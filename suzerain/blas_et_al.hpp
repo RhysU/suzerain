@@ -110,7 +110,7 @@ inline void swap(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sswap */
+/*! @copydoc suzerain_blas_dswap */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void swap(
         const Integer1 n,
@@ -129,7 +129,7 @@ inline void swap(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sswap */
+/*! @copydoc suzerain_blas_cswap */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -152,7 +152,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sswap */
+/*! @copydoc suzerain_blas_zswap */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -194,7 +194,7 @@ inline void copy(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_scopy */
+/*! @copydoc suzerain_blas_dcopy */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void copy(
         const Integer1 n,
@@ -213,7 +213,7 @@ inline void copy(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_scopy */
+/*! @copydoc suzerain_blas_ccopy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -236,7 +236,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_scopy */
+/*! @copydoc suzerain_blas_zcopy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -278,7 +278,7 @@ inline float dot(
                               boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sdot */
+/*! @copydoc suzerain_blas_ddot */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline double dot(
         const Integer1 n,
@@ -383,7 +383,7 @@ inline float nrm2(
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_snrm2 */
+/*! @copydoc suzerain_blas_dnrm2 */
 template< typename Integer1, typename Integer2 >
 inline double nrm2(
         const Integer1 n,
@@ -397,7 +397,7 @@ inline double nrm2(
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_snrm2 */
+/*! @copydoc suzerain_blas_scnrm2 */
 template< typename Integer1, typename Integer2, typename Complex1 >
 inline typename boost::enable_if<
     suzerain::complex::traits::is_complex_float<Complex1>, float
@@ -413,7 +413,7 @@ inline typename boost::enable_if<
                                 boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_snrm2 */
+/*! @copydoc suzerain_blas_dznrm2 */
 template< typename Integer1, typename Integer2, typename Complex1 >
 inline typename boost::enable_if<
     suzerain::complex::traits::is_complex_double<Complex1>, double
@@ -443,7 +443,7 @@ inline float asum(
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sasum */
+/*! @copydoc suzerain_blas_dasum */
 template< typename Integer1, typename Integer2 >
 inline double asum(
         const Integer1 n,
@@ -478,7 +478,7 @@ inline void axpy(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpy */
+/*! @copydoc suzerain_blas_daxpy */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void axpy(
         const Integer1 n,
@@ -499,7 +499,7 @@ inline void axpy(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpy */
+/*! @copydoc suzerain_blas_caxpy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -525,7 +525,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpy */
+/*! @copydoc suzerain_blas_caxpy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -551,7 +551,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpy */
+/*! @copydoc suzerain_blas_zaxpy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -577,7 +577,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpy */
+/*! @copydoc suzerain_blas_zaxpy */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -626,7 +626,7 @@ inline void axpby(
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_daxpby */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void axpby(
         const Integer1 n,
@@ -649,7 +649,7 @@ inline void axpby(
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_caxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2,
           typename Complex3, typename Complex4 >
@@ -679,7 +679,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_caxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -708,7 +708,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_caxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -737,7 +737,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_caxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -766,7 +766,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_zaxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2,
           typename Complex3, typename Complex4 >
@@ -796,7 +796,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_zaxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -825,7 +825,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_zaxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2, typename Complex3 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -854,7 +854,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                 boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_saxpby */
+/*! @copydoc suzerain_blas_zaxpby */
 template< typename Integer1, typename Integer2, typename Integer3,
           typename Complex1, typename Complex2 >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -914,7 +914,7 @@ inline void waxpby(
                                  boost::numeric_cast<int>(incw));
 }
 
-/*! @copydoc suzerain_blas_swaxpby */
+/*! @copydoc suzerain_blas_dwaxpby */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -961,7 +961,7 @@ inline void scal(
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sscal */
+/*! @copydoc suzerain_blas_dscal */
 template< typename Integer1, typename Integer2 >
 inline void scal(
         const Integer1 n,
@@ -977,7 +977,7 @@ inline void scal(
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sscal */
+/*! @copydoc suzerain_blas_cscal */
 template< typename Integer1, typename Integer2,
           typename Complex1, typename Complex2  >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -997,7 +997,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sscal */
+/*! @copydoc suzerain_blas_cscal */
 template< typename Integer1, typename Integer2,
           typename Complex1 >
 inline typename boost::enable_if<
@@ -1017,7 +1017,7 @@ inline typename boost::enable_if<
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sscal */
+/*! @copydoc suzerain_blas_zscal */
 template< typename Integer1, typename Integer2,
           typename Complex1, typename Complex2  >
 inline typename boost::enable_if<boost::mpl::and_<
@@ -1045,7 +1045,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                boost::numeric_cast<int>(incx));
 }
 
-/*! @copydoc suzerain_blas_sscal */
+/*! @copydoc suzerain_blas_zscal */
 template< typename Integer1, typename Integer2,
           typename Complex1 >
 inline typename boost::enable_if<
@@ -1116,7 +1116,7 @@ inline void gbmv(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_sgbmv */
+/*! @copydoc suzerain_blas_dgbmv */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1198,7 +1198,7 @@ inline void sbmv(
                                boost::numeric_cast<int>(incy));
 }
 
-/*! @copydoc suzerain_blas_ssbmv */
+/*! @copydoc suzerain_blas_dsbmv */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1272,7 +1272,7 @@ inline void gb_acc(
                                  boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_blas_sgb_acc */
+/*! @copydoc suzerain_blas_dgb_acc */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1507,7 +1507,7 @@ inline int gbtrf(
                                   ipiv);
 }
 
-/*! @copydoc suzerain_lapack_sgbtrf */
+/*! @copydoc suzerain_lapack_dgbtrf */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1536,7 +1536,7 @@ inline int gbtrf(
                                   ipiv);
 }
 
-/*! @copydoc suzerain_lapack_sgbtrf */
+/*! @copydoc suzerain_lapack_cgbtrf */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1568,7 +1568,7 @@ inline typename boost::enable_if<
                                   ipiv);
 }
 
-/*! @copydoc suzerain_lapack_sgbtrf */
+/*! @copydoc suzerain_lapack_zgbtrf */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1637,7 +1637,7 @@ inline int gbtrs(
                                   boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbtrs */
+/*! @copydoc suzerain_lapack_dgbtrs */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1674,7 +1674,7 @@ inline int gbtrs(
                                   boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbtrs */
+/*! @copydoc suzerain_lapack_cgbtrs */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1716,7 +1716,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                   boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbtrs */
+/*! @copydoc suzerain_lapack_zgbtrs */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1793,7 +1793,7 @@ inline int gbsv(
                                  boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbsv */
+/*! @copydoc suzerain_lapack_dgbsv */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1828,7 +1828,7 @@ inline int gbsv(
                                  boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbsv */
+/*! @copydoc suzerain_lapack_cgbsv */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -1868,7 +1868,7 @@ inline typename boost::enable_if<boost::mpl::and_<
                                  boost::numeric_cast<int>(ldb));
 }
 
-/*! @copydoc suzerain_lapack_sgbsv */
+/*! @copydoc suzerain_lapack_zgbsv */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -2123,6 +2123,7 @@ inline int gbnorm1(
                                      norm1);
 }
 
+/*! @copydoc suzerain_blasext_cgbnorm1 */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
@@ -2154,6 +2155,7 @@ inline typename boost::enable_if<
                                      norm1);
 }
 
+/*! @copydoc suzerain_blasext_zgbnorm1 */
 template< typename Integer1,
           typename Integer2,
           typename Integer3,
