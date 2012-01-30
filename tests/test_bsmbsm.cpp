@@ -466,41 +466,36 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( submatrix_packing )
 
 // Precision-specific dispatch for floats
-static void pack(int S,  int n, int ihat, int jhat,
-                 int kl, int ku, const float *b,    int ldb,
-                 int KL, int KU,       float *papt, int ldpapt)
+static void packc(const suzerain_bsmbsm A, int ihat, int jhat,
+                  const float *b, float *papt)
 {
-    return suzerain_bsmbsm_spack(
-            S, n, ihat, jhat, kl, ku, b, ldb, KL, KU, papt, ldpapt);
+    return suzerain_bsmbsm_spackc(A, ihat, jhat, b, papt);
 }
 
 // Precision-specific dispatch for doubles
-static void pack(int S, int n, int ihat, int jhat,
-                 int kl, int ku, const double *b,    int ldb,
-                 int KL, int KU,       double *papt, int ldpapt)
+static void packc(const suzerain_bsmbsm A, int ihat, int jhat,
+                  const double *b, double *papt)
 {
-    return suzerain_bsmbsm_dpack(
-            S, n, ihat, jhat, kl, ku, b, ldb, KL, KU, papt, ldpapt);
+    return suzerain_bsmbsm_dpackc(A, ihat, jhat, b, papt);
 }
 
 // Precision-specific dispatch for complex floats
-static void pack(int S, int n, int ihat, int jhat,
-                 int kl, int ku, const std::complex<float> *b,    int ldb,
-                 int KL, int KU,       std::complex<float> *papt, int ldpapt)
+static void packc(const suzerain_bsmbsm A, int ihat, int jhat,
+                  const std::complex<float> *b, std::complex<float> *papt)
 {
-    return suzerain_bsmbsm_cpack(S, n, ihat, jhat,
-                                 kl, ku, (const float (*)[2]) b,    ldb,
-                                 KL, KU, (      float (*)[2]) papt, ldpapt);
+    return suzerain_bsmbsm_cpackc(A, ihat, jhat,
+                                  (const float (*)[2]) b,
+                                  (      float (*)[2]) papt);
 }
 
 // Precision-specific dispatch for complex doubles
-static void pack(int S, int n, int ihat, int jhat,
-                 int kl, int ku, const std::complex<double> *b,    int ldb,
-                 int KL, int KU,       std::complex<double> *papt, int ldpapt)
+static void packc(const suzerain_bsmbsm A, int ihat, int jhat,
+                  const std::complex<double> *b,
+                        std::complex<double> *papt)
 {
-    return suzerain_bsmbsm_zpack(S, n, ihat, jhat,
-                                 kl, ku, (const double (*)[2]) b,    ldb,
-                                 KL, KU, (      double (*)[2]) papt, ldpapt);
+    return suzerain_bsmbsm_zpackc(A, ihat, jhat,
+                                  (const double (*)[2]) b,
+                                  (      double (*)[2]) papt);
 }
 
 typedef boost::mpl::list<
@@ -537,8 +532,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( degenerate, Scalar, test_types )
     }
 
     // Perform the degenerate pack operation
-    pack(A.S, A.n, 0, 0, A.kl, A.ku, b.get(),    A.ld,
-                         A.KL, A.KU, papt.get(), A.LD);
+    packc(A, 0, 0, b.get(), papt.get());
 
     // Check that the operation was indeed nothing but a copy
     CHECK_GBMATRIX_CLOSE(A.n, A.n, A.kl, A.ku, b.get(),    A.ld,

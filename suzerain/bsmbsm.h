@@ -351,6 +351,62 @@ suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
 
 /**
  * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
+ * the corresponding locations within contiguous storage of \f$P A
+ * P^{\mbox{T}}\f$.  This is a convenience method to simplify preparing storage
+ * for use by the BLAS' <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.
+ *
+ * @param A      Storage details for the BSMBSM matrix.
+ * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
+ * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
+ *               which <em>must</em> have <tt>A.kl</tt> and <tt>A.ku</tt>
+ *               diagonals and leading dimension
+ *               <tt>A.ld = A.ku + 1 + A.kl</tt>.
+ * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *               which <em>must</em> have <tt>A.KL</tt> and <tt>A.KU</tt>
+ *               diagonals and leading dimension <tt>A.LD</tt>.
+ */
+inline static void
+suzerain_bsmbsm_spackc(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const float *b, float *papt)
+{
+    return suzerain_bsmbsm_spack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,    A.ld,
+                                 A.KL, A.KU, papt, A.LD);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc */
+inline static void
+suzerain_bsmbsm_dpackc(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const double *b, double *papt)
+{
+    return suzerain_bsmbsm_dpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,    A.ld,
+                                 A.KL, A.KU, papt, A.LD);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc */
+inline static void
+suzerain_bsmbsm_cpackc(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const float (*b)[2], float (*papt)[2])
+{
+    return suzerain_bsmbsm_cpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,    A.ld,
+                                 A.KL, A.KU, papt, A.LD);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc */
+inline static void
+suzerain_bsmbsm_zpackc(const suzerain_bsmbsm A, int ihat, int jhat,
+                       const double (*b)[2], double (*papt)[2])
+{
+    return suzerain_bsmbsm_zpack(A.S, A.n, ihat, jhat,
+                                 A.kl, A.ku, b,    A.ld,
+                                 A.KL, A.KU, papt, A.LD);
+}
+
+/**
+ * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
  * the corresponding locations within contiguous, LU factorization-ready
  * storage of \f$P A P^{\mbox{T}}\f$.  This is a convenience method to simplify
  * preparing storage for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
