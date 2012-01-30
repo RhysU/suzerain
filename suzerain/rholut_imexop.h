@@ -170,6 +170,8 @@ suzerain_rholut_imexop_apply(
  *                     globally contiguous state vector.
  * @param[in] ndx_rhoe Order of contiguous total energy data within a
  *                     globally contiguous state vector.
+ * @param[in]  buf  Working storage of size at least
+ *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.
  * @param[out] papt Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
  *                  which will have <tt>A->KL</tt> and <tt>A->KU</tt>
@@ -192,6 +194,7 @@ suzerain_rholut_imexop_packc(
         const int ndx_rhov,
         const int ndx_rhow,
         const int ndx_rhoe,
+        double (*buf)[2],
         suzerain_bsmbsm *A,
         double (*papt)[2]);
 
@@ -228,6 +231,8 @@ suzerain_rholut_imexop_packc(
  *                     globally contiguous state vector.
  * @param[in] ndx_rhoe Order of contiguous total energy data within a
  *                     globally contiguous state vector.
+ * @param[in]  buf  Working storage of size at least
+ *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.
  * @param[out] papt Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
  *                  which will have <tt>A->KL</tt> and <tt>A->KU</tt>
@@ -250,6 +255,7 @@ suzerain_rholut_imexop_packf(
         const int ndx_rhov,
         const int ndx_rhow,
         const int ndx_rhoe,
+        double (*buf)[2],
         suzerain_bsmbsm *A,
         double (*papt)[2]);
 
