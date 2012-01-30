@@ -160,16 +160,21 @@ suzerain_rholut_imexop_apply(
  * @param[in] r     Reference quantities used to form the operator.
  * @param[in] ld    Strides between reference quantity values.
  * @param[in] w     B-spline workspace providing discrete operators.
- * @param[in] ndx_rho  Order of contiguous density data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhou Order of contiguous streamwise momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhov Order of contiguous wall-normal momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhow Order of contiguous spanwise momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhoe Order of contiguous total energy data within a
- *                     globally contiguous state vector.
+ * @param[in] rho   Order of contiguous density data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhou  Order of contiguous streamwise momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhov  Order of contiguous wall-normal momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhow  Order of contiguous spanwise momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhoe  Order of contiguous total energy data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
  * @param[in]  buf  Working storage of size at least
  *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.
@@ -189,11 +194,11 @@ suzerain_rholut_imexop_packc(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int ndx_rho,
-        const int ndx_rhou,
-        const int ndx_rhov,
-        const int ndx_rhow,
-        const int ndx_rhoe,
+        const int rho,
+        const int rhou,
+        const int rhov,
+        const int rhow,
+        const int rhoe,
         double (*buf)[2],
         suzerain_bsmbsm * const A,
         double (*papt)[2]);
@@ -221,16 +226,21 @@ suzerain_rholut_imexop_packc(
  * @param[in] r     Reference quantities used to form the operator.
  * @param[in] ld    Strides between reference quantity values.
  * @param[in] w     B-spline workspace providing discrete operators.
- * @param[in] ndx_rho  Order of contiguous density data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhou Order of contiguous streamwise momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhov Order of contiguous wall-normal momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhow Order of contiguous spanwise momentum data within a
- *                     globally contiguous state vector.
- * @param[in] ndx_rhoe Order of contiguous total energy data within a
- *                     globally contiguous state vector.
+ * @param[in] rho   Order of contiguous density data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhou  Order of contiguous streamwise momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhov  Order of contiguous wall-normal momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhow  Order of contiguous spanwise momentum data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
+ * @param[in] rhoe  Order of contiguous total energy data within a
+ *                  globally contiguous state vector.
+ *                  Must be one of 0, 1, 2, 3, or 4.
  * @param[in]  buf  Working storage of size at least
  *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.
@@ -250,11 +260,11 @@ suzerain_rholut_imexop_packf(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int ndx_rho,
-        const int ndx_rhou,
-        const int ndx_rhov,
-        const int ndx_rhow,
-        const int ndx_rhoe,
+        const int rho,
+        const int rhou,
+        const int rhov,
+        const int rhow,
+        const int rhoe,
         double (*buf)[2],
         suzerain_bsmbsm * const A,
         double (*papt)[2]);

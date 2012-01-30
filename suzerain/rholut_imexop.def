@@ -13,24 +13,85 @@ FUNCNAME()(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int ndx_rho,
-        const int ndx_rhou,
-        const int ndx_rhov,
-        const int ndx_rhow,
-        const int ndx_rhoe,
+        const int rho,
+        const int rhou,
+        const int rhov,
+        const int rhow,
+        const int rhoe,
         double (*buf)[2],
         suzerain_bsmbsm * const A,
         double (*papt)[2])
 {
-    assert(w->nderiv >= 2);
+    // Prepare oft-used constants to aid readability
+    const double c_one[2] = { 1, 0 };
 
     // Compute the BSMBSM structure and named max_kl, max_ku views of w->D.
     *A = suzerain_bsmbsm_construct(5, w->n, w->max_kl, w->max_ku);
     const double * const M  = w->D[0] - (w->max_ku - w->ku[0]);
     const double * const D1 = w->D[1] - (w->max_ku - w->ku[1]);
     const double * const D2 = w->D[2] - (w->max_ku - w->ku[1]);
+    assert(w->nderiv >= 2); // Enough derivatives in workspace?
+    assert(A->ld == w->ld); // Compatible storage?
+    const size_t bufbytes = A->ld*A->n*2*sizeof(buf[0][0]);
 
-    // FIXME Implement
+    // We do not know the leading dimension associated with the definition of
+    // PACKFUNC() so we must overwrite every possible submatrix within PAPT.
+    // This is only suboptimal for the zero (rho, rhoe) submatrix.
+
+    { // Prepare density row
+        memset(buf, 0, bufbytes);
+        PACKFUNC()(A, rho,  rhou, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rho,  rhov, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rho,  rhow, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rho,  rhoe, (const double (*)[2])buf, papt);
+
+        suzerain_blas_dcopy(A->ld*A->n, M, 1, &buf[0][0], 2);
+        PACKFUNC()(A, rho,  rho,  (const double (*)[2])buf, papt);
+    }
+
+    { // Prepare streamwise momentum row
+        memset(buf, 0, bufbytes);
+        PACKFUNC()(A, rhou, rho,  (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhou, rhov, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhou, rhow, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhou, rhoe, (const double (*)[2])buf, papt);
+
+        suzerain_blas_dcopy(A->ld*A->n, M, 1, &buf[0][0], 2);
+        PACKFUNC()(A, rhou, rhou, (const double (*)[2])buf, papt);
+    }
+
+    { // Prepare wall-normal momentum row
+        memset(buf, 0, bufbytes);
+        PACKFUNC()(A, rhov, rho,  (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhov, rhou, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhov, rhow, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhov, rhoe, (const double (*)[2])buf, papt);
+
+        suzerain_blas_dcopy(A->ld*A->n, M, 1, &buf[0][0], 2);
+        PACKFUNC()(A, rhov, rhov, (const double (*)[2])buf, papt);
+    }
+
+    { // Prepare spanwise momentum row
+        memset(buf, 0, bufbytes);
+        PACKFUNC()(A, rhow, rho,  (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhow, rhou, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhow, rhov, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhow, rhoe, (const double (*)[2])buf, papt);
+
+        suzerain_blas_dcopy(A->ld*A->n, M, 1, &buf[0][0], 2);
+        PACKFUNC()(A, rhow, rhow, (const double (*)[2])buf, papt);
+    }
+
+    { // Prepare total energy row
+        memset(buf, 0, bufbytes);
+        PACKFUNC()(A, rhoe, rho,  (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhoe, rhou, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhoe, rhov, (const double (*)[2])buf, papt);
+        PACKFUNC()(A, rhoe, rhow, (const double (*)[2])buf, papt);
+
+        suzerain_blas_dcopy(A->ld*A->n, M, 1, &buf[0][0], 2);
+        PACKFUNC()(A, rhoe, rhoe, (const double (*)[2])buf, papt);
+    }
 }
 
 #undef FUNCNAME
