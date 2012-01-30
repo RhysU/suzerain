@@ -61,14 +61,14 @@
  * equations.
  *
  * With appropriate renumbering of \f$A\f$, solving linear equations can be
- * done efficiently.  The zero-indexed permutation vector \f[q(i) \coloneqq
+ * done efficiently.  The zero-indexed permutation vector \f[q(i) =
  * \left(i\bmod{}S\right)n + \lfloor{}i/S\rfloor{}\f] may always be used to
  * convert a BSMBSM into a globally banded <tt>N</tt>x<tt>N</tt> matrix with
  * minimum bandwidth.  More concretely, the permutation matrix \f$P\f$ uniquely
  * defined by vector \f$q\f$ causes \f$P A P^{\mbox{T}}\f$ to have <tt>KL :=
  * S*(kl+1)-1</tt> subdiagonals and <tt>KU := S*(ku+1)-1</tt> superdiagonals
  * summing to overall bandwidth <tt>KL + 1 + KU = S*(kl + ku + 2)-1</tt>.  The
- * reverse permutation vector has a simple closed form \f[q^{-1}(i) \coloneqq
+ * reverse permutation vector has a simple closed form \f[q^{-1}(i) =
  * \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\f] With \f$A_{i\,j}\f$ in
  * hand, the banded renumbering may formed using the relationships
  * \f{align*}{
