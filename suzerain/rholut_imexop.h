@@ -43,7 +43,6 @@
 extern "C" {
 #endif
 
-
 /** Scenario-like constants used for operator formation. */
 typedef struct {
     const double Re;    /**< \f$\mbox{Re} = \frac{\rho_0 u_0 l_0 }{\mu_0}\f$ */
@@ -97,7 +96,7 @@ typedef struct {
  * @param s[in]  Scenario parameters used to form the operator.
  * @param r[in]  Reference quantities used to form the operator.
  * @param ld[in] Strides between reference quantity values.
- * @param b[in]  B-spline workspace providing discrete operators.
+ * @param w[in]  B-spline workspace providing discrete operators.
  * @param in_rho[in]    Wall-normal input data for \f$\rho{}\f$.
  * @param in_rhou[in]   Wall-normal input data for \f$\rho{}u\f$.
  * @param in_rhov[in]   Wall-normal input data for \f$\rho{}v\f$.
@@ -110,24 +109,26 @@ typedef struct {
  * @param out_rhow[out] Wall-normal output data for \f$\rho{}w\f$.
  * @param out_rhoe[out] Wall-normal output data for \f$\rho{}e\f$.
  */
-void suzerain_rholut_imexop_apply(const double phi,
-                                  const double km,
-                                  const double kn,
-                                  const suzerain_rholut_imexop_scenario *s,
-                                  const suzerain_rholut_imexop_ref      *r,
-                                  const suzerain_rholut_imexop_refld    *ld,
-                                  const suzerain_bsplineop_workspace    *b,
-                                  const double (*in_rho )[2],
-                                  const double (*in_rhou)[2],
-                                  const double (*in_rhov)[2],
-                                  const double (*in_rhow)[2],
-                                  const double (*in_rhoe)[2],
-                                  const double beta,
-                                  double (*out_rho )[2],
-                                  double (*out_rhou)[2],
-                                  double (*out_rhov)[2],
-                                  double (*out_rhow)[2],
-                                  double (*out_rhoe)[2]);
+void
+suzerain_rholut_imexop_apply(
+        const double phi,
+        const double km,
+        const double kn,
+        const suzerain_rholut_imexop_scenario *s,
+        const suzerain_rholut_imexop_ref      *r,
+        const suzerain_rholut_imexop_refld    *ld,
+        const suzerain_bsplineop_workspace    *w,
+        const double (*in_rho )[2],
+        const double (*in_rhou)[2],
+        const double (*in_rhov)[2],
+        const double (*in_rhow)[2],
+        const double (*in_rhoe)[2],
+        const double beta,
+        double (*out_rho )[2],
+        double (*out_rhou)[2],
+        double (*out_rhov)[2],
+        double (*out_rhow)[2],
+        double (*out_rhoe)[2]);
 
 #ifdef __cplusplus
 } /* extern "C" */
