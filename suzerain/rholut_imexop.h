@@ -31,6 +31,7 @@
 #ifndef __SUZERAIN_RHOLUT_IMEXOP_H__
 #define __SUZERAIN_RHOLUT_IMEXOP_H__
 
+#include <suzerain/bsmbsm.h>
 #include <suzerain/bsplineop.h>
 
 /** @file
@@ -90,40 +91,41 @@ typedef struct {
  * Apply linear implicit operator \f$y \leftarrow{} \left(M + \varphi{}L\right)
  * x + \beta{} y\f$.  The matrix \f$L\f$ is a function of the provided
  * wavenumbers, scenario parameters, and wall-normal reference quantities.  The
- * problem size and discrete operators are tkane from the provided B-spline
- * workspace \c w.  Input and output state variables must be stride one.  See
- * <tt>writeups/derivation.tex</tt> for full details.
+ * problem size and discrete operators are taken from the provided B-spline
+ * workspace \c w.  Input and output state variables must be stride one.
  *
- * @param phi[in] Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param km[in] X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
+ * @param[in] phi Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in] km X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
  *               (from, for example, \ref suzerain_inorder_wavenumber).
- * @param kn[in] Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
+ * @param[in] kn Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
  *               (from, for example, \ref suzerain_inorder_wavenumber).
- * @param s[in]  Scenario parameters used to form the operator.
- * @param r[in]  Reference quantities used to form the operator.
- * @param ld[in] Strides between reference quantity values.
- * @param w[in]  B-spline workspace providing discrete operators.
- * @param in_rho[in]    Wall-normal input data for \f$\rho{}\f$.
- * @param in_rhou[in]   Wall-normal input data for \f$\rho{}u\f$.
- * @param in_rhov[in]   Wall-normal input data for \f$\rho{}v\f$.
- * @param in_rhow[in]   Wall-normal input data for \f$\rho{}w\f$.
- * @param in_rhoe[in]   Wall-normal input data for \f$\rho{}e\f$.
- * @param beta[in]      Accumulation scaling factor \f$\beta\f$.
- * @param out_rho[out]  Wall-normal output data for \f$\rho{}\f$.
- * @param out_rhou[out] Wall-normal output data for \f$\rho{}u\f$.
- * @param out_rhov[out] Wall-normal output data for \f$\rho{}v\f$.
- * @param out_rhow[out] Wall-normal output data for \f$\rho{}w\f$.
- * @param out_rhoe[out] Wall-normal output data for \f$\rho{}e\f$.
+ * @param[in] s  Scenario parameters used to form the operator.
+ * @param[in] r  Reference quantities used to form the operator.
+ * @param[in] ld Strides between reference quantity values.
+ * @param[in] w  B-spline workspace providing discrete operators.
+ * @param[in] in_rho    Wall-normal input data for \f$\rho{}\f$.
+ * @param[in] in_rhou   Wall-normal input data for \f$\rho{}u\f$.
+ * @param[in] in_rhov   Wall-normal input data for \f$\rho{}v\f$.
+ * @param[in] in_rhow   Wall-normal input data for \f$\rho{}w\f$.
+ * @param[in] in_rhoe   Wall-normal input data for \f$\rho{}e\f$.
+ * @param[in] beta      Accumulation scaling factor \f$\beta\f$.
+ * @param[out] out_rho  Wall-normal output data for \f$\rho{}\f$.
+ * @param[out] out_rhou Wall-normal output data for \f$\rho{}u\f$.
+ * @param[out] out_rhov Wall-normal output data for \f$\rho{}v\f$.
+ * @param[out] out_rhow Wall-normal output data for \f$\rho{}w\f$.
+ * @param[out] out_rhoe Wall-normal output data for \f$\rho{}e\f$.
+ *
+ * @see Model documentation in <tt>writeups/derivation.tex</tt> for full details.
  */
 void
 suzerain_rholut_imexop_apply(
         const double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario *s,
-        const suzerain_rholut_imexop_ref      *r,
-        const suzerain_rholut_imexop_refld    *ld,
-        const suzerain_bsplineop_workspace    *w,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
         const double (*in_rho )[2],
         const double (*in_rhou)[2],
         const double (*in_rhov)[2],
@@ -135,6 +137,121 @@ suzerain_rholut_imexop_apply(
         double (*out_rhov)[2],
         double (*out_rhow)[2],
         double (*out_rhoe)[2]);
+
+/**
+ * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
+ * within contiguous storage of \f$P\left(M + \varphi{}L\right)P^{\mbox{T}}\f$
+ * for use by the BLAS' <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.  The matrix
+ * \f$L\f$ is a function of the provided wavenumbers, scenario parameters, and
+ * wall-normal reference quantities.
+ *
+ * The problem size and discrete operators are taken from the provided B-spline
+ * workspace \c w.  On entry, \c papt must be of at least size
+ * <tt>w->n*(5*(w->max_kl + w->max_ku + 2) - 1)</tt>.  Boundary conditions,
+ * which are \em not applied, will require using information about the
+ * permutation returned in \c A.
+ *
+ * @param[in] phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in] km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
+ *                  (from, for example, \ref suzerain_inorder_wavenumber).
+ * @param[in] kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
+ *                  (from, for example, \ref suzerain_inorder_wavenumber).
+ * @param[in] s     Scenario parameters used to form the operator.
+ * @param[in] r     Reference quantities used to form the operator.
+ * @param[in] ld    Strides between reference quantity values.
+ * @param[in] w     B-spline workspace providing discrete operators.
+ * @param[in] ndx_rho  Order of contiguous density data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhou Order of contiguous streamwise momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhov Order of contiguous wall-normal momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhow Order of contiguous spanwise momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhoe Order of contiguous total energy data within a
+ *                     globally contiguous state vector.
+ * @param[out] A    Storage details for the BSMBSM matrix \c papt.
+ * @param[out] papt Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                  which will have <tt>A->KL</tt> and <tt>A->KU</tt>
+ *                  diagonals and leading dimension <tt>A->LD</tt>.
+ *
+ * @see Model documentation in <tt>writeups/derivation.tex</tt> for full details.
+ * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c papt.
+ */
+void
+suzerain_rholut_imexop_packc(
+        const double phi,
+        const double km,
+        const double kn,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int ndx_rho,
+        const int ndx_rhou,
+        const int ndx_rhov,
+        const int ndx_rhow,
+        const int ndx_rhoe,
+        suzerain_bsmbsm *A,
+        double (*papt)[2]);
+
+/**
+ * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
+ * within contiguous, LU factorization-ready storage of \f$P\left(M +
+ * \varphi{}L\right)P^{\mbox{T}}\f$ for use by the LAPACK's <tt>gbtrf</tt> or
+ * <tt>gbsv</tt>.  The matrix \f$L\f$ is a function of the provided
+ * wavenumbers, scenario parameters, and wall-normal reference quantities.
+ *
+ * The problem size and discrete operators are taken from the provided B-spline
+ * workspace \c w.  On entry, \c papt must be of at least size
+ * <tt>w->n*(10*(w->max_kl+1) + 5*(w->max_ku+1) - 2)</tt>.  Boundary
+ * conditions, which are \em not applied, will require using information about
+ * the permutation returned in \c A taking care that in accordance with
+ * <tt>gbtrf</tt> the operator starts at row <tt>A->KL</tt>.
+ *
+ * @param[in] phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in] km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
+ *                  (from, for example, \ref suzerain_inorder_wavenumber).
+ * @param[in] kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
+ *                  (from, for example, \ref suzerain_inorder_wavenumber).
+ * @param[in] s     Scenario parameters used to form the operator.
+ * @param[in] r     Reference quantities used to form the operator.
+ * @param[in] ld    Strides between reference quantity values.
+ * @param[in] w     B-spline workspace providing discrete operators.
+ * @param[in] ndx_rho  Order of contiguous density data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhou Order of contiguous streamwise momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhov Order of contiguous wall-normal momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhow Order of contiguous spanwise momentum data within a
+ *                     globally contiguous state vector.
+ * @param[in] ndx_rhoe Order of contiguous total energy data within a
+ *                     globally contiguous state vector.
+ * @param[out] A    Storage details for the BSMBSM matrix \c papt.
+ * @param[out] papt Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                  which will have <tt>A->KL</tt> and <tt>A->KU</tt>
+ *                  diagonals and leading dimension <tt>A->LD + A->KL</tt>.
+ *
+ * @see Model documentation in <tt>writeups/derivation.tex</tt> for full details.
+ * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c papt.
+ */
+void
+suzerain_rholut_imexop_packf(
+        const double phi,
+        const double km,
+        const double kn,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int ndx_rho,
+        const int ndx_rhou,
+        const int ndx_rhov,
+        const int ndx_rhow,
+        const int ndx_rhoe,
+        suzerain_bsmbsm *A,
+        double (*papt)[2]);
 
 #ifdef __cplusplus
 } /* extern "C" */
