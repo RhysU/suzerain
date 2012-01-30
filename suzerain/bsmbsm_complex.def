@@ -48,8 +48,7 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
             if        (beta_is_zero) {
                 for (int i = 0; i < N; ++i) {
                     const int ix = suzerain_bsmbsm_q(S, n, i);
-                    y[i][0] = x[ix][0];                               // P x
-                    y[i][1] = x[ix][1];
+                    memcpy(y + i, x + ix, 2*sizeof(x[0][0]));         // P x
                 }
             } else if (beta_is_one)  {
                 for (int i = 0; i < N; ++i) {
@@ -151,8 +150,7 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
             if        (beta_is_zero) {
                 for (int i = 0; i < N; ++i, iy += incy) {
                     const int ix = suzerain_bsmbsm_q(S, n, i);
-                    y[iy][0] = x[ix][0];                               // P x
-                    y[iy][1] = x[ix][1];
+                    memcpy(y + iy, x + ix, 2*sizeof(x[0][0]));         // P x
                 }
             } else if (beta_is_one)  {
                 for (int i = 0; i < N; ++i, iy += incy) {
@@ -255,8 +253,7 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
             if        (beta_is_zero) {
                 for (int i = 0; i < N; ++i, iy += incy) {
                     const int ix = incx*suzerain_bsmbsm_q(S, n, i);
-                    y[iy][0] = x[ix][0];                               // P x
-                    y[iy][1] = x[ix][1];
+                    memcpy(y + iy, x + ix, 2*sizeof(x[0][0]));         // P x
                 }
             } else if (beta_is_one)  {
                 for (int i = 0; i < N; ++i, iy += incy) {
