@@ -195,7 +195,7 @@ suzerain_rholut_imexop_packc(
         const int ndx_rhow,
         const int ndx_rhoe,
         double (*buf)[2],
-        suzerain_bsmbsm *A,
+        suzerain_bsmbsm * const A,
         double (*papt)[2]);
 
 /**
@@ -256,7 +256,7 @@ suzerain_rholut_imexop_packf(
         const int ndx_rhow,
         const int ndx_rhoe,
         double (*buf)[2],
-        suzerain_bsmbsm *A,
+        suzerain_bsmbsm * const A,
         double (*papt)[2]);
 
 #ifdef __cplusplus

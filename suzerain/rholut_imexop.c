@@ -97,3 +97,16 @@ suzerain_rholut_imexop_apply(
     suzerain_bsplineop_accumulate_complex(
             M, nrhs, c_one, in_rhoe, inc, n, c_phi, out_rhoe, inc, n, w);
 }
+
+// suzerain_rholut_imexop_pack{c,f} differ trivially
+// use preprocessor to generate both from the same source template
+
+// suzerain_rholut_imexop_packc
+#define FUNCNAME() suzerain_rholut_imexop_packc
+#define PACKFUNC() suzerain_bsmbsm_zpackc
+#include "rholut_imexop.def"
+
+// suzerain_rholut_imexop_packf
+#define FUNCNAME() suzerain_rholut_imexop_packf
+#define PACKFUNC() suzerain_bsmbsm_zpackf
+#include "rholut_imexop.def"

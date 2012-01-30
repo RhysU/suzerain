@@ -147,6 +147,7 @@ EXTRA_libsuzerain_la_SOURCES += gbddmv.def
 EXTRA_libsuzerain_la_SOURCES += gbidmv.def
 EXTRA_libsuzerain_la_SOURCES += gbdmv.def
 EXTRA_libsuzerain_la_SOURCES += gbmv.def
+EXTRA_libsuzerain_la_SOURCES += rholut_imexop.def
 EXTRA_libsuzerain_la_SOURCES += sbmv.def
 libsuzerain_la_LDFLAGS        = -release $(PACKAGE_VERSION)
 libsuzerain_la_LIBADD         = $(GRVY_LIBS)
