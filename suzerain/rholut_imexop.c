@@ -56,6 +56,8 @@ suzerain_rholut_imexop_apply(
         double (*out_rhow)[2],
         double (*out_rhoe)[2])
 {
+    assert(w->nderiv >= 2);
+
     // Prepare several oft-used constants to aid readability
     static const int inc        = 1;
     static const int nrhs       = 1;
