@@ -87,6 +87,12 @@ typedef struct {
 } suzerain_rholut_imexop_refld;
 
 /**
+ * Apply linear implicit operator \f$y \leftarrow{} \left(M + \varphi{}L\right)
+ * x + \beta{} y\f$.  The matrix \f$L\f$ is a function of the provided
+ * wavenumbers, scenario parameters, and wall-normal reference quantities.  The
+ * problem size and discrete operators are tkane from the provided B-spline
+ * workspace \c w.  Input and output state variables must be stride one.  See
+ * <tt>writeups/derivation.tex</tt> for full details.
  *
  * @param phi[in] Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
  * @param km[in] X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
