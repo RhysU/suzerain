@@ -294,7 +294,7 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * corresponding locations within banded storage of \f$P A P^{\mbox{T}}\f$.
  * More specifically,
  * \f[
- *   \left.B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}}
+ *   \left.B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}
  *   =
  *   \left.A\right|_{\hat{\imath}n + i\, \hat{\jmath}n + j}
  *   =
