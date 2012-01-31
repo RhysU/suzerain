@@ -4,7 +4,7 @@
 // #define COMPONENT double  /* Real-valued floating point type         */
 // #define AFFIXPREC         /* Prepares BLAS-like names per COMPONENT  */
 
-void
+int
 AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
     char trans,
     int S,
@@ -346,10 +346,12 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
         }
 
     }
+
+    return 0;
 }
 
 
-void
+int
 AFFIXPREC(suzerain_bsmbsm_,pack)(
         int S,  int n, int ihat, int jhat,
         int kl, int ku, const COMPONENT (* restrict b)[2],    int ldb,
@@ -397,6 +399,8 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
             memcpy(papt + qinvi + qinvj_ldpapt, b + i, 2*sizeof(COMPONENT));
         }
     }
+
+    return 0;
 }
 
 #undef COMPONENT

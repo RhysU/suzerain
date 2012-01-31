@@ -51,19 +51,22 @@
 #include <suzerain/gbmv.h>
 #include <suzerain/sbmv.h>
 
-
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
 
 // Shorthand
 #define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
 
-void
+// From "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
+#define assert_static(e) do { enum { assert_static__ = 1/(e) }; } while (0)
+
+int
 suzerain_blas_xerbla(const char *srname, const int info)
 {
 #ifdef SUZERAIN_HAVE_MKL
     const int lsrname = srname ? strlen(srname) : 0;
     xerbla(srname, &info, lsrname);
+    return info;
 #else
 #error "Sanity failure"
 #endif
@@ -117,8 +120,8 @@ suzerain_blas_sswap(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    sswap(&n, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return sswap(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -133,8 +136,8 @@ suzerain_blas_dswap(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    dswap(&n, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dswap(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -149,8 +152,8 @@ suzerain_blas_cswap(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    cswap(&n, (MKL_Complex8 *) x, &incx, (MKL_Complex8 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return cswap(&n, (MKL_Complex8 *) x, &incx, (MKL_Complex8 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -165,8 +168,8 @@ suzerain_blas_zswap(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    zswap(&n, (MKL_Complex16 *) x, &incx, (MKL_Complex16 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return zswap(&n, (MKL_Complex16 *) x, &incx, (MKL_Complex16 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -181,8 +184,8 @@ suzerain_blas_scopy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    scopy(&n, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return scopy(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -197,8 +200,8 @@ suzerain_blas_dcopy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    dcopy(&n, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dcopy(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -213,10 +216,10 @@ suzerain_blas_ccopy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    ccopy(&n,
-          (const MKL_Complex8 *) x, &incx,
-          (      MKL_Complex8 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return ccopy(&n,
+                 (const MKL_Complex8 *) x, &incx,
+                 (      MKL_Complex8 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -231,10 +234,10 @@ suzerain_blas_zcopy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    zcopy(&n,
-         (const MKL_Complex16 *) x, &incx,
-         (      MKL_Complex16 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return zcopy(&n,
+                 (const MKL_Complex16 *) x, &incx,
+                 (      MKL_Complex16 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -249,7 +252,7 @@ suzerain_blas_sdot(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return sdot(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
@@ -265,7 +268,7 @@ suzerain_blas_ddot(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return ddot(&n, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
@@ -282,7 +285,7 @@ suzerain_blas_cdotc(
         float dotc[2])
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return cdotc((      MKL_Complex8 *)dotc, &n,
                  (const MKL_Complex8 *)x,    &incx,
                  (const MKL_Complex8 *)y,    &incy);
@@ -301,7 +304,7 @@ suzerain_blas_zdotc(
         double dotc[2])
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return zdotc((      MKL_Complex16 *)dotc, &n,
                  (const MKL_Complex16 *)x,    &incx,
                  (const MKL_Complex16 *)y,    &incy);
@@ -317,7 +320,7 @@ suzerain_blas_snrm2(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return snrm2(&n, x, &incx);
 #else
 #error "Sanity failure"
@@ -331,7 +334,7 @@ suzerain_blas_dnrm2(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return dnrm2(&n, x, &incx);
 #else
 #error "Sanity failure"
@@ -345,7 +348,7 @@ suzerain_blas_scnrm2(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return scnrm2(&n, (const MKL_Complex8 *) x, &incx);
 #else
 #error "Sanity failure"
@@ -359,7 +362,7 @@ suzerain_blas_dznrm2(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return dznrm2(&n, (const MKL_Complex16 *) x, &incx);
 #else
 #error "Sanity failure"
@@ -373,7 +376,7 @@ suzerain_blas_sasum(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return sasum(&n, x, &incx);
 #else
 #error "Sanity failure"
@@ -387,7 +390,7 @@ suzerain_blas_dasum(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return dasum(&n, x, &incx);
 #else
 #error "Sanity failure"
@@ -404,8 +407,8 @@ suzerain_blas_saxpy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    saxpy(&n, &alpha, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return saxpy(&n, &alpha, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -421,8 +424,8 @@ suzerain_blas_daxpy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    daxpy(&n, &alpha, x, &incx, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return daxpy(&n, &alpha, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -438,11 +441,11 @@ suzerain_blas_caxpy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    caxpy(&n,
-          (const MKL_Complex8 *) alpha,
-          (const MKL_Complex8 *) x, &incx,
-          (      MKL_Complex8 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return caxpy(&n,
+                 (const MKL_Complex8 *) alpha,
+                 (const MKL_Complex8 *) x, &incx,
+                 (      MKL_Complex8 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -458,11 +461,11 @@ suzerain_blas_zaxpy(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    zaxpy(&n,
-        (const MKL_Complex16 *) alpha,
-        (const MKL_Complex16 *) x, &incx,
-        (      MKL_Complex16 *) y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return zaxpy(&n,
+                 (const MKL_Complex16 *) alpha,
+                 (const MKL_Complex16 *) x, &incx,
+                 (      MKL_Complex16 *) y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -481,7 +484,7 @@ suzerain_blas_saxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0f)
         sscal(&n, &beta, y, &incy);
     saxpy(&n, &alpha, x, &incx, y, &incy);
@@ -504,7 +507,7 @@ suzerain_blas_daxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     if (beta != 1.0)
         dscal(&n, &beta, y, &incy);
     daxpy(&n, &alpha, x, &incx, y, &incy);
@@ -527,7 +530,7 @@ suzerain_blas_caxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     const int beta_is_one = (beta[0] == 1.0f && beta[1] == 0.0f);
     if (!beta_is_one)
         suzerain_blas_cscal(n, beta, y, incy);
@@ -551,7 +554,7 @@ suzerain_blas_zaxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     const int beta_is_one = (beta[0] == 1.0 && beta[1] == 0.0);
     if (!beta_is_one)
         suzerain_blas_zscal(n, beta, y, incy);
@@ -577,7 +580,7 @@ suzerain_blas_swaxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate swaxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     scopy(&n, y, &incy, w, &incw);
     if (beta != 1.0f)
         sscal(&n, &beta, w, &incw);
@@ -603,7 +606,7 @@ suzerain_blas_dwaxpby(
 #pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dwaxpby since MKL lacks the routine. */
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     dcopy(&n, y, &incy, w, &incw);
     if (beta != 1.0)
         dscal(&n, &beta, w, &incw);
@@ -622,8 +625,8 @@ suzerain_blas_sscal(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    sscal(&n, &alpha, x, &incx);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return sscal(&n, &alpha, x, &incx);
 #else
 #error "Sanity failure"
 #endif
@@ -637,8 +640,8 @@ suzerain_blas_dscal(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    dscal(&n, &alpha, x, &incx);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dscal(&n, &alpha, x, &incx);
 #else
 #error "Sanity failure"
 #endif
@@ -652,10 +655,10 @@ suzerain_blas_cscal(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    cscal(&n,
-         (const MKL_Complex8 *) alpha,
-         (      MKL_Complex8 *) x, &incx);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return cscal(&n,
+                 (const MKL_Complex8 *) alpha,
+                 (      MKL_Complex8 *) x, &incx);
 #else
 #error "Sanity failure"
 #endif
@@ -669,10 +672,10 @@ suzerain_blas_zscal(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    zscal(&n,
-         (const MKL_Complex16 *) alpha,
-         (      MKL_Complex16 *) x, &incx);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return zscal(&n,
+                 (const MKL_Complex16 *) alpha,
+                 (      MKL_Complex16 *) x, &incx);
 #else
 #error "Sanity failure"
 #endif
@@ -695,9 +698,9 @@ suzerain_blas_sgbmv_external(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    sgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
-          x, &incx, &beta, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return sgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
+                 x, &incx, &beta, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -720,15 +723,15 @@ suzerain_blas_dgbmv_external(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    dgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
-          x, &incx, &beta, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
+                 x, &incx, &beta, y, &incy);
 #else
 #error "Sanity failure"
 #endif
 }
 
-void
+int
 suzerain_blas_sgbmv(
         const char trans,
         const int m,
@@ -748,9 +751,10 @@ suzerain_blas_sgbmv(
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blas_dgbmv(
         const char trans,
         const int m,
@@ -770,6 +774,7 @@ suzerain_blas_dgbmv(
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
 void
@@ -787,9 +792,9 @@ suzerain_blas_ssbmv_external(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    ssbmv(&uplo, &n, &k, &alpha, a, &lda,
-          x, &incx, &beta, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return ssbmv(&uplo, &n, &k, &alpha, a, &lda,
+                 x, &incx, &beta, y, &incy);
 #else
 #error "Sanity failure"
 #endif
@@ -810,15 +815,15 @@ suzerain_blas_dsbmv_external(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert(sizeof(MKL_INT) == sizeof(int));
-    dsbmv(&uplo, &n, &k, &alpha, a, &lda,
-          x, &incx, &beta, y, &incy);
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dsbmv(&uplo, &n, &k, &alpha, a, &lda,
+                 x, &incx, &beta, y, &incy);
 #else
 #error "Sanity failure"
 #endif
 }
 
-void
+int
 suzerain_blas_ssbmv(
         const char uplo,
         const int n,
@@ -836,9 +841,10 @@ suzerain_blas_ssbmv(
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blas_dsbmv(
         const char uplo,
         const int n,
@@ -856,9 +862,10 @@ suzerain_blas_dsbmv(
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blas_sgb_acc(
         const int m,
         const int n,
@@ -874,15 +881,15 @@ suzerain_blas_sgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal sgb_acc because MKL lacks the routine. */
     const float one = 1.0f;
-    suzerain_blasext_sgb_diag_scale_acc('R', m, n, kl, ku,
-                                        alpha, &one, 0, a, 1, lda,
-                                        beta,           b, 1, ldb);
+    return suzerain_blasext_sgb_diag_scale_acc('R', m, n, kl, ku,
+                                               alpha, &one, 0, a, 1, lda,
+                                               beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
 }
 
-void
+int
 suzerain_blas_dgb_acc(
         const int m,
         const int n,
@@ -898,15 +905,15 @@ suzerain_blas_dgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal dgb_acc because MKL lacks the routine. */
     const double one = 1.0;
-    suzerain_blasext_dgb_diag_scale_acc('R', m, n, kl, ku,
-                                        alpha, &one, 0, a, 1, lda,
-                                        beta,           b, 1, ldb);
+    return suzerain_blasext_dgb_diag_scale_acc('R', m, n, kl, ku,
+                                               alpha, &one, 0, a, 1, lda,
+                                               beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
 }
 
-void
+int
 suzerain_blas_cgb_acc(
         const int m,
         const int n,
@@ -922,15 +929,15 @@ suzerain_blas_cgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal cgb_acc because MKL lacks the routine. */
     const float one[2] = { 1.0f, 0.0f };
-    suzerain_blasext_cgb_diag_scale_acc('R', m, n, kl, ku,
-                                        alpha, &one, 0, a, 1, lda,
-                                        beta,           b, 1, ldb);
+    return suzerain_blasext_cgb_diag_scale_acc('R', m, n, kl, ku,
+                                               alpha, &one, 0, a, 1, lda,
+                                               beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
 }
 
-void
+int
 suzerain_blas_zgb_acc(
         const int m,
         const int n,
@@ -946,9 +953,9 @@ suzerain_blas_zgb_acc(
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal zgb_acc because MKL lacks the routine. */
     const double one[2] = { 1.0, 0.0 };
-    suzerain_blasext_zgb_diag_scale_acc('R', m, n, kl, ku,
-                                        alpha, &one, 0, a, 1, lda,
-                                        beta,           b, 1, ldb);
+    return suzerain_blasext_zgb_diag_scale_acc('R', m, n, kl, ku,
+                                               alpha, &one, 0, a, 1, lda,
+                                               beta,           b, 1, ldb);
 #else
 #error "Sanity failure"
 #endif
@@ -967,7 +974,7 @@ suzerain_lapack_sgbtrf(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     sgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
            ab, (int*)&ldab, ipiv, &info);
@@ -990,7 +997,7 @@ suzerain_lapack_dgbtrf(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     dgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
            ab, (int*)&ldab, ipiv, &info);
@@ -1013,7 +1020,7 @@ suzerain_lapack_cgbtrf(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     cgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
            (MKL_Complex8*)ab, (int *)&ldab, ipiv, &info);
@@ -1036,7 +1043,7 @@ suzerain_lapack_zgbtrf(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     zgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
            (MKL_Complex16*)ab, (int *)&ldab, ipiv, &info);
@@ -1062,7 +1069,7 @@ suzerain_lapack_sgbtrs(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     sgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
            (float *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
@@ -1088,7 +1095,7 @@ suzerain_lapack_dgbtrs(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     dgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
            (double *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
@@ -1114,7 +1121,7 @@ suzerain_lapack_cgbtrs(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     cgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
            (MKL_Complex8*)ab, (int*)&ldab, (int *)ipiv,
@@ -1141,7 +1148,7 @@ suzerain_lapack_zgbtrs(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     zgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
            (MKL_Complex16*)ab, (int*)&ldab, (int *)ipiv,
@@ -1169,7 +1176,7 @@ suzerain_lapack_sgbcon(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     sgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
            (float*)ab, (int*)&ldab, (int*) ipiv, (float*)&anorm,
@@ -1197,7 +1204,7 @@ suzerain_lapack_dgbcon(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     dgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
            (double*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
@@ -1225,7 +1232,7 @@ suzerain_lapack_cgbcon(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     cgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
            (MKL_Complex8*)ab, (int*)&ldab, (int*)ipiv, (float*)&anorm,
@@ -1253,7 +1260,7 @@ suzerain_lapack_zgbcon(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
     zgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
            (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
@@ -1279,7 +1286,7 @@ suzerain_lapack_sgbsv(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     sgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
           ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
@@ -1304,7 +1311,7 @@ suzerain_lapack_dgbsv(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     dgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
           ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
@@ -1329,7 +1336,7 @@ suzerain_lapack_cgbsv(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     cgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
           (MKL_Complex8*)ab, (int*)&ldab, ipiv,
@@ -1355,7 +1362,7 @@ suzerain_lapack_zgbsv(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     zgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
           (MKL_Complex16*)ab, (int*)&ldab, ipiv,
@@ -1395,7 +1402,7 @@ suzerain_lapack_sgbsvx(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     sgbsvx((char*)&fact, (char*)&trans,
            (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
@@ -1436,7 +1443,7 @@ suzerain_lapack_dgbsvx(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     dgbsvx((char*)&fact, (char*)&trans,
            (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
@@ -1477,7 +1484,7 @@ suzerain_lapack_cgbsvx(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     cgbsvx((char*)&fact, (char*)&trans,
            (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex8*)ab,
@@ -1519,7 +1526,7 @@ suzerain_lapack_zgbsvx(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     zgbsvx((char*)&fact, (char*)&trans,
            (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex16*)ab,
@@ -1545,7 +1552,7 @@ suzerain_lapack_slangb(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return slangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
                   (float*)ab, (int*)&ldab, work);
 #else
@@ -1566,7 +1573,7 @@ suzerain_lapack_dlangb(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return dlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
                   (double*)ab, (int*)&ldab, work);
 #else
@@ -1587,7 +1594,7 @@ suzerain_lapack_clangb(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return clangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
                   (MKL_Complex8*)ab, (int*)&ldab, work);
 #else
@@ -1608,7 +1615,7 @@ suzerain_lapack_zlangb(
 #ifdef SUZERAIN_HAVE_MKL
     // Casts away const; MKL LAPACK API does not enforce its logical const-ness
     // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert(sizeof(MKL_INT) == sizeof(int));
+    assert_static(sizeof(MKL_INT) == sizeof(int));
     return zlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
                   (MKL_Complex16*)ab, (int*)&ldab, work);
 #else
@@ -1625,8 +1632,8 @@ suzerain_blasext_daxpzy(
         double (* restrict y)[2],
         const int incy)
 {
-    assert(incx >= 0); // TODO Handle negative incx
-    assert(incy >= 0); // TODO Handle negative incy
+    assert(incx >= 0); // FIXME Handle negative incx
+    assert(incy >= 0); // FIXME Handle negative incy
 
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
@@ -1634,8 +1641,8 @@ suzerain_blasext_daxpzy(
     if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi    = x[i * incx];
-            double * restrict yi    = y[i * incy];
+            const double      xi = x[i * incx];
+            double * restrict yi = y[i * incy];
 
             yi[0] += alpha_re*xi;
             yi[1] += alpha_im*xi;
@@ -1643,8 +1650,8 @@ suzerain_blasext_daxpzy(
     } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi    = x[i];
-            double * restrict yi    = y[i];
+            const double      xi = x[i];
+            double * restrict yi = y[i];
 
             yi[0] += alpha_re*xi;
             yi[1] += alpha_im*xi;
@@ -1662,8 +1669,8 @@ suzerain_blasext_daxpzby(
         double (* restrict y)[2],
         const int incy)
 {
-    assert(incx >= 0); // TODO Handle negative incx
-    assert(incy >= 0); // TODO Handle negative incy
+    assert(incx >= 0); // FIXME Handle negative incx
+    assert(incy >= 0); // FIXME Handle negative incy
 
     const double alpha_re = alpha[0];
     const double alpha_im = alpha[1];
@@ -1795,7 +1802,7 @@ suzerain_blasext_dgbmzv_external(
     }
 }
 
-void
+int
 suzerain_blasext_sgbmzv(
         const char trans,
         const int m,
@@ -1815,9 +1822,10 @@ suzerain_blasext_sgbmzv(
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbmzv(
         const char trans,
         const int m,
@@ -1837,6 +1845,7 @@ suzerain_blasext_dgbmzv(
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
 void
@@ -1935,7 +1944,7 @@ suzerain_blasext_dsbmzv_external(
     }
 }
 
-void
+int
 suzerain_blasext_sgbdmv_external(
         const char trans,
         const int n,
@@ -1958,9 +1967,10 @@ suzerain_blasext_sgbdmv_external(
     suzerain_blas_ssbmv_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbdmv(
         const char trans,
         const int n,
@@ -1981,9 +1991,10 @@ suzerain_blasext_sgbdmv(
                                       a, lda, x, incx,
                                       beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbdmv_external(
         const char trans,
         const int n,
@@ -2006,9 +2017,10 @@ suzerain_blasext_dgbdmv_external(
     suzerain_blas_dsbmv_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbdmv(
         const char trans,
         const int n,
@@ -2029,9 +2041,10 @@ suzerain_blasext_dgbdmv(
                                       a, lda, x, incx,
                                       beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbdmzv_external(
         const char trans,
         const int n,
@@ -2056,9 +2069,10 @@ suzerain_blasext_sgbdmzv_external(
     suzerain_blasext_ssbmzv_external(
             'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbdmzv(
         const char trans,
         const int n,
@@ -2079,9 +2093,10 @@ suzerain_blasext_sgbdmzv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbdmzv_external(
         const char trans,
         const int n,
@@ -2106,9 +2121,10 @@ suzerain_blasext_dgbdmzv_external(
     suzerain_blasext_dsbmzv_external(
             'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbdmzv(
         const char trans,
         const int n,
@@ -2129,9 +2145,10 @@ suzerain_blasext_dgbdmzv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbddmv_external(
         const char trans,
         const int n,
@@ -2158,9 +2175,10 @@ suzerain_blasext_sgbddmv_external(
     suzerain_blas_ssbmv_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbddmv(
         const char trans,
         const int n,
@@ -2183,9 +2201,10 @@ suzerain_blasext_sgbddmv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbddmv_external(
         const char trans,
         const int n,
@@ -2212,9 +2231,10 @@ suzerain_blasext_dgbddmv_external(
     suzerain_blas_dsbmv_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbddmv(
         const char trans,
         const int n,
@@ -2237,9 +2257,10 @@ suzerain_blasext_dgbddmv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbddmzv_external(
         const char trans,
         const int n,
@@ -2268,9 +2289,10 @@ suzerain_blasext_sgbddmzv_external(
     suzerain_blasext_ssbmzv_external(
             'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbddmzv(
         const char trans,
         const int n,
@@ -2293,9 +2315,10 @@ suzerain_blasext_sgbddmzv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbddmzv_external(
         const char trans,
         const int n,
@@ -2324,9 +2347,10 @@ suzerain_blasext_dgbddmzv_external(
     suzerain_blasext_dsbmzv_external(
             'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbddmzv(
         const char trans,
         const int n,
@@ -2349,9 +2373,10 @@ suzerain_blasext_dgbddmzv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbidmv_external(
         const char trans,
         const int n,
@@ -2377,9 +2402,10 @@ suzerain_blasext_sgbidmv_external(
     suzerain_blas_ssbmv_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbidmv(
         const char trans,
         const int n,
@@ -2401,9 +2427,10 @@ suzerain_blasext_sgbidmv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbidmv_external(
         const char trans,
         const int n,
@@ -2429,9 +2456,10 @@ suzerain_blasext_dgbidmv_external(
     suzerain_blas_dsbmv_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbidmv(
         const char trans,
         const int n,
@@ -2453,9 +2481,10 @@ suzerain_blasext_dgbidmv(
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbidmzv_external(
         const char trans,
         const int n,
@@ -2483,9 +2512,10 @@ suzerain_blasext_sgbidmzv_external(
     suzerain_blasext_ssbmzv_external(
             'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbidmzv(
         const char trans,
         const int n,
@@ -2507,9 +2537,10 @@ suzerain_blasext_sgbidmzv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbidmzv_external(
         const char trans,
         const int n,
@@ -2537,9 +2568,10 @@ suzerain_blasext_dgbidmzv_external(
     suzerain_blasext_dsbmzv_external(
             'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbidmzv(
         const char trans,
         const int n,
@@ -2561,9 +2593,10 @@ suzerain_blasext_dgbidmzv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbdddmv_external(
         const char trans,
         const int n,
@@ -2594,9 +2627,10 @@ suzerain_blasext_sgbdddmv_external(
     suzerain_blas_ssbmv_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbdddmv(
         const char trans,
         const int n,
@@ -2621,9 +2655,10 @@ suzerain_blasext_sgbdddmv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbdddmv_external(
         const char trans,
         const int n,
@@ -2654,9 +2689,10 @@ suzerain_blasext_dgbdddmv_external(
     suzerain_blas_dsbmv_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbdddmv(
         const char trans,
         const int n,
@@ -2681,9 +2717,10 @@ suzerain_blasext_dgbdddmv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbdddmzv_external(
         const char trans,
         const int n,
@@ -2716,9 +2753,10 @@ suzerain_blasext_sgbdddmzv_external(
     suzerain_blasext_ssbmzv_external(
             'U', n, 0, alpha2, d2, 1, (void *) z, 1, one,  y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbdddmzv(
         const char trans,
         const int n,
@@ -2743,9 +2781,10 @@ suzerain_blasext_sgbdddmzv(
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbdddmzv_external(
         const char trans,
         const int n,
@@ -2778,9 +2817,10 @@ suzerain_blasext_dgbdddmzv_external(
     suzerain_blasext_dsbmzv_external(
             'U', n, 0, alpha2, d2, 1, (void *) z, 1, one,  y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbdddmzv(
         const char trans,
         const int n,
@@ -2805,9 +2845,10 @@ suzerain_blasext_dgbdddmzv(
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbiddmv_external(
         const char trans,
         const int n,
@@ -2837,9 +2878,10 @@ suzerain_blasext_sgbiddmv_external(
     suzerain_blas_ssbmv_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbiddmv(
         const char trans,
         const int n,
@@ -2863,9 +2905,10 @@ suzerain_blasext_sgbiddmv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbiddmv_external(
         const char trans,
         const int n,
@@ -2895,9 +2938,10 @@ suzerain_blasext_dgbiddmv_external(
     suzerain_blas_dsbmv_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbiddmv(
         const char trans,
         const int n,
@@ -2921,9 +2965,10 @@ suzerain_blasext_dgbiddmv(
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgbiddmzv_external(
         const char trans,
         const int n,
@@ -2955,9 +3000,10 @@ suzerain_blasext_sgbiddmzv_external(
     suzerain_blasext_ssbmzv_external(
             'U', n, 0, alpha2, d2, 1, (void *) z, 1, one, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_sgbiddmzv(
         const char trans,
         const int n,
@@ -2981,9 +3027,10 @@ suzerain_blasext_sgbiddmzv(
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dgbiddmzv_external(
         const char trans,
         const int n,
@@ -3015,9 +3062,10 @@ suzerain_blasext_dgbiddmzv_external(
     suzerain_blasext_dsbmzv_external(
             'U', n, 0, alpha2, d2, 1, (void *) z, 1, one, y, incy);
     suzerain_blas_free(z);
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgbiddmzv(
         const char trans,
         const int n,
@@ -3041,9 +3089,10 @@ suzerain_blasext_dgbiddmzv(
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
@@ -3061,9 +3110,10 @@ suzerain_blasext_ssbmzv(
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_dsbmzv(
         const char uplo,
         const int n,
@@ -3081,9 +3131,10 @@ suzerain_blasext_dsbmzv(
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
 }
 
-void
+int
 suzerain_blasext_sgb_diag_scale_acc(
         char side,
         int m,
@@ -3126,7 +3177,7 @@ suzerain_blasext_sgb_diag_scale_acc(
 
     // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3150,9 +3201,11 @@ suzerain_blasext_sgb_diag_scale_acc(
                                           beta,       b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_dgb_diag_scale_acc(
         char side,
         int m,
@@ -3195,7 +3248,7 @@ suzerain_blasext_dgb_diag_scale_acc(
 
     // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3219,9 +3272,11 @@ suzerain_blasext_dgb_diag_scale_acc(
                                           beta,       b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_cgb_diag_scale_acc(
         char side,
         int m,
@@ -3264,7 +3319,7 @@ suzerain_blasext_cgb_diag_scale_acc(
 
     // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3292,9 +3347,11 @@ suzerain_blasext_cgb_diag_scale_acc(
                                           beta, b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_zgb_diag_scale_acc(
         char side,
         int m,
@@ -3337,7 +3394,7 @@ suzerain_blasext_zgb_diag_scale_acc(
 
     // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3365,9 +3422,11 @@ suzerain_blasext_zgb_diag_scale_acc(
                                           beta, b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_zgb_diag_scale_dacc(
         char side,
         int m,
@@ -3410,7 +3469,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
 
     // Quick return if possible
     if (UNLIKELY((alpha_is_zero && beta_is_one) || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3436,9 +3495,11 @@ suzerain_blasext_zgb_diag_scale_dacc(
                                               beta, b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_zgb_ddiag_scale_dacc(
         char side,
         int m,
@@ -3487,7 +3548,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     // Quick return if possible
     if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && beta_is_one)
                   || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3517,9 +3578,11 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
                                               beta, b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_zgb_dddiag_scale_dacc(
         char side,
         int m,
@@ -3574,7 +3637,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && alpha2_is_zero
                                      && beta_is_one)
                   || m <= 0 || n <= 0))
-        return;
+        return 0;
 
     // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
     // Incorporate the ku offset and decrement ldX to speed indexing in loops.
@@ -3608,9 +3671,11 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
                                               beta, b + il*incb, incb);
         }
     }
+
+    return 0;
 }
 
-void
+int
 suzerain_blasext_zgb_dacc(
         const int m,
         const int n,
@@ -3624,9 +3689,9 @@ suzerain_blasext_zgb_dacc(
         const int ldb)
 {
     const double one = 1.0;
-    suzerain_blasext_zgb_diag_scale_dacc('R', m, n, kl, ku,
-                                         alpha, &one, 0, a, 1, lda,
-                                         beta,           b, 1, ldb);
+    return suzerain_blasext_zgb_diag_scale_dacc('R', m, n, kl, ku,
+                                                alpha, &one, 0, a, 1, lda,
+                                                beta,           b, 1, ldb);
 }
 
 void

@@ -466,22 +466,22 @@ BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE( submatrix_packing )
 
 // Precision-specific dispatch for floats
-static void packc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                  const float *b, float *papt)
+static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                 const float *b, float *papt)
 {
     return suzerain_bsmbsm_spackc(A, ihat, jhat, b, papt);
 }
 
 // Precision-specific dispatch for doubles
-static void packc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                  const double *b, double *papt)
+static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                 const double *b, double *papt)
 {
     return suzerain_bsmbsm_dpackc(A, ihat, jhat, b, papt);
 }
 
 // Precision-specific dispatch for complex floats
-static void packc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                  const std::complex<float> *b, std::complex<float> *papt)
+static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                 const std::complex<float> *b, std::complex<float> *papt)
 {
     return suzerain_bsmbsm_cpackc(A, ihat, jhat,
                                   (const float (*)[2]) b,
@@ -489,8 +489,8 @@ static void packc(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 // Precision-specific dispatch for complex doubles
-static void packc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                  const std::complex<double> *b,
+static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                 const std::complex<double> *b,
                         std::complex<double> *papt)
 {
     return suzerain_bsmbsm_zpackc(A, ihat, jhat,

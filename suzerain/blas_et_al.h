@@ -54,8 +54,10 @@ extern "C" {
  * \param srname The name of the calling routine.
  * \param info   The position of the invalid parameter in the
  *               parameter list of the calling routine.
+ *
+ * \return The error code \c info.
  */
-void
+int
 suzerain_blas_xerbla(const char *srname, const int info);
 
 /*! @} */
@@ -615,7 +617,7 @@ suzerain_blas_dgbmv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blas_sgbmv(
         const char trans,
         const int m,
@@ -632,7 +634,7 @@ suzerain_blas_sgbmv(
         const int incy);
 
 /*! \copydoc suzerain_blas_sgbmv */
-void
+int
 suzerain_blas_dgbmv(
         const char trans,
         const int m,
@@ -719,7 +721,7 @@ suzerain_blas_dsbmv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blas_ssbmv(
         const char uplo,
         const int n,
@@ -734,7 +736,7 @@ suzerain_blas_ssbmv(
         const int incy);
 
 /*! \copydoc suzerain_blas_ssbmv */
-void
+int
 suzerain_blas_dsbmv(
         const char uplo,
         const int n,
@@ -770,7 +772,7 @@ suzerain_blas_dsbmv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blas_sgb_acc(
         const int m,
         const int n,
@@ -784,7 +786,7 @@ suzerain_blas_sgb_acc(
         const int ldb);
 
 /*! \copydoc suzerain_blas_sgb_acc */
-void
+int
 suzerain_blas_dgb_acc(
         const int m,
         const int n,
@@ -798,7 +800,7 @@ suzerain_blas_dgb_acc(
         const int ldb);
 
 /*! \copydoc suzerain_blas_sgb_acc */
-void
+int
 suzerain_blas_cgb_acc(
         const int m,
         const int n,
@@ -812,7 +814,7 @@ suzerain_blas_cgb_acc(
         const int ldb);
 
 /*! \copydoc suzerain_blas_sgb_acc */
-void
+int
 suzerain_blas_zgb_acc(
         const int m,
         const int n,
@@ -1564,7 +1566,7 @@ suzerain_blasext_dgbmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbmzv(
         const char trans,
         const int m,
@@ -1605,7 +1607,7 @@ suzerain_blasext_sgbmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbmzv(
         const char trans,
         const int m,
@@ -1645,7 +1647,7 @@ suzerain_blasext_dgbmzv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdmv_external(
         const char trans,
         const int n,
@@ -1662,7 +1664,7 @@ suzerain_blasext_sgbdmv_external(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbdmv_external */
-void
+int
 suzerain_blasext_dgbdmv_external(
         const char trans,
         const int n,
@@ -1704,7 +1706,7 @@ suzerain_blasext_dgbdmv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdmzv_external(
         const char trans,
         const int n,
@@ -1746,7 +1748,7 @@ suzerain_blasext_sgbdmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbdmzv_external(
         const char trans,
         const int n,
@@ -1785,7 +1787,7 @@ suzerain_blasext_dgbdmzv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdmv(
         const char trans,
         const int n,
@@ -1802,7 +1804,7 @@ suzerain_blasext_sgbdmv(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbdmv */
-void
+int
 suzerain_blasext_dgbdmv(
         const char trans,
         const int n,
@@ -1843,7 +1845,7 @@ suzerain_blasext_dgbdmv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdmzv(
         const char trans,
         const int n,
@@ -1884,7 +1886,7 @@ suzerain_blasext_sgbdmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbdmzv(
         const char trans,
         const int n,
@@ -1926,7 +1928,7 @@ suzerain_blasext_dgbdmzv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbddmv_external(
         const char trans,
         const int n,
@@ -1945,7 +1947,7 @@ suzerain_blasext_sgbddmv_external(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbddmv_external */
-void
+int
 suzerain_blasext_dgbddmv_external(
         const char trans,
         const int n,
@@ -1991,7 +1993,7 @@ suzerain_blasext_dgbddmv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbddmzv_external(
         const char trans,
         const int n,
@@ -2037,7 +2039,7 @@ suzerain_blasext_sgbddmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbddmzv_external(
         const char trans,
         const int n,
@@ -2081,7 +2083,7 @@ suzerain_blasext_dgbddmzv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbddmv(
         const char trans,
         const int n,
@@ -2100,7 +2102,7 @@ suzerain_blasext_sgbddmv(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbddmv */
-void
+int
 suzerain_blasext_dgbddmv(
         const char trans,
         const int n,
@@ -2146,7 +2148,7 @@ suzerain_blasext_dgbddmv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbddmzv(
         const char trans,
         const int n,
@@ -2192,7 +2194,7 @@ suzerain_blasext_sgbddmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbddmzv(
         const char trans,
         const int n,
@@ -2235,7 +2237,7 @@ suzerain_blasext_dgbddmzv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbidmv_external(
         const char trans,
         const int n,
@@ -2253,7 +2255,7 @@ suzerain_blasext_sgbidmv_external(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbidmv_external */
-void
+int
 suzerain_blasext_dgbidmv_external(
         const char trans,
         const int n,
@@ -2297,7 +2299,7 @@ suzerain_blasext_dgbidmv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbidmzv_external(
         const char trans,
         const int n,
@@ -2341,7 +2343,7 @@ suzerain_blasext_sgbidmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbidmzv_external(
         const char trans,
         const int n,
@@ -2383,7 +2385,7 @@ suzerain_blasext_dgbidmzv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbidmv(
         const char trans,
         const int n,
@@ -2401,7 +2403,7 @@ suzerain_blasext_sgbidmv(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbidmv */
-void
+int
 suzerain_blasext_dgbidmv(
         const char trans,
         const int n,
@@ -2445,7 +2447,7 @@ suzerain_blasext_dgbidmv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbidmzv(
         const char trans,
         const int n,
@@ -2489,7 +2491,7 @@ suzerain_blasext_sgbidmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbidmzv(
         const char trans,
         const int n,
@@ -2534,7 +2536,7 @@ suzerain_blasext_dgbidmzv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdddmv_external(
         const char trans,
         const int n,
@@ -2555,7 +2557,7 @@ suzerain_blasext_sgbdddmv_external(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbdddmv_external */
-void
+int
 suzerain_blasext_dgbdddmv_external(
         const char trans,
         const int n,
@@ -2606,7 +2608,7 @@ suzerain_blasext_dgbdddmv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdddmzv_external(
         const char trans,
         const int n,
@@ -2657,7 +2659,7 @@ suzerain_blasext_sgbdddmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbdddmzv_external(
         const char trans,
         const int n,
@@ -2705,7 +2707,7 @@ suzerain_blasext_dgbdddmzv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdddmv(
         const char trans,
         const int n,
@@ -2726,7 +2728,7 @@ suzerain_blasext_sgbdddmv(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbdddmv */
-void
+int
 suzerain_blasext_dgbdddmv(
         const char trans,
         const int n,
@@ -2776,7 +2778,7 @@ suzerain_blasext_dgbdddmv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbdddmzv(
         const char trans,
         const int n,
@@ -2826,7 +2828,7 @@ suzerain_blasext_sgbdddmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbdddmzv(
         const char trans,
         const int n,
@@ -2873,7 +2875,7 @@ suzerain_blasext_dgbdddmzv(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbiddmv_external(
         const char trans,
         const int n,
@@ -2893,7 +2895,7 @@ suzerain_blasext_sgbiddmv_external(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbiddmv_external */
-void
+int
 suzerain_blasext_dgbiddmv_external(
         const char trans,
         const int n,
@@ -2942,7 +2944,7 @@ suzerain_blasext_dgbiddmv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbiddmzv_external(
         const char trans,
         const int n,
@@ -2991,7 +2993,7 @@ suzerain_blasext_sgbiddmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbiddmzv_external(
         const char trans,
         const int n,
@@ -3037,7 +3039,7 @@ suzerain_blasext_dgbiddmzv_external(
  * \see A BLAS reference for more details, especially for general
  *      band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbiddmv(
         const char trans,
         const int n,
@@ -3057,7 +3059,7 @@ suzerain_blasext_sgbiddmv(
         const int incy);
 
 /*! \copydoc suzerain_blasext_sgbiddmv */
-void
+int
 suzerain_blasext_dgbiddmv(
         const char trans,
         const int n,
@@ -3105,7 +3107,7 @@ suzerain_blasext_dgbiddmv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgbiddmzv(
         const char trans,
         const int n,
@@ -3153,7 +3155,7 @@ suzerain_blasext_sgbiddmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dgbiddmzv(
         const char trans,
         const int n,
@@ -3265,7 +3267,7 @@ suzerain_blasext_dsbmzv_external(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
@@ -3300,7 +3302,7 @@ suzerain_blasext_ssbmzv(
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_dsbmzv(
         const char uplo,
         const int n,
@@ -3345,7 +3347,7 @@ suzerain_blasext_dsbmzv(
  *
  * \see A BLAS reference for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_sgb_diag_scale_acc(
         char side,
         int m,
@@ -3364,7 +3366,7 @@ suzerain_blasext_sgb_diag_scale_acc(
         int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
-void
+int
 suzerain_blasext_dgb_diag_scale_acc(
         char side,
         int m,
@@ -3383,7 +3385,7 @@ suzerain_blasext_dgb_diag_scale_acc(
         int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
-void
+int
 suzerain_blasext_cgb_diag_scale_acc(
         char side,
         int m,
@@ -3402,7 +3404,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         int ldb);
 
 /*! \copydoc suzerain_blasext_sgb_diag_scale_acc */
-void
+int
 suzerain_blasext_zgb_diag_scale_acc(
         char side,
         int m,
@@ -3452,7 +3454,7 @@ suzerain_blasext_zgb_diag_scale_acc(
  *
  * \see A BLAS reference for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_zgb_diag_scale_dacc(
         char side,
         int m,
@@ -3505,7 +3507,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
  *
  * \see A BLAS reference for banded matrix storage requirements.
  */
-void
+int
 suzerain_blasext_zgb_ddiag_scale_dacc(
         char side,
         int m,
@@ -3565,7 +3567,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  *
  * \see A BLAS reference for banded matrix storage requirements.
  */
-void
+int
 suzerain_blasext_zgb_dddiag_scale_dacc(
         char side,
         int m,
@@ -3612,7 +3614,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
  *
  * \see A BLAS reference for general band matrix storage requirements.
  */
-void
+int
 suzerain_blasext_zgb_dacc(
         const int m,
         const int n,

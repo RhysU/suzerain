@@ -145,36 +145,37 @@ suzerain_rholut_imexop_apply(
  * \f$L\f$ is a function of the provided wavenumbers, scenario parameters, and
  * wall-normal reference quantities.
  *
+ * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
+ * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
+ * the corresponding rows and columns from the formed matrix.  All nonnegative
+ * order parameters must form a unique, contiguous set starting from zero.
+ *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
- * <tt>w->n*(5*(w->max_kl + w->max_ku + 2) - 1)</tt>.  Boundary conditions,
+ * <tt>w->n*(nneg*(w->max_kl + w->max_ku + 2) - 1)</tt> where <tt>nneg</tt> is
+ * the number of nonnegative state order parameters.  Boundary conditions,
  * which are \em not applied, will require using information about the
  * permutation returned in \c A.
  *
- * @param[in] phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param[in] km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
+ * @param[in]  phi  Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in]  km   X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
  *                  (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in] kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
+ * @param[in]  kn   Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
  *                  (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in] s     Scenario parameters used to form the operator.
- * @param[in] r     Reference quantities used to form the operator.
- * @param[in] ld    Strides between reference quantity values.
- * @param[in] w     B-spline workspace providing discrete operators.
- * @param[in] rho   Order of contiguous density data within a
+ * @param[in]  s    Scenario parameters used to form the operator.
+ * @param[in]  r    Reference quantities used to form the operator.
+ * @param[in]  ld   Strides between reference quantity values.
+ * @param[in]  w    B-spline workspace providing discrete operators.
+ * @param[in]  rho  Order of contiguous density data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhou  Order of contiguous streamwise momentum data within a
+ * @param[in]  rhou Order of contiguous streamwise momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhov  Order of contiguous wall-normal momentum data within a
+ * @param[in]  rhov Order of contiguous wall-normal momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhow  Order of contiguous spanwise momentum data within a
+ * @param[in]  rhow Order of contiguous spanwise momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhoe  Order of contiguous total energy data within a
+ * @param[in]  rhoe Order of contiguous total energy data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
  * @param[in]  buf  Working storage of size at least
  *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.
@@ -210,37 +211,38 @@ suzerain_rholut_imexop_packc(
  * <tt>gbsv</tt>.  The matrix \f$L\f$ is a function of the provided
  * wavenumbers, scenario parameters, and wall-normal reference quantities.
  *
+ * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
+ * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
+ * the corresponding rows and columns from the formed matrix.  All nonnegative
+ * order parameters must form a unique, contiguous set starting from zero.
+ *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
- * <tt>w->n*(10*(w->max_kl+1) + 5*(w->max_ku+1) - 2)</tt>.  Boundary
+ * <tt>w->n*(2*nneg*(w->max_kl+1) + nneg*(w->max_ku+1) - 2)</tt> where
+ * <tt>nneg</tt> is the number of nonnegative state order parameters.  Boundary
  * conditions, which are \em not applied, will require using information about
  * the permutation returned in \c A taking care that in accordance with
  * <tt>gbtrf</tt> the operator starts at row <tt>A->KL</tt>.
  *
- * @param[in] phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param[in] km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
+ * @param[in]  phi  Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in]  km   X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
  *                  (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in] kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
+ * @param[in]  kn   Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
  *                  (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in] s     Scenario parameters used to form the operator.
- * @param[in] r     Reference quantities used to form the operator.
- * @param[in] ld    Strides between reference quantity values.
- * @param[in] w     B-spline workspace providing discrete operators.
- * @param[in] rho   Order of contiguous density data within a
+ * @param[in]  s    Scenario parameters used to form the operator.
+ * @param[in]  r    Reference quantities used to form the operator.
+ * @param[in]  ld   Strides between reference quantity values.
+ * @param[in]  w    B-spline workspace providing discrete operators.
+ * @param[in]  rho  Order of contiguous density data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhou  Order of contiguous streamwise momentum data within a
+ * @param[in]  rhou Order of contiguous streamwise momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhov  Order of contiguous wall-normal momentum data within a
+ * @param[in]  rhov Order of contiguous wall-normal momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhow  Order of contiguous spanwise momentum data within a
+ * @param[in]  rhow Order of contiguous spanwise momentum data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
- * @param[in] rhoe  Order of contiguous total energy data within a
+ * @param[in]  rhoe Order of contiguous total energy data within a
  *                  globally contiguous state vector.
- *                  Must be one of 0, 1, 2, 3, or 4.
  * @param[in]  buf  Working storage of size at least
  *                  <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
  * @param[out] A    Storage details for the BSMBSM matrix \c papt.

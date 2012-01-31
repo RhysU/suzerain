@@ -200,9 +200,11 @@ int suzerain_bsmbsm_qinv(int S, int n, int i)
  * @param y Second source vector and target vector of length <tt>S*n</tt>.
  * @param incy Second source vector and target vector stride.
  *
+ * @return Zero on success.
+ *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */
-void
+int
 suzerain_bsmbsm_saPxpby(
     char trans,
     int S,
@@ -215,7 +217,7 @@ suzerain_bsmbsm_saPxpby(
     int incy);
 
 /** @copydoc suzerain_bsmbsm_saPxpby */
-void
+int
 suzerain_bsmbsm_daPxpby(
     char trans,
     int S,
@@ -228,7 +230,7 @@ suzerain_bsmbsm_daPxpby(
     int incy);
 
 /** @copydoc suzerain_bsmbsm_saPxpby */
-void
+int
 suzerain_bsmbsm_caPxpby(
     char trans,
     int S,
@@ -241,7 +243,7 @@ suzerain_bsmbsm_caPxpby(
     int incy);
 
 /** @copydoc suzerain_bsmbsm_saPxpby */
-void
+int
 suzerain_bsmbsm_zaPxpby(
     char trans,
     int S,
@@ -325,27 +327,29 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * @param ldpapt Leading dimension of storage \c papt.
  *               which must be <tt>KU + 1 + KL</tt>.
  *
+ * @return Zero on success.
+ *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */
-void
+int
 suzerain_bsmbsm_spack(int S,  int n, int ihat, int jhat,
                       int kl, int ku, const float *b,    int ldb,
                       int KL, int KU,       float *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
-void
+int
 suzerain_bsmbsm_dpack(int S,  int n, int ihat, int jhat,
                       int kl, int ku, const double *b,    int ldb,
                       int KL, int KU,       double *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
-void
+int
 suzerain_bsmbsm_cpack(int S,  int n, int ihat, int jhat,
                       int kl, int ku, const float (*b)[2],    int ldb,
                       int KL, int KU,       float (*papt)[2], int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
-void
+int
 suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
                       int kl, int ku, const double (*b)[2],    int ldb,
                       int KL, int KU,       double (*papt)[2], int ldpapt);
@@ -366,8 +370,11 @@ suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
  * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
  *               which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
  *               diagonals and leading dimension <tt>A->LD</tt>.
+ *
+ * @return Zero on success.
+ *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
  */
-inline static void
+inline static int
 suzerain_bsmbsm_spackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const float *b, float *papt)
 {
@@ -377,7 +384,7 @@ suzerain_bsmbsm_spackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
-inline static void
+inline static int
 suzerain_bsmbsm_dpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const double *b, double *papt)
 {
@@ -387,7 +394,7 @@ suzerain_bsmbsm_dpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
-inline static void
+inline static int
 suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const float (*b)[2], float (*papt)[2])
 {
@@ -397,7 +404,7 @@ suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
-inline static void
+inline static int
 suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const double (*b)[2], double (*papt)[2])
 {
@@ -423,8 +430,11 @@ suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
  *               which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
  *               diagonals and leading dimension
  *               <tt>A->LD + A->KL = 2*A->KL + A->KU + 1</tt>.
+ *
+ * @return Zero on success.
+ *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
  */
-inline static void
+inline static int
 suzerain_bsmbsm_spackf(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const float *b, float *papt)
 {
@@ -434,7 +444,7 @@ suzerain_bsmbsm_spackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
-inline static void
+inline static int
 suzerain_bsmbsm_dpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const double *b, double *papt)
 {
@@ -444,7 +454,7 @@ suzerain_bsmbsm_dpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
-inline static void
+inline static int
 suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const float (*b)[2], float (*papt)[2])
 {
@@ -454,7 +464,7 @@ suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
-inline static void
+inline static int
 suzerain_bsmbsm_zpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
                        const double (*b)[2], double (*papt)[2])
 {
