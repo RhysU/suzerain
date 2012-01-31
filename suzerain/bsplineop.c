@@ -281,12 +281,12 @@ int
 suzerain_bsplineop_accumulate_complex(
     int nderiv,
     int nrhs,
-    const double alpha[2],
-    const double (*x)[2],
+    const complex_double alpha,
+    const complex_double *x,
     int incx,
     int ldx,
-    const double beta[2],
-    double (*y)[2],
+    const complex_double beta,
+    complex_double *y,
     int incy,
     int ldy,
     const suzerain_bsplineop_workspace *w)
@@ -301,7 +301,7 @@ suzerain_bsplineop_accumulate_complex(
     if (nrhs > 1 && ldy < w->n) {
         SUZERAIN_ERROR("nrhs > 1 && ldy < w->n", SUZERAIN_EINVAL);
     }
-    if ((void*) x == (void*) y) {
+    if (x == y) {
         /* BLAS' behavior on aliased pointers is undefined */
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
@@ -367,7 +367,7 @@ suzerain_bsplineop_apply_complex(
     int nderiv,
     int nrhs,
     double alpha,
-    double (*x)[2],
+    complex_double *x,
     int incx,
     int ldx,
     const suzerain_bsplineop_workspace *w)
@@ -382,8 +382,7 @@ suzerain_bsplineop_apply_complex(
 
     /* Allocate scratch space; Required because BLAS operations' behavior on
      * aliased pointers is undefined. */
-    double * const scratch
-        = suzerain_blas_malloc(w->n*sizeof(scratch[0]));
+    double * const scratch = suzerain_blas_malloc(w->n*sizeof(scratch[0]));
     const int incscratch = 1;
     if (scratch == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
@@ -393,15 +392,15 @@ suzerain_bsplineop_apply_complex(
     // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
     const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        double (*const x_j)[2] = x + j*ldx;
+        double * const xreal_j = (double *)(x + j*ldx);
         /* Compute x_j := w->D[nderiv]*x_j for real/imaginary parts */
-        for (int i = 0; i < 2; ++i) {
+        for (int c = 0; c < 2; ++c) {
             suzerain_blas_dcopy(
-                    w->n, &(x_j[0][i]), 2*incx, scratch, incscratch);
+                    w->n, xreal_j + c, 2*incx, scratch, incscratch);
             suzerain_blas_dgbmv(
                     trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, scratch,      incscratch,
-                    0.0,                        &(x_j[0][i]), 2*incx);
+                    alpha, w->D[nderiv], w->ld, scratch,     incscratch,
+                    0.0,                        xreal_j + c, 2*incx);
         }
     }
 
@@ -917,7 +916,7 @@ suzerain_bsplineop_interpolation_rhs(
 int
 suzerain_bsplineop_interpolation_rhs_complex(
     const suzerain_zfunction * zfunction,
-    double (*rhs)[2],
+    complex_double *rhs,
     gsl_bspline_workspace *bw,
     const suzerain_bsplineop_workspace *w)
 {
@@ -1343,13 +1342,11 @@ suzerain_bsplineop_luz_free(suzerain_bsplineop_luz_workspace * luzw)
 int
 suzerain_bsplineop_luz_opaccumulate(
     int ncoefficients,
-    const double (*coefficients)[2],
-    const suzerain_bsplineop_workspace * w,
-    const double scale[2],
+    const complex_double *coefficients,
+    const suzerain_bsplineop_workspace *w,
+    const complex_double scale,
     suzerain_bsplineop_luz_workspace *luzw)
 {
-    const double z_one[2] = { 1.0, 0.0 };
-
     /* Parameter sanity checks */
     if (ncoefficients < 0) {
         SUZERAIN_ERROR("Number of coefficients cannot be negative",
@@ -1370,7 +1367,7 @@ suzerain_bsplineop_luz_opaccumulate(
     }
     /* Protect the user from incorrect API usage */
 #pragma warning(push,disable:1572)
-    if (!(scale[0] == 0.0 && scale[1] == 0.0) && luzw->ipiv[0] >= 0) {
+    if (scale != 0.0 && luzw->ipiv[0] >= 0) {
 #pragma warning(pop)
         SUZERAIN_ERROR("Unable to accumulate into a factored operator",
                        SUZERAIN_EINVAL);
@@ -1384,7 +1381,7 @@ suzerain_bsplineop_luz_opaccumulate(
         suzerain_blas_zscal(luzw->ld*luzw->n, scale, luzw->A, 1);
 
 #pragma warning(push,disable:1572)
-    } else if (scale[0] == 0.0 && scale[1] == 0.0) {
+    } else if (scale == 0.0) {
 #pragma warning(pop)
 
         /* Zero all operator storage including the superdiagonals */
@@ -1395,7 +1392,7 @@ suzerain_bsplineop_luz_opaccumulate(
         suzerain_blasext_zgb_dacc(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
             coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
-            z_one, luzw->A + w->max_kl, luzw->ld);
+            1, luzw->A + w->max_kl, luzw->ld);
 
     } else {
 
@@ -1412,7 +1409,7 @@ suzerain_bsplineop_luz_opaccumulate(
         suzerain_blasext_zgb_dacc(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
             coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
-            z_one, luzw->A + w->max_kl, luzw->ld);
+            1, luzw->A + w->max_kl, luzw->ld);
     }
 
     /* Make -1*ipiv[0] indicate the number of opaccumulate calls performed */
@@ -1435,8 +1432,8 @@ suzerain_bsplineop_luz_opnorm1(
     /* As operator is not yet factored, it starts at A + kl per GBTRF */
     const int info = suzerain_blasext_zgbnorm1(
                                 luzw->n, luzw->n, luzw->kl, luzw->ku,
-                                (const double (*)[2]) luzw->A + luzw->kl,
-                                luzw->ld, /* modified */ norm1);
+                                luzw->A + luzw->kl, luzw->ld,
+                                /* modified */ norm1);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1494,11 +1491,10 @@ suzerain_bsplineop_luz_rcond(
     }
 
     const int info = suzerain_lapack_zgbcon('1', luzw->n, luzw->kl, luzw->ku,
-                                            (const double (*)[2]) luzw->A,
-                                            luzw->ld, luzw->ipiv, norm1,
-                                            /* modified */ rcond,
-                                            (double (*)[2]) work,
-                                            (void *)(work + 2*(2*luzw->n)));
+                                            luzw->A, luzw->ld, luzw->ipiv,
+                                            norm1, /* modified */ rcond,
+                                            (complex_double *) work,
+                                            work + 2*(2*luzw->n));
     suzerain_blas_free(work);
 
     if (info) {
@@ -1515,7 +1511,7 @@ static
 int
 suzerain_bsplineop_luz_solve_contiguous(
     int nrhs,
-    double (*B)[2],
+    complex_double *B,
     int ldb,
     const suzerain_bsplineop_luz_workspace *luzw)
 {
@@ -1526,9 +1522,8 @@ suzerain_bsplineop_luz_solve_contiguous(
     }
 
     const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl, luzw->ku,
-                                            nrhs,
-                                            (const double (*)[2]) luzw->A,
-                                            luzw->ld, luzw->ipiv, B, ldb);
+                                            nrhs, luzw->A, luzw->ld, luzw->ipiv,
+                                            B, ldb);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1543,7 +1538,7 @@ static
 int
 suzerain_bsplineop_luz_solve_noncontiguous(
     int nrhs,
-    double (*B)[2],
+    complex_double *B,
     int incb,
     int ldb,
     const suzerain_bsplineop_luz_workspace *luzw)
@@ -1555,23 +1550,21 @@ suzerain_bsplineop_luz_solve_noncontiguous(
     }
 
     /* Allocate scratch space because ZGBTRS requires contiguous vectors */
-    double (* const scratch)[2]
-        = suzerain_blas_malloc(luzw->n*sizeof(scratch[0]));
+    complex_double * const scratch
+            = suzerain_blas_malloc(luzw->n*sizeof(scratch[0]));
     if (scratch == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space",
                        SUZERAIN_ENOMEM);
     }
 
     for (int j = 0; j < nrhs; ++j) {
-        double (* const b_j)[2] = B + j*ldb;
+        complex_double * const b_j = B + j*ldb;
 
-        suzerain_blas_zcopy(
-                luzw->n, (const double (*)[2]) b_j, incb, scratch, 1);
+        suzerain_blas_zcopy(luzw->n, b_j, incb, scratch, 1);
         const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl,
                                                 luzw->ku,
                                                 1, /* One RHS at a time */
-                                                (const double (*)[2]) luzw->A,
-                                                luzw->ld, luzw->ipiv,
+                                                luzw->A, luzw->ld, luzw->ipiv,
                                                 scratch, luzw->n);
         if (info) {
             suzerain_blas_free(scratch);
@@ -1580,8 +1573,7 @@ suzerain_bsplineop_luz_solve_noncontiguous(
                     "suzerain_lapack_zgbtrs reported error %d", info);
             SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
         }
-        suzerain_blas_zcopy(
-                luzw->n, (const double (*)[2]) scratch, 1, b_j, incb);
+        suzerain_blas_zcopy(luzw->n, scratch, 1, b_j, incb);
     }
 
     suzerain_blas_free(scratch);
@@ -1592,7 +1584,7 @@ suzerain_bsplineop_luz_solve_noncontiguous(
 int
 suzerain_bsplineop_luz_solve(
     int nrhs,
-    double (*B)[2],
+    complex_double *B,
     int incb,
     int ldb,
     const suzerain_bsplineop_luz_workspace *luzw)
@@ -1609,13 +1601,12 @@ suzerain_bsplineop_luz_solve(
 int
 suzerain_bsplineop_luz_opform(
     int ncoefficients,
-    const double (*coefficients)[2],
+    const complex_double *coefficients,
     const suzerain_bsplineop_workspace * w,
     suzerain_bsplineop_luz_workspace * luzw)
 {
-    const double z_zero[2] = { 0.0, 0.0 };
     return suzerain_bsplineop_luz_opaccumulate(
-            ncoefficients, coefficients, w, z_zero, luzw);
+            ncoefficients, coefficients, w, 0, luzw);
 }
 
 int
@@ -1623,7 +1614,7 @@ suzerain_bsplineop_luz_opform_mass(
     const suzerain_bsplineop_workspace * w,
     suzerain_bsplineop_luz_workspace * luzw)
 {
-    const double z_one[2] = { 1.0, 0.0 };
+    const complex_double z_one = 1;
     return suzerain_bsplineop_luz_opform(1, &z_one, w, luzw);
 }
 

@@ -41,6 +41,8 @@ extern "C" {
  * kernels.
  */
 
+#include <suzerain/complex.h>
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1
  * + \alpha_{2} D_2 \right) A x + \beta{} y \f$.
@@ -115,8 +117,7 @@ suzerain_gbdddmv_d(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$.  Real-valued strides are in units of <tt>float</tt>
- * while complex-valued strides are in units of <tt>float[2]</tt>.
+ * \f$D_2\f$, and \f$A\f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -132,12 +133,12 @@ suzerain_gbdddmv_d(
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
  * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \return Zero on success and a BLAS-like error code otherwise.
  * \see A BLAS reference for for general band storage matrix requirements.
@@ -148,69 +149,39 @@ suzerain_gbdddmv_sc(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
- * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$.  Real-valued strides are in units of <tt>double</tt>
- * while complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \return Zero on success and a BLAS-like error code otherwise.
- * \see A BLAS reference for for general band storage matrix requirements.
- */
+/*! \copydoc suzerain_gbdddmv_sc */
 int
 suzerain_gbdddmv_dz(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 #ifdef __cplusplus

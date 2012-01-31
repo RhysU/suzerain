@@ -32,6 +32,7 @@
 #define __SUZERAIN_BLAS_ET_AL_H__
 
 #include <suzerain/common.h>
+#include <suzerain/complex.h>
 
 /** \file
  * Wraps external BLAS and LAPACK routines necessary for Suzerain.
@@ -151,18 +152,18 @@ suzerain_blas_dswap(
 void
 suzerain_blas_cswap(
         const int n,
-        float (*x)[2],
+        complex_float *x,
         const int incx,
-        float (*y)[2],
+        complex_float *y,
         const int incy);
 
 /*! \copydoc suzerain_blas_sswap */
 void
 suzerain_blas_zswap(
         const int n,
-        double (*x)[2],
+        complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy);
 
 /*!
@@ -197,18 +198,18 @@ suzerain_blas_dcopy(
 void
 suzerain_blas_ccopy(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        float (*y)[2],
+        complex_float *y,
         const int incy);
 
 /*! \copydoc suzerain_blas_scopy */
 void
 suzerain_blas_zcopy(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy);
 
 /*!
@@ -256,21 +257,21 @@ suzerain_blas_ddot(
 void
 suzerain_blas_cdotc(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float (*y)[2],
+        const complex_float *y,
         const int incy,
-        float dotc[2]);
+        complex_float *dotc);
 
 /*! \copydoc suzerain_blas_cdotc */
 void
 suzerain_blas_zdotc(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double (*y)[2],
+        const complex_double *y,
         const int incy,
-        double dotc[2]);
+        complex_double *dotc);
 
 /*!
  * \brief Compute \f$ \left|\left| x \right|\right|_{2} \f$ using BLAS's nrm2.
@@ -300,14 +301,14 @@ suzerain_blas_dnrm2(
 float
 suzerain_blas_scnrm2(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx);
 
 /*! \copydoc suzerain_blas_snrm2 */
 double
 suzerain_blas_dznrm2(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx);
 
 /*!
@@ -369,20 +370,20 @@ suzerain_blas_daxpy(
 void
 suzerain_blas_caxpy(
         const int n,
-        const float alpha[2],
-        const float (*x)[2],
+        const complex_float alpha,
+        const complex_float *x,
         const int incx,
-        float (*y)[2],
+        complex_float *y,
         const int incy);
 
 /*! \copydoc suzerain_blas_saxpy */
 void
 suzerain_blas_zaxpy(
         const int n,
-        const double alpha[2],
-        const double (*x)[2],
+        const complex_double alpha,
+        const complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy);
 
 /*!
@@ -426,22 +427,22 @@ suzerain_blas_daxpby(
 void
 suzerain_blas_caxpby(
         const int n,
-        const float alpha[2],
-        const float (*x)[2],
+        const complex_float alpha,
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
 /*! \copydoc suzerain_blas_saxpby */
 void
 suzerain_blas_zaxpby(
         const int n,
-        const double alpha[2],
-        const double (*x)[2],
+        const complex_double alpha,
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -517,16 +518,16 @@ suzerain_blas_dscal(
 void
 suzerain_blas_cscal(
         const int n,
-        const float alpha[2],
-        float (*x)[2],
+        const complex_float alpha,
+        complex_float *x,
         const int incx);
 
 /*! \copydoc suzerain_blas_sscal */
 void
 suzerain_blas_zscal(
         const int n,
-        const double alpha[2],
-        double (*x)[2],
+        const complex_double alpha,
+        complex_double *x,
         const int incx);
 
 /*! @} */
@@ -806,11 +807,11 @@ suzerain_blas_cgb_acc(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
-        const float (*a)[2],
+        const complex_float alpha,
+        const complex_float *a,
         const int lda,
-        const float beta[2],
-        float (*b)[2],
+        const complex_float beta,
+        complex_float *b,
         const int ldb);
 
 /*! \copydoc suzerain_blas_sgb_acc */
@@ -820,11 +821,11 @@ suzerain_blas_zgb_acc(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
-        const double (*a)[2],
+        const complex_double alpha,
+        const complex_double *a,
         const int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         const int ldb);
 
 
@@ -892,7 +893,7 @@ suzerain_lapack_cgbtrf(
         const int n,
         const int kl,
         const int ku,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
         int *ipiv);
 
@@ -903,7 +904,7 @@ suzerain_lapack_zgbtrf(
         const int n,
         const int kl,
         const int ku,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
         int *ipiv);
 
@@ -969,10 +970,10 @@ suzerain_lapack_cgbtrs(
         const int kl,
         const int ku,
         const int nrhs,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         const int *ipiv,
-        float (*b)[2],
+        complex_float *b,
         const int ldb);
 
 /*! \copydoc suzerain_lapack_sgbtrs */
@@ -983,10 +984,10 @@ suzerain_lapack_zgbtrs(
         const int kl,
         const int ku,
         const int nrhs,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         const int *ipiv,
-        double (*b)[2],
+        complex_double *b,
         const int ldb);
 
 /*!
@@ -1078,12 +1079,12 @@ suzerain_lapack_cgbcon(
         const int n,
         const int kl,
         const int ku,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         const int *ipiv,
         const float anorm,
         float *rcond,
-        float (*work)[2],
+        complex_float *work,
         float  *rwork);
 
 /*! \copydoc suzerain_lapack_cgbcon */
@@ -1093,13 +1094,13 @@ suzerain_lapack_zgbcon(
         const int n,
         const int kl,
         const int ku,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         const int *ipiv,
         const double anorm,
         double *rcond,
-        double (*work)[2],
-        double  *rwork);
+        complex_double *work,
+        double *rwork);
 
 /*!
  * \brief Compute the solution to a banded system of linear equations \f$ AX=B
@@ -1151,10 +1152,10 @@ suzerain_lapack_cgbsv(
         const int kl,
         const int ku,
         const int nrhs,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
         int *ipiv,
-        float (*b)[2],
+        complex_float *b,
         const int ldb);
 
 /*! \copydoc suzerain_lapack_sgbsv */
@@ -1164,10 +1165,10 @@ suzerain_lapack_zgbsv(
         const int kl,
         const int ku,
         const int nrhs,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
         int *ipiv,
-        double (*b)[2],
+        complex_double *b,
         const int ldb);
 
 /*!
@@ -1297,22 +1298,22 @@ suzerain_lapack_cgbsvx(
         const int kl,
         const int ku,
         const int nrhs,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
-        float (*afb)[2],
+        complex_float *afb,
         const int ldafb,
         int *ipiv,
         char *equed,
         float *r,
         float *c,
-        float (*b)[2],
+        complex_float *b,
         const int ldb,
-        float (*x)[2],
+        complex_float *x,
         const int ldx,
         float *rcond,
         float *ferr,
         float *berr,
-        float (*work)[2],
+        complex_float *work,
         float *rwork);
 
 /*! \copydoc suzerain_lapack_cgbsvx */
@@ -1324,22 +1325,22 @@ suzerain_lapack_zgbsvx(
         const int kl,
         const int ku,
         const int nrhs,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
-        double (*afb)[2],
+        complex_double *afb,
         const int ldafb,
         int *ipiv,
         char *equed,
         double *r,
         double *c,
-        double (*b)[2],
+        complex_double *b,
         const int ldb,
-        double (*x)[2],
+        complex_double *x,
         const int ldx,
         double *rcond,
         double *ferr,
         double *berr,
-        double (*work)[2],
+        complex_double *work,
         double *rwork);
 
 /*!
@@ -1376,7 +1377,7 @@ suzerain_lapack_clangb(
         const int n,
         const int kl,
         const int ku,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         float *work);
 
@@ -1387,7 +1388,7 @@ suzerain_lapack_zlangb(
         const int n,
         const int kl,
         const int ku,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         double *work);
 
@@ -1411,58 +1412,50 @@ suzerain_lapack_zlangb(
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ where \f$x\f$ is
- * real-valued and \f$\alpha\f$ and \f$y\f$ are complex-valued.  Real-valued
- * strides are in units of <tt>double</tt> while complex-valued strides are in
- * units of <tt>double[2]</tt>.
+ * real-valued and \f$\alpha\f$ and \f$y\f$ are complex-valued.
  *
  * \param n Number of elements in \c x and \c y.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param x First source vector.
- * \param incx First source vector stride in units of <tt>double</tt>.
+ * \param incx First source vector stride.
  * \param y Second source vector and target vector.
- * \param incy Second source vector and target vector stride in
- *             units of <tt>double[2]</tt>.
+ * \param incy Second source vector and target vector stride.
  */
 void
 suzerain_blasext_daxpzy(
         const int n,
-        const double alpha[2],
+        const complex_double alpha,
         const double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ where \f$x\f$ is
  * real-valued and \f$\alpha\f$, \f$\beta\f$, and \f$y\f$ are complex-valued.
- * Real-valued strides are in units of <tt>double</tt> while complex-valued
- * strides are in units of <tt>double[2]</tt>.
  *
  * \param n Number of elements in \c x and \c y.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param x First source vector.
- * \param incx First source vector stride in units of <tt>double</tt>.
+ * \param incx First source vector stride.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param y Second source vector and target vector.
- * \param incy Second source vector and target vector stride in
- *             units of <tt>double[2]</tt>.
+ * \param incy Second source vector and target vector stride.
  */
 void
 suzerain_blasext_daxpzby(
         const int n,
-        const double alpha[2],
+        const complex_double alpha,
         const double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$
- * using an external BLAS' gbmv.  Real-valued strides are in units of
- * <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * using an external BLAS' gbmv.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -1474,12 +1467,12 @@ suzerain_blasext_daxpzby(
  * \param ku Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -1490,41 +1483,16 @@ suzerain_blasext_sgbmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$
- * using an external BLAS' gbmv.  Real-valued strides are in units of
- * <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbmzv_external */
 void
 suzerain_blasext_dgbmzv_external(
         const char trans,
@@ -1532,20 +1500,18 @@ suzerain_blasext_dgbmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
- * Real-valued strides are in units of <tt>float</tt> while complex-valued
- * strides are in units of <tt>float[2]</tt>.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -1557,12 +1523,12 @@ suzerain_blasext_dgbmzv_external(
  * \param ku Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x in.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -1573,40 +1539,16 @@ suzerain_blasext_sgbmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
- * Real-valued strides are in units of <tt>double</tt> while complex-valued
- * strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbmzv */
 int
 suzerain_blasext_dgbmzv(
         const char trans,
@@ -1614,13 +1556,13 @@ suzerain_blasext_dgbmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -1683,9 +1625,7 @@ suzerain_blasext_dgbdmv_external(
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
- * and \f$A\f$ using an external BLAS.  Real-valued strides are in units of
- * <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * and \f$A\f$ using an external BLAS.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -1697,12 +1637,12 @@ suzerain_blasext_dgbdmv_external(
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param d Contiguous storage for diagonal matrix \f$ D \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -1712,56 +1652,31 @@ suzerain_blasext_sgbdmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *d,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
- * and \f$A\f$ using an external BLAS.  Real-valued strides are in units of
- * <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbdmzv_external */
 int
 suzerain_blasext_dgbdmzv_external(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -1823,8 +1738,7 @@ suzerain_blasext_dgbdmv(
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
- * and \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
- * complex-valued strides are in units of <tt>float[2]</tt>.
+ * and \f$A\f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -1836,12 +1750,12 @@ suzerain_blasext_dgbdmv(
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param d Contiguous storage for diagonal matrix \f$ D \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -1851,55 +1765,31 @@ suzerain_blasext_sgbdmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *d,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
- * and \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbdmzv */
 int
 suzerain_blasext_dgbdmzv(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -1969,8 +1859,7 @@ suzerain_blasext_dgbddmv_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha{0} D_0 + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
  * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$
- * using an external BLAS.  Real-valued strides are in units of <tt>float</tt>
- * while complex-valued strides are in units of <tt>float[2]</tt>.
+ * using an external BLAS.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -1984,12 +1873,12 @@ suzerain_blasext_dgbddmv_external(
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
  * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -1999,62 +1888,35 @@ suzerain_blasext_sgbddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1
- * \right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$
- * using an external BLAS.  Real-valued strides are in units of <tt>double</tt>
- * while complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbddmzv_external */
 int
 suzerain_blasext_dgbddmzv_external(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2124,8 +1986,6 @@ suzerain_blasext_dgbddmv(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
  * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
- * Real-valued strides are in units of <tt>float</tt> while complex-valued
- * strides are in units of <tt>float[2]</tt>.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2139,12 +1999,12 @@ suzerain_blasext_dgbddmv(
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
  * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2154,62 +2014,35 @@ suzerain_blasext_sgbddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
- * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
- * Real-valued strides are in units of <tt>double</tt> while complex-valued
- * strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbddmzv */
 int
 suzerain_blasext_dgbddmzv(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2276,8 +2109,6 @@ suzerain_blasext_dgbidmv_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha{0} I + \alpha_{1} D_1\right)
  * A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and
  * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$ using an external BLAS.
- * Real-valued strides are in units of <tt>float</tt> while complex-valued
- * strides are in units of <tt>float[2]</tt>.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2290,12 +2121,12 @@ suzerain_blasext_dgbidmv_external(
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
  * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2305,59 +2136,33 @@ suzerain_blasext_sgbidmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1
- * \right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$ using an
- * external BLAS.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbidmzv_external */
 int
 suzerain_blasext_dgbidmzv_external(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2423,9 +2228,7 @@ suzerain_blasext_dgbidmv(
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1\right)
  * A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and
- * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.  Real-valued strides are in
- * units of <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2438,12 +2241,12 @@ suzerain_blasext_dgbidmv(
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
  * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2453,59 +2256,33 @@ suzerain_blasext_sgbidmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1\right)
- * A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and
- * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.  Real-valued strides are in
- * units of <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbidmzv */
 int
 suzerain_blasext_dgbidmzv(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2581,9 +2358,7 @@ suzerain_blasext_dgbdddmv_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$ using an external BLAS.  Real-valued strides are in
- * units of <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * \f$D_2\f$, and \f$A\f$ using an external BLAS.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2599,12 +2374,12 @@ suzerain_blasext_dgbdddmv_external(
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
  * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2614,69 +2389,39 @@ suzerain_blasext_sgbdddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
- * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$ using an external BLAS.  Real-valued strides are in
- * units of <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbdddmzv_external */
 int
 suzerain_blasext_dgbdddmzv_external(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2752,8 +2497,7 @@ suzerain_blasext_dgbdddmv(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$.  Real-valued strides are in units of <tt>float</tt>
- * while complex-valued strides are in units of <tt>float[2]</tt>.
+ * \f$D_2\f$, and \f$A\f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2769,12 +2513,12 @@ suzerain_blasext_dgbdddmv(
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
  * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2784,68 +2528,39 @@ suzerain_blasext_sgbdddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
- * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
- * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
- * \f$D_2\f$, and \f$A\f$.  Real-valued strides are in units of <tt>double</tt>
- * while complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbdddmzv */
 int
 suzerain_blasext_dgbdddmzv(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -2918,9 +2633,7 @@ suzerain_blasext_dgbiddmv_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha{0} I + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
- * \f$A\f$ using an external BLAS.  Real-valued strides are in units of
- * <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * \f$A\f$ using an external BLAS.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -2935,12 +2648,12 @@ suzerain_blasext_dgbiddmv_external(
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
  * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -2950,66 +2663,37 @@ suzerain_blasext_sgbiddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1 +
- * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
- * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
- * \f$A\f$ using an external BLAS.  Real-valued strides are in units of
- * <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbiddmzv_external */
 int
 suzerain_blasext_dgbiddmzv_external(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -3082,8 +2766,7 @@ suzerain_blasext_dgbiddmv(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
- * \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
- * complex-valued strides are in units of <tt>float[2]</tt>.
+ * \f$A\f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -3098,12 +2781,12 @@ suzerain_blasext_dgbiddmv(
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
  * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
  * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -3113,73 +2796,43 @@ suzerain_blasext_sgbiddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1} D_1 +
- * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
- * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
- * \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_sgbiddmzv */
 int
 suzerain_blasext_dgbiddmzv(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$ using an external BLAS' sbmv.  Real-valued strides are in units of
- * <tt>float</tt> while complex-valued strides are in units of
- * <tt>float[2]</tt>.
+ * \f$A\f$ using an external BLAS' sbmv.
  *
  * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
  *      part of \f$A\f$ is supplied in \c a, respectively.
@@ -3187,12 +2840,12 @@ suzerain_blasext_dgbiddmzv(
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -3201,56 +2854,34 @@ suzerain_blasext_ssbmzv_external(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$ using an external BLAS' sbmv.  Real-valued strides are in units of
- * <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
- *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_ssbmzv_external */
 void
 suzerain_blasext_dsbmzv_external(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
- * complex-valued strides are in units of <tt>float[2]</tt>.
+ * \f$A\f$.
  *
  * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
  *      part of \f$A\f$ is supplied in \c a, respectively.
@@ -3258,12 +2889,12 @@ suzerain_blasext_dsbmzv_external(
  * \param k Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
  * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
+ * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
+ * \param incx Stride of vector \c x.
  * \param beta Multiplicative scalar \f$ \beta \f$.
  * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
+ * \param incy Stride of vector \c y.
  *
  * \see A BLAS reference for for general band matrix storage requirements.
  */
@@ -3272,48 +2903,28 @@ suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
+/*! \copydoc suzerain_blasext_ssbmzv */
 int
 suzerain_blasext_dsbmzv(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -3392,14 +3003,14 @@ suzerain_blasext_cgb_diag_scale_acc(
         int n,
         int kl,
         int ku,
-        const float alpha[2],
-        const float (*d)[2],
+        const complex_float alpha,
+        const complex_float *d,
         int ldd,
-        const float (*a)[2],
+        const complex_float *a,
         int inca,
         int lda,
-        const float beta[2],
-        float (*b)[2],
+        const complex_float beta,
+        complex_float *b,
         int incb,
         int ldb);
 
@@ -3411,23 +3022,21 @@ suzerain_blasext_zgb_diag_scale_acc(
         int n,
         int kl,
         int ku,
-        const double alpha[2],
-        const double (*d)[2],
+        const complex_double alpha,
+        const complex_double *d,
         int ldd,
-        const double (*a)[2],
+        const complex_double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb);
 
 /*!
  * \brief Compute either \f$ B \leftarrow{} \alpha{} D A + \beta{}B \f$ or \f$
  * B \leftarrow{} \alpha{} A D + \beta{}B \f$ for real banded \f$A\f$, real
- * diagonal \f$D\f$, and complex banded \f$B\f$.  Real-valued strides are in
- * units of <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
+ * diagonal \f$D\f$, and complex banded \f$B\f$.
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.
  * All three matrices may be generally strided.  The operation and
@@ -3461,14 +3070,14 @@ suzerain_blasext_zgb_diag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         int ldd,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb);
 
@@ -3476,9 +3085,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
  * \brief Compute either \f$ B \leftarrow{} (\alpha_0 D_0 + \alpha_1 D_1) A +
  * \beta{}B \f$ or \f$ B \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1) +
  * \beta{}B \f$ for real banded \f$A\f$, real diagonal \f$D_0\f$, real diagonal
- * \f$D_1\f$, and complex banded \f$B\f$.  Real-valued strides are in units of
- * <tt>double</tt> while complex-valued strides are in units of
- * <tt>double[2]</tt>.
+ * \f$D_1\f$, and complex banded \f$B\f$.
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
  * be generally strided.  Matrices \f$ D_0 \f$ and \f$ D_1 \f$ may be aliased.
@@ -3514,17 +3121,17 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
         int ldd0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         int ldd1,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb);
 
@@ -3533,8 +3140,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  * \alpha_2 D_2) A + \beta{}B \f$ or \f$ B \leftarrow{} A (\alpha_0 D_0 +
  * \alpha_1 D_1 + \alpha_2 D_2) + \beta{}B \f$ for real banded \f$A\f$, real
  * diagonal \f$D_0\f$, real diagonal \f$D_1\f$, real diagonal \f$D_2\f$,  and
- * complex banded \f$B\f$.  Real-valued strides are in units of <tt>double</tt>
- * while complex-valued strides are in units of <tt>double[2]</tt>.
+ * complex banded \f$B\f$.
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
  * be generally strided.  Matrices \f$ D_0 \f$, \f$ D_1 \f$, and \f$ D_2 \f$
@@ -3574,28 +3180,27 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
         int ldd0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         int ldd1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         int ldd2,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ where
  * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
- * real-valued.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
+ * real-valued.
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have
  * band storage and must have the same shape and same number
@@ -3607,10 +3212,10 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
  * \param ku Number of superdiagonals in band storage of \c ab.
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param a General band storage of the matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
+ * \param lda Leading dimension of \c a.
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param b General band storage of the matrix \f$ B \f$.
- * \param ldb Leading dimension of \c b in units of <tt>double[2]</tt>.
+ * \param ldb Leading dimension of \c b.
  *
  * \see A BLAS reference for general band matrix storage requirements.
  */
@@ -3620,11 +3225,11 @@ suzerain_blasext_zgb_dacc(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         const int ldb);
 
 /*!
@@ -3724,7 +3329,7 @@ suzerain_blasext_cgbnorm1(
         const int n,
         const int kl,
         const int ku,
-        const float (*a)[2],
+        const complex_float *a,
         const int lda,
         float *norm1);
 
@@ -3735,7 +3340,7 @@ suzerain_blasext_zgbnorm1(
         const int n,
         const int kl,
         const int ku,
-        const double (*a)[2],
+        const complex_double *a,
         const int lda,
         double *norm1);
 

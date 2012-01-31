@@ -72,14 +72,14 @@
 #define SBMV_STATIC    static
 #define SBMV_FUNCTION  suzerain_sbmv_internal_sc
 #define SBMV_COMPONENT float
-#define SBMV_SCALAR    float _Complex
+#define SBMV_SCALAR    complex_float
 #define SBMV_K         const int k,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
 #define SBMV_FUNCTION  suzerain_sbmv_internal_dz
 #define SBMV_COMPONENT double
-#define SBMV_SCALAR    double _Complex
+#define SBMV_SCALAR    complex_double
 #define SBMV_K         const int k,
 #include "sbmv.def"
 
@@ -176,23 +176,18 @@ suzerain_sbmv_sc(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    float _Complex alpha_c, beta_c;
-    memcpy(&alpha_c, alpha, sizeof(float _Complex));
-    memcpy(&beta_c,  beta,  sizeof(float _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     switch (k) {
-#define ARGS uplo, n, alpha_c, (void *) a, lda,     \
-             (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS uplo, n, alpha, a, lda, x, incx, beta, y, incy
         case  0: return suzerain_sbmv_internal_sc0(ARGS);
         case  1: return suzerain_sbmv_internal_sc1(ARGS);
         case  2: return suzerain_sbmv_internal_sc2(ARGS);
@@ -213,10 +208,9 @@ suzerain_sbmv_sc(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_sbmv_internal_sc(
-            uplo, n, k,
-            alpha_c, (void *) a, lda, (void *) x, incx,
-            beta_c,                   (void *) y, incy);
+    return suzerain_sbmv_internal_sc(uplo, n, k,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
 }
 
 int
@@ -224,23 +218,18 @@ suzerain_sbmv_dz(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    double _Complex alpha_c, beta_c;
-    memcpy(&alpha_c, alpha, sizeof(double _Complex));
-    memcpy(&beta_c,  beta,  sizeof(double _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     switch (k) {
-#define ARGS uplo, n, alpha_c, (void *) a, lda,     \
-             (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS uplo, n, alpha, a, lda, x, incx, beta, y, incy
         case  0: return suzerain_sbmv_internal_dz0(ARGS);
         case  1: return suzerain_sbmv_internal_dz1(ARGS);
         case  2: return suzerain_sbmv_internal_dz2(ARGS);
@@ -261,10 +250,9 @@ suzerain_sbmv_dz(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_sbmv_internal_dz(
-            uplo, n, k,
-            alpha_c, (void *) a, lda, (void *) x, incx,
-            beta_c,                   (void *) y, incy);
+    return suzerain_sbmv_internal_dz(uplo, n, k,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
 }
 
 #else
@@ -294,7 +282,7 @@ suzerain_sbmv_dz(
 #define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_sc, \
                                     BOOST_PP_ITERATION())
 #define SBMV_COMPONENT float
-#define SBMV_SCALAR    float _Complex
+#define SBMV_SCALAR    complex_float
 #define SBMV_K
 #include "sbmv.def"
 
@@ -302,7 +290,7 @@ suzerain_sbmv_dz(
 #define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_dz, \
                                     BOOST_PP_ITERATION())
 #define SBMV_COMPONENT double
-#define SBMV_SCALAR    double _Complex
+#define SBMV_SCALAR    complex_double
 #define SBMV_K
 #include "sbmv.def"
 

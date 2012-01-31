@@ -33,6 +33,7 @@
 
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bsplineop.h>
+#include <suzerain/complex.h>
 
 /** @file
  * Provides implicit operator apply and solve routines for a single wall-normal
@@ -126,17 +127,17 @@ suzerain_rholut_imexop_apply(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const double (*in_rho )[2],
-        const double (*in_rhou)[2],
-        const double (*in_rhov)[2],
-        const double (*in_rhow)[2],
-        const double (*in_rhoe)[2],
-        const double beta,
-        double (*out_rho )[2],
-        double (*out_rhou)[2],
-        double (*out_rhov)[2],
-        double (*out_rhow)[2],
-        double (*out_rhoe)[2]);
+        const complex_double *in_rho ,
+        const complex_double *in_rhou,
+        const complex_double *in_rhov,
+        const complex_double *in_rhow,
+        const complex_double *in_rhoe,
+        const complex_double beta,
+        complex_double *out_rho ,
+        complex_double *out_rhou,
+        complex_double *out_rhov,
+        complex_double *out_rhow,
+        complex_double *out_rhoe);
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
@@ -200,9 +201,9 @@ suzerain_rholut_imexop_packc(
         const int rhov,
         const int rhow,
         const int rhoe,
-        double (*buf)[2],
+        complex_double * const buf,
         suzerain_bsmbsm * const A,
-        double (*papt)[2]);
+        complex_double * const papt);
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
@@ -267,9 +268,9 @@ suzerain_rholut_imexop_packf(
         const int rhov,
         const int rhow,
         const int rhoe,
-        double (*buf)[2],
+        complex_double * const buf,
         suzerain_bsmbsm * const A,
-        double (*papt)[2]);
+        complex_double *const papt);
 
 #ifdef __cplusplus
 } /* extern "C" */

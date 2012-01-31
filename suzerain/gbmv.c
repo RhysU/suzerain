@@ -74,7 +74,7 @@
 #define GBMV_STATIC    static
 #define GBMV_FUNCTION  suzerain_gbmv_internal_sc
 #define GBMV_COMPONENT float
-#define GBMV_SCALAR    float _Complex
+#define GBMV_SCALAR    complex_float
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
 #include "gbmv.def"
@@ -82,7 +82,7 @@
 #define GBMV_STATIC    static
 #define GBMV_FUNCTION  suzerain_gbmv_internal_dz
 #define GBMV_COMPONENT double
-#define GBMV_SCALAR    double _Complex
+#define GBMV_SCALAR    complex_double
 #define GBMV_KL        const int kl,
 #define GBMV_KU        const int ku,
 #include "gbmv.def"
@@ -190,24 +190,19 @@ suzerain_gbmv_sc(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    float _Complex alpha_c, beta_c;
-    memcpy(&alpha_c, alpha, sizeof(float _Complex));
-    memcpy(&beta_c,  beta,  sizeof(float _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
         switch (kl) {
-#define ARGS trans, m, n, alpha_c, (void *) a, lda,     \
-             (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS trans, m, n, alpha, a, lda, x, incx, beta,  y, incy
             case  0: return suzerain_gbmv_internal_sc0(ARGS);
             case  1: return suzerain_gbmv_internal_sc1(ARGS);
             case  2: return suzerain_gbmv_internal_sc2(ARGS);
@@ -229,10 +224,9 @@ suzerain_gbmv_sc(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbmv_internal_sc(
-            trans, m, n, kl, ku,
-            alpha_c, (void *) a, lda, (void *) x, incx,
-            beta_c,                   (void *) y, incy);
+    return suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
 }
 
 int
@@ -242,24 +236,19 @@ suzerain_gbmv_dz(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    double _Complex alpha_c, beta_c;
-    memcpy(&alpha_c, alpha, sizeof(double _Complex));
-    memcpy(&beta_c,  beta,  sizeof(double _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
         switch (kl) {
-#define ARGS trans, m, n, alpha_c, (void *) a, lda,     \
-             (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS trans, m, n, alpha,  a, lda, x, incx, beta,  y, incy
             case  0: return suzerain_gbmv_internal_dz0(ARGS);
             case  1: return suzerain_gbmv_internal_dz1(ARGS);
             case  2: return suzerain_gbmv_internal_dz2(ARGS);
@@ -281,10 +270,9 @@ suzerain_gbmv_dz(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbmv_internal_dz(
-            trans, m, n, kl, ku,
-            alpha_c, (void *) a, lda, (void *) x, incx,
-            beta_c,                   (void *) y, incy);
+    return suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
+                                     alpha, a, lda, x, incx,
+                                     beta,          y, incy);
 }
 
 #else
@@ -317,7 +305,7 @@ suzerain_gbmv_dz(
 #define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_sc, \
                                     BOOST_PP_ITERATION())
 #define GBMV_COMPONENT float
-#define GBMV_SCALAR    float _Complex
+#define GBMV_SCALAR    complex_float
 #define GBMV_KL
 #define GBMV_KU
 #include "gbmv.def"
@@ -326,7 +314,7 @@ suzerain_gbmv_dz(
 #define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_dz, \
                                     BOOST_PP_ITERATION())
 #define GBMV_COMPONENT double
-#define GBMV_SCALAR    double _Complex
+#define GBMV_SCALAR    complex_double
 #define GBMV_KL
 #define GBMV_KU
 #include "gbmv.def"

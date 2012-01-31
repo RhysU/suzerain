@@ -39,26 +39,15 @@
 #include <suzerain/diffwave.h>
 
 static inline
-void scale_by_imaginary_power(const double in[2], double out[2], int p)
+void scale_by_imaginary_power(const complex_double in,
+                              complex_double * const out, int p)
 {
     // Modulo-four-like operation for 2's complement p
     switch (p & 3) {
-        case 0: // I^0 = 1
-            out[0] = in[0];
-            out[1] = in[1];
-            break;
-        case 1: // I^1 = I = I^-3
-            out[0] = -in[1];
-            out[1] =  in[0];
-            break;
-        case 2: // I^2 = -1 = I^-2
-            out[0] = -in[0];
-            out[1] = -in[1];
-            break;
-        case 3: // I^3 = -I = I^-1
-            out[0] =  in[1];
-            out[1] = -in[0];
-            break;
+        case 0: *out =  in           ; break; // I^0 = 1
+        case 1: *out =  in*_Complex_I; break; // I^1 = I = I^-3
+        case 2: *out = -in           ; break; // I^2 = -1 = I^-2
+        case 3: *out = -in*_Complex_I; break; // I^3 = -I = I^-1
     }
 }
 
@@ -78,7 +67,7 @@ double twopiover(const double L)
 
 // Special case for diffwave_apply when dxcnt = dzcnt = 0 and alpha = 1
 static void zero_wavenumbers_used_only_for_dealiasing(
-    double (* const x)[2],
+    complex_double * const x,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez);
@@ -86,7 +75,7 @@ static void zero_wavenumbers_used_only_for_dealiasing(
 void suzerain_diffwave_apply(
     const int dxcnt,
     const int dzcnt,
-    const double alpha[2], double (* const x)[2],
+    const complex_double alpha, complex_double * const x,
     const double Lx,
     const double Lz,
     const int Ny,
@@ -107,7 +96,7 @@ void suzerain_diffwave_apply(
 
     // Special logic for common-but-degenerate case
 #pragma warning(push,disable:1572)
-    if (dxcnt == 0 && dzcnt == 0 && alpha[0] == 1 && alpha[1] == 0) {
+    if (dxcnt == 0 && dzcnt == 0 && alpha == 0) {
 #pragma warning(pop)
         return zero_wavenumbers_used_only_for_dealiasing(
                 x, Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
@@ -116,8 +105,8 @@ void suzerain_diffwave_apply(
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
-    double alpha_ipow[2];
-    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+    complex_double alpha_ipow;
+    scale_by_imaginary_power(alpha, &alpha_ipow, dxcnt + dzcnt);
 
     // Compute X, Z strides
     const int sx = Ny, sz = (dkex - dkbx)*sx;
@@ -143,8 +132,7 @@ void suzerain_diffwave_apply(
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-                    const double malpha[2] = { mscale*alpha_ipow[0],
-                                               mscale*alpha_ipow[1] };
+                    const complex_double malpha = mscale*alpha_ipow;
                     suzerain_blas_zscal(Ny,malpha,x+moff,1);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
@@ -157,7 +145,7 @@ void suzerain_diffwave_apply(
 }
 
 static void zero_wavenumbers_used_only_for_dealiasing(
-    double (* const x)[2],
+    complex_double * const x,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
@@ -195,8 +183,8 @@ static void zero_wavenumbers_used_only_for_dealiasing(
 void suzerain_diffwave_accumulate(
     const int dxcnt,
     const int dzcnt,
-    const double alpha[2], const double (* const x)[2],
-    const double beta[2],        double (* const y)[2],
+    const complex_double alpha, const complex_double * const x,
+    const complex_double beta,        complex_double * const y,
     const double Lx,
     const double Lz,
     const int Ny,
@@ -219,8 +207,8 @@ void suzerain_diffwave_accumulate(
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
-    double alpha_ipow[2];
-    scale_by_imaginary_power(alpha, alpha_ipow, dxcnt + dzcnt);
+    complex_double alpha_ipow;
+    scale_by_imaginary_power(alpha, &alpha_ipow, dxcnt + dzcnt);
 
     // Compute X, Z strides
     const int sx = Ny, sz = (dkex - dkbx)*sx;
@@ -246,8 +234,7 @@ void suzerain_diffwave_accumulate(
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-                    const double malpha[2] = { mscale*alpha_ipow[0],
-                                               mscale*alpha_ipow[1] };
+                    const complex_double malpha = mscale*alpha_ipow;
                     suzerain_blas_zaxpby(Ny,malpha,x+moff,1,beta,y+moff,1);
                 } else {
                     suzerain_blas_zscal(Ny,beta,y+moff,1);

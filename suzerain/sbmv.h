@@ -31,6 +31,8 @@
 #ifndef __SUZERAIN_SBMV_H__
 #define __SUZERAIN_SBMV_H__
 
+#include <suzerain/complex.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -93,8 +95,7 @@ suzerain_sbmv_d(
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$.  Real-valued strides are in units of <tt>float</tt> while
- * complex-valued strides are in units of <tt>float[2]</tt>.
+ * \f$A\f$.
  *
  * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
  *      part of \f$A\f$ is supplied in \c a, respectively.
@@ -117,49 +118,28 @@ suzerain_sbmv_sc(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy);
 
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$.  Real-valued strides are in units of <tt>double</tt> while
- * complex-valued strides are in units of <tt>double[2]</tt>.
- *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of super-diagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>double</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>double[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>double[2]</tt>.
- *
- * \return Zero on success and a BLAS-like error code otherwise.
- * \see A BLAS reference for for general band storage matrix requirements.
- */
+/*! \copydoc suzerain_sbmv_sc */
 int
 suzerain_sbmv_dz(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 #ifdef __cplusplus

@@ -38,6 +38,8 @@
  * processing.
  */
 
+#include <suzerain/complex.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,7 +92,7 @@ extern "C" {
 void suzerain_diffwave_apply(
     const int dxcnt,
     const int dzcnt,
-    const double alpha[2], double (*x)[2],
+    const complex_double alpha, complex_double *x,
     const double Lx,
     const double Lz,
     const int Ny,
@@ -142,8 +144,8 @@ void suzerain_diffwave_apply(
 void suzerain_diffwave_accumulate(
     const int dxcnt,
     const int dzcnt,
-    const double alpha[2], const double (*x)[2],
-    const double beta[2],        double (*y)[2],
+    const complex_double alpha, const complex_double *x,
+    const complex_double beta,        complex_double *y,
     const double Lx,
     const double Lz,
     const int Ny,

@@ -34,6 +34,7 @@
 #define __SUZERAIN_FUNCTION_H__
 
 #include <suzerain/common.h>
+#include <suzerain/complex.h>
 
 /** @file
  * Provides a function evaluation interface compatible with the <a
@@ -124,7 +125,7 @@ typedef struct {
      * @param[in]  params Arbitrary data to be passed to the function.
      * @param[out] z Complex-valued result of evaluation.
      */
-    void (* function) (double x, void * params, double z[2]);
+    void (* function) (double x, void * params, complex_double z);
 
     /**
      * Fixed data to be provided to \c function on each invocation.

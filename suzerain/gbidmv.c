@@ -74,7 +74,7 @@
 #define GBIDMV_STATIC    static
 #define GBIDMV_FUNCTION  suzerain_gbidmv_internal_sc
 #define GBIDMV_COMPONENT float
-#define GBIDMV_SCALAR    float _Complex
+#define GBIDMV_SCALAR    complex_float
 #define GBIDMV_KL        const int kl,
 #define GBIDMV_KU        const int ku,
 #include "gbidmv.def"
@@ -82,7 +82,7 @@
 #define GBIDMV_STATIC    static
 #define GBIDMV_FUNCTION  suzerain_gbidmv_internal_dz
 #define GBIDMV_COMPONENT double
-#define GBIDMV_SCALAR    double _Complex
+#define GBIDMV_SCALAR    complex_double
 #define GBIDMV_KL        const int kl,
 #define GBIDMV_KU        const int ku,
 #include "gbidmv.def"
@@ -193,27 +193,21 @@ suzerain_gbidmv_sc(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    float _Complex alpha0_c, alpha1_c, beta_c;
-    memcpy(&alpha0_c, alpha0, sizeof(float _Complex));
-    memcpy(&alpha1_c, alpha1, sizeof(float _Complex));
-    memcpy(&beta_c,   beta,   sizeof(float _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
         switch (kl) {
-#define ARGS trans, n, alpha0_c, alpha1_c, (void *) d1,                 \
-            (void *) a, lda, (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS trans, n, alpha0, alpha1, d1, a, lda, x, incx, beta, y, incy
             case  0: return suzerain_gbidmv_internal_sc0(ARGS);
             case  1: return suzerain_gbidmv_internal_sc1(ARGS);
             case  2: return suzerain_gbidmv_internal_sc2(ARGS);
@@ -235,11 +229,8 @@ suzerain_gbidmv_sc(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbidmv_internal_sc(
-            trans, n, kl, ku,
-            alpha0_c, alpha1_c, (void *) d1,
-            (void *) a, lda, (void *) x, incx,
-            beta_c,          (void *) y, incy);
+    return suzerain_gbidmv_internal_sc(trans, n, kl, ku, alpha0, alpha1, d1,
+                                       a, lda, x, incx, beta, y, incy);
 }
 
 int
@@ -248,27 +239,21 @@ suzerain_gbidmv_dz(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    double _Complex alpha0_c, alpha1_c, beta_c;
-    memcpy(&alpha0_c, alpha0, sizeof(double _Complex));
-    memcpy(&alpha1_c, alpha1, sizeof(double _Complex));
-    memcpy(&beta_c,   beta,   sizeof(double _Complex));
-
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
         switch (kl) {
-#define ARGS trans, n, alpha0_c, alpha1_c, (void *) d1,                 \
-            (void *) a, lda, (void *) x, incx, beta_c, (void *) y, incy
+#define ARGS trans, n, alpha0, alpha1, d1, a, lda, x, incx, beta, y, incy
             case  0: return suzerain_gbidmv_internal_dz0(ARGS);
             case  1: return suzerain_gbidmv_internal_dz1(ARGS);
             case  2: return suzerain_gbidmv_internal_dz2(ARGS);
@@ -290,11 +275,8 @@ suzerain_gbidmv_dz(
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbidmv_internal_dz(
-            trans, n, kl, ku,
-            alpha0_c, alpha1_c, (void *) d1,
-            (void *) a, lda, (void *) x, incx,
-            beta_c,          (void *) y, incy);
+    return suzerain_gbidmv_internal_dz(trans, n, kl, ku, alpha0, alpha1, d1,
+                                       a, lda, x, incx, beta, y, incy);
 }
 
 #else
@@ -327,7 +309,7 @@ suzerain_gbidmv_dz(
 #define GBIDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbidmv_internal_sc, \
                                       BOOST_PP_ITERATION())
 #define GBIDMV_COMPONENT float
-#define GBIDMV_SCALAR    float _Complex
+#define GBIDMV_SCALAR    complex_float
 #define GBIDMV_KL
 #define GBIDMV_KU
 #include "gbidmv.def"
@@ -336,7 +318,7 @@ suzerain_gbidmv_dz(
 #define GBIDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbidmv_internal_dz, \
                                       BOOST_PP_ITERATION())
 #define GBIDMV_COMPONENT double
-#define GBIDMV_SCALAR    double _Complex
+#define GBIDMV_SCALAR    complex_double
 #define GBIDMV_KL
 #define GBIDMV_KU
 #include "gbidmv.def"

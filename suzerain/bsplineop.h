@@ -32,6 +32,7 @@
 
 #include <gsl/gsl_bspline.h>
 #include <suzerain/common.h>
+#include <suzerain/complex.h>
 #include <suzerain/function.h>
 
 /* TODO Add usage example */
@@ -222,8 +223,7 @@ suzerain_bsplineop_free(
  * Apply the <tt>nderiv</tt>-th derivative operator to real coefficients \c x.
  * Multiplies the precomputed banded derivative operator scaled by \c alpha
  * against one or more coefficient vectors stored in \c x.  Results overwrite
- * \c x.  Each coefficient vector is of length <tt>w->n</tt>.  Increments and
- * leading dimensions are specified in <tt>double</tt>-sized units.
+ * \c x.  Each coefficient vector is of length <tt>w->n</tt>.
  *
  * @param[in] nderiv Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of coefficient vectors stored in \c x.
@@ -257,8 +257,7 @@ suzerain_bsplineop_apply(
  * accumulating the results in \c y.  Multiplies \c alpha times the precomputed
  * banded derivative operator against one or more coefficient vectors stored in
  * \c x.  Results are added to \c beta times \c y.  Each coefficient vector is
- * of length <tt>w->n</tt>.  \c x and \c y cannot be aliased.  Increments and
- * leading dimensions are specified in <tt>double</tt>-sized units.
+ * of length <tt>w->n</tt>.  \c x and \c y cannot be aliased.
  *
  * @param[in] nderiv Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of vectors stored in \c x and \c y.
@@ -339,8 +338,6 @@ suzerain_bsplineop_interpolation_rhs(
  * x.  Multiplies the precomputed banded derivative operator scaled by
  * real-valued \c alpha against one or more coefficient vectors stored in \c x.
  * Results overwrite \c x.  Each coefficient vector is of length <tt>w->n</tt>.
- * Increments and leading dimensions are specified in <tt>double[2]</tt>-sized
- * units.
  *
  * @param[in] nderiv Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of coefficient vectors stored in \c x.
@@ -364,7 +361,7 @@ suzerain_bsplineop_apply_complex(
     int nderiv,
     int nrhs,
     double alpha,
-    double (*x)[2],
+    complex_double *x,
     int incx,
     int ldx,
     const suzerain_bsplineop_workspace *w);
@@ -375,8 +372,7 @@ suzerain_bsplineop_apply_complex(
  * precomputed banded derivative operator against one or more coefficient
  * vectors stored in \c x.  Results are added to \c beta times \c y.  Each
  * coefficient vector is of length <tt>w->n</tt>.  \c x and \c y cannot be
- * aliased.  Increments and leading dimensions are specified in
- * <tt>double[2]</tt>-sized units.
+ * aliased.
  *
  * @param[in] nderiv Derivative operator to apply.  May be zero.
  * @param[in] nrhs Number of vectors stored in \c x and \c y.
@@ -403,12 +399,12 @@ int
 suzerain_bsplineop_accumulate_complex(
     int nderiv,
     int nrhs,
-    const double alpha[2],
-    const double (*x)[2],
+    const complex_double alpha,
+    const complex_double *x,
     int incx,
     int ldx,
-    const double beta[2],
-    double (*y)[2],
+    const complex_double beta,
+    complex_double *y,
     int incy,
     int ldy,
     const suzerain_bsplineop_workspace *w);
@@ -443,7 +439,7 @@ suzerain_bsplineop_accumulate_complex(
 int
 suzerain_bsplineop_interpolation_rhs_complex(
     const suzerain_zfunction * zfunction,
-    double (*rhs)[2],
+    complex_double *rhs,
     gsl_bspline_workspace *bw,
     const suzerain_bsplineop_workspace *w);
 
@@ -757,7 +753,7 @@ typedef struct suzerain_bsplineop_luz_workspace {
      * the starting general band storage location for the non-factored
      * operator.
      */
-    double (*A)[2];
+    complex_double *A;
 
 } suzerain_bsplineop_luz_workspace;
 
@@ -819,9 +815,9 @@ suzerain_bsplineop_luz_free(
 int
 suzerain_bsplineop_luz_opaccumulate(
     int ncoefficients,
-    const double (*coefficients)[2],
+    const complex_double *coefficients,
     const suzerain_bsplineop_workspace * w,
-    const double scale[2],
+    const complex_double scale,
     suzerain_bsplineop_luz_workspace * luzw);
 
 /**
@@ -899,7 +895,7 @@ suzerain_bsplineop_luz_rcond(
 int
 suzerain_bsplineop_luz_solve(
     int nrhs,
-    double (*B)[2],
+    complex_double *B,
     int incb,
     int ldb,
     const suzerain_bsplineop_luz_workspace * luzw);
@@ -933,7 +929,7 @@ suzerain_bsplineop_luz_solve(
 int
 suzerain_bsplineop_luz_opform(
     int ncoefficients,
-    const double (*coefficients)[2],
+    const complex_double *coefficients,
     const suzerain_bsplineop_workspace * w,
     suzerain_bsplineop_luz_workspace * luzw);
 

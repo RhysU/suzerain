@@ -56,12 +56,14 @@ static inline int imax(int a, int b) { return a > b ? a : b; }
 // suzerain_bsmbsm_caPxpby
 // suzerain_bsmbsm_cpack
 #define COMPONENT float
+#define COMPLEX   complex_float
 #define AFFIXPREC(pre,post) pre ## c ## post
 #include "bsmbsm_complex.def"
 
 // suzerain_bsmbsm_zaPxpby
 // suzerain_bsmbsm_zpack
 #define COMPONENT double
+#define COMPLEX   complex_double
 #define AFFIXPREC(pre,post) pre ## z ## post
 #include "bsmbsm_complex.def"
 

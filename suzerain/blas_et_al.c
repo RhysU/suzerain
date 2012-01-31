@@ -146,9 +146,9 @@ suzerain_blas_dswap(
 void
 suzerain_blas_cswap(
         const int n,
-        float  (*x)[2],
+        complex_float *x,
         const int incx,
-        float  (*y)[2],
+        complex_float *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -162,9 +162,9 @@ suzerain_blas_cswap(
 void
 suzerain_blas_zswap(
         const int n,
-        double (*x)[2],
+        complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -210,9 +210,9 @@ suzerain_blas_dcopy(
 void
 suzerain_blas_ccopy(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        float (*y)[2],
+        complex_float *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -228,9 +228,9 @@ suzerain_blas_ccopy(
 void
 suzerain_blas_zcopy(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -278,11 +278,11 @@ suzerain_blas_ddot(
 void
 suzerain_blas_cdotc(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float (*y)[2],
+        const complex_float *y,
         const int incy,
-        float dotc[2])
+        complex_float *dotc)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
@@ -297,11 +297,11 @@ suzerain_blas_cdotc(
 void
 suzerain_blas_zdotc(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double (*y)[2],
+        const complex_double *y,
         const int incy,
-        double dotc[2])
+        complex_double *dotc)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
@@ -344,7 +344,7 @@ suzerain_blas_dnrm2(
 float
 suzerain_blas_scnrm2(
         const int n,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -358,7 +358,7 @@ suzerain_blas_scnrm2(
 double
 suzerain_blas_dznrm2(
         const int n,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -434,16 +434,16 @@ suzerain_blas_daxpy(
 void
 suzerain_blas_caxpy(
         const int n,
-        const float alpha[2],
-        const float (*x)[2],
+        const complex_float alpha,
+        const complex_float *x,
         const int incx,
-        float (*y)[2],
+        complex_float *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
     return caxpy(&n,
-                 (const MKL_Complex8 *) alpha,
+                 (const MKL_Complex8 *) &alpha,
                  (const MKL_Complex8 *) x, &incx,
                  (      MKL_Complex8 *) y, &incy);
 #else
@@ -454,16 +454,16 @@ suzerain_blas_caxpy(
 void
 suzerain_blas_zaxpy(
         const int n,
-        const double alpha[2],
-        const double (*x)[2],
+        const complex_double alpha,
+        const complex_double *x,
         const int incx,
-        double (*y)[2],
+        complex_double *y,
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
     return zaxpy(&n,
-                 (const MKL_Complex16 *) alpha,
+                 (const MKL_Complex16 *) &alpha,
                  (const MKL_Complex16 *) x, &incx,
                  (      MKL_Complex16 *) y, &incy);
 #else
@@ -520,49 +520,47 @@ suzerain_blas_daxpby(
 void
 suzerain_blas_caxpby(
         const int n,
-        const float alpha[2],
-        const float (*x)[2],
+        const complex_float alpha,
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    const int beta_is_one = (beta[0] == 1.0f && beta[1] == 0.0f);
-    if (!beta_is_one)
+#pragma warning(push,disable:1572)
+    if (beta != 1.0f)
+#pragma warning(pop)
         suzerain_blas_cscal(n, beta, y, incy);
     suzerain_blas_caxpy(n, alpha, x, incx, y, incy);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 void
 suzerain_blas_zaxpby(
         const int n,
-        const double alpha[2],
-        const double (*x)[2],
+        const complex_double alpha,
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    const int beta_is_one = (beta[0] == 1.0 && beta[1] == 0.0);
-    if (!beta_is_one)
+#pragma warning(push,disable:1572)
+    if (!beta == 1.0)
+#pragma warning(pop)
         suzerain_blas_zscal(n, beta, y, incy);
     suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 void
@@ -650,14 +648,14 @@ suzerain_blas_dscal(
 void
 suzerain_blas_cscal(
         const int n,
-        const float alpha[2],
-        float (*x)[2],
+        const complex_float alpha,
+        complex_float *x,
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
     return cscal(&n,
-                 (const MKL_Complex8 *) alpha,
+                 (const MKL_Complex8 *) &alpha,
                  (      MKL_Complex8 *) x, &incx);
 #else
 #error "Sanity failure"
@@ -667,14 +665,14 @@ suzerain_blas_cscal(
 void
 suzerain_blas_zscal(
         const int n,
-        const double alpha[2],
-        double (*x)[2],
+        const complex_double alpha,
+        complex_double *x,
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
     return zscal(&n,
-                 (const MKL_Complex16 *) alpha,
+                 (const MKL_Complex16 *) &alpha,
                  (      MKL_Complex16 *) x, &incx);
 #else
 #error "Sanity failure"
@@ -919,16 +917,16 @@ suzerain_blas_cgb_acc(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
-        const float (*a)[2],
+        const complex_float alpha,
+        const complex_float *a,
         const int lda,
-        const float beta[2],
-        float (*b)[2],
+        const complex_float beta,
+        complex_float *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal cgb_acc because MKL lacks the routine. */
-    const float one[2] = { 1.0f, 0.0f };
+    const complex_float one = 1.0f;
     return suzerain_blasext_cgb_diag_scale_acc('R', m, n, kl, ku,
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
@@ -943,16 +941,16 @@ suzerain_blas_zgb_acc(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
-        const double (*a)[2],
+        const complex_double alpha,
+        const complex_double *a,
         const int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Internal zgb_acc because MKL lacks the routine. */
-    const double one[2] = { 1.0, 0.0 };
+    const complex_double one = 1.0;
     return suzerain_blasext_zgb_diag_scale_acc('R', m, n, kl, ku,
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
@@ -1013,7 +1011,7 @@ suzerain_lapack_cgbtrf(
         const int n,
         const int kl,
         const int ku,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
         int *ipiv)
 {
@@ -1036,7 +1034,7 @@ suzerain_lapack_zgbtrf(
         const int n,
         const int kl,
         const int ku,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
         int *ipiv)
 {
@@ -1112,10 +1110,10 @@ suzerain_lapack_cgbtrs(
         const int kl,
         const int ku,
         const int nrhs,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         const int *ipiv,
-        float (*b)[2],
+        complex_float *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1139,10 +1137,10 @@ suzerain_lapack_zgbtrs(
         const int kl,
         const int ku,
         const int nrhs,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         const int *ipiv,
-        double (*b)[2],
+        complex_double *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1221,12 +1219,12 @@ suzerain_lapack_cgbcon(
         const int n,
         const int kl,
         const int ku,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         const int *ipiv,
         const float anorm,
         float *rcond,
-        float (*work)[2],
+        complex_float *work,
         float  *rwork)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1249,12 +1247,12 @@ suzerain_lapack_zgbcon(
         const int n,
         const int kl,
         const int ku,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         const int *ipiv,
         const double anorm,
         double *rcond,
-        double (*work)[2],
+        complex_double *work,
         double  *rwork)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1327,10 +1325,10 @@ suzerain_lapack_cgbsv(
         const int kl,
         const int ku,
         const int nrhs,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
         int *ipiv,
-        float (*b)[2],
+        complex_float *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1353,10 +1351,10 @@ suzerain_lapack_zgbsv(
         const int kl,
         const int ku,
         const int nrhs,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
         int *ipiv,
-        double (*b)[2],
+        complex_double *b,
         const int ldb)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1463,22 +1461,22 @@ suzerain_lapack_cgbsvx(
         const int kl,
         const int ku,
         const int nrhs,
-        float (*ab)[2],
+        complex_float *ab,
         const int ldab,
-        float (*afb)[2],
+        complex_float *afb,
         const int ldafb,
         int *ipiv,
         char *equed,
         float *r,
         float *c,
-        float (*b)[2],
+        complex_float *b,
         const int ldb,
-        float (*x)[2],
+        complex_float *x,
         const int ldx,
         float *rcond,
         float *ferr,
         float *berr,
-        float (*work)[2],
+        complex_float *work,
         float *rwork)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1505,22 +1503,22 @@ suzerain_lapack_zgbsvx(
         const int kl,
         const int ku,
         const int nrhs,
-        double (*ab)[2],
+        complex_double *ab,
         const int ldab,
-        double (*afb)[2],
+        complex_double *afb,
         const int ldafb,
         int *ipiv,
         char *equed,
         double *r,
         double *c,
-        double (*b)[2],
+        complex_double *b,
         const int ldb,
-        double (*x)[2],
+        complex_double *x,
         const int ldx,
         double *rcond,
         double *ferr,
         double *berr,
-        double (*work)[2],
+        complex_double *work,
         double *rwork)
 {
 #ifdef SUZERAIN_HAVE_MKL
@@ -1587,7 +1585,7 @@ suzerain_lapack_clangb(
         const int n,
         const int kl,
         const int ku,
-        const float (*ab)[2],
+        const complex_float *ab,
         const int ldab,
         float *work)
 {
@@ -1608,7 +1606,7 @@ suzerain_lapack_zlangb(
         const int n,
         const int kl,
         const int ku,
-        const double (*ab)[2],
+        const complex_double *ab,
         const int ldab,
         double *work)
 {
@@ -1626,35 +1624,24 @@ suzerain_lapack_zlangb(
 void
 suzerain_blasext_daxpzy(
         const int n,
-        const double alpha[2],
-        const double * restrict x,
+        const complex_double alpha,
+        const double *x,
         const int incx,
-        double (* restrict y)[2],
+        complex_double *y,
         const int incy)
 {
     assert(incx >= 0); // FIXME Handle negative incx
     assert(incy >= 0); // FIXME Handle negative incy
 
-    const double alpha_re = alpha[0];
-    const double alpha_im = alpha[1];
-
     if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi = x[i * incx];
-            double * restrict yi = y[i * incy];
-
-            yi[0] += alpha_re*xi;
-            yi[1] += alpha_im*xi;
+            y[i*incy] += alpha*x[i*incx];
         }
     } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi = x[i];
-            double * restrict yi = y[i];
-
-            yi[0] += alpha_re*xi;
-            yi[1] += alpha_im*xi;
+            y[i] += alpha*x[i];
         }
     }
 }
@@ -1662,42 +1649,27 @@ suzerain_blasext_daxpzy(
 void
 suzerain_blasext_daxpzby(
         const int n,
-        const double alpha[2],
-        const double * restrict x,
+        const complex_double alpha,
+        const double *x,
         const int incx,
-        const double beta[2],
-        double (* restrict y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     assert(incx >= 0); // FIXME Handle negative incx
     assert(incy >= 0); // FIXME Handle negative incy
 
-    const double alpha_re = alpha[0];
-    const double alpha_im = alpha[1];
-    const double beta_re  = beta[0];
-    const double beta_im  = beta[1];
-
     if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi    = x[i * incx];
-            double * restrict yi    = y[i * incy];
-            double            yi_re = yi[0];
-            double            yi_im = yi[1];
-
-            yi[0] = beta_re*yi_re - beta_im*yi_im + alpha_re*xi;
-            yi[1] = beta_re*yi_im + beta_im*yi_re + alpha_im*xi;
+            y[i*incy] *= beta;
+            y[i*incy] += alpha*x[i*incx];
         }
     } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            const double      xi    = x[i];
-            double * restrict yi    = y[i];
-            double            yi_re = yi[0];
-            double            yi_im = yi[1];
-
-            yi[0] = beta_re*yi_re - beta_im*yi_im + alpha_re*xi;
-            yi[1] = beta_re*yi_im + beta_im*yi_re + alpha_im*xi;
+            y[i*incy] *= beta;
+            y[i*incy] += alpha*x[i*incx];
         }
     }
 }
@@ -1709,46 +1681,51 @@ suzerain_blasext_sgbmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
+    assert_static(sizeof(float*) == sizeof(complex_float*));
+    float *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
 #pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     beta[0], &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     beta[0], &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_cscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
     }
 }
 
@@ -1759,46 +1736,51 @@ suzerain_blasext_dgbmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
+    assert_static(sizeof(double*) == sizeof(complex_double*));
+    double *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
 #pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     beta[0], &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     beta[0], &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_zscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
     }
 }
 
@@ -1809,13 +1791,13 @@ suzerain_blasext_sgbmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbmv_sc(trans, m, n, kl, ku,
@@ -1832,13 +1814,13 @@ suzerain_blasext_dgbmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbmv_dz(trans, m, n, kl, ku,
@@ -1853,46 +1835,51 @@ suzerain_blasext_ssbmzv_external(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
+    assert_static(sizeof(float*) == sizeof(complex_float*));
+    float *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
 #pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     beta[0], &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     beta[0], &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_cscal(n, beta, y, incy); /* NB cscal */
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_ssbmv_external(uplo, n, k,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
     }
 }
 
@@ -1901,46 +1888,51 @@ suzerain_blasext_dsbmzv_external(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
+    assert_static(sizeof(double*) == sizeof(complex_double*));
+    double *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
 #pragma warning(push,disable:1572)
-    if (alpha[1] == 0.0 && beta[1] == 0.0) {
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
 #pragma warning(pop)
         /* Real-valued alpha and beta: scale y as we go */
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     beta[0], &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     beta[0], &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
     } else {
         /* Complex-valued alpha and/or beta: scale y and then accumulate */
         suzerain_blas_zscal(n, beta, y, incy); /* NB zscal */
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[1], a, lda, &(x[0][0]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     alpha[0], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][1]), 2*incy);
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
         suzerain_blas_dsbmv_external(uplo, n, k,
-                                     -alpha[1], a, lda, &(x[0][1]), 2*incx,
-                                     1.0, &(y[0][0]), 2*incy);
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
     }
 }
 
@@ -2050,24 +2042,22 @@ suzerain_blasext_sgbdmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *d,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    static const float one[2]  = { 1, 0 };
-    static const float zero[2] = { 0, 0 };
-    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2078,14 +2068,14 @@ suzerain_blasext_sgbdmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha[2],
+        const complex_float alpha,
         const float *d,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbdmv_sc(trans, n, kl, ku,
@@ -2102,24 +2092,22 @@ suzerain_blasext_dgbdmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    static const double one[2]  = { 1, 0 };
-    static const double zero[2] = { 0, 0 };
-    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha, d, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2130,14 +2118,14 @@ suzerain_blasext_dgbdmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbdmv_dz(trans, n, kl, ku,
@@ -2266,28 +2254,26 @@ suzerain_blasext_sgbddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    static const float one[2]  = { 1, 0 };
-    static const float zero[2] = { 0, 0 };
-    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2298,16 +2284,16 @@ suzerain_blasext_sgbddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbddmv_sc(trans, n, kl, ku,
@@ -2324,28 +2310,26 @@ suzerain_blasext_dgbddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    static const double one[2]  = { 1, 0 };
-    static const double zero[2] = { 0, 0 };
-    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2356,16 +2340,16 @@ suzerain_blasext_dgbddmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbddmv_dz(trans, n, kl, ku,
@@ -2490,27 +2474,25 @@ suzerain_blasext_sgbidmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    static const float one[2]  = { 1, 0 };
-    static const float zero[2] = { 0, 0 };
-    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
-            n, alpha0, (void *) z, 1, beta, y, incy);
+            n, alpha0, z, 1, beta, y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2521,15 +2503,15 @@ suzerain_blasext_sgbidmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbidmv_sc(trans, n, kl, ku,
@@ -2546,27 +2528,25 @@ suzerain_blasext_dgbidmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    static const double one[2]  = { 1, 0 };
-    static const double zero[2] = { 0, 0 };
-    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
-            n, alpha0, (void *) z, 1, beta, y, incy);
+            n, alpha0, z, 1, beta, y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2577,15 +2557,15 @@ suzerain_blasext_dgbidmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbidmv_dz(trans, n, kl, ku,
@@ -2726,32 +2706,30 @@ suzerain_blasext_sgbdddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    static const float one[2]  = { 1, 0 };
-    static const float zero[2] = { 0, 0 };
-    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha2, d2, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2762,18 +2740,18 @@ suzerain_blasext_sgbdddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
+        const complex_float alpha0,
         const float *d0,
-        const float alpha1[2],
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbdddmv_sc(trans, n, kl, ku,
@@ -2790,32 +2768,30 @@ suzerain_blasext_dgbdddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    static const double one[2]  = { 1, 0 };
-    static const double zero[2] = { 0, 0 };
-    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha0, d0, 1, (void *) z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha2, d2, 1, (void *) z, 1, one,  y, incy);
+            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2826,18 +2802,18 @@ suzerain_blasext_dgbdddmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbdddmv_dz(trans, n, kl, ku,
@@ -2974,31 +2950,29 @@ suzerain_blasext_sgbiddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
-    static const float one[2]  = { 1, 0 };
-    static const float zero[2] = { 0, 0 };
-    float (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(float));
+    complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_sgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
-            n, alpha0, (void *) z, 1, beta, y, incy);
+            n, alpha0, z, 1, beta, y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blasext_ssbmzv_external(
-            'U', n, 0, alpha2, d2, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -3009,17 +2983,17 @@ suzerain_blasext_sgbiddmzv(
         const int n,
         const int kl,
         const int ku,
-        const float alpha0[2],
-        const float alpha1[2],
+        const complex_float alpha0,
+        const complex_float alpha1,
         const float *d1,
-        const float alpha2[2],
+        const complex_float alpha2,
         const float *d2,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_gbiddmv_sc(trans, n, kl, ku,
@@ -3036,31 +3010,29 @@ suzerain_blasext_dgbiddmzv_external(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
-    static const double one[2]  = { 1, 0 };
-    static const double zero[2] = { 0, 0 };
-    double (* const z)[2] = suzerain_blas_malloc(2*n*sizeof(double));
+    complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
     suzerain_blasext_dgbmzv_external(
-            trans, n, n, kl, ku, one, a, lda, x, incx, zero, z, 1);
+            trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
-            n, alpha0, (void *) z, 1, beta, y, incy);
+            n, alpha0, z, 1, beta, y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha1, d1, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blasext_dsbmzv_external(
-            'U', n, 0, alpha2, d2, 1, (void *) z, 1, one, y, incy);
+            'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -3071,17 +3043,17 @@ suzerain_blasext_dgbiddmzv(
         const int n,
         const int kl,
         const int ku,
-        const double alpha0[2],
-        const double alpha1[2],
+        const complex_double alpha0,
+        const complex_double alpha1,
         const double *d1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_gbiddmv_dz(trans, n, kl, ku,
@@ -3097,13 +3069,13 @@ suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
         const int k,
-        const float alpha[2],
+        const complex_float alpha,
         const float *a,
         const int lda,
-        const float (*x)[2],
+        const complex_float *x,
         const int incx,
-        const float beta[2],
-        float (*y)[2],
+        const complex_float beta,
+        complex_float *y,
         const int incy)
 {
     const int info = suzerain_sbmv_sc(uplo, n, k,
@@ -3118,13 +3090,13 @@ suzerain_blasext_dsbmzv(
         const char uplo,
         const int n,
         const int k,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double (*x)[2],
+        const complex_double *x,
         const int incx,
-        const double beta[2],
-        double (*y)[2],
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     const int info = suzerain_sbmv_dz(uplo, n, k,
@@ -3283,14 +3255,14 @@ suzerain_blasext_cgb_diag_scale_acc(
         int n,
         int kl,
         int ku,
-        const float alpha[2],
-        const float (*d)[2],
+        const complex_float alpha,
+        const complex_float *d,
         int ldd,
-        const float (*a)[2],
+        const complex_float *a,
         int inca,
         int lda,
-        const float beta[2],
-        float (*b)[2],
+        const complex_float beta,
+        complex_float *b,
         int incb,
         int ldb)
 {
@@ -3303,8 +3275,8 @@ suzerain_blasext_cgb_diag_scale_acc(
     if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha_is_zero = (alpha[0] == 0.0f && alpha[1] == 0.0f);
-    const _Bool beta_is_one   = (beta[0]  == 1.0f && beta[1]  == 0.0f);
+    const _Bool alpha_is_zero = (alpha == 0.0f);
+    const _Bool beta_is_one   = (beta  == 1.0f);
 #pragma warning(pop)
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
@@ -3332,8 +3304,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            const complex_float tmp = alpha*(*d);
             suzerain_blas_caxpy (iu - il, tmp,  a + il*inca, inca,
                                                 b + il*incb, incb);
         }
@@ -3341,8 +3312,7 @@ suzerain_blasext_cgb_diag_scale_acc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const float tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                   alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            const complex_float tmp = alpha*(*d);
             suzerain_blas_caxpby(iu - il, tmp,  a + il*inca, inca,
                                           beta, b + il*incb, incb);
         }
@@ -3358,14 +3328,14 @@ suzerain_blasext_zgb_diag_scale_acc(
         int n,
         int kl,
         int ku,
-        const double alpha[2],
-        const double (*d)[2],
+        const complex_double alpha,
+        const complex_double *d,
         int ldd,
-        const double (*a)[2],
+        const complex_double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb)
 {
@@ -3378,8 +3348,8 @@ suzerain_blasext_zgb_diag_scale_acc(
     if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
-    const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
+    const _Bool alpha_is_zero = (alpha == 0.0);
+    const _Bool beta_is_one   = (beta  == 1.0);
 #pragma warning(pop)
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
@@ -3407,8 +3377,7 @@ suzerain_blasext_zgb_diag_scale_acc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                    alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            const complex_double tmp = alpha*(*d);
             suzerain_blas_zaxpy (iu - il, tmp,  a + il*inca, inca,
                                                 b + il*incb, incb);
         }
@@ -3416,8 +3385,7 @@ suzerain_blasext_zgb_diag_scale_acc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha[0]*(*d)[0] - alpha[1]*(*d)[1],
-                                    alpha[0]*(*d)[1] + alpha[1]*(*d)[0] };
+            const complex_double tmp = alpha*(*d);
             suzerain_blas_zaxpby(iu - il, tmp,  a + il*inca, inca,
                                           beta, b + il*incb, incb);
         }
@@ -3433,14 +3401,14 @@ suzerain_blasext_zgb_diag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *d,
         int ldd,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb)
 {
@@ -3453,8 +3421,8 @@ suzerain_blasext_zgb_diag_scale_dacc(
     if (UNLIKELY(ldb  <= kl + ku)) return suzerain_blas_xerbla(__func__, 15);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha_is_zero = (alpha[0] == 0.0 && alpha[1] == 0.0);
-    const _Bool beta_is_one   = (beta[0]  == 1.0 && beta[1]  == 0.0);
+    const _Bool alpha_is_zero = (alpha == 0.0);
+    const _Bool beta_is_one   = (beta  == 1.0);
 #pragma warning(pop)
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
@@ -3482,7 +3450,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha[0]*(*d), alpha[1]*(*d) };
+            const complex_double tmp = alpha*(*d);
             suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
                                                     b + il*incb, incb);
         }
@@ -3490,7 +3458,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha[0]*(*d), alpha[1]*(*d) };
+            const complex_double tmp = alpha*(*d);
             suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
                                               beta, b + il*incb, incb);
         }
@@ -3506,17 +3474,17 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
         int ldd0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         int ldd1,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb)
 {
@@ -3530,9 +3498,9 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
     if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 18);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
-    const _Bool alpha1_is_zero = (alpha1[0] == 0.0 && alpha1[1] == 0.0);
-    const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
+    const _Bool alpha0_is_zero = (alpha0 == 0.0);
+    const _Bool alpha1_is_zero = (alpha1 == 0.0);
+    const _Bool beta_is_one    = (beta   == 1.0);
 #pragma warning(pop)
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
@@ -3562,8 +3530,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
              a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha0[0]*(*d0) + alpha1[0]*(*d1),
-                                    alpha0[1]*(*d0) + alpha1[1]*(*d1) };
+            const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
             suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
                                                     b + il*incb, incb);
         }
@@ -3572,8 +3539,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
              a += lda, d0 += ldd0, d1 += ldd1, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = { alpha0[0]*(*d0) + alpha1[0]*(*d1),
-                                    alpha0[1]*(*d0) + alpha1[1]*(*d1) };
+            const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
             suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
                                               beta, b + il*incb, incb);
         }
@@ -3589,20 +3555,20 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
         int n,
         int kl,
         int ku,
-        const double alpha0[2],
+        const complex_double alpha0,
         const double *d0,
         int ldd0,
-        const double alpha1[2],
+        const complex_double alpha1,
         const double *d1,
         int ldd1,
-        const double alpha2[2],
+        const complex_double alpha2,
         const double *d2,
         int ldd2,
         const double *a,
         int inca,
         int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         int incb,
         int ldb)
 {
@@ -3617,10 +3583,10 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 21);
 
 #pragma warning(push,disable:1572)
-    const _Bool alpha0_is_zero = (alpha0[0] == 0.0 && alpha0[1] == 0.0);
-    const _Bool alpha1_is_zero = (alpha1[0] == 0.0 && alpha1[1] == 0.0);
-    const _Bool alpha2_is_zero = (alpha2[0] == 0.0 && alpha2[1] == 0.0);
-    const _Bool beta_is_one    = (beta[0]   == 1.0 && beta[1]   == 0.0);
+    const _Bool alpha0_is_zero = (alpha0 == 0.0);
+    const _Bool alpha1_is_zero = (alpha1 == 0.0);
+    const _Bool alpha2_is_zero = (alpha2 == 0.0);
+    const _Bool beta_is_one    = (beta   == 1.0);
 #pragma warning(pop)
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
@@ -3651,10 +3617,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
              a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = {
-                    alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2),
-                    alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)
-            };
+            const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
                                                     b + il*incb, incb);
         }
@@ -3663,10 +3626,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
              a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const double tmp[2] = {
-                    alpha0[0]*(*d0) + alpha1[0]*(*d1) + alpha2[0]*(*d2),
-                    alpha0[1]*(*d0) + alpha1[1]*(*d1) + alpha2[1]*(*d2)
-            };
+            const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
                                               beta, b + il*incb, incb);
         }
@@ -3681,11 +3641,11 @@ suzerain_blasext_zgb_dacc(
         const int n,
         const int kl,
         const int ku,
-        const double alpha[2],
+        const complex_double alpha,
         const double *a,
         const int lda,
-        const double beta[2],
-        double (*b)[2],
+        const complex_double beta,
+        complex_double *b,
         const int ldb)
 {
     const double one = 1.0;
@@ -3812,13 +3772,13 @@ suzerain_blasext_sgbnorm1(
         return 0;
     }
 
-    if (m  < 0)        return -1;
-    if (n  < 0)        return -2;
-    if (kl < 0)        return -3;
-    if (ku < 0)        return -4;
-    if (!a)            return -5;
-    if (lda < kl+ku+1) return -6;
-    if (!norm1)        return -7;
+    if (UNLIKELY(m  < 0))        return suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(n  < 0))        return suzerain_blas_xerbla(__func__, -2);
+    if (UNLIKELY(kl < 0))        return suzerain_blas_xerbla(__func__, -3);
+    if (UNLIKELY(ku < 0))        return suzerain_blas_xerbla(__func__, -4);
+    if (UNLIKELY(!a))            return suzerain_blas_xerbla(__func__, -5);
+    if (UNLIKELY(lda < kl+ku+1)) return suzerain_blas_xerbla(__func__, -6);
+    if (UNLIKELY(!norm1))        return suzerain_blas_xerbla(__func__, -7);
 
     *norm1 = 0;
     for (int j = 0; j < n; ++j) {
@@ -3852,13 +3812,13 @@ suzerain_blasext_dgbnorm1(
         return 0;
     }
 
-    if (m  < 0)        return -1;
-    if (n  < 0)        return -2;
-    if (kl < 0)        return -3;
-    if (ku < 0)        return -4;
-    if (!a)            return -5;
-    if (lda < kl+ku+1) return -6;
-    if (!norm1)        return -7;
+    if (UNLIKELY(m  < 0))        return suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(n  < 0))        return suzerain_blas_xerbla(__func__, -2);
+    if (UNLIKELY(kl < 0))        return suzerain_blas_xerbla(__func__, -3);
+    if (UNLIKELY(ku < 0))        return suzerain_blas_xerbla(__func__, -4);
+    if (UNLIKELY(!a))            return suzerain_blas_xerbla(__func__, -5);
+    if (UNLIKELY(lda < kl+ku+1)) return suzerain_blas_xerbla(__func__, -6);
+    if (UNLIKELY(!norm1))        return suzerain_blas_xerbla(__func__, -7);
 
     *norm1 = 0;
     for (int j = 0; j < n; ++j) {
@@ -3882,7 +3842,7 @@ suzerain_blasext_cgbnorm1(
         const int n,
         const int kl,
         const int ku,
-        const float (*a)[2],
+        const complex_float *a,
         const int lda,
         float *norm1)
 {
@@ -3892,23 +3852,23 @@ suzerain_blasext_cgbnorm1(
         return 0;
     }
 
-    if (m  < 0)        return -1;
-    if (n  < 0)        return -2;
-    if (kl < 0)        return -3;
-    if (ku < 0)        return -4;
-    if (!a)            return -5;
-    if (lda < kl+ku+1) return -6;
-    if (!norm1)        return -7;
+    if (UNLIKELY(m  < 0))        return suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(n  < 0))        return suzerain_blas_xerbla(__func__, -2);
+    if (UNLIKELY(kl < 0))        return suzerain_blas_xerbla(__func__, -3);
+    if (UNLIKELY(ku < 0))        return suzerain_blas_xerbla(__func__, -4);
+    if (UNLIKELY(!a))            return suzerain_blas_xerbla(__func__, -5);
+    if (UNLIKELY(lda < kl+ku+1)) return suzerain_blas_xerbla(__func__, -6);
+    if (UNLIKELY(!norm1))        return suzerain_blas_xerbla(__func__, -7);
 
     *norm1 = 0;
     for (int j = 0; j < n; ++j) {
-        const float (*a_j)[2]  = a + j *lda;
+        const complex_float *a_j  = a + j *lda;
 
         float     s    = 0;
         const int ibgn = imax(0, ku - j);
         const int iend = ku + imin(kl + 1, m - j);
         for (int i = ibgn; i < iend; ++i) {
-            s += sqrtf(a_j[i][0]*a_j[i][0] + a_j[i][1]*a_j[i][1]);
+            s += cabsf(a_j[i]);
         }
         *norm1 = fmaxf(s, *norm1);
     }
@@ -3922,7 +3882,7 @@ suzerain_blasext_zgbnorm1(
         const int n,
         const int kl,
         const int ku,
-        const double (*a)[2],
+        const complex_double *a,
         const int lda,
         double *norm1)
 {
@@ -3932,23 +3892,23 @@ suzerain_blasext_zgbnorm1(
         return 0;
     }
 
-    if (m  < 0)        return -1;
-    if (n  < 0)        return -2;
-    if (kl < 0)        return -3;
-    if (ku < 0)        return -4;
-    if (!a)            return -5;
-    if (lda < kl+ku+1) return -6;
-    if (!norm1)        return -7;
+    if (UNLIKELY(m  < 0))        return suzerain_blas_xerbla(__func__, -1);
+    if (UNLIKELY(n  < 0))        return suzerain_blas_xerbla(__func__, -2);
+    if (UNLIKELY(kl < 0))        return suzerain_blas_xerbla(__func__, -3);
+    if (UNLIKELY(ku < 0))        return suzerain_blas_xerbla(__func__, -4);
+    if (UNLIKELY(!a))            return suzerain_blas_xerbla(__func__, -5);
+    if (UNLIKELY(lda < kl+ku+1)) return suzerain_blas_xerbla(__func__, -6);
+    if (UNLIKELY(!norm1))        return suzerain_blas_xerbla(__func__, -7);
 
     *norm1 = 0;
     for (int j = 0; j < n; ++j) {
-        const double (*a_j)[2]  = a + j *lda;
+        const complex_double *a_j  = a + j *lda;
 
         double    s    = 0;
         const int ibgn = imax(0, ku - j);
         const int iend = ku + imin(kl + 1, m - j);
         for (int i = ibgn; i < iend; ++i) {
-            s += sqrt(a_j[i][0]*a_j[i][0] + a_j[i][1]*a_j[i][1]);
+            s += cabs(a_j[i]);
         }
         *norm1 = fmax(s, *norm1);
     }

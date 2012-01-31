@@ -1,25 +1,25 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define COMPONENT double  /* Real-valued floating point type         */
-// #define AFFIXPREC         /* Prepares BLAS-like names per COMPONENT  */
+// #define COMPONENT double         /* Real-valued floating point type      */
+// #define COMPLEX   double_complex /* Complex-valued floating point type   */
+// #define AFFIXPREC                /* Prepares BLAS-like names per COMPLEX */
 
 int
 AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
     char trans,
     int S,
     int n,
-    const COMPONENT alpha[2],
-    const COMPONENT (* restrict x)[2],
+    const COMPLEX alpha_,
+    const COMPLEX * restrict x_,
     int incx,
-    const COMPONENT beta[2],
-    COMPONENT (* restrict y)[2],
+    const COMPLEX beta_,
+    COMPLEX * restrict y_,
     int incy)
 {
-    if (UNLIKELY(S <  0)) return suzerain_blas_xerbla(__func__,  2);
-    if (UNLIKELY(n <  0)) return suzerain_blas_xerbla(__func__,  3);
-    if (UNLIKELY((void*)x == (void*)y))
-                          return suzerain_blas_xerbla(__func__, 58);
+    if (UNLIKELY(S < 0))    return suzerain_blas_xerbla(__func__,  2);
+    if (UNLIKELY(n < 0))    return suzerain_blas_xerbla(__func__,  3);
+    if (UNLIKELY(x_ == y_)) return suzerain_blas_xerbla(__func__, 58);
 
     // Adjust for P versus P^T operation
     switch (toupper(trans)) {
@@ -28,6 +28,15 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
                   break;
         default:  return suzerain_blas_xerbla(__func__, 1);
     }
+
+    // Work with memory using separate real- and imaginary-valued components
+    // This eases dispatching to FLOP-efficient, specialized loops below.
+    const COMPONENT alpha[2] = { creal(alpha_), cimag(alpha_) };
+    const COMPONENT beta[2]  = { creal(beta_),  cimag(beta_)  };
+    const COMPONENT (* restrict x)[2];
+          COMPONENT (* restrict y)[2];
+    memcpy((void * restrict) &x, (void * restrict) &x_, sizeof(x_));
+    memcpy((void * restrict) &y, (void * restrict) &y_, sizeof(y_));
 
 #pragma warning(push,disable:1572)
     const _Bool alpha_is_real = (alpha[1] == 0);
@@ -354,8 +363,8 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
 int
 AFFIXPREC(suzerain_bsmbsm_,pack)(
         int S,  int n, int ihat, int jhat,
-        int kl, int ku, const COMPONENT (* restrict b)[2],    int ldb,
-        int KL, int KU,       COMPONENT (* restrict papt)[2], int ldpapt)
+        int kl, int ku, const COMPLEX * restrict b,    int ldb,
+        int KL, int KU,       COMPLEX * restrict papt, int ldpapt)
 {
     if (UNLIKELY(S  < 0))
             return suzerain_blas_xerbla(__func__,   1);
@@ -396,7 +405,7 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
         const int iu = imin(n, j + kl);
         for (int i = il; i < iu; ++i) {
             const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat + i);
-            memcpy(papt + qinvi + qinvj_ldpapt, b + i, 2*sizeof(COMPONENT));
+            papt[qinvi + qinvj_ldpapt] = b[i];
         }
     }
 
@@ -404,4 +413,5 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
 }
 
 #undef COMPONENT
+#undef COMPLEX
 #undef AFFIXPREC

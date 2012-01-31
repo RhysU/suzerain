@@ -44,17 +44,17 @@ suzerain_rholut_imexop_apply(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const double (*in_rho )[2],
-        const double (*in_rhou)[2],
-        const double (*in_rhov)[2],
-        const double (*in_rhow)[2],
-        const double (*in_rhoe)[2],
-        const double beta,
-        double (*out_rho )[2],
-        double (*out_rhou)[2],
-        double (*out_rhov)[2],
-        double (*out_rhow)[2],
-        double (*out_rhoe)[2])
+        const complex_double *in_rho ,
+        const complex_double *in_rhou,
+        const complex_double *in_rhov,
+        const complex_double *in_rhow,
+        const complex_double *in_rhoe,
+        const complex_double beta,
+        complex_double *out_rho ,
+        complex_double *out_rhou,
+        complex_double *out_rhov,
+        complex_double *out_rhow,
+        complex_double *out_rhoe)
 {
     assert(w->nderiv >= 2);
 
@@ -65,39 +65,36 @@ suzerain_rholut_imexop_apply(
     static const int D1         = 1;
     static const int D2         = 2;
     const int    n              = w->n;
-    const double c_one[2]       = {          1, 0 };
-    const double c_phi[2]       = {        phi, 0 };
-    const double beta_by_phi[2] = { beta / phi, 0 };
 
     // Incrementally build out_rho
     suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta_by_phi, out_rho, inc);
+            n, beta/phi, out_rho, inc);
     suzerain_bsplineop_accumulate_complex(
-            M, nrhs, c_one, in_rho, inc, n, c_phi, out_rho, inc, n, w);
+            M, nrhs, 1.0, in_rho, inc, n, phi, out_rho, inc, n, w);
 
     // Incrementally build out_rhou
     suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta_by_phi, out_rhou, inc);
+            n, beta/phi, out_rhou, inc);
     suzerain_bsplineop_accumulate_complex(
-            M, nrhs, c_one, in_rhou, inc, n, c_phi, out_rhou, inc, n, w);
+            M, nrhs, 1.0, in_rhou, inc, n, phi, out_rhou, inc, n, w);
 
     // Incrementally build out_rhov
     suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta_by_phi, out_rhov, inc);
+            n, beta/phi, out_rhov, inc);
     suzerain_bsplineop_accumulate_complex(
-            M, nrhs, c_one, in_rhov, inc, n, c_phi, out_rhov, inc, n, w);
+            M, nrhs, 1.0, in_rhov, inc, n, phi, out_rhov, inc, n, w);
 
     // Incrementally build out_rhow
     suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta_by_phi, out_rhow, inc);
+            n, beta/phi, out_rhow, inc);
     suzerain_bsplineop_accumulate_complex(
-            M, nrhs, c_one, in_rhow, inc, n, c_phi, out_rhow, inc, n, w);
+            M, nrhs, 1.0, in_rhow, inc, n, phi, out_rhow, inc, n, w);
 
     // Incrementally build out_rhoe
     suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta_by_phi, out_rhoe, inc);
+            n, beta/phi, out_rhoe, inc);
     suzerain_bsplineop_accumulate_complex(
-            M, nrhs, c_one, in_rhoe, inc, n, c_phi, out_rhoe, inc, n, w);
+            M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
 }
 
 // suzerain_rholut_imexop_pack{c,f} differ trivially

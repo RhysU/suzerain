@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_permute.h>
+#include <suzerain/complex.h>
 
 /** @file
  * Utilities for working with blocked square matrices with banded submatrices
@@ -235,11 +236,11 @@ suzerain_bsmbsm_caPxpby(
     char trans,
     int S,
     int n,
-    const float alpha[2],
-    const float (*x)[2],
+    const complex_float alpha,
+    const complex_float *x,
     int incx,
-    const float beta[2],
-    float (*y)[2],
+    const complex_float beta,
+    complex_float *y,
     int incy);
 
 /** @copydoc suzerain_bsmbsm_saPxpby */
@@ -248,11 +249,11 @@ suzerain_bsmbsm_zaPxpby(
     char trans,
     int S,
     int n,
-    const double alpha[2],
-    const double (*x)[2],
+    const complex_double alpha,
+    const complex_double *x,
     int incx,
-    const double beta[2],
-    double (*y)[2],
+    const complex_double beta,
+    complex_double *y,
     int incy);
 
 /**
@@ -345,14 +346,14 @@ suzerain_bsmbsm_dpack(int S,  int n, int ihat, int jhat,
 /** @copydoc suzerain_bsmbsm_spack */
 int
 suzerain_bsmbsm_cpack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const float (*b)[2],    int ldb,
-                      int KL, int KU,       float (*papt)[2], int ldpapt);
+                      int kl, int ku, const complex_float *b,    int ldb,
+                      int KL, int KU,       complex_float *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 int
 suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const double (*b)[2],    int ldb,
-                      int KL, int KU,       double (*papt)[2], int ldpapt);
+                      int kl, int ku, const complex_double *b,    int ldb,
+                      int KL, int KU,       complex_double *papt, int ldpapt);
 
 /**
  * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
@@ -396,7 +397,7 @@ suzerain_bsmbsm_dpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 /** @copydoc suzerain_bsmbsm_spackc */
 inline static int
 suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const float (*b)[2], float (*papt)[2])
+                       const complex_float *b, complex_float *papt)
 {
     return suzerain_bsmbsm_cpack(A->S, A->n, ihat, jhat,
                                  A->kl, A->ku, b,    A->ld,
@@ -406,7 +407,7 @@ suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 /** @copydoc suzerain_bsmbsm_spackc */
 inline static int
 suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const double (*b)[2], double (*papt)[2])
+                       const complex_double *b, complex_double *papt)
 {
     return suzerain_bsmbsm_zpack(A->S, A->n, ihat, jhat,
                                  A->kl, A->ku, b,    A->ld,
@@ -456,7 +457,7 @@ suzerain_bsmbsm_dpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 /** @copydoc suzerain_bsmbsm_spackf */
 inline static int
 suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const float (*b)[2], float (*papt)[2])
+                       const complex_float *b, complex_float *papt)
 {
     return suzerain_bsmbsm_cpack(A->S, A->n, ihat, jhat,
                                  A->kl, A->ku, b,           A->ld,
@@ -466,7 +467,7 @@ suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 /** @copydoc suzerain_bsmbsm_spackf */
 inline static int
 suzerain_bsmbsm_zpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const double (*b)[2], double (*papt)[2])
+                       const complex_double *b, complex_double *papt)
 {
     return suzerain_bsmbsm_zpack(A->S, A->n, ihat, jhat,
                                  A->kl, A->ku, b,           A->ld,
