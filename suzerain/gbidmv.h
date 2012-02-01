@@ -147,7 +147,7 @@ suzerain_gbidmv_sc(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_gbidmv_dz */
+/*! \copydoc suzerain_gbidmv_sc */
 int
 suzerain_gbidmv_dz(
         const char trans,
