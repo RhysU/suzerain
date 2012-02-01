@@ -391,8 +391,8 @@ _suzerain_check_gbmatrix_close(
     FPT abs_tolerance)
 {
     return _suzerain_check_gbmatrix_close(
-            e_m, e_n, e_kl, e_ku, (const FPT (* const)[2])e, e_ld,
-            r_m, r_n, r_kl, r_ku, (const FPT (* const)[2])r, r_ld,
+            e_m, e_n, e_kl, e_ku, (const FPT (*)[2])e, e_ld,
+            r_m, r_n, r_kl, r_ku, (const FPT (*)[2])r, r_ld,
             abs_tolerance);
 }
 
