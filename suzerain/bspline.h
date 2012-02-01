@@ -31,8 +31,8 @@
 #define __SUZERAIN_BSPLINE_H
 
 #include <gsl/gsl_bspline.h>
-#include <gsl/gsl_complex.h>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/complex.h>
 
 /** @file
  * Provides higher-level logic built atop the <a
@@ -147,19 +147,16 @@ suzerain_bspline_linear_combination(
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
- * @see The GNU Scientific Library's documentation for more details on <code><a
- *      href="http://www.gnu.org/software/gsl/manual/html_node/Complex-Numbers.html">
- *      gsl_complex</a></code>.
  * @see suzerain_bspline_linear_combination() for a way to evaluate a function
  *      and its derivatives when the coeffs are real-valued.
  */
 int
 suzerain_bspline_linear_combination_complex(
     const size_t nderiv,
-    const gsl_complex *coeffs,
+    const complex_double *coeffs,
     const size_t npoints,
     const double * points,
-    gsl_complex *values,
+    complex_double *values,
     const size_t ldvalues,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,

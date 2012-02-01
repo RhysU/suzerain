@@ -34,8 +34,6 @@
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <gsl/gsl_bspline.h>
-#include <gsl/gsl_complex.h>
-#include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
@@ -88,10 +86,10 @@ suzerain_bspline_linear_combination(
 int
 suzerain_bspline_linear_combination_complex(
     const size_t nderiv,
-    const gsl_complex *coeffs,
+    const complex_double *coeffs,
     const size_t npoints,
     const double * points,
-    gsl_complex *values,
+    complex_double *values,
     const size_t ldvalues,
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
@@ -111,16 +109,16 @@ suzerain_bspline_linear_combination_complex(
         gsl_bspline_deriv_eval_nonzero(points[i], nderiv,
                 dB, &istart, &iend, w, dw);
 
-        const gsl_complex * coeff_start = coeffs + istart;
+        const complex_double * coeff_start = coeffs + istart;
 
         for (size_t j = jstart; j <= nderiv; ++j) {
             double dotr = 0.0, doti = 0.0;
             for (size_t k = 0; k < w->k; ++k) {
                 const double basis_value = (dB->data + j)[k * dB->tda];
-                dotr += GSL_REAL(coeff_start[k]) * basis_value;
-                doti += GSL_IMAG(coeff_start[k]) * basis_value;
+                dotr += creal(coeff_start[k]) * basis_value;
+                doti += cimag(coeff_start[k]) * basis_value;
             }
-            values[i + j*ldvalues] = gsl_complex_rect(dotr, doti);
+            values[i + j*ldvalues] = complex_double(dotr, doti);
         }
     }
 
