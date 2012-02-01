@@ -139,6 +139,7 @@ suzerain_rholut_imexop_apply(
         complex_double *out_rhow,
         complex_double *out_rhoe);
 
+
 /**
  * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
  * within contiguous storage of \f$P\left(M + \varphi{}L\right)P^{\mbox{T}}\f$
@@ -153,8 +154,8 @@ suzerain_rholut_imexop_apply(
  *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
- * <tt>w->n*(nneg*(w->max_kl + w->max_ku + 2) - 1)</tt> where <tt>nneg</tt> is
- * the number of nonnegative state order parameters.  Boundary conditions,
+ * <tt>(nneg*w->n)*(nneg*(w->max_kl + w->max_ku + 2) - 1)</tt> where \c nneg
+ * is the number of nonnegative state order parameters.  Boundary conditions,
  * which are \em not applied, will require using information about the
  * permutation returned in \c A.
  *
@@ -219,7 +220,7 @@ suzerain_rholut_imexop_packc(
  *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
- * <tt>w->n*(2*nneg*(w->max_kl+1) + nneg*(w->max_ku+1) - 2)</tt> where
+ * <tt>(nneg*w->n)*(nneg*(2*w->max_kl + w->max_ku + 3) - 2)</tt> where
  * <tt>nneg</tt> is the number of nonnegative state order parameters.  Boundary
  * conditions, which are \em not applied, will require using information about
  * the permutation returned in \c A taking care that in accordance with
