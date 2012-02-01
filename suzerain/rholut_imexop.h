@@ -47,11 +47,11 @@ extern "C" {
 
 /** Scenario-like constants used for operator formation. */
 typedef struct {
-    const double Re;    /**< \f$\mbox{Re} = \frac{\rho_0 u_0 l_0 }{\mu_0}\f$ */
-    const double Pr;    /**< \f$\mbox{Pr} = \frac{\mu_0 C_{p}}{\kappa_0}\f$ */
-    const double Ma;    /**< \f$\mbox{Ma} = \frac{u_0}{a_0}\f$ */
-    const double alpha; /**< \f$\alpha\f$ such that \f$\mu_B = \alpha\mu\f$ */
-    const double gamma; /**< \f$\gamma\f$ such that \f$\rho T = p \gamma \f$ */
+    double Re;    /**< \f$\mbox{Re} = \frac{\rho_0 u_0 l_0 }{\mu_0}\f$ */
+    double Pr;    /**< \f$\mbox{Pr} = \frac{\mu_0 C_{p}}{\kappa_0}\f$ */
+    double Ma;    /**< \f$\mbox{Ma} = \frac{u_0}{a_0}\f$ */
+    double alpha; /**< \f$\alpha\f$ such that \f$\mu_B = \alpha\mu\f$ */
+    double gamma; /**< \f$\gamma\f$ such that \f$\rho T = p \gamma \f$ */
 } suzerain_rholut_imexop_scenario;
 
 /** Wall-normal diagonal reference matrices used for operator formation. */
