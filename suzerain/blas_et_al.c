@@ -553,17 +553,17 @@ suzerain_blas_saxpby(
         float *y,
         const int incy)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
+#pragma warning(push,disable:1572)
     if (beta != 1.0f)
+#pragma warning(pop)
         sscal(&n, &beta, y, &incy);
     saxpy(&n, &alpha, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 inline void
@@ -576,17 +576,17 @@ suzerain_blas_daxpby(
         double *y,
         const int incy)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
+#pragma warning(push,disable:1572)
     if (beta != 1.0)
+#pragma warning(pop)
         dscal(&n, &beta, y, &incy);
     daxpy(&n, &alpha, x, &incx, y, &incy);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 inline void
@@ -647,18 +647,18 @@ suzerain_blas_swaxpby(
         float *w,
         const int incw)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate swaxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
     scopy(&n, y, &incy, w, &incw);
+#pragma warning(push,disable:1572)
     if (beta != 1.0f)
+#pragma warning(pop)
         sscal(&n, &beta, w, &incw);
     saxpy(&n, &alpha, x, &incx, w, &incw);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 inline void
@@ -673,18 +673,18 @@ suzerain_blas_dwaxpby(
         double *w,
         const int incw)
 {
-#pragma warning(push,disable:1572)
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dwaxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
     dcopy(&n, y, &incy, w, &incw);
+#pragma warning(push,disable:1572)
     if (beta != 1.0)
+#pragma warning(pop)
         dscal(&n, &beta, w, &incw);
     daxpy(&n, &alpha, x, &incx, w, &incw);
 #else
 #error "Sanity failure"
 #endif
-#pragma warning(pop)
 }
 
 inline void
@@ -1629,7 +1629,7 @@ suzerain_lapack_zlangb(
 #endif
 }
 
-void
+inline void
 suzerain_blasext_daxpzy(
         const int n,
         const complex_double alpha,
@@ -1638,23 +1638,27 @@ suzerain_blasext_daxpzy(
         complex_double *y,
         const int incy)
 {
-    assert(incx >= 0); // FIXME Handle negative incx
-    assert(incy >= 0); // FIXME Handle negative incy
+    if (incx == 1 && incy == 1) {  // Unit strides
 
-    if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
-#pragma unroll
-        for (int i = 0; i < n; ++i) {
-            y[i*incy] += alpha*x[i*incx];
-        }
-    } else {                                 // Unit strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
             y[i] += alpha*x[i];
         }
+
+    } else {                       // General strides
+
+        // Adjust for possibly negative incx and incy
+        int ix = (incx < 0) ? (1 - n)*incx : 0;
+        int iy = (incy < 0) ? (1 - n)*incy : 0;
+#pragma unroll
+        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+            y[iy] += alpha*x[ix];
+        }
+
     }
 }
 
-void
+inline void
 suzerain_blasext_daxpzby(
         const int n,
         const complex_double alpha,
@@ -1664,21 +1668,25 @@ suzerain_blasext_daxpzby(
         complex_double *y,
         const int incy)
 {
-    assert(incx >= 0); // FIXME Handle negative incx
-    assert(incy >= 0); // FIXME Handle negative incy
+    if (incx == 1 && incy == 1) {  // Unit strides
 
-    if (UNLIKELY(incx != 1 || incy != 1)) {  // General strides
 #pragma unroll
         for (int i = 0; i < n; ++i) {
-            y[i*incy] *= beta;
-            y[i*incy] += alpha*x[i*incx];
+            y[i] *= beta;
+            y[i] += alpha*x[i];
         }
-    } else {                                 // Unit strides
+
+    } else {                       // General strides
+
+        // Adjust for possibly negative incx and incy
+        int ix = (incx < 0) ? (1 - n)*incx : 0;
+        int iy = (incy < 0) ? (1 - n)*incy : 0;
 #pragma unroll
-        for (int i = 0; i < n; ++i) {
-            y[i*incy] *= beta;
-            y[i*incy] += alpha*x[i*incx];
+        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+            y[iy] *= beta;
+            y[iy] += alpha*x[ix];
         }
+
     }
 }
 
