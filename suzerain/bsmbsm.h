@@ -43,11 +43,11 @@
  * Matrix \f$A\f$ is a blocked square matrix with banded submatrices (BSMBSM)
  * when
  * \f[A = \begin{pmatrix}
- *     B^{0\,0}  & \cdots & B^{0\,S-1}   \\
+ *     B^{0,0}  & \cdots & B^{0,S-1}   \\
  *     \vdots    & \ddots & \vdots       \\
- *     B^{S-1,0} & \cdots & B^{S-1\,S-1}
+ *     B^{S-1,0} & \cdots & B^{S-1,S-1}
  * \end{pmatrix}\f]
- * where every \f$B^{i\,j}\f$ is an <tt>n</tt>x<tt>n</tt> banded submatrix
+ * where every \f$B^{i,j}\f$ is an <tt>n</tt>x<tt>n</tt> banded submatrix
  * containing \c kl subdiagonals and \c ku superdiagonals.  We set the
  * convention that lowercase identifiers indicate submatrix details while
  * uppercase identifiers indicate global matrix details.  The structure of a
@@ -56,7 +56,7 @@
  * S*n</tt>.
  *
  * Building \f$A\f$ from individually contiguous, banded submatrices
- * \f$B_{i\,j}\f$ within \f$A\f$ is both convenient and efficient.  For
+ * \f$B_{i,j}\f$ within \f$A\f$ is both convenient and efficient.  For
  * example, banded matrix accumulation operations and boundary condition
  * imposition are simple in such a storage format.  However, using individually
  * contiguous, banded submatrices is grossly inefficient for solving linear
@@ -71,14 +71,14 @@
  * S*(kl+1)-1</tt> subdiagonals and <tt>KU := S*(ku+1)-1</tt> superdiagonals
  * summing to overall bandwidth <tt>KL + 1 + KU = S*(kl + ku + 2)-1</tt>.  The
  * reverse permutation vector has a simple closed form \f[q^{-1}(i) =
- * \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\f] With \f$A_{i\,j}\f$ in
+ * \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\f] With \f$A_{i,j}\f$ in
  * hand, the banded renumbering may formed using the relationships
  * \f{align*}{
- *        \left.A\right|_{i\,j}
- *     &= \left.P A P^{\mbox{T}}\right|_{q^{-1}(i)\,q^{-1}(j)}
+ *        \left.A\right|_{i,j}
+ *     &= \left.P A P^{\mbox{T}}\right|_{q^{-1}(i),q^{-1}(j)}
  *     &
- *        \left.P A P^{\mbox{T}}\right|_{i\,j}
- *     &= \left.A\right|_{q(i)\,q(j)}.
+ *        \left.P A P^{\mbox{T}}\right|_{i,j}
+ *     &= \left.A\right|_{q(i),q(j)}.
  * \f}
  * This renumbering can be LU factorized in order <tt>N*(KL + 1 + KU)^2 =
  * S*n*(S*(kl + ku + 2)-1)^2</tt> floating point operations to find \f$LU = P A
@@ -294,17 +294,17 @@ suzerain_bsmbsm_zaPxpby(
 gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
 
 /**
- * Pack scaled, banded submatrix \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$
+ * Pack scaled, banded submatrix \f$\alpha{}B^{\hat{\imath},\hat{\jmath}}\f$
  * into the corresponding locations within banded storage of \f$P A
  * P^{\mbox{T}}\f$.  More specifically,
  * \f[
- *   \left.\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}
+ *   \left.\alpha{}B^{\hat{\imath},\hat{\jmath}}\right|_{i,j}
  *   =
- *   \left.A\right|_{\hat{\imath}n + i\, \hat{\jmath}n + j}
+ *   \left.A\right|_{\hat{\imath}n + i, \hat{\jmath}n + j}
  *   =
  *   \left.PAP^{\mbox{T}}\right|_{
  *       q^{-1}\left(\hat{\imath}n + i\right)
- *       \,
+ *       ,
  *       q^{-1}\left(\hat{\jmath}n + j\right)
  *   }
  * \f]
@@ -319,7 +319,7 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * @param kl     Number of subdiagonals in each banded submatrix.
  * @param ku     Number of superdiagonals in each banded submatrix.
  * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$.
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$.
  * @param ldb    Leading dimension of storage \c b.
  * @param KL     Number of subdiagonals in the renumbered matrix
  *               which must be at least <tt>S*(kl + 1) - 1</tt>.
@@ -380,7 +380,7 @@ suzerain_bsmbsm_zdpack(
 
 /**
  * Pack contiguous, scaled, banded submatrix
- * \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$ into the corresponding
+ * \f$\alpha{}B^{\hat{\imath},\hat{\jmath}}\f$ into the corresponding
  * locations within contiguous storage of \f$P A P^{\mbox{T}}\f$.  This is a
  * convenience method to simplify preparing storage for use by the BLAS'
  * <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.
@@ -389,7 +389,7 @@ suzerain_bsmbsm_zdpack(
  * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
  * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
  * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$
  *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
  *               diagonals and leading dimension
  *               <tt>A->ld = A->ku + 1 + A->kl</tt>.
@@ -465,7 +465,7 @@ suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
 
 /**
  * Pack contiguous, scaled, banded submatrix
- * \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$ into the corresponding
+ * \f$\alpha{}B^{\hat{\imath},\hat{\jmath}}\f$ into the corresponding
  * locations within contiguous, LU factorization-ready storage of \f$P A
  * P^{\mbox{T}}\f$.  This is a convenience method to simplify preparing storage
  * for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
@@ -474,7 +474,7 @@ suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
  * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
  * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
  * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
+ * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$
  *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
  *               diagonals and leading dimension
  *               <tt>A->ld = A->ku + 1 + A->kl</tt>.
