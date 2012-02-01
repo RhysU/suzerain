@@ -42,30 +42,50 @@ static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
 
 // suzerain_bsmbsm_saPxpby
-// suzerain_bsmbsm_spack
 #define COMPONENT float
 #define AFFIXPREC(pre,post) pre ## s ## post
-#include "bsmbsm_real.def"
+#include "bsmbsm_aPxpby_real.def"
 
 // suzerain_bsmbsm_daPxpby
-// suzerain_bsmbsm_dpack
 #define COMPONENT double
 #define AFFIXPREC(pre,post) pre ## d ## post
-#include "bsmbsm_real.def"
+#include "bsmbsm_aPxpby_real.def"
 
 // suzerain_bsmbsm_caPxpby
-// suzerain_bsmbsm_cpack
 #define COMPONENT float
 #define COMPLEX   complex_float
 #define AFFIXPREC(pre,post) pre ## c ## post
-#include "bsmbsm_complex.def"
+#include "bsmbsm_aPxpby_complex.def"
 
 // suzerain_bsmbsm_zaPxpby
-// suzerain_bsmbsm_zpack
 #define COMPONENT double
 #define COMPLEX   complex_double
 #define AFFIXPREC(pre,post) pre ## z ## post
-#include "bsmbsm_complex.def"
+#include "bsmbsm_aPxpby_complex.def"
+
+// suzerain_bsmbsm_spack
+#define SOURCE float
+#define TARGET float
+#define AFFIXPREC(pre,post) pre ## s ## post
+#include "bsmbsm_pack.def"
+
+// suzerain_bsmbsm_dpack
+#define SOURCE double
+#define TARGET double
+#define AFFIXPREC(pre,post) pre ## d ## post
+#include "bsmbsm_pack.def"
+
+// suzerain_bsmbsm_cpack
+#define SOURCE complex_float
+#define TARGET complex_float
+#define AFFIXPREC(pre,post) pre ## c ## post
+#include "bsmbsm_pack.def"
+
+// suzerain_bsmbsm_zpack
+#define SOURCE complex_double
+#define TARGET complex_double
+#define AFFIXPREC(pre,post) pre ## z ## post
+#include "bsmbsm_pack.def"
 
 gsl_permutation *
 suzerain_bsmbsm_permutation(int S, int n)
