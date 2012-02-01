@@ -314,6 +314,13 @@ test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 dist_check_SCRIPTS  += test_rholut.sage
 
+TESTS                      += test_rholut_imexop
+check_PROGRAMS             += test_rholut_imexop
+test_rholut_imexop_SOURCES  = test_rholut_imexop.cpp
+test_rholut_imexop_LDADD    = ../suzerain/libsuzerain.la
+test_rholut_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rholut_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                   += test_richardson
 check_PROGRAMS          += test_richardson
 test_richardson_SOURCES  = test_richardson.c
