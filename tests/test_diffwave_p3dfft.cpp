@@ -138,10 +138,10 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Differentiate-and-accumulate
     // Build FFT forward-and-inverse normalization factor into accumulation
     {
-        const double alpha[2] = { 2.0/scale, 0.0/scale };
-        const double (*x)[2]  = reinterpret_cast<const double (*)[2]>(A.get());
-        const double beta[2]  = { 3.0/scale, 0.0/scale };
-        double (*y)[2]        = reinterpret_cast<double (*)[2]>(B.get());
+        const std::complex<double> alpha = 2.0/scale;
+        const std::complex<double> *x    = (const std::complex<double> *) A.get();
+        const std::complex<double> beta  = 3.0/scale;
+              std::complex<double> *y    = (std::complex<double> *) B.get();
         const int Ny          = pg.global_physical_extent[1];
         const int dNx         = pg.global_physical_extent[0];
         const int dkbx        = pg.local_wave_start[0];
@@ -231,15 +231,15 @@ static double test_accumulateAndApply_helper(const pencil_grid &pg,
     // Differentiate-and-accumulate
     // Build FFT forward-and-inverse normalization factor into accumulation
     {
-        const double alpha[2] = { 2.0/scale, 0.0/scale };
-        double (*x)[2]        = reinterpret_cast<double (*)[2]>(A.get());
-        const int Ny          = pg.global_physical_extent[1];
-        const int dNx         = pg.global_physical_extent[0];
-        const int dkbx        = pg.local_wave_start[0];
-        const int dkex        = pg.local_wave_end[0];
-        const int dNz         = pg.global_physical_extent[2];
-        const int dkbz        = pg.local_wave_start[2];
-        const int dkez        = pg.local_wave_end[2];
+        const std::complex<double> alpha = 2.0/scale;
+              std::complex<double> *x    = (std::complex<double> *) A.get();
+        const int Ny   = pg.global_physical_extent[1];
+        const int dNx  = pg.global_physical_extent[0];
+        const int dkbx = pg.local_wave_start[0];
+        const int dkex = pg.local_wave_end[0];
+        const int dNz  = pg.global_physical_extent[2];
+        const int dkbz = pg.local_wave_start[2];
+        const int dkez = pg.local_wave_end[2];
 
         suzerain_diffwave_apply(
             dxcnt, dzcnt, alpha, x, Lx, Lz,
