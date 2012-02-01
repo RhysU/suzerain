@@ -193,7 +193,7 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
             return suzerain_blas_xerbla(__func__,  10);
     if (UNLIKELY(ldpapt < KL + 1 + KU))
             return suzerain_blas_xerbla(__func__,  12);
-    if (UNLIKELY((void*)b == (void*)papt))
+    if (UNLIKELY(b == papt))
             return suzerain_blas_xerbla(__func__, 511);
 
     // Source dereference is always of form b[ku + i + j*(ldb - 1)].
