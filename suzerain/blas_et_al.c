@@ -60,6 +60,14 @@ static inline int imax(int a, int b) { return a > b ? a : b; }
 // From "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
 #define assert_static(e) do { enum { assert_static__ = 1/(e) }; } while (0)
 
+// Many of the short methods have "inline" though their declarations do not.
+// This allows inlining them latter within this particular translation unit.
+// We don't pay for needless function call overhead when our BLAS wrapper
+// routines call other BLAS wrapper routines (e.g. within suzerain_blasext_*).
+
+// Thank you captain obvious...
+#pragma warning(disable:981)
+
 int
 suzerain_blas_xerbla(const char *srname, const int info)
 {
@@ -111,7 +119,71 @@ suzerain_blas_free(void *ptr)
     if (ptr) free(ptr);
 }
 
-void
+inline void
+suzerain_blas_sscal(
+        const int n,
+        const float alpha,
+        float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return sscal(&n, &alpha, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline void
+suzerain_blas_dscal(
+        const int n,
+        const double alpha,
+        double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dscal(&n, &alpha, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline void
+suzerain_blas_cscal(
+        const int n,
+        const complex_float alpha,
+        complex_float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return cscal(&n,
+                 (const MKL_Complex8 *) &alpha,
+                 (      MKL_Complex8 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline void
+suzerain_blas_zscal(
+        const int n,
+        const complex_double alpha,
+        complex_double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return zscal(&n,
+                 (const MKL_Complex16 *) &alpha,
+                 (      MKL_Complex16 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline void
 suzerain_blas_sswap(
         const int n,
         float *x,
@@ -127,7 +199,7 @@ suzerain_blas_sswap(
 #endif
 }
 
-void
+inline void
 suzerain_blas_dswap(
         const int n,
         double *x,
@@ -143,7 +215,7 @@ suzerain_blas_dswap(
 #endif
 }
 
-void
+inline void
 suzerain_blas_cswap(
         const int n,
         complex_float *x,
@@ -159,7 +231,7 @@ suzerain_blas_cswap(
 #endif
 }
 
-void
+inline void
 suzerain_blas_zswap(
         const int n,
         complex_double *x,
@@ -175,7 +247,7 @@ suzerain_blas_zswap(
 #endif
 }
 
-void
+inline void
 suzerain_blas_scopy(
         const int n,
         const float *x,
@@ -191,7 +263,7 @@ suzerain_blas_scopy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_dcopy(
         const int n,
         const double *x,
@@ -207,7 +279,7 @@ suzerain_blas_dcopy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_ccopy(
         const int n,
         const complex_float *x,
@@ -225,7 +297,7 @@ suzerain_blas_ccopy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_zcopy(
         const int n,
         const complex_double *x,
@@ -243,7 +315,7 @@ suzerain_blas_zcopy(
 #endif
 }
 
-float
+inline float
 suzerain_blas_sdot(
         const int n,
         const float *x,
@@ -259,7 +331,7 @@ suzerain_blas_sdot(
 #endif
 }
 
-double
+inline double
 suzerain_blas_ddot(
         const int n,
         const double *x,
@@ -275,7 +347,7 @@ suzerain_blas_ddot(
 #endif
 }
 
-void
+inline void
 suzerain_blas_cdotc(
         const int n,
         const complex_float *x,
@@ -294,7 +366,7 @@ suzerain_blas_cdotc(
 #endif
 }
 
-void
+inline void
 suzerain_blas_zdotc(
         const int n,
         const complex_double *x,
@@ -313,7 +385,7 @@ suzerain_blas_zdotc(
 #endif
 }
 
-float
+inline float
 suzerain_blas_snrm2(
         const int n,
         const float *x,
@@ -327,7 +399,7 @@ suzerain_blas_snrm2(
 #endif
 }
 
-double
+inline double
 suzerain_blas_dnrm2(
         const int n,
         const double *x,
@@ -341,7 +413,7 @@ suzerain_blas_dnrm2(
 #endif
 }
 
-float
+inline float
 suzerain_blas_scnrm2(
         const int n,
         const complex_float *x,
@@ -355,7 +427,7 @@ suzerain_blas_scnrm2(
 #endif
 }
 
-double
+inline double
 suzerain_blas_dznrm2(
         const int n,
         const complex_double *x,
@@ -369,7 +441,7 @@ suzerain_blas_dznrm2(
 #endif
 }
 
-float
+inline float
 suzerain_blas_sasum(
         const int n,
         const float *x,
@@ -383,7 +455,7 @@ suzerain_blas_sasum(
 #endif
 }
 
-double
+inline double
 suzerain_blas_dasum(
         const int n,
         const double *x,
@@ -397,7 +469,7 @@ suzerain_blas_dasum(
 #endif
 }
 
-void
+inline void
 suzerain_blas_saxpy(
         const int n,
         const float alpha,
@@ -414,7 +486,7 @@ suzerain_blas_saxpy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_daxpy(
         const int n,
         const double alpha,
@@ -431,7 +503,7 @@ suzerain_blas_daxpy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_caxpy(
         const int n,
         const complex_float alpha,
@@ -451,7 +523,7 @@ suzerain_blas_caxpy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_zaxpy(
         const int n,
         const complex_double alpha,
@@ -471,7 +543,7 @@ suzerain_blas_zaxpy(
 #endif
 }
 
-void
+inline void
 suzerain_blas_saxpby(
         const int n,
         const float alpha,
@@ -494,7 +566,7 @@ suzerain_blas_saxpby(
 #pragma warning(pop)
 }
 
-void
+inline void
 suzerain_blas_daxpby(
         const int n,
         const double alpha,
@@ -517,7 +589,7 @@ suzerain_blas_daxpby(
 #pragma warning(pop)
 }
 
-void
+inline void
 suzerain_blas_caxpby(
         const int n,
         const complex_float alpha,
@@ -540,7 +612,7 @@ suzerain_blas_caxpby(
 #endif
 }
 
-void
+inline void
 suzerain_blas_zaxpby(
         const int n,
         const complex_double alpha,
@@ -563,7 +635,7 @@ suzerain_blas_zaxpby(
 #endif
 }
 
-void
+inline void
 suzerain_blas_swaxpby(
         const int n,
         const float alpha,
@@ -589,7 +661,7 @@ suzerain_blas_swaxpby(
 #pragma warning(pop)
 }
 
-void
+inline void
 suzerain_blas_dwaxpby(
         const int n,
         const double alpha,
@@ -615,71 +687,7 @@ suzerain_blas_dwaxpby(
 #pragma warning(pop)
 }
 
-void
-suzerain_blas_sscal(
-        const int n,
-        const float alpha,
-        float *x,
-        const int incx)
-{
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sscal(&n, &alpha, x, &incx);
-#else
-#error "Sanity failure"
-#endif
-}
-
-void
-suzerain_blas_dscal(
-        const int n,
-        const double alpha,
-        double *x,
-        const int incx)
-{
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dscal(&n, &alpha, x, &incx);
-#else
-#error "Sanity failure"
-#endif
-}
-
-void
-suzerain_blas_cscal(
-        const int n,
-        const complex_float alpha,
-        complex_float *x,
-        const int incx)
-{
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return cscal(&n,
-                 (const MKL_Complex8 *) &alpha,
-                 (      MKL_Complex8 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
-}
-
-void
-suzerain_blas_zscal(
-        const int n,
-        const complex_double alpha,
-        complex_double *x,
-        const int incx)
-{
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zscal(&n,
-                 (const MKL_Complex16 *) &alpha,
-                 (      MKL_Complex16 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
-}
-
-void
+inline void
 suzerain_blas_sgbmv_external(
         const char trans,
         const int m,
@@ -704,7 +712,7 @@ suzerain_blas_sgbmv_external(
 #endif
 }
 
-void
+inline void
 suzerain_blas_dgbmv_external(
         const char trans,
         const int m,
@@ -729,7 +737,7 @@ suzerain_blas_dgbmv_external(
 #endif
 }
 
-int
+inline int
 suzerain_blas_sgbmv(
         const char trans,
         const int m,
@@ -752,7 +760,7 @@ suzerain_blas_sgbmv(
     return info;
 }
 
-int
+inline int
 suzerain_blas_dgbmv(
         const char trans,
         const int m,
@@ -775,7 +783,7 @@ suzerain_blas_dgbmv(
     return info;
 }
 
-void
+inline void
 suzerain_blas_ssbmv_external(
         const char uplo,
         const int n,
@@ -798,7 +806,7 @@ suzerain_blas_ssbmv_external(
 #endif
 }
 
-void
+inline void
 suzerain_blas_dsbmv_external(
         const char uplo,
         const int n,
@@ -821,7 +829,7 @@ suzerain_blas_dsbmv_external(
 #endif
 }
 
-int
+inline int
 suzerain_blas_ssbmv(
         const char uplo,
         const int n,
@@ -842,7 +850,7 @@ suzerain_blas_ssbmv(
     return info;
 }
 
-int
+inline int
 suzerain_blas_dsbmv(
         const char uplo,
         const int n,
@@ -863,7 +871,7 @@ suzerain_blas_dsbmv(
     return info;
 }
 
-int
+inline int
 suzerain_blas_sgb_acc(
         const int m,
         const int n,
@@ -887,7 +895,7 @@ suzerain_blas_sgb_acc(
 #endif
 }
 
-int
+inline int
 suzerain_blas_dgb_acc(
         const int m,
         const int n,
@@ -911,7 +919,7 @@ suzerain_blas_dgb_acc(
 #endif
 }
 
-int
+inline int
 suzerain_blas_cgb_acc(
         const int m,
         const int n,
@@ -935,7 +943,7 @@ suzerain_blas_cgb_acc(
 #endif
 }
 
-int
+inline int
 suzerain_blas_zgb_acc(
         const int m,
         const int n,
@@ -959,7 +967,7 @@ suzerain_blas_zgb_acc(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_sgbtrf(
         const int m,
         const int n,
@@ -982,7 +990,7 @@ suzerain_lapack_sgbtrf(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_dgbtrf(
         const int m,
         const int n,
@@ -1005,7 +1013,7 @@ suzerain_lapack_dgbtrf(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_cgbtrf(
         const int m,
         const int n,
@@ -1028,7 +1036,7 @@ suzerain_lapack_cgbtrf(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_zgbtrf(
         const int m,
         const int n,
@@ -1051,7 +1059,7 @@ suzerain_lapack_zgbtrf(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_sgbtrs(
         const char trans,
         const int n,
@@ -1077,7 +1085,7 @@ suzerain_lapack_sgbtrs(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_dgbtrs(
         const char trans,
         const int n,
@@ -1103,7 +1111,7 @@ suzerain_lapack_dgbtrs(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_cgbtrs(
         const char trans,
         const int n,
@@ -1130,7 +1138,7 @@ suzerain_lapack_cgbtrs(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_zgbtrs(
         const char trans,
         const int n,
@@ -1157,7 +1165,7 @@ suzerain_lapack_zgbtrs(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_sgbcon(
         const char norm,
         const int n,
@@ -1185,7 +1193,7 @@ suzerain_lapack_sgbcon(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_dgbcon(
         const char norm,
         const int n,
@@ -1213,7 +1221,7 @@ suzerain_lapack_dgbcon(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_cgbcon(
         const char norm,
         const int n,
@@ -1241,7 +1249,7 @@ suzerain_lapack_cgbcon(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_zgbcon(
         const char norm,
         const int n,
@@ -1269,7 +1277,7 @@ suzerain_lapack_zgbcon(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_sgbsv(
         const int n,
         const int kl,
@@ -1294,7 +1302,7 @@ suzerain_lapack_sgbsv(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_dgbsv(
         const int n,
         const int kl,
@@ -1319,7 +1327,7 @@ suzerain_lapack_dgbsv(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_cgbsv(
         const int n,
         const int kl,
@@ -1345,7 +1353,7 @@ suzerain_lapack_cgbsv(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_zgbsv(
         const int n,
         const int kl,
@@ -1371,7 +1379,7 @@ suzerain_lapack_zgbsv(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_sgbsvx(
         const char fact,
         const char trans,
@@ -1412,7 +1420,7 @@ suzerain_lapack_sgbsvx(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_dgbsvx(
         const char fact,
         const char trans,
@@ -1453,7 +1461,7 @@ suzerain_lapack_dgbsvx(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_cgbsvx(
         const char fact,
         const char trans,
@@ -1495,7 +1503,7 @@ suzerain_lapack_cgbsvx(
 #endif
 }
 
-int
+inline int
 suzerain_lapack_zgbsvx(
         const char fact,
         const char trans,
@@ -1537,7 +1545,7 @@ suzerain_lapack_zgbsvx(
 #endif
 }
 
-float
+inline float
 suzerain_lapack_slangb(
         const char norm,
         const int n,
@@ -1558,7 +1566,7 @@ suzerain_lapack_slangb(
 #endif
 }
 
-double
+inline double
 suzerain_lapack_dlangb(
         const char norm,
         const int n,
@@ -1579,7 +1587,7 @@ suzerain_lapack_dlangb(
 #endif
 }
 
-float
+inline float
 suzerain_lapack_clangb(
         const char norm,
         const int n,
@@ -1600,7 +1608,7 @@ suzerain_lapack_clangb(
 #endif
 }
 
-double
+inline double
 suzerain_lapack_zlangb(
         const char norm,
         const int n,
@@ -1784,7 +1792,7 @@ suzerain_blasext_dgbmzv_external(
     }
 }
 
-int
+inline int
 suzerain_blasext_sgbmzv(
         const char trans,
         const int m,
@@ -1807,7 +1815,7 @@ suzerain_blasext_sgbmzv(
     return info;
 }
 
-int
+inline int
 suzerain_blasext_dgbmzv(
         const char trans,
         const int m,
@@ -2012,7 +2020,7 @@ suzerain_blasext_dgbdmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbdmv(
         const char trans,
         const int n,
@@ -2062,7 +2070,7 @@ suzerain_blasext_sgbdmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbdmzv(
         const char trans,
         const int n,
@@ -2112,7 +2120,7 @@ suzerain_blasext_dgbdmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbdmzv(
         const char trans,
         const int n,
@@ -2166,7 +2174,7 @@ suzerain_blasext_sgbddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbddmv(
         const char trans,
         const int n,
@@ -2222,7 +2230,7 @@ suzerain_blasext_dgbddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbddmv(
         const char trans,
         const int n,
@@ -2278,7 +2286,7 @@ suzerain_blasext_sgbddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbddmzv(
         const char trans,
         const int n,
@@ -2334,7 +2342,7 @@ suzerain_blasext_dgbddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbddmzv(
         const char trans,
         const int n,
@@ -2389,7 +2397,7 @@ suzerain_blasext_sgbidmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbidmv(
         const char trans,
         const int n,
@@ -2443,7 +2451,7 @@ suzerain_blasext_dgbidmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbidmv(
         const char trans,
         const int n,
@@ -2497,7 +2505,7 @@ suzerain_blasext_sgbidmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbidmzv(
         const char trans,
         const int n,
@@ -2551,7 +2559,7 @@ suzerain_blasext_dgbidmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbidmzv(
         const char trans,
         const int n,
@@ -2610,7 +2618,7 @@ suzerain_blasext_sgbdddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbdddmv(
         const char trans,
         const int n,
@@ -2672,7 +2680,7 @@ suzerain_blasext_dgbdddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbdddmv(
         const char trans,
         const int n,
@@ -2734,7 +2742,7 @@ suzerain_blasext_sgbdddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbdddmzv(
         const char trans,
         const int n,
@@ -2796,7 +2804,7 @@ suzerain_blasext_dgbdddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbdddmzv(
         const char trans,
         const int n,
@@ -2857,7 +2865,7 @@ suzerain_blasext_sgbiddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbiddmv(
         const char trans,
         const int n,
@@ -2917,7 +2925,7 @@ suzerain_blasext_dgbiddmv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbiddmv(
         const char trans,
         const int n,
@@ -2977,7 +2985,7 @@ suzerain_blasext_sgbiddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_sgbiddmzv(
         const char trans,
         const int n,
@@ -3037,7 +3045,7 @@ suzerain_blasext_dgbiddmzv_external(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dgbiddmzv(
         const char trans,
         const int n,
@@ -3064,7 +3072,7 @@ suzerain_blasext_dgbiddmzv(
     return info;
 }
 
-int
+inline int
 suzerain_blasext_ssbmzv(
         const char uplo,
         const int n,
@@ -3085,7 +3093,7 @@ suzerain_blasext_ssbmzv(
     return info;
 }
 
-int
+inline int
 suzerain_blasext_dsbmzv(
         const char uplo,
         const int n,
@@ -3635,7 +3643,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_zgb_dacc(
         const int m,
         const int n,
