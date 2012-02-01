@@ -554,7 +554,7 @@ suzerain_blas_zaxpby(
     /* Simulate caxpby since MKL lacks the routine. */
     assert_static(sizeof(MKL_INT) == sizeof(int));
 #pragma warning(push,disable:1572)
-    if (!beta == 1.0)
+    if (beta != 1.0)
 #pragma warning(pop)
         suzerain_blas_zscal(n, beta, y, incy);
     suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);

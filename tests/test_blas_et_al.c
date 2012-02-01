@@ -86,34 +86,36 @@ test_caxpby()
 {
     int i;
 
-    const float alpha[2] = {2., -0.25};
+    const float alpha_re = 2.;
+    const float alpha_im = -0.25;
     const float x[][2]   = {{1., -1.}, {2., -2.}, {3., -3.}};
     const int   incx     = 1;
-    const float beta[2]  = {3., -0.50};
+    const float beta_re  = 3.;
+    const float beta_im  = -0.50;
     float       y[][2]   = {{4.,-4.}, {-1,1},{5.,-5},{-2,2},{6.,-6},{-3,3}};
     const int   incy     = 2;
     const int   nx       = sizeof(x)/sizeof(x[0]);
     const int   ny       = sizeof(y)/sizeof(y[0]);
     const float  expected[][2] = {
         {
-            alpha[0]*x[0][0]-alpha[1]*x[0][1]+beta[0]*y[0][0]-beta[1]*y[0][1],
-            alpha[0]*x[0][1]+alpha[1]*x[0][0]+beta[0]*y[0][1]+beta[1]*y[0][0]
+            alpha_re*x[0][0]-alpha_im*x[0][1]+beta_re*y[0][0]-beta_im*y[0][1],
+            alpha_re*x[0][1]+alpha_im*x[0][0]+beta_re*y[0][1]+beta_im*y[0][0]
         },
         {
             y[1][0],
             y[1][1]
         },
         {
-            alpha[0]*x[1][0]-alpha[1]*x[1][1]+beta[0]*y[2][0]-beta[1]*y[2][1],
-            alpha[0]*x[1][1]+alpha[1]*x[1][0]+beta[0]*y[2][1]+beta[1]*y[2][0]
+            alpha_re*x[1][0]-alpha_im*x[1][1]+beta_re*y[2][0]-beta_im*y[2][1],
+            alpha_re*x[1][1]+alpha_im*x[1][0]+beta_re*y[2][1]+beta_im*y[2][0]
         },
         {
             y[3][0],
             y[3][1]
         },
         {
-            alpha[0]*x[2][0]-alpha[1]*x[2][1]+beta[0]*y[4][0]-beta[1]*y[4][1],
-            alpha[0]*x[2][1]+alpha[1]*x[2][0]+beta[0]*y[4][1]+beta[1]*y[4][0]
+            alpha_re*x[2][0]-alpha_im*x[2][1]+beta_re*y[4][0]-beta_im*y[4][1],
+            alpha_re*x[2][1]+alpha_im*x[2][0]+beta_re*y[4][1]+beta_im*y[4][0]
         },
         {
             y[5][0],
@@ -125,7 +127,9 @@ test_caxpby()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_caxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    suzerain_blas_caxpby(nx/incx,
+            complex_float(alpha_re, alpha_im), (complex_float *) x, incx,
+            complex_float(beta_re,  beta_im),  (complex_float *) y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -140,34 +144,36 @@ test_zaxpby()
 {
     int i;
 
-    const double alpha[2] = {2., -0.25};
+    const double alpha_re = 2.;
+    const double alpha_im = -0.25;
     const double x[][2]   = {{1., -1.}, {2., -2.}, {3., -3.}};
     const int    incx     = 1;
-    const double beta[2]  = {3., -0.50};
+    const double beta_re  = 3.;
+    const double beta_im  = -0.50;
     double       y[][2]   = {{4.,-4.},{-1,1},{5.,-5},{-2,2},{6.,-6},{-3,3}};
     const int    incy     = 2;
     const int    nx       = sizeof(x)/sizeof(x[0]);
     const int    ny       = sizeof(y)/sizeof(y[0]);
     const double expected[][2] = {
         {
-            alpha[0]*x[0][0]-alpha[1]*x[0][1]+beta[0]*y[0][0]-beta[1]*y[0][1],
-            alpha[0]*x[0][1]+alpha[1]*x[0][0]+beta[0]*y[0][1]+beta[1]*y[0][0]
+            alpha_re*x[0][0]-alpha_im*x[0][1]+beta_re*y[0][0]-beta_im*y[0][1],
+            alpha_re*x[0][1]+alpha_im*x[0][0]+beta_re*y[0][1]+beta_im*y[0][0]
         },
         {
             y[1][0],
             y[1][1]
         },
         {
-            alpha[0]*x[1][0]-alpha[1]*x[1][1]+beta[0]*y[2][0]-beta[1]*y[2][1],
-            alpha[0]*x[1][1]+alpha[1]*x[1][0]+beta[0]*y[2][1]+beta[1]*y[2][0]
+            alpha_re*x[1][0]-alpha_im*x[1][1]+beta_re*y[2][0]-beta_im*y[2][1],
+            alpha_re*x[1][1]+alpha_im*x[1][0]+beta_re*y[2][1]+beta_im*y[2][0]
         },
         {
             y[3][0],
             y[3][1]
         },
         {
-            alpha[0]*x[2][0]-alpha[1]*x[2][1]+beta[0]*y[4][0]-beta[1]*y[4][1],
-            alpha[0]*x[2][1]+alpha[1]*x[2][0]+beta[0]*y[4][1]+beta[1]*y[4][0]
+            alpha_re*x[2][0]-alpha_im*x[2][1]+beta_re*y[4][0]-beta_im*y[4][1],
+            alpha_re*x[2][1]+alpha_im*x[2][0]+beta_re*y[4][1]+beta_im*y[4][0]
         },
         {
             y[5][0],
@@ -179,7 +185,9 @@ test_zaxpby()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_zaxpby(nx/incx, alpha, x, incx, beta, y, incy);
+    suzerain_blas_zaxpby(nx/incx,
+            complex_double(alpha_re, alpha_im), (complex_double *) x, incx,
+            complex_double(beta_re,  beta_im),  (complex_double *) y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -395,7 +403,8 @@ test_cswap()
     gsl_test_int(nx, nx_expected, "Expected x results' length");
     gsl_test_int(ny, ny_expected, "Expected y results' length");
 
-    suzerain_blas_cswap(nx/incx, x, incx, y, incy);
+    suzerain_blas_cswap(nx/incx, (complex_float *) x, incx,
+                                 (complex_float *) y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i][0], x_expected[i][0], GSL_FLT_EPSILON,
                 "%s:%d x real index %d", __func__, __LINE__, i);
@@ -431,7 +440,8 @@ test_zswap()
     gsl_test_int(nx, nx_expected, "Expected x results' length");
     gsl_test_int(ny, ny_expected, "Expected y results' length");
 
-    suzerain_blas_zswap(nx/incx, x, incx, y, incy);
+    suzerain_blas_zswap(nx/incx, (complex_double*) x, incx,
+                                 (complex_double*) y, incy);
     for (i = 0; i < nx_expected; ++i) {
         gsl_test_abs(x[i][0], x_expected[i][0], GSL_DBL_EPSILON,
                 "%s:%d x real index %d", __func__, __LINE__, i);
@@ -568,7 +578,8 @@ test_zscal()
 
     gsl_test_int(nx, nexpected, "Expected results' length");
 
-    suzerain_blas_zscal(nx/incx, alpha, x, incx);
+    suzerain_blas_zscal(nx/incx, complex_double(alpha[0], alpha[1]),
+                        (complex_double *) x, incx);
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -620,7 +631,8 @@ test_cscal()
 
     gsl_test_int(nx, nexpected, "Expected results' length");
 
-    suzerain_blas_cscal(nx/incx, alpha, x, incx);
+    suzerain_blas_cscal(nx/incx, complex_float(alpha[0], alpha[1]),
+                        (complex_float *) x, incx);
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(x[i][0], expected[i][0], GSL_FLT_EPSILON,
@@ -724,7 +736,8 @@ test_zcopy()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_zcopy(nx/incx, x, incx, y, incy);
+    suzerain_blas_zcopy(nx/incx, (complex_double *) x, incx,
+                                 (complex_double *) y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -755,7 +768,8 @@ test_ccopy()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_ccopy(nx/incx, x, incx, y, incy);
+    suzerain_blas_ccopy(nx/incx, (complex_float *) x, incx,
+                                 (complex_float *) y, incy);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -799,8 +813,8 @@ test_scnrm2()
     const int    nx       = sizeof(x)/sizeof(x[0])/incx;
     const float  expected = 9.27361849549570375251641607399; /* Sqrt 86 */
 
-    gsl_test_abs(suzerain_blas_scnrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
-            "%s:%d result", __func__);
+    gsl_test_abs(suzerain_blas_scnrm2(nx, (complex_float *) x, incx),
+                 expected, GSL_FLT_EPSILON, "%s:%d result", __func__);
 }
 
 static
@@ -812,8 +826,8 @@ test_dznrm2()
     const int    nx       = sizeof(x)/sizeof(x[0])/incx;
     const double expected = 9.27361849549570375251641607399; /* Sqrt 86 */
 
-    gsl_test_abs(suzerain_blas_dznrm2(nx, x, incx), expected, GSL_FLT_EPSILON,
-            "%s:%d result", __func__);
+    gsl_test_abs(suzerain_blas_dznrm2(nx, (complex_double *) x, incx),
+                 expected, GSL_FLT_EPSILON, "%s:%d result", __func__);
 }
 
 static
@@ -957,7 +971,9 @@ test_zaxpy()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_zaxpy(nx/incx, alpha, x, incx, y, incy);
+    suzerain_blas_zaxpy(nx/incx, complex_double(alpha[0],alpha[1]),
+                        (complex_double *) x, incx,
+                        (complex_double *) y, incy);
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -1012,7 +1028,9 @@ test_caxpy()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
     gsl_test_int(ny, nexpected, "Expected results' length");
 
-    suzerain_blas_caxpy(nx/incx, alpha, x, incx, y, incy);
+    suzerain_blas_caxpy(nx/incx, complex_float(alpha[0],alpha[1]),
+                        (complex_float *) x, incx,
+                        (complex_float *) y, incy);
 
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(y[i][0], expected[i][0], GSL_FLT_EPSILON,
@@ -1075,7 +1093,9 @@ test_zdotc()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
 
     double result[2] = {555, 555};
-    suzerain_blas_zdotc(nx/incx, x, incx, y, incy, result);
+    suzerain_blas_zdotc(nx/incx, (complex_double *) x, incx,
+                                 (complex_double *) y, incy,
+                                 (complex_double *) result);
     gsl_test_rel(result[0], expected[0], GSL_DBL_EPSILON,
             "%s:%d real result", __func__);
     gsl_test_rel(result[1], expected[1], GSL_DBL_EPSILON,
@@ -1099,7 +1119,9 @@ test_cdotc()
     gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
 
     float  result[2] = {555, 555};
-    suzerain_blas_cdotc(nx/incx, x, incx, y, incy, result);
+    suzerain_blas_cdotc(nx/incx, (complex_float *) x, incx,
+                                 (complex_float *) y, incy,
+                                 (complex_float *) result);
     gsl_test_rel(result[0], expected[0], GSL_FLT_EPSILON,
             "%s:%d real result", __func__);
     gsl_test_rel(result[1], expected[1], GSL_FLT_EPSILON,
@@ -1330,8 +1352,8 @@ test_cgb_acc1()
     const int    kl       = 1;
     const int    lda      = 5;
     const int    ldb      = 6;
-    const float  alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
-    const float  beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const complex_float alpha = 2.0; /* TODO Nontrivial imaginary part */
+    const complex_float beta  = 3.0; /* TODO Nontrivial imaginary part */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1363,7 +1385,8 @@ test_cgb_acc1()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, (complex_float *) a, lda,
+                                         beta,  (complex_float *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -1384,8 +1407,8 @@ test_cgb_acc2()
     const int    kl       = 1;
     const int    lda      = ku + 1 + kl;
     const int    ldb      = ku + 1 + kl;
-    const float  alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
-    const float  beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const complex_float alpha = 2.0; /* TODO Nontrivial imaginary part */
+    const complex_float beta  = 3.0; /* TODO Nontrivial imaginary part */
 
     /* Negative one represents values outside of the band */
     const float  a_data[][2]  = {
@@ -1425,7 +1448,8 @@ test_cgb_acc2()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, (complex_float *) a, lda,
+                                         beta,  (complex_float *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -1446,8 +1470,8 @@ test_zgb_acc1()
     const int    kl       = 1;
     const int    lda      = 5;
     const int    ldb      = 6;
-    const double alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
-    const double beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const complex_double alpha = 2.0; /* TODO Nontrivial imaginary part */
+    const complex_double beta  = 3.0; /* TODO Nontrivial imaginary part */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1479,7 +1503,8 @@ test_zgb_acc1()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, (complex_double *) a, lda,
+                                         beta,  (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -1500,8 +1525,8 @@ test_zgb_acc2()
     const int    kl       = 1;
     const int    lda      = ku + 1 + kl;
     const int    ldb      = ku + 1 + kl;
-    const double alpha[2] = {2.0, 0.0}; /* TODO Nontrivial imaginary part */
-    const double beta[2]  = {3.0, 0.0}; /* TODO Nontrivial imaginary part */
+    const complex_double alpha = 2.0; /* TODO Nontrivial imaginary part */
+    const complex_double beta  = 3.0; /* TODO Nontrivial imaginary part */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1530,7 +1555,8 @@ test_zgb_acc2()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, (complex_double *) a, lda,
+                                         beta,  (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -1655,8 +1681,8 @@ test_cgb_acc_nop()
     const int    kl      = 1;
     const int    lda     = 5;
     const int    ldb     = 6;
-    const float alpha[2] = {0.0, 0.0}; /* NOP zero */
-    const float beta[2]  = {1.0, 0.0}; /* NOP one */
+    const complex_float alpha = 0.0; /* NOP zero */
+    const complex_float beta  = 1.0; /* NOP one */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1686,7 +1712,8 @@ test_cgb_acc_nop()
     expected_data = malloc(nb*sizeof(b_data[0]));
     memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
 
-    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_cgb_acc( m, n, kl, ku, alpha, (complex_float *) a, lda,
+                                         beta,  (complex_float *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -1709,8 +1736,8 @@ test_zgb_acc_nop()
     const int    kl       = 1;
     const int    lda      = 5;
     const int    ldb      = 6;
-    const double alpha[2] = {0.0, 0.0}; /* NOP zero */
-    const double beta[2]  = {1.0, 0.0}; /* NOP one */
+    const complex_double alpha = 0.0; /* NOP zero */
+    const complex_double beta  = 1.0; /* NOP one */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -1740,7 +1767,8 @@ test_zgb_acc_nop()
     expected_data = malloc(nb*sizeof(b_data[0]));
     memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
 
-    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blas_zgb_acc( m, n, kl, ku, alpha, (complex_double *) a, lda,
+                                         beta,  (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -2068,10 +2096,10 @@ void
 test_daxpzy()
 {
     int i;
+    const complex_double alpha = complex_double(2.0, 3.0);
 
     {
         /* Both x and y stride 1 */
-        const double alpha[2] = {2.0, 3.0};
         const double x[]      = {1.0, 2.0, 3.0};
         const int    incx     = 1;
         double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
@@ -2086,7 +2114,8 @@ test_daxpzy()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx,
+                                (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2097,7 +2126,6 @@ test_daxpzy()
 
     {
         /* x stride 2 */
-        const double alpha[2] = {2.0, 3.0};
         const double x[]      = {1.0, -1, 2.0, -2, 3.0, -3};
         const int    incx     = 2;
         double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
@@ -2112,7 +2140,8 @@ test_daxpzy()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx,
+                                (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2123,7 +2152,6 @@ test_daxpzy()
 
     {
         /* y stride 2 */
-        const double alpha[2] = {2.0, 3.0};
         const double x[]      = {1.0, 2.0, 3.0};
         const int    incx     = 1;
         double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
@@ -2138,7 +2166,8 @@ test_daxpzy()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx,
+                                (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2149,7 +2178,6 @@ test_daxpzy()
 
     {
         /* Both x and y stride 2 */
-        const double alpha[2] = {2.0, 3.0};
         const double x[]      = {1.0, -555, 2.0, -666, 3.0, -777};
         const int    incx     = 2;
         double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
@@ -2164,7 +2192,8 @@ test_daxpzy()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx, y, incy);
+        suzerain_blasext_daxpzy(nx/incx, alpha, x, incx,
+                                (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2179,11 +2208,11 @@ void
 test_daxpzby()
 {
     int i;
+    const complex_double alpha = complex_double(2.0, 3.0);
+    const complex_double beta  = complex_double(5.0, 7.0);
 
     {
         /* Both x and y stride 1 */
-        const double alpha[2] = {2.0, 3.0};
-        const double beta[2]  = {5.0, 7.0};
         const double x[]      = {1.0, 2.0, 3.0};
         const int    incx     = 1;
         double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
@@ -2198,7 +2227,8 @@ test_daxpzby()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
+        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta,
+                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2209,8 +2239,6 @@ test_daxpzby()
 
     {
         /* x stride 2 */
-        const double alpha[2] = {2.0, 3.0};
-        const double beta[2]  = {5.0, 7.0};
         const double x[]      = {1.0, -1, 2.0, -2, 3.0, -3};
         const int    incx     = 2;
         double       y[][2]   = {{4,-4}, {5,-5}, {6,-6}};
@@ -2225,7 +2253,8 @@ test_daxpzby()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
+        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta,
+                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2236,8 +2265,6 @@ test_daxpzby()
 
     {
         /* y stride 2 */
-        const double alpha[2] = {2.0, 3.0};
-        const double beta[2]  = {5.0, 7.0};
         const double x[]      = {1.0, 2.0, 3.0};
         const int    incx     = 1;
         double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
@@ -2252,7 +2279,8 @@ test_daxpzby()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
+        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta,
+                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2263,8 +2291,6 @@ test_daxpzby()
 
     {
         /* Both x and y stride 2 */
-        const double alpha[2] = {2.0, 3.0};
-        const double beta[2]  = {5.0, 7.0};
         const double x[]      = {1.0, -555, 2.0, -666, 3.0, -777};
         const int    incx     = 2;
         double       y[][2]   = {{4,-4},{1,-1},{5,-5},{2,-2},{6,-6},{3,-3}};
@@ -2279,7 +2305,8 @@ test_daxpzby()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta, y, incy);
+        suzerain_blasext_daxpzby(nx/incx, alpha, x, incx, beta,
+                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
                     "%s:%d real index %d", __func__, __LINE__, i);
@@ -2519,8 +2546,8 @@ test_zgb_dacc1()
     const int    kl       = 1;
     const int    lda      = 5;
     const int    ldb      = 6;
-    const double alpha[2] = {2.0, -3.0};
-    const double beta[2]  = {7.0, -5.0};
+    const complex_double alpha = complex_double(2.0, -3.0);
+    const complex_double beta  = complex_double(7.0, -5.0);
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -2555,7 +2582,8 @@ test_zgb_dacc1()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda,
+                              beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -2576,8 +2604,8 @@ test_zgb_dacc2()
     const int    kl       = 1;
     const int    lda      = ku + 1 + kl;
     const int    ldb      = ku + 1 + kl;
-    const double alpha[2] = {2.0, -3.0};
-    const double beta[2]  = {7.0, -5.0};
+    const complex_double alpha = complex_double(2.0, -3.0);
+    const complex_double beta  = complex_double(7.0, -5.0);
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -2612,7 +2640,8 @@ test_zgb_dacc2()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blasext_zgb_dacc(m, n, kl, ku, alpha, a, lda,
+                              beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -2633,8 +2662,8 @@ test_zgb_dacc_nop()
     const int    kl       = 1;
     const int    lda      = ku + 1 + kl;
     const int    ldb      = ku + 1 + kl;
-    const double alpha[2] = {0.0, 0.0}; /* NOP zero */
-    const double beta[2]  = {1.0, 0.0}; /* NOP one */
+    const complex_double alpha = 0; /* NOP zero */
+    const complex_double beta  = 1; /* NOP one */
 
     /* Negative one represents values outside of the band */
     /* Decimal parts flag regions outside the matrix entirely */
@@ -2666,7 +2695,8 @@ test_zgb_dacc_nop()
     expected_data = malloc(nb*sizeof(b_data[0]));
     memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
 
-    suzerain_blasext_zgb_dacc( m, n, kl, ku, alpha, a, lda, beta, b, ldb);
+    suzerain_blasext_zgb_dacc(m, n, kl, ku, alpha, a, lda,
+                              beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
                 "%s:%d real index %d", __func__, __LINE__, i);
@@ -2728,7 +2758,8 @@ test_blasext_cgbnorm1()
     const float expected = 7.*sqrt(2.)+2.*sqrt(26.)+2.*sqrt(29.)+sqrt(61.);
 
     float norm1;
-    const int status = suzerain_blasext_cgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    const int status = suzerain_blasext_cgbnorm1(
+            m, n, kl, ku, (complex_float *) a, lda, &norm1);
     gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
@@ -2749,7 +2780,8 @@ test_blasext_zgbnorm1()
     const double expected = 7.*sqrt(2.)+2.*sqrt(26.)+2.*sqrt(29.)+sqrt(61.);
 
     double norm1;
-    const int status = suzerain_blasext_zgbnorm1(m, n, kl, ku, a, lda, &norm1);
+    const int status = suzerain_blasext_zgbnorm1(
+            m, n, kl, ku, (complex_double *) a, lda, &norm1);
     gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*100, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
