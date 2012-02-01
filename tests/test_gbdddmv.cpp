@@ -205,24 +205,24 @@ static void test_gbdddmv_sc(const gbdddmzv_tc_type& t)
     for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
 
     // Get appropriately typed alpha and beta constants
-    const float alpha0[2] = { t.alpha0[0], t.alpha0[1] };
-    const float alpha1[2] = { t.alpha1[0], t.alpha1[1] };
-    const float alpha2[2] = { t.alpha2[0], t.alpha2[1] };
-    const float beta[2]   = { t.beta[0],   t.beta[1]  };
+    const complex_float alpha0( t.alpha0[0], t.alpha0[1] );
+    const complex_float alpha1( t.alpha1[0], t.alpha1[1] );
+    const complex_float alpha2( t.alpha2[0], t.alpha2[1] );
+    const complex_float beta  ( t.beta[0],   t.beta[1]  );
 
     // Compute expected result using external BLAS
     suzerain_blasext_sgbdddmzv_external(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
-            a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
-            beta,           (      float(*)[2]) e.get(), t.incy);
+            a.get(), t.lda, (const complex_float *) x.get(), t.incx,
+            beta,           (      complex_float *) e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_sc(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
-            a.get(), t.lda, (const float(*)[2]) x.get(), t.incx,
-            beta,           (      float(*)[2]) y.get(), t.incy));
+            a.get(), t.lda, (const complex_float *) x.get(), t.incx,
+            beta,           (      complex_float *) y.get(), t.incy));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
@@ -252,19 +252,25 @@ static void test_gbdddmv_dz(const gbdddmzv_tc_type& t)
     for (int i = 0; i < lenx; ++i) x[i]  = random() * inv_rand_max;
     for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
 
+    // Get appropriately typed alpha and beta constants
+    const complex_double alpha0( t.alpha0[0], t.alpha0[1] );
+    const complex_double alpha1( t.alpha1[0], t.alpha1[1] );
+    const complex_double alpha2( t.alpha2[0], t.alpha2[1] );
+    const complex_double beta  ( t.beta[0],   t.beta[1]  );
+
     // Compute expected result using external BLAS
     suzerain_blasext_dgbdddmzv_external(
             t.trans, t.n, t.kl, t.ku,
-            t.alpha0, d0.get(), t.alpha1, d1.get(), t.alpha2, d2.get(),
-            a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
-            t.beta,         (      double(*)[2]) e.get(), t.incy);
+            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            a.get(), t.lda, (const complex_double *) x.get(), t.incx,
+            beta,           (      complex_double *) e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_dz(
             t.trans, t.n, t.kl, t.ku,
-            t.alpha0, d0.get(), t.alpha1, d1.get(), t.alpha2, d2.get(),
-            a.get(), t.lda, (const double(*)[2]) x.get(), t.incx,
-            t.beta,         (      double(*)[2]) y.get(), t.incy));
+            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            a.get(), t.lda, (const complex_double *) x.get(), t.incx,
+            beta,           (      complex_double *) y.get(), t.incy));
 
     check_close_collections(e.get(), e.get() + leny,
                             y.get(), y.get() + leny,
