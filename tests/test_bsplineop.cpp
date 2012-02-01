@@ -346,8 +346,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         BOOST_CHECK_LE(rcond, 1.0);
 
         CHECK_GBMATRIX_CLOSE(
-                 4,        4,        1,                 2,  good_A0,        4,
-            luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(),  luz.A(), luz.ld(),
+                 4,        4,        1,                 2, (std::complex<double>*) good_A0,        4,
+            luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(),                         luz.A(), luz.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     }
 

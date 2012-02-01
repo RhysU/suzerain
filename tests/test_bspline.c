@@ -387,9 +387,11 @@ static void test_linear_combination_complex()
 
         /* Evaluate all derivatives */
         gsl_test(suzerain_bspline_linear_combination_complex(
-                w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
+                w->k - 1,
+                (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
-                gsl_vector_complex_ptr(values, 0), ldvalues, scratch, w, dw),
+                (complex_double *) gsl_vector_complex_ptr(values, 0),
+                ldvalues, scratch, w, dw),
                 "linear_combination_complex real unity multiple");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, i)), 1.0,
@@ -410,9 +412,11 @@ static void test_linear_combination_complex()
 
         /* Evaluate only the (k-1)th derivative */
         gsl_test(suzerain_bspline_linear_combination_complex(
-                w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
+                w->k - 1,
+                (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
-                gsl_vector_complex_ptr(values, 0), 0, scratch, w, dw),
+                (complex_double *) gsl_vector_complex_ptr(values, 0),
+                0, scratch, w, dw),
                 "linear_combination_complex real unity single");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -428,9 +432,11 @@ static void test_linear_combination_complex()
 
         /* Evaluate all derivatives */
         gsl_test(suzerain_bspline_linear_combination_complex(
-                w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
+                w->k - 1,
+                (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
-                gsl_vector_complex_ptr(values, 0), ldvalues, scratch, w, dw),
+                (complex_double *) gsl_vector_complex_ptr(values, 0),
+                ldvalues, scratch, w, dw),
                 "linear_combination_complex imag unity multiple");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -451,9 +457,11 @@ static void test_linear_combination_complex()
 
         /* Evaluate only the (k-1)th derivative */
         gsl_test(suzerain_bspline_linear_combination_complex(
-                w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
+                w->k - 1,
+                (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
                 sizeof(b)/sizeof(b[0]), b,
-                gsl_vector_complex_ptr(values, 0), 0, scratch, w, dw),
+                (complex_double *) gsl_vector_complex_ptr(values, 0),
+                0, scratch, w, dw),
                 "linear_combination_complex imag unity single");
         for (size_t i = 0; i < ldvalues; ++i) {
             gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, i)), 0.0,
@@ -478,8 +486,10 @@ static void test_linear_combination_complex()
         gsl_vector_complex_set(coeffs, 1, gsl_complex_rect(1.0, -0.5));
         gsl_vector_complex_set_all(values, gsl_complex_rect(-555.0,-555.0));
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    w->k - 1,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     ldvalues, scratch, w, dw),
                 "linear_combination_complex basis 2");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 1./4.,
@@ -506,8 +516,10 @@ static void test_linear_combination_complex()
         gsl_vector_complex_set(coeffs, 2, gsl_complex_rect(1.0, -0.5));
         gsl_vector_complex_set_all(values, gsl_complex_rect(-555.0,-555.0));
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    w->k - 1,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     ldvalues, scratch, w, dw),
                 "linear_combination_complex basis 3");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 7./12.,
@@ -534,8 +546,10 @@ static void test_linear_combination_complex()
         gsl_vector_complex_set(coeffs, 3, gsl_complex_rect(1.0, -0.5));
         gsl_vector_complex_set_all(values, gsl_complex_rect(-555.0,-555.0));
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    w->k - 1,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     ldvalues, scratch, w, dw),
                 "linear_combination_complex basis 4");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 1./6.,
@@ -563,8 +577,10 @@ static void test_linear_combination_complex()
         gsl_vector_complex_set(coeffs, 4, gsl_complex_rect(1.0, -0.5));
         gsl_vector_complex_set_all(values, gsl_complex_rect(-555.0,-555.0));
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    w->k - 1,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     ldvalues, scratch, w, dw),
                 "linear_combination_complex basis 5");
         gsl_test_abs(GSL_REAL(gsl_vector_complex_get(values, 0)), 0.,
@@ -595,8 +611,10 @@ static void test_linear_combination_complex()
         gsl_vector_complex_set(coeffs, 4, gsl_complex_rect(4.0, -2.0));
         gsl_vector_complex_set(coeffs, 5, gsl_complex_rect(GSL_NAN, GSL_NAN));
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    w->k - 1, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    w->k - 1,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     ldvalues, scratch, w, dw),
                 "linear_combination_complex linear combination");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)), 23./12.,
@@ -620,8 +638,10 @@ static void test_linear_combination_complex()
 
         /* Linear combination of basis functions for second deriv */
         gsl_test(suzerain_bspline_linear_combination_complex(
-                    2, gsl_vector_complex_const_ptr(coeffs, 0),
-                    ldvalues, points, gsl_vector_complex_ptr(values, 0),
+                    2,
+                    (complex_double *) gsl_vector_complex_const_ptr(coeffs, 0),
+                    ldvalues, points,
+                    (complex_double *) gsl_vector_complex_ptr(values, 0),
                     0, scratch, w, dw),
                 "linear_combination_complex linear combination single");
         gsl_test_rel(GSL_REAL(gsl_vector_complex_get(values, 0)),  -1./2.,

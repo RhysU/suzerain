@@ -220,9 +220,9 @@ public:
     {
         return suzerain_bspline_linear_combination_complex(
                 nderiv,
-                reinterpret_cast<const gsl_complex *>(coeffs),
+                reinterpret_cast<const std::complex<double> *>(coeffs),
                 npoints, points,
-                reinterpret_cast<gsl_complex *>(values),
+                reinterpret_cast<std::complex<double> *>(values),
                 ldvalues, db_, bw, dbw);
     }
 
@@ -370,11 +370,10 @@ public:
      */
     int accumulate(int nderiv,
                    double alpha, const double *x, int incx,
-                   double beta, double *y, int incy) const
+                   double beta,        double *y, int incy) const
     {
-        return suzerain_bsplineop_accumulate(nderiv, 1,
-                                             alpha, x, incx, 0,
-                                             beta,  y, incy, 0, w_);
+        return this->accumulate(
+                nderiv, 1, alpha, x, incx, 0, beta,  y, incy, 0);
     }
 
     /**
@@ -391,10 +390,9 @@ public:
      * @copybrief suzerain_bsplineop_apply
      * @see       suzerain_bsplineop_apply
      */
-    int apply(int nderiv, double alpha,
-              double *x, int incx) const
+    int apply(int nderiv, double alpha, double *x, int incx) const
     {
-        return suzerain_bsplineop_apply(nderiv, 1, alpha, x, incx, 0, w_);
+        return this->apply(nderiv, 1, alpha, x, incx, 0);
     }
 
     /**
@@ -417,27 +415,27 @@ public:
      * @copybrief suzerain_bsplineop_accumulate_complex
      * @see       suzerain_bsplineop_accumulate_complex
      */
-    template< typename Complex1,
-              typename Complex2,
-              typename Complex3,
-              typename Complex4 >
+    template< typename AlphaType, typename BetaType,
+              typename Complex1,  typename Complex2 >
     typename boost::enable_if<boost::mpl::and_<
         suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>,
-        suzerain::complex::traits::is_complex_double<Complex3>,
-        suzerain::complex::traits::is_complex_double<Complex4>
+        suzerain::complex::traits::is_complex_double<Complex2>
     >, int>::type accumulate(
-                int nderiv, int nrhs,
-                const Complex1 &alpha, const Complex2 *x, int incx, int ldx,
-                const Complex3 &beta, Complex4 *y, int incy, int ldy) const
+            int nderiv, int nrhs,
+            const AlphaType &alpha, const Complex1 *x, int incx, int ldx,
+            const BetaType  &beta,        Complex2 *y, int incy, int ldy) const
     {
+        std::complex<double> alpha_complex;
+        suzerain::complex::assign_complex(alpha_complex, alpha);
+        std::complex<double> beta_complex;
+        suzerain::complex::assign_complex(beta_complex, beta);
         return suzerain_bsplineop_accumulate_complex(
                 nderiv, nrhs,
-                reinterpret_cast<const double *>(&alpha),
-                reinterpret_cast<const double (*)[2]>(x),
+                alpha_complex,
+                reinterpret_cast<const std::complex<double> *>(x),
                 incx, ldx,
-                reinterpret_cast<const double *>(&beta),
-                reinterpret_cast<double (*)[2]>(y),
+                beta_complex,
+                reinterpret_cast<std::complex<double> *>(y),
                 incy, ldy, w_);
     }
 
@@ -445,78 +443,17 @@ public:
      * @copybrief suzerain_bsplineop_accumulate_complex
      * @see       suzerain_bsplineop_accumulate_complex
      */
-    template< typename Complex1,
-              typename Complex2,
-              typename Complex3,
-              typename Complex4 >
-    typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>,
-        suzerain::complex::traits::is_complex_double<Complex3>,
-        suzerain::complex::traits::is_complex_double<Complex4>
-    >, int>::type accumulate(
-                int nderiv,
-                const Complex1 &alpha, const Complex2 *x, int incx,
-                const Complex3 &beta, Complex4 *y, int incy) const
-    {
-        return suzerain_bsplineop_accumulate_complex(
-                nderiv, 1,
-                reinterpret_cast<const double *>(&alpha),
-                reinterpret_cast<const double (*)[2]>(x),
-                incx, 0,
-                reinterpret_cast<const double *>(&beta),
-                reinterpret_cast<double (*)[2]>(y),
-                incy, 0, w_);
-    }
-
-    /**
-     * @copybrief suzerain_bsplineop_accumulate_complex
-     * @see       suzerain_bsplineop_accumulate_complex
-     */
-    template< typename Complex1, typename Complex2 >
-    typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>
-    >, int>::type accumulate(
-                int nderiv, int nrhs,
-                const double alpha, const Complex1 *x, int incx, int ldx,
-                const double beta, Complex2 *y, int incy, int ldy) const
-    {
-        const double alpha_complex[2] = { alpha, 0 };
-        const double beta_complex[2]  = { beta,  0 };
-        return suzerain_bsplineop_accumulate_complex(
-                nderiv, nrhs,
-                alpha_complex,
-                reinterpret_cast<const double (*)[2]>(x),
-                incx, ldx,
-                beta_complex,
-                reinterpret_cast<double (*)[2]>(y),
-                incy, ldy, w_);
-    }
-
-    /**
-     * @copybrief suzerain_bsplineop_accumulate_complex
-     * @see       suzerain_bsplineop_accumulate_complex
-     */
-    template< typename Complex1, typename Complex2 >
+    template< typename AlphaType, typename BetaType,
+              typename Complex1,  typename Complex2 >
     typename boost::enable_if<boost::mpl::and_<
         suzerain::complex::traits::is_complex_double<Complex1>,
         suzerain::complex::traits::is_complex_double<Complex2>
     >, int>::type accumulate(
                 int nderiv,
-                const double alpha, const Complex1 *x, int incx,
-                const double beta, Complex2 *y, int incy) const
+                const AlphaType &alpha, const Complex1 *x, int incx,
+                const BetaType  &beta,        Complex2 *y, int incy) const
     {
-        const double alpha_complex[2] = { alpha, 0 };
-        const double beta_complex[2]  = { beta, 0 };
-        return suzerain_bsplineop_accumulate_complex(
-                nderiv, 1,
-                alpha_complex,
-                reinterpret_cast<const double (*)[2]>(x),
-                incx, 0,
-                beta_complex,
-                reinterpret_cast<double (*)[2]>(y),
-                incy, 0, w_);
+        return this->accumulate(nderiv, 1, alpha, x, incx, 0, beta, y, incy, 0);
     }
 
     /**
@@ -531,7 +468,7 @@ public:
     {
         return suzerain_bsplineop_apply_complex(
                 nderiv, nrhs, alpha,
-                reinterpret_cast<double (*)[2]>(x),
+                reinterpret_cast<std::complex<double> *>(x),
                 incx, ldx, w_);
     }
 
@@ -545,10 +482,7 @@ public:
     >::type apply(int nderiv, double alpha,
                   Complex *x, int incx) const
     {
-        return suzerain_bsplineop_apply_complex(
-                nderiv, 1, alpha,
-                reinterpret_cast<double (*)[2]>(x),
-                incx, 0, w_);
+        return this->apply(nderiv, 1, alpha, x, incx, 0);
     }
 
     /**
@@ -563,7 +497,8 @@ public:
                               suzerain::bspline &b) const
     {
         return suzerain_bsplineop_interpolation_rhs_complex(
-                zfunction, reinterpret_cast<double (*)[2]>(rhs), b.bw, w_);
+                zfunction, reinterpret_cast<std::complex<double> *>(rhs),
+                b.bw, w_);
     }
 
 /**@}*/
@@ -792,13 +727,13 @@ public:
      * @copybrief suzerain_bsplineop_luz_workspace#A
      * @see       suzerain_bsplineop_luz_workspace#A
      */
-    const double (*A() const)[2] { return luzw_->A; }
+    const std::complex<double> * A() const { return luzw_->A; }
 
     /**
      * @copybrief suzerain_bsplineop_luz_workspace#A
      * @see       suzerain_bsplineop_luz_workspace#A
      */
-    double (*A())[2] { return luzw_->A; }
+    std::complex<double> * A() { return luzw_->A; }
 
 /**@}*/
 
@@ -809,22 +744,20 @@ public:
      * @copybrief suzerain_bsplineop_luz_opaccumulate
      * @see       suzerain_bsplineop_luz_opaccumulate
      */
-    template< typename Complex1,
-              typename Complex2 >
-    typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>
-    >, int>::type opaccumulate(int ncoefficients,
-                               const Complex1* coefficients,
-                               const bsplineop &op,
-                               const Complex2  &scale)
+    template< typename ScaleType, typename Complex1 >
+    typename boost::enable_if<
+        suzerain::complex::traits::is_complex_double<Complex1>, int
+    >::type opaccumulate(int ncoefficients,
+                         const Complex1* coefficients,
+                         const bsplineop &op,
+                         const ScaleType &scale)
     {
-        double tmp[2];
-        suzerain::complex::assign_complex(tmp, scale);
+        std::complex<double> scale_complex;
+        suzerain::complex::assign_complex(scale_complex, scale);
         return suzerain_bsplineop_luz_opaccumulate(
                 ncoefficients,
-                reinterpret_cast<const double (*)[2]>(coefficients),
-                op.get(), tmp, luzw_);
+                reinterpret_cast<const std::complex<double> *>(coefficients),
+                op.get(), scale_complex, luzw_);
     }
 
     /**
@@ -864,7 +797,8 @@ public:
     >::type solve(int nrhs, Complex *B, int incb, int ldb) const
     {
         return suzerain_bsplineop_luz_solve(
-                nrhs, reinterpret_cast<double (*)[2]>(B), incb, ldb, luzw_);
+                nrhs, reinterpret_cast<std::complex<double> *>(B),
+                incb, ldb, luzw_);
     }
 
 /**@}*/
@@ -885,7 +819,7 @@ public:
     {
         return suzerain_bsplineop_luz_opform(
                 ncoefficients,
-                reinterpret_cast<const double (*)[2]>(coefficients),
+                reinterpret_cast<const std::complex<double> *>(coefficients),
                 op.get(), luzw_);
     }
 
