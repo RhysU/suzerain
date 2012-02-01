@@ -1,8 +1,8 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define FUNCNAME()  /* Function name, e.g. suzerain_rholut_imexop_packc    */
-// #define PACKFUNC()  /* bsmbsm.h pack function, e.g. suzerain_bsmbsm_zpackc */
+// #define FUNCNAME()   /* Function name, e.g. suzerain_rholut_imexop_packc */
+// #define PACKFUNC(x)  /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
 
 void
 FUNCNAME()(
@@ -22,77 +22,74 @@ FUNCNAME()(
         suzerain_bsmbsm * const A,
         complex_double * const papt)
 {
+    // How many rows and columns of banded submatrices will we build?
+    const int nneg = (rho >= 0)
+                   + (rhou >= 0) + (rhov >= 0) + (rhow >= 0)
+                   + (rhoe >= 0);
+
     // Compute the BSMBSM structure and named max_kl, max_ku views of w->D.
-    *A = suzerain_bsmbsm_construct(5, w->n, w->max_kl, w->max_ku);
+    *A = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
     const double * const M  = w->D[0] - (w->max_ku - w->ku[0]);
     const double * const D1 = w->D[1] - (w->max_ku - w->ku[1]);
     const double * const D2 = w->D[2] - (w->max_ku - w->ku[1]);
     assert(w->nderiv >= 2); // Enough derivatives in workspace?
     assert(A->ld == w->ld); // Compatible storage?
+
+    // How big is our scratch buffer for building banded submatrices?
     const size_t bufbytes = A->ld*A->n*sizeof(buf[0]);
 
     // We do not know the leading dimension associated with the definition of
     // PACKFUNC() so we must overwrite every possible submatrix within PAPT.
     // This is only suboptimal for the zero (rho, rhoe) submatrix.
 
-    if (rho >= 0) { // Prepare density row
-        memset(buf, 0, bufbytes);
+    if (rho >= 0) {  // Prepare density row
 
-        if (rhou >= 0) PACKFUNC()(A, rho,  rhou, 1.0, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rho,  rhov, 1.0, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rho,  rhow, 1.0, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rho,  rhoe, 1.0, buf, papt);
+        if (rhou >= 0) PACKFUNC(z)(A, rho,  rhou, 0.0, NULL, papt);
+        if (rhov >= 0) PACKFUNC(z)(A, rho,  rhov, 0.0, NULL, papt);
+        if (rhow >= 0) PACKFUNC(z)(A, rho,  rhow, 0.0, NULL, papt);
+        if (rhoe >= 0) PACKFUNC(z)(A, rho,  rhoe, 0.0, NULL, papt);
 
-        suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rho,  rho, 1.0, buf, papt);
+        PACKFUNC(zd)(A, rho,  rho, 1.0, M, papt);
     }
 
     if (rhou >= 0) { // Prepare streamwise momentum row
-        memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhou, rho,  1.0, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhou, rhov, 1.0, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhou, rhow, 1.0, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhou, rhoe, 1.0, buf, papt);
+        if (rho  >= 0) PACKFUNC(z)(A, rhou, rho,  0.0, NULL, papt);
+        if (rhov >= 0) PACKFUNC(z)(A, rhou, rhov, 0.0, NULL, papt);
+        if (rhow >= 0) PACKFUNC(z)(A, rhou, rhow, 0.0, NULL, papt);
+        if (rhoe >= 0) PACKFUNC(z)(A, rhou, rhoe, 0.0, NULL, papt);
 
-        suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhou, rhou, 1.0, buf, papt);
+        PACKFUNC(zd)(A, rhou, rhou, 1.0, M, papt);
     }
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
-        memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhov, rho,  1.0, buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhov, rhou, 1.0, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhov, rhow, 1.0, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhov, rhoe, 1.0, buf, papt);
+        if (rho  >= 0) PACKFUNC(z)(A, rhov, rho,  0.0, NULL, papt);
+        if (rhou >= 0) PACKFUNC(z)(A, rhov, rhou, 0.0, NULL, papt);
+        if (rhow >= 0) PACKFUNC(z)(A, rhov, rhow, 0.0, NULL, papt);
+        if (rhoe >= 0) PACKFUNC(z)(A, rhov, rhoe, 0.0, NULL, papt);
 
-        suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhov, rhov, 1.0, buf, papt);
+        PACKFUNC(zd)(A, rhov, rhov, 1.0, M, papt);
     }
 
     if (rhow >= 0) { // Prepare spanwise momentum row
-        memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhow, rho,  1.0, buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhow, rhou, 1.0, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhow, rhov, 1.0, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhow, rhoe, 1.0, buf, papt);
+        if (rho  >= 0) PACKFUNC(z)(A, rhow, rho,  0.0, NULL, papt);
+        if (rhou >= 0) PACKFUNC(z)(A, rhow, rhou, 0.0, NULL, papt);
+        if (rhov >= 0) PACKFUNC(z)(A, rhow, rhov, 0.0, NULL, papt);
+        if (rhoe >= 0) PACKFUNC(z)(A, rhow, rhoe, 0.0, NULL, papt);
 
-        suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhow, rhow, 1.0, buf, papt);
+        PACKFUNC(zd)(A, rhow, rhow, 1.0, M, papt);
     }
 
     if (rhoe >= 0) { // Prepare total energy row
-        memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhoe, rho,  1.0, buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhoe, rhou, 1.0, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhoe, rhov, 1.0, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhoe, rhow, 1.0, buf, papt);
+        if (rho  >= 0) PACKFUNC(z)(A, rhoe, rho,  0.0, NULL, papt);
+        if (rhou >= 0) PACKFUNC(z)(A, rhoe, rhou, 0.0, NULL, papt);
+        if (rhov >= 0) PACKFUNC(z)(A, rhoe, rhov, 0.0, NULL, papt);
+        if (rhow >= 0) PACKFUNC(z)(A, rhoe, rhow, 0.0, NULL, papt);
 
-        suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhoe, rhoe, 1.0, buf, papt);
+        PACKFUNC(zd)(A, rhoe, rhoe, 1.0, M, papt);
     }
 }
 

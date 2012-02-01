@@ -101,11 +101,11 @@ suzerain_rholut_imexop_apply(
 // use preprocessor to generate both from the same source template
 
 // suzerain_rholut_imexop_packc
-#define FUNCNAME() suzerain_rholut_imexop_packc
-#define PACKFUNC() suzerain_bsmbsm_zpackc
+#define FUNCNAME()  suzerain_rholut_imexop_packc
+#define PACKFUNC(x) suzerain_bsmbsm_ ## x ## packc
 #include "rholut_imexop.def"
 
 // suzerain_rholut_imexop_packf
-#define FUNCNAME() suzerain_rholut_imexop_packf
-#define PACKFUNC() suzerain_bsmbsm_zpackf
+#define FUNCNAME()  suzerain_rholut_imexop_packf
+#define PACKFUNC(x) suzerain_bsmbsm_ ## x ## packf
 #include "rholut_imexop.def"
