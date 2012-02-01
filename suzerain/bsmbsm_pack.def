@@ -8,7 +8,8 @@
 int
 AFFIXPREC(suzerain_bsmbsm_,pack)(
         int S,  int n, int ihat, int jhat,
-        int kl, int ku, const SOURCE * restrict b,    int ldb,
+        int kl, int ku, const TARGET alpha,
+                        const SOURCE * restrict b,    int ldb,
         int KL, int KU,       TARGET * restrict papt, int ldpapt)
 {
     if (UNLIKELY(S  < 0))
@@ -43,15 +44,47 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     jhat *= n;
     ++kl;
 
-    // Copy banded B into renumbered locations within banded PAP^T
-    for (int j = 0; j < n; b += ldb, ++j) {
-        const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat + j);
-        const int il = imax(0, j - ku);
-        const int iu = imin(n, j + kl);
-        for (int i = il; i < iu; ++i) {
-            const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat + i);
-            papt[qinvi + qinvj_ldpapt] = b[i];
+    // Copy scaled, banded B into renumbered locations within banded PAP^T
+#pragma warning(push,disable:1572)
+    if (alpha == 0) {                  // b never referenced
+#pragma warning(pop)
+
+        for (int j = 0; j < n; /*b += ldb,*/ ++j) {
+            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
+            const int il = imax(0, j - ku);
+            const int iu = imin(n, j + kl);
+            for (int i = il; i < iu; ++i) {
+                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
+                papt[qinvi + qinvj_ldpapt] = 0;
+            }
         }
+
+#pragma warning(push,disable:1572)
+    } else if (alpha == 1) {           // no scaling performed
+#pragma warning(pop)
+
+        for (int j = 0; j < n; b += ldb, ++j) {
+            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
+            const int il = imax(0, j - ku);
+            const int iu = imin(n, j + kl);
+            for (int i = il; i < iu; ++i) {
+                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
+                papt[qinvi + qinvj_ldpapt] = b[i];
+            }
+        }
+
+    } else {                           // general case
+
+        for (int j = 0; j < n; b += ldb, ++j) {
+            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
+            const int il = imax(0, j - ku);
+            const int iu = imin(n, j + kl);
+            for (int i = il; i < iu; ++i) {
+                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
+                papt[qinvi + qinvj_ldpapt] = alpha*b[i];
+            }
+        }
+
     }
 
     return 0;

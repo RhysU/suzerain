@@ -38,61 +38,61 @@ FUNCNAME()(
     if (rho >= 0) { // Prepare density row
         memset(buf, 0, bufbytes);
 
-        if (rhou >= 0) PACKFUNC()(A, rho,  rhou, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rho,  rhov, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rho,  rhow, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rho,  rhoe, buf, papt);
+        if (rhou >= 0) PACKFUNC()(A, rho,  rhou, 1.0, buf, papt);
+        if (rhov >= 0) PACKFUNC()(A, rho,  rhov, 1.0, buf, papt);
+        if (rhow >= 0) PACKFUNC()(A, rho,  rhow, 1.0, buf, papt);
+        if (rhoe >= 0) PACKFUNC()(A, rho,  rhoe, 1.0, buf, papt);
 
         suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rho,  rho, buf, papt);
+        PACKFUNC()(A, rho,  rho, 1.0, buf, papt);
     }
 
     if (rhou >= 0) { // Prepare streamwise momentum row
         memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhou, rho,  buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhou, rhov, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhou, rhow, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhou, rhoe, buf, papt);
+        if (rho  >= 0) PACKFUNC()(A, rhou, rho,  1.0, buf, papt);
+        if (rhov >= 0) PACKFUNC()(A, rhou, rhov, 1.0, buf, papt);
+        if (rhow >= 0) PACKFUNC()(A, rhou, rhow, 1.0, buf, papt);
+        if (rhoe >= 0) PACKFUNC()(A, rhou, rhoe, 1.0, buf, papt);
 
         suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhou, rhou, buf, papt);
+        PACKFUNC()(A, rhou, rhou, 1.0, buf, papt);
     }
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
         memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhov, rho,  buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhov, rhou, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhov, rhow, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhov, rhoe, buf, papt);
+        if (rho  >= 0) PACKFUNC()(A, rhov, rho,  1.0, buf, papt);
+        if (rhou >= 0) PACKFUNC()(A, rhov, rhou, 1.0, buf, papt);
+        if (rhow >= 0) PACKFUNC()(A, rhov, rhow, 1.0, buf, papt);
+        if (rhoe >= 0) PACKFUNC()(A, rhov, rhoe, 1.0, buf, papt);
 
         suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhov, rhov, buf, papt);
+        PACKFUNC()(A, rhov, rhov, 1.0, buf, papt);
     }
 
     if (rhow >= 0) { // Prepare spanwise momentum row
         memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhow, rho,  buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhow, rhou, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhow, rhov, buf, papt);
-        if (rhoe >= 0) PACKFUNC()(A, rhow, rhoe, buf, papt);
+        if (rho  >= 0) PACKFUNC()(A, rhow, rho,  1.0, buf, papt);
+        if (rhou >= 0) PACKFUNC()(A, rhow, rhou, 1.0, buf, papt);
+        if (rhov >= 0) PACKFUNC()(A, rhow, rhov, 1.0, buf, papt);
+        if (rhoe >= 0) PACKFUNC()(A, rhow, rhoe, 1.0, buf, papt);
 
         suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhow, rhow, buf, papt);
+        PACKFUNC()(A, rhow, rhow, 1.0, buf, papt);
     }
 
     if (rhoe >= 0) { // Prepare total energy row
         memset(buf, 0, bufbytes);
 
-        if (rho  >= 0) PACKFUNC()(A, rhoe, rho,  buf, papt);
-        if (rhou >= 0) PACKFUNC()(A, rhoe, rhou, buf, papt);
-        if (rhov >= 0) PACKFUNC()(A, rhoe, rhov, buf, papt);
-        if (rhow >= 0) PACKFUNC()(A, rhoe, rhow, buf, papt);
+        if (rho  >= 0) PACKFUNC()(A, rhoe, rho,  1.0, buf, papt);
+        if (rhou >= 0) PACKFUNC()(A, rhoe, rhou, 1.0, buf, papt);
+        if (rhov >= 0) PACKFUNC()(A, rhoe, rhov, 1.0, buf, papt);
+        if (rhow >= 0) PACKFUNC()(A, rhoe, rhow, 1.0, buf, papt);
 
         suzerain_blas_dcopy(A->ld*A->n, M, 1, (double *) buf, 2);
-        PACKFUNC()(A, rhoe, rhoe, buf, papt);
+        PACKFUNC()(A, rhoe, rhoe, 1.0, buf, papt);
     }
 }
 

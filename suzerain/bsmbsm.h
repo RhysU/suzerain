@@ -294,11 +294,11 @@ suzerain_bsmbsm_zaPxpby(
 gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
 
 /**
- * Pack banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into the
- * corresponding locations within banded storage of \f$P A P^{\mbox{T}}\f$.
- * More specifically,
+ * Pack scaled, banded submatrix \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$
+ * into the corresponding locations within banded storage of \f$P A
+ * P^{\mbox{T}}\f$.  More specifically,
  * \f[
- *   \left.B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}
+ *   \left.\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\right|_{i\,j}
  *   =
  *   \left.A\right|_{\hat{\imath}n + i\, \hat{\jmath}n + j}
  *   =
@@ -318,6 +318,7 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
  * @param kl     Number of subdiagonals in each banded submatrix.
  * @param ku     Number of superdiagonals in each banded submatrix.
+ * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
  * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$.
  * @param ldb    Leading dimension of storage \c b.
  * @param KL     Number of subdiagonals in the renumbered matrix
@@ -333,37 +334,45 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  * @see bsmbsm.h for full details on the permutation vector \f$q\f$.
  */
 int
-suzerain_bsmbsm_spack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const float *b,    int ldb,
-                      int KL, int KU,       float *papt, int ldpapt);
+suzerain_bsmbsm_spack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const float alpha, const float *b,    int ldb,
+        int KL, int KU,                          float *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 int
-suzerain_bsmbsm_dpack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const double *b,    int ldb,
-                      int KL, int KU,       double *papt, int ldpapt);
+suzerain_bsmbsm_dpack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const double alpha, const double *b,    int ldb,
+        int KL, int KU,                           double *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 int
-suzerain_bsmbsm_cpack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const complex_float *b,    int ldb,
-                      int KL, int KU,       complex_float *papt, int ldpapt);
+suzerain_bsmbsm_cpack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const complex_float alpha,
+                        const complex_float *b,    int ldb,
+        int KL, int KU,       complex_float *papt, int ldpapt);
 
 /** @copydoc suzerain_bsmbsm_spack */
 int
-suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
-                      int kl, int ku, const complex_double *b,    int ldb,
-                      int KL, int KU,       complex_double *papt, int ldpapt);
+suzerain_bsmbsm_zpack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const complex_double alpha,
+                        const complex_double *b,    int ldb,
+        int KL, int KU,       complex_double *papt, int ldpapt);
 
 /**
- * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
- * the corresponding locations within contiguous storage of \f$P A
- * P^{\mbox{T}}\f$.  This is a convenience method to simplify preparing storage
- * for use by the BLAS' <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.
+ * Pack contiguous, scaled, banded submatrix
+ * \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$ into the corresponding
+ * locations within contiguous storage of \f$P A P^{\mbox{T}}\f$.  This is a
+ * convenience method to simplify preparing storage for use by the BLAS'
+ * <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.
  *
  * @param A      Storage details for the BSMBSM matrix.
  * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
  * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
  * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
  *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
  *               diagonals and leading dimension
@@ -377,52 +386,56 @@ suzerain_bsmbsm_zpack(int S,  int n, int ihat, int jhat,
  */
 inline static int
 suzerain_bsmbsm_spackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const float *b, float *papt)
+                       const float alpha, const float *b, float *papt)
 {
     return suzerain_bsmbsm_spack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,    A->ld,
-                                 A->KL, A->KU, papt, A->LD);
+                                 A->kl, A->ku, alpha, b,    A->ld,
+                                 A->KL, A->KU,        papt, A->LD);
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
 inline static int
 suzerain_bsmbsm_dpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const double *b, double *papt)
+                       const double alpha, const double *b, double *papt)
 {
     return suzerain_bsmbsm_dpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,    A->ld,
-                                 A->KL, A->KU, papt, A->LD);
+                                 A->kl, A->ku, alpha, b,    A->ld,
+                                 A->KL, A->KU,        papt, A->LD);
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
 inline static int
 suzerain_bsmbsm_cpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const complex_float *b, complex_float *papt)
+                       const complex_float alpha, const complex_float *b,
+                                                        complex_float *papt)
 {
     return suzerain_bsmbsm_cpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,    A->ld,
-                                 A->KL, A->KU, papt, A->LD);
+                                 A->kl, A->ku, alpha, b,    A->ld,
+                                 A->KL, A->KU,        papt, A->LD);
 }
 
 /** @copydoc suzerain_bsmbsm_spackc */
 inline static int
 suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const complex_double *b, complex_double *papt)
+                       const complex_double alpha, const complex_double *b,
+                                                         complex_double *papt)
 {
     return suzerain_bsmbsm_zpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,    A->ld,
-                                 A->KL, A->KU, papt, A->LD);
+                                 A->kl, A->ku, alpha, b,    A->ld,
+                                 A->KL, A->KU,        papt, A->LD);
 }
 
 /**
- * Pack contiguous, banded submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$ into
- * the corresponding locations within contiguous, LU factorization-ready
- * storage of \f$P A P^{\mbox{T}}\f$.  This is a convenience method to simplify
- * preparing storage for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
+ * Pack contiguous, scaled, banded submatrix
+ * \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$ into the corresponding
+ * locations within contiguous, LU factorization-ready storage of \f$P A
+ * P^{\mbox{T}}\f$.  This is a convenience method to simplify preparing storage
+ * for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
  *
  * @param A      Storage details for the BSMBSM matrix.
  * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
  * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
  * @param b      Band storage of submatrix \f$B^{\hat{\imath}\,\hat{\jmath}}\f$
  *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
  *               diagonals and leading dimension
@@ -437,41 +450,47 @@ suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
  */
 inline static int
 suzerain_bsmbsm_spackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const float *b, float *papt)
+                       const float alpha, const float *b, float *papt)
 {
-    return suzerain_bsmbsm_spack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,           A->ld,
-                                 A->KL, A->KU, papt + A->KL, A->LD + A->KL);
+    return suzerain_bsmbsm_spack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
 inline static int
 suzerain_bsmbsm_dpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const double *b, double *papt)
+                       const double alpha, const double *b, double *papt)
 {
-    return suzerain_bsmbsm_dpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,           A->ld,
-                                 A->KL, A->KU, papt + A->KL, A->LD + A->KL);
+    return suzerain_bsmbsm_dpack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
 inline static int
 suzerain_bsmbsm_cpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const complex_float *b, complex_float *papt)
+                       const complex_float alpha, const complex_float *b,
+                                                        complex_float *papt)
 {
-    return suzerain_bsmbsm_cpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,           A->ld,
-                                 A->KL, A->KU, papt + A->KL, A->LD + A->KL);
+    return suzerain_bsmbsm_cpack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
 }
 
 /** @copydoc suzerain_bsmbsm_spackf */
 inline static int
 suzerain_bsmbsm_zpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
-                       const complex_double *b, complex_double *papt)
+                       const complex_double alpha, const complex_double *b,
+                                                         complex_double *papt)
 {
-    return suzerain_bsmbsm_zpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, b,           A->ld,
-                                 A->KL, A->KU, papt + A->KL, A->LD + A->KL);
+    return suzerain_bsmbsm_zpack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
 }
 
 #ifdef __cplusplus

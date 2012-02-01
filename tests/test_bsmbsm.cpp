@@ -461,28 +461,28 @@ BOOST_AUTO_TEST_SUITE( submatrix_packing )
 static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
                  const float *b, float *papt)
 {
-    return suzerain_bsmbsm_spackc(A, ihat, jhat, b, papt);
+    return suzerain_bsmbsm_spackc(A, ihat, jhat, 1.0, b, papt);
 }
 
 // Precision-specific dispatch for doubles
 static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
                  const double *b, double *papt)
 {
-    return suzerain_bsmbsm_dpackc(A, ihat, jhat, b, papt);
+    return suzerain_bsmbsm_dpackc(A, ihat, jhat, 1.0, b, papt);
 }
 
 // Precision-specific dispatch for complex floats
 static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
                  const std::complex<float> *b, std::complex<float> *papt)
 {
-    return suzerain_bsmbsm_cpackc(A, ihat, jhat, b, papt);
+    return suzerain_bsmbsm_cpackc(A, ihat, jhat, 1.0, b, papt);
 }
 
 // Precision-specific dispatch for complex doubles
 static int packc(const suzerain_bsmbsm *A, int ihat, int jhat,
                  const std::complex<double> *b, std::complex<double> *papt)
 {
-    return suzerain_bsmbsm_zpackc(A, ihat, jhat, b, papt);
+    return suzerain_bsmbsm_zpackc(A, ihat, jhat, 1.0, b, papt);
 }
 
 typedef boost::mpl::list<
@@ -670,29 +670,27 @@ BOOST_AUTO_TEST_CASE( solve_real )
     // Build the packed operator "op" per Mathematica above
     // B^{0,0} is M
     blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 0, 0, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 0, 0, 1.0, b.get(), papt.get());
     // B^{1,1} is 2*M
-    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 1, 1, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 1, 1, 2.0, b.get(), papt.get());
     // B^{2,2} is 4*M
-    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 2, 2, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 2, 2, 4.0, b.get(), papt.get());
 
     // B^{0,1} is (1/5)*D1
     blas::copy(SUZERAIN_COUNTOF(D1), D1, 1, b.get(), 1);
     blas::scal(SUZERAIN_COUNTOF(D1), 1.0/5.0, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 0, 1, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 0, 1, 1.0, b.get(), papt.get());
     // B^{2,1} is (1/10)*D1
     blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 2, 1, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 2, 1, 1.0, b.get(), papt.get());
 
     // B^{1,0} is (1/7)*D2
     blas::copy(SUZERAIN_COUNTOF(D2), D2, 1, b.get(), 1);
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/7.0, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 1, 0, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 1, 0, 1.0, b.get(), papt.get());
     // B^{1,2} is (1/14)*D2
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get(), 1);
-    suzerain_bsmbsm_dpackf(&A, 1, 2, b.get(), papt.get());
+    suzerain_bsmbsm_dpackf(&A, 1, 2, 1.0, b.get(), papt.get());
 
     // Reuse working buffer to permute right hand side for solve
     b.reset(new double[2*A.N]);
@@ -746,36 +744,34 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     // Notice that we only manipulate the imaginary portions of b.get().
     // B^{0,0} is i*M
     blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 0, 0, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 0, 0, 1.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
     // B^{1,1} is i*2*M
-    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 1, 1, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 1, 1, 2.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
     // B^{2,2} is i*4*M
-    blas::scal(SUZERAIN_COUNTOF(M), 2, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 2, 2, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 2, 2, 4.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
 
     // B^{0,1} is i*(1/5)*D1
     blas::copy(SUZERAIN_COUNTOF(D1), D1, 1, b.get()+1, 2);
     blas::scal(SUZERAIN_COUNTOF(D1), 1.0/5.0, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 0, 1, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 0, 1, 1.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
     // B^{2,1} is i*(1/10)*D1
     blas::scal(SUZERAIN_COUNTOF(D1), 1.0/2.0, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 2, 1, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 2, 1, 1.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
 
     // B^{1,0} is i*(1/7)*D2
     blas::copy(SUZERAIN_COUNTOF(D2), D2, 1,   b.get()+1, 2);
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/7.0, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 1, 0, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 1, 0, 1.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
     // B^{1,2} is i*(1/14)*D2
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 1, 2, (const complex_t *) b.get(),
-                                     (      complex_t *) papt.get());
+    suzerain_bsmbsm_zpackf(&A, 1, 2, 1.0, (const complex_t *) b.get(),
+                                          (      complex_t *) papt.get());
 
     // Reuse working buffer to permute right hand side for solve
     b.reset(new real_t[2*(2*A.N)]);
