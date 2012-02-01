@@ -87,6 +87,18 @@ static inline int imax(int a, int b) { return a > b ? a : b; }
 #define AFFIXPREC(pre,post) pre ## z ## post
 #include "bsmbsm_pack.def"
 
+// suzerain_bsmbsm_cspack
+#define SOURCE float
+#define TARGET complex_float
+#define AFFIXPREC(pre,post) pre ## cs ## post
+#include "bsmbsm_pack.def"
+
+// suzerain_bsmbsm_zdpack
+#define SOURCE double
+#define TARGET complex_double
+#define AFFIXPREC(pre,post) pre ## zd ## post
+#include "bsmbsm_pack.def"
+
 gsl_permutation *
 suzerain_bsmbsm_permutation(int S, int n)
 {

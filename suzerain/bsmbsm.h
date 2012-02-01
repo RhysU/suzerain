@@ -362,6 +362,22 @@ suzerain_bsmbsm_zpack(
                         const complex_double *b,    int ldb,
         int KL, int KU,       complex_double *papt, int ldpapt);
 
+/** @copydoc suzerain_bsmbsm_spack */
+int
+suzerain_bsmbsm_cspack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const complex_float alpha,
+                        const         float *b,    int ldb,
+        int KL, int KU,       complex_float *papt, int ldpapt);
+
+/** @copydoc suzerain_bsmbsm_spack */
+int
+suzerain_bsmbsm_zdpack(
+        int S,  int n, int ihat, int jhat,
+        int kl, int ku, const complex_double alpha,
+                        const         double *b,    int ldb,
+        int KL, int KU,       complex_double *papt, int ldpapt);
+
 /**
  * Pack contiguous, scaled, banded submatrix
  * \f$\alpha{}B^{\hat{\imath}\,\hat{\jmath}}\f$ into the corresponding
@@ -421,6 +437,28 @@ suzerain_bsmbsm_zpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                                                          complex_double *papt)
 {
     return suzerain_bsmbsm_zpack(A->S, A->n, ihat, jhat,
+                                 A->kl, A->ku, alpha, b,    A->ld,
+                                 A->KL, A->KU,        papt, A->LD);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc */
+inline static int
+suzerain_bsmbsm_cspackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_float alpha, const float *b,
+                        complex_float *papt)
+{
+    return suzerain_bsmbsm_cspack(A->S, A->n, ihat, jhat,
+                                  A->kl, A->ku, alpha, b,    A->ld,
+                                  A->KL, A->KU,        papt, A->LD);
+}
+
+/** @copydoc suzerain_bsmbsm_spackc */
+inline static int
+suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_double alpha, const double *b,
+                        complex_double *papt)
+{
+    return suzerain_bsmbsm_zdpack(A->S, A->n, ihat, jhat,
                                  A->kl, A->ku, alpha, b,    A->ld,
                                  A->KL, A->KU,        papt, A->LD);
 }
@@ -488,6 +526,30 @@ suzerain_bsmbsm_zpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
                                                          complex_double *papt)
 {
     return suzerain_bsmbsm_zpack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf */
+inline static int
+suzerain_bsmbsm_cspackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_float alpha, const float *b,
+                        complex_float *papt)
+{
+    return suzerain_bsmbsm_cspack(
+            A->S, A->n, ihat, jhat,
+            A->kl, A->ku, alpha, b,            A->ld,
+            A->KL, A->KU,        papt + A->KL, A->LD + A->KL);
+}
+
+/** @copydoc suzerain_bsmbsm_spackf */
+inline static int
+suzerain_bsmbsm_zdpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
+                        const complex_double alpha, const double *b,
+                        complex_double *papt)
+{
+    return suzerain_bsmbsm_zdpack(
             A->S, A->n, ihat, jhat,
             A->kl, A->ku, alpha, b,            A->ld,
             A->KL, A->KU,        papt + A->KL, A->LD + A->KL);

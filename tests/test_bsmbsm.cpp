@@ -738,14 +738,14 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     boost::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
     boost::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
     std::fill(b.get(),    b.get()    + 2*A.n*A.ld,        0);
-    std::fill(papt.get(), papt.get() + 2*A.N*(A.LD+A.KL), 0);
+    // All of papt is overwritten so no fill is performed
 
     // Build the packed, complex operator "i*op" per Mathematica above.
     // Notice that we only manipulate the imaginary portions of b.get().
     // B^{0,0} is i*M
     blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get()+1, 2);
-    suzerain_bsmbsm_zpackf(&A, 0, 0, 1.0, (const complex_t *) b.get(),
-                                          (      complex_t *) papt.get());
+    suzerain_bsmbsm_zdpackf(&A, 0, 0, std::complex<double>(0,1), M,
+                                                   (complex_t *) papt.get());
     // B^{1,1} is i*2*M
     suzerain_bsmbsm_zpackf(&A, 1, 1, 2.0, (const complex_t *) b.get(),
                                           (      complex_t *) papt.get());
@@ -772,6 +772,12 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get()+1, 2);
     suzerain_bsmbsm_zpackf(&A, 1, 2, 1.0, (const complex_t *) b.get(),
                                           (      complex_t *) papt.get());
+
+    // B^{2,0} is identically zero so b argument is not referenced
+    suzerain_bsmbsm_zpackf(&A, 2, 0, 0.0, NULL, (complex_t *) papt.get());
+
+    // B^{0,2} is identically zero so b argument is not referenced
+    suzerain_bsmbsm_zpackf(&A, 0, 2, 0.0, NULL, (complex_t *) papt.get());
 
     // Reuse working buffer to permute right hand side for solve
     b.reset(new real_t[2*(2*A.N)]);
