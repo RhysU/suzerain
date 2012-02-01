@@ -47,25 +47,25 @@ namespace suzerain {
 namespace diffwave {
 
 /** @see suzerain_diffwave_apply */
-template< typename Complex1,
-          typename Complex2 >
-typename boost::enable_if<boost::mpl::and_<
-    suzerain::complex::traits::is_complex_double<Complex1>,
-    suzerain::complex::traits::is_complex_double<Complex2>
->, void>::type apply(
+template< typename AlphaType, typename Complex >
+typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex>
+>::type apply(
     const int dxcnt,
     const int dzcnt,
-    const Complex1 &alpha, Complex2 *x,
+    const AlphaType &alpha, Complex *x,
     const double Lx,
     const double Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
+    std::complex<double> alpha_complex;
+    suzerain::complex::assign_complex(alpha_complex, alpha);
     return suzerain_diffwave_apply(
             dxcnt, dzcnt,
-            reinterpret_cast<const double *>(&alpha),
-            reinterpret_cast<double (*)[2]>(x),
+            alpha_complex,
+            reinterpret_cast<std::complex<double> *>(x),
             Lx,
             Lz,
             Ny,
@@ -74,32 +74,32 @@ typename boost::enable_if<boost::mpl::and_<
 }
 
 /** @see suzerain_diffwave_accumulate */
-template< typename Complex1,
-          typename Complex2,
-          typename Complex3,
-          typename Complex4 >
+template< typename AlphaType, typename BetaType,
+          typename Complex1,  typename Complex2 >
 typename boost::enable_if<boost::mpl::and_<
     suzerain::complex::traits::is_complex_double<Complex1>,
-    suzerain::complex::traits::is_complex_double<Complex2>,
-    suzerain::complex::traits::is_complex_double<Complex3>,
-    suzerain::complex::traits::is_complex_double<Complex4>
+    suzerain::complex::traits::is_complex_double<Complex2>
 >, void>::type accumulate(
     const int dxcnt,
     const int dzcnt,
-    const Complex1 &alpha, const Complex2 *x,
-    const Complex3 &beta, Complex4 *y,
+    const AlphaType &alpha, const Complex1 *x,
+    const BetaType  &beta,        Complex2 *y,
     const double Lx,
     const double Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
+    std::complex<double> alpha_complex;
+    suzerain::complex::assign_complex(alpha_complex, alpha);
+    std::complex<double> beta_complex;
+    suzerain::complex::assign_complex(beta_complex, beta);
     return suzerain_diffwave_accumulate(
             dxcnt, dzcnt,
-            reinterpret_cast<const double *>(&alpha),
-            reinterpret_cast<const double (*)[2]>(x),
-            reinterpret_cast<const double *>(&beta),
-            reinterpret_cast<double (*)[2]>(y),
+            alpha_complex,
+            reinterpret_cast<const std::complex<double> *>(x),
+            beta_complex,
+            reinterpret_cast<std::complex<double> *>(y),
             Lx,
             Lz,
             Ny,
