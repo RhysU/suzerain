@@ -261,8 +261,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
     const long incx = 2;
     const size_t N = x.size() / incx;
 
-    BOOST_CHECK_EQUAL(2, blas::iamax(N, x.data(), incx));
-    BOOST_CHECK_EQUAL(1, blas::iamin(N, x.data(), incx));
+    BOOST_CHECK_EQUAL( 1, blas::iamax(N, x.data(), incx));
+    BOOST_CHECK_EQUAL( 0, blas::iamin(N, x.data(), incx));
+
+    BOOST_CHECK_EQUAL(-1, blas::iamax(0, x.data(), incx));
+    BOOST_CHECK_EQUAL(-1, blas::iamin(0, x.data(), incx));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
@@ -277,8 +280,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
     const long incx = 2;
     const size_t N = x.size() / incx;
 
-    BOOST_CHECK_EQUAL(2, blas::iamax(N, x.data(), incx));
-    BOOST_CHECK_EQUAL(1, blas::iamin(N, x.data(), incx));
+    BOOST_CHECK_EQUAL( 1, blas::iamax(N, x.data(), incx));
+    BOOST_CHECK_EQUAL( 0, blas::iamin(N, x.data(), incx));
+
+    BOOST_CHECK_EQUAL(-1, blas::iamax(0, x.data(), incx));
+    BOOST_CHECK_EQUAL(-1, blas::iamin(0, x.data(), incx));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

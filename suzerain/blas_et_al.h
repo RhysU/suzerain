@@ -350,13 +350,15 @@ suzerain_blas_dzasum(
         const int incx);
 
 /*!
- * \brief Find \f$i\f$ maximizing \f$\left|x_i\right|\f$ using BLAS's amax.
+ * \brief Find <em>zero-indexed</em> \f$i\f$ such that
+ * \f$i = \mbox{arg max}_{0\leq{}i<n} \left|x_i\right|\f$ using
+ * BLAS's amax.
  *
  * \param n Number of elements in \c x.
  * \param x Source vector.
  * \param incx Source vector stride.
  *
- * \return Index \f$i\f$ of maximum absolute value within vector \f$x\f$.
+ * \return Zero-indexed \f$i\f$ on success.  On nonpositive \c n returns -1.
  *
  * \see A BLAS reference for more details.
  */
@@ -374,9 +376,9 @@ suzerain_blas_idamax(
         const int incx);
 
 /*!
- * \brief Find \f$i\f$ maximizing
- * \f$\left|\mbox{Re}\left(x_i\right)\right|+\left|\mbox{Im}\left(x_i\right)\right|\f$
- * using BLAS's amax.
+ * \brief Find <em>zero-indexed</em> \f$i\f$ such that \f$i = \mbox{arg
+ * max}_{0\leq{}i<n} \left|\mbox{Re}\left(x_i\right)\right| +
+ * \left|\mbox{Im}\left(x_i\right)\right|\f$ using BLAS's amax.
  *
  * \param n Number of elements in \c x.
  * \param x Source vector.
@@ -400,7 +402,9 @@ suzerain_blas_izamax(
         const int incx);
 
 /*!
- * \brief Find \f$i\f$ minimizing \f$\left|x_i\right|\f$ using BLAS's amin.
+ * \brief Find <em>zero-indexed</em> \f$i\f$ such that
+ * \f$i = \mbox{arg min}_{0\leq{}i<n} \left|x_i\right|\f$ using
+ * BLAS's amin.
  *
  * \param n Number of elements in \c x.
  * \param x Source vector.
@@ -424,9 +428,9 @@ suzerain_blas_idamin(
         const int incx);
 
 /*!
- * \brief Find \f$i\f$ minimizing
- * \f$\left|\mbox{Re}\left(x_i\right)\right|+\left|\mbox{Im}\left(x_i\right)\right|\f$
- * using BLAS's amin.
+ * \brief Find <em>zero-indexed</em> \f$i\f$ such that \f$i = \mbox{arg
+ * min}_{0\leq{}i<n} \left|\mbox{Re}\left(x_i\right)\right| +
+ * \left|\mbox{Im}\left(x_i\right)\right|\f$ using BLAS's amin.
  *
  * \param n Number of elements in \c x.
  * \param x Source vector.

@@ -505,7 +505,7 @@ suzerain_blas_isamax(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return isamax(&n, x, &incx);
+    return isamax(&n, x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -519,7 +519,7 @@ suzerain_blas_idamax(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return idamax(&n, x, &incx);
+    return idamax(&n, x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -533,7 +533,7 @@ suzerain_blas_icamax(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return icamax(&n, (MKL_Complex8 *) x, &incx);
+    return icamax(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -547,7 +547,7 @@ suzerain_blas_izamax(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return izamax(&n, (MKL_Complex16 *) x, &incx);
+    return izamax(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -561,7 +561,7 @@ suzerain_blas_isamin(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return isamin(&n, x, &incx);
+    return isamin(&n, x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -575,7 +575,7 @@ suzerain_blas_idamin(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return idamin(&n, x, &incx);
+    return idamin(&n, x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -589,7 +589,7 @@ suzerain_blas_icamin(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return icamin(&n, (MKL_Complex8 *) x, &incx);
+    return icamin(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
@@ -603,7 +603,7 @@ suzerain_blas_izamin(
 {
 #ifdef SUZERAIN_HAVE_MKL
     assert_static(sizeof(MKL_INT) == sizeof(int));
-    return izamin(&n, (MKL_Complex16 *) x, &incx);
+    return izamin(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity failure"
 #endif
