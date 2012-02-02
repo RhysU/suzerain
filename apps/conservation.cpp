@@ -55,6 +55,9 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
+    logging::initialize(MPI_COMM_WORLD,             // Initialize logging
+                        channel::log4cxx_config);
+    WARN0_ENABLE();                                 // Disable chattiness
 
     // Process incoming program arguments from command line, input files
     double L       = 2;
