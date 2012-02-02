@@ -497,6 +497,62 @@ suzerain_blas_dzasum(
 #endif
 }
 
+inline int
+suzerain_blas_isamax(
+        const int n,
+        const float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return isamax(&n, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_idamax(
+        const int n,
+        const double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return idamax(&n, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_icamax(
+        const int n,
+        const complex_float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return icamax(&n, (MKL_Complex8 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_izamax(
+        const int n,
+        const complex_double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return izamax(&n, (MKL_Complex16 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
 inline void
 suzerain_blas_saxpy(
         const int n,
