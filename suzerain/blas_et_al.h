@@ -400,6 +400,56 @@ suzerain_blas_izamax(
         const int incx);
 
 /*!
+ * \brief Find \f$i\f$ minimizing \f$\left|x_i\right|\f$ using BLAS's amin.
+ *
+ * \param n Number of elements in \c x.
+ * \param x Source vector.
+ * \param incx Source vector stride.
+ *
+ * \return Index \f$i\f$ of minimum absolute value within vector \f$x\f$.
+ *
+ * \see A BLAS reference for more details.
+ */
+int
+suzerain_blas_isamin(
+        const int n,
+        const float *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_isamin */
+int
+suzerain_blas_idamin(
+        const int n,
+        const double *x,
+        const int incx);
+
+/*!
+ * \brief Find \f$i\f$ minimizing
+ * \f$\left|\mbox{Re}\left(x_i\right)\right|+\left|\mbox{Im}\left(x_i\right)\right|\f$
+ * using BLAS's amin.
+ *
+ * \param n Number of elements in \c x.
+ * \param x Source vector.
+ * \param incx Source vector stride.
+ *
+ * \return Index \f$i\f$ of minimum absolute value within vector \f$x\f$.
+ *
+ * \see A BLAS reference for more details.
+ */
+int
+suzerain_blas_icamin(
+        const int n,
+        const complex_float *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_icamin */
+int
+suzerain_blas_izamin(
+        const int n,
+        const complex_double *x,
+        const int incx);
+
+/*!
  * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's axpy.
  *
  * \param n Number of elements in \c x and \c y.

@@ -553,6 +553,62 @@ suzerain_blas_izamax(
 #endif
 }
 
+inline int
+suzerain_blas_isamin(
+        const int n,
+        const float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return isamin(&n, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_idamin(
+        const int n,
+        const double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return idamin(&n, x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_icamin(
+        const int n,
+        const complex_float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return icamin(&n, (MKL_Complex8 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
+suzerain_blas_izamin(
+        const int n,
+        const complex_double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return izamin(&n, (MKL_Complex16 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
 inline void
 suzerain_blas_saxpy(
         const int n,
