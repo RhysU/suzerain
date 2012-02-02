@@ -253,6 +253,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
 BOOST_AUTO_TEST_SUITE_END()
 
 
+BOOST_AUTO_TEST_SUITE( iamax_and_iamin )
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
+{
+    const array<T,6> x = {{  -1, -555, 3, 0, 2, -555 }};
+    const long incx = 2;
+    const size_t N = x.size() / incx;
+
+    BOOST_CHECK_EQUAL(2, blas::iamax(N, x.data(), incx));
+    BOOST_CHECK_EQUAL(1, blas::iamin(N, x.data(), incx));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( complex_valued, T, complex_types )
+{
+    array<T,6> x;
+    assign_complex(x[0],   1, -  1);
+    assign_complex(x[1], 555, -555);
+    assign_complex(x[2],   3, -  3);
+    assign_complex(x[3],   0,    0);
+    assign_complex(x[4],   2, -  2);
+    assign_complex(x[5], 555, -555);
+    const long incx = 2;
+    const size_t N = x.size() / incx;
+
+    BOOST_CHECK_EQUAL(2, blas::iamax(N, x.data(), incx));
+    BOOST_CHECK_EQUAL(1, blas::iamin(N, x.data(), incx));
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+
 BOOST_AUTO_TEST_SUITE( axpy )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( real_valued, T, real_types )
