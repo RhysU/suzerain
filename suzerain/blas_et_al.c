@@ -469,6 +469,34 @@ suzerain_blas_dasum(
 #endif
 }
 
+inline float
+suzerain_blas_scasum(
+        const int n,
+        const complex_float *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return scasum(&n, (MKL_Complex8 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline double
+suzerain_blas_dzasum(
+        const int n,
+        const complex_double *x,
+        const int incx)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(MKL_INT) == sizeof(int));
+    return dzasum(&n, (MKL_Complex16 *) x, &incx);
+#else
+#error "Sanity failure"
+#endif
+}
+
 inline void
 suzerain_blas_saxpy(
         const int n,

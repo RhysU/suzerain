@@ -335,6 +335,20 @@ suzerain_blas_dasum(
         const double *x,
         const int incx);
 
+/*! \copydoc suzerain_blas_sasum */
+float
+suzerain_blas_scasum(
+        const int n,
+        const complex_float *x,
+        const int incx);
+
+/*! \copydoc suzerain_blas_sasum */
+double
+suzerain_blas_dzasum(
+        const int n,
+        const complex_double *x,
+        const int incx);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ using BLAS's axpy.
  *
