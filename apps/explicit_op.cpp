@@ -717,7 +717,6 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     // Reduce and scale common.u() sums to obtain mean "zero-zero" quantities
     if (dgrid.has_zero_zero_modes()) {
-        assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
         SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
                     common.u().size(), suzerain::mpi::datatype<real_t>::value,
                     MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
