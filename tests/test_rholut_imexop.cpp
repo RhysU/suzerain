@@ -67,9 +67,6 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
         B1[i + i*N] = 1;
     }
 
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
-
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
@@ -78,16 +75,10 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
     }
 
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
-
     // Compute B1 = P*B2
     for (int j = 0; j < N; ++j) {
         suzerain_bsmbsm_zaPxpby('N', S, n, 1.0, &B2[j*N], 1, 0.0, &B1[j*N], 1);
     }
-
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
 
     // Form PAP^T (with size computations to check documentation is right)
     const int bufsize  = n*(op.max_kl() + 1 + op.max_ku());
@@ -129,9 +120,9 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
                                                   /* equed */ &equed,
                                                   /* r     */ scale_r.get(),
                                                   /* c     */ scale_c.get(),
-                                                  /* b     */ B2.get(),
+                                                  /* b     */ B1.get(),
                                                   /* ldb   */ N,
-                                                  /* x     */ B1.get(),
+                                                  /* x     */ B2.get(),
                                                   /* ldx   */ N,
                                                   /* rcond */ &rcond,
                                                   /* ferr  */ ferr.get(),
@@ -141,26 +132,20 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     BOOST_TEST_MESSAGE("suzerain_lapack_zgbsvx returned equed = " <<   equed);
     BOOST_TEST_MESSAGE("suzerain_lapack_zgbsvx returned cond  = " << 1/rcond);
 
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
-
     // Compute B1 = P^T*B2
     for (int j = 0; j < N; ++j) {
         suzerain_bsmbsm_zaPxpby('T', S, n, 1.0, &B2[j*N], 1, 0.0, &B1[j*N], 1);
     }
 
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
-
-    // Expected result is the identity.
-    // Subtract the identity from B1.
+    // Expected result is the identity so subtract identity matrix from B1
     for (int i = 0; i < N; ++i) {
         B1[i + i*N] -= 1;
     }
 
-    // Expected result is now identically zero.
-    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
-    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
-
-    // TODO Check result
+    // Expected result is now a matrix containing only zeros.
+    // Check that the maximum absolute deviation from zero is small.
+    const int imaxabs = iamax(N*N, B1.get(), 1);
+    BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
+    BOOST_CHECK_LT(std::abs(B1[imaxabs]),
+                   N*std::numeric_limits<real_t>::epsilon());
 }
