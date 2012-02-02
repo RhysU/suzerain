@@ -74,36 +74,48 @@ suzerain_rholut_imexop_apply(
 
     // Accumulate the requested portions of the M + \varphi L operator.
     // The zscal beta/phi and M gbmv phi coefficients scale output by beta.
+    // Notice that the phi in (M + phi*L) is achieved using final M gbmv.
 
-    if (out_rho ) {  // Accumulate density terms into out_rho
+    if (in_rho ) {  // Accumulate density terms into out_rho
         suzerain_blas_zscal(n, beta/phi, out_rho, inc);
 
+        if (in_rhou) suzerain_bsplineop_accumulate_complex(
+                M,  nrhs, -I*km, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
+
+        if (in_rhov) suzerain_bsplineop_accumulate_complex(
+                D1, nrhs, - 1.0, in_rhov, inc, n, 1.0, out_rho, inc, n, w);
+
+        if (in_rhow) suzerain_bsplineop_accumulate_complex(
+                M,  nrhs, -I*kn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
+
+        if (in_rhoe) /* NOP */;
+
         suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rho, inc, n, phi, out_rho, inc, n, w);
+                M,  nrhs,   1.0, in_rho,  inc, n, phi, out_rho, inc, n, w);
     }
 
-    if (out_rhou) {  // Accumulate X momentum terms into out_rhou
+    if (in_rhou) {  // Accumulate X momentum terms into out_rhou
         suzerain_blas_zscal(n, beta/phi, out_rhou, inc);
 
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhou, inc, n, phi, out_rhou, inc, n, w);
     }
 
-    if (out_rhov) {  // Accumulate Y momentum terms into out_rhov
+    if (in_rhov) {  // Accumulate Y momentum terms into out_rhov
         suzerain_blas_zscal(n, beta/phi, out_rhov, inc);
 
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhov, inc, n, phi, out_rhov, inc, n, w);
     }
 
-    if (out_rhow) {  // Accumulate Z momentum terms into out_rhow
+    if (in_rhow) {  // Accumulate Z momentum terms into out_rhow
         suzerain_blas_zscal(n, beta/phi, out_rhow, inc);
 
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhow, inc, n, phi, out_rhow, inc, n, w);
     }
 
-    if (out_rhoe) {  // Accumulate total energy terms into out_rhoe
+    if (in_rhoe) {  // Accumulate total energy terms into out_rhoe
         suzerain_blas_zscal(n, beta/phi, out_rhoe, inc);
 
         suzerain_bsplineop_accumulate_complex(

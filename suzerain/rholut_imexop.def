@@ -45,49 +45,65 @@ FUNCNAME()(
 
     if (rho >= 0) {  // Prepare density row
 
-        if (rhou >= 0) PACKFUNC(z)(A, rho,  rhou, 0.0, NULL, papt);
-        if (rhov >= 0) PACKFUNC(z)(A, rho,  rhov, 0.0, NULL, papt);
-        if (rhow >= 0) PACKFUNC(z)(A, rho,  rhow, 0.0, NULL, papt);
-        if (rhoe >= 0) PACKFUNC(z)(A, rho,  rhoe, 0.0, NULL, papt);
-
         PACKFUNC(zd)(A, rho,  rho, 1.0, M, papt);
+
+        if (rhou >= 0) PACKFUNC(zd)(A, rho, rhou, -I*km*phi, M,  papt);
+
+        if (rhov >= 0) PACKFUNC(zd)(A, rho, rhov, - 1.0*phi, D1, papt);
+
+        if (rhow >= 0) PACKFUNC(zd)(A, rho, rhow, -I*kn*phi, M,  papt);
+
+        if (rhoe >= 0) PACKFUNC(z)(A, rho,  rhoe,       0.0, 0,  papt);
     }
 
     if (rhou >= 0) { // Prepare streamwise momentum row
 
         if (rho  >= 0) PACKFUNC(z)(A, rhou, rho,  0.0, NULL, papt);
-        if (rhov >= 0) PACKFUNC(z)(A, rhou, rhov, 0.0, NULL, papt);
-        if (rhow >= 0) PACKFUNC(z)(A, rhou, rhow, 0.0, NULL, papt);
-        if (rhoe >= 0) PACKFUNC(z)(A, rhou, rhoe, 0.0, NULL, papt);
 
         PACKFUNC(zd)(A, rhou, rhou, 1.0, M, papt);
+
+        if (rhov >= 0) PACKFUNC(z)(A, rhou, rhov, 0.0, NULL, papt);
+
+        if (rhow >= 0) PACKFUNC(z)(A, rhou, rhow, 0.0, NULL, papt);
+
+        if (rhoe >= 0) PACKFUNC(z)(A, rhou, rhoe, 0.0, NULL, papt);
     }
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
 
         if (rho  >= 0) PACKFUNC(z)(A, rhov, rho,  0.0, NULL, papt);
+
         if (rhou >= 0) PACKFUNC(z)(A, rhov, rhou, 0.0, NULL, papt);
-        if (rhow >= 0) PACKFUNC(z)(A, rhov, rhow, 0.0, NULL, papt);
-        if (rhoe >= 0) PACKFUNC(z)(A, rhov, rhoe, 0.0, NULL, papt);
 
         PACKFUNC(zd)(A, rhov, rhov, 1.0, M, papt);
+
+        if (rhow >= 0) PACKFUNC(z)(A, rhov, rhow, 0.0, NULL, papt);
+
+        if (rhoe >= 0) PACKFUNC(z)(A, rhov, rhoe, 0.0, NULL, papt);
     }
 
     if (rhow >= 0) { // Prepare spanwise momentum row
 
         if (rho  >= 0) PACKFUNC(z)(A, rhow, rho,  0.0, NULL, papt);
+
         if (rhou >= 0) PACKFUNC(z)(A, rhow, rhou, 0.0, NULL, papt);
+
         if (rhov >= 0) PACKFUNC(z)(A, rhow, rhov, 0.0, NULL, papt);
-        if (rhoe >= 0) PACKFUNC(z)(A, rhow, rhoe, 0.0, NULL, papt);
 
         PACKFUNC(zd)(A, rhow, rhow, 1.0, M, papt);
+
+        if (rhoe >= 0) PACKFUNC(z)(A, rhow, rhoe, 0.0, NULL, papt);
+
     }
 
     if (rhoe >= 0) { // Prepare total energy row
 
         if (rho  >= 0) PACKFUNC(z)(A, rhoe, rho,  0.0, NULL, papt);
+
         if (rhou >= 0) PACKFUNC(z)(A, rhoe, rhou, 0.0, NULL, papt);
+
         if (rhov >= 0) PACKFUNC(z)(A, rhoe, rhov, 0.0, NULL, papt);
+
         if (rhow >= 0) PACKFUNC(z)(A, rhoe, rhow, 0.0, NULL, papt);
 
         PACKFUNC(zd)(A, rhoe, rhoe, 1.0, M, papt);
