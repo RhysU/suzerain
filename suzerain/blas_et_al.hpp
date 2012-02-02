@@ -457,6 +457,38 @@ inline double asum(
                                boost::numeric_cast<int>(incx));
 }
 
+/*! @copydoc suzerain_blas_scasum */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_float<Complex1>, float
+>::type asum(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_scasum(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const std::complex<float> *>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_dzasum */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex1>, double
+>::type asum(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_dzasum(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const complex_double *>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
 /*! @copydoc suzerain_blas_saxpy */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void axpy(
