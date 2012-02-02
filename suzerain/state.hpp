@@ -157,6 +157,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename ContiguousState<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
@@ -178,6 +180,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename ContiguousState<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
@@ -205,6 +209,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename ContiguousState<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
@@ -238,6 +244,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename ContiguousState<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
@@ -291,6 +299,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename InterleavedState<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
@@ -312,6 +322,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename InterleavedState<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
@@ -339,6 +351,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename InterleavedState<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
@@ -372,6 +386,8 @@ void apply(BLASFunctor functor,
 {
     typedef typename InterleavedState<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
+
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);

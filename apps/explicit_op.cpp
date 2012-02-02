@@ -105,6 +105,9 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     suzerain::ContiguousState<4,complex_t>        &y = output; // Shorthand
     const complex_t c_one = 1;
 
+    // Sidesteps assertions triggered by dereferencing trivial input and output
+    if (SUZERAIN_UNLIKELY(0U == x.shape()[1] * x.shape()[2])) return;
+
     // Loops go from slower to faster indices for ContiguousState<4,complex_t>
     typedef suzerain::ContiguousState<4,complex_t>::index index;
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
