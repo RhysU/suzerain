@@ -1419,8 +1419,8 @@ void load_collocation_values(
     massluz.factor();
 
     for (size_t i = 0; i < field::count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys(i, 0)); // X, Z
-        obase.bop_solve(massluz, state, i);             // Y
+        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
+        obase.bop_solve(massluz, state, i);                      // Y
     }
 }
 
@@ -1754,31 +1754,31 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     // From Ax in s[0] compute \partial_y Ax
     obase.bop_apply(1, 1.0, s, 0);
-    dgrid.transform_wave_to_physical(&p(0,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(0,0));
 
     // From Ax in s[1]  compute \partial_z Ax
     obase.bop_apply(0, 1.0, s, 1);
     obase.diffwave_apply(0, 1, 1.0, s, 1);
-    dgrid.transform_wave_to_physical(&p(1,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(1,0));
 
     // From Ay in s[2] compute \partial_x Ay
     obase.bop_apply(0, 1.0, s, 2);
     obase.diffwave_apply(1, 0, 1.0, s, 2);
-    dgrid.transform_wave_to_physical(&p(2,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(2,0));
 
     // From Ay in s[3] compute \partial_z Ay
     obase.bop_apply(0, 1.0, s, 3);
     obase.diffwave_apply(0, 1, 1.0, s, 3);
-    dgrid.transform_wave_to_physical(&p(3,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(3,0));
 
     // From Az in s[4] compute \partial_x Az
     obase.bop_apply(0, 1.0, s, 4);
     obase.diffwave_apply(1, 0, 1.0, s, 4);
-    dgrid.transform_wave_to_physical(&p(4,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(4,0));
 
     // From Az in s[5] compute \partial_y Az
     obase.bop_apply(1, 1.0, s, 5);
-    dgrid.transform_wave_to_physical(&p(5,0));
+    dgrid.transform_wave_to_physical(&p.coeffRef(5,0));
 
     // Store curl A in s[{5,6,7}] and find global maximum magnitude of curl A
     real_t maxmagsquared = 0;
@@ -1852,7 +1852,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     for (size_t i = 0; i < channel::field::count; ++i) {
         s[i] = state[i];
         obase.bop_apply(0, 1.0, s, i);
-        dgrid.transform_wave_to_physical(&p(i,0));
+        dgrid.transform_wave_to_physical(&p.coeffRef(i,0));
     }
 
     //  7) At each point compute velocity and internal energy.  Perturb
@@ -1909,8 +1909,8 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     assert(field::ndx::rho == 0);
     assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
     for (size_t i = field::ndx::rhou; i < field::count; ++i) {
-        dgrid.transform_physical_to_wave(&p(i, 0));      // X, Z
-        obase.bop_solve(massluz, s, i);                  // Y
+        dgrid.transform_physical_to_wave(&p.coeffRef(i, 0));  // X, Z
+        obase.bop_solve(massluz, s, i);                       // Y
     }
 
     //  9) Overwrite state storage with the new perturbed state.
@@ -2056,7 +2056,7 @@ void accumulate_manufactured_solution(
         // ...or scale data by beta and transform it to physical space.
         for (size_t i = 0; i < field::count; ++i) {
             obase.bop_apply(0, beta, swave, i);
-            dgrid.transform_wave_to_physical(&sphys(i,0));
+            dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
         }
     }
 
@@ -2109,8 +2109,8 @@ void accumulate_manufactured_solution(
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
     for (size_t i = 0; i < field::count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys(i, 0));      // X, Z
-        obase.bop_solve(massluz, swave, i);                  // Y
+        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
+        obase.bop_solve(massluz, swave, i);                       // Y
     }
 }
 
@@ -2252,10 +2252,10 @@ mean sample_mean_quantities(
     channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(dgrid, swave);
     for (size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_wave_to_physical(&sphys(i,0));
+        dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
-        dgrid.transform_wave_to_physical(&auxp(i,0));
+        dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
 
     // Physical space is traversed linearly using a single offset 'offset'.

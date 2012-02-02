@@ -496,10 +496,10 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     typename channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(dgrid, swave);
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_wave_to_physical(&sphys(i,0));
+        dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (std::size_t i = 0; i < aux::count; ++i) {
-        dgrid.transform_wave_to_physical(&auxp(i,0));
+        dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
 
     // Retrieve constants and compute derived constants
@@ -779,7 +779,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys(i,0));
+        dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
     }
 
     // Return the stable time step criteria separately on each rank.  The time

@@ -394,8 +394,8 @@ int main(int argc, char **argv)
         massluz.factor();
 
         for (std::size_t i = 0; i < channel::field::count; ++i) {
-            dgrid->transform_physical_to_wave(&sphys(i, 0));     // X, Z
-            obase.bop_solve(massluz, swave, i);                  // Y
+            dgrid->transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
+            obase.bop_solve(massluz, swave, i);                        // Y
         }
 
     }
