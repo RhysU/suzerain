@@ -87,7 +87,7 @@ void suzerain_diffwave_apply(
     assert(Ny >= 0);                // Sanity check Y direction
     assert(Nx >= 0);                // Sanity check X direction
     assert(dNx >= Nx);
-    assert(dkex <= dNx);            // Often dkex <= (dNx/2+1)
+    assert(dkex <= dNx);
     assert(dkbx <= dkex);
     assert(Nz >= 0);                // Sanity check Z direction
     assert(dNz >= Nz);
@@ -191,15 +191,15 @@ void suzerain_diffwave_accumulate(
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
-    assert(dxcnt >= 0);             // Only differentiation supported
+    assert(dkex == dkbx || dkez == dkbz || x != y); // Trivial or not aliased?
+    assert(dxcnt >= 0);                             // No integration!
     assert(dzcnt >= 0);
-    assert((void*) x != (void *)y); // Sanity check aliasing requirements
-    assert(Ny >= 0);                // Sanity check Y direction
-    assert(Nx >= 0);                // Sanity check X direction
+    assert(Ny >= 0);                                // Sanity check Y direction
+    assert(Nx >= 0);                                // Sanity check X direction
     assert(dNx >= Nx);
-    assert(dkex <= dNx);            // Often dkex <= (dNx/2+1)
+    assert(dkex <= dNx);
     assert(dkbx <= dkex);
-    assert(Nz >= 0);                // Sanity check Z direction
+    assert(Nz >= 0);                                // Sanity check Z direction
     assert(dNz >= Nz);
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
