@@ -549,6 +549,66 @@ inline typename boost::enable_if<
                                 boost::numeric_cast<int>(incx));
 }
 
+/*! @copydoc suzerain_blas_isamin */
+template< typename Integer1, typename Integer2 >
+inline int iamin(
+        const Integer1 n,
+        const float *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_isamin(boost::numeric_cast<int>(n),
+                                x,
+                                boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_idamin */
+template< typename Integer1, typename Integer2 >
+inline int iamin(
+        const Integer1 n,
+        const double *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_idamin(boost::numeric_cast<int>(n),
+                                x,
+                                boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_icamin */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_float<Complex1>, int
+>::type iamin(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_icamin(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const std::complex<float> *>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
+/*! @copydoc suzerain_blas_izamin */
+template< typename Integer1, typename Integer2, typename Complex1 >
+inline typename boost::enable_if<
+    suzerain::complex::traits::is_complex_double<Complex1>, int
+>::type iamin(
+        const Integer1 n,
+        const Complex1 *x,
+        const Integer2 incx)
+{
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer1>::value);
+    BOOST_STATIC_ASSERT(boost::is_integral<Integer2>::value);
+    return suzerain_blas_izamin(boost::numeric_cast<int>(n),
+                                reinterpret_cast<const complex_double *>(x),
+                                boost::numeric_cast<int>(incx));
+}
+
 /*! @copydoc suzerain_blas_saxpy */
 template< typename Integer1, typename Integer2, typename Integer3 >
 inline void axpy(
