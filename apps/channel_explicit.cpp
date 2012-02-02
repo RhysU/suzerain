@@ -243,12 +243,15 @@ static void information_L2(const std::string& timeprefix)
     INFO0(rms_fluct, msg.str());
 }
 
-/** Build a message containing bulk quantities (intended for root rank only) */
+/** Build a message containing bulk quantities */
 static void information_bulk(const std::string& timeprefix)
 {
-    // Avoid computational cost when logging is disabled
+    // Only continue on the rank housing the zero-zero modes...
+    if (!dgrid->has_zero_zero_modes()) return;
+
+    // ...and when logging is enabled.  Notice INFO not INFO0 is used.
     logging::logger_type bulk_state = logging::get_logger("bulk.state");
-    if (!INFO0_ENABLED(bulk_state)) return;
+    if (!INFO_ENABLED(bulk_state)) return;
 
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
@@ -263,12 +266,15 @@ static void information_bulk(const std::string& timeprefix)
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
-    INFO0(bulk_state, msg.str());
+    INFO(bulk_state, msg.str());
 }
 
 /** Build a message containing specific state quantities at the wall */
 static void information_specific_wall_state(const std::string& timeprefix)
 {
+    // Only continue on the rank housing the zero-zero modes.
+    if (!dgrid->has_zero_zero_modes()) return;
+
     namespace ndx = channel::field::ndx;
 
     logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
@@ -282,7 +288,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
     for (size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
 
         // Avoid computational cost when logging is disabled
-        if (!DEBUG0_ENABLED(nick[l])) continue;
+        if (!DEBUG_ENABLED(nick[l])) continue;
 
         std::ostringstream msg;
         msg << timeprefix;
@@ -294,7 +300,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
             append_real(msg << ' ' ,
                         ((*state_linear)[k][wall[l]][0][0]).real() / rho);
         }
-        DEBUG0(nick[l], msg.str());
+        DEBUG(nick[l], msg.str());
     }
 }
 
