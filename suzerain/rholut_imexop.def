@@ -40,7 +40,8 @@ FUNCNAME()(
 
     // We do not know the leading dimension associated with the definition of
     // PACKFUNC() so we must overwrite every possible submatrix within PAPT.
-    // This is only suboptimal for the zero (rho, rhoe) submatrix.
+    // This is only suboptimal for the zero (rho, rhoe) submatrix and
+    // brings with it much flexibility.
 
     if (rho >= 0) {  // Prepare density row
 

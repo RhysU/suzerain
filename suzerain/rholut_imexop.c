@@ -56,7 +56,13 @@ suzerain_rholut_imexop_apply(
         complex_double *out_rhow,
         complex_double *out_rhoe)
 {
-    assert(w->nderiv >= 2);
+    // Sanity checks
+    assert(w->nderiv >= 2);          // Adequate workspace?
+    assert(!(!in_rho  ^ !out_rho )); // Both non-NULL or NULL?
+    assert(!(!in_rhou ^ !out_rhou)); // ditto
+    assert(!(!in_rhov ^ !out_rhov)); // ditto
+    assert(!(!in_rhow ^ !out_rhow)); // ditto
+    assert(!(!in_rhoe ^ !out_rhoe)); // ditto
 
     // Prepare several oft-used constants to aid readability
     static const int inc        = 1;
@@ -66,35 +72,43 @@ suzerain_rholut_imexop_apply(
     static const int D2         = 2;
     const int    n              = w->n;
 
-    // Incrementally build out_rho
-    suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta/phi, out_rho, inc);
-    suzerain_bsplineop_accumulate_complex(
-            M, nrhs, 1.0, in_rho, inc, n, phi, out_rho, inc, n, w);
+    // Accumulate the requested portions of the M + \varphi L operator.
+    // The zscal beta/phi and M gbmv phi coefficients scale output by beta.
 
-    // Incrementally build out_rhou
-    suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta/phi, out_rhou, inc);
-    suzerain_bsplineop_accumulate_complex(
-            M, nrhs, 1.0, in_rhou, inc, n, phi, out_rhou, inc, n, w);
+    if (out_rho ) {  // Accumulate density terms into out_rho
+        suzerain_blas_zscal(n, beta/phi, out_rho, inc);
 
-    // Incrementally build out_rhov
-    suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta/phi, out_rhov, inc);
-    suzerain_bsplineop_accumulate_complex(
-            M, nrhs, 1.0, in_rhov, inc, n, phi, out_rhov, inc, n, w);
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rho, inc, n, phi, out_rho, inc, n, w);
+    }
 
-    // Incrementally build out_rhow
-    suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta/phi, out_rhow, inc);
-    suzerain_bsplineop_accumulate_complex(
-            M, nrhs, 1.0, in_rhow, inc, n, phi, out_rhow, inc, n, w);
+    if (out_rhou) {  // Accumulate X momentum terms into out_rhou
+        suzerain_blas_zscal(n, beta/phi, out_rhou, inc);
 
-    // Incrementally build out_rhoe
-    suzerain_blas_zscal( // TODO incorporate beta_by_rho into first GBMV
-            n, beta/phi, out_rhoe, inc);
-    suzerain_bsplineop_accumulate_complex(
-            M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhou, inc, n, phi, out_rhou, inc, n, w);
+    }
+
+    if (out_rhov) {  // Accumulate Y momentum terms into out_rhov
+        suzerain_blas_zscal(n, beta/phi, out_rhov, inc);
+
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhov, inc, n, phi, out_rhov, inc, n, w);
+    }
+
+    if (out_rhow) {  // Accumulate Z momentum terms into out_rhow
+        suzerain_blas_zscal(n, beta/phi, out_rhow, inc);
+
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhow, inc, n, phi, out_rhow, inc, n, w);
+    }
+
+    if (out_rhoe) {  // Accumulate total energy terms into out_rhoe
+        suzerain_blas_zscal(n, beta/phi, out_rhoe, inc);
+
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
+    }
 }
 
 // suzerain_rholut_imexop_pack{c,f} differ trivially

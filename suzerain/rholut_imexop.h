@@ -37,8 +37,10 @@
 
 /** @file
  * Provides implicit operator apply and solve routines for a single wall-normal
- * pencil of state information.  Meant to be used in conjunction with compute
- * kernels found in rholut.hpp.  Coded in C99 to facilitate profiling.
+ * pencil of state information.  The operator is described in "Hybrid
+ * implicit/explicit" treatment within the model document.  These routines are
+ * meant to be used in conjunction with compute kernels found in rholut.hpp.
+ * The logic is coded in C99 to facilitate profiling.
  */
 
 #ifdef __cplusplus
@@ -95,6 +97,11 @@ typedef struct {
  * problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  Input and output state variables must be stride one.
  *
+ * Providing a \c NULL value for any input and its corresponding output (e.g.
+ * \c in_rho and \c out_rho) omits the corresponding part of the operator.
+ * This may be useful for omitting part of the operator (e.g. the density
+ * equation).
+ *
  * @param[in] phi Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
  * @param[in] km X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
  *               (from, for example, \ref suzerain_inorder_wavenumber).
@@ -139,7 +146,6 @@ suzerain_rholut_imexop_apply(
         complex_double *out_rhow,
         complex_double *out_rhoe);
 
-
 /**
  * Pack \f$\left(M + \varphi{}L\right)\f$ into the corresponding locations
  * within contiguous storage of \f$P\left(M + \varphi{}L\right)P^{\mbox{T}}\f$
@@ -149,8 +155,10 @@ suzerain_rholut_imexop_apply(
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
  * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
- * the corresponding rows and columns from the formed matrix.  All nonnegative
- * order parameters must form a unique, contiguous set starting from zero.
+ * the corresponding rows and columns from the formed matrix.  This may be
+ * useful for omitting part of the operator (e.g. the density equation).  All
+ * nonnegative order parameters must form a unique, contiguous set starting
+ * from zero.
  *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
@@ -215,8 +223,10 @@ suzerain_rholut_imexop_packc(
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
  * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
- * the corresponding rows and columns from the formed matrix.  All nonnegative
- * order parameters must form a unique, contiguous set starting from zero.
+ * the corresponding rows and columns from the formed matrix.  This may be
+ * useful for omitting part of the operator (e.g. the density equation).  All
+ * nonnegative order parameters must form a unique, contiguous set starting
+ * from zero.
  *
  * The problem size and discrete operators are taken from the provided B-spline
  * workspace \c w.  On entry, \c papt must be of at least size
