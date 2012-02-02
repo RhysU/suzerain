@@ -20,6 +20,8 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 // holds to within reasonable floating point error.
 BOOST_AUTO_TEST_CASE( operator_consistency )
 {
+    using suzerain::blas::iamax;
+    using suzerain::blas::iamin;
     typedef double real_t;
     typedef std::complex<double> complex_t;
 
@@ -61,7 +63,12 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     boost::scoped_array<complex_t> B2(new complex_t[N*N]);
     std::fill(B1.get(), B1.get() + N*N, 0);
     std::fill(B2.get(), B2.get() + N*N, 0);
-    for (int i = 0; i < N; ++i) B1[i + i*N] = 1;
+    for (int i = 0; i < N; ++i) {
+        B1[i + i*N] = 1;
+    }
+
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
 
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
@@ -71,10 +78,16 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
     }
 
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
+
     // Compute B1 = P*B2
     for (int j = 0; j < N; ++j) {
         suzerain_bsmbsm_zaPxpby('N', S, n, 1.0, &B2[j*N], 1, 0.0, &B1[j*N], 1);
     }
+
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
 
     // Form PAP^T (with size computations to check documentation is right)
     const int bufsize  = n*(op.max_kl() + 1 + op.max_ku());
@@ -125,11 +138,29 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
                                                   /* berr  */ berr.get(),
                                                   /* work  */ work.get(),
                                                   /* rwork */ rwork.get()));
+    BOOST_TEST_MESSAGE("suzerain_lapack_zgbsvx returned equed = " <<   equed);
+    BOOST_TEST_MESSAGE("suzerain_lapack_zgbsvx returned cond  = " << 1/rcond);
+
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
 
     // Compute B1 = P^T*B2
     for (int j = 0; j < N; ++j) {
         suzerain_bsmbsm_zaPxpby('T', S, n, 1.0, &B2[j*N], 1, 0.0, &B1[j*N], 1);
     }
+
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
+
+    // Expected result is the identity.
+    // Subtract the identity from B1.
+    for (int i = 0; i < N; ++i) {
+        B1[i + i*N] -= 1;
+    }
+
+    // Expected result is now identically zero.
+    BOOST_TEST_MESSAGE(__LINE__ << ": maxabs = " << B1[iamax(N*N,B1.get(),1)]); // FIXME
+    BOOST_TEST_MESSAGE(__LINE__ << ": minabs = " << B1[iamin(N*N,B1.get(),1)]); // FIXME
 
     // TODO Check result
 }
