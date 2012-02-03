@@ -1,8 +1,6 @@
 /*--------------------------------------------------------------------------
  *
  * Copyright (C) 2011, 2012 The PECOS Development Team
- *
- * This file is part of Suzerain.
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
