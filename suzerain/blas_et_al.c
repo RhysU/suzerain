@@ -1382,6 +1382,29 @@ suzerain_blas_zgb_acc(
 }
 
 inline int
+suzerain_blas_zgb_acc_d(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double beta,
+        complex_double *b,
+        const int ldb)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    const double one = 1.0;
+    return suzerain_blasext_zgb_diag_scale_acc_d('R', m, n, kl, ku,
+                                                alpha, &one, 0, a, 1, lda,
+                                                beta,           b, 1, ldb);
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline int
 suzerain_lapack_sgbtrf(
         const int m,
         const int n,
@@ -3804,25 +3827,6 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
     }
 
     return 0;
-}
-
-inline int
-suzerain_blasext_zgb_acc_d(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double beta,
-        complex_double *b,
-        const int ldb)
-{
-    const double one = 1.0;
-    return suzerain_blasext_zgb_diag_scale_acc_d('R', m, n, kl, ku,
-                                                alpha, &one, 0, a, 1, lda,
-                                                beta,           b, 1, ldb);
 }
 
 void

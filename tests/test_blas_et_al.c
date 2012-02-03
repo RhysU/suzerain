@@ -2582,7 +2582,7 @@ test_zgb_acc_d1()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blasext_zgb_acc_d( m, n, kl, ku, alpha, a, lda,
+    suzerain_blas_zgb_acc_d( m, n, kl, ku, alpha, a, lda,
                               beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
@@ -2640,7 +2640,7 @@ test_zgb_acc_d2()
     const int nexpected = sizeof(expected_data)/sizeof(expected_data[0]);
     gsl_test_int(nb, nexpected, "Expected results' length");
 
-    suzerain_blasext_zgb_acc_d(m, n, kl, ku, alpha, a, lda,
+    suzerain_blas_zgb_acc_d(m, n, kl, ku, alpha, a, lda,
                               beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,
@@ -2695,7 +2695,7 @@ test_zgb_acc_d_nop()
     expected_data = malloc(nb*sizeof(b_data[0]));
     memcpy(expected_data, b_data, nb*sizeof(b_data[0]));
 
-    suzerain_blasext_zgb_acc_d(m, n, kl, ku, alpha, a, lda,
+    suzerain_blas_zgb_acc_d(m, n, kl, ku, alpha, a, lda,
                               beta, (complex_double *) b, ldb);
     for (i = 0; i < nexpected; ++i) {
         gsl_test_abs(b_data[i][0], expected_data[i][0], GSL_FLT_EPSILON,

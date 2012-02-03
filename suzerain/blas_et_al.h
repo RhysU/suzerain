@@ -364,13 +364,7 @@ suzerain_blas_idamax(
  * \operatorname{arg\,max}_{0\leq{}i<n} \left|\mbox{Re}\left(x_i\right)\right|
  * + \left|\mbox{Im}\left(x_i\right)\right|\f$ using BLAS's amax.
  *
- * \param n Number of elements in \c x.
- * \param x Source vector.
- * \param incx Source vector stride.
- *
- * \return Zero-indexed \f$i\f$ on success.  On nonpositive \c n returns -1.
- *
- * \see A BLAS reference for more details.
+ * \copydetails suzerain_blas_isamax
  */
 int
 suzerain_blas_icamax(
@@ -416,13 +410,7 @@ suzerain_blas_idamin(
  * \operatorname{arg\,min}_{0\leq{}i<n} \left|\mbox{Re}\left(x_i\right)\right|
  * + \left|\mbox{Im}\left(x_i\right)\right|\f$ using BLAS's amin.
  *
- * \param n Number of elements in \c x.
- * \param x Source vector.
- * \param incx Source vector stride.
- *
- * \return Index \f$i\f$ of minimum absolute value within vector \f$x\f$.
- *
- * \see A BLAS reference for more details.
+ * \copydetails suzerain_blas_isamin
  */
 int
 suzerain_blas_icamin(
@@ -755,25 +743,7 @@ suzerain_blas_zgbmv_d_external(
  * The computation may use internal, optimized kernels for some fixed bandwidth
  * cases while deferring to the BLAS for general use.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \copydetails suzerain_blas_sgbmv_external
  */
 int
 suzerain_blas_sgbmv(
@@ -927,21 +897,7 @@ suzerain_blas_zsbmv_d_external(
  * kernels for some fixed bandwidth cases while deferring to the BLAS for
  * general use.
  *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \copydetails suzerain_blas_ssbmv_external
  */
 int
 suzerain_blas_ssbmv(
@@ -1075,6 +1031,20 @@ suzerain_blas_zgb_acc(
         const int ku,
         const complex_double alpha,
         const complex_double *a,
+        const int lda,
+        const complex_double beta,
+        complex_double *b,
+        const int ldb);
+
+/*! \copydoc suzerain_blas_sgb_acc */
+int
+suzerain_blas_zgb_acc_d(
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
         const int lda,
         const complex_double beta,
         complex_double *b,
@@ -1724,24 +1694,7 @@ suzerain_blasext_dgbdmv_external(
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$ using an external BLAS.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbdmv_external
  */
 int
 suzerain_blasext_cgbdmv_s_external(
@@ -1837,24 +1790,7 @@ suzerain_blasext_dgbdmv(
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbdmv
  */
 int
 suzerain_blasext_cgbdmv_s(
@@ -1958,26 +1894,7 @@ suzerain_blasext_dgbddmv_external(
  * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$
  * using an external BLAS.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbddmv_external
  */
 int
 suzerain_blasext_cgbddmv_s_external(
@@ -2020,27 +1937,7 @@ suzerain_blasext_zgbddmv_d_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbddmv_external
  */
 int
 suzerain_blasext_sgbddmv(
@@ -2084,26 +1981,7 @@ suzerain_blasext_dgbddmv(
  * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
  * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbddmv
  */
 int
 suzerain_blasext_cgbddmv_s(
@@ -2207,25 +2085,7 @@ suzerain_blasext_dgbidmv_external(
  * A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and
  * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$ using an external BLAS.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbidmv_external
  */
 int
 suzerain_blasext_cgbidmv_s_external(
@@ -2266,26 +2126,7 @@ suzerain_blasext_zgbidmv_d_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} I + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbidmv_external
  */
 int
 suzerain_blasext_sgbidmv(
@@ -2327,25 +2168,7 @@ suzerain_blasext_dgbidmv(
  * A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and
  * \f$y\f$ but real-valued \f$D_1\f$ and \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbidmv
  */
 int
 suzerain_blasext_cgbidmv_s(
@@ -2457,28 +2280,7 @@ suzerain_blasext_dgbdddmv_external(
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
  * \f$D_2\f$, and \f$A\f$ using an external BLAS.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbdddmv_external
  */
 int
 suzerain_blasext_cgbdddmv_s_external(
@@ -2525,29 +2327,7 @@ suzerain_blasext_zgbdddmv_d_external(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
  * D_1 + \alpha_{2} D_2\right) A x + \beta{} y \f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbdddmv_external
  */
 int
 suzerain_blasext_sgbdddmv(
@@ -2596,28 +2376,7 @@ suzerain_blasext_dgbdddmv(
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
  * \f$D_2\f$, and \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param d0 Contiguous storage for diagonal matrix \f$ D_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbdddmv
  */
 int
 suzerain_blasext_cgbdddmv_s(
@@ -2732,27 +2491,7 @@ suzerain_blasext_dgbiddmv_external(
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
  * \f$A\f$ using an external BLAS.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbiddmv_external
  */
 int
 suzerain_blasext_cgbiddmv_s_external(
@@ -2865,27 +2604,7 @@ suzerain_blasext_dgbiddmv(
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_1\f$, \f$D_2\f$, and
  * \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$.
- * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
- * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_sgbiddmv
  */
 int
 suzerain_blasext_cgbiddmv_s(
@@ -3037,30 +2756,7 @@ suzerain_blasext_zgb_diag_scale_acc(
  * B \leftarrow{} \alpha{} A D + \beta{}B \f$ for real banded \f$A\f$, real
  * diagonal \f$D\f$, and complex banded \f$B\f$.
  *
- * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.
- * All three matrices may be generally strided.  The operation and
- * interface differs from the BLAS' gb_diag_scale_acc.
- *
- * \param side One of 'L' or 'R' indicating whether \f$D\f$ should be applied
- *        to the left or right side of \f$A\f$, respectively.
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$ when <tt>side == 'L'</tt>.
- * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
- *          and size of matrix \f$ D\f$ when <tt>side == 'R'</tt>.
- * \param kl Number of subdiagonals in band storage of \c a and \c b.
- * \param ku Number of superdiagonals in band storage of \c a and \c b.
- * \param alpha Multiplicative scalar \f$ \alpha \f$
- * \param d Diagonal storage of matrix \f$ D \f$.
- * \param ldd Nonnegative stride between diagonal entries in \c d.
- * \param a General band storage of the matrix \f$ A \f$.
- * \param inca Strictly positive stride between values in \c a.
- * \param lda Leading dimension of \c a.
- * \param beta Multiplicative scalar \f$ \beta \f$
- * \param b General band storage of the matrix \f$ B \f$.
- * \param incb Strictly positive stride between values in \c b.
- * \param ldb Leading dimension of \c b.
- *
- * \see A BLAS reference for general band matrix storage requirements.
+ * \copydetails suzerain_blasext_zgb_diag_scale_acc
  */
 int
 suzerain_blasext_zgb_diag_scale_acc_d(
@@ -3195,41 +2891,6 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
         complex_double *b,
         int incb,
         int ldb);
-
-/*!
- * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ where
- * \f$B\f$, \f$\alpha\f$, and \f$\beta\f$ are complex-valued and \f$A\f$ is
- * real-valued.
- *
- * Matrices \f$ A \f$ and \f$ B \f$ both have
- * band storage and must have the same shape and same number
- * of super- and subdiagonals.
- *
- * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$.
- * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$.
- * \param kl Number of subdiagonals in band storage of \c ab.
- * \param ku Number of superdiagonals in band storage of \c ab.
- * \param alpha Multiplicative scalar \f$ \alpha \f$
- * \param a General band storage of the matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param beta Multiplicative scalar \f$ \beta \f$
- * \param b General band storage of the matrix \f$ B \f$.
- * \param ldb Leading dimension of \c b.
- *
- * \see A BLAS reference for general band matrix storage requirements.
- */
-int
-suzerain_blasext_zgb_acc_d(
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double beta,
-        complex_double *b,
-        const int ldb);
 
 /*!
  * \brief Compute two-strided \f$ Y \leftarrow{} \alpha{}X+\beta{}Y \f$
