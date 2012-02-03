@@ -15,8 +15,8 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define FUNCNAME()   /* Function name, e.g. suzerain_rholut_imexop_packc */
-// #define PACKFUNC(x)  /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
+// #define FUNCNAME() /* Function name, e.g. suzerain_rholut_imexop_packc */
+// #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
 
 void
 FUNCNAME()(
@@ -66,76 +66,76 @@ FUNCNAME()(
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
     // We do not know the leading dimension associated with the definition of
-    // PACKFUNC() so we must overwrite every possible submatrix within PAPT.
+    // PACK() so we must overwrite every possible submatrix within PAPT.
     // This is only suboptimal for the zero (rho, rhoe) submatrix and
     // brings with it much flexibility.
 
     if (rho >= 0) {  // Prepare density row
 
-        PACKFUNC(zd)(A, rho,  rho, 1.0, M, papt);
+        PACK(zd)(A, rho,  rho, 1.0, M, papt);
 
-        if (rhou >= 0) PACKFUNC(zd)(A, rho, rhou, -ikm*phi, M,  papt);
+        if (rhou >= 0) PACK(zd)(A, rho, rhou, -ikm*phi, M,  papt);
 
-        if (rhov >= 0) PACKFUNC(zd)(A, rho, rhov, -1.0*phi, D1, papt);
+        if (rhov >= 0) PACK(zd)(A, rho, rhov, -1.0*phi, D1, papt);
 
-        if (rhow >= 0) PACKFUNC(zd)(A, rho, rhow, -ikn*phi, M,  papt);
+        if (rhow >= 0) PACK(zd)(A, rho, rhow, -ikn*phi, M,  papt);
 
-        if (rhoe >= 0) PACKFUNC(z)( A, rho,  rhoe,     0.0, 0,  papt);
+        if (rhoe >= 0) PACK(z)( A, rho,  rhoe,     0.0, 0,  papt);
     }
 
     if (rhou >= 0) { // Prepare streamwise momentum row
 
-        if (rho  >= 0) PACKFUNC(z)(A, rhou, rho,  0.0, NULL, papt);
+        if (rho  >= 0) PACK(z)(A, rhou, rho,  0.0, NULL, papt);
 
-        PACKFUNC(zd)(A, rhou, rhou, 1.0, M, papt);
+        PACK(zd)(A, rhou, rhou, 1.0, M, papt);
 
-        if (rhov >= 0) PACKFUNC(z)(A, rhou, rhov, 0.0, NULL, papt);
+        if (rhov >= 0) PACK(z)(A, rhou, rhov, 0.0, NULL, papt);
 
-        if (rhow >= 0) PACKFUNC(z)(A, rhou, rhow, 0.0, NULL, papt);
+        if (rhow >= 0) PACK(z)(A, rhou, rhow, 0.0, NULL, papt);
 
-        if (rhoe >= 0) PACKFUNC(z)(A, rhou, rhoe, 0.0, NULL, papt);
+        if (rhoe >= 0) PACK(zd)(A, rhou, rhoe, -gm1*invMa2*ikm*phi, M, papt);
     }
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
 
-        if (rho  >= 0) PACKFUNC(z)(A, rhov, rho,  0.0, NULL, papt);
+        if (rho  >= 0) PACK(z)(A, rhov, rho,  0.0, NULL, papt);
 
-        if (rhou >= 0) PACKFUNC(z)(A, rhov, rhou, 0.0, NULL, papt);
+        if (rhou >= 0) PACK(z)(A, rhov, rhou, 0.0, NULL, papt);
 
-        PACKFUNC(zd)(A, rhov, rhov, 1.0, M, papt);
+        PACK(zd)(A, rhov, rhov, 1.0, M, papt);
 
-        if (rhow >= 0) PACKFUNC(z)(A, rhov, rhow, 0.0, NULL, papt);
+        if (rhow >= 0) PACK(z)(A, rhov, rhow, 0.0, NULL, papt);
 
-        if (rhoe >= 0) PACKFUNC(z)(A, rhov, rhoe, 0.0, NULL, papt);
+        if (rhoe >= 0) PACK(zd)(A, rhov, rhoe, -gm1*invMa2*phi, D1, papt);
     }
 
     if (rhow >= 0) { // Prepare spanwise momentum row
 
-        if (rho  >= 0) PACKFUNC(z)(A, rhow, rho,  0.0, NULL, papt);
+        if (rho  >= 0) PACK(z)(A, rhow, rho,  0.0, NULL, papt);
 
-        if (rhou >= 0) PACKFUNC(z)(A, rhow, rhou, 0.0, NULL, papt);
+        if (rhou >= 0) PACK(z)(A, rhow, rhou, 0.0, NULL, papt);
 
-        if (rhov >= 0) PACKFUNC(z)(A, rhow, rhov, 0.0, NULL, papt);
+        if (rhov >= 0) PACK(z)(A, rhow, rhov, 0.0, NULL, papt);
 
-        PACKFUNC(zd)(A, rhow, rhow, 1.0, M, papt);
+        PACK(zd)(A, rhow, rhow, 1.0, M, papt);
 
-        if (rhoe >= 0) PACKFUNC(z)(A, rhow, rhoe, 0.0, NULL, papt);
+        if (rhoe >= 0) PACK(zd)(A, rhow, rhoe, -gm1*invMa2*ikn*phi, M, papt);
 
     }
 
     if (rhoe >= 0) { // Prepare total energy row
 
-        if (rho  >= 0) PACKFUNC(z)(A, rhoe, rho,  0.0, NULL, papt);
+        if (rho  >= 0) PACK(z)(A, rhoe, rho,  0.0, NULL, papt);
 
-        if (rhou >= 0) PACKFUNC(z)(A, rhoe, rhou, 0.0, NULL, papt);
+        if (rhou >= 0) PACK(z)(A, rhoe, rhou, 0.0, NULL, papt);
 
-        if (rhov >= 0) PACKFUNC(z)(A, rhoe, rhov, 0.0, NULL, papt);
+        if (rhov >= 0) PACK(z)(A, rhoe, rhov, 0.0, NULL, papt);
 
-        if (rhow >= 0) PACKFUNC(z)(A, rhoe, rhow, 0.0, NULL, papt);
+        if (rhow >= 0) PACK(z)(A, rhoe, rhow, 0.0, NULL, papt);
 
-        PACKFUNC(zd)(A, rhoe, rhoe, 1.0, M, papt);
+        PACK(zd)(A, rhoe, rhoe, 1.0, M, papt);
     }
 }
 
 #undef FUNCNAME
-#undef PACKFUNC
+#undef PACK

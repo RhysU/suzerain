@@ -76,23 +76,26 @@ suzerain_rholut_imexop_apply(
     if (in_rho ) {  // Accumulate density terms into out_rho
         suzerain_blas_zscal(n, beta/phi, out_rho, inc);
 
-        if (in_rhou) suzerain_bsplineop_accumulate_complex(
-                M,  nrhs, -ikm, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
+        if (in_rhou) suzerain_bsplineop_accumulate_complex(M, nrhs,
+                -ikm, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
 
-        if (in_rhov) suzerain_bsplineop_accumulate_complex(
-                D1, nrhs, -1.0, in_rhov, inc, n, 1.0, out_rho, inc, n, w);
+        if (in_rhov) suzerain_bsplineop_accumulate_complex(D1,nrhs,
+                -1.0, in_rhov, inc, n, 1.0, out_rho, inc, n, w);
 
-        if (in_rhow) suzerain_bsplineop_accumulate_complex(
-                M,  nrhs, -ikn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
+        if (in_rhow) suzerain_bsplineop_accumulate_complex(M, nrhs,
+                -ikn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
 
-        if (in_rhoe) /* NOP */;
+        if (in_rhoe) {/* NOP */};
 
         suzerain_bsplineop_accumulate_complex(
-                M,  nrhs,  1.0, in_rho,  inc, n, phi, out_rho, inc, n, w);
+                M, nrhs, 1.0, in_rho,  inc, n, phi, out_rho, inc, n, w);
     }
 
     if (in_rhou) {  // Accumulate X momentum terms into out_rhou
         suzerain_blas_zscal(n, beta/phi, out_rhou, inc);
+
+        if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
+                -gm1*invMa2*ikm, in_rhoe, inc, n, 1.0, out_rhou, inc, n, w);
 
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhou, inc, n, phi, out_rhou, inc, n, w);
@@ -101,12 +104,18 @@ suzerain_rholut_imexop_apply(
     if (in_rhov) {  // Accumulate Y momentum terms into out_rhov
         suzerain_blas_zscal(n, beta/phi, out_rhov, inc);
 
+        if (in_rhoe) suzerain_bsplineop_accumulate_complex(D1, nrhs,
+                -gm1*invMa2, in_rhoe, inc, n, 1.0, out_rhov, inc, n, w);
+
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhov, inc, n, phi, out_rhov, inc, n, w);
     }
 
     if (in_rhow) {  // Accumulate Z momentum terms into out_rhow
         suzerain_blas_zscal(n, beta/phi, out_rhow, inc);
+
+        if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
+                -gm1*invMa2*ikn, in_rhoe, inc, n, 1.0, out_rhow, inc, n, w);
 
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhow, inc, n, phi, out_rhow, inc, n, w);
@@ -125,10 +134,10 @@ suzerain_rholut_imexop_apply(
 
 // suzerain_rholut_imexop_packc
 #define FUNCNAME()  suzerain_rholut_imexop_packc
-#define PACKFUNC(x) suzerain_bsmbsm_ ## x ## packc
+#define PACK(x)     suzerain_bsmbsm_ ## x ## packc
 #include "rholut_imexop.def"
 
 // suzerain_rholut_imexop_packf
 #define FUNCNAME()  suzerain_rholut_imexop_packf
-#define PACKFUNC(x) suzerain_bsmbsm_ ## x ## packf
+#define PACK(x)     suzerain_bsmbsm_ ## x ## packf
 #include "rholut_imexop.def"
