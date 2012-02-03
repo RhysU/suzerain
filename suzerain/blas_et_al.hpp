@@ -1,35 +1,18 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2010, 2011, 2012 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * blas_et_al.hpp: C++ wrappers around blas_et_al.h's functionality
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2010, 2011, 2012 The PECOS Development Team
+// Please see http://pecos.ices.utexas.edu for more information on PECOS.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//--------------------------------------------------------------------------
+// blas_et_al.hpp: C++ wrappers around blas_et_al.h's functionality
+// $Id$
 
-#ifndef __SUZERAIN_BLAS_ET_AL_HPP__
-#define __SUZERAIN_BLAS_ET_AL_HPP__
+#ifndef __SUZERAIN_BLAS_ET_AL_HPP
+#define __SUZERAIN_BLAS_ET_AL_HPP
 
 #include <suzerain/blas_et_al.h>
 #include <boost/numeric/conversion/cast.hpp>
@@ -2079,4 +2062,4 @@ inline typename boost::enable_if<
 
 } // namespace suzerain
 
-#endif /* __SUZERAIN_BLAS_ET_AL_HPP__ */
+#endif /* __SUZERAIN_BLAS_ET_AL_HPP */

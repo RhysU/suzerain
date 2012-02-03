@@ -1,32 +1,12 @@
 /*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
  *
- * Copyright (C) 2011, 2012 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Suzerain is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ * Code copyright and licensing details follow on routine-specific basis.
+ * This routines have been extracted from the GNU Scientific Library.
  *
  *--------------------------------------------------------------------------
- *
- * pre_gsl.h: functionality not present in public GSL releases
- *
+ * pre_gsl.h: functionality not always present in older GSL releases
  * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
@@ -35,9 +15,40 @@
 #pragma hdrstop
 #include <suzerain/pre_gsl.h>
 
+/*
+ * integration/glfixed.c
+ *
+ * Numerical Integration by Gauss-Legendre Quadrature Formulas of high orders.
+ * High-precision abscissas and weights are used.
+ *
+ * Original project homepage: http://www.holoborodko.com/pavel/?page_id=679
+ * Original contact e-mail:   pavel@holoborodko.com
+ *
+ * Copyright (c)2007-2008 Pavel Holoborodko
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ * Contributors:
+ * Konstantin Holoborodko - Optimization of Legendre polynomial computing.
+ * Rhys Ulerich - Inclusion within GNU Scientific Library.
+ *
+ */
+
 // gsl_integration_glfixed in GSL 1.14 but
 // gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
-// Source code lifted from GSL which is cool since it's my copyright :)
+// Source code lifted verbatim from the GSL
 // FIXME: Remove this logic once GSL 1.15 becomes widespread
 #if    (!defined GSL_MAJOR_VERSION                     ) \
     || (GSL_MAJOR_VERSION < 2 && GSL_MINOR_VERSION < 15)
@@ -80,6 +91,27 @@ gsl_integration_glfixed_point (
 
     return GSL_SUCCESS;
 }
+
+
+/* bspline/bspline.c
+ *
+ * Copyright (C) 2006, 2007, 2008, 2009 Patrick Alken
+ * Copyright (C) 2008 Rhys Ulerich
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ */
 
 // gsl_bspline_knots_greville is 1.15+ so build it atop 1.15's public API
 // FIXME: Remove this logic once GSL 1.16 becomes widespread

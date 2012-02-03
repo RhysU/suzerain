@@ -1,38 +1,25 @@
 /*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
  *
  * Copyright (C) 2012 The PECOS Development Team
  *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
  * This file is part of Suzerain.
+ * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- *
  * parcel.h: utilities for parcelling out monolithically malloc-ed memory
- *
  * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+ */
+
+#ifndef __SUZERAIN_PARCEL_H
+#define __SUZERAIN_PARCEL_H
+
 #include <inttypes.h>
 #include <stddef.h>
 #include <boost/preprocessor.hpp>
-
-#ifndef __SUZERAIN_PARCEL_H__
-#define __SUZERAIN_PARCEL_H__
 
 #ifdef __cplusplus
 # error "SUZERAIN_PARCEL implementation cannot be used in C++ code"
@@ -165,4 +152,4 @@
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-#endif // __SUZERAIN_PARCEL_H__
+#endif // __SUZERAIN_PARCEL_H

@@ -1,3 +1,20 @@
+/*--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2011, 2012 The PECOS Development Team
+ * Please see http://pecos.ices.utexas.edu for more information on PECOS.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *--------------------------------------------------------------------------
+ * complex.h: compatibility layer for C99 and C++ complex types
+ * $Id$
+ */
+
+#ifndef __SUZERAIN_COMPLEX_H
+#define __SUZERAIN_COMPLEX_H
+
 /** @file
  * Compatibility file for C99 \c _Complex and C++ <tt>std::complex</tt> types.
  *
@@ -6,9 +23,6 @@
  * Intent is for C++ source to be able to seamlessly call C99-based functions
  * without needlessly polluting the C++ global namespace.
  */
-
-#ifndef __SUZERAIN_COMPLEX_H
-#define __SUZERAIN_COMPLEX_H
 
 #ifdef __cplusplus
 

@@ -1,35 +1,21 @@
 /*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
  *
  * Copyright (C) 2010, 2011, 2012 The PECOS Development Team
  *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
  * This file is part of Suzerain.
+ * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- *
  * os.h: POSIX-based operating system utilities
- *
  * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
+ */
 
-#ifndef __SUZERAIN_OS_H__
-#define __SUZERAIN_OS_H__
+#ifndef __SUZERAIN_OS_H
+#define __SUZERAIN_OS_H
 
 #include <suzerain/common.h>
 #include <fcntl.h>
@@ -103,4 +89,4 @@ const char * suzerain_temporary_directory();
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_OS_H__ */
+#endif /* __SUZERAIN_OS_H */

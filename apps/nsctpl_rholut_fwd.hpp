@@ -1,4 +1,3 @@
-//-----------------------------------------------------------------------bl-
 //--------------------------------------------------------------------------
 //
 // MASA - Manufactured Analytical Solutions Abstraction Library
@@ -19,7 +18,7 @@
 // Foundation, Inc. 51 Franklin Street, Fifth Floor,
 // Boston, MA  02110-1301  USA
 //
-//-----------------------------------------------------------------------el-
+//--------------------------------------------------------------------------
 
 // Using this file will require #include-ing <cmath>, <limits>, <sstream>, and
 // <string>.  Those headers are not #include-d here to allow #include-ing this

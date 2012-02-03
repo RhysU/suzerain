@@ -1,34 +1,18 @@
-/*--------------------------------------------------------------------------
- *--------------------------------------------------------------------------
- *
- * Copyright (C) 2008, 2009, 2010, 2011, 2012 The PECOS Development Team
- *
- * Please see http://pecos.ices.utexas.edu for more information.
- *
- * This file is part of Suzerain.
- *
- * Suzerain is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
- *
- * Suzerain is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Suzerain.  If not, see <http://www.gnu.org/licenses/>.
- *
- *--------------------------------------------------------------------------
- *
- * pencil.hpp: Class to support P3DFFT's physical and wave space data layout
- *
- * $Id$
- *--------------------------------------------------------------------------
- *-------------------------------------------------------------------------- */
-#ifndef __SUZERAIN_PENCIL_H
-#define __SUZERAIN_PENCIL_H
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 The PECOS Development Team
+// Please see http://pecos.ices.utexas.edu for more information on PECOS.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//--------------------------------------------------------------------------
+// pencil.hpp: Class to support P3DFFT's physical and wave space data layout
+// $Id$
+
+#ifndef __SUZERAIN_PENCIL_HPP
+#define __SUZERAIN_PENCIL_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -290,4 +274,4 @@ pencil<FPT,Allocator>::pencil(const pencil_grid_base& pg)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PENCIL_H
+#endif // __SUZERAIN_PENCIL_HPP
