@@ -1524,7 +1524,7 @@ suzerain_lapack_zlangb(
  * \param incy Second source vector and target vector stride.
  */
 void
-suzerain_blasext_zaxpy_d(
+suzerain_blas_zaxpy_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1545,7 +1545,7 @@ suzerain_blasext_zaxpy_d(
  * \param incy Second source vector and target vector stride.
  */
 void
-suzerain_blasext_zaxpby_d(
+suzerain_blas_zaxpby_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1579,7 +1579,7 @@ suzerain_blasext_zaxpby_d(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
-suzerain_blasext_cgbmv_s_external(
+suzerain_blas_cgbmv_s_external(
         const char trans,
         const int m,
         const int n,
@@ -1594,9 +1594,9 @@ suzerain_blasext_cgbmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbmv_s_external */
+/*! \copydoc suzerain_blas_cgbmv_s_external */
 void
-suzerain_blasext_zgbmv_d_external(
+suzerain_blas_zgbmv_d_external(
         const char trans,
         const int m,
         const int n,
@@ -1635,7 +1635,7 @@ suzerain_blasext_zgbmv_d_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_cgbmv_s(
+suzerain_blas_cgbmv_s(
         const char trans,
         const int m,
         const int n,
@@ -1650,9 +1650,9 @@ suzerain_blasext_cgbmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbmv_s */
+/*! \copydoc suzerain_blas_cgbmv_s */
 int
-suzerain_blasext_zgbmv_d(
+suzerain_blas_zgbmv_d(
         const char trans,
         const int m,
         const int n,
@@ -2952,7 +2952,7 @@ suzerain_blasext_zgbiddmv_d(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
-suzerain_blasext_csbmv_s_external(
+suzerain_blas_csbmv_s_external(
         const char uplo,
         const int n,
         const int k,
@@ -2965,9 +2965,9 @@ suzerain_blasext_csbmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_csbmv_s_external */
+/*! \copydoc suzerain_blas_csbmv_s_external */
 void
-suzerain_blasext_zsbmv_d_external(
+suzerain_blas_zsbmv_d_external(
         const char uplo,
         const int n,
         const int k,
@@ -3001,7 +3001,7 @@ suzerain_blasext_zsbmv_d_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_csbmv_s(
+suzerain_blas_csbmv_s(
         const char uplo,
         const int n,
         const int k,
@@ -3014,9 +3014,9 @@ suzerain_blasext_csbmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_csbmv_s */
+/*! \copydoc suzerain_blas_csbmv_s */
 int
-suzerain_blasext_zsbmv_d(
+suzerain_blas_zsbmv_d(
         const char uplo,
         const int n,
         const int k,

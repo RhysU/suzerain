@@ -294,7 +294,7 @@ suzerain_bsplineop_accumulate_complex(
     // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
     const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        suzerain_blasext_zgbmv_d(
+        suzerain_blas_zgbmv_d(
                 trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
                 alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
                 beta,                       y + j*ldy, incy);

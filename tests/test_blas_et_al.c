@@ -2114,7 +2114,7 @@ test_zaxpy_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpy_d(nx/incx, alpha, x, incx,
+        suzerain_blas_zaxpy_d(nx/incx, alpha, x, incx,
                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2140,7 +2140,7 @@ test_zaxpy_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpy_d(nx/incx, alpha, x, incx,
+        suzerain_blas_zaxpy_d(nx/incx, alpha, x, incx,
                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2166,7 +2166,7 @@ test_zaxpy_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpy_d(nx/incx, alpha, x, incx,
+        suzerain_blas_zaxpy_d(nx/incx, alpha, x, incx,
                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2192,7 +2192,7 @@ test_zaxpy_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpy_d(nx/incx, alpha, x, incx,
+        suzerain_blas_zaxpy_d(nx/incx, alpha, x, incx,
                                 (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2227,7 +2227,7 @@ test_zaxpby_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpby_d(nx/incx, alpha, x, incx, beta,
+        suzerain_blas_zaxpby_d(nx/incx, alpha, x, incx, beta,
                                   (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2253,7 +2253,7 @@ test_zaxpby_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpby_d(nx/incx, alpha, x, incx, beta,
+        suzerain_blas_zaxpby_d(nx/incx, alpha, x, incx, beta,
                                   (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2279,7 +2279,7 @@ test_zaxpby_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpby_d(nx/incx, alpha, x, incx, beta,
+        suzerain_blas_zaxpby_d(nx/incx, alpha, x, incx, beta,
                                   (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,
@@ -2305,7 +2305,7 @@ test_zaxpby_d()
         gsl_test_int(nx/incx, ny/incy, "Vectors of equivalent lengths");
         gsl_test_int(ny, nexpected, "Expected results' length");
 
-        suzerain_blasext_zaxpby_d(nx/incx, alpha, x, incx, beta,
+        suzerain_blas_zaxpby_d(nx/incx, alpha, x, incx, beta,
                                   (complex_double *) y, incy);
         for (i = 0; i < nexpected; ++i) {
             gsl_test_abs(y[i][0], expected[i][0], GSL_DBL_EPSILON,

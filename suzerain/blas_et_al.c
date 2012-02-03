@@ -1754,7 +1754,7 @@ suzerain_lapack_zlangb(
 }
 
 inline void
-suzerain_blasext_zaxpy_d(
+suzerain_blas_zaxpy_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1783,7 +1783,7 @@ suzerain_blasext_zaxpy_d(
 }
 
 inline void
-suzerain_blasext_zaxpby_d(
+suzerain_blas_zaxpby_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1815,7 +1815,7 @@ suzerain_blasext_zaxpby_d(
 }
 
 void
-suzerain_blasext_cgbmv_s_external(
+suzerain_blas_cgbmv_s_external(
         const char trans,
         const int m,
         const int n,
@@ -1870,7 +1870,7 @@ suzerain_blasext_cgbmv_s_external(
 }
 
 void
-suzerain_blasext_zgbmv_d_external(
+suzerain_blas_zgbmv_d_external(
         const char trans,
         const int m,
         const int n,
@@ -1925,7 +1925,7 @@ suzerain_blasext_zgbmv_d_external(
 }
 
 inline int
-suzerain_blasext_cgbmv_s(
+suzerain_blas_cgbmv_s(
         const char trans,
         const int m,
         const int n,
@@ -1948,7 +1948,7 @@ suzerain_blasext_cgbmv_s(
 }
 
 inline int
-suzerain_blasext_zgbmv_d(
+suzerain_blas_zgbmv_d(
         const char trans,
         const int m,
         const int n,
@@ -1971,7 +1971,7 @@ suzerain_blasext_zgbmv_d(
 }
 
 void
-suzerain_blasext_csbmv_s_external(
+suzerain_blas_csbmv_s_external(
         const char uplo,
         const int n,
         const int k,
@@ -2024,7 +2024,7 @@ suzerain_blasext_csbmv_s_external(
 }
 
 void
-suzerain_blasext_zsbmv_d_external(
+suzerain_blas_zsbmv_d_external(
         const char uplo,
         const int n,
         const int k,
@@ -2194,9 +2194,9 @@ suzerain_blasext_cgbdmv_s_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_cgbmv_s_external(
+    suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2244,9 +2244,9 @@ suzerain_blasext_zgbdmv_d_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_zgbmv_d_external(
+    suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2408,11 +2408,11 @@ suzerain_blasext_cgbddmv_s_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_cgbmv_s_external(
+    suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2464,11 +2464,11 @@ suzerain_blasext_zgbddmv_d_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_zgbmv_d_external(
+    suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2627,11 +2627,11 @@ suzerain_blasext_cgbidmv_s_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_cgbmv_s_external(
+    suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2681,11 +2681,11 @@ suzerain_blasext_zgbidmv_d_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_zgbmv_d_external(
+    suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2862,13 +2862,13 @@ suzerain_blasext_cgbdddmv_s_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_cgbmv_s_external(
+    suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -2924,13 +2924,13 @@ suzerain_blasext_zgbdddmv_d_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_zgbmv_d_external(
+    suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -3105,13 +3105,13 @@ suzerain_blasext_cgbiddmv_s_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_cgbmv_s_external(
+    suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
-    suzerain_blasext_csbmv_s_external(
+    suzerain_blas_csbmv_s_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -3165,13 +3165,13 @@ suzerain_blasext_zgbiddmv_d_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_zgbmv_d_external(
+    suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
-    suzerain_blasext_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
@@ -3205,7 +3205,7 @@ suzerain_blasext_zgbiddmv_d(
 }
 
 inline int
-suzerain_blasext_csbmv_s(
+suzerain_blas_csbmv_s(
         const char uplo,
         const int n,
         const int k,
@@ -3226,7 +3226,7 @@ suzerain_blasext_csbmv_s(
 }
 
 inline int
-suzerain_blasext_zsbmv_d(
+suzerain_blas_zsbmv_d(
         const char uplo,
         const int n,
         const int k,
@@ -3591,7 +3591,7 @@ suzerain_blasext_zgb_diag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
-            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                      b + il*incb, incb);
         }
     } else {
@@ -3599,7 +3599,7 @@ suzerain_blasext_zgb_diag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
-            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                                beta, b + il*incb, incb);
         }
     }
@@ -3671,7 +3671,7 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
-            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                      b + il*incb, incb);
         }
     } else {
@@ -3680,7 +3680,7 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
-            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                                beta, b + il*incb, incb);
         }
     }
@@ -3758,7 +3758,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
-            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                      b + il*incb, incb);
         }
     } else {
@@ -3767,7 +3767,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
-            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+            suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                                beta, b + il*incb, incb);
         }
     }
