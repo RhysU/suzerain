@@ -488,6 +488,16 @@ suzerain_blas_zaxpy(
         complex_double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_saxpy */
+void
+suzerain_blas_zaxpy_d(
+        const int n,
+        const complex_double alpha,
+        const double *x,
+        const int incx,
+        complex_double *y,
+        const int incy);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$
  * using BLAS's axpby.
@@ -542,6 +552,17 @@ suzerain_blas_zaxpby(
         const int n,
         const complex_double alpha,
         const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_saxpby */
+void
+suzerain_blas_zaxpby_d(
+        const int n,
+        const complex_double alpha,
+        const double *x,
         const int incx,
         const complex_double beta,
         complex_double *y,
@@ -695,6 +716,40 @@ suzerain_blas_dgbmv_external(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_sgbmv_external */
+void
+suzerain_blas_cgbmv_s_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sgbmv_external */
+void
+suzerain_blas_zgbmv_d_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$.
  * The computation may use internal, optimized kernels for some fixed bandwidth
@@ -753,6 +808,40 @@ suzerain_blas_dgbmv(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_sgbmv */
+int
+suzerain_blas_cgbmv_s(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sgbmv */
+int
+suzerain_blas_zgbmv_d(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$
  * for symmetric \f$ A \f$ using an external BLAS's sbmv.
@@ -800,6 +889,36 @@ suzerain_blas_dsbmv_external(
         const int incx,
         const double beta,
         double *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_ssbmv_external */
+void
+suzerain_blas_csbmv_s_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_csbmv_external */
+void
+suzerain_blas_zsbmv_d_external(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*!
@@ -852,6 +971,37 @@ suzerain_blas_dsbmv(
         const double beta,
         double *y,
         const int incy);
+
+/*! \copydoc suzerain_blas_ssbmv */
+int
+suzerain_blas_csbmv_s(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_csbmv_s */
+int
+suzerain_blas_zsbmv_d(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
 
 /*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
@@ -1511,161 +1661,6 @@ suzerain_lapack_zlangb(
  * interleaved versus split complex storage</a>.
  * @{
  */
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{}x + y \f$ where \f$x\f$ is
- * real-valued and \f$\alpha\f$ and \f$y\f$ are complex-valued.
- *
- * \param n Number of elements in \c x and \c y.
- * \param alpha Multiplicative scalar \f$ \alpha \f$
- * \param x First source vector.
- * \param incx First source vector stride.
- * \param y Second source vector and target vector.
- * \param incy Second source vector and target vector stride.
- */
-void
-suzerain_blas_zaxpy_d(
-        const int n,
-        const complex_double alpha,
-        const double *x,
-        const int incx,
-        complex_double *y,
-        const int incy);
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{}x + \beta{}y \f$ where \f$x\f$ is
- * real-valued and \f$\alpha\f$, \f$\beta\f$, and \f$y\f$ are complex-valued.
- *
- * \param n Number of elements in \c x and \c y.
- * \param alpha Multiplicative scalar \f$ \alpha \f$
- * \param x First source vector.
- * \param incx First source vector stride.
- * \param beta Multiplicative scalar \f$ \beta \f$
- * \param y Second source vector and target vector.
- * \param incy Second source vector and target vector stride.
- */
-void
-suzerain_blas_zaxpby_d(
-        const int n,
-        const complex_double alpha,
-        const double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy);
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$
- * using an external BLAS' gbmv.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
-void
-suzerain_blas_cgbmv_s_external(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy);
-
-/*! \copydoc suzerain_blas_cgbmv_s_external */
-void
-suzerain_blas_zgbmv_d_external(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy);
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
- *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
-int
-suzerain_blas_cgbmv_s(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy);
-
-/*! \copydoc suzerain_blas_cgbmv_s */
-int
-suzerain_blas_zgbmv_d(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy);
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$
@@ -2923,104 +2918,6 @@ suzerain_blasext_zgbiddmv_d(
         const double *d1,
         const complex_double alpha2,
         const double *d2,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy);
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$ using an external BLAS' sbmv.
- *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
-void
-suzerain_blas_csbmv_s_external(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy);
-
-/*! \copydoc suzerain_blas_csbmv_s_external */
-void
-suzerain_blas_zsbmv_d_external(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy);
-
-/*!
- * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but symmetric, real-valued
- * \f$A\f$.
- *
- * \param uplo Either 'U'/'u' or 'L'/'l' if the upper or lower triangular
- *      part of \f$A\f$ is supplied in \c a, respectively.
- * \param n Number of rows and columns in matrix \c a.
- * \param k Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a Symmetric band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \see A BLAS reference for for general band matrix storage requirements.
- */
-int
-suzerain_blas_csbmv_s(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy);
-
-/*! \copydoc suzerain_blas_csbmv_s */
-int
-suzerain_blas_zsbmv_d(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_double alpha,
         const double *a,
         const int lda,
         const complex_double *x,

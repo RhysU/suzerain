@@ -67,6 +67,7 @@ suzerain_blas_xerbla(const char *srname, const int info)
 void *
 suzerain_blas_malloc(size_t size)
 {
+#ifdef SUZERAIN_HAVE_MKL
     void * p = NULL;
 
     /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
@@ -83,24 +84,35 @@ suzerain_blas_malloc(size_t size)
                     __FILE__, __LINE__, strerror(status));
             abort();
     }
+#else
+#error "Sanity failure"
+#endif
 }
 
 void *
 suzerain_blas_calloc(size_t nmemb, size_t size)
 {
+#ifdef SUZERAIN_HAVE_MKL
     const size_t total_bytes = nmemb * size;
     void * p = suzerain_blas_malloc(total_bytes);
     if (p != NULL) {
         memset(p, 0, total_bytes);
     }
     return p;
+#else
+#error "Sanity failure"
+#endif
 }
 
 void
 suzerain_blas_free(void *ptr)
 {
+#ifdef SUZERAIN_HAVE_MKL
     // Must match suzerain_blas_malloc's malloc-like routine!
     if (ptr) free(ptr);
+#else
+#error "Sanity failure"
+#endif
 }
 
 inline void
@@ -668,6 +680,39 @@ suzerain_blas_zaxpy(
 }
 
 inline void
+suzerain_blas_zaxpy_d(
+        const int n,
+        const complex_double alpha,
+        const double *x,
+        const int incx,
+        complex_double *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (incx == 1 && incy == 1) {  // Unit strides
+
+#pragma unroll
+        for (int i = 0; i < n; ++i) {
+            y[i] += alpha*x[i];
+        }
+
+    } else {                       // General strides
+
+        // Adjust for possibly negative incx and incy
+        int ix = (incx < 0) ? (1 - n)*incx : 0;
+        int iy = (incy < 0) ? (1 - n)*incy : 0;
+#pragma unroll
+        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+            y[iy] += alpha*x[ix];
+        }
+
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+inline void
 suzerain_blas_saxpby(
         const int n,
         const float alpha,
@@ -758,6 +803,43 @@ suzerain_blas_zaxpby(
 #error "Sanity failure"
 #endif
 }
+
+inline void
+suzerain_blas_zaxpby_d(
+        const int n,
+        const complex_double alpha,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    if (incx == 1 && incy == 1) {  // Unit strides
+
+#pragma unroll
+        for (int i = 0; i < n; ++i) {
+            y[i] *= beta;
+            y[i] += alpha*x[i];
+        }
+
+    } else {                       // General strides
+
+        // Adjust for possibly negative incx and incy
+        int ix = (incx < 0) ? (1 - n)*incx : 0;
+        int iy = (incy < 0) ? (1 - n)*incy : 0;
+#pragma unroll
+        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+            y[iy] *= beta;
+            y[iy] += alpha*x[ix];
+        }
+
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
 
 inline void
 suzerain_blas_swaxpby(
@@ -861,6 +943,125 @@ suzerain_blas_dgbmv_external(
 #endif
 }
 
+void
+suzerain_blas_cgbmv_s_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(float*) == sizeof(complex_float*));
+    float *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
+#pragma warning(push,disable:1572)
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        suzerain_blas_cscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+void
+suzerain_blas_zgbmv_d_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+#ifdef SUZERAIN_HAVE_MKL
+    assert_static(sizeof(double*) == sizeof(complex_double*));
+    double *x_re, *y_re;
+    memcpy(&x_re, &x, sizeof(x));
+    memcpy(&y_re, &y, sizeof(y));
+
+#pragma warning(push,disable:1572)
+    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
+#pragma warning(pop)
+        /* Real-valued alpha and beta: scale y as we go */
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     creal(beta), y_re, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     creal(beta), y_re+1, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+    } else {
+        /* Complex-valued alpha and/or beta: scale y and then accumulate */
+        suzerain_blas_zscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     cimag(alpha), a, lda, x_re, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     creal(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re+1, 2*incy);
+        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
+                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
+                                     1.0, y_re, 2*incy);
+    }
+#else
+#error "Sanity failure"
+#endif
+}
+
+
 inline int
 suzerain_blas_sgbmv(
         const char trans,
@@ -906,6 +1107,53 @@ suzerain_blas_dgbmv(
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
+
+inline int
+suzerain_blas_cgbmv_s(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    const int info = suzerain_gbmv_sc(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
+}
+
+inline int
+suzerain_blas_zgbmv_d(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+    const int info = suzerain_gbmv_dz(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
+}
+
 
 inline void
 suzerain_blas_ssbmv_external(
@@ -991,6 +1239,48 @@ suzerain_blas_dsbmv(
     const int info = suzerain_sbmv_d(uplo, n, k,
                                      alpha, a, lda, x, incx,
                                      beta,          y, incy);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
+}
+
+inline int
+suzerain_blas_csbmv_s(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    const int info = suzerain_sbmv_sc(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
+    return info;
+}
+
+inline int
+suzerain_blas_zsbmv_d(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+    const int info = suzerain_sbmv_dz(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
@@ -1751,223 +2041,6 @@ suzerain_lapack_zlangb(
 #else
 #error "Sanity failure"
 #endif
-}
-
-inline void
-suzerain_blas_zaxpy_d(
-        const int n,
-        const complex_double alpha,
-        const double *x,
-        const int incx,
-        complex_double *y,
-        const int incy)
-{
-    if (incx == 1 && incy == 1) {  // Unit strides
-
-#pragma unroll
-        for (int i = 0; i < n; ++i) {
-            y[i] += alpha*x[i];
-        }
-
-    } else {                       // General strides
-
-        // Adjust for possibly negative incx and incy
-        int ix = (incx < 0) ? (1 - n)*incx : 0;
-        int iy = (incy < 0) ? (1 - n)*incy : 0;
-#pragma unroll
-        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
-            y[iy] += alpha*x[ix];
-        }
-
-    }
-}
-
-inline void
-suzerain_blas_zaxpby_d(
-        const int n,
-        const complex_double alpha,
-        const double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy)
-{
-    if (incx == 1 && incy == 1) {  // Unit strides
-
-#pragma unroll
-        for (int i = 0; i < n; ++i) {
-            y[i] *= beta;
-            y[i] += alpha*x[i];
-        }
-
-    } else {                       // General strides
-
-        // Adjust for possibly negative incx and incy
-        int ix = (incx < 0) ? (1 - n)*incx : 0;
-        int iy = (incy < 0) ? (1 - n)*incy : 0;
-#pragma unroll
-        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
-            y[iy] *= beta;
-            y[iy] += alpha*x[ix];
-        }
-
-    }
-}
-
-void
-suzerain_blas_cgbmv_s_external(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy)
-{
-    assert_static(sizeof(float*) == sizeof(complex_float*));
-    float *x_re, *y_re;
-    memcpy(&x_re, &x, sizeof(x));
-    memcpy(&y_re, &y, sizeof(y));
-
-#pragma warning(push,disable:1572)
-    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
-#pragma warning(pop)
-        /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re, 2*incx,
-                                     creal(beta), y_re, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re+1, 2*incx,
-                                     creal(beta), y_re+1, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     cimag(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-    } else {
-        /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_cscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     cimag(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-        suzerain_blas_sgbmv_external(trans, m, n, kl, ku,
-                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re, 2*incy);
-    }
-}
-
-void
-suzerain_blas_zgbmv_d_external(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy)
-{
-    assert_static(sizeof(double*) == sizeof(complex_double*));
-    double *x_re, *y_re;
-    memcpy(&x_re, &x, sizeof(x));
-    memcpy(&y_re, &y, sizeof(y));
-
-#pragma warning(push,disable:1572)
-    if (cimag(alpha) == 0.0 && cimag(beta) == 0.0) {
-#pragma warning(pop)
-        /* Real-valued alpha and beta: scale y as we go */
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re, 2*incx,
-                                     creal(beta), y_re, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re+1, 2*incx,
-                                     creal(beta), y_re+1, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     cimag(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-    } else {
-        /* Complex-valued alpha and/or beta: scale y and then accumulate */
-        suzerain_blas_zscal((toupper(trans) == 'N' ? m : n), beta, y, incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     cimag(alpha), a, lda, x_re, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     creal(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re+1, 2*incy);
-        suzerain_blas_dgbmv_external(trans, m, n, kl, ku,
-                                     -cimag(alpha), a, lda, x_re+1, 2*incx,
-                                     1.0, y_re, 2*incy);
-    }
-}
-
-inline int
-suzerain_blas_cgbmv_s(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy)
-{
-    const int info = suzerain_gbmv_sc(trans, m, n, kl, ku,
-                                      alpha, a, lda, x, incx,
-                                      beta,          y, incy);
-    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
-    return info;
-}
-
-inline int
-suzerain_blas_zgbmv_d(
-        const char trans,
-        const int m,
-        const int n,
-        const int kl,
-        const int ku,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy)
-{
-    const int info = suzerain_gbmv_dz(trans, m, n, kl, ku,
-                                      alpha, a, lda, x, incx,
-                                      beta,          y, incy);
-    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
-    return info;
 }
 
 void
@@ -3200,48 +3273,6 @@ suzerain_blasext_zgbiddmv_d(
                                          alpha0, alpha1, d1, alpha2, d2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
-    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
-    return info;
-}
-
-inline int
-suzerain_blas_csbmv_s(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_float alpha,
-        const float *a,
-        const int lda,
-        const complex_float *x,
-        const int incx,
-        const complex_float beta,
-        complex_float *y,
-        const int incy)
-{
-    const int info = suzerain_sbmv_sc(uplo, n, k,
-                                      alpha, a, lda, x, incx,
-                                      beta,          y, incy);
-    if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
-    return info;
-}
-
-inline int
-suzerain_blas_zsbmv_d(
-        const char uplo,
-        const int n,
-        const int k,
-        const complex_double alpha,
-        const double *a,
-        const int lda,
-        const complex_double *x,
-        const int incx,
-        const complex_double beta,
-        complex_double *y,
-        const int incy)
-{
-    const int info = suzerain_sbmv_dz(uplo, n, k,
-                                      alpha, a, lda, x, incx,
-                                      beta,          y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
     return info;
 }
