@@ -194,7 +194,7 @@ static void test_gbidmv_sc(const gbidmzv_tc_type& t)
     const complex_float beta  ( t.beta[0],   t.beta[1]  );
 
     // Compute expected result using external BLAS
-    suzerain_blasext_sgbidmzv_external(
+    suzerain_blasext_cgbidmv_s_external(
             t.trans, t.n, t.kl, t.ku,
             alpha0, alpha1, d1.get(),
             a.get(), t.lda, (const complex_float *) x.get(), t.incx,
@@ -237,7 +237,7 @@ static void test_gbidmv_dz(const gbidmzv_tc_type& t)
     const complex_double beta  ( t.beta[0],   t.beta[1]  );
 
     // Compute expected result using external BLAS
-    suzerain_blasext_dgbidmzv_external(
+    suzerain_blasext_zgbidmv_d_external(
             t.trans, t.n, t.kl, t.ku,
             alpha0, alpha1, d1.get(),
             a.get(), t.lda, (const complex_double *) x.get(), t.incx,

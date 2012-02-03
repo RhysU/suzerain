@@ -1524,7 +1524,7 @@ suzerain_lapack_zlangb(
  * \param incy Second source vector and target vector stride.
  */
 void
-suzerain_blasext_daxpzy(
+suzerain_blasext_zaxpy_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1545,7 +1545,7 @@ suzerain_blasext_daxpzy(
  * \param incy Second source vector and target vector stride.
  */
 void
-suzerain_blasext_daxpzby(
+suzerain_blasext_zaxpby_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1579,7 +1579,7 @@ suzerain_blasext_daxpzby(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
-suzerain_blasext_sgbmzv_external(
+suzerain_blasext_cgbmv_s_external(
         const char trans,
         const int m,
         const int n,
@@ -1594,9 +1594,9 @@ suzerain_blasext_sgbmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbmzv_external */
+/*! \copydoc suzerain_blasext_cgbmv_s_external */
 void
-suzerain_blasext_dgbmzv_external(
+suzerain_blasext_zgbmv_d_external(
         const char trans,
         const int m,
         const int n,
@@ -1635,7 +1635,7 @@ suzerain_blasext_dgbmzv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbmzv(
+suzerain_blasext_cgbmv_s(
         const char trans,
         const int m,
         const int n,
@@ -1650,9 +1650,9 @@ suzerain_blasext_sgbmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbmzv */
+/*! \copydoc suzerain_blasext_cgbmv_s */
 int
-suzerain_blasext_dgbmzv(
+suzerain_blasext_zgbmv_d(
         const char trans,
         const int m,
         const int n,
@@ -1749,7 +1749,7 @@ suzerain_blasext_dgbdmv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbdmzv_external(
+suzerain_blasext_cgbdmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -1764,9 +1764,9 @@ suzerain_blasext_sgbdmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbdmzv_external */
+/*! \copydoc suzerain_blasext_cgbdmv_s_external */
 int
-suzerain_blasext_dgbdmzv_external(
+suzerain_blasext_zgbdmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -1862,7 +1862,7 @@ suzerain_blasext_dgbdmv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbdmzv(
+suzerain_blasext_cgbdmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -1877,9 +1877,9 @@ suzerain_blasext_sgbdmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbdmzv */
+/*! \copydoc suzerain_blasext_cgbdmv_s */
 int
-suzerain_blasext_dgbdmzv(
+suzerain_blasext_zgbdmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -1985,7 +1985,7 @@ suzerain_blasext_dgbddmv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbddmzv_external(
+suzerain_blasext_cgbddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2002,9 +2002,9 @@ suzerain_blasext_sgbddmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbddmzv_external */
+/*! \copydoc suzerain_blasext_cgbddmv_s_external */
 int
-suzerain_blasext_dgbddmzv_external(
+suzerain_blasext_zgbddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2111,7 +2111,7 @@ suzerain_blasext_dgbddmv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbddmzv(
+suzerain_blasext_cgbddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2128,9 +2128,9 @@ suzerain_blasext_sgbddmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbddmzv */
+/*! \copydoc suzerain_blasext_cgbddmv_s */
 int
-suzerain_blasext_dgbddmzv(
+suzerain_blasext_zgbddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2233,7 +2233,7 @@ suzerain_blasext_dgbidmv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbidmzv_external(
+suzerain_blasext_cgbidmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2249,9 +2249,9 @@ suzerain_blasext_sgbidmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbidmzv_external */
+/*! \copydoc suzerain_blasext_cgbidmv_s_external */
 int
-suzerain_blasext_dgbidmzv_external(
+suzerain_blasext_zgbidmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2353,7 +2353,7 @@ suzerain_blasext_dgbidmv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbidmzv(
+suzerain_blasext_cgbidmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2369,9 +2369,9 @@ suzerain_blasext_sgbidmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbidmzv */
+/*! \copydoc suzerain_blasext_cgbidmv_s */
 int
-suzerain_blasext_dgbidmzv(
+suzerain_blasext_zgbidmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2486,7 +2486,7 @@ suzerain_blasext_dgbdddmv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbdddmzv_external(
+suzerain_blasext_cgbdddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2505,9 +2505,9 @@ suzerain_blasext_sgbdddmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbdddmzv_external */
+/*! \copydoc suzerain_blasext_cgbdddmv_s_external */
 int
-suzerain_blasext_dgbdddmzv_external(
+suzerain_blasext_zgbdddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2625,7 +2625,7 @@ suzerain_blasext_dgbdddmv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbdddmzv(
+suzerain_blasext_cgbdddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2644,9 +2644,9 @@ suzerain_blasext_sgbdddmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbdddmzv */
+/*! \copydoc suzerain_blasext_cgbdddmv_s */
 int
-suzerain_blasext_dgbdddmzv(
+suzerain_blasext_zgbdddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2760,7 +2760,7 @@ suzerain_blasext_dgbiddmv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbiddmzv_external(
+suzerain_blasext_cgbiddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2778,9 +2778,9 @@ suzerain_blasext_sgbiddmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbiddmzv_external */
+/*! \copydoc suzerain_blasext_cgbiddmv_s_external */
 int
-suzerain_blasext_dgbiddmzv_external(
+suzerain_blasext_zgbiddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2893,7 +2893,7 @@ suzerain_blasext_dgbiddmv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_sgbiddmzv(
+suzerain_blasext_cgbiddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2911,9 +2911,9 @@ suzerain_blasext_sgbiddmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_sgbiddmzv */
+/*! \copydoc suzerain_blasext_cgbiddmv_s */
 int
-suzerain_blasext_dgbiddmzv(
+suzerain_blasext_zgbiddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2952,7 +2952,7 @@ suzerain_blasext_dgbiddmzv(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 void
-suzerain_blasext_ssbmzv_external(
+suzerain_blasext_csbmv_s_external(
         const char uplo,
         const int n,
         const int k,
@@ -2965,9 +2965,9 @@ suzerain_blasext_ssbmzv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_ssbmzv_external */
+/*! \copydoc suzerain_blasext_csbmv_s_external */
 void
-suzerain_blasext_dsbmzv_external(
+suzerain_blasext_zsbmv_d_external(
         const char uplo,
         const int n,
         const int k,
@@ -3001,7 +3001,7 @@ suzerain_blasext_dsbmzv_external(
  * \see A BLAS reference for for general band matrix storage requirements.
  */
 int
-suzerain_blasext_ssbmzv(
+suzerain_blasext_csbmv_s(
         const char uplo,
         const int n,
         const int k,
@@ -3014,9 +3014,9 @@ suzerain_blasext_ssbmzv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_ssbmzv */
+/*! \copydoc suzerain_blasext_csbmv_s */
 int
-suzerain_blasext_dsbmzv(
+suzerain_blasext_zsbmv_d(
         const char uplo,
         const int n,
         const int k,
@@ -3166,7 +3166,7 @@ suzerain_blasext_zgb_diag_scale_acc(
  * \see A BLAS reference for general band matrix storage requirements.
  */
 int
-suzerain_blasext_zgb_diag_scale_dacc(
+suzerain_blasext_zgb_diag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3217,7 +3217,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
  * \see A BLAS reference for banded matrix storage requirements.
  */
 int
-suzerain_blasext_zgb_ddiag_scale_dacc(
+suzerain_blasext_zgb_ddiag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3276,7 +3276,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
  * \see A BLAS reference for banded matrix storage requirements.
  */
 int
-suzerain_blasext_zgb_dddiag_scale_dacc(
+suzerain_blasext_zgb_dddiag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3322,7 +3322,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
  * \see A BLAS reference for general band matrix storage requirements.
  */
 int
-suzerain_blasext_zgb_dacc(
+suzerain_blasext_zgb_acc_d(
         const int m,
         const int n,
         const int kl,

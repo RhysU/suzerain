@@ -1754,7 +1754,7 @@ suzerain_lapack_zlangb(
 }
 
 inline void
-suzerain_blasext_daxpzy(
+suzerain_blasext_zaxpy_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1783,7 +1783,7 @@ suzerain_blasext_daxpzy(
 }
 
 inline void
-suzerain_blasext_daxpzby(
+suzerain_blasext_zaxpby_d(
         const int n,
         const complex_double alpha,
         const double *x,
@@ -1815,7 +1815,7 @@ suzerain_blasext_daxpzby(
 }
 
 void
-suzerain_blasext_sgbmzv_external(
+suzerain_blasext_cgbmv_s_external(
         const char trans,
         const int m,
         const int n,
@@ -1870,7 +1870,7 @@ suzerain_blasext_sgbmzv_external(
 }
 
 void
-suzerain_blasext_dgbmzv_external(
+suzerain_blasext_zgbmv_d_external(
         const char trans,
         const int m,
         const int n,
@@ -1925,7 +1925,7 @@ suzerain_blasext_dgbmzv_external(
 }
 
 inline int
-suzerain_blasext_sgbmzv(
+suzerain_blasext_cgbmv_s(
         const char trans,
         const int m,
         const int n,
@@ -1948,7 +1948,7 @@ suzerain_blasext_sgbmzv(
 }
 
 inline int
-suzerain_blasext_dgbmzv(
+suzerain_blasext_zgbmv_d(
         const char trans,
         const int m,
         const int n,
@@ -1971,7 +1971,7 @@ suzerain_blasext_dgbmzv(
 }
 
 void
-suzerain_blasext_ssbmzv_external(
+suzerain_blasext_csbmv_s_external(
         const char uplo,
         const int n,
         const int k,
@@ -2024,7 +2024,7 @@ suzerain_blasext_ssbmzv_external(
 }
 
 void
-suzerain_blasext_dsbmzv_external(
+suzerain_blasext_zsbmv_d_external(
         const char uplo,
         const int n,
         const int k,
@@ -2177,7 +2177,7 @@ suzerain_blasext_dgbdmv(
 }
 
 int
-suzerain_blasext_sgbdmzv_external(
+suzerain_blasext_cgbdmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2194,16 +2194,16 @@ suzerain_blasext_sgbdmzv_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_sgbmzv_external(
+    suzerain_blasext_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_sgbdmzv(
+suzerain_blasext_cgbdmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2227,7 +2227,7 @@ suzerain_blasext_sgbdmzv(
 }
 
 int
-suzerain_blasext_dgbdmzv_external(
+suzerain_blasext_zgbdmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2244,16 +2244,16 @@ suzerain_blasext_dgbdmzv_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_dgbmzv_external(
+    suzerain_blasext_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_dgbdmzv(
+suzerain_blasext_zgbdmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2389,7 +2389,7 @@ suzerain_blasext_dgbddmv(
 }
 
 int
-suzerain_blasext_sgbddmzv_external(
+suzerain_blasext_cgbddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2408,18 +2408,18 @@ suzerain_blasext_sgbddmzv_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_sgbmzv_external(
+    suzerain_blasext_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_sgbddmzv(
+suzerain_blasext_cgbddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2445,7 +2445,7 @@ suzerain_blasext_sgbddmzv(
 }
 
 int
-suzerain_blasext_dgbddmzv_external(
+suzerain_blasext_zgbddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2464,18 +2464,18 @@ suzerain_blasext_dgbddmzv_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_dgbmzv_external(
+    suzerain_blasext_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_dgbddmzv(
+suzerain_blasext_zgbddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2609,7 +2609,7 @@ suzerain_blasext_dgbidmv(
 }
 
 int
-suzerain_blasext_sgbidmzv_external(
+suzerain_blasext_cgbidmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2627,18 +2627,18 @@ suzerain_blasext_sgbidmzv_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_sgbmzv_external(
+    suzerain_blasext_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_sgbidmzv(
+suzerain_blasext_cgbidmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2663,7 +2663,7 @@ suzerain_blasext_sgbidmzv(
 }
 
 int
-suzerain_blasext_dgbidmzv_external(
+suzerain_blasext_zgbidmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2681,18 +2681,18 @@ suzerain_blasext_dgbidmzv_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_dgbmzv_external(
+    suzerain_blasext_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_dgbidmzv(
+suzerain_blasext_zgbidmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -2841,7 +2841,7 @@ suzerain_blasext_dgbdddmv(
 }
 
 int
-suzerain_blasext_sgbdddmzv_external(
+suzerain_blasext_cgbdddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -2862,20 +2862,20 @@ suzerain_blasext_sgbdddmzv_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_sgbmzv_external(
+    suzerain_blasext_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_sgbdddmzv(
+suzerain_blasext_cgbdddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -2903,7 +2903,7 @@ suzerain_blasext_sgbdddmzv(
 }
 
 int
-suzerain_blasext_dgbdddmzv_external(
+suzerain_blasext_zgbdddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -2924,20 +2924,20 @@ suzerain_blasext_dgbdddmzv_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_dgbmzv_external(
+    suzerain_blasext_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_dgbdddmzv(
+suzerain_blasext_zgbdddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -3085,7 +3085,7 @@ suzerain_blasext_dgbiddmv(
 }
 
 int
-suzerain_blasext_sgbiddmzv_external(
+suzerain_blasext_cgbiddmv_s_external(
         const char trans,
         const int n,
         const int kl,
@@ -3105,20 +3105,20 @@ suzerain_blasext_sgbiddmzv_external(
 {
     complex_float * const z = suzerain_blas_malloc(n*sizeof(complex_float));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_sgbmzv_external(
+    suzerain_blasext_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_caxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
-    suzerain_blasext_ssbmzv_external(
+    suzerain_blasext_csbmv_s_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_sgbiddmzv(
+suzerain_blasext_cgbiddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -3145,7 +3145,7 @@ suzerain_blasext_sgbiddmzv(
 }
 
 int
-suzerain_blasext_dgbiddmzv_external(
+suzerain_blasext_zgbiddmv_d_external(
         const char trans,
         const int n,
         const int kl,
@@ -3165,20 +3165,20 @@ suzerain_blasext_dgbiddmzv_external(
 {
     complex_double * const z = suzerain_blas_malloc(n*sizeof(complex_double));
     if (UNLIKELY(!z)) return suzerain_blas_xerbla(__func__, -1);
-    suzerain_blasext_dgbmzv_external(
+    suzerain_blasext_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zaxpby(
             n, alpha0, z, 1, beta, y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha1, d1, 1, z, 1, 1, y, incy);
-    suzerain_blasext_dsbmzv_external(
+    suzerain_blasext_zsbmv_d_external(
             'U', n, 0, alpha2, d2, 1, z, 1, 1, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
 
 inline int
-suzerain_blasext_dgbiddmzv(
+suzerain_blasext_zgbiddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -3205,7 +3205,7 @@ suzerain_blasext_dgbiddmzv(
 }
 
 inline int
-suzerain_blasext_ssbmzv(
+suzerain_blasext_csbmv_s(
         const char uplo,
         const int n,
         const int k,
@@ -3226,7 +3226,7 @@ suzerain_blasext_ssbmzv(
 }
 
 inline int
-suzerain_blasext_dsbmzv(
+suzerain_blasext_zsbmv_d(
         const char uplo,
         const int n,
         const int k,
@@ -3535,7 +3535,7 @@ suzerain_blasext_zgb_diag_scale_acc(
 }
 
 int
-suzerain_blasext_zgb_diag_scale_dacc(
+suzerain_blasext_zgb_diag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3591,16 +3591,16 @@ suzerain_blasext_zgb_diag_scale_dacc(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
-            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
-                                                    b + il*incb, incb);
+            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+                                                     b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
-            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                              beta, b + il*incb, incb);
+            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+                                               beta, b + il*incb, incb);
         }
     }
 
@@ -3608,7 +3608,7 @@ suzerain_blasext_zgb_diag_scale_dacc(
 }
 
 int
-suzerain_blasext_zgb_ddiag_scale_dacc(
+suzerain_blasext_zgb_ddiag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3671,8 +3671,8 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
-            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
-                                                    b + il*incb, incb);
+            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+                                                     b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n;
@@ -3680,8 +3680,8 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
-            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                              beta, b + il*incb, incb);
+            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+                                               beta, b + il*incb, incb);
         }
     }
 
@@ -3689,7 +3689,7 @@ suzerain_blasext_zgb_ddiag_scale_dacc(
 }
 
 int
-suzerain_blasext_zgb_dddiag_scale_dacc(
+suzerain_blasext_zgb_dddiag_scale_acc_d(
         char side,
         int m,
         int n,
@@ -3758,8 +3758,8 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
-            suzerain_blasext_daxpzy (iu - il, tmp,  a + il*inca, inca,
-                                                    b + il*incb, incb);
+            suzerain_blasext_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+                                                     b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n;
@@ -3767,8 +3767,8 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
-            suzerain_blasext_daxpzby(iu - il, tmp,  a + il*inca, inca,
-                                              beta, b + il*incb, incb);
+            suzerain_blasext_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+                                               beta, b + il*incb, incb);
         }
     }
 
@@ -3776,7 +3776,7 @@ suzerain_blasext_zgb_dddiag_scale_dacc(
 }
 
 inline int
-suzerain_blasext_zgb_dacc(
+suzerain_blasext_zgb_acc_d(
         const int m,
         const int n,
         const int kl,
@@ -3789,7 +3789,7 @@ suzerain_blasext_zgb_dacc(
         const int ldb)
 {
     const double one = 1.0;
-    return suzerain_blasext_zgb_diag_scale_dacc('R', m, n, kl, ku,
+    return suzerain_blasext_zgb_diag_scale_acc_d('R', m, n, kl, ku,
                                                 alpha, &one, 0, a, 1, lda,
                                                 beta,           b, 1, ldb);
 }

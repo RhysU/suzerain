@@ -294,7 +294,7 @@ suzerain_bsplineop_accumulate_complex(
     // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
     const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        suzerain_blasext_dgbmzv(
+        suzerain_blasext_zgbmv_d(
                 trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
                 alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
                 beta,                       y + j*ldy, incy);
@@ -1373,7 +1373,7 @@ suzerain_bsplineop_luz_opaccumulate(
 
         /* Accumulate the mass matrix into operator storage, allowing */
         /* lower level routines to optimize for the factor of 1.      */
-        suzerain_blasext_zgb_dacc(
+        suzerain_blasext_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
             coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
             1, luzw->A + w->max_kl, luzw->ld);
@@ -1381,7 +1381,7 @@ suzerain_bsplineop_luz_opaccumulate(
     } else {
 
         /* Accumulate the mass matrix into scaled operator storage */
-        suzerain_blasext_zgb_dacc(
+        suzerain_blasext_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
             coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
             scale, luzw->A + w->max_kl, luzw->ld);
@@ -1390,7 +1390,7 @@ suzerain_bsplineop_luz_opaccumulate(
 
     /* Accumulate necessary any higher derivative operators into luzw->A */
     for (int k = 1; k < ncoefficients; ++k) {
-        suzerain_blasext_zgb_dacc(
+        suzerain_blasext_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
             coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
             1, luzw->A + w->max_kl, luzw->ld);
