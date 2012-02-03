@@ -49,9 +49,6 @@ FUNCNAME()(
     assert(w->nderiv >= 2); // Enough derivatives in workspace?
     assert(A->ld == w->ld); // Compatible storage?
 
-    // How big is our scratch buffer for building banded submatrices?
-    const size_t bufbytes = A->ld*A->n*sizeof(buf[0]);
-
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
     const complex_double ikn = _Complex_I*kn;
@@ -83,9 +80,26 @@ FUNCNAME()(
         if (rhoe >= 0) PACK(z)( A, rho,  rhoe,     0.0, 0,  papt);
     }
 
+    // The provided buf may contain INFs or NANs.  Defensively zero it.
+    // Also serves to (possibly) bring the buffer into cache for accumulation.
+    assert(buf);
+    memset(buf, 0, A->ld*A->n*sizeof(buf[0]));
+
     if (rhou >= 0) { // Prepare streamwise momentum row
 
-        if (rho  >= 0) PACK(z)(A, rhou, rho,  0.0, NULL, papt);
+        if (rho  >= 0) {
+            PACK(z)(A, rhou, rho,  0.0, NULL, papt); // FIXME Remove
+
+            // -phi*0.5*gm1*ikm,            r->m_gradrho, ld->m_gradrho,
+            //  phi*(ap43*km2 + kn2)*invRe, r->nuux,      ld->nuux,
+            // -phi*ap13*invRe*(ikm+ikn),   r->nuuz,      ld->nuuz,
+
+
+            // -phi*ap13*invRe*ikm,         r->nuuy,      ld->nuuy,
+
+            // -phi*invRe,                  r->nuux,      ld->nuux,
+
+        }
 
         PACK(zd)(A, rhou, rhou, 1.0, M, papt);
 
