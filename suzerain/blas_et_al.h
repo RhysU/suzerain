@@ -906,7 +906,7 @@ suzerain_blas_csbmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blas_csbmv_external */
+/*! \copydoc suzerain_blas_ssbmv_external */
 void
 suzerain_blas_zsbmv_d_external(
         const char uplo,
