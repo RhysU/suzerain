@@ -15,7 +15,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AX_ENABLE_BUILDDIR
-AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar -Wall -Werror foreign)
+AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests -Wall foreign)
 AC_PREREQ([2.61])
 AX_AM_MACROS
 AX_ADD_AM_CTAGSFLAGS
