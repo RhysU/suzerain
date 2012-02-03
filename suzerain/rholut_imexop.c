@@ -56,6 +56,19 @@ suzerain_rholut_imexop_apply(
     static const int D2         = 2;
     const int    n              = w->n;
 
+    // Prepare shorthand for some useful derived values
+    const complex_double ikm = _Complex_I*km;
+    const complex_double ikn = _Complex_I*kn;
+    const double km2         = km*km;
+    const double kn2         = kn*kn;
+    const double gm1         = s->gamma - 1;
+    const double ap43        = s->alpha + 4.0/3.0;
+    const double ap13        = s->alpha + 1.0/3.0;
+    const double Ma2         = s->Ma * s->Ma;
+    const double invRe       = 1 / s->Re;
+    const double invMa2      = 1 / Ma2;
+    const double ginvRePr    = s->gamma / (s->Re * s->Pr);
+
     // Accumulate the requested portions of the M + \varphi L operator.
     // The zscal beta/phi and M gbmv phi coefficients scale output by beta.
     // Notice that the phi in (M + phi*L) is achieved using final M gbmv.
@@ -64,18 +77,18 @@ suzerain_rholut_imexop_apply(
         suzerain_blas_zscal(n, beta/phi, out_rho, inc);
 
         if (in_rhou) suzerain_bsplineop_accumulate_complex(
-                M,  nrhs, -I*km, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
+                M,  nrhs, -ikm, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
 
         if (in_rhov) suzerain_bsplineop_accumulate_complex(
-                D1, nrhs, - 1.0, in_rhov, inc, n, 1.0, out_rho, inc, n, w);
+                D1, nrhs, -1.0, in_rhov, inc, n, 1.0, out_rho, inc, n, w);
 
         if (in_rhow) suzerain_bsplineop_accumulate_complex(
-                M,  nrhs, -I*kn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
+                M,  nrhs, -ikn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
 
         if (in_rhoe) /* NOP */;
 
         suzerain_bsplineop_accumulate_complex(
-                M,  nrhs,   1.0, in_rho,  inc, n, phi, out_rho, inc, n, w);
+                M,  nrhs,  1.0, in_rho,  inc, n, phi, out_rho, inc, n, w);
     }
 
     if (in_rhou) {  // Accumulate X momentum terms into out_rhou

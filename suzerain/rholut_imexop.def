@@ -37,7 +37,7 @@ FUNCNAME()(
         complex_double * const papt)
 {
     // How many rows and columns of banded submatrices will we build?
-    const int nneg = (rho >= 0)
+    const int nneg = (rho  >= 0)
                    + (rhou >= 0) + (rhov >= 0) + (rhow >= 0)
                    + (rhoe >= 0);
 
@@ -52,6 +52,19 @@ FUNCNAME()(
     // How big is our scratch buffer for building banded submatrices?
     const size_t bufbytes = A->ld*A->n*sizeof(buf[0]);
 
+    // Prepare shorthand for some useful derived values
+    const complex_double ikm = _Complex_I*km;
+    const complex_double ikn = _Complex_I*kn;
+    const double km2         = km*km;
+    const double kn2         = kn*kn;
+    const double gm1         = s->gamma - 1;
+    const double ap43        = s->alpha + 4.0/3.0;
+    const double ap13        = s->alpha + 1.0/3.0;
+    const double Ma2         = s->Ma * s->Ma;
+    const double invRe       = 1 / s->Re;
+    const double invMa2      = 1 / Ma2;
+    const double ginvRePr    = s->gamma / (s->Re * s->Pr);
+
     // We do not know the leading dimension associated with the definition of
     // PACKFUNC() so we must overwrite every possible submatrix within PAPT.
     // This is only suboptimal for the zero (rho, rhoe) submatrix and
@@ -61,13 +74,13 @@ FUNCNAME()(
 
         PACKFUNC(zd)(A, rho,  rho, 1.0, M, papt);
 
-        if (rhou >= 0) PACKFUNC(zd)(A, rho, rhou, -I*km*phi, M,  papt);
+        if (rhou >= 0) PACKFUNC(zd)(A, rho, rhou, -ikm*phi, M,  papt);
 
-        if (rhov >= 0) PACKFUNC(zd)(A, rho, rhov, - 1.0*phi, D1, papt);
+        if (rhov >= 0) PACKFUNC(zd)(A, rho, rhov, -1.0*phi, D1, papt);
 
-        if (rhow >= 0) PACKFUNC(zd)(A, rho, rhow, -I*kn*phi, M,  papt);
+        if (rhow >= 0) PACKFUNC(zd)(A, rho, rhow, -ikn*phi, M,  papt);
 
-        if (rhoe >= 0) PACKFUNC(z)(A, rho,  rhoe,       0.0, 0,  papt);
+        if (rhoe >= 0) PACKFUNC(z)( A, rho,  rhoe,     0.0, 0,  papt);
     }
 
     if (rhou >= 0) { // Prepare streamwise momentum row
