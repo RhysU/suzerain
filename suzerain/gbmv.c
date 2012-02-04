@@ -73,13 +73,13 @@
 #define GBMV_KU        const int ku,
 #include "gbmv.def"
 
-#define FIXEDBW_CASE(z,num,prefix)                           \
-    case num: return BOOST_PP_CAT(prefix,num)(               \
-        trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
-
 // ------------------------------------------------------------------
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
+
+#define FIXEDBW_CASE(z,num,prefix)                           \
+    case num: return BOOST_PP_CAT(prefix,num)(               \
+        trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
 
 int
 suzerain_gbmv_s(
