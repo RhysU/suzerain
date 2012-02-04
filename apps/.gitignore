@@ -3,6 +3,7 @@
 /channel_mean
 /conservation
 /*.dat
+/*.log
 /.deps
 /driver_suzerain_p3dfft
 /Makefile
