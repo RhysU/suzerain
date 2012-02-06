@@ -259,6 +259,22 @@ suzerain_rholut_imexop_apply(
     if (in_rhoe) {  // Accumulate total energy terms into out_rhoe
         suzerain_blas_zscal(n, beta/phi, out_rhoe, inc);
 
+        if (in_rho) {
+            suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
+                -ikm,                    REF(ex_gradrho),
+                -ikn,                    REF(ez_gradrho),
+                -ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
+                w->D[M],  w->ld, in_rho, inc, 1.0, out_rhoe, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
+                -1.0,                    REF(ey_gradrho),
+                w->D[D1], w->ld, in_rho, inc, 1.0, out_rhoe, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                ginvRePr/gm1,            REF(e_deltarho),
+                w->D[D2], w->ld, in_rho, inc, 1.0, out_rhoe, inc);
+        }
+
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
     }

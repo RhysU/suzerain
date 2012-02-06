@@ -291,7 +291,26 @@ FUNCNAME()(
 
     if (rhoe >= 0) { // Prepare total energy row
 
-        if (rho  >= 0) PACK(z)(A, rhoe, rho,  0.0, NULL, papt);
+        if (rho  >= 0) {
+            suzerain_blasext_zgb_dddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*ikm,                    REF(ex_gradrho),
+                    -phi*ikn,                    REF(ez_gradrho),
+                    -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
+                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi,                        REF(ey_gradrho),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*ginvRePr/gm1,            REF(e_deltarho),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhoe, rho, 1.0, buf, papt);
+        }
 
         if (rhou >= 0) PACK(z)(A, rhoe, rhou, 0.0, NULL, papt);
 

@@ -151,5 +151,5 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     const int imaxabs = iamax(N*N, B1.get(), 1);
     BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
     BOOST_CHECK_LT(std::abs(B1[imaxabs]),
-                   N*N*std::numeric_limits<real_t>::epsilon());
+                   N*N*N*std::numeric_limits<real_t>::epsilon());
 }
