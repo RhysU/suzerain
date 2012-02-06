@@ -157,7 +157,7 @@ static void test_gbmv_d(const gbmv_tc_type& t)
 
 static void test_gbmv_sc(const gbmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*20;
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*200;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -194,7 +194,7 @@ static void test_gbmv_sc(const gbmzv_tc_type& t)
 
 static void test_gbmv_dz(const gbmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*25;
+    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*250;
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -338,7 +338,7 @@ init_unit_test_suite( int argc, char* argv[] )
         ,{   'T', 19, 17,  3,  0,   5.0,   5,   -3, 11.0,    2}
         ,{   'T', 19, 17,  3,  0,  -5.0,   4,    3,  0.0,    2}
         ,{   'T', 19, 17,  3,  0,   5.0,   4,    3, 11.0,   -2}
-        ,{   'N',  4,  5,  3,  4,  -5.0,   8,    1,  0.0,    1} // Degenerate
+        ,{   'N',  4,  5,  3,  4,  -5.0,   8,    1,  0.0,    1} // Degenerate A
         ,{   'N',  4,  5,  3,  4,   5.0,   8,   -1, 11.0,    1}
         ,{   'N',  4,  5,  3,  4,  -5.0,   9,    1,  0.0,    1}
         ,{   'N',  4,  5,  3,  4,   5.0,   9,    1, 11.0,   -1}
@@ -370,6 +370,38 @@ init_unit_test_suite( int argc, char* argv[] )
         ,{   'T',  4,  5,  3,  4,   5.0,   8,   -3, 11.0,    2}
         ,{   'T',  4,  5,  3,  4,  -5.0,   9,    3,  0.0,    2}
         ,{   'T',  4,  5,  3,  4,   5.0,   9,    3, 11.0,   -2}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   8,    1,  0.0,    1} // Degenerate B
+        ,{   'N',  5,  4,  3,  2,   5.0,   8,   -1, 11.0,    1}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   9,    1,  0.0,    1}
+        ,{   'N',  5,  4,  3,  2,   5.0,   9,    1, 11.0,   -1}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   8,    1,  0.0,    2}
+        ,{   'N',  5,  4,  3,  2,   5.0,   8,   -1, 11.0,    2}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   9,    1,  0.0,    2}
+        ,{   'N',  5,  4,  3,  2,   5.0,   9,    1, 11.0,   -2}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   8,    3,  0.0,    1}
+        ,{   'N',  5,  4,  3,  2,   5.0,   8,   -3, 11.0,    1}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   9,    3,  0.0,    1}
+        ,{   'N',  5,  4,  3,  2,   5.0,   9,    3, 11.0,   -1}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   8,    3,  0.0,    2}
+        ,{   'N',  5,  4,  3,  2,   5.0,   8,   -3, 11.0,    2}
+        ,{   'N',  5,  4,  3,  2,  -5.0,   9,    3,  0.0,    2}
+        ,{   'N',  5,  4,  3,  2,   5.0,   9,    3, 11.0,   -2}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   8,    1,  0.0,    1}
+        ,{   'T',  5,  4,  3,  2,   5.0,   8,   -1, 11.0,    1}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   9,    1,  0.0,    1}
+        ,{   'T',  5,  4,  3,  2,   5.0,   9,    1, 11.0,   -1}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   8,    1,  0.0,    2}
+        ,{   'T',  5,  4,  3,  2,   5.0,   8,   -1, 11.0,    2}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   9,    1,  0.0,    2}
+        ,{   'T',  5,  4,  3,  2,   5.0,   9,    1, 11.0,   -2}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   8,    3,  0.0,    1}
+        ,{   'T',  5,  4,  3,  2,   5.0,   8,   -3, 11.0,    1}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   9,    3,  0.0,    1}
+        ,{   'T',  5,  4,  3,  2,   5.0,   9,    3, 11.0,   -1}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   8,    3,  0.0,    2}
+        ,{   'T',  5,  4,  3,  2,   5.0,   8,   -3, 11.0,    2}
+        ,{   'T',  5,  4,  3,  2,  -5.0,   9,    3,  0.0,    2}
+        ,{   'T',  5,  4,  3,  2,   5.0,   9,    3, 11.0,   -2}
         ,{   'T', 19, 17,  3,  4,   0.0,   9,    3,  1.0,    1} // Quick
     };
     const size_t gcases = sizeof(gbmv_tc)/sizeof(gbmv_tc[0]);
