@@ -179,7 +179,15 @@ FUNCNAME()(
             PACK(z)(A, rhov, rho, 1.0, buf, papt);
         }
 
-        if (rhou >= 0) PACK(z)(A, rhov, rhou, 0.0, NULL, papt);
+        if (rhou  >= 0) {
+            suzerain_blasext_zgb_ddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*gm1,            REF(ux),
+                    phi*ap13*invRe*ikm, REF(nu),
+                    D1, 1, w->ld, 0.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhov, rhou, 1.0, buf, papt);
+        }
 
         /* rhov */ {
             suzerain_blasext_zgb_ddiag_scale_acc_d(
@@ -201,7 +209,15 @@ FUNCNAME()(
             PACK(z)(A, rhov, rhov, 1.0, buf, papt);
         }
 
-        if (rhow >= 0) PACK(z)(A, rhov, rhow, 0.0, NULL, papt);
+        if (rhow  >= 0) {
+            suzerain_blasext_zgb_ddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*gm1,            REF(uz),
+                    phi*ap13*invRe*ikn, REF(nu),
+                    D1, 1, w->ld, 0.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhov, rhow, 1.0, buf, papt);
+        }
 
         if (rhoe >= 0) PACK(zd)(A, rhov, rhoe, -gm1*invMa2*phi, D1, papt);
     }
