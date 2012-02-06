@@ -46,8 +46,8 @@ FUNCNAME()(
     const double * const M  = w->D[0] - (w->max_ku - w->ku[0]);
     const double * const D1 = w->D[1] - (w->max_ku - w->ku[1]);
     const double * const D2 = w->D[2] - (w->max_ku - w->ku[1]);
-    assert(w->nderiv >= 2); // Enough derivatives in workspace?
-    assert(A->ld == w->ld); // Compatible storage?
+    assert(w->nderiv >= 2);         // Enough derivatives in workspace?
+    assert(A->ld == w->ld);         // Compatible storage?
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
@@ -69,6 +69,8 @@ FUNCNAME()(
 
     // Shorthand for the common pattern of providing a r->foo, ld->foo pair.
 #   define REF(quantity) r->quantity, ld->quantity
+    static const double one = 1.0;
+#   define IDENTITY()    &one,        0
 
     if (rho >= 0) {  // Prepare density row
 
@@ -94,7 +96,7 @@ FUNCNAME()(
             suzerain_blasext_zgb_dddiag_scale_acc_d(
                     'L', A->n, A->n, A->kl, A->ku,
                     -phi*0.5*gm1*ikm,            REF(m_gradrho),
-                     phi*(ap43*km2 + kn2)*invRe, REF(nuux),
+                     phi*invRe*(ap43*km2 + kn2), REF(nuux),
                     -phi*ap13*invRe*(ikm+ikn),   REF(nuuz),
                     M, 1, w->ld, 0.0, buf, 1, A->ld);
 
@@ -111,7 +113,21 @@ FUNCNAME()(
             PACK(z)(A, rhou, rho, 1.0, buf, papt);
         }
 
-        PACK(zd)(A, rhou, rhou, 1.0, M, papt);
+        /* rhou */ {
+            suzerain_blasext_zgb_dddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    1.0,                         IDENTITY(),
+                    -phi*gm1*ikm,                REF(ux),
+                    -phi*invRe*(ap43*km2 + kn2), REF(nu),
+                    M, 1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*invRe,                  REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhou, rhou, 1.0, buf, papt);
+        }
 
         if (rhov >= 0) PACK(z)(A, rhou, rhov, 0.0, NULL, papt);
 
@@ -161,6 +177,7 @@ FUNCNAME()(
     }
 
 #   undef REF
+#   undef IDENTITY
 
 }
 
