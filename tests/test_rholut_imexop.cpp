@@ -38,8 +38,8 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
 
     // Initialize scenario parameters
     const double phi = M_SQRT2/5;
-    const double km  = M_E;
-    const double kn  = M_PI;
+    const double km  = 7*M_E;
+    const double kn  = 3*M_PI;
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -53,8 +53,8 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     suzerain_rholut_imexop_ref r;
     const std::size_t nrefs = sizeof(r)/sizeof(real_t *);
     boost::scoped_array<real_t> refs(new real_t[n*nrefs]);
-    for (std::size_t i = 0; i < n*nrefs; ++i) { // Create garbage
-        refs[i] = 1 + random() / RAND_MAX;
+    for (std::size_t i = 0; i < n*nrefs; ++i) { // Create interesting garbage
+        refs[i] = 1 + (i / 100.0) + (random() / RAND_MAX);
     }
     for (std::size_t i = 0; i < nrefs; ++i) {   // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
