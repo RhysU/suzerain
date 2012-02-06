@@ -8,18 +8,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbddmv.h: provides BLAS-like general band matrix-vector operations
+ * gbdddddmv.h: provides BLAS-like general band matrix-vector operations
  * $Id$
  */
 
-#ifndef __SUZERAIN_GBDDMV_H
-#define __SUZERAIN_GBDDMV_H
+#ifndef __SUZERAIN_GBDDDDMV_H
+#define __SUZERAIN_GBDDDDMV_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <suzerain/complex.h>
 
 /** \file
  * Provides custom, BLAS-like diagonal matrix times general band matrix-vector
@@ -27,9 +25,11 @@ extern "C" {
  * kernels.
  */
 
+#include <suzerain/complex.h>
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1
- * \right) A x + \beta{} y \f$.
+ * + \alpha_{2} D_2 + \alpha_{3} D_3 \right) A x + \beta{} y \f$.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
@@ -42,8 +42,14 @@ extern "C" {
  * \param d0 Storage for diagonal matrix \f$ D_0 \f$.
  * \param ldd0 Leading dimension of \c d0.
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Storage for diagonal matrix \f$ D_1 \f$.
+ * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
  * \param ldd1 Leading dimension of \c d1.
+ * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
+ * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
+ * \param ldd2 Leading dimension of \c d2.
+ * \param alpha3 Multiplicative scalar \f$ \alpha_3 \f$.
+ * \param d3 Contiguous storage for diagonal matrix \f$ D_3 \f$.
+ * \param ldd3 Leading dimension of \c d3.
  * \param a General band storage for matrix \f$ A \f$.
  * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
@@ -57,7 +63,7 @@ extern "C" {
  *      band storage matrix requirements.
  */
 int
-suzerain_gbddmv_s(
+suzerain_gbddddmv_s(
         const char trans,
         const int n,
         const int kl,
@@ -68,6 +74,12 @@ suzerain_gbddmv_s(
         const float alpha1,
         const float *d1,
         const int ldd1,
+        const float alpha2,
+        const float *d2,
+        const int ldd2,
+        const float alpha3,
+        const float *d3,
+        const int ldd3,
         const float *a,
         const int lda,
         const float *x,
@@ -76,9 +88,9 @@ suzerain_gbddmv_s(
         float *y,
         const int incy);
 
-/*! \copydoc suzerain_gbddmv_s */
+/*! \copydoc suzerain_gbddddmv_s */
 int
-suzerain_gbddmv_d(
+suzerain_gbddddmv_d(
         const char trans,
         const int n,
         const int kl,
@@ -89,6 +101,12 @@ suzerain_gbddmv_d(
         const double alpha1,
         const double *d1,
         const int ldd1,
+        const double alpha2,
+        const double *d2,
+        const int ldd2,
+        const double alpha3,
+        const double *d3,
+        const int ldd3,
         const double *a,
         const int lda,
         const double *x,
@@ -98,14 +116,15 @@ suzerain_gbddmv_d(
         const int incy);
 
 /*!
- * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
- * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$x\f$,
- * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, and \f$A\f$.
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2 + \alpha_{3} D_{3} \right) A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$,
+ * \f$D_1\f$, \f$D_2\f$, and \f$A\f$.
  *
- * \copydetails suzerain_gbddmv_s
+ * \copydetails suzerain_gbddddmv_s
  */
 int
-suzerain_gbddmv_sc(
+suzerain_gbddddmv_sc(
         const char trans,
         const int n,
         const int kl,
@@ -116,6 +135,12 @@ suzerain_gbddmv_sc(
         const complex_float alpha1,
         const float *d1,
         const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const complex_float alpha3,
+        const float *d3,
+        const int ldd3,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -124,9 +149,9 @@ suzerain_gbddmv_sc(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_gbddmv_sc */
+/*! \copydoc suzerain_gbddddmv_sc */
 int
-suzerain_gbddmv_dz(
+suzerain_gbddddmv_dz(
         const char trans,
         const int n,
         const int kl,
@@ -137,6 +162,12 @@ suzerain_gbddmv_dz(
         const complex_double alpha1,
         const double *d1,
         const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        const int ldd3,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -149,4 +180,4 @@ suzerain_gbddmv_dz(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_GBDDMV_H */
+#endif /* __SUZERAIN_GBDDDDMV_H */

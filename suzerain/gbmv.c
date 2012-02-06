@@ -8,7 +8,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbmv.c: provides custom, BLAS-like general band matrix-vector operations
+ * gbmv.c: provides BLAS-like general band matrix-vector operations
  * $Id$
  */
 

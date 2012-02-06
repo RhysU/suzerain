@@ -8,7 +8,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbdddmv.h: provides custom, BLAS-like general band matrix-vector operations
+ * gbdddmv.h: provides BLAS-like general band matrix-vector operations
  * $Id$
  */
 
@@ -42,10 +42,10 @@ extern "C" {
  * \param d0 Storage for diagonal matrix \f$ D_0 \f$.
  * \param ldd0 Leading dimension of \c d0.
  * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$.
- * \param d1 Contiguous storage for diagonal matrix \f$ D_1 \f$.
+ * \param d1 Storage for diagonal matrix \f$ D_1 \f$.
  * \param ldd1 Leading dimension of \c d1.
  * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$.
- * \param d2 Contiguous storage for diagonal matrix \f$ D_2 \f$.
+ * \param d2 Storage for diagonal matrix \f$ D_2 \f$.
  * \param ldd2 Leading dimension of \c d2.
  * \param a General band storage for matrix \f$ A \f$.
  * \param lda Leading dimension of \c a.

@@ -27,6 +27,7 @@
 #endif
 
 #include <suzerain/blas_et_al.h>
+#include <suzerain/gbddddmv.h>
 #include <suzerain/gbdddmv.h>
 #include <suzerain/gbddmv.h>
 #include <suzerain/gbdmv.h>
