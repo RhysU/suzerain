@@ -67,6 +67,9 @@ FUNCNAME()(
     // This is only suboptimal for the zero (rho, rhoe) submatrix and
     // brings with it much flexibility.
 
+    // Shorthand for the common pattern of providing a r->foo, ld->foo pair.
+#   define REF(quantity) r->quantity, ld->quantity
+
     if (rho >= 0) {  // Prepare density row
 
         PACK(zd)(A, rho,  rho, 1.0, M, papt);
@@ -88,17 +91,24 @@ FUNCNAME()(
     if (rhou >= 0) { // Prepare streamwise momentum row
 
         if (rho  >= 0) {
-            PACK(z)(A, rhou, rho,  0.0, NULL, papt); // FIXME Remove
+            suzerain_blasext_zgb_dddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*0.5*gm1*ikm,            REF(m_gradrho),
+                     phi*(ap43*km2 + kn2)*invRe, REF(nuux),
+                    -phi*ap13*invRe*(ikm+ikn),   REF(nuuz),
+                    M, 1, w->ld, 0.0, buf, 1, A->ld);
 
-            // -phi*0.5*gm1*ikm,            r->m_gradrho, ld->m_gradrho,
-            //  phi*(ap43*km2 + kn2)*invRe, r->nuux,      ld->nuux,
-            // -phi*ap13*invRe*(ikm+ikn),   r->nuuz,      ld->nuuz,
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*ap13*invRe*ikm,         REF(nuuy),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
 
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*invRe,                  REF(nuux),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
 
-            // -phi*ap13*invRe*ikm,         r->nuuy,      ld->nuuy,
-
-            // -phi*invRe,                  r->nuux,      ld->nuux,
-
+            PACK(z)(A, rhou, rho, 1.0, buf, papt);
         }
 
         PACK(zd)(A, rhou, rhou, 1.0, M, papt);
@@ -149,6 +159,9 @@ FUNCNAME()(
 
         PACK(zd)(A, rhoe, rhoe, 1.0, M, papt);
     }
+
+#   undef REF
+
 }
 
 #undef FUNCNAME

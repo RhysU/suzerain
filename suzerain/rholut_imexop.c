@@ -73,6 +73,9 @@ suzerain_rholut_imexop_apply(
     // The zscal beta/phi and M gbmv phi coefficients scale output by beta.
     // Notice that the phi in (M + phi*L) is achieved using final M gbmv.
 
+    // Shorthand for the common pattern of providing a r->foo, ld->foo pair.
+#   define REF(quantity) r->quantity, ld->quantity
+
     if (in_rho ) {  // Accumulate density terms into out_rho
         suzerain_blas_zscal(n, beta/phi, out_rho, inc);
 
@@ -93,6 +96,22 @@ suzerain_rholut_imexop_apply(
 
     if (in_rhou) {  // Accumulate X momentum terms into out_rhou
         suzerain_blas_zscal(n, beta/phi, out_rhou, inc);
+
+        if (in_rho) {
+            suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
+                -0.5*gm1*ikm,          REF(m_gradrho),
+                invRe*(ap43*km2+kn2),  REF(nuux),
+                -ap13*invRe*(ikm+ikn), REF(nuuz),
+                w->D[M],  w->ld, in_rho, inc, 1.0, out_rhou, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
+                -ap13*invRe*ikm,       REF(nuuy),
+                w->D[D1], w->ld, in_rho, inc, 1.0, out_rhou, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                -invRe,                REF(nuux),
+                w->D[D2], w->ld, in_rho, inc, 1.0, out_rhou, inc);
+        }
 
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
                 -gm1*invMa2*ikm, in_rhoe, inc, n, 1.0, out_rhou, inc, n, w);
@@ -127,6 +146,9 @@ suzerain_rholut_imexop_apply(
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
     }
+
+#   undef REF
+
 }
 
 // suzerain_rholut_imexop_pack{c,f} differ trivially
