@@ -275,6 +275,28 @@ suzerain_rholut_imexop_apply(
                 w->D[D2], w->ld, in_rho, inc, 1.0, out_rhoe, inc);
         }
 
+        if (in_rhou) {
+            suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
+                -ikm,                    REF(e_divm),
+                -ginvRePr*Ma2*(km2+kn2), REF(nuux),
+                w->D[M],  w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                -ginvRePr*Ma2,            REF(nuux),
+                w->D[D2], w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
+        }
+
+        if (in_rhow) {
+            suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
+                -ikn,                    REF(e_divm),
+                -ginvRePr*Ma2*(km2+kn2), REF(nuuz),
+                w->D[M],  w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                -ginvRePr*Ma2,            REF(nuuz),
+                w->D[D2], w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
+        }
+
         suzerain_bsplineop_accumulate_complex(
                 M, nrhs, 1.0, in_rhoe, inc, n, phi, out_rhoe, inc, n, w);
     }
