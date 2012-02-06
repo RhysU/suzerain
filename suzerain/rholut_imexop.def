@@ -361,7 +361,27 @@ FUNCNAME()(
             PACK(z)(A, rhoe, rhow, 1.0, buf, papt);
         }
 
-        PACK(zd)(A, rhoe, rhoe, 1.0, M, papt);
+        /* rhoe */ {
+            suzerain_blasext_zgb_ddddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    1.0,                     IDENTITY(),
+                    -phi*s->gamma*ikm,       REF(ux),
+                    -phi*s->gamma*ikn,       REF(uz),
+                    -phi*ginvRePr*(km2+kn2), REF(nu),
+                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*s->gamma,           REF(uy),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*ginvRePr,            REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhoe, rhoe, 1.0, buf, papt);
+        }
     }
 
 #   undef REF
