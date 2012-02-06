@@ -3748,6 +3748,104 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
     return 0;
 }
 
+int
+suzerain_blasext_zgb_ddddiag_scale_acc_d(
+        char side,
+        int m,
+        int n,
+        int kl,
+        int ku,
+        const complex_double alpha0,
+        const double *d0,
+        int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        int ldd3,
+        const double *a,
+        int inca,
+        int lda,
+        const complex_double beta,
+        complex_double *b,
+        int incb,
+        int ldb)
+{
+    if (UNLIKELY(kl   < 0       )) return suzerain_blas_xerbla(__func__,  4);
+    if (UNLIKELY(ku   < 0       )) return suzerain_blas_xerbla(__func__,  5);
+    if (UNLIKELY(ldd0 < 0       )) return suzerain_blas_xerbla(__func__,  8);
+    if (UNLIKELY(ldd1 < 0       )) return suzerain_blas_xerbla(__func__, 11);
+    if (UNLIKELY(ldd2 < 0       )) return suzerain_blas_xerbla(__func__, 14);
+    if (UNLIKELY(ldd3 < 0       )) return suzerain_blas_xerbla(__func__, 17);
+    if (UNLIKELY(inca < 1       )) return suzerain_blas_xerbla(__func__, 19);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 20);
+    if (UNLIKELY(incb < 1       )) return suzerain_blas_xerbla(__func__, 23);
+    if (UNLIKELY(lda  <= kl + ku)) return suzerain_blas_xerbla(__func__, 24);
+
+#pragma warning(push,disable:1572)
+    const _Bool alpha0_is_zero = (alpha0 == 0.0);
+    const _Bool alpha1_is_zero = (alpha1 == 0.0);
+    const _Bool alpha2_is_zero = (alpha2 == 0.0);
+    const _Bool alpha3_is_zero = (alpha3 == 0.0);
+    const _Bool beta_is_one    = (beta   == 1.0);
+#pragma warning(pop)
+
+    // If necessary, recast side == 'L' details into a side == 'R' traversal
+    switch (toupper(side)) {
+        case 'R': break;
+        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+                  break;
+        default:  return suzerain_blas_xerbla(__func__, 1);
+    }
+
+    // Quick return if possible
+    if (UNLIKELY(    (alpha0_is_zero && alpha1_is_zero && alpha2_is_zero
+                                     && alpha3_is_zero && beta_is_one)
+                  || m <= 0 || n <= 0))
+        return 0;
+
+    // Banded matrix dereference has form a[(ku + i)*inca + j*(lda - inca)].
+    // Incorporate the ku offset and decrement ldX to speed indexing in loops.
+    // Further, increment kl anticipating expressions like imin(m, j + kl + 1).
+    a += ku*inca; lda -= inca;
+    b += ku*incb; ldb -= incb;
+    ++kl;
+
+    if (beta_is_one) {
+        for (int j = 0; j < n; ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3);
+            suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
+                                                  b + il*incb, incb);
+            a += lda; d0 += ldd0; d1 += ldd1; d2 += ldd2; d3 += ldd3; b += ldb;
+        }
+    } else {
+        for (int j = 0; j < n; ++j) {
+            const int il = imax(0, j - ku);
+            const int iu = imin(m, j + kl);
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3);
+            suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
+                                            beta, b + il*incb, incb);
+            a += lda; d0 += ldd0; d1 += ldd1; d2 += ldd2; d3 += ldd3; b += ldb;
+        }
+    }
+
+    return 0;
+}
+
 void
 suzerain_blasext_i2s_zaxpby2(
         const int m,
