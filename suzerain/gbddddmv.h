@@ -119,7 +119,7 @@ suzerain_gbddddmv_d(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2 + \alpha_{3} D_{3} \right) A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$,
- * \f$D_1\f$, \f$D_2\f$, and \f$A\f$.
+ * \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, and \f$A\f$.
  *
  * \copydetails suzerain_gbddddmv_s
  */

@@ -119,11 +119,11 @@ suzerain_gbddddmv_s(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddddmv_internal_s(trans, n, kl, ku,
-                                       alpha0, d0, ldd0,
-                                       alpha1, d1, ldd1,
-                                       alpha2, d2, ldd2,
-                                       alpha3, d3, ldd3,
-                                       a, lda, x, incx, beta, y, incy);
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
+                                        alpha3, d3, ldd3,
+                                        a, lda, x, incx, beta, y, incy);
 }
 
 int
@@ -162,11 +162,11 @@ suzerain_gbddddmv_d(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddddmv_internal_d(trans, n, kl, ku,
-                                       alpha0, d0, ldd0,
-                                       alpha1, d1, ldd1,
-                                       alpha2, d2, ldd2,
-                                       alpha3, d3, ldd3,
-                                       a, lda, x, incx, beta, y, incy);
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
+                                        alpha3, d3, ldd3,
+                                        a, lda, x, incx, beta, y, incy);
 }
 
 int
@@ -205,11 +205,11 @@ suzerain_gbddddmv_sc(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddddmv_internal_sc(trans, n, kl, ku,
-                                        alpha0, d0, ldd0,
-                                        alpha1, d1, ldd1,
-                                        alpha2, d2, ldd2,
-                                        alpha3, d3, ldd3,
-                                        a, lda, x, incx, beta, y, incy);
+                                         alpha0, d0, ldd0,
+                                         alpha1, d1, ldd1,
+                                         alpha2, d2, ldd2,
+                                         alpha3, d3, ldd3,
+                                         a, lda, x, incx, beta, y, incy);
 }
 
 int
@@ -248,11 +248,11 @@ suzerain_gbddddmv_dz(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddddmv_internal_dz(trans, n, kl, ku,
-                                        alpha0, d0, ldd0,
-                                        alpha1, d1, ldd1,
-                                        alpha2, d2, ldd2,
-                                        alpha3, d3, ldd3,
-                                        a, lda, x, incx, beta, y, incy);
+                                         alpha0, d0, ldd0,
+                                         alpha1, d1, ldd1,
+                                         alpha2, d2, ldd2,
+                                         alpha3, d3, ldd3,
+                                         a, lda, x, incx, beta, y, incy);
 }
 
 #else
