@@ -3565,7 +3565,7 @@ suzerain_blasext_zgb_diag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
-                                                     b + il*incb, incb);
+                                                  b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n; a += lda, d += ldd, b += ldb, ++j) {
@@ -3573,7 +3573,7 @@ suzerain_blasext_zgb_diag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha*(*d);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
-                                               beta, b + il*incb, incb);
+                                            beta, b + il*incb, incb);
         }
     }
 
@@ -3645,7 +3645,7 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
-                                                     b + il*incb, incb);
+                                                  b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n;
@@ -3654,7 +3654,7 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0) + alpha1*(*d1);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
-                                               beta, b + il*incb, incb);
+                                            beta, b + il*incb, incb);
         }
     }
 
@@ -3732,7 +3732,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
-                                                     b + il*incb, incb);
+                                                  b + il*incb, incb);
         }
     } else {
         for (int j = 0; j < n;
@@ -3741,7 +3741,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
             const int iu = imin(m, j + kl);
             const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
-                                               beta, b + il*incb, incb);
+                                            beta, b + il*incb, incb);
         }
     }
 
