@@ -221,7 +221,19 @@ FUNCNAME()(
             PACK(z)(A, rhow, rhou, 1.0, buf, papt);
         }
 
-        if (rhov >= 0) PACK(z)(A, rhow, rhov, 0.0, NULL, papt);
+        if (rhov >= 0) {
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*gm1*ikn,       REF(uy),
+                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*ap13*invRe*ikn, REF(nu),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhow, rhov, 1.0, buf, papt);
+        }
 
         /* rhow */ {
             suzerain_blasext_zgb_dddiag_scale_acc_d(
