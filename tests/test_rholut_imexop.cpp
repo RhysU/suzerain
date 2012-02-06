@@ -49,14 +49,18 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     s.gamma = 1.4;
 
     // Initialize reference quantities with random, nonzero values
+    // Abuses what we know about the structure if ...imexop_ref{,ld}.
     suzerain_rholut_imexop_ref r;
     const std::size_t nrefs = sizeof(r)/sizeof(real_t *);
     boost::scoped_array<real_t> refs(new real_t[n*nrefs]);
-    for (std::size_t i = 0; i < n*nrefs; ++i) {
+    for (std::size_t i = 0; i < n*nrefs; ++i) { // Create garbage
         refs[i] = 1 + random() / RAND_MAX;
     }
+    for (std::size_t i = 0; i < nrefs; ++i) {   // Establish refs
+        ((real_t **)&r)[i] = &refs[i*n];
+    }
     suzerain_rholut_imexop_refld ld;
-    std::fill((int *)&ld, (int *)(&ld + 1), 0);
+    std::fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
 
     // Allocate state storage and initialize B1 to eye(N)
     boost::scoped_array<complex_t> B1(new complex_t[N*N]);
