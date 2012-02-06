@@ -64,7 +64,7 @@ suzerain_rholut_imexop_apply(
     const double gm1         = s->gamma - 1;
     const double ap43        = s->alpha + 4.0/3.0;
     const double ap13        = s->alpha + 1.0/3.0;
-    const double Ma2         = s->Ma * s->Ma;
+    const double Ma2         = s->Ma*s->Ma;
     const double invRe       = 1 / s->Re;
     const double invMa2      = 1 / Ma2;
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
