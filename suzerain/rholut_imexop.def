@@ -211,7 +211,15 @@ FUNCNAME()(
             PACK(z)(A, rhow, rho, 1.0, buf, papt);
         }
 
-        if (rhou >= 0) PACK(z)(A, rhow, rhou, 0.0, NULL, papt);
+        if (rhou >= 0) {
+            suzerain_blasext_zgb_ddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*gm1*ikn,             REF(ux),
+                    phi*ap13*invRe*(ikm+ikn), REF(nu),
+                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhow, rhou, 1.0, buf, papt);
+        }
 
         if (rhov >= 0) PACK(z)(A, rhow, rhov, 0.0, NULL, papt);
 
