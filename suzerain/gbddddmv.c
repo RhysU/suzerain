@@ -80,7 +80,7 @@
 #define FIXEDBW_CASE(z,num,prefix)                    \
     case num: return BOOST_PP_CAT(prefix,num)(        \
         trans, n, alpha0, d0, ldd0, alpha1, d1, ldd1, \
-                  alpha2, d2, ldd2, alpha2, d2, ldd2, \
+                  alpha2, d2, ldd2, alpha3, d3, ldd3, \
         a, lda, x, incx, beta, y, incy);
 
 int
