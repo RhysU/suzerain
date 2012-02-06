@@ -151,6 +151,22 @@ suzerain_rholut_imexop_apply(
     if (in_rhov) {  // Accumulate Y momentum terms into out_rhov
         suzerain_blas_zscal(n, beta/phi, out_rhov, inc);
 
+        if (in_rho) {
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
+                invRe*(km2+kn2), REF(nuuy),
+                w->D[M],  w->ld, in_rho, inc, 1.0, out_rhov, inc);
+
+            suzerain_blasext_zgbdddmv_d('N', n, w->kl[D1], w->ku[D1],
+                -0.5*gm1,        REF(m_gradrho),
+                -ap13*invRe*ikm, REF(nuux),
+                -ap13*invRe*ikn, REF(nuuz),
+                w->D[D1], w->ld, in_rho, inc, 1.0, out_rhov, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                -ap43*invRe,     REF(nuuy),
+                w->D[D2], w->ld, in_rho, inc, 1.0, out_rhov, inc);
+        }
+
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(D1, nrhs,
                 -gm1*invMa2, in_rhoe, inc, n, 1.0, out_rhov, inc, n, w);
 
@@ -160,6 +176,22 @@ suzerain_rholut_imexop_apply(
 
     if (in_rhow) {  // Accumulate Z momentum terms into out_rhow
         suzerain_blas_zscal(n, beta/phi, out_rhow, inc);
+
+        if (in_rho) {
+            suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
+                -0.5*gm1*ikn,          REF(m_gradrho),
+                invRe*(km2+ap43*kn2),  REF(nuuz),
+                -ap13*invRe*(ikm+ikn), REF(nuux),
+                w->D[M],  w->ld, in_rho, inc, 1.0, out_rhow, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
+                -ap13*invRe*ikn,       REF(nuuy),
+                w->D[D1], w->ld, in_rho, inc, 1.0, out_rhow, inc);
+
+            suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
+                -invRe,                REF(nuuz),
+                w->D[D2], w->ld, in_rho, inc, 1.0, out_rhow, inc);
+        }
 
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
                 -gm1*invMa2*ikn, in_rhoe, inc, n, 1.0, out_rhow, inc, n, w);

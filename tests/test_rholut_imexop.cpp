@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     const int N = S*n;    // DOF for global operator
 
     // Initialize scenario parameters
-    const double phi = M_SQRT2;
+    const double phi = M_SQRT2/5;
     const double km  = M_E;
     const double kn  = M_PI;
 

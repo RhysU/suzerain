@@ -158,7 +158,26 @@ FUNCNAME()(
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
 
-        if (rho  >= 0) PACK(z)(A, rhov, rho,  0.0, NULL, papt);
+        if (rho  >= 0) {
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    phi*invRe*(km2+kn2), REF(nuuy),
+                    M, 1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_dddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*0.5*gm1, REF(m_gradrho),
+                    -phi*ap13*invRe*ikm, REF(nuux),
+                    -phi*ap13*invRe*ikn, REF(nuuz),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*ap43*invRe, REF(nuuy),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhov, rho, 1.0, buf, papt);
+        }
 
         if (rhou >= 0) PACK(z)(A, rhov, rhou, 0.0, NULL, papt);
 
@@ -171,7 +190,26 @@ FUNCNAME()(
 
     if (rhow >= 0) { // Prepare spanwise momentum row
 
-        if (rho  >= 0) PACK(z)(A, rhow, rho,  0.0, NULL, papt);
+        if (rho  >= 0) {
+            suzerain_blasext_zgb_dddiag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*0.5*gm1*ikn,            REF(m_gradrho),
+                     phi*invRe*(km2 + ap43*kn2), REF(nuuz),
+                    -phi*ap13*invRe*(ikm+ikn),   REF(nuux),
+                    M, 1, w->ld, 0.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*ap13*invRe*ikn,         REF(nuuy),
+                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(
+                    'L', A->n, A->n, A->kl, A->ku,
+                    -phi*invRe,                  REF(nuuz),
+                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+
+            PACK(z)(A, rhow, rho, 1.0, buf, papt);
+        }
 
         if (rhou >= 0) PACK(z)(A, rhow, rhou, 0.0, NULL, papt);
 
