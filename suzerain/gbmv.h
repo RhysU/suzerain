@@ -87,25 +87,7 @@ suzerain_gbmv_d(
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param m Number of rows in matrix \c a.
- * \param n Number of columns in matrix \c a.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a in units of <tt>float</tt>.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x in units of <tt>float[2]</tt>.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y in units of <tt>float[2]</tt>.
- *
- * \return Zero on success and a BLAS-like error code otherwise.
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \copydetails suzerain_gbmv_s
  */
 int
 suzerain_gbmv_sc(

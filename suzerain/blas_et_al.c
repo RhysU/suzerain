@@ -2178,6 +2178,7 @@ suzerain_blasext_sgbdmv_external(
         const int ku,
         const float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const float *x,
@@ -2191,7 +2192,7 @@ suzerain_blasext_sgbdmv_external(
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, ldd, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2204,6 +2205,7 @@ suzerain_blasext_sgbdmv(
         const int ku,
         const float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const float *x,
@@ -2213,7 +2215,7 @@ suzerain_blasext_sgbdmv(
         const int incy)
 {
     const int info = suzerain_gbdmv_s(trans, n, kl, ku,
-                                      alpha, d,
+                                      alpha, d, ldd,
                                       a, lda, x, incx,
                                       beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2228,6 +2230,7 @@ suzerain_blasext_dgbdmv_external(
         const int ku,
         const double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const double *x,
@@ -2241,7 +2244,7 @@ suzerain_blasext_dgbdmv_external(
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, ldd, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2254,6 +2257,7 @@ suzerain_blasext_dgbdmv(
         const int ku,
         const double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const double *x,
@@ -2263,7 +2267,7 @@ suzerain_blasext_dgbdmv(
         const int incy)
 {
     const int info = suzerain_gbdmv_d(trans, n, kl, ku,
-                                      alpha, d,
+                                      alpha, d, ldd,
                                       a, lda, x, incx,
                                       beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2278,6 +2282,7 @@ suzerain_blasext_cgbdmv_s_external(
         const int ku,
         const complex_float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2291,7 +2296,7 @@ suzerain_blasext_cgbdmv_s_external(
     suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, ldd, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2304,6 +2309,7 @@ suzerain_blasext_cgbdmv_s(
         const int ku,
         const complex_float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2313,7 +2319,7 @@ suzerain_blasext_cgbdmv_s(
         const int incy)
 {
     const int info = suzerain_gbdmv_sc(trans, n, kl, ku,
-                                       alpha, d,
+                                       alpha, d, ldd,
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2328,6 +2334,7 @@ suzerain_blasext_zgbdmv_d_external(
         const int ku,
         const complex_double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2341,7 +2348,7 @@ suzerain_blasext_zgbdmv_d_external(
     suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha, d, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha, d, ldd, z, 1, beta, y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2354,6 +2361,7 @@ suzerain_blasext_zgbdmv_d(
         const int ku,
         const complex_double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2363,7 +2371,7 @@ suzerain_blasext_zgbdmv_d(
         const int incy)
 {
     const int info = suzerain_gbdmv_dz(trans, n, kl, ku,
-                                       alpha, d,
+                                       alpha, d, ldd,
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2378,8 +2386,10 @@ suzerain_blasext_sgbddmv_external(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const float *x,
@@ -2393,9 +2403,9 @@ suzerain_blasext_sgbddmv_external(
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2408,8 +2418,10 @@ suzerain_blasext_sgbddmv(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const float *x,
@@ -2419,7 +2431,8 @@ suzerain_blasext_sgbddmv(
         const int incy)
 {
     const int info = suzerain_gbddmv_s(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1,
+                                       alpha0, d0, ldd0,
+                                       alpha1, d1, ldd1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2434,8 +2447,10 @@ suzerain_blasext_dgbddmv_external(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const double *x,
@@ -2449,9 +2464,9 @@ suzerain_blasext_dgbddmv_external(
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2464,8 +2479,10 @@ suzerain_blasext_dgbddmv(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const double *x,
@@ -2475,7 +2492,8 @@ suzerain_blasext_dgbddmv(
         const int incy)
 {
     const int info = suzerain_gbddmv_d(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1,
+                                       alpha0, d0, ldd0,
+                                       alpha1, d1, ldd1,
                                        a, lda, x, incx,
                                        beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2490,8 +2508,10 @@ suzerain_blasext_cgbddmv_s_external(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2505,9 +2525,9 @@ suzerain_blasext_cgbddmv_s_external(
     suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2520,8 +2540,10 @@ suzerain_blasext_cgbddmv_s(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2531,7 +2553,8 @@ suzerain_blasext_cgbddmv_s(
         const int incy)
 {
     const int info = suzerain_gbddmv_sc(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2546,8 +2569,10 @@ suzerain_blasext_zgbddmv_d_external(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2561,9 +2586,9 @@ suzerain_blasext_zgbddmv_d_external(
     suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2576,8 +2601,10 @@ suzerain_blasext_zgbddmv_d(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2587,7 +2614,8 @@ suzerain_blasext_zgbddmv_d(
         const int incy)
 {
     const int info = suzerain_gbddmv_dz(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2602,10 +2630,13 @@ suzerain_blasext_sgbdddmv_external(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const float *x,
@@ -2619,11 +2650,11 @@ suzerain_blasext_sgbdddmv_external(
     suzerain_blas_sgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_ssbmv_external(
-            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha2, d2, ldd2, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2636,10 +2667,13 @@ suzerain_blasext_sgbdddmv(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const float *x,
@@ -2649,7 +2683,9 @@ suzerain_blasext_sgbdddmv(
         const int incy)
 {
     const int info = suzerain_gbdddmv_s(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1, alpha2, d2,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2664,10 +2700,13 @@ suzerain_blasext_dgbdddmv_external(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const double *x,
@@ -2681,11 +2720,11 @@ suzerain_blasext_dgbdddmv_external(
     suzerain_blas_dgbmv_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_dsbmv_external(
-            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha2, d2, ldd2, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2698,10 +2737,13 @@ suzerain_blasext_dgbdddmv(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const double *x,
@@ -2711,7 +2753,9 @@ suzerain_blasext_dgbdddmv(
         const int incy)
 {
     const int info = suzerain_gbdddmv_d(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1, alpha2, d2,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
                                         a, lda, x, incx,
                                         beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2726,10 +2770,13 @@ suzerain_blasext_cgbdddmv_s_external(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const complex_float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2743,11 +2790,11 @@ suzerain_blasext_cgbdddmv_s_external(
     suzerain_blas_cgbmv_s_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_csbmv_s_external(
-            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha2, d2, ldd2, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2760,10 +2807,13 @@ suzerain_blasext_cgbdddmv_s(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const complex_float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -2773,7 +2823,9 @@ suzerain_blasext_cgbdddmv_s(
         const int incy)
 {
     const int info = suzerain_gbdddmv_sc(trans, n, kl, ku,
-                                         alpha0, d0, alpha1, d1, alpha2, d2,
+                                         alpha0, d0, ldd0,
+                                         alpha1, d1, ldd1,
+                                         alpha2, d2, ldd2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);
@@ -2788,10 +2840,13 @@ suzerain_blasext_zgbdddmv_d_external(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const complex_double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2805,11 +2860,11 @@ suzerain_blasext_zgbdddmv_d_external(
     suzerain_blas_zgbmv_d_external(
             trans, n, n, kl, ku, 1, a, lda, x, incx, 0, z, 1);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha0, d0, 1, z, 1, beta, y, incy);
+            'U', n, 0, alpha0, d0, ldd0, z, 1, beta, y, incy);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha1, d1, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha1, d1, ldd1, z, 1, 1,    y, incy);
     suzerain_blas_zsbmv_d_external(
-            'U', n, 0, alpha2, d2, 1, z, 1, 1,    y, incy);
+            'U', n, 0, alpha2, d2, ldd2, z, 1, 1,    y, incy);
     suzerain_blas_free(z);
     return 0;
 }
@@ -2822,10 +2877,13 @@ suzerain_blasext_zgbdddmv_d(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const complex_double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -2835,7 +2893,9 @@ suzerain_blasext_zgbdddmv_d(
         const int incy)
 {
     const int info = suzerain_gbdddmv_dz(trans, n, kl, ku,
-                                         alpha0, d0, alpha1, d1, alpha2, d2,
+                                         alpha0, d0, ldd0,
+                                         alpha1, d1, ldd1,
+                                         alpha2, d2, ldd2,
                                          a, lda, x, incx,
                                          beta,   y, incy);
     if (UNLIKELY(info)) suzerain_blas_xerbla(__func__, info);

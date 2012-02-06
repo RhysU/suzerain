@@ -38,7 +38,8 @@ extern "C" {
  * \param kl Number of subdiagonals in band storage of \c a.
  * \param ku Number of superdiagonals in band storage of \c a.
  * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
+ * \param d Storage for diagonal matrix \f$ D \f$.
+ * \param ldd Leading dimension of \c d.
  * \param a General band storage for matrix \f$ A \f$.
  * \param lda Leading dimension of \c a.
  * \param x Vector to be multiplied.
@@ -59,6 +60,7 @@ suzerain_gbdmv_s(
         const int ku,
         const float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const float *x,
@@ -76,6 +78,7 @@ suzerain_gbdmv_d(
         const int ku,
         const double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const double *x,
@@ -89,25 +92,7 @@ suzerain_gbdmv_d(
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$.
  *
- * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
- *
- * \param trans One of 'N', 'T', or 'C' for no transpose, a transpose,
- *      or a conjugate transpose, respectively.
- * \param n Dimension of all matrices and vectors.
- * \param kl Number of subdiagonals in band storage of \c a.
- * \param ku Number of superdiagonals in band storage of \c a.
- * \param alpha Multiplicative scalar \f$ \alpha \f$.
- * \param d Contiguous storage for diagonal matrix \f$ D \f$.
- * \param a General band storage for matrix \f$ A \f$.
- * \param lda Leading dimension of \c a.
- * \param x Vector to be multiplied.
- * \param incx Stride of vector \c x.
- * \param beta Multiplicative scalar \f$ \beta \f$.
- * \param y Vector to be added to product and to contain result.
- * \param incy Stride of vector \c y.
- *
- * \return Zero on success and a BLAS-like error code otherwise.
- * \see A BLAS reference for for general band storage matrix requirements.
+ * \copydetails suzerain_gbdmv_sc
  */
 int
 suzerain_gbdmv_sc(
@@ -117,6 +102,7 @@ suzerain_gbdmv_sc(
         const int ku,
         const complex_float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -134,6 +120,7 @@ suzerain_gbdmv_dz(
         const int ku,
         const complex_double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const complex_double *x,

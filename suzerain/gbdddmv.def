@@ -30,12 +30,12 @@ static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 
 GBDDDMV_STATIC int GBDDDMV_FUNCTION(
     char trans, const int n, GBDDDMV_KL GBDDDMV_KU
-    const GBDDDMV_SCALAR alpha0, const GBDDDMV_COMPONENT * const restrict d0,
-    const GBDDDMV_SCALAR alpha1, const GBDDDMV_COMPONENT * const restrict d1,
-    const GBDDDMV_SCALAR alpha2, const GBDDDMV_COMPONENT * const restrict d2,
-                                 const GBDDDMV_COMPONENT *       restrict a, int lda,
-                                 const    GBDDDMV_SCALAR * const restrict x, const int incx,
-    const GBDDDMV_SCALAR beta,            GBDDDMV_SCALAR * const restrict y, const int incy)
+    const GBDDDMV_SCALAR alpha0, const GBDDDMV_COMPONENT *       restrict d0, const int ldd0,
+    const GBDDDMV_SCALAR alpha1, const GBDDDMV_COMPONENT *       restrict d1, const int ldd1,
+    const GBDDDMV_SCALAR alpha2, const GBDDDMV_COMPONENT *       restrict d2, const int ldd2,
+                                 const GBDDDMV_COMPONENT *       restrict a,  int lda,
+                                 const    GBDDDMV_SCALAR * const restrict x,  const int incx,
+    const GBDDDMV_SCALAR beta,            GBDDDMV_SCALAR * const restrict y,  const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -52,12 +52,18 @@ GBDDDMV_STATIC int GBDDDMV_FUNCTION(
         return 3;
     } else if (ku < 0) {
         return 4;
+    } else if (ldd0 < 0) {
+        return 7;
+    } else if (ldd1 < 0) {
+        return 10;
+    } else if (ldd2 < 0) {
+        return 13;
     } else if (lda <= kl + ku) {
-        return 12;
+        return 15;
     } else if (incx == 0) {
-        return 14;
-    } else if (incy == 0) {
         return 17;
+    } else if (incy == 0) {
+        return 20;
     }
 
     // Quick return if possible
@@ -123,7 +129,9 @@ GBDDDMV_STATIC int GBDDDMV_FUNCTION(
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
                 for (int i = il; i < iu; ++i) {
-                    y[i] += (alpha0*d0[i]+alpha1*d1[i]+alpha2*d2[i])*a[i]*x[jx];
+                    y[i] += ( alpha0*d0[i*ldd0]
+                             +alpha1*d1[i*ldd1]
+                             +alpha2*d2[i*ldd2])*a[i]*x[jx];
                 }
                 jx += incx;
                 a += lda;
@@ -137,7 +145,9 @@ GBDDDMV_STATIC int GBDDDMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += (alpha0*d0[i]+alpha1*d1[i]+alpha2*d2[i])*a[i]*x[jx];
+                    y[iy] += ( alpha0*d0[i*ldd0]
+                              +alpha1*d1[i*ldd1]
+                              +alpha2*d2[i*ldd2])*a[i]*x[jx];
                     iy += incy;
                 }
                 jx += incx;
@@ -159,9 +169,12 @@ GBDDDMV_STATIC int GBDDDMV_FUNCTION(
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += (alpha0*d0[j]+alpha1*d1[j]+alpha2*d2[j])*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2))*temp;
                 jy += incy;
-                a += lda;
+                a  += lda;
+                d0 += ldd0;
+                d1 += ldd1;
+                d2 += ldd2;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
@@ -176,12 +189,15 @@ GBDDDMV_STATIC int GBDDDMV_FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += (alpha0*d0[j]+alpha1*d1[j]+alpha2*d2[j])*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2))*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
                 }
-                a += lda;
+                a  += lda;
+                d0 += ldd0;
+                d1 += ldd1;
+                d2 += ldd2;
             }
         }
     }

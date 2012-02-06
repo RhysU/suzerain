@@ -26,8 +26,12 @@ struct gbdddmv_tc_type
 {
     char trans;
     int n, kl, ku;
-    double alpha0, alpha1, alpha2;
-    int lda, incx;
+    double alpha0;
+    int ldd0;
+    double alpha1;
+    int ldd1;
+    double alpha2;
+    int ldd2, lda, incx;
     double beta;
     int incy;
 };
@@ -37,13 +41,18 @@ struct gbdddmzv_tc_type
 {
     char trans;
     int n, kl, ku;
-    double alpha0[2], alpha1[2], alpha2[2];
-    int lda, incx;
+    double alpha0[2];
+    int ldd0;
+    double alpha1[2];
+    int ldd1;
+    double alpha2[2];
+    int ldd2, lda, incx;
     double beta[2];
     int incy;
 
     gbdddmzv_tc_type(const gbdddmv_tc_type& o)
         : trans(o.trans), n(o.n), kl(o.kl), ku(o.ku),
+          ldd0(o.ldd0), ldd1(o.ldd1), ldd2(o.ldd2),
           lda(o.lda), incx(o.incx), incy(o.incy)
     {
         alpha0[0] = o.alpha0; alpha0[1] = 0;
@@ -62,8 +71,11 @@ std::basic_ostream<charT,traits>& operator<<(
        << ", kl="     << t.kl
        << ", ku="     << t.ku
        << ", alpha0=" << t.alpha0
+       << ", ldd0="   << t.ldd0
        << ", alpha1=" << t.alpha1
+       << ", ldd1="   << t.ldd1
        << ", alpha2=" << t.alpha2
+       << ", ldd2="   << t.ldd2
        << ", lda="    << t.lda
        << ", incx="   << t.incx
        << ", beta="   << t.beta
@@ -81,8 +93,11 @@ std::basic_ostream<charT,traits>& operator<<(
        << ", kl="     << t.kl
        << ", ku="     << t.ku
        << ", alpha0=" << std::complex<double>(t.alpha0[0], t.alpha0[1])
+       << ", ldd0="   << t.ldd0
        << ", alpha1=" << std::complex<double>(t.alpha1[0], t.alpha1[1])
+       << ", ldd1="   << t.ldd1
        << ", alpha2=" << std::complex<double>(t.alpha2[0], t.alpha2[1])
+       << ", ldd2="   << t.ldd2
        << ", lda="    << t.lda
        << ", incx="   << t.incx
        << ", beta="   << std::complex<double>(t.beta[0], t.beta[1])
@@ -93,26 +108,28 @@ std::basic_ostream<charT,traits>& operator<<(
 
 static void test_gbdddmv_s(const gbdddmv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*2000;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*3000;
     const float inv_rand_max = float(1) / RAND_MAX;
-    const int lend = t.n;
-    const int lena = t.lda * t.n;
-    const int lenx = abs(t.incx) * t.n;
-    const int leny = abs(t.incy) * t.n;
+    const int lend0 = t.ldd0 * t.n;
+    const int lend1 = t.ldd1 * t.n;
+    const int lend2 = t.ldd2 * t.n;
+    const int lena  = t.lda  * t.n;
+    const int lenx  = abs(t.incx) * t.n;
+    const int leny  = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    boost::scoped_array<float> d0(new float[lend]);
-    boost::scoped_array<float> d1(new float[lend]);
-    boost::scoped_array<float> d2(new float[lend]);
+    boost::scoped_array<float> d0(new float[lend0]);
+    boost::scoped_array<float> d1(new float[lend1]);
+    boost::scoped_array<float> d2(new float[lend2]);
     boost::scoped_array<float> a(new float[lena]);
     boost::scoped_array<float> x(new float[lenx]);
     boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
-    for (int i = 0; i < lend; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d2[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena; ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx; ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend2; ++i) d2[i] = random() * inv_rand_max;
+    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
+    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
     // Get appropriately typed alpha and beta constants
     const float alpha0 = (float) t.alpha0;
@@ -123,14 +140,18 @@ static void test_gbdddmv_s(const gbdddmv_tc_type& t)
     // Compute expected result using external BLAS
     suzerain_blasext_sgbdddmv_external(
             t.trans, t.n, t.kl, t.ku,
-            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            alpha0, d0.get(), t.ldd0,
+            alpha1, d1.get(), t.ldd1,
+            alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, x.get(), t.incx,
             beta,           e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_s(
                   t.trans, t.n, t.kl, t.ku,
-                  alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+                  alpha0, d0.get(), t.ldd0,
+                  alpha1, d1.get(), t.ldd1,
+                  alpha2, d2.get(), t.ldd2,
                   a.get(), t.lda, x.get(), t.incx,
                   beta,           y.get(), t.incy));
 
@@ -143,36 +164,42 @@ static void test_gbdddmv_d(const gbdddmv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*1000;
     const double inv_rand_max = double(1) / RAND_MAX;
-    const int lend = t.n;
-    const int lena = t.lda * t.n;
-    const int lenx = abs(t.incx) * t.n;
-    const int leny = abs(t.incy) * t.n;
+    const int lend0 = t.ldd0 * t.n;
+    const int lend1 = t.ldd1 * t.n;
+    const int lend2 = t.ldd2 * t.n;
+    const int lena  = t.lda  * t.n;
+    const int lenx  = abs(t.incx) * t.n;
+    const int leny  = abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    boost::scoped_array<double> d0(new double[lend]);
-    boost::scoped_array<double> d1(new double[lend]);
-    boost::scoped_array<double> d2(new double[lend]);
+    boost::scoped_array<double> d0(new double[lend0]);
+    boost::scoped_array<double> d1(new double[lend1]);
+    boost::scoped_array<double> d2(new double[lend2]);
     boost::scoped_array<double> a(new double[lena]);
     boost::scoped_array<double> x(new double[lenx]);
     boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
-    for (int i = 0; i < lend; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d2[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena; ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx; ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend2; ++i) d2[i] = random() * inv_rand_max;
+    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
+    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
     // Compute expected result using external BLAS
     suzerain_blasext_dgbdddmv_external(
             t.trans, t.n, t.kl, t.ku,
-            t.alpha0, d0.get(), t.alpha1, d1.get(), t.alpha2, d2.get(),
+            t.alpha0, d0.get(), t.ldd0,
+            t.alpha1, d1.get(), t.ldd1,
+            t.alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, x.get(), t.incx,
             t.beta,         e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_d(
                 t.trans, t.n, t.kl, t.ku,
-                t.alpha0, d0.get(), t.alpha1, d1.get(), t.alpha2, d2.get(),
+                t.alpha0, d0.get(), t.ldd0,
+                t.alpha1, d1.get(), t.ldd1,
+                t.alpha2, d2.get(), t.ldd2,
                 a.get(), t.lda, x.get(), t.incx,
                 t.beta,         y.get(), t.incy));
 
@@ -185,24 +212,26 @@ static void test_gbdddmv_sc(const gbdddmzv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*5000;
     const float inv_rand_max = float(1) / RAND_MAX;
-    const int lend = t.n;
-    const int lena = t.lda * t.n;
-    const int lenx = 2 * abs(t.incx) * t.n;
-    const int leny = 2 * abs(t.incy) * t.n;
+    const int lend0 = t.ldd0 * t.n;
+    const int lend1 = t.ldd1 * t.n;
+    const int lend2 = t.ldd2 * t.n;
+    const int lena  = t.lda  * t.n;
+    const int lenx  = 2 * abs(t.incx) * t.n;
+    const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    boost::scoped_array<float> d0(new float[lend]);
-    boost::scoped_array<float> d1(new float[lend]);
-    boost::scoped_array<float> d2(new float[lend]);
+    boost::scoped_array<float> d0(new float[lend0]);
+    boost::scoped_array<float> d1(new float[lend1]);
+    boost::scoped_array<float> d2(new float[lend2]);
     boost::scoped_array<float> a(new float[lena]);
     boost::scoped_array<float> x(new float[lenx]);
     boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
-    for (int i = 0; i < lend; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d2[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena; ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx; ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend2; ++i) d2[i] = random() * inv_rand_max;
+    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
+    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
     // Get appropriately typed alpha and beta constants
     const complex_float alpha0( t.alpha0[0], t.alpha0[1] );
@@ -213,14 +242,18 @@ static void test_gbdddmv_sc(const gbdddmzv_tc_type& t)
     // Compute expected result using external BLAS
     suzerain_blasext_cgbdddmv_s_external(
             t.trans, t.n, t.kl, t.ku,
-            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            alpha0, d0.get(), t.ldd0,
+            alpha1, d1.get(), t.ldd1,
+            alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, (const complex_float *) x.get(), t.incx,
             beta,           (      complex_float *) e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_sc(
             t.trans, t.n, t.kl, t.ku,
-            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            alpha0, d0.get(), t.ldd0,
+            alpha1, d1.get(), t.ldd1,
+            alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, (const complex_float *) x.get(), t.incx,
             beta,           (      complex_float *) y.get(), t.incy));
 
@@ -233,24 +266,26 @@ static void test_gbdddmv_dz(const gbdddmzv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*100000;
     const double inv_rand_max = double(1) / RAND_MAX;
-    const int lend = t.n;
-    const int lena = t.lda * t.n;
-    const int lenx = 2 * abs(t.incx) * t.n;
-    const int leny = 2 * abs(t.incy) * t.n;
+    const int lend0 = t.ldd0 * t.n;
+    const int lend1 = t.ldd1 * t.n;
+    const int lend2 = t.ldd2 * t.n;
+    const int lena  = t.lda  * t.n;
+    const int lenx  = 2 * abs(t.incx) * t.n;
+    const int leny  = 2 * abs(t.incy) * t.n;
 
     // Allocate random data for testing purposes
-    boost::scoped_array<double> d0(new double[lend]);
-    boost::scoped_array<double> d1(new double[lend]);
-    boost::scoped_array<double> d2(new double[lend]);
+    boost::scoped_array<double> d0(new double[lend0]);
+    boost::scoped_array<double> d1(new double[lend1]);
+    boost::scoped_array<double> d2(new double[lend2]);
     boost::scoped_array<double> a(new double[lena]);
     boost::scoped_array<double> x(new double[lenx]);
     boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
-    for (int i = 0; i < lend; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend; ++i) d2[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena; ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx; ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny; ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend2; ++i) d2[i] = random() * inv_rand_max;
+    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
+    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
     // Get appropriately typed alpha and beta constants
     const complex_double alpha0( t.alpha0[0], t.alpha0[1] );
@@ -261,14 +296,18 @@ static void test_gbdddmv_dz(const gbdddmzv_tc_type& t)
     // Compute expected result using external BLAS
     suzerain_blasext_zgbdddmv_d_external(
             t.trans, t.n, t.kl, t.ku,
-            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            alpha0, d0.get(), t.ldd0,
+            alpha1, d1.get(), t.ldd1,
+            alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, (const complex_double *) x.get(), t.incx,
             beta,           (      complex_double *) e.get(), t.incy);
 
     // Compute observed result using our implementation
     BOOST_REQUIRE_EQUAL(0, suzerain_gbdddmv_dz(
             t.trans, t.n, t.kl, t.ku,
-            alpha0, d0.get(), alpha1, d1.get(), alpha2, d2.get(),
+            alpha0, d0.get(), t.ldd0,
+            alpha1, d1.get(), t.ldd1,
+            alpha2, d2.get(), t.ldd2,
             a.get(), t.lda, (const complex_double *) x.get(), t.incx,
             beta,           (      complex_double *) y.get(), t.incy));
 
@@ -289,136 +328,136 @@ init_unit_test_suite( int argc, char* argv[] )
     // -------------------------------------------------------
 
     const gbdddmv_tc_type gbdddmv_tc[] = {
-        // trans,  n, kl, ku, alpha0, alpha1, alpha2, lda, incx, beta, incy
-         {   'N', 19,  3,  2,   -5.0,   -1.0,    0.1,   7,    1,  0.0,    1} // Regular
-        ,{   'N', 19,  3,  2,    5.0,    1.0,   -0.1,   7,   -1, 11.0,    1}
-        ,{   'N', 19,  3,  2,   -5.0,   -2.0,    0.2,   6,    1,  0.0,    1}
-        ,{   'N', 19,  3,  2,    5.0,    2.0,   -0.2,   6,    1, 11.0,   -1}
-        ,{   'N', 19,  3,  2,   -5.0,   -3.0,    0.3,   7,    1,  0.0,    2}
-        ,{   'N', 19,  3,  2,    5.0,    3.0,   -0.3,   7,   -1, 11.0,    2}
-        ,{   'N', 19,  3,  2,   -5.0,   -4.0,    0.4,   6,    1,  0.0,    2}
-        ,{   'N', 19,  3,  2,    5.0,    4.0,   -0.4,   6,    1, 11.0,   -2}
-        ,{   'N', 19,  3,  2,   -5.0,   -5.0,    0.5,   7,    3,  0.0,    1}
-        ,{   'N', 19,  3,  2,    5.0,    5.0,   -0.5,   7,   -3, 11.0,    1}
-        ,{   'N', 19,  3,  2,   -5.0,   -6.0,    0.6,   6,    3,  0.0,    1}
-        ,{   'N', 19,  3,  2,    5.0,    6.0,   -0.6,   6,    3, 11.0,   -1}
-        ,{   'N', 19,  3,  2,   -5.0,   -7.0,    0.7,   7,    3,  0.0,    2}
-        ,{   'N', 19,  3,  2,    5.0,    7.0,   -0.7,   7,   -3, 11.0,    2}
-        ,{   'N', 19,  3,  2,   -5.0,   -8.0,    0.8,   6,    3,  0.0,    2}
-        ,{   'N', 19,  3,  2,    5.0,    8.0,   -0.8,   6,    3, 11.0,   -2}
-        ,{   'T', 19,  3,  2,   -5.0,   -9.0,    0.9,   7,    1,  0.0,    1}
-        ,{   'T', 19,  3,  2,    5.0,    9.0,   -0.9,   7,   -1, 11.0,    1}
-        ,{   'T', 19,  3,  2,   -5.0,   -1.0,    0.1,   6,    1,  0.0,    1}
-        ,{   'T', 19,  3,  2,    5.0,    1.0,   -0.1,   6,    1, 11.0,   -1}
-        ,{   'T', 19,  3,  2,   -5.0,   -2.0,    0.2,   7,    1,  0.0,    2}
-        ,{   'T', 19,  3,  2,    5.0,    2.0,   -0.2,   7,   -1, 11.0,    2}
-        ,{   'T', 19,  3,  2,   -5.0,   -3.0,    0.3,   6,    1,  0.0,    2}
-        ,{   'T', 19,  3,  2,    5.0,    3.0,   -0.3,   6,    1, 11.0,   -2}
-        ,{   'T', 19,  3,  2,   -5.0,   -4.0,    0.4,   7,    3,  0.0,    1}
-        ,{   'T', 19,  3,  2,    5.0,    4.0,   -0.4,   7,   -3, 11.0,    1}
-        ,{   'T', 19,  3,  2,   -5.0,   -5.0,    0.5,   6,    3,  0.0,    1}
-        ,{   'T', 19,  3,  2,    5.0,    5.0,   -0.5,   6,    3, 11.0,   -1}
-        ,{   'T', 19,  3,  2,   -5.0,   -6.0,    0.6,   7,    3,  0.0,    2}
-        ,{   'T', 19,  3,  2,    5.0,    6.0,   -0.6,   7,   -3, 11.0,    2}
-        ,{   'T', 19,  3,  2,   -5.0,   -7.0,    0.7,   6,    3,  0.0,    2}
-        ,{   'T', 19,  3,  2,    5.0,    7.0,   -0.7,   6,    3, 11.0,   -2}
-        ,{   'N', 17,  0,  2,   -5.0,   -8.0,    0.8,   4,    1,  0.0,    1} // kl == 0
-        ,{   'N', 17,  0,  2,    5.0,    8.0,   -0.8,   4,   -1, 11.0,    1}
-        ,{   'N', 17,  0,  2,   -5.0,   -9.0,    0.9,   3,    1,  0.0,    1}
-        ,{   'N', 17,  0,  2,    5.0,    9.0,   -0.9,   3,    1, 11.0,   -1}
-        ,{   'N', 17,  0,  2,   -5.0,   -1.0,    0.1,   4,    1,  0.0,    2}
-        ,{   'N', 17,  0,  2,    5.0,    1.0,   -0.1,   4,   -1, 11.0,    2}
-        ,{   'N', 17,  0,  2,   -5.0,   -2.0,    0.2,   3,    1,  0.0,    2}
-        ,{   'N', 17,  0,  2,    5.0,    2.0,   -0.2,   3,    1, 11.0,   -2}
-        ,{   'N', 17,  0,  2,   -5.0,   -3.0,    0.3,   4,    3,  0.0,    1}
-        ,{   'N', 17,  0,  2,    5.0,    3.0,   -0.3,   4,   -3, 11.0,    1}
-        ,{   'N', 17,  0,  2,   -5.0,   -4.0,    0.4,   3,    3,  0.0,    1}
-        ,{   'N', 17,  0,  2,    5.0,    4.0,   -0.4,   3,    3, 11.0,   -1}
-        ,{   'N', 17,  0,  2,   -5.0,   -5.0,    0.5,   4,    3,  0.0,    2}
-        ,{   'N', 17,  0,  2,    5.0,    5.0,   -0.5,   4,   -3, 11.0,    2}
-        ,{   'N', 17,  0,  2,   -5.0,   -6.0,    0.6,   3,    3,  0.0,    2}
-        ,{   'N', 17,  0,  2,    5.0,    6.0,   -0.6,   3,    3, 11.0,   -2}
-        ,{   'T', 17,  0,  2,   -5.0,   -7.0,    0.7,   4,    1,  0.0,    1}
-        ,{   'T', 17,  0,  2,    5.0,    7.0,   -0.7,   4,   -1, 11.0,    1}
-        ,{   'T', 17,  0,  2,   -5.0,   -8.0,    0.8,   3,    1,  0.0,    1}
-        ,{   'T', 17,  0,  2,    5.0,    8.0,   -0.8,   3,    1, 11.0,   -1}
-        ,{   'T', 17,  0,  2,   -5.0,   -9.0,    0.9,   4,    1,  0.0,    2}
-        ,{   'T', 17,  0,  2,    5.0,    9.0,   -0.9,   4,   -1, 11.0,    2}
-        ,{   'T', 17,  0,  2,   -5.0,   -1.0,    0.1,   3,    1,  0.0,    2}
-        ,{   'T', 17,  0,  2,    5.0,    1.0,   -0.1,   3,    1, 11.0,   -2}
-        ,{   'T', 17,  0,  2,   -5.0,   -2.0,    0.2,   4,    3,  0.0,    1}
-        ,{   'T', 17,  0,  2,    5.0,    2.0,   -0.2,   4,   -3, 11.0,    1}
-        ,{   'T', 17,  0,  2,   -5.0,   -3.0,    0.3,   3,    3,  0.0,    1}
-        ,{   'T', 17,  0,  2,    5.0,    3.0,   -0.3,   3,    3, 11.0,   -1}
-        ,{   'T', 17,  0,  2,   -5.0,   -4.0,    0.4,   4,    3,  0.0,    2}
-        ,{   'T', 17,  0,  2,    5.0,    4.0,   -0.4,   4,   -3, 11.0,    2}
-        ,{   'T', 17,  0,  2,   -5.0,   -5.0,    0.5,   3,    3,  0.0,    2}
-        ,{   'T', 17,  0,  2,    5.0,    5.0,   -0.5,   4,    3, 11.0,   -2}
-        ,{   'N', 17,  3,  0,   -5.0,   -6.0,    0.6,   5,    1,  0.0,    1} // ku == 0
-        ,{   'N', 17,  3,  0,    5.0,    6.0,   -0.6,   5,   -1, 11.0,    1}
-        ,{   'N', 17,  3,  0,   -5.0,   -7.0,    0.7,   4,    1,  0.0,    1}
-        ,{   'N', 17,  3,  0,    5.0,    7.0,   -0.7,   4,    1, 11.0,   -1}
-        ,{   'N', 17,  3,  0,   -5.0,   -8.0,    0.8,   5,    1,  0.0,    2}
-        ,{   'N', 17,  3,  0,    5.0,    8.0,   -0.8,   5,   -1, 11.0,    2}
-        ,{   'N', 17,  3,  0,   -5.0,   -9.0,    0.9,   4,    1,  0.0,    2}
-        ,{   'N', 17,  3,  0,    5.0,    9.0,   -0.9,   4,    1, 11.0,   -2}
-        ,{   'N', 17,  3,  0,   -5.0,   -1.0,    0.1,   5,    3,  0.0,    1}
-        ,{   'N', 17,  3,  0,    5.0,    1.0,   -0.1,   5,   -3, 11.0,    1}
-        ,{   'N', 17,  3,  0,   -5.0,   -2.0,    0.2,   4,    3,  0.0,    1}
-        ,{   'N', 17,  3,  0,    5.0,    2.0,   -0.2,   4,    3, 11.0,   -1}
-        ,{   'N', 17,  3,  0,   -5.0,   -3.0,    0.3,   5,    3,  0.0,    2}
-        ,{   'N', 17,  3,  0,    5.0,    3.0,   -0.3,   5,   -3, 11.0,    2}
-        ,{   'N', 17,  3,  0,   -5.0,   -4.0,    0.4,   4,    3,  0.0,    2}
-        ,{   'N', 17,  3,  0,    5.0,    4.0,   -0.4,   4,    3, 11.0,   -2}
-        ,{   'T', 17,  3,  0,   -5.0,   -5.0,    0.5,   5,    1,  0.0,    1}
-        ,{   'T', 17,  3,  0,    5.0,    5.0,   -0.5,   5,   -1, 11.0,    1}
-        ,{   'T', 17,  3,  0,   -5.0,   -6.0,    0.6,   4,    1,  0.0,    1}
-        ,{   'T', 17,  3,  0,    5.0,    6.0,   -0.6,   4,    1, 11.0,   -1}
-        ,{   'T', 17,  3,  0,   -5.0,   -7.0,    0.7,   5,    1,  0.0,    2}
-        ,{   'T', 17,  3,  0,    5.0,    7.0,   -0.7,   5,   -1, 11.0,    2}
-        ,{   'T', 17,  3,  0,   -5.0,   -8.0,    0.8,   4,    1,  0.0,    2}
-        ,{   'T', 17,  3,  0,    5.0,    8.0,   -0.8,   4,    1, 11.0,   -2}
-        ,{   'T', 17,  3,  0,   -5.0,   -9.0,    0.9,   5,    3,  0.0,    1}
-        ,{   'T', 17,  3,  0,    5.0,    9.0,   -0.9,   5,   -3, 11.0,    1}
-        ,{   'T', 17,  3,  0,   -5.0,   -1.0,    0.1,   4,    3,  0.0,    1}
-        ,{   'T', 17,  3,  0,    5.0,    1.0,   -0.1,   4,    3, 11.0,   -1}
-        ,{   'T', 17,  3,  0,   -5.0,   -2.0,    0.2,   5,    3,  0.0,    2}
-        ,{   'T', 17,  3,  0,    5.0,    2.0,   -0.2,   5,   -3, 11.0,    2}
-        ,{   'T', 17,  3,  0,   -5.0,   -3.0,    0.3,   4,    3,  0.0,    2}
-        ,{   'T', 17,  3,  0,    5.0,    3.0,   -0.3,   4,    3, 11.0,   -2}
-        ,{   'N',  5,  3,  4,   -5.0,   -4.0,    0.4,   8,    1,  0.0,    1} // Degenerate
-        ,{   'N',  5,  3,  4,    5.0,    4.0,   -0.4,   8,   -1, 11.0,    1}
-        ,{   'N',  5,  3,  4,   -5.0,   -5.0,    0.5,   9,    1,  0.0,    1}
-        ,{   'N',  5,  3,  4,    5.0,    5.0,   -0.5,   9,    1, 11.0,   -1}
-        ,{   'N',  5,  3,  4,   -5.0,   -6.0,    0.6,   8,    1,  0.0,    2}
-        ,{   'N',  5,  3,  4,    5.0,    6.0,   -0.6,   8,   -1, 11.0,    2}
-        ,{   'N',  5,  3,  4,   -5.0,   -7.0,    0.7,   9,    1,  0.0,    2}
-        ,{   'N',  5,  3,  4,    5.0,    7.0,   -0.7,   9,    1, 11.0,   -2}
-        ,{   'N',  5,  3,  4,   -5.0,   -8.0,    0.8,   8,    3,  0.0,    1}
-        ,{   'N',  5,  3,  4,    5.0,    8.0,   -0.8,   8,   -3, 11.0,    1}
-        ,{   'N',  5,  3,  4,   -5.0,   -9.0,    0.9,   9,    3,  0.0,    1}
-        ,{   'N',  5,  3,  4,    5.0,    9.0,   -0.9,   9,    3, 11.0,   -1}
-        ,{   'N',  5,  3,  4,   -5.0,   -1.0,    0.1,   8,    3,  0.0,    2}
-        ,{   'N',  5,  3,  4,    5.0,    1.0,   -0.1,   8,   -3, 11.0,    2}
-        ,{   'N',  5,  3,  4,   -5.0,   -2.0,    0.2,   9,    3,  0.0,    2}
-        ,{   'N',  5,  3,  4,    5.0,    2.0,   -0.2,   9,    3, 11.0,   -2}
-        ,{   'T',  5,  3,  4,   -5.0,   -3.0,    0.3,   8,    1,  0.0,    1}
-        ,{   'T',  5,  3,  4,    5.0,    3.0,   -0.3,   8,   -1, 11.0,    1}
-        ,{   'T',  5,  3,  4,   -5.0,   -4.0,    0.4,   9,    1,  0.0,    1}
-        ,{   'T',  5,  3,  4,    5.0,    4.0,   -0.4,   9,    1, 11.0,   -1}
-        ,{   'T',  5,  3,  4,   -5.0,   -5.0,    0.5,   8,    1,  0.0,    2}
-        ,{   'T',  5,  3,  4,    5.0,    5.0,   -0.5,   8,   -1, 11.0,    2}
-        ,{   'T',  5,  3,  4,   -5.0,   -6.0,    0.6,   9,    1,  0.0,    2}
-        ,{   'T',  5,  3,  4,    5.0,    6.0,   -0.6,   9,    1, 11.0,   -2}
-        ,{   'T',  5,  3,  4,   -5.0,   -7.0,    0.7,   8,    3,  0.0,    1}
-        ,{   'T',  5,  3,  4,    5.0,    7.0,   -0.7,   8,   -3, 11.0,    1}
-        ,{   'T',  5,  3,  4,   -5.0,   -8.0,    0.8,   9,    3,  0.0,    1}
-        ,{   'T',  5,  3,  4,    5.0,    8.0,   -0.8,   9,    3, 11.0,   -1}
-        ,{   'T',  5,  3,  4,   -5.0,   -9.0,    0.9,   8,    3,  0.0,    2}
-        ,{   'T',  5,  3,  4,    5.0,    9.0,   -0.9,   8,   -3, 11.0,    2}
-        ,{   'T',  5,  3,  4,   -5.0,   -1.0,    0.1,   9,    3,  0.0,    2}
-        ,{   'T',  5,  3,  4,    5.0,    1.0,   -0.1,   9,    3, 11.0,   -2}
-        ,{   'T', 17,  3,  4,    0.0,    0.0,    0.0,   9,    3,  1.0,    1} // Quick
+        // trans,  n, kl, ku, alpha0, ld0, alpha1, ld1, alpha2, ld2, lda, incx, beta, incy
+         {   'N', 19,  3,  2,   -5.0,   1,   -1.0,   1,    0.1,   1,   7,    1,  0.0,    1} // Regular
+        ,{   'N', 19,  3,  2,    5.0,   1,    1.0,   1,   -0.1,   2,   7,   -1, 11.0,    1}
+        ,{   'N', 19,  3,  2,   -5.0,   1,   -2.0,   2,    0.2,   3,   6,    1,  0.0,    1}
+        ,{   'N', 19,  3,  2,    5.0,   2,    2.0,   2,   -0.2,   1,   6,    1, 11.0,   -1}
+        ,{   'N', 19,  3,  2,   -5.0,   2,   -3.0,   3,    0.3,   2,   7,    1,  0.0,    2}
+        ,{   'N', 19,  3,  2,    5.0,   2,    3.0,   3,   -0.3,   3,   7,   -1, 11.0,    2}
+        ,{   'N', 19,  3,  2,   -5.0,   3,   -4.0,   1,    0.4,   1,   6,    1,  0.0,    2}
+        ,{   'N', 19,  3,  2,    5.0,   3,    4.0,   2,   -0.4,   2,   6,    1, 11.0,   -2}
+        ,{   'N', 19,  3,  2,   -5.0,   3,   -5.0,   3,    0.5,   3,   7,    3,  0.0,    1}
+        ,{   'N', 19,  3,  2,    5.0,   1,    5.0,   1,   -0.5,   1,   7,   -3, 11.0,    1}
+        ,{   'N', 19,  3,  2,   -5.0,   1,   -6.0,   1,    0.6,   2,   6,    3,  0.0,    1}
+        ,{   'N', 19,  3,  2,    5.0,   1,    6.0,   2,   -0.6,   3,   6,    3, 11.0,   -1}
+        ,{   'N', 19,  3,  2,   -5.0,   2,   -7.0,   2,    0.7,   1,   7,    3,  0.0,    2}
+        ,{   'N', 19,  3,  2,    5.0,   2,    7.0,   3,   -0.7,   2,   7,   -3, 11.0,    2}
+        ,{   'N', 19,  3,  2,   -5.0,   2,   -8.0,   3,    0.8,   3,   6,    3,  0.0,    2}
+        ,{   'N', 19,  3,  2,    5.0,   3,    8.0,   1,   -0.8,   1,   6,    3, 11.0,   -2}
+        ,{   'T', 19,  3,  2,   -5.0,   3,   -9.0,   2,    0.9,   2,   7,    1,  0.0,    1}
+        ,{   'T', 19,  3,  2,    5.0,   3,    9.0,   3,   -0.9,   3,   7,   -1, 11.0,    1}
+        ,{   'T', 19,  3,  2,   -5.0,   1,   -1.0,   1,    0.1,   1,   6,    1,  0.0,    1}
+        ,{   'T', 19,  3,  2,    5.0,   1,    1.0,   1,   -0.1,   2,   6,    1, 11.0,   -1}
+        ,{   'T', 19,  3,  2,   -5.0,   1,   -2.0,   2,    0.2,   3,   7,    1,  0.0,    2}
+        ,{   'T', 19,  3,  2,    5.0,   2,    2.0,   2,   -0.2,   1,   7,   -1, 11.0,    2}
+        ,{   'T', 19,  3,  2,   -5.0,   2,   -3.0,   3,    0.3,   2,   6,    1,  0.0,    2}
+        ,{   'T', 19,  3,  2,    5.0,   2,    3.0,   3,   -0.3,   3,   6,    1, 11.0,   -2}
+        ,{   'T', 19,  3,  2,   -5.0,   3,   -4.0,   1,    0.4,   1,   7,    3,  0.0,    1}
+        ,{   'T', 19,  3,  2,    5.0,   3,    4.0,   2,   -0.4,   2,   7,   -3, 11.0,    1}
+        ,{   'T', 19,  3,  2,   -5.0,   3,   -5.0,   3,    0.5,   3,   6,    3,  0.0,    1}
+        ,{   'T', 19,  3,  2,    5.0,   1,    5.0,   1,   -0.5,   1,   6,    3, 11.0,   -1}
+        ,{   'T', 19,  3,  2,   -5.0,   1,   -6.0,   1,    0.6,   2,   7,    3,  0.0,    2}
+        ,{   'T', 19,  3,  2,    5.0,   1,    6.0,   2,   -0.6,   3,   7,   -3, 11.0,    2}
+        ,{   'T', 19,  3,  2,   -5.0,   2,   -7.0,   2,    0.7,   1,   6,    3,  0.0,    2}
+        ,{   'T', 19,  3,  2,    5.0,   2,    7.0,   3,   -0.7,   2,   6,    3, 11.0,   -2}
+        ,{   'N', 17,  0,  2,   -5.0,   2,   -8.0,   3,    0.8,   3,   4,    1,  0.0,    1} // kl == 0
+        ,{   'N', 17,  0,  2,    5.0,   3,    8.0,   1,   -0.8,   1,   4,   -1, 11.0,    1}
+        ,{   'N', 17,  0,  2,   -5.0,   3,   -9.0,   2,    0.9,   2,   3,    1,  0.0,    1}
+        ,{   'N', 17,  0,  2,    5.0,   3,    9.0,   3,   -0.9,   3,   3,    1, 11.0,   -1}
+        ,{   'N', 17,  0,  2,   -5.0,   1,   -1.0,   1,    0.1,   1,   4,    1,  0.0,    2}
+        ,{   'N', 17,  0,  2,    5.0,   1,    1.0,   1,   -0.1,   2,   4,   -1, 11.0,    2}
+        ,{   'N', 17,  0,  2,   -5.0,   1,   -2.0,   2,    0.2,   3,   3,    1,  0.0,    2}
+        ,{   'N', 17,  0,  2,    5.0,   2,    2.0,   2,   -0.2,   1,   3,    1, 11.0,   -2}
+        ,{   'N', 17,  0,  2,   -5.0,   2,   -3.0,   3,    0.3,   2,   4,    3,  0.0,    1}
+        ,{   'N', 17,  0,  2,    5.0,   2,    3.0,   3,   -0.3,   3,   4,   -3, 11.0,    1}
+        ,{   'N', 17,  0,  2,   -5.0,   3,   -4.0,   1,    0.4,   1,   3,    3,  0.0,    1}
+        ,{   'N', 17,  0,  2,    5.0,   3,    4.0,   2,   -0.4,   2,   3,    3, 11.0,   -1}
+        ,{   'N', 17,  0,  2,   -5.0,   3,   -5.0,   3,    0.5,   3,   4,    3,  0.0,    2}
+        ,{   'N', 17,  0,  2,    5.0,   1,    5.0,   1,   -0.5,   1,   4,   -3, 11.0,    2}
+        ,{   'N', 17,  0,  2,   -5.0,   1,   -6.0,   1,    0.6,   2,   3,    3,  0.0,    2}
+        ,{   'N', 17,  0,  2,    5.0,   1,    6.0,   2,   -0.6,   3,   3,    3, 11.0,   -2}
+        ,{   'T', 17,  0,  2,   -5.0,   2,   -7.0,   2,    0.7,   1,   4,    1,  0.0,    1}
+        ,{   'T', 17,  0,  2,    5.0,   2,    7.0,   3,   -0.7,   2,   4,   -1, 11.0,    1}
+        ,{   'T', 17,  0,  2,   -5.0,   2,   -8.0,   3,    0.8,   3,   3,    1,  0.0,    1}
+        ,{   'T', 17,  0,  2,    5.0,   3,    8.0,   1,   -0.8,   1,   3,    1, 11.0,   -1}
+        ,{   'T', 17,  0,  2,   -5.0,   3,   -9.0,   2,    0.9,   2,   4,    1,  0.0,    2}
+        ,{   'T', 17,  0,  2,    5.0,   3,    9.0,   3,   -0.9,   3,   4,   -1, 11.0,    2}
+        ,{   'T', 17,  0,  2,   -5.0,   1,   -1.0,   1,    0.1,   1,   3,    1,  0.0,    2}
+        ,{   'T', 17,  0,  2,    5.0,   1,    1.0,   1,   -0.1,   2,   3,    1, 11.0,   -2}
+        ,{   'T', 17,  0,  2,   -5.0,   1,   -2.0,   2,    0.2,   3,   4,    3,  0.0,    1}
+        ,{   'T', 17,  0,  2,    5.0,   2,    2.0,   2,   -0.2,   1,   4,   -3, 11.0,    1}
+        ,{   'T', 17,  0,  2,   -5.0,   2,   -3.0,   3,    0.3,   2,   3,    3,  0.0,    1}
+        ,{   'T', 17,  0,  2,    5.0,   2,    3.0,   3,   -0.3,   3,   3,    3, 11.0,   -1}
+        ,{   'T', 17,  0,  2,   -5.0,   3,   -4.0,   1,    0.4,   1,   4,    3,  0.0,    2}
+        ,{   'T', 17,  0,  2,    5.0,   3,    4.0,   2,   -0.4,   2,   4,   -3, 11.0,    2}
+        ,{   'T', 17,  0,  2,   -5.0,   3,   -5.0,   3,    0.5,   3,   3,    3,  0.0,    2}
+        ,{   'T', 17,  0,  2,    5.0,   1,    5.0,   1,   -0.5,   1,   4,    3, 11.0,   -2}
+        ,{   'N', 17,  3,  0,   -5.0,   1,   -6.0,   1,    0.6,   2,   5,    1,  0.0,    1} // ku == 0
+        ,{   'N', 17,  3,  0,    5.0,   1,    6.0,   2,   -0.6,   3,   5,   -1, 11.0,    1}
+        ,{   'N', 17,  3,  0,   -5.0,   2,   -7.0,   2,    0.7,   1,   4,    1,  0.0,    1}
+        ,{   'N', 17,  3,  0,    5.0,   2,    7.0,   3,   -0.7,   2,   4,    1, 11.0,   -1}
+        ,{   'N', 17,  3,  0,   -5.0,   2,   -8.0,   3,    0.8,   3,   5,    1,  0.0,    2}
+        ,{   'N', 17,  3,  0,    5.0,   3,    8.0,   1,   -0.8,   1,   5,   -1, 11.0,    2}
+        ,{   'N', 17,  3,  0,   -5.0,   3,   -9.0,   2,    0.9,   2,   4,    1,  0.0,    2}
+        ,{   'N', 17,  3,  0,    5.0,   3,    9.0,   3,   -0.9,   3,   4,    1, 11.0,   -2}
+        ,{   'N', 17,  3,  0,   -5.0,   1,   -1.0,   1,    0.1,   1,   5,    3,  0.0,    1}
+        ,{   'N', 17,  3,  0,    5.0,   1,    1.0,   1,   -0.1,   2,   5,   -3, 11.0,    1}
+        ,{   'N', 17,  3,  0,   -5.0,   1,   -2.0,   2,    0.2,   3,   4,    3,  0.0,    1}
+        ,{   'N', 17,  3,  0,    5.0,   2,    2.0,   2,   -0.2,   1,   4,    3, 11.0,   -1}
+        ,{   'N', 17,  3,  0,   -5.0,   2,   -3.0,   3,    0.3,   2,   5,    3,  0.0,    2}
+        ,{   'N', 17,  3,  0,    5.0,   2,    3.0,   3,   -0.3,   3,   5,   -3, 11.0,    2}
+        ,{   'N', 17,  3,  0,   -5.0,   3,   -4.0,   1,    0.4,   1,   4,    3,  0.0,    2}
+        ,{   'N', 17,  3,  0,    5.0,   3,    4.0,   2,   -0.4,   2,   4,    3, 11.0,   -2}
+        ,{   'T', 17,  3,  0,   -5.0,   3,   -5.0,   3,    0.5,   3,   5,    1,  0.0,    1}
+        ,{   'T', 17,  3,  0,    5.0,   1,    5.0,   1,   -0.5,   1,   5,   -1, 11.0,    1}
+        ,{   'T', 17,  3,  0,   -5.0,   1,   -6.0,   1,    0.6,   2,   4,    1,  0.0,    1}
+        ,{   'T', 17,  3,  0,    5.0,   1,    6.0,   2,   -0.6,   3,   4,    1, 11.0,   -1}
+        ,{   'T', 17,  3,  0,   -5.0,   2,   -7.0,   2,    0.7,   1,   5,    1,  0.0,    2}
+        ,{   'T', 17,  3,  0,    5.0,   2,    7.0,   3,   -0.7,   2,   5,   -1, 11.0,    2}
+        ,{   'T', 17,  3,  0,   -5.0,   2,   -8.0,   3,    0.8,   3,   4,    1,  0.0,    2}
+        ,{   'T', 17,  3,  0,    5.0,   3,    8.0,   1,   -0.8,   1,   4,    1, 11.0,   -2}
+        ,{   'T', 17,  3,  0,   -5.0,   3,   -9.0,   2,    0.9,   2,   5,    3,  0.0,    1}
+        ,{   'T', 17,  3,  0,    5.0,   3,    9.0,   3,   -0.9,   3,   5,   -3, 11.0,    1}
+        ,{   'T', 17,  3,  0,   -5.0,   1,   -1.0,   1,    0.1,   1,   4,    3,  0.0,    1}
+        ,{   'T', 17,  3,  0,    5.0,   1,    1.0,   1,   -0.1,   2,   4,    3, 11.0,   -1}
+        ,{   'T', 17,  3,  0,   -5.0,   1,   -2.0,   2,    0.2,   3,   5,    3,  0.0,    2}
+        ,{   'T', 17,  3,  0,    5.0,   2,    2.0,   2,   -0.2,   1,   5,   -3, 11.0,    2}
+        ,{   'T', 17,  3,  0,   -5.0,   2,   -3.0,   3,    0.3,   2,   4,    3,  0.0,    2}
+        ,{   'T', 17,  3,  0,    5.0,   2,    3.0,   3,   -0.3,   3,   4,    3, 11.0,   -2}
+        ,{   'N',  5,  3,  4,   -5.0,   3,   -4.0,   1,    0.4,   1,   8,    1,  0.0,    1} // Degenerate
+        ,{   'N',  5,  3,  4,    5.0,   3,    4.0,   2,   -0.4,   2,   8,   -1, 11.0,    1}
+        ,{   'N',  5,  3,  4,   -5.0,   3,   -5.0,   3,    0.5,   3,   9,    1,  0.0,    1}
+        ,{   'N',  5,  3,  4,    5.0,   1,    5.0,   1,   -0.5,   1,   9,    1, 11.0,   -1}
+        ,{   'N',  5,  3,  4,   -5.0,   1,   -6.0,   1,    0.6,   2,   8,    1,  0.0,    2}
+        ,{   'N',  5,  3,  4,    5.0,   1,    6.0,   2,   -0.6,   3,   8,   -1, 11.0,    2}
+        ,{   'N',  5,  3,  4,   -5.0,   2,   -7.0,   2,    0.7,   1,   9,    1,  0.0,    2}
+        ,{   'N',  5,  3,  4,    5.0,   2,    7.0,   3,   -0.7,   2,   9,    1, 11.0,   -2}
+        ,{   'N',  5,  3,  4,   -5.0,   2,   -8.0,   3,    0.8,   3,   8,    3,  0.0,    1}
+        ,{   'N',  5,  3,  4,    5.0,   3,    8.0,   1,   -0.8,   1,   8,   -3, 11.0,    1}
+        ,{   'N',  5,  3,  4,   -5.0,   3,   -9.0,   2,    0.9,   2,   9,    3,  0.0,    1}
+        ,{   'N',  5,  3,  4,    5.0,   3,    9.0,   3,   -0.9,   3,   9,    3, 11.0,   -1}
+        ,{   'N',  5,  3,  4,   -5.0,   1,   -1.0,   1,    0.1,   1,   8,    3,  0.0,    2}
+        ,{   'N',  5,  3,  4,    5.0,   1,    1.0,   1,   -0.1,   2,   8,   -3, 11.0,    2}
+        ,{   'N',  5,  3,  4,   -5.0,   1,   -2.0,   2,    0.2,   3,   9,    3,  0.0,    2}
+        ,{   'N',  5,  3,  4,    5.0,   2,    2.0,   2,   -0.2,   1,   9,    3, 11.0,   -2}
+        ,{   'T',  5,  3,  4,   -5.0,   2,   -3.0,   3,    0.3,   2,   8,    1,  0.0,    1}
+        ,{   'T',  5,  3,  4,    5.0,   2,    3.0,   3,   -0.3,   3,   8,   -1, 11.0,    1}
+        ,{   'T',  5,  3,  4,   -5.0,   3,   -4.0,   1,    0.4,   1,   9,    1,  0.0,    1}
+        ,{   'T',  5,  3,  4,    5.0,   3,    4.0,   2,   -0.4,   2,   9,    1, 11.0,   -1}
+        ,{   'T',  5,  3,  4,   -5.0,   3,   -5.0,   3,    0.5,   3,   8,    1,  0.0,    2}
+        ,{   'T',  5,  3,  4,    5.0,   1,    5.0,   1,   -0.5,   1,   8,   -1, 11.0,    2}
+        ,{   'T',  5,  3,  4,   -5.0,   1,   -6.0,   1,    0.6,   2,   9,    1,  0.0,    2}
+        ,{   'T',  5,  3,  4,    5.0,   1,    6.0,   2,   -0.6,   3,   9,    1, 11.0,   -2}
+        ,{   'T',  5,  3,  4,   -5.0,   2,   -7.0,   2,    0.7,   1,   8,    3,  0.0,    1}
+        ,{   'T',  5,  3,  4,    5.0,   2,    7.0,   3,   -0.7,   2,   8,   -3, 11.0,    1}
+        ,{   'T',  5,  3,  4,   -5.0,   2,   -8.0,   3,    0.8,   3,   9,    3,  0.0,    1}
+        ,{   'T',  5,  3,  4,    5.0,   3,    8.0,   1,   -0.8,   1,   9,    3, 11.0,   -1}
+        ,{   'T',  5,  3,  4,   -5.0,   3,   -9.0,   2,    0.9,   2,   8,    3,  0.0,    2}
+        ,{   'T',  5,  3,  4,    5.0,   3,    9.0,   3,   -0.9,   3,   8,   -3, 11.0,    2}
+        ,{   'T',  5,  3,  4,   -5.0,   1,   -1.0,   1,    0.1,   1,   9,    3,  0.0,    2}
+        ,{   'T',  5,  3,  4,    5.0,   1,    1.0,   2,   -0.1,   2,   9,    3, 11.0,   -2}
+        ,{   'T', 17,  3,  4,    0.0,   1,    0.0,   3,    0.0,   3,   9,    3,  1.0,    1} // Quick
     };
     const size_t gcases = sizeof(gbdddmv_tc)/sizeof(gbdddmv_tc[0]);
 
@@ -514,40 +553,40 @@ init_unit_test_suite( int argc, char* argv[] )
 
     const gbdddmv_tc_type fixed_tc[] = {
         // kl, ku to be set while lda is a delta
-        // trans,  n, kl, ku, alpha0, alpha1, alpha2, lda, incx, beta, incy
-         {   'N', 19,  0,  0,   -5.0,   -5.1,    1.5,   1,    1,  0.0,    1} // Regular
-        ,{   'N', 19,  0,  0,    5.0,    5.1,   -1.5,   1,   -1, 11.0,    1}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.2,    2.5,   0,    1,  0.0,    1}
-        ,{   'N', 19,  0,  0,    5.0,    5.2,   -2.5,   0,    1, 11.0,   -1}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.3,    3.5,   1,    1,  0.0,    2}
-        ,{   'N', 19,  0,  0,    5.0,    5.3,   -3.5,   1,   -1, 11.0,    2}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.4,    4.5,   0,    1,  0.0,    2}
-        ,{   'N', 19,  0,  0,    5.0,    5.4,   -4.5,   0,    1, 11.0,   -2}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.5,    5.5,   1,    3,  0.0,    1}
-        ,{   'N', 19,  0,  0,    5.0,    5.5,   -5.5,   1,   -3, 11.0,    1}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.6,    6.5,   0,    3,  0.0,    1}
-        ,{   'N', 19,  0,  0,    5.0,    5.6,   -6.5,   0,    3, 11.0,   -1}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.7,    7.5,   1,    3,  0.0,    2}
-        ,{   'N', 19,  0,  0,    5.0,    5.7,   -7.5,   1,   -3, 11.0,    2}
-        ,{   'N', 19,  0,  0,   -5.0,   -5.8,    8.5,   0,    3,  0.0,    2}
-        ,{   'N', 19,  0,  0,    5.0,    5.8,   -8.5,   0,    3, 11.0,   -2}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.9,    9.5,   1,    1,  0.0,    1}
-        ,{   'T', 19,  0,  0,    5.0,    5.9,   -9.5,   1,   -1, 11.0,    1}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.1,    1.5,   0,    1,  0.0,    1}
-        ,{   'T', 19,  0,  0,    5.0,    5.1,   -1.5,   0,    1, 11.0,   -1}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.2,    2.5,   1,    1,  0.0,    2}
-        ,{   'T', 19,  0,  0,    5.0,    5.2,   -2.5,   1,   -1, 11.0,    2}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.3,    3.5,   0,    1,  0.0,    2}
-        ,{   'T', 19,  0,  0,    5.0,    5.3,   -3.5,   0,    1, 11.0,   -2}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.4,    4.5,   1,    3,  0.0,    1}
-        ,{   'T', 19,  0,  0,    5.0,    5.4,   -4.5,   1,   -3, 11.0,    1}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.5,    5.5,   0,    3,  0.0,    1}
-        ,{   'T', 19,  0,  0,    5.0,    5.5,   -5.5,   0,    3, 11.0,   -1}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.6,    6.5,   1,    3,  0.0,    2}
-        ,{   'T', 19,  0,  0,    5.0,    5.6,   -6.5,   1,   -3, 11.0,    2}
-        ,{   'T', 19,  0,  0,   -5.0,   -5.7,    7.5,   0,    3,  0.0,    2}
-        ,{   'T', 19,  0,  0,    5.0,    5.7,   -7.5,   0,    3, 11.0,   -2}
-        ,{   'T', 17,  0,  0,    0.0,    0.0,    0.0,   2,    3,  1.0,    1} // Quick
+        // trans,  n, kl, ku, alpha0, ld0, alpha1, ld1, alpha2, ld2, lda, incx, beta, incy
+         {   'N', 19,  0,  0,   -5.0,   1,   -5.1,   3,    1.5,   1,   1,    1,  0.0,    1} // Regular
+        ,{   'N', 19,  0,  0,    5.0,   2,    5.1,   3,   -1.5,   2,   1,   -1, 11.0,    1}
+        ,{   'N', 19,  0,  0,   -5.0,   3,   -5.2,   2,    2.5,   1,   0,    1,  0.0,    1}
+        ,{   'N', 19,  0,  0,    5.0,   1,    5.2,   2,   -2.5,   2,   0,    1, 11.0,   -1}
+        ,{   'N', 19,  0,  0,   -5.0,   2,   -5.3,   1,    3.5,   1,   1,    1,  0.0,    2}
+        ,{   'N', 19,  0,  0,    5.0,   3,    5.3,   1,   -3.5,   2,   1,   -1, 11.0,    2}
+        ,{   'N', 19,  0,  0,   -5.0,   1,   -5.4,   3,    4.5,   1,   0,    1,  0.0,    2}
+        ,{   'N', 19,  0,  0,    5.0,   2,    5.4,   2,   -4.5,   2,   0,    1, 11.0,   -2}
+        ,{   'N', 19,  0,  0,   -5.0,   3,   -5.5,   1,    5.5,   1,   1,    3,  0.0,    1}
+        ,{   'N', 19,  0,  0,    5.0,   1,    5.5,   3,   -5.5,   2,   1,   -3, 11.0,    1}
+        ,{   'N', 19,  0,  0,   -5.0,   2,   -5.6,   2,    6.5,   1,   0,    3,  0.0,    1}
+        ,{   'N', 19,  0,  0,    5.0,   3,    5.6,   1,   -6.5,   2,   0,    3, 11.0,   -1}
+        ,{   'N', 19,  0,  0,   -5.0,   1,   -5.7,   3,    7.5,   1,   1,    3,  0.0,    2}
+        ,{   'N', 19,  0,  0,    5.0,   2,    5.7,   3,   -7.5,   2,   1,   -3, 11.0,    2}
+        ,{   'N', 19,  0,  0,   -5.0,   3,   -5.8,   2,    8.5,   1,   0,    3,  0.0,    2}
+        ,{   'N', 19,  0,  0,    5.0,   1,    5.8,   2,   -8.5,   2,   0,    3, 11.0,   -2}
+        ,{   'T', 19,  0,  0,   -5.0,   2,   -5.9,   1,    9.5,   1,   1,    1,  0.0,    1}
+        ,{   'T', 19,  0,  0,    5.0,   3,    5.9,   1,   -9.5,   2,   1,   -1, 11.0,    1}
+        ,{   'T', 19,  0,  0,   -5.0,   1,   -5.1,   3,    1.5,   1,   0,    1,  0.0,    1}
+        ,{   'T', 19,  0,  0,    5.0,   2,    5.1,   2,   -1.5,   2,   0,    1, 11.0,   -1}
+        ,{   'T', 19,  0,  0,   -5.0,   3,   -5.2,   1,    2.5,   1,   1,    1,  0.0,    2}
+        ,{   'T', 19,  0,  0,    5.0,   1,    5.2,   3,   -2.5,   2,   1,   -1, 11.0,    2}
+        ,{   'T', 19,  0,  0,   -5.0,   2,   -5.3,   2,    3.5,   1,   0,    1,  0.0,    2}
+        ,{   'T', 19,  0,  0,    5.0,   3,    5.3,   1,   -3.5,   2,   0,    1, 11.0,   -2}
+        ,{   'T', 19,  0,  0,   -5.0,   1,   -5.4,   3,    4.5,   1,   1,    3,  0.0,    1}
+        ,{   'T', 19,  0,  0,    5.0,   2,    5.4,   3,   -4.5,   2,   1,   -3, 11.0,    1}
+        ,{   'T', 19,  0,  0,   -5.0,   3,   -5.5,   3,    5.5,   1,   0,    3,  0.0,    1}
+        ,{   'T', 19,  0,  0,    5.0,   1,    5.5,   2,   -5.5,   2,   0,    3, 11.0,   -1}
+        ,{   'T', 19,  0,  0,   -5.0,   2,   -5.6,   2,    6.5,   1,   1,    3,  0.0,    2}
+        ,{   'T', 19,  0,  0,    5.0,   3,    5.6,   2,   -6.5,   2,   1,   -3, 11.0,    2}
+        ,{   'T', 19,  0,  0,   -5.0,   1,   -5.7,   1,    7.5,   3,   0,    3,  0.0,    2}
+        ,{   'T', 19,  0,  0,    5.0,   2,    5.7,   1,   -7.5,   3,   0,    3, 11.0,   -2}
+        ,{   'T', 17,  0,  0,    0.0,   3,    0.0,   1,    0.0,   3,   2,    3,  1.0,    1} // Quick
     };
 
     // Loop over fixed kl = ku = k bandwidths

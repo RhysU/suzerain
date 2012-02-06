@@ -30,7 +30,7 @@ static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 
 GBDMV_STATIC int GBDMV_FUNCTION(
     char trans, const int n, GBDMV_KL GBDMV_KU
-    const GBDMV_SCALAR alpha, const GBDMV_COMPONENT * const restrict d,
+    const GBDMV_SCALAR alpha, const GBDMV_COMPONENT *       restrict d, const int ldd,
                               const GBDMV_COMPONENT *       restrict a, int lda,
                               const    GBDMV_SCALAR * const restrict x, const int incx,
     const GBDMV_SCALAR beta,           GBDMV_SCALAR * const restrict y, const int incy)
@@ -50,12 +50,14 @@ GBDMV_STATIC int GBDMV_FUNCTION(
         return 3;
     } else if (ku < 0) {
         return 4;
+    } else if (ldd < 0) {
+        return 7;
     } else if (lda <= kl + ku) {
-        return 8;
+        return 9;
     } else if (incx == 0) {
-        return 10;
+        return 11;
     } else if (incy == 0) {
-        return 12;
+        return 13;
     }
 
     // Quick return if possible
@@ -122,7 +124,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                 const int iu = ndxmin(n, j + klp1);
                 const GBDMV_SCALAR temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
-                    y[i] += temp*d[i]*a[i];
+                    y[i] += temp*d[i*ldd]*a[i];
                 }
                 jx += incx;
                 a += lda;
@@ -137,7 +139,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += temp*d[i]*a[i];
+                    y[iy] += temp*d[i*ldd]*a[i];
                     iy += incy;
                 }
                 jx += incx;
@@ -159,9 +161,10 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += alpha*d[j]*temp;
+                y[jy] += alpha*(*d)*temp;
                 jy += incy;
-                a += lda;
+                a  += lda;
+                d  += ldd;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
@@ -176,12 +179,13 @@ GBDMV_STATIC int GBDMV_FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += alpha*d[j]*temp;
+                y[jy] += alpha*(*d)*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
                 }
                 a += lda;
+                d += ldd;
             }
         }
     }

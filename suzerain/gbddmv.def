@@ -30,11 +30,11 @@ static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 
 GBDDMV_STATIC int GBDDMV_FUNCTION(
     char trans, const int n, GBDDMV_KL GBDDMV_KU
-    const GBDDMV_SCALAR alpha0, const GBDDMV_COMPONENT * const restrict d0,
-    const GBDDMV_SCALAR alpha1, const GBDDMV_COMPONENT * const restrict d1,
-                                const GBDDMV_COMPONENT *       restrict a, int lda,
-                                const    GBDDMV_SCALAR * const restrict x, const int incx,
-    const GBDDMV_SCALAR beta,            GBDDMV_SCALAR * const restrict y, const int incy)
+    const GBDDMV_SCALAR alpha0, const GBDDMV_COMPONENT *       restrict d0, const int ldd0,
+    const GBDDMV_SCALAR alpha1, const GBDDMV_COMPONENT *       restrict d1, const int ldd1,
+                                const GBDDMV_COMPONENT *       restrict a,  int lda,
+                                const    GBDDMV_SCALAR * const restrict x,  const int incx,
+    const GBDDMV_SCALAR beta,            GBDDMV_SCALAR * const restrict y,  const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -51,12 +51,16 @@ GBDDMV_STATIC int GBDDMV_FUNCTION(
         return 3;
     } else if (ku < 0) {
         return 4;
-    } else if (lda <= kl + ku) {
+    } else if (ldd0 < 0) {
+        return 7;
+    } else if (ldd1 < 0) {
         return 10;
-    } else if (incx == 0) {
+    } else if (lda <= kl + ku) {
         return 12;
+    } else if (incx == 0) {
+        return 14;
     } else if (incy == 0) {
-        return 15;
+        return 17;
     }
 
     // Quick return if possible
@@ -122,7 +126,7 @@ GBDDMV_STATIC int GBDDMV_FUNCTION(
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
                 for (int i = il; i < iu; ++i) {
-                    y[i] += (alpha0*d0[i]+alpha1*d1[i])*a[i]*x[jx];
+                    y[i] += (alpha0*d0[i*ldd0]+alpha1*d1[i*ldd1])*a[i]*x[jx];
                 }
                 jx += incx;
                 a += lda;
@@ -136,7 +140,7 @@ GBDDMV_STATIC int GBDDMV_FUNCTION(
 #pragma unroll
 #endif
                 for (int i = il; i < iu; ++i) {
-                    y[iy] += (alpha0*d0[i]+alpha1*d1[i])*a[i]*x[jx];
+                    y[iy] += (alpha0*d0[i*ldd0]+alpha1*d1[i*ldd1])*a[i]*x[jx];
                     iy += incy;
                 }
                 jx += incx;
@@ -158,9 +162,11 @@ GBDDMV_STATIC int GBDDMV_FUNCTION(
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += (alpha0*d0[j]+alpha1*d1[j])*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1))*temp;
                 jy += incy;
-                a += lda;
+                a  += lda;
+                d0 += ldd0;
+                d1 += ldd1;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
@@ -175,12 +181,14 @@ GBDDMV_STATIC int GBDDMV_FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += (alpha0*d0[j]+alpha1*d1[j])*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1))*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
                 }
-                a += lda;
+                a  += lda;
+                d0 += ldd0;
+                d1 += ldd1;
             }
         }
     }

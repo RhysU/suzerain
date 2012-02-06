@@ -77,9 +77,9 @@
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
 
-#define FIXEDBW_CASE(z,num,prefix)                    \
-    case num: return BOOST_PP_CAT(prefix,num)(        \
-        trans, n, alpha0, d0, alpha1, d1, alpha2, d2, \
+#define FIXEDBW_CASE(z,num,prefix)                                      \
+    case num: return BOOST_PP_CAT(prefix,num)(                          \
+        trans, n, alpha0, d0, ldd0, alpha1, d1, ldd1, alpha2, d2, ldd2, \
         a, lda, x, incx, beta, y, incy);
 
 int
@@ -90,10 +90,13 @@ suzerain_gbdddmv_s(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const float *x,
@@ -112,7 +115,9 @@ suzerain_gbdddmv_s(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdddmv_internal_s(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1, alpha2, d2,
+                                       alpha0, d0, ldd0,
+                                       alpha1, d1, ldd1,
+                                       alpha2, d2, ldd2,
                                        a, lda, x, incx, beta, y, incy);
 }
 
@@ -124,10 +129,13 @@ suzerain_gbdddmv_d(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const double *x,
@@ -146,7 +154,9 @@ suzerain_gbdddmv_d(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdddmv_internal_d(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1, alpha2, d2,
+                                       alpha0, d0, ldd0,
+                                       alpha1, d1, ldd1,
+                                       alpha2, d2, ldd2,
                                        a, lda, x, incx, beta, y, incy);
 }
 
@@ -158,10 +168,13 @@ suzerain_gbdddmv_sc(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const complex_float alpha2,
         const float *d2,
+        const int ldd2,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -180,7 +193,9 @@ suzerain_gbdddmv_sc(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdddmv_internal_sc(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1, alpha2, d2,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
                                         a, lda, x, incx, beta, y, incy);
 }
 
@@ -192,10 +207,13 @@ suzerain_gbdddmv_dz(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const complex_double alpha2,
         const double *d2,
+        const int ldd2,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -214,7 +232,9 @@ suzerain_gbdddmv_dz(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdddmv_internal_dz(trans, n, kl, ku,
-                                        alpha0, d0, alpha1, d1, alpha2, d2,
+                                        alpha0, d0, ldd0,
+                                        alpha1, d1, ldd1,
+                                        alpha2, d2, ldd2,
                                         a, lda, x, incx, beta, y, incy);
 }
 

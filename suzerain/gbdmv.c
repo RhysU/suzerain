@@ -77,9 +77,9 @@
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
 
-#define FIXEDBW_CASE(z,num,prefix)                           \
-    case num: return BOOST_PP_CAT(prefix,num)(               \
-        trans, n, alpha, d, a, lda, x, incx, beta, y, incy);
+#define FIXEDBW_CASE(z,num,prefix)                                \
+    case num: return BOOST_PP_CAT(prefix,num)(                    \
+        trans, n, alpha, d, ldd, a, lda, x, incx, beta, y, incy);
 
 int
 suzerain_gbdmv_s(
@@ -89,6 +89,7 @@ suzerain_gbdmv_s(
         const int ku,
         const float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const float *x,
@@ -107,8 +108,8 @@ suzerain_gbdmv_s(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_s(trans, n, kl, ku,
-                                     alpha, d, a, lda, x, incx,
-                                     beta,             y, incy);
+                                     alpha, d, ldd, a, lda, x, incx,
+                                     beta,                  y, incy);
 }
 
 int
@@ -119,6 +120,7 @@ suzerain_gbdmv_d(
         const int ku,
         const double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const double *x,
@@ -137,8 +139,8 @@ suzerain_gbdmv_d(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_d(trans, n, kl, ku,
-                                     alpha, d, a, lda, x, incx,
-                                     beta,             y, incy);
+                                     alpha, d, ldd, a, lda, x, incx,
+                                     beta,                  y, incy);
 }
 
 int
@@ -149,6 +151,7 @@ suzerain_gbdmv_sc(
         const int ku,
         const complex_float alpha,
         const float *d,
+        const int ldd,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -167,8 +170,8 @@ suzerain_gbdmv_sc(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_sc(trans, n, kl, ku,
-                                      alpha, d, a, lda, x, incx,
-                                      beta,             y, incy);
+                                      alpha, d, ldd, a, lda, x, incx,
+                                      beta,                  y, incy);
 }
 
 int
@@ -179,6 +182,7 @@ suzerain_gbdmv_dz(
         const int ku,
         const complex_double alpha,
         const double *d,
+        const int ldd,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -197,8 +201,8 @@ suzerain_gbdmv_dz(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbdmv_internal_dz(trans, n, kl, ku,
-                                      alpha, d, a, lda, x, incx,
-                                      beta,             y, incy);
+                                      alpha, d, ldd, a, lda, x, incx,
+                                      beta,                  y, incy);
 }
 
 #else

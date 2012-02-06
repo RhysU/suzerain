@@ -77,9 +77,10 @@
 // Provide externally callable logic dispatching to internal routines
 // ------------------------------------------------------------------
 
-#define FIXEDBW_CASE(z,num,prefix)                                         \
-    case num: return BOOST_PP_CAT(prefix,num)(                             \
-        trans, n, alpha0, d0, alpha1, d1, a, lda, x, incx, beta, y, incy);
+#define FIXEDBW_CASE(z,num,prefix)                    \
+    case num: return BOOST_PP_CAT(prefix,num)(        \
+        trans, n, alpha0, d0, ldd0, alpha1, d1, ldd1, \
+        a, lda, x, incx, beta, y, incy);
 
 int
 suzerain_gbddmv_s(
@@ -89,8 +90,10 @@ suzerain_gbddmv_s(
         const int ku,
         const float alpha0,
         const float *d0,
+        const int ldd0,
         const float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const float *x,
@@ -109,7 +112,7 @@ suzerain_gbddmv_s(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddmv_internal_s(trans, n, kl, ku,
-                                      alpha0, d0, alpha1, d1,
+                                      alpha0, d0, ldd0, alpha1, d1, ldd1,
                                       a, lda, x, incx,
                                       beta,   y, incy);
 }
@@ -122,8 +125,10 @@ suzerain_gbddmv_d(
         const int ku,
         const double alpha0,
         const double *d0,
+        const int ldd0,
         const double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const double *x,
@@ -142,7 +147,7 @@ suzerain_gbddmv_d(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddmv_internal_d(trans, n, kl, ku,
-                                      alpha0, d0, alpha1, d1,
+                                      alpha0, d0, ldd0, alpha1, d1, ldd1,
                                       a, lda, x, incx,
                                       beta,   y, incy);
 }
@@ -155,8 +160,10 @@ suzerain_gbddmv_sc(
         const int ku,
         const complex_float alpha0,
         const float *d0,
+        const int ldd0,
         const complex_float alpha1,
         const float *d1,
+        const int ldd1,
         const float *a,
         const int lda,
         const complex_float *x,
@@ -175,7 +182,7 @@ suzerain_gbddmv_sc(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddmv_internal_sc(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1,
+                                       alpha0, d0, ldd0, alpha1, d1, ldd1,
                                        a, lda, x, incx, beta, y, incy);
 }
 
@@ -187,8 +194,10 @@ suzerain_gbddmv_dz(
         const int ku,
         const complex_double alpha0,
         const double *d0,
+        const int ldd0,
         const complex_double alpha1,
         const double *d1,
+        const int ldd1,
         const double *a,
         const int lda,
         const complex_double *x,
@@ -207,7 +216,7 @@ suzerain_gbddmv_dz(
 
     // ...otherwise employ a general bandwidth implementation
     return suzerain_gbddmv_internal_dz(trans, n, kl, ku,
-                                       alpha0, d0, alpha1, d1,
+                                       alpha0, d0, ldd0, alpha1, d1, ldd1,
                                        a, lda, x, incx, beta, y, incy);
 }
 
