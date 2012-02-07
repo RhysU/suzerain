@@ -343,6 +343,8 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t evmaxmag_imag) const
 {
     namespace ndx = channel::field::ndx;
+    using Eigen::Vector3r;
+    using Eigen::Matrix3r;
 
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -500,22 +502,6 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
 
-    // Working non-scalar storage used within following loop
-    Eigen::Vector3r grad_rho;
-    Eigen::Matrix3r grad_grad_rho;
-    Eigen::Vector3r m;
-    Eigen::Matrix3r grad_m;
-    Eigen::Vector3r div_grad_m;
-    Eigen::Vector3r grad_div_m;
-    Eigen::Vector3r grad_e;
-    Eigen::Vector3r u;
-    Eigen::Matrix3r grad_u;
-    Eigen::Vector3r grad_div_u, div_grad_u;
-    Eigen::Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-    Eigen::Matrix3r tau;
-    Eigen::Vector3r div_tau;
-    Eigen::Vector3r momentum_rhs;
-
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
@@ -543,82 +529,87 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                 ++i, /* NB */ ++offset) {
 
                 // Unpack density-related quantities
-                const real_t rho          = sphys(ndx::rho, offset);
-                grad_rho.x()              = auxp(aux::rho_x, offset);
-                grad_rho.y()              = auxp(aux::rho_y, offset);
-                grad_rho.z()              = auxp(aux::rho_z, offset);
-                const real_t div_grad_rho = auxp(aux::rho_xx, offset)
-                                          + auxp(aux::rho_yy, offset)
-                                          + auxp(aux::rho_zz, offset);
-                grad_grad_rho(0,0)        = auxp(aux::rho_xx, offset);
-                grad_grad_rho(0,1)        = auxp(aux::rho_xy, offset);
-                grad_grad_rho(0,2)        = auxp(aux::rho_xz, offset);
-                grad_grad_rho(1,0)        = grad_grad_rho(0,1);
-                grad_grad_rho(1,1)        = auxp(aux::rho_yy, offset);
-                grad_grad_rho(1,2)        = auxp(aux::rho_yz, offset);
-                grad_grad_rho(2,0)        = grad_grad_rho(0,2);
-                grad_grad_rho(2,1)        = grad_grad_rho(1,2);
-                grad_grad_rho(2,2)        = auxp(aux::rho_zz, offset);
+                const real_t   rho         ( sphys(ndx::rho,    offset));
+                const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
+                                              auxp(aux::rho_y,  offset),
+                                              auxp(aux::rho_z,  offset));
+                const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
+                                            + auxp(aux::rho_yy, offset)
+                                            + auxp(aux::rho_zz, offset));
+                const Matrix3r grad_grad_rho;
+                const_cast<Matrix3r&>(grad_grad_rho) <<
+                                              auxp(aux::rho_xx, offset),
+                                              auxp(aux::rho_xy, offset),
+                                              auxp(aux::rho_xz, offset),
+                                              auxp(aux::rho_xy, offset),
+                                              auxp(aux::rho_yy, offset),
+                                              auxp(aux::rho_yz, offset),
+                                              auxp(aux::rho_xz, offset),
+                                              auxp(aux::rho_yz, offset),
+                                              auxp(aux::rho_zz, offset);
 
                 // Unpack momentum-related quantities
-                m.x()              = sphys(ndx::rhou, offset);
-                m.y()              = sphys(ndx::rhov, offset);
-                m.z()              = sphys(ndx::rhow, offset);
-                const real_t div_m = auxp(aux::mx_x, offset)
-                                   + auxp(aux::my_y, offset)
-                                   + auxp(aux::mz_z, offset);
-                grad_m(0,0)        = auxp(aux::mx_x, offset);
-                grad_m(0,1)        = auxp(aux::mx_y, offset);
-                grad_m(0,2)        = auxp(aux::mx_z, offset);
-                grad_m(1,0)        = auxp(aux::my_x, offset);
-                grad_m(1,1)        = auxp(aux::my_y, offset);
-                grad_m(1,2)        = auxp(aux::my_z, offset);
-                grad_m(2,0)        = auxp(aux::mz_x, offset);
-                grad_m(2,1)        = auxp(aux::mz_y, offset);
-                grad_m(2,2)        = auxp(aux::mz_z, offset);
-                div_grad_m.x()     = auxp(aux::mx_xx, offset)
-                                   + auxp(aux::mx_yy, offset)
-                                   + auxp(aux::mx_zz, offset);
-                div_grad_m.y()     = auxp(aux::my_xx, offset)
-                                   + auxp(aux::my_yy, offset)
-                                   + auxp(aux::my_zz, offset);
-                div_grad_m.z()     = auxp(aux::mz_xx, offset)
-                                   + auxp(aux::mz_yy, offset)
-                                   + auxp(aux::mz_zz, offset);
-                grad_div_m.x()     = auxp(aux::mx_xx, offset)
-                                   + auxp(aux::my_xy, offset)
-                                   + auxp(aux::mz_xz, offset);
-                grad_div_m.y()     = auxp(aux::mx_xy, offset)
-                                   + auxp(aux::my_yy, offset)
-                                   + auxp(aux::mz_yz, offset);
-                grad_div_m.z()     = auxp(aux::mx_xz, offset)
-                                   + auxp(aux::my_yz, offset)
-                                   + auxp(aux::mz_zz, offset);
+                const Vector3r m    ( sphys(ndx::rhou, offset),
+                                      sphys(ndx::rhov, offset),
+                                      sphys(ndx::rhow, offset));
+                const real_t   div_m(  auxp(aux::mx_x, offset)
+                                     + auxp(aux::my_y, offset)
+                                     + auxp(aux::mz_z, offset));
+                const Matrix3r grad_m;
+                const_cast<Matrix3r&>(grad_m) <<
+                                            auxp(aux::mx_x,  offset),
+                                            auxp(aux::mx_y,  offset),
+                                            auxp(aux::mx_z,  offset),
+                                            auxp(aux::my_x,  offset),
+                                            auxp(aux::my_y,  offset),
+                                            auxp(aux::my_z,  offset),
+                                            auxp(aux::mz_x,  offset),
+                                            auxp(aux::mz_y,  offset),
+                                            auxp(aux::mz_z,  offset);
+                const Vector3r div_grad_m(  auxp(aux::mx_xx, offset)
+                                          + auxp(aux::mx_yy, offset)
+                                          + auxp(aux::mx_zz, offset),
+                                            auxp(aux::my_xx, offset)
+                                          + auxp(aux::my_yy, offset)
+                                          + auxp(aux::my_zz, offset),
+                                            auxp(aux::mz_xx, offset)
+                                          + auxp(aux::mz_yy, offset)
+                                          + auxp(aux::mz_zz, offset));
+                const Vector3r grad_div_m(  auxp(aux::mx_xx, offset)
+                                          + auxp(aux::my_xy, offset)
+                                          + auxp(aux::mz_xz, offset),
+                                            auxp(aux::mx_xy, offset)
+                                          + auxp(aux::my_yy, offset)
+                                          + auxp(aux::mz_yz, offset),
+                                            auxp(aux::mx_xz, offset)
+                                          + auxp(aux::my_yz, offset)
+                                          + auxp(aux::mz_zz, offset));
 
                 // Unpack total energy-related quantities
-                const real_t e          = sphys(ndx::rhoe, offset);
-                grad_e.x()              = auxp(aux::e_x, offset);
-                grad_e.y()              = auxp(aux::e_y, offset);
-                grad_e.z()              = auxp(aux::e_z, offset);
-                const real_t div_grad_e = auxp(aux::div_grad_e, offset);
+                const real_t e        (sphys(ndx::rhoe,       offset));
+                const Vector3r grad_e ( auxp(aux::e_x,        offset),
+                                        auxp(aux::e_y,        offset),
+                                        auxp(aux::e_z,        offset));
+                const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
-                // Compute quantities based upon state.  Real-valued scalars
-                // are declared inline.  Vector- and tensor-valued expressions
-                // declared outside loop.
-                u                  = suzerain::rholut::u(
-                                        rho, m);
+                // Compute velocity-related quantities
+                const Vector3r u          = suzerain::rholut::u(
+                                                rho, m);
                 sum_u(u.x());
-                const real_t div_u = suzerain::rholut::div_u(
-                                        rho, grad_rho, m, div_m);
-                grad_u             = suzerain::rholut::grad_u(
-                                        rho, grad_rho, m, grad_m);
-                grad_div_u         = suzerain::rholut::grad_div_u(
-                                        rho, grad_rho, grad_grad_rho,
-                                        m, div_m, grad_m, grad_div_m);
-                div_grad_u         = suzerain::rholut::div_grad_u(
-                                        rho, grad_rho, div_grad_rho,
-                                        m, grad_m, div_grad_m);
+                const real_t div_u        = suzerain::rholut::div_u(
+                                                rho, grad_rho, m, div_m);
+                const Matrix3r grad_u     = suzerain::rholut::grad_u(
+                                                rho, grad_rho, m, grad_m);
+                const Vector3r grad_div_u = suzerain::rholut::grad_div_u(
+                                                rho, grad_rho, grad_grad_rho,
+                                                m, div_m, grad_m, grad_div_m);
+                const Vector3r div_grad_u = suzerain::rholut::div_grad_u(
+                                                rho, grad_rho, div_grad_rho,
+                                                m, grad_m, div_grad_m);
+
+                // Compute quantities related to the equation of state
                 real_t p, T, mu, lambda;
+                Vector3r grad_p, grad_T, grad_mu, grad_lambda;
                 suzerain::rholut::p_T_mu_lambda(
                     alpha, beta, gamma, Ma,
                     rho, grad_rho, m, grad_m, e, grad_e,
@@ -632,18 +623,21 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                                             gamma,
                                             rho, grad_rho, div_grad_rho,
                                             p, grad_p, div_grad_p);
-                tau     = suzerain::rholut::tau(
-                            mu, lambda, div_u, grad_u);
-                div_tau = suzerain::rholut::div_tau(
-                            mu, grad_mu, lambda, grad_lambda,
-                            div_u, grad_u, div_grad_u, grad_div_u);
+
+                // Compute quantities related to the viscous stress tensor
+                const Matrix3r tau     = suzerain::rholut::tau(
+                                            mu, lambda, div_u, grad_u);
+                const Vector3r div_tau = suzerain::rholut::div_tau(
+                                            mu, grad_mu, lambda, grad_lambda,
+                                            div_u, grad_u, div_grad_u,
+                                            grad_div_u);
 
                 // Form continuity equation right hand side
                 sphys(ndx::rho, offset) = - div_m
                     ;
 
                 // Form momentum equation right hand side
-                momentum_rhs =
+                const Vector3r momentum_rhs =
                     - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
                     - inv_Ma2 * grad_p
                     + inv_Re * div_tau
