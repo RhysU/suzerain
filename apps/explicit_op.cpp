@@ -502,218 +502,346 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
 
-    // Physical space is traversed linearly using a single offset 'offset'.
-    // The three loop structure is present to provide the global absolute
-    // positions x(i), y(j), and z(k) where necessary.
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
-
-        // Used to accumulate mean quantities versus wall-normal position
-        boost::accumulators::accumulator_set<
+    // Type of Boost.Accumulator to use for summation processes.
+    // Kahan summation preferred when available as incremental cost is small
+    // and we will add many small numbers to a large magnitude sum.
+    typedef boost::accumulators::accumulator_set<
                 real_t,
 #if BOOST_VERSION >= 104700
                 boost::accumulators::stats<boost::accumulators::tag::sum_kahan>
 #else
                 boost::accumulators::stats<boost::accumulators::tag::sum>
 #endif
-            > sum_u;
+            > summing_accumulator_type;
 
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
+    // Physical space is traversed linearly using a single offset 'offset'.
+    // The three loop structure is present to provide the global absolute
+    // positions x(i), y(j), and z(k) where necessary. Three traversals occur:
+    //
+    // (1) Computing mean velocity OR reference quantities and mean velocity
+    //     (depending on which substep is being performed).
+    // (2) Computing the nonlinear equation right hand sides.
+    // (3) Computing any manufactured solution forcing (when enabled).
+    //
+    // The traversal pattern is best embodied by the third pass.  The first and
+    // second passes use slightly more compact structure as only y(j) must be
+    // known within them.  Study (3) and convince yourself that (1) and (2) are
+    // equivalent but lack information on x(i) and z(k).
 
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
+    // (1) Computing mean velocity OR reference quantities and mean velocity
+    //     (depending on which substep is being performed).
+    if (!zeroth_substep) { // MPI_Reduce mean velocity only
 
-                // Unpack density-related quantities
-                const real_t   rho         ( sphys(ndx::rho,    offset));
-                const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
-                                              auxp(aux::rho_y,  offset),
-                                              auxp(aux::rho_z,  offset));
-                const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
-                                            + auxp(aux::rho_yy, offset)
-                                            + auxp(aux::rho_zz, offset));
-                const Matrix3r grad_grad_rho;
-                const_cast<Matrix3r&>(grad_grad_rho) <<
-                                              auxp(aux::rho_xx, offset),
-                                              auxp(aux::rho_xy, offset),
-                                              auxp(aux::rho_xz, offset),
-                                              auxp(aux::rho_xy, offset),
-                                              auxp(aux::rho_yy, offset),
-                                              auxp(aux::rho_yz, offset),
-                                              auxp(aux::rho_xz, offset),
-                                              auxp(aux::rho_yz, offset),
-                                              auxp(aux::rho_zz, offset);
+        // Sum streamwise velocities as a function of y(j) into common.u()
+        size_t offset = 0;
+        for (int j = dgrid.local_physical_start.y();
+            j < dgrid.local_physical_end.y();
+            ++j) {
 
-                // Unpack momentum-related quantities
-                const Vector3r m    ( sphys(ndx::rhou, offset),
-                                      sphys(ndx::rhov, offset),
-                                      sphys(ndx::rhow, offset));
-                const real_t   div_m(  auxp(aux::mx_x, offset)
-                                     + auxp(aux::my_y, offset)
-                                     + auxp(aux::mz_z, offset));
-                const Matrix3r grad_m;
-                const_cast<Matrix3r&>(grad_m) <<
-                                            auxp(aux::mx_x,  offset),
-                                            auxp(aux::mx_y,  offset),
-                                            auxp(aux::mx_z,  offset),
-                                            auxp(aux::my_x,  offset),
-                                            auxp(aux::my_y,  offset),
-                                            auxp(aux::my_z,  offset),
-                                            auxp(aux::mz_x,  offset),
-                                            auxp(aux::mz_y,  offset),
-                                            auxp(aux::mz_z,  offset);
-                const Vector3r div_grad_m(  auxp(aux::mx_xx, offset)
-                                          + auxp(aux::mx_yy, offset)
-                                          + auxp(aux::mx_zz, offset),
-                                            auxp(aux::my_xx, offset)
-                                          + auxp(aux::my_yy, offset)
-                                          + auxp(aux::my_zz, offset),
-                                            auxp(aux::mz_xx, offset)
-                                          + auxp(aux::mz_yy, offset)
-                                          + auxp(aux::mz_zz, offset));
-                const Vector3r grad_div_m(  auxp(aux::mx_xx, offset)
-                                          + auxp(aux::my_xy, offset)
-                                          + auxp(aux::mz_xz, offset),
-                                            auxp(aux::mx_xy, offset)
-                                          + auxp(aux::my_yy, offset)
-                                          + auxp(aux::mz_yz, offset),
-                                            auxp(aux::mx_xz, offset)
-                                          + auxp(aux::my_yz, offset)
-                                          + auxp(aux::mz_zz, offset));
+            summing_accumulator_type ux;
 
-                // Unpack total energy-related quantities
-                const real_t e        (sphys(ndx::rhoe,       offset));
-                const Vector3r grad_e ( auxp(aux::e_x,        offset),
-                                        auxp(aux::e_y,        offset),
-                                        auxp(aux::e_z,        offset));
-                const real_t div_grad_e(auxp(aux::div_grad_e, offset));
+            const size_t last_zxoffset = offset
+                                       + dgrid.local_physical_extent.z()
+                                       * dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+                ux(sphys(ndx::rhou, offset)/sphys(ndx::rho, offset));
+            } // end X // end Z
 
-                // Compute velocity-related quantities
-                const Vector3r u          = suzerain::rholut::u(
-                                                rho, m);
-                sum_u(u.x());
-                const real_t div_u        = suzerain::rholut::div_u(
-                                                rho, grad_rho, m, div_m);
-                const Matrix3r grad_u     = suzerain::rholut::grad_u(
-                                                rho, grad_rho, m, grad_m);
-                const Vector3r grad_div_u = suzerain::rholut::grad_div_u(
-                                                rho, grad_rho, grad_grad_rho,
-                                                m, div_m, grad_m, grad_div_m);
-                const Vector3r div_grad_u = suzerain::rholut::div_grad_u(
-                                                rho, grad_rho, div_grad_rho,
-                                                m, grad_m, div_grad_m);
+            // Store sum into common block in preparation for MPI Reduce
+            common.u()[j] = boost::accumulators::sum(ux);
+
+        } // end Y
+
+        // Reduce and scale common.u() sums to obtain mean on zero-zero rank
+        // Only zero-zero rank needs the information so Reduce is sufficient
+        if (dgrid.has_zero_zero_modes()) {
+            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            common.u() /= (   dgrid.global_physical_extent.x()
+                            * dgrid.global_physical_extent.z());
+        } else {
+            Eigen::ArrayXr tmp;
+            tmp.resizeLike(common.u());
+            tmp.setZero();
+            SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+        }
+
+    } else {               // MPI_Allreduce references and mean velocity
+
+        // Sum reference quantities as a function of y(j) into common.ref_*
+        size_t offset = 0;
+        for (int j = dgrid.local_physical_start.y();
+            j < dgrid.local_physical_end.y();
+            ++j) {
+
+            // See writeups/derivation.tex or rholut_imexop.h for definitions
+            summing_accumulator_type ref_nu, ref_ux, ref_uy, ref_uz,
+                                     ref_nuux, ref_nuuy, ref_nuuz,
+                                     ref_m_gradrho, ref_ex_gradrho,
+                                     ref_ey_gradrho, ref_ez_gradrho,
+                                     ref_e_divm, ref_e_deltarho;
+
+            const size_t last_zxoffset = offset
+                                       + dgrid.local_physical_extent.z()
+                                       * dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+
+                // Unpack conserved state
+                const real_t   rho(sphys(ndx::rho,  offset));
+                const Vector3r m  (sphys(ndx::rhou, offset),
+                                   sphys(ndx::rhov, offset),
+                                   sphys(ndx::rhow, offset));
+                const real_t   e  (sphys(ndx::rhoe, offset));
 
                 // Compute quantities related to the equation of state
                 real_t p, T, mu, lambda;
-                Vector3r grad_p, grad_T, grad_mu, grad_lambda;
                 suzerain::rholut::p_T_mu_lambda(
-                    alpha, beta, gamma, Ma,
-                    rho, grad_rho, m, grad_m, e, grad_e,
-                    p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-                const real_t div_grad_p = suzerain::rholut::div_grad_p(
-                                            gamma, Ma,
+                    alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
+
+                // Accumulate reference quantities into running sums...
+                const real_t nu = mu / rho;
+                ref_nu(nu);
+
+                // ...including simple velocity-related quantities...
+                const Vector3r u = suzerain::rholut::u(rho, m);
+                ref_ux(u.x());
+                ref_uy(u.y());
+                ref_uz(u.z());
+                ref_nuux(nu*u.x());
+                ref_nuuy(nu*u.y());
+                ref_nuuz(nu*u.z());
+
+                // ...and other expressions.
+                ref_m_gradrho(u.squaredNorm());
+
+                namespace rholut = suzerain::rholut;
+                const Vector3r e_gradrho
+                        = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+                                gamma, rho, m, e, p);
+                ref_ex_gradrho(e_gradrho.x());
+                ref_ey_gradrho(e_gradrho.y());
+                ref_ez_gradrho(e_gradrho.z());
+
+                ref_e_divm(
+                        rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
+                            rho, e, p));
+
+                ref_e_deltarho(
+                        rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+                            gamma, mu, rho, e, p));
+
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Allreduce
+            namespace accumulators = boost::accumulators;
+            common.ref_nu        ()[j] = accumulators::sum(ref_nu        );
+            common.ref_ux        ()[j] = accumulators::sum(ref_ux        );
+            common.ref_uy        ()[j] = accumulators::sum(ref_uy        );
+            common.ref_uz        ()[j] = accumulators::sum(ref_uz        );
+            common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
+            common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
+            common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
+            common.ref_m_gradrho ()[j] = accumulators::sum(ref_m_gradrho );
+            common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
+            common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
+            common.ref_ez_gradrho()[j] = accumulators::sum(ref_ez_gradrho);
+            common.ref_e_divm    ()[j] = accumulators::sum(ref_e_divm    );
+            common.ref_e_deltarho()[j] = accumulators::sum(ref_e_deltarho);
+
+        } // end Y
+
+        // Allreduce and scale common.refs() sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need references for linearization
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs().data(),
+                common.refs().size(), suzerain::mpi::datatype<real_t>::value,
+                MPI_SUM, MPI_COMM_WORLD));
+        common.refs() /= (   dgrid.global_physical_extent.x()
+                           * dgrid.global_physical_extent.z());
+
+        // Copy redundant mean streamwise velocity information into common.u()
+        common.u() = common.ref_ux();
+    }
+
+    // (2) Computing the nonlinear equation right hand sides.
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        // Wall-normal grid spacing depends on wall-normal location
+        const real_t one_over_delta_y_j = one_over_delta_y(j);
+
+        const size_t last_zxoffset = offset
+                                   + dgrid.local_physical_extent.z()
+                                   * dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
+
+            // Unpack density-related quantities
+            const real_t   rho         ( sphys(ndx::rho,    offset));
+            const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
+                                          auxp(aux::rho_y,  offset),
+                                          auxp(aux::rho_z,  offset));
+            const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
+                                        + auxp(aux::rho_yy, offset)
+                                        + auxp(aux::rho_zz, offset));
+            const Matrix3r grad_grad_rho;
+            const_cast<Matrix3r&>(grad_grad_rho) <<
+                                          auxp(aux::rho_xx, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_yy, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_zz, offset);
+
+            // Unpack momentum-related quantities
+            const Vector3r m    ( sphys(ndx::rhou, offset),
+                                  sphys(ndx::rhov, offset),
+                                  sphys(ndx::rhow, offset));
+            const real_t   div_m(  auxp(aux::mx_x, offset)
+                                 + auxp(aux::my_y, offset)
+                                 + auxp(aux::mz_z, offset));
+            const Matrix3r grad_m;
+            const_cast<Matrix3r&>(grad_m) <<
+                                        auxp(aux::mx_x,  offset),
+                                        auxp(aux::mx_y,  offset),
+                                        auxp(aux::mx_z,  offset),
+                                        auxp(aux::my_x,  offset),
+                                        auxp(aux::my_y,  offset),
+                                        auxp(aux::my_z,  offset),
+                                        auxp(aux::mz_x,  offset),
+                                        auxp(aux::mz_y,  offset),
+                                        auxp(aux::mz_z,  offset);
+            const Vector3r div_grad_m(  auxp(aux::mx_xx, offset)
+                                      + auxp(aux::mx_yy, offset)
+                                      + auxp(aux::mx_zz, offset),
+                                        auxp(aux::my_xx, offset)
+                                      + auxp(aux::my_yy, offset)
+                                      + auxp(aux::my_zz, offset),
+                                        auxp(aux::mz_xx, offset)
+                                      + auxp(aux::mz_yy, offset)
+                                      + auxp(aux::mz_zz, offset));
+            const Vector3r grad_div_m(  auxp(aux::mx_xx, offset)
+                                      + auxp(aux::my_xy, offset)
+                                      + auxp(aux::mz_xz, offset),
+                                        auxp(aux::mx_xy, offset)
+                                      + auxp(aux::my_yy, offset)
+                                      + auxp(aux::mz_yz, offset),
+                                        auxp(aux::mx_xz, offset)
+                                      + auxp(aux::my_yz, offset)
+                                      + auxp(aux::mz_zz, offset));
+
+            // Unpack total energy-related quantities
+            const real_t e        (sphys(ndx::rhoe,       offset));
+            const Vector3r grad_e ( auxp(aux::e_x,        offset),
+                                    auxp(aux::e_y,        offset),
+                                    auxp(aux::e_z,        offset));
+            const real_t div_grad_e(auxp(aux::div_grad_e, offset));
+
+            // Compute velocity-related quantities
+            const Vector3r u          = suzerain::rholut::u(
+                                            rho, m);
+            const real_t div_u        = suzerain::rholut::div_u(
+                                            rho, grad_rho, m, div_m);
+            const Matrix3r grad_u     = suzerain::rholut::grad_u(
+                                            rho, grad_rho, m, grad_m);
+            const Vector3r grad_div_u = suzerain::rholut::grad_div_u(
+                                            rho, grad_rho, grad_grad_rho,
+                                            m, div_m, grad_m, grad_div_m);
+            const Vector3r div_grad_u = suzerain::rholut::div_grad_u(
                                             rho, grad_rho, div_grad_rho,
-                                            m, grad_m, div_grad_m,
-                                            e, grad_e, div_grad_e);
-                const real_t div_grad_T = suzerain::rholut::div_grad_T(
-                                            gamma,
-                                            rho, grad_rho, div_grad_rho,
-                                            p, grad_p, div_grad_p);
+                                            m, grad_m, div_grad_m);
 
-                // Compute quantities related to the viscous stress tensor
-                const Matrix3r tau     = suzerain::rholut::tau(
-                                            mu, lambda, div_u, grad_u);
-                const Vector3r div_tau = suzerain::rholut::div_tau(
-                                            mu, grad_mu, lambda, grad_lambda,
-                                            div_u, grad_u, div_grad_u,
-                                            grad_div_u);
+            // Compute quantities related to the equation of state
+            real_t p, T, mu, lambda;
+            Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+            suzerain::rholut::p_T_mu_lambda(
+                alpha, beta, gamma, Ma,
+                rho, grad_rho, m, grad_m, e, grad_e,
+                p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+            const real_t div_grad_p = suzerain::rholut::div_grad_p(
+                                        gamma, Ma,
+                                        rho, grad_rho, div_grad_rho,
+                                        m, grad_m, div_grad_m,
+                                        e, grad_e, div_grad_e);
+            const real_t div_grad_T = suzerain::rholut::div_grad_T(
+                                        gamma,
+                                        rho, grad_rho, div_grad_rho,
+                                        p, grad_p, div_grad_p);
 
-                // Form continuity equation right hand side
-                sphys(ndx::rho, offset) = - div_m
-                    ;
+            // Compute quantities related to the viscous stress tensor
+            const Matrix3r tau     = suzerain::rholut::tau(
+                                        mu, lambda, div_u, grad_u);
+            const Vector3r div_tau = suzerain::rholut::div_tau(
+                                        mu, grad_mu, lambda, grad_lambda,
+                                        div_u, grad_u, div_grad_u,
+                                        grad_div_u);
 
-                // Form momentum equation right hand side
-                const Vector3r momentum_rhs =
-                    - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
-                    - inv_Ma2 * grad_p
-                    + inv_Re * div_tau
-                    ;
-                sphys(ndx::rhou, offset) = momentum_rhs.x();
-                sphys(ndx::rhov, offset) = momentum_rhs.y();
-                sphys(ndx::rhow, offset) = momentum_rhs.z();
+            // Form continuity equation right hand side
+            sphys(ndx::rho, offset) = - div_m
+                ;
 
-                // Form energy equation right hand side
-                sphys(ndx::rhoe, offset) =
-                    - suzerain::rholut::div_e_u(
-                            e, grad_e, u, div_u
-                        )
-                    - suzerain::rholut::div_p_u(
-                            p, grad_p, u, div_u
-                        )
-                    + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
-                            grad_T, div_grad_T, mu, grad_mu
-                        )
-                    + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
-                            u, grad_u, tau, div_tau
-                        )
-                    ;
+            // Form momentum equation right hand side
+            const Vector3r momentum_rhs =
+                - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
+                - inv_Ma2 * grad_p
+                + inv_Re * div_tau
+                ;
+            sphys(ndx::rhou, offset) = momentum_rhs.x();
+            sphys(ndx::rhov, offset) = momentum_rhs.y();
+            sphys(ndx::rhow, offset) = momentum_rhs.z();
 
-                // Maintain the minimum observed stable time step, if necessary
-                if (zeroth_substep) {
-                    namespace timestepper = suzerain::timestepper;
-                    // See convective_stability_criterion documentation for
-                    // why the magic number 4 modifies one_over_delta_y
-                    convective_delta_t = suzerain::math::minnan(
-                            convective_delta_t,
-                            timestepper::convective_stability_criterion(
-                                    u.x(), one_over_delta_x,
-                                    u.y(), one_over_delta_y(j) / 4,
-                                    u.z(), one_over_delta_z,
-                                    evmaxmag_real,
-                                    std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
-                    const real_t nu = mu / rho;
-                    diffusive_delta_t = suzerain::math::minnan(
-                            diffusive_delta_t,
-                            timestepper::diffusive_stability_criterion(
-                                    one_over_delta_x,
-                                    one_over_delta_y(j),
-                                    one_over_delta_z,
-                                    Re, Pr, gamma, evmaxmag_imag,
-                                    nu, 0.0, alpha * nu, 0.0));
-                }
+            // Form energy equation right hand side
+            sphys(ndx::rhoe, offset) =
+                - suzerain::rholut::div_e_u(
+                        e, grad_e, u, div_u
+                    )
+                - suzerain::rholut::div_p_u(
+                        p, grad_p, u, div_u
+                    )
+                + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
+                        grad_T, div_grad_T, mu, grad_mu
+                    )
+                + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
+                        u, grad_u, tau, div_tau
+                    )
+                ;
 
-            } // end X
+            // Maintain the minimum observed stable time step, if necessary
+            if (zeroth_substep) {
+                namespace timestepper = suzerain::timestepper;
+                // See convective_stability_criterion documentation for
+                // why the magic number 4 modifies one_over_delta_y
+                convective_delta_t = suzerain::math::minnan(
+                        convective_delta_t,
+                        timestepper::convective_stability_criterion(
+                                u.x(), one_over_delta_x,
+                                u.y(), one_over_delta_y_j / 4,
+                                u.z(), one_over_delta_z,
+                                evmaxmag_real,
+                                std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
+                const real_t nu = mu / rho;
+                diffusive_delta_t = suzerain::math::minnan(
+                        diffusive_delta_t,
+                        timestepper::diffusive_stability_criterion(
+                                one_over_delta_x,
+                                one_over_delta_y_j,
+                                one_over_delta_z,
+                                Re, Pr, gamma, evmaxmag_imag,
+                                nu, 0.0, alpha * nu, 0.0));
+            }
 
-        } // end Z
-
-        // Store sum(s) into common block in preparation for MPI reduction
-        common.u()[j] = boost::accumulators::sum(sum_u);
+        } // end X // end Z
 
     } // end Y
 
-    // Reduce and scale common.u() sums to obtain mean "zero-zero" quantities
-    if (dgrid.has_zero_zero_modes()) {
-        SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-        common.u() /= (   dgrid.global_physical_extent.x()
-                        * dgrid.global_physical_extent.z());
-    } else {
-        Eigen::ArrayXr tmp;
-        tmp.resizeLike(common.u());
-        tmp.setZero();
-        SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-    }
-
-    // If active, add manufactured solution forcing in a second pass.
-    // Isolating this pass allows us to quickly skip the associated work when
-    // not using a manufactured solution.  Same traversal idiom as above.
+    // (3) Computing any manufactured solution forcing (when enabled).
+    // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
 
         // Dereference the msoln smart pointer outside the compute loop

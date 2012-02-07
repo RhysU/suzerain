@@ -131,6 +131,12 @@ public:
     storage_type::ConstColXpr f_dot_u()        const { return storage.col(15); }
     storage_type::ConstColXpr qb()             const { return storage.col(16); }
 
+    // Declare views into \c storage for all reference quantities
+    storage_type::NColsBlockXpr<13>::Type      refs()
+        { return storage.leftCols<13>(); }
+    storage_type::ConstNColsBlockXpr<13>::Type refs() const
+        { return storage.leftCols<13>(); }
+
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
                     suzerain_rholut_imexop_refld &ld)
