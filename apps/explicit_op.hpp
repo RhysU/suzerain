@@ -67,7 +67,7 @@ namespace channel {
  * of equal length, a simple running mean is reset on substep zero and then
  * accumulated.
  *
- * Contiguous \c storage has been arranged so that an Allreduce operations
+ * Contiguous \c storage has been arranged so that an Allreduce operation
  * should be performed on <tt>[storage.data(), u().data() + u().size())</tt> on
  * substep zero (to include reference quantities) and on <tt>[u.data(),
  * u().size())</tt> on later substeps.
