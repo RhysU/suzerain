@@ -340,13 +340,11 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return channel::applyNonlinearOperator<
-                true,  channel::linearization::none
-            >(*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+        return channel::applyNonlinearOperator<true,  channel::linearize::none>
+            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return channel::applyNonlinearOperator<
-                false, channel::linearization::none
-            >(*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+        return channel::applyNonlinearOperator<false, channel::linearize::none>
+            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

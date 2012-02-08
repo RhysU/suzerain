@@ -203,8 +203,8 @@ private:
 
 
 
-/** Provides scoping semantics for linearization::type */
-namespace linearization {
+/** Provides scoping semantics for linearize::type */
+namespace linearize {
 
 /** What type of hybrid implicit/explicit linearization is employed? */
 enum type {
@@ -265,7 +265,7 @@ enum type {
  *      interface that an actual operator would provide.
  */
 template<bool ZerothSubstep,
-         linearization::type Linearize,
+         linearize::type Linearize,
          class SharedPointerToConstManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
             const suzerain::OperatorBase<real_t> &o,
@@ -471,7 +471,7 @@ std::vector<real_t> applyNonlinearOperator(
     // (1) Computing reference quantities and mean velocity OR mean velocity
     //     (depending on linearization and which substep is being performed).
     if (    ZerothSubstep
-         && Linearize != linearization::none) { // Refs and mean velocity
+         && Linearize != linearize::none) {  // References and mean velocity
 
         // Sum reference quantities as a function of y(j) into common.ref_*
         size_t offset = 0;
@@ -566,10 +566,10 @@ std::vector<real_t> applyNonlinearOperator(
         // Copy mean streamwise velocity information into common.u()
         common.u() = common.ref_ux();
 
-    } else {                                        // Mean velocity only
+    } else {                                 // Mean velocity profile only
 
         // Zero all reference quantities on fully-explicit zeroth substep
-        if (ZerothSubstep && Linearize == linearization::none) {
+        if (ZerothSubstep && Linearize == linearize::none) {
             common.refs.setZero();
         }
 
@@ -747,47 +747,100 @@ std::vector<real_t> applyNonlinearOperator(
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
 
-            // Form continuity equation right hand side.
+            // FORM CONTINUITY EQUATION RIGHT HAND SIDE
             //
             // Implicit density handling requires zeroing density RHS in
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             sphys(ndx::rho, offset) =
-                (Linearize == linearization::rhome) ? 0 : - div_m
+                (Linearize == linearize::rhome) ? 0 : - div_m
                 ;
 
-            // Form momentum equation right hand side
-            const Vector3r momentum_rhs =
+            // FORM MOMENTUM EQUATION RIGHT HAND SIDE
+            // (done in stages depending on Linearize parameter)
+            Vector3r momentum_rhs =
+                // Explicit convective term
                 - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
-                - inv_Ma2 * grad_p
+                // Explicit viscous term
                 + inv_Re * div_tau
                 ;
+            switch (Linearize) {
+                case linearize::none:
+                    momentum_rhs +=
+                        // Explicit pressure term
+                        - inv_Ma2 * grad_p
+                        ;
+                    break;
+                case linearize::rhome:
+                    momentum_rhs +=
+                        // Explicit pressure less implicit pressure terms
+                        - inv_Ma2 * suzerain::rholut::explicit_grad_p(
+                                gamma, Ma, rho, grad_rho, m, grad_m,
+                                ref_m_gradrho, ref_u)
+                        // Subtract implicit portions of viscous terms per
+                        // suzerain::rholut::explicit_mu_div_grad_u and
+                        // suzerain::rholut::explicit_mu_plus_lambda_grad_div_u
+                        - inv_Re * (
+                            ref_nu*(div_grad_m + (alpha + 1./3.)*grad_div_m)
+                          - ref_nuu*div_grad_rho
+                          - (alpha + 1./3.)*(grad_grad_rho*ref_nuu)
+                        )
+                        ;
+                    break;
+            }
             sphys(ndx::rhou, offset) = momentum_rhs.x();
             sphys(ndx::rhov, offset) = momentum_rhs.y();
             sphys(ndx::rhow, offset) = momentum_rhs.z();
 
-            // Form energy equation right hand side
+            // FORM ENERGY EQUATION RIGHT HAND SIDE
+            // (done in stages depending on Linearize parameter)
             sphys(ndx::rhoe, offset) =
-                - suzerain::rholut::div_e_u(
-                        e, grad_e, u, div_u
-                    )
-                - suzerain::rholut::div_p_u(
-                        p, grad_p, u, div_u
-                    )
-                + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
-                        grad_T, div_grad_T, mu, grad_mu
-                    )
+                // Explicit viscous work term
                 + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
                         u, grad_u, tau, div_tau
                     )
                 ;
+            switch (Linearize) {
+                case linearize::none:
+                    sphys(ndx::rhoe, offset) +=
+                        // Explicit convective and acoustic terms
+                        - suzerain::rholut::div_e_u(
+                                e, grad_e, u, div_u
+                            )
+                        - suzerain::rholut::div_p_u(
+                                p, grad_p, u, div_u
+                            )
+                        // Explicit energy diffusion terms
+                        + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
+                                grad_T, div_grad_T, mu, grad_mu
+                            )
+                        ;
+                    break;
+                case linearize::rhome:
+                    sphys(ndx::rhoe, offset) +=
+                        // Explicit convective/acoustic less implicit portion
+                        - suzerain::rholut::explicit_div_e_plus_p_u(
+                                gamma, Ma, rho, grad_rho,
+                                m, div_m, grad_m, e, grad_e, p,
+                                ref_e_divm, ref_e_gradrho, ref_u)
+                        // Explicit portion of energy diffusion terms
+                        + inv_Re_Pr_gamma1 * (
+                              grad_mu.dot(grad_T)
+                            + suzerain::rholut::explicit_mu_div_grad_T(
+                                 gamma, Ma, mu, rho, grad_rho, div_grad_rho, m,
+                                 grad_m, div_grad_m, e, div_grad_e, p, grad_p,
+                                 ref_nu, ref_nuu, ref_e_deltarho)
+                        )
+                        ;
+                    break;
+            }
 
-            // Maintain the minimum observed stable time step, if necessary
+            // Determine the minimum observed stable time step when necessary
             if (ZerothSubstep) {
 
                 // Implicit handling sets the effective sound speed to zero
                 // when computing the convective_stability_criterion.
-                const real_t a = (Linearize == linearization::none)
+                const real_t a = (Linearize == linearize::none)
                                ? std::sqrt(T) / Ma  // a/u_0 = sqrt(T*)/Ma
                                : 0;
 
@@ -867,7 +920,7 @@ std::vector<real_t> applyNonlinearOperator(
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
 
-        if (Linearize == linearization::rhome && i == ndx::rho && !msoln) {
+        if (Linearize == linearize::rhome && i == ndx::rho && !msoln) {
 
             // When density equation is handled fully implicitly AND no
             // manufactured solution is employed, save some communications by
