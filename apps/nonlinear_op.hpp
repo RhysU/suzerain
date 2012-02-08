@@ -779,26 +779,35 @@ std::vector<real_t> applyNonlinearOperator(
 
             // Maintain the minimum observed stable time step, if necessary
             if (ZerothSubstep) {
-                namespace timestepper = suzerain::timestepper;
-                // See convective_stability_criterion documentation for
-                // why the magic number 4 modifies one_over_delta_y
+
+                // Implicit handling sets the effective sound speed to zero
+                // when computing the convective_stability_criterion.
+                const real_t a = (Linearize == linearization::none)
+                               ? std::sqrt(T) / Ma  // a/u_0 = sqrt(T*)/Ma
+                               : 0;
+
+                // See convective_stability_criterion documentation for why the
+                // magic number 4 modifies one_over_delta_y only here.
                 convective_delta_t = suzerain::math::minnan(
                         convective_delta_t,
-                        timestepper::convective_stability_criterion(
+                        suzerain::timestepper::convective_stability_criterion(
                                 u.x(), one_over_delta_x,
                                 u.y(), one_over_delta_y_j / 4,
                                 u.z(), one_over_delta_z,
-                                evmaxmag_real,
-                                std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
+                                evmaxmag_real, a));
+
+                // The diffusive stability uses ref_nu which has been
+                // previously set as appropriate for Linearize.  This form
+                // assumes "isotropic linearization" in X, Y, and Z.
                 const real_t nu = mu / rho;
                 diffusive_delta_t = suzerain::math::minnan(
                         diffusive_delta_t,
-                        timestepper::diffusive_stability_criterion(
+                        suzerain::timestepper::diffusive_stability_criterion(
                                 one_over_delta_x,
                                 one_over_delta_y_j,
                                 one_over_delta_z,
                                 Re, Pr, gamma, evmaxmag_imag,
-                                nu, 0.0, alpha * nu, 0.0));
+                                nu, ref_nu, alpha*nu, alpha*ref_nu));
             }
 
         } // end X // end Z
