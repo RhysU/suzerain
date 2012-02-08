@@ -457,8 +457,8 @@ std::vector<real_t> applyNonlinearOperator(
     // positions x(i), y(j), and z(k) where necessary.
     //
     // Three traversals occur:
-    // (1) Computing mean velocity OR reference quantities and mean velocity
-    //     (depending on which substep is being performed).
+    // (1) Computing reference quantities and mean velocity OR mean quantities
+    //     (depending on linearization and which substep is being performed).
     // (2) Computing the nonlinear equation right hand sides.
     // (3) Computing any manufactured solution forcing (when enabled).
     //
@@ -468,48 +468,10 @@ std::vector<real_t> applyNonlinearOperator(
     // equivalent but lack information on x(i) and z(k).
 
     // Traversal:
-    // (1) Computing mean velocity OR reference quantities and mean velocity
-    //     (depending on which substep is being performed).
-    if (!ZerothSubstep) { // MPI_Reduce mean velocity only
-
-        // Sum streamwise velocities as a function of y(j) into common.u()
-        size_t offset = 0;
-        for (int j = o.dgrid.local_physical_start.y();
-            j < o.dgrid.local_physical_end.y();
-            ++j) {
-
-            summing_accumulator_type ux;
-
-            const size_t last_zxoffset = offset
-                                       + o.dgrid.local_physical_extent.z()
-                                       * o.dgrid.local_physical_extent.x();
-            for (; offset < last_zxoffset; ++offset) {
-                ux(sphys(ndx::rhou, offset)/sphys(ndx::rho, offset));
-            } // end X // end Z
-
-            // Store sum into common block in preparation for MPI Reduce
-            common.u()[j] = boost::accumulators::sum(ux);
-
-        } // end Y
-
-        // Reduce and scale common.u() sums to obtain mean on zero-zero rank
-        // Only zero-zero rank needs the information so Reduce is sufficient
-        if (o.dgrid.has_zero_zero_modes()) {
-            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-            common.u() /= (   o.dgrid.global_physical_extent.x()
-                            * o.dgrid.global_physical_extent.z());
-        } else {
-            Eigen::ArrayXr tmp;
-            tmp.resizeLike(common.u());
-            tmp.setZero();
-            SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
-                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-        }
-
-    } else {               // MPI_Allreduce references and mean velocity
+    // (1) Computing reference quantities and mean velocity OR mean velocity
+    //     (depending on linearization and which substep is being performed).
+    if (    ZerothSubstep
+         && Linearize != linearization::none) { // Refs and mean velocity
 
         // Sum reference quantities as a function of y(j) into common.ref_*
         size_t offset = 0;
@@ -601,8 +563,53 @@ std::vector<real_t> applyNonlinearOperator(
         common.refs /= (   o.dgrid.global_physical_extent.x()
                          * o.dgrid.global_physical_extent.z());
 
-        // Copy redundant mean streamwise velocity information into common.u()
+        // Copy mean streamwise velocity information into common.u()
         common.u() = common.ref_ux();
+
+    } else {                                        // Mean velocity only
+
+        // Zero all reference quantities on fully-explicit zeroth substep
+        if (ZerothSubstep && Linearize == linearization::none) {
+            common.refs.setZero();
+        }
+
+        // Sum streamwise velocities as a function of y(j) into common.u()
+        size_t offset = 0;
+        for (int j = o.dgrid.local_physical_start.y();
+            j < o.dgrid.local_physical_end.y();
+            ++j) {
+
+            summing_accumulator_type ux;
+
+            const size_t last_zxoffset = offset
+                                       + o.dgrid.local_physical_extent.z()
+                                       * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+                ux(sphys(ndx::rhou, offset)/sphys(ndx::rho, offset));
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Reduce
+            common.u()[j] = boost::accumulators::sum(ux);
+
+        } // end Y
+
+        // Reduce and scale common.u() sums to obtain mean on zero-zero rank
+        // Only zero-zero rank needs the information so Reduce is sufficient
+        if (o.dgrid.has_zero_zero_modes()) {
+            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            common.u() /= (   o.dgrid.global_physical_extent.x()
+                            * o.dgrid.global_physical_extent.z());
+        } else {
+            Eigen::ArrayXr tmp;
+            tmp.resizeLike(common.u());
+            tmp.setZero();
+            SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+        }
+
     }
 
     // Traversal:
