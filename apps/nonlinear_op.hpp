@@ -1,0 +1,863 @@
+//--------------------------------------------------------------------------
+//
+// Copyright (C) 2011, 2012 The PECOS Development Team
+// Please see http://pecos.ices.utexas.edu for more information on PECOS.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+//--------------------------------------------------------------------------
+// nonlinear_op.hpp: Building blocks for nonlinear Navier--Stokes operators
+// $Id$
+
+#ifndef NONLINEAR_OP_HPP
+#define NONLINEAR_OP_HPP
+
+#include <suzerain/grid_definition.hpp>
+#include <suzerain/multi_array.hpp>
+#include <suzerain/operator_base.hpp>
+#include <suzerain/pencil_grid.hpp>
+#include <suzerain/rholut.hpp>
+#include <suzerain/rholut_imexop.h>
+#include <suzerain/scenario_definition.hpp>
+#include <suzerain/state_fwd.hpp>
+
+#include "precision.hpp"
+#include "channel.hpp"
+
+#pragma warning(disable:383 1572)
+
+namespace channel {
+
+/**
+ * Storage for holding quantities computed during nonlinear operator
+ * application which either are required for linear operator application or for
+ * statistics sampling purposes.
+ */
+class OperatorCommonBlock
+{
+public:
+    // See http://eigen.tuxfamily.org/dox-devel/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    OperatorCommonBlock() {}
+
+private:
+
+    /** Type of the contiguous storage housing all mean quantities */
+    typedef Eigen::Array<real_t, Eigen::Dynamic,  4, Eigen::ColMajor> means_t;
+
+    /** Type of the contiguous storage housing all reference quantities */
+    typedef Eigen::Array<real_t, 13, Eigen::Dynamic, Eigen::ColMajor> refs_t;
+
+public:
+
+    /**
+     * The mean quantities stored in \c means are as follows:
+     * \li \c u  The nonlinear operator computes the instantaneous spatial
+     *     (x, z) mean streamwise velocity profile as collocation point
+     *     values.  The linear operator then uses the information to
+     *     compute the
+     *     implicit \f$f\cdot{}u\f$ term in the total energy equation.
+     * \li \c f The linear operator accumulates the time-step-specific
+     *     temporal mean streamwise (x) component of the implicit \f$f\f$
+     *     term in the momentum equation stored as coefficients.
+     * \li \c f_dot_u The linear operator accumulates the
+     *     time-step-specific temporal mean the implicit \f$f\cdot{}u\f$
+     *     term in the energy equation stored as coefficients.
+     * \li \c qb The linear operator accumulates the time-step-specific
+     *     temporal mean the implicit \f$q_b\f$ term in the energy equation
+     *     stored as coefficients.
+     *
+     * "Time-step-specific temporal means" are time averages taken across
+     * a single time step of quantities which vary on each substep.
+     * As the substeps are all of equal length, a simple running mean
+     * is reset on substep zero and then accumulated.
+     *
+     * Each mean quantity is a single column within \c means.  This facilitates
+     * operations across the entire wall-normal profile in a stride one
+     * fashion.
+     *
+     * @see writeups/channel_treatment.tex and writeups/derivation.tex for
+     * details on the mean quantities.
+     * @{
+     */
+
+    /** Column-major storage housing all mean quantities (one per column). */
+    means_t means;
+
+    means_t::ColXpr      u()             { return means.col(0); }
+    means_t::ColXpr      f()             { return means.col(1); }
+    means_t::ColXpr      f_dot_u()       { return means.col(2); }
+    means_t::ColXpr      qb()            { return means.col(3); }
+
+    means_t::ConstColXpr u()       const { return means.col(0); }
+    means_t::ConstColXpr f()       const { return means.col(1); }
+    means_t::ConstColXpr f_dot_u() const { return means.col(2); }
+    means_t::ConstColXpr qb()      const { return means.col(3); }
+
+    /** @} */
+
+    /**
+     *
+     * The reference quantities stored in \c refs are as follows:
+     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
+     * \li \c ref_ux         Reference \f$C^{u_x}               \f$
+     * \li \c ref_uy         Reference \f$C^{u_y}               \f$
+     * \li \c ref_uz         Reference \f$C^{u_z}               \f$
+     * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
+     * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
+     * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
+     * \li \c ref_m_gradrho  Reference \f$C^{m}_{\nabla\rho}    \f$
+     * \li \c ref_ex_gradrho Reference \f$C^{e_x}_{\nabla\rho}  \f$
+     * \li \c ref_ey_gradrho Reference \f$C^{e_y}_{\nabla\rho}  \f$
+     * \li \c ref_ez_gradrho Reference \f$C^{e_z}_{\nabla\rho}  \f$
+     * \li \c ref_e_divm     Reference \f$C^{e}_{\nabla\cdot{}m}\f$
+     * \li \c ref_e_deltarho Reference \f$C^{e}_{\Delta\rho}    \f$
+     *
+     * Each reference quantity is a single row within \c refs.  This
+     * facilitates a stride one operation loading or writing all reference
+     * quantities for a single wall-normal location.
+     *
+     * @see rholut_imexop.h for details on linearization and the associated
+     * reference quantities.
+     *
+     * @{
+     */
+
+    /** Column-major storage housing all mean quantities (one per row). */
+    refs_t refs;
+
+    refs_t::RowXpr      ref_nu()               { return refs.row( 0); }
+    refs_t::RowXpr      ref_ux()               { return refs.row( 1); }
+    refs_t::RowXpr      ref_uy()               { return refs.row( 2); }
+    refs_t::RowXpr      ref_uz()               { return refs.row( 3); }
+    refs_t::RowXpr      ref_nuux()             { return refs.row( 4); }
+    refs_t::RowXpr      ref_nuuy()             { return refs.row( 5); }
+    refs_t::RowXpr      ref_nuuz()             { return refs.row( 6); }
+    refs_t::RowXpr      ref_m_gradrho()        { return refs.row( 7); }
+    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row( 8); }
+    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row( 9); }
+    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(10); }
+    refs_t::RowXpr      ref_e_divm()           { return refs.row(11); }
+    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(12); }
+
+    refs_t::ConstRowXpr ref_nu()         const { return refs.row( 0); }
+    refs_t::ConstRowXpr ref_ux()         const { return refs.row( 1); }
+    refs_t::ConstRowXpr ref_uy()         const { return refs.row( 2); }
+    refs_t::ConstRowXpr ref_uz()         const { return refs.row( 3); }
+    refs_t::ConstRowXpr ref_nuux()       const { return refs.row( 4); }
+    refs_t::ConstRowXpr ref_nuuy()       const { return refs.row( 5); }
+    refs_t::ConstRowXpr ref_nuuz()       const { return refs.row( 6); }
+    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row( 7); }
+    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row( 8); }
+    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row( 9); }
+    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(10); }
+    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(11); }
+    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(12); }
+
+    /** Prepare data for use by implicit operator API in rholut_imexop.h. */
+    void imexop_ref(suzerain_rholut_imexop_ref   &ref,
+                    suzerain_rholut_imexop_refld &ld)
+    {
+        ld.nu         = 1; ref.nu         = ref_nu().data();
+        ld.ux         = 1; ref.ux         = ref_ux().data();
+        ld.uy         = 1; ref.uy         = ref_uy().data();
+        ld.uz         = 1; ref.uz         = ref_uz().data();
+        ld.nuux       = 1; ref.nuux       = ref_nuux().data();
+        ld.nuuy       = 1; ref.nuuy       = ref_nuuy().data();
+        ld.nuuz       = 1; ref.nuuz       = ref_nuuz().data();
+        ld.m_gradrho  = 1; ref.m_gradrho  = ref_m_gradrho().data();
+        ld.ex_gradrho = 1; ref.ex_gradrho = ref_ex_gradrho().data();
+        ld.ey_gradrho = 1; ref.ey_gradrho = ref_ey_gradrho().data();
+        ld.ez_gradrho = 1; ref.ez_gradrho = ref_ez_gradrho().data();
+        ld.e_divm     = 1; ref.e_divm     = ref_e_divm().data();
+        ld.e_deltarho = 1; ref.e_deltarho = ref_e_deltarho().data();
+    }
+
+    /** @} */
+
+    /** Helper consistently resizing both \c means and \c refs */
+    template<typename Index>
+    void resize(const Index& Ny)
+    {
+        means.resize(Ny, means_t::ColsAtCompileTime);
+        refs.resize(refs_t::RowsAtCompileTime,  Ny);
+    }
+
+    /** Helper consistently zeroing both \c means and \c refs */
+    template<typename Index>
+    void setZero(const Index& Ny)
+    {
+        means.setZero(Ny, means_t::ColsAtCompileTime);
+        refs.setZero(refs_t::RowsAtCompileTime, Ny);
+    }
+
+private:
+
+    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    OperatorCommonBlock(const OperatorCommonBlock&);
+    OperatorCommonBlock& operator=(const OperatorCommonBlock&);
+};
+
+
+
+/** Provides scoping semantics for linearization::type */
+namespace linearization {
+
+/** What type of hybrid implicit/explicit linearization is employed? */
+enum type {
+    none,  ///< No linearization implying a fully implicit treatment
+    rhome  ///< Linearization of density, momentum, and total energy
+};
+
+}
+
+/**
+ * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
+ * implementation is provided as a common building block for
+ * <tt>suzerain::timestepper::INonlinearOperator<
+ *          suzerain::ContiguousState<4,complex_t>
+ *    ></tt>
+ * subclasses allowing varying numbers of passive scalars or varying hybrid
+ * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
+ * of redundancy and are error prone to create.  This implementation allows
+ * writing the "futsy" bits once and then sharing the logic repeatedly.
+ * Templating allows for compile-time branching amongst different
+ * implementation choices rather than paying runtime cost for such flexibility.
+ *
+ * Computation follows the "Numerical Considerations" section of
+ * writeups/derivation.tex.  No boundary conditions are applied.  The
+ * instantaneous wall-normal velocity is averaged across the streamwise and
+ * spanwise directions and stored into <tt>common.u()</tt>.
+ *
+ * \param o Provides access to discretization, parallel decomposition,
+ *        and scenario parameters.
+ * \param common Shared storage for interaction with an ILinearOperator
+ *        implementation providing forcing and boundary conditions.
+ * \param msoln If \c msoln evaluates to \c true in a boolean context,
+ *        then it will be used to provide manufactured forcing terms. 
+ * \param time Simulation time at which the operator should be applied.
+ *        This allows time-dependent forcing (e.g. from \c msoln).
+ * \param swave State to which the operator should be applied.  On
+ *        entry, it must be coefficients in the X, Y, and Z directions.
+ *        on exit, it must be coefficients in the X and Z directions but
+ *        collocation point values in the Y direction.
+ * \param evmaxmag_real Maximum real eigenvalue magnitude used for
+ *        stable time step computation when <tt>ZerothSubstep == true</tt>.
+ * \param evmaxmag_imag Maximum imaginary eigenvalue magnitude used for
+ *        stable time step computation when <tt>ZerothSubstep == true</tt>.
+ *
+ * \tparam ZerothSubstep Should one-time activities taking place at the
+ *         beginning of a Runge-Kutta step be performed?  Examples include
+ *         computing a stable time step size and also computing reference
+ *         quantities for linearization.
+ * \tparam Linearize What type of hybrid implicit/explicit linearization
+ *         is employed?
+ * \tparam SharedPointerToConstManufacturedSolution What manufactured
+ *         solution should be used to provide additional forcing?
+ *
+ * @return A vector of stable timestep sizes according to different criteria
+ *         per suzerain::timestepper::INonlinearOperator::applyOperator.
+ *
+ * @see suzerain::timestepper::INonlinearOperator for the (slighly different)
+ *      interface that an actual operator would provide.
+ */
+template<bool ZerothSubstep,
+         linearization::type Linearize,
+         class SharedPointerToConstManufacturedSolution>
+std::vector<real_t> applyNonlinearOperator(
+            const suzerain::OperatorBase<real_t> &o,
+            OperatorCommonBlock &common,
+            const SharedPointerToConstManufacturedSolution& msoln,
+            const real_t time,
+            suzerain::ContiguousState<4,complex_t> &swave,
+            const real_t evmaxmag_real,
+            const real_t evmaxmag_imag)
+{
+    // Shorthand
+    typedef suzerain::ContiguousState<4,complex_t> state_type;
+    namespace ndx = channel::field::ndx;
+    using Eigen::Vector3r;
+    using Eigen::Matrix3r;
+
+    // State enters method as coefficients in X, Y, and Z directions
+
+    // We need auxiliary scalar-field storage.  Prepare logical indices using a
+    // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
+    struct aux { enum {
+        rho_y, rho_yy, rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
+        mx_y,  mx_yy,  mx_x,  mx_xx,  mx_xz,  mx_z,  mx_zz,  mx_xy,  mx_yz,
+        my_y,  my_yy,  my_x,  my_xx,  my_xz,  my_z,  my_zz,  my_xy,  my_yz,
+        mz_y,  mz_yy,  mz_x,  mz_xx,  mz_xz,  mz_z,  mz_zz,  mz_xy,  mz_yz,
+        e_y, div_grad_e, e_x, e_z,
+        count // Sentry
+    }; };
+
+    // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
+    // We assume no garbage values in the memory will impact us (for speed).
+    typename boost::scoped_ptr<state_type> _auxw_ptr(
+            allocate_padded_state<state_type>(aux::count, o.dgrid)); // RAII
+    state_type &auxw = *_auxw_ptr;                                   // Brevity
+
+    // Sanity check incoming swave's and auxw's shape and contiguity
+    assert(swave.shape()[0] == channel::field::count);
+    assert(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
+    assert(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
+    assert(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
+    assert((unsigned) swave.strides()[1] == 1u);
+    assert((unsigned) swave.strides()[2] == swave.shape()[1]);
+    assert((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
+    assert(std::equal(swave.shape() + 1, swave.shape() + 4,
+                      auxw.shape() + 1));
+    assert(std::equal(swave.strides() + 1, swave.strides() + 4,
+                      auxw.strides() + 1));
+
+    // Prepare common-block-like storage used to pass details from N to L.
+    // Zeroing is done carefully as accumulated means and reference quantities
+    // must survive from substep to substep while instant profiles do not.
+    common.resize(/* Ny */ swave.shape()[1]);
+    common.u().setZero();
+
+    // Maintain stable time step values to return to the caller
+    boost::array<real_t, 2> delta_t_candidates = {{
+            std::numeric_limits<real_t>::max(),
+            std::numeric_limits<real_t>::max()
+    }};
+    real_t &convective_delta_t = delta_t_candidates[0];
+    real_t &diffusive_delta_t  = delta_t_candidates[1];
+
+    // Compute Y derivatives of density at collocation points
+    // Zero wavenumbers present only for dealiasing along the way
+    o.diffwave_apply(0, 0, 1, swave, ndx::rho);
+    o.bop_accumulate(1,    1, swave, ndx::rho, 0, auxw, aux::rho_y);
+    o.bop_accumulate(2,    1, swave, ndx::rho, 0, auxw, aux::rho_yy);
+    o.bop_apply     (0,    1, swave, ndx::rho);
+
+    // Compute X- and Z- derivatives of density at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rho,   0, auxw, aux::rho_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
+
+    // Compute Y derivatives of X momentum at collocation points
+    // Zero wavenumbers present only for dealiasing along the way
+    o.diffwave_apply(0, 0, 1, swave, ndx::rhou);
+    o.bop_accumulate(1,    1, swave, ndx::rhou, 0, auxw, aux::mx_y);
+    o.bop_accumulate(2,    1, swave, ndx::rhou, 0, auxw, aux::mx_yy);
+    o.bop_apply     (0,    1, swave, ndx::rhou);
+
+    // Compute X- and Z- derivatives of X momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhou,  0, auxw, aux::mx_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhou,  0, auxw, aux::mx_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhou,  0, auxw, aux::mx_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhou,  0, auxw, aux::mx_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhou,  0, auxw, aux::mx_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mx_y,  0, auxw, aux::mx_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mx_y,  0, auxw, aux::mx_yz);
+
+    // Compute Y derivatives of Y momentum at collocation points
+    // Zero wavenumbers present only for dealiasing along the way
+    o.diffwave_apply(0, 0, 1, swave, ndx::rhov);
+    o.bop_accumulate(1,    1, swave, ndx::rhov, 0, auxw, aux::my_y);
+    o.bop_accumulate(2,    1, swave, ndx::rhov, 0, auxw, aux::my_yy);
+    o.bop_apply     (0,    1, swave, ndx::rhov);
+
+    // Compute X- and Z- derivatives of Y momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhov,  0, auxw, aux::my_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhov,  0, auxw, aux::my_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhov,  0, auxw, aux::my_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhov,  0, auxw, aux::my_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhov,  0, auxw, aux::my_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::my_y,  0, auxw, aux::my_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::my_y,  0, auxw, aux::my_yz);
+
+    // Compute Y derivatives of Z momentum at collocation points
+    // Zero wavenumbers present only for dealiasing along the way
+    o.diffwave_apply(0, 0, 1, swave, ndx::rhow);
+    o.bop_accumulate(1,    1, swave, ndx::rhow, 0, auxw, aux::mz_y);
+    o.bop_accumulate(2,    1, swave, ndx::rhow, 0, auxw, aux::mz_yy);
+    o.bop_apply     (0,    1, swave, ndx::rhow);
+
+    // Compute X- and Z- derivatives of Z momentum at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhow,  0, auxw, aux::mz_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhow,  0, auxw, aux::mz_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhow,  0, auxw, aux::mz_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhow,  0, auxw, aux::mz_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhow,  0, auxw, aux::mz_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mz_y,  0, auxw, aux::mz_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mz_y,  0, auxw, aux::mz_yz);
+
+    // Compute Y derivatives of total energy at collocation points
+    // Zero wavenumbers present only for dealiasing along the way
+    o.diffwave_apply(0, 0, 1, swave, ndx::rhoe);
+    o.bop_accumulate(1,    1, swave, ndx::rhoe, 0, auxw, aux::e_y);
+    o.bop_accumulate(2,    1, swave, ndx::rhoe, 0, auxw, aux::div_grad_e);
+    o.bop_apply     (0,    1, swave, ndx::rhoe);
+
+    // Compute X- and Z- derivatives of total energy at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhoe, 0, auxw, aux::e_x       );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhoe, 1, auxw, aux::div_grad_e);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhoe, 0, auxw, aux::e_z       );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhoe, 1, auxw, aux::div_grad_e);
+
+    // Collectively convert swave and auxw to physical space using parallel
+    // FFTs. In physical space, we'll employ views to reshape the 4D row-major
+    // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
+    // we know F a priori.  Reducing the dimensionality encourages linear
+    // access and eases indexing overhead.
+    typename channel::physical_view<aux::count>::type auxp
+        = channel::physical_view<aux::count>::create(o.dgrid, auxw);
+    typename channel::physical_view<channel::field::count>::type sphys
+        = channel::physical_view<channel::field::count>::create(o.dgrid, swave);
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
+    }
+    for (std::size_t i = 0; i < aux::count; ++i) {
+        o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
+    }
+
+    // Retrieve constants and compute derived constants before inner loops
+    const real_t one_over_delta_x = o.one_over_delta_x;
+    const real_t one_over_delta_z = o.one_over_delta_z;
+    const real_t alpha            = o.scenario.alpha;
+    const real_t beta             = o.scenario.beta;
+    const real_t gamma            = o.scenario.gamma;
+    const real_t Ma               = o.scenario.Ma;
+    const real_t Pr               = o.scenario.Pr;
+    const real_t Re               = o.scenario.Re;
+    const real_t inv_Re           = 1 / Re;
+    const real_t inv_Ma2          = 1 / (Ma * Ma);
+    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
+    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
+
+    // Type of Boost.Accumulator to use for summation processes.
+    // Kahan summation preferred when available as incremental cost is small
+    // and we will add many small numbers to a large magnitude sum.
+    typedef boost::accumulators::accumulator_set<
+                real_t,
+#if BOOST_VERSION >= 104700
+                boost::accumulators::stats<boost::accumulators::tag::sum_kahan>
+#else
+                boost::accumulators::stats<boost::accumulators::tag::sum>
+#endif
+            > summing_accumulator_type;
+
+    // Physical space is traversed linearly using a single offset 'offset'.
+    // The three loop structure is present to provide the global absolute
+    // positions x(i), y(j), and z(k) where necessary.
+    //
+    // Three traversals occur:
+    // (1) Computing mean velocity OR reference quantities and mean velocity
+    //     (depending on which substep is being performed).
+    // (2) Computing the nonlinear equation right hand sides.
+    // (3) Computing any manufactured solution forcing (when enabled).
+    //
+    // The traversal pattern is best embodied by the third pass.  The first and
+    // second passes use slightly more compact structure as only y(j) must be
+    // known within them.  Study (3) and convince yourself that (1) and (2) are
+    // equivalent but lack information on x(i) and z(k).
+
+    // Traversal:
+    // (1) Computing mean velocity OR reference quantities and mean velocity
+    //     (depending on which substep is being performed).
+    if (!ZerothSubstep) { // MPI_Reduce mean velocity only
+
+        // Sum streamwise velocities as a function of y(j) into common.u()
+        size_t offset = 0;
+        for (int j = o.dgrid.local_physical_start.y();
+            j < o.dgrid.local_physical_end.y();
+            ++j) {
+
+            summing_accumulator_type ux;
+
+            const size_t last_zxoffset = offset
+                                       + o.dgrid.local_physical_extent.z()
+                                       * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+                ux(sphys(ndx::rhou, offset)/sphys(ndx::rho, offset));
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Reduce
+            common.u()[j] = boost::accumulators::sum(ux);
+
+        } // end Y
+
+        // Reduce and scale common.u() sums to obtain mean on zero-zero rank
+        // Only zero-zero rank needs the information so Reduce is sufficient
+        if (o.dgrid.has_zero_zero_modes()) {
+            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            common.u() /= (   o.dgrid.global_physical_extent.x()
+                            * o.dgrid.global_physical_extent.z());
+        } else {
+            Eigen::ArrayXr tmp;
+            tmp.resizeLike(common.u());
+            tmp.setZero();
+            SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
+                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+        }
+
+    } else {               // MPI_Allreduce references and mean velocity
+
+        // Sum reference quantities as a function of y(j) into common.ref_*
+        size_t offset = 0;
+        for (int j = o.dgrid.local_physical_start.y();
+            j < o.dgrid.local_physical_end.y();
+            ++j) {
+
+            // See writeups/derivation.tex or rholut_imexop.h for definitions
+            summing_accumulator_type ref_nu, ref_ux, ref_uy, ref_uz,
+                                     ref_nuux, ref_nuuy, ref_nuuz,
+                                     ref_m_gradrho, ref_ex_gradrho,
+                                     ref_ey_gradrho, ref_ez_gradrho,
+                                     ref_e_divm, ref_e_deltarho;
+
+            const size_t last_zxoffset = offset
+                                       + o.dgrid.local_physical_extent.z()
+                                       * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+
+                // Unpack conserved state
+                const real_t   rho(sphys(ndx::rho,  offset));
+                const Vector3r m  (sphys(ndx::rhou, offset),
+                                   sphys(ndx::rhov, offset),
+                                   sphys(ndx::rhow, offset));
+                const real_t   e  (sphys(ndx::rhoe, offset));
+
+                // Compute quantities related to the equation of state
+                real_t p, T, mu, lambda;
+                suzerain::rholut::p_T_mu_lambda(
+                    alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
+
+                // Accumulate reference quantities into running sums...
+                const real_t nu = mu / rho;
+                ref_nu(nu);
+
+                // ...including simple velocity-related quantities...
+                const Vector3r u = suzerain::rholut::u(rho, m);
+                ref_ux(u.x());
+                ref_uy(u.y());
+                ref_uz(u.z());
+                ref_nuux(nu*u.x());
+                ref_nuuy(nu*u.y());
+                ref_nuuz(nu*u.z());
+
+                // ...and other expressions.
+                ref_m_gradrho(u.squaredNorm());
+
+                namespace rholut = suzerain::rholut;
+                const Vector3r e_gradrho
+                        = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
+                                gamma, rho, m, e, p);
+                ref_ex_gradrho(e_gradrho.x());
+                ref_ey_gradrho(e_gradrho.y());
+                ref_ez_gradrho(e_gradrho.z());
+
+                ref_e_divm(
+                        rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
+                            rho, e, p));
+
+                ref_e_deltarho(
+                        rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
+                            gamma, mu, rho, e, p));
+
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Allreduce
+            namespace accumulators = boost::accumulators;
+            common.ref_nu        ()[j] = accumulators::sum(ref_nu        );
+            common.ref_ux        ()[j] = accumulators::sum(ref_ux        );
+            common.ref_uy        ()[j] = accumulators::sum(ref_uy        );
+            common.ref_uz        ()[j] = accumulators::sum(ref_uz        );
+            common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
+            common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
+            common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
+            common.ref_m_gradrho ()[j] = accumulators::sum(ref_m_gradrho );
+            common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
+            common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
+            common.ref_ez_gradrho()[j] = accumulators::sum(ref_ez_gradrho);
+            common.ref_e_divm    ()[j] = accumulators::sum(ref_e_divm    );
+            common.ref_e_deltarho()[j] = accumulators::sum(ref_e_deltarho);
+
+        } // end Y
+
+        // Allreduce and scale common.refs sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need references for linearization
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
+                common.refs.size(), suzerain::mpi::datatype<real_t>::value,
+                MPI_SUM, MPI_COMM_WORLD));
+        common.refs /= (   o.dgrid.global_physical_extent.x()
+                         * o.dgrid.global_physical_extent.z());
+
+        // Copy redundant mean streamwise velocity information into common.u()
+        common.u() = common.ref_ux();
+    }
+
+    // Traversal:
+    // (2) Computing the nonlinear equation right hand sides.
+    size_t offset = 0;
+    for (int j = o.dgrid.local_physical_start.y();
+         j < o.dgrid.local_physical_end.y();
+         ++j) {
+
+        // Wall-normal grid spacing depends on wall-normal location
+        const real_t one_over_delta_y_j = o.one_over_delta_y(j);
+
+        // Unpack appropriate wall-normal reference quantities
+        // FIXME: Reference quantities not used within right hand sides
+        const real_t   ref_nu        (common.ref_nu        ()[j]);
+        const Vector3r ref_u         (common.ref_ux        ()[j],
+                                      common.ref_uy        ()[j],
+                                      common.ref_uz        ()[j]);
+        const Vector3r ref_nuu       (common.ref_nuux      ()[j],
+                                      common.ref_nuuy      ()[j],
+                                      common.ref_nuuz      ()[j]);
+        const real_t   ref_m_gradrho (common.ref_m_gradrho ()[j]);
+        const Vector3r ref_e_gradrho (common.ref_ex_gradrho()[j],
+                                      common.ref_ey_gradrho()[j],
+                                      common.ref_ez_gradrho()[j]);
+        const real_t   ref_e_divm    (common.ref_e_divm    ()[j]);
+        const real_t   ref_e_deltarho(common.ref_e_deltarho()[j]);
+
+        // Iterate across the j-th ZX plane
+        const size_t last_zxoffset = offset
+                                   + o.dgrid.local_physical_extent.z()
+                                   * o.dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
+
+            // Unpack density-related quantities
+            const real_t   rho         ( sphys(ndx::rho,    offset));
+            const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
+                                          auxp(aux::rho_y,  offset),
+                                          auxp(aux::rho_z,  offset));
+            const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
+                                        + auxp(aux::rho_yy, offset)
+                                        + auxp(aux::rho_zz, offset));
+            const Matrix3r grad_grad_rho;
+            const_cast<Matrix3r&>(grad_grad_rho) <<
+                                          auxp(aux::rho_xx, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_yy, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_zz, offset);
+
+            // Unpack momentum-related quantities
+            const Vector3r m    ( sphys(ndx::rhou, offset),
+                                  sphys(ndx::rhov, offset),
+                                  sphys(ndx::rhow, offset));
+            const real_t   div_m(  auxp(aux::mx_x, offset)
+                                 + auxp(aux::my_y, offset)
+                                 + auxp(aux::mz_z, offset));
+            const Matrix3r grad_m;
+            const_cast<Matrix3r&>(grad_m) <<
+                                        auxp(aux::mx_x,  offset),
+                                        auxp(aux::mx_y,  offset),
+                                        auxp(aux::mx_z,  offset),
+                                        auxp(aux::my_x,  offset),
+                                        auxp(aux::my_y,  offset),
+                                        auxp(aux::my_z,  offset),
+                                        auxp(aux::mz_x,  offset),
+                                        auxp(aux::mz_y,  offset),
+                                        auxp(aux::mz_z,  offset);
+            const Vector3r div_grad_m(  auxp(aux::mx_xx, offset)
+                                      + auxp(aux::mx_yy, offset)
+                                      + auxp(aux::mx_zz, offset),
+                                        auxp(aux::my_xx, offset)
+                                      + auxp(aux::my_yy, offset)
+                                      + auxp(aux::my_zz, offset),
+                                        auxp(aux::mz_xx, offset)
+                                      + auxp(aux::mz_yy, offset)
+                                      + auxp(aux::mz_zz, offset));
+            const Vector3r grad_div_m(  auxp(aux::mx_xx, offset)
+                                      + auxp(aux::my_xy, offset)
+                                      + auxp(aux::mz_xz, offset),
+                                        auxp(aux::mx_xy, offset)
+                                      + auxp(aux::my_yy, offset)
+                                      + auxp(aux::mz_yz, offset),
+                                        auxp(aux::mx_xz, offset)
+                                      + auxp(aux::my_yz, offset)
+                                      + auxp(aux::mz_zz, offset));
+
+            // Unpack total energy-related quantities
+            const real_t e        (sphys(ndx::rhoe,       offset));
+            const Vector3r grad_e ( auxp(aux::e_x,        offset),
+                                    auxp(aux::e_y,        offset),
+                                    auxp(aux::e_z,        offset));
+            const real_t div_grad_e(auxp(aux::div_grad_e, offset));
+
+            // Compute velocity-related quantities
+            const Vector3r u          = suzerain::rholut::u(
+                                            rho, m);
+            const real_t div_u        = suzerain::rholut::div_u(
+                                            rho, grad_rho, m, div_m);
+            const Matrix3r grad_u     = suzerain::rholut::grad_u(
+                                            rho, grad_rho, m, grad_m);
+            const Vector3r grad_div_u = suzerain::rholut::grad_div_u(
+                                            rho, grad_rho, grad_grad_rho,
+                                            m, div_m, grad_m, grad_div_m);
+            const Vector3r div_grad_u = suzerain::rholut::div_grad_u(
+                                            rho, grad_rho, div_grad_rho,
+                                            m, grad_m, div_grad_m);
+
+            // Compute quantities related to the equation of state
+            real_t p, T, mu, lambda;
+            Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+            suzerain::rholut::p_T_mu_lambda(
+                alpha, beta, gamma, Ma,
+                rho, grad_rho, m, grad_m, e, grad_e,
+                p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+            const real_t div_grad_p = suzerain::rholut::div_grad_p(
+                                        gamma, Ma,
+                                        rho, grad_rho, div_grad_rho,
+                                        m, grad_m, div_grad_m,
+                                        e, grad_e, div_grad_e);
+            const real_t div_grad_T = suzerain::rholut::div_grad_T(
+                                        gamma,
+                                        rho, grad_rho, div_grad_rho,
+                                        p, grad_p, div_grad_p);
+
+            // Compute quantities related to the viscous stress tensor
+            const Matrix3r tau     = suzerain::rholut::tau(
+                                        mu, lambda, div_u, grad_u);
+            const Vector3r div_tau = suzerain::rholut::div_tau(
+                                        mu, grad_mu, lambda, grad_lambda,
+                                        div_u, grad_u, div_grad_u,
+                                        grad_div_u);
+
+            // Form continuity equation right hand side
+            sphys(ndx::rho, offset) = - div_m
+                ;
+
+            // Form momentum equation right hand side
+            const Vector3r momentum_rhs =
+                - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
+                - inv_Ma2 * grad_p
+                + inv_Re * div_tau
+                ;
+            sphys(ndx::rhou, offset) = momentum_rhs.x();
+            sphys(ndx::rhov, offset) = momentum_rhs.y();
+            sphys(ndx::rhow, offset) = momentum_rhs.z();
+
+            // Form energy equation right hand side
+            sphys(ndx::rhoe, offset) =
+                - suzerain::rholut::div_e_u(
+                        e, grad_e, u, div_u
+                    )
+                - suzerain::rholut::div_p_u(
+                        p, grad_p, u, div_u
+                    )
+                + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
+                        grad_T, div_grad_T, mu, grad_mu
+                    )
+                + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
+                        u, grad_u, tau, div_tau
+                    )
+                ;
+
+            // Maintain the minimum observed stable time step, if necessary
+            if (ZerothSubstep) {
+                namespace timestepper = suzerain::timestepper;
+                // See convective_stability_criterion documentation for
+                // why the magic number 4 modifies one_over_delta_y
+                convective_delta_t = suzerain::math::minnan(
+                        convective_delta_t,
+                        timestepper::convective_stability_criterion(
+                                u.x(), one_over_delta_x,
+                                u.y(), one_over_delta_y_j / 4,
+                                u.z(), one_over_delta_z,
+                                evmaxmag_real,
+                                std::sqrt(T) / Ma)); // a/u_0=sqrt(T*)/Ma
+                const real_t nu = mu / rho;
+                diffusive_delta_t = suzerain::math::minnan(
+                        diffusive_delta_t,
+                        timestepper::diffusive_stability_criterion(
+                                one_over_delta_x,
+                                one_over_delta_y_j,
+                                one_over_delta_z,
+                                Re, Pr, gamma, evmaxmag_imag,
+                                nu, 0.0, alpha * nu, 0.0));
+            }
+
+        } // end X // end Z
+
+    } // end Y
+
+    // Traversal:
+    // (3) Computing any manufactured solution forcing (when enabled).
+    // Isolating this pass allows skipping the work when unnecessary
+    if (msoln) {
+
+        // Dereference the msoln smart pointer outside the compute loop
+        const channel::manufactured_solution &ms = *msoln;
+
+        offset = 0;
+        for (int j = o.dgrid.local_physical_start.y();
+             j < o.dgrid.local_physical_end.y();
+             ++j) {
+
+            const real_t y = o.y(j);
+
+            for (int k = o.dgrid.local_physical_start.z();
+                k < o.dgrid.local_physical_end.z();
+                ++k) {
+
+                const real_t z = o.z(k);
+
+                for (int i = o.dgrid.local_physical_start.x();
+                    i < o.dgrid.local_physical_end.x();
+                    ++i, /* NB */ ++offset) {
+
+                    const real_t x = o.x(i);
+
+                    real_t Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe;
+                    ms.Q_conservative(x, y, z, time,
+                                      Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
+
+                    sphys(ndx::rho,  offset) += Q_rho;
+                    sphys(ndx::rhou, offset) += Q_rhou;
+                    sphys(ndx::rhov, offset) += Q_rhov;
+                    sphys(ndx::rhow, offset) += Q_rhow;
+                    sphys(ndx::rhoe, offset) += Q_rhoe;
+
+                } // end X
+
+            } // end Z
+
+        } // end Y
+
+    } // end msoln
+
+    // Collectively convert state to wave space using parallel FFTs
+    for (std::size_t i = 0; i < channel::field::count; ++i) {
+        o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+    }
+
+    // Return the stable time step criteria separately on each rank.  The time
+    // stepping logic must perform the Allreduce.  Delegating the Allreduce
+    // responsibility allows reducing additional info with minimal overhead.
+    return std::vector<real_t>(delta_t_candidates.begin(),
+                               delta_t_candidates.end());
+
+    // State leaves method as coefficients in X and Z directions
+    // State leaves method as collocation point values in Y direction
+}
+
+} // namespace channel
+
+#endif  /* NONLINEAR_OP_HPP */

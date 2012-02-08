@@ -232,8 +232,6 @@ public:
     /** Uniform grid spacing in z */
     const FPT one_over_delta_z;
 
-protected:
-
     /** The scenario in which the operator is used */
     const typename suzerain::problem::ScenarioDefinition<FPT> &scenario;
 
@@ -253,6 +251,10 @@ private:
 
     /** Stores y grid spacing on this rank in wave space */
     boost::multi_array<FPT,1> one_over_delta_y_;
+
+    // Noncopyable
+    OperatorBase(const OperatorBase&);
+    OperatorBase& operator=(const OperatorBase&);
 };
 
 } // namespace suzerain
