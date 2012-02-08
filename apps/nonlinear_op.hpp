@@ -747,8 +747,13 @@ std::vector<real_t> applyNonlinearOperator(
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
 
-            // Form continuity equation right hand side
-            sphys(ndx::rho, offset) = - div_m
+            // Form continuity equation right hand side.
+            //
+            // Implicit density handling requires zeroing density RHS in
+            // anticipation of possible manufactured solution forcing.  See
+            // subsequent transform_physical_to_wave if you monkey around here.
+            sphys(ndx::rho, offset) =
+                (Linearize == linearization::rhome) ? 0 : - div_m
                 ;
 
             // Form momentum equation right hand side
@@ -861,7 +866,23 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Collectively convert state to wave space using parallel FFTs
     for (std::size_t i = 0; i < channel::field::count; ++i) {
-        o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+
+        if (Linearize == linearization::rhome && i == ndx::rho && !msoln) {
+
+            // When density equation is handled fully implicitly AND no
+            // manufactured solution is employed, save some communications by
+            // using that the density right hand side is identically zero.
+            assert(suzerain::multi_array::is_contiguous(swave[i]));
+            std::memset(swave[i].origin(), 0,
+                    sizeof(complex_t)*o.dgrid.local_wave_extent.prod());
+
+        } else {
+
+            // Otherwise, bring the field back to wave space
+            o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+
+        }
+
     }
 
     // Return the stable time step criteria separately on each rank.  The time
