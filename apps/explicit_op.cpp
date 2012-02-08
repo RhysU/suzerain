@@ -379,9 +379,9 @@ std::vector<real_t> NonlinearOperator::applyOperator(
                       auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L.
-    // Zeroing is done carefully as accumulated means must survive
-    // from substep to substep while instantaneous profiles must not.
-    common.storage.resize(/* Ny */ swave.shape()[1], Eigen::NoChange);
+    // Zeroing is done carefully as accumulated means and reference quantities
+    // must survive from substep to substep while instant profiles do not.
+    common.resize(/* Ny */ swave.shape()[1]);
     common.u().setZero();
 
     // Maintain stable time step values to return to the caller
@@ -516,8 +516,9 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
-    // positions x(i), y(j), and z(k) where necessary. Three traversals occur:
+    // positions x(i), y(j), and z(k) where necessary.
     //
+    // Three traversals occur:
     // (1) Computing mean velocity OR reference quantities and mean velocity
     //     (depending on which substep is being performed).
     // (2) Computing the nonlinear equation right hand sides.
@@ -528,6 +529,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     // known within them.  Study (3) and convince yourself that (1) and (2) are
     // equivalent but lack information on x(i) and z(k).
 
+    // Traversal:
     // (1) Computing mean velocity OR reference quantities and mean velocity
     //     (depending on which substep is being performed).
     if (!zeroth_substep) { // MPI_Reduce mean velocity only
@@ -653,18 +655,19 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
         } // end Y
 
-        // Allreduce and scale common.refs() sums to obtain means on all ranks
+        // Allreduce and scale common.refs sums to obtain means on all ranks
         // Allreduce mandatory as all ranks need references for linearization
-        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs().data(),
-                common.refs().size(), suzerain::mpi::datatype<real_t>::value,
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
+                common.refs.size(), suzerain::mpi::datatype<real_t>::value,
                 MPI_SUM, MPI_COMM_WORLD));
-        common.refs() /= (   dgrid.global_physical_extent.x()
-                           * dgrid.global_physical_extent.z());
+        common.refs /= (   dgrid.global_physical_extent.x()
+                         * dgrid.global_physical_extent.z());
 
         // Copy redundant mean streamwise velocity information into common.u()
         common.u() = common.ref_ux();
     }
 
+    // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     size_t offset = 0;
     for (int j = dgrid.local_physical_start.y();
@@ -674,6 +677,23 @@ std::vector<real_t> NonlinearOperator::applyOperator(
         // Wall-normal grid spacing depends on wall-normal location
         const real_t one_over_delta_y_j = one_over_delta_y(j);
 
+        // Unpack appropriate wall-normal reference quantities
+        // FIXME: Reference quantities not used within right hand sides
+        const real_t   ref_nu        (common.ref_nu        ()[j]);
+        const Vector3r ref_u         (common.ref_ux        ()[j],
+                                      common.ref_uy        ()[j],
+                                      common.ref_uz        ()[j]);
+        const Vector3r ref_nuu       (common.ref_nuux      ()[j],
+                                      common.ref_nuuy      ()[j],
+                                      common.ref_nuuz      ()[j]);
+        const real_t   ref_m_gradrho (common.ref_m_gradrho ()[j]);
+        const Vector3r ref_e_gradrho (common.ref_ex_gradrho()[j],
+                                      common.ref_ey_gradrho()[j],
+                                      common.ref_ez_gradrho()[j]);
+        const real_t   ref_e_divm    (common.ref_e_divm    ()[j]);
+        const real_t   ref_e_deltarho(common.ref_e_deltarho()[j]);
+
+        // Iterate across the j-th ZX plane
         const size_t last_zxoffset = offset
                                    + dgrid.local_physical_extent.z()
                                    * dgrid.local_physical_extent.x();
@@ -840,6 +860,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 
     } // end Y
 
+    // Traversal:
     // (3) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {

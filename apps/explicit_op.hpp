@@ -33,47 +33,6 @@ namespace channel {
  * Storage for holding quantities computed during nonlinear operator
  * application which either are required for linear operator application or for
  * statistics sampling purposes.
- *
- * The quantities are as follows:
- * \li \c ref_nu         Linearization reference \f$C^{\nu}               \f$
- * \li \c ref_ux         Linearization reference \f$C^{u_x}               \f$
- * \li \c ref_uy         Linearization reference \f$C^{u_y}               \f$
- * \li \c ref_uz         Linearization reference \f$C^{u_z}               \f$
- * \li \c ref_nuux       Linearization reference \f$C^{\nu u_x}           \f$
- * \li \c ref_nuuy       Linearization reference \f$C^{\nu u_y}           \f$
- * \li \c ref_nuuz       Linearization reference \f$C^{\nu u_z}           \f$
- * \li \c ref_m_gradrho  Linearization reference \f$C^{m}_{\nabla\rho}    \f$
- * \li \c ref_ex_gradrho Linearization reference \f$C^{e_x}_{\nabla\rho}  \f$
- * \li \c ref_ey_gradrho Linearization reference \f$C^{e_y}_{\nabla\rho}  \f$
- * \li \c ref_ez_gradrho Linearization reference \f$C^{e_z}_{\nabla\rho}  \f$
- * \li \c ref_e_divm     Linearization reference \f$C^{e}_{\nabla\cdot{}m}\f$
- * \li \c ref_e_deltarho Linearization reference \f$C^{e}_{\Delta\rho}    \f$
- * \li \c u  The nonlinear operator computes the instantaneous spatial (x, z)
- *     mean streamwise velocity profile as collocation point values.
- *     The linear operator then uses the information to compute
- *     the implicit \f$f\cdot{}u\f$ term in the total energy equation.
- * \li \c f The linear operator accumulates the time-step-specific
- *     temporal mean streamwise (x) component of the implicit \f$f\f$
- *     term in the momentum equation stored as coefficients.
- * \li \c f_dot_u The linear operator accumulates the time-step-specific
- *     temporal mean the implicit \f$f\cdot{}u\f$ term in the energy equation
- *     stored as coefficients.
- * \li \c qb The linear operator accumulates the time-step-specific
- *     temporal mean the implicit \f$q_b\f$ term in the energy equation
- *     stored as coefficients.
- *
- * "Time-step-specific temporal means" are time averages taken across a single
- * time step of quantities which vary on each substep.  As the substeps are all
- * of equal length, a simple running mean is reset on substep zero and then
- * accumulated.
- *
- * Contiguous \c storage has been arranged so that an Allreduce operation
- * should be performed on <tt>[storage.data(), u().data() + u().size())</tt> on
- * substep zero (to include reference quantities) and on <tt>[u.data(),
- * u().size())</tt> on later substeps.
- *
- * @see rholut_imexop.h for details on linearization and the associated
- * reference quantities.
  */
 class OperatorCommonBlock
 {
@@ -85,57 +44,117 @@ public:
 
 private:
 
-    /** Type of the contiguous storage used to house all scalars */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, 17> storage_type;
+    /** Type of the contiguous storage housing all mean quantities */
+    typedef Eigen::Array<real_t, Eigen::Dynamic,  4, Eigen::ColMajor> means_t;
+
+    /** Type of the contiguous storage housing all reference quantities */
+    typedef Eigen::Array<real_t, 13, Eigen::Dynamic, Eigen::ColMajor> refs_t;
 
 public:
 
-    /** Contiguous storage used to house all scalars */
-    storage_type storage;
+    /**
+     * The mean quantities stored in \c means are as follows:
+     * \li \c u  The nonlinear operator computes the instantaneous spatial
+     *     (x, z) mean streamwise velocity profile as collocation point
+     *     values.  The linear operator then uses the information to
+     *     compute the
+     *     implicit \f$f\cdot{}u\f$ term in the total energy equation.
+     * \li \c f The linear operator accumulates the time-step-specific
+     *     temporal mean streamwise (x) component of the implicit \f$f\f$
+     *     term in the momentum equation stored as coefficients.
+     * \li \c f_dot_u The linear operator accumulates the
+     *     time-step-specific temporal mean the implicit \f$f\cdot{}u\f$
+     *     term in the energy equation stored as coefficients.
+     * \li \c qb The linear operator accumulates the time-step-specific
+     *     temporal mean the implicit \f$q_b\f$ term in the energy equation
+     *     stored as coefficients.
+     *
+     * "Time-step-specific temporal means" are time averages taken across
+     * a single time step of quantities which vary on each substep.
+     * As the substeps are all of equal length, a simple running mean
+     * is reset on substep zero and then accumulated.
+     *
+     * Each mean quantity is a single column within \c means.  This facilitates
+     * operations across the entire wall-normal profile in a stride one
+     * fashion.
+     *
+     * @see writeups/channel_treatment.tex and writeups/derivation.tex for
+     * details on the mean quantities.
+     * @{
+     */
 
-    // Declare a named, mutable "view" into \c storage for each quantity
-    storage_type::ColXpr ref_nu()         { return storage.col( 0); }
-    storage_type::ColXpr ref_ux()         { return storage.col( 1); }
-    storage_type::ColXpr ref_uy()         { return storage.col( 2); }
-    storage_type::ColXpr ref_uz()         { return storage.col( 3); }
-    storage_type::ColXpr ref_nuux()       { return storage.col( 4); }
-    storage_type::ColXpr ref_nuuy()       { return storage.col( 5); }
-    storage_type::ColXpr ref_nuuz()       { return storage.col( 6); }
-    storage_type::ColXpr ref_m_gradrho()  { return storage.col( 7); }
-    storage_type::ColXpr ref_ex_gradrho() { return storage.col( 8); }
-    storage_type::ColXpr ref_ey_gradrho() { return storage.col( 9); }
-    storage_type::ColXpr ref_ez_gradrho() { return storage.col(10); }
-    storage_type::ColXpr ref_e_divm()     { return storage.col(11); }
-    storage_type::ColXpr ref_e_deltarho() { return storage.col(12); }
-    storage_type::ColXpr u()              { return storage.col(13); }
-    storage_type::ColXpr f()              { return storage.col(14); }
-    storage_type::ColXpr f_dot_u()        { return storage.col(15); }
-    storage_type::ColXpr qb()             { return storage.col(16); }
+    /** Column-major storage housing all mean quantities (one per column). */
+    means_t means;
 
-    // Declare a named, mutable "view" into \c storage for each quantity
-    storage_type::ConstColXpr ref_nu()         const { return storage.col( 0); }
-    storage_type::ConstColXpr ref_ux()         const { return storage.col( 1); }
-    storage_type::ConstColXpr ref_uy()         const { return storage.col( 2); }
-    storage_type::ConstColXpr ref_uz()         const { return storage.col( 3); }
-    storage_type::ConstColXpr ref_nuux()       const { return storage.col( 4); }
-    storage_type::ConstColXpr ref_nuuy()       const { return storage.col( 5); }
-    storage_type::ConstColXpr ref_nuuz()       const { return storage.col( 6); }
-    storage_type::ConstColXpr ref_m_gradrho()  const { return storage.col( 7); }
-    storage_type::ConstColXpr ref_ex_gradrho() const { return storage.col( 8); }
-    storage_type::ConstColXpr ref_ey_gradrho() const { return storage.col( 9); }
-    storage_type::ConstColXpr ref_ez_gradrho() const { return storage.col(10); }
-    storage_type::ConstColXpr ref_e_divm()     const { return storage.col(11); }
-    storage_type::ConstColXpr ref_e_deltarho() const { return storage.col(12); }
-    storage_type::ConstColXpr u()              const { return storage.col(13); }
-    storage_type::ConstColXpr f()              const { return storage.col(14); }
-    storage_type::ConstColXpr f_dot_u()        const { return storage.col(15); }
-    storage_type::ConstColXpr qb()             const { return storage.col(16); }
+    means_t::ColXpr      u()             { return means.col(0); }
+    means_t::ColXpr      f()             { return means.col(1); }
+    means_t::ColXpr      f_dot_u()       { return means.col(2); }
+    means_t::ColXpr      qb()            { return means.col(3); }
 
-    // Declare views into \c storage for all reference quantities
-    storage_type::NColsBlockXpr<13>::Type      refs()
-        { return storage.leftCols<13>(); }
-    storage_type::ConstNColsBlockXpr<13>::Type refs() const
-        { return storage.leftCols<13>(); }
+    means_t::ConstColXpr u()       const { return means.col(0); }
+    means_t::ConstColXpr f()       const { return means.col(1); }
+    means_t::ConstColXpr f_dot_u() const { return means.col(2); }
+    means_t::ConstColXpr qb()      const { return means.col(3); }
+
+    /** @} */
+
+    /**
+     *
+     * The reference quantities stored in \c refs are as follows:
+     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
+     * \li \c ref_ux         Reference \f$C^{u_x}               \f$
+     * \li \c ref_uy         Reference \f$C^{u_y}               \f$
+     * \li \c ref_uz         Reference \f$C^{u_z}               \f$
+     * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
+     * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
+     * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
+     * \li \c ref_m_gradrho  Reference \f$C^{m}_{\nabla\rho}    \f$
+     * \li \c ref_ex_gradrho Reference \f$C^{e_x}_{\nabla\rho}  \f$
+     * \li \c ref_ey_gradrho Reference \f$C^{e_y}_{\nabla\rho}  \f$
+     * \li \c ref_ez_gradrho Reference \f$C^{e_z}_{\nabla\rho}  \f$
+     * \li \c ref_e_divm     Reference \f$C^{e}_{\nabla\cdot{}m}\f$
+     * \li \c ref_e_deltarho Reference \f$C^{e}_{\Delta\rho}    \f$
+     *
+     * Each reference quantity is a single row within \c refs.  This
+     * facilitates a stride one operation loading or writing all reference
+     * quantities for a single wall-normal location.
+     *
+     * @see rholut_imexop.h for details on linearization and the associated
+     * reference quantities.
+     *
+     * @{
+     */
+
+    /** Column-major storage housing all mean quantities (one per row). */
+    refs_t refs;
+
+    refs_t::RowXpr      ref_nu()               { return refs.row( 0); }
+    refs_t::RowXpr      ref_ux()               { return refs.row( 1); }
+    refs_t::RowXpr      ref_uy()               { return refs.row( 2); }
+    refs_t::RowXpr      ref_uz()               { return refs.row( 3); }
+    refs_t::RowXpr      ref_nuux()             { return refs.row( 4); }
+    refs_t::RowXpr      ref_nuuy()             { return refs.row( 5); }
+    refs_t::RowXpr      ref_nuuz()             { return refs.row( 6); }
+    refs_t::RowXpr      ref_m_gradrho()        { return refs.row( 7); }
+    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row( 8); }
+    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row( 9); }
+    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(10); }
+    refs_t::RowXpr      ref_e_divm()           { return refs.row(11); }
+    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(12); }
+
+    refs_t::ConstRowXpr ref_nu()         const { return refs.row( 0); }
+    refs_t::ConstRowXpr ref_ux()         const { return refs.row( 1); }
+    refs_t::ConstRowXpr ref_uy()         const { return refs.row( 2); }
+    refs_t::ConstRowXpr ref_uz()         const { return refs.row( 3); }
+    refs_t::ConstRowXpr ref_nuux()       const { return refs.row( 4); }
+    refs_t::ConstRowXpr ref_nuuy()       const { return refs.row( 5); }
+    refs_t::ConstRowXpr ref_nuuz()       const { return refs.row( 6); }
+    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row( 7); }
+    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row( 8); }
+    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row( 9); }
+    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(10); }
+    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(11); }
+    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(12); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
@@ -154,6 +173,24 @@ public:
         ld.ez_gradrho = 1; ref.ez_gradrho = ref_ez_gradrho().data();
         ld.e_divm     = 1; ref.e_divm     = ref_e_divm().data();
         ld.e_deltarho = 1; ref.e_deltarho = ref_e_deltarho().data();
+    }
+
+    /** @} */
+
+    /** Helper consistently resizing both \c means and \c refs */
+    template<typename Index>
+    void resize(const Index& Ny)
+    {
+        means.resize(Ny, means_t::ColsAtCompileTime);
+        refs.resize(refs_t::RowsAtCompileTime,  Ny);
+    }
+
+    /** Helper consistently zeroing both \c means and \c refs */
+    template<typename Index>
+    void setZero(const Index& Ny)
+    {
+        means.setZero(Ny, means_t::ColsAtCompileTime);
+        refs.setZero(refs_t::RowsAtCompileTime, Ny);
     }
 
 private:

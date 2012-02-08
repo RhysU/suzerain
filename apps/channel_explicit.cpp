@@ -1099,8 +1099,7 @@ int main(int argc, char **argv)
           << suzerain::multi_array::strides_array(*state_nonlinear));
 
     // Prepare chosen time stepping scheme and required operators
-    common_block.storage.setZero(
-            grid.dN.y(), channel::mean::storage_type::ColsAtCompileTime);
+    common_block.setZero(grid.dN.y());
     suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
                 timedef.evmagfactor);
     channel::BsplineMassOperatorIsothermal L(
