@@ -135,36 +135,62 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-// FIXME Implement
-//  SUZERAIN_UNUSED(substep_index);
-//  SUZERAIN_ENSURE(output.isIsomorphic(input));
-//
-//  const suzerain::multi_array::ref<complex_t,4> &x = input;  // Shorthand
-//  suzerain::ContiguousState<4,complex_t>        &y = output; // Shorthand
-//  const complex_t c_one = 1;
-//
-//  // Sidesteps assertions triggered by dereferencing trivial input and output
-//  if (SUZERAIN_UNLIKELY(0U == x.shape()[1] * x.shape()[2])) return;
-//
-//  // Loops go from slower to faster indices for ContiguousState<4,complex_t>
-//  typedef suzerain::ContiguousState<4,complex_t>::index index;
-//  for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-//      ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
-//      ++ix, ++iy) {
-//
-//      for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-//          lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
-//          ++lx, ++ly) {
-//
-//          bop.accumulate(0, x.shape()[2],
-//                  c_one,
-//                  &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
-//                  x.strides()[1], x.strides()[2],
-//                  beta,
-//                  &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
-//                  y.strides()[1], y.strides()[2]);
-//      }
-//  }
+    using suzerain::inorder::wavenumber;
+    namespace field = channel::field;
+    SUZERAIN_UNUSED(substep_index);
+
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    // const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    // const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+    const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
+    const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
+
+    // Sidesteps assertions when local rank contains no wavespace information
+    if (SUZERAIN_UNLIKELY(0U == input.shape()[1])) return;
+
+    // Input and output state storage has contiguous wall-normal scalars?
+    SUZERAIN_ENSURE(output.isIsomorphic(input));
+    SUZERAIN_ENSURE(input.shape()  [0]  ==  field::count);
+    SUZERAIN_ENSURE(input.shape()  [1]  == (unsigned) Ny);
+    SUZERAIN_ENSURE(input.strides()[1]  ==             1);
+    SUZERAIN_ENSURE(output.strides()[1] ==             1);
+
+    // Scratch for suzerain_rholut_imexop_accumulate usage
+    suzerain_rholut_imexop_scenario s(this->imexop_s());
+    suzerain_rholut_imexop_ref   ref;
+    suzerain_rholut_imexop_refld ld;
+    common.imexop_ref(ref, ld);
+
+    // Iterate across local wavenumbers and apply operator "in-place".
+    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    for (int n = dkbz; n < dkez; ++n) {
+        const real_t kn = twopioverLz*wavenumber(dNz, n);
+        for (int m = dkbx; m < dkex; ++m) {
+            const real_t km = twopioverLx*wavenumber(dNx, m);
+
+            suzerain_rholut_imexop_accumulate(
+                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    &input [field::ndx::rho ][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::rhou][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::rhov][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::rhow][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::rhoe][0][m - dkbx][n - dkbz],
+                    beta,
+                    &output[field::ndx::rho ][0][m - dkbx][n - dkbz],
+                    &output[field::ndx::rhou][0][m - dkbx][n - dkbz],
+                    &output[field::ndx::rhov][0][m - dkbx][n - dkbz],
+                    &output[field::ndx::rhow][0][m - dkbx][n - dkbz],
+                    &output[field::ndx::rhoe][0][m - dkbx][n - dkbz]);
+
+        }
+    }
 }
 
 void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
