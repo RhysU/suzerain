@@ -42,7 +42,8 @@ int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
     return j*lda+(ku+i-j);
 }
 
-/** Determine if indices fall within the band of a general banded matrix.
+/**
+ * Determine if indices fall within the band of a general banded matrix.
  *
  * @param lda Leading dimension for column-major ordering
  * @param kl  Number of superdiagonals
@@ -58,6 +59,35 @@ int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
     SUZERAIN_UNUSED(lda);
     return j-ku <= i && i <= j+kl;
 }
+
+/**
+ * Compute the starting point, stride, and extents of the <tt>i</tt>-th
+ * row within a general banded matrix.
+ *
+ * Assuming <tt>s == sizeof(double)</tt> on entry and the returned value was \c
+ * p, then <tt>((double *)p)[il*inc]</tt> is the first nonzero entry in row \c
+ * i and <tt>((double *)p)[iu*inc]</tt> is the one past the last nonzero entry
+ * of the same row.
+ *
+ * @param[in]  m   Number of rows.
+ * @param[in]  n   Number of columns.
+ * @param[in]  kl  Number of subdiagonals.
+ * @param[in]  ku  Number of superdiagonals.
+ * @param[in]  a   BLAS-compatible general banded storage.
+ * @param[in]  lda Leading dimension for column-major ordering.
+ * @param[in]  s   Size of each matrix entry in bytes.
+ *                 For example, <tt>sizeof(double)</tt>.
+ * @param[in]  i   Desired row in the half-open range <tt>[0,m)</tt>.
+ * @param[out] il  First non-zero entry in row \c i.
+ * @param[out] iu  Last plus one entry in row \c i.
+ * @param[out] inc Increment between entries in row \c i.
+ *
+ * @return A pointer which, after been cast to match \c s, may be
+ *         dereferenced to access entries in rho \c i of \c a.
+ */
+void *suzerain_gbmatrix_row(int m, int n, int kl, int ku,
+                            void *a, int lda, size_t s, int i,
+                            int *il, int *iu, int *inc);
 
 #ifdef __cplusplus
 } /* extern "C" */
