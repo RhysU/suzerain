@@ -111,7 +111,7 @@ typedef struct {
  */
 void
 suzerain_rholut_imexop_apply(
-        const double phi,
+        const complex_double phi,
         const double km,
         const double kn,
         const suzerain_rholut_imexop_scenario * const s,
@@ -182,7 +182,7 @@ suzerain_rholut_imexop_apply(
  */
 void
 suzerain_rholut_imexop_packc(
-        const double phi,
+        const complex_double phi,
         const double km,
         const double kn,
         const suzerain_rholut_imexop_scenario * const s,
@@ -251,7 +251,7 @@ suzerain_rholut_imexop_packc(
  */
 void
 suzerain_rholut_imexop_packf(
-        const double phi,
+        const complex_double phi,
         const double km,
         const double kn,
         const suzerain_rholut_imexop_scenario * const s,

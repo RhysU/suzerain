@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     using suzerain::blas::iamax;
     using suzerain::blas::iamin;
     typedef double real_t;
-    typedef std::complex<double> complex_t;
+    typedef std::complex<real_t> complex_t;
 
     // Initialize discrete B-spline operators
     using suzerain::bspline;
@@ -37,9 +37,9 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     const int N = S*n;    // DOF for global operator
 
     // Initialize scenario parameters
-    const double phi = M_SQRT2/5;
-    const double km  = 7*M_E;
-    const double kn  = 3*M_PI;
+    const complex_t phi(M_SQRT2/5, M_LOG2E);
+    const real_t    km (7*M_E);
+    const real_t    kn (3*M_PI);
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     char equed;
     boost::scoped_array<real_t>    scale_r(new real_t[A.N]);
     boost::scoped_array<real_t>    scale_c(new real_t[A.N]);
-    double rcond;
+    real_t rcond;
     boost::scoped_array<real_t>    ferr(new real_t[N]);
     boost::scoped_array<real_t>    berr(new real_t[N]);
     boost::scoped_array<complex_t> work(new complex_t[2*A.N]);

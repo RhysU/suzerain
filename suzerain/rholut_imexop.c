@@ -21,7 +21,7 @@
 
 void
 suzerain_rholut_imexop_apply(
-        const double phi,
+        const complex_double phi,
         const double km,
         const double kn,
         const suzerain_rholut_imexop_scenario * const s,
