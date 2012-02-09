@@ -52,6 +52,7 @@
 #include "precision.hpp"
 #include "channel.hpp"
 #include "explicit_op.hpp"
+#include "hybrid_op.hpp"
 
 // Provided by channel_explicit_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
