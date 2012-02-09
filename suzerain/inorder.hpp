@@ -55,7 +55,7 @@ int wavenumber_max(const int N)
     return suzerain_inorder_wavenumber_max(N);
 }
 
-/** copydoc suzerain_inorder_wavenumber_valid() */
+/** @copydoc suzerain_inorder_wavenumber_valid() */
 inline
 bool wavenumber_valid(const int N, const int w)
 {
