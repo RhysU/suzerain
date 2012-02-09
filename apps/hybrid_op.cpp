@@ -18,12 +18,26 @@
 #include "nonlinear.hpp"
 #include "hybrid_op.hpp"
 
-#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
 #pragma warning(disable:383 1572)
+
+#pragma float_control(precise, on)
+#pragma fenv_access(on)
+#pragma float_control(except, on)
+#pragma fp_contract(off)
+static inline
+real_t twopiover(const real_t L)
+{
+    return 2*M_PI/L;
+}
+#pragma float_control(except, off)
+#pragma fenv_access(off)
+#pragma float_control(precise, off)
+#pragma fp_contract(on)
 
 namespace channel {
 
@@ -49,19 +63,69 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-// FIXME Implement
-//  SUZERAIN_UNUSED(substep_index);
-//
-//  // Verify required assumptions
-//  SUZERAIN_ENSURE(state.strides()[1] == 1);
-//  SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
-//  SUZERAIN_ENSURE(suzerain::multi_array::is_contiguous(state));
-//
-//  // Those assumptions holding, apply operator to each wall-normal pencil.
-//  const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-//  bop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
-}
+    using suzerain::inorder::wavenumber;
+    namespace field = channel::field;
+    SUZERAIN_UNUSED(substep_index);
 
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    // const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    // const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+    const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
+    const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
+
+    // Sidesteps assertions when local rank contains no wavespace information
+    if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
+
+    // Incoming state has wall-normal pencils of interleaved state scalars?
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
+    SUZERAIN_ENSURE(state.strides()[1] ==             1);
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
+    SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
+
+    // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
+    Eigen::Vector3c tmp(Ny*field::count);
+    suzerain_rholut_imexop_scenario s(this->imexop_s());
+    suzerain_rholut_imexop_ref   ref;
+    suzerain_rholut_imexop_refld ld;
+    common.imexop_ref(ref, ld);
+
+    // Iterate across local wavenumbers and apply operator "in-place".
+    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    for (int n = dkbz; n < dkez; ++n) {
+        const real_t kn = twopioverLz*wavenumber(dNz, n);
+        for (int m = dkbx; m < dkex; ++m) {
+            const real_t km = twopioverLx*wavenumber(dNx, m);
+
+            // Get pointer to (.,m,n) pencil
+            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+            // Copy pencil into temporary storage
+            suzerain::blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
+
+            // Accumulate result back into state storage
+            suzerain_rholut_imexop_accumulate(
+                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    tmp.data() + field::ndx::rho *Ny,
+                    tmp.data() + field::ndx::rhou*Ny,
+                    tmp.data() + field::ndx::rhov*Ny,
+                    tmp.data() + field::ndx::rhow*Ny,
+                    tmp.data() + field::ndx::rhoe*Ny,
+                    0.0,
+                    p + field::ndx::rho *Ny,
+                    p + field::ndx::rhou*Ny,
+                    p + field::ndx::rhov*Ny,
+                    p + field::ndx::rhow*Ny,
+                    p + field::ndx::rhoe*Ny);
+        }
+    }
+}
 
 void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,

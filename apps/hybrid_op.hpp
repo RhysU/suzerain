@@ -94,6 +94,18 @@ private:
     /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
 
+    /** Pack scenario parameters for rholut_imexop.h usage */
+    suzerain_rholut_imexop_scenario imexop_s() const
+    {
+        suzerain_rholut_imexop_scenario retval;
+        retval.Re    = scenario.Re;
+        retval.Pr    = scenario.Pr;
+        retval.Ma    = scenario.Ma;
+        retval.alpha = scenario.alpha;
+        retval.gamma = scenario.gamma;
+        return retval;
+    }
+
 };
 
 /**
