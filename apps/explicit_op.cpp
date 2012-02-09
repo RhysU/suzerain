@@ -15,6 +15,8 @@
 #include <suzerain/config.h>
 #endif
 
+#include "explicit_op.hpp"
+
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
@@ -26,7 +28,7 @@
 #include <suzerain/state.hpp>
 #include <suzerain/utility.hpp>
 
-#include "explicit_op.hpp"
+#include "nonlinear.hpp"
 
 #pragma warning(disable:383 1572)
 

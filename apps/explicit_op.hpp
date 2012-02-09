@@ -23,7 +23,7 @@
 
 #include "precision.hpp"
 #include "channel.hpp"
-#include "nonlinear_op.hpp"
+#include "nonlinear_fwd.hpp"
 
 #pragma warning(disable:383 1572)
 
