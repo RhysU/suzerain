@@ -84,10 +84,10 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
+    SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
 
     // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
     Eigen::Vector3c tmp(Ny*field::count);
@@ -156,10 +156,12 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     if (SUZERAIN_UNLIKELY(0U == input.shape()[1])) return;
 
     // Input and output state storage has contiguous wall-normal scalars?
+    // Furthermore, input has contiguous wall-normal pencils of all state?
     SUZERAIN_ENSURE(output.isIsomorphic(input));
-    SUZERAIN_ENSURE(input.shape()  [0]  ==  field::count);
-    SUZERAIN_ENSURE(input.shape()  [1]  == (unsigned) Ny);
-    SUZERAIN_ENSURE(input.strides()[1]  ==             1);
+    SUZERAIN_ENSURE(input.shape()   [0] ==  field::count);
+    SUZERAIN_ENSURE(input.strides() [0] == (unsigned) Ny);
+    SUZERAIN_ENSURE(input.shape()   [1] == (unsigned) Ny);
+    SUZERAIN_ENSURE(input.strides() [1] ==             1);
     SUZERAIN_ENSURE(output.strides()[1] ==             1);
 
     // Scratch for suzerain_rholut_imexop_accumulate usage
@@ -245,7 +247,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // See channel_treatment writeup for information on the steps below.
     // Steps may appear out of order relative to the writeup.
-    // Success of the zero-zero mode treatment relies on real-valued phi.
+    // For phi real, the implicit operator is purely real for km == kn == 0.
+    // Success of the zero-zero mode treatment relies on real-valued phi!
     SUZERAIN_ENSURE(phi.imag() == 0);
 
     // channel_treatment step (1) done during nonlinear operator application
