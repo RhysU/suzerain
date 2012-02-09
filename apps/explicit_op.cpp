@@ -15,20 +15,13 @@
 #include <suzerain/config.h>
 #endif
 
+#include "nonlinear.hpp"
 #include "explicit_op.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/error.h>
-#include <suzerain/math.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/mpi_datatype.hpp>
-#include <suzerain/mpi.hpp>
-#include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/utility.hpp>
-
-#include "nonlinear.hpp"
 
 #pragma warning(disable:383 1572)
 

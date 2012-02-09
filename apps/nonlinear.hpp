@@ -16,6 +16,9 @@
 
 #include "nonlinear_fwd.hpp"
 
+#include <suzerain/error.h>
+#include <suzerain/mpi_datatype.hpp>
+#include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
