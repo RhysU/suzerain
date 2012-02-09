@@ -27,56 +27,56 @@ namespace suzerain {
  */
 namespace inorder {
 
-/** @see suzerain_inorder_wavenumber() */
+/** @copydoc suzerain_inorder_wavenumber() */
 inline
 int wavenumber(const int N, const int i)
 {
     return suzerain_inorder_wavenumber(N, i);
 }
 
-/** @see suzerain_inorder_wavenumber_abs() */
+/** @copydoc suzerain_inorder_wavenumber_abs() */
 inline
 int wavenumber_abs(const int N, const int i)
 {
     return suzerain_inorder_wavenumber_abs(N, i);
 }
 
-/** @see suzerain_inorder_wavenumber_min() */
+/** @copydoc suzerain_inorder_wavenumber_min() */
 inline
 int wavenumber_min(const int N)
 {
     return suzerain_inorder_wavenumber_min(N);
 }
 
-/** @see suzerain_inorder_wavenumber_max() */
+/** @copydoc suzerain_inorder_wavenumber_max() */
 inline
 int wavenumber_max(const int N)
 {
     return suzerain_inorder_wavenumber_max(N);
 }
 
-/** see suzerain_inorder_wavenumber_valid() */
+/** copydoc suzerain_inorder_wavenumber_valid() */
 inline
 bool wavenumber_valid(const int N, const int w)
 {
     return suzerain_inorder_wavenumber_valid(N, w);
 }
 
-/** @see suzerain_inorder_wavenumber_diff() */
+/** @copydoc suzerain_inorder_wavenumber_diff() */
 inline
 int wavenumber_diff(const int N, const int dN, const int i)
 {
     return suzerain_inorder_wavenumber_diff(N, dN, i);
 }
 
-/** @see suzerain_inorder_wavenumber_translatable() */
+/** @copydoc suzerain_inorder_wavenumber_translatable() */
 inline
 int wavenumber_translatable(const int N, const int dN, const int i)
 {
     return suzerain_inorder_wavenumber_translatable(N, dN, i);
 }
 
-/** @see suzerain_inorder_wavenumber_translate() */
+/** @copydoc suzerain_inorder_wavenumber_translate() */
 inline
 void wavenumber_translate(const int S, const int T, const int tb, const int te,
                           int& sb1, int& se1, int& sb2, int& se2,
@@ -86,7 +86,7 @@ void wavenumber_translate(const int S, const int T, const int tb, const int te,
         S, T, tb, te, &sb1, &se1, &sb2, &se2, &tb1, &te1, &tb2, &te2);
 }
 
-/** @see suzerain_inorder_index() */
+/** @copydoc suzerain_inorder_index() */
 inline
 int index(const int N, const int w)
 {
