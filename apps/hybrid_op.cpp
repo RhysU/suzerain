@@ -293,13 +293,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // channel_treatment step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
-    //
-    // channel_treatment step (8) sets no-slip conditions
-    // on wall collocation points.
-    //
-    // channel_treatment step (9) sets isothermal conditions on wall
-    // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
-    const real_t inv_gamma_gamma1 = 1/(scenario.gamma*(scenario.gamma - 1));
 
     // Scratch for suzerain_rholut_imexop-based "inversion" using ZGBSVX
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
@@ -341,7 +334,13 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // b := P p
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1.0, p, 1, 0.0, b, 1);
 
-            // Apply isothermal, no slip conditions to tuple (papt, b)
+            // channel_treatment step (8) sets no-slip conditions
+            // on wall collocation points.
+            //
+            // channel_treatment step (9) sets isothermal conditions at walls
+            // using e_wall = rho_wall / (gamma * (gamma - 1)).
+            const real_t inv_gamma_gamma1
+                    = 1 / (scenario.gamma * (scenario.gamma - 1));
             // FIXME Implement boundary conditions
 
             // x := (LU)^-1 b using GBSVX
