@@ -75,11 +75,12 @@ typedef struct {
 } suzerain_rholut_imexop_refld;
 
 /**
- * Apply linear implicit operator \f$y \leftarrow{} \left(M + \varphi{}L\right)
- * x + \beta{} y\f$.  The matrix \f$L\f$ is a function of the provided
- * wavenumbers, scenario parameters, and wall-normal reference quantities.  The
- * problem size and discrete operators are taken from the provided B-spline
- * workspace \c w.  Input and output state variables must be stride one.
+ * Accumulate the linear implicit operator application \f$y \leftarrow{}
+ * \left(M + \varphi{}L\right) x + \beta{} y\f$.  The matrix \f$L\f$ is a
+ * function of the provided wavenumbers, scenario parameters, and wall-normal
+ * reference quantities.  The problem size and discrete operators are taken
+ * from the provided B-spline workspace \c w.  Input and output state variables
+ * must be stride one.
  *
  * Providing a \c NULL value for any input and its corresponding output (e.g.
  * \c in_rho and \c out_rho) omits the corresponding part of the operator.
@@ -110,7 +111,7 @@ typedef struct {
  * @see Model documentation in <tt>writeups/derivation.tex</tt> for full details.
  */
 void
-suzerain_rholut_imexop_apply(
+suzerain_rholut_imexop_accumulate(
         const complex_double phi,
         const double km,
         const double kn,

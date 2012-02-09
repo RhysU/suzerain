@@ -20,7 +20,7 @@
 #include <suzerain/bsmbsm.h>
 
 void
-suzerain_rholut_imexop_apply(
+suzerain_rholut_imexop_accumulate(
         const complex_double phi,
         const double km,
         const double kn,
