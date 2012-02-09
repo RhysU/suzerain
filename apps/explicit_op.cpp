@@ -310,22 +310,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-NonlinearOperator::NonlinearOperator(
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        OperatorCommonBlock &common,
-        const boost::shared_ptr<
-            const channel::manufactured_solution>& msoln)
-    : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
-      common(common),
-      msoln(msoln)
-{
-    // NOP
-}
-
 std::vector<real_t> NonlinearOperator::applyOperator(
             const real_t time,
             suzerain::ContiguousState<4,complex_t> &swave,

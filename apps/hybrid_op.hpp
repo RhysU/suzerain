@@ -120,7 +120,11 @@ public:
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common,
             const boost::shared_ptr<
-                  const channel::manufactured_solution>& msoln);
+                  const channel::manufactured_solution>& msoln)
+        : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+          common(common),
+          msoln(msoln)
+    {}
 
     virtual std::vector<real_t> applyOperator(
             const real_t time,
