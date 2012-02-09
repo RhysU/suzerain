@@ -51,9 +51,9 @@ channel_init_svnrev.h: $(channel_init_SOURCES) $(libchannel_la_SOURCES)
 bin_PROGRAMS             += channel_explicit
 channel_explicit_LDADD    = libchannel.la
 channel_explicit_SOURCES  = channel_explicit.cpp
-channel_explicit_SOURCES += explicit_op.cpp explicit_op.hpp
-channel_explicit_SOURCES += hybrid_op.hpp
 channel_explicit_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
+channel_explicit_SOURCES += explicit_op.cpp explicit_op.hpp
+channel_explicit_SOURCES += hybrid_op.cpp   hybrid_op.hpp
 channel_explicit_SOURCES += channel_explicit_svnrev.c
 BUILT_SOURCES            += channel_explicit_svnrev.h
 channel_explicit_svnrev.h: $(channel_explicit_SOURCES) $(libchannel_la_SOURCES)

@@ -62,7 +62,8 @@ public:
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
-            const suzerain::bsplineop &bop);
+            const suzerain::bsplineop &bop,
+            OperatorCommonBlock &common);
 
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
@@ -90,7 +91,7 @@ private:
     /** Precomputed integration coefficients */
     Eigen::VectorXr bulkcoeff;
 
-    /** Houses data required for \ref invertMassPlusScaledOperator */
+    /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
 
 };
