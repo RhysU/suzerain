@@ -19,6 +19,7 @@
 #include "hybrid_op.hpp"
 
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bsmbsm.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
@@ -65,6 +66,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 {
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
+    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
@@ -103,7 +105,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         for (int m = dkbx; m < dkex; ++m) {
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
-            // Get pointer to (.,m,n) pencil
+            // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
             // Copy pencil into temporary storage
@@ -137,6 +139,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 {
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
+    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
@@ -205,7 +208,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Shorthand
     using Eigen::Map;
     using Eigen::ArrayXc;
+    using Eigen::ArrayXi;
     using Eigen::ArrayXr;
+    using Eigen::ArrayXXc;
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
@@ -296,37 +301,94 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
     const real_t inv_gamma_gamma1 = 1/(scenario.gamma*(scenario.gamma - 1));
 
-    // Scratch for suzerain_rholut_imexop_accumulate usage
+    // Scratch for suzerain_rholut_imexop-based "inversion" using ZGBSVX
+    suzerain_bsmbsm A = suzerain_bsmbsm_construct(
+            (int) field::count, Ny, bop.max_kl(), bop.max_ku());
+    ArrayXXc papt(A.LD,      A.N);                     // Holds PAP^T
+    ArrayXXc lu  (A.LD+A.KL, A.N);                     // Holds LU of PAP^T
+    ArrayXc buf(std::max(A.ld*A.n, 4*A.N));            // For packc, b, x, work
+    complex_t * const b    = buf.data();               // ...parcel out b
+    complex_t * const x    = buf.data() +   A.N;       // ...parcel out x
+    complex_t * const work = buf.data() + 2*A.N;       // ...parcel out work
+    ArrayXr rcrwork(3*A.N);                            // For r, c, rwork
+    real_t * const r     = rcrwork.data();             // ...parcel out r
+    real_t * const c     = rcrwork.data() +   A.N;     // ...parcel out c
+    real_t * const rwork = rcrwork.data() + 2*A.N;     // ...parcel out rwork
+    ArrayXi ipiv(A.N);                                 // For ipiv
+
+    // Pack reference details for suzerain_rholut_imexop routines
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-//  FIXME (3), (8), and (9)
-//  // Possible pre-solve since L = 0.
-//  {
-//      // Prepare a state view of density locations at lower and upper walls
-//      using boost::multi_array_types::index_range;
-//      suzerain::multi_array::ref<complex_t,4>::array_view<3>::type view
-//              = state[boost::indices[ndx::rho]
-//                                    [index_range(wall_lower,
-//                                                 wall_upper + 1,
-//                                                 wall_upper - wall_lower)]
-//                                    [index_range()]
-//                                    [index_range()]];
-//
-//      // Prepare functor setting pointwise BCs given density locations
-//      const IsothermalNoSlipFunctor bc_functor(
-//              state.strides()[0], scenario.gamma);
-//
-//      // Apply the functor to all wall-only density locations
-//      suzerain::multi_array::for_each(view, bc_functor);
-//  }
-//
-//
-//  // channel_treatment step (3) performs the usual operator solve
-//  base::invertMassPlusScaledOperator(
-//          phi, state, delta_t, substep_index, iota);
+    // Iterate across local wavenumbers and "invert" operator "in-place".
+    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    for (int n = dkbz; n < dkez; ++n) {
+        const real_t kn = twopioverLz*wavenumber(dNz, n);
+        for (int m = dkbx; m < dkex; ++m) {
+            const real_t km = twopioverLx*wavenumber(dNx, m);
+
+            // Get pointer to (.,m,n)-th state pencil
+            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+            // Form wavenumber-dependent PAP^T within papt
+            suzerain_rholut_imexop_packc(
+                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
+                    buf.data(), &A, papt.data());
+
+            // b := P p
+            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1.0, p, 1, 0.0, b, 1);
+
+            // Apply isothermal, no slip conditions to tuple (papt, b)
+            // FIXME Implement boundary conditions
+
+            // x := (LU)^-1 b using GBSVX
+            //
+            // "Why GBSVX?" you ask.  "It's expensive!" you rightly observe.
+            //
+            // Well, we might as well get our money's worth out of the
+            // factorization once we've paid for it.  If GBSVX is too
+            // expensive, GBSV is a less intensive option.  I have unfounded
+            // hunches that (a) the incremental cost from GBSV to GBSVX is low
+            // once everything is in L2 cache and (b) always solving the
+            // equations well using iterative refinement will save us from the
+            // woes of modest resolution and possibly less-than-perfectly
+            // conditioned operators stemming from
+            // reference-values-during-transients and high wavenumbers.
+            //
+            // TODO Track and report statistics on rcond, ferr, and berr
+            real_t rcond, ferr, berr;
+            char equed;
+            suzerain_lapack_zgbsvx(/* fact  */ 'E',
+                                   /* trans */ 'N',
+                                   /* n     */ A.N,
+                                   /* kl    */ A.KL,
+                                   /* ku    */ A.KU,
+                                   /* nrhs  */ 1,
+                                   /* ab    */ papt.data(),
+                                   /* ldab  */ A.LD,
+                                   /* afb   */ lu.data(),
+                                   /* ldafb */ A.LD + A.KL,
+                                   /* ipiv  */ ipiv.data(),
+                                   /* equed */ &equed,
+                                   /* r     */ r,
+                                   /* c     */ c,
+                                   /* b     */ b,
+                                   /* ldb   */ A.N,
+                                   /* x     */ x,
+                                   /* ldx   */ A.N,
+                                   /* rcond */ &rcond,
+                                   /* ferr  */ &ferr,
+                                   /* berr  */ &berr,
+                                   /* work  */ work,
+                                   /* rwork */ rwork);
+
+            // p := P^T x
+            suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1.0, x, 1, 0.0, p, 1);
+        }
+    }
 
     if (constrain_bulk_rhou && has_zero_zero_modes) {
 
