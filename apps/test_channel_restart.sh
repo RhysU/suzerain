@@ -5,7 +5,7 @@ set -eu
 source "`dirname $0`/test_channel_setup.sh"
 
 # Shorthand
-explicit="prunq ../channel_explicit"
+explicit="prun ../channel_explicit"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.

@@ -5,7 +5,7 @@ set -eu
 source "`dirname $0`/test_channel_setup.sh"
 
 # Shorthand
-explicit="prunq ../channel_explicit"
+explicit="prun ../channel_explicit"
 
 # Run each test case in this file under the following circumstances
 # (which can be overridden by providing the environment variable METACASES).
@@ -19,8 +19,8 @@ eval "$METACASE"
 banner "Preparation of physical-space version of wave-based test field"
 (
     cd $testdir
-    runq ../channel_explicit mms0.h5 --restart_destination "pmms#.h5" \
-                                     --advance_nt=0 --restart_physical
+    run ../channel_explicit mms0.h5 --restart_destination "pmms#.h5" \
+                                    --advance_nt=0 --restart_physical
     $explicit mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                       --restart_physical
     differ pmms0.h5 a0.h5

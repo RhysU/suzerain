@@ -9,7 +9,7 @@ banner "Restarting from current laminar restart file"
 (
     : ${FIELDSDIR:=.}
     cd $testdir
-    runq ../channel_explicit "${FIELDSDIR}/laminar_k08.h5" --advance_nt=0
+    run ../channel_explicit "${FIELDSDIR}/laminar_k08.h5" --advance_nt=0
 )
 
 # Ensure our restart-loading routines remain backwards-compatible
@@ -17,5 +17,5 @@ banner "Restarting from legacy laminar restart file (r22804)"
 (
     : ${FIELDSDIR:=.}
     cd $testdir
-    runq ../channel_explicit "${FIELDSDIR}/legacy_r22804.h5" --advance_nt=0
+    run ../channel_explicit "${FIELDSDIR}/legacy_r22804.h5" --advance_nt=0
 )
