@@ -15,7 +15,7 @@
 #ifndef __SUZERAIN_GBMATRIX_H
 #define __SUZERAIN_GBMATRIX_H
 
-#include <suzerain/common.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,39 +24,40 @@ extern "C" {
 /**
  * Compute the BLAS-compatible offset to <tt>a(i,j)</tt> for general
  * banded matrices <tt>a(i,j) -> storage(ku+i-j,j)</tt> where storage
- * is column-major with LDA lda.  When comparing with BLAS documentation, note
- * missing constant one compared to Fortran due to C's 0-indexing.
+ * is column-major with leading dimension ld.  When comparing with BLAS
+ * documentation, note missing constant one compared to Fortran due to
+ * C's 0-indexing.
  *
- * @param lda Leading dimension for column-major ordering
- * @param kl  Number of superdiagonals
- * @param ku  Number of subdiagonals
- * @param i   Row index desired
- * @param j   Column index desired
+ * @param ld Leading dimension for column-major ordering
+ * @param kl Number of superdiagonals
+ * @param ku Number of subdiagonals
+ * @param i  Row index desired
+ * @param j  Column index desired
  *
  * @return Column-major offset where entry <tt>(i,j)</tt> is stored.
  */
-inline
-int suzerain_gbmatrix_offset(int lda, int kl, int ku, int i, int j) {
+static inline
+int suzerain_gbmatrix_offset(int ld, int kl, int ku, int i, int j) {
     /* Unused parameters present to be consistent with gbmatrix_in_band */
-    SUZERAIN_UNUSED(kl);
-    return j*lda+(ku+i-j);
+    (void) kl;
+    return j*ld+(ku+i-j);
 }
 
 /**
  * Determine if indices fall within the band of a general banded matrix.
  *
- * @param lda Leading dimension for column-major ordering
- * @param kl  Number of superdiagonals
- * @param ku  Number of subdiagonals
- * @param i   Row index desired
- * @param j   Column index desired
+ * @param ld Leading dimension for column-major ordering
+ * @param kl Number of superdiagonals
+ * @param ku Number of subdiagonals
+ * @param i  Row index desired
+ * @param j  Column index desired
  *
  * @return true if entry <tt>(i,j)</tt> falls within the matrix's band.
  */
-inline
-int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
+static inline
+int suzerain_gbmatrix_in_band(int ld, int kl, int ku, int i, int j) {
     /* Unused parameters present to be consistent with gbmatrix_offset */
-    SUZERAIN_UNUSED(lda);
+    (void) ld;
     return j-ku <= i && i <= j+kl;
 }
 
@@ -85,7 +86,7 @@ int suzerain_gbmatrix_in_band(int lda, int kl, int ku, int i, int j) {
  * @return A pointer which, after been cast to match \c s, may be
  *         dereferenced to access entries in rho \c i of \c a.
  */
-inline
+static inline
 void *suzerain_gbmatrix_row(int m, int n, int kl, int ku,
                             void *a, int ld, size_t s, int i,
                             int *jl, int *ju, int *inc)
@@ -101,7 +102,7 @@ void *suzerain_gbmatrix_row(int m, int n, int kl, int ku,
     // Now our row problem looks just like indexing the i-th column of A
     *jl = i - ku;     if (*jl < 0) *jl = 0;
     *ju = i + kl + 1; if (*ju > m) *ju = m;
-    return ((char*)a) + s*(ku*(*inc) - i*(ld - *inc));
+    return ((char*)a) + s*(ku*(*inc) + i*(ld - *inc));
 }
 
 #ifdef __cplusplus

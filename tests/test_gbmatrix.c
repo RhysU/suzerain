@@ -1,6 +1,8 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+#include <suzerain/common.h>
+#pragma hdrstop
 #include <suzerain/gbmatrix.h>
 #include <gsl/gsl_test.h>
 
@@ -318,10 +320,165 @@ static void test_suzerain_gbmatrix_in_band()
     gsl_test_int(in_band(lb, bl, bu, 6, 8), 1, "line %d", __LINE__);
 }
 
+static void test_suzerain_gbmatrix_row()
+{
+    int * r;
+    int jl, ju, inc;
+
+    // Matrix A
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 0, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 4, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 11, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 12, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 13, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 14, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 1, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 5, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 21, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 22, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 23, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 24, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 25, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 2, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 6, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 31, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 32, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 33, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 34, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 35, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 36, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 3, &jl, &ju, &inc);
+    gsl_test_int(jl, 1, "line %d", __LINE__);
+    gsl_test_int(ju, 7, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 42, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 43, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 44, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 45, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 46, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 47, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 4, &jl, &ju, &inc);
+    gsl_test_int(jl, 2, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 53, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 54, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 55, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 56, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 57, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 58, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 5, &jl, &ju, &inc);
+    gsl_test_int(jl, 3, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 64, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 65, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 66, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 67, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 68, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 6, &jl, &ju, &inc);
+    gsl_test_int(jl, 4, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 75, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 76, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 77, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 78, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 7, &jl, &ju, &inc);
+    gsl_test_int(jl, 5, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 86, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 87, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 88, "line %d", __LINE__);
+
+    r = row(am, an, al, au, (void *)a, la, sizeof(int), 8, &jl, &ju, &inc);
+    gsl_test_int(jl, 6, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 97, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 98, "line %d", __LINE__);
+
+
+    // Matrix B
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 0, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 4, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 11, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 12, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 13, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 14, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 1, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 5, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 21, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 22, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 23, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 24, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 25, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 2, &jl, &ju, &inc);
+    gsl_test_int(jl, 0, "line %d", __LINE__);
+    gsl_test_int(ju, 6, "line %d", __LINE__);
+    gsl_test_int(r[0*inc], 31, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 32, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 33, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 34, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 35, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 36, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 3, &jl, &ju, &inc);
+    gsl_test_int(jl, 1, "line %d", __LINE__);
+    gsl_test_int(ju, 7, "line %d", __LINE__);
+    gsl_test_int(r[1*inc], 42, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 43, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 44, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 45, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 46, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 47, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 4, &jl, &ju, &inc);
+    gsl_test_int(jl, 2, "line %d", __LINE__);
+    gsl_test_int(ju, 8, "line %d", __LINE__);
+    gsl_test_int(r[2*inc], 53, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 54, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 55, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 56, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 57, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 58, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 5, &jl, &ju, &inc);
+    gsl_test_int(jl, 3, "line %d", __LINE__);
+    gsl_test_int(ju, 9, "line %d", __LINE__);
+    gsl_test_int(r[3*inc], 64, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 65, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 66, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 67, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 68, "line %d", __LINE__);
+    gsl_test_int(r[8*inc], 69, "line %d", __LINE__);
+
+    r = row(bm, bn, bl, bu, (void *)b, lb, sizeof(int), 6, &jl, &ju, &inc);
+    gsl_test_int(jl, 4, "line %d", __LINE__);
+    gsl_test_int(ju, 9, "line %d", __LINE__);
+    gsl_test_int(r[4*inc], 75, "line %d", __LINE__);
+    gsl_test_int(r[5*inc], 76, "line %d", __LINE__);
+    gsl_test_int(r[6*inc], 77, "line %d", __LINE__);
+    gsl_test_int(r[7*inc], 78, "line %d", __LINE__);
+    gsl_test_int(r[8*inc], 79, "line %d", __LINE__);
+}
+
 int main()
 {
     test_suzerain_gbmatrix_offset();
     test_suzerain_gbmatrix_in_band();
+    test_suzerain_gbmatrix_row();
 
     exit(gsl_test_summary());
 }
