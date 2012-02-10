@@ -20,11 +20,15 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/countof.h>
+#include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
 #pragma warning(disable:383 1572)
+
+#define COUNTOF(expr) SUZERAIN_COUNTOF(expr)
 
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
@@ -315,6 +319,27 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
+    // Prepare mapped PAP^T indices for boundary condition implementation
+    const int papt_noslip[2][3] = {
+        {
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhou)*A.n + wall_lower ),
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhov)*A.n + wall_lower ),
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhow)*A.n + wall_lower )
+        }, {
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhou)*A.n + wall_upper ),
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhov)*A.n + wall_upper ),
+            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhow)*A.n + wall_upper )
+        }
+    };
+    const int papt_rho[2] = {
+        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rho )*A.n + wall_lower ),
+        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rho )*A.n + wall_upper ),
+    };
+    const int papt_rhoe[2] = {
+        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhoe)*A.n + wall_lower ),
+        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhoe)*A.n + wall_upper ),
+    };
+
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Does not shortcircuit on only-dealiased state (TODO should it?)
     for (int n = dkbz; n < dkez; ++n) {
@@ -338,10 +363,54 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // on wall collocation points.
             //
             // channel_treatment step (9) sets isothermal conditions at walls
-            // using e_wall = rho_wall / (gamma * (gamma - 1)).
-            const real_t inv_gamma_gamma1
-                    = 1 / (scenario.gamma * (scenario.gamma - 1));
-            // FIXME Implement boundary conditions
+            // using rho_wall = e_wall * gamma * (gamma - 1).
+            //
+            // Access is one pass per row (w/ others hopefully nearby in cache).
+            // Attempt made to not unnecessarily disturb matrix conditioning.
+            // With apologies to whomever next needs to decipher this horror.
+
+            // Zero RHS of momentum and energy equations at lower, upper walls
+            for (size_t wall = 0; wall < 2; ++wall) {
+                for (size_t eqn = 0; eqn < COUNTOF(papt_noslip[wall]); ++eqn) {
+                    b[papt_noslip[wall][eqn]] = 0;
+                }
+                b[papt_rhoe[wall]] = 0;
+            }
+
+            // Modify the equations within PAP^T for lower, upper walls
+            for (size_t wall = 0; wall < 2; ++wall) {
+                int start, end, inc;
+
+                // Zero all row entries but the mass matrix one on the diagonal
+                // Then momentum equations are like const*rho{u,v,w} = 0.
+                for (size_t eqn = 0; eqn < COUNTOF(papt_noslip[wall]); ++eqn) {
+                    complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
+                            A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.KL,
+                            sizeof(complex_t), papt_noslip[wall][eqn],
+                            &start, &end, &inc);
+                    for (int entry = start; entry < end; ++entry) {
+                        if (entry != papt_noslip[wall][eqn]) {
+                            row[entry*inc] = 0;
+                        }
+                    }
+                }
+
+                // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
+                complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
+                        A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.KL,
+                        sizeof(complex_t), papt_rhoe[wall], &start, &end, &inc);
+                for (int entry = start; entry < end; ++entry) {
+                    if (entry == papt_rho[wall]) {
+                        // NOP
+                    } else if (entry == papt_rhoe[wall]) {
+                        row[entry*inc] = row[papt_rho[wall]*inc]
+                                       * s.gamma*(1 - s.gamma);
+                    } else {
+                        row[entry*inc] = 0;
+                    }
+                }
+
+            }
 
             // x := (LU)^-1 b using GBSVX
             //
