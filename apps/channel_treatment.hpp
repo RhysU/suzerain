@@ -67,7 +67,7 @@ public:
      * The BaseClass must perform the following steps.
      * <ul>
      * <li>
-     *     \channel_treatment step (3) performs the operator solve which for
+     *     channel_treatment step (3) performs the operator solve which for
      *     the implicit treatment must be combined with boundary conditions
      * </li><li>
      *     channel_treatment step (8) sets no-slip conditions
