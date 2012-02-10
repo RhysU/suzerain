@@ -193,9 +193,17 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // any asymmetry.  Combat the bulk density's very, very small tendency to
     // drift by adding an integral constraint that the bulk density stay fixed
     // at a target value.  Approach follows that of the bulk momentum forcing.
+    //
+    // Forcing density at the walls as that no longer permits simultaneously
+    // solving the zero-zero modes and the forcing constraint.  (at least not
+    // without less-straightforward boundary treatments).  The complexity
+    // arises from rhoe = rho / (gamma*(gamma-1)) not holding when rho at the
+    // zero-zero wall modes has a non-zero imaginary part.
     if (constrain_bulk_rho && has_zero_zero_modes) {
         Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
-        mean_rho.imag().setOnes();
+        mean_rho.imag()[wall_lower] = 0;
+        mean_rho.imag().segment(1, Ny-2).setOnes();
+        mean_rho.imag()[wall_upper] = 0;
     }
 
     // The BaseClass is responsible for all of the following steps:
