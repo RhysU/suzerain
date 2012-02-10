@@ -9,7 +9,7 @@ source "`dirname $0`/test_channel_setup.sh"
 banner "Generating serial result for comparison purposes"
 (
     cd $testdir
-    run ../channel_explicit mms0.h5 --restart_destination "serial#.h5" $ADVANCE
+    run ../channel mms0.h5 --restart_destination "serial#.h5" $ADVANCE
 )
 
 # Run each test case in this file under the following circumstances
@@ -22,7 +22,7 @@ eval "$METACASE"
 banner "Equivalence of serial and parallel execution"
 (
     cd $testdir
-    prun ../channel_explicit mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prun ../channel mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ_exclude $exclude_datasets_bar --delta=2e-14 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do

@@ -15,7 +15,7 @@ do
         prereq_status=0
     fi
 done
-for binary in ./channel_init ./channel_explicit
+for binary in ./channel_init ./channel
 do
     if [ ! -x $binary ]; then
         echo "ERROR: $binary not found or not executable" 1>&2

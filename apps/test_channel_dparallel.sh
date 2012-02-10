@@ -9,8 +9,8 @@ source "`dirname $0`/test_channel_setup.sh"
 
 # Shorthand for serial/parallel run truncating to only 1D problem
 # Such runs certainly stress the MPI pencil decomposition routines
-s_explicit="runq  ../channel_explicit --Nx=1 --Nz=1"
-p_explicit="prunq ../channel_explicit --Nx=1 --Nz=1"
+s_channel="runq  ../channel --Nx=1 --Nz=1"
+p_channel="prunq ../channel --Nx=1 --Nz=1"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
@@ -29,16 +29,16 @@ eval "$METACASE"
 banner "Idempotence of serial versus degenerate parallel without time advance"
 (
     cd $testdir
-    $s_explicit mms0.h5 --restart_destination "a#.h5" --advance_nt=0
-    $p_explicit mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $P
+    $s_channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0
+    $p_channel mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $P
     differ_exclude --use-system-epsilon $exclude_datasets a0.h5 b0.h5
 )
 
 banner "Idempotence of serial versus degenerate parallel with time advance"
 (
     cd $testdir
-    $s_explicit mms0.h5 --restart_destination "a#.h5" --advance_nt=3
-    $p_explicit mms0.h5 --restart_destination "b#.h5" --advance_nt=3 $P
+    $s_channel mms0.h5 --restart_destination "a#.h5" --advance_nt=3
+    $p_channel mms0.h5 --restart_destination "b#.h5" --advance_nt=3 $P
     differ --use-system-epsilon a0.h5 b0.h5
 )
 

@@ -48,15 +48,15 @@ BUILT_SOURCES        += channel_init_svnrev.h
 channel_init_svnrev.h: $(channel_init_SOURCES) $(libchannel_la_SOURCES)
 	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
-bin_PROGRAMS             += channel_explicit
-channel_explicit_LDADD    = libchannel.la
-channel_explicit_SOURCES  = channel_explicit.cpp
-channel_explicit_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
-channel_explicit_SOURCES += explicit_op.cpp explicit_op.hpp
-channel_explicit_SOURCES += hybrid_op.cpp   hybrid_op.hpp
-channel_explicit_SOURCES += channel_explicit_svnrev.c
-BUILT_SOURCES            += channel_explicit_svnrev.h
-channel_explicit_svnrev.h: $(channel_explicit_SOURCES) $(libchannel_la_SOURCES)
+bin_PROGRAMS    += channel
+channel_LDADD    = libchannel.la
+channel_SOURCES  = channel_main.cpp
+channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
+channel_SOURCES += explicit_op.cpp explicit_op.hpp
+channel_SOURCES += hybrid_op.cpp   hybrid_op.hpp
+channel_SOURCES += channel_main_svnrev.c
+BUILT_SOURCES   += channel_main_svnrev.h
+channel_main_svnrev.h: $(channel_SOURCES) $(libchannel_la_SOURCES)
 	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS         += channel_mean
