@@ -48,7 +48,7 @@ test_os_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS               += test_parcel
 EXTRA_PROGRAMS      += test_parcel
-test_parcel_SOURCES  = test_parcel.cpp
+test_parcel_SOURCES  = test_parcel.c
 test_parcel_LDADD    = ../suzerain/libsuzerain.la
 
 TESTS                   += test_blas_et_al
