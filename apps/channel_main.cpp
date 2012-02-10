@@ -8,7 +8,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// channel_explicit.cpp: A fully explicit channel calculation using Suzerain
+// channel_main.cpp: A channel simulation driver using Suzerain
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -54,7 +54,7 @@
 #include "explicit_op.hpp"
 #include "hybrid_op.hpp"
 
-// Provided by channel_explicit_svnrev.{c,h} to speed recompilation
+// Provided by channel_main_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
 
 #pragma warning(disable:383 1572)
@@ -988,7 +988,7 @@ int main(int argc, char **argv)
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
-                        (std::string("channel_explicit ") + revstr).c_str());
+                        (std::string("channel ") + revstr).c_str());
         channel::store(h, scenario);
         channel::store(h, grid, scenario.Lx, scenario.Lz);
         channel::store(h, b, bop, gop);

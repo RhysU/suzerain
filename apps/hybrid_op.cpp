@@ -8,7 +8,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// explicit_op.hpp: Operators for channel_explicit
+// explicit_op.hpp: Operators for channel simulation
 // $Id$
 
 #ifdef HAVE_CONFIG_H
