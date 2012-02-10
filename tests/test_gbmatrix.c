@@ -159,9 +159,169 @@ static void test_suzerain_gbmatrix_offset()
     gsl_test_int(b[offset(lb, bl, bu, 6, 8)], 79, "line %d", __LINE__);
 }
 
+static void test_suzerain_gbmatrix_in_band()
+{
+    // Matrix A
+
+    gsl_test_int(in_band(la, al, au, 0, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 4), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 5), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 0, 7), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 1, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 5), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 1, 7), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 2, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 2, 7), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 3, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 3, 7), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 4, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 4, 7), 1, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 5, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 5, 7), 1, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 6, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 3), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 6, 7), 1, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 7, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 3), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 4), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 7, 7), 1, "line %d", __LINE__);
+
+    gsl_test_int(in_band(la, al, au, 8, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 3), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 4), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 5), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(la, al, au, 8, 7), 1, "line %d", __LINE__);
+
+
+    // Matrix B
+
+    gsl_test_int(in_band(lb, bl, bu, 0, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 4), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 5), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 7), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 0, 8), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 1, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 5), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 7), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 1, 8), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 2, 0), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 6), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 7), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 2, 8), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 3, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 1), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 7), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 3, 8), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 4, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 2), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 7), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 4, 8), 0, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 5, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 3), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 7), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 5, 8), 1, "line %d", __LINE__);
+
+    gsl_test_int(in_band(lb, bl, bu, 6, 0), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 1), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 2), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 3), 0, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 4), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 5), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 6), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 7), 1, "line %d", __LINE__);
+    gsl_test_int(in_band(lb, bl, bu, 6, 8), 1, "line %d", __LINE__);
+}
+
 int main()
 {
     test_suzerain_gbmatrix_offset();
+    test_suzerain_gbmatrix_in_band();
 
     exit(gsl_test_summary());
 }
