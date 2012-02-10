@@ -188,6 +188,51 @@ public:
     /** @return the "--verbose-all" flag count from the command line.  */
     int verbose_all() { return verbose_all_; }
 
+    /**
+     * Ensures that \c opt1 and \c opt2 were not both specified.
+     * Should only be invoked after process().
+     *
+     * @param opt1 First option name to check
+     * @param opt2 Second option name to check
+     *
+     * @throw std::invalid_argument if both opt1 and opt2 were supplied.
+     */
+    template<typename String>
+    void conflicting_options(const String opt1, const String opt2) const
+    {
+        // Routine is Copyright Vladimir Prus 2002-2004.
+        // Distributed under the Boost Software License, Version 1.0.
+        // (See http://www.boost.org/LICENSE_1_0.txt)
+        if (   variables_.count(opt1) && !variables_[opt1].defaulted()
+            && variables_.count(opt2) && !variables_[opt2].defaulted())
+            throw std::invalid_argument(std::string("Conflicting options '")
+                                        + opt1 + "' and '" + opt2 + "'.");
+    }
+
+    /**
+     * Ensures that if \c for_what was specified then \c required_option was
+     * specified too.  Should only be invoked after process().
+     *
+     * @param for_what First option name to check
+     * @param required_option Second option name to check
+     *
+     * @throw std::invalid_argument if \c for_what was specified without \c
+     * required_option.
+     */
+    template<typename String>
+    void option_dependency(const String for_what,
+                           const String required_option) const
+    {
+        // Routine is Copyright Vladimir Prus 2002-2004.
+        // Distributed under the Boost Software License, Version 1.0.
+        // (See http://www.boost.org/LICENSE_1_0.txt)
+        if (variables_.count(for_what) && !variables_[for_what].defaulted())
+            if (   variables_.count(required_option) == 0
+                || variables_[required_option].defaulted())
+                throw std::invalid_argument(std::string("Option '") + for_what
+                            + "' requires option '" + required_option + "'.");
+    }
+
 protected:
 
     /**
