@@ -21,6 +21,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/countof.h>
+#include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
@@ -429,29 +430,35 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // TODO Track and report statistics on rcond, ferr, and berr
             real_t rcond, ferr, berr;
             char equed;
-            suzerain_lapack_zgbsvx(/* fact  */ 'E',
-                                   /* trans */ 'N',
-                                   /* n     */ A.N,
-                                   /* kl    */ A.KL,
-                                   /* ku    */ A.KU,
-                                   /* nrhs  */ 1,
-                                   /* ab    */ papt.data(),
-                                   /* ldab  */ A.LD,
-                                   /* afb   */ lu.data(),
-                                   /* ldafb */ A.LD + A.KL,
-                                   /* ipiv  */ ipiv.data(),
-                                   /* equed */ &equed,
-                                   /* r     */ r,
-                                   /* c     */ c,
-                                   /* b     */ b,
-                                   /* ldb   */ A.N,
-                                   /* x     */ x,
-                                   /* ldx   */ A.N,
-                                   /* rcond */ &rcond,
-                                   /* ferr  */ &ferr,
-                                   /* berr  */ &berr,
-                                   /* work  */ work,
-                                   /* rwork */ rwork);
+            const int info = suzerain_lapack_zgbsvx(/* fact  */ 'E',
+                                                    /* trans */ 'N',
+                                                    /* n     */ A.N,
+                                                    /* kl    */ A.KL,
+                                                    /* ku    */ A.KU,
+                                                    /* nrhs  */ 1,
+                                                    /* ab    */ papt.data(),
+                                                    /* ldab  */ A.LD,
+                                                    /* afb   */ lu.data(),
+                                                    /* ldafb */ A.LD + A.KL,
+                                                    /* ipiv  */ ipiv.data(),
+                                                    /* equed */ &equed,
+                                                    /* r     */ r,
+                                                    /* c     */ c,
+                                                    /* b     */ b,
+                                                    /* ldb   */ A.N,
+                                                    /* x     */ x,
+                                                    /* ldx   */ A.N,
+                                                    /* rcond */ &rcond,
+                                                    /* ferr  */ &ferr,
+                                                    /* berr  */ &berr,
+                                                    /* work  */ work,
+                                                    /* rwork */ rwork);
+            if (info) {
+                char buffer[80];
+                snprintf(buffer, sizeof(buffer),
+                        "suzerain_lapack_zgbsvx reported error %d", info);
+                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
+            }
 
             // p := P^T x
             suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1.0, x, 1, 0.0, p, 1);
