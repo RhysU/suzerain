@@ -379,34 +379,34 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             // Modify the equations within PAP^T for lower, upper walls
             for (size_t wall = 0; wall < 2; ++wall) {
-                int start, end, inc;
+                int begin, end, inc;
 
                 // Zero all row entries but the mass matrix one on the diagonal
                 // Then momentum equations are like const*rho{u,v,w} = 0.
                 for (size_t eqn = 0; eqn < COUNTOF(papt_noslip[wall]); ++eqn) {
                     complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
-                            A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.KL,
+                            A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.LD,
                             sizeof(complex_t), papt_noslip[wall][eqn],
-                            &start, &end, &inc);
-                    for (int entry = start; entry < end; ++entry) {
-                        if (entry != papt_noslip[wall][eqn]) {
-                            row[entry*inc] = 0;
+                            &begin, &end, &inc);
+                    for (int rowndx = begin; rowndx < end; ++rowndx) {
+                        if (rowndx != papt_noslip[wall][eqn]) {
+                            row[rowndx*inc] = 0;
                         }
                     }
                 }
 
                 // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
                 complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
-                        A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.KL,
-                        sizeof(complex_t), papt_rhoe[wall], &start, &end, &inc);
-                for (int entry = start; entry < end; ++entry) {
-                    if (entry == papt_rho[wall]) {
+                        A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.LD,
+                        sizeof(complex_t), papt_rhoe[wall], &begin, &end, &inc);
+                for (int rowndx = begin; rowndx < end; ++rowndx) {
+                    if (rowndx == papt_rho[wall]) {
                         // NOP
-                    } else if (entry == papt_rhoe[wall]) {
-                        row[entry*inc] = row[papt_rho[wall]*inc]
-                                       * s.gamma*(1 - s.gamma);
+                    } else if (rowndx == papt_rhoe[wall]) {
+                        row[rowndx*inc] = row[papt_rho[wall]*inc]
+                                        * s.gamma*(1 - s.gamma);
                     } else {
-                        row[entry*inc] = 0;
+                        row[rowndx*inc] = 0;
                     }
                 }
 
