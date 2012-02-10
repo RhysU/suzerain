@@ -200,32 +200,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space
 
-    // channel_treatment step (8) sets no-slip conditions
-    // on wall collocation points.
-    //
-    // channel_treatment step (9) sets isothermal conditions on wall
-    // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
-    //
-    // Possible pre-solve since L = 0.
-    {
-        // Prepare a state view of density locations at lower and upper walls
-        using boost::multi_array_types::index_range;
-        suzerain::multi_array::ref<complex_t,4>::array_view<3>::type view
-                = state[boost::indices[ndx::rho]
-                                      [index_range(wall_lower,
-                                                   wall_upper + 1,
-                                                   wall_upper - wall_lower)]
-                                      [index_range()]
-                                      [index_range()]];
-
-        // Prepare functor setting pointwise BCs given density locations
-        const IsothermalNoSlipFunctor bc_functor(
-                state.strides()[0], scenario.gamma);
-
-        // Apply the functor to all wall-only density locations
-        suzerain::multi_array::for_each(view, bc_functor);
-    }
-
     // Integral constraints enabled only when parameters are non-inf, non-NaN.
     // Allow disabling these to meet manufactured solution verification needs.
     const bool constrain_bulk_rhou
@@ -264,6 +238,32 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         mean_rho.imag()[wall_lower] = 0;
         mean_rho.imag().segment(1, Ny-2).setOnes();
         mean_rho.imag()[wall_upper] = 0;
+    }
+
+    // channel_treatment step (8) sets no-slip conditions
+    // on wall collocation points.
+    //
+    // channel_treatment step (9) sets isothermal conditions on wall
+    // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
+    //
+    // Possible pre-solve since L = 0.
+    {
+        // Prepare a state view of density locations at lower and upper walls
+        using boost::multi_array_types::index_range;
+        suzerain::multi_array::ref<complex_t,4>::array_view<3>::type view
+                = state[boost::indices[ndx::rho]
+                                      [index_range(wall_lower,
+                                                   wall_upper + 1,
+                                                   wall_upper - wall_lower)]
+                                      [index_range()]
+                                      [index_range()]];
+
+        // Prepare functor setting pointwise BCs given density locations
+        const IsothermalNoSlipFunctor bc_functor(
+                state.strides()[0], scenario.gamma);
+
+        // Apply the functor to all wall-only density locations
+        suzerain::multi_array::for_each(view, bc_functor);
     }
 
     // channel_treatment step (3) performs the usual operator solve
