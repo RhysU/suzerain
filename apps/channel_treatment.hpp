@@ -195,7 +195,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // at a target value.  Approach follows that of the bulk momentum forcing.
     //
     // Forcing density at the walls as that no longer permits simultaneously
-    // solving the zero-zero modes and the forcing constraint.  (at least not
+    // solving the zero-zero modes and the forcing constraint (at least not
     // without less-straightforward boundary treatments).  The complexity
     // arises from rhoe = rho / (gamma*(gamma-1)) not holding when rho at the
     // zero-zero wall modes has a non-zero imaginary part.
