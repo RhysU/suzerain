@@ -120,8 +120,10 @@ if test "$ac_test_CFLAGS" != "set"; then
 
     gnu)
         # Default optimization flags for gcc on all systems.
-        # Somehow -O3 does not imply -fomit-frame-pointer on ia32
-        CFLAGS="-O3 -fomit-frame-pointer"
+        CFLAGS="-O3"
+
+        # -O3 does not imply -fomit-frame-pointer on ia32
+        AX_APPEND_COMPILE_FLAGS([-fomit-frame-pointer])
 
         # tune for the host by default
         AX_APPEND_COMPILE_FLAGS([-mtune=native])
@@ -129,7 +131,7 @@ if test "$ac_test_CFLAGS" != "set"; then
         # -malign-double for x86 systems
         AX_APPEND_COMPILE_FLAGS([-malign-double])
 
-        #  -fstrict-aliasing for gcc-2.95+
+        # -fstrict-aliasing for gcc-2.95+
         AX_APPEND_COMPILE_FLAGS([-fstrict-aliasing])
 
         # We enable "unsafe" fp optimization with other compilers, too
