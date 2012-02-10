@@ -92,7 +92,7 @@ suzerain_gbdmv_d(
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$.
  *
- * \copydetails suzerain_gbdmv_c
+ * \copydetails suzerain_gbdmv_s
  */
 int
 suzerain_gbdmv_sc(
