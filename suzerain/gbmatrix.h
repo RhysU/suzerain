@@ -15,6 +15,7 @@
 #ifndef __SUZERAIN_GBMATRIX_H
 #define __SUZERAIN_GBMATRIX_H
 
+#include <assert.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -91,18 +92,34 @@ void *suzerain_gbmatrix_row(int m, int n, int kl, int ku,
                             void *a, int ld, size_t s, int i,
                             int *jl, int *ju, int *inc)
 {
+    (void) m;
+    assert(m  >= 0);
+    assert(n  >= 0);
+    assert(kl >= 0);
+    assert(ku >= 0);
+    assert(ld >= kl + ku);
+
     // Column-major banded matrix layout: a[(ku + i)*inc + j*(ld - inc)]
-
+    //
+    // Logically, here's what needs to happen...
+    //
     // Transpose the matrix storage information to traverse by rows
-    *inc = ld - 1;                          // Start from column-major...
-    a = ((char*)a) + s*(ku - kl*(*inc));    // ...and traverse a by rows
-    kl ^= ku; ku ^= kl; kl ^= ku;           // Swap kl and ku for A^T
-    m  ^= n;  n  ^= m;  m  ^= n;            // Swap m and n for A^T
-
+    // *inc = ld - 1;                          // Start from column-major...
+    // a = ((char*)a) + s*(ku - kl*(*inc));    // ...and traverse a by rows
+    // kl ^= ku; ku ^= kl; kl ^= ku;           // Swap kl and ku for A^T
+    // m  ^= n;  n  ^= m;  m  ^= n;            // Swap m and n for A^T
+    //
     // Now our row problem looks just like indexing the i-th column of A
-    *jl = i - ku;     if (*jl < 0) *jl = 0;
-    *ju = i + kl + 1; if (*ju > m) *ju = m;
-    return ((char*)a) + s*(ku*(*inc) + i*(ld - *inc));
+    // *jl = i - ku;     if (*jl < 0) *jl = 0;
+    // *ju = i + kl + 1; if (*ju > m) *ju = m;
+    // return ((char*)a) + s*(ku*(*inc) + i*(ld - *inc));
+    //
+    // In practice, here's the shortest path there...
+
+    *inc = ld - 1;
+    *jl  = i - kl;     if (*jl < 0) *jl = 0;
+    *ju  = i + ku + 1; if (*ju > n) *ju = n;
+    return ((char*)a) + s*(ku + i);
 }
 
 #ifdef __cplusplus
