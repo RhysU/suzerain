@@ -1,6 +1,6 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2012 The PECOS Development Team
+// Copyright (C) 2011, 2012 The PECOS Development Team
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -195,7 +195,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // at a target value.  Approach follows that of the bulk momentum forcing.
     if (constrain_bulk_rho && has_zero_zero_modes) {
         Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
-        mean_rho.imag().setConstant(1);
+        mean_rho.imag().setOnes();
     }
 
     // The BaseClass is responsible for all of the following steps:

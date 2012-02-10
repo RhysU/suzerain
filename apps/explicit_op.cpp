@@ -255,7 +255,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // at a target value.  Approach follows that of the bulk momentum forcing.
     if (constrain_bulk_rho && has_zero_zero_modes) {
         Map<ArrayXc> mean_rho(state[ndx::rho].origin(), Ny);
-        mean_rho.imag().setConstant(1);
+        mean_rho.imag().setOnes();
     }
 
     // channel_treatment step (3) performs the usual operator solve
