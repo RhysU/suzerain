@@ -41,6 +41,11 @@ test_error_LDADD    = ../suzerain/libsuzerain.la
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS                 += test_gbmatrix
+EXTRA_PROGRAMS        += test_gbmatrix
+test_gbmatrix_SOURCES  = test_gbmatrix.c
+test_gbmatrix_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS           += test_os
 EXTRA_PROGRAMS  += test_os
 test_os_SOURCES  = test_os.c
