@@ -50,6 +50,7 @@
 
 #include "logging.hpp"
 #include "precision.hpp"
+#include "channel_treatment.hpp"
 #include "channel.hpp"
 #include "explicit_op.hpp"
 #include "hybrid_op.hpp"
