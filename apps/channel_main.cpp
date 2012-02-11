@@ -1101,21 +1101,40 @@ int main(int argc, char **argv)
           << suzerain::multi_array::strides_array(*state_nonlinear));
 
     // Prepare chosen time stepping scheme and required operators
+    //
+    // Operators are managed via shared_ptrs for both type erasure
+    // (to avoid depending on specific operator details) and to
+    // facilitate runtime selection of operators.
+    //
+    // The linear state type chosen for ILinearOperator is a superclass of both
+    // ContiguousState and InterleavedState to allow swapping one for another
+    // if so desired.  However, this is unlikely to be useful in conjunction
+    // with hybrid implicit/explicit operators.
     common_block.setZero(grid.dN.y());
     suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
                 timedef.evmagfactor);
-    channel::ChannelTreatment<channel::BsplineMassOperatorIsothermal> L(
-                scenario, grid, *dgrid, *b, *bop, common_block);
-    channel::NonlinearOperator N(
-                scenario, grid, *dgrid, *b, *bop, common_block, msoln);
+
+    typedef suzerain::timestepper::lowstorage::ILinearOperator<
+            suzerain::multi_array::ref<complex_t,4>,
+            nonlinear_state_type
+        > linear_operator_type;
+    shared_ptr<linear_operator_type> L(new
+            channel::ChannelTreatment<channel::BsplineMassOperatorIsothermal>(
+                scenario, grid, *dgrid, *b, *bop, common_block));
+
+    typedef suzerain::timestepper::INonlinearOperator<
+            nonlinear_state_type
+        > nonlinear_operator_type;
+    shared_ptr<nonlinear_operator_type> N(new channel::NonlinearOperator(
+            scenario, grid, *dgrid, *b, *bop, common_block, msoln));
 
     // Prepare TimeController for managing the time advance
     // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
-    // (Spatial discretization) is modified for dealiasing and included here.
+    // (Spatial discretization) accounts for dealiasing and included here.
     using suzerain::timestepper::TimeController;
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
                 m, delta_t_allreducer,
-                L, real_t(1)/(grid.dN.x()*grid.dN.z()), N,
+                *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
