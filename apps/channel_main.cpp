@@ -1104,7 +1104,7 @@ int main(int argc, char **argv)
     common_block.setZero(grid.dN.y());
     suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
                 timedef.evmagfactor);
-    channel::BsplineMassOperatorIsothermal L(
+    channel::ChannelTreatment<channel::BsplineMassOperatorIsothermal> L(
                 scenario, grid, *dgrid, *b, *bop, common_block);
     channel::NonlinearOperator N(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln);

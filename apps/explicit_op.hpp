@@ -8,7 +8,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// explicit_op.hpp: Operators for channel simulation
+// explicit_op.hpp: Fully explicit Navier--Stokes operators
 // $Id$
 
 #ifndef EXPLICIT_OP_HPP
@@ -125,25 +125,16 @@ private:
 };
 
 /**
- * A mass operator that forces bulk momentum and provides no slip, isothermal
- * walls.  It requires interoperation with NonlinearOperator via
- * OperatorCommonBlock.
- *
- * During \ref invertMassPlusScaledOperator implicit momentum forcing is
- * applied following the section of <tt>writeups/channel_treatment.tex</tt>
- * titled "Enforcing a target bulk momentum via the linear operator" and using
- * information from OperatorCommonBlock::u().
- *
- * Also during \ref invertMassPlusScaledOperator, OperatorCommonBlock::f(),
- * OperatorCommonBlock::f_dot_u(), and OperatorCommonBlock::qb() are
- * accumulated using ILowStorageMethod::iota().
+ * A mass operator that provides no slip, isothermal walls.  It requires
+ * interoperation with NonlinearOperator via OperatorCommonBlock.
  */
 class BsplineMassOperatorIsothermal
-  : public BsplineMassOperator
+    : public BsplineMassOperator
 {
-public:
 
     typedef BsplineMassOperator base;
+
+public:
 
     BsplineMassOperatorIsothermal(
             const suzerain::problem::ScenarioDefinition<real_t> &scenario,
@@ -151,8 +142,26 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
-            OperatorCommonBlock &common);
+            OperatorCommonBlock &common)
+        : BsplineMassOperator(scenario, grid, dgrid, b, bop),
+          common(common)
+    {}
 
+    /**
+     * Performs the following steps:
+     * <ul>
+     * <li>
+     *     channel_treatment step (3) performs the operator solve which for
+     *     the implicit treatment must be combined with boundary conditions
+     * </li><li>
+     *     channel_treatment step (8) sets no-slip conditions
+     *     on wall collocation points.
+     * </li><li>
+     * </li>
+     *     channel_treatment step (9) sets isothermal conditions at walls
+     *     using rho_wall = e_wall * gamma * (gamma - 1).
+     * </ul>
+     */
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             suzerain::multi_array::ref<complex_t,4> &state,
@@ -161,9 +170,6 @@ public:
             const real_t iota) const;
 
 protected:
-
-    /** Precomputed integration coefficients */
-    Eigen::VectorXr bulkcoeff;
 
     /** Houses data required for \ref invertMassPlusScaledOperator */
     OperatorCommonBlock &common;
