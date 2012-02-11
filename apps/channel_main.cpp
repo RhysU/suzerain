@@ -829,6 +829,8 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
+    bool use_explicit = false;
+    bool use_implicit = false;
     bool default_advance_nt;
     {
         suzerain::ProgramOptions options(
@@ -851,7 +853,19 @@ int main(int argc, char **argv)
         options.add_definition(
                 const_cast<SignalDefinition&>(sigdef));
 
+        options.add_options()
+            ("explicit", "Perform purely explicit time advance")
+            ("implicit", "Perform hybrid implicit/explicit time advance")
+            ;
         std::vector<std::string> positional = options.process(argc, argv);
+
+        // Select type of timestepping operators to use
+        options.conflicting_options("implicit", "explicit");
+        if (options.variables().count("implicit")) {
+            use_implicit = true;
+        } else {
+            use_explicit = true;
+        }
 
         // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
@@ -1114,19 +1128,29 @@ int main(int argc, char **argv)
     suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
                 timedef.evmagfactor);
 
-    typedef suzerain::timestepper::lowstorage::ILinearOperator<
+    shared_ptr<suzerain::timestepper::lowstorage::ILinearOperator<
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type
-        > linear_operator_type;
-    shared_ptr<linear_operator_type> L(new
-            channel::ChannelTreatment<channel::BsplineMassOperatorIsothermal>(
-                scenario, grid, *dgrid, *b, *bop, common_block));
-
-    typedef suzerain::timestepper::INonlinearOperator<
+        > > L;
+    shared_ptr<suzerain::timestepper::INonlinearOperator<
             nonlinear_state_type
-        > nonlinear_operator_type;
-    shared_ptr<nonlinear_operator_type> N(new channel::NonlinearOperator(
-            scenario, grid, *dgrid, *b, *bop, common_block, msoln));
+        > > N;
+
+    using channel::ChannelTreatment;
+    if (use_explicit) {
+        INFO0("Initializing explicit timestepping operators");
+        L.reset(new ChannelTreatment<channel::BsplineMassOperatorIsothermal>(
+                    scenario, grid, *dgrid, *b, *bop, common_block));
+        N.reset(new channel::NonlinearOperator(
+                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
+    } else if (use_implicit) {
+        INFO0("Initializing hybrid implicit/explicit timestepping operators");
+        FATAL0("FIXME: Implement");
+        return EXIT_FAILURE;
+    } else {
+        FATAL0("Sanity error in operator selection");
+        return EXIT_FAILURE;
+    }
 
     // Prepare TimeController for managing the time advance
     // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
