@@ -30,20 +30,9 @@
 namespace channel {
 
 /**
- * A hybrid implicit operator that forces bulk momentum and provides no slip,
- * isothermal walls.  It requires interoperation with HybridNonlinearOperator
- * via OperatorCommonBlock.
- *
- * Implicit treatment follows "Numerical considerations" within
- * <tt>writeups/derivation.tex</tt>.  During \ref invertMassPlusScaledOperator
- * implicit momentum forcing is applied following the section of
- * <tt>writeups/channel_treatment.tex</tt> titled "Enforcing a target bulk
- * momentum via the linear operator" and using information from
- * OperatorCommonBlock::u().
- *
- * Also during \ref invertMassPlusScaledOperator, OperatorCommonBlock::f(),
- * OperatorCommonBlock::f_dot_u(), and OperatorCommonBlock::qb() are
- * accumulated using ILowStorageMethod::iota().
+ * A hybrid implicit operator that provides no slip, isothermal walls.  It
+ * requires interoperation with HybridNonlinearOperator via
+ * OperatorCommonBlock.
  */
 class HybridIsothermalLinearOperator
   : public suzerain::OperatorBase<real_t>,
@@ -63,7 +52,10 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
-            OperatorCommonBlock &common);
+            OperatorCommonBlock &common)
+        : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+          common(common)
+    {}
 
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
@@ -71,25 +63,37 @@ public:
              const component delta_t,
              const std::size_t substep_index) const;
 
-     virtual void accumulateMassPlusScaledOperator(
-             const complex_t &phi,
-             const suzerain::multi_array::ref<complex_t,4> &input,
-             const complex_t &beta,
-             suzerain::ContiguousState<4,complex_t> &output,
-             const component delta_t,
-             const std::size_t substep_index) const;
+    virtual void accumulateMassPlusScaledOperator(
+            const complex_t &phi,
+            const suzerain::multi_array::ref<complex_t,4> &input,
+            const complex_t &beta,
+            suzerain::ContiguousState<4,complex_t> &output,
+            const component delta_t,
+            const std::size_t substep_index) const;
 
-     virtual void invertMassPlusScaledOperator(
-             const complex_t &phi,
-             suzerain::multi_array::ref<complex_t,4> &state,
-             const component delta_t,
-             const std::size_t substep_index,
-             const real_t iota) const;
+    /**
+     * Performs the following steps:
+     * <ul>
+     * <li>
+     *     channel_treatment step (3) performs the operator solve which for
+     *     the implicit treatment must be combined with boundary conditions
+     * </li><li>
+     *     channel_treatment step (8) sets no-slip conditions
+     *     on wall collocation points.
+     * </li><li>
+     * </li>
+     *     channel_treatment step (9) sets isothermal conditions at walls
+     *     using rho_wall = e_wall * gamma * (gamma - 1).
+     * </ul>
+     */
+    virtual void invertMassPlusScaledOperator(
+            const complex_t &phi,
+            suzerain::multi_array::ref<complex_t,4> &state,
+            const component delta_t,
+            const std::size_t substep_index,
+            const real_t iota) const;
 
 private:
-
-    /** Precomputed integration coefficients */
-    Eigen::VectorXr bulkcoeff;
 
     /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
