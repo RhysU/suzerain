@@ -1149,7 +1149,6 @@ int main(int argc, char **argv)
                     scenario, grid, *dgrid, *b, *bop, common_block));
         N.reset(new channel::HybridNonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
-        return EXIT_FAILURE;
     } else {
         FATAL0("Sanity error in operator selection");
         return EXIT_FAILURE;
