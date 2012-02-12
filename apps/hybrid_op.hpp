@@ -93,10 +93,12 @@ public:
             const std::size_t substep_index,
             const real_t iota) const;
 
-private:
+protected:
 
     /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
+
+private:
 
     /** Pack scenario parameters for rholut_imexop.h usage */
     suzerain_rholut_imexop_scenario imexop_s() const

@@ -1145,7 +1145,10 @@ int main(int argc, char **argv)
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
-        FATAL0("FIXME: Implement");
+        L.reset(new ChannelTreatment<channel::HybridIsothermalLinearOperator>(
+                    scenario, grid, *dgrid, *b, *bop, common_block));
+        N.reset(new channel::HybridNonlinearOperator(
+                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
         return EXIT_FAILURE;
     } else {
         FATAL0("Sanity error in operator selection");
