@@ -81,7 +81,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
 
     // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
-    Eigen::Vector3c tmp(Ny*field::count);
+    Eigen::VectorXc tmp(Ny*field::count);
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
