@@ -395,6 +395,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 char buffer[80];
                 snprintf(buffer, sizeof(buffer),
                         "suzerain_lapack_zgbsvx reported error %d", info);
+#ifndef NDEBUG
+                std::cerr << buffer << ": Banded PAP^T = " << std::endl;
+                std::cerr << papt << std::endl;
+#endif
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
 
