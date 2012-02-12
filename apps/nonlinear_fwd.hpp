@@ -151,19 +151,20 @@ public:
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
                     suzerain_rholut_imexop_refld &ld)
     {
-        ld.nu         = 1; ref.nu         = ref_nu().data();
-        ld.ux         = 1; ref.ux         = ref_ux().data();
-        ld.uy         = 1; ref.uy         = ref_uy().data();
-        ld.uz         = 1; ref.uz         = ref_uz().data();
-        ld.nuux       = 1; ref.nuux       = ref_nuux().data();
-        ld.nuuy       = 1; ref.nuuy       = ref_nuuy().data();
-        ld.nuuz       = 1; ref.nuuz       = ref_nuuz().data();
-        ld.m_gradrho  = 1; ref.m_gradrho  = ref_m_gradrho().data();
-        ld.ex_gradrho = 1; ref.ex_gradrho = ref_ex_gradrho().data();
-        ld.ey_gradrho = 1; ref.ey_gradrho = ref_ey_gradrho().data();
-        ld.ez_gradrho = 1; ref.ez_gradrho = ref_ez_gradrho().data();
-        ld.e_divm     = 1; ref.e_divm     = ref_e_divm().data();
-        ld.e_deltarho = 1; ref.e_deltarho = ref_e_deltarho().data();
+        const int inc = refs.colStride();
+        ld.nu         = inc; ref.nu         = ref_nu().data();
+        ld.ux         = inc; ref.ux         = ref_ux().data();
+        ld.uy         = inc; ref.uy         = ref_uy().data();
+        ld.uz         = inc; ref.uz         = ref_uz().data();
+        ld.nuux       = inc; ref.nuux       = ref_nuux().data();
+        ld.nuuy       = inc; ref.nuuy       = ref_nuuy().data();
+        ld.nuuz       = inc; ref.nuuz       = ref_nuuz().data();
+        ld.m_gradrho  = inc; ref.m_gradrho  = ref_m_gradrho().data();
+        ld.ex_gradrho = inc; ref.ex_gradrho = ref_ex_gradrho().data();
+        ld.ey_gradrho = inc; ref.ey_gradrho = ref_ey_gradrho().data();
+        ld.ez_gradrho = inc; ref.ez_gradrho = ref_ez_gradrho().data();
+        ld.e_divm     = inc; ref.e_divm     = ref_e_divm().data();
+        ld.e_deltarho = inc; ref.e_deltarho = ref_e_deltarho().data();
     }
 
     /** @} */
