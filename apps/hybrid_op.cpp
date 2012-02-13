@@ -346,20 +346,19 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // channel_treatment step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
 
-    // Scratch for suzerain_rholut_imexop-based "inversion" using ZGBSVX
+    // Details for suzerain_rholut_imexop-based "inversion" using ?GBSVX
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
             (int) field::count, Ny, bop.max_kl(), bop.max_ku());
-    ArrayXXc papt(A.LD,      A.N);                     // Holds PAP^T
-    ArrayXXc lu  (A.LD+A.KL, A.N);                     // Holds LU of PAP^T
-    ArrayXc buf(std::max(A.ld*A.n, 4*A.N));            // For packc, b, x, work
-    complex_t * const b    = buf.data();               // ...parcel out b
-    complex_t * const x    = buf.data() +   A.N;       // ...parcel out x
-    complex_t * const work = buf.data() + 2*A.N;       // ...parcel out work
-    ArrayXr rcrwork(3*A.N);                            // For r, c, rwork
-    real_t * const r     = rcrwork.data();             // ...parcel out r
-    real_t * const c     = rcrwork.data() +   A.N;     // ...parcel out c
-    real_t * const rwork = rcrwork.data() + 2*A.N;     // ...parcel out rwork
-    ArrayXi ipiv(A.N);                                 // For ipiv
+    ArrayXXc buf  (A.ld,      A.n);                     // For packc calls
+    ArrayXXc papt (A.LD,      A.N);                     // Holds PAP^T
+    ArrayXXc lu   (A.LD+A.KL, A.N);                     // Holds LU of PAP^T
+    ArrayXi  ipiv (A.N);                                // For solve...
+    ArrayXr  r    (A.N);
+    ArrayXr  c    (A.N);
+    ArrayXc  b    (A.N);
+    ArrayXc  x    (A.N);
+    ArrayXc  work (2*A.N);
+    ArrayXr  rwork(A.N);
 
     // Pack reference details for suzerain_rholut_imexop routines
     suzerain_rholut_imexop_scenario s(this->imexop_s());
@@ -387,7 +386,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
-            // Process for the rest of the solve loop logically looks like
+            // Given state pencil "p" the rest of the solve loop looks like
             //
             //     b := P p          using suzerain_bsmbsm_?aPxpby
             //     apply BC to RHS   using IsothermalNoSlipPAPTEnforcer
@@ -423,49 +422,58 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
 // FIXME Enable zero-zero-specific logic
 //          if (km || kn) {  // Complex-valued solve with one right hand side
+            if (true) {  // Complex-valued solve with one right hand side
 
                 method = "zgbsvx";
-                suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b, 1);
-                bc_enforcer.rhs(b);
+                suzerain_bsmbsm_zaPxpby(
+                        'N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
+                bc_enforcer.rhs(b.data());
                 bc_enforcer.op(A, papt.data(), papt.colStride());
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     papt.data(), papt.colStride(), lu.data(), lu.colStride(),
-                    ipiv.data(), &equed, r, c, b, A.N, x, A.N,
-                    &rcond, ferr, berr, work, rwork);
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x, 1, 0., p, 1);
+                    ipiv.data(), &equed, r.data(), c.data(),
+                    b.data(), b.size(), x.data(), x.size(),
+                    &rcond, ferr, berr, work.data(), rwork.data());
+                suzerain_bsmbsm_zaPxpby(
+                        'T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
 
-//          } else {         // Two real-valued solves for zero-zero mode
+            } else {         // Two real-valued solves for zero-zero mode
 
-//              // Process one right hand side for each of real(p) and imag(p).
-//              //
-//              // The "Complex" operator is actually real-valued, we repack
-//              // PAP^T as a real operator for the solution process.  This
-//              // allows two real RHS in the same storage as one complex RHS;
-//              // convince yourself that DGBSVX can use ZGBSVX working storage.
-//              method = "dgbsvx";
-//              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p),     2,
-//                                                     0., ((real_t*)b),     1);
-//              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p)+1,   2,
-//                                                     0., ((real_t*)b)+A.N, 1);
-//              bc_enforcer.rhs(((real_t*)b));
-//              bc_enforcer.rhs(((real_t*)b)+A.N);
-//              for (int i = 0; i < papt.size(); ++i) {  // Pack real operator
-//                  ((real_t*)papt.data())[i] = papt(i).real();
-//              }
-//              bc_enforcer.op(A, (real_t*)papt.data(), papt.colStride());
-//              info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU, 2,
-//                          (real_t*)papt.data(), papt.colStride(),
-//                          (real_t*)lu.data(), lu.colStride(),
-//                          ipiv.data(), &equed, r, c, (real_t*)b, A.N,
-//                          (real_t*)x, A.N, &rcond, ferr, berr,
-//                          (real_t*)work, (int*)rwork);
-//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x),     1,
-//                                                     0., ((real_t*)p),     2);
-//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x)+A.N, 1,
-//                                                     0., ((real_t*)p)+1,   2);
-//              ferr[0] = std::max(ferr[0], ferr[1]);
-//              berr[0] = std::max(berr[0], berr[1]);
-//          }
+                // Process one right hand side for each of real(p) and imag(p).
+                //
+                // The "Complex" operator is actually real-valued, we repack
+                // PAP^T as a real operator for the solution process.  This
+                // allows two real RHS in the same storage as one complex RHS;
+                // convince yourself that DGBSVX can use ZGBSVX working storage.
+                method = "dgbsvx";
+                suzerain_bsmbsm_daPxpby(
+                        'N', A.S, A.n, 1., ((real_t*)p),            2,
+                                       0., ((real_t*)b.data()),     1);
+                suzerain_bsmbsm_daPxpby(
+                        'N', A.S, A.n, 1., ((real_t*)p)+1,          2,
+                                       0., ((real_t*)b.data())+A.N, 1);
+                bc_enforcer.rhs(((real_t*)b.data()));
+                bc_enforcer.rhs(((real_t*)b.data())+A.N);
+                for (int i = 0; i < papt.size(); ++i) {  // Pack real operator
+                    ((real_t*)papt.data())[i] = papt(i).real();
+                }
+                bc_enforcer.op(A, (real_t*)papt.data(), papt.colStride());
+                info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU, 2,
+                            (real_t*)papt.data(), papt.colStride(),
+                            (real_t*)lu.data(), lu.colStride(),
+                            ipiv.data(), &equed, r.data(), c.data(),
+                            (real_t*)b.data(), b.size(),
+                            (real_t*)x.data(), x.size(), &rcond, ferr, berr,
+                            (real_t*)work.data(), (int*)rwork.data());
+                suzerain_bsmbsm_daPxpby(
+                        'T', A.S, A.n, 1., ((real_t*)x.data()),     1,
+                                       0., ((real_t*)p),            2);
+                suzerain_bsmbsm_daPxpby(
+                        'T', A.S, A.n, 1., ((real_t*)x.data())+A.N, 1,
+                                       0., ((real_t*)p)+1,          2);
+                ferr[0] = std::max(ferr[0], ferr[1]);
+                berr[0] = std::max(berr[0], berr[1]);
+            }
 
             if (info) {
                 char buffer[80];
