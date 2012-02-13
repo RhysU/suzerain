@@ -429,7 +429,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 bc_enforcer.rhs(b);
                 bc_enforcer.op(A, papt.data(), papt.colStride());
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                    papt.data(), papt.colStride(), lu.data(),lu.colStride(),
+                    papt.data(), papt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r, c, b, A.N, x, A.N,
                     &rcond, ferr, berr, work, rwork);
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x, 1, 0., p, 1);
