@@ -414,10 +414,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // transients and high wavenumbers).  So we'll run with GBSVX until
             // it's demonstrably a bad idea.
 
-            const char fact    = 'E';       // Common inputs for {z,d}gbsvx
-            const char trans   = 'N';
-            const char *method;
-            int info;                       // Common outputs for {z,d}gbsvx
+            const char *method;               // Used for error reporting
+            static const char fact    = 'E';  // Common inputs for {z,d}gbsvx
+            static const char trans   = 'N';
+            int info;                         // Common outputs for {z,d}gbsvx
             char equed;
             real_t rcond, ferr[2], berr[2];
 
@@ -427,11 +427,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 method = "zgbsvx";
                 suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b, 1);
                 bc_enforcer.rhs(b);
-                bc_enforcer.op(A, papt.data(), A.LD);
-                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU,
-                            1, papt.data(), A.LD, lu.data(), A.LD + A.KL,
-                            ipiv.data(), &equed, r, c, b, A.N, x, A.N, &rcond,
-                            ferr, berr, work, rwork);
+                bc_enforcer.op(A, papt.data(), papt.colStride());
+                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
+                    papt.data(), papt.colStride(), lu.data(),lu.colStride(),
+                    ipiv.data(), &equed, r, c, b, A.N, x, A.N,
+                    &rcond, ferr, berr, work, rwork);
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x, 1, 0., p, 1);
 
 //          } else {         // Two real-valued solves for zero-zero mode
@@ -446,21 +446,22 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 //              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p),     2,
 //                                                     0., ((real_t*)b),     1);
 //              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p)+1,   2,
-//                                                     0., ((real_t*)b)+A.n, 1);
+//                                                     0., ((real_t*)b)+A.N, 1);
 //              bc_enforcer.rhs(((real_t*)b));
-//              bc_enforcer.rhs(((real_t*)b)+A.n);
+//              bc_enforcer.rhs(((real_t*)b)+A.N);
 //              for (int i = 0; i < papt.size(); ++i) {  // Pack real operator
 //                  ((real_t*)papt.data())[i] = papt(i).real();
 //              }
-//              bc_enforcer.op(A, (real_t*)papt.data(), A.LD);
-//              info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU,
-//                          2, (real_t*)papt.data(), A.LD,
-//                          (real_t*)lu.data(), A.LD + A.KL, ipiv.data(),
-//                          &equed, r, c, (real_t*)b, A.N, (real_t*)x, A.N,
-//                          &rcond, ferr, berr, (real_t*)work, (int*)rwork);
+//              bc_enforcer.op(A, (real_t*)papt.data(), papt.colStride());
+//              info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU, 2,
+//                          (real_t*)papt.data(), papt.colStride(),
+//                          (real_t*)lu.data(), lu.colStride(),
+//                          ipiv.data(), &equed, r, c, (real_t*)b, A.N,
+//                          (real_t*)x, A.N, &rcond, ferr, berr,
+//                          (real_t*)work, (int*)rwork);
 //              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x),     1,
 //                                                     0., ((real_t*)p),     2);
-//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x)+A.n, 1,
+//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x)+A.N, 1,
 //                                                     0., ((real_t*)p)+1,   2);
 //              ferr[0] = std::max(ferr[0], ferr[1]);
 //              berr[0] = std::max(berr[0], berr[1]);
