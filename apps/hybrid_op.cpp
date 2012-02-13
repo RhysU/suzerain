@@ -20,6 +20,7 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.hpp>
@@ -306,11 +307,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const real_t iota) const
 {
     // Shorthand
-    using Eigen::Map;
-    using Eigen::ArrayXc;
-    using Eigen::ArrayXi;
-    using Eigen::ArrayXr;
-    using Eigen::ArrayXXc;
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
@@ -347,18 +343,34 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // implicit treatment must be combined with boundary conditions
 
     // Details for suzerain_rholut_imexop-based "inversion" using ?GBSVX
+    // Macros used to automatically increase paranoia during debug builds
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
             (int) field::count, Ny, bop.max_kl(), bop.max_ku());
-    ArrayXXc buf  (A.ld,      A.n);                     // For packc calls
-    ArrayXXc papt (A.LD,      A.N);                     // Holds PAP^T
-    ArrayXXc lu   (A.LD+A.KL, A.N);                     // Holds LU of PAP^T
-    ArrayXi  ipiv (A.N);                                // For solve...
-    ArrayXr  r    (A.N);
-    ArrayXr  c    (A.N);
-    ArrayXc  b    (A.N);
-    ArrayXc  x    (A.N);
-    ArrayXc  work (2*A.N);
-    ArrayXr  rwork(A.N);
+#ifndef NDEBUG
+# define SCRATCH_C(type, name, ...) \
+         type name = type::Constant(__VA_ARGS__, suzerain::complex::NaN<type::Scalar>())
+# define SCRATCH_R(type, name, ...) \
+         type name = type::Constant(__VA_ARGS__, std::numeric_limits<type::Scalar>::quiet_NaN())
+# define SCRATCH_I(type, name, ...) \
+         type name = type::Constant(__VA_ARGS__, -12345)
+#else
+# define SCRATCH_C(type, name, ...) type name(__VA_ARGS__)
+# define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
+# define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
+#endif
+    SCRATCH_C(Eigen::ArrayXXc, buf,     A.ld,      A.n);  // For packc calls
+    SCRATCH_C(Eigen::ArrayXXc, papt,    A.LD,      A.N);  // Holds PAP^T
+    SCRATCH_C(Eigen::ArrayXXc, lu,      A.LD+A.KL, A.N);  // Holds LU of PAP^T
+    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);             // Linear solve...
+    SCRATCH_R(Eigen::ArrayXr,  r,       A.N);
+    SCRATCH_R(Eigen::ArrayXr,  c,       A.N);
+    SCRATCH_C(Eigen::ArrayXc,  b,       A.N);
+    SCRATCH_C(Eigen::ArrayXc,  x,       A.N);
+    SCRATCH_C(Eigen::ArrayXc,  work,  2*A.N);
+    SCRATCH_R(Eigen::ArrayXr,  rwork,   A.N);
+#undef SCRATCH_C
+#undef SCRATCH_R
+#undef SCRATCH_I
 
     // Pack reference details for suzerain_rholut_imexop routines
     suzerain_rholut_imexop_scenario s(this->imexop_s());
@@ -420,9 +432,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             char equed;
             real_t rcond, ferr[2], berr[2];
 
-// FIXME Enable zero-zero-specific logic
-//          if (km || kn) {  // Complex-valued solve with one right hand side
-            if (true) {  // Complex-valued solve with one right hand side
+            if (km || kn) {  // Complex-valued solve with one right hand side
 
                 method = "zgbsvx";
                 suzerain_bsmbsm_zaPxpby(
