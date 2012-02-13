@@ -188,6 +188,17 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
  * A functor for applying isothermal conditions for PAP^T-based operators.
  * Encapsulated in a class so that the same logic may be applied to real-
  * and complex-valued operators and right hand sides.
+ *
+ * Helps accomplish the following steps:
+ * <ul>
+ * <li>
+ *     channel_treatment step (8) sets no-slip conditions
+ *     on wall collocation points.
+ * </li><li>
+ * </li>
+ *     channel_treatment step (9) sets isothermal conditions at walls
+ *     using rho_wall = e_wall * gamma * (gamma - 1).
+ * </ul>
  */
 class IsothermalNoSlipPAPTEnforcer
 {
@@ -217,7 +228,7 @@ public:
         // Relative to start_foo what is the offset to lower, upper walls
         const int wall[nwalls] = { 0, A.n - 1};
 
-        // Prepare indicies within PAP^T corresponding to the walls.
+        // Prepare indices within PAP^T corresponding to the walls.
         // Uses that A_{i,j} maps to {PAP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
             rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho +wall[i]);
@@ -357,36 +368,38 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PAP^T to enforce BCs.
-    IsothermalNoSlipPAPTEnforcer enforcer(A, s);
+    IsothermalNoSlipPAPTEnforcer bc_enforcer(A, s);
 
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Does not shortcircuit on only-dealiased state (TODO should it?)
     for (int n = dkbz; n < dkez; ++n) {
         const real_t kn = twopioverLz*wavenumber(dNz, n);
+
         for (int m = dkbx; m < dkex; ++m) {
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
-            // Get pointer to (.,m,n)-th state pencil
-            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
-
-            // Form wavenumber-dependent PAP^T within papt
+            // Form complex-valued, wavenumber-dependent PAP^T within papt
             suzerain_rholut_imexop_packc(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                     buf.data(), &A, papt.data());
 
-            // b := P p
-            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1.0, p, 1, 0.0, b, 1);
+            // Get pointer to (.,m,n)-th state pencil
+            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
-            // channel_treatment step (8) sets no-slip conditions
-            // on wall collocation points.
+            // Process for the rest of the solve loop logically looks like
             //
-            // channel_treatment step (9) sets isothermal conditions at walls
-            // using rho_wall = e_wall * gamma * (gamma - 1).
-            enforcer.rhs(b);
-            enforcer.op(A, papt.data(), A.LD);
-
-            // x := (LU)^-1 b using GBSVX
+            //     b := P p          using suzerain_bsmbsm_?aPxpby
+            //     apply BC to RHS   using IsothermalNoSlipPAPTEnforcer
+            //     apply BC to PAP^T using IsothermalNoSlipPAPTEnforcer
+            //     x := (LU)^-1 b    using ?gbsvx which factorizes PAP^T
+            //     p := P^T x        using suzerain_bsmbsm_?aPxpby
+            //
+            // where (km != 0 && kn != 0) uses complex-valued logic with one
+            // right hand side.  The zero-zero modes require different handling
+            // to prevent coupling between the real-valued state and the
+            // imaginary-valued "state" used for integral constraints.  In some
+            // cases those two could be solved together, but not here.
             //
             // "Why GBSVX?" you ask.  "It's expensive!" you rightly observe.
             //
@@ -397,48 +410,70 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // once everything is in L2 cache and (b) always solving the
             // equations well using iterative refinement will save us from the
             // woes of modest resolution and possibly less-than-perfectly
-            // conditioned operators stemming from
-            // reference-values-during-transients and high wavenumbers.
-            //
-            // TODO Track and report statistics on rcond, ferr, and berr
-            real_t rcond, ferr, berr;
+            // conditioned operators stemming (from reference values during
+            // transients and high wavenumbers).  So we'll run with GBSVX until
+            // it's demonstrably a bad idea.
+
+            const char fact    = 'E';       // Common inputs for {z,d}gbsvx
+            const char trans   = 'N';
+            const char *method;
+            int info;                       // Common outputs for {z,d}gbsvx
             char equed;
-            const int info = suzerain_lapack_zgbsvx(/* fact  */ 'E',
-                                                    /* trans */ 'N',
-                                                    /* n     */ A.N,
-                                                    /* kl    */ A.KL,
-                                                    /* ku    */ A.KU,
-                                                    /* nrhs  */ 1,
-                                                    /* ab    */ papt.data(),
-                                                    /* ldab  */ A.LD,
-                                                    /* afb   */ lu.data(),
-                                                    /* ldafb */ A.LD + A.KL,
-                                                    /* ipiv  */ ipiv.data(),
-                                                    /* equed */ &equed,
-                                                    /* r     */ r,
-                                                    /* c     */ c,
-                                                    /* b     */ b,
-                                                    /* ldb   */ A.N,
-                                                    /* x     */ x,
-                                                    /* ldx   */ A.N,
-                                                    /* rcond */ &rcond,
-                                                    /* ferr  */ &ferr,
-                                                    /* berr  */ &berr,
-                                                    /* work  */ work,
-                                                    /* rwork */ rwork);
+            real_t rcond, ferr[2], berr[2];
+
+// FIXME Enable zero-zero-specific logic
+//          if (km || kn) {  // Complex-valued solve with one right hand side
+
+                method = "zgbsvx";
+                suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b, 1);
+                bc_enforcer.rhs(b);
+                bc_enforcer.op(A, papt.data(), A.LD);
+                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU,
+                            1, papt.data(), A.LD, lu.data(), A.LD + A.KL,
+                            ipiv.data(), &equed, r, c, b, A.N, x, A.N, &rcond,
+                            ferr, berr, work, rwork);
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x, 1, 0., p, 1);
+
+//          } else {         // Two real-valued solves for zero-zero mode
+
+//              // Process one right hand side for each of real(p) and imag(p).
+//              //
+//              // The "Complex" operator is actually real-valued, we repack
+//              // PAP^T as a real operator for the solution process.  This
+//              // allows two real RHS in the same storage as one complex RHS;
+//              // convince yourself that DGBSVX can use ZGBSVX working storage.
+//              method = "dgbsvx";
+//              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p),     2,
+//                                                     0., ((real_t*)b),     1);
+//              suzerain_bsmbsm_daPxpby('N', A.S, A.n, 1., ((real_t*)p)+1,   2,
+//                                                     0., ((real_t*)b)+A.n, 1);
+//              bc_enforcer.rhs(((real_t*)b));
+//              bc_enforcer.rhs(((real_t*)b)+A.n);
+//              for (int i = 0; i < papt.size(); ++i) {  // Pack real operator
+//                  ((real_t*)papt.data())[i] = papt(i).real();
+//              }
+//              bc_enforcer.op(A, (real_t*)papt.data(), A.LD);
+//              info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU,
+//                          2, (real_t*)papt.data(), A.LD,
+//                          (real_t*)lu.data(), A.LD + A.KL, ipiv.data(),
+//                          &equed, r, c, (real_t*)b, A.N, (real_t*)x, A.N,
+//                          &rcond, ferr, berr, (real_t*)work, (int*)rwork);
+//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x),     1,
+//                                                     0., ((real_t*)p),     2);
+//              suzerain_bsmbsm_daPxpby('T', A.S, A.n, 1., ((real_t*)x)+A.n, 1,
+//                                                     0., ((real_t*)p)+1,   2);
+//              ferr[0] = std::max(ferr[0], ferr[1]);
+//              berr[0] = std::max(berr[0], berr[1]);
+//          }
+
             if (info) {
                 char buffer[80];
                 snprintf(buffer, sizeof(buffer),
-                        "suzerain_lapack_zgbsvx reported error %d", info);
-#ifndef NDEBUG
-////            std::cerr << buffer << ": Banded PAP^T = " << std::endl;
-////            std::cerr << papt << std::endl;
-#endif
+                         "suzerain_lapack_%s reported error %d", method, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
 
-            // p := P^T x
-            suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1.0, x, 1, 0.0, p, 1);
+            // TODO Track and report statistics on rcond, equed, ferr, and berr
         }
     }
 
