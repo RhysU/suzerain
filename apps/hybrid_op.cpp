@@ -20,7 +20,6 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
-#include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.hpp>
@@ -28,8 +27,6 @@
 #include <suzerain/state.hpp>
 
 #pragma warning(disable:383 1572)
-
-#define COUNTOF(expr) SUZERAIN_COUNTOF(expr)
 
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
@@ -187,6 +184,109 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     }
 }
 
+/**
+ * A functor for applying isothermal conditions for PAP^T-based operators.
+ * Encapsulated in a class so that the same logic may be applied to real-
+ * and complex-valued operators and right hand sides.
+ */
+class IsothermalNoSlipPAPTEnforcer
+{
+    enum { nwalls = 2, nmomentum = 3 };
+
+    // Indices within PAP^T at which to apply boundary conditions
+    // Computed once within constructor and then repeatedly used
+    int rho[nwalls], noslip[nwalls][nmomentum], rhoe[nwalls];
+
+    // Precomputed coefficient based on the isothermal equation of state
+    real_t gamma_times_one_minus_gamma;
+
+public:
+
+    IsothermalNoSlipPAPTEnforcer(const suzerain_bsmbsm &A,
+                                 const suzerain_rholut_imexop_scenario &s)
+        : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
+    {
+        // Starting offset to named scalars in InterleavedState pencil
+        namespace ndx = channel::field::ndx;
+        const int start_rho  = static_cast<int>(ndx::rho )*A.n;
+        const int start_rhou = static_cast<int>(ndx::rhou)*A.n;
+        const int start_rhov = static_cast<int>(ndx::rhov)*A.n;
+        const int start_rhow = static_cast<int>(ndx::rhow)*A.n;
+        const int start_rhoe = static_cast<int>(ndx::rhoe)*A.n;
+
+        // Relative to start_foo what is the offset to lower, upper walls
+        const int wall[nwalls] = { 0, A.n - 1};
+
+        // Prepare indicies within PAP^T corresponding to the walls.
+        // Uses that A_{i,j} maps to {PAP^T}_{{q^-1}(i),{q^(-1)}(j)}.
+        for (int i = 0; i < nwalls; ++i) {
+            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho +wall[i]);
+            noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhou+wall[i]);
+            noslip[i][1] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhov+wall[i]);
+            noslip[i][2] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhow+wall[i]);
+            rhoe  [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rhoe+wall[i]);
+        }
+    }
+
+    /**
+     * Zero RHS of momentum and energy equations at lower, upper walls.
+     * Must be used in conjunction with op().
+     */
+    template<typename T>
+    void rhs(T * const b)
+    {
+        for (int wall = 0; wall < nwalls; ++wall) {
+            for (int eqn = 0; eqn < nmomentum; ++eqn) {
+                b[noslip[wall][eqn]] = 0;
+            }
+            b[rhoe[wall]] = 0;
+        }
+    }
+
+    /**
+     * Modify the equations within PAP^T for lower, upper walls.
+     * Must be done in conjunction with rhs().
+     */
+    template<typename T>
+    void op(const suzerain_bsmbsm& A, T * const papt, int papt_ld)
+    {
+        // Access is one pass per row (w/ others hopefully nearby in cache).
+        // Attempt made to not unnecessarily disturb matrix conditioning.
+
+        for (int wall = 0; wall < nwalls; ++wall) {
+            int begin, end, inc;
+
+            // Zero all row entries but the mass matrix one on the diagonal
+            // Then momentum equations are like const*rho{u,v,w} = 0.
+            for (size_t eqn = 0; eqn < nmomentum; ++eqn) {
+                T * const row = (T *) suzerain_gbmatrix_row(
+                        A.N, A.N, A.KL, A.KU, (void *) papt, papt_ld,
+                        sizeof(T), noslip[wall][eqn], &begin, &end, &inc);
+                for (int rowndx = begin; rowndx < end; ++rowndx) {
+                    if (rowndx != noslip[wall][eqn]) {
+                        row[rowndx*inc] = 0;
+                    }
+                }
+            }
+
+            // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
+            T * const row = (T *) suzerain_gbmatrix_row(
+                    A.N, A.N, A.KL, A.KU, (void *) papt, papt_ld,
+                    sizeof(T), rhoe[wall], &begin, &end, &inc);
+            for (int rowndx = begin; rowndx < end; ++rowndx) {
+                if (rowndx == rho[wall]) {
+                    // NOP
+                } else if (rowndx == rhoe[wall]) {
+                    row[rowndx*inc] = row[rho[wall]*inc]
+                                    * gamma_times_one_minus_gamma;
+                } else {
+                    row[rowndx*inc] = 0;
+                }
+            }
+        }
+    }
+};
+
 void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
@@ -220,8 +320,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const std::size_t wall_lower  = 0;
-    const std::size_t wall_upper  = Ny - 1;
     const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
     const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
 
@@ -258,26 +356,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Prepare mapped PAP^T indices for boundary condition implementation
-    const int papt_noslip[2][3] = {
-        {
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhou)*A.n + wall_lower ),
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhov)*A.n + wall_lower ),
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhow)*A.n + wall_lower )
-        }, {
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhou)*A.n + wall_upper ),
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhov)*A.n + wall_upper ),
-            suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhow)*A.n + wall_upper )
-        }
-    };
-    const int papt_rho[2] = {
-        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rho )*A.n + wall_lower ),
-        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rho )*A.n + wall_upper ),
-    };
-    const int papt_rhoe[2] = {
-        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhoe)*A.n + wall_lower ),
-        suzerain_bsmbsm_qinv(A.S, A.n, ((int) ndx::rhoe)*A.n + wall_upper ),
-    };
+    // Prepare an almost functor mutating RHS and PAP^T to enforce BCs.
+    IsothermalNoSlipPAPTEnforcer enforcer(A, s);
 
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Does not shortcircuit on only-dealiased state (TODO should it?)
@@ -303,53 +383,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             //
             // channel_treatment step (9) sets isothermal conditions at walls
             // using rho_wall = e_wall * gamma * (gamma - 1).
-            //
-            // Access is one pass per row (w/ others hopefully nearby in cache).
-            // Attempt made to not unnecessarily disturb matrix conditioning.
-            // With apologies to whomever next needs to decipher this horror.
-
-            // Zero RHS of momentum and energy equations at lower, upper walls
-            for (size_t wall = 0; wall < 2; ++wall) {
-                for (size_t eqn = 0; eqn < COUNTOF(papt_noslip[wall]); ++eqn) {
-                    b[papt_noslip[wall][eqn]] = 0;
-                }
-                b[papt_rhoe[wall]] = 0;
-            }
-
-            // Modify the equations within PAP^T for lower, upper walls
-            for (size_t wall = 0; wall < 2; ++wall) {
-                int begin, end, inc;
-
-                // Zero all row entries but the mass matrix one on the diagonal
-                // Then momentum equations are like const*rho{u,v,w} = 0.
-                for (size_t eqn = 0; eqn < COUNTOF(papt_noslip[wall]); ++eqn) {
-                    complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
-                            A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.LD,
-                            sizeof(complex_t), papt_noslip[wall][eqn],
-                            &begin, &end, &inc);
-                    for (int rowndx = begin; rowndx < end; ++rowndx) {
-                        if (rowndx != papt_noslip[wall][eqn]) {
-                            row[rowndx*inc] = 0;
-                        }
-                    }
-                }
-
-                // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
-                complex_t * const row = (complex_t *) suzerain_gbmatrix_row(
-                        A.N, A.N, A.KL, A.KU, (void *) papt.data(), A.LD,
-                        sizeof(complex_t), papt_rhoe[wall], &begin, &end, &inc);
-                for (int rowndx = begin; rowndx < end; ++rowndx) {
-                    if (rowndx == papt_rho[wall]) {
-                        // NOP
-                    } else if (rowndx == papt_rhoe[wall]) {
-                        row[rowndx*inc] = row[papt_rho[wall]*inc]
-                                        * s.gamma*(1 - s.gamma);
-                    } else {
-                        row[rowndx*inc] = 0;
-                    }
-                }
-
-            }
+            enforcer.rhs(b);
+            enforcer.op(A, papt.data(), A.LD);
 
             // x := (LU)^-1 b using GBSVX
             //
