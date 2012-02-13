@@ -83,7 +83,7 @@ FUNCNAME()(
 
         if (rhow >= 0) PACK(zd)(A, rho, rhow, -ikn*phi, M,  papt);
 
-        if (rhoe >= 0) PACK(z)( A, rho,  rhoe,     0.0, 0,  papt);
+        if (rhoe >= 0) PACK(z)( A, rho, rhoe,      0.0, 0,  papt);
     }
 
     // The provided buf may contain INFs or NANs.  Defensively zero it.
