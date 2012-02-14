@@ -101,10 +101,10 @@ typedef struct suzerain_bsmbsm {
 /**
  * Populate a suzerain_bsmbsm instance with all BSMBSM storage details.
  *
- * @param S  Number of rows and columns of banded submatrices
- * @param n  Number or rows and columns in each banded submatrix
- * @param kl Number of subdiagonals in each banded submatrix
- * @param ku Number of superdiagonals in each banded submatrix
+ * @param[in] S  Number of rows and columns of banded submatrices
+ * @param[in] n  Number or rows and columns in each banded submatrix
+ * @param[in] kl Number of subdiagonals in each banded submatrix
+ * @param[in] ku Number of superdiagonals in each banded submatrix
  *
  * @return a fully populated BSMBSM storage description.
  *
@@ -134,9 +134,9 @@ suzerain_bsmbsm suzerain_bsmbsm_construct(int S, int n, int kl, int ku)
 /**
  * Compute the <tt>i</tt>th entry in the permutation vector \f$q\f$.
  *
- * @param S Number of rows and columns of banded submatrices
- * @param n Number or rows and columns in each banded submatrix
- * @param i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
+ * @param[in] S Number of rows and columns of banded submatrices
+ * @param[in] n Number or rows and columns in each banded submatrix
+ * @param[in] i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
  *
  * @return the value of \f$q(i)\f$.
  *
@@ -154,9 +154,9 @@ int suzerain_bsmbsm_q(int S, int n, int i)
 /**
  * Compute the <tt>i</tt>th entry in the permutation vector \f$q^{-1}\f$.
  *
- * @param S Number of rows and columns of banded submatrices
- * @param n Number or rows and columns in each banded submatrix
- * @param i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
+ * @param[in] S Number of rows and columns of banded submatrices
+ * @param[in] n Number or rows and columns in each banded submatrix
+ * @param[in] i Index \f$i\f$ in the range <tt>[0, S*n)</tt>.
  *
  * @return the value of \f$q^{-1}(i)\f$.
  *
@@ -172,18 +172,17 @@ int suzerain_bsmbsm_qinv(int S, int n, int i)
  * @brief Compute \f$ y \leftarrow{} \alpha{} P x + \beta{}y \f$ or \f$ y
  * \leftarrow{} \alpha{} P^{\mbox{T}} x + \beta{}y \f$ where \f$P\f$ is defined
  * by permutation vector \f$q\f$.  Storage \c y must not alias storage \c x.
- * Negative strides may be used and are interpreted as in the BLAS.  On error
- * invokes suzerain_blas_xerbla().
+ * Negative strides may be used and are interpreted as in the BLAS.
  *
- * @param trans Either 'N' for \f$P x\f$ or 'T' for \f$P^{\mbox{T}}\f$.
- * @param S Number of rows and columns of banded submatrices
- * @param n Number or rows and columns in each banded submatrix
- * @param alpha Multiplicative scalar \f$ \alpha \f$
- * @param x First source vector of length <tt>S*n</tt>.
- * @param incx First source vector stride.
- * @param beta Multiplicative scalar \f$ \beta \f$
- * @param y Second source vector and target vector of length <tt>S*n</tt>.
- * @param incy Second source vector and target vector stride.
+ * @param[in]  trans Either 'N' for \f$P x\f$ or 'T' for \f$P^{\mbox{T}}\f$.
+ * @param[in]  S Number of rows and columns of banded submatrices
+ * @param[in]  n Number or rows and columns in each banded submatrix
+ * @param[in]  alpha Multiplicative scalar \f$ \alpha \f$
+ * @param[in]  x First source vector of length <tt>S*n</tt>.
+ * @param[in]  incx First source vector stride.
+ * @param[in]  beta Multiplicative scalar \f$ \beta \f$
+ * @param[out] y Second source vector and target vector of length <tt>S*n</tt>.
+ * @param[in]  incy Second source vector and target vector stride.
  *
  * @return Zero on success.
  *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
@@ -269,8 +268,8 @@ suzerain_bsmbsm_zaPxpby(
  * permutation is is much, much faster than the in-place methods available
  * in the GSL.
  *
- * @param S Number of rows and columns of banded submatrices
- * @param n Number or rows and columns in each banded submatrix
+ * @param S[in]  Number of rows and columns of banded submatrices
+ * @param n[in]  Number or rows and columns in each banded submatrix
  *
  * @return A <tt>gsl_permutation*</tt> representing \f$q\f$ on success.
  *         NULL otherwise (e.g. on memory allocation failure).
@@ -293,25 +292,30 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  *   }
  * \f]
  * relates the source and target values through the permutation vector \f$q\f$.
- * Storage \c b must not alias storage \c papt.  On error invokes
- * suzerain_blas_xerbla().
+ * Storage \c b must not alias storage \c papt.
  *
- * @param S      Number of rows and columns of banded submatrices.
- * @param n      Number or rows and columns in each banded submatrix.
- * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
- * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
- * @param kl     Number of subdiagonals in each banded submatrix.
- * @param ku     Number of superdiagonals in each banded submatrix.
- * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$.
- * @param ldb    Leading dimension of storage \c b.
- * @param KL     Number of subdiagonals in the renumbered matrix
- *               which must be at least <tt>S*(kl + 1) - 1</tt>.
- * @param KU     Number of superdiagonals in the renumbered matrix
- *               which must be at least <tt>S*(ku + 1) - 1</tt>.
- * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
- * @param ldpapt Leading dimension of storage \c papt.
- *               which must be <tt>KU + 1 + KL</tt>.
+ * All calls packing data into one \f$P A P^{\mbox{T}}\f$ should supply the
+ * same parameters for \c KL, \c KU, and \c ldpapt.  All calls must either
+ * supply identical \c kl and \c ku parameters \em or the caller must fill the
+ * storage \c papt with zeros prior to packing data into it.
+ *
+ * @param[in]  S      Number of rows and columns of banded submatrices.
+ * @param[in]  n      Number or rows and columns in each banded submatrix.
+ * @param[in]  ihat   Submatrix row offset \f$\hat{\imath}\f$.
+ * @param[in]  jhat   Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param[in]  kl     Number of subdiagonals in each banded submatrix.
+ * @param[in]  ku     Number of superdiagonals in each banded submatrix.
+ * @param[in]  alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
+ * @param[in]  b      Band storage of submatrix
+ *                    \f$B^{\hat{\imath},\hat{\jmath}}\f$.
+ * @param[in]  ldb    Leading dimension of storage \c b.
+ * @param[in]  KL     Number of subdiagonals in the renumbered matrix
+ *                    which must be at least <tt>S*(kl + 1) - 1</tt>.
+ * @param[in]  KU     Number of superdiagonals in the renumbered matrix
+ *                    which must be at least <tt>S*(ku + 1) - 1</tt>.
+ * @param[out] papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ * @param[in]  ldpapt Leading dimension of storage \c papt.
+ *                    which must be <tt>KU + 1 + KL</tt>.
  *
  * @return Zero on success.
  *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
@@ -369,17 +373,19 @@ suzerain_bsmbsm_zdpack(
  * convenience method to simplify preparing storage for use by the BLAS'
  * <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.
  *
- * @param A      Storage details for the BSMBSM matrix.
- * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
- * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
- * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$
- *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
- *               diagonals and leading dimension
- *               <tt>A->ld = A->ku + 1 + A->kl</tt>.
- * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
- *               which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
- *               diagonals and leading dimension <tt>A->LD</tt>.
+ * @param[in]  A     Storage details for the BSMBSM matrix.
+ * @param[in]  ihat  Submatrix row offset \f$\hat{\imath}\f$.
+ * @param[in]  jhat  Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param[in]  alpha Scaling factor \f$\alpha\f$ to apply to submatrix.
+ * @param[in]  b     Band storage of submatrix
+ *                   \f$B^{\hat{\imath},\hat{\jmath}}\f$
+ *                   which <em>must</em> have <tt>A->kl</tt> and
+ *                   <tt>A->ku</tt> diagonals and leading dimension
+ *                   <tt>A->ld = A->ku + 1 + A->kl</tt>.
+ * @param[out] papt  Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                   which <em>must</em> have <tt>A->KL</tt> and
+ *                   <tt>A->KU</tt> diagonals and leading dimension
+ *                   <tt>A->LD</tt>.
  *
  * @return Zero on success.
  *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
@@ -454,18 +460,19 @@ suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
  * P^{\mbox{T}}\f$.  This is a convenience method to simplify preparing storage
  * for use by LAPACK's <tt>gbtrf</tt> or <tt>gbsv</tt>.
  *
- * @param A      Storage details for the BSMBSM matrix.
- * @param ihat   Submatrix row offset \f$\hat{\imath}\f$.
- * @param jhat   Submatrix column offset \f$\hat{\jmath}\f$.
- * @param alpha  Scaling factor \f$\alpha\f$ to apply to submatrix.
- * @param b      Band storage of submatrix \f$B^{\hat{\imath},\hat{\jmath}}\f$
- *               which <em>must</em> have <tt>A->kl</tt> and <tt>A->ku</tt>
- *               diagonals and leading dimension
- *               <tt>A->ld = A->ku + 1 + A->kl</tt>.
- * @param papt   Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
- *               which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
- *               diagonals and leading dimension
- *               <tt>A->LD + A->KL = 2*A->KL + A->KU + 1</tt>.
+ * @param[in]  A     Storage details for the BSMBSM matrix.
+ * @param[in]  ihat  Submatrix row offset \f$\hat{\imath}\f$.
+ * @param[in]  jhat  Submatrix column offset \f$\hat{\jmath}\f$.
+ * @param[in]  alpha Scaling factor \f$\alpha\f$ to apply to submatrix.
+ * @param[in]  b     Band storage of submatrix
+ *                   \f$B^{\hat{\imath},\hat{\jmath}}\f$
+ *                   which <em>must</em> have <tt>A->kl</tt> and
+ *                   <tt>A->ku</tt> diagonals and leading dimension
+ *                   <tt>A->ld = A->ku + 1 + A->kl</tt>.
+ * @param[out] papt  Band storage of renumbered matrix \f$PAP^{\mbox{T}}\f$
+ *                   which <em>must</em> have <tt>A->KL</tt> and <tt>A->KU</tt>
+ *                   diagonals and leading dimension
+ *                   <tt>A->LD + A->KL = 2*A->KL + A->KU + 1</tt>.
  *
  * @return Zero on success.
  *         Otherwise calls suzerain_blas_xerbla() and returns nonzero.
