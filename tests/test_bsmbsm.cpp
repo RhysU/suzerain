@@ -561,6 +561,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( degenerate, Scalar, test_types )
 
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( minimal_two_by_two, Scalar, test_types )
+{
+    static const Scalar one = 1;
+    typedef typename suzerain::traits::component<Scalar>::type component_type;
+    using suzerain::complex::traits::is_complex;
+
+    // Prepare a 2x2 problem with 5x5 submatrices
+    const suzerain_bsmbsm A = suzerain_bsmbsm_construct(2, 2, 0, 0);
+    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+
+    // Generate well-defined source data
+    if (suzerain::complex::traits::is_complex<Scalar>::value) {
+        std::fill(b.get(), b.get() + A.n*A.ld, one - std::sqrt(-one));
+    } else {
+        std::fill(b.get(), b.get() + A.n*A.ld, one);
+    }
+    std::partial_sum(b.get(), b.get() + A.n*A.ld, b.get());
+
+    // Fill target with NaNs for detecting untouched values
+    std::fill(((component_type*) papt.get()),
+              ((component_type*) papt.get())
+                + A.N*A.LD*sizeof(Scalar)/sizeof(component_type),
+              std::numeric_limits<component_type>::quiet_NaN());
+
+    // Pack the 4 submatrices with distinct scaling coefficients
+    packc(&A, 0, 0, 2, b.get(), papt.get());
+    packc(&A, 0, 1, 3, b.get(), papt.get());
+    packc(&A, 1, 0, 5, b.get(), papt.get());
+    packc(&A, 1, 1, 7, b.get(), papt.get());
+
+    // Test that no NaN values remain inside papt's bandwidth
+    for (int i = 0; i < A.N; ++i) {
+        const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
+        for (int j = 0; j < A.N; ++j) {
+            const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
+            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+                int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
+                BOOST_CHECK_MESSAGE(papt[o] == papt[o],
+                    "NaN PAP^T_{"<<i<<","<<j<<"} from "
+                    <<"submatrix ("<<qi/A.n<<","<<qj/A.n<<") "
+                    <<"element ("<<qi%A.n<<","<<qj%A.n<<")");
+            }
+        }
+    }
+}
+
 BOOST_AUTO_TEST_CASE_TEMPLATE( three_by_three, Scalar, test_types )
 {
     static const Scalar one = 1;
