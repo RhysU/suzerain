@@ -8,8 +8,10 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bspline.hpp>
-#include <suzerain/rholut_imexop.h>
+#include <suzerain/complex.hpp>
 #include <suzerain/countof.h>
+#include <suzerain/gbmatrix.h>
+#include <suzerain/rholut_imexop.h>
 
 #include "test_tools.hpp"
 
@@ -95,11 +97,31 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     BOOST_REQUIRE_EQUAL(lusize,   (A.LD + A.KL) * A.N);
     boost::scoped_array<complex_t> buf(new complex_t[bufsize]);
     boost::scoped_array<complex_t> papt(new complex_t[paptsize]);
+
+    // Fill all working storage with NaNs, invoke suzerain_rholut_imexop_packc,
+    // and be sure we get a matrix lacking NaNs on the band as a result.
+    using suzerain::complex::NaN;
+    std::fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
+    std::fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
                                  0, 1, 2, 3, 4, buf.get(), &A, papt.get());
+    for (int i = 0; i < A.N; ++i) {
+        const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
+        for (int j = 0; j < A.N; ++j) {
+            const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
+            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+                int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
+                BOOST_CHECK_MESSAGE(papt[o] == papt[o],
+                    "NaN PAP^T_{"<<i<<","<<j<<"} from "
+                    <<"submatrix ("<<qi/A.n<<","<<qj/A.n<<") "
+                    <<"element ("<<qi%A.n<<","<<qj%A.n<<")");
+            }
+        }
+    }
 
     // Factor LU = PAP^T and solve (LU)^{-1} B2 = B1
     boost::scoped_array<complex_t> lu(new complex_t[(A.LD + A.KL)*A.N]);
+    std::fill(lu.get(), lu.get() + lusize, NaN<real_t>());
     boost::scoped_array<int>       ipiv(new int[A.N]);
     char equed;
     boost::scoped_array<real_t>    scale_r(new real_t[A.N]);
