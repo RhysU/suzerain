@@ -395,6 +395,21 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                     buf.data(), &A, papt.data());
 
+            // Debug: determine what submatrices are contributing NaNs!
+            // Inner assertion meant as an easy way to fire up a debugger.
+#ifndef NDEBUG
+            for (int i = 0; i < A.N; ++i) {
+                const int qi = suzerain_bsmbsm_q(A.S, A.n, i); (void) qi;
+                for (int j = 0; j < A.N; ++j) {
+                    const int qj = suzerain_bsmbsm_q(A.S, A.n, j); (void) qj;
+                    if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+                        int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
+                        assert(papt(o) == papt(o)); // !isnan
+                    }
+                }
+            }
+#endif
+
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
