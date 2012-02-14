@@ -813,12 +813,24 @@ suzerain_blas_zaxpby_d(
         const int incy)
 {
 #ifdef SUZERAIN_HAVE_MKL
+
+#pragma warning(push,disable:1572)
+    const _Bool beta_is_zero = (beta == 0);
+#pragma warning(pop)
+
     if (incx == 1 && incy == 1) {  // Unit strides
 
+        if (UNLIKELY(beta_is_zero)) {
 #pragma unroll
-        for (int i = 0; i < n; ++i) {
-            y[i] *= beta;
-            y[i] += alpha*x[i];
+            for (int i = 0; i < n; ++i) {
+                y[i]  = alpha*x[i];
+            }
+        } else {
+#pragma unroll
+            for (int i = 0; i < n; ++i) {
+                y[i] *= beta;
+                y[i] += alpha*x[i];
+            }
         }
 
     } else {                       // General strides
@@ -826,10 +838,17 @@ suzerain_blas_zaxpby_d(
         // Adjust for possibly negative incx and incy
         int ix = (incx < 0) ? (1 - n)*incx : 0;
         int iy = (incy < 0) ? (1 - n)*incy : 0;
+        if (UNLIKELY(beta_is_zero)) {
 #pragma unroll
-        for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
-            y[iy] *= beta;
-            y[iy] += alpha*x[ix];
+            for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+                y[iy]  = alpha*x[ix];
+            }
+        } else {
+#pragma unroll
+            for (int i = 0; i < n; ++i, ix += incx, iy += incy) {
+                y[iy] *= beta;
+                y[iy] += alpha*x[ix];
+            }
         }
 
     }
@@ -837,7 +856,6 @@ suzerain_blas_zaxpby_d(
 #error "Sanity failure"
 #endif
 }
-
 
 inline void
 suzerain_blas_swaxpby(
