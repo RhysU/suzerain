@@ -443,8 +443,8 @@ suzerain_bsmbsm_zdpackc(const suzerain_bsmbsm *A, int ihat, int jhat,
                         complex_double *papt)
 {
     return suzerain_bsmbsm_zdpack(A->S, A->n, ihat, jhat,
-                                 A->kl, A->ku, alpha, b,    A->ld,
-                                 A->KL, A->KU,        papt, A->LD);
+                                  A->kl, A->ku, alpha, b,    A->ld,
+                                  A->KL, A->KU,        papt, A->LD);
 }
 
 /**
