@@ -10,9 +10,10 @@
 #include <gsl/gsl_permute_vector_float.h>
 #include <gsl/gsl_permute_vector_complex_float.h>
 #include <gsl/gsl_permute_vector_complex_double.h>
-#include <suzerain/bsmbsm.h>
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/bsmbsm.h>
 #include <suzerain/countof.h>
+#include <suzerain/gbmatrix.h>
 #include <suzerain/traits.hpp>
 
 #include "test_tools.hpp"
@@ -560,6 +561,58 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( degenerate, Scalar, test_types )
 
 }
 
+BOOST_AUTO_TEST_CASE_TEMPLATE( three_by_three, Scalar, test_types )
+{
+    static const Scalar one = 1;
+    typedef typename suzerain::traits::component<Scalar>::type component_type;
+    using suzerain::complex::traits::is_complex;
+
+    // Prepare a 3x3 problem with 17x17 submatrices
+    const suzerain_bsmbsm A = suzerain_bsmbsm_construct(3, 17, 4, 3);
+    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+
+    // Generate well-defined source data
+    if (suzerain::complex::traits::is_complex<Scalar>::value) {
+        std::fill(b.get(), b.get() + A.n*A.ld, one - std::sqrt(-one));
+    } else {
+        std::fill(b.get(), b.get() + A.n*A.ld, one);
+    }
+    std::partial_sum(b.get(), b.get() + A.n*A.ld, b.get());
+
+    // Fill target with NaNs for detecting untouched values
+    std::fill(((component_type*) papt.get()),
+              ((component_type*) papt.get())
+                + A.N*A.LD*sizeof(Scalar)/sizeof(component_type),
+              std::numeric_limits<component_type>::quiet_NaN());
+
+    // Pack the 9 submatrices with distinct scaling coefficients
+    packc(&A, 0, 0,  2, b.get(), papt.get());
+    packc(&A, 0, 1,  3, b.get(), papt.get());
+    packc(&A, 0, 2,  5, b.get(), papt.get());
+    packc(&A, 1, 0,  7, b.get(), papt.get());
+    packc(&A, 1, 1, 11, b.get(), papt.get());
+    packc(&A, 1, 2, 13, b.get(), papt.get());
+    packc(&A, 2, 0, 17, b.get(), papt.get());
+    packc(&A, 2, 1, 19, b.get(), papt.get());
+    packc(&A, 2, 2, 23, b.get(), papt.get());
+
+    // Test that no NaN values remain inside papt's bandwidth
+    for (int i = 0; i < A.N; ++i) {
+        const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
+        for (int j = 0; j < A.N; ++j) {
+            const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
+            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+                int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
+                BOOST_CHECK_MESSAGE(papt[o] == papt[o],
+                    "NaN PAP^T_{"<<i<<","<<j<<"} from "
+                    <<"submatrix ("<<qi/A.n<<","<<qj/A.n<<") "
+                    <<"element ("<<qi%A.n<<","<<qj%A.n<<")");
+            }
+        }
+    }
+}
+
 // Employing helper functions from http://snipt.net/RhysU/tag/mathematica,
 // this test problem comes from Mathematica like
 //     b = {0, 1/4, 3/4, 1, 5/4, 2};
@@ -698,7 +751,8 @@ BOOST_AUTO_TEST_CASE( solve_real )
     // Allocate working buffers for accumulating submatrices
     boost::scoped_array<double> b   (new double[A.n*A.ld]);
     boost::scoped_array<double> papt(new double[A.N*(A.LD+A.KL)]);
-    std::fill(papt.get(), papt.get() + A.N*(A.LD+A.KL), 0);
+    std::fill(papt.get(), papt.get() + A.N*(A.LD+A.KL),
+              std::numeric_limits<double>::quiet_NaN());
 
     // Build the packed operator "op" per Mathematica above
     // B^{0,0} is M
@@ -771,14 +825,15 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     boost::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
     boost::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
     std::fill(b.get(),    b.get()    + 2*A.n*A.ld,        0);
-    // All of papt is overwritten so no fill is performed
+    std::fill(papt.get(), papt.get() + 2*A.N*(A.LD+A.KL),
+              std::numeric_limits<real_t>::quiet_NaN());
 
     // Build the packed, complex operator "i*op" per Mathematica above.
     // Notice that we only manipulate the imaginary portions of b.get().
     // B^{0,0} is i*M
     blas::copy(SUZERAIN_COUNTOF(M), M, 1, b.get()+1, 2);
     suzerain_bsmbsm_zdpackf(&A, 0, 0, std::complex<double>(0,1), M,
-                                                   (complex_t *) papt.get());
+                                                (complex_t *) papt.get());
     // B^{1,1} is i*2*M
     suzerain_bsmbsm_zpackf(&A, 1, 1, 2.0, (const complex_t *) b.get(),
                                           (      complex_t *) papt.get());
