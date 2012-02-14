@@ -27,6 +27,8 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
+#include "logging.hpp"
+
 #pragma warning(disable:383 1572)
 
 #pragma float_control(precise, on)
@@ -396,17 +398,25 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     buf.data(), &A, papt.data());
 
             // Debug: determine what submatrices are contributing NaNs!
-            // Inner assertion meant as an easy way to fire up a debugger.
 #ifndef NDEBUG
-            for (int i = 0; i < A.N; ++i) {
-                const int qi = suzerain_bsmbsm_q(A.S, A.n, i); (void) qi;
-                for (int j = 0; j < A.N; ++j) {
-                    const int qj = suzerain_bsmbsm_q(A.S, A.n, j); (void) qj;
-                    if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
-                        int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
-                        assert(papt(o) == papt(o)); // !isnan
+            {
+                bool papt_contained_no_NaN_entries = true;
+                for (int i = 0; i < A.N; ++i) {
+                    const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
+                    for (int j = 0; j < A.N; ++j) {
+                        const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
+                        if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+                            int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
+                            if (papt(o) != papt(o)) { // isnan
+                                WARN("NaN PAP^T_{"<<i<<","<<j<<"} from "
+                                     <<"submatrix ("<<qi/A.n<<","<<qj/A.n<<") "
+                                     <<"element ("<<qi%A.n<<","<<qj%A.n<<")");
+                                papt_contained_no_NaN_entries = false;
+                            }
+                        }
                     }
                 }
+                assert(papt_contained_no_NaN_entries);
             }
 #endif
 
