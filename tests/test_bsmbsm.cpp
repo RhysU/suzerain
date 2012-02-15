@@ -826,6 +826,11 @@ BOOST_AUTO_TEST_CASE( solve_real )
     blas::scal(SUZERAIN_COUNTOF(D2), 1.0/2.0, b.get(), 1);
     suzerain_bsmbsm_dpackf(&A, 1, 2, 1.0, b.get(), papt.get());
 
+    // Zero out submatrices B^{0,2}, B^{2,0} using pack
+    // Strictly necessary since we filled papt with NaNs above
+    suzerain_bsmbsm_dpackf(&A, 0, 2, 0.0, NULL, papt.get());
+    suzerain_bsmbsm_dpackf(&A, 2, 0, 0.0, NULL, papt.get());
+
     // Reuse working buffer to permute right hand side for solve
     b.reset(new double[2*A.N]);
     suzerain_bsmbsm_daPxpby(

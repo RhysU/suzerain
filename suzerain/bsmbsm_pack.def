@@ -49,53 +49,66 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     if (UNLIKELY((void*)b == (void*)papt))
             return suzerain_blas_xerbla(__func__, 511);
 
-    // Source dereference is always of form b[ku + i + j*(ldb - 1)].
-    // Target uses papt[KU + q(ihat*n + i) + q(jhat*n + j)*(ldpapt - 1)].
-    // Increment kl anticipating expressions like imin(m, j + kl + 1).
+
+    // Target dereference is always of form papt[KU + i + j*(ldpapt - 1)].
+    // Increment KL anticipating expressions like imin(m, j + KL + 1).
     b    += ku; --ldb;
     papt += KU; --ldpapt;
-    ihat *= n;
-    jhat *= n;
-    ++kl;
+    ++KL;
 
     // Copy scaled, banded B into renumbered locations within banded PAP^T
-#pragma warning(push,disable:1572)
-    if (alpha == 0) {                  // b never referenced
-#pragma warning(pop)
+    // Operation walks PAP^T linearly to
+    //   (a) copy values inside B's bandwidth into PAP^T, and
+    //   (b) zero values outside B's bandwidth within PAP^T.
+    // Process simplifies checking for out-of-bandwidth conditions, performs
+    // writes (rather than reads) stride one, and does random access across the
+    // smaller of PAP^T and B.  The pattern incurs lots of integer operations
+    // and branches instead of memory latency.
+    const int N = S*n;
 
-        for (int j = 0; j < n; /*b += ldb,*/ ++j) {
-            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
-            const int il = imax(0, j - ku);
-            const int iu = imin(n, j + kl);
-            for (int i = il; i < iu; ++i) {
-                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
-                papt[qinvi + qinvj_ldpapt] = 0;
+    // FIXME Rework loops so that q{j,i}_div_n.quot == {j,i}hat always true
+    // Will require some head scratching on suzerain_bsmbsm_q definition,
+    // but it should greatly cut down on the number of iterations we run.
+
+    if (alpha != 0) {  // General case
+
+        for (int j = 0; j < N; papt += ldpapt, ++j) {              // Column j
+            const int qj = suzerain_bsmbsm_q(S, n, j);
+            const div_t qj_div = div(qj, n);
+            if (qj_div.quot == jhat) {                             // Inside B?
+                const int offjb = qj_div.rem*ldb;
+                const int il = imax(0, j - KU);
+                const int iu = imin(N, j + KL);
+                for (int i = il; i < iu; ++i) {                    // Row il.iu
+                    const int qi = suzerain_bsmbsm_q(S, n, i);
+                    const div_t qi_div = div(qi, n);
+                    if (qi_div.quot == ihat) {                     // Inside B?
+                        if (    qj_div.rem - ku <= qi_div.rem
+                             && qi_div.rem <= qj_div.rem + kl) {   // In band?
+                            papt[i] = alpha*b[qi_div.rem + offjb]; // Yes
+                        } else {
+                            papt[i] = 0;                           // No
+                        }
+                    }
+                }
             }
         }
 
-#pragma warning(push,disable:1572)
-    } else if (alpha == 1) {           // no scaling performed
-#pragma warning(pop)
+    } else {          // Do not reference B when alpha == 0
 
-        for (int j = 0; j < n; b += ldb, ++j) {
-            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
-            const int il = imax(0, j - ku);
-            const int iu = imin(n, j + kl);
-            for (int i = il; i < iu; ++i) {
-                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
-                papt[qinvi + qinvj_ldpapt] = b[i];
-            }
-        }
-
-    } else {                           // general case
-
-        for (int j = 0; j < n; b += ldb, ++j) {
-            const int qinvj_ldpapt = ldpapt*suzerain_bsmbsm_qinv(S, n, jhat+j);
-            const int il = imax(0, j - ku);
-            const int iu = imin(n, j + kl);
-            for (int i = il; i < iu; ++i) {
-                const int qinvi = suzerain_bsmbsm_qinv(S, n, ihat+i);
-                papt[qinvi + qinvj_ldpapt] = alpha*b[i];
+        for (int j = 0; j < N; papt += ldpapt, ++j) {              // Column j
+            const int qj = suzerain_bsmbsm_q(S, n, j);
+            const div_t qj_div = div(qj, n);
+            if (qj_div.quot == jhat) {                             // Inside B?
+                const int il = imax(0, j - KU);
+                const int iu = imin(N, j + KL);
+                for (int i = il; i < iu; ++i) {                    // Row il.iu
+                    const int qi = suzerain_bsmbsm_q(S, n, i);
+                    const div_t qi_div = div(qi, n);
+                    if (qi_div.quot == ihat) {                     // Inside B?
+                        papt[i] = 0;                               // Yes, zero
+                    }
+                }
             }
         }
 
