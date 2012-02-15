@@ -56,44 +56,45 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     // Process simplifies checking for out-of-bandwidth conditions, performs
     // writes (rather than reads) stride one, and does random access across the
     // smaller of PAP^T and B.  The pattern incurs lots of integer operations
-    // and branches instead of memory latency.
-
-    // Target dereference is always of form papt[KU + i + j*(ldpapt - 1)].
-    // Source dereference is always of form b[ku + bi + bj*(ldb - 1)].
-    // Increment KL anticipating expressions like imin(N, j + KL + 1).
-    b    += ku; --ldb;
-    papt += KU; --ldpapt;
-    ++KL;
-
+    // but should provide minimal memory latency.
+    //
     // Loops iterate across q({j,i}) such that q({j,i})/n == {j,i}hat without
     // visiting the intervening {i,j} and in a way that provides local indices
     // into the B^{ihat,jhat} submatrix.  Uses known form of suzerain_bsmbsm_q.
+    // See revision r27980 for an unoptimized version that may provide insight.
     //
     // {bj, bi} indices into B^{ihat,jhat} stored in b
     // { j,  i} indices into PAP^T stored in papt
     // b        always tracks the bj-th column of b
     // papt     always tracks the j-th  column of papt
 
-    const int N = S*n;     // Oft-used constant
-    papt   += jhat*ldpapt; // We start walking papt at column jhat
-    ldpapt *= S;           // We walk papt S columns every time
+    // Target dereference is always of form papt[KU + i + j*(ldpapt - 1)].
+    // Source dereference is always of form b[ku + bi + bj*(ldb - 1)].
+    b    += ku; --ldb;
+    papt += KU; --ldpapt;
 
-    if (alpha != 0) {  // General case
+    const int N      = S*n;           // PAP^T is logically an N by N matrix
+    const int ihat1S = ihat + 1 - S;  // Constant hoisted from loops
+    papt   += jhat*ldpapt;            // Start walking papt at column jhat
+    ldpapt *= S;                      // Walk papt by S columns each iteration
+    ++KL;                             // Anticipating imin(N, j + KL + 1)
+
+    if (alpha != 0) {  // General case accessing B
 
         for (int bj=0, j=jhat; bj<n; ++bj, b+=ldb, j+=S, papt+=ldpapt) {
-            const int bil = (imax(0, j-KU) - ihat + S-1)/S;
-            const int biu = (imin(N, j+KL) - ihat + S-1)/S;
+            const int bil = (imax(0, j-KU) - ihat1S)/S;
+            const int biu = (imin(N, j+KL) - ihat1S)/S;
             for (int bi=bil, i=ihat+S*bil; bi < biu; ++bi, i+=S) {
-                // Use zero whenever (bi,bj) not inside bandwidth of b
+                // Use zero whenever b(bi,bj) not inside bandwidth of b
                 papt[i] = (bj-ku <= bi && bi <= bj+kl) ? alpha*b[bi] : 0;
             }
         }
 
-    } else {          // Do not reference B when alpha == 0
+    } else {          // Do not access B when alpha == 0
 
         for (int bj=0, j=jhat; bj<n; ++bj, b+=ldb, j+=S, papt+=ldpapt) {
-            const int bil = (imax(0, j-KU) - ihat + S-1)/S;
-            const int biu = (imin(N, j+KL) - ihat + S-1)/S;
+            const int bil = (imax(0, j-KU) - ihat1S)/S;
+            const int biu = (imin(N, j+KL) - ihat1S)/S;
             for (int bi=bil, i=ihat+S*bil; bi < biu; ++bi, i+=S) {
                 papt[i] = 0;
             }
