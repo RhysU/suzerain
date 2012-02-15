@@ -397,29 +397,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                     buf.data(), &A, papt.data());
 
-            // Debug: determine what submatrices are contributing NaNs!
-#ifndef NDEBUG
-            {
-                bool papt_contained_no_NaN_entries = true;
-                for (int i = 0; i < A.N; ++i) {
-                    const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
-                    for (int j = 0; j < A.N; ++j) {
-                        const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
-                        if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
-                            int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
-                            if (papt(o) != papt(o)) { // isnan
-                                WARN("NaN PAP^T_{"<<i<<","<<j<<"} from "
-                                     <<"submatrix ("<<qi/A.n<<","<<qj/A.n<<") "
-                                     <<"element ("<<qi%A.n<<","<<qj%A.n<<")");
-                                papt_contained_no_NaN_entries = false;
-                            }
-                        }
-                    }
-                }
-                assert(papt_contained_no_NaN_entries);
-            }
-#endif
-
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
@@ -431,84 +408,36 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             //     x := (LU)^-1 b    using ?gbsvx which factorizes PAP^T
             //     p := P^T x        using suzerain_bsmbsm_?aPxpby
             //
-            // where (km != 0 && kn != 0) uses complex-valued logic with one
-            // right hand side.  The zero-zero modes require different handling
-            // to prevent coupling between the real-valued state and the
-            // imaginary-valued "state" used for integral constraints.  In some
-            // cases those two could be solved together, but not here.
-            //
-            // "Why GBSVX?" you ask.  "It's expensive!" you rightly observe.
+            // "Why gbsvx?" you ask.  "It's expensive!" you rightly observe.
             //
             // Well, we might as well get our money's worth out of the
-            // factorization once we've paid for it.  If GBSVX is too
-            // expensive, GBSV is a less intensive option.  I have unfounded
-            // hunches that (a) the incremental cost from GBSV to GBSVX is low
+            // factorization once we've paid for it.  If gbsvx is too
+            // expensive, gbsv is a less intensive option.  I have unfounded
+            // hunches that (a) the incremental cost from gbsv to gbsvx is low
             // once everything is in L2 cache and (b) always solving the
             // equations well using iterative refinement will save us from the
             // woes of modest resolution and possibly less-than-perfectly
             // conditioned operators stemming (from reference values during
-            // transients and high wavenumbers).  So we'll run with GBSVX until
+            // transients and high wavenumbers).  So we'll run with gbsvx until
             // it's demonstrably a bad idea.
 
             const char *method;               // Used for error reporting
-            static const char fact    = 'E';  // Common inputs for {z,d}gbsvx
+            static const char fact    = 'E';  // Common inputs for ?gbsvx
             static const char trans   = 'N';
-            int info;                         // Common outputs for {z,d}gbsvx
+            int info;                         // Common outputs for ?gbsvx
             char equed;
-            real_t rcond, ferr[2], berr[2];
+            real_t rcond, ferr[1], berr[1];
 
-            if (km || kn) {  // Complex-valued solve with one right hand side
-
-                method = "zgbsvx";
-                suzerain_bsmbsm_zaPxpby(
-                        'N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
-                bc_enforcer.rhs(b.data());
-                bc_enforcer.op(A, papt.data(), papt.colStride());
-                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                    papt.data(), papt.colStride(), lu.data(), lu.colStride(),
-                    ipiv.data(), &equed, r.data(), c.data(),
-                    b.data(), b.size(), x.data(), x.size(),
-                    &rcond, ferr, berr, work.data(), rwork.data());
-                suzerain_bsmbsm_zaPxpby(
-                        'T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
-
-            } else {         // Two real-valued solves for zero-zero mode
-
-                // Process one right hand side for each of real(p) and imag(p).
-                //
-                // The "Complex" operator is actually real-valued, we repack
-                // PAP^T as a real operator for the solution process.  This
-                // allows two real RHS in the same storage as one complex RHS;
-                // convince yourself that DGBSVX can use ZGBSVX working storage.
-                method = "dgbsvx";
-                suzerain_bsmbsm_daPxpby(
-                        'N', A.S, A.n, 1., ((real_t*)p),            2,
-                                       0., ((real_t*)b.data()),     1);
-                suzerain_bsmbsm_daPxpby(
-                        'N', A.S, A.n, 1., ((real_t*)p)+1,          2,
-                                       0., ((real_t*)b.data())+A.N, 1);
-                bc_enforcer.rhs(((real_t*)b.data()));
-                bc_enforcer.rhs(((real_t*)b.data())+A.N);
-                for (int i = 0; i < papt.size(); ++i) {  // Pack real operator
-                    ((real_t*)papt.data())[i] = papt(i).real();
-                }
-                bc_enforcer.op(A, (real_t*)papt.data(), papt.colStride());
-                info = suzerain_lapack_dgbsvx(fact, trans, A.N, A.KL, A.KU, 2,
-                            (real_t*)papt.data(), papt.colStride(),
-                            (real_t*)lu.data(), lu.colStride(),
-                            ipiv.data(), &equed, r.data(), c.data(),
-                            (real_t*)b.data(), b.size(),
-                            (real_t*)x.data(), x.size(), &rcond, ferr, berr,
-                            (real_t*)work.data(), (int*)rwork.data());
-                suzerain_bsmbsm_daPxpby(
-                        'T', A.S, A.n, 1., ((real_t*)x.data()),     1,
-                                       0., ((real_t*)p),            2);
-                suzerain_bsmbsm_daPxpby(
-                        'T', A.S, A.n, 1., ((real_t*)x.data())+A.N, 1,
-                                       0., ((real_t*)p)+1,          2);
-                ferr[0] = std::max(ferr[0], ferr[1]);
-                berr[0] = std::max(berr[0], berr[1]);
-            }
+            method = "zgbsvx";
+            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
+            bc_enforcer.rhs(b.data());
+            bc_enforcer.op(A, papt.data(), papt.colStride());
+            info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
+                papt.data(), papt.colStride(), lu.data(), lu.colStride(),
+                ipiv.data(), &equed, r.data(), c.data(),
+                b.data(), b.size(), x.data(), x.size(),
+                &rcond, ferr, berr, work.data(), rwork.data());
+            suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
 
             if (info) {
                 char buffer[80];
