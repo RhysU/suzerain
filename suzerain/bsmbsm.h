@@ -292,12 +292,9 @@ gsl_permutation * suzerain_bsmbsm_permutation(int S, int n);
  *   }
  * \f]
  * relates the source and target values through the permutation vector \f$q\f$.
- * Storage \c b must not alias storage \c papt.
- *
- * All calls packing data into one \f$P A P^{\mbox{T}}\f$ should supply the
- * same parameters for \c KL, \c KU, and \c ldpapt.  All calls must either
- * supply identical \c kl and \c ku parameters \em or the caller must fill the
- * storage \c papt with zeros prior to packing data into it.
+ * Storage \c b must not alias storage \c papt.  All calls packing data into
+ * one \f$P A P^{\mbox{T}}\f$ must supply the same parameters for \c KL and \c
+ * KU.
  *
  * @param[in]  S      Number of rows and columns of banded submatrices.
  * @param[in]  n      Number or rows and columns in each banded submatrix.
