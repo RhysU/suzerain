@@ -59,14 +59,15 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     // and branches instead of memory latency.
 
     // Target dereference is always of form papt[KU + i + j*(ldpapt - 1)].
-    // Increment KL anticipating expressions like imin(m, j + KL + 1).
+    // Source dereference is always of form b[ku + bi + bj*(ldb - 1)].
+    // Increment KL anticipating expressions like imin(N, j + KL + 1).
     b    += ku; --ldb;
     papt += KU; --ldpapt;
     ++KL;
 
     // Loops iterate across q({j,i}) such that q({j,i})/n == {j,i}hat without
-    // visiting the intervening values and in a way that provides local indices
-    // into the B^{ihat,jhat} submatrix.  Uses known form of suzerain_bsmbsm_q:
+    // visiting the intervening {i,j} and in a way that provides local indices
+    // into the B^{ihat,jhat} submatrix.  Uses known form of suzerain_bsmbsm_q.
     //
     // {bj, bi} indices into B^{ihat,jhat} stored in b
     // { j,  i} indices into PAP^T stored in papt
@@ -74,67 +75,27 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     // papt     always tracks the j-th  column of papt
 
     const int N = S*n;     // Oft-used constant
+    papt   += jhat*ldpapt; // We start walking papt at column jhat
+    ldpapt *= S;           // We walk papt S columns every time
 
     if (alpha != 0) {  // General case
 
-        papt   += jhat*ldpapt; // We start walking papt at column jhat
-        ldpapt *= S;           // We walk S columns at a time
-
         for (int bj=0, j=jhat; bj<n; ++bj, b+=ldb, j+=S, papt+=ldpapt) {
-            const int il = imax(0, j-KU);
-            const int iu = imin(N, j+KL);
-            for (int i = il; i < iu; ++i) {
-                const int qi = suzerain_bsmbsm_q(S, n, i);
-                const div_t qi_div = div(qi, n);
-                if (qi_div.quot == ihat) {
-                    if (    bj - ku <= qi_div.rem
-                         && qi_div.rem <= bj + kl) {           // In band?
-                        papt[i] = alpha*b[qi_div.rem];         // Yes
-                    } else {
-                        papt[i] = 0;                           // No
-                    }
-                }
+            const int bil = (imax(0, j-KU) - ihat + S-1)/S;
+            const int biu = (imin(N, j+KL) - ihat + S-1)/S;
+            for (int bi=bil, i=ihat+S*bil; bi < biu; ++bi, i+=S) {
+                // Use zero whenever (bi,bj) not inside bandwidth of b
+                papt[i] = (bj-ku <= bi && bi <= bj+kl) ? alpha*b[bi] : 0;
             }
         }
 
-//      for (int j = 0; j < N; papt += ldpapt, ++j) {              // Column j
-//          const int qj = suzerain_bsmbsm_q(S, n, j);
-//          const div_t qj_div = div(qj, n);
-//          if (qj_div.quot == jhat) {                             // Inside B?
-//              const int offjb = qj_div.rem*ldb;
-//              const int il = imax(0, j - KU);
-//              const int iu = imin(N, j + KL);
-//              for (int i = il; i < iu; ++i) {                    // Row il.iu
-//                  const int qi = suzerain_bsmbsm_q(S, n, i);
-//                  const div_t qi_div = div(qi, n);
-//                  if (qi_div.quot == ihat) {                     // Inside B?
-//                      if (    qj_div.rem - ku <= qi_div.rem
-//                           && qi_div.rem <= qj_div.rem + kl) {   // In band?
-//                          papt[i] = alpha*b[qi_div.rem + offjb]; // Yes
-//                      } else {
-//                          papt[i] = 0;                           // No
-//                      }
-//                  }
-//              }
-//          }
-//      }
-
-
     } else {          // Do not reference B when alpha == 0
 
-        for (int j = 0; j < N; papt += ldpapt, ++j) {              // Column j
-            const int qj = suzerain_bsmbsm_q(S, n, j);
-            const div_t qj_div = div(qj, n);
-            if (qj_div.quot == jhat) {                             // Inside B?
-                const int il = imax(0, j - KU);
-                const int iu = imin(N, j + KL);
-                for (int i = il; i < iu; ++i) {                    // Row il.iu
-                    const int qi = suzerain_bsmbsm_q(S, n, i);
-                    const div_t qi_div = div(qi, n);
-                    if (qi_div.quot == ihat) {                     // Inside B?
-                        papt[i] = 0;                               // Yes, zero
-                    }
-                }
+        for (int bj=0, j=jhat; bj<n; ++bj, b+=ldb, j+=S, papt+=ldpapt) {
+            const int bil = (imax(0, j-KU) - ihat + S-1)/S;
+            const int biu = (imin(N, j+KL) - ihat + S-1)/S;
+            for (int bi=bil, i=ihat+S*bil; bi < biu; ++bi, i+=S) {
+                papt[i] = 0;
             }
         }
 
