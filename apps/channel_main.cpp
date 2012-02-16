@@ -281,6 +281,41 @@ static void information_bulk(const std::string& timeprefix)
     INFO(bulk_state, msg.str());
 }
 
+/** Build a message containing specific state quantities at the wall */
+static void information_specific_wall_state(const std::string& timeprefix)
+{
+    // Only continue on the rank housing the zero-zero modes.
+    if (!dgrid->has_zero_zero_modes()) return;
+
+    namespace ndx = channel::field::ndx;
+
+    logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
+                                     logging::get_logger("wall.upper")  };
+
+    // Indices at the lower and upper walls.  Use that wall collocation point
+    // values are nothing but the first and last B-spline coefficient values.
+    size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
+
+    // Message lists rho, u, v, w, and total energy at walls
+    for (size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
+
+        // Avoid computational cost when logging is disabled
+        if (!DEBUG_ENABLED(nick[l])) continue;
+
+        std::ostringstream msg;
+        msg << timeprefix;
+
+        const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
+        append_real(msg << ' ', rho);
+        assert(ndx::rho == 0);
+        for (size_t k = 1; k < channel::field::count; ++k) {
+            append_real(msg << ' ' ,
+                        ((*state_linear)[k][wall[l]][0][0]).real() / rho);
+        }
+        DEBUG(nick[l], msg.str());
+    }
+}
+
 /**
  * Build a message for the absolute error versus a manufactured solution.
  * Uses state_nonlinear as a scratch space and is not cheap.
@@ -354,6 +389,7 @@ static bool log_status(real_t t, size_t nt)
     // Log information about the various quantities of interest
     information_bulk(timeprefix);
     information_L2(timeprefix);
+    information_specific_wall_state(timeprefix);
 
     // Log errors versus any manufactured solution in use
     if (msoln) {
