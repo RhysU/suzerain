@@ -199,18 +199,32 @@ static std::basic_ostream<CharT,Traits>& append_real(
 /** Log messages containing mean L2 and RMS fluctuation information */
 static void information_L2(const std::string& timeprefix)
 {
+    namespace field = channel::field;
+
     // Avoid computational cost when logging is disabled
     logging::logger_type L2_mean  = logging::get_logger("L2.mean");
     logging::logger_type rms_fluct = logging::get_logger("rms.fluct");
     if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(rms_fluct)) return;
 
+    // Show headers only on first invocation
+    std::ostringstream msg;
+    static bool show_header = true;
+    if (show_header) {
+        msg << timeprefix;
+        for (size_t k = 0; k < field::count; ++k)
+            msg << ' ' << std::setw(append_real_width) << field::name[k];
+        INFO0(L2_mean, msg.str());
+        INFO0(rms_fluct, msg.str());
+        msg.str("");
+        show_header = false;
+    }
+
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
-    const array<channel::L2,channel::field::count> L2
+    const array<channel::L2,field::count> L2
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
-    std::ostringstream msg;
     msg << timeprefix;
     for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
@@ -231,6 +245,8 @@ static void information_L2(const std::string& timeprefix)
 /** Build a message containing bulk quantities */
 static void information_bulk(const std::string& timeprefix)
 {
+    namespace field = channel::field;
+
     // Only continue on the rank housing the zero-zero modes...
     if (!dgrid->has_zero_zero_modes()) return;
 
@@ -238,13 +254,24 @@ static void information_bulk(const std::string& timeprefix)
     logging::logger_type bulk_state = logging::get_logger("bulk.state");
     if (!INFO_ENABLED(bulk_state)) return;
 
+    // Show headers only on first invocation
+    std::ostringstream msg;
+    static bool show_header = true;
+    if (show_header) {
+        msg << timeprefix;
+        for (size_t k = 0; k < field::count; ++k)
+            msg << ' ' << std::setw(append_real_width) << field::name[k];
+        INFO0(bulk_state, msg.str());
+        msg.str("");
+        show_header = false;
+    }
+
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
     b->integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= scenario.Ly;
 
     // Prepare the status message and log it
-    std::ostringstream msg;
     msg << timeprefix;
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
@@ -252,41 +279,6 @@ static void information_bulk(const std::string& timeprefix)
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
     INFO(bulk_state, msg.str());
-}
-
-/** Build a message containing specific state quantities at the wall */
-static void information_specific_wall_state(const std::string& timeprefix)
-{
-    // Only continue on the rank housing the zero-zero modes.
-    if (!dgrid->has_zero_zero_modes()) return;
-
-    namespace ndx = channel::field::ndx;
-
-    logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
-                                     logging::get_logger("wall.upper")  };
-
-    // Indices at the lower and upper walls.  Use that wall collocation point
-    // values are nothing but the first and last B-spline coefficient values.
-    size_t wall[2] = { 0, state_linear->shape()[1] - 1 };
-
-    // Message lists rho, u, v, w, and total energy at walls
-    for (size_t l = 0; l < SUZERAIN_COUNTOF(wall); ++l) {
-
-        // Avoid computational cost when logging is disabled
-        if (!DEBUG_ENABLED(nick[l])) continue;
-
-        std::ostringstream msg;
-        msg << timeprefix;
-
-        const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
-        append_real(msg << ' ', rho);
-        assert(ndx::rho == 0);
-        for (size_t k = 1; k < channel::field::count; ++k) {
-            append_real(msg << ' ' ,
-                        ((*state_linear)[k][wall[l]][0][0]).real() / rho);
-        }
-        DEBUG(nick[l], msg.str());
-    }
 }
 
 /**
@@ -362,7 +354,6 @@ static bool log_status(real_t t, size_t nt)
     // Log information about the various quantities of interest
     information_bulk(timeprefix);
     information_L2(timeprefix);
-    information_specific_wall_state(timeprefix);
 
     // Log errors versus any manufactured solution in use
     if (msoln) {
