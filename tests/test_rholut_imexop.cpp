@@ -3,8 +3,8 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <boost/test/included/unit_test.hpp>
+#include <boost/test/parameterized_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bspline.hpp>
@@ -17,15 +17,30 @@
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
-// Check if the apply and pack operations are consistent in that
+typedef double real_t;
+typedef std::complex<real_t> complex_t;
+
+struct wavenumbers
+{
+    real_t km;
+    real_t kn;
+};
+
+template< typename charT, typename traits >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os, const wavenumbers& w)
+{
+    return os << "{km=" << w.km << ", kn=" << w.kn << '}';
+}
+
+// Free function checking if the apply and pack operations are
+// consistent in that
 //     (M+\varphi{}L)^(-1) * (M+\varphi{}L) * I == I
-// holds to within reasonable floating point error.
-BOOST_AUTO_TEST_CASE( operator_consistency )
+// holds to within reasonable floating point error for some wavenumbers.
+static void operator_consistency(const wavenumbers& w)
 {
     using suzerain::blas::iamax;
     using suzerain::blas::iamin;
-    typedef double real_t;
-    typedef std::complex<real_t> complex_t;
 
     // Initialize discrete B-spline operators
     using suzerain::bspline;
@@ -40,8 +55,8 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
 
     // Initialize scenario parameters
     const complex_t phi(M_SQRT2/5, M_LOG2E);
-    const real_t    km (7*M_E);
-    const real_t    kn (3*M_PI);
+    const real_t&   km = w.km;
+    const real_t&   kn = w.kn;
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -174,4 +189,30 @@ BOOST_AUTO_TEST_CASE( operator_consistency )
     BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
     BOOST_CHECK_LT(std::abs(B1[imaxabs]),
                    N*N*N*std::numeric_limits<real_t>::epsilon());
+}
+
+boost::unit_test::test_suite*
+init_unit_test_suite( int argc, char* argv[] )
+{
+
+    (void) argc; // Unused
+    (void) argv; // Unused
+
+    using boost::unit_test::framework::master_test_suite;
+    master_test_suite().p_name.value = __FILE__;
+
+    // Use a mixture of non-zero and zero wavenumbers in each of X, Z
+    // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls
+    const wavenumbers w[] = { {7*M_E, 3*M_PI},
+                              {7*M_E,      0},
+                              {    0, 3*M_PI},
+                              {    0,      0} };
+    for (size_t i = 0; i < sizeof(w)/sizeof(w[0]); ++i) {
+        std::ostringstream name;
+        name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << w[i];
+        master_test_suite().add(boost::unit_test::make_test_case(
+                &operator_consistency, name.str(), w + i, w + i + 1));
+    }
+
+    return 0;
 }
