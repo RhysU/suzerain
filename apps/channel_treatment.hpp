@@ -91,6 +91,8 @@ private:
     /** Precomputed integration coefficients */
     Eigen::VectorXr bulkcoeff;
 
+    /** Precomputed, real-valued mass matrix factorization */
+    suzerain::bsplineop_lu masslu;
 };
 
 template< typename BaseClass >
@@ -102,11 +104,15 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common)
     : BaseClass(scenario, grid, dgrid, b, bop, common),
-      bulkcoeff(b.n())
+      bulkcoeff(b.n()),
+      masslu(bop)
 {
     // Precompute operator for finding bulk quantities from coefficients
     b.integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= scenario.Ly;
+
+    // Precompute LU decomposition of mass matrix for implicit forcing
+    masslu.factor_mass(bop);
 }
 
 template< typename BaseClass >
@@ -121,10 +127,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // State enters method as collocation point values in Y direction
 
     // Shorthand
-    using Eigen::ArrayXc;
-    using Eigen::ArrayXr;
-    using Eigen::InnerStride;
-    using Eigen::Map;
+    typedef Eigen::Map<Eigen::ArrayXr,0,Eigen::InnerStride<2> > ModesRealPart;
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
@@ -138,12 +141,10 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
             = this->dgrid;
 
     // More shorthand
-    const int         Ny            = dgrid.global_wave_extent.y();
-    const std::size_t wall_lower    = 0;
-    const std::size_t wall_upper    = Ny - 1;
-    const std::size_t nonwall_start = wall_lower + 1;
-    const std::size_t nonwall_size  = wall_upper - nonwall_start;
-    const bool has_zero_zero_modes  = dgrid.has_zero_zero_modes();
+    const int         Ny           = dgrid.global_wave_extent.y();
+    const std::size_t wall_lower   = 0;
+    const std::size_t wall_upper   = Ny - 1;
+    const bool has_zero_zero_modes = dgrid.has_zero_zero_modes();
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
@@ -160,50 +161,22 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // ILowStorageMethod::iota a la mean += iota*(sample - mean).  Note that
     // the sample must be divided by delta_t to account for step sizes.
 
-    // See channel_treatment writeup for information on the steps below.
-    // Steps may appear out of order relative to the writeup.
-    // For phi real, the implicit operator is purely real for km == kn == 0.
-    // Success of the zero-zero mode treatment relies on real-valued phi!
-    SUZERAIN_ENSURE(phi.imag() == 0);
+    // See channel_treatment writeup for general information on the steps below.
+    //
+    // To handle either the fully explicit or the hybrid implicit/explicit
+    // case, we must account for a non-trivial linear operator.  This implies
+    // that the invertMassPlusScaledOperator() call below cannot be tricked
+    // into solving our integral constraints while it solves the real-valued
+    // zero-zero mode problem.  We must accommodate mass matrix solves.  As a
+    // result, steps may appear out of order or differ compared to the writeup.
+    //
+    // B-spline numerics are not conservative when the mean density field has
+    // any asymmetry.  Combat the bulk density's very, very small tendency to
+    // drift by adding an integral constraint that the bulk density stay fixed
+    // at a target value.  Approach follows that of the bulk momentum forcing.
 
     // channel_treatment step (1) done during nonlinear operator application
     // via shared OperatorCommonBlock storage space.
-
-    // Integral constraints enabled only when parameters are non-inf, non-NaN.
-    // Allow disabling these to meet manufactured solution verification needs.
-    const bool constrain_bulk_rhou
-            = (boost::math::isnormal)(scenario.bulk_rhou);
-    const bool constrain_bulk_rho
-            = (boost::math::isnormal)(scenario.bulk_rho);
-
-    // channel_treatment step (2) loads ones and local mean streamwise velocity
-    // into the imaginary part of the zero-zero mode non-wall collocation
-    // points of the streamwise momentum and total energy, respectively.  These
-    // wall collocation points are set to zero to avoid forcing at the walls
-    // when enforcing integral constraints.
-    //
-    // The remaining equations have their zero-zero mode imaginary portions
-    // zeroed to reduce cross-talk between equations during implicit solves.
-    // These must be re-zeroed after the solve.
-    if (constrain_bulk_rhou && has_zero_zero_modes) {
-
-        Map<ArrayXc>(state[ndx::rho ].origin(), Ny).imag().setZero();
-
-        Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
-        mean_rhou.imag()[wall_lower] = 0;
-        mean_rhou.imag().segment(nonwall_start, nonwall_size).setOnes();
-        mean_rhou.imag()[wall_upper] = 0;
-
-        Map<ArrayXc>(state[ndx::rhov].origin(), Ny).imag().setZero();
-
-        Map<ArrayXc>(state[ndx::rhow].origin(), Ny).imag().setZero();
-
-        Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        mean_rhoe.imag()[wall_lower]          = 0;
-        mean_rhoe.imag().segment(nonwall_start, nonwall_size)
-            = common.u().segment(nonwall_start, nonwall_size);
-        mean_rhoe.imag()[wall_upper]          = 0;
-    }
 
     // The BaseClass is responsible for all of the following steps:
     //
@@ -218,89 +191,92 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     BaseClass::invertMassPlusScaledOperator(
             phi, state, delta_t, substep_index, iota);
 
-    if (constrain_bulk_rhou && has_zero_zero_modes) {
+    // Integral constraints enabled only when parameters are non-inf, non-NaN.
+    // Allow disabling these to meet manufactured solution verification needs.
+    const bool constrain_bulk_rhou
+            = (boost::math::isnormal)(scenario.bulk_rhou);
+    const bool constrain_bulk_rho
+            = (boost::math::isnormal)(scenario.bulk_rho);
 
-        Map<ArrayXc>(state[ndx::rho ].origin(), Ny).imag().setZero();
+    // Enforce and track the integral constraints at zero-zero modes
+    if (has_zero_zero_modes) {
 
-        // channel_treatment steps (4), (5), and (6) determine and apply the
-        // appropriate bulk momentum forcing to achieve a target value.
-        Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
-        const complex_t bulk
-                = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
-        const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
-        mean_rhou.real() += varphi * mean_rhou.imag();
-        common.f() += iota*((varphi/delta_t)*mean_rhou.imag() - common.f());
-        mean_rhou.imag().setZero();
+        // Parameters identifying the interior collocation points for Eigen.
+        const std::size_t nonwall_start = wall_lower + 1;
+        const std::size_t nonwall_size  = wall_upper - nonwall_start;
 
-        Map<ArrayXc>(state[ndx::rhov].origin(), Ny).imag().setZero();
-
-        Map<ArrayXc>(state[ndx::rhow].origin(), Ny).imag().setZero();
-
-        // channel_treatment step (7) accounts for the momentum forcing
-        // within the total energy equation including the Mach squared
-        // factor arising from the nondimensionalization choices.
+        // channel_treatment step (2) loads ones and local mean streamwise
+        // velocity into non-wall collocation points.  Only non-wall points are
+        // used to avoid upsetting Dirichlet boundary conditions.  More
+        // thought will be necessary for Neumann or Robin conditions.
         //
-        // During implicit treatment, cross-talk between equations causes the
-        // imaginary wall coefficients below to be non-zero.  Using them as-is
-        // perturbs the isothermal condition (in a scenario-dependent fashion).
-        // Ignoring them fails to account for the work done by the constraint.
-        //
-        // We take a middle road by distributing the wall coefficient work
-        // uniformly throughout the interior.  The pointwise work at the wall
-        // is wounded but the global energy balance remains correct.  This
-        // admittedly screws up the clean residuals from calculating the
-        // integral constraints.  The hope is that the damage is the wall is
-        // dominated by the boundary condition and the damage in the interior
-        // is negligible relative to the local work contribution.
-        Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
+        // channel_treatment step (3) was already performed for state.  Perform
+        // sufficient additional mass matrix solves for constraints.
+        Eigen::ArrayXXr rhs = Eigen::ArrayXXr::Zero(
+                Ny, (constrain_bulk_rhou ? 2 : constrain_bulk_rho ? 1 : 0));
+        switch (rhs.cols()) { // Fall through is intentional...
+            case 2:
+                rhs.col(1).segment(nonwall_start, nonwall_size)
+                    = common.u().segment(nonwall_start, nonwall_size);
+            case 1:
+                rhs.col(0).segment(nonwall_start, nonwall_size).setOnes();
+            case 0:
+            default:
+                ;             // ...as is empty statement here.
+        }
+        masslu.solve(rhs.cols(), rhs.data(),
+                     rhs.innerStride(), rhs.outerStride());
 
-        const real_t global_work   = bulkcoeff.dot(mean_rhoe.imag().matrix());
-        const real_t interior_work = global_work
-                - bulkcoeff[wall_lower]*mean_rhoe.imag()[wall_lower]
-                - bulkcoeff[wall_upper]*mean_rhoe.imag()[wall_upper];
-        mean_rhoe.imag()[wall_lower] = 0;
-        mean_rhoe.imag().segment(nonwall_start, nonwall_size)
-                *= global_work / interior_work;
-        mean_rhoe.imag()[wall_upper] = 0;
+        // If necessary, constrain the bulk streamwise momentum.
+        if (constrain_bulk_rhou) {
 
-        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma)*mean_rhoe.imag();
-        common.f_dot_u() += iota*(   (varphi/delta_t)*mean_rhoe.imag()
-                                   - common.f_dot_u());
-        mean_rhoe.imag().setZero();
+            // channel_treatment steps (4), (5), and (6) determine and apply
+            // the appropriate bulk momentum forcing to achieve a target value.
+            ModesRealPart mean_rhou((real_t *)state[ndx::rhou].origin(), Ny);
+            const real_t observed = bulkcoeff.dot((mean_rhou.matrix()));
+            const real_t varphi = (scenario.bulk_rhou - observed)
+                                / bulkcoeff.dot(rhs.col(0).matrix());
+            mean_rhou += varphi*rhs.col(0);
 
-        // channel_treatment steps (8) and (9) already performed above
+            // channel_treatment step (7) accounts for the momentum forcing
+            // within the total energy equation including the Mach squared
+            // factor arising from the nondimensionalization choices.
+            ModesRealPart mean_rhoe((real_t *)state[ndx::rhoe].origin(), Ny);
+            mean_rhoe        += (varphi*scenario.Ma*scenario.Ma)*rhs.col(1);
+
+            // Track the forcing magnitude within statistics.
+            common.f()       += iota*(   (varphi/delta_t)*rhs.col(0)
+                                       - common.f());
+            common.f_dot_u() += iota*(   (varphi/delta_t)*rhs.col(1)
+                                       - common.f_dot_u());
+        } else {
+
+            // Track the lack of forcing within statistics.
+            common.f()       += iota*(/* (zero/delta_t) */ - common.f());
+            common.f_dot_u() += iota*(/* (zero/delta_t) */ - common.f_dot_u());
+
+        }
+
+        // If necessary, constraint the bulk density.
+        if (constrain_bulk_rho) {
+
+            // We force only the continuity equation which neglects
+            // associated contributions to the momentum and energy
+            // equations.  The mass addition is of order the discrete
+            // conservation error and vanishes when the mean density
+            // field is symmetric in the wall-normal direction.
+            ModesRealPart mean_rho((real_t *)state[ndx::rho].origin(), Ny);
+            const real_t observed = bulkcoeff.dot((mean_rho.matrix()));
+            const real_t varphi = (scenario.bulk_rho - observed)
+                                / bulkcoeff.dot(rhs.col(0).matrix());
+            mean_rho += varphi*rhs.col(0);
+
+            // Statistics for the bulk density forcing are not tracked
+        }
+
+        // No volumetric energy forcing in performed current substep
+        common.qb() += iota*(/* (zero/delta_t) */ - common.qb());
     }
-
-    // B-spline numerics are not conservative when the mean density field has
-    // any asymmetry.  Combat the bulk density's very, very small tendency to
-    // drift by (usually) dribbling in mass so that we maintain a target bulk
-    // density.
-    //
-    // When nonzero, this mass forcing /does/ perturb the thermodynamic state.
-    // A constant value is added to all density coefficients to avoid
-    // introducing any additional density gradient (using that the basis is a
-    // partition of unity).  However, examining the equation of state shows
-    // that this approach does muck with pressure and temperature gradients
-    // (albeit also uniformly).
-    //
-    // We neglect the associated contributions to the momentum and energy
-    // equations as this mass dribbling is small and vanishes when the mean
-    // field is symmetric in the wall-normal direction.
-    //
-    // Enforcing using an integral constraint (a la the bulk momentum target)
-    // would be cleaner.  However, it would require additional implicit solves
-    // to implement in the general case.  The particulars would be sensitive to
-    // boundary conditions in the presence of equation cross-talk.
-    if (constrain_bulk_rho && has_zero_zero_modes) {
-
-        // Statistics for the bulk density forcing are not tracked.
-        Map<ArrayXr,0,InnerStride<2> > mean_rho(
-                (real_t *)state[ndx::rho].origin(), Ny);
-        mean_rho *= (scenario.bulk_rho / bulkcoeff.dot(mean_rho.matrix()));
-    }
-
-    // No volumetric energy forcing in performed current substep
-    common.qb() += iota*(/* (zero/delta_t) */ - common.qb());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
