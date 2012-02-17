@@ -138,9 +138,11 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
             = this->dgrid;
 
     // More shorthand
-    const int Ny = dgrid.global_wave_extent.y();
+    const int         Ny            = dgrid.global_wave_extent.y();
     const std::size_t wall_lower    = 0;
     const std::size_t wall_upper    = Ny - 1;
+    const std::size_t nonwall_start = wall_lower + 1;
+    const std::size_t nonwall_size  = wall_upper - nonwall_start;
     const bool has_zero_zero_modes  = dgrid.has_zero_zero_modes();
 
     // Sidesteps assertions when local rank contains no wavespace information
@@ -185,14 +187,11 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // These must be re-zeroed after the solve.
     if (constrain_bulk_rhou && has_zero_zero_modes) {
 
-        const std::size_t start = wall_lower + 1;
-        const std::size_t size  = wall_upper - start;
-
         Map<ArrayXc>(state[ndx::rho ].origin(), Ny).imag().setZero();
 
         Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
         mean_rhou.imag()[wall_lower] = 0;
-        mean_rhou.imag().segment(start, size).setOnes();
+        mean_rhou.imag().segment(nonwall_start, nonwall_size).setOnes();
         mean_rhou.imag()[wall_upper] = 0;
 
         Map<ArrayXc>(state[ndx::rhov].origin(), Ny).imag().setZero();
@@ -201,7 +200,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
         Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
         mean_rhoe.imag()[wall_lower]          = 0;
-        mean_rhoe.imag().segment(start, size) = common.u().segment(start, size);
+        mean_rhoe.imag().segment(nonwall_start, nonwall_size)
+            = common.u().segment(nonwall_start, nonwall_size);
         mean_rhoe.imag()[wall_upper]          = 0;
     }
 
@@ -225,7 +225,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         // channel_treatment steps (4), (5), and (6) determine and apply the
         // appropriate bulk momentum forcing to achieve a target value.
         Map<ArrayXc> mean_rhou(state[ndx::rhou].origin(), Ny);
-        const complex_t bulk = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
+        const complex_t bulk
+                = bulkcoeff.cast<complex_t>().dot(mean_rhou.matrix());
         const real_t varphi = (scenario.bulk_rhou - bulk.real()) / bulk.imag();
         mean_rhou.real() += varphi * mean_rhou.imag();
         common.f() += iota*((varphi/delta_t)*mean_rhou.imag() - common.f());
@@ -238,8 +239,31 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
+        //
+        // During implicit treatment, cross-talk between equations causes the
+        // imaginary wall coefficients below to be non-zero.  Using them as-is
+        // perturbs the isothermal condition (in a scenario-dependent fashion).
+        // Ignoring them fails to account for the work done by the constraint.
+        //
+        // We take a middle road by distributing the wall coefficient work
+        // uniformly throughout the interior.  The pointwise work at the wall
+        // is wounded but the global energy balance remains correct.  This
+        // admittedly screws up the clean residuals from calculating the
+        // integral constraints.  The hope is that the damage is the wall is
+        // dominated by the boundary condition and the damage in the interior
+        // is negligible relative to the local work contribution.
         Map<ArrayXc> mean_rhoe(state[ndx::rhoe].origin(), Ny);
-        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma) * mean_rhoe.imag();
+
+        const real_t global_work   = bulkcoeff.dot(mean_rhoe.imag().matrix());
+        const real_t interior_work = global_work
+                - bulkcoeff[wall_lower]*mean_rhoe.imag()[wall_lower]
+                - bulkcoeff[wall_upper]*mean_rhoe.imag()[wall_upper];
+        mean_rhoe.imag()[wall_lower] = 0;
+        mean_rhoe.imag().segment(nonwall_start, nonwall_size)
+                *= global_work / interior_work;
+        mean_rhoe.imag()[wall_upper] = 0;
+
+        mean_rhoe.real() += (varphi*scenario.Ma*scenario.Ma)*mean_rhoe.imag();
         common.f_dot_u() += iota*(   (varphi/delta_t)*mean_rhoe.imag()
                                    - common.f_dot_u());
         mean_rhoe.imag().setZero();
@@ -252,12 +276,12 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // drift by (usually) dribbling in mass so that we maintain a target bulk
     // density.
     //
-    // When nonzero, this mass forcing does perturb the thermodynamic state.  A
-    // constant value is added to all density coefficients to avoid introducing
-    // any additional density gradient (using that the basis is a partition of
-    // unity).  However, examining the equation of state shows that this
-    // approach does muck with pressure and temperature gradients (albeit also
-    // uniformly).
+    // When nonzero, this mass forcing /does/ perturb the thermodynamic state.
+    // A constant value is added to all density coefficients to avoid
+    // introducing any additional density gradient (using that the basis is a
+    // partition of unity).  However, examining the equation of state shows
+    // that this approach does muck with pressure and temperature gradients
+    // (albeit also uniformly).
     //
     // We neglect the associated contributions to the momentum and energy
     // equations as this mass dribbling is small and vanishes when the mean
