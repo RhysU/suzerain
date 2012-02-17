@@ -104,11 +104,12 @@ private:
     }
 
     /** Precomputed, real-valued mass matrix factorization */
-    suzerain::bsplineop_lu masslu;
+    boost::scoped_ptr<suzerain::bsplineop_lu> masslu;
 
     /** Precomputed integration coefficients */
     Eigen::VectorXr bulkcoeff;
 
+    // TODO Not strictly necessary beyond constructor.  Save some RAM.
     /** Coefficients for function supported at non-wall points */
     Eigen::ArrayXr interior;
 
@@ -124,31 +125,30 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common)
-    : BaseClass(scenario, grid, dgrid, b, bop, common),
-      masslu(bop),
-      bulkcoeff(b.n()),
-      interior(b.n())
+    : BaseClass(scenario, grid, dgrid, b, bop, common)
 {
-    // Precompute LU decomposition of mass matrix for implicit forcing
-    masslu.factor_mass(bop);
+    // Precomputed results only necessary on rank with zero-zero modes
+    if (!dgrid.has_zero_zero_modes()) return;
 
-    // Precompute operator for finding bulk quantities from coefficients
-    b.integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= scenario.Ly;
+    masslu.reset(new suzerain::bsplineop_lu(bop));
+    masslu->factor_mass(bop);
 
     // channel_treatment step (2) loads ones and local mean streamwise
     // velocity into non-wall collocation points.  Only non-wall points are
     // used to avoid upsetting Dirichlet boundary conditions.  More
     // thought will be necessary for Neumann or Robin conditions.
-    interior[0]       = 0;
+    interior.setZero(b.n());
     interior.segment(1, b.n()-2).setOnes();
-    interior[b.n()-1] = 0;
-    masslu.solve(1, interior.data(), 1, b.n());
+    masslu->solve(1, interior.data(), 1, b.n());
 
-    // Precompute a constant factor
+    // Precompute operator for finding bulk quantities from coefficients
+    bulkcoeff.resize(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= scenario.Ly;
     bulkcoeff_dot_interior = bulkcoeff.dot(interior.matrix());
 
-    // TODO We only need to keep the mass matrix around if rhou is active.
+    // Release resources if not necessary beyond initialization
+    if (!constrain_bulk_rhou()) masslu.reset();
 }
 
 template< typename BaseClass >
@@ -220,15 +220,18 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     BaseClass::invertMassPlusScaledOperator(
             phi, state, delta_t, substep_index, iota);
 
+    // Only the rank with zero-zero modes proceeds!
+    if (!dgrid.has_zero_zero_modes()) return;
+
     // If necessary, constrain the bulk streamwise momentum.
-    if (dgrid.has_zero_zero_modes() && constrain_bulk_rhou()) {
+    if (constrain_bulk_rhou()) {
 
         // channel_treatment step (3) was already performed for state.
         // Perform mass matrix solve for forcing work contribution.
         Eigen::ArrayXr rhs = common.u();
         rhs[0]    = 0;
         rhs[Ny-1] = 0;
-        masslu.solve(1, rhs.data(), 1, rhs.size());
+        masslu->solve(1, rhs.data(), 1, rhs.size());
 
         // channel_treatment steps (4), (5), and (6) determine and apply
         // the appropriate bulk momentum forcing to achieve a target value.
@@ -256,7 +259,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     }
 
     // If necessary, constraint the bulk density.
-    if (dgrid.has_zero_zero_modes() && constrain_bulk_rho()) {
+    if (constrain_bulk_rho()) {
 
         // We force only the continuity equation which neglects
         // associated contributions to the momentum and energy
