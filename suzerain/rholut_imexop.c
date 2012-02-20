@@ -117,7 +117,7 @@ suzerain_rholut_imexop_accumulate(
 
         /* in_rhou */ {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikm,              REF(ux),
+                phi*gm1*ikm,               REF(ux),
                 -phi*invRe*(ap43*km2+kn2), REF(nu),
                 w->D[M],  w->ld, in_rhou, inc, 1.0, out_rhou, inc);
 
@@ -128,7 +128,7 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhov) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikm,       REF(uy),
+                phi*gm1*ikm,               REF(uy),
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhou, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
@@ -138,7 +138,7 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhow) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikm,             REF(uz),
+                phi*gm1*ikm,              REF(uz),
                 phi*ap13*invRe*(ikm+ikn), REF(nu),
                 w->D[M],  w->ld, in_rhow, inc, 1.0, out_rhou, inc);
         }
@@ -227,14 +227,14 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhou) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikn,             REF(ux),
+                phi*gm1*ikn,              REF(ux),
                 phi*ap13*invRe*(ikm+ikn), REF(nu),
                 w->D[M],  w->ld, in_rhou, inc, 1.0, out_rhow, inc);
         }
 
         if (in_rhov) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikn,       REF(uy),
+                phi*gm1*ikn,        REF(uy),
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhow, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
@@ -244,7 +244,7 @@ suzerain_rholut_imexop_accumulate(
 
         /* in_rhow */ {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*gm1*ikn,              REF(uz),
+                phi*gm1*ikn,               REF(uz),
                 -phi*invRe*(km2+ap43*kn2), REF(nu),
                 w->D[M],  w->ld, in_rhow, inc, 1.0, out_rhow, inc);
 

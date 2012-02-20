@@ -114,7 +114,7 @@ FUNCNAME()(
         /* rhou */ {
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
-                    -phi*gm1*ikm,                REF(ux),
+                    phi*gm1*ikm,                 REF(ux),
                     -phi*invRe*(ap43*km2 + kn2), REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
@@ -127,7 +127,7 @@ FUNCNAME()(
 
         if (rhov >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*gm1*ikm,       REF(uy),
+                    phi*gm1*ikm,        REF(uy),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
@@ -139,7 +139,7 @@ FUNCNAME()(
 
         if (rhow >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    -phi*gm1*ikm,             REF(uz),
+                    phi*gm1*ikm,              REF(uz),
                     phi*ap13*invRe*(ikm+ikn), REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
@@ -229,7 +229,7 @@ FUNCNAME()(
 
         if (rhou >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    -phi*gm1*ikn,             REF(ux),
+                    phi*gm1*ikn,              REF(ux),
                     phi*ap13*invRe*(ikm+ikn), REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
@@ -238,7 +238,7 @@ FUNCNAME()(
 
         if (rhov >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*gm1*ikn,       REF(uy),
+                    phi*gm1*ikn,        REF(uy),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
@@ -251,7 +251,7 @@ FUNCNAME()(
         /* rhow */ {
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
-                    -phi*gm1*ikn,                REF(uz),
+                    phi*gm1*ikn,                 REF(uz),
                     -phi*invRe*(km2 + ap43*kn2), REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
