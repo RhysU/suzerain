@@ -20,24 +20,27 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 typedef double real_t;
 typedef std::complex<real_t> complex_t;
 
-struct wavenumbers
+struct parameters
 {
     real_t km;
     real_t kn;
+    bool   zerorefs;
 };
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
-        std::basic_ostream<charT,traits> &os, const wavenumbers& w)
+        std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{km=" << w.km << ", kn=" << w.kn << '}';
+    return os << "{km="        << p.km
+              << ", kn="       << p.kn
+              << ", zerorefs=" << p.zerorefs << '}';
 }
 
 // Free function checking if the apply and pack operations are
 // consistent in that
 //     (M+\varphi{}L)^(-1) * (M+\varphi{}L) * I == I
-// holds to within reasonable floating point error for some wavenumbers.
-static void operator_consistency(const wavenumbers& w)
+// holds to within reasonable floating point error for some parameters.
+static void operator_consistency(const parameters& p)
 {
     using suzerain::blas::iamax;
     using suzerain::blas::iamin;
@@ -55,8 +58,8 @@ static void operator_consistency(const wavenumbers& w)
 
     // Initialize scenario parameters
     const complex_t phi(M_SQRT2/5, M_LOG2E);
-    const real_t&   km = w.km;
-    const real_t&   kn = w.kn;
+    const real_t&   km = p.km;
+    const real_t&   kn = p.kn;
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -65,13 +68,19 @@ static void operator_consistency(const wavenumbers& w)
     s.alpha = 3;
     s.gamma = 1.4;
 
-    // Initialize reference quantities with random, nonzero values
-    // Abuses what we know about the structure if ...imexop_ref{,ld}.
+    // Initialize reference quantities
+    // Abuses what we know about the structure of ...imexop_ref{,ld}.
     suzerain_rholut_imexop_ref r;
     const std::size_t nrefs = sizeof(r)/sizeof(real_t *);
     boost::scoped_array<real_t> refs(new real_t[n*nrefs]);
-    for (std::size_t i = 0; i < n*nrefs; ++i) { // Create interesting garbage
-        refs[i] = 1 + (i / 100.0) + (random() / RAND_MAX);
+    if (p.zerorefs) {  // Either use zero reference values...
+        for (std::size_t i = 0; i < n*nrefs; ++i) {
+            refs[i] = 0;
+        }
+    } else {           // ...or create interesting garbage
+        for (std::size_t i = 0; i < n*nrefs; ++i) {
+            refs[i] = 1 + (i / 100.0) + (random() / RAND_MAX);
+        }
     }
     for (std::size_t i = 0; i < nrefs; ++i) {   // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
@@ -202,16 +211,23 @@ init_unit_test_suite( int argc, char* argv[] )
     master_test_suite().p_name.value = __FILE__;
 
     // Use a mixture of non-zero and zero wavenumbers in each of X, Z
-    // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls
-    const wavenumbers w[] = { {7*M_E, 3*M_PI},
-                              {7*M_E,      0},
-                              {    0, 3*M_PI},
-                              {    0,      0} };
-    for (size_t i = 0; i < sizeof(w)/sizeof(w[0]); ++i) {
+    // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls.
+    //
+    // Use both zero and non-zero reference values to tickle
+    // degenerate-but-expected behavior.
+    const parameters p[] = { {7*M_E, 3*M_PI, true },
+                             {7*M_E,      0, true },
+                             {    0, 3*M_PI, true },
+                             {    0,      0, true },
+                             {7*M_E, 3*M_PI, false},
+                             {7*M_E,      0, false},
+                             {    0, 3*M_PI, false},
+                             {    0,      0, false} };
+    for (size_t i = 0; i < sizeof(p)/sizeof(p[0]); ++i) {
         std::ostringstream name;
-        name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << w[i];
+        name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << p[i];
         master_test_suite().add(boost::unit_test::make_test_case(
-                &operator_consistency, name.str(), w + i, w + i + 1));
+                &operator_consistency, name.str(), p + i, p + i + 1));
     }
 
     return 0;
