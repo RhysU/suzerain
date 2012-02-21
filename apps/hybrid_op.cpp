@@ -287,12 +287,15 @@ public:
             T * const row = (T *) suzerain_gbmatrix_row(
                     A.N, A.N, A.KL, A.KU, (void *) papt, papt_ld,
                     sizeof(T), rhoe[wall], &begin, &end, &inc);
+            // Necessary to ensure constraint possible in degenerate case
+            complex_t &rhocoeff = row[rho[wall]*inc];
+            if (rhocoeff == complex_t(0)) rhocoeff = 1;
+            // Scan row and adjust coefficients for constraint
             for (int rowndx = begin; rowndx < end; ++rowndx) {
                 if (rowndx == rho[wall]) {
                     // NOP
                 } else if (rowndx == rhoe[wall]) {
-                    row[rowndx*inc] = row[rho[wall]*inc]
-                                    * gamma_times_one_minus_gamma;
+                    row[rowndx*inc] = rhocoeff*gamma_times_one_minus_gamma;
                 } else {
                     row[rowndx*inc] = 0;
                 }
@@ -439,10 +442,31 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 &rcond, ferr, berr, work.data(), rwork.data());
             suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
 
-            if (info) {
-                char buffer[80];
+            char buffer[128];
+            if (info == 0) {
+                // Success
+            } else if (info < 0) {
                 snprintf(buffer, sizeof(buffer),
-                         "suzerain_lapack_%s reported error %d", method, info);
+                    "suzerain_lapack_%s reported error in argument %d",
+                    method, -info);
+                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
+            } else if (info <= A.N) {
+                snprintf(buffer, sizeof(buffer),
+                    "suzerain_lapack_%s reported singularity in PAP^T row %d"
+                    " corresponding to A row %d for state scalar %d",
+                    method, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
+                    suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
+                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
+            } else if (info == A.N+1) {
+                snprintf(buffer, sizeof(buffer),
+                    "suzerain_lapack_%s reported condition number like %g for "
+                    " m=%d, n=%d with km=%g, kn=%g",
+                    method, 1/rcond, m, n, km, kn);
+                WARN(buffer); // Warn user but continue...
+            } else {
+                snprintf(buffer, sizeof(buffer),
+                    "suzerain_lapack_%s reported unknown error %d",
+                    method, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
 
