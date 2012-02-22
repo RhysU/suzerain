@@ -20,20 +20,27 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 typedef double real_t;
 typedef std::complex<real_t> complex_t;
 
+// Machine precision constant
+static const real_t macheps = std::numeric_limits<real_t>::epsilon();
+
+// Abuse what we know about suzerain_rholut_imexop_ref{,ld}.
+static const size_t NREFS = sizeof(suzerain_rholut_imexop_ref)/sizeof(real_t*);
+BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_rholut_imexop_refld)/sizeof(int));
+
 struct parameters
 {
     real_t km;
     real_t kn;
-    bool   zerorefs;
+    int    refndx;
 };
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{km="        << p.km
-              << ", kn="       << p.kn
-              << ", zerorefs=" << p.zerorefs << '}';
+    return os << "{km="      << p.km
+              << ", kn="     << p.kn
+              << ", refndx=" << p.refndx << '}';
 }
 
 // Free function checking if the apply and pack operations are
@@ -42,6 +49,9 @@ std::basic_ostream<charT,traits>& operator<<(
 // holds to within reasonable floating point error for some parameters.
 static void operator_consistency(const parameters& p)
 {
+    using std::abs;
+    using std::fill;
+    using std::sqrt;
     using suzerain::blas::iamax;
     using suzerain::blas::iamin;
 
@@ -57,7 +67,7 @@ static void operator_consistency(const parameters& p)
     const int N = S*n;    // DOF for global operator
 
     // Initialize scenario parameters
-    const complex_t phi(M_SQRT2/5, M_LOG2E);
+    const complex_t phi(M_SQRT2/11, M_LOG2E/13);
     const real_t&   km = p.km;
     const real_t&   kn = p.kn;
 
@@ -68,31 +78,32 @@ static void operator_consistency(const parameters& p)
     s.alpha = 3;
     s.gamma = 1.4;
 
-    // Initialize reference quantities
+    // Initialize nonzero reference quantities for p.refndx
     // Abuses what we know about the structure of ...imexop_ref{,ld}.
     suzerain_rholut_imexop_ref r;
-    const std::size_t nrefs = sizeof(r)/sizeof(real_t *);
-    boost::scoped_array<real_t> refs(new real_t[n*nrefs]);
-    if (p.zerorefs) {  // Either use zero reference values...
-        for (std::size_t i = 0; i < n*nrefs; ++i) {
-            refs[i] = 0;
-        }
-    } else {           // ...or create interesting garbage
-        for (std::size_t i = 0; i < n*nrefs; ++i) {
-            refs[i] = 1 + (i / 100.0) + (random() / RAND_MAX);
+    boost::scoped_array<real_t> refs(new real_t[n*NREFS]);
+    for (int i = 0; i < (int) NREFS; ++i) {
+        if (i == p.refndx) {
+            for (int j = 0; j < n; ++j) {
+                refs[i*n + j] = 1 + (random() / RAND_MAX);
+            }
+        } else {
+            for (int j = 0; j < n; ++j) {
+                refs[i*n + j] = 0;
+            }
         }
     }
-    for (std::size_t i = 0; i < nrefs; ++i) {   // Establish refs
+    for (size_t i = 0; i < NREFS; ++i) {        // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
     }
     suzerain_rholut_imexop_refld ld;
-    std::fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
+    fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
 
     // Allocate state storage and initialize B1 to eye(N)
     boost::scoped_array<complex_t> B1(new complex_t[N*N]);
     boost::scoped_array<complex_t> B2(new complex_t[N*N]);
-    std::fill(B1.get(), B1.get() + N*N, 0);
-    std::fill(B2.get(), B2.get() + N*N, 0);
+    fill(B1.get(), B1.get() + N*N, 0);
+    fill(B2.get(), B2.get() + N*N, 0);
     for (int i = 0; i < N; ++i) {
         B1[i + i*N] = 1;
     }
@@ -125,8 +136,8 @@ static void operator_consistency(const parameters& p)
     // Fill all working storage with NaNs, invoke suzerain_rholut_imexop_packc,
     // and be sure we get a matrix lacking NaNs on the band as a result.
     using suzerain::complex::NaN;
-    std::fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
-    std::fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
+    fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
+    fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
     suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
                                  0, 1, 2, 3, 4, buf.get(), &A, papt.get());
     for (int i = 0; i < A.N; ++i) {
@@ -145,7 +156,7 @@ static void operator_consistency(const parameters& p)
 
     // Factor LU = PAP^T and solve (LU)^{-1} B2 = B1
     boost::scoped_array<complex_t> lu(new complex_t[(A.LD + A.KL)*A.N]);
-    std::fill(lu.get(), lu.get() + lusize, NaN<real_t>());
+    fill(lu.get(), lu.get() + lusize, NaN<real_t>());
     boost::scoped_array<int>       ipiv(new int[A.N]);
     char equed;
     boost::scoped_array<real_t>    scale_r(new real_t[A.N]);
@@ -194,10 +205,11 @@ static void operator_consistency(const parameters& p)
 
     // Expected result is now a matrix containing only zeros.
     // Check that the maximum absolute deviation from zero is small.
+    // "Small" defined as machine epsilon modified by conditioning estimate.
     const int imaxabs = iamax(N*N, B1.get(), 1);
     BOOST_TEST_MESSAGE("maximum absolute error is " << B1[imaxabs]);
-    BOOST_CHECK_LT(std::abs(B1[imaxabs]),
-                   N*N*N*std::numeric_limits<real_t>::epsilon());
+    BOOST_WARN_LT(1/rcond, 1/sqrt(macheps));         // Squack on bad rcond
+    BOOST_CHECK_LT(abs(B1[imaxabs]), macheps/rcond); // Check on estimate
 }
 
 boost::unit_test::test_suite*
@@ -213,21 +225,20 @@ init_unit_test_suite( int argc, char* argv[] )
     // Use a mixture of non-zero and zero wavenumbers in each of X, Z
     // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls.
     //
-    // Use both zero and non-zero reference values to tickle
-    // degenerate-but-expected behavior.
-    const parameters p[] = { {7*M_E, 3*M_PI, true },
-                             {7*M_E,      0, true },
-                             {    0, 3*M_PI, true },
-                             {    0,      0, true },
-                             {7*M_E, 3*M_PI, false},
-                             {7*M_E,      0, false},
-                             {    0, 3*M_PI, false},
-                             {    0,      0, false} };
-    for (size_t i = 0; i < sizeof(p)/sizeof(p[0]); ++i) {
-        std::ostringstream name;
-        name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << p[i];
-        master_test_suite().add(boost::unit_test::make_test_case(
-                &operator_consistency, name.str(), p + i, p + i + 1));
+    // First register all-zero reference values to tickle degenerate cases.
+    // Then register nonzero references one-by-one to ensure consistency.
+    parameters p[] = { {7*M_E, 3*M_PI, /*refndx*/-1},
+                       {7*M_E,      0, /*refndx*/-1},
+                       {    0, 3*M_PI, /*refndx*/-1},
+                       {    0,      0, /*refndx*/-1} };
+    for (int i = -1; i < (int) NREFS; ++i) {
+        for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
+            p[j].refndx = i;
+            std::ostringstream name;
+            name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << p[j];
+            master_test_suite().add(boost::unit_test::make_test_case(
+                    &operator_consistency, name.str(), p + j, p + j + 1));
+        }
     }
 
     return 0;
