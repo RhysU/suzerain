@@ -1350,51 +1350,53 @@ int main(int argc, char **argv)
     }
 
     // Whenever we advanced the simulation, find the linearization
-    // error present within the chosen operator implementations.
+    // error present between the two chosen hybrid operator implementations.
     //
-    // Procedure performed whenever we advance to (a) ensure the check is run
-    // often but (b) not costly when we wish to merely down-sample restart
-    // files or convert to/from physical space.  The user has already paid the
-    // memory overhead for one-or-more nonlinear operator applications.  The
-    // incremental cost here is then less than a complete Runge-Kutta step.
+    // More specifically, for \partial_t u = \mathscr{L}u + Lu + (N(u)-Lu) did
+    // the INonlinearOperator compute a "-Lu" matching with the
+    // ILinearOperator's "+Lu" contribution?  ILinearOperator is assumed to
+    // also compute \mathscr{L}u which is independent of reference values (e.g.
+    // the divergence of the momentum within the mass equation).
     //
-    // More specifically, for \partial_t u = Lu + (N(u)-Lu) did the
-    // INonlinearOperator compute a N(u)-Lu matching with the ILinearOperator's
-    // Lu implementation?  Done at shutdown as the check destroys the state
-    // information so it may be performed under low storage memory constraints.
+    // Procedure performed whenever we advance time to (a) ensure the test is
+    // run often but (b) not costly when we wish to merely down-sample restart
+    // files or convert to/from physical space (e.g. --advance_nt=0).  In those
+    // circumstances the user has already paid the memory overhead for
+    // nonlinear operator applications.  The incremental runtime overhead is
+    // therefore no memory and computation smaller than a complete Runge-Kutta
+    // step.  Done at shutdown as the check destroys the state information so
+    // it may be performed within low storage memory requirements.
     //
-    // Requires that the following facts all hold:
+    // Success requires that the following preconditions all hold:
     //    i) At substep zero, INonlinearOperator computes N(u) - Lu
     //       including the necessary reference quantities.
     //   ii) The reference quantities are stored in common_block
-    //       and may be expressly zeroed.
+    //       and may be expressly zeroed.  Zeroing them nukes linearized
+    //       contributions from I{Nonlinear,Linear}Operator but not
+    //       linear contributions from ILinearOperator.
     //  iii) On non-zero substeps for zero reference values,
-    //       INonlinearOperator computes N(u).
+    //       INonlinearOperator computes only N(u) and ILinearOperator
+    //       computes only \left(M+\varphi\mathscr{L}\right)u.
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.
     //    v) The NonlinearOperator application requires an
-    //       auxiliary scaling factor chi to account for Fourier
+    //       auxiliary scaling factor "chi" to account for Fourier
     //       transform normalization needs.
     if (tc->current_nt()) {
         const double starttime = MPI_Wtime();
-        common_block.setZero(grid.dN.y());                  // Zero references
-        state_nonlinear->assign(*state_linear);             // b:=u
-        N->applyOperator(                                   // b:=(N(u)-Lu)/chi
-                tc->current_t(), *state_nonlinear,          //    for substep 0
-                m.evmaxmag_real(), m.evmaxmag_imag(), 0);
-        state_nonlinear->scale(-chi);                       // b:=Lu-N(u)
-        L->accumulateMassPlusScaledOperator(                // b:=(M+L)u-N(u)
-                0, *state_linear, 1, *state_nonlinear, 0,0);
-        state_nonlinear->scale(-1);                         // b:=N(u)-(M+L)u
+        state_nonlinear->assign(*state_linear);
+        common_block.setZero(grid.dN.y());  // Defensive
+        N->applyOperator(tc->current_t(), *state_nonlinear,
+                m.evmaxmag_real(), m.evmaxmag_imag(), /*substep*/0);
         L->accumulateMassPlusScaledOperator(
-                1, *state_linear, 1, *state_nonlinear, 0,0);// b:=N(u)
-        state_nonlinear->exchange(*state_linear);           // a,b:=N(u),u
-        common_block.setZero(grid.dN.y());                  // Zero references
-        N->applyOperator(                                   // b:=N(u)/chi
-                tc->current_t(), *state_nonlinear,          //    for substep 1
-                m.evmaxmag_real(), m.evmaxmag_imag(), 1);
-        state_linear->addScaled(                            // a:=a-chi*b
-                -chi, *state_nonlinear);
+                1.0, *state_linear, chi,  *state_nonlinear, 0, /*substep*/0);
+        common_block.setZero(grid.dN.y());  // Zero reference quantities
+        L->accumulateMassPlusScaledOperator(
+                1.0, *state_linear, -1.0, *state_nonlinear, 0, /*substep*/0);
+        state_nonlinear->exchange(*state_linear);
+        N->applyOperator(tc->current_t(), *state_nonlinear,
+                m.evmaxmag_real(), m.evmaxmag_imag(), /*substep*/1);
+        state_linear->addScaled(chi, *state_nonlinear);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
