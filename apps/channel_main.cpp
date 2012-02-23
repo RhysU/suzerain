@@ -1184,13 +1184,13 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // Prepare TimeController for managing the time advance
-    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
+    // Prepare TimeController for managing the time advance.
+    // Nonlinear scaling factor chi = (N_x N_z)^(-1) from write up section 2.1
     // (Spatial discretization) accounts for dealiasing and included here.
     using suzerain::timestepper::TimeController;
+    const real_t chi = real_t(1)/(grid.dN.x()*grid.dN.z());
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                m, delta_t_allreducer,
-                *L, real_t(1)/(grid.dN.x()*grid.dN.z()), *N,
+                m, delta_t_allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
@@ -1372,26 +1372,29 @@ int main(int argc, char **argv)
     //       INonlinearOperator computes N(u).
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.
+    //    v) The NonlinearOperator application requires an
+    //       auxiliary scaling factor chi to account for Fourier
+    //       transform normalization needs.
     if (tc->current_nt()) {
         const double starttime = MPI_Wtime();
         common_block.setZero(grid.dN.y());                  // Zero references
-        state_nonlinear->assign(*state_linear);             // b := u
-        N->applyOperator(                                   // b := N(u)-Lu
+        state_nonlinear->assign(*state_linear);             // b:=u
+        N->applyOperator(                                   // b:=(N(u)-Lu)/chi
                 tc->current_t(), *state_nonlinear,
                 m.evmaxmag_real(), m.evmaxmag_imag(), 0);
-        state_nonlinear->scale(-1);                         // b := Lu-N(u)
-        L->accumulateMassPlusScaledOperator(                // b := (M+L)u-N(u)
+        state_nonlinear->scale(-chi);                       // b:=Lu-N(u)
+        L->accumulateMassPlusScaledOperator(                // b:=(M+L)u-N(u)
                 0, *state_linear, 1, *state_nonlinear, 0,0);
-        state_nonlinear->scale(-1);                         // b := N(u)-(M+L)u
+        state_nonlinear->scale(-1);                         // b:=N(u)-(M+L)u
         L->accumulateMassPlusScaledOperator(
-                1, *state_linear, 1, *state_nonlinear, 0,0);// b := N(u)
-        state_nonlinear->exchange(*state_linear);           // a,b := N(u),u
+                1, *state_linear, 1, *state_nonlinear, 0,0);// b:=N(u)
+        state_nonlinear->exchange(*state_linear);           // a,b:=N(u),u
         common_block.setZero(grid.dN.y());                  // Zero references
-        N->applyOperator(                                   // b := N(u)
+        N->applyOperator(                                   // b:=N(u)/chi
                 tc->current_t(), *state_nonlinear,
                 m.evmaxmag_real(), m.evmaxmag_imag(), 1);
-        state_linear->addScaled(                            // a := a - b
-                -1, *state_nonlinear);
+        state_linear->addScaled(                            // a:=a-chi*b
+                -chi, *state_nonlinear);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
