@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE( rholut_p_T_mu_lambda )
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
     /* Expected results found using test_rholut.sage */
-    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e4;
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
     BOOST_CHECK_CLOSE(p,
             4441.1984111498830681828969449447964342868418205971441637701L,
             close_enough);
