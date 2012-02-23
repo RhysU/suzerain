@@ -197,24 +197,26 @@ static std::basic_ostream<CharT,Traits>& append_real(
 }
 
 /** Log messages containing mean L2 and RMS fluctuation information */
-static void information_L2(const std::string& timeprefix)
+static void information_L2(const std::string& prefix,
+                           const char * const name_L2  = "L2.mean",
+                           const char * const name_rms = "rms.fluct")
 {
     namespace field = channel::field;
 
     // Avoid computational cost when logging is disabled
-    logging::logger_type L2_mean  = logging::get_logger("L2.mean");
-    logging::logger_type rms_fluct = logging::get_logger("rms.fluct");
-    if (!INFO0_ENABLED(L2_mean) && !INFO0_ENABLED(rms_fluct)) return;
+    logging::logger_type log_L2  = logging::get_logger(name_L2);
+    logging::logger_type log_rms = logging::get_logger(name_rms);
+    if (!INFO0_ENABLED(log_L2) && !INFO0_ENABLED(log_rms)) return;
 
     // Show headers only on first invocation
     std::ostringstream msg;
     static bool show_header = true;
     if (show_header) {
-        msg << timeprefix;
+        msg << prefix;
         for (size_t k = 0; k < field::count; ++k)
             msg << ' ' << std::setw(append_real_width) << field::name[k];
-        INFO0(L2_mean, msg.str());
-        INFO0(rms_fluct, msg.str());
+        INFO0(log_L2, msg.str());
+        INFO0(log_rms, msg.str());
         msg.str("");
         show_header = false;
     }
@@ -225,25 +227,25 @@ static void information_L2(const std::string& timeprefix)
         = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
-    msg << timeprefix;
+    msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].mean());
     }
-    INFO0(L2_mean, msg.str());
+    INFO0(log_L2, msg.str());
 
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
     const real_t rms_coeff = 1/std::sqrt(scenario.Lx*scenario.Ly*scenario.Lz);
     msg.str("");
-    msg << timeprefix;
+    msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', rms_coeff*L2[k].fluctuating());
     }
-    INFO0(rms_fluct, msg.str());
+    INFO0(log_rms, msg.str());
 }
 
 /** Build a message containing bulk quantities */
-static void information_bulk(const std::string& timeprefix)
+static void information_bulk(const std::string& prefix)
 {
     namespace field = channel::field;
 
@@ -258,7 +260,7 @@ static void information_bulk(const std::string& timeprefix)
     std::ostringstream msg;
     static bool show_header = true;
     if (show_header) {
-        msg << timeprefix;
+        msg << prefix;
         for (size_t k = 0; k < field::count; ++k)
             msg << ' ' << std::setw(append_real_width) << field::name[k];
         INFO0(bulk_state, msg.str());
@@ -272,7 +274,7 @@ static void information_bulk(const std::string& timeprefix)
     bulkcoeff /= scenario.Ly;
 
     // Prepare the status message and log it
-    msg << timeprefix;
+    msg << prefix;
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Eigen::Map<Eigen::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
@@ -282,7 +284,7 @@ static void information_bulk(const std::string& timeprefix)
 }
 
 /** Build a message containing specific state quantities at the wall */
-static void information_specific_wall_state(const std::string& timeprefix)
+static void information_specific_wall_state(const std::string& prefix)
 {
     // Only continue on the rank housing the zero-zero modes.
     if (!dgrid->has_zero_zero_modes()) return;
@@ -303,7 +305,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
         if (!DEBUG_ENABLED(nick[l])) continue;
 
         std::ostringstream msg;
-        msg << timeprefix;
+        msg << prefix;
 
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
         append_real(msg << ' ', rho);
@@ -321,7 +323,7 @@ static void information_specific_wall_state(const std::string& timeprefix)
  * Uses state_nonlinear as a scratch space and is not cheap.
  */
 static void information_manufactured_solution_absolute_error(
-        const std::string& timeprefix,
+        const std::string& prefix,
         const real_t simulation_time)
 {
     // Avoid computational cost when logging is disabled
@@ -339,7 +341,7 @@ static void information_manufactured_solution_absolute_error(
 
     // Output absolute global errors for each field
     std::ostringstream msg;
-    msg << timeprefix;
+    msg << prefix;
     for (size_t k = 0; k < channel::field::count; ++k) {
         append_real(msg << ' ', L2[k].total());
     }
@@ -856,8 +858,8 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
-    bool use_explicit = false;
-    bool use_implicit = false;
+    bool use_explicit      = false;
+    bool use_implicit      = false;
     bool default_advance_nt;
     {
         suzerain::ProgramOptions options(
@@ -881,8 +883,9 @@ int main(int argc, char **argv)
                 const_cast<SignalDefinition&>(sigdef));
 
         options.add_options()
-            ("explicit", "Perform purely explicit time advance")
-            ("implicit", "Perform hybrid implicit/explicit time advance")
+            ("explicit",    "Perform purely explicit time advance")
+            ("implicit",    "Perform hybrid implicit/explicit time advance")
+            ("consistency", "Check consistency of chosen spatial operators")
             ;
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -1346,7 +1349,59 @@ int main(int argc, char **argv)
         save_restart(tc->current_t(), tc->current_nt());
     }
 
-    // Output details on time advancement (if advancement occurred)
+    // Whenever we advanced the simulation, find the linearization
+    // error present within the chosen operator implementations.
+    //
+    // Procedure performed whenever we advance to (a) ensure the check is run
+    // often but (b) not costly when we wish to merely down-sample restart
+    // files or convert to/from physical space.  The user has already paid the
+    // memory overhead for one-or-more nonlinear operator applications.  The
+    // incremental cost here is then less than a complete Runge-Kutta step.
+    //
+    // More specifically, for \partial_t u = Lu + (N(u)-Lu) did the
+    // INonlinearOperator compute a N(u)-Lu matching with the ILinearOperator's
+    // Lu implementation?  Done at shutdown as the check destroys the state
+    // information so it may be performed under low storage memory constraints.
+    //
+    // Requires that the following facts all hold:
+    //    i) At substep zero, INonlinearOperator computes N(u) - Lu
+    //       including the necessary reference quantities.
+    //   ii) The reference quantities are stored in common_block
+    //       and may be expressly zeroed.
+    //  iii) On non-zero substeps for zero reference values,
+    //       INonlinearOperator computes N(u).
+    //   iv) At the beginning of this process, state_linear contains
+    //       valid information and adheres to boundary conditions.
+    if (tc->current_nt()) {
+        const double starttime = MPI_Wtime();
+        common_block.setZero(grid.dN.y());                  // Zero references
+        state_nonlinear->assign(*state_linear);             // b := u
+        N->applyOperator(                                   // b := N(u)-Lu
+                tc->current_t(), *state_nonlinear,
+                m.evmaxmag_real(), m.evmaxmag_imag(), 0);
+        state_nonlinear->scale(-1);                         // b := Lu-N(u)
+        L->accumulateMassPlusScaledOperator(                // b := (M+L)u-N(u)
+                0, *state_linear, 1, *state_nonlinear, 0,0);
+        state_nonlinear->scale(-1);                         // b := N(u)-(M+L)u
+        L->accumulateMassPlusScaledOperator(
+                1, *state_linear, 1, *state_nonlinear, 0,0);// b := N(u)
+        state_nonlinear->exchange(*state_linear);           // a,b := N(u),u
+        common_block.setZero(grid.dN.y());                  // Zero references
+        N->applyOperator(                                   // b := N(u)
+                tc->current_t(), *state_nonlinear,
+                m.evmaxmag_real(), m.evmaxmag_imag(), 1);
+        state_linear->addScaled(                            // a := a - b
+                -1, *state_nonlinear);
+        const double elapsed = MPI_Wtime() - starttime;
+        DEBUG0("Computed linearization error in " << elapsed << " seconds");
+
+        // When the operators match, state_linear now be identically zero.
+        // Seeing more than floating point error indicates something is amiss.
+        information_L2("Linearization error", "lerr.mean", "lerr.rms");
+    }
+    // Beware, state_linear and state_nonlinear now contain garbage!
+
+    // Output details on time advancement (whenever advancement occurred)
     if (tc->current_nt()) {
         std::ostringstream msg;
         msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.75));
@@ -1378,20 +1433,20 @@ int main(int argc, char **argv)
         const real_t wtime_advance = (wtime_advance_end - wtime_advance_start);
 
         // Advance rate measured in a (mostly) problem-size-agnostic metric
-        INFO0("Advancing at " << wtime_advance / tc->current_nt() / grid.N.prod()
+        INFO0("Advancing at " << wtime_advance/tc->current_nt()/grid.N.prod()
                               << " wall seconds per time step per grid point");
 
         // Advance rate measured in a problem-size-dependent metric
-        INFO0("Advancing at " << wtime_advance / tc->current_nt()
+        INFO0("Advancing at " << wtime_advance/tc->current_nt()
                               << " wall seconds per time step");
 
         // Advance rate measured in flow through based on bulk velocity
         // (where bulk velocity is estimated from bulk momentum and density)
         const real_t flowthrough_time
-                = scenario.Lx / (scenario.bulk_rhou / scenario.bulk_rho);
+                = scenario.Lx/(scenario.bulk_rhou/scenario.bulk_rho);
         const real_t flowthroughs
-                = (tc->current_t() - initial_t) / flowthrough_time;
-        INFO0("Advancing at " << wtime_advance / flowthroughs
+                = (tc->current_t() - initial_t)/flowthrough_time;
+        INFO0("Advancing at " << wtime_advance/flowthroughs
                               << " wall seconds per flow through");
 
         // Admit what overhead we've neglected in those calculations
