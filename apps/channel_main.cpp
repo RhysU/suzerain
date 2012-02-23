@@ -1380,7 +1380,7 @@ int main(int argc, char **argv)
         common_block.setZero(grid.dN.y());                  // Zero references
         state_nonlinear->assign(*state_linear);             // b:=u
         N->applyOperator(                                   // b:=(N(u)-Lu)/chi
-                tc->current_t(), *state_nonlinear,
+                tc->current_t(), *state_nonlinear,          //    for substep 0
                 m.evmaxmag_real(), m.evmaxmag_imag(), 0);
         state_nonlinear->scale(-chi);                       // b:=Lu-N(u)
         L->accumulateMassPlusScaledOperator(                // b:=(M+L)u-N(u)
@@ -1391,7 +1391,7 @@ int main(int argc, char **argv)
         state_nonlinear->exchange(*state_linear);           // a,b:=N(u),u
         common_block.setZero(grid.dN.y());                  // Zero references
         N->applyOperator(                                   // b:=N(u)/chi
-                tc->current_t(), *state_nonlinear,
+                tc->current_t(), *state_nonlinear,          //    for substep 1
                 m.evmaxmag_real(), m.evmaxmag_imag(), 1);
         state_linear->addScaled(                            // a:=a-chi*b
                 -chi, *state_nonlinear);
