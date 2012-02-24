@@ -139,8 +139,8 @@ FUNCNAME()(
 
         if (rhow >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    phi*gm1*ikm,              REF(uz),
-                    phi*ap13*invRe*(ikm+ikn), REF(nu),
+                     phi*gm1*ikm,          REF(uz),
+                    -phi*ap13*invRe*km*kn, REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             PACK(z)(A, rhou, rhow, 1.0, buf, papt);
@@ -229,8 +229,8 @@ FUNCNAME()(
 
         if (rhou >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    phi*gm1*ikn,              REF(ux),
-                    phi*ap13*invRe*(ikm+ikn), REF(nu),
+                     phi*gm1*ikn,          REF(ux),
+                    -phi*ap13*invRe*km*kn, REF(nu),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             PACK(z)(A, rhow, rhou, 1.0, buf, papt);

@@ -138,8 +138,8 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhow) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                phi*gm1*ikm,              REF(uz),
-                phi*ap13*invRe*(ikm+ikn), REF(nu),
+                 phi*gm1*ikm,              REF(uz),
+                -phi*ap13*invRe*km*kn,     REF(nu),
                 w->D[M],  w->ld, in_rhow, inc, 1.0, out_rhou, inc);
         }
 
@@ -227,8 +227,8 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhou) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                phi*gm1*ikn,              REF(ux),
-                phi*ap13*invRe*(ikm+ikn), REF(nu),
+                 phi*gm1*ikn,              REF(ux),
+                -phi*ap13*invRe*km*kn,     REF(nu),
                 w->D[M],  w->ld, in_rhou, inc, 1.0, out_rhow, inc);
         }
 
