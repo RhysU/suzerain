@@ -377,24 +377,6 @@ std::vector<real_t> applyNonlinearOperator(
 
     }
 
-//  // FIXME DEBUG Tweak reference values to help isolate linearization bugs
-//  if (ZerothSubstep) {
-//      char *p;
-//      if ((p = getenv("COMMON_REF_NU"        ))) common.ref_nu        ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_UX"        ))) common.ref_ux        ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_UY"        ))) common.ref_uy        ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_UZ"        ))) common.ref_uz        ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_NUUX"      ))) common.ref_nuux      ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_NUUY"      ))) common.ref_nuuy      ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_NUUZ"      ))) common.ref_nuuz      ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_M_GRADRHO" ))) common.ref_m_gradrho ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_EX_GRADRHO"))) common.ref_ex_gradrho().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_EY_GRADRHO"))) common.ref_ey_gradrho().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_EZ_GRADRHO"))) common.ref_ez_gradrho().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_E_DIVM"    ))) common.ref_e_divm    ().setConstant(atof(p));
-//      if ((p = getenv("COMMON_REF_E_DELTARHO"))) common.ref_e_deltarho().setConstant(atof(p));
-//  }
-
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     size_t offset = 0;
