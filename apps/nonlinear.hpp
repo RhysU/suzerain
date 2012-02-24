@@ -238,6 +238,10 @@ std::vector<real_t> applyNonlinearOperator(
     if (    ZerothSubstep
          && Linearize != linearize::none) {  // References and mean velocity
 
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const std::size_t leftNotOnRank = o.dgrid.local_physical_start.y();
+        if (leftNotOnRank) common.refs.leftCols(leftNotOnRank).setZero();
+
         // Sum reference quantities as a function of y(j) into common.ref_*
         size_t offset = 0;
         for (int j = o.dgrid.local_physical_start.y();
@@ -320,6 +324,11 @@ std::vector<real_t> applyNonlinearOperator(
 
         } // end Y
 
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const std::size_t rightNotOnRank = common.refs.cols()
+                                         - o.dgrid.local_physical_end.y();
+        if (rightNotOnRank) common.refs.rightCols(rightNotOnRank).setZero();
+
         // Allreduce and scale common.refs sums to obtain means on all ranks
         // Allreduce mandatory as all ranks need references for linearization
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
@@ -337,6 +346,10 @@ std::vector<real_t> applyNonlinearOperator(
         if (ZerothSubstep && Linearize == linearize::none) {
             common.refs.setZero();
         }
+
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const std::size_t topNotOnRank = o.dgrid.local_physical_start.y();
+        if (topNotOnRank) common.u().topRows(topNotOnRank).setZero();
 
         // Sum streamwise velocities as a function of y(j) into common.u()
         size_t offset = 0;
@@ -357,6 +370,11 @@ std::vector<real_t> applyNonlinearOperator(
             common.u()[j] = boost::accumulators::sum(ux);
 
         } // end Y
+
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const std::size_t bottomNotOnRank = common.u().rows()
+                                         - o.dgrid.local_physical_end.y();
+        if (bottomNotOnRank) common.u().bottomRows(bottomNotOnRank).setZero();
 
         // Reduce and scale common.u() sums to obtain mean on zero-zero rank
         // Only zero-zero rank needs the information so Reduce is sufficient
