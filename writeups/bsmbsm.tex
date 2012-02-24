@@ -1,0 +1,70 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fullpage}
+\usepackage{mathtools}
+\usepackage{setspace}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+\pagestyle{plain}
+
+\begin{document}
+Matrix $A$ is a blocked square matrix with banded submatrices (BSMBSM)
+when
+\[A = \begin{pmatrix}
+    B^{0,0}  & \cdots & B^{0,S-1}   \\
+    \vdots    & \ddots & \vdots       \\
+    B^{S-1,0} & \cdots & B^{S-1,S-1}
+\end{pmatrix}\]
+where every $B^{i,j}$ is an \texttt{n}x\texttt{n} banded submatrix containing
+\texttt{kl} subdiagonals and \texttt{ku} superdiagonals.  We set the convention
+that lowercase identifiers indicate submatrix details while uppercase
+identifiers indicate global matrix details.  The structure of a BSMBSM is
+defined completely by the parameters \texttt{S}, \texttt{n}, \texttt{kl}, and
+\texttt{ku}.  The number of rows and columns is \texttt{N := S*n}.
+
+Building $A$ from individually contiguous, banded submatrices $B_{i,j}$ within
+$A$ is both convenient and efficient.  For example, banded matrix accumulation
+operations and boundary condition imposition are simple in such a storage
+format.  However, using individually contiguous, banded submatrices is grossly
+inefficient for solving linear equations.
+
+With appropriate renumbering of $A$, solving linear equations can be done
+efficiently.  The zero-indexed permutation vector \[q(i) =
+\left(i\bmod{}S\right)n + \lfloor{}i/S\rfloor{}\] may always be used to convert
+a BSMBSM into a globally banded \texttt{N}x\texttt{N} matrix with minimum
+bandwidth.  More concretely, the permutation matrix $P$ uniquely defined by
+vector $q$ causes $P A P^{\mbox{T}}$ to have \texttt{KL := S*(kl+1)-1}
+subdiagonals and \texttt{KU := S*(ku+1)-1} superdiagonals summing to overall
+bandwidth \texttt{KL + 1 + KU = S*(kl + ku + 2)-1}.  The reverse permutation
+vector has a simple closed form \[q^{-1}(i) = \left(i\bmod{}n\right)S +
+\lfloor{}i/n\rfloor{}.\] With $A_{i,j}$ in hand, the banded renumbering may
+formed using the relationships
+\begin{align*}
+       \left.A\right|_{i,j}
+    &= \left.P A P^{\mbox{T}}\right|_{q^{-1}(i),q^{-1}(j)}
+    &
+       \left.P A P^{\mbox{T}}\right|_{i,j}
+    &= \left.A\right|_{q(i),q(j)}.
+\end{align*}
+This renumbering can be LU factorized in order
+\verb|N*(KL + 1 + KU)^2 = S*n*(S*(kl + ku + 2)-1)^2|
+floating point operations to find $LU = P A
+P^{\mbox{T}}$.  The linear equation $AX=B$, which is equivalent to $LUPX=PB$,
+has the solution \[X = A^{-1}B = P^{\mbox{T}}\left(LU\right)^{-1}PB\] where
+inversion has been used as a notational convenience representing triangular
+back substitution.
+
+\end{document}

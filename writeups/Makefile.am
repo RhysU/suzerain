@@ -5,7 +5,8 @@
 .NOTPARALLEL:
 
 # LaTeX and BiBTeX source files
-TEXSOURCES  = channel_treatment.tex
+TEXSOURCES  = bsmbsm.tex
+TEXSOURCES += channel_treatment.tex
 TEXSOURCES += derivation.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += skewadjoint.tex
