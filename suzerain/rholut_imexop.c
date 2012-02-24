@@ -79,7 +79,10 @@ suzerain_rholut_imexop_accumulate(
 #   define REF(quantity) r->quantity, ld->quantity
 
     if (in_rho ) {  // Accumulate density terms into out_rho
-        suzerain_blas_zscal(n, beta, out_rho, inc);
+
+        // Accumulate mass matrix on the diagonal and scale output by beta
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rho,  inc, n, beta, out_rho, inc, n, w);
 
         if (in_rhou) suzerain_bsplineop_accumulate_complex(M, nrhs,
                 -phi*ikm, in_rhou, inc, n, 1.0, out_rho, inc, n, w);
@@ -91,13 +94,13 @@ suzerain_rholut_imexop_accumulate(
                 -phi*ikn, in_rhow, inc, n, 1.0, out_rho, inc, n, w);
 
         if (in_rhoe) {/* NOP */};
-
-        suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rho,  inc, n, 1.0, out_rho, inc, n, w);
     }
 
     if (in_rhou) {  // Accumulate X momentum terms into out_rhou
-        suzerain_blas_zscal(n, beta, out_rhou, inc);
+
+        // Accumulate mass matrix on the diagonal and scale output by beta
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhou, inc, n, beta, out_rhou, inc, n, w);
 
         if (in_rho) {
             suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
@@ -146,13 +149,13 @@ suzerain_rholut_imexop_accumulate(
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
                 -phi*gm1*invMa2*ikm, in_rhoe, inc, n,
                 1.0, out_rhou, inc, n, w);
-
-        suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rhou, inc, n, 1.0, out_rhou, inc, n, w);
     }
 
     if (in_rhov) {  // Accumulate Y momentum terms into out_rhov
-        suzerain_blas_zscal(n, beta, out_rhov, inc);
+
+        // Accumulate mass matrix on the diagonal and scale output by beta
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhov, inc, n, beta, out_rhov, inc, n, w);
 
         if (in_rho) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
@@ -201,13 +204,13 @@ suzerain_rholut_imexop_accumulate(
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(D1, nrhs,
                 -phi*gm1*invMa2, in_rhoe, inc, n,
                 1.0, out_rhov, inc, n, w);
-
-        suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rhov, inc, n, 1.0, out_rhov, inc, n, w);
     }
 
     if (in_rhow) {  // Accumulate Z momentum terms into out_rhow
-        suzerain_blas_zscal(n, beta, out_rhow, inc);
+
+        // Accumulate mass matrix on the diagonal and scale output by beta
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhow, inc, n, beta, out_rhow, inc, n, w);
 
         if (in_rho) {
             suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
@@ -256,13 +259,13 @@ suzerain_rholut_imexop_accumulate(
         if (in_rhoe) suzerain_bsplineop_accumulate_complex(M, nrhs,
                 -phi*gm1*invMa2*ikn, in_rhoe, inc, n,
                 1.0, out_rhow, inc, n, w);
-
-        suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rhow, inc, n, 1.0, out_rhow, inc, n, w);
     }
 
     if (in_rhoe) {  // Accumulate total energy terms into out_rhoe
-        suzerain_blas_zscal(n, beta, out_rhoe, inc);
+
+        // Accumulate mass matrix on the diagonal and scale output by beta
+        suzerain_bsplineop_accumulate_complex(
+                M, nrhs, 1.0, in_rhoe, inc, n, beta, out_rhoe, inc, n, w);
 
         if (in_rho) {
             suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
@@ -331,9 +334,6 @@ suzerain_rholut_imexop_accumulate(
                 phi*ginvRePr,            REF(nu),
                 w->D[D2], w->ld, in_rhoe, inc, 1.0, out_rhoe, inc);
         }
-
-        suzerain_bsplineop_accumulate_complex(
-                M, nrhs, 1.0, in_rhoe, inc, n, 1.0, out_rhoe, inc, n, w);
     }
 
 #   undef REF
