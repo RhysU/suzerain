@@ -377,8 +377,8 @@ std::vector<real_t> applyNonlinearOperator(
 
     }
 
-//  // FIXME DEBUG Tweak reference values to help isolate bugs
-//  {
+//  // FIXME DEBUG Tweak reference values to help isolate linearization bugs
+//  if (ZerothSubstep) {
 //      char *p;
 //      if ((p = getenv("COMMON_REF_NU"        ))) common.ref_nu        ().setConstant(atof(p));
 //      if ((p = getenv("COMMON_REF_UX"        ))) common.ref_ux        ().setConstant(atof(p));
