@@ -1257,9 +1257,9 @@ Combining the B-spline and Fourier details for a scalar-valued $\phi$ one finds
   \left.\left(\nabla\nabla{} \phi\right)\right|_{m n}
 &=
   \begin{pmatrix}
-    -k_m^2               M       & \ii k_m D^{(1)} & \ii \left(k_m + k_n\right) M \\
-    \ii k_m              D^{(1)} &         D^{(2)} & \ii k_n D^{(1)}        \\
-    \ii \left(k_m + k_n\right) M       & \ii k_n D^{(1)} & -k_n^2 M
+    -k_m^2      M       & \ii k_m D^{(1)} & -k_{m}k_{n} M   \\
+    \ii k_m     D^{(1)} &         D^{(2)} & \ii k_n D^{(1)} \\
+    -k_{m}k_{n} M       & \ii k_n D^{(1)} & -k_n^2 M
   \end{pmatrix} \phi\bigr|_{m n}
 \end{align}
 where all operators map coefficients in all three directions to wall-normal
@@ -2240,7 +2240,7 @@ factorization only once per substep.
   \subcoeff{
       \frac{1-\g}{2}\ii\km\C{m}{\nabla\rho}
     + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
-    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(\km+\kn\right)\C{\nu{}u_z}{}
+    + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_z}{}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu{}u_y}{}
   }{
@@ -2321,7 +2321,7 @@ factorization only once per substep.
   \subcoeff{
       \frac{1-\g}{2}\ii\kn\C{m}{\nabla\rho}
     + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
-    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(\km+\kn\right)\C{\nu{}u_x}{}
+    + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_x}{}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu{}u_y}{}
   }{

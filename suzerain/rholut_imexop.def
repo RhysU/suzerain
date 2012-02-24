@@ -97,7 +97,7 @@ FUNCNAME()(
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     -phi*0.5*gm1*ikm,            REF(m_gradrho),
                      phi*invRe*(ap43*km2 + kn2), REF(nuux),
-                    -phi*ap13*invRe*(ikm+ikn),   REF(nuuz),
+                     phi*ap13*invRe*km*kn,       REF(nuuz),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
@@ -213,7 +213,7 @@ FUNCNAME()(
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     -phi*0.5*gm1*ikn,            REF(m_gradrho),
                      phi*invRe*(km2 + ap43*kn2), REF(nuuz),
-                    -phi*ap13*invRe*(ikm+ikn),   REF(nuux),
+                     phi*ap13*invRe*km*kn,       REF(nuux),
                     M,  1, w->ld, 0.0, buf, 1, A->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
