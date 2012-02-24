@@ -227,10 +227,12 @@ init_unit_test_suite( int argc, char* argv[] )
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {7*M_E, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      0, /*refndx*/-1},
+    parameters p[] = { {    0,      0, /*refndx*/-1},
                        {    0, 3*M_PI, /*refndx*/-1},
-                       {    0,      0, /*refndx*/-1} };
+                       {7*M_E,      0, /*refndx*/-1},
+                       {    1, 3*M_PI, /*refndx*/-1},
+                       {7*M_E,      1, /*refndx*/-1},
+                       {7*M_E, 3*M_PI, /*refndx*/-1} };
     for (int i = -1; i < (int) NREFS; ++i) {
         for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
             p[j].refndx = i;
