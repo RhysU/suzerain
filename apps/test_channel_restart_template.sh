@@ -4,8 +4,9 @@ set -eu
 # Initialize test infrastructure
 source "`dirname $0`/test_channel_setup.sh"
 
-# Shorthand
-channel="prun ../channel"
+# Shorthand for binary under test
+: ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
+channel="prun ../channel $OPER"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
@@ -21,14 +22,14 @@ NP=
 P=
 eval "$METACASE"
 
-banner "Idempotence of restarting without time advance"
+banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P
     differ_exclude $exclude_datasets mms0.h5 a0.h5
 )
 
-banner "Equivalence of a field advanced both with and without a restart"
+banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
@@ -37,7 +38,7 @@ banner "Equivalence of a field advanced both with and without a restart"
     differ --delta=7e-16 --nan b0.h5 c0.h5
 )
 
-banner "Upsample/downsample both homogeneous directions"
+banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
@@ -47,7 +48,7 @@ banner "Upsample/downsample both homogeneous directions"
     differ_exclude $exclude_datasets mms0.h5 b0.h5
 )
 
-banner "Upsample/downsample inhomogeneous direction order"
+banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
@@ -62,7 +63,7 @@ banner "Upsample/downsample inhomogeneous direction order"
     differ_exclude $exclude_datasets --delta=7e-4 mms0.h5 b0.h5 /rhoe
 )
 
-banner "Upsample/downsample inhomogeneous direction NDOF and htdelta"
+banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \

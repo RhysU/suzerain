@@ -104,8 +104,12 @@ TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
 
 dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 
-TESTS              += test_channel_restart.sh   # Restart handling...
-dist_check_SCRIPTS += test_channel_restart.sh   # ...using coefficients
+# Restart handling using coefficient-based restart files
+TESTS              += test_channel_restart_explicit.sh
+TESTS              += test_channel_restart_implicit.sh
+dist_check_SCRIPTS += test_channel_restart_template.sh # Common "template"
+dist_check_SCRIPTS += test_channel_restart_explicit.sh # Sources template
+dist_check_SCRIPTS += test_channel_restart_implicit.sh # Sources template
 
 TESTS              += test_channel_dparallel.sh # Serial/parallel equivalence...
 dist_check_SCRIPTS += test_channel_dparallel.sh # ...for degenerate parallel
