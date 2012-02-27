@@ -43,14 +43,16 @@ banner "Conversion from physical- to wave-based restart without time advance${OP
 )
 
 banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"
+# --max_dt option avoids false positives from large implicit
+# timesteps necessarily magnifying O(epsilon) restart errors
 (
     cd $testdir
     $channel pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P \
-                      --restart_physical
+                      --restart_physical --max_dt=5e-6
     $channel a0.h5    --restart_destination "b#.h5" --advance_nt=2 $P \
-                      --restart_physical
+                      --restart_physical --max_dt=5e-6
     $channel pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P \
-                      --restart_physical
+                      --restart_physical --max_dt=5e-6
     differ_exclude $exclude_datasets_bar --delta=4e-15 --nan b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test
 )
