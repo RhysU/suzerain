@@ -29,19 +29,28 @@ fi
 
 # Minimalistic command execution infrastructure
 banner_prefix=`basename $0`
-banner() { echo; echo $banner_prefix${METACASE:+ (}${METACASE:-}${METACASE:+)}: "$@" ; }
-run()    { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@"                ; }
-runq()   { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@" > /dev/null    ; }
-prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"                ; }
-prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null    ; }
+banner() {
+    echo
+    msg="$banner_prefix${METACASE:+ (}${METACASE:-}${METACASE:+)}: $@"
+    printf "%$(expr length "$msg")s\n"|tr ' ' '#'
+    echo $msg
+    printf "%$(expr length "$msg")s\n"|tr ' ' '#'
+    echo
+}
+run()    { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@"             ; echo; }
+runq()   { echo mpiexec -np 1        "$@" ; mpiexec -np 1        "$@" > /dev/null ; echo; }
+prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"             ; echo; }
+prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; echo; }
 differ() { echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;}
 differ_exclude() {
     h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
     h5diff_version_number=$(echo $h5diff_version_string | sed -e 's/\.//g')
     if test "$h5diff_version_number" -lt 186; then
         echo "WARN: Skipping 'h5diff $@' as $h5diff_version_string lacks --exclude-path"
+        echo
     else
         echo h5diff "$@" ; h5diff "$@" || h5diff -rv "$@" ;
+        echo
     fi
 }
 
