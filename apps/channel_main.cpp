@@ -897,12 +897,12 @@ int main(int argc, char **argv)
             ;
         std::vector<std::string> positional = options.process(argc, argv);
 
-        // Select type of timestepping operators to use
+        // Select type of timestepping operators to use (default implicit)
         options.conflicting_options("implicit", "explicit");
-        if (options.variables().count("implicit")) {
-            use_implicit = true;
-        } else {
+        if (options.variables().count("explicit")) {
             use_explicit = true;
+        } else {
+            use_implicit = true;
         }
 
         // Record build and invocation for posterity and to aid in debugging
