@@ -93,6 +93,10 @@ endif
 ##
 ## Tests for channel applications
 ##
+## Identical test logic varying only in the operator choices (e.g. --explicit
+## versus implicit) are broken out into separate, templated tests to increase
+## the parallelism available during 'make check'.
+##
 
 # Specify test environment for 'make check'
 TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
@@ -106,8 +110,12 @@ dist_check_SCRIPTS += test_channel_restart.sh   # ...using coefficients
 TESTS              += test_channel_dparallel.sh # Serial/parallel equivalence...
 dist_check_SCRIPTS += test_channel_dparallel.sh # ...for degenerate parallel
 
-TESTS              += test_channel_parallel.sh  # Serial/parallel equivalence...
-dist_check_SCRIPTS += test_channel_parallel.sh  # ...for regular parallel
+# Serial/parallel equivalence for normal parallel decompositions
+TESTS              += test_channel_parallel_explicit.sh
+TESTS              += test_channel_parallel_implicit.sh
+dist_check_SCRIPTS += test_channel_parallel_template.sh # Common "template"
+dist_check_SCRIPTS += test_channel_parallel_explicit.sh # Sources template
+dist_check_SCRIPTS += test_channel_parallel_implicit.sh # Sources template
 
 TESTS              += test_channel_fields.sh    # Read canned, legacy fields
 dist_check_SCRIPTS += test_channel_fields.sh

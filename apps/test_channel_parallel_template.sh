@@ -5,14 +5,12 @@ set -eu
 source "`dirname $0`/test_channel_setup.sh"
 
 : ${ADVANCE:=--advance_nt=10 --status_nt=5 --fluct_percent=10 --fluct_seed=45678}
+: ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
 
-# Test both purely explicit and hybrid implicit/explicit operators
-for OP in --explicit --implicit; do
-
-banner "Generating serial result for comparison purposes ($OP)"
+banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../channel $OP mms0.h5 --restart_destination "serial#.h5" $ADVANCE
+    run ../channel $OPER mms0.h5 --restart_destination "serial#.h5" $ADVANCE
 )
 
 # Run each test case in this file under the following circumstances
@@ -22,17 +20,15 @@ NP=
 P=
 eval "$METACASE"
 
-banner "Equivalence of serial and parallel execution ($OP)"
+banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
-    prun ../channel $OP mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prun ../channel $OPER mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ_exclude $exclude_datasets_bar --delta=2e-14 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do
         differ --delta=5e-12 --relative=5e-12 serial0.h5 a0.h5 $dset
     done
 )
-
-done
 
 done
