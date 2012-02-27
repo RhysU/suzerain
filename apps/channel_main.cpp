@@ -1445,14 +1445,20 @@ int main(int argc, char **argv)
         INFO0("Advancing at " << wtime_advance/tc->current_nt()
                               << " wall seconds per time step");
 
+        // Advance rate measured in nondimensional simulation time units
+        INFO0("Advancing at " << wtime_advance/(tc->current_t() - initial_t)
+                              << " wall seconds per simulation time unit");
+
         // Advance rate measured in flow through based on bulk velocity
         // (where bulk velocity is estimated from bulk momentum and density)
         const real_t flowthrough_time
                 = scenario.Lx/(scenario.bulk_rhou/scenario.bulk_rho);
         const real_t flowthroughs
                 = (tc->current_t() - initial_t)/flowthrough_time;
-        INFO0("Advancing at " << wtime_advance/flowthroughs
-                              << " wall seconds per flow through");
+        if (boost::math::isnormal(flowthrough_time)) {
+            INFO0("Advancing at " << wtime_advance/flowthroughs
+                                  << " wall seconds per flow through");
+        }
 
         // Admit what overhead we've neglected in those calculations
         INFO0("Advancement rate calculations ignore "
