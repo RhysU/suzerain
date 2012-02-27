@@ -420,11 +420,18 @@ static void sample_statistics(real_t t)
     samples = channel::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, *state_nonlinear, t);
 
-    // Obtain mean samples based on implicit forcing
-    samples.f().col(0) = common_block.f();      // Only streamwise momentum...
-    samples.f().rightCols<2>().setZero();       // ...not wall-normal, spanwise
-    samples.f_dot_u() = common_block.f_dot_u();
-    samples.qb()      = common_block.qb();
+    // Obtain mean samples computed via implicit forcing (when possible)
+    if (common_block.means.rows() == samples.storage.rows()) {
+       samples.f().col(0) = common_block.f();  // Only streamwise momentum...
+       samples.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
+       samples.f_dot_u() = common_block.f_dot_u();
+       samples.qb()      = common_block.qb();
+    } else {
+        WARN0("Could not obtain mean samples computed from implicit forcing");
+        samples.f      ().setConstant(numeric_limits<real_t>::epsilon());
+        samples.f_dot_u().setConstant(numeric_limits<real_t>::epsilon());
+        samples.qb     ().setConstant(numeric_limits<real_t>::epsilon());
+    }
 
     const double elapsed = MPI_Wtime() - starttime;
     INFO0("Computed statistics at t = " << t
@@ -1154,10 +1161,8 @@ int main(int argc, char **argv)
     // ContiguousState and InterleavedState to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
-    common_block.setZero(grid.dN.y());
     suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
                 timedef.evmagfactor);
-
     shared_ptr<suzerain::timestepper::lowstorage::ILinearOperator<
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type
