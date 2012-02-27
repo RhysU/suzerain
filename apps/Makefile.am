@@ -90,6 +90,10 @@ driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES) $(liblogging_
 	../build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 endif
 
+# Clean up from Intel Compiler's -prof-gen output and precomiled headers
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+CLEANFILES += *.pchi
+
 ##
 ## Tests for channel applications
 ##
@@ -107,32 +111,36 @@ dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
 # Restart handling using coefficient-based restart files
 TESTS              += test_channel_restart_explicit.sh
 TESTS              += test_channel_restart_implicit.sh
-dist_check_SCRIPTS += test_channel_restart_template.sh # Common "template"
-dist_check_SCRIPTS += test_channel_restart_explicit.sh # Sources template
-dist_check_SCRIPTS += test_channel_restart_implicit.sh # Sources template
+dist_check_SCRIPTS += test_channel_restart_template.sh
+dist_check_SCRIPTS += test_channel_restart_explicit.sh
+dist_check_SCRIPTS += test_channel_restart_implicit.sh
 
-TESTS              += test_channel_dparallel.sh # Serial/parallel equivalence...
-dist_check_SCRIPTS += test_channel_dparallel.sh # ...for degenerate parallel
+# Serial/parallel equivalence for degenerate parallel decompositions
+# Not important from a utility perspective, but great for hitting edge cases
+TESTS              += test_channel_dparallel.sh
+dist_check_SCRIPTS += test_channel_dparallel.sh
 
 # Serial/parallel equivalence for normal parallel decompositions
 TESTS              += test_channel_parallel_explicit.sh
 TESTS              += test_channel_parallel_implicit.sh
-dist_check_SCRIPTS += test_channel_parallel_template.sh # Common "template"
-dist_check_SCRIPTS += test_channel_parallel_explicit.sh # Sources template
-dist_check_SCRIPTS += test_channel_parallel_implicit.sh # Sources template
+dist_check_SCRIPTS += test_channel_parallel_template.sh
+dist_check_SCRIPTS += test_channel_parallel_explicit.sh
+dist_check_SCRIPTS += test_channel_parallel_implicit.sh
 
-TESTS              += test_channel_fields.sh    # Read canned, legacy fields
+# Read canned, legacy fields to test backwards compatibility
+TESTS              += test_channel_fields.sh
 dist_check_SCRIPTS += test_channel_fields.sh
 
-TESTS              += test_channel_fluct.sh     # Adding fluctuations
+# Adding fluctuations at startup
+TESTS              += test_channel_fluct.sh
 dist_check_SCRIPTS += test_channel_fluct.sh
 
-TESTS              += test_channel_physical.sh  # Restart handling...
-dist_check_SCRIPTS += test_channel_physical.sh  # ...using collocation values
-
-# Clean up from Intel Compiler's -prof-gen output and precomiled headers
-CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-CLEANFILES += *.pchi
+# Restart handling using collocation-value-based restart files
+TESTS              += test_channel_physical_explicit.sh
+TESTS              += test_channel_physical_implicit.sh
+dist_check_SCRIPTS += test_channel_physical_template.sh
+dist_check_SCRIPTS += test_channel_physical_explicit.sh
+dist_check_SCRIPTS += test_channel_physical_implicit.sh
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

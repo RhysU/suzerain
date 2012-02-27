@@ -4,8 +4,9 @@ set -eu
 # Initialize test infrastructure
 source "`dirname $0`/test_channel_setup.sh"
 
-# Shorthand
-channel="prun ../channel"
+# Shorthand for binary under test for desired operator without statistics
+: ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
+channel="prun ../channel $OPER --statistics_dt=0 --statistics_nt=0"
 
 # Run each test case in this file under the following circumstances
 # (which can be overridden by providing the environment variable METACASES).
@@ -16,17 +17,17 @@ eval "$METACASE"
 
 # Prepare pmms0.h5 in serial, then in parallel, and ensure both match
 # pmms0.h5 restart file is used in the tests that follow
-banner "Preparation of physical-space version of wave-based test field"
+banner "Preparation of physical-space version of wave-based test field${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../channel mms0.h5 --restart_destination "pmms#.h5" \
-                           --advance_nt=0 --restart_physical
+    run ../channel $OPER mms0.h5 --restart_destination "pmms#.h5" \
+                                 --advance_nt=0 --restart_physical
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                      --restart_physical
     differ pmms0.h5 a0.h5
 )
 
-banner "Idempotence of restarting from physical space without time advance"
+banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
@@ -34,14 +35,14 @@ banner "Idempotence of restarting from physical space without time advance"
     differ --delta=1e-15 --nan pmms0.h5 a0.h5
 )
 
-banner "Conversion from physical- to wave-based restart without time advance"
+banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel pmms0.h5 --restart_destination "a#.h5" --advance_nt=0
     differ --delta=3e-15 --nan mms0.h5 a0.h5
 )
 
-banner "Equivalence of a field advanced both with and without a physical space restart"
+banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"
 (
     cd $testdir
     $channel pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P \
