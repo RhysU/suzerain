@@ -891,9 +891,8 @@ int main(int argc, char **argv)
                 const_cast<SignalDefinition&>(sigdef));
 
         options.add_options()
-            ("explicit",    "Perform purely explicit time advance")
-            ("implicit",    "Perform hybrid implicit/explicit time advance")
-            ("consistency", "Check consistency of chosen spatial operators")
+            ("explicit", "Use purely explicit time advance")
+            ("implicit", "Use hybrid implicit/explicit time advance")
             ;
         std::vector<std::string> positional = options.process(argc, argv);
 
