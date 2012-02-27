@@ -35,7 +35,10 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
     $channel a0.h5   --restart_destination "b#.h5" --advance_nt=2 $P
     $channel mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
-    differ --delta=7e-16 --nan b0.h5 c0.h5
+
+    # Ensure simulation time "/t" matches before bothering with anything else
+    differ --use-system-epsilon b0.h5 c0.h5 /t
+    differ --delta=7e-16 --nan --exclude-path=/t b0.h5 c0.h5
 )
 
 banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
