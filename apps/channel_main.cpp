@@ -868,6 +868,7 @@ int main(int argc, char **argv)
     bool use_explicit      = false;
     bool use_implicit      = false;
     bool default_advance_nt;
+    bool default_statistics;
     {
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation",
@@ -928,6 +929,8 @@ int main(int argc, char **argv)
         restart_file = positional[0];
 
         default_advance_nt = options.variables()["advance_nt"].defaulted();
+        default_statistics =  options.variables()["statistics_dt"].defaulted()
+                           && options.variables()["statistics_nt"].defaulted();
     }
 
     INFO0("Loading details from restart file: " << restart_file);
@@ -1254,6 +1257,14 @@ int main(int argc, char **argv)
     }
 
     // Register statistics-related callbacks per statistics_{dt,nt}.
+    // If no non-default, non-zero values were provided, be sensible.
+    if (default_statistics && !statsdef.dt && !statsdef.nt) {
+        const real_t flowthrough_time
+                = scenario.Lx/(scenario.bulk_rhou/scenario.bulk_rho);
+        if (boost::math::isnormal(flowthrough_time)) {
+            const_cast<real_t &>(statsdef.dt) = flowthrough_time / 4;
+        }
+    }
     tc->add_periodic_callback(
             (statsdef.dt ? statsdef.dt : tc->forever_t()),
             (statsdef.nt ? statsdef.nt : tc->forever_nt()),

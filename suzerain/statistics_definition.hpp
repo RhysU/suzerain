@@ -50,7 +50,7 @@ public:
     explicit StatisticsDefinition(
             const std::string& destination,
             int retain = (1<<15),
-            double dt  = 1,
+            double dt  = 0,
             int nt     = 0);
 
     /**
