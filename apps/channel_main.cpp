@@ -1076,8 +1076,8 @@ int main(int argc, char **argv)
           << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
-    INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
-          << dgrid->rank_zero_zero_modes);
+    DEBUG0("Zero-zero modes located on MPI_COMM_WORLD rank "
+           << dgrid->rank_zero_zero_modes);
     { // Display normalized workloads metrics relative to zero-zero workload
         real_t sendbuf[4];
         if (dgrid->has_zero_zero_modes()) {
@@ -1309,6 +1309,7 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
+    GRVY_TIMER_INIT("channel");
     wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
@@ -1342,6 +1343,7 @@ int main(int argc, char **argv)
             FATAL0("Sanity error in time control");
             return EXIT_FAILURE;
     }
+    GRVY_TIMER_FINALIZE();
     if (soft_teardown) {
         INFO0("TimeController stopped advancing due to teardown signal");
         advance_success = true; // ...treat like successful advance
@@ -1363,6 +1365,15 @@ int main(int argc, char **argv)
         INFO0("Saving final restart file");
         save_restart(tc->current_t(), tc->current_nt());
     }
+
+    // Postprocess GRVY timer information on time advance now that restart is
+    // safely on disk.  Reduces likelihood that GRVY hiccups cause data loss.
+#ifdef SUZERAIN_HAVE_GRVY
+    if (tc->current_nt() && dgrid->has_zero_zero_modes()) {
+        INFO("Displaying GRVY timings from MPI rank handling zero-zero modes:");
+        GRVY_TIMER_SUMMARIZE();
+    }
+#endif
 
     // Whenever we advanced the simulation, find the linearization
     // error present between the two chosen hybrid operator implementations.
