@@ -96,7 +96,10 @@ public:
             const BetaType& beta,         MultiArrayY &y, int ndx_y) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::bop_accumulate");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::bop_accumulate"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::bop_accumulate"); }
+        } scope_guard;
 #endif
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
@@ -107,9 +110,6 @@ public:
                 nderiv, x.shape()[2] * x.shape()[3],
                 alpha,  x[ndx_x].origin(), x.strides()[1], x.strides()[2],
                 beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::bop_accumulate");
-#endif
     }
 
     /** Shorthand for scaled operator application */
@@ -118,7 +118,10 @@ public:
             int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::bop_apply");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::bop_apply"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::bop_apply"); }
+        } scope_guard;
 #endif
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
@@ -126,9 +129,6 @@ public:
         return bop.apply(
                 nderiv, x.shape()[2] * x.shape()[3],
                 alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::bop_apply");
-#endif
     }
 
     /** Shorthand for real-valued operator inversion */
@@ -137,16 +137,16 @@ public:
             const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::bop_solve");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::bop_solve(real)"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::bop_solve(real)"); }
+        } scope_guard;
 #endif
         assert(x.shape()[1] == (unsigned) lu.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
         return lu.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
                         x.strides()[1], x.strides()[2]);
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::bop_solve");
-#endif
     }
 
     /** Shorthand for complex-valued operator inversion */
@@ -155,16 +155,16 @@ public:
             const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::bop_solve");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::bop_solve(cmplx)"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::bop_solve(cmplx)"); }
+        } scope_guard;
 #endif
         assert(x.shape()[1] == (unsigned) luz.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
         return luz.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
                          x.strides()[1], x.strides()[2]);
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::bop_solve");
-#endif
     }
 
     /** Shorthand for wave space-based differentiation accumulation */
@@ -179,7 +179,10 @@ public:
                              int ndx_y) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::diffwave_accumulate");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::diffwave_accumulate"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::diffwave_accumulate"); }
+        } scope_guard;
 #endif
         assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
         assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
@@ -198,9 +201,7 @@ public:
                 grid.dN.z(),
                 dgrid.local_wave_start.z(),
                 dgrid.local_wave_end.z());
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::diffwave_accumulate");
-#endif
+
     }
 
     /** Shorthand for wave space-based differentiation application */
@@ -212,7 +213,10 @@ public:
                         int ndx_x) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_begin("OperatorBase::diffwave_apply");
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::diffwave_apply"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::diffwave_apply"); }
+        } scope_guard;
 #endif
         return suzerain::diffwave::apply(
                 dxcnt, dzcnt,
@@ -227,9 +231,6 @@ public:
                 grid.dN.z(),
                 dgrid.local_wave_start.z(),
                 dgrid.local_wave_end.z());
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
-        grvy_timer_end("OperatorBase::diffwave_apply");
-#endif
     }
 
     /**

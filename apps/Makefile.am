@@ -55,6 +55,7 @@ channel_SOURCES += channel_treatment.hpp
 channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
 channel_SOURCES += explicit_op.cpp explicit_op.hpp
 channel_SOURCES += hybrid_op.cpp   hybrid_op.hpp
+channel_SOURCES += timers.hpp
 channel_SOURCES += channel_main_svnrev.c
 BUILT_SOURCES   += channel_main_svnrev.h
 channel_main_svnrev.h: $(channel_SOURCES) $(libchannel_la_SOURCES)

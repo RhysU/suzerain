@@ -15,8 +15,8 @@
 #include <suzerain/config.h>
 #endif
 
-#include "nonlinear.hpp"
-#include "hybrid_op.hpp"
+// Must appear before Suzerain header includes to obtain timer hooks
+#include "timers.hpp"
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
@@ -27,7 +27,9 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
+#include "hybrid_op.hpp"
 #include "logging.hpp"
+#include "nonlinear.hpp"
 
 #pragma warning(disable:383 1572)
 

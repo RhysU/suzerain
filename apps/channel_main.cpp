@@ -18,6 +18,9 @@
 #define EIGEN_DEFAULT_IO_FORMAT \
         Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ";", "", "", "[", "]")
 
+// Must appear before Suzerain header includes to obtain timer hooks
+#include "timers.hpp"
+
 #include <suzerain/common.hpp>
 #include <gsl/gsl_errno.h>
 #include <esio/esio.h>
