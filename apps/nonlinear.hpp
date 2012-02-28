@@ -41,6 +41,8 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
+    GRVY_TIMER_BEGIN("applyNonlinearOperator");
+
     // Shorthand
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     namespace ndx = channel::field::ndx;
@@ -92,6 +94,8 @@ std::vector<real_t> applyNonlinearOperator(
     }};
     real_t &convective_delta_t = delta_t_candidates[0];
     real_t &diffusive_delta_t  = delta_t_candidates[1];
+
+    // GRVY_TIMER_{BEGIN,END} pairs for differentiation done in OperatorBase
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
@@ -185,10 +189,14 @@ std::vector<real_t> applyNonlinearOperator(
     typename channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(o.dgrid, swave);
     for (std::size_t i = 0; i < channel::field::count; ++i) {
+        GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
+        GRVY_TIMER_END("transform_wave_to_physical");
     }
     for (std::size_t i = 0; i < aux::count; ++i) {
+        GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
+        GRVY_TIMER_END("transform_wave_to_physical");
     }
 
     // Retrieve constants and compute derived constants before inner loops
@@ -237,6 +245,8 @@ std::vector<real_t> applyNonlinearOperator(
     //     (depending on linearization and which substep is being performed).
     if (    ZerothSubstep
          && Linearize != linearize::none) {  // References and mean velocity
+
+        GRVY_TIMER_BEGIN("reference quantities");
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const std::size_t leftNotOnRank = o.dgrid.local_physical_start.y();
@@ -340,7 +350,11 @@ std::vector<real_t> applyNonlinearOperator(
         // Copy mean streamwise velocity information into common.u()
         common.u() = common.ref_ux();
 
+        GRVY_TIMER_END("reference quantities");
+
     } else {                                 // Mean velocity profile only
+
+        GRVY_TIMER_BEGIN("mean velocity profile");
 
         // Zero all reference quantities on fully-explicit zeroth substep
         if (ZerothSubstep && Linearize == linearize::none) {
@@ -393,10 +407,13 @@ std::vector<real_t> applyNonlinearOperator(
                     MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         }
 
+        GRVY_TIMER_END("mean velocity profile");
+
     }
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
+    GRVY_TIMER_BEGIN("right hand sides");
     size_t offset = 0;
     for (int j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
@@ -662,11 +679,13 @@ std::vector<real_t> applyNonlinearOperator(
         } // end X // end Z
 
     } // end Y
+    GRVY_TIMER_END("right hand sides");
 
     // Traversal:
     // (3) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
+        GRVY_TIMER_BEGIN("mms forcing");
 
         // Dereference the msoln smart pointer outside the compute loop
         const channel::manufactured_solution &ms = *msoln;
@@ -706,6 +725,7 @@ std::vector<real_t> applyNonlinearOperator(
 
         } // end Y
 
+        GRVY_TIMER_END("mms forcing");
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
@@ -723,11 +743,15 @@ std::vector<real_t> applyNonlinearOperator(
         } else {
 
             // Otherwise, bring the field back to wave space
+            GRVY_TIMER_BEGIN("transform_physical_to_wave");
             o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+            GRVY_TIMER_END("transform_physical_to_wave");
 
         }
 
     }
+
+    GRVY_TIMER_END("applyNonlinearOperator");
 
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce

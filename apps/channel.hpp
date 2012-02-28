@@ -14,19 +14,6 @@
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <esio/esio.h>
-#include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/diffwave.hpp>
-#include <suzerain/grid_definition.hpp>
-#include <suzerain/inorder.hpp>
-#include <suzerain/mpi.hpp>
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
-#include <suzerain/state.hpp>
-#include <suzerain/time_definition.hpp>
-#include <suzerain/timestepper.hpp>
-
 #ifdef SUZERAIN_HAVE_GRVY
 #include <grvy.h>
 #define GRVY_TIMER_BEGIN(id)   grvy_timer_begin(id)
@@ -49,6 +36,19 @@
 #include <underling/underling.hpp>
 #include <underling/underling_fftw.hpp>
 #endif
+
+#include <esio/esio.h>
+#include <suzerain/common.hpp>
+#include <suzerain/bspline.hpp>
+#include <suzerain/diffwave.hpp>
+#include <suzerain/grid_definition.hpp>
+#include <suzerain/inorder.hpp>
+#include <suzerain/mpi.hpp>
+#include <suzerain/pencil_grid.hpp>
+#include <suzerain/scenario_definition.hpp>
+#include <suzerain/state.hpp>
+#include <suzerain/time_definition.hpp>
+#include <suzerain/timestepper.hpp>
 
 #include "precision.hpp"
 #include "nsctpl_rholut.hpp"

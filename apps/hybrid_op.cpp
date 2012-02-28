@@ -53,6 +53,8 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
+    GRVY_TIMER_BEGIN("applyMassPlusScaledOperator");
+
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
@@ -116,6 +118,8 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
                     p + field::ndx::rhoe*Ny);
         }
     }
+
+    GRVY_TIMER_END("applyMassPlusScaledOperator");
 }
 
 void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
@@ -126,6 +130,8 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
+    GRVY_TIMER_BEGIN("accumulateMassPlusScaledOperator");
+
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
@@ -185,6 +191,8 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
         }
     }
+
+    GRVY_TIMER_END("accumulateMassPlusScaledOperator");
 }
 
 /**
@@ -311,6 +319,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const std::size_t substep_index,
         const real_t iota) const
 {
+    GRVY_TIMER_BEGIN("invertMassPlusScaledOperator");
+
     // Shorthand
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
@@ -395,10 +405,12 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Form complex-valued, wavenumber-dependent PAP^T within papt
+            GRVY_TIMER_BEGIN("operator assembly");
             suzerain_rholut_imexop_packc(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                     buf.data(), &A, papt.data());
+            GRVY_TIMER_END("operator assembly");
 
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
@@ -431,6 +443,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             char equed;
             real_t rcond, ferr[1], berr[1];
 
+            GRVY_TIMER_BEGIN("operator solution");
             method = "zgbsvx";
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
             bc_enforcer.rhs(b.data());
@@ -441,6 +454,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 b.data(), b.size(), x.data(), x.size(),
                 &rcond, ferr, berr, work.data(), rwork.data());
             suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
+            GRVY_TIMER_END("operator solution");
 
             char buffer[128];
             if (info == 0) {
@@ -475,6 +489,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     }
 
     // State leaves method as coefficients in X, Y, and Z directions
+
+    GRVY_TIMER_END("invertMassPlusScaledOperator");
 }
 
 std::vector<real_t> HybridNonlinearOperator::applyOperator(

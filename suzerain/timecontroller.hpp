@@ -469,6 +469,13 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
         const TimeType final_t,
         const StepType final_nt)
 {
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+    struct ScopeGuard {
+         ScopeGuard() { grvy_timer_begin("TimeController::advance"); }
+        ~ScopeGuard() { grvy_timer_end("TimeController::advance");   }
+    } scope_guard;
+#endif
+
     assert(min_dt_ <= max_dt_);
     using std::min;
 

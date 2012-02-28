@@ -1057,6 +1057,10 @@ const typename suzerain::traits::component<Element>::type step(
     StateB& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+    grvy_timer_begin("timestepper::lowstorage::step");
+#endif
+
     using boost::is_same;
     BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));
     BOOST_STATIC_ASSERT((is_same<Element,typename    LinearB::element>::value));
@@ -1092,6 +1096,10 @@ const typename suzerain::traits::component<Element>::type step(
         L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a,
                                        delta_t, i, m.iota(i));
     }
+
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+    grvy_timer_end("timestepper::lowstorage::step");
+#endif
 
     return delta_t;
 }
