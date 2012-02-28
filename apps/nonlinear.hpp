@@ -531,15 +531,19 @@ std::vector<real_t> applyNonlinearOperator(
 
             // FORM CONTINUITY EQUATION RIGHT HAND SIDE
             //
-            // Implicit density handling requires zeroing density RHS in
+            // Implicit continuity equation handling requires zeroing RHS in
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
-            sphys(ndx::rho, offset) =
-                (Linearize == linearize::rhome) ? 0 : - div_m
-                ;
+            switch (Linearize) {
+                case linearize::none:
+                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
+                    break;
+                case linearize::rhome:
+                    sphys(ndx::rho, offset) = 0;       // Implicit convection
+                    break;
+            }
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
-            // (done in stages depending on Linearize parameter)
             Vector3r momentum_rhs =
                 // Explicit convective term
                 - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
@@ -575,7 +579,6 @@ std::vector<real_t> applyNonlinearOperator(
             sphys(ndx::rhow, offset) = momentum_rhs.z();
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
-            // (done in stages depending on Linearize parameter)
             sphys(ndx::rhoe, offset) =
                 // Explicit viscous work term
                 + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
@@ -620,11 +623,17 @@ std::vector<real_t> applyNonlinearOperator(
             // Determine the minimum observed stable time step when necessary
             if (ZerothSubstep) {
 
-                // Implicit handling sets the effective sound speed to zero
-                // when computing the convective_stability_criterion.
-                const real_t a = (Linearize == linearize::none)
-                               ? std::sqrt(T) / Ma  // a/u_0 = sqrt(T*)/Ma
-                               : 0;
+                // Implicit acoustic handling sets the effective sound speed to
+                // zero when computing the convective_stability_criterion.
+                real_t a;
+                switch (Linearize) {
+                    case linearize::none:
+                        a = std::sqrt(T) / Ma; // a/u_0 = sqrt(T*)/Ma
+                        break;
+                    case linearize::rhome:
+                        a = 0;
+                        break;
+                }
 
                 // See convective_stability_criterion documentation for why the
                 // magic number 4 modifies one_over_delta_y only here.
@@ -638,7 +647,7 @@ std::vector<real_t> applyNonlinearOperator(
 
                 // The diffusive stability uses ref_nu which has been
                 // previously set as appropriate for Linearize.  This form
-                // assumes "isotropic linearization" in X, Y, and Z.
+                // assumes "isotropic linearization" across X, Y, and Z.
                 const real_t nu = mu / rho;
                 diffusive_delta_t = suzerain::math::minnan(
                         diffusive_delta_t,
