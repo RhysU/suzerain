@@ -842,6 +842,7 @@ static const char log4cxx_config[] =
 /** Main driver logic */
 int main(int argc, char **argv)
 {
+    GRVY_TIMER_INIT("channel");                      // Initialize GRVY Timers
     MPI_Init(&argc, &argv);                          // Initialize MPI...
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
@@ -1312,7 +1313,7 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
-    GRVY_TIMER_INIT("channel");
+    GRVY_TIMER_RESET();
     wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
