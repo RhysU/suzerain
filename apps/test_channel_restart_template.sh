@@ -38,7 +38,7 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon b0.h5 c0.h5 /t
-    differ --delta=7e-16 --nan --exclude-path=/t b0.h5 c0.h5
+    differ --delta=3e-15 --nan --exclude-path=/t b0.h5 c0.h5
 )
 
 banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
