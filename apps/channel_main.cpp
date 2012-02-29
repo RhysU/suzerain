@@ -842,7 +842,10 @@ static const char log4cxx_config[] =
 /** Main driver logic */
 int main(int argc, char **argv)
 {
-    GRVY_TIMER_INIT("channel");                      // Initialize GRVY Timers
+#ifdef SUZERAIN_HAVE_GRVY
+    grvy_timer_init("channel");                      // Initialize GRVY Timers
+    grvy_log_setlevel(GRVY_ERROR);                   // Suppress GRVY warnings
+#endif
     MPI_Init(&argc, &argv);                          // Initialize MPI...
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
@@ -1332,7 +1335,9 @@ int main(int argc, char **argv)
     }
 
     // Advance time according to advance_dt, advance_nt criteria
-    GRVY_TIMER_RESET();
+#ifdef SUZERAIN_HAVE_GRVY
+    grvy_timer_reset();
+#endif
     wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
@@ -1367,7 +1372,9 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
     }
     const double wtime_advance_end = MPI_Wtime();
-    GRVY_TIMER_FINALIZE();
+#ifdef SUZERAIN_HAVE_GRVY
+    grvy_timer_finalize();
+#endif
     if (soft_teardown) {
         INFO0("TimeController stopped advancing due to teardown signal");
         advance_success = true; // ...treat like successful advance
@@ -1396,7 +1403,7 @@ int main(int argc, char **argv)
         // Only summarize when time advance took long enough to be interesting
         if (wtime_advance_end - wtime_advance_start > 5 /*seconds*/) {
             INFO("Displaying GRVY timings from MPI rank with zero-zero modes:");
-            GRVY_TIMER_SUMMARIZE();
+            grvy_timer_summarize();
         }
     }
 #endif
