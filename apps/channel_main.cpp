@@ -1366,6 +1366,7 @@ int main(int argc, char **argv)
             FATAL0("Sanity error in time control");
             return EXIT_FAILURE;
     }
+    const double wtime_advance_end = MPI_Wtime();
     GRVY_TIMER_FINALIZE();
     if (soft_teardown) {
         INFO0("TimeController stopped advancing due to teardown signal");
@@ -1376,7 +1377,6 @@ int main(int argc, char **argv)
     } else if (!advance_success) {
         WARN0("TimeController halted unexpectedly");
     }
-    const double wtime_advance_end = MPI_Wtime();
 
     // Output status if it was not just output during time advancement
     if (last_status_nt != tc->current_nt()) {
@@ -1393,8 +1393,11 @@ int main(int argc, char **argv)
     // safely on disk.  Reduces likelihood that GRVY hiccups cause data loss.
 #ifdef SUZERAIN_HAVE_GRVY
     if (tc->current_nt() && dgrid->has_zero_zero_modes()) {
-        INFO("Displaying GRVY timings from MPI rank handling zero-zero modes:");
-        GRVY_TIMER_SUMMARIZE();
+        // Only summarize when time advance took long enough to be interesting
+        if (wtime_advance_end - wtime_advance_start > 5 /*seconds*/) {
+            INFO("Displaying GRVY timings from MPI rank with zero-zero modes:");
+            GRVY_TIMER_SUMMARIZE();
+        }
     }
 #endif
 
