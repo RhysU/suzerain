@@ -1500,6 +1500,84 @@ static void parse_range(const std::string& s,
     }
 }
 
+void
+adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
+                const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+                const suzerain::problem::GridDefinition& grid,
+                const suzerain::pencil_grid& dgrid,
+                suzerain::bspline &b,
+                const suzerain::bsplineop& bop,
+                const real_t old_Ma,
+                const real_t old_gamma)
+{
+    bool quickreturn = true;
+    if (old_Ma != scenario.Ma) {
+        INFO0("Changing state Mach number from "
+              << old_Ma << " to " << scenario.Ma);
+        quickreturn = false;
+    }
+    if (old_gamma != scenario.gamma) {
+        INFO0("Changing state ratio of specific heats from "
+              << old_gamma << " to " << scenario.gamma);
+        quickreturn = false;
+    }
+    if (quickreturn) {
+        DEBUG0("Not rescaling energy as scenario parameters have not changed");
+        return;
+    }
+
+    // Expression modifying total energy can be found by setting old
+    // temperature equal to new temperature, holding momentum and density
+    // constant, substituting both new_Ma = old_Ma + delta_Ma and new_gamma =
+    // old_gamma + delta_gamma, into the equation, and simplifying.
+    INFO0("Holding density and temperature constant during changes");
+    const real_t delta_Ma     = scenario.Ma - old_Ma;
+    const real_t delta_Ma2    = delta_Ma * delta_Ma;
+    const real_t delta_gamma  = scenario.gamma - old_gamma;
+    const real_t gamma_factor = delta_gamma * (2*old_gamma + delta_gamma - 1)
+                              / (scenario.gamma * (scenario.gamma - 1));
+
+    // Convert state to physical space collocation points
+    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    physical_view<field::count>::type sphys
+            = physical_view<field::count>::create(dgrid, swave);
+    for (size_t k = 0; k < channel::field::count; ++k) {
+        obase.bop_apply(0, 1.0, swave, k);
+        dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
+    }
+
+    // Adjust total energy by the necessary amount at every collocation point
+    size_t offset = 0;
+    for (int j = dgrid.local_physical_start.y();
+        j < dgrid.local_physical_end.y();
+        ++j) {
+        const size_t last_zxoffset = offset
+                                   + dgrid.local_physical_extent.z()
+                                   * dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
+            const real_t          rho(sphys(field::ndx::rho,  offset));
+            const Eigen::Vector3r m  (sphys(field::ndx::rhou, offset),
+                                      sphys(field::ndx::rhov, offset),
+                                      sphys(field::ndx::rhow, offset));
+            real_t&               e  (sphys(field::ndx::rhoe, offset));
+
+            const real_t m2by2rho = m.squaredNorm() / rho / 2;
+            e += delta_Ma2*m2by2rho - gamma_factor*(e - old_Ma*m2by2rho);
+        }
+    }
+
+    // Convert state back to wave space coefficients in X, Y, and Z
+    // building FFT normalization constant into the mass matrix
+    suzerain::bsplineop_luz massluz(bop);
+    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    massluz.opform(1, &scale_factor, bop);
+    massluz.factor();
+    for (size_t i = 0; i < channel::field::count; ++i) {
+        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
+        obase.bop_solve(massluz, swave, i);
+    }
+}
+
 NoiseDefinition::NoiseDefinition(real_t percent,
                                  unsigned long seed)
     : IDefinition("Additive random velocity perturbations on startup"),

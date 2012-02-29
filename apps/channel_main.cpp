@@ -938,7 +938,22 @@ int main(int argc, char **argv)
 
     INFO0("Loading details from restart file: " << restart_file);
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
-    channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
+    // Mach and gamma are "pushed" and "popped" around loading the restart file
+    // to permit fixing temperature and density when changing the scenario.
+    real_t restart_Ma, restart_gamma;
+    {
+        real_t cli_Ma = scenario.Ma, cli_gamma = scenario.gamma;
+        const_cast<ScenarioDefinition<real_t>&>(scenario).Ma
+            = const_cast<ScenarioDefinition<real_t>&>(scenario).gamma
+            = numeric_limits<real_t>::quiet_NaN();
+        channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
+        restart_Ma    = scenario.Ma;
+        restart_gamma = scenario.gamma;
+        const_cast<ScenarioDefinition<real_t>&>(scenario).Ma
+                = ((boost::math::isnan)(cli_Ma)) ? restart_Ma : cli_Ma;
+        const_cast<ScenarioDefinition<real_t>&>(scenario).gamma
+                = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
+    }
     channel::load(esioh, const_cast<GridDefinition&>(grid));
     channel::load(esioh, const_cast<TimeDefinition<real_t>&>(timedef));
     channel::load(esioh, scenario, msoln);
@@ -1135,6 +1150,10 @@ int main(int argc, char **argv)
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
+
+    // If necessary, adjust total energy to account for scenario changes
+    channel::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
+                             restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
     channel::add_noise(*state_nonlinear, noisedef,

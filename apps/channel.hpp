@@ -306,6 +306,22 @@ void load(const esio_handle h,
           suzerain::bspline& b,
           const suzerain::bsplineop& bop);
 
+/**
+ * Hold temperature and density constant while changing the Mach number and
+ * ratio of specific heats.  On input, \c state should contain total energy
+ * fields using \c old_Ma and \c old_gamma.  On output \c state will contain
+ * total energy fields using <tt>scenario.Ma</tt> and <tt>scenario.gamma</tt>.
+ */
+void
+adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
+                const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+                const suzerain::problem::GridDefinition& grid,
+                const suzerain::pencil_grid& dgrid,
+                suzerain::bspline &b,
+                const suzerain::bsplineop& bop,
+                const real_t old_Ma,
+                const real_t old_gamma);
+
 /** Options definitions for adding random noise to momentum fields */
 class NoiseDefinition : public suzerain::problem::IDefinition {
 
