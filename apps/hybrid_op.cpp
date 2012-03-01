@@ -400,7 +400,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // How will we solve the linear system of equations?
     enum solve_types { gbsvx, gbsv };
-    solve_types solve_type = gbsvx;
+    const static solve_types solve_type = gbsvx;
 
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Does not shortcircuit on only-dealiased state (TODO should it?)
