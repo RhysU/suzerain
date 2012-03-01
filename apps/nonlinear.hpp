@@ -685,7 +685,7 @@ std::vector<real_t> applyNonlinearOperator(
     // (3) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
-        GRVY_TIMER_BEGIN("mms forcing");
+        GRVY_TIMER_BEGIN("manufactured forcing");
 
         // Dereference the msoln smart pointer outside the compute loop
         const channel::manufactured_solution &ms = *msoln;
@@ -725,7 +725,7 @@ std::vector<real_t> applyNonlinearOperator(
 
         } // end Y
 
-        GRVY_TIMER_END("mms forcing");
+        GRVY_TIMER_END("manufactured forcing");
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs

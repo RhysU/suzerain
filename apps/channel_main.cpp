@@ -27,6 +27,7 @@
 #include <esio/error.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
+#include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
 #include <suzerain/math.hpp>
@@ -1442,6 +1443,9 @@ int main(int argc, char **argv)
     //    v) The NonlinearOperator application requires an
     //       auxiliary scaling factor "chi" to account for Fourier
     //       transform normalization needs.
+    //   vi) Using suzerain::diffwave::apply zeros wavenumbers
+    //       used only for dealiasing purposes-- this data is unimportant
+    //       from the perspective of measuring actual linearization error.
     if (tc->current_nt()) {
         const double starttime = MPI_Wtime();
         state_nonlinear->assign(*state_linear);
@@ -1453,16 +1457,40 @@ int main(int argc, char **argv)
         common_block.setZero(grid.dN.y());  // Zero reference quantities
         L->accumulateMassPlusScaledOperator(
                 1.0, *state_linear, -1.0, *state_nonlinear, 0, /*substep*/0);
+        for (size_t k = 0; k < channel::field::count; ++k) {
+            suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
+                scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),
+                grid.N.x(), grid.dN.x(),
+                dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
+                grid.N.z(), grid.dN.z(),
+                dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
+        }
         state_nonlinear->exchange(*state_linear);
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m.evmaxmag_real(), m.evmaxmag_imag(), /*substep*/1);
-        state_linear->addScaled(chi, *state_nonlinear);
+        for (size_t k = 0; k < channel::field::count; ++k) {
+            suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
+                scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),
+                grid.N.x(), grid.dN.x(),
+                dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
+                grid.N.z(), grid.dN.z(),
+                dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
+        }
+        state_nonlinear->addScaled(1/chi, *state_linear);
+        const array<channel::L2,channel::field::count> L2
+            = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
-        // When the operators match, state_linear now be identically zero.
+        // When operators "match", state_nonlinear should be identically zero.
         // Seeing more than floating point error indicates something is amiss.
-        information_L2("Linearization error", "lerr.mean", "lerr.rms");
+        std::ostringstream msg;
+        msg << "Linearization error";
+        append_real(msg, L2[0].total());
+        for (size_t k = 1; k < channel::field::count; ++k) {
+            append_real(msg << ' ', L2[k].total());
+        }
+        INFO0("lin.abserr", msg.str());
     }
     // Beware, state_linear and state_nonlinear now contain garbage!
 

@@ -58,17 +58,18 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("applyMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
+    using suzerain::inorder::wavenumber_abs;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
-    // const int Nx   = grid.N.x();
+    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    // const int Nz   = grid.N.z();
+    const int Nz   = grid.N.z();
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
@@ -92,10 +93,12 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place".
-    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
+        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
         for (int m = dkbx; m < dkex; ++m) {
+            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Get pointer to (.,m,n)-th state pencil
@@ -135,17 +138,18 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("accumulateMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
+    using suzerain::inorder::wavenumber_abs;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
-    // const int Nx   = grid.N.x();
+    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    // const int Nz   = grid.N.z();
+    const int Nz   = grid.N.z();
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
@@ -171,10 +175,12 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place".
-    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
+        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
         for (int m = dkbx; m < dkex; ++m) {
+            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             suzerain_rholut_imexop_accumulate(
@@ -325,6 +331,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // Shorthand
     using suzerain::inorder::wavenumber;
+    using suzerain::inorder::wavenumber_abs;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(delta_t);
@@ -336,11 +343,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
-    // const int Nx   = grid.N.x();
+    const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
     const int dkex = dgrid.local_wave_end.x();
-    // const int Nz   = grid.N.z();
+    const int Nz   = grid.N.z();
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
@@ -400,14 +407,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // How will we solve the linear system of equations?
     enum solve_types { gbsvx, gbsv };
-    const static solve_types solve_type = gbsvx;
+    static const solve_types solve_type = gbsvx;
 
     // Iterate across local wavenumbers and "invert" operator "in-place".
-    // Does not shortcircuit on only-dealiased state (TODO should it?)
+    // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
+        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
 
         for (int m = dkbx; m < dkex; ++m) {
+            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Form complex-valued, wavenumber-dependent PAP^T within papt
