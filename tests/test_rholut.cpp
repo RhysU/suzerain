@@ -222,6 +222,14 @@ BOOST_AUTO_TEST_CASE( rholut_p_T_mu_lambda )
             45.055636055143743363613040114696980466792183873003314822257L,
             close_enough);
 
+    /* Variant computing pressure from density and temperature */
+    p = 555;
+    suzerain::rholut::p(gamma, rho, T, p);
+
+    BOOST_CHECK_CLOSE(p,
+            4441.1984111498830681828969449447964342868418205971441637701L,
+            close_enough);
+
     /* Variant providing only pressure */
     p = 555;
     suzerain::rholut::p(alpha, beta, gamma, Ma, rho, m, e, p);

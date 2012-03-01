@@ -648,6 +648,24 @@ void p(const Scalar &alpha,
 }
 
 /**
+ * Compute \f$p\f$ using the equation of state.
+ *
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho   \f$\rho\f$
+ * @param[in]  T     \f$T\f$
+ * @param[out] p     \f$p\f$
+ */
+template<typename Scalar>
+inline
+void p(const Scalar &gamma,
+       const Scalar &rho,
+       const Scalar &T,
+       Scalar &p)
+{
+    p = rho*T/gamma;
+}
+
+/**
  * Compute the internal energy by subtracting the kinetic
  * energy from the total energy.
  *
