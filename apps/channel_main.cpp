@@ -844,7 +844,6 @@ int main(int argc, char **argv)
 {
 #ifdef SUZERAIN_HAVE_GRVY
     grvy_timer_init("channel");                      // Initialize GRVY Timers
-    grvy_log_setlevel(GRVY_ERROR);                   // Suppress GRVY warnings
 #endif
     MPI_Init(&argc, &argv);                          // Initialize MPI...
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
@@ -1337,6 +1336,7 @@ int main(int argc, char **argv)
     // Advance time according to advance_dt, advance_nt criteria
 #ifdef SUZERAIN_HAVE_GRVY
     grvy_timer_reset();
+    grvy_log_setlevel(GRVY_ERROR);  // Suppress GRVY timer resolution warnings
 #endif
     wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
@@ -1373,6 +1373,7 @@ int main(int argc, char **argv)
     }
     const double wtime_advance_end = MPI_Wtime();
 #ifdef SUZERAIN_HAVE_GRVY
+    grvy_log_setlevel(GRVY_INFO);  // Re-enable all GRVY-related warnings
     grvy_timer_finalize();
 #endif
     if (soft_teardown) {
