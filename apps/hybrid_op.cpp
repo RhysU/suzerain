@@ -407,12 +407,12 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Form complex-valued, wavenumber-dependent PAP^T within papt
-            GRVY_TIMER_BEGIN("operator assembly");
+            GRVY_TIMER_BEGIN("implicit operator assembly");
             suzerain_rholut_imexop_packc(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                     buf.data(), &A, papt.data());
-            GRVY_TIMER_END("operator assembly");
+            GRVY_TIMER_END("implicit operator assembly");
 
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
@@ -445,18 +445,24 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             char equed;
             real_t rcond, ferr[1], berr[1];
 
-            GRVY_TIMER_BEGIN("operator solution");
+            GRVY_TIMER_BEGIN("implicit operator solve");
             method = "zgbsvx";
+            GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
+            GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             bc_enforcer.op(A, papt.data(), papt.colStride());
+            GRVY_TIMER_END("implicit operator BCs");
             info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                 papt.data(), papt.colStride(), lu.data(), lu.colStride(),
                 ipiv.data(), &equed, r.data(), c.data(),
                 b.data(), b.size(), x.data(), x.size(),
                 &rcond, ferr, berr, work.data(), rwork.data());
+            GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
-            GRVY_TIMER_END("operator solution");
+            GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            GRVY_TIMER_END("implicit operator solve");
 
             char buffer[128];
             if (info == 0) {

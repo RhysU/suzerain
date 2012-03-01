@@ -413,7 +413,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
-    GRVY_TIMER_BEGIN("right hand sides");
+    GRVY_TIMER_BEGIN("nonlinear right hand sides");
     size_t offset = 0;
     for (int j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
@@ -679,7 +679,7 @@ std::vector<real_t> applyNonlinearOperator(
         } // end X // end Z
 
     } // end Y
-    GRVY_TIMER_END("right hand sides");
+    GRVY_TIMER_END("nonlinear right hand sides");
 
     // Traversal:
     // (3) Computing any manufactured solution forcing (when enabled).
