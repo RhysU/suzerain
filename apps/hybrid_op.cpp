@@ -398,6 +398,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Prepare an almost functor mutating RHS and PAP^T to enforce BCs.
     IsothermalNoSlipPAPTEnforcer bc_enforcer(A, s);
 
+    // How will we solve the linear system of equations?
+    enum solve_types { gbsvx, gbsv };
+    solve_types solve_type = gbsvx;
+
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Does not shortcircuit on only-dealiased state (TODO should it?)
     for (int n = dkbz; n < dkez; ++n) {
@@ -408,10 +412,20 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             // Form complex-valued, wavenumber-dependent PAP^T within papt
             GRVY_TIMER_BEGIN("implicit operator assembly");
-            suzerain_rholut_imexop_packc(
-                    phi, km, kn, &s, &ref, &ld, bop.get(),
-                    ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
-                    buf.data(), &A, papt.data());
+            switch (solve_type) {
+            case gbsvx:
+                suzerain_rholut_imexop_packc(
+                        phi, km, kn, &s, &ref, &ld, bop.get(),
+                        ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
+                        buf.data(), &A, papt.data());
+                break;
+            case gbsv:
+                suzerain_rholut_imexop_packf(
+                        phi, km, kn, &s, &ref, &ld, bop.get(),
+                        ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
+                        buf.data(), &A, lu.data());
+                break;
+            }
             GRVY_TIMER_END("implicit operator assembly");
 
             // Get pointer to (.,m,n)-th state pencil
@@ -423,6 +437,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             //     apply BC to RHS   using IsothermalNoSlipPAPTEnforcer
             //     apply BC to PAP^T using IsothermalNoSlipPAPTEnforcer
             //     x := (LU)^-1 b    using ?gbsvx which factorizes PAP^T
+            //                       or ?gbsv which factorizes in place
             //     p := P^T x        using suzerain_bsmbsm_?aPxpby
             //
             // "Why gbsvx?" you ask.  "It's expensive!" you rightly observe.
@@ -446,22 +461,47 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             real_t rcond, ferr[1], berr[1];
 
             GRVY_TIMER_BEGIN("implicit operator solve");
-            method = "zgbsvx";
+            switch (solve_type) {
+            case gbsvx:
+                method = "zgbsvx";
+                break;
+            case gbsv:
+                method = "zgbsv";
+                break;
+            }
             GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1., p, 1, 0., b.data(), 1);
+            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
             GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
-            bc_enforcer.op(A, papt.data(), papt.colStride());
+            switch (solve_type) {
+                case gbsvx:
+                    bc_enforcer.op(A, papt.data(), papt.colStride());
+                    break;
+                case gbsv:
+                    bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
+                    break;
+            }
             GRVY_TIMER_END("implicit operator BCs");
-            info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                papt.data(), papt.colStride(), lu.data(), lu.colStride(),
-                ipiv.data(), &equed, r.data(), c.data(),
-                b.data(), b.size(), x.data(), x.size(),
-                &rcond, ferr, berr, work.data(), rwork.data());
-            GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1., x.data(), 1, 0., p, 1);
-            GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            switch (solve_type) {
+            case gbsvx:
+                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
+                    papt.data(), papt.colStride(), lu.data(), lu.colStride(),
+                    ipiv.data(), &equed, r.data(), c.data(),
+                    b.data(), A.N, x.data(), A.N,
+                    &rcond, ferr, berr, work.data(), rwork.data());
+                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
+                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                break;
+            case gbsv:
+                info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
+                    lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
+                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
+                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                break;
+            }
             GRVY_TIMER_END("implicit operator solve");
 
             char buffer[128];
@@ -492,7 +532,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
 
-            // TODO Track and report statistics on rcond, equed, ferr, and berr
+            if (solve_type == gbsvx) {
+                // TODO Track and statistics on rcond, equed, ferr, and berr
+            }
         }
     }
 
