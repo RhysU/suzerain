@@ -1531,11 +1531,12 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     // constant, substituting both new_Ma = old_Ma + delta_Ma and new_gamma =
     // old_gamma + delta_gamma, into the equation, and simplifying.
     INFO0("Holding density and temperature constant during changes");
-    const real_t delta_Ma     = scenario.Ma - old_Ma;
-    const real_t delta_Ma2    = delta_Ma * delta_Ma;
-    const real_t delta_gamma  = scenario.gamma - old_gamma;
-    const real_t gamma_factor = delta_gamma * (2*old_gamma + delta_gamma - 1)
-                              / (scenario.gamma * (scenario.gamma - 1));
+    const real_t r      = old_gamma*(old_gamma - 1);
+    const real_t s      = scenario.gamma*(scenario.gamma - 1);
+    const real_t oldMa2 = old_Ma*old_Ma;
+    const real_t kefact = (r - s)*oldMa2/s/2
+                        + (scenario.Ma*scenario.Ma - oldMa2)/2;
+    const real_t tefact = (s - r) / s;
 
     // Convert state to physical space collocation points
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
@@ -1559,10 +1560,10 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
             const Eigen::Vector3r m  (sphys(field::ndx::rhou, offset),
                                       sphys(field::ndx::rhov, offset),
                                       sphys(field::ndx::rhow, offset));
-            real_t&               e  (sphys(field::ndx::rhoe, offset));
+            const real_t          e  (sphys(field::ndx::rhoe, offset));
 
-            const real_t m2by2rho = m.squaredNorm() / rho / 2;
-            e += delta_Ma2*m2by2rho - gamma_factor*(e - old_Ma*m2by2rho);
+            sphys(field::ndx::rhoe, offset)
+                += kefact*m.squaredNorm()/rho + tefact*e;
         }
     }
 
