@@ -1526,18 +1526,6 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
         return;
     }
 
-    // Expression modifying total energy can be found by setting old
-    // temperature equal to new temperature, holding momentum and density
-    // constant, substituting both new_Ma = old_Ma + delta_Ma and new_gamma =
-    // old_gamma + delta_gamma, into the equation, and simplifying.
-    INFO0("Holding density and temperature constant during changes");
-    const real_t r      = old_gamma*(old_gamma - 1);
-    const real_t s      = scenario.gamma*(scenario.gamma - 1);
-    const real_t oldMa2 = old_Ma*old_Ma;
-    const real_t kefact = (r - s)*oldMa2/s/2
-                        + (scenario.Ma*scenario.Ma - oldMa2)/2;
-    const real_t tefact = (s - r) / s;
-
     // Convert state to physical space collocation points
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
     physical_view<field::count>::type sphys
@@ -1548,6 +1536,9 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     }
 
     // Adjust total energy by the necessary amount at every collocation point
+    // This procedure is not the cheapest or least numerically noisy,
+    // but it does re-use existing compute kernels in a readable way.
+    INFO0("Holding density and temperature constant during changes");
     size_t offset = 0;
     for (int j = dgrid.local_physical_start.y();
         j < dgrid.local_physical_end.y();
@@ -1556,14 +1547,23 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                    + dgrid.local_physical_extent.z()
                                    * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
+
             const real_t          rho(sphys(field::ndx::rho,  offset));
             const Eigen::Vector3r m  (sphys(field::ndx::rhou, offset),
                                       sphys(field::ndx::rhov, offset),
                                       sphys(field::ndx::rhow, offset));
             const real_t          e  (sphys(field::ndx::rhoe, offset));
 
+            // Compute temperature using old_gamma, old_Ma
+            real_t p, T;
+            suzerain::rholut::p_T(scenario.alpha, scenario.beta,
+                                  old_gamma, old_Ma, rho, m, e,
+                                  /*out*/ p, /*out*/ T);
+            // Compute total energy from new gamma, Ma, rho, T
+            suzerain::rholut::p(scenario.gamma, rho, T, /*out*/ p);
             sphys(field::ndx::rhoe, offset)
-                += kefact*m.squaredNorm()/rho + tefact*e;
+                    = suzerain::rholut::energy_internal(scenario.gamma, p)
+                    + suzerain::rholut::energy_kinetic(scenario.Ma, rho, m);
         }
     }
 
