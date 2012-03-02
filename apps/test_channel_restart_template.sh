@@ -37,7 +37,7 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
     $channel mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
 
     # Ensure simulation time "/t" matches before bothering with anything else
-    differ --use-system-epsilon b0.h5 c0.h5 /t
+    differ --delta=3e-15 --nan b0.h5 c0.h5 /t
     differ --delta=3e-15 --nan --exclude-path=/t b0.h5 c0.h5
 )
 
