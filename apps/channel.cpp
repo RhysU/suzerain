@@ -1110,7 +1110,7 @@ void load_coefficients(const esio_handle h,
     boost::scoped_ptr<suzerain::bsplineop_luz> mass;
     if (!bsplines_same) {
         INFO0("Differences in B-spline basis require restart projection ("
-              << ")");
+              << bsplines_dist << " >= " << bsplines_distinct_distance << ")");
         const boost::array<tmp_type::index,3> extent = {{
             Fy, state.shape()[2], state.shape()[3]
         }};
