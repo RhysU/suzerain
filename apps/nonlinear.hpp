@@ -243,6 +243,9 @@ std::vector<real_t> applyNonlinearOperator(
     // Traversal:
     // (1) Computing reference quantities and mean velocity OR mean velocity
     //     (depending on linearization and which substep is being performed).
+    //
+    // Always gather all reference quantities when using implicit solves.
+    // Profiling indicates the overhead is tiny and it keeps the code readable.
     if (    ZerothSubstep
          && Linearize != linearize::none) {  // References and mean velocity
 
@@ -260,6 +263,9 @@ std::vector<real_t> applyNonlinearOperator(
 
             // See writeups/derivation.tex or rholut_imexop.h for definitions
             summing_accumulator_type ref_nu, ref_ux, ref_uy, ref_uz,
+                                     ref_uxux, ref_uxuy, ref_uxuz,
+                                               ref_uyuy, ref_uyuz,
+                                                         ref_uzuz,
                                      ref_nuux, ref_nuuy, ref_nuuz,
                                      ref_m_gradrho, ref_ex_gradrho,
                                      ref_ey_gradrho, ref_ez_gradrho,
@@ -291,6 +297,12 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_ux(u.x());
                 ref_uy(u.y());
                 ref_uz(u.z());
+                ref_uxux(u.x()*u.x());
+                ref_uxuy(u.x()*u.y());
+                ref_uxuz(u.x()*u.z());
+                ref_uyuy(u.y()*u.y());
+                ref_uyuz(u.y()*u.z());
+                ref_uyuz(u.z()*u.z());
                 ref_nuux(nu*u.x());
                 ref_nuuy(nu*u.y());
                 ref_nuuz(nu*u.z());
@@ -322,6 +334,12 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_ux        ()[j] = accumulators::sum(ref_ux        );
             common.ref_uy        ()[j] = accumulators::sum(ref_uy        );
             common.ref_uz        ()[j] = accumulators::sum(ref_uz        );
+            common.ref_uxux      ()[j] = accumulators::sum(ref_uxux      );
+            common.ref_uxuy      ()[j] = accumulators::sum(ref_uxuy      );
+            common.ref_uxuz      ()[j] = accumulators::sum(ref_uxuz      );
+            common.ref_uyuy      ()[j] = accumulators::sum(ref_uyuy      );
+            common.ref_uyuz      ()[j] = accumulators::sum(ref_uyuz      );
+            common.ref_uzuz      ()[j] = accumulators::sum(ref_uzuz      );
             common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
             common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
             common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
@@ -423,19 +441,29 @@ std::vector<real_t> applyNonlinearOperator(
         const real_t one_over_delta_y_j = o.one_over_delta_y(j);
 
         // Unpack appropriate wall-normal reference quantities
-        const real_t   ref_nu        (common.ref_nu        ()[j]);
-        const Vector3r ref_u         (common.ref_ux        ()[j],
-                                      common.ref_uy        ()[j],
-                                      common.ref_uz        ()[j]);
-        const Vector3r ref_nuu       (common.ref_nuux      ()[j],
-                                      common.ref_nuuy      ()[j],
-                                      common.ref_nuuz      ()[j]);
-        const real_t   ref_m_gradrho (common.ref_m_gradrho ()[j]);
-        const Vector3r ref_e_gradrho (common.ref_ex_gradrho()[j],
-                                      common.ref_ey_gradrho()[j],
-                                      common.ref_ez_gradrho()[j]);
-        const real_t   ref_e_divm    (common.ref_e_divm    ()[j]);
-        const real_t   ref_e_deltarho(common.ref_e_deltarho()[j]);
+        const real_t   ref_nu           (common.ref_nu        ()[j]);
+        const Vector3r ref_u            (common.ref_ux        ()[j],
+                                         common.ref_uy        ()[j],
+                                         common.ref_uz        ()[j]);
+        const Matrix3r ref_uu;
+        const_cast<Matrix3r&>(ref_uu) << common.ref_uxux      ()[j],
+                                         common.ref_uxuy      ()[j],
+                                         common.ref_uxuz      ()[j],
+                                         common.ref_uxuy      ()[j],
+                                         common.ref_uyuy      ()[j],
+                                         common.ref_uyuz      ()[j],
+                                         common.ref_uxuz      ()[j],
+                                         common.ref_uyuz      ()[j],
+                                         common.ref_uzuz      ()[j];
+        const Vector3r ref_nuu          (common.ref_nuux      ()[j],
+                                         common.ref_nuuy      ()[j],
+                                         common.ref_nuuz      ()[j]);
+        const real_t   ref_m_gradrho    (common.ref_m_gradrho ()[j]);
+        const Vector3r ref_e_gradrho    (common.ref_ex_gradrho()[j],
+                                         common.ref_ey_gradrho()[j],
+                                         common.ref_ez_gradrho()[j]);
+        const real_t   ref_e_divm       (common.ref_e_divm    ()[j]);
+        const real_t   ref_e_deltarho   (common.ref_e_deltarho()[j]);
 
         // Iterate across the j-th ZX plane
         const size_t last_zxoffset = offset

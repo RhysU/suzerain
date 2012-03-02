@@ -46,6 +46,12 @@ typedef struct {
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
+    double *uxux;       /**< \f$ C^{u_x u_x}            \f$ */
+    double *uxuy;       /**< \f$ C^{u_x u_y}            \f$ */
+    double *uxuz;       /**< \f$ C^{u_x u_z}            \f$ */
+    double *uyuy;       /**< \f$ C^{u_y u_y}            \f$ */
+    double *uyuz;       /**< \f$ C^{u_y u_z}            \f$ */
+    double *uzuz;       /**< \f$ C^{u_z u_z}            \f$ */
     double *nuux;       /**< \f$ C^{\nu u_x}            \f$ */
     double *nuuy;       /**< \f$ C^{\nu u_y}            \f$ */
     double *nuuz;       /**< \f$ C^{\nu u_z}            \f$ */
@@ -63,6 +69,12 @@ typedef struct {
     int ux;             /**< \copydoc suzerain_rholut_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_rholut_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_rholut_imexop_ref::uz         */
+    int uxux;           /**< \copydoc suzerain_rholut_imexop_ref::uxux       */
+    int uxuy;           /**< \copydoc suzerain_rholut_imexop_ref::uxuy       */
+    int uxuz;           /**< \copydoc suzerain_rholut_imexop_ref::uxuz       */
+    int uyuy;           /**< \copydoc suzerain_rholut_imexop_ref::uyuy       */
+    int uyuz;           /**< \copydoc suzerain_rholut_imexop_ref::uyuz       */
+    int uzuz;           /**< \copydoc suzerain_rholut_imexop_ref::uzuz       */
     int nuux;           /**< \copydoc suzerain_rholut_imexop_ref::nuux       */
     int nuuy;           /**< \copydoc suzerain_rholut_imexop_ref::nuuy       */
     int nuuz;           /**< \copydoc suzerain_rholut_imexop_ref::nuuz       */

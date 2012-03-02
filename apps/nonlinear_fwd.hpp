@@ -42,7 +42,7 @@ private:
     typedef Eigen::Array<real_t, Eigen::Dynamic,  4, Eigen::ColMajor> means_t;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Eigen::Array<real_t, 13, Eigen::Dynamic, Eigen::ColMajor> refs_t;
+    typedef Eigen::Array<real_t, 19, Eigen::Dynamic, Eigen::ColMajor> refs_t;
 
 public:
 
@@ -99,6 +99,12 @@ public:
      * \li \c ref_ux         Reference \f$C^{u_x}               \f$
      * \li \c ref_uy         Reference \f$C^{u_y}               \f$
      * \li \c ref_uz         Reference \f$C^{u_z}               \f$
+     * \li \c ref_uxux       Reference \f$C^{u_x u_x}           \f$
+     * \li \c ref_uxuy       Reference \f$C^{u_x u_y}           \f$
+     * \li \c ref_uxuz       Reference \f$C^{u_x u_z}           \f$
+     * \li \c ref_uyuy       Reference \f$C^{u_y u_y}           \f$
+     * \li \c ref_uyuz       Reference \f$C^{u_y u_z}           \f$
+     * \li \c ref_uzuz       Reference \f$C^{u_z u_z}           \f$
      * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
      * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
      * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
@@ -126,48 +132,86 @@ public:
     refs_t::RowXpr      ref_ux()               { return refs.row( 1); }
     refs_t::RowXpr      ref_uy()               { return refs.row( 2); }
     refs_t::RowXpr      ref_uz()               { return refs.row( 3); }
-    refs_t::RowXpr      ref_nuux()             { return refs.row( 4); }
-    refs_t::RowXpr      ref_nuuy()             { return refs.row( 5); }
-    refs_t::RowXpr      ref_nuuz()             { return refs.row( 6); }
-    refs_t::RowXpr      ref_m_gradrho()        { return refs.row( 7); }
-    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row( 8); }
-    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row( 9); }
-    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(10); }
-    refs_t::RowXpr      ref_e_divm()           { return refs.row(11); }
-    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(12); }
+    refs_t::RowXpr      ref_uxux()             { return refs.row( 4); }
+    refs_t::RowXpr      ref_uxuy()             { return refs.row( 5); }
+    refs_t::RowXpr      ref_uxuz()             { return refs.row( 6); }
+    refs_t::RowXpr      ref_uyuy()             { return refs.row( 7); }
+    refs_t::RowXpr      ref_uyuz()             { return refs.row( 8); }
+    refs_t::RowXpr      ref_uzuz()             { return refs.row( 9); }
+    refs_t::RowXpr      ref_nuux()             { return refs.row(10); }
+    refs_t::RowXpr      ref_nuuy()             { return refs.row(11); }
+    refs_t::RowXpr      ref_nuuz()             { return refs.row(12); }
+    refs_t::RowXpr      ref_m_gradrho()        { return refs.row(13); }
+    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row(14); }
+    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row(15); }
+    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(16); }
+    refs_t::RowXpr      ref_e_divm()           { return refs.row(17); }
+    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(18); }
 
     refs_t::ConstRowXpr ref_nu()         const { return refs.row( 0); }
     refs_t::ConstRowXpr ref_ux()         const { return refs.row( 1); }
     refs_t::ConstRowXpr ref_uy()         const { return refs.row( 2); }
     refs_t::ConstRowXpr ref_uz()         const { return refs.row( 3); }
-    refs_t::ConstRowXpr ref_nuux()       const { return refs.row( 4); }
-    refs_t::ConstRowXpr ref_nuuy()       const { return refs.row( 5); }
-    refs_t::ConstRowXpr ref_nuuz()       const { return refs.row( 6); }
-    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row( 7); }
-    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row( 8); }
-    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row( 9); }
-    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(10); }
-    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(11); }
-    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(12); }
+    refs_t::ConstRowXpr ref_uxux()       const { return refs.row( 4); }
+    refs_t::ConstRowXpr ref_uxuy()       const { return refs.row( 5); }
+    refs_t::ConstRowXpr ref_uxuz()       const { return refs.row( 6); }
+    refs_t::ConstRowXpr ref_uyuy()       const { return refs.row( 7); }
+    refs_t::ConstRowXpr ref_uyuz()       const { return refs.row( 8); }
+    refs_t::ConstRowXpr ref_uzuz()       const { return refs.row( 9); }
+    refs_t::ConstRowXpr ref_nuux()       const { return refs.row(10); }
+    refs_t::ConstRowXpr ref_nuuy()       const { return refs.row(11); }
+    refs_t::ConstRowXpr ref_nuuz()       const { return refs.row(12); }
+    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row(13); }
+    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row(14); }
+    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row(15); }
+    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(16); }
+    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(17); }
+    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(18); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
                     suzerain_rholut_imexop_refld &ld)
     {
+        ref.nu         = ref_nu().data();
+        ref.ux         = ref_ux().data();
+        ref.uy         = ref_uy().data();
+        ref.uz         = ref_uz().data();
+        ref.uxux       = ref_uxux().data();
+        ref.uxuy       = ref_uxuy().data();
+        ref.uxuz       = ref_uxuz().data();
+        ref.uyuy       = ref_uyuy().data();
+        ref.uyuz       = ref_uyuz().data();
+        ref.uzuz       = ref_uzuz().data();
+        ref.nuux       = ref_nuux().data();
+        ref.nuuy       = ref_nuuy().data();
+        ref.nuuz       = ref_nuuz().data();
+        ref.m_gradrho  = ref_m_gradrho().data();
+        ref.ex_gradrho = ref_ex_gradrho().data();
+        ref.ey_gradrho = ref_ey_gradrho().data();
+        ref.ez_gradrho = ref_ez_gradrho().data();
+        ref.e_divm     = ref_e_divm().data();
+        ref.e_deltarho = ref_e_deltarho().data();
+
         const int inc = refs.colStride();
-        ld.nu         = inc; ref.nu         = ref_nu().data();
-        ld.ux         = inc; ref.ux         = ref_ux().data();
-        ld.uy         = inc; ref.uy         = ref_uy().data();
-        ld.uz         = inc; ref.uz         = ref_uz().data();
-        ld.nuux       = inc; ref.nuux       = ref_nuux().data();
-        ld.nuuy       = inc; ref.nuuy       = ref_nuuy().data();
-        ld.nuuz       = inc; ref.nuuz       = ref_nuuz().data();
-        ld.m_gradrho  = inc; ref.m_gradrho  = ref_m_gradrho().data();
-        ld.ex_gradrho = inc; ref.ex_gradrho = ref_ex_gradrho().data();
-        ld.ey_gradrho = inc; ref.ey_gradrho = ref_ey_gradrho().data();
-        ld.ez_gradrho = inc; ref.ez_gradrho = ref_ez_gradrho().data();
-        ld.e_divm     = inc; ref.e_divm     = ref_e_divm().data();
-        ld.e_deltarho = inc; ref.e_deltarho = ref_e_deltarho().data();
+        ld.nu         = inc;
+        ld.ux         = inc;
+        ld.uy         = inc;
+        ld.uz         = inc;
+        ld.uxux       = inc;
+        ld.uxuy       = inc;
+        ld.uxuz       = inc;
+        ld.uyuy       = inc;
+        ld.uyuz       = inc;
+        ld.uzuz       = inc;
+        ld.nuux       = inc;
+        ld.nuuy       = inc;
+        ld.nuuz       = inc;
+        ld.m_gradrho  = inc;
+        ld.ex_gradrho = inc;
+        ld.ey_gradrho = inc;
+        ld.ez_gradrho = inc;
+        ld.e_divm     = inc;
+        ld.e_deltarho = inc;
     }
 
     /** @} */
@@ -229,7 +273,7 @@ enum type {
  * \param common Shared storage for interaction with an ILinearOperator
  *        implementation providing forcing and boundary conditions.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
- *        then it will be used to provide manufactured forcing terms. 
+ *        then it will be used to provide manufactured forcing terms.
  * \param time Simulation time at which the operator should be applied.
  *        This allows time-dependent forcing (e.g. from \c msoln).
  * \param swave State to which the operator should be applied.  On
