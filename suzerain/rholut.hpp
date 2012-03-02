@@ -126,6 +126,12 @@ using suzerain::rholt::div_tau_u;
 
 /**
  * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_div_rho_inverse_m_outer_m
+ */
+using suzerain::rholt::explicit_div_rho_inverse_m_outer_m;
+
+/**
+ * \namespace suzerain::rholut
  * \see suzerain::rholt::explicit_grad_p_refcoeff_grad_rho
  */
 using suzerain::rholt::explicit_grad_p_refcoeff_grad_rho;

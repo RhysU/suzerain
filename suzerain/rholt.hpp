@@ -370,6 +370,64 @@ Scalar div_tau_u(
 }
 
 /**
+ * Compute the explicit part of
+ * \f$\vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)\f$.
+ * Uses the expansion
+ * \f[
+ *      \vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)
+ *      = \vec{\nabla}\vec{m}\left(
+ *            \vec{u} - \left\{\vec{u}\right\}_0
+ *        \right)
+ *      + \left(\vec{\nabla}\cdot\vec{m}\right)\left(
+ *            \vec{u} - \left\{\vec{u}\right\}_0
+ *        \right)
+ *      - \left(
+ *            \vec{u}\otimes\vec{u} - \left\{\vec{u}\otimes\vec{u}\right\}_0
+ *        \right) \vec{\nabla}\rho
+ * \f]
+ * where \f$\left\{\rho^{-1}\vec{m}\right\}_0\f$ and
+ * \f$\left\{\rho^{-1}\vec{m}\otimes\rho^{-1}\vec{m}\right\}_0\f$ are based on
+ * the same reference velocity.  The remaining linear portion of
+ * \f$\vec{\nabla}\cdot\left(\frac{1}{\rho}\vec{m}\otimes\vec{m}\right)\f$ is
+ * \f[
+ *        \vec{\nabla}\vec{m} \left\{\vec{u}\right\}_0
+ *      + \left(\vec{\nabla}\cdot\vec{m}\right) \left\{\vec{u}\right\}_0
+ *      - \left\{\vec{u}\otimes\vec{u}\right\}_0 \vec{\nabla}\rho
+ * \f]
+ *
+ * @param[in] grad_rho           \f$\vec{\nabla}\rho\f$
+ * @param[in] m                  \f$\vec{m}\f$
+ * @param[in] div_m              \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param[in] grad_m             \f$\vec{\nabla}\vec{m}\f$
+ * @param[in] u                  \f$\vec{u}\f$ computed from, for example, u()
+ * @param[in] refcoeff_u         \f$\left\{\vec{u}\right\}_0\f$
+ * @param[in] refcoeff_u_outer_u \f$\left\{\vec{u}\otimes\vec{u}\right\}_0\f$
+ *
+ * @return The convective derivative computed from the divergence form.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor,
+         typename VectorCoefficient,
+         typename TensorCoefficient >
+inline
+Vector explicit_div_rho_inverse_m_outer_m(
+        const Vector &grad_rho,
+        const Vector &m,
+        const Scalar &div_m,
+        const Tensor &grad_m,
+        const Vector &u,
+        const VectorCoefficient &refcoeff_u,
+        const TensorCoefficient &refcoeff_u_outer_u)
+{
+    const Vector coeff_u = u - refcoeff_u;
+
+    return grad_m*coeff_u
+         + div_m*coeff_u
+         - (u*u.transpose() - refcoeff_u_outer_u)*grad_rho;
+}
+
+/**
  * Compute the reference coefficient for the term containing
  * \f$\vec{\nabla}\cdot\vec{m}\f$ in the explicit portion
  * of \f$\vec{\nabla}\cdot{}p\vec{u}\f$.
