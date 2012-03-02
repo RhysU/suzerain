@@ -59,6 +59,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -95,10 +96,10 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     // Iterate across local wavenumbers and apply operator "in-place".
     // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
+        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
         for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
+            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Get pointer to (.,m,n)-th state pencil
@@ -139,6 +140,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -177,10 +179,10 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     // Iterate across local wavenumbers and apply operator "in-place".
     // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
+        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
         for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
+            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             suzerain_rholut_imexop_accumulate(
@@ -332,6 +334,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Shorthand
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(delta_t);
@@ -412,11 +415,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Iterate across local wavenumbers and "invert" operator "in-place".
     // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > (Nz-1)/2) continue;
+        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
         const real_t kn = twopioverLz*wavenumber(dNz, n);
 
         for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > (Nx-1)/2) continue;
+            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
             // Form complex-valued, wavenumber-dependent PAP^T within papt
