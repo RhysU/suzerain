@@ -232,14 +232,17 @@ FPT diffusive_stability_criterion(
         const FPT nuB = 0,
         const FPT nuB0 = 0)
 {
+
+    // Find maximum diffusive coefficient amongst all possible criteria
+    using std::abs;
+    using std::max;
+    const FPT maxcoeff = max(max(gamma/Pr,FPT(1))*abs(nu  - nu0 )/Re,
+                                                  abs(nuB - nuB0)/Re);
+
     // Precision for a 128-bit quad found via Sage's N(1/(pi*pi),digits=34)
     static const FPT one_over_pi_squared
         = (FPT) 0.1013211836423377714438794632097276L;
 
-    // Kinematic viscosity and bulk kinematic viscosity enter identically
-    const FPT nu_less_nu0 = std::max(std::abs(nu - nu0), std::abs(nuB - nuB0));
-
-    const FPT maxcoeff = std::max((gamma*nu_less_nu0)/(Re*Pr), nu_less_nu0/Re);
     return (evmaxmag_real * one_over_pi_squared)
         /  (maxcoeff * (   one_over_delta_x*one_over_delta_x
                          + one_over_delta_y*one_over_delta_y
