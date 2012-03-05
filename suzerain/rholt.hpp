@@ -396,7 +396,6 @@ Scalar div_tau_u(
  * \f]
  *
  * @param[in] grad_rho           \f$\vec{\nabla}\rho\f$
- * @param[in] m                  \f$\vec{m}\f$
  * @param[in] div_m              \f$\vec{\nabla}\cdot\vec{m}\f$
  * @param[in] grad_m             \f$\vec{\nabla}\vec{m}\f$
  * @param[in] u                  \f$\vec{u}\f$ computed from, for example, u()
@@ -413,13 +412,13 @@ template<typename Scalar,
 inline
 Vector explicit_div_rho_inverse_m_outer_m(
         const Vector &grad_rho,
-        const Vector &m,
         const Scalar &div_m,
         const Tensor &grad_m,
         const Vector &u,
         const VectorCoefficient &refcoeff_u,
         const TensorCoefficient &refcoeff_u_outer_u)
 {
+// FIXME symmetry of refcoeff_u_outer_u should be used in the computation
     const Vector coeff_u = u - refcoeff_u;
 
     return grad_m*coeff_u
