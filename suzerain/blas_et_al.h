@@ -2971,7 +2971,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
  * \alpha_2 D_2 + \alpha_3 D_3) A + \beta{}B \f$ or \f$ B \leftarrow{} A
  * (\alpha_0 D_0 + \alpha_1 D_1 + \alpha_2 D_2 + \alpha_3 D_3) + \beta{}B \f$
  * for real banded \f$A\f$, real diagonal \f$D_0\f$, real diagonal \f$D_1\f$,
- * real diagonal \f$D_2\f$, real diagonal \f$D_3\f$ and complex banded \f$B\f$.
+ * real diagonal \f$D_2\f$, real diagonal \f$D_3\f$,and complex banded \f$B\f$.
  *
  * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
  * be generally strided.  Matrices \f$ D_0 \f$, \f$ D_1 \f$, \f$ D_2 \f$, and
@@ -3026,6 +3026,81 @@ suzerain_blasext_zgb_ddddiag_scale_acc_d(
         const complex_double alpha3,
         const double *d3,
         int ldd3,
+        const double *a,
+        int inca,
+        int lda,
+        const complex_double beta,
+        complex_double *b,
+        int incb,
+        int ldb);
+
+/*!
+ * \brief Compute either \f$ B \leftarrow{} (\alpha_0 D_0 + \alpha_1 D_1 +
+ * \alpha_2 D_2 + \alpha_3 D_3 + \alpha_4 D_4) A + \beta{}B \f$ or \f$ B
+ * \leftarrow{} A (\alpha_0 D_0 + \alpha_1 D_1 + \alpha_2 D_2 + \alpha_3 D_3 +
+ * \alpha_4 D_4) + \beta{}B \f$ for real banded \f$A\f$, real diagonal
+ * \f$D_0\f$, real diagonal \f$D_1\f$, real diagonal \f$D_2\f$, real diagonal
+ * \f$D_3\f$, real diagonal \f$D_4\f$, and complex banded \f$B\f$.
+ *
+ * Matrices \f$ A \f$ and \f$ B \f$ both have banded storage.  Any matrix may
+ * be generally strided.  Matrices \f$ D_0 \f$, \f$ D_1 \f$, \f$ D_2 \f$, \f$
+ * D_3 \f$, and \f$ D_4 \f$ may be aliased.
+ *
+ * \param side One of 'L' or 'R' indicating whether the diagonal matrices
+ *        should be applied to the left or right side of \f$A\f$, respectively.
+ * \param m Number of rows in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of diagonal matrices when <tt>side == 'L'</tt>.
+ * \param n Number of columns in matrices \f$ A \f$ and \f$ B \f$
+ *          and size of diagonal matrices when <tt>side == 'R'</tt>.
+ * \param kl Number of subdiagonals in band storage of \c a and \c b.
+ * \param ku Number of superdiagonals in band storage of \c a and \c b.
+ * \param alpha0 Multiplicative scalar \f$ \alpha_0 \f$
+ * \param d0 Diagonal storage of matrix \f$ D_0 \f$.
+ * \param ldd0 Nonnegative stride between diagonal entries in \c d0.
+ * \param alpha1 Multiplicative scalar \f$ \alpha_1 \f$
+ * \param d1 Diagonal storage of matrix \f$ D_1 \f$.
+ * \param ldd1 Nonnegative stride between diagonal entries in \c d1.
+ * \param alpha2 Multiplicative scalar \f$ \alpha_2 \f$
+ * \param d2 Diagonal storage of matrix \f$ D_2 \f$.
+ * \param ldd2 Nonnegative stride between diagonal entries in \c d2.
+ * \param alpha3 Multiplicative scalar \f$ \alpha_3 \f$
+ * \param d3 Diagonal storage of matrix \f$ D_3 \f$.
+ * \param ldd3 Nonnegative stride between diagonal entries in \c d3.
+ * \param alpha4 Multiplicative scalar \f$ \alpha_4 \f$
+ * \param d4 Diagonal storage of matrix \f$ D_4 \f$.
+ * \param ldd4 Nonnegative stride between diagonal entries in \c d4.
+ * \param a General band storage of the matrix \f$ A \f$.
+ * \param inca Strictly positive stride between values in \c a.
+ * \param lda Leading dimension of \c a.
+ * \param beta Multiplicative scalar \f$ \beta \f$
+ * \param b General band storage of the matrix \f$ B \f$.
+ * \param incb Strictly positive stride between values in \c b.
+ * \param ldb Leading dimension of \c b.
+ *
+ * \see A BLAS reference for banded matrix storage requirements.
+ */
+int
+suzerain_blasext_zgb_dddddiag_scale_acc_d(
+        char side,
+        int m,
+        int n,
+        int kl,
+        int ku,
+        const complex_double alpha0,
+        const double *d0,
+        int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        int ldd3,
+        const complex_double alpha4,
+        const double *d4,
+        int ldd4,
         const double *a,
         int inca,
         int lda,
