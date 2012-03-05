@@ -1373,6 +1373,7 @@ $1/\Delta{}y$ four times smaller than the nominal value was feasible
 (equation~3.29).
 
 \subsubsection{Diffusive stability criterion}
+\label{sec:diffusivestability}
 
 The diffusive criterion uses the maximum real eigenvalue magnitude from a model
 diffusion equation as a surrogate for the more complicated Navier--Stokes case.
@@ -1542,6 +1543,14 @@ containing derivative operators applied only to state quantities:
         \right]
   \right]
 \\
+  \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
+  &=
+  \rho^{-1}\left[
+      \left(\nabla{}m\right)m
+      + \left(\nabla\cdot{}m - \rho^{-1}m\cdot\nabla\rho\right)m
+  \right]
+\end{align}
+\begin{align}
   \nabla\times\nabla\times\frac{m}{\rho}
   &=
   \rho^{-1}\left[
@@ -2033,7 +2042,7 @@ The total energy convection and pressure work terms may be linearized as
   \\
    &+ \lessreference{
         \rho^{-2}m\left(\left(\gamma-1\right)e-2p\right)
-      }\cdot\vec{\nabla}\rho
+      }\cdot\nabla\rho
   \\
    &+ \gamma\reference{
         \rho^{-1}m
@@ -2043,7 +2052,7 @@ The total energy convection and pressure work terms may be linearized as
       }\nabla\cdot{}m
     + \reference{
         \rho^{-2}m\left(\left(\gamma-2\right)e-2p\right)
-      }\cdot\vec{\nabla}\rho
+      }\cdot\nabla\rho
 .
 \end{align}
 We have linearized the two terms together as doing so is algebraically simple
@@ -2056,6 +2065,47 @@ If off-diagonal density and momentum derivatives are computed implicitly,
 implicitly treating the convective term $-\nabla\cdot{}m$ in
 equation~\eqref{eq:state_continuity} is simple.  Doing so reduces by one the
 number of scalar fields needing conversion from physical space to wave space.
+
+\subsubsection{Linearization of the convective terms in the momentum equation}
+\label{sec:momtconv}
+
+Once the convective terms in equations~\eqref{eq:state_continuity}
+and~\eqref{eq:state_energy} and linearized viscous terms are treated
+implicitly, the incremental cost to treat the convective term in
+equation~\eqref{eq:state_momentum} is small.  In particular, linearizing this
+term does not increase the discrete operator bandwidth.  The linearization used
+is
+\begin{align}
+  \nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)
+&=
+    \left(\nabla{}m + I \nabla\cdot{}m\right)\lessreference{\rho^{-1}m}
+  - \lessreference{\rho^{-1}m\otimes\rho^{-1}m}\nabla\rho
+\\
+ &+ \left(\nabla{}m + I \nabla\cdot{}m\right)\reference{\rho^{-1}m}
+  - \reference{\rho^{-1}m\otimes\rho^{-1}m}\nabla\rho
+  .
+\end{align}
+
+Two benefits arise from this additional work.  First, simulations with
+supersonic velocities at sufficiently high Reynolds number are limited by
+convective stability.  Implicit treatment of the linearized convective operator
+allows using a time step safety factor closer to one without sacrificing
+temporal accuracy.  This reduces the wall time necessary to obtain converged
+statistics or allows finer resolution atop fixed computing resources.
+
+Second, having convective terms handled implicitly in all equations replaces
+$u_x$, $u_y$, and $u_z$ in criterion~\eqref{eq:convectivestability} with
+$\left|u_x-u_{x0}\right|$, $\left|u_y-u_{y0}\right|$, and
+$\left|u_z-u_{z0}\right|$ in a manner similar to the appearance of $\nu-\nu_0$
+within criterion~\eqref{eq:diffusivestability}.  While such large time steps
+cannot be taken in time-accurate simulations due to the temporal damage done to
+the turbulent dynamics, such time steps will greatly accelerate time-inaccurate
+simulations advancing across uninteresting transients.  For example, changing
+$\Reynolds$, $\Prandtl$, or $\Mach$ often causes a lengthy transient in the
+bulk energy within the domain.  Time-inaccurate simulation may be used until
+the bulk energy again becomes stationary.  Of course, time-accurate
+calculations must then be performed until the turbulent dynamics become
+stationary prior to collecting statistics.
 
 \subsubsection{The implicitly-treated terms}
 \label{sec:implicitlytreatedterms}
@@ -2463,9 +2513,6 @@ temperature $T$.  These conditions may be built into linear operators for
 implicit treatment using how B-spline basis support limits the number of
 nonzero coefficients at the wall as discussed in
 section~\ref{sec:formingoperators}.
-
-TODO Can one have a ``thermally rough'' wall by enforcing isothermal conditions
-on only the zero-zero modes and doing something else on other modes?
 
 \subsubsection{Isothermal, transpiring wall boundary condition}
 
