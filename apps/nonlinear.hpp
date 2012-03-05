@@ -688,7 +688,7 @@ std::vector<real_t> applyNonlinearOperator(
                                 u.x(), one_over_delta_x,
                                 u.y(), one_over_delta_y_j / 4,
                                 u.z(), one_over_delta_z,
-                                evmaxmag_real, a));
+                                evmaxmag_imag, a));
 
                 // The diffusive stability uses ref_nu which has been
                 // previously set as appropriate for Linearize.  This form
@@ -700,7 +700,7 @@ std::vector<real_t> applyNonlinearOperator(
                                 one_over_delta_x,
                                 one_over_delta_y_j,
                                 one_over_delta_z,
-                                Re, Pr, gamma, evmaxmag_imag,
+                                Re, Pr, gamma, evmaxmag_real,
                                 nu, ref_nu, alpha*nu, alpha*ref_nu));
             }
 
