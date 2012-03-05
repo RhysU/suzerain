@@ -81,6 +81,11 @@ EXTRA_PROGRAMS       += test_gbdddmv
 test_gbdddmv_SOURCES  = test_gbdddmv.cpp
 test_gbdddmv_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                += test_gbddddmv
+EXTRA_PROGRAMS       += test_gbddddmv
+test_gbddddmv_SOURCES  = test_gbddddmv.cpp
+test_gbddddmv_LDADD    = ../suzerain/libsuzerain.la
+
 TESTS             += test_sbmv
 EXTRA_PROGRAMS    += test_sbmv
 test_sbmv_SOURCES  = test_sbmv.cpp
