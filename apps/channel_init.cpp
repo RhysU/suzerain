@@ -50,7 +50,7 @@ using suzerain::problem::GridDefinition;
 using suzerain::problem::TimeDefinition;
 static ScenarioDefinition<real_t> scenario(
         /* Re        */ "100",
-        /* Ma        */ "1.15",
+        /* Ma        */ "1.5",
         /* Pr        */ "0.7",
         /* bulk_rho  */ "1",
         /* bulk_rhou */ "1",
