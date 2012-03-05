@@ -1228,4 +1228,40 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1), ans(1), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(2), ans(2), close_enough);
     }
+
+    /* Compute using explicit_div_rho_inverse_m_outer_m with vector ref */
+    {
+        const Eigen::Vector3d u = suzerain::rholt::u(
+                rho, m);
+        const Eigen::Vector3d uref(7, 11, 13);
+        const Eigen::Vector3d div_rho_inverse_m_outer_m
+            = suzerain::rholt::explicit_div_rho_inverse_m_outer_m(
+                    grad_rho, div_m, grad_m, u,
+                    uref, Eigen::Matrix3d::Zero());
+        const Eigen::Vector3d refadjust = grad_m*uref + div_m*uref;
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0),
+                          ans(0) - refadjust(0), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1),
+                          ans(1) - refadjust(1), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(2),
+                          ans(2) - refadjust(2), close_enough);
+    }
+
+    /* Compute using explicit_div_rho_inverse_m_outer_m with tensor ref */
+    {
+        const Eigen::Vector3d u = suzerain::rholt::u(
+                rho, m);
+        const Eigen::Vector3d uref(7, 11, 13);
+        const Eigen::Vector3d div_rho_inverse_m_outer_m
+            = suzerain::rholt::explicit_div_rho_inverse_m_outer_m(
+                    grad_rho, div_m, grad_m, u,
+                    Eigen::Vector3d::Zero(), uref*uref.transpose());
+        const Eigen::Vector3d refadjust = -uref*uref.transpose()*grad_rho;
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0),
+                          ans(0) - refadjust(0), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1),
+                          ans(1) - refadjust(1), close_enough);
+        BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(2),
+                          ans(2) - refadjust(2), close_enough);
+    }
 }
