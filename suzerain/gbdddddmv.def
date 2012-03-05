@@ -8,35 +8,36 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbddddmv.def: templated functionality for gdddmv.c
+ * gbdddddmv.def: templated functionality for gdddmv.c
  * $Id$
  */
 
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define GBDDDDMV_STATIC    /*empty*/         /* Use for static function    */
-// #define GBDDDDMV_FUNCTION  dgbdddmv          /* Function name              */
-// #define GBDDDDMV_COMPONENT double            /* Type of matrices           */
-// #define GBDDDDMV_SCALAR    double            /* Type of coeffs and vectors */
-// #define GBDDDDMV_KL        const int kl,     /* Matrix lower bandwidth     */
-// #define GBDDDDMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define GBDDDDDMV_STATIC    /*empty*/         /* Use for static function    */
+// #define GBDDDDDMV_FUNCTION  dgbdddmv          /* Function name              */
+// #define GBDDDDDMV_COMPONENT double            /* Type of matrices           */
+// #define GBDDDDDMV_SCALAR    double            /* Type of coeffs and vectors */
+// #define GBDDDDDMV_KL        const int kl,     /* Matrix lower bandwidth     */
+// #define GBDDDDDMV_KU        const int ku,     /* Matrix upper bandwidth     */
 
-#ifndef __GBDDDDMV_INTERNAL_ONCE
-#define __GBDDDDMV_INTERNAL_ONCE
+#ifndef __GBDDDDDMV_INTERNAL_ONCE
+#define __GBDDDDDMV_INTERNAL_ONCE
 static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
-#endif /* __GBDDDDMV_INTERNAL_ONCE */
+#endif /* __GBDDDDDMV_INTERNAL_ONCE */
 
-GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
-    char trans, const int n, GBDDDDMV_KL GBDDDDMV_KU
-    const GBDDDDMV_SCALAR alpha0, const GBDDDDMV_COMPONENT *       restrict d0, const int ldd0,
-    const GBDDDDMV_SCALAR alpha1, const GBDDDDMV_COMPONENT *       restrict d1, const int ldd1,
-    const GBDDDDMV_SCALAR alpha2, const GBDDDDMV_COMPONENT *       restrict d2, const int ldd2,
-    const GBDDDDMV_SCALAR alpha3, const GBDDDDMV_COMPONENT *       restrict d3, const int ldd3,
-                                  const GBDDDDMV_COMPONENT *       restrict a,  int lda,
-                                  const    GBDDDDMV_SCALAR * const restrict x,  const int incx,
-    const GBDDDDMV_SCALAR beta,            GBDDDDMV_SCALAR * const restrict y,  const int incy)
+GBDDDDDMV_STATIC int GBDDDDDMV_FUNCTION(
+    char trans, const int n, GBDDDDDMV_KL GBDDDDDMV_KU
+    const GBDDDDDMV_SCALAR alpha0, const GBDDDDDMV_COMPONENT *       restrict d0, const int ldd0,
+    const GBDDDDDMV_SCALAR alpha1, const GBDDDDDMV_COMPONENT *       restrict d1, const int ldd1,
+    const GBDDDDDMV_SCALAR alpha2, const GBDDDDDMV_COMPONENT *       restrict d2, const int ldd2,
+    const GBDDDDDMV_SCALAR alpha3, const GBDDDDDMV_COMPONENT *       restrict d3, const int ldd3,
+    const GBDDDDDMV_SCALAR alpha4, const GBDDDDDMV_COMPONENT *       restrict d4, const int ldd4,
+                                   const GBDDDDDMV_COMPONENT *       restrict a,  int lda,
+                                   const    GBDDDDDMV_SCALAR * const restrict x,  const int incx,
+    const GBDDDDDMV_SCALAR beta,            GBDDDDDMV_SCALAR * const restrict y,  const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -61,16 +62,18 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
         return 13;
     } else if (ldd3 < 0) {
         return 16;
+    } else if (ldd4 < 0) {
+        return 19;
     } else if (lda <= kl + ku) {
-        return 18;
+        return 21;
     } else if (incx == 0) {
-        return 20;
-    } else if (incy == 0) {
         return 23;
+    } else if (incy == 0) {
+        return 26;
     }
 
     // Quick return if possible
-    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0 && beta == 1)) {
+    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0 && alpha4 == 0 && beta == 1)) {
         return 0;
     }
 
@@ -108,7 +111,7 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
     }
 
     // Quick return when the matrices used are irrelevant
-    if (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0) {
+    if (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0 && alpha4 == 0) {
         return 0;
     }
 
@@ -135,7 +138,8 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
                     y[i] += ( alpha0*d0[i*ldd0]
                              +alpha1*d1[i*ldd1]
                              +alpha2*d2[i*ldd2]
-                             +alpha3*d3[i*ldd3])*a[i]*x[jx];
+                             +alpha3*d3[i*ldd3]
+                             +alpha4*d4[i*ldd4])*a[i]*x[jx];
                 }
                 jx += incx;
                 a += lda;
@@ -152,7 +156,8 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
                     y[iy] += ( alpha0*d0[i*ldd0]
                               +alpha1*d1[i*ldd1]
                               +alpha2*d2[i*ldd2]
-                              +alpha3*d3[i*ldd3])*a[i]*x[jx];
+                              +alpha3*d3[i*ldd3]
+                              +alpha4*d4[i*ldd4])*a[i]*x[jx];
                     iy += incy;
                 }
                 jx += incx;
@@ -170,23 +175,24 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBDDDDMV_SCALAR temp = 0;
+                GBDDDDDMV_SCALAR temp = 0;
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
-                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2)+alpha3*(*d3))*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2)+alpha3*(*d3)+alpha4*(*d4))*temp;
                 jy += incy;
                 a  += lda;
                 d0 += ldd0;
                 d1 += ldd1;
                 d2 += ldd2;
                 d3 += ldd3;
+                d4 += ldd4;
             }
         } else {          // ...for strided x
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBDDDDMV_SCALAR temp = 0;
+                GBDDDDDMV_SCALAR temp = 0;
                 int ix = kx;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -195,7 +201,7 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
                     temp += a[i]*x[ix];
                     ix += incx;
                 }
-                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2)+alpha3*(*d3))*temp;
+                y[jy] += (alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2)+alpha3*(*d3)+alpha4*(*d4))*temp;
                 jy += incy;
                 if (j >= ku) {
                     kx += incx;
@@ -205,6 +211,7 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
                 d1 += ldd1;
                 d2 += ldd2;
                 d3 += ldd3;
+                d4 += ldd4;
             }
         }
     }
@@ -212,9 +219,9 @@ GBDDDDMV_STATIC int GBDDDDMV_FUNCTION(
     return 0;
 }
 
-#undef GBDDDDMV_STATIC
-#undef GBDDDDMV_FUNCTION
-#undef GBDDDDMV_COMPONENT
-#undef GBDDDDMV_SCALAR
-#undef GBDDDDMV_KL
-#undef GBDDDDMV_KU
+#undef GBDDDDDMV_STATIC
+#undef GBDDDDDMV_FUNCTION
+#undef GBDDDDDMV_COMPONENT
+#undef GBDDDDDMV_SCALAR
+#undef GBDDDDDMV_KL
+#undef GBDDDDDMV_KU
