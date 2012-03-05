@@ -1322,11 +1322,11 @@ continuous formulation remains worthwhile.
 \label{sec:stabilitycriteria}
 
 The step size $\Delta{}t$ used within the SMR91 scheme is limited by both a
-convective and a diffusive stability criteria.  The time step used is taken to
+convective and a diffusive stability criterion.  The time step used is taken to
 be the minimum stable time step possible according to either restriction.  As
 both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
-by a value less than one as a way to introduce a safety factor.  Values like
-$0.70-0.72$ are often used.
+by a safety factor less than one.  Safety factors like $0.70-0.77$ are often
+used~\cite{Venugopal2003,spalart_lowstoragerk}.
 
 \subsubsection{Convective stability criterion}
 \label{sec:convectivestability}
@@ -1356,9 +1356,9 @@ $\mbox{Ma}=\frac{u_0}{a_0}$ appears, one must provide the velocities and the
 sound speed both nondimensionalized using $u_0$.  That expressions like
 $\left|u\right| + \frac{a}{\mbox{Ma}}$ are appropriate in that context can be
 seen by finding the eigenvalues of the Euler equations in such a
-nondimensionalization.  Using a hybrid implicit/explicit time scheme, like
-SMR91, where acoustic terms treated implicitly effectively sets the sound speed
-to be zero when computing this convective criterion.
+nondimensionalization.  Using an A-stable scheme, like the implicit portion of
+SMR91, to compute acoustic terms effectively sets the sound speed to zero when
+computing this convective criterion.
 
 When Venugopal~\cite{Venugopal2003} used a nearly identical convective
 criterion (equation~3.10), he found the constraint to be overly conservative in
@@ -1399,10 +1399,11 @@ timestepping method.  For the SMR91 scheme,
 \begin{align}
 \left|\lambda_{R}\Delta{}t\right|_{\mbox{max}} &\approx 2.512.
 \end{align}
-Using a hybrid implicit/explicit time scheme, like SMR91, with viscous terms
-treated implicitly sets $\nu_0$ to be the reference kinematic viscosity
-about which the viscous terms were linearized.  The absolute values within the
-maximum operation account for the possibility that $\nu<\nu_{0}$.
+Using an A-stable scheme, like the implicit portion of SMR91, to compute
+linearized viscous terms allows subtracting the linearization reference
+kinematic viscosities $\nu_0$ and $\nu_{B0}$ when computing this diffusive
+criterion.  The absolute values within the maximum operations account for the
+possibility that $\nu<\nu_{0}$.
 
 Venugopal~\cite{Venugopal2003} used a nearly identical diffusive criterion
 (equation~3.15).  His analysis determined that the diffusive stability
