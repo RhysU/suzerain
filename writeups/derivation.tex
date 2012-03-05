@@ -10,6 +10,7 @@
 \usepackage{bm}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
+\usepackage{floatpag}
 \usepackage{fullpage}
 \usepackage{ifthen}
 \usepackage{lastpage}
@@ -2243,13 +2244,15 @@ with no mean bulk velocity in the spanwise direction, the reference coefficient
 matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may be treated as effectively zero.  This
 reduces the required linear algebra.  If desired, the density equation and
 density terms in the other equations may removed from the result in
-figure~\ref{fig:discreteimplicitop}.  Previous work by Guarini did not treat
-density implicitly~\cite{Guarini1998}.  Finally, implicitly handling only the
+figure~\ref{fig:discreteimplicitop} to greatly reduce operator assembly and
+factorization overhead.  Previous work by Guarini did not treat density
+implicitly~\cite{Guarini1998}.  Finally, implicitly handling only the
 wall-normal directions may be accomplished by setting $k_{m}$ and $k_{n}$ to
 zero.  Doing so results in a wavenumber independent operator requiring
 factorization only once per substep.
 
 \begin{sidewaysfigure}
+\thisfloatpagestyle{empty}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
 \newcommand{\D}[1]{D^{(#1)}}      % ditto
@@ -2271,7 +2274,7 @@ factorization only once per substep.
 {\resizebox{\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
 \bm{\vp}
-\renewcommand{\arraystretch}{6.0} % Adds whitespace between rows
+\renewcommand{\arraystretch}{7.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
 % Density row
@@ -2304,20 +2307,28 @@ factorization only once per substep.
 % Streamwise momentum row
 \\\entry{\mx\rho }
   \subcoeff{
-      \frac{1-\g}{2}\ii\km\C{m}{\nabla\rho}
-    + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_z}{}
+    \begin{pmatrix}
+        \frac{1-\g}{2}\ii\km\C{m}{\nabla\rho}
+      + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
+      + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_z}{}
+      \\
+      + \ii\km\C{u_x u_x}{}
+      + \ii\kn\C{u_x u_z}{}
+    \end{pmatrix}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu{}u_y}{}
+    + \C{u_x u_y}{}
   }{
     - \frac{1}{\Re}\C{\nu{}u_x}{}
   }
 & \entry{\mx\mx  }
   \subcoeff{
       \bm{\frac{1}{\vp}} % M
-    + \left(\g-1\right)\ii\km\C{u_x}{}
+    + \left(\g-3\right)\ii\km\C{u_x}{}
+    - \ii\kn\C{u_z}{}
     - \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
+    - \C{u_y}{}
   }{
       \frac{1}{\Re}\C{\nu}{}
   }
@@ -2325,12 +2336,14 @@ factorization only once per substep.
   \subcoeff{
       \left(\g-1\right)\ii\km\C{u_y}{}
   }{
-      \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\km\C{\nu}{}
+    - \C{u_x}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\mx\mz  }
   \subcoeff{
       \left(\g-1\right)\ii\km\C{u_z}{}
+    - \ii\kn\C{u_x}{}
     - \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\km\kn\C{\nu}{}
   }{
   }{
@@ -2345,16 +2358,20 @@ factorization only once per substep.
 \\\entry{\my\rho }
   \subcoeff{
       \frac{\km^2+\kn^2}{\Re}\C{\nu{}u_y}{}
+    + \ii\km\C{u_x u_y}{}
+    + \ii\kn\C{u_y u_z}{}
   }{
       \frac{1-\g}{2}\C{m}{\nabla\rho}
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(
          \km\C{\nu{}u_x}{} + \kn\C{\nu{}u_z}{}
       \right)
+    + \C{u_y u_y}{}
   }{
     - \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu{}u_y}{}
   }
 & \entry{\my\mx  }
   \subcoeff{
+    - \ii\km\C{u_y}{}
   }{
       \left(\g-1\right)\C{u_x}{}
     + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\km\C{\nu}{}
@@ -2363,14 +2380,17 @@ factorization only once per substep.
 & \entry{\my\my  }
   \subcoeff{
       \bm{\frac{1}{\vp}} % M
+    - \ii\km\C{u_x}{}
+    - \ii\kn\C{u_z}{}
     - \frac{\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
-      \left(\g-1\right)\C{u_y}{}
+      \left(\g-3\right)\C{u_y}{}
   }{
       \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu}{}
   }
 & \entry{\my\mz  }
   \subcoeff{
+    - \ii\kn\C{u_y}{}
   }{
       \left(\g-1\right)\C{u_z}{}
     + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\kn\C{\nu}{}
@@ -2385,17 +2405,24 @@ factorization only once per substep.
 % Spanwise momentum row
 \\\entry{\mz\rho}
   \subcoeff{
-      \frac{1-\g}{2}\ii\kn\C{m}{\nabla\rho}
-    + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_x}{}
+    \begin{pmatrix}
+        \frac{1-\g}{2}\ii\kn\C{m}{\nabla\rho}
+      + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
+      + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_x}{}
+      \\
+      + \ii\km\C{u_x u_z}{}
+      + \ii\kn\C{u_z u_z}{}
+    \end{pmatrix}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu{}u_y}{}
+    + \C{u_y u_z}{}
   }{
     - \frac{1}{\Re}\C{\nu{}u_z}{}
   }
 & \entry{\mz\mx }
   \subcoeff{
       \left(\g-1\right)\ii\kn\C{u_x}{}
+    - \ii\km\C{u_z}{}
     - \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\km\kn\C{\nu}{}
   }{
   }{
@@ -2404,15 +2431,18 @@ factorization only once per substep.
   \subcoeff{
       \left(\g-1\right)\ii\kn\C{u_y}{}
   }{
-      \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\kn\C{\nu}{}
+    - \C{u_z}{}
+    + \frac{\left(\alpha+\frac{1}{3}\right)}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\mz\mz }
   \subcoeff{
       \bm{\frac{1}{\vp}} % M
-    + \left(\g-1\right)\ii\kn\C{u_z}{}
+    - \ii\km\C{u_x}{}
+    + \left(\g-3\right)\ii\kn\C{u_z}{}
     - \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu}{}
   }{
+    - \C{u_y}{}
   }{
       \frac{1}{\Re}\C{\nu}{}
   }
@@ -2500,7 +2530,7 @@ factorization only once per substep.
 \\
 \begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
-depicted.  Notice the leftmost scalar factor $\bm{\vp}$!  The $3 N_y \times
+depicted.  Notice the leftmost scalar factor $\bm{\vp}$.  The $3 N_y \times
 N_y$ blocked vectors written using curly braces are to be ``dotted'' against
 the blocked vector $
   \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
