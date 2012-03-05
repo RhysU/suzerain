@@ -268,8 +268,8 @@ suzerain_bsmbsm_zaPxpby(
  * permutation is is much, much faster than the in-place methods available
  * in the GSL.
  *
- * @param S[in]  Number of rows and columns of banded submatrices
- * @param n[in]  Number or rows and columns in each banded submatrix
+ * @param[in] S Number of rows and columns of banded submatrices
+ * @param[in] n Number or rows and columns in each banded submatrix
  *
  * @return A <tt>gsl_permutation*</tt> representing \f$q\f$ on success.
  *         NULL otherwise (e.g. on memory allocation failure).
