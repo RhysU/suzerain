@@ -2120,9 +2120,10 @@ results.  Coupling the density equation reduces the communications overhead at
 the expense of on-node work (see section~\ref{sec:contconv}) and further
 unifies the programmatic details.  Moreover, so long as the fully coupled
 implicit operations can fit in cache, increasing the on-node work to take
-larger time steps helps to balance the high communication overhead stemming
-from sections~\ref{sec:commoverhead} and~\ref{sec:separate_first_second_deriv}.
-Improving the computation to communication ratio should bolster scalability.
+larger time steps (e.g. section~\ref{sec:momtconv}) helps to balance the high
+communication overhead stemming from sections~\ref{sec:commoverhead}
+and~\ref{sec:separate_first_second_deriv}.  Improving the computation to
+communication ratio bolsters scalability.
 
 Accordingly, we choose to implicitly treat all terms identified as candidates
 in the preceding discussion.  In the full context of
@@ -2132,7 +2133,11 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
 \\
   \frac{\partial}{\partial{}t} m = \dots
 % \underbrace{
-   &- \frac{\gamma-1}{2} c^{m}_{\nabla\rho} \nabla\rho
+   &+ \overleftrightarrow{c^{u\otimes{}u}} \nabla\rho
+    - \left(\nabla{}m+I\nabla\cdot{}m\right)\overrightarrow{c^u}
+% }_{-\nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)}
+% \underbrace{
+    - \frac{\gamma-1}{2} c^{m}_{\nabla\rho} \nabla\rho
     + \left(\gamma-1\right)\trans{\nabla{}m} \overrightarrow{c^u}
     - \frac{\gamma-1}{\Mach^2}\nabla{}e
 % }_{-\Mach^{-1}\nabla{}p}
@@ -2156,7 +2161,7 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
     + \frac{\gamma}{\Reynolds\Prandtl}c^{\nu}\Delta{}e
     + \dots
 \end{align}
-where the repeated reference values have physically-motivated superscripts
+where some reference values have physically-motivated superscripts
 \begin{align}
   c^{\nu} &= \reference{\rho^{-1}\mu}
 &
@@ -2166,9 +2171,19 @@ where the repeated reference values have physically-motivated superscripts
   \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
   = \trans{\left(c^{\nu{}u_x}, c^{\nu{}u_y}, c^{\nu{}u_z}\right)}
 \end{align}
-while the single-use reference values
+\begin{align}
+   \overleftrightarrow{c^{u\otimes{}u}}
+  = \reference{\rho^{-1}m\otimes\rho^{-1}m}
+  = \begin{pmatrix}
+   c^{u_x u_x} & c^{u_x u_y} & c^{u_x u_z} \\
+   c^{u_x u_y} & c^{u_y u_y} & c^{u_y u_z} \\
+   c^{u_x u_z} & c^{u_y u_z} & c^{u_z u_z}
+  \end{pmatrix}
+\end{align}
+while the other reference values
 \begin{align}
   c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
+  = \trace\overleftrightarrow{c^{u\otimes{}u}}
 \\
   \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{
         m\rho^{-2}\left(\left(\gamma-2\right)e-2p\right)
@@ -2213,14 +2228,14 @@ Switching to a blocked matrix representation employing five scalar conserved
 state fields, the complete, SMR91-ready discrete operator $M+\varphi{}L$ is
 shown in figure~\vref{fig:discreteimplicitop}.  The representation chosen
 highlights how the full operator is built from discrete operators applied to
-individual state fields.  Applying the operator should not require fully
-forming it within a contiguous region of memory.  ``Inverting'' the operator
-(more correctly, factorizing and solving for unknown coefficients given
-collocation point values) will.  Employing an appropriate permutation matrix
-$P$ causes the renumbered operator $P\left(M+\varphi{}L\right)\trans{P}$ to be
-globally banded with a small bandwidth independent of the number of wall-normal
-degrees of freedom.  This $P\left(M+\varphi{}L\right)\trans{P}$ allows
-efficient banded factorization and back substitution.
+individual state fields.  Applying the operator does not require assembling it
+within a contiguous region of memory.  ``Inverting'' the operator (more
+correctly, factorizing and solving for unknown coefficients given collocation
+point values) does require assembly.  Employing an appropriate permutation
+matrix $P$ causes the renumbered operator $P\left(M+\varphi{}L\right)\trans{P}$
+to be globally banded with a small bandwidth independent of the number of
+wall-normal degrees of freedom.  This $P\left(M+\varphi{}L\right)\trans{P}$
+allows efficient banded factorization and back substitution.
 
 Strong Dirichlet boundary conditions may be enforced in the usual way.  Neumann
 boundary condition implementations are less straightforward.  For simulations
