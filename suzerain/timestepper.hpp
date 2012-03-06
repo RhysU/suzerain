@@ -269,7 +269,7 @@ FPT diffusive_stability_criterion(
  *     \frac{\nu}{\mbox{Re}},
  *     \frac{\nu_{B}}{\mbox{Re}}
  *   \right)
- *   \pi^{2}
+ *   \pi^{3}
  *   \left(
  *       \frac{u_x}{\Delta{}x^{3}}
  *     + \frac{u_y}{\Delta{}y^{3}}
@@ -312,13 +312,13 @@ FPT viscouswork_stability_criterion(
         const FPT nu,
         const FPT nuB = 0)
 {
-    // Precision for a 128-bit IEEE quad found via Sage's N(1/pi,digits=34)
-    static const FPT one_over_pi
-        = (FPT) 0.3183098861837906715377675267450287L;
+    // Precision for a 128-bit IEEE quad found via Sage's N(pi^(-3/2),digits=34)
+    static const FPT pi_negative_three_halfs
+        = (FPT) 0.1795871221251665616890819836276928L;
 
     using std::sqrt;
     using std::max;
-    return one_over_pi*sqrt( (Re * evmaxmag_real) / (max(nu, nuB)*(
+    return pi_negative_three_halfs*sqrt( (Re * evmaxmag_real) / (max(nu, nuB)*(
             u_x*one_over_delta_x*one_over_delta_x*one_over_delta_x
           + u_y*one_over_delta_y*one_over_delta_y*one_over_delta_y
           + u_z*one_over_delta_z*one_over_delta_z*one_over_delta_z
