@@ -872,8 +872,12 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
-    bool use_explicit      = false;
-    bool use_implicit      = false;
+    bool use_explicit  = false;
+    bool use_implicit  = false;
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    bool use_p3dfft    = false;
+    bool use_underling = false;
+#endif
     bool default_advance_nt;
     bool default_statistics;
     {
@@ -898,8 +902,12 @@ int main(int argc, char **argv)
                 const_cast<SignalDefinition&>(sigdef));
 
         options.add_options()
-            ("explicit", "Use purely explicit time advance")
-            ("implicit", "Use hybrid implicit/explicit time advance")
+            ("explicit", "Use purely explicit operators")
+            ("implicit", "Use hybrid implicit/explicit operators")
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+            ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
+            ("underling", "Use underling for MPI-parallel FFTs")
+#endif
             ;
         std::vector<std::string> positional = options.process(argc, argv);
 
@@ -910,6 +918,16 @@ int main(int argc, char **argv)
         } else {
             use_implicit = true;
         }
+
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+        // Select pencil decomposition and FFT library to use (default p3dfft)
+        options.conflicting_options("p3dfft", "underling");
+        if (options.variables().count("underling")) {
+            use_underling = true;
+        } else {
+            use_p3dfft = true;
+        }
+#endif
 
         // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
@@ -1089,16 +1107,29 @@ int main(int argc, char **argv)
         const double begin = MPI_Wtime();
         fftw_set_timelimit(fftwdef.plan_timelimit);
         channel::wisdom_broadcast(fftwdef.plan_wisdom);
-        dgrid = make_shared<suzerain::pencil_grid_default>(
-                grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+        if (use_p3dfft) {
+            dgrid = make_shared<suzerain::pencil_grid_p3dfft>(
+                    grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+        } else if (use_underling) {
+            dgrid = make_shared<suzerain::pencil_grid_underling>(
+                    grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+        } else {
+#endif
+            dgrid = make_shared<suzerain::pencil_grid_default>(
+                    grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+        }
+#endif
         channel::wisdom_gather(fftwdef.plan_wisdom);
         wtime_fftw_planning = MPI_Wtime() - begin;
     }
-    INFO0("MPI transpose and Fourier transform planning took "
+    INFO0("MPI transpose and Fourier transform planning by "
+          << dgrid->implementation() << " took "
           << wtime_fftw_planning << " seconds");
     assert((grid.dN == dgrid->global_physical_extent).all());
     INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
-    DEBUG0("Zero-zero modes located on MPI_COMM_WORLD rank "
+    INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
            << dgrid->rank_zero_zero_modes);
     { // Display normalized workloads metrics relative to zero-zero workload
         real_t sendbuf[4];
