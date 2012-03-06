@@ -1368,7 +1368,6 @@ int main(int argc, char **argv)
     // Advance time according to advance_dt, advance_nt criteria
 #ifdef SUZERAIN_HAVE_GRVY
     grvy_timer_reset();
-    grvy_log_setlevel(GRVY_ERROR);  // Suppress GRVY timer resolution warnings
 #endif
     wtime_advance_start = MPI_Wtime();
     bool advance_success = true;
@@ -1405,8 +1404,9 @@ int main(int argc, char **argv)
     }
     const double wtime_advance_end = MPI_Wtime();
 #ifdef SUZERAIN_HAVE_GRVY
-    grvy_log_setlevel(GRVY_INFO);  // Re-enable all GRVY-related warnings
+    grvy_log_setlevel(GRVY_ERROR);  // Suppress GRVY timer resolution warnings
     grvy_timer_finalize();
+    grvy_log_setlevel(GRVY_INFO);   // Re-enable GRVY warnings
 #endif
     if (soft_teardown) {
         INFO0("TimeController stopped advancing due to teardown signal");
