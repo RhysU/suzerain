@@ -281,7 +281,7 @@ int main(int argc, char **argv)
     bopluz->factor_mass(*bop);
 
     INFO0("Initializing pencil_grid to obtain parallel decomposition details");
-    dgrid = make_shared<suzerain::pencil_grid>(grid.dN, grid.P);
+    dgrid = make_shared<suzerain::pencil_grid_default>(grid.dN, grid.P);
     assert((grid.dN == dgrid->global_physical_extent).all());
 
 

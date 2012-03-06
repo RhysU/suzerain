@@ -35,11 +35,11 @@ class pencil_grid_underling;
 
 // Choose default pencil grid implementation based on build-time availability
 #if defined(SUZERAIN_HAVE_P3DFFT)
-/** Use P3DFFT-based \c pencil_grid implementation */
-typedef pencil_grid_p3dfft pencil_grid;
+/** Use P3DFFT-based \c pencil_grid implementation as the default */
+typedef pencil_grid_p3dfft pencil_grid_default;
 #elif defined(SUZERAIN_HAVE_UNDERLING)
-/** Use underling-based \c pencil_grid implementation */
-typedef pencil_grid_underling pencil_grid;
+/** Use underling-based \c pencil_grid implementation as the default */
+typedef pencil_grid_underling pencil_grid_default;
 #else
 # error "Found neither suzerain-p3dfft nor underling libraries"
 #endif
@@ -48,7 +48,7 @@ typedef pencil_grid_underling pencil_grid;
  * An abstract base class for %pencil grid implementations atop various
  * communications libraries.
  */
-class pencil_grid_base
+class pencil_grid : public boost::noncopyable
 {
 public:
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -57,10 +57,10 @@ public:
 #endif
 
     /** Default constructor for abstract base class */
-    pencil_grid_base() : rank_zero_zero_modes(/* deliberately invalid */-1) {}
+    pencil_grid() : rank_zero_zero_modes(/* deliberately invalid */-1) {}
 
     /** Virtual destructor for an abstract base class */
-    virtual ~pencil_grid_base() {};
+    virtual ~pencil_grid() {};
 
     /** Global grid extents using physical space sizes. */
     Eigen::Array3i global_physical_extent;
@@ -203,7 +203,7 @@ protected:
  * <tt>p3dfft_setup</tt> and <tt>p3dfft_clean</tt> are invoked on construction
  * and destruction of an instance.
  */
-class pencil_grid_p3dfft : public pencil_grid_base, boost::noncopyable
+class pencil_grid_p3dfft : public pencil_grid
 {
 public:
 
@@ -261,7 +261,7 @@ private:
  * one in Y in wave space.  Unless otherwise noted, all indices start from zero
  * with X, Y, and Z having indices 0, 1, and 2, respectively.
  */
-class pencil_grid_underling : public pencil_grid_base, boost::noncopyable
+class pencil_grid_underling : public pencil_grid
 {
 public:
 

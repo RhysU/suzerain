@@ -24,7 +24,7 @@
 
 namespace suzerain {
 
-int pencil_grid_base::compute_rank_zero_zero_modes_() const
+int pencil_grid::compute_rank_zero_zero_modes_() const
 {
     // Accumulate the sum of all rank numbers reporting has_zero_zero_modes().
     // Accumulate the number of ranks where has_zero_zero_modes() == true.

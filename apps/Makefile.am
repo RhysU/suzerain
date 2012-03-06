@@ -78,7 +78,7 @@ conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = libchannel.la
 
 if HAVE_P3DFFT
-bin_PROGRAMS                += driver_suzerain_p3dfft
+bin_PROGRAMS                    += driver_suzerain_p3dfft
 driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
 driver_suzerain_p3dfft_LDADD    += ./liblogging.la
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)

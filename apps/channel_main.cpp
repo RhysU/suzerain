@@ -1089,7 +1089,7 @@ int main(int argc, char **argv)
         const double begin = MPI_Wtime();
         fftw_set_timelimit(fftwdef.plan_timelimit);
         channel::wisdom_broadcast(fftwdef.plan_wisdom);
-        dgrid = make_shared<suzerain::pencil_grid>(
+        dgrid = make_shared<suzerain::pencil_grid_default>(
                 grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
         channel::wisdom_gather(fftwdef.plan_wisdom);
         wtime_fftw_planning = MPI_Wtime() - begin;

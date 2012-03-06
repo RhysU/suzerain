@@ -344,8 +344,9 @@ static void test_accumulateAndApply(const int Ny,
     }
 #endif
 
-    pencil_grid pg(global_physical_extents, processor_grid,
-                   suzerain::fftw::estimate, suzerain::fftw::estimate);
+    suzerain::pencil_grid_default pg(
+            global_physical_extents, processor_grid,
+            suzerain::fftw::estimate, suzerain::fftw::estimate);
 
     for (int dxcnt = 0; dxcnt <= MAX_DXCNT_INCLUSIVE; ++dxcnt) {
         for (int dzcnt = 0; dzcnt <= MAX_DZCNT_INCLUSIVE; ++dzcnt) {

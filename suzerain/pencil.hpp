@@ -96,7 +96,7 @@ public:
      *
      * @param pg The pencil_grid to match.
      */
-    pencil(const pencil_grid_base& pg);
+    pencil(const pencil_grid& pg);
 
     /**
      * A real-valued, local physical-space view of the storage stored row-major
@@ -226,7 +226,7 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
 }
 
 template<typename FPT, typename Allocator>
-pencil<FPT,Allocator>::pencil(const pencil_grid_base& pg)
+pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
     : ContiguousMemory<FPT,Allocator>(std::max<typename Allocator::size_type>(
                 pg.local_physical_extent.prod(),
                   (   sizeof(typename wave_type::element)
