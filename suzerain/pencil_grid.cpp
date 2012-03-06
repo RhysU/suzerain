@@ -43,6 +43,11 @@ int pencil_grid::compute_rank_zero_zero_modes_() const
 
 #ifdef HAVE_P3DFFT ///////////////////////////////////////////////////////////
 
+const char * pencil_grid_p3dfft::implementation() const
+{
+    return "P3DFFT";
+}
+
 #pragma warning(push, disable:2022)
 void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
                                     unsigned rigor_fft, unsigned rigor_mpi)
@@ -181,6 +186,11 @@ void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
 pencil_grid_underling::~pencil_grid_underling()
 {
     // NOP
+}
+
+const char * pencil_grid_underling::implementation() const
+{
+    return "underling";
 }
 
 std::size_t pencil_grid_underling::local_wave_storage() const

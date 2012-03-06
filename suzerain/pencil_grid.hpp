@@ -62,6 +62,9 @@ public:
     /** Virtual destructor for an abstract base class */
     virtual ~pencil_grid() {};
 
+    /** Human-readable name of concrete implementations */
+    virtual const char * implementation() const = 0;
+
     /** Global grid extents using physical space sizes. */
     Eigen::Array3i global_physical_extent;
 
@@ -234,6 +237,8 @@ public:
 
     virtual ~pencil_grid_p3dfft();
 
+    virtual const char * implementation() const;
+
     virtual std::size_t local_physical_storage() const;
 
     virtual std::size_t local_wave_storage() const;
@@ -291,6 +296,8 @@ public:
     }
 
     virtual ~pencil_grid_underling();
+
+    virtual const char * implementation() const;
 
     virtual std::size_t local_physical_storage() const;
 
