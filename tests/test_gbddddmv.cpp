@@ -230,7 +230,7 @@ static void test_gbddddmv_d(const gbddddmv_tc_type& t)
 
 static void test_gbddddmv_sc(const gbddddmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*5000;
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*6000;
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
