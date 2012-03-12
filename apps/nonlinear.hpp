@@ -590,20 +590,23 @@ std::vector<real_t> applyNonlinearOperator(
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
             Vector3r momentum_rhs =
-                // Explicit convective term
-                - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
                 // Explicit viscous term
-                + inv_Re * div_tau
+                  inv_Re * div_tau
                 ;
             switch (Linearize) {
                 case linearize::none:
                     momentum_rhs +=
+                        // Explicit convective term
+                        - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
                         // Explicit pressure term
                         - inv_Ma2 * grad_p
                         ;
                     break;
                 case linearize::rhome:
                     momentum_rhs +=
+                        // Explicit convective term less implicit portion
+                        - suzerain::rholut::explicit_div_rho_inverse_m_outer_m(
+                                grad_rho, div_m, grad_m, u, ref_u, ref_uu)
                         // Explicit pressure less implicit pressure terms
                         - inv_Ma2 * suzerain::rholut::explicit_grad_p(
                                 gamma, Ma, rho, grad_rho, m, grad_m,
@@ -679,6 +682,17 @@ std::vector<real_t> applyNonlinearOperator(
                         a = 0;
                         break;
                 }
+
+                // Strictly speaking, linearize::rhome's implicit treatment of
+                // the convective terms in all equations entitles us to compute
+                // convective stability using the difference between u and
+                // ref_u.  However, the resulting time steps are in general too
+                // large for reasonable accuracy.  We computed those terms
+                // implicitly to buy an incremental bump in the stability
+                // safety factor (here already incorporated into
+                // evmaxmag_imag).
+                //
+                // TODO Permit large steps to avoid thermal transients (#2127)
 
                 // See convective_stability_criterion documentation for why the
                 // magic number 4 modifies one_over_delta_y only here.
