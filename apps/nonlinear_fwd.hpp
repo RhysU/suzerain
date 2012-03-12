@@ -95,7 +95,6 @@ public:
     /**
      *
      * The reference quantities stored in \c refs are as follows:
-     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
      * \li \c ref_ux         Reference \f$C^{u_x}               \f$
      * \li \c ref_uy         Reference \f$C^{u_y}               \f$
      * \li \c ref_uz         Reference \f$C^{u_z}               \f$
@@ -105,6 +104,7 @@ public:
      * \li \c ref_uyuy       Reference \f$C^{u_y u_y}           \f$
      * \li \c ref_uyuz       Reference \f$C^{u_y u_z}           \f$
      * \li \c ref_uzuz       Reference \f$C^{u_z u_z}           \f$
+     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
      * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
      * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
      * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
@@ -128,16 +128,16 @@ public:
     /** Column-major storage housing all mean quantities (one per row). */
     refs_t refs;
 
-    refs_t::RowXpr      ref_nu()               { return refs.row( 0); }
-    refs_t::RowXpr      ref_ux()               { return refs.row( 1); }
-    refs_t::RowXpr      ref_uy()               { return refs.row( 2); }
-    refs_t::RowXpr      ref_uz()               { return refs.row( 3); }
-    refs_t::RowXpr      ref_uxux()             { return refs.row( 4); }
-    refs_t::RowXpr      ref_uxuy()             { return refs.row( 5); }
-    refs_t::RowXpr      ref_uxuz()             { return refs.row( 6); }
-    refs_t::RowXpr      ref_uyuy()             { return refs.row( 7); }
-    refs_t::RowXpr      ref_uyuz()             { return refs.row( 8); }
-    refs_t::RowXpr      ref_uzuz()             { return refs.row( 9); }
+    refs_t::RowXpr      ref_ux()               { return refs.row( 0); }
+    refs_t::RowXpr      ref_uy()               { return refs.row( 1); }
+    refs_t::RowXpr      ref_uz()               { return refs.row( 2); }
+    refs_t::RowXpr      ref_uxux()             { return refs.row( 3); }
+    refs_t::RowXpr      ref_uxuy()             { return refs.row( 4); }
+    refs_t::RowXpr      ref_uxuz()             { return refs.row( 5); }
+    refs_t::RowXpr      ref_uyuy()             { return refs.row( 6); }
+    refs_t::RowXpr      ref_uyuz()             { return refs.row( 7); }
+    refs_t::RowXpr      ref_uzuz()             { return refs.row( 8); }
+    refs_t::RowXpr      ref_nu()               { return refs.row( 9); }
     refs_t::RowXpr      ref_nuux()             { return refs.row(10); }
     refs_t::RowXpr      ref_nuuy()             { return refs.row(11); }
     refs_t::RowXpr      ref_nuuz()             { return refs.row(12); }
@@ -148,16 +148,16 @@ public:
     refs_t::RowXpr      ref_e_divm()           { return refs.row(17); }
     refs_t::RowXpr      ref_e_deltarho()       { return refs.row(18); }
 
-    refs_t::ConstRowXpr ref_nu()         const { return refs.row( 0); }
-    refs_t::ConstRowXpr ref_ux()         const { return refs.row( 1); }
-    refs_t::ConstRowXpr ref_uy()         const { return refs.row( 2); }
-    refs_t::ConstRowXpr ref_uz()         const { return refs.row( 3); }
-    refs_t::ConstRowXpr ref_uxux()       const { return refs.row( 4); }
-    refs_t::ConstRowXpr ref_uxuy()       const { return refs.row( 5); }
-    refs_t::ConstRowXpr ref_uxuz()       const { return refs.row( 6); }
-    refs_t::ConstRowXpr ref_uyuy()       const { return refs.row( 7); }
-    refs_t::ConstRowXpr ref_uyuz()       const { return refs.row( 8); }
-    refs_t::ConstRowXpr ref_uzuz()       const { return refs.row( 9); }
+    refs_t::ConstRowXpr ref_ux()         const { return refs.row( 0); }
+    refs_t::ConstRowXpr ref_uy()         const { return refs.row( 1); }
+    refs_t::ConstRowXpr ref_uz()         const { return refs.row( 2); }
+    refs_t::ConstRowXpr ref_uxux()       const { return refs.row( 3); }
+    refs_t::ConstRowXpr ref_uxuy()       const { return refs.row( 4); }
+    refs_t::ConstRowXpr ref_uxuz()       const { return refs.row( 5); }
+    refs_t::ConstRowXpr ref_uyuy()       const { return refs.row( 6); }
+    refs_t::ConstRowXpr ref_uyuz()       const { return refs.row( 7); }
+    refs_t::ConstRowXpr ref_uzuz()       const { return refs.row( 8); }
+    refs_t::ConstRowXpr ref_nu()         const { return refs.row( 9); }
     refs_t::ConstRowXpr ref_nuux()       const { return refs.row(10); }
     refs_t::ConstRowXpr ref_nuuy()       const { return refs.row(11); }
     refs_t::ConstRowXpr ref_nuuz()       const { return refs.row(12); }
@@ -172,7 +172,6 @@ public:
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
                     suzerain_rholut_imexop_refld &ld)
     {
-        ref.nu         = ref_nu().data();
         ref.ux         = ref_ux().data();
         ref.uy         = ref_uy().data();
         ref.uz         = ref_uz().data();
@@ -182,6 +181,7 @@ public:
         ref.uyuy       = ref_uyuy().data();
         ref.uyuz       = ref_uyuz().data();
         ref.uzuz       = ref_uzuz().data();
+        ref.nu         = ref_nu().data();
         ref.nuux       = ref_nuux().data();
         ref.nuuy       = ref_nuuy().data();
         ref.nuuz       = ref_nuuz().data();
@@ -193,7 +193,6 @@ public:
         ref.e_deltarho = ref_e_deltarho().data();
 
         const int inc = refs.colStride();
-        ld.nu         = inc;
         ld.ux         = inc;
         ld.uy         = inc;
         ld.uz         = inc;
@@ -203,6 +202,7 @@ public:
         ld.uyuy       = inc;
         ld.uyuz       = inc;
         ld.uzuz       = inc;
+        ld.nu         = inc;
         ld.nuux       = inc;
         ld.nuuy       = inc;
         ld.nuuz       = inc;

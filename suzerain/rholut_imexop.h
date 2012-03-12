@@ -42,7 +42,6 @@ typedef struct {
 
 /** Wall-normal diagonal reference matrices used for operator formation. */
 typedef struct {
-    double *nu;         /**< \f$ C^{\nu}                \f$ */
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
@@ -52,6 +51,7 @@ typedef struct {
     double *uyuy;       /**< \f$ C^{u_y u_y}            \f$ */
     double *uyuz;       /**< \f$ C^{u_y u_z}            \f$ */
     double *uzuz;       /**< \f$ C^{u_z u_z}            \f$ */
+    double *nu;         /**< \f$ C^{\nu}                \f$ */
     double *nuux;       /**< \f$ C^{\nu u_x}            \f$ */
     double *nuuy;       /**< \f$ C^{\nu u_y}            \f$ */
     double *nuuz;       /**< \f$ C^{\nu u_z}            \f$ */
@@ -65,7 +65,6 @@ typedef struct {
 
 /** Strides between elements in a \ref suzerain_rholut_imexop_ref. */
 typedef struct {
-    int nu;             /**< \copydoc suzerain_rholut_imexop_ref::nu         */
     int ux;             /**< \copydoc suzerain_rholut_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_rholut_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_rholut_imexop_ref::uz         */
@@ -75,6 +74,7 @@ typedef struct {
     int uyuy;           /**< \copydoc suzerain_rholut_imexop_ref::uyuy       */
     int uyuz;           /**< \copydoc suzerain_rholut_imexop_ref::uyuz       */
     int uzuz;           /**< \copydoc suzerain_rholut_imexop_ref::uzuz       */
+    int nu;             /**< \copydoc suzerain_rholut_imexop_ref::nu         */
     int nuux;           /**< \copydoc suzerain_rholut_imexop_ref::nuux       */
     int nuuy;           /**< \copydoc suzerain_rholut_imexop_ref::nuuy       */
     int nuuz;           /**< \copydoc suzerain_rholut_imexop_ref::nuuz       */
