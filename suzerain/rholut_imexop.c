@@ -109,16 +109,16 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rho) {
             suzerain_blasext_zgbdddddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*0.5*gm1*ikm,          REF(m_gradrho),
                 phi*ikm,                   REF(uxux),
                 phi*ikn,                   REF(uxuz),
                 phi*invRe*(ap43*km2+kn2),  REF(nuux),
                 phi*ap13*invRe*km*kn,      REF(nuuz),
+                -phi*0.5*gm1*ikm,          REF(m_gradrho),
                 w->D[M],  w->ld, in_rho, inc, 1.0, out_rhou, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi*ap13*invRe*ikm,       REF(nuuy),
                 phi,                       REF(uxuy),
+                -phi*ap13*invRe*ikm,       REF(nuuy),
                 w->D[D1], w->ld, in_rho, inc, 1.0, out_rhou, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
@@ -148,8 +148,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhou, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi,               REF(ux),
-                phi*ap13*invRe*ikm, REF(nu),
+                -phi,                      REF(ux),
+                phi*ap13*invRe*ikm,        REF(nu),
                 w->D[D1], w->ld, in_rhov, inc, 1.0, out_rhou, inc);
         }
 
@@ -175,31 +175,31 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rho) {
             suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
-                phi*ikm,             REF(uxuy),
-                phi*ikn,             REF(uyuz),
-                phi*invRe*(km2+kn2), REF(nuuy),
+                phi*ikm,              REF(uxuy),
+                phi*ikn,              REF(uyuz),
+                phi*invRe*(km2+kn2),  REF(nuuy),
                 w->D[M],  w->ld, in_rho, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbddddmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi*0.5*gm1,        REF(m_gradrho),
-                 phi,                REF(uyuy),
-                -phi*ap13*invRe*ikm, REF(nuux),
-                -phi*ap13*invRe*ikn, REF(nuuz),
+                 phi,                 REF(uyuy),
+                -phi*ap13*invRe*ikm,  REF(nuux),
+                -phi*ap13*invRe*ikn,  REF(nuuz),
+                -phi*0.5*gm1,         REF(m_gradrho),
                 w->D[D1], w->ld, in_rho, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                -phi*ap43*invRe,     REF(nuuy),
+                -phi*ap43*invRe,      REF(nuuy),
                 w->D[D2], w->ld, in_rho, inc, 1.0, out_rhov, inc);
         }
 
         if (in_rhou) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*ikm,            REF(uy),
+                -phi*ikm,             REF(uy),
                 w->D[M],   w->ld, in_rhou, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
-                phi*gm1,            REF(ux),
-                phi*ap13*invRe*ikm, REF(nu),
+                phi*gm1,              REF(ux),
+                phi*ap13*invRe*ikm,   REF(nu),
                 w->D[D1],  w->ld, in_rhou, inc, 1.0, out_rhov, inc);
         }
 
@@ -211,22 +211,22 @@ suzerain_rholut_imexop_accumulate(
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
-                phi*gm3,             REF(uy),
+                phi*gm3,              REF(uy),
                 w->D[D1], w->ld, in_rhov, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                phi*ap43*invRe,      REF(nu),
+                phi*ap43*invRe,       REF(nu),
                 w->D[D2], w->ld, in_rhov, inc, 1.0, out_rhov, inc);
         }
 
         if (in_rhow) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*ikn,           REF(uy),
+                -phi*ikn,             REF(uy),
                 w->D[M],   w->ld, in_rhow, inc, 1.0, out_rhov, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
-                phi*gm1,            REF(uz),
-                phi*ap13*invRe*ikn, REF(nu),
+                phi*gm1,              REF(uz),
+                phi*ap13*invRe*ikn,   REF(nu),
                 w->D[D1],  w->ld, in_rhow, inc, 1.0, out_rhov, inc);
         }
 
@@ -246,9 +246,9 @@ suzerain_rholut_imexop_accumulate(
             suzerain_blasext_zgbdddddmv_d('N', n, w->kl[M], w->ku[M],
                 phi*ikm,                   REF(uxuz),
                 phi*ikn,                   REF(uzuz),
-                -phi*0.5*gm1*ikn,          REF(m_gradrho),
                 phi*invRe*(km2+ap43*kn2),  REF(nuuz),
                 phi*ap13*invRe*km*kn,      REF(nuux),
+                -phi*0.5*gm1*ikn,          REF(m_gradrho),
                 w->D[M],  w->ld, in_rho, inc, 1.0, out_rhow, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
@@ -271,12 +271,12 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhov) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                phi*gm1*ikn,        REF(uy),
+                phi*gm1*ikn,               REF(uy),
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhow, inc);
 
             suzerain_blasext_zgbddmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi,               REF(uz),
-                phi*ap13*invRe*ikn, REF(nu),
+                -phi,                      REF(uz),
+                phi*ap13*invRe*ikn,        REF(nu),
                 w->D[D1], w->ld, in_rhov, inc, 1.0, out_rhow, inc);
         }
 
@@ -326,56 +326,55 @@ suzerain_rholut_imexop_accumulate(
 
         if (in_rhou) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*ikm,                    REF(e_divm),
                 phi*ginvRePr*Ma2*(km2+kn2),  REF(nuux),
+                -phi*ikm,                    REF(e_divm),
                 w->D[M],  w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,            REF(nuux),
+                -phi*ginvRePr*Ma2,           REF(nuux),
                 w->D[D2], w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
         }
 
         if (in_rhov) {
             suzerain_blasext_zgbdmv_d('N', n, w->kl[M], w->ku[M],
-                phi*ginvRePr*Ma2*(km2+kn2), REF(nuuy),
+                phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuy),
                 w->D[M],  w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi,                       REF(e_divm),
+                -phi,                        REF(e_divm),
                 w->D[D1], w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,          REF(nuuy),
+                -phi*ginvRePr*Ma2,           REF(nuuy),
                 w->D[D2], w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
         }
 
         if (in_rhow) {
             suzerain_blasext_zgbddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*ikn,                     REF(e_divm),
-                phi*ginvRePr*Ma2*(km2+kn2),   REF(nuuz),
+                phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuz),
+                -phi*ikn,                    REF(e_divm),
                 w->D[M],  w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,            REF(nuuz),
+                -phi*ginvRePr*Ma2,           REF(nuuz),
                 w->D[D2], w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
         }
 
         /* in_rhoe */ {
             suzerain_blasext_zgbdddmv_d('N', n, w->kl[M], w->ku[M],
-                -phi*s->gamma*ikm,       REF(ux),
-                -phi*s->gamma*ikn,       REF(uz),
-                -phi*ginvRePr*(km2+kn2), REF(nu),
+                -phi*s->gamma*ikm,           REF(ux),
+                -phi*s->gamma*ikn,           REF(uz),
+                -phi*ginvRePr*(km2+kn2),     REF(nu),
                 w->D[M],  w->ld, in_rhoe, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D1], w->ku[D1],
-                -phi*s->gamma,           REF(uy),
+                -phi*s->gamma,               REF(uy),
                 w->D[D1], w->ld, in_rhoe, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('N', n, w->kl[D2], w->ku[D2],
-                phi*ginvRePr,            REF(nu),
+                phi*ginvRePr,                REF(nu),
                 w->D[D2], w->ld, in_rhoe, inc, 1.0, out_rhoe, inc);
         }
-
 
         suzerain_bsplineop_accumulate_complex(
             M, nrhs, 1.0, in_rhoe, inc, n, 1.0, out_rhoe, inc, n, w);
