@@ -597,7 +597,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minimal_two_by_two, Scalar, test_types )
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
             const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
-            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+            if (suzerain_gbmatrix_in_band(A.KL,A.KU,i,j)) {
                 int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
                 BOOST_CHECK_MESSAGE(papt[o] == papt[o],
                     "NaN PAP^T_{"<<i<<","<<j<<"} from "
@@ -649,7 +649,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( three_by_three, Scalar, test_types )
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
             const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
-            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+            if (suzerain_gbmatrix_in_band(A.KL,A.KU,i,j)) {
                 int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
                 BOOST_CHECK_MESSAGE(papt[o] == papt[o],
                     "NaN PAP^T_{"<<i<<","<<j<<"} from "

@@ -144,7 +144,7 @@ static void operator_consistency(const parameters& p)
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
             const int qj = suzerain_bsmbsm_q(A.S, A.n, j);
-            if (suzerain_gbmatrix_in_band(A.LD,A.KL,A.KU,i,j)) {
+            if (suzerain_gbmatrix_in_band(A.KL,A.KU,i,j)) {
                 int o = suzerain_gbmatrix_offset(A.LD,A.KL,A.KU,i,j);
                 BOOST_CHECK_MESSAGE(papt[o] == papt[o],
                     "NaN PAP^T_{"<<i<<","<<j<<"} from "
@@ -168,7 +168,7 @@ static void operator_consistency(const parameters& p)
     boost::scoped_array<real_t>    rwork(new real_t[A.N]);
 
     BOOST_REQUIRE_EQUAL(0, suzerain_lapack_zgbsvx(/* fact  */ 'E',
-                                                  /* trans */ 'N',
+                                                  /* trans */ 'T',
                                                   /* n     */ A.N,
                                                   /* kl    */ A.KL,
                                                   /* ku    */ A.KU,

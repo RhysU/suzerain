@@ -33,8 +33,8 @@ FUNCNAME()(
         const int rhow,
         const int rhoe,
         complex_double * const buf,
-        suzerain_bsmbsm * const A,
-        complex_double * const papt)
+        suzerain_bsmbsm * const A_T,
+        complex_double * const patpt)
 {
     // When you modify this routine, you must also modify
     // suzerain_rholut_imexop_accumulate so that operator
@@ -47,13 +47,13 @@ FUNCNAME()(
                    + (rhou >= 0) + (rhov >= 0) + (rhow >= 0)
                    + (rhoe >= 0);
 
-    // Compute the BSMBSM structure and named max_kl, max_ku views of w->D.
-    *A = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
-    const double * const M  = w->D[0] - (w->max_ku - w->ku[0]);
-    const double * const D1 = w->D[1] - (w->max_ku - w->ku[1]);
-    const double * const D2 = w->D[2] - (w->max_ku - w->ku[1]);
+    // Compute the BSMBSM structure and named max_kl, max_ku views of w->D_T.
+    *A_T = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
+    const double * const M  = w->D_T[0] - (w->max_ku - w->ku[0]);
+    const double * const D1 = w->D_T[1] - (w->max_ku - w->ku[1]);
+    const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[1]);
     assert(w->nderiv >= 2);         // Enough derivatives in workspace?
-    assert(A->ld == w->ld);         // Compatible storage?
+    assert(A_T->ld == w->ld);         // Compatible storage?
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
@@ -70,33 +70,37 @@ FUNCNAME()(
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
     // We do not know the leading dimension associated with the definition of
-    // PACK() so we must overwrite every possible submatrix within PAPT.
+    // PACK() so we must overwrite every possible submatrix within PATPT.
     // This is only suboptimal for the zero (rho, rhoe) submatrix and
     // brings with it much flexibility.
+
+    // This routine assembles the transpose of the operator and hence the
+    // equation indices are transposed in calls to PACK(...)(...) and we right
+    // the transpose of the discrete operators by diagonal matrices.
 
     // Shorthand for common patterns below
     static const double one = 1.0;
 #   define IDENTITY      &one,        0
 #   define REF(quantity) r->quantity, ld->quantity
-#   define PREAMBLE      'L', A->n, A->n, A->kl, A->ku
+#   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
 
     if (rho >= 0) {  // Prepare density row
 
-        PACK(zd)(A, rho,  rho, 1.0, M, papt);
+        PACK(zd)(A_T, rho,  rho, 1.0, M, patpt);
 
-        if (rhou >= 0) PACK(zd)(A, rho, rhou, -ikm*phi, M,  papt);
+        if (rhou >= 0) PACK(zd)(A_T, rhou, rho, -ikm*phi, M,  patpt);
 
-        if (rhov >= 0) PACK(zd)(A, rho, rhov, -1.0*phi, D1, papt);
+        if (rhov >= 0) PACK(zd)(A_T, rhov, rho, -1.0*phi, D1, patpt);
 
-        if (rhow >= 0) PACK(zd)(A, rho, rhow, -ikn*phi, M,  papt);
+        if (rhow >= 0) PACK(zd)(A_T, rhow, rho, -ikn*phi, M,  patpt);
 
-        if (rhoe >= 0) PACK(z)( A, rho, rhoe,      0.0, 0,  papt);
+        if (rhoe >= 0) PACK(z)( A_T, rhoe, rho,      0.0, 0,  patpt);
     }
 
     // The provided buf may contain INFs or NANs.  Defensively zero it.
     // Also serves to (possibly) bring the buffer into cache for accumulation.
     assert(buf);
-    memset(buf, 0, A->ld*A->n*sizeof(buf[0]));
+    memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
 
     if (rhou >= 0) { // Prepare streamwise momentum row
 
@@ -107,18 +111,18 @@ FUNCNAME()(
                      phi*invRe*(ap43*km2 + kn2), REF(nuux),
                      phi*ap13*invRe*km*kn,       REF(nuuz),
                     -phi*0.5*gm1*ikm,            REF(m_gradrho),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                      phi,                        REF(uxuy),
                     -phi*ap13*invRe*ikm,         REF(nuuy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*invRe,                  REF(nuux),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhou, rho, 1.0, buf, papt);
+            PACK(z)(A_T, rho, rhou, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -128,34 +132,34 @@ FUNCNAME()(
                     gm3*ikm,                     REF(ux),
                     -ikn,                        REF(uz),
                     -invRe*(ap43*km2 + kn2),     REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A->ld);
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhou, rhou, 1.0, buf, papt);
+            PACK(z)(A_T, rhou, rhou, 1.0, buf, patpt);
         }
 
         if (rhov >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*gm1*ikm,                 REF(uy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     -phi,                        REF(ux),
                     phi*ap13*invRe*ikm,          REF(nu),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhou, rhov, 1.0, buf, papt);
+            PACK(z)(A_T, rhov, rhou, 1.0, buf, patpt);
         }
 
         if (rhow >= 0) {
@@ -163,12 +167,14 @@ FUNCNAME()(
                      phi*gm1*ikm,                REF(uz),
                     -phi*ikn,                    REF(ux),
                     -phi*ap13*invRe*km*kn,       REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhou, rhow, 1.0, buf, papt);
+            PACK(z)(A_T, rhow, rhou, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) PACK(zd)(A, rhou, rhoe, -gm1*invMa2*ikm*phi, M, papt);
+        if (rhoe >= 0) {
+            PACK(zd)(A_T, rhoe, rhou, -gm1*invMa2*ikm*phi, M, patpt);
+        }
     }
 
     if (rhov >= 0) { // Prepare wall-normal momentum row
@@ -178,33 +184,33 @@ FUNCNAME()(
                     phi*ikm,              REF(uxuy),
                     phi*ikn,              REF(uyuz),
                     phi*invRe*(km2+kn2),  REF(nuuy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddddiag_scale_acc_d(PREAMBLE,
                      phi,                 REF(uyuy),
                     -phi*ap13*invRe*ikm,  REF(nuux),
                     -phi*ap13*invRe*ikn,  REF(nuuz),
                     -phi*0.5*gm1,         REF(m_gradrho),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ap43*invRe,      REF(nuuy),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhov, rho, 1.0, buf, papt);
+            PACK(z)(A_T, rho, rhov, 1.0, buf, patpt);
         }
 
         if (rhou >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ikm,             REF(uy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     phi*gm1,              REF(ux),
                     phi*ap13*invRe*ikm,   REF(nu),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhov, rhou, 1.0, buf, papt);
+            PACK(z)(A_T, rhou, rhov, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -214,37 +220,39 @@ FUNCNAME()(
                     -ikm,                 REF(ux),
                     -ikn,                 REF(uz),
                     -invRe*(km2+kn2),     REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     gm3,                  REF(uy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     ap43*invRe,           REF(nu),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                  IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A->ld);
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhov, rhov, 1.0, buf, papt);
+            PACK(z)(A_T, rhov, rhov, 1.0, buf, patpt);
         }
 
         if (rhow >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ikn,             REF(uy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     phi*gm1,              REF(uz),
                     phi*ap13*invRe*ikn,   REF(nu),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhov, rhow, 1.0, buf, papt);
+            PACK(z)(A_T, rhow, rhov, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) PACK(zd)(A, rhov, rhoe, -gm1*invMa2*phi, D1, papt);
+        if (rhoe >= 0) {
+            PACK(zd)(A_T, rhoe, rhov, -gm1*invMa2*phi, D1, patpt);
+        }
     }
 
     if (rhow >= 0) { // Prepare spanwise momentum row
@@ -256,18 +264,18 @@ FUNCNAME()(
                      phi*invRe*(km2 + ap43*kn2), REF(nuuz),
                      phi*ap13*invRe*km*kn,       REF(nuux),
                     -phi*0.5*gm1*ikn,            REF(m_gradrho),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                      phi,                        REF(uyuz),
                     -phi*ap13*invRe*ikn,         REF(nuuy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*invRe,                  REF(nuuz),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhow, rho, 1.0, buf, papt);
+            PACK(z)(A_T, rho, rhow, 1.0, buf, patpt);
         }
 
         if (rhou >= 0) {
@@ -275,22 +283,22 @@ FUNCNAME()(
                      phi*gm1*ikn,                REF(ux),
                     -phi*ikm,                    REF(uz),
                     -phi*ap13*invRe*km*kn,       REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhow, rhou, 1.0, buf, papt);
+            PACK(z)(A_T, rhou, rhow, 1.0, buf, patpt);
         }
 
         if (rhov >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*gm1*ikn,                 REF(uy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     -phi,                        REF(uz),
                     phi*ap13*invRe*ikn,          REF(nu),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhow, rhov, 1.0, buf, papt);
+            PACK(z)(A_T, rhov, rhow, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -300,24 +308,26 @@ FUNCNAME()(
                     -ikm,                        REF(ux),
                     gm3*ikn,                     REF(uz),
                     -invRe*(km2 + ap43*kn2),     REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A->ld);
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhow, rhow, 1.0, buf, papt);
+            PACK(z)(A_T, rhow, rhow, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) PACK(zd)(A, rhow, rhoe, -gm1*invMa2*ikn*phi, M, papt);
+        if (rhoe >= 0) {
+            PACK(zd)(A_T, rhoe, rhow, -gm1*invMa2*ikn*phi, M, patpt);
+        }
 
     }
 
@@ -328,59 +338,59 @@ FUNCNAME()(
                     -phi*ikm,                    REF(ex_gradrho),
                     -phi*ikn,                    REF(ez_gradrho),
                     -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi,                        REF(ey_gradrho),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*ginvRePr/gm1,            REF(e_deltarho),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhoe, rho, 1.0, buf, papt);
+            PACK(z)(A_T, rho, rhoe, 1.0, buf, patpt);
         }
 
         if (rhou >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     phi*ginvRePr*Ma2*(km2+kn2),  REF(nuux),
                     -phi*ikm,                    REF(e_divm),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ginvRePr*Ma2,           REF(nuux),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhoe, rhou, 1.0, buf, papt);
+            PACK(z)(A_T, rhou, rhoe, 1.0, buf, patpt);
         }
 
         if (rhov >= 0) {
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuy),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi,                        REF(e_divm),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ginvRePr*Ma2,           REF(nuuy),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhoe, rhov, 1.0, buf, papt);
+            PACK(z)(A_T, rhov, rhoe, 1.0, buf, patpt);
         }
 
         if (rhow >= 0) {
             suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
                     phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuz),
                     -phi*ikn,                    REF(e_divm),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*ginvRePr*Ma2,           REF(nuuz),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhoe, rhow, 1.0, buf, papt);
+            PACK(z)(A_T, rhow, rhoe, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
@@ -390,21 +400,21 @@ FUNCNAME()(
                     -s->gamma*ikm,               REF(ux),
                     -s->gamma*ikn,               REF(uz),
                     -ginvRePr*(km2+kn2),         REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A->ld);
+                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -s->gamma,                   REF(uy),
-                    D1, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     ginvRePr,                    REF(nu),
-                    D2, 1, w->ld, 1.0, buf, 1, A->ld);
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
-                    M,  1, w->ld, phi, buf, 1, A->ld);
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            PACK(z)(A, rhoe, rhoe, 1.0, buf, papt);
+            PACK(z)(A_T, rhoe, rhoe, 1.0, buf, patpt);
         }
     }
 

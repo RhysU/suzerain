@@ -206,7 +206,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 }
 
 /**
- * A functor for applying isothermal conditions for PAP^T-based operators.
+ * A functor for applying isothermal conditions for PA^TP^T-based operators.
  * Encapsulated in a class so that the same logic may be applied to real-
  * and complex-valued operators and right hand sides.
  *
@@ -221,11 +221,11 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
  *     using rho_wall = e_wall * gamma * (gamma - 1).
  * </ul>
  */
-class IsothermalNoSlipPAPTEnforcer
+class IsothermalNoSlipPATPTEnforcer
 {
     enum { nwalls = 2, nmomentum = 3 };
 
-    // Indices within PAP^T at which to apply boundary conditions
+    // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
     int rho[nwalls], noslip[nwalls][nmomentum], rhoe[nwalls];
 
@@ -234,8 +234,8 @@ class IsothermalNoSlipPAPTEnforcer
 
 public:
 
-    IsothermalNoSlipPAPTEnforcer(const suzerain_bsmbsm &A,
-                                 const suzerain_rholut_imexop_scenario &s)
+    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A,
+                                  const suzerain_rholut_imexop_scenario &s)
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
         // Starting offset to named scalars in InterleavedState pencil
@@ -249,8 +249,8 @@ public:
         // Relative to start_foo what is the offset to lower, upper walls
         const int wall[nwalls] = { 0, A.n - 1};
 
-        // Prepare indices within PAP^T corresponding to the walls.
-        // Uses that A_{i,j} maps to {PAP^T}_{{q^-1}(i),{q^(-1)}(j)}.
+        // Prepare indices within PA^TP^T corresponding to the walls.
+        // Uses that A_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
             rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho +wall[i]);
             noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhou+wall[i]);
@@ -276,46 +276,46 @@ public:
     }
 
     /**
-     * Modify the equations within PAP^T for lower, upper walls.
+     * Modify the equations within PA^TP^T for lower, upper walls where each
+     * contiguous column within PA^TP^T contains one equation.  This storage is
+     * ideal from a cache locality perspective for this boundary condition.
      * Must be done in conjunction with rhs().
      */
     template<typename T>
-    void op(const suzerain_bsmbsm& A, T * const papt, int papt_ld)
+    void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
     {
-        // Access is one pass per row (w/ others hopefully nearby in cache).
         // Attempt made to not unnecessarily disturb matrix conditioning.
 
         for (int wall = 0; wall < nwalls; ++wall) {
-            int begin, end, inc;
+            int begin, end;
 
-            // Zero all row entries but the mass matrix one on the diagonal
-            // Then momentum equations are like const*rho{u,v,w} = 0.
+            // Zero off-diagonals so momentum equations are const*rho{u,v,w}=0.
             for (size_t eqn = 0; eqn < nmomentum; ++eqn) {
-                T * const row = (T *) suzerain_gbmatrix_row(
-                        A.N, A.N, A.KL, A.KU, (void *) papt, papt_ld,
-                        sizeof(T), noslip[wall][eqn], &begin, &end, &inc);
-                for (int rowndx = begin; rowndx < end; ++rowndx) {
-                    if (rowndx != noslip[wall][eqn]) {
-                        row[rowndx*inc] = 0;
+                T * const col = (T *) suzerain_gbmatrix_col(
+                        A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
+                        sizeof(T), noslip[wall][eqn], &begin, &end);
+                for (int i = begin; i < end; ++i) {
+                    if (i != noslip[wall][eqn]) {
+                        col[i] = 0;
                     }
                 }
             }
 
             // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
-            T * const row = (T *) suzerain_gbmatrix_row(
-                    A.N, A.N, A.KL, A.KU, (void *) papt, papt_ld,
-                    sizeof(T), rhoe[wall], &begin, &end, &inc);
+            T * const col = (T *) suzerain_gbmatrix_col(
+                    A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
+                    sizeof(T), rhoe[wall], &begin, &end);
             // Necessary to ensure constraint possible in degenerate case
-            complex_t &rhocoeff = row[rho[wall]*inc];
+            complex_t &rhocoeff = col[rho[wall]];
             if (rhocoeff == complex_t(0)) rhocoeff = 1;
             // Scan row and adjust coefficients for constraint
-            for (int rowndx = begin; rowndx < end; ++rowndx) {
-                if (rowndx == rho[wall]) {
+            for (int i = begin; i < end; ++i) {
+                if (i == rho[wall]) {
                     // NOP
-                } else if (rowndx == rhoe[wall]) {
-                    row[rowndx*inc] = rhocoeff*gamma_times_one_minus_gamma;
+                } else if (i == rhoe[wall]) {
+                    col[i] = rhocoeff*gamma_times_one_minus_gamma;
                 } else {
-                    row[rowndx*inc] = 0;
+                    col[i] = 0;
                 }
             }
         }
@@ -385,10 +385,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 # define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
 # define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
 #endif
-    SCRATCH_C(Eigen::ArrayXXc, buf,     A.ld,      A.n);  // For packc calls
-    SCRATCH_C(Eigen::ArrayXXc, papt,    A.LD,      A.N);  // Holds PAP^T
-    SCRATCH_C(Eigen::ArrayXXc, lu,      A.LD+A.KL, A.N);  // Holds LU of PAP^T
-    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);             // Linear solve...
+    SCRATCH_C(Eigen::ArrayXXc, buf,     A.ld,      A.n); // For packc calls
+    SCRATCH_C(Eigen::ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
+    SCRATCH_C(Eigen::ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
+    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);            // Linear solve...
     SCRATCH_R(Eigen::ArrayXr,  r,       A.N);
     SCRATCH_R(Eigen::ArrayXr,  c,       A.N);
     SCRATCH_C(Eigen::ArrayXc,  b,       A.N);
@@ -405,8 +405,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Prepare an almost functor mutating RHS and PAP^T to enforce BCs.
-    IsothermalNoSlipPAPTEnforcer bc_enforcer(A, s);
+    // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
+    IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
     // How will we solve the linear system of equations?
     enum solve_types { gbsvx, gbsv };
@@ -422,14 +422,15 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
-            // Form complex-valued, wavenumber-dependent PAP^T within papt
+            // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
+            // This is the transpose of the implicit operator we desire.
             GRVY_TIMER_BEGIN("implicit operator assembly");
             switch (solve_type) {
             case gbsvx:
                 suzerain_rholut_imexop_packc(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
-                        buf.data(), &A, papt.data());
+                        buf.data(), &A, patpt.data());
                 break;
             case gbsv:
                 suzerain_rholut_imexop_packf(
@@ -445,12 +446,12 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             // Given state pencil "p" the rest of the solve loop looks like
             //
-            //     b := P p          using suzerain_bsmbsm_?aPxpby
-            //     apply BC to RHS   using IsothermalNoSlipPAPTEnforcer
-            //     apply BC to PAP^T using IsothermalNoSlipPAPTEnforcer
-            //     x := (LU)^-1 b    using ?gbsvx which factorizes PAP^T
-            //                       or ?gbsv which factorizes in place
-            //     p := P^T x        using suzerain_bsmbsm_?aPxpby
+            //     b := P p            using suzerain_bsmbsm_?aPxpby
+            //     apply BC to RHS     using IsothermalNoSlipPATPTEnforcer
+            //     apply BC to PA^TP^T using IsothermalNoSlipPATPTEnforcer
+            //     x := (LU)^-T b      using ?gbsvx which factorizes PA^TP^T
+            //                         or ?gbsv which factorizes in place
+            //     p := P^T x          using suzerain_bsmbsm_?aPxpby
             //
             // "Why gbsvx?" you ask.  "It's expensive!" you rightly observe.
             //
@@ -465,10 +466,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // transients and high wavenumbers).  So we'll run with gbsvx until
             // it's demonstrably a bad idea.
 
-            const char *method;               // Used for error reporting
-            static const char fact    = 'E';  // Common inputs for ?gbsvx
-            static const char trans   = 'N';
-            int info;                         // Common outputs for ?gbsvx
+            const char *method;             // Used for error reporting
+            static const char fact  = 'E';  // Common inputs for ?gbsvx
+            static const char trans = 'T';  // Un-transpose transposed operator
+            int info;                       // Common outputs for ?gbsvx
             char equed;
             real_t rcond, ferr[1], berr[1];
 
@@ -488,7 +489,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
                 case gbsvx:
-                    bc_enforcer.op(A, papt.data(), papt.colStride());
+                    bc_enforcer.op(A, patpt.data(), patpt.colStride());
                     break;
                 case gbsv:
                     bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
@@ -498,7 +499,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             switch (solve_type) {
             case gbsvx:
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                    papt.data(), papt.colStride(), lu.data(), lu.colStride(),
+                    patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
                     &rcond, ferr, berr, work.data(), rwork.data());
@@ -526,7 +527,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (info <= A.N) {
                 snprintf(buffer, sizeof(buffer),
-                    "suzerain_lapack_%s reported singularity in PAP^T row %d"
+                    "suzerain_lapack_%s reported singularity in PA^TP^T row %d"
                     " corresponding to A row %d for state scalar %d",
                     method, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);

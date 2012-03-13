@@ -31,13 +31,6 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/pre_gsl.h>
 
-// Some operators are symmetric and allow slightly optimized handling
-static inline
-int is_symmetric(const int nderiv, const suzerain_bsplineop_workspace *w)
-{
-    return nderiv == 0 && w->method == SUZERAIN_BSPLINEOP_GALERKIN_L2;
-}
-
 static
 int
 suzerain_bsplineop_determine_operator_bandwidths(
@@ -69,7 +62,7 @@ suzerain_bsplineop_create_operators(
 
 static
 int
-suzerain_bsplineop_create_collocation_operators(
+suzerain_bsplineop_create_collocation_operator_transposes(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
         gsl_bspline_deriv_workspace *dbw,
@@ -85,7 +78,7 @@ suzerain_bsplineop_create_galerkin_operators(
 
 static
 int
-compute_banded_collocation_derivative_submatrix(
+compute_banded_collocation_derivative_submatrix_transpose(
     const int ioffset,
     const int joffset,
     const int nderiv,
@@ -131,16 +124,16 @@ suzerain_bsplineop_alloc(
                 sizeof(suzerain_bsplineop_workspace)
                 + (nderiv+1)*sizeof(w->kl[0])
                 + (nderiv+1)*sizeof(w->ku[0])
-                + (nderiv+1)*sizeof(w->D[0])
+                + (nderiv+1)*sizeof(w->D_T[0])
             );
     if (w == NULL) {
         gsl_matrix_free(db);
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
     }
-    w->kl = (void *)(((char *) w) + sizeof(suzerain_bsplineop_workspace));
-    w->ku = w->kl + (nderiv+1);
-    w->D  = (void *)(w->ku + (nderiv+1));
+    w->kl  = (void *)(((char *) w) + sizeof(suzerain_bsplineop_workspace));
+    w->ku  = w->kl + (nderiv+1);
+    w->D_T = (void *)(w->ku + (nderiv+1));
 
     /* Save bspline operator parameters in workspace */
     w->method = method;
@@ -170,8 +163,9 @@ suzerain_bsplineop_alloc(
     const size_t an_operators_storage = w->ld * w->n;
     const size_t all_operators_storage
         = an_operators_storage * (w->nderiv+1);
-    w->D[0] = suzerain_blas_calloc(all_operators_storage, sizeof(w->D[0][0]));
-    if (w->D[0] == NULL) {
+    w->D_T[0] = suzerain_blas_calloc(all_operators_storage,
+                                     sizeof(w->D_T[0][0]));
+    if (w->D_T[0] == NULL) {
         gsl_matrix_free(db);
         suzerain_bsplineop_free(w);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
@@ -180,11 +174,11 @@ suzerain_bsplineop_alloc(
     /* Compute pointers to the beginning of each derivative operator */
     /* Determine the start of raw storage for (k+1)-th operator */
     for (int k = 1; k <= w->nderiv; ++k) {
-        w->D[k] = w->D[k-1] + an_operators_storage;
+        w->D_T[k] = w->D_T[k-1] + an_operators_storage;
     }
     /* Step pointer past any unused superdiagonals in the k-th operator */
     for (int k = 0; k <= w->nderiv; ++k) {
-        w->D[k] += (w->max_ku - w->ku[k]);
+        w->D_T[k] += (w->max_ku - w->ku[k]);
     }
 
     /* Calculate operator matrices */
@@ -205,17 +199,17 @@ void
 suzerain_bsplineop_free(suzerain_bsplineop_workspace * w)
 {
     if (w != NULL) {
-        if (w->D != NULL) {
-            if (w->D[0] != NULL) {
+        if (w->D_T != NULL) {
+            if (w->D_T[0] != NULL) {
                 // Must free originally allocated memory offset, not the
                 // computed offset.  See suzerain_bsplineop_alloc.
-                w->D[0] -= (w->max_ku - w->ku[0]);
-                suzerain_blas_free(w->D[0]);
-                w->D[0] = NULL;
+                w->D_T[0] -= (w->max_ku - w->ku[0]);
+                suzerain_blas_free(w->D_T[0]);
+                w->D_T[0] = NULL;
             }
         }
 
-        // D, kl, ku, and w were all allocated together
+        // D_T, kl, ku, and w were all allocated together
         suzerain_blas_free(w);
     }
 }
@@ -249,13 +243,10 @@ suzerain_bsplineop_accumulate(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
-    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
-    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
-    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
-        suzerain_blas_dgbmv(trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                            alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
-                            beta,                       y + j*ldy, incy);
+        suzerain_blas_dgbmv('T',   w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D_T[nderiv], w->ld, x + j*ldx, incx,
+                            beta,                         y + j*ldy, incy);
     }
 
     return SUZERAIN_SUCCESS;
@@ -290,14 +281,11 @@ suzerain_bsplineop_accumulate_complex(
         SUZERAIN_ERROR("x == y not allowed", SUZERAIN_EINVAL);
     }
 
-    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
-    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
-    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
         suzerain_blas_zgbmv_d(
-                trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                alpha, w->D[nderiv], w->ld, x + j*ldx, incx,
-                beta,                       y + j*ldy, incy);
+                'T', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                alpha, w->D_T[nderiv], w->ld, x + j*ldx, incx,
+                beta,                         y + j*ldy, incy);
     }
 
     return SUZERAIN_SUCCESS;
@@ -330,16 +318,13 @@ suzerain_bsplineop_apply(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    // The operation y = alpha*A**T*x + beta*y accesses x in stride one pass
-    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
-    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
         double * const x_j = x + j*ldx;
         /* Compute x_j := w->D[nderiv]*x_j */
         suzerain_blas_dcopy(w->n, x_j, incx, scratch, incscratch);
-        suzerain_blas_dgbmv(trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                            alpha, w->D[nderiv], w->ld, scratch, incscratch,
-                            0.0,                        x_j,     incx);
+        suzerain_blas_dgbmv('T',   w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                            alpha, w->D_T[nderiv], w->ld, scratch, incscratch,
+                            0.0,                          x_j,     incx);
     }
 
     suzerain_blas_free(scratch);
@@ -372,9 +357,6 @@ suzerain_bsplineop_apply_complex(
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
-    // The operation y = alpha*A**T*x + beta*y accesses y in stride one pass
-    // (e.g., http://www.netlib.org/blas/dgbmv.f) so transpose when possible.
-    const char trans = is_symmetric(nderiv, w) ? 'T' : 'N';
     for (int j = 0; j < nrhs; ++j) {
         double * const xreal_j = (double *)(x + j*ldx);
         /* Compute x_j := w->D[nderiv]*x_j for real/imaginary parts */
@@ -382,9 +364,9 @@ suzerain_bsplineop_apply_complex(
             suzerain_blas_dcopy(
                     w->n, xreal_j + c, 2*incx, scratch, incscratch);
             suzerain_blas_dgbmv(
-                    trans, w->n, w->n, w->kl[nderiv], w->ku[nderiv],
-                    alpha, w->D[nderiv], w->ld, scratch,     incscratch,
-                    0.0,                        xreal_j + c, 2*incx);
+                    'T',   w->n, w->n, w->kl[nderiv], w->ku[nderiv],
+                    alpha, w->D_T[nderiv], w->ld, scratch,     incscratch,
+                    0.0,                          xreal_j + c, 2*incx);
         }
     }
 
@@ -452,7 +434,7 @@ suzerain_bsplineop_determine_collocation_bandwidths(
     }
     const size_t an_operators_storage = w->ld * w->k;
     const size_t total_storage = 2*(w->nderiv+1)*an_operators_storage;
-    scratch[0] = suzerain_blas_calloc(total_storage, sizeof(w->D[0][0]));
+    scratch[0] = suzerain_blas_calloc(total_storage, sizeof(w->D_T[0][0]));
     if (scratch[0] == NULL) {
         suzerain_blas_free(scratch);
         suzerain_blas_free(points);
@@ -465,14 +447,14 @@ suzerain_bsplineop_determine_collocation_bandwidths(
     /* Create convenience views of our working space */
     const double * const ul_points = &(points[0]);
     const double * const lr_points = &(points[w->k]);
-    double ** const ul_D = &(scratch[0]);
-    double ** const lr_D = &(scratch[w->nderiv+1]);
+    double ** const ul_D_T = &(scratch[0]);
+    double ** const lr_D_T = &(scratch[w->nderiv+1]);
 
     /* Compute the upper-left- and lower-right- most submatrices */
-    if (compute_banded_collocation_derivative_submatrix(
+    if (compute_banded_collocation_derivative_submatrix_transpose(
              0, 0,
              w->nderiv, w->kl, w->ku, w->ld,
-             w->k, ul_points, bw, dbw, db, ul_D)) {
+             w->k, ul_points, bw, dbw, db, ul_D_T)) {
         suzerain_blas_free(scratch[0]);
         suzerain_blas_free(scratch);
         suzerain_blas_free(points);
@@ -480,10 +462,10 @@ suzerain_bsplineop_determine_collocation_bandwidths(
                        SUZERAIN_ESANITY);
     }
     const int lr_offset = w->n - w->k;
-    if (compute_banded_collocation_derivative_submatrix(
+    if (compute_banded_collocation_derivative_submatrix_transpose(
              lr_offset, lr_offset,
              w->nderiv, w->kl, w->ku, w->ld,
-             w->k, lr_points, bw, dbw, db, lr_D)) {
+             w->k, lr_points, bw, dbw, db, lr_D_T)) {
         suzerain_blas_free(scratch[0]);
         suzerain_blas_free(scratch);
         suzerain_blas_free(points);
@@ -491,16 +473,16 @@ suzerain_bsplineop_determine_collocation_bandwidths(
                        SUZERAIN_ESANITY);
     }
 
-    /* Reduce kl/ku for each zero off-diagonal in ul_D and lr_D */
+    /* Reduce kl/ku for each zero off-diagonal in ul_D_T and lr_D_T */
     for (int k = 0; k <= w->nderiv; ++k) {
         const int fixed_ku_k = w->ku[k];
         const int fixed_ld   = w->ld;
 
         for (int i=0; i < fixed_ku_k; ++i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->k, ul_D[k]+i, fixed_ld);
+                = suzerain_blas_dasum(w->k, ul_D_T[k]+i, fixed_ld);
             const double lr_asum
-                = suzerain_blas_dasum(w->k, lr_D[k]+i, fixed_ld);
+                = suzerain_blas_dasum(w->k, lr_D_T[k]+i, fixed_ld);
 #pragma warning(push,disable:1572)
             if (ul_asum + lr_asum == 0.0) {
 #pragma warning(pop)
@@ -511,9 +493,9 @@ suzerain_bsplineop_determine_collocation_bandwidths(
         }
         for (int i=fixed_ld-1; i > fixed_ku_k; --i) {
             const double ul_asum
-                = suzerain_blas_dasum(w->k, ul_D[k]+i, fixed_ld);
+                = suzerain_blas_dasum(w->k, ul_D_T[k]+i, fixed_ld);
             const double lr_asum
-                = suzerain_blas_dasum(w->k, lr_D[k]+i, fixed_ld);
+                = suzerain_blas_dasum(w->k, lr_D_T[k]+i, fixed_ld);
 #pragma warning(push,disable:1572)
             if (ul_asum + lr_asum == 0.0) {
 #pragma warning(pop)
@@ -555,7 +537,8 @@ suzerain_bsplineop_create_operators(
     /* Compute the operator bandwidths based on the supplied method */
     switch (w->method) {
     case SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE:
-        return suzerain_bsplineop_create_collocation_operators(db, bw, dbw, w);
+        return suzerain_bsplineop_create_collocation_operator_transposes(
+                db, bw, dbw, w);
     case SUZERAIN_BSPLINEOP_GALERKIN_L2:
         return suzerain_bsplineop_create_galerkin_operators(db, bw, dbw, w);
     default:
@@ -565,13 +548,13 @@ suzerain_bsplineop_create_operators(
 
 static
 int
-suzerain_bsplineop_create_collocation_operators(
+suzerain_bsplineop_create_collocation_operator_transposes(
         gsl_matrix *db,
         gsl_bspline_workspace *bw,
         gsl_bspline_deriv_workspace *dbw,
         suzerain_bsplineop_workspace *w)
 {
-    /* Evaluate basis at collocation points: d^k/dx^k B_j(\xi_i) */
+    /* Evaluate basis at collocation points: d^k/dx^k B_i(\xi_j) */
     double * const points = suzerain_blas_malloc(w->n*sizeof(points[0]));
     if (points == NULL) {
         SUZERAIN_ERROR("Unable to allocate space for Greville abscissae",
@@ -581,10 +564,10 @@ suzerain_bsplineop_create_collocation_operators(
         points[i] = gsl_bspline_greville_abscissa(i, bw);
     }
 
-    /* Compute the full derivative operator matrices */
-    if (compute_banded_collocation_derivative_submatrix(
+    /* Compute the full derivative operator matrix's transpose */
+    if (compute_banded_collocation_derivative_submatrix_transpose(
              0, 0, w->nderiv, w->kl, w->ku, w->ld,
-             w->n, points, bw, dbw, db, w->D)) {
+             w->n, points, bw, dbw, db, w->D_T)) {
         suzerain_blas_free(points);
         SUZERAIN_ERROR("Error computing operator matrices", SUZERAIN_ESANITY);
     }
@@ -596,7 +579,7 @@ suzerain_bsplineop_create_collocation_operators(
 
 static
 int
-compute_banded_collocation_derivative_submatrix(
+compute_banded_collocation_derivative_submatrix_transpose(
     const int ioffset,
     const int joffset,
     const int nderiv,
@@ -608,11 +591,16 @@ compute_banded_collocation_derivative_submatrix(
     gsl_bspline_workspace * bw,
     gsl_bspline_deriv_workspace * dbw,
     gsl_matrix * db,
-    double ** const D)
+    double ** const D_T)
 {
-    /* PRECONDITION: D[0]...D[nderiv] must have been filled with zeros */
+    /* PRECONDITION: D_T[0]...D_T[nderiv] must have been filled with zeros */
 
-    /* Fill all nonzero entries in the operator storage */
+    /*
+     * Fill all nonzero entries in the tranpose of the operator's storage.
+     * B-spline basis evaluation routines make d^k/dx^k B_j(\xi_i) easier
+     * to compute so we loop over B_j(\xi_i) while storing B_i(\xi_j).
+     */
+
     for (int i = 0; i < npoints; ++i) {
         size_t dbjstart, dbjend;
         gsl_bspline_deriv_eval_nonzero(points[i], nderiv, db,
@@ -625,13 +613,13 @@ compute_banded_collocation_derivative_submatrix(
         for (int k = 0; k <= nderiv; ++k) {
             for (int j = jstart; j <= jend; ++j) {
                 const double value = gsl_matrix_get(db, j - dbjstart, k);
-                const int in_band  = suzerain_gbmatrix_in_band(
-                        ld, kl[k], ku[k], i+ioffset, j /* no joffset */);
-                const int offset = suzerain_gbmatrix_offset(
-                        ld, kl[k], ku[k], i /* no ioffset */, j-joffset);
+                const int in_band  = suzerain_gbmatrix_in_band( /*TRANS*/
+                            kl[k], ku[k], j /* no joffset */, i+ioffset);
+                const int offset = suzerain_gbmatrix_offset(    /*TRANS*/
+                        ld, kl[k], ku[k], j-joffset, i /* no ioffset */);
 
                 if (in_band) {
-                    D[k][offset] = value;
+                    D_T[k][offset] = value;
 #pragma warning(push,disable:1572)
                 } else if (value == 0.0) {
 #pragma warning(pop)
@@ -664,7 +652,7 @@ compute_banded_collocation_derivative_submatrix(
 }
 
 static inline int int_div_ceil(int dividend, int divisor) {
-    // Modified from http://www.justlinux.com/forum/showthread.php?t=126876
+    /* Modified from http://www.justlinux.com/forum/showthread.php?t=126876 */
     return ((dividend + divisor) - 1) / divisor;
 }
 
@@ -677,6 +665,11 @@ suzerain_bsplineop_create_galerkin_operators(
         suzerain_bsplineop_workspace *w)
 {
     /* PRECONDITION: D[0]...D[nderiv] must have been filled with zeros */
+
+    /*
+     * B-spline basis evaluation routines make d^k/dx^k B_j(\xi_i) easier
+     * to compute so we loop over B_j(\xi_i) while storing B_i(\xi_j).
+     */
 
     /* Determine the integration order and retrieve Gauss-Legendre rule */
     /* Maximum quadratic piecewise polynomial order is 2*(w->k-1)   */
@@ -718,12 +711,12 @@ suzerain_bsplineop_create_galerkin_operators(
                 gsl_matrix_scale(db,
                                  wk * gsl_matrix_get(db, i - istart, 0));
 
-                /* ...and accumulate into the banded derivative matrices. */
+                /* ...and accumulate into derivative matrix's transpose. */
                 for (size_t l = istart; l <= iend; ++l) {
                     for (size_t m = 0; m <= (size_t) w->nderiv; ++m) {
-                        const int offset = suzerain_gbmatrix_offset(
-                                w->ld, w->kl[m], w->ku[m], i, l);
-                        w->D[m][offset] += gsl_matrix_get(db, l - istart, m);
+                        const int offset = suzerain_gbmatrix_offset( /*TRANS!*/
+                                w->ld, w->kl[m], w->ku[m], l, i);
+                        w->D_T[m][offset] += gsl_matrix_get(db, l - istart, m);
                     }
                 }
             }
@@ -740,15 +733,15 @@ suzerain_bsplineop_create_galerkin_operators(
      * cause problems if people use BLAS DGMBV vs DSBMV-with-upper-diagonals vs
      * DSBMV-with-lower-diagonals to compute matrix-vector products or
      * factorizations.  Explicitly enforce the mass matrix's discrete symmetry
-     * by copying the subdiagonals to the superdiagonals.
+     * by copying the superdiagonals to the subdiagonals.
      */
     if (w->nderiv >= 0) {
         assert(w->kl[0] == w->ku[0]);
         for (int diag = 1; diag <= w->kl[0]; ++diag) {
-            double * const sup = w->D[0] + w->ku[0] - diag;
-            double * const sub = w->D[0] + w->ku[0] + diag;
+            double * const sub = w->D_T[0] + w->ku[0] - diag;
+            double * const sup = w->D_T[0] + w->ku[0] + diag;
             for (int i = 0; i < w->n - diag; ++i) {
-                sup[(i+diag)*w->ld] = sub[i*w->ld];
+                sub[(i+diag)*w->ld] = sup[i*w->ld];
             }
         }
     }
@@ -764,8 +757,8 @@ suzerain_bsplineop_create_galerkin_operators(
         for (int i = 0; i < w->n; ++i) {
             const int offset = suzerain_gbmatrix_offset(
                     w->ld, w->kl[n], w->ku[n], i, i);
-            if (fabs(w->D[n][offset]) < tiny) {
-                w->D[n][offset] = 0.0;
+            if (fabs(w->D_T[n][offset]) < tiny) {
+                w->D_T[n][offset] = 0.0;
             }
         }
     }
@@ -957,8 +950,8 @@ suzerain_bsplineop_lu_alloc(
     luw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within lu_opform */
-    luw->A = suzerain_blas_malloc(luw->ld*luw->n*sizeof(luw->A[0]));
-    if (luw->A == NULL) {
+    luw->A_T = suzerain_blas_malloc(luw->ld*luw->n*sizeof(luw->A_T[0]));
+    if (luw->A_T == NULL) {
         suzerain_bsplineop_lu_free(luw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
@@ -971,8 +964,8 @@ void
 suzerain_bsplineop_lu_free(suzerain_bsplineop_lu_workspace * luw)
 {
     if (luw != NULL) {
-        suzerain_blas_free(luw->A);
-        luw->A = NULL;
+        suzerain_blas_free(luw->A_T);
+        luw->A_T = NULL;
 
         suzerain_blas_free(luw->ipiv);
         luw->ipiv = NULL;
@@ -1020,38 +1013,38 @@ suzerain_bsplineop_lu_opaccumulate(
 
         /* No accumulation implies a scal operation on the operator */
         /* Tramples on the superdiagonals but it should not matter */
-        suzerain_blas_dscal(luw->ld*luw->n, scale, luw->A, 1);
+        suzerain_blas_dscal(luw->ld*luw->n, scale, luw->A_T, 1);
 
 #pragma warning(push,disable:1572)
     } else if (scale == 0.0) {
 #pragma warning(pop)
 
         /* Zero all operator storage including the superdiagonals */
-        memset(luw->A, 0, luw->ld*luw->n*sizeof(luw->A[0]));
+        memset(luw->A_T, 0, luw->ld*luw->n*sizeof(luw->A_T[0]));
 
         /* Accumulate the mass matrix into operator storage, allowing */
         /* lower level routines to optimize for the factor of 1.      */
         suzerain_blas_dgb_acc(
             luw->n, luw->n, w->max_kl, w->max_ku,
-            coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
-            1.0, luw->A + w->max_kl, luw->ld);
+            coefficients[0], w->D_T[0] - (w->max_ku - w->ku[0]), w->ld,
+            1.0, luw->A_T + w->max_kl, luw->ld);
 
     } else {
 
         /* Accumulate the mass matrix into scaled operator storage */
         suzerain_blas_dgb_acc(
             luw->n, luw->n, w->max_kl, w->max_ku,
-            coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
-            scale, luw->A + w->max_kl, luw->ld);
+            coefficients[0], w->D_T[0] - (w->max_ku - w->ku[0]), w->ld,
+            scale, luw->A_T + w->max_kl, luw->ld);
 
     }
 
-    /* Accumulate any necessary higher derivative operators into luw->A */
+    /* Accumulate any necessary higher derivative operators into luw->A_T */
     for (int k = 1; k < ncoefficients; ++k) {
         suzerain_blas_dgb_acc(
             luw->n, luw->n, w->max_kl, w->max_ku,
-            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
-            1.0, luw->A + w->max_kl, luw->ld);
+            coefficients[k], w->D_T[k] - (w->max_ku - w->ku[k]), w->ld,
+            1.0, luw->A_T + w->max_kl, luw->ld);
     }
 
     /* Make -1*ipiv[0] indicate the number of opaccumulate calls performed */
@@ -1061,9 +1054,9 @@ suzerain_bsplineop_lu_opaccumulate(
 }
 
 int
-suzerain_bsplineop_lu_opnorm1(
+suzerain_bsplineop_lu_opnorm(
     const suzerain_bsplineop_lu_workspace * luw,
-    double *norm1)
+    double * norm)
 {
     /* Protect the user from incorrect API usage */
     if (luw->ipiv[0] >= 0) {
@@ -1071,10 +1064,11 @@ suzerain_bsplineop_lu_opnorm1(
                        SUZERAIN_EINVAL);
     }
 
-    /* As operator is not yet factored, it starts at A + kl per GBTRF */
+    /* As operator is not yet factored, it starts at A_T + kl per GBTRF */
+    /* We want the infinity norm of A which is the one norm of A^T. */
     const int info = suzerain_blasext_dgbnorm1(luw->n, luw->n, luw->kl,
-                                               luw->ku, luw->A + luw->kl,
-                                               luw->ld, /* modified */ norm1);
+                                               luw->ku, luw->A_T + luw->kl,
+                                               luw->ld, /* modified */ norm);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1097,7 +1091,7 @@ suzerain_bsplineop_lu_factor(
 
     /* Compute in-place LU factorization of the operator */
     const int info = suzerain_lapack_dgbtrf(luw->n, luw->n, luw->kl, luw->ku,
-                                            luw->A, luw->ld, luw->ipiv);
+                                            luw->A_T, luw->ld, luw->ipiv);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1113,8 +1107,8 @@ suzerain_bsplineop_lu_factor(
 
 int
 suzerain_bsplineop_lu_rcond(
-    const double norm1,
-    double *rcond,
+    const double norm,
+    double * rcond,
     const suzerain_bsplineop_lu_workspace *luw)
 {
     /* Protect the user from incorrect API usage */
@@ -1124,16 +1118,17 @@ suzerain_bsplineop_lu_rcond(
             SUZERAIN_EINVAL);
     }
 
-    // Allocate one chunk of memory for both work and iwork usage
-    double *work = suzerain_blas_malloc(   (3*luw->n)*sizeof(luw->A[0])
+    /* Allocate one chunk of memory for both work and iwork usage */
+    double *work = suzerain_blas_malloc(   (3*luw->n)*sizeof(luw->A_T[0])
                                          + (  luw->n)*sizeof(int)       );
     if (work == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
+    /* The infinity condition number of A is one-based result for A^T. */
     const int info = suzerain_lapack_dgbcon('1', luw->n, luw->kl, luw->ku,
-                                            luw->A, luw->ld, luw->ipiv,
-                                            norm1, rcond, work,
+                                            luw->A_T, luw->ld, luw->ipiv,
+                                            norm, rcond, work,
                                             (void *)(work + 3*luw->n));
     suzerain_blas_free(work);
 
@@ -1191,8 +1186,8 @@ suzerain_bsplineop_lu_solve_contiguous(
                 SUZERAIN_EINVAL);
     }
 
-    const int info = suzerain_lapack_dgbtrs('N', luw->n, luw->kl, luw->ku,
-                                            nrhs, luw->A, luw->ld, luw->ipiv,
+    const int info = suzerain_lapack_dgbtrs('T', luw->n, luw->kl, luw->ku,
+                                            nrhs, luw->A_T, luw->ld, luw->ipiv,
                                             B, ldb);
     if (info) {
         char buffer[80];
@@ -1230,9 +1225,9 @@ suzerain_bsplineop_lu_solve_noncontiguous(
         double * const b_j = B + j*ldb;
 
         suzerain_blas_dcopy(luw->n, b_j, incb, scratch, 1);
-        const int info = suzerain_lapack_dgbtrs('N', luw->n, luw->kl, luw->ku,
+        const int info = suzerain_lapack_dgbtrs('T', luw->n, luw->kl, luw->ku,
                                                 1, /* One RHS at a time */
-                                                luw->A, luw->ld, luw->ipiv,
+                                                luw->A_T, luw->ld, luw->ipiv,
                                                 scratch, luw->n);
         if (info) {
             suzerain_blas_free(scratch);
@@ -1299,8 +1294,8 @@ suzerain_bsplineop_luz_alloc(
     luzw->ipiv[0] = -1;
 
     /* Allocate memory for the matrix formed within luz_form */
-    luzw->A = suzerain_blas_malloc(luzw->ld*luzw->n*sizeof(luzw->A[0]));
-    if (luzw->A == NULL) {
+    luzw->A_T = suzerain_blas_malloc(luzw->ld*luzw->n*sizeof(luzw->A_T[0]));
+    if (luzw->A_T == NULL) {
         suzerain_bsplineop_luz_free(luzw);
         SUZERAIN_ERROR_NULL("failed to allocate space for matrix storage",
                             SUZERAIN_ENOMEM);
@@ -1313,8 +1308,8 @@ void
 suzerain_bsplineop_luz_free(suzerain_bsplineop_luz_workspace * luzw)
 {
     if (luzw != NULL) {
-        suzerain_blas_free(luzw->A);
-        luzw->A = NULL;
+        suzerain_blas_free(luzw->A_T);
+        luzw->A_T = NULL;
 
         suzerain_blas_free(luzw->ipiv);
         luzw->ipiv = NULL;
@@ -1362,38 +1357,38 @@ suzerain_bsplineop_luz_opaccumulate(
 
         /* No accumulation implies a scal operation on the operator */
         /* Tramples on the superdiagonals but it should not matter */
-        suzerain_blas_zscal(luzw->ld*luzw->n, scale, luzw->A, 1);
+        suzerain_blas_zscal(luzw->ld*luzw->n, scale, luzw->A_T, 1);
 
 #pragma warning(push,disable:1572)
     } else if (scale == 0.0) {
 #pragma warning(pop)
 
         /* Zero all operator storage including the superdiagonals */
-        memset(luzw->A, 0, luzw->ld*luzw->n*sizeof(luzw->A[0]));
+        memset(luzw->A_T, 0, luzw->ld*luzw->n*sizeof(luzw->A_T[0]));
 
         /* Accumulate the mass matrix into operator storage, allowing */
         /* lower level routines to optimize for the factor of 1.      */
         suzerain_blas_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
-            coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
-            1, luzw->A + w->max_kl, luzw->ld);
+            coefficients[0], w->D_T[0] - (w->max_ku - w->ku[0]), w->ld,
+            1, luzw->A_T + w->max_kl, luzw->ld);
 
     } else {
 
         /* Accumulate the mass matrix into scaled operator storage */
         suzerain_blas_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
-            coefficients[0], w->D[0] - (w->max_ku - w->ku[0]), w->ld,
-            scale, luzw->A + w->max_kl, luzw->ld);
+            coefficients[0], w->D_T[0] - (w->max_ku - w->ku[0]), w->ld,
+            scale, luzw->A_T + w->max_kl, luzw->ld);
 
     }
 
-    /* Accumulate necessary any higher derivative operators into luzw->A */
+    /* Accumulate necessary any higher derivative operators into luzw->A_T */
     for (int k = 1; k < ncoefficients; ++k) {
         suzerain_blas_zgb_acc_d(
             luzw->n, luzw->n, w->max_kl, w->max_ku,
-            coefficients[k], w->D[k] - (w->max_ku - w->ku[k]), w->ld,
-            1, luzw->A + w->max_kl, luzw->ld);
+            coefficients[k], w->D_T[k] - (w->max_ku - w->ku[k]), w->ld,
+            1, luzw->A_T + w->max_kl, luzw->ld);
     }
 
     /* Make -1*ipiv[0] indicate the number of opaccumulate calls performed */
@@ -1403,9 +1398,9 @@ suzerain_bsplineop_luz_opaccumulate(
 }
 
 int
-suzerain_bsplineop_luz_opnorm1(
+suzerain_bsplineop_luz_opnorm(
     const suzerain_bsplineop_luz_workspace * luzw,
-    double *norm1)
+    double * norm)
 {
     /* Protect the user from incorrect API usage */
     if (luzw->ipiv[0] >= 0) {
@@ -1413,11 +1408,12 @@ suzerain_bsplineop_luz_opnorm1(
                        SUZERAIN_EINVAL);
     }
 
-    /* As operator is not yet factored, it starts at A + kl per GBTRF */
+    /* As operator is not yet factored, it starts at A_T + kl per GBTRF */
+    /* We want the infinity norm of A which is the one norm of A^T. */
     const int info = suzerain_blasext_zgbnorm1(
                                 luzw->n, luzw->n, luzw->kl, luzw->ku,
-                                luzw->A + luzw->kl, luzw->ld,
-                                /* modified */ norm1);
+                                luzw->A_T + luzw->kl, luzw->ld,
+                                /* modified */ norm);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1440,7 +1436,7 @@ suzerain_bsplineop_luz_factor(
 
     /* Compute in-place LU factorization of the operator */
     const int info = suzerain_lapack_zgbtrf(luzw->n, luzw->n, luzw->kl,
-                                            luzw->ku, luzw->A, luzw->ld,
+                                            luzw->ku, luzw->A_T, luzw->ld,
                                             luzw->ipiv);
     if (info) {
         char buffer[80];
@@ -1457,8 +1453,8 @@ suzerain_bsplineop_luz_factor(
 
 int
 suzerain_bsplineop_luz_rcond(
-    const double norm1,
-    double *rcond,
+    const double norm,
+    double * rcond,
     const suzerain_bsplineop_luz_workspace *luzw)
 {
     if (luzw->ipiv[0] < 0) {
@@ -1467,16 +1463,17 @@ suzerain_bsplineop_luz_rcond(
             SUZERAIN_EINVAL);
     }
 
-    // Allocate one chunk of memory for both work and rwork usage
-    double *work = suzerain_blas_malloc(   (2*(2*luzw->n))*sizeof(luzw->A[0])
-                                         + (     luzw->n )*sizeof(luzw->A[0]));
+    /* Allocate one chunk of memory for both work and rwork usage */
+    double *work = suzerain_blas_malloc(   (2*(2*luzw->n))*sizeof(luzw->A_T[0])
+                                         + (     luzw->n )*sizeof(luzw->A_T[0]));
     if (work == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
+    /* The infinity condition number of A is one-based result for A^T. */
     const int info = suzerain_lapack_zgbcon('1', luzw->n, luzw->kl, luzw->ku,
-                                            luzw->A, luzw->ld, luzw->ipiv,
-                                            norm1, /* modified */ rcond,
+                                            luzw->A_T, luzw->ld, luzw->ipiv,
+                                            norm, /* modified */ rcond,
                                             (complex_double *) work,
                                             work + 2*(2*luzw->n));
     suzerain_blas_free(work);
@@ -1505,9 +1502,9 @@ suzerain_bsplineop_luz_solve_contiguous(
                 SUZERAIN_EINVAL);
     }
 
-    const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl, luzw->ku,
-                                            nrhs, luzw->A, luzw->ld, luzw->ipiv,
-                                            B, ldb);
+    const int info = suzerain_lapack_zgbtrs('T', luzw->n, luzw->kl, luzw->ku,
+                                            nrhs, luzw->A_T, luzw->ld,
+                                            luzw->ipiv, B, ldb);
     if (info) {
         char buffer[80];
         snprintf(buffer, sizeof(buffer),
@@ -1545,10 +1542,10 @@ suzerain_bsplineop_luz_solve_noncontiguous(
         complex_double * const b_j = B + j*ldb;
 
         suzerain_blas_zcopy(luzw->n, b_j, incb, scratch, 1);
-        const int info = suzerain_lapack_zgbtrs('N', luzw->n, luzw->kl,
+        const int info = suzerain_lapack_zgbtrs('T', luzw->n, luzw->kl,
                                                 luzw->ku,
                                                 1, /* One RHS at a time */
-                                                luzw->A, luzw->ld, luzw->ipiv,
+                                                luzw->A_T, luzw->ld, luzw->ipiv,
                                                 scratch, luzw->n);
         if (info) {
             suzerain_blas_free(scratch);

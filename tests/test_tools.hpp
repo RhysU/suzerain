@@ -133,9 +133,9 @@ _suzerain_check_gbmatrix_close(
             for (int i = 0; i < e_m; ++i) {
 
                 const bool e_in_band
-                    = suzerain_gbmatrix_in_band(e_ld, e_kl, e_ku, i, j);
+                    = suzerain_gbmatrix_in_band(e_kl, e_ku, i, j);
                 const bool r_in_band
-                    = suzerain_gbmatrix_in_band(r_ld, r_kl, r_ku, i, j);
+                    = suzerain_gbmatrix_in_band(r_kl, r_ku, i, j);
                 const int e_offset
                     = suzerain_gbmatrix_offset(e_ld, e_kl, e_ku, i, j);
                 const int r_offset
@@ -289,9 +289,9 @@ _suzerain_check_gbmatrix_close(
             for (int i = 0; i < e_m; ++i) {
 
                 const bool e_in_band
-                    = suzerain_gbmatrix_in_band(e_ld, e_kl, e_ku, i, j);
+                    = suzerain_gbmatrix_in_band(e_kl, e_ku, i, j);
                 const bool r_in_band
-                    = suzerain_gbmatrix_in_band(r_ld, r_kl, r_ku, i, j);
+                    = suzerain_gbmatrix_in_band(r_kl, r_ku, i, j);
                 const int e_offset
                     = suzerain_gbmatrix_offset(e_ld, e_kl, e_ku, i, j);
                 const int r_offset
@@ -422,8 +422,8 @@ _suzerain_check_gbmatrix_symmetric(
     if (checkequality) {
         for (int i = 0; i < n; ++i) {
             for (int j = 0; j < i; ++j) {
-                if (   suzerain_gbmatrix_in_band(ld, kl, ku, i, j)
-                    && suzerain_gbmatrix_in_band(ld, kl, ku, j, i)) {
+                if (   suzerain_gbmatrix_in_band(kl, ku, i, j)
+                    && suzerain_gbmatrix_in_band(kl, ku, j, i)) {
                     int o_ij = suzerain_gbmatrix_offset(ld, kl, ku, i, j);
                     int o_ji = suzerain_gbmatrix_offset(ld, kl, ku, j, i);
                     double v_ij = r[o_ij];

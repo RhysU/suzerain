@@ -51,21 +51,21 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     {
-        /* Check w->D[0], the mass matrix, against known good solution:
+        /* Check D[0], the mass matrix, against known good solution:
          *   1   0   0   0
          *   0   1   0   0
          *   0   0   1   0
          *   0   0   0   1
-         * Known good is in general banded matrix column-major order.
+         * Known good is transposed in general banded column-major storage.
          */
-        const double good_D0[] = { 1, 1, 1, 1 };
+        const double good_D_T0[] = { 1, 1, 1, 1 };
         CHECK_GBMATRIX_CLOSE(
-                 4,      4,        0,       0,  good_D0,       1,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 4,      4,        0,       0,  good_D_T0,       1,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
         {
-            /* Check w->D[0] application against multiple real vectors */
+            /* Check D[0] application against multiple real vectors */
             const int nrhs = 2;
             double b[] = { 1, 2, 3, 4,
                            5, 6, 7, 8 };
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         }
 
         {
-            /* Check w->D[0] application against multiple complex vectors */
+            /* Check D[0] application against multiple complex vectors */
             const int nrhs = 2;
             double b[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         }
 
         {
-            /* Check w->D[0] accumulation against multiple real vectors */
+            /* Check D[0] accumulation against multiple real vectors */
             const int nrhs = 2;
             const double x[] = { 1, 2, 3, 4,
                                  5, 6, 7, 8 };
@@ -122,8 +122,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         }
 
         {
-            /* Check w->D[0] accumulation against multiple complex vectors */
-            /* using complex-valued coefficients                           */
+            /* Check D[0] accumulation against multiple complex vectors */
+            /* using complex-valued coefficients                        */
             const int nrhs = 2;
             const double x[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
@@ -152,8 +152,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
         }
 
         {
-            /* Check w->D[0] accumulation against multiple complex vectors */
-            /* using real-valued coefficients                              */
+            /* Check D[0] accumulation against multiple complex vectors */
+            /* using real-valued coefficients                           */
             const int nrhs = 2;
             const double x[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8},
@@ -183,23 +183,23 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     }
 
     {
-        /* Check w->D[1], the first derivative matrix, against known good:
+        /* Check D[1], the first derivative matrix, against known good:
          *  -1   1   0   0
          *   0  -1   1   0
          *   0   0  -1   1
          *   0   0  -1   1
-         * Known good is in general banded matrix column-major order.
+         * Known good is transposed in general banded column-major storage.
          */
-        const double good_D1[] = { /*DK*/0,   -1,       0,
-                                         1,   -1,       0,
-                                         1,   -1,      -1,
-                                         1,    1, /*DK*/0 };
+        const double good_D_T1[] = { /*DK*/0,   -1,       1,
+                                           0,   -1,       1,
+                                           0,   -1,       1,
+                                          -1,    1, /*DK*/0 };
         CHECK_GBMATRIX_CLOSE(
-                 4,      4,        1,        1, good_D1,     3,
-            op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+                 4,      4,        1,        1, good_D_T1,       3,
+            op.n(), op.n(), op.kl(1), op.ku(1), op.D_T(1), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
-        /* Check w->D[1] application against multiple vectors */
+        /* Check D[1] application against multiple vectors */
         /* Includes b having non-unit stride */
         const int nrhs = 2;
         double vapply[] = {
@@ -221,12 +221,12 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     }
 
     {
-        /* Check w->D[2], the second derivative matrix, against zero result.
-         */
-        const double good_D2[] = { 0, 0, 0, 0 };
+        /* Check D[2], the second derivative matrix, against zero result. */
+        /* Known good is transposed in general banded column-major storage. */
+        const double good_D_T2[] = { 0, 0, 0, 0 };
         CHECK_GBMATRIX_CLOSE(
-                 4,      4,        0,        0, good_D2,       1,
-            op.n(), op.n(), op.kl(2), op.ku(2), op.D(2), op.ld(),
+                 4,      4,        0,        0, good_D_T2,       1,
+            op.n(), op.n(), op.kl(2), op.ku(2), op.D_T(2), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     }
 
@@ -237,41 +237,48 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     bsplineop_lu lu(op);
     BOOST_REQUIRE_EQUAL(lu.n(), op.n());
 
-    /* Form 2*D[0] - 3*D[1] operator in LU-ready banded storage.  Answer is
-     *   5   -3    0     0
-     *   0    5   -3     0
-     *   0    0    5    -3
-     *   0    0    3    -1
-     * which, in LU-form where L has ones on the main diagonal, is
-     *   5   -3    0     0
-     *   0    5   -3     0
-     *   0    0    5    -3
-     *   0    0    0.6   0.8
-     * The pivot matrix is eye(4).  Check it in octave using [l,u,p] = lu(A).
-     * Known good is in general banded matrix column-major order with
-     * additional superdiagonal to allow for LU factorization fill-in.
+    /* Form 2*D[0] - 3*D[1] operator which (not including any transpose) is:
+     *   5  -3   0   0
+     *   0   5  -3   0
+     *   0   0   5  -3
+     *   0   0   3  -1
+     * Skip known good tests as they are tedious and error prone to code.
+     * Instead we will sanity check factorization and sanity check the
+     * action of the inverse on an extended collection of basis vectors.
      */
     {
-        const double good_A0[] = { /*DK*/0, /*DK*/0,   5,         0,
-                                   /*DK*/0,      -3,   5,         0,
-                                         0,      -3,   5,         0.6,
-                                         0,      -3,   0.8, /*DK*/0    };
         const double coeff[] = { 2.0, -3.0, 999.0 };
         lu.opform(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
 
         // Factorize, checking the norm and conditioning are sane
-        double norm1 = -123, rcond = -456;
-        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.opnorm1(norm1));
-        BOOST_CHECK_GT(norm1, 0.0);
+        double norm = -123, rcond = -456;
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.opnorm(norm));
+        BOOST_CHECK_GT(norm, 0.0);
         BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.factor());
-        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.rcond(norm1, rcond));
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, lu.rcond(norm, rcond));
         BOOST_CHECK_GT(rcond, 0.0);
         BOOST_CHECK_LE(rcond, 1.0);
 
-        CHECK_GBMATRIX_CLOSE(
-                 4,      4,      1,                2, good_A0,       4,
-            lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(),  lu.A(), lu.ld(),
-            std::numeric_limits<double>::epsilon()*1000);
+        const int nrhs = 4;
+        double b[] = { 1, 0, 0, 0,
+                       0, 1, 0, 0,
+                       0, 0, 1, 0,
+                       0, 0, 0, 1 };
+        const double b_good[] = {
+                         1./5.,       0,   0,        0,
+                        3./25.,   1./5.,   0,        0,
+                      -9./100., -3./20., -1./4., -3./4.,
+                      27./100.,  9./20.,  3./4.,  5./4.
+        };
+        const int incb = 1;
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        lu.solve(nrhs, b, incb, ldb);
+        /* Tolerance requirement adequate? condest(A) ~= 29.9 */
+        /* Also, using approximate rationals via 'format rat' */
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            1.0e-10);
     }
 
     /* Check that multiple rhs solution works for operator found just above */
@@ -305,53 +312,64 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_linear )
     bsplineop_luz luz(op);
     BOOST_REQUIRE_EQUAL(luz.n(), op.n());
 
-    /* Form (2-3*i)*D[0] + (7-5*i)*D[1] operator in LU-ready banded storage.
-     * Answer is
-     *   -5+2i   7-5i   0-0i   0-0i
-     *    0-0i  -5+2i   7-5i   0-0i
-     *    0-0i   0-0i  -5+2i   7-5i
-     *    0-0i   0-0i  -7+5i   9-8i
-     * which, in LU-form where L has ones on the main diagonal, is
-     *   -5+2i   7-5i       0+    0i       0+     0i
-     *    0+0i  -5+2i       7-    5i       0+     0i
-     *    0+0i   0+0i      -7+    5i       9-     8i
-     *    0+0i   0+0i   45/74+11/74i   25/74-109/74i
-     * The pivot matrix is
-     *    1   0   0   0
-     *    0   1   0   0
-     *    0   0   0   1
-     *    0   0   1   0
-     * Check it in octave using [l,u,p] = lu(A).
-     * Known good is in general banded matrix column-major order with
-     * additional superdiagonal to allow for LU factorization fill-in.
+    /* Form (2-3*i)*D[0] + (7-5*i)*D[1]) in LU-ready banded storage.
+     * The answer (not including any transpose used for storage) is:
+     *   -5+2*i  7-5*i  0-0*i  0-0*i
+     *    0-0*i -5+2*i  7-5*i  0-0*i
+     *    0-0*i  0-0*i -5+2*i  7-5*i
+     *    0-0*i  0-0*i -7+5*i  9-8*i
+     * Skip known good tests as they are tedious and error prone to code.
+     * Instead we will sanity check factorization and sanity check the
+     * action of the inverse on an extended collection of basis vectors.
      */
     {
         BOOST_TEST_MESSAGE("suzerain_bspline_luz_form");
-        const double good_A0[][2] = {
-            /*DK*/{0,0}, /*DK*/{0, 0}, {     -5,2},               {0,0},
-            /*DK*/{0,0},       {7,-5}, {     -5,2},               {0,0},
-                  {0,0},       {7,-5}, {     -7,5},         {45./74.,11./74.},
-                  {0,0},       {9,-8}, {25./74.,-109./74.}, /*DK*/{0,0}
-        };
         const double coeff[][2] = {{2.0, -3.0}, {7.0, -5.0}, {999.0, -999.0}};
         luz.opform(sizeof(coeff)/sizeof(coeff[0]), coeff, op);
 
         // Factorize, checking the norm and conditioning are sane
-        double norm1 = -123, rcond = -456;
-        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.opnorm1(norm1));
-        BOOST_CHECK_GT(norm1, 0.0);
+        double norm = -123, rcond = -456;
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.opnorm(norm));
+        BOOST_CHECK_GT(norm, 0.0);
         BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.factor());
-        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.rcond(norm1, rcond));
+        BOOST_REQUIRE_EQUAL(SUZERAIN_SUCCESS, luz.rcond(norm, rcond));
         BOOST_CHECK_GT(rcond, 0.0);
         BOOST_CHECK_LE(rcond, 1.0);
 
-        CHECK_GBMATRIX_CLOSE(
-                 4,        4,        1,                 2, (std::complex<double>*) good_A0,        4,
-            luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(),                         luz.A(), luz.ld(),
-            std::numeric_limits<double>::epsilon()*1000);
+        const int nrhs = 8;
+        double b[][2] = {
+            {1,0}, {0,0}, {0,0}, {0,0},
+            {0,1}, {0,0}, {0,0}, {0,0},
+            {0,0}, {1,0}, {0,0}, {0,0},
+            {0,0}, {0,1}, {0,0}, {0,0},
+            {0,0}, {0,0}, {1,0}, {0,0},
+            {0,0}, {0,0}, {0,1}, {0,0},
+            {0,0}, {0,0}, {0,0}, {1,0},
+            {0,0}, {0,0}, {0,0}, {0,1}
+        };
+        const double b_good[][2] = {
+            {-5./29,-2./29}, {0,0}, {0,0}, {0,0},
+            { 2./29,-5./29}, {0,0}, {0,0}, {0,0},
+            {-247./841,-35./841}, {-5./29,-2./29}, {0,0}, {0,0},
+            {35./841,-247./841}, {2./29,-5./29}, {0,0}, {0,0},
+            {4059./2368,760./467}, {3923./4901,6099./4901}, {51./169,148./169}, {25./169,109./169},
+            {-760./467,4059./2368}, {-56./45,3923./4901}, {-148./169,51./169}, {-109./169,25./169},
+            {-430./393,-4824./3751}, {-643./1356,-4630./4901}, {-25./169,-109./169}, {1./169,-70./169},
+            {4824./3751,-3963./3622}, {4630./4901,-2324./4901}, {109./169,-25./169}, {70./169,1./169}
+        };
+        const int incb = 1;
+        const int ldb = sizeof(b)/(sizeof(b[0]))/nrhs;
+        luz.solve(nrhs, b, incb, ldb);
+        /* Tolerance requirement adequate? condest(A) ~= 122.7 */
+        /* Also, using approximate rationals via 'format rat'  */
+        check_close_collections(
+            b_good, b_good + sizeof(b_good)/sizeof(b_good[0]),
+            b, b + sizeof(b)/sizeof(b[0]),
+            1.0e-5);
     }
 
     /* Check that multiple rhs solution works for operator found just above */
+    /* Technically not necessary given basis results above, but can't hurt */
     {
         BOOST_TEST_MESSAGE("suzerain_bspline_luz_solve contiguous");
         const int nrhs = 2;
@@ -434,20 +452,20 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
          *  0.    1./8. 3./4. 1./8. 0.
          *  0.    0.    1./8. 5./8. 1./4.
          *  0.    0.    0.    0.    1.
-         * Known good is in general banded matrix column-major order.
+         * Known good is transposed in general banded column-major storage.
          */
-        const double good_D0[] = { /*DK*/0.,   1.,      1./4.,
-                                         0.,   5./8.,   1./8.,
-                                      1./8.,   3./4.,   1./8.,
-                                      1./8.,   5./8.,   0.,
-                                      1./4.,      1.,   /*DK*/0. };
+        const double good_D_T0[] = { /*DK*/0.,     1.,     0.,
+                                        1./4.,  5./8.,  1./8.,
+                                        1./8.,  3./4.,  1./8.,
+                                        1./8.,  5./8.,  1./4.,
+                                           0.,     1.,  /*DK*/0. };
         CHECK_GBMATRIX_CLOSE(
-                 5,      5,       1,        1,  good_D0,       3,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 5,      5,       1,        1,  good_D_T0,       3,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
         {
-            /* Check w->D[0] application against multiple real vectors */
+            /* Check D[0] application against multiple real vectors */
             const int nrhs = 2;
             double b[] = { 1, 2, 3, 4, 5,
                            5, 6, 7, 8, 9 };
@@ -461,7 +479,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
         }
 
         {
-            /* Check w->D[0] application against multiple complex vectors */
+            /* Check D[0] application against multiple complex vectors */
             const int nrhs = 2;
             double b[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
@@ -481,7 +499,7 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
         }
 
         {
-            /* Check w->D[0] accumulation against multiple real vectors */
+            /* Check D[0] accumulation against multiple real vectors */
             const int nrhs = 2;
             const double x[] = { 1, 2, 3, 4, 5,
                                  5, 6, 7, 8, 9 };
@@ -502,8 +520,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
         }
 
         {
-            /* Check w->D[0] accumulation against multiple complex vectors */
-            /* using complex-valued coefficients                           */
+            /* Check D[0] accumulation against multiple complex vectors */
+            /* using complex-valued coefficients                        */
             const int nrhs = 2;
             const double x[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
@@ -534,8 +552,8 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_quadratic)
         }
 
         {
-            /* Check w->D[0] accumulation against multiple complex vectors */
-            /* using real-valued coefficients                              */
+            /* Check D[0] accumulation against multiple complex vectors */
+            /* using real-valued coefficients                           */
             const int nrhs = 2;
             const double x[][2] = {
                 { 1,  2}, { 3,  4}, { 5,  6}, { 7,  8}, { 9, 10},
@@ -573,26 +591,26 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic )
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
     {
-        /* Check w->D[0], the mass matrix, against known good solution:
+        /* Check D[0], the mass matrix, against known good solution:
          * 1.       0.        0.       0.        0.       0.
          * 8./27.  61./108.  43./324.  1./162.   0.       0.
          * 0.       1./4.     7./12.   1./6.     0.       0.
          * 0.       0.        1./6.    7./12.    1./4.    0.
          * 0.       0.        1./162. 43./324.  61./108.  8./27.
          * 0.       0.        0.       0.        0.       1.
-         * Known good is in general banded matrix column-major order.
+         * Known good is transposed in general banded column-major storage.
          */
-        const double good_D0[] = {
-            /*DK*/0,  /*DK*/0,          1.,       8./27.,         0,
-            /*DK*/0,        0,         61./108.,  1./4.,          0,
-                  0,       43./324.,    7./12.,   1./6.,          1./162.,
-                  1./162.,  1./6.,      7./12.,   43./324.,       0,
-                  0,        1./4.,     61./108.,  0,        /*DK*/0,
-                  0,        8./27.,     1.,       /*DK*/0,  /*DK*/0
+        const double good_D_T0[] = {
+            /*DK*/0,  /*DK*/0,          1.,       0.,             0,
+            /*DK*/0,   8./27.,    61./108., 43./324.,       1./162.,
+                  0,    1./4.,      7./12.,    1./6.,             0,
+                  0,    1./6.,      7./12.,    1./4.,             0,
+            1./162., 43./324.,    61./108.,   8./27.,       /*DK*/0,
+                  0,        0,          1.,  /*DK*/0,       /*DK*/0
         };
         CHECK_GBMATRIX_CLOSE(
-                 6,      6,        2,        2, good_D0,       5,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 6,      6,        2,        2, good_D_T0,       5,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
         /* Check w->D[0] application against multiple vectors */
@@ -624,28 +642,30 @@ BOOST_AUTO_TEST_CASE( collocation_piecewise_cubic_almost_dense )
     bsplineop op(b, 2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
-    /* Check w->D[0], the mass matrix, against known good solution */
-    const double good_D0[] = {
-        0., 0.,     0.,     1.,    8./27., 1./27., 0.,
-        0., 0.,     0.,     4./9., 2./9.,  0.,     0.,
-        0., 0.,     2./9.,  4./9., 0.,     0.,     0.,
-        0., 1./27., 8./27., 1.,    0.,     0.,     0.
+    /* Check D[0], the mass matrix, against known good solution */
+    /* Known good is transposed in general banded column-major storage. */
+    const double good_D_T0[] = {
+        0., 0.,         0.,     1.,     0.,     0.,     0.,
+        0., 0.,     8./27.,  4./9.,  2./9., 1./27.,     0.,
+        0., 1./27.,  2./9.,  4./9., 8./27.,     0.,     0.,
+        0., 0.,         0.,     1.,     0.,     0.,     0.
     };
     CHECK_GBMATRIX_CLOSE(
-                4,      4,        3,       3,  good_D0,       7,
-        op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                4,      4,        3,       3,  good_D_T0,       7,
+        op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 
-    /* Check w->D[1], the derivative matrix, against known good solution */
-    const double good_D1[] = {
-        0., 0.,    0.,    -3., -4./3., -1./3., 0.,
-        0., 0.,    3.,    0.,  -1.,    0.,     0.,
-        0., 0.,    1.,    0.,  -3.,    0.,     0.,
-        0., 1./3., 4./3., 3.,  0.,     0.,     0.
+    /* Check D[1], the derivative matrix, against known good solution */
+    /* Known good is transposed in general banded column-major storage. */
+    const double good_D_T1[] = {
+        0.,     0.,     0., -3.,    3.,    0., 0.,
+        0.,     0., -4./3.,  0.,    1., 1./3., 0.,
+        0., -1./3.,    -1.,  0., 4./3.,    0., 0.,
+        0.,     0.,    -3.,  3.,    0.,    0., 0.
     };
     CHECK_GBMATRIX_CLOSE(
-                4,      4,        3,       3,  good_D1,       7,
-        op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+                4,      4,        3,       3,  good_D_T1,       7,
+        op.n(), op.n(), op.kl(1), op.ku(1), op.D_T(1), op.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -712,13 +732,13 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_constant )
         *   0   0   0   0   1
         * Known good is in general banded matrix column-major order.
         */
-    const double good_D0[] = { 1., 1./8., 3./8., 1./2., 1. };
+    const double good_D_T0[] = { 1., 1./8., 3./8., 1./2., 1. };
     CHECK_GBMATRIX_CLOSE(
-                 5,      5,        0,        0, good_D0,     1,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 5,      5,        0,        0, good_D_T0,     1,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld());
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld());
 }
 
 // See http://www.scribd.com/doc/52035371/Finding-Galerkin-L-2-based-Operators-for-B-spline-discretizations for the details.
@@ -729,35 +749,35 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear )
     bsplineop op(b, 1, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
-    /* Check w->D[0], the mass matrix, against known good:
+    /* Check D[0], the mass matrix, against known good:
      * 1/3  1/6    0    0    0    0
      * 1/6  3/8   1/48  0    0    0
      *  0   1/48  1/6  1/16  0    0
      *  0    0    1/16 7/24 1/12  0
      *  0    0    0    1/12 1/2  1/6
      *  0    0    0    0    1/6  1/3
-     * Known good is in general banded matrix column-major order.
+     * Known good is transposed in general banded column-major storage.
      */
-    const double good_D0[] = {0.    , 1./3. , 1./6. ,
-                              1./6. , 3./8. , 1./48.,
-                              1./48., 1./6. , 1./16.,
-                              1./16., 7./24., 1./12.,
-                              1./12., 1./2. , 1./6. ,
-                              1./6. , 1./3. , 0.    };
+    const double good_D_T0[] = {0.    , 1./3. , 1./6. ,
+                                1./6. , 3./8. , 1./48.,
+                                1./48., 1./6. , 1./16.,
+                                1./16., 7./24., 1./12.,
+                                1./12., 1./2. , 1./6. ,
+                                1./6. , 1./3. , 0.    };
     CHECK_GBMATRIX_CLOSE(
-                 6,       6,       1,        1, good_D0,       3,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 6,       6,       1,        1, good_D_T0,       3,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld());
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld());
 
     // FIXME What did this test block accomplish exactly?
     for (int i = 0; i < 5; ++i) {
         const int offset = (i * op.ld()) + (op.ku(0) + 1);
-        BOOST_CHECK_EQUAL(op.D(0)[offset], op.D(0)[offset + op.kl(0)]);
+        BOOST_CHECK_EQUAL(op.D_T(0)[offset], op.D_T(0)[offset + op.kl(0)]);
     }
 
-    /* Check w->D[1], the first derivative matrix, against known good:
+    /* Check D[1], the first derivative matrix, against known good:
      * -1/2  1/2   0    0    0   0
      * -1/2   0   1/2   0    0   0
      *   0  -1/2   0   1/2   0   0
@@ -766,15 +786,15 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_linear )
      *   0    0    0   0   -1/2 1/2
      * Known good is in general banded matrix column-major order.
      */
-    const double good_D1[] = { 0.   , -1./2., -1./2.,
-                               1./2.,  0.   , -1./2.,
-                               1./2.,  0.   , -1./2.,
-                               1./2.,  0.   , -1./2.,
-                               1./2.,  0.   , -1./2.,
-                               1./2.,  1./2.,  0.  };
+    const double good_D_T1[] = {  0.   , -1./2., 1./2.,
+                                 -1./2.,  0.   , 1./2.,
+                                 -1./2.,  0.   , 1./2.,
+                                 -1./2.,  0.   , 1./2.,
+                                 -1./2.,  0.   , 1./2.,
+                                 -1./2.,  1./2.,  0.  };
     CHECK_GBMATRIX_CLOSE(
-                6,       6,        1,        1, good_D1,       3,
-            op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+                6,       6,        1,        1, good_D_T1,       3,
+            op.n(), op.n(), op.kl(1), op.ku(1), op.D_T(1), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -786,10 +806,10 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     bsplineop op(b, 2, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
-    /* Check w->D[0], the mass matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[0], the mass matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D0[] = {
+    const double good_D_T0[] = {
             0.      , 0.          , 1./5.    ,  14./135.    ,  4./135. ,
             0.      , 14./135.    , 19./120. ,  65./576.    ,  1./8640.,
             4./135. , 65./576.    , 107./360.,  851./15120. ,  9./2240.,
@@ -799,14 +819,14 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
             1./45.  , 1./9.       , 1./5.    ,  0.          ,  0.
     };
     CHECK_GBMATRIX_CLOSE(
-                 7,      7,        2,        2, good_D0,       5,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                 7,      7,        2,        2, good_D_T0,       5,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld());
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld());
 
     {
-        /* Check w->D[0] application against multiple real vectors */
+        /* Check D[0] application against multiple real vectors */
         const int nrhs = 2;
         double b[] = {  1,  2,  3,  4,  5,  6,  7,
                        11, 12, 13, 14, 15, 16, 17 };
@@ -824,7 +844,7 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[0] application against multiple complex vectors */
+        /* Check D[0] application against multiple complex vectors */
         const int nrhs = 2;
         double b[][2] = {
             {  1, 2}, { 2, 3}, { 3, 4}, { 4, 5}, { 5, 6}, { 6, 7}, {7,  8},
@@ -846,7 +866,7 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[0] accumulation against multiple real vectors */
+        /* Check D[0] accumulation against multiple real vectors */
         const int nrhs = 2;
         double x[] = {  1,  2,  3,  4,  5,  6,  7,
                        11, 12, 13, 14, 15, 16, 17 };
@@ -868,8 +888,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[0] accumulation against multiple complex vectors */
-        /* using complex-valued coefficients                           */
+        /* Check D[0] accumulation against multiple complex vectors */
+        /* using complex-valued coefficients                        */
         const int nrhs = 2;
         const double x[][2] = {
             { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
@@ -899,8 +919,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[0] accumulation against multiple complex vectors */
-        /* using real-valued coefficients                              */
+        /* Check D[0] accumulation against multiple complex vectors */
+        /* using real-valued coefficients                           */
         const int nrhs = 2;
         const double x[][2] = {
             { 1, 2},{ 2, 3},{ 3, 4},{ 4, 5},{ 5, 6},{ 6, 7},{ 7, 8},
@@ -929,25 +949,25 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
             std::numeric_limits<double>::epsilon()*1000);
     }
 
-    /* Check w->D[1], the first derivative matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[1], the first derivative matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D1[] = {
-            0.     ,  0.       ,  -1./2.,   -19./54.  ,  -4./27. ,
-            0.     ,  19./54.  ,   0.   ,   -25./72.  ,  -1./216.,
-            4./27. ,  25./72.  ,   0.   ,   -167./378.,  -3./56. ,
-            1./216.,  167./378.,   0.   ,   -209./504.,  -2./63. ,
-            3./56. ,  209./504.,   0.   ,   -5./14.   ,  -1./9.  ,
-            2./63. ,  5./14.   ,   0.   ,   -7./18.   ,   0.     ,
-            1./9.  ,  7./18.   ,   1./2.,    0.       ,   0.
+    const double good_D_T1[] = {
+            0.      ,         0.  ,  -1./2., 19./54.  , 4./27. ,
+            0.      ,   -19./54.  ,   0.   , 25./72.  , 1./216.,
+            -4./27. ,   -25./72.  ,   0.   , 167./378., 3./56. ,
+            -1./216.,   -167./378.,   0.   , 209./504., 2./63. ,
+            -3./56. ,   -209./504.,   0.   , 5./14.   , 1./9.  ,
+            -2./63. ,   -5./14.   ,   0.   , 7./18.   , 0.     ,
+            -1./9.  ,   -7./18.   ,   1./2., 0.       , 0.
     };
     CHECK_GBMATRIX_CLOSE(
-                7,       7,        2,        2, good_D1,       5,
-            op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+                7,       7,        2,        2, good_D_T1,       5,
+            op.n(), op.n(), op.kl(1), op.ku(1), op.D_T(1), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
     {
-        /* Check w->D[1] application against multiple real vectors */
+        /* Check D[1] application against multiple real vectors */
         const int nrhs = 2;
         double b[] = {  2,  3,  5,  7,  6,  4,  1,
                         1,  4,  6,  7,  5,  3,  2 };
@@ -965,7 +985,7 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[1] application against multiple complex vectors */
+        /* Check D[1] application against multiple complex vectors */
         const int nrhs = 2;
         double b[][2] = {
             { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
@@ -987,7 +1007,7 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[1] accumulation against multiple real vectors */
+        /* Check D[1] accumulation against multiple real vectors */
         const int nrhs = 2;
         double x[] = {  2,  3,  5,  7,  6,  4,  1,
                         1,  4,  6,  7,  5,  3,  2 };
@@ -1009,8 +1029,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[1] accumulation against multiple complex vectors */
-        /* using complex-valued coefficients                           */
+        /* Check D[1] accumulation against multiple complex vectors */
+        /* using complex-valued coefficients                        */
         const int nrhs = 2;
         const double x[][2] = {
             { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
@@ -1040,8 +1060,8 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
     }
 
     {
-        /* Check w->D[1] accumulation against multiple complex vectors */
-        /* using real-valued coefficients                              */
+        /* Check D[1] accumulation against multiple complex vectors */
+        /* using real-valued coefficients                           */
         const int nrhs = 2;
         const double x[][2] = {
             { 2, 1},{ 3, 4},{ 5, 6},{ 7, 7},{ 6, 5},{ 4, 3},{ 1, 2},
@@ -1070,21 +1090,21 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_quadratic )
             std::numeric_limits<double>::epsilon()*10000);
     }
 
-    /* Check w->D[2], the second derivative matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[2], the second derivative matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D2[] = {
-                 0.,         0.,     2./3.,    20./27.,  16./27.,
-                 0.,   -34./27.,    -4./3.,      4./9.,   4./27.,
+    const double good_D_T2[] = {
+                 0.,         0.,     2./3.,   -34./27.,  16./27.,
+                 0.,    20./27.,    -4./3.,      4./9.,   4./27.,
             16./27.,      4./9.,   -32./9.,  368./189.,    4./7.,
              4./27.,  368./189.,  -64./21.,    44./63.,  16./63.,
               4./7.,    44./63.,  -40./21.,     4./21.,    4./9.,
-            16./63.,     4./21.,    -4./3.,    -10./9.,       0.,
-              4./9.,      8./9.,     2./3.,         0.,       0.
+            16./63.,     4./21.,    -4./3.,      8./9.,       0.,
+              4./9.,    -10./9.,     2./3.,         0.,       0.
     };
     CHECK_GBMATRIX_CLOSE(
-                7,       7,        2,        2, good_D2,       5,
-            op.n(), op.n(), op.kl(2), op.ku(2), op.D(2), op.ld(),
+                7,       7,        2,        2, good_D_T2,       5,
+            op.n(), op.n(), op.kl(2), op.ku(2), op.D_T(2), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1096,10 +1116,10 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_cubic )
     bsplineop op(b, 3, SUZERAIN_BSPLINEOP_GALERKIN_L2);
     BOOST_REQUIRE_EQUAL(op.n(), b.n());
 
-    /* Check w->D[0], the mass matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[0], the mass matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D0[] = {
+    const double good_D_T0[] = {
                  0.,                 0.,                 0.,            1./7.,         121./1620.,           16./567.,       4./945.,
                  0.,                 0.,         121./1620.,       257./2520.,       7901./96768.,    66553./2903040.,   1./2903040.,
                  0.,           16./567.,       7901./96768.,     9263./60480.,   111205./1016064.,   63109./25401600.,   27./627200.,
@@ -1110,65 +1130,65 @@ BOOST_AUTO_TEST_CASE( galerkin_piecewise_cubic )
            4./1575.,            4./175.,         103./1260.,            1./7.,                 0.,                 0.,            0.
     };
     CHECK_GBMATRIX_CLOSE(
-                8,       8,        3,        3, good_D0,       7,
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld(),
+                8,       8,        3,        3, good_D_T0,       7,
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
     CHECK_GBMATRIX_SYMMETRIC( // Mass matrix is analytically symmetric
-            op.n(), op.n(), op.kl(0), op.ku(0), op.D(0), op.ld());
+            op.n(), op.n(), op.kl(0), op.ku(0), op.D_T(0), op.ld());
 
-    /* Check w->D[1], the first derivative matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[1], the first derivative matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D1[] = {
-               0.,               0.,              0.,   -1./2.,       -257./810.,         -62./405.,     -4./135.,
-               0.,               0.,       257./810.,       0.,      -353./1728.,     -5857./51840.,   -1./51840.,
-               0.,         62./405.,      353./1728.,       0.,   -29489./90720.,   -14293./453600.,   -9./11200.,
-          4./135.,     5857./51840.,   29489./90720.,       0.,     -1861./4725.,     -4853./67200.,     -1./630.,
-        1./51840.,   14293./453600.,     1861./4725.,       0.,   -19093./67200.,       -389./3150.,     -4./225.,
-        9./11200.,     4853./67200.,   19093./67200.,       0.,       -121./525.,         -19./150.,           0.,
-          1./630.,       389./3150.,       121./525.,       0.,         -16./45.,                0.,           0.,
-          4./225.,         19./150.,         16./45.,    1./2.,               0.,                0.,            0.
+    const double good_D_T1[] = {
+               0.,              0.,              0.,    -1./2.,       257./810.,         62./405.,    4./135.,
+               0.,              0.,      -257./810.,        0.,      353./1728.,     5857./51840.,  1./51840.,
+               0.,       -62./405.,     -353./1728.,        0.,   29489./90720.,   14293./453600.,  9./11200.,
+         -4./135.,   -5857./51840.,  -29489./90720.,        0.,     1861./4725.,     4853./67200.,    1./630.,
+       -1./51840., -14293./453600.,    -1861./4725.,        0.,   19093./67200.,       389./3150.,    4./225.,
+       -9./11200.,   -4853./67200.,  -19093./67200.,        0.,       121./525.,         19./150.,         0.,
+         -1./630.,     -389./3150.,      -121./525.,        0.,         16./45.,               0.,         0.,
+         -4./225.,       -19./150.,        -16./45.,     1./2.,              0.,               0.,         0.
     };
     CHECK_GBMATRIX_CLOSE(
-                8,       8,        3,        3, good_D1,       7,
-            op.n(), op.n(), op.kl(1), op.ku(1), op.D(1), op.ld(),
+                8,       8,        3,        3, good_D_T1,       7,
+            op.n(), op.n(), op.kl(1), op.ku(1), op.D_T(1), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 
-    /* Check w->D[2], the second derivative matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[2], the second derivative matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D2[] = {
-              0.,            0.,           0.,        6./5.,    131./135.,      88./135.,     8./45.,
-              0.,            0.,   -274./135.,     -19./15.,    -23./180.,    457./1080.,   1./1080.,
-              0.,      88./135.,    -23./180.,      -10./9.,   473./1890.,   3061./9450.,    9./700.,
-          8./45.,    457./1080.,   473./1890.,   -668./315.,      52./63.,       17./40.,    2./105.,
-        1./1080.,   3061./9450.,      52./63.,   -836./525.,   -37./1400.,      38./105.,     8./75.,
-         9./700.,       17./40.,   -37./1400.,       -6./7.,      -4./35.,       14./25.,         0.,
-         2./105.,      38./105.,      -4./35.,       -7./5.,     -28./15.,            0.,         0.,
-          8./75.,       14./25.,      17./15.,        6./5.,           0.,            0.,          0.
+    const double good_D_T2[] = {
+               0.,           0.,           0.,         6./5.,   -274./135.,      88./135.,      8./45.,
+               0.,           0.,    131./135.,      -19./15.,    -23./180.,    457./1080.,    1./1080.,
+               0.,     88./135.,    -23./180.,       -10./9.,   473./1890.,   3061./9450.,     9./700.,
+           8./45.,   457./1080.,   473./1890.,    -668./315.,      52./63.,       17./40.,     2./105.,
+         1./1080.,  3061./9450.,      52./63.,    -836./525.,   -37./1400.,      38./105.,      8./75.,
+          9./700.,      17./40.,   -37./1400.,        -6./7.,      -4./35.,       14./25.,          0.,
+          2./105.,     38./105.,      -4./35.,        -7./5.,      17./15.,            0.,          0.,
+           8./75.,      14./25.,     -28./15.,         6./5.,           0.,            0.,          0.
     };
     // Reduced precision as -37/1400 won't pass at the usual one
     CHECK_GBMATRIX_CLOSE(
-                8,       8,        3,        3, good_D2,       7,
-            op.n(), op.n(), op.kl(2), op.ku(2), op.D(2), op.ld(),
+                8,       8,        3,        3, good_D_T2,       7,
+            op.n(), op.n(), op.kl(2), op.ku(2), op.D_T(2), op.ld(),
             std::numeric_limits<double>::epsilon()*10000);
 
-    /* Check w->D[3], the third derivative matrix, against known good
-     * in general banded matrix column-major order.
+    /* Check D[3], the third derivative matrix, against known good
+     * transposed in general banded matrix column-major order.
      */
-    const double good_D3[] = {
-            0.,           0.,            0.,   -3./2.,     -91./54.,      -52./27.,    -8./9.,
-            0.,           0.,      217./54.,    9./2.,       34./9.,      -25./27.,   -1./27.,
-            0.,     -92./27.,       -34./9.,       0.,    844./189.,   -2308./945.,   -6./35.,
-         8./9.,      25./27.,    -844./189.,       0.,   1408./315.,      -57./35.,   -4./21.,
-        1./27.,   2308./945.,   -1408./315.,       0.,     103./35.,     -44./105.,   -8./15.,
-        6./35.,      57./35.,     -103./35.,       0.,     103./35.,        11./5.,        0.,
-        4./21.,     44./105.,     -103./35.,   -9./2.,      -19./6.,            0.,        0.,
-        8./15.,        9./5.,        13./6.,    3./2.,           0.,            0.,         0.
+    const double good_D_T3[] = {
+           0.,           0.,           0.,    -3./2.,      217./54.,     -92./27.,     8./9.,
+           0.,           0.,     -91./54.,     9./2.,       -34./9.,      25./27.,    1./27.,
+           0.,     -52./27.,       34./9.,        0.,    -844./189.,   2308./945.,    6./35.,
+       -8./9.,     -25./27.,    844./189.,        0.,   -1408./315.,      57./35.,    4./21.,
+      -1./27.,  -2308./945.,   1408./315.,        0.,     -103./35.,     44./105.,    8./15.,
+      -6./35.,     -57./35.,     103./35.,        0.,     -103./35.,        9./5.,        0.,
+      -4./21.,    -44./105.,     103./35.,    -9./2.,        13./6.,           0.,        0.,
+      -8./15.,       11./5.,      -19./6.,     3./2.,            0.,           0.,        0.
     };
     CHECK_GBMATRIX_CLOSE(
-                8,       8,        3,        3, good_D3,       7,
-            op.n(), op.n(), op.kl(3), op.ku(3), op.D(3), op.ld(),
+                8,       8,        3,        3, good_D_T3,       7,
+            op.n(), op.n(), op.kl(3), op.ku(3), op.D_T(3), op.ld(),
             std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1572,8 +1592,8 @@ BOOST_AUTO_TEST_CASE( form_mass )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1583,8 +1603,8 @@ BOOST_AUTO_TEST_CASE( form )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1594,8 +1614,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_simple )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1606,8 +1626,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_simple_twice )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1618,8 +1638,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_scale )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1633,8 +1653,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000000);
 
     // Accumulate our way to a mass matrix one more time
@@ -1644,8 +1664,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A(), lu.ld(),
-         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A(),  t.ld(),
+        lu.n(), lu.n(), lu.kl(), lu.ku()+lu.kl(), lu.A_T(), lu.ld(),
+         t.n(),  t.n(),  t.kl(),  t.ku()+ t.kl(),  t.A_T(),  t.ld(),
         std::numeric_limits<double>::epsilon()*1000000);
 }
 
@@ -1685,8 +1705,8 @@ BOOST_AUTO_TEST_CASE( form_mass )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1696,8 +1716,8 @@ BOOST_AUTO_TEST_CASE( form )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1707,8 +1727,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_simple )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1719,8 +1739,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_simple_twice )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1735,8 +1755,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_scale )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000);
 }
 
@@ -1750,8 +1770,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000000);
 
     // Accumulate our way to a mass matrix a second time using imag higher derivs
@@ -1761,8 +1781,8 @@ BOOST_AUTO_TEST_CASE( opaccumulate_repeated )
     t.factor();
 
     CHECK_GBMATRIX_CLOSE(
-        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A(), luz.ld(),
-         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A(),   t.ld(),
+        luz.n(), luz.n(), luz.kl(), luz.ku()+luz.kl(), luz.A_T(), luz.ld(),
+         t.n(),    t.n(),   t.kl(),   t.ku()+  t.kl(),   t.A_T(),   t.ld(),
         std::numeric_limits<double>::epsilon()*1000000);
 
 }

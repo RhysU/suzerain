@@ -315,16 +315,16 @@ public:
     int ld() const { return w_->ld; }
 
     /**
-     * @copybrief suzerain_bsplineop_workspace#D
-     * @see       suzerain_bsplineop_workspace#D
+     * @copybrief suzerain_bsplineop_workspace#D_T
+     * @see       suzerain_bsplineop_workspace#D_T
      */
-    const double * D(int i) const { return w_->D[i]; }
+    const double * D_T(int i) const { return w_->D_T[i]; }
 
     /**
-     * @copybrief suzerain_bsplineop_workspace#D
-     * @see       suzerain_bsplineop_workspace#D
+     * @copybrief suzerain_bsplineop_workspace#D_T
+     * @see       suzerain_bsplineop_workspace#D_T
      */
-    double * D(int i) { return w_->D[i]; }
+    double * D_T(int i) { return w_->D_T[i]; }
 
     /** @return The wrapped suzerain_bsplineop_workspace pointer. */
     const suzerain_bsplineop_workspace* get() const { return w_; }
@@ -545,16 +545,16 @@ public:
     int * ipiv() { return luw_->ipiv; }
 
     /**
-     * @copybrief suzerain_bsplineop_lu_workspace#A
-     * @see       suzerain_bsplineop_lu_workspace#A
+     * @copybrief suzerain_bsplineop_lu_workspace#A_T
+     * @see       suzerain_bsplineop_lu_workspace#A_T
      */
-    const double * A() const { return luw_->A; }
+    const double * A_T() const { return luw_->A_T; }
 
     /**
-     * @copybrief suzerain_bsplineop_lu_workspace#A
-     * @see       suzerain_bsplineop_lu_workspace#A
+     * @copybrief suzerain_bsplineop_lu_workspace#A_T
+     * @see       suzerain_bsplineop_lu_workspace#A_T
      */
-    double * A() { return luw_->A; }
+    double * A_T() { return luw_->A_T; }
 
 /** @name Operations */
 /**@{*/
@@ -573,12 +573,12 @@ public:
     }
 
     /**
-     * @copybrief suzerain_bsplineop_lu_opnorm1
-     * @see       suzerain_bsplineop_lu_opnorm1
+     * @copybrief suzerain_bsplineop_lu_opnorm
+     * @see       suzerain_bsplineop_lu_opnorm
      */
-    int opnorm1(double &norm1) const
+    int opnorm(double &norm) const
     {
-        return suzerain_bsplineop_lu_opnorm1(luw_, &norm1);
+        return suzerain_bsplineop_lu_opnorm(luw_, &norm);
     }
 
     /**
@@ -594,9 +594,9 @@ public:
      * @copybrief suzerain_bsplineop_lu_rcond
      * @see       suzerain_bsplineop_lu_rcond
      */
-    int rcond(const double norm1, double &rcond) const
+    int rcond(const double norm, double &rcond) const
     {
-        return suzerain_bsplineop_lu_rcond(norm1, &rcond, luw_);
+        return suzerain_bsplineop_lu_rcond(norm, &rcond, luw_);
     }
 
     /**
@@ -707,16 +707,16 @@ public:
     int * ipiv() { return luzw_->ipiv; }
 
     /**
-     * @copybrief suzerain_bsplineop_luz_workspace#A
-     * @see       suzerain_bsplineop_luz_workspace#A
+     * @copybrief suzerain_bsplineop_luz_workspace#A_T
+     * @see       suzerain_bsplineop_luz_workspace#A_T
      */
-    const std::complex<double> * A() const { return luzw_->A; }
+    const std::complex<double> * A_T() const { return luzw_->A_T; }
 
     /**
-     * @copybrief suzerain_bsplineop_luz_workspace#A
-     * @see       suzerain_bsplineop_luz_workspace#A
+     * @copybrief suzerain_bsplineop_luz_workspace#A_T
+     * @see       suzerain_bsplineop_luz_workspace#A_T
      */
-    std::complex<double> * A() { return luzw_->A; }
+    std::complex<double> * A_T() { return luzw_->A_T; }
 
 /**@}*/
 
@@ -744,12 +744,12 @@ public:
     }
 
     /**
-     * @copybrief suzerain_bsplineop_luz_opnorm1
-     * @see       suzerain_bsplineop_luz_opnorm1
+     * @copybrief suzerain_bsplineop_luz_opnorm
+     * @see       suzerain_bsplineop_luz_opnorm
      */
-    int opnorm1(double &norm1) const
+    int opnorm(double &norm) const
     {
-        return suzerain_bsplineop_luz_opnorm1(luzw_, &norm1);
+        return suzerain_bsplineop_luz_opnorm(luzw_, &norm);
     }
 
     /**
@@ -765,9 +765,9 @@ public:
      * @copybrief suzerain_bsplineop_luz_rcond
      * @see       suzerain_bsplineop_luz_rcond
      */
-    int rcond(const double norm1, double &rcond) const
+    int rcond(const double norm, double &rcond) const
     {
-        return suzerain_bsplineop_luz_rcond(norm1, &rcond, luzw_);
+        return suzerain_bsplineop_luz_rcond(norm, &rcond, luzw_);
     }
 
     /**

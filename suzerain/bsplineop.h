@@ -60,10 +60,13 @@
  * through the ::suzerain_bsplineop_method value provided to
  * suzerain_bsplineop_alloc().
  *
- * All matrices are stored in column-major (Fortran) storage.  Multiple threads
- * may call the routines simultaneously provided that each thread has its own
- * workspace instances.  The behavior is undefined if two threads
- * simultaneously share a workspace.  Internally, the code builds upon the <a
+ * All operator matrices are stored \e transposed in column-major (Fortran)
+ * storage.  The operator transposes are stored so that discrete operator
+ * application (which is nothing but a matrix-vector product) has an optimal
+ * memory access pattern.  Multiple threads may call the routines
+ * simultaneously provided that each thread has its own workspace instances.
+ * The behavior is undefined if two threads simultaneously share a workspace.
+ * Internally, the code builds upon the <a
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL) <a
  * href="http://www.gnu.org/software/gsl/manual/html_node/Basis-Splines.html">
  * B-spline routines</a> and uses banded matrix BLAS and LAPACK functionality
@@ -90,7 +93,7 @@ enum suzerain_bsplineop_method {
 
     /**
      * Form derivative operators using collocation at the Greville abscissae.
-     **/
+     */
     SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE = 1,
 
     /**
@@ -123,15 +126,15 @@ typedef struct suzerain_bsplineop_workspace {
     int nderiv;
 
     /** @name Banded derivative matrix storage details
-     * Each of the \c 0 through \c nderiv (inclusive) derivative operators is
-     * stored using BLAS banded matrix conventions.
+     * The \e transpose of each of the \c 0 through \c nderiv (inclusive)
+     * derivative operators is stored using BLAS banded matrix conventions.
      * @{
      */
 
-    /** Number of subdiagonals in each derivative operator */
+    /** Number of subdiagonals in each derivative operator's transpose */
     int * kl;
 
-    /** Number of superdiagonals in each derivative operator */
+    /** Number of superdiagonals in each derivative operator's transpose */
     int * ku;
 
     /** Maximum of all values in \c kl */
@@ -147,15 +150,16 @@ typedef struct suzerain_bsplineop_workspace {
      * Storage for each banded derivative operator matrix.
      *
      * This general band storage can be accessed in two different ways:
-     * \li <tt>D[k]</tt> is the band storage for the <tt>k</tt>-th derivative
-     *     using <tt>kl[k]</tt>, <tt>ku[k]</tt>, and <tt>ld</tt>.  This view
-     *     is optimal for BLAS \c gbmv operations.
-     * \li <tt>D[k] - (max_ku - ku[k])</tt> is the same band storage
-     *     for the <tt>k</tt>-th derivative viewed using <tt>max_kl</tt>,
-     *     <tt>max_ku</tt>, and <tt>ld</tt>.  This view is optimal for
-     *     BLAS \c gb_acc and \c gb_add operations.
+     * \li <tt>D_T[k]</tt> is the band storage for the transpose of the
+     *     <tt>k</tt>-th derivative using <tt>kl[k]</tt>, <tt>ku[k]</tt>,
+     *     and <tt>ld</tt>.  This view is optimal for BLAS \c gbmv operations
+     *     using <tt>TRANS == 'T'</tt>.
+     * \li <tt>D_T[k] - (max_ku - ku[k])</tt> is the same band storage
+     *     for the transpose of the <tt>k</tt>-th derivative viewed using
+     *     <tt>max_kl</tt>, <tt>max_ku</tt>, and <tt>ld</tt>.  This view is
+     *     optimal for BLAS \c gb_acc and \c gb_add operations.
      */
-    double **D;
+    double **D_T;
 
     /* @} */
 
@@ -280,8 +284,8 @@ suzerain_bsplineop_accumulate(
     const suzerain_bsplineop_workspace *w);
 
 /**
- * Determine the right hand side of the interpolation problem <tt>D[0] x
- * = rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
+ * Determine the right hand side of the interpolation problem <tt>D[0] x =
+ * rhs</tt>.  Here <tt>D[0]</tt> is the zeroth derivative operator (i.e. mass
  * matrix), \c x are the basis function coefficients that will best represent
  * \c function for the given method, and \c rhs is the vector computed by this
  * routine.
@@ -436,44 +440,49 @@ suzerain_bsplineop_interpolation_rhs_complex(
  * suzerain_bsplineop_lu_alloc() and release it using
  * suzerain_bsplineop_lu_free().
  *
- * As manipulating an non-factored operator is easiest using the non-factored
- * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
- * non-factored values of \c kl and \c ku, we do too.  The non-factored
- * operator uses column-major band storage per <tt>GBTRF</tt>'s \c AB "on
- * entry" documentation.  After factorization, storage is per <tt>GBTRS</tt>'s
- * "on entry" documentation.
+ * As manipulating an unfactored operator is easiest using the unfactored \c kl
+ * and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
+ * unfactored values of \c kl and \c ku, we do too.  The unfactored \e
+ * transpose of the operator uses column-major band storage per
+ * <tt>GBTRF</tt>'s \c AB "on entry" documentation.  After factorization, the
+ * factorization of the transposed operator is stored per <tt>GBTRS</tt>'s "on
+ * entry" documentation.
  *
- * @see suzerain_bsplineop_luz_workspace for manipulating the complex-valued case.
+ * @see suzerain_bsplineop_luz_workspace for manipulating the complex-valued
+ * case.
  */
 typedef struct suzerain_bsplineop_lu_workspace {
 
     /** Number of degrees of freedom in the basis */
     int n;
 
-    /** Number of subdiagonals in the non-factored operator. */
+    /** Number of subdiagonals in the transpose of the unfactored operator. */
     int kl;
 
     /**
-     * Number of superdiagonals in the non-factored operator.  The number of
-     * superdiagonals in the upper triangular portion of the factored operator
-     * is <tt>kl + ku</tt>.
+     * Number of superdiagonals in the transpose of the unfactored operator.
+     * The number of superdiagonals in the upper triangular portion of the
+     * factored operator transpose is <tt>kl + ku</tt>.
      */
     int ku;
 
-    /** Leading dimension of the non-factored and factored operator storage */
+    /** Leading dimension of the unfactored and factored operator storage */
     int ld;
 
-    /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
+    /**
+     *  Pivot matrix \c P from the \c LUP decomposition of the transposed
+     *  operator.
+     */
     int *ipiv;
 
     /**
-     * Raw data storage for the non-factored and factored operators.  Operator
-     * is stored according to LAPACK \c GBTRF conventions according to \c kl,
-     * \c ku, \c ld, and \c n.  In particular, this means <tt>A + kl</tt> is
-     * the starting general band storage location for the non-factored
-     * operator.
+     * Raw data storage for the unfactored and factored operator transposes.
+     * The transpose of the operator is stored according to LAPACK \c GBTRF
+     * conventions regarding \c kl, \c ku, \c ld, and \c n.  In particular,
+     * this means <tt>A + kl</tt> is the starting general band storage location
+     * for the transpose of the unfactored operator.
      */
-    double *A;
+    double *A_T;
 
 } suzerain_bsplineop_lu_workspace;
 
@@ -541,11 +550,11 @@ suzerain_bsplineop_lu_opaccumulate(
     suzerain_bsplineop_lu_workspace * luw);
 
 /**
- * Compute the \f$p = 1\f$ norm of the non-factored operator stored in
- * \c luw.  That is, find \f$ \left|\left|A\right|\right|_{1} \f$.
+ * Compute the \f$p = \infty\f$ norm of the unfactored operator stored in
+ * \c luw.  That is, find \f$ \left|\left|A\right|\right|_{\infty} \f$.
  *
- * \param[in]  luw Workspace containing the operator to investigate.
- * \param[out] norm1 The one norm of the operator.
+ * \param[in]  luw  Workspace containing the operator to investigate.
+ * \param[out] norm The infinity norm of the operator.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -553,9 +562,9 @@ suzerain_bsplineop_lu_opaccumulate(
  * \memberof suzerain_bsplineop_lu_workspace
  */
 int
-suzerain_bsplineop_lu_opnorm1(
+suzerain_bsplineop_lu_opnorm(
     const suzerain_bsplineop_lu_workspace * luw,
-    double *norm1);
+    double * norm);
 
 /**
  * Factorize the operator in the current workspace.  That is, \f[ \mbox{luw}
@@ -575,13 +584,13 @@ suzerain_bsplineop_lu_factor(
 
 /**
  * Estimate the reciprocal condition number of the factored operator stored in
- * \c luw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
- * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
+ * \c luw.  That is, \f$ \left( \left|\left|A\right|\right|_{\infty}
+ * \left|\left|A^{-1}\right|\right|_{\infty} \right)^{-1} \f$.
  *
- * \param[in]  norm1 The \f$p=1\f$ norm of the non-factored operator
- *                   obtained from suzerain_bsplineop_lu_opnorm1().
+ * \param[in]  norm  The infinity norm of the unfactored operator
+ *                   obtained from suzerain_bsplineop_lu_opnorm().
  * \param[out] rcond The reciprocal of the condition number of the operator.
- * \param[in]  luw Workspace containing the factored operator to investigate.
+ * \param[in]  luw   Workspace containing the factored operator to investigate.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -590,8 +599,8 @@ suzerain_bsplineop_lu_factor(
  */
 int
 suzerain_bsplineop_lu_rcond(
-    const double norm1,
-    double *rcond,
+    const double norm,
+    double * rcond,
     const suzerain_bsplineop_lu_workspace * luw);
 
 /**
@@ -701,12 +710,13 @@ suzerain_bsplineop_lu_factor_mass(
  * suzerain_bsplineop_luz_alloc() and release it using
  * suzerain_bsplineop_luz_free().
  *
- * As manipulating an non-factored operator is easiest using the non-factored
- * \c kl and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
- * non-factored values of \c kl and \c ku, we do too.  The non-factored
- * operator uses column-major band storage per <tt>GBTRF</tt>'s \c AB "on
- * entry" documentation.  After factorization, storage is per <tt>GBTRS</tt>'s
- * "on entry" documentation.
+ * As manipulating an unfactored operator is easiest using the unfactored \c kl
+ * and \c ku, and as LAPACK's \c GBTRF and \c GBTRS are written using the
+ * unfactored values of \c kl and \c ku, we do too.  The unfactored \e
+ * transpose of the operator uses column-major band storage per
+ * <tt>GBTRF</tt>'s \c AB "on entry" documentation.  After factorization, the
+ * factorization of the transposed operator is stored per <tt>GBTRS</tt>'s "on
+ * entry" documentation.
  *
  * @see suzerain_bsplineop_lu_workspace for manipulating the real-valued case.
  */
@@ -715,30 +725,30 @@ typedef struct suzerain_bsplineop_luz_workspace {
     /** Number of degrees of freedom in the basis */
     int n;
 
-    /** Number of subdiagonals in the non-factored operator. */
+    /** Number of subdiagonals in the transpose of the unfactored operator. */
     int kl;
 
     /**
-     * Number of superdiagonals in the non-factored operator.  The number of
-     * superdiagonals in the upper triangular portion of the factored operator
-     * is <tt>kl + ku</tt>.
+     * Number of superdiagonals in the transpose of the unfactored operator.
+     * The number of superdiagonals in the upper triangular portion of the
+     * factored operator transpose is <tt>kl + ku</tt>.
      */
     int ku;
 
-    /** Leading dimension of the non-factored and factored operator storage */
+    /** Leading dimension of the unfactored and factored operator storage */
     int ld;
 
     /** Pivot matrix \c P from the \c LUP decomposition of the operator. */
     int *ipiv;
 
     /**
-     * Raw data storage for the non-factored and factored operators.  Operator
-     * is stored according to LAPACK \c GBTRF conventions according to \c kl,
-     * \c ku, \c ld, and \c n.  In particular, this means <tt>A + kl</tt> is
-     * the starting general band storage location for the non-factored
-     * operator.
+     * Raw data storage for the unfactored and factored operator transposes.
+     * The transpose of the operator is stored according to LAPACK \c GBTRF
+     * conventions regarding \c kl, \c ku, \c ld, and \c n.  In particular,
+     * this means <tt>A + kl</tt> is the starting general band storage location
+     * for the transpose of the unfactored operator.
      */
-    complex_double *A;
+    complex_double *A_T;
 
 } suzerain_bsplineop_luz_workspace;
 
@@ -806,11 +816,11 @@ suzerain_bsplineop_luz_opaccumulate(
     suzerain_bsplineop_luz_workspace * luzw);
 
 /**
- * Compute the \f$p = 1\f$ norm of the non-factored operator stored in
- * \c luzw.  That is, find \f$ \left|\left|A\right|\right|_{1} \f$.
+ * Compute the \f$p = \infty\f$ norm of the unfactored operator stored in
+ * \c luzw.  That is, find \f$ \left|\left|A\right|\right|_{\infty} \f$.
  *
  * \param[in]  luzw Workspace containing the operator to investigate.
- * \param[out] norm1 The one norm of the operator.
+ * \param[out] norm The infinity norm of the operator.
  *
  * \return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -818,9 +828,9 @@ suzerain_bsplineop_luz_opaccumulate(
  * \memberof suzerain_bsplineop_luz_workspace
  */
 int
-suzerain_bsplineop_luz_opnorm1(
+suzerain_bsplineop_luz_opnorm(
     const suzerain_bsplineop_luz_workspace * luzw,
-    double *norm1);
+    double * norm);
 
 /**
  * Factorize the operator in the current workspace.  That is, \f[ \mbox{luzw}
@@ -840,11 +850,11 @@ suzerain_bsplineop_luz_factor(
 
 /**
  * Estimate the reciprocal condition number of the factored operator stored in
- * \c luzw.  That is, \f$ \left( \left|\left|A\right|\right|_{1}
- * \left|\left|A^{-1}\right|\right|_{1} \right)^{-1} \f$.
+ * \c luzw.  That is, \f$ \left( \left|\left|A\right|\right|_{\infty}
+ * \left|\left|A^{-1}\right|\right|_{\infty} \right)^{-1} \f$.
  *
- * \param[in]  norm1 The \f$p=1\f$ norm of the non-factored operator
- *                   obtained from suzerain_bsplineop_luz_norm1().
+ * \param[in]  norm  The infinity norm of the unfactored operator
+ *                   obtained from suzerain_bsplineop_luz_norm().
  * \param[out] rcond The reciprocal of the condition number of the operator.
  * \param[in]  luzw Workspace containing the factored operator to investigate.
  *
@@ -855,8 +865,8 @@ suzerain_bsplineop_luz_factor(
  */
 int
 suzerain_bsplineop_luz_rcond(
-    const double norm1,
-    double *rcond,
+    const double norm,
+    double * rcond,
     const suzerain_bsplineop_luz_workspace * luzw);
 
 /**

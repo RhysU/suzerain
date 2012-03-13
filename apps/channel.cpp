@@ -720,15 +720,15 @@ void store(const esio_handle h,
     char comment[127] = {};
 
     for (int k = 0; k <= bop->nderiv(); ++k) {
-        snprintf(name, sizeof(name), "Dy%d", k);
+        snprintf(name, sizeof(name), "Dy%dT", k);
         snprintf(comment, sizeof(comment),
-                "Wall-normal derivative Dy%d(i,j) = D%d[j,ku+i-j] for"
+                "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = bop->ku(k) + 1 + bop->kl(k);
         esio_plane_establish(h,
                 bop->n(), 0, (procid == 0 ? bop->n() : 0),
                 lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, bop->D(k), 0, 0, comment);
+        esio_plane_write(h, name, bop->D_T(k), 0, 0, comment);
         esio_attribute_write(h, name, "kl", bop->kl(k));
         esio_attribute_write(h, name, "ku", bop->ku(k));
         esio_attribute_write(h, name, "m",  bop->n());
@@ -738,15 +738,15 @@ void store(const esio_handle h,
     DEBUG0("Storing B-spline Galerkin L2 derivative operators");
 
     for (int k = 0; k <= gop->nderiv(); ++k) {
-        snprintf(name, sizeof(name), "Gy%d", k);
+        snprintf(name, sizeof(name), "Gy%dT", k);
         snprintf(comment, sizeof(comment),
-                "Wall-normal Galerkin L2 Gy%d(i,j) = G%d[j,ku+i-j] for"
+                "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
         const int lda = gop->ku(k) + 1 + gop->kl(k);
         esio_plane_establish(h,
                 gop->n(), 0, (procid == 0 ? gop->n() : 0),
                 lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, gop->D(k), 0, 0, comment);
+        esio_plane_write(h, name, gop->D_T(k), 0, 0, comment);
         esio_attribute_write(h, name, "kl", gop->kl(k));
         esio_attribute_write(h, name, "ku", gop->ku(k));
         esio_attribute_write(h, name, "m",  gop->n());

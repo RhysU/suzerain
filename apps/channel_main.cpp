@@ -1004,8 +1004,8 @@ int main(int argc, char **argv)
         // Temporarily work in real-valued quantities as it is a bit simpler.
         suzerain::bsplineop_lu boplu(*bop);
         boplu.opform_mass(*bop);
-        double norm1;
-        boplu.opnorm1(norm1);
+        double norm;
+        boplu.opnorm(norm);
         boplu.factor();
 
         // Compute and display discrete conservation error magnitude
@@ -1024,7 +1024,7 @@ int main(int argc, char **argv)
 
         // Compute and display condition number
         double rcond;
-        boplu.rcond(norm1, rcond);
+        boplu.rcond(norm, rcond);
         INFO0("B-spline mass matrix has condition number near "
               << (1 / rcond));
     }
