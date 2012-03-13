@@ -880,9 +880,9 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
  * Uses the expansion
  * \f{align*}
  * \mu\vec{\nabla}\cdot\vec{\nabla}\vec{u} = &\phantom{{}+}
- *     \mu\rho^{-2}\left[
- *           2\rho^{-1}\vec{m}\left({\vec\nabla}\rho\right)^{2}
- *         - 2 \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ *     2\mu\rho^{-2}\left[
+ *           \rho^{-1}\vec{m}\left({\vec\nabla}\rho\right)^{2}
+ *         - \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
  *     \right]
  * \\
  *   &{}+ \left(
@@ -948,9 +948,9 @@ Vector explicit_mu_div_grad_u(
             explicit_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m)
           - refcoeff_div_grad_rho);
 
-    return   mu*rho_inverse2*(
-                    2*rho_inverse*grad_rho.squaredNorm()*m
-                  - 2*grad_m*grad_rho
+    return   2*mu*rho_inverse2*(
+                    rho_inverse*grad_rho.squaredNorm()*m
+                  - grad_m*grad_rho
              )
            + coeff_div_grad_m  *div_grad_m
            - coeff_div_grad_rho*div_grad_rho;
