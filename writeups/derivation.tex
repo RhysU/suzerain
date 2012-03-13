@@ -1881,14 +1881,14 @@ take the quantities from sections~\ref{velocity_derivative_expansions}
 and~\ref{sec:separate_first_second_deriv} and expand the nonlinear coefficients on
 second order terms about reference states.
 
-Beginning with the nonlinear linearization candidates from
-\eqref{eq:nabla_cdot_tau_expansion}:
+Beginning with the nonlinear linearization candidates within $\nabla\cdot\tau$
+from \eqref{eq:nabla_cdot_tau_expansion}:
 \begin{align}
 \label{eq:linearready_delta_u}
 \mu\Delta\frac{m}{\rho} &=
-    \mu\rho^{-2}\left[
-          2\rho^{-1}m\left(\nabla\rho\right)^{2}
-        - 2 \left(\nabla{}m\right)\nabla\rho
+    2\mu\rho^{-2}\left[
+          \rho^{-1}m\left(\nabla\rho\right)^{2}
+        - \left(\nabla{}m\right)\nabla\rho
     \right]
 \\
   &{}+ \lessreference{\mu\rho^{-1}} \Delta{}m
@@ -1905,55 +1905,51 @@ Beginning with the nonlinear linearization candidates from
    \right]
 \\
   &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
-     - \nabla\nabla\rho \lessreference{\left(\mu+\lambda\right)\rho^{-2}m}
+\\
+  &{}- \nabla\nabla\rho \lessreference{\left(\mu+\lambda\right)\rho^{-2}m}
 \\
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}} \nabla\nabla\cdot{}m
      - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-2}m}
+\intertext{
+    The term~$\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$ from
+    expansion~\eqref{eq:nabla_cdot_tau_u_expansion} contains two similar
+    contributions:
+}
+\label{eq:linearready_umu_delta_u}
+\frac{m}{\rho}\cdot\mu\Delta\frac{m}{\rho} &=
+    2\mu\rho^{-3}m\cdot\left[
+          \rho^{-1}m\left(\nabla\rho\right)^{2}
+        - \left(\nabla{}m\right)\nabla\rho
+    \right]
+\\
+  &{}+ \lessreference{\mu\rho^{-2}m}\cdot\Delta{}m
+     - \lessreference{\mu\rho^{-3}m^2} \Delta\rho
+\\
+  &{}+ \reference{\mu\rho^{-2}m}\cdot\Delta{}m
+     - \reference{\mu\rho^{-3}m^2}\Delta\rho
+\\
+\label{eq:linearready_umu_grad_div_u}
+\frac{m}{\rho}\cdot\left(\mu+\lambda\right)\nabla\nabla\cdot\frac{m}{\rho} &=
+   \left(\mu+\lambda\right)\rho^{-3}m\cdot\left[
+       \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
+     - \trans{\nabla{}m}\nabla\rho
+   \right]
+\\
+  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2}m}\cdot\nabla\nabla\cdot{}m
+\\
+  &{}- \nabla\nabla\rho \lessreference{\left(\mu+\lambda\right)\rho^{-3}m^2}
+\\
+  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-2}m}\cdot\nabla\nabla\cdot{}m
+     - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-3}m^2}
 \end{align}
-
-The term~$\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$ from
-expansion~\eqref{eq:nabla_cdot_tau_u_expansion} contains the linearizable
-contributions $\frac{m}{\rho} \cdot \mu\Delta\frac{m}{\rho}$ and
-$\frac{m}{\rho} \cdot \left(\mu+\lambda\right)\nabla\nabla \cdot
-\frac{m}{\rho}$.  We choose to not linearize these possibilities due to the
-associated implementation complexity and runtime cost.  Not linearizing these
-terms while linearizing their analogues in the momentum equation may require
-introducing new terms into the stability criteria set forth
-in~\ref{sec:stabilitycriteria}.  This choice may need to be revisited.
-
-%%%Moving on to the candidates from the alternative $\nabla\cdot\tau$
-%%%expansion~\eqref{eq:nabla_cdot_tau_expansion_alt}:
-%%%\begin{align}
-%%%\label{eq:linearready_alt_delta_u}
-%%%\left(2\mu+\lambda\right)\Delta\frac{m}{\rho} &=
-%%%    \left(2\mu+\lambda\right)\rho^{-2}\left[
-%%%          2\rho^{-1}m\left(\nabla\rho\right)^{2}
-%%%        - 2 \left(\nabla{}m\right)\nabla\rho
-%%%    \right]
-%%%\\
-%%%  &{}+ \lessreference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
-%%%     - \lessreference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
-%%%\\
-%%%  &{}+ \reference{\left(2\mu+\lambda\right)\rho^{-1}} \Delta{}m
-%%%     - \reference{\left(2\mu+\lambda\right)\rho^{-2}m} \Delta\rho
-%%%\\
-%%%\label{eq:linearready_alt_curl_curl_u}
-%%%  \left(\mu+\lambda\right)\nabla\times\nabla\times\frac{m}{\rho} &=
-%%%        \left(\mu+\lambda\right) \rho^{-2} \left[
-%%%                  \left(2\nabla{}m - \trans{\nabla{}m} \right) \nabla\rho
-%%%                - 2 \rho^{-1} \left(\nabla\rho\right)^2 m
-%%%                + \left(2\rho^{-1}\nabla\rho\cdot{}m-\nabla\cdot{}m\right)\nabla\rho
-%%%            \right]
-%%%\\
-%%%  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
-%%%\\
-%%%  &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
-%%%     - \lessreference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
-%%%\\
-%%%  &{}+ \reference{\left(\mu+\lambda\right)\rho^{-1}  } \nabla\times\nabla\times{}m
-%%%     + \reference{\left(\mu+\lambda\right)\rho^{-2} m} \Delta\rho
-%%%     - \reference{\left(\mu+\lambda\right)\rho^{-2} m} \nabla\nabla\rho
-%%%\end{align}
+Though linearizing the latter two terms is less common, not linearizing them
+while linearizing the former two technically requires introducing more terms
+into the stability criteria set forth in~\ref{sec:stabilitycriteria}.  During
+several hybrid implicit/explicit $\Mach=1/2$ channel flow simulations we
+observed stability issues arising from the total energy equation while
+treating the latter two terms explicitly.  We choose to linearize all four
+terms to unify the numerics across the momentum and energy equations and for
+the iota of additional stability linearizing the latter two provides.
 
 Finishing with the second order temperature term from
 equation~\eqref{eq:mu_delta_T} and its dependencies:
