@@ -1235,6 +1235,7 @@ Vector explicit_mu_plus_lambda_grad_div_u(
               mu, lambda, rho, m)
           - refcoeff_grad_grad_rho);
 
+    // TODO Use symmetry of grad_grad_rho
     return   (mu+lambda)*rho_inverse2*(
                   (2*rho_inverse*grad_rho.dot(m) - div_m)*grad_rho
                 - grad_m.transpose()*grad_rho
@@ -1400,6 +1401,7 @@ Scalar explicit_u_dot_mu_plus_lambda_grad_div_u(
           - refcoeff_grad_grad_rho);
 
     // TODO Use lazyProduct before trace() method?
+    // TODO Use symmetry of grad_grad_rho and coeff_grad_grad_rho
     return   ((mu+lambda)/(rho*rho*rho))*m.dot(
                   (2*grad_rho.dot(m)/rho - div_m)*grad_rho
                 - grad_m.transpose()*grad_rho

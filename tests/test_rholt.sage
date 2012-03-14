@@ -162,6 +162,16 @@ grad_m_T_m = [
     grad_m[0][1]*m[0] + grad_m[1][1]*m[1] + grad_m[2][1]*m[2],
     grad_m[0][2]*m[0] + grad_m[1][2]*m[1] + grad_m[2][2]*m[2],
 ];
+u_dot_mu_div_grad_u = (
+      u[0]*mu*div_grad_u[0]
+    + u[1]*mu*div_grad_u[1]
+    + u[2]*mu*div_grad_u[2]
+);
+u_dot_mu_plus_lambda_grad_div_u = (
+      u[0]*(mu+l)*grad_div_u[0]
+    + u[1]*(mu+l)*grad_div_u[1]
+    + u[2]*(mu+l)*grad_div_u[2]
+);
 
 # Divergence form of the convective derivative
 u_outer_m = [

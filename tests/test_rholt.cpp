@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
         }
     }
 }
-//
+
 // Checks derived formula and computation against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
 {
@@ -691,6 +691,93 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
             ::explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(
                 mu, rho, m),
             mu/(rho*rho*rho)*m.squaredNorm(), close_enough);
+    }
+}
+
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
+{
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
+    const double mu
+        = 12.818531787494714755711740676149526369900526768964830775976L;
+    const double lambda
+        = 55.546971079143763941417542929981280936235615998847600029231L;
+
+    /* With zero refcoeffs, explicit operator matches the full one */
+    {
+        const double ans
+            = -7863.2308357512977715114493722454403366670208895633912928559L;
+
+        const double u_dot_mu_plus_lambda_grad_div_u
+            = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
+                mu, lambda, rho, grad_rho, grad_grad_rho,
+                m, div_m, grad_m, grad_div_m,
+                Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero());
+
+        BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
+    }
+
+    /* With nonzero refcoeffs, explicit operator differs from full one */
+    {
+        const Eigen::Vector3d refcoeff_grad_div_m(3, 5, 7);
+        const double ans
+            = -218902.29059155252474980585723649734813459133691881587116865L;
+
+        const double u_dot_mu_plus_lambda_grad_div_u
+            = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
+                mu, lambda, rho, grad_rho, grad_grad_rho,
+                m, div_m, grad_m, grad_div_m,
+                refcoeff_grad_div_m, Eigen::Matrix3d::Zero());
+
+        BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
+    }
+
+    /* With zero refcoeffs, explicit operator matches the full one */
+    {
+        Eigen::Matrix3d refcoeff_grad_grad_rho; // should be symmetric
+        refcoeff_grad_grad_rho << 3,  5,  7,
+                                  5, 11, 13,
+                                  7, 13, 17;
+        const double ans
+            = -4059.2308357512977715114493722454403366670208895633912928559L;
+
+        const double u_dot_mu_plus_lambda_grad_div_u
+            = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
+                mu, lambda, rho, grad_rho, grad_grad_rho,
+                m, div_m, grad_m, grad_div_m,
+                Eigen::Vector3d::Zero(), refcoeff_grad_grad_rho);
+
+        BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double mu     = 4181.0;
+        const double lambda = 1234.5;
+        const double rho    = 5678.0;
+        const Eigen::Vector3d m(3.0, 5.0, 7.0);
+
+        const Eigen::Vector3d refcoeff_grad_div_m = suzerain::rholt
+                ::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m
+                (mu, lambda, rho, m);
+
+        for (int i = 0; i < 3; ++i) {
+            BOOST_CHECK_CLOSE(refcoeff_grad_div_m[i],
+                    (mu+lambda)/(rho*rho)*m[i], close_enough);
+        }
+
+        const Eigen::Matrix3d refcoeff_grad_grad_rho = suzerain::rholt
+                ::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho<
+                double, Eigen::Vector3d, Eigen::Matrix3d>(mu, lambda, rho, m);
+
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                BOOST_CHECK_CLOSE(refcoeff_grad_grad_rho(i,j),
+                        (mu+lambda)/(rho*rho*rho)*m[i]*m[j], close_enough);
+            }
+        }
     }
 }
 
