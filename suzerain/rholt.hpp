@@ -1011,7 +1011,7 @@ Scalar explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(
  * \f$\vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
  * Uses the expansion
  * \f{align*}
- * \mu\vec{\nabla}\cdot\vec{\nabla}\vec{u} = &\phantom{{}+}
+ * \vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u} = &\phantom{{}+}
  *     2\mu\rho^{-3}\vec{m}\cdot\left[
  *           \rho^{-1}\vec{m}\left({\vec\nabla}\rho\right)^{2}
  *         - \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
@@ -1053,8 +1053,8 @@ Scalar explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(
  *        on \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ which may
  *        be computed using explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho()
  *
- * @return The explicit portion of the viscosity times the Laplacian
- *         of velocity.
+ * @return The explicit portion of the velocity times the viscosity dotted
+ *         against the Laplacian of velocity.
  */
 template<typename Scalar,
          typename Vector,
@@ -1241,6 +1241,170 @@ Vector explicit_mu_plus_lambda_grad_div_u(
              )
            + coeff_grad_div_m*grad_div_m
            - grad_grad_rho*coeff_grad_grad_rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$ in the explicit portion of
+ * \f$\vec{u}\cdot\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\left(\mu+\lambda\right)\rho^{-2}\vec{m}\f$
+ * @see explicit_u_dot_mu_plus_lambda_grad_div_u() for more details on the
+ *      explicit operator.
+ */
+template<typename Scalar,
+         typename Vector>
+inline
+Vector explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho,
+        const Vector &m)
+{
+    return (mu+lambda)/(rho*rho)*m;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\vec{\nabla}\rho\f$ in the explicit portion of \f$\vec{u}
+ * \cdot \left(\mu+\lambda\right) \vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] lambda \f$\lambda\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\left(\mu+\lambda\right)\rho^{-3}\vec{m}\otimes\vec{m}\f$
+ * @see explicit_u_dot_mu_plus_lambda_grad_div_u() for more details on the
+ *      explicit operator.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor>
+inline
+Tensor explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+        const Scalar &mu,
+        const Scalar &lambda,
+        const Scalar &rho,
+        const Vector &m)
+{
+    return ((mu+lambda)*(rho*rho*rho)*m)*m.transpose();
+}
+
+/**
+ * Compute the explicit portion of \f$\vec{u} \cdot \left(\mu+\lambda\right)
+ * \vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$.  Uses the expansion
+ * \f{align*}
+ * \vec{u}\cdot\left(\mu+\lambda\right)\vec{\nabla}\vec{\nabla}\cdot\vec{u} =
+ *   &\phantom{{}+}
+ *    \left(\mu+\lambda\right)\rho^{-3}\vec{m}\cdot\left[
+ *        \left(
+ *              2\rho^{-1}\vec{\nabla}\rho\cdot\vec{m}
+ *            - \vec{\nabla}\cdot\vec{m}
+ *        \right)\vec{\nabla}\rho
+ *      - {\vec{\nabla}\vec{m}}^{\mathsf{T}}\vec{\nabla}\rho
+ *    \right]
+ * \\
+ *   &{}+ \left(
+ *              \left(\mu+\lambda\right)\rho^{-2}\vec{m}
+ *            - \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *        \right)\cdot\vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ * \\
+ *   &{}- \operatorname{trace}\left[
+ *          {\vec{\nabla}\vec{\nabla}\rho}^{\mathsf{T}}
+ *          \left(
+ *                \left(\mu+\lambda\right)\rho^{-3}
+ *                \vec{m}\otimes\vec{m}
+ *              - \left\{\left(\mu+\lambda\right)
+ *                \rho^{-3}\vec{m}\otimes\vec{m}\right\}_0
+ *          \right)
+ *        \right]
+ * \\
+ * \f}
+ * where \f$\left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0\f$ and
+ * \f$\left\{\left(\mu+\lambda\right)
+ * \rho^{-3}\vec{m}\otimes\vec{m}\right\}_0\f$ are fixed by \c
+ * refcoeff_grad_div_m and \c refcoeff_grad_grad_rho, respectively.
+ * The remaining linear portion of \f$\vec{u}\cdot\left(\mu+\lambda\right)
+ * \vec{\nabla}\vec{\nabla}\cdot\vec{u}\f$ is
+ * \f[
+ *        \left\{\left(\mu+\lambda\right)\rho^{-2}\vec{m}\right\}_0
+ *        \cdot\vec{\nabla}\vec{\nabla}\cdot\vec{m}
+ *      - \operatorname{trace}\left[
+ *          {\vec{\nabla}\vec{\nabla}\rho}^{\mathsf{T}}
+ *          \left\{
+ *            \left(\mu+\lambda\right)\rho^{-3}\vec{m}\otimes\vec{m}
+ *          \right\}_0
+ *        \right]
+ * \f]
+ *
+ * @param mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param lambda \f$\lambda\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param grad_grad_rho \f$\vec{\nabla}\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param div_m \f$\vec{\nabla}\cdot\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param grad_div_m \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$
+ * @param refcoeff_grad_div_m the reference coefficient
+ *        on \f$\vec{\nabla}\vec{\nabla}\cdot\vec{m}\f$ which may
+ *        be computed using
+ *        explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m()
+ * @param refcoeff_grad_grad_rho the reference coefficient
+ *        on \f$\vec{\nabla}\vec{\nabla}\rho\f$ which may
+ *        be computed using
+ *        explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho()
+ *
+ * @return The explicit portion of the sum of the viscosities times the
+ *         velocity dotted against the gradient of the divergence of velocity.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor,
+         typename VectorCoefficient,
+         typename TensorCoefficient >
+inline
+Scalar explicit_u_dot_mu_plus_lambda_grad_div_u(
+        const Scalar            &mu,
+        const Scalar            &lambda,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Tensor            &grad_grad_rho,
+        const Vector            &m,
+        const Scalar            &div_m,
+        const Tensor            &grad_m,
+        const Vector            &grad_div_m,
+        const VectorCoefficient &refcoeff_grad_div_m,
+        const TensorCoefficient &refcoeff_grad_grad_rho)
+{
+    const Vector coeff_grad_div_m(
+            explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
+              mu, lambda, rho)
+          - refcoeff_grad_div_m);
+    const Tensor coeff_grad_grad_rho(
+            explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
+              mu, lambda, rho, m)
+          - refcoeff_grad_grad_rho);
+
+    // TODO Use lazyProduct before trace() method?
+    return   ((mu+lambda)/(rho*rho*rho))*m.dot(
+                  (2*grad_rho.dot(m)/rho - div_m)*grad_rho
+                - grad_m.transpose()*grad_rho
+             )
+           + coeff_grad_div_m.dot(grad_div_m)
+           - (grad_grad_rho.transpose()*coeff_grad_grad_rho).trace();
 }
 
 /**

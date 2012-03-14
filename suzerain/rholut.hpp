@@ -406,6 +406,24 @@ using suzerain::rholt::explicit_mu_plus_lambda_grad_div_u;
 
 /**
  * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m
+ */
+using suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m;
+
+/**
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho
+ */
+using suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho;
+
+/**
+ * \namespace suzerain::rholut
+ * \see suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u
+ */
+using suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u;
+
+/**
+ * \namespace suzerain::rholut
  * \see suzerain::rholt::explicit_mu_div_grad_T_refcoeff_div_grad_e
  */
 using suzerain::rholt::explicit_mu_div_grad_T_refcoeff_div_grad_e;
