@@ -305,6 +305,16 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
         local_wave_end[1]   = e.start[0] + e.size[0];
         local_wave_end[2]   = e.start[1] + e.size[1];
         local_wave_extent   = local_wave_end - local_wave_start;
+
+        // Ensure wave space storage is column-major, contiguous Y X/2 Z
+        if (e.stride[3] != 1)                       throw runtime_error(
+                "pencil_grid_underling: wave space scalars not contiguous");
+        if (e.stride[0] != e.size[3] * e.stride[3]) throw runtime_error(
+                "pencil_grid_underling: wave space Y not contiguous");
+        if (e.stride[2] != e.size[0] * e.stride[0]) throw runtime_error(
+                "pencil_grid_underling: wave space X not contiguous");
+        if (e.stride[1] != e.size[2] * e.stride[2]) throw runtime_error(
+                "pencil_grid_underling: wave space Z not contiguous");
     }
 
     // Prepare information on physical space storage
@@ -318,13 +328,22 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
         local_physical_end[1]   = e.start[0] + e.size[0];
         local_physical_end[2]   = e.start[1] + e.size[1];
         local_physical_extent   = local_physical_end - local_physical_start;
+
+        // Ensure physical space storage is column-major, contiguous X Z Y
+        if (e.stride[4] != 1)                       throw runtime_error(
+                "pencil_grid_underling: physical space components not contiguous");
+        if (e.stride[3] != e.size[4] * e.stride[4]) throw runtime_error(
+                "pencil_grid_underling: physical space scalars not contiguous");
+        if (e.stride[2] != e.size[3] * e.stride[3]) throw runtime_error(
+                "pencil_grid_underling: physical space Y not contiguous");
+        if (e.stride[1] != e.size[2] * e.stride[2]) throw runtime_error(
+                "pencil_grid_underling: physical space X not contiguous");
+        if (e.stride[0] != e.size[1] * e.stride[1]) throw runtime_error(
+                "pencil_grid_underling: physical space Z not contiguous");
     }
 
     // Compute which rank possesses the zero zero mode
     rank_zero_zero_modes = compute_rank_zero_zero_modes_();
-
-    // TODO Ensure wave space storage is column-major, contiguous Y X/2 Z
-    // TODO Ensure physical space storage is column-major, contiguous X Z Y
 }
 
 #endif // HAVE_UNDERLING /////////////////////////////////////////////////////

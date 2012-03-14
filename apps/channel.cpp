@@ -1746,7 +1746,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
             allocate_padded_state<ContiguousState<4,complex_t> >(
                 field::count + 3, dgrid));
     ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
-    suzerain::multi_array::fill(s, 0);                       // Zero memory
+    std::fill(s.range().begin(), s.range().end(), 0);        // Zero memory
 
     // 1) Generate a random vector-valued field \tilde{A}.
     // For each scalar component of \tilde{A}...
