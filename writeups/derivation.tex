@@ -2134,7 +2134,7 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
     - \left(\nabla{}m+I\nabla\cdot{}m\right)\overrightarrow{c^u}
 % }_{-\nabla\cdot\left(\frac{m}{\rho}\otimes{}m\right)}
 % \underbrace{
-    - \frac{\gamma-1}{2} c^{m}_{\nabla\rho} \nabla\rho
+    - \frac{\gamma-1}{2} c^{u^2} \nabla\rho
     + \left(\gamma-1\right)\trans{\nabla{}m} \overrightarrow{c^u}
     - \frac{\gamma-1}{\Mach^2}\nabla{}e
 % }_{-\Mach^{-1}\nabla{}p}
@@ -2161,7 +2161,9 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
 where some reference values have physically-motivated superscripts
 \begin{align}
   \overrightarrow{c^{u}} &= \reference{\rho^{-1}m}
-  = \trans{\left(c^{u_x}, c^{u_y}, c^{u_z}\right)}
+  = \begin{pmatrix} c^{u_x} \\ c^{u_y} \\ c^{u_z} \end{pmatrix}
+&
+  c^{u^2} &= \reference{m^{2}\rho^{-2}}
 &
    \overleftrightarrow{c^{u\otimes{}u}}
   = \reference{\rho^{-1}m\otimes\rho^{-1}m}
@@ -2175,28 +2177,25 @@ where some reference values have physically-motivated superscripts
   c^{\nu} &= \reference{\rho^{-1}\mu}
 &
   \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
-  = \trans{\left(c^{\nu{}u_x}, c^{\nu{}u_y}, c^{\nu{}u_z}\right)}
+  = \begin{pmatrix} c^{\nu{}u_x} \\ c^{\nu{}u_y} \\ c^{\nu{}u_z} \end{pmatrix}
 &
   c^{\nu{}u^2} &= \reference{\rho^{-3}\mu{}m^2}
 \end{align}
 while the other reference values
 \begin{align}
-  c^{m}_{\nabla\rho} &= \reference{m^{2}\rho^{-2}}
-  = \trace\overleftrightarrow{c^{u\otimes{}u}}
-\\
   \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{
         m\rho^{-2}\left(\left(\gamma-2\right)e-2p\right)
   }
-  = \trans{\left(
-      c^{e_{x}}_{\nabla\rho},
-      c^{e_{y}}_{\nabla\rho},
+  = \begin{pmatrix}
+      c^{e_{x}}_{\nabla\rho} \\
+      c^{e_{y}}_{\nabla\rho} \\
       c^{e_{z}}_{\nabla\rho}
-  \right)}
-\\
+  \end{pmatrix}
+&
   c^{e}_{\nabla\cdot{}m} &= \reference{
         \rho^{-1}\left(e + p\right)
   }
-\\
+&
   c^{e}_{\Delta\rho} &= \reference{
         \mu\rho^{-2}\left(\left(\gamma-1\right)e-2p\right)
   }
@@ -2306,7 +2305,7 @@ factorization only once per substep.
 \\\entry{\mx\rho }
   \subcoeff{
     \begin{pmatrix}
-        \frac{1-\g}{2}\ii\km\C{m}{\nabla\rho}
+        \frac{1-\g}{2}\ii\km\C{u^2}{}
       + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
       + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_z}{}
       \\
@@ -2359,7 +2358,7 @@ factorization only once per substep.
     + \ii\km\C{u_x u_y}{}
     + \ii\kn\C{u_y u_z}{}
   }{
-      \frac{1-\g}{2}\C{m}{\nabla\rho}
+      \frac{1-\g}{2}\C{u^2}{}
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(
          \km\C{\nu{}u_x}{} + \kn\C{\nu{}u_z}{}
       \right)
@@ -2404,7 +2403,7 @@ factorization only once per substep.
 \\\entry{\mz\rho}
   \subcoeff{
     \begin{pmatrix}
-        \frac{1-\g}{2}\ii\kn\C{m}{\nabla\rho}
+        \frac{1-\g}{2}\ii\kn\C{u^2}{}
       + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
       + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_x}{}
       \\

@@ -45,6 +45,7 @@ typedef struct {
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
+    double *u2;         /**< \f$ C^{u^2}                \f$ */
     double *uxux;       /**< \f$ C^{u_x u_x}            \f$ */
     double *uxuy;       /**< \f$ C^{u_x u_y}            \f$ */
     double *uxuz;       /**< \f$ C^{u_x u_z}            \f$ */
@@ -56,7 +57,6 @@ typedef struct {
     double *nuuy;       /**< \f$ C^{\nu u_y}            \f$ */
     double *nuuz;       /**< \f$ C^{\nu u_z}            \f$ */
     double *nuu2;       /**< \f$ C^{\nu u^2}            \f$ */
-    double *m_gradrho;  /**< \f$ C^{m}_{\nabla\rho}     \f$ */
     double *ex_gradrho; /**< \f$ C^{e_x}_{\nabla\rho}   \f$ */
     double *ey_gradrho; /**< \f$ C^{e_y}_{\nabla\rho}   \f$ */
     double *ez_gradrho; /**< \f$ C^{e_z}_{\nabla\rho}   \f$ */
@@ -69,6 +69,7 @@ typedef struct {
     int ux;             /**< \copydoc suzerain_rholut_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_rholut_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_rholut_imexop_ref::uz         */
+    int u2;             /**< \copydoc suzerain_rholut_imexop_ref::u2         */
     int uxux;           /**< \copydoc suzerain_rholut_imexop_ref::uxux       */
     int uxuy;           /**< \copydoc suzerain_rholut_imexop_ref::uxuy       */
     int uxuz;           /**< \copydoc suzerain_rholut_imexop_ref::uxuz       */
@@ -80,7 +81,6 @@ typedef struct {
     int nuuy;           /**< \copydoc suzerain_rholut_imexop_ref::nuuy       */
     int nuuz;           /**< \copydoc suzerain_rholut_imexop_ref::nuuz       */
     int nuu2;           /**< \copydoc suzerain_rholut_imexop_ref::nuu2       */
-    int m_gradrho;      /**< \copydoc suzerain_rholut_imexop_ref::m_gradrho  */
     int ex_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ex_gradrho */
     int ey_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ey_gradrho */
     int ez_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ez_gradrho */

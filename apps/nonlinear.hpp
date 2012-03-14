@@ -262,15 +262,16 @@ std::vector<real_t> applyNonlinearOperator(
             ++j) {
 
             // See writeups/derivation.tex or rholut_imexop.h for definitions
-            summing_accumulator_type ref_ux, ref_uy, ref_uz,
+            summing_accumulator_type ref_ux, ref_uy, ref_uz, ref_u2,
                                      ref_uxux, ref_uxuy, ref_uxuz,
                                                ref_uyuy, ref_uyuz,
                                                          ref_uzuz,
                                      ref_nu,
                                      ref_nuux, ref_nuuy, ref_nuuz,
                                      ref_nuu2,
-                                     ref_m_gradrho, ref_ex_gradrho,
-                                     ref_ey_gradrho, ref_ez_gradrho,
+                                     ref_ex_gradrho,
+                                     ref_ey_gradrho,
+                                     ref_ez_gradrho,
                                      ref_e_divm, ref_e_deltarho;
 
             const size_t last_zxoffset = offset
@@ -297,6 +298,7 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_ux(u.x());
                 ref_uy(u.y());
                 ref_uz(u.z());
+                ref_u2(u.squaredNorm());
                 ref_uxux(u.x()*u.x());
                 ref_uxuy(u.x()*u.y());
                 ref_uxuz(u.x()*u.z());
@@ -312,9 +314,7 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuuz(nu*u.z());
                 ref_nuu2(nu*u.squaredNorm());
 
-                // ...and other expressions.
-                ref_m_gradrho(u.squaredNorm());
-
+                // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;
                 const Vector3r e_gradrho
                         = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
@@ -338,6 +338,7 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_ux        ()[j] = accumulators::sum(ref_ux        );
             common.ref_uy        ()[j] = accumulators::sum(ref_uy        );
             common.ref_uz        ()[j] = accumulators::sum(ref_uz        );
+            common.ref_u2        ()[j] = accumulators::sum(ref_u2        );
             common.ref_uxux      ()[j] = accumulators::sum(ref_uxux      );
             common.ref_uxuy      ()[j] = accumulators::sum(ref_uxuy      );
             common.ref_uxuz      ()[j] = accumulators::sum(ref_uxuz      );
@@ -349,7 +350,6 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
             common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
             common.ref_nuu2      ()[j] = accumulators::sum(ref_nuu2      );
-            common.ref_m_gradrho ()[j] = accumulators::sum(ref_m_gradrho );
             common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
             common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
             common.ref_ez_gradrho()[j] = accumulators::sum(ref_ez_gradrho);
@@ -450,6 +450,7 @@ std::vector<real_t> applyNonlinearOperator(
         const Vector3r ref_u            (common.ref_ux        ()[j],
                                          common.ref_uy        ()[j],
                                          common.ref_uz        ()[j]);
+        const real_t   ref_u2           (common.ref_u2        ()[j]);
         const Matrix3r ref_uu;
         const_cast<Matrix3r&>(ref_uu) << common.ref_uxux      ()[j],
                                          common.ref_uxuy      ()[j],
@@ -465,7 +466,6 @@ std::vector<real_t> applyNonlinearOperator(
                                          common.ref_nuuy      ()[j],
                                          common.ref_nuuz      ()[j]);
         const real_t   ref_nuu2         (common.ref_nuu2      ()[j]);
-        const real_t   ref_m_gradrho    (common.ref_m_gradrho ()[j]);
         const Vector3r ref_e_gradrho    (common.ref_ex_gradrho()[j],
                                          common.ref_ey_gradrho()[j],
                                          common.ref_ez_gradrho()[j]);
@@ -617,7 +617,7 @@ std::vector<real_t> applyNonlinearOperator(
                         // Explicit pressure less implicit pressure terms
                         - inv_Ma2 * suzerain::rholut::explicit_grad_p(
                                 gamma, Ma, rho, grad_rho, m, grad_m,
-                                ref_m_gradrho, ref_u)
+                                ref_u2, ref_u)
                         // Subtract implicit portions of viscous terms per
                         // suzerain::rholut::explicit_mu_div_grad_u and
                         // suzerain::rholut::explicit_mu_plus_lambda_grad_div_u
