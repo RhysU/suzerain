@@ -1297,7 +1297,7 @@ Tensor explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
         const Scalar &rho,
         const Vector &m)
 {
-    return ((mu+lambda)*(rho*rho*rho)*m)*m.transpose();
+    return ((mu+lambda)/(rho*rho*rho)*m)*m.transpose();
 }
 
 /**
@@ -1391,11 +1391,12 @@ Scalar explicit_u_dot_mu_plus_lambda_grad_div_u(
 {
     const Vector coeff_grad_div_m(
             explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m(
-              mu, lambda, rho)
+              mu, lambda, rho, m)
           - refcoeff_grad_div_m);
     const Tensor coeff_grad_grad_rho(
-            explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho(
-              mu, lambda, rho, m)
+            explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho<
+                Scalar, Vector, Tensor
+            >(mu, lambda, rho, m)
           - refcoeff_grad_grad_rho);
 
     // TODO Use lazyProduct before trace() method?
