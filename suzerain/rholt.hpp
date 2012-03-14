@@ -895,7 +895,7 @@ Vector explicit_mu_div_grad_u_refcoeff_div_grad_rho(
  *        \right)\vec{\nabla}\cdot\vec{\nabla}\rho
  * \f}
  * where \f$\left\{\mu\rho^{-1}\right\}_0\f$
- * and \f$\left\{\mu\rho^{-2}m\right\}_0\f$ are fixed by
+ * and \f$\left\{\mu\rho^{-2}\vec{m}\right\}_0\f$ are fixed by
  * \c refcoeff_div_grad_m and \c refcoeff_div_grad_rho, respectively.
  * The remaining linear portion of
  * \f$\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$ is
@@ -953,6 +953,140 @@ Vector explicit_mu_div_grad_u(
                   - grad_m*grad_rho
              )
            + coeff_div_grad_m  *div_grad_m
+           - coeff_div_grad_rho*div_grad_rho;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ in the explicit portion
+ * of \f$\vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m  \f$m\f$
+ *
+ * @return \f$\mu\rho^{-2}\vec{m}\f$
+ * @see explicit_u_dot_mu_div_grad_u for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector>
+inline
+Vector explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_m(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    return mu/(rho*rho)*m;
+}
+
+/**
+ * Compute the reference coefficient for the term containing
+ * \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ in the explicit portion
+ * of \f$\vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ *
+ * @param[in] mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param[in] rho \f$\rho\f$
+ * @param[in] m \f$\vec{m}\f$
+ *
+ * @return \f$\mu\rho^{-3}\vec{m}^2\f$
+ * @see explicit_u_dot_mu_div_grad_u for more details on the explicit
+ *      operator.
+ */
+template<typename Scalar,
+         typename Vector >
+inline
+Scalar explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(
+        const Scalar &mu,
+        const Scalar &rho,
+        const Vector &m)
+{
+    return mu*m.squaredNorm()/(rho*rho*rho);
+}
+
+/**
+ * Compute the explicit portion of
+ * \f$\vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$.
+ * Uses the expansion
+ * \f{align*}
+ * \mu\vec{\nabla}\cdot\vec{\nabla}\vec{u} = &\phantom{{}+}
+ *     2\mu\rho^{-3}\vec{m}\cdot\left[
+ *           \rho^{-1}\vec{m}\left({\vec\nabla}\rho\right)^{2}
+ *         - \left(\vec{\nabla}\vec{m}\right)\vec{\nabla}\rho
+ *     \right]
+ * \\
+ *   &{}+ \left(
+ *              \mu\rho^{-2}\vec{m}
+ *            - \left\{\mu\rho^{-2}m\right\}_0
+ *        \right)\cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *      - \left(
+ *              \mu\rho^{-3}\vec{m}^2
+ *            - \left\{\mu\rho^{-3}\vec{m}^2\right\}_0
+ *        \right)\vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f}
+ * where \f$\left\{\mu\rho^{-2}\vec{m}\right\}_0\f$
+ * and \f$\left\{\mu\rho^{-3}\vec{m}^2\right\}_0\f$ are fixed by
+ * \c refcoeff_div_grad_m and \c refcoeff_div_grad_rho, respectively.
+ * The remaining linear portion of
+ * \f$\vec{u}\cdot\mu\vec{\nabla}\cdot\vec{\nabla}\vec{u}\f$ is
+ * \f[
+ *      \left\{\mu\rho^{-1}\vec{m}\right\}_0
+ *      \cdot\vec{\nabla}\cdot\vec{\nabla}\vec{m}
+ *    - \left\{\mu\rho^{-3}\vec{m}^2\right\}_0
+ *      \vec{\nabla}\cdot\vec{\nabla}\rho
+ * \f]
+ *
+ * @param mu \f$\mu\f$
+ *            computed from, for example, p_T_mu_lambda()
+ * @param rho \f$\rho\f$
+ * @param grad_rho \f$\vec{\nabla}\rho\f$
+ * @param div_grad_rho \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$
+ * @param m \f$\vec{m}\f$
+ * @param grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param div_grad_m \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$
+ * @param refcoeff_div_grad_m the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\vec{m}\f$ which may
+ *        be computed using explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_m()
+ * @param refcoeff_div_grad_rho the reference coefficient
+ *        on \f$\vec{\nabla}\cdot\vec{\nabla}\rho\f$ which may
+ *        be computed using explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho()
+ *
+ * @return The explicit portion of the viscosity times the Laplacian
+ *         of velocity.
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor,
+         typename ScalarCoefficient,
+         typename VectorCoefficient >
+inline
+Scalar explicit_u_dot_mu_div_grad_u(
+        const Scalar            &mu,
+        const Scalar            &rho,
+        const Vector            &grad_rho,
+        const Scalar            &div_grad_rho,
+        const Vector            &m,
+        const Tensor            &grad_m,
+        const Vector            &div_grad_m,
+        const VectorCoefficient &refcoeff_div_grad_m,
+        const ScalarCoefficient &refcoeff_div_grad_rho)
+{
+    const Scalar rho_inverse  = 1/rho;
+    const Scalar rho_inverse3 = rho_inverse*rho_inverse*rho_inverse;
+    const Vector coeff_div_grad_m(
+            explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_m(mu, rho, m)
+          - refcoeff_div_grad_m);
+    const Scalar coeff_div_grad_rho(
+            explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(mu, rho, m)
+          - refcoeff_div_grad_rho);
+
+    return   2*mu*rho_inverse3*m.dot(
+                    rho_inverse*grad_rho.squaredNorm()*m
+                  - grad_m*grad_rho
+             )
+           + coeff_div_grad_m.dot(div_grad_m)
            - coeff_div_grad_rho*div_grad_rho;
 }
 

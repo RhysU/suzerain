@@ -623,6 +623,76 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
         }
     }
 }
+//
+// Checks derived formula and computation against rholt_test_data()
+BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
+{
+    const double close_enough = std::numeric_limits<double>::epsilon() * 1.0e3;
+
+    ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
+    const double mu
+        = 12.818531787494714755711740676149526369900526768964830775976L;
+
+    /* With zero refcoeffs, explicit operator matches the full one */
+    {
+        const double ans
+            = -4293.7193901585066389168068570176066143148258347128441480446L;
+
+        const double u_dot_mu_div_grad_u
+            = suzerain::rholt::explicit_u_dot_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                Eigen::Vector3d::Zero(), 0);
+
+        BOOST_CHECK_CLOSE(u_dot_mu_div_grad_u, ans, close_enough);
+    }
+
+    /* With nonzero refcoeffs, explicit operator differs from full one */
+    {
+        const Eigen::Vector3d refcoeff_div_grad_m(3, 5, 7);
+        const double ans
+            = -673176.50373070234836923498008429608579249020553411631291690L;
+
+        const double u_dot_mu_div_grad_u
+            = suzerain::rholt::explicit_u_dot_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                refcoeff_div_grad_m, 0);
+
+        BOOST_CHECK_CLOSE(u_dot_mu_div_grad_u, ans, close_enough);
+    }
+
+    /* With nonzero refcoeffs, explicit operator differs from full one */
+    {
+        const double refcoeff_div_grad_rho
+            = 123;
+        const double ans
+            = 3332.2806098414933610831931429823933856851741652871558519554L;
+
+        const double u_dot_mu_div_grad_u
+            = suzerain::rholt::explicit_u_dot_mu_div_grad_u(
+                mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
+                Eigen::Vector3d::Zero(), refcoeff_div_grad_rho);
+
+        BOOST_CHECK_CLOSE(u_dot_mu_div_grad_u, ans, close_enough);
+    }
+
+    /* Ensure the coefficient calculations are correct */
+    {
+        const double mu  = 4181.0;
+        const double rho = 5678.0;
+        const Eigen::Vector3d m(3.0, 5.0, 7.0);
+
+        for (int i = 0; i < 3; ++i) {
+            BOOST_CHECK_CLOSE(suzerain::rholt
+                ::explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_m(
+                    mu, rho, m)[i],
+                (mu/rho)/rho * m[i], close_enough);
+        }
+        BOOST_CHECK_CLOSE(suzerain::rholt
+            ::explicit_u_dot_mu_div_grad_u_refcoeff_div_grad_rho(
+                mu, rho, m),
+            mu/(rho*rho*rho)*m.squaredNorm(), close_enough);
+    }
+}
 
 // Checks derived formula and computed result against rholt_test_data()
 BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
