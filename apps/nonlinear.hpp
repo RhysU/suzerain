@@ -266,7 +266,9 @@ std::vector<real_t> applyNonlinearOperator(
                                      ref_uxux, ref_uxuy, ref_uxuz,
                                                ref_uyuy, ref_uyuz,
                                                          ref_uzuz,
-                                     ref_nu, ref_nuux, ref_nuuy, ref_nuuz,
+                                     ref_nu,
+                                     ref_nuux, ref_nuuy, ref_nuuz,
+                                     ref_nuu2,
                                      ref_m_gradrho, ref_ex_gradrho,
                                      ref_ey_gradrho, ref_ez_gradrho,
                                      ref_e_divm, ref_e_deltarho;
@@ -308,6 +310,7 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuux(nu*u.x());
                 ref_nuuy(nu*u.y());
                 ref_nuuz(nu*u.z());
+                ref_nuu2(nu*u.squaredNorm());
 
                 // ...and other expressions.
                 ref_m_gradrho(u.squaredNorm());
@@ -345,6 +348,7 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
             common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
             common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
+            common.ref_nuu2      ()[j] = accumulators::sum(ref_nuu2      );
             common.ref_m_gradrho ()[j] = accumulators::sum(ref_m_gradrho );
             common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
             common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
@@ -460,6 +464,7 @@ std::vector<real_t> applyNonlinearOperator(
         const Vector3r ref_nuu          (common.ref_nuux      ()[j],
                                          common.ref_nuuy      ()[j],
                                          common.ref_nuuz      ()[j]);
+        const real_t   ref_nuu2         (common.ref_nuu2      ()[j]);
         const real_t   ref_m_gradrho    (common.ref_m_gradrho ()[j]);
         const Vector3r ref_e_gradrho    (common.ref_ex_gradrho()[j],
                                          common.ref_ey_gradrho()[j],

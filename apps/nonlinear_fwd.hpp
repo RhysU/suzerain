@@ -42,7 +42,7 @@ private:
     typedef Eigen::Array<real_t, Eigen::Dynamic,  4, Eigen::ColMajor> means_t;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Eigen::Array<real_t, 19, Eigen::Dynamic, Eigen::ColMajor> refs_t;
+    typedef Eigen::Array<real_t, 20, Eigen::Dynamic, Eigen::ColMajor> refs_t;
 
 public:
 
@@ -108,6 +108,7 @@ public:
      * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
      * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
      * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
+     * \li \c ref_nuu2       Reference \f$C^{\nu u^2}           \f$
      * \li \c ref_m_gradrho  Reference \f$C^{m}_{\nabla\rho}    \f$
      * \li \c ref_ex_gradrho Reference \f$C^{e_x}_{\nabla\rho}  \f$
      * \li \c ref_ey_gradrho Reference \f$C^{e_y}_{\nabla\rho}  \f$
@@ -141,12 +142,13 @@ public:
     refs_t::RowXpr      ref_nuux()             { return refs.row(10); }
     refs_t::RowXpr      ref_nuuy()             { return refs.row(11); }
     refs_t::RowXpr      ref_nuuz()             { return refs.row(12); }
-    refs_t::RowXpr      ref_m_gradrho()        { return refs.row(13); }
-    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row(14); }
-    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row(15); }
-    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(16); }
-    refs_t::RowXpr      ref_e_divm()           { return refs.row(17); }
-    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(18); }
+    refs_t::RowXpr      ref_nuu2()             { return refs.row(13); }
+    refs_t::RowXpr      ref_m_gradrho()        { return refs.row(14); }
+    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row(15); }
+    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row(16); }
+    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(17); }
+    refs_t::RowXpr      ref_e_divm()           { return refs.row(18); }
+    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(19); }
 
     refs_t::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_t::ConstRowXpr ref_uy()         const { return refs.row( 1); }
@@ -161,12 +163,13 @@ public:
     refs_t::ConstRowXpr ref_nuux()       const { return refs.row(10); }
     refs_t::ConstRowXpr ref_nuuy()       const { return refs.row(11); }
     refs_t::ConstRowXpr ref_nuuz()       const { return refs.row(12); }
-    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row(13); }
-    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row(14); }
-    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row(15); }
-    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(16); }
-    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(17); }
-    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(18); }
+    refs_t::ConstRowXpr ref_nuu2()       const { return refs.row(13); }
+    refs_t::ConstRowXpr ref_m_gradrho()  const { return refs.row(14); }
+    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row(15); }
+    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row(16); }
+    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(17); }
+    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(18); }
+    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(19); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
@@ -185,6 +188,7 @@ public:
         ref.nuux       = ref_nuux().data();
         ref.nuuy       = ref_nuuy().data();
         ref.nuuz       = ref_nuuz().data();
+        ref.nuu2       = ref_nuu2().data();
         ref.m_gradrho  = ref_m_gradrho().data();
         ref.ex_gradrho = ref_ex_gradrho().data();
         ref.ey_gradrho = ref_ey_gradrho().data();
@@ -206,6 +210,7 @@ public:
         ld.nuux       = inc;
         ld.nuuy       = inc;
         ld.nuuz       = inc;
+        ld.nuu2       = inc;
         ld.m_gradrho  = inc;
         ld.ex_gradrho = inc;
         ld.ey_gradrho = inc;

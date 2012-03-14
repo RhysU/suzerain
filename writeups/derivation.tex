@@ -2086,9 +2086,9 @@ is
 Two benefits arise from this additional work.  First, simulations with
 supersonic velocities at sufficiently high Reynolds number are limited by
 convective stability.  Implicit treatment of the linearized convective operator
-allows using a time step safety factor closer to one without sacrificing
-temporal accuracy.  This reduces the wall time necessary to obtain converged
-statistics or allows finer resolution atop fixed computing resources.
+allows using a time step safety factor closer to one.  This reduces the wall
+time necessary to obtain converged statistics or allows finer resolution atop
+fixed computing resources.
 
 Second, having convective terms handled implicitly in all equations replaces
 $u_x$, $u_y$, and $u_z$ in criterion~\eqref{eq:convectivestability} with
@@ -2160,15 +2160,9 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
 \end{align}
 where some reference values have physically-motivated superscripts
 \begin{align}
-  c^{\nu} &= \reference{\rho^{-1}\mu}
-&
   \overrightarrow{c^{u}} &= \reference{\rho^{-1}m}
   = \trans{\left(c^{u_x}, c^{u_y}, c^{u_z}\right)}
 &
-  \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
-  = \trans{\left(c^{\nu{}u_x}, c^{\nu{}u_y}, c^{\nu{}u_z}\right)}
-\end{align}
-\begin{align}
    \overleftrightarrow{c^{u\otimes{}u}}
   = \reference{\rho^{-1}m\otimes\rho^{-1}m}
   = \begin{pmatrix}
@@ -2176,6 +2170,14 @@ where some reference values have physically-motivated superscripts
    c^{u_x u_y} & c^{u_y u_y} & c^{u_y u_z} \\
    c^{u_x u_z} & c^{u_y u_z} & c^{u_z u_z}
   \end{pmatrix}
+\end{align}
+\begin{align}
+  c^{\nu} &= \reference{\rho^{-1}\mu}
+&
+  \overrightarrow{c^{\nu{}u}} &= \reference{\rho^{-2}\mu{}m}
+  = \trans{\left(c^{\nu{}u_x}, c^{\nu{}u_y}, c^{\nu{}u_z}\right)}
+&
+  c^{\nu{}u^2} &= \reference{\rho^{-3}\mu{}m^2}
 \end{align}
 while the other reference values
 \begin{align}
