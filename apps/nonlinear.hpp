@@ -268,7 +268,9 @@ std::vector<real_t> applyNonlinearOperator(
                                                          ref_uzuz,
                                      ref_nu,
                                      ref_nuux, ref_nuuy, ref_nuuz,
-                                     ref_nuu2,
+                                     ref_nuuxux, ref_nuuxuy, ref_nuuxuz,
+                                                 ref_nuuyuy, ref_nuuyuz,
+                                                             ref_nuuzuz,
                                      ref_ex_gradrho,
                                      ref_ey_gradrho,
                                      ref_ez_gradrho,
@@ -312,7 +314,12 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuux(nu*u.x());
                 ref_nuuy(nu*u.y());
                 ref_nuuz(nu*u.z());
-                ref_nuu2(nu*u.squaredNorm());
+                ref_nuuxux(nu*u.x()*u.x());
+                ref_nuuxuy(nu*u.x()*u.y());
+                ref_nuuxuz(nu*u.x()*u.z());
+                ref_nuuyuy(nu*u.y()*u.y());
+                ref_nuuyuz(nu*u.y()*u.z());
+                ref_nuuyuz(nu*u.z()*u.z());
 
                 // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;
@@ -349,7 +356,12 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
             common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
             common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
-            common.ref_nuu2      ()[j] = accumulators::sum(ref_nuu2      );
+            common.ref_nuuxux    ()[j] = accumulators::sum(ref_nuuxux    );
+            common.ref_nuuxuy    ()[j] = accumulators::sum(ref_nuuxuy    );
+            common.ref_nuuxuz    ()[j] = accumulators::sum(ref_nuuxuz    );
+            common.ref_nuuyuy    ()[j] = accumulators::sum(ref_nuuyuy    );
+            common.ref_nuuyuz    ()[j] = accumulators::sum(ref_nuuyuz    );
+            common.ref_nuuzuz    ()[j] = accumulators::sum(ref_nuuzuz    );
             common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
             common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
             common.ref_ez_gradrho()[j] = accumulators::sum(ref_ez_gradrho);
@@ -447,30 +459,39 @@ std::vector<real_t> applyNonlinearOperator(
         const real_t one_over_delta_y_j = o.one_over_delta_y(j);
 
         // Unpack appropriate wall-normal reference quantities
-        const Vector3r ref_u            (common.ref_ux        ()[j],
-                                         common.ref_uy        ()[j],
-                                         common.ref_uz        ()[j]);
-        const real_t   ref_u2           (common.ref_u2        ()[j]);
+        const Vector3r ref_u              (common.ref_ux        ()[j],
+                                           common.ref_uy        ()[j],
+                                           common.ref_uz        ()[j]);
+        const real_t   ref_u2             (common.ref_u2        ()[j]);
         const Matrix3r ref_uu;
-        const_cast<Matrix3r&>(ref_uu) << common.ref_uxux      ()[j],
-                                         common.ref_uxuy      ()[j],
-                                         common.ref_uxuz      ()[j],
-                                         common.ref_uxuy      ()[j],
-                                         common.ref_uyuy      ()[j],
-                                         common.ref_uyuz      ()[j],
-                                         common.ref_uxuz      ()[j],
-                                         common.ref_uyuz      ()[j],
-                                         common.ref_uzuz      ()[j];
-        const real_t   ref_nu           (common.ref_nu        ()[j]);
-        const Vector3r ref_nuu          (common.ref_nuux      ()[j],
-                                         common.ref_nuuy      ()[j],
-                                         common.ref_nuuz      ()[j]);
-        const real_t   ref_nuu2         (common.ref_nuu2      ()[j]);
-        const Vector3r ref_e_gradrho    (common.ref_ex_gradrho()[j],
-                                         common.ref_ey_gradrho()[j],
-                                         common.ref_ez_gradrho()[j]);
-        const real_t   ref_e_divm       (common.ref_e_divm    ()[j]);
-        const real_t   ref_e_deltarho   (common.ref_e_deltarho()[j]);
+        const_cast<Matrix3r&>(ref_uu) <<   common.ref_uxux      ()[j],
+                                           common.ref_uxuy      ()[j],
+                                           common.ref_uxuz      ()[j],
+                                           common.ref_uxuy      ()[j],
+                                           common.ref_uyuy      ()[j],
+                                           common.ref_uyuz      ()[j],
+                                           common.ref_uxuz      ()[j],
+                                           common.ref_uyuz      ()[j],
+                                           common.ref_uzuz      ()[j];
+        const real_t   ref_nu             (common.ref_nu        ()[j]);
+        const Vector3r ref_nuu            (common.ref_nuux      ()[j],
+                                           common.ref_nuuy      ()[j],
+                                           common.ref_nuuz      ()[j]);
+        const Matrix3r ref_nuuu;
+        const_cast<Matrix3r&>(ref_nuuu) << common.ref_nuuxux  ()[j],
+                                           common.ref_nuuxuy  ()[j],
+                                           common.ref_nuuxuz  ()[j],
+                                           common.ref_nuuxuy  ()[j],
+                                           common.ref_nuuyuy  ()[j],
+                                           common.ref_nuuyuz  ()[j],
+                                           common.ref_nuuxuz  ()[j],
+                                           common.ref_nuuyuz  ()[j],
+                                           common.ref_nuuzuz  ()[j];
+        const Vector3r ref_e_gradrho      (common.ref_ex_gradrho()[j],
+                                           common.ref_ey_gradrho()[j],
+                                           common.ref_ez_gradrho()[j]);
+        const real_t   ref_e_divm         (common.ref_e_divm    ()[j]);
+        const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
 
         // Iterate across the j-th ZX plane
         const size_t last_zxoffset = offset
