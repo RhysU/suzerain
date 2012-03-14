@@ -1937,19 +1937,25 @@ from \eqref{eq:nabla_cdot_tau_expansion}:
 \\
   &{}+ \lessreference{\left(\mu+\lambda\right)\rho^{-2}m}\cdot\nabla\nabla\cdot{}m
 \\
-  &{}- \nabla\nabla\rho \lessreference{\left(\mu+\lambda\right)\rho^{-3}m^2}
+  &{}- \trace\left[
+           \trans{\nabla\nabla\rho}
+           \lessreference{\left(\mu+\lambda\right)\rho^{-3}m\otimes{}m}
+       \right]
 \\
   &{}+ \reference{\left(\mu+\lambda\right)\rho^{-2}m}\cdot\nabla\nabla\cdot{}m
-     - \nabla\nabla\rho \reference{\left(\mu+\lambda\right)\rho^{-3}m^2}
+     - \trace\left[
+           \trans{\nabla\nabla\rho}
+           \reference{\left(\mu+\lambda\right)\rho^{-3}m\otimes{}m}
+       \right]
 \end{align}
 Though linearizing the latter two terms is less common, not linearizing them
 while linearizing the former two technically requires introducing more terms
 into the stability criteria set forth in~\ref{sec:stabilitycriteria}.  During
 several hybrid implicit/explicit $\Mach=1/2$ channel flow simulations we
-observed stability issues arising from the total energy equation while
-treating the latter two terms explicitly.  We choose to linearize all four
-terms to unify the numerics across the momentum and energy equations and for
-the iota of additional stability linearizing the latter two provides.
+observed stability issues arising from the total energy equation while treating
+the latter two terms explicitly.  We implicitly treat the latter two terms
+to unify the numerics across the momentum and energy equations and to acquire
+some additional stability.
 
 Finishing with the second order temperature term from
 equation~\eqref{eq:mu_delta_T} and its dependencies:
