@@ -324,7 +324,7 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     rank_zero_zero_modes = compute_rank_zero_zero_modes_();
 
     // TODO Ensure wave space storage is column-major, contiguous Y X/2 Z
-    // TODO Ensure wave space storage is column-major, contiguous X Z Y
+    // TODO Ensure physical space storage is column-major, contiguous X Z Y
 }
 
 #endif // HAVE_UNDERLING /////////////////////////////////////////////////////
