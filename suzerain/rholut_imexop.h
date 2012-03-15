@@ -56,6 +56,7 @@ typedef struct {
     double *nuux;       /**< \f$ C^{\nu u_x}            \f$ */
     double *nuuy;       /**< \f$ C^{\nu u_y}            \f$ */
     double *nuuz;       /**< \f$ C^{\nu u_z}            \f$ */
+    double *nuu2;       /**< \f$ C^{\nu u^2}            \f$ */
     double *nuuxux;     /**< \f$ C^{\nu u_x u_x}        \f$ */
     double *nuuxuy;     /**< \f$ C^{\nu u_x u_y}        \f$ */
     double *nuuxuz;     /**< \f$ C^{\nu u_x u_z}        \f$ */
@@ -85,6 +86,7 @@ typedef struct {
     int nuux;           /**< \copydoc suzerain_rholut_imexop_ref::nuux       */
     int nuuy;           /**< \copydoc suzerain_rholut_imexop_ref::nuuy       */
     int nuuz;           /**< \copydoc suzerain_rholut_imexop_ref::nuuz       */
+    int nuu2;           /**< \copydoc suzerain_rholut_imexop_ref::nuu2       */
     int nuuxux;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxux     */
     int nuuxuy;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxuy     */
     int nuuxuz;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxuz     */

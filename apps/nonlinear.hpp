@@ -268,6 +268,7 @@ std::vector<real_t> applyNonlinearOperator(
                                                          ref_uzuz,
                                      ref_nu,
                                      ref_nuux, ref_nuuy, ref_nuuz,
+                                     ref_nuu2,
                                      ref_nuuxux, ref_nuuxuy, ref_nuuxuz,
                                                  ref_nuuyuy, ref_nuuyuz,
                                                              ref_nuuzuz,
@@ -314,6 +315,7 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuux(nu*u.x());
                 ref_nuuy(nu*u.y());
                 ref_nuuz(nu*u.z());
+                ref_nuu2(nu*u.squaredNorm());
                 ref_nuuxux(nu*u.x()*u.x());
                 ref_nuuxuy(nu*u.x()*u.y());
                 ref_nuuxuz(nu*u.x()*u.z());
@@ -356,6 +358,7 @@ std::vector<real_t> applyNonlinearOperator(
             common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
             common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
             common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
+            common.ref_nuu2      ()[j] = accumulators::sum(ref_nuu2      );
             common.ref_nuuxux    ()[j] = accumulators::sum(ref_nuuxux    );
             common.ref_nuuxuy    ()[j] = accumulators::sum(ref_nuuxuy    );
             common.ref_nuuxuz    ()[j] = accumulators::sum(ref_nuuxuz    );
@@ -477,16 +480,17 @@ std::vector<real_t> applyNonlinearOperator(
         const Vector3r ref_nuu            (common.ref_nuux      ()[j],
                                            common.ref_nuuy      ()[j],
                                            common.ref_nuuz      ()[j]);
+        const real_t   ref_nuu2           (common.ref_nuu2      ()[j]);
         const Matrix3r ref_nuuu;
-        const_cast<Matrix3r&>(ref_nuuu) << common.ref_nuuxux  ()[j],
-                                           common.ref_nuuxuy  ()[j],
-                                           common.ref_nuuxuz  ()[j],
-                                           common.ref_nuuxuy  ()[j],
-                                           common.ref_nuuyuy  ()[j],
-                                           common.ref_nuuyuz  ()[j],
-                                           common.ref_nuuxuz  ()[j],
-                                           common.ref_nuuyuz  ()[j],
-                                           common.ref_nuuzuz  ()[j];
+        const_cast<Matrix3r&>(ref_nuuu) << common.ref_nuuxux    ()[j],
+                                           common.ref_nuuxuy    ()[j],
+                                           common.ref_nuuxuz    ()[j],
+                                           common.ref_nuuxuy    ()[j],
+                                           common.ref_nuuyuy    ()[j],
+                                           common.ref_nuuyuz    ()[j],
+                                           common.ref_nuuxuz    ()[j],
+                                           common.ref_nuuyuz    ()[j],
+                                           common.ref_nuuzuz    ()[j];
         const Vector3r ref_e_gradrho      (common.ref_ex_gradrho()[j],
                                            common.ref_ey_gradrho()[j],
                                            common.ref_ez_gradrho()[j]);
