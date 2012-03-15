@@ -2504,23 +2504,22 @@ factorization only once per substep.
 & \entry{e\mx   }
   \subcoeff{
     \begin{pmatrix}
-      - \ii\km\C{e}{\nabla\cdot{}m}
-      + \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right)
-        \left(\km^2+\kn^2\right)\C{\nu{}u_x}{}
+      \frac{\Ma^2}{\Re}\left[
+          \left(\frac{\g}{\Pr}-\left(\alpha+\frac{4}{3}\right)\right)\km^2
+        + \left(\frac{\g}{\Pr}-1                              \right)\kn^2
+      \right] \C{\nu{}u_x}{}
       \\
-      + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
-          - \km^2 \C{\nu{}u_x}{}
-          - \km\kn\C{\nu{}u_z}{}
-        \right)
+      - \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right) \km\kn\C{\nu{}u_z}{}
+      - \ii\km\C{e}{\nabla\cdot{}m}
     \end{pmatrix}
   }{
-      \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\km\C{\nu{}u_y}{}
+    \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\km\C{\nu{}u_y}{}
   }{
-    - \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right)\C{\nu{}u_x}{}
+    \frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right)\C{\nu{}u_x}{}
   }
 & \entry{e\my   }
   \subcoeff{
-    \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right)
+    \frac{\Ma^2}{\Re}\left(\frac{\g}{\Pr} - 1\right)
     \left(\km^2+\kn^2\right)\C{\nu{}u_y}{}
   }{
     - \C{e}{\nabla\cdot{}m}
@@ -2529,25 +2528,25 @@ factorization only once per substep.
         + \ii\kn\C{\nu{}u_z}{}
       \right)
   }{
-    - \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right) \C{\nu{}u_y}{}
-    + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\C{\nu{}u_y}{}
+    \frac{\Ma^2}{\Re}\left[
+      \left(\alpha+\frac{4}{3}\right) - \frac{\g}{\Pr}
+    \right] \C{\nu{}u_y}{}
   }
 & \entry{e\mz   }
   \subcoeff{
     \begin{pmatrix}
-      - \ii\kn\C{e}{\nabla\cdot{}m}
-      + \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right)
-        \left(\km^2+\kn^2\right)\C{\nu{}u_z}{}
+      \frac{\Ma^2}{\Re}\left[
+          \left(\frac{\g}{\Pr}-1                              \right)\km^2
+        + \left(\frac{\g}{\Pr}-\left(\alpha+\frac{4}{3}\right)\right)\kn^2
+      \right] \C{\nu{}u_z}{}
       \\
-      + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
-          - \km\kn\C{\nu{}u_x}{}
-          - \kn^2 \C{\nu{}u_z}{}
-        \right)
+      - \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right) \km\kn\C{\nu{}u_x}{}
+      - \ii\kn\C{e}{\nabla\cdot{}m}
     \end{pmatrix}
   }{
-      \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\kn\C{\nu{}u_y}{}
+    \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\kn\C{\nu{}u_y}{}
   }{
-    - \left(\frac{\g\Ma^2}{\Re\Pr} - \frac{\Ma^2}{\Re}\right) \C{\nu{}u_z}{}
+    \frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right) \C{\nu{}u_z}{}
   }
 & \entry{ee     }
   \subcoeff{
