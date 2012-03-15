@@ -2299,7 +2299,7 @@ factorization only once per substep.
 {\resizebox{1.08\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
 \bm{\vp}
-\renewcommand{\arraystretch}{7.0} % Adds whitespace between rows
+\renewcommand{\arraystretch}{9.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
 % Density row
@@ -2482,6 +2482,7 @@ factorization only once per substep.
   \subcoeff{
     \begin{pmatrix}
       - \ii\left(\km\C{e_x}{\nabla\rho} + \kn\C{e_z}{\nabla\rho}\right)
+      \\
       - \g\frac{\km^2+\kn^2}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}
       + \frac{\Ma^2}{\Re}\left(\km^2+\kn^2\right)\C{\nu{}u^2}{}
       \\
@@ -2599,19 +2600,16 @@ factorization only once per substep.
 \end{minipage}}}  % END SCALE-TO-FIT!
 \vspace{2em}
 \\
-\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
+ \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
 The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
 depicted.  Notice the leftmost scalar factor $\bm{\vp}$.  The $3 N_y \times
-N_y$ blocked vectors written using curly braces are to be ``dotted'' against
+N_y$ blocked vectors surrounded by curly braces are to be ``dotted'' against
 the blocked vector $
   \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
 $ to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
 $N_y \times N_y$ banded matrix.  Reference quantities like $C^\nu$ are $N_y
 \times N_y$ diagonal matrices.  The wavenumber-dependent operator takes
 wall-normal B-spline coefficients to B-spline collocation point values.
-\end{minipage}
- \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
-  The complete discrete operator $M+\varphi{}L$ used for implicit time advance.
  }
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
