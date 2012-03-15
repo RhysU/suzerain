@@ -2162,7 +2162,19 @@ equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
     - \frac{\gamma\Mach^{2}}{\Reynolds\Prandtl}
       \overrightarrow{c^{\nu{}u}}\cdot\Delta{}m
     + \frac{\gamma}{\Reynolds\Prandtl}c^{\nu}\Delta{}e
-    + \dots
+\\
+% \underbrace{
+   &+ \frac{\Mach^2}{\Reynolds}\left(
+       - c^{\nu{}u^2}\Delta\rho
+       - \left(\alpha+\frac{1}{3}\right)
+         \trace\left(\trans{\nabla\nabla\rho}
+                     \overleftrightarrow{c^{\nu{}u\otimes{}u}}\right)
+       + c^{\nu{}u}\cdot\Delta{}m
+       + \left(\alpha+\frac{1}{3}\right)
+         \overrightarrow{c^{\nu{}u}}\cdot\nabla\nabla\cdot{}m
+   \right)
+% }_{\Mach^2\Reynolds^{-1}\nabla\cdot\tau\frac{m}{\rho}}
+       + \dots
 \end{align}
 where some reference values have physically-motivated superscripts
 \begin{align}
@@ -2196,7 +2208,7 @@ where some reference values have physically-motivated superscripts
    c^{\nu{} u_x u_z} & c^{\nu{} u_y u_z} & c^{\nu{} u_z u_z}
   \end{pmatrix}
 \end{align}
-while the other reference values
+while the remaining reference values
 \begin{align}
   \overrightarrow{c^{e}_{\nabla\rho}} &= \reference{
         m\rho^{-2}\left(\left(\gamma-2\right)e-2p\right)
