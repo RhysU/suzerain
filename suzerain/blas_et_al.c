@@ -3238,6 +3238,7 @@ suzerain_blasext_zgbddddmv_d(
     return info;
 }
 
+inline int
 suzerain_blasext_sgbdddddmv_external(
         const char trans,
         const int n,
