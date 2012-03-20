@@ -219,11 +219,13 @@ std::vector<real_t> applyNonlinearOperator(
     // and we will add many small numbers to a large magnitude sum.
     typedef boost::accumulators::accumulator_set<
                 real_t,
+                boost::accumulators::stats<
 #if BOOST_VERSION >= 104700
-                boost::accumulators::stats<boost::accumulators::tag::sum_kahan>
+                    boost::accumulators::tag::sum_kahan
 #else
-                boost::accumulators::stats<boost::accumulators::tag::sum>
+                    boost::accumulators::tag::sum
 #endif
+                >
             > summing_accumulator_type;
 
     // Physical space is traversed linearly using a single offset 'offset'.
@@ -257,26 +259,25 @@ std::vector<real_t> applyNonlinearOperator(
         if (leftNotOnRank) common.refs.leftCols(leftNotOnRank).setZero();
 
         // Sum reference quantities as a function of y(j) into common.ref_*
+        // See writeups/derivation.tex or rholut_imexop.h for definitions
         size_t offset = 0;
         for (int j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // See writeups/derivation.tex or rholut_imexop.h for definitions
-            summing_accumulator_type ref_ux, ref_uy, ref_uz, ref_u2,
-                                     ref_uxux, ref_uxuy, ref_uxuz,
-                                               ref_uyuy, ref_uyuz,
-                                                         ref_uzuz,
-                                     ref_nu,
-                                     ref_nuux, ref_nuuy, ref_nuuz,
-                                     ref_nuu2,
-                                     ref_nuuxux, ref_nuuxuy, ref_nuuxuz,
-                                                 ref_nuuyuy, ref_nuuyuz,
-                                                             ref_nuuzuz,
-                                     ref_ex_gradrho,
-                                     ref_ey_gradrho,
-                                     ref_ez_gradrho,
-                                     ref_e_divm, ref_e_deltarho;
+            // Prepare logical indices using a struct for scoping (e.g. ref::ux).
+            struct ref { enum { ux, uy, uz, u2,
+                                uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
+                                nu, nuux, nuuy, nuuz, nuu2,
+                                nuuxux, nuuxuy, nuuxuz, nuuyuy, nuuyuz, nuuzuz,
+                                ex_gradrho, ey_gradrho, ez_gradrho,
+                                e_divm, e_deltarho,
+                                count // Sentry
+            }; };
+
+            // An array of summing_accumulator_type holds all running sums.
+            // This gives nicer construction and allows looping over results.
+            summing_accumulator_type acc[ref::count];
 
             const size_t last_zxoffset = offset
                                        + o.dgrid.local_physical_extent.z()
@@ -299,86 +300,86 @@ std::vector<real_t> applyNonlinearOperator(
 
                 // ...including simple velocity-related quantities...
                 const Vector3r u = suzerain::rholut::u(rho, m);
-                ref_ux(u.x());
-                ref_uy(u.y());
-                ref_uz(u.z());
-                ref_u2(u.squaredNorm());
-                ref_uxux(u.x()*u.x());
-                ref_uxuy(u.x()*u.y());
-                ref_uxuz(u.x()*u.z());
-                ref_uyuy(u.y()*u.y());
-                ref_uyuz(u.y()*u.z());
-                ref_uyuz(u.z()*u.z());
+                acc[ref::ux](u.x());
+                acc[ref::uy](u.y());
+                acc[ref::uz](u.z());
+                acc[ref::u2](u.squaredNorm());
+                acc[ref::uxux](u.x()*u.x());
+                acc[ref::uxuy](u.x()*u.y());
+                acc[ref::uxuz](u.x()*u.z());
+                acc[ref::uyuy](u.y()*u.y());
+                acc[ref::uyuz](u.y()*u.z());
+                acc[ref::uyuz](u.z()*u.z());
 
                 // ...including simple viscosity-related quantities...
                 const real_t nu = mu / rho;
-                ref_nu(nu);
-                ref_nuux(nu*u.x());
-                ref_nuuy(nu*u.y());
-                ref_nuuz(nu*u.z());
-                ref_nuu2(nu*u.squaredNorm());
-//              ref_nuuxux(nu*u.x()*u.x());
-//              ref_nuuxuy(nu*u.x()*u.y());
-//              ref_nuuxuz(nu*u.x()*u.z());
-//              ref_nuuyuy(nu*u.y()*u.y());
-//              ref_nuuyuz(nu*u.y()*u.z());
-//              ref_nuuzuz(nu*u.z()*u.z());
+                acc[ref::nu](nu);
+                acc[ref::nuux](nu*u.x());
+                acc[ref::nuuy](nu*u.y());
+                acc[ref::nuuz](nu*u.z());
+                acc[ref::nuu2](nu*u.squaredNorm());
+//              acc[ref::nuuxux](nu*u.x()*u.x());
+//              acc[ref::nuuxuy](nu*u.x()*u.y());
+//              acc[ref::nuuxuz](nu*u.x()*u.z());
+//              acc[ref::nuuyuy](nu*u.y()*u.y());
+//              acc[ref::nuuyuz](nu*u.y()*u.z());
+//              acc[ref::nuuzuz](nu*u.z()*u.z());
 
                 // DEBUG
-                ref_nuuxux(0);
-                ref_nuuxuy(0);
-                ref_nuuxuz(0);
-                ref_nuuyuy(0);
-                ref_nuuyuz(0);
-                ref_nuuzuz(0);
+                acc[ref::nuuxux](0);
+                acc[ref::nuuxuy](0);
+                acc[ref::nuuxuz](0);
+                acc[ref::nuuyuy](0);
+                acc[ref::nuuyuz](0);
+                acc[ref::nuuzuz](0);
 
                 // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;
                 const Vector3r e_gradrho
                         = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
                                 gamma, rho, m, e, p);
-                ref_ex_gradrho(e_gradrho.x());
-                ref_ey_gradrho(e_gradrho.y());
-                ref_ez_gradrho(e_gradrho.z());
+                acc[ref::ex_gradrho](e_gradrho.x());
+                acc[ref::ey_gradrho](e_gradrho.y());
+                acc[ref::ez_gradrho](e_gradrho.z());
 
-                ref_e_divm(
+                acc[ref::e_divm](
                         rholut::explicit_div_e_plus_p_u_refcoeff_div_m(
                             rho, e, p));
 
-                ref_e_deltarho(
+                acc[ref::e_deltarho](
                         rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
                             gamma, mu, rho, e, p));
 
             } // end X // end Z
 
-            // Store sum into common block in preparation for MPI Allreduce
-            namespace accumulators = boost::accumulators;
-            common.ref_ux        ()[j] = accumulators::sum(ref_ux        );
-            common.ref_uy        ()[j] = accumulators::sum(ref_uy        );
-            common.ref_uz        ()[j] = accumulators::sum(ref_uz        );
-            common.ref_u2        ()[j] = accumulators::sum(ref_u2        );
-            common.ref_uxux      ()[j] = accumulators::sum(ref_uxux      );
-            common.ref_uxuy      ()[j] = accumulators::sum(ref_uxuy      );
-            common.ref_uxuz      ()[j] = accumulators::sum(ref_uxuz      );
-            common.ref_uyuy      ()[j] = accumulators::sum(ref_uyuy      );
-            common.ref_uyuz      ()[j] = accumulators::sum(ref_uyuz      );
-            common.ref_uzuz      ()[j] = accumulators::sum(ref_uzuz      );
-            common.ref_nu        ()[j] = accumulators::sum(ref_nu        );
-            common.ref_nuux      ()[j] = accumulators::sum(ref_nuux      );
-            common.ref_nuuy      ()[j] = accumulators::sum(ref_nuuy      );
-            common.ref_nuuz      ()[j] = accumulators::sum(ref_nuuz      );
-            common.ref_nuu2      ()[j] = accumulators::sum(ref_nuu2      );
-            common.ref_nuuxux    ()[j] = accumulators::sum(ref_nuuxux    );
-            common.ref_nuuxuy    ()[j] = accumulators::sum(ref_nuuxuy    );
-            common.ref_nuuxuz    ()[j] = accumulators::sum(ref_nuuxuz    );
-            common.ref_nuuyuy    ()[j] = accumulators::sum(ref_nuuyuy    );
-            common.ref_nuuyuz    ()[j] = accumulators::sum(ref_nuuyuz    );
-            common.ref_nuuzuz    ()[j] = accumulators::sum(ref_nuuzuz    );
-            common.ref_ex_gradrho()[j] = accumulators::sum(ref_ex_gradrho);
-            common.ref_ey_gradrho()[j] = accumulators::sum(ref_ey_gradrho);
-            common.ref_ez_gradrho()[j] = accumulators::sum(ref_ez_gradrho);
-            common.ref_e_divm    ()[j] = accumulators::sum(ref_e_divm    );
-            common.ref_e_deltarho()[j] = accumulators::sum(ref_e_deltarho);
+            // Store sums into common block in preparation for MPI Allreduce
+            using boost::accumulators::sum;
+            common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
+            common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
+            common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
+            common.ref_u2        ()[j] = sum(acc[ref::u2        ]);
+            common.ref_uxux      ()[j] = sum(acc[ref::uxux      ]);
+            common.ref_uxuy      ()[j] = sum(acc[ref::uxuy      ]);
+            common.ref_uxuz      ()[j] = sum(acc[ref::uxuz      ]);
+            common.ref_uyuy      ()[j] = sum(acc[ref::uyuy      ]);
+            common.ref_uyuz      ()[j] = sum(acc[ref::uyuz      ]);
+            common.ref_uzuz      ()[j] = sum(acc[ref::uzuz      ]);
+            common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
+            common.ref_nuux      ()[j] = sum(acc[ref::nuux      ]);
+            common.ref_nuuy      ()[j] = sum(acc[ref::nuuy      ]);
+            common.ref_nuuz      ()[j] = sum(acc[ref::nuuz      ]);
+            common.ref_nuu2      ()[j] = sum(acc[ref::nuu2      ]);
+            common.ref_nuuxux    ()[j] = sum(acc[ref::nuuxux    ]);
+            common.ref_nuuxuy    ()[j] = sum(acc[ref::nuuxuy    ]);
+            common.ref_nuuxuz    ()[j] = sum(acc[ref::nuuxuz    ]);
+            common.ref_nuuyuy    ()[j] = sum(acc[ref::nuuyuy    ]);
+            common.ref_nuuyuz    ()[j] = sum(acc[ref::nuuyuz    ]);
+            common.ref_nuuzuz    ()[j] = sum(acc[ref::nuuzuz    ]);
+            common.ref_ex_gradrho()[j] = sum(acc[ref::ex_gradrho]);
+            common.ref_ey_gradrho()[j] = sum(acc[ref::ey_gradrho]);
+            common.ref_ez_gradrho()[j] = sum(acc[ref::ez_gradrho]);
+            common.ref_e_divm    ()[j] = sum(acc[ref::e_divm    ]);
+            common.ref_e_deltarho()[j] = sum(acc[ref::e_deltarho]);
 
         } // end Y
 
