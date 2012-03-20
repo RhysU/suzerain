@@ -309,7 +309,7 @@ std::vector<real_t> applyNonlinearOperator(
                 acc[ref::uxuz](u.x()*u.z());
                 acc[ref::uyuy](u.y()*u.y());
                 acc[ref::uyuz](u.y()*u.z());
-                acc[ref::uyuz](u.z()*u.z());
+                acc[ref::uzuz](u.z()*u.z());
 
                 // ...including simple viscosity-related quantities...
                 const real_t nu = mu / rho;
