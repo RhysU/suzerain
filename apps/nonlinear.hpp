@@ -317,12 +317,20 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuuy(nu*u.y());
                 ref_nuuz(nu*u.z());
                 ref_nuu2(nu*u.squaredNorm());
-                ref_nuuxux(nu*u.x()*u.x());
-                ref_nuuxuy(nu*u.x()*u.y());
-                ref_nuuxuz(nu*u.x()*u.z());
-                ref_nuuyuy(nu*u.y()*u.y());
-                ref_nuuyuz(nu*u.y()*u.z());
-                ref_nuuzuz(nu*u.z()*u.z());
+//              ref_nuuxux(nu*u.x()*u.x());
+//              ref_nuuxuy(nu*u.x()*u.y());
+//              ref_nuuxuz(nu*u.x()*u.z());
+//              ref_nuuyuy(nu*u.y()*u.y());
+//              ref_nuuyuz(nu*u.y()*u.z());
+//              ref_nuuzuz(nu*u.z()*u.z());
+
+                // DEBUG
+                ref_nuuxux(0);
+                ref_nuuxuy(0);
+                ref_nuuxuz(0);
+                ref_nuuyuy(0);
+                ref_nuuyuz(0);
+                ref_nuuzuz(0);
 
                 // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;
@@ -703,9 +711,9 @@ std::vector<real_t> applyNonlinearOperator(
                         // rholut::explicit_u_dot_mu_plus_lambda_grad_div_u
                         - Ma2_over_Re * (
                             - ref_nuu2*div_grad_rho
-//                          + alpha13*(
-//                            - (grad_grad_rho.transpose()*ref_nuuu).trace()
-//                          )
+                            + alpha13*(
+                              - grad_grad_rho.cwiseProduct(ref_nuuu).sum()
+                            )
                         )
                         ;
                     break;
