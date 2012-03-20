@@ -69,13 +69,12 @@ namespace rholt
 {
 
 /**
- * Compute \f$\accentset{\leftrightarrow}{\tau} =
+ * Compute \f$\tau =
  *    \mu\left(
  *        \vec{\nabla}\vec{u}
  *      + \left(\vec{\nabla}\vec{u}\right)^{\mathsf{T}}
  *    \right)
- *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right)
- *            \accentset{\leftrightarrow}{I}\f$.
+ *  + \lambda \left( \vec{\nabla}\cdot\vec{u} \right) I\f$.
  *
  * @param[in] mu \f$\mu\f$
  *            computed from, for example, p_T_mu_lambda()
@@ -177,10 +176,10 @@ Vector div_u_outer_m(
 }
 
 /**
- * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$.
+ * Compute \f$\vec{\nabla}\cdot\tau\f$.
  * Uses the expansion
  * \f[
- *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau} =
+ *      \vec{\nabla}\cdot\tau =
  *        \left[
  *           \vec{\nabla}\vec{u}
  *         + \left(\vec{\nabla}\vec{u}\right)^{\mathsf{T}}
@@ -326,16 +325,16 @@ Scalar div_p_u(
 }
 
 /**
- * Compute \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\vec{u}\f$.
+ * Compute \f$\vec{\nabla}\cdot\tau\vec{u}\f$.
  * Uses the expansion
  * \f[
- *      \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\vec{u} =
+ *      \vec{\nabla}\cdot\tau\vec{u} =
  *      \vec{u}\cdot\left(
- *          \vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}
+ *          \vec{\nabla}\cdot\tau
  *      \right)
  *      +
  *      \operatorname{trace}\left(
- *          \accentset{\leftrightarrow}{\tau}\,\vec{\nabla}\vec{u}
+ *          \tau\,\vec{\nabla}\vec{u}
  *      \right)
  * \f]
  *
@@ -343,9 +342,9 @@ Scalar div_p_u(
  *            computed from, for example, u()
  * @param[in] grad_u \f$\vec{\nabla}\vec{u}\f$
  *            computed from, for example, grad_u()
- * @param[in] tau \f$\accentset{\leftrightarrow}{\tau}\f$
+ * @param[in] tau \f$\tau\f$
  *            computed from, for example, tau()
- * @param[in] div_tau \f$\vec{\nabla}\cdot\accentset{\leftrightarrow}{\tau}\f$
+ * @param[in] div_tau \f$\vec{\nabla}\cdot\tau\f$
  *            computed from, for example, div_tau()
  *
  * @note Compilers may have trouble automatically deducing the Scalar type
