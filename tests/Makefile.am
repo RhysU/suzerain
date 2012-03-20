@@ -247,6 +247,13 @@ test_complex_LDADD    = ../suzerain/libsuzerain.la
 test_complex_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_complex_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS              += test_kahan
+EXTRA_PROGRAMS     += test_kahan
+test_kahan_SOURCES  = test_kahan.cpp
+test_kahan_LDADD    = ../suzerain/libsuzerain.la
+test_kahan_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_kahan_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                += test_traits
 EXTRA_PROGRAMS       += test_traits
 test_traits_SOURCES   = test_traits.cpp

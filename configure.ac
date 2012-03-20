@@ -234,6 +234,14 @@ case $ax_cv_c_compiler_vendor in #(
          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CFLAGS])
          ;;
 esac
+AC_ARG_VAR([CFLAGS_PRECISE],[C compiler flags specifying no unsafe math optimizations])
+case $ax_cv_c_compiler_vendor in #(
+    intel)    AX_CHECK_COMPILE_FLAG([-fp-model precise],
+                                    [AX_APPEND_FLAG([-fp-model precise],
+                                                    [CFLAGS_PRECISE])])                  ;;
+    portland) AX_APPEND_COMPILE_FLAGS([-Kieee -Mnofpapprox],           [CFLAGS_PRECISE]) ;;
+    gnu|*)    AX_APPEND_COMPILE_FLAGS([-fno-unsafe-math-optimizations],[CFLAGS_PRECISE]) ;;
+esac
 AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AX_CXXFLAGS_WARN_ALL
@@ -250,6 +258,14 @@ case $ax_cv_cxx_compiler_vendor in #(
          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=const   ],[CXXFLAGS])
          AX_APPEND_COMPILE_FLAGS([-Wsuggest-attribute=noreturn],[CXXFLAGS])
          ;;
+esac
+AC_ARG_VAR([CXXFLAGS_PRECISE],[C++ compiler flags specifying no unsafe math optimizations])
+case $ax_cv_cxx_compiler_vendor in #(
+    intel)    AX_CHECK_COMPILE_FLAG([-fp-model precise],
+                                    [AX_APPEND_FLAG([-fp-model precise],
+                                                    [CXXFLAGS_PRECISE])])                  ;;
+    portland) AX_APPEND_COMPILE_FLAGS([-Kieee -Mnofpapprox],           [CXXFLAGS_PRECISE]) ;;
+    gnu|*)    AX_APPEND_COMPILE_FLAGS([-fno-unsafe-math-optimizations],[CXXFLAGS_PRECISE]) ;;
 esac
 AC_LANG_POP([C++])
 AX_WARNINGS_SANITIZE

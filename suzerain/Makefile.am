@@ -62,6 +62,7 @@ pkginclude_HEADERS += htstretch.h
 pkginclude_HEADERS += inorder.h
 pkginclude_HEADERS += inorder.hpp
 pkginclude_HEADERS += iterator.hpp
+pkginclude_HEADERS += kahan.h
 pkginclude_HEADERS += math.hpp
 pkginclude_HEADERS += mpi_datatype.hpp
 pkginclude_HEADERS += mpi.h
@@ -152,7 +153,8 @@ EXTRA_libsuzerain_la_SOURCES += gbmv.def
 EXTRA_libsuzerain_la_SOURCES += rholut_imexop.def
 EXTRA_libsuzerain_la_SOURCES += sbmv.def
 libsuzerain_la_LDFLAGS        = -release $(PACKAGE_VERSION)
-libsuzerain_la_LIBADD         = $(GRVY_LIBS)
+libsuzerain_la_LIBADD         = libsuzerain-precise.la
+libsuzerain_la_LIBADD        += $(GRVY_LIBS)
 libsuzerain_la_LIBADD        += $(UNDERLING_LIBS)
 libsuzerain_la_LIBADD        += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
 libsuzerain_la_LIBADD        += $(GSL_LIBS)
@@ -160,6 +162,14 @@ libsuzerain_la_LIBADD        += $(BOOST_IOSTREAMS_LDFLAGS)
 libsuzerain_la_LIBADD        += $(BOOST_IOSTREAMS_LIBS)
 libsuzerain_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LIBS)
+
+# Sources requiring IEEE-faithful floating point behavior
+# Built separately to allow different optimization settings
+noinst_LTLIBRARIES                   += libsuzerain-precise.la
+libsuzerain_precise_la_SOURCES        = kahan.c
+EXTRA_libsuzerain_precise_la_SOURCES  = kahan.def
+libsuzerain_precise_la_CFLAGS         = $(AM_CFLAGS)   $(CFLAGS_PRECISE)
+libsuzerain_precise_la_CXXFLAGS       = $(AM_CXXFLAGS) $(CXXFLAGS_PRECISE)
 
 # Clean up from Intel Compiler's -prof-gen output and precompiled headers
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
