@@ -16,6 +16,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AX_ENABLE_BUILDDIR
 AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.61])
 AX_AM_MACROS
 AX_ADD_AM_CTAGSFLAGS
