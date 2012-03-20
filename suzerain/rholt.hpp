@@ -96,9 +96,7 @@ Tensor tau(
         const Scalar &div_u,
         const Tensor &grad_u)
 {
-// FIXME tau's symmetry should be used/enforced in the computation
-    return mu*(grad_u + grad_u.transpose())
-        + lambda*div_u*Tensor::Identity();
+    return mu*(grad_u + grad_u.transpose()) + lambda*div_u*Tensor::Identity();
 }
 
 /**
@@ -223,7 +221,6 @@ Vector div_tau(
         const Vector &div_grad_u,
         const Vector &grad_div_u)
 {
-// FIXME symmetry of grad_u + grad_u^T should be used in the computation
     return (grad_u + grad_u.transpose())*grad_mu
         + mu*div_grad_u
         + (mu+lambda)*grad_div_u
@@ -334,7 +331,7 @@ Scalar div_p_u(
  *      \right)
  *      +
  *      \operatorname{trace}\left(
- *          \tau\,\vec{\nabla}\vec{u}
+ *          \tau^{\mathsf{T}}\,\vec{\nabla}\vec{u}
  *      \right)
  * \f]
  *
@@ -365,8 +362,7 @@ Scalar div_tau_u(
         const Tensor &tau,
         const Vector &div_tau)
 {
-    return u.dot(div_tau)
-         + tau.cwiseProduct(grad_u.transpose()).sum(); // tr(tau*grad_u)
+    return u.dot(div_tau) + tau.cwiseProduct(grad_u).sum();
 }
 
 /**

@@ -44,6 +44,10 @@
 % Increase table of contents depth
 \setcounter{tocdepth}{4}
 
+% Simplify headings on floating pages
+\floatpagestyle{plain}
+\rotfloatpagestyle{empty}
+
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
@@ -1605,7 +1609,7 @@ ensure that these three terms have the most physically correct diffusive impact
 on high frequency content at a given spatial resolution.  These results will
 also be used in the course of developing our implicit diffusive treatment.
 
-We expand the three mixed order, nonlinear terms:
+We expand the three mixed order, nonlinear terms and use the symmetry of $\tau$:
 \begin{align}
 \label{eq:nabla_cdot_tau_expansion}
   \nabla\cdot\tau
@@ -1619,7 +1623,7 @@ We expand the three mixed order, nonlinear terms:
   \nabla\cdot\tau{}\frac{m}{\rho}
   &=
     \frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)
-  + \trace\left( \tau\,\nabla\frac{m}{\rho} \right)
+  + \trace\left( \trans{\tau}\nabla\frac{m}{\rho} \right)
 \\
   \nabla\cdot\mu\nabla{}T \label{eq:mu_delta_T}
   &=
@@ -1802,7 +1806,7 @@ $\frac{m}{\rho}\cdot\left(\nabla\cdot\tau\right)$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm & \cd & \cm & \cm & \cd & \cd & \cm & \cm & \cm & \cm & \cm &
 & 32 \\
-$\trace\left(\tau\nabla\frac{m}{\rho}\right)$
+$\trace\left(\trans{\tau}\nabla\frac{m}{\rho}\right)$
 % 001 & 002 & 003 & 004 & 005 & 006 & 007 & 008 & 009 & 011 & 012 & 013 & 014
 & \cm & \cm &     &     & \cm & \cd & \cd & \cm &     &     & \cm &     &
 & 20 \\
@@ -2277,7 +2281,6 @@ zero.  Doing so results in a wavenumber independent operator requiring
 factorization only once per substep.
 
 \begin{sidewaysfigure}
-\thisfloatpagestyle{empty}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
 \newcommand{\D}[1]{D^{(#1)}}      % ditto
