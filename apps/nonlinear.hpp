@@ -48,6 +48,7 @@ std::vector<real_t> applyNonlinearOperator(
     namespace ndx = channel::field::ndx;
     using Eigen::Vector3r;
     using Eigen::Matrix3r;
+    using std::size_t;
 
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -188,12 +189,12 @@ std::vector<real_t> applyNonlinearOperator(
         = channel::physical_view<aux::count>::create(o.dgrid, auxw);
     typename channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(o.dgrid, swave);
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < channel::field::count; ++i) {
         GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
         GRVY_TIMER_END("transform_wave_to_physical");
     }
-    for (std::size_t i = 0; i < aux::count; ++i) {
+    for (size_t i = 0; i < aux::count; ++i) {
         GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
         GRVY_TIMER_END("transform_wave_to_physical");
@@ -255,7 +256,7 @@ std::vector<real_t> applyNonlinearOperator(
         GRVY_TIMER_BEGIN("reference quantities");
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const std::size_t leftNotOnRank = o.dgrid.local_physical_start.y();
+        const size_t leftNotOnRank = o.dgrid.local_physical_start.y();
         if (leftNotOnRank) common.refs.leftCols(leftNotOnRank).setZero();
 
         // Sum reference quantities as a function of y(j) into common.ref_*
@@ -384,8 +385,8 @@ std::vector<real_t> applyNonlinearOperator(
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const std::size_t rightNotOnRank = common.refs.cols()
-                                         - o.dgrid.local_physical_end.y();
+        const size_t rightNotOnRank = common.refs.cols()
+                                    - o.dgrid.local_physical_end.y();
         if (rightNotOnRank) common.refs.rightCols(rightNotOnRank).setZero();
 
         // Allreduce and scale common.refs sums to obtain means on all ranks
@@ -411,7 +412,7 @@ std::vector<real_t> applyNonlinearOperator(
         }
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const std::size_t topNotOnRank = o.dgrid.local_physical_start.y();
+        const size_t topNotOnRank = o.dgrid.local_physical_start.y();
         if (topNotOnRank) common.u().topRows(topNotOnRank).setZero();
 
         // Sum streamwise velocities as a function of y(j) into common.u()
@@ -435,8 +436,8 @@ std::vector<real_t> applyNonlinearOperator(
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const std::size_t bottomNotOnRank = common.u().rows()
-                                         - o.dgrid.local_physical_end.y();
+        const size_t bottomNotOnRank = common.u().rows()
+                                     - o.dgrid.local_physical_end.y();
         if (bottomNotOnRank) common.u().bottomRows(bottomNotOnRank).setZero();
 
         // Reduce and scale common.u() sums to obtain mean on zero-zero rank
@@ -823,7 +824,7 @@ std::vector<real_t> applyNonlinearOperator(
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
-    for (std::size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < channel::field::count; ++i) {
 
         if (Linearize == linearize::rhome && i == ndx::rho && !msoln) {
 
