@@ -25,7 +25,6 @@
 #include <suzerain/common.h>
 #pragma hdrstop
 #include <suzerain/gbddddmv.h>
-#include <suzerain/kahan.h>
 
 #pragma warning(disable:1418 1572 2259)
 
@@ -42,40 +41,36 @@
 // Generate general bandwidth routines
 // -----------------------------------
 
-#define GBDDDDMV_STATIC     static
-#define GBDDDDMV_FUNCTION   suzerain_gbddddmv_internal_s
-#define GBDDDDMV_COMPONENT  float
-#define GBDDDDMV_SCALAR     float
-#define GBDDDDMV_KL         const int kl,
-#define GBDDDDMV_KU         const int ku,
-#define GBDDDDMV_KAHAN(...) suzerain_kahanf4(__VA_ARGS__)
+#define GBDDDDMV_STATIC    static
+#define GBDDDDMV_FUNCTION  suzerain_gbddddmv_internal_s
+#define GBDDDDMV_COMPONENT float
+#define GBDDDDMV_SCALAR    float
+#define GBDDDDMV_KL        const int kl,
+#define GBDDDDMV_KU        const int ku,
 #include "gbddddmv.def"
 
-#define GBDDDDMV_STATIC     static
-#define GBDDDDMV_FUNCTION   suzerain_gbddddmv_internal_d
-#define GBDDDDMV_COMPONENT  double
-#define GBDDDDMV_SCALAR     double
-#define GBDDDDMV_KL         const int kl,
-#define GBDDDDMV_KU         const int ku,
-#define GBDDDDMV_KAHAN(...) suzerain_kahan4(__VA_ARGS__)
+#define GBDDDDMV_STATIC    static
+#define GBDDDDMV_FUNCTION  suzerain_gbddddmv_internal_d
+#define GBDDDDMV_COMPONENT double
+#define GBDDDDMV_SCALAR    double
+#define GBDDDDMV_KL        const int kl,
+#define GBDDDDMV_KU        const int ku,
 #include "gbddddmv.def"
 
-#define GBDDDDMV_STATIC     static
-#define GBDDDDMV_FUNCTION   suzerain_gbddddmv_internal_sc
-#define GBDDDDMV_COMPONENT  float
-#define GBDDDDMV_SCALAR     complex_float
-#define GBDDDDMV_KL         const int kl,
-#define GBDDDDMV_KU         const int ku,
-#define GBDDDDMV_KAHAN(...) suzerain_kahanc4(__VA_ARGS__)
+#define GBDDDDMV_STATIC    static
+#define GBDDDDMV_FUNCTION  suzerain_gbddddmv_internal_sc
+#define GBDDDDMV_COMPONENT float
+#define GBDDDDMV_SCALAR    complex_float
+#define GBDDDDMV_KL        const int kl,
+#define GBDDDDMV_KU        const int ku,
 #include "gbddddmv.def"
 
-#define GBDDDDMV_STATIC     static
-#define GBDDDDMV_FUNCTION   suzerain_gbddddmv_internal_dz
-#define GBDDDDMV_COMPONENT  double
-#define GBDDDDMV_SCALAR     complex_double
-#define GBDDDDMV_KL         const int kl,
-#define GBDDDDMV_KU         const int ku,
-#define GBDDDDMV_KAHAN(...) suzerain_kahanz4(__VA_ARGS__)
+#define GBDDDDMV_STATIC    static
+#define GBDDDDMV_FUNCTION  suzerain_gbddddmv_internal_dz
+#define GBDDDDMV_COMPONENT double
+#define GBDDDDMV_SCALAR    complex_double
+#define GBDDDDMV_KL        const int kl,
+#define GBDDDDMV_KU        const int ku,
 #include "gbddddmv.def"
 
 // ------------------------------------------------------------------
@@ -275,7 +270,6 @@ suzerain_gbddddmv_dz(
 #define GBDDDDMV_SCALAR    float
 #define GBDDDDMV_KL
 #define GBDDDDMV_KU
-#define GBDDDDMV_KAHAN(...) suzerain_kahanf4(__VA_ARGS__)
 #include "gbddddmv.def"
 
 #define GBDDDDMV_STATIC    static
@@ -285,7 +279,6 @@ suzerain_gbddddmv_dz(
 #define GBDDDDMV_SCALAR    double
 #define GBDDDDMV_KL
 #define GBDDDDMV_KU
-#define GBDDDDMV_KAHAN(...) suzerain_kahan4(__VA_ARGS__)
 #include "gbddddmv.def"
 
 #define GBDDDDMV_STATIC    static
@@ -295,7 +288,6 @@ suzerain_gbddddmv_dz(
 #define GBDDDDMV_SCALAR    complex_float
 #define GBDDDDMV_KL
 #define GBDDDDMV_KU
-#define GBDDDDMV_KAHAN(...) suzerain_kahanc4(__VA_ARGS__)
 #include "gbddddmv.def"
 
 #define GBDDDDMV_STATIC    static
@@ -305,7 +297,6 @@ suzerain_gbddddmv_dz(
 #define GBDDDDMV_SCALAR    complex_double
 #define GBDDDDMV_KL
 #define GBDDDDMV_KU
-#define GBDDDDMV_KAHAN(...) suzerain_kahanz4(__VA_ARGS__)
 #include "gbddddmv.def"
 
 #undef kl

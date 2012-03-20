@@ -177,7 +177,7 @@ static void test_gbddddmv_s(const gbddddmv_tc_type& t)
 
 static void test_gbddddmv_d(const gbddddmv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*5000;
+    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*4000;
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;

@@ -33,7 +33,6 @@
 #include <suzerain/gbddmv.h>
 #include <suzerain/gbdmv.h>
 #include <suzerain/gbmv.h>
-#include <suzerain/kahan.h>
 #include <suzerain/sbmv.h>
 
 static inline int imin(int a, int b) { return a < b ? a : b; }
@@ -4101,9 +4100,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
              a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz3(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2));
+            const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                   b + il*incb, incb);
         }
@@ -4112,9 +4109,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
              a += lda, d0 += ldd0, d1 += ldd1, d2 += ldd2, b += ldb, ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz3(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2));
+            const complex_double tmp = alpha0*(*d0)+alpha1*(*d1)+alpha2*(*d2);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                             beta, b + il*incb, incb);
         }
@@ -4196,10 +4191,10 @@ suzerain_blasext_zgb_ddddiag_scale_acc_d(
         for (int j = 0; j < n; ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz4(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2),
-                                                        alpha3*(*d3));
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                   b + il*incb, incb);
             a += lda; d0 += ldd0; d1 += ldd1; d2 += ldd2; d3 += ldd3; b += ldb;
@@ -4208,10 +4203,10 @@ suzerain_blasext_zgb_ddddiag_scale_acc_d(
         for (int j = 0; j < n; ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz4(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2),
-                                                        alpha3*(*d3));
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                             beta, b + il*incb, incb);
             a += lda; d0 += ldd0; d1 += ldd1; d2 += ldd2; d3 += ldd3; b += ldb;
@@ -4300,11 +4295,11 @@ suzerain_blasext_zgb_dddddiag_scale_acc_d(
         for (int j = 0; j < n; ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz5(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2),
-                                                        alpha3*(*d3),
-                                                        alpha4*(*d4));
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3)
+                                     + alpha4*(*d4);
             suzerain_blas_zaxpy_d (iu - il, tmp,  a + il*inca, inca,
                                                   b + il*incb, incb);
             a += lda;
@@ -4315,11 +4310,11 @@ suzerain_blasext_zgb_dddddiag_scale_acc_d(
         for (int j = 0; j < n; ++j) {
             const int il = imax(0, j - ku);
             const int iu = imin(m, j + kl);
-            const complex_double tmp = suzerain_kahanz5(alpha0*(*d0),
-                                                        alpha1*(*d1),
-                                                        alpha2*(*d2),
-                                                        alpha3*(*d3),
-                                                        alpha4*(*d4));
+            const complex_double tmp = alpha0*(*d0)
+                                     + alpha1*(*d1)
+                                     + alpha2*(*d2)
+                                     + alpha3*(*d3)
+                                     + alpha4*(*d4);
             suzerain_blas_zaxpby_d(iu - il, tmp,  a + il*inca, inca,
                                             beta, b + il*incb, incb);
             a += lda;
