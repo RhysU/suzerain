@@ -218,6 +218,7 @@ std::vector<real_t> applyNonlinearOperator(
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
     // and we will add many small numbers to a large magnitude sum.
+    // During debugging, also make the number of samples available.
     typedef boost::accumulators::accumulator_set<
                 real_t,
                 boost::accumulators::stats<
@@ -225,6 +226,9 @@ std::vector<real_t> applyNonlinearOperator(
                     boost::accumulators::tag::sum_kahan
 #else
                     boost::accumulators::tag::sum
+#endif
+#ifndef NDEBUG
+                    , boost::accumulators::tag::count
 #endif
                 >
             > summing_accumulator_type;
@@ -352,6 +356,15 @@ std::vector<real_t> applyNonlinearOperator(
                             gamma, mu, rho, e, p));
 
             } // end X // end Z
+
+#ifndef NDEBUG
+            // Ensure that all accumulators saw a consistent number of samples
+            const size_t expected = boost::accumulators::count(acc[0]);
+            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
+                const size_t observed = boost::accumulators::count(acc[k]);
+                assert(expected == observed);
+            }
+#endif
 
             // Store sums into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
