@@ -2034,10 +2034,15 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     results_type mean2(buf + field::count);
 
     // Compute the local L2 contribution towards each L^2 norm squared
+    // Computation uses partial sums at each loop to reduce swamping which is
+    // more-or-less recursive summation using large partitioning factors.
     total2.setZero();
     for (size_t k = 0; k < field::count; ++k) {
+        complex_t jsum = 0;
         for (int j = 0; j < 2; ++j) {
+            complex_t nsum = 0;
             for (int n = mzb[j]; n < mze[j]; ++n) {
+                complex_t msum = 0;
                 for (int m = mxb[0]; m < mxe[0]; ++m) {
                     const complex_t * u_mn
                         = &state[k][0][m - dgrid.local_wave_start.x()]
@@ -2048,15 +2053,18 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
                     if (m > 0 && m < grid.dN.x()/2) {
                         dot *= 2;
                     }
-                    total2[k] += dot;
+                    msum += dot;
                 }
+                nsum += msum;
             }
+            jsum += nsum;
         }
+        total2[k] += jsum;
     }
     total2 *= scenario.Lx * scenario.Lz;
 
     // Reduce total2 sum onto processor housing the zero-zero mode using
-    // mean2 as a scratch buffer to simulate (the disallowed) MPI_IN_PLACE
+    // mean2 as a scratch buffer to simulate MPI_IN_PLACE
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
                 mean2.data(), field::count * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
