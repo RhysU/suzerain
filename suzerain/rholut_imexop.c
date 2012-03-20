@@ -315,17 +315,30 @@ suzerain_rholut_imexop_accumulate(
         suzerain_blas_zscal(n, beta, out_rhoe, inc);
 
         if (in_rho) {
-            suzerain_blasext_zgbdddmv_d('T', n, w->kl[M], w->ku[M],
+
+            // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
+            // Writing such a beast may provide a tiny speedup.
+            suzerain_blasext_zgbdmv_d('T', n, w->kl[M], w->ku[M],
+                phi*Ma2*invRe*(km2+kn2),     REF(nuu2),
+//              phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
+//              phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
+//              phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
+                w->D_T[M],  w->ld, in_rho, inc, 1.0, out_rhoe, inc);
+            suzerain_blasext_zgbdddmv_d( 'T', n, w->kl[M], w->ku[M],
                 -phi*ikm,                    REF(ex_gradrho),
                 -phi*ikn,                    REF(ez_gradrho),
                 -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
                 w->D_T[M],  w->ld, in_rho, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('T', n, w->kl[D1], w->ku[D1],
+//              -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
+//              -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
                 -phi,                        REF(ey_gradrho),
                 w->D_T[D1], w->ld, in_rho, inc, 1.0, out_rhoe, inc);
 
-            suzerain_blasext_zgbdmv_d('T', n, w->kl[D2], w->ku[D2],
+            suzerain_blasext_zgbddmv_d('T', n, w->kl[D2], w->ku[D2],
+                -phi*Ma2*invRe,              REF(nuu2),
+//              -phi*Ma2*invRe*ap13,         REF(nuuyuy),
                 phi*ginvRePr/gm1,            REF(e_deltarho),
                 w->D_T[D2], w->ld, in_rho, inc, 1.0, out_rhoe, inc);
         }

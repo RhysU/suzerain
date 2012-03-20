@@ -681,6 +681,7 @@ std::vector<real_t> applyNonlinearOperator(
                                 grad_T, div_grad_T, mu, grad_mu
                             )
                         ;
+                        // No need to adjust explicit viscous work term
                     break;
                 case linearize::rhome:
                     sphys(ndx::rhoe, offset) +=
@@ -696,6 +697,15 @@ std::vector<real_t> applyNonlinearOperator(
                                  gamma, Ma, mu, rho, grad_rho, div_grad_rho, m,
                                  grad_m, div_grad_m, e, div_grad_e, p, grad_p,
                                  ref_nu, ref_nuu, ref_e_deltarho)
+                        )
+                        // Subtract implicit portions of viscous work terms per
+                        // rholut::explicit_u_dot_mu_div_grad_u and
+                        // rholut::explicit_u_dot_mu_plus_lambda_grad_div_u
+                        - Ma2_over_Re * (
+                            - ref_nuu2*div_grad_rho
+//                          + alpha13*(
+//                            - (grad_grad_rho.transpose()*ref_nuuu).trace()
+//                          )
                         )
                         ;
                     break;
