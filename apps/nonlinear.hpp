@@ -322,7 +322,7 @@ std::vector<real_t> applyNonlinearOperator(
                 ref_nuuxuz(nu*u.x()*u.z());
                 ref_nuuyuy(nu*u.y()*u.y());
                 ref_nuuyuz(nu*u.y()*u.z());
-                ref_nuuyuz(nu*u.z()*u.z());
+                ref_nuuzuz(nu*u.z()*u.z());
 
                 // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;
