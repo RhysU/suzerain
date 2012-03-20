@@ -366,7 +366,8 @@ Scalar div_tau_u(
         const Tensor &tau,
         const Vector &div_tau)
 {
-    return u.dot(div_tau) + (tau*grad_u).trace(); // Use lazyProduct?
+    return u.dot(div_tau)
+         + tau.cwiseProduct(grad_u.transpose()).sum(); // tr(tau*grad_u)
 }
 
 /**
@@ -1400,14 +1401,12 @@ Scalar explicit_u_dot_mu_plus_lambda_grad_div_u(
             >(mu, lambda, rho, m)
           - refcoeff_grad_grad_rho);
 
-    // TODO Use lazyProduct before trace() method?
-    // TODO Use symmetry of grad_grad_rho and coeff_grad_grad_rho
     return   ((mu+lambda)/(rho*rho*rho))*m.dot(
                   (2*grad_rho.dot(m)/rho - div_m)*grad_rho
                 - grad_m.transpose()*grad_rho
              )
            + coeff_grad_div_m.dot(grad_div_m)
-           - (grad_grad_rho.transpose()*coeff_grad_grad_rho).trace();
+           - grad_grad_rho.cwiseProduct(coeff_grad_grad_rho).sum();
 }
 
 /**
@@ -1611,7 +1610,7 @@ Scalar explicit_mu_div_grad_T(
                 )
               + (gamma-1)*(
                   - mu*rho_inverse2*(
-                        (grad_m.transpose()*grad_m).trace()
+                        grad_m.squaredNorm() // Frobenius norm
                       - rho_inverse*(
                             2*grad_rho.dot(grad_m.transpose()*m)
                           - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
@@ -1946,7 +1945,7 @@ Scalar div_grad_p(
     return (gamma - 1)*(
                   div_grad_e
                 - rho_inverse*(
-                          (grad_m.transpose()*grad_m).trace()
+                          grad_m.squaredNorm() // Frobenius norm
                         + div_grad_m.dot(m)
                         - rho_inverse*(
                                 2*grad_rho.dot(grad_m.transpose()*m)

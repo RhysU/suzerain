@@ -569,7 +569,7 @@ Scalar explicit_mu_div_grad_T(
                     coeff_div_grad_e*div_grad_e
                   - Ma * Ma * (
                       mu*rho_inverse2*(
-                          (grad_m.transpose()*grad_m).trace()
+                          grad_m.squaredNorm() // Frobenius norm
                         - rho_inverse*(
                               2*grad_rho.dot(grad_m.transpose()*m)
                             - rho_inverse*m.squaredNorm()*grad_rho.squaredNorm()
@@ -921,7 +921,7 @@ Scalar div_grad_p(
     return (gamma - 1)*(
                   div_grad_e
                 - Ma*Ma*rho_inverse*(
-                          (grad_m.transpose()*grad_m).trace()
+                          grad_m.squaredNorm() // Frobenius norm
                         + div_grad_m.dot(m)
                         - rho_inverse*(
                                 2*grad_rho.dot(grad_m.transpose()*m)
