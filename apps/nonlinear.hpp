@@ -203,6 +203,7 @@ std::vector<real_t> applyNonlinearOperator(
     const real_t one_over_delta_x = o.one_over_delta_x;
     const real_t one_over_delta_z = o.one_over_delta_z;
     const real_t alpha            = o.scenario.alpha;
+    const real_t alpha13          = alpha + real_t(1)/real_t(3);
     const real_t beta             = o.scenario.beta;
     const real_t gamma            = o.scenario.gamma;
     const real_t Ma               = o.scenario.Ma;
@@ -647,9 +648,9 @@ std::vector<real_t> applyNonlinearOperator(
                         // suzerain::rholut::explicit_mu_div_grad_u and
                         // suzerain::rholut::explicit_mu_plus_lambda_grad_div_u
                         - inv_Re * (
-                            ref_nu*(div_grad_m + (alpha + 1./3.)*grad_div_m)
+                            ref_nu*(div_grad_m + alpha13*grad_div_m)
                           - ref_nuu*div_grad_rho
-                          - (alpha + 1./3.)*(grad_grad_rho*ref_nuu)
+                          - alpha13*grad_grad_rho*ref_nuu
                         )
                         ;
                     break;

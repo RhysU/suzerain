@@ -73,6 +73,7 @@ suzerain_rholut_imexop_accumulate(
     const double Ma2         = s->Ma*s->Ma;
     const double invRe       = 1 / s->Re;
     const double invMa2      = 1 / Ma2;
+    const double ginvPr      = s->gamma / s->Pr;
     const double ginvRePr    = s->gamma / (s->Re * s->Pr);
 
     // Accumulate the requested portions of the M + \varphi L operator.  Scale
