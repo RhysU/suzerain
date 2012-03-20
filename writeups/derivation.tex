@@ -130,9 +130,8 @@ Separating total force into surface forces and body forces
   +  \int_{\Omega} f \, dV
   =  \int_{\Omega} \nabla\cdot\sigma + f \, dV
 \end{align}
-where $\sigma$ is the Cauchy stress tensor.  Examining
-momentum $I=\int_{\Omega} \rho{}u\,dV$ and its conservation
-$\frac{d}{dt}I=\sum{}F$,
+where $\sigma$ is the Cauchy stress tensor.  From linear momentum
+$I=\int_{\Omega} \rho{}u\,dV$ and its conservation $\frac{d}{dt}I=\sum{}F$,
 \begin{align}
     \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}u
   + \nabla\cdot(u\otimes{}\rho{}u)\,dV
@@ -153,6 +152,8 @@ the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 &= -\nabla{}p + \nabla\cdot{}\tau + f
 .
 \end{align}
+The conservation of angular momentum implies $\sigma=\trans{\sigma}$ and
+therefore $\tau=\trans{\tau}$ holds also.
 
 \subsubsection{Energy equation}
 Lumping internal and kinetic energy into an intrinsic density $E$,
