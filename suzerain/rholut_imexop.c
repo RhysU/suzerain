@@ -344,38 +344,56 @@ suzerain_rholut_imexop_accumulate(
         }
 
         if (in_rhou) {
-            suzerain_blasext_zgbddmv_d('T', n, w->kl[M], w->ku[M],
-                phi*ginvRePr*Ma2*(km2+kn2),  REF(nuux),
+            const double coeff_nuux
+                = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
+            suzerain_blasext_zgbdddmv_d('T', n, w->kl[M], w->ku[M],
+                phi*coeff_nuux,              REF(nuux),
+                -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
                 -phi*ikm,                    REF(e_divm),
                 w->D_T[M],  w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
 
+            suzerain_blasext_zgbdmv_d('T', n, w->kl[D1], w->ku[D1],
+                phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
+                w->D_T[D1], w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
+
             suzerain_blasext_zgbdmv_d('T', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,           REF(nuux),
+                phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
                 w->D_T[D2], w->ld, in_rhou, inc, 1.0, out_rhoe, inc);
         }
 
         if (in_rhov) {
+            const double coeff_nuuy
+                = Ma2*invRe*(ginvPr-1)*(km2+kn2);
             suzerain_blasext_zgbdmv_d('T', n, w->kl[M], w->ku[M],
-                phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuy),
+                phi*coeff_nuuy,              REF(nuuy),
                 w->D_T[M],  w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
 
-            suzerain_blasext_zgbdmv_d('T', n, w->kl[D1], w->ku[D1],
+            suzerain_blasext_zgbdddmv_d('T', n, w->kl[D1], w->ku[D1],
+                phi*Ma2*invRe*ap13*ikm,      REF(nuux),
+                phi*Ma2*invRe*ap13*ikn,      REF(nuuz),
                 -phi,                        REF(e_divm),
                 w->D_T[D1], w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
 
             suzerain_blasext_zgbdmv_d('T', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,           REF(nuuy),
+                phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
                 w->D_T[D2], w->ld, in_rhov, inc, 1.0, out_rhoe, inc);
         }
 
         if (in_rhow) {
-            suzerain_blasext_zgbddmv_d('T', n, w->kl[M], w->ku[M],
-                phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuz),
+            const double coeff_nuuz
+                = Ma2*invRe*((ginvPr-1)*km2 + (ginvPr-ap43)*kn2);
+            suzerain_blasext_zgbdddmv_d('T', n, w->kl[M], w->ku[M],
+                -phi*Ma2*invRe*ap13*km*kn,   REF(nuux),
+                phi*coeff_nuuz,              REF(nuuz),
                 -phi*ikn,                    REF(e_divm),
                 w->D_T[M],  w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
 
+            suzerain_blasext_zgbdmv_d('T', n, w->kl[D1], w->ku[D1],
+                phi*Ma2*invRe*ap13*ikn,      REF(nuuy),
+                w->D_T[D1], w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
+
             suzerain_blasext_zgbdmv_d('T', n, w->kl[D2], w->ku[D2],
-                -phi*ginvRePr*Ma2,           REF(nuuz),
+                phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
                 w->D_T[D2], w->ld, in_rhow, inc, 1.0, out_rhoe, inc);
         }
 

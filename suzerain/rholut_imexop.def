@@ -365,42 +365,60 @@ FUNCNAME()(
         }
 
         if (rhou >= 0) {
-            suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    phi*ginvRePr*Ma2*(km2+kn2),  REF(nuux),
+            const double coeff_nuux
+                = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
+            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
+                    phi*coeff_nuux,              REF(nuux),
+                    -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
                     -phi*ikm,                    REF(e_divm),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*ginvRePr*Ma2,           REF(nuux),
+                    phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rhou, rhoe, 1.0, buf, patpt);
         }
 
         if (rhov >= 0) {
+            const double coeff_nuuy
+                = Ma2*invRe*(ginvPr-1)*(km2+kn2);
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuy),
+                    phi*coeff_nuuy,              REF(nuuy),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
+                    phi*Ma2*invRe*ap13*ikm,      REF(nuux),
+                    phi*Ma2*invRe*ap13*ikn,      REF(nuuz),
                     -phi,                        REF(e_divm),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*ginvRePr*Ma2,           REF(nuuy),
+                    phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rhov, rhoe, 1.0, buf, patpt);
         }
 
         if (rhow >= 0) {
-            suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
-                    phi*ginvRePr*Ma2*(km2+kn2),  REF(nuuz),
+            const double coeff_nuuz
+                = Ma2*invRe*((ginvPr-1)*km2 + (ginvPr-ap43)*kn2);
+            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
+                    -phi*Ma2*invRe*ap13*km*kn,   REF(nuux),
+                    phi*coeff_nuuz,              REF(nuuz),
                     -phi*ikn,                    REF(e_divm),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    -phi*ginvRePr*Ma2,           REF(nuuz),
+                    phi*Ma2*invRe*ap13*ikn,      REF(nuuy),
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rhow, rhoe, 1.0, buf, patpt);

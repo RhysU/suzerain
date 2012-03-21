@@ -717,8 +717,10 @@ std::vector<real_t> applyNonlinearOperator(
                         // rholut::explicit_u_dot_mu_div_grad_u and
                         // rholut::explicit_u_dot_mu_plus_lambda_grad_div_u
                         - Ma2_over_Re * (
+                              ref_nuu.dot(div_grad_m)
                             - ref_nuu2*div_grad_rho
                             + alpha13*(
+                                ref_nuu.dot(grad_div_m)
                               - grad_grad_rho.cwiseProduct(ref_nuuu).sum()
                             )
                         )
