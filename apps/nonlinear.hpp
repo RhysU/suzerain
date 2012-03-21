@@ -323,20 +323,12 @@ std::vector<real_t> applyNonlinearOperator(
                 acc[ref::nuuy](nu*u.y());
                 acc[ref::nuuz](nu*u.z());
                 acc[ref::nuu2](nu*u.squaredNorm());
-//              acc[ref::nuuxux](nu*u.x()*u.x());
-//              acc[ref::nuuxuy](nu*u.x()*u.y());
-//              acc[ref::nuuxuz](nu*u.x()*u.z());
-//              acc[ref::nuuyuy](nu*u.y()*u.y());
-//              acc[ref::nuuyuz](nu*u.y()*u.z());
-//              acc[ref::nuuzuz](nu*u.z()*u.z());
-
-                // DEBUG
-                acc[ref::nuuxux](0);
-                acc[ref::nuuxuy](0);
-                acc[ref::nuuxuz](0);
-                acc[ref::nuuyuy](0);
-                acc[ref::nuuyuz](0);
-                acc[ref::nuuzuz](0);
+                acc[ref::nuuxux](nu*u.x()*u.x());
+                acc[ref::nuuxuy](nu*u.x()*u.y());
+                acc[ref::nuuxuz](nu*u.x()*u.z());
+                acc[ref::nuuyuy](nu*u.y()*u.y());
+                acc[ref::nuuyuz](nu*u.y()*u.z());
+                acc[ref::nuuzuz](nu*u.z()*u.z());
 
                 // ...and other, more complicated expressions.
                 namespace rholut = suzerain::rholut;

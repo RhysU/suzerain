@@ -339,9 +339,9 @@ FUNCNAME()(
             // Writing such a beast may provide a tiny speedup.
             suzerain_blasext_zgb_ddddiag_scale_acc_d(PREAMBLE,
                     phi*Ma2*invRe*(km2+kn2),     REF(nuu2),
-                    0,/* phi*Ma2*invRe*ap13*km2,     */  REF(nuuxux),
-                    0,/* phi*Ma2*invRe*ap13*2*km*kn, */  REF(nuuxuz),
-                    0,/* phi*Ma2*invRe*ap13*kn2,     */  REF(nuuzuz),
+                    phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
+                    phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
+                    phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
                     M,  1, w->ld, 0.0, buf, 1, A_T->ld);
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     -phi*ikm,                    REF(ex_gradrho),
@@ -350,14 +350,14 @@ FUNCNAME()(
                     M,  1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                    0,/* -phi*Ma2*invRe*ap13*2*ikm, */  REF(nuuxuy),
-                    0,/* -phi*Ma2*invRe*ap13*2*ikn, */  REF(nuuyuz),
+                    -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
+                    -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
                     -phi,                        REF(ey_gradrho),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     -phi*Ma2*invRe,              REF(nuu2),
-                    0,/* -phi*Ma2*invRe*ap13, */        REF(nuuyuy),
+                    -phi*Ma2*invRe*ap13,         REF(nuuyuy),
                     phi*ginvRePr/gm1,            REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
