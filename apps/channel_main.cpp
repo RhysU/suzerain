@@ -1259,58 +1259,16 @@ int main(int argc, char **argv)
                 initial_t, timedef.min_dt, timedef.max_dt));
 
     // Register status callbacks status_{dt,nt} as requested.
-    // When neither is provided, default and update timedef with new value.
-    {
-        TimeController<real_t>::time_type dt;
-        if (timedef.status_dt) {
-            dt = timedef.status_dt;
-        } else if (timedef.advance_dt) {
-            dt = timedef.advance_dt / restart.retain / 5;
-            const_cast<real_t &>(timedef.status_dt) = dt;
-        } else {
-            dt = tc->forever_t();
-        }
-
-        TimeController<real_t>::step_type nt;
-        if (timedef.status_nt) {
-            nt = timedef.status_nt;
-        } else if (timedef.advance_nt) {
-            nt = timedef.advance_nt / restart.retain / 5;
-            nt = std::max<TimeController<real_t>::step_type>(1, nt);
-            const_cast<int &>(timedef.status_nt) = nt;
-        } else {
-            nt = tc->forever_nt();
-        }
-
-        tc->add_periodic_callback(dt, nt, &log_status);
-    }
+    tc->add_periodic_callback(
+            (timedef.status_dt ? timedef.status_dt : tc->forever_t()),
+            (timedef.status_nt ? timedef.status_nt : tc->forever_nt()),
+            &log_status);
 
     // Register restart-writing callbacks restart_{dt,nt} as requested.
-    // When neither is provided, default and update restart with new value.
-    {
-        TimeController<real_t>::time_type dt;
-        if (restart.dt) {
-            dt = restart.dt;
-        } else if (timedef.advance_dt) {
-            dt = timedef.advance_dt / restart.retain;
-            const_cast<real_t &>(restart.dt) = dt;
-        } else {
-            dt = tc->forever_t();
-        }
-
-        TimeController<real_t>::step_type nt;
-        if (restart.nt) {
-            nt = restart.nt;
-        } else if (timedef.advance_nt) {
-            nt = timedef.advance_nt / restart.retain;
-            nt = std::max<TimeController<real_t>::step_type>(1, nt);
-            const_cast<int &>(restart.nt) = nt;
-        } else {
-            nt = tc->forever_nt();
-        }
-
-        tc->add_periodic_callback(dt, nt, &save_restart);
-    }
+    tc->add_periodic_callback(
+            (restart.dt ? restart.dt : tc->forever_t()),
+            (restart.nt ? restart.nt : tc->forever_nt()),
+            &save_restart);
 
     // Register statistics-related callbacks per statistics_{dt,nt}.
     // If no non-default, non-zero values were provided, be sensible.
