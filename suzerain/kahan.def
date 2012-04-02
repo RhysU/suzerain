@@ -37,7 +37,13 @@ SCALAR NAME(kahan,)(const SCALAR * a, int n)
 }
 
 // Unrolled Kahan summation algorithm for n == 3
-SCALAR NAME(kahan,3)(const SCALAR a0,
+// GCC __attribute__ fix per boost/accumulators/statistics/sum_kahan.hpp
+SCALAR
+#if !defined(__INTEL_COMPILER) && \
+    ( __GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__) > 40305
+    __attribute__((optimize("no-associative-math")))
+#endif
+       NAME(kahan,3)(const SCALAR a0,
                      const SCALAR a1,
                      const SCALAR a2)
 {
