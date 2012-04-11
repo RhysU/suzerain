@@ -362,64 +362,65 @@ yield
   .
 \end{align}
 
-\section{$L^2$ approximation error of a discrete field}
-
-To measure the $L^2$ approximation error of a discrete field $u^h$ against a
-known, analytic field $u$, we wish to compute $\left|\left| u - u^h
-\right|\right|^{2}_{L^{2}_{xyz}}$.  Employing inner product notation we find
-\begin{align}
-  \left|\left| u - u^h \right|\right|^{2}_{L^{2}_{xyz}}
-&=
-  \left( u-u^h, u-u^h \right)
-\\ &=
-    \left( u, u \right)
-  - \left( u, u^h \right)
-  - \left( u^h, u \right)
-  + \left(u^h, u^h\right)
-\\ &=
-    \left|\left| u   \right|\right|^{2}_{L^{2}_{xyz}}
-  - 2 \left( u, u^h \right)_{L^{2}_{xyz}}
-  + \left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}
-\end{align}
-using that both $u$ and $u^h$ are real-valued.  The first term can be evaluated
-analytically.  The third term can be computed following \eqref{eq:L2uh}.
-
-The second term may be treated as
-\begin{align}
-  \left( u^h, u \right)_{L^{2}_{xyz}}
-&=
-  \int_0^{L_y}
-  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u\!\left(x,y,z\right)
-  \left(
-    \sum_{l}\sum_{m}\sum_{n}
-    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
-  \right)
-  \,d\!z \,d\!x \,d\!y
-% \\ &=
-%   \sum_{n}
-%   \left(
-%     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-%     \sum_{m}
-%     \left(
-%       \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
-%       \sum_{l}
-%       \hat{u}_{l m n}
-%       \left(
-%         \int_0^{L_y}
-%         u\!\left(x,y,z\right)
-%         B_l\!\left(y\right)
-%         \,d\!y
-%       \right)
-%       e^{\ii k_m x}
-%       \,d\!x
-%     \right)
-%     e^{\ii k_n z}
-%     \,d\!z
-%   \right)
-\end{align}
-where some flash of insight as to a convenient computational technique would be
-quite helpful.
+% Not useful so commented out...
+%%\section{$L^2$ approximation error of a discrete field}
+%%
+%%To measure the $L^2$ approximation error of a discrete field $u^h$ against a
+%%known, analytic field $u$, we wish to compute $\left|\left| u - u^h
+%%\right|\right|^{2}_{L^{2}_{xyz}}$.  Employing inner product notation we find
+%%\begin{align}
+%%  \left|\left| u - u^h \right|\right|^{2}_{L^{2}_{xyz}}
+%%&=
+%%  \left( u-u^h, u-u^h \right)
+%%\\ &=
+%%    \left( u, u \right)
+%%  - \left( u, u^h \right)
+%%  - \left( u^h, u \right)
+%%  + \left(u^h, u^h\right)
+%%\\ &=
+%%    \left|\left| u   \right|\right|^{2}_{L^{2}_{xyz}}
+%%  - 2 \left( u, u^h \right)_{L^{2}_{xyz}}
+%%  + \left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}
+%%\end{align}
+%%using that both $u$ and $u^h$ are real-valued.  The first term can be evaluated
+%%analytically.  The third term can be computed following \eqref{eq:L2uh}.
+%%
+%%The second term may be treated as
+%%\begin{align}
+%%  \left( u^h, u \right)_{L^{2}_{xyz}}
+%%&=
+%%  \int_0^{L_y}
+%%  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+%%  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+%%  u\!\left(x,y,z\right)
+%%  \left(
+%%    \sum_{l}\sum_{m}\sum_{n}
+%%    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+%%  \right)
+%%  \,d\!z \,d\!x \,d\!y
+%%% \\ &=
+%%%   \sum_{n}
+%%%   \left(
+%%%     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+%%%     \sum_{m}
+%%%     \left(
+%%%       \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+%%%       \sum_{l}
+%%%       \hat{u}_{l m n}
+%%%       \left(
+%%%         \int_0^{L_y}
+%%%         u\!\left(x,y,z\right)
+%%%         B_l\!\left(y\right)
+%%%         \,d\!y
+%%%       \right)
+%%%       e^{\ii k_m x}
+%%%       \,d\!x
+%%%     \right)
+%%%     e^{\ii k_n z}
+%%%     \,d\!z
+%%%   \right)
+%%\end{align}
+%%where some flash of insight as to a convenient computational technique would be
+%%quite helpful.
 
 \end{document}
