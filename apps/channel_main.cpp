@@ -1172,6 +1172,12 @@ int main(int argc, char **argv)
     state_nonlinear.reset(channel::allocate_padded_state<nonlinear_state_type>(
                 channel::field::count, *dgrid));
 
+    // Dump some state shape and stride information for debugging purposes
+    DEBUG("Nonlinear state shape   (FYXZ): "
+          << suzerain::multi_array::shape_array(*state_nonlinear));
+    DEBUG("Nonlinear state strides (FYXZ): "
+          << suzerain::multi_array::strides_array(*state_nonlinear));
+
     // Load restart information into state_nonlinear, including simulation time
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
@@ -1197,18 +1203,14 @@ int main(int argc, char **argv)
     state_linear = make_shared<linear_state_type>(
             suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
 
-    // Copy (possibly perturbed) state from state_nonlinear into state_linear
-    state_linear->assign(*state_nonlinear);
-
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
           << suzerain::multi_array::shape_array(*state_linear));
-    DEBUG("Nonlinear state shape   (FYXZ): "
-          << suzerain::multi_array::shape_array(*state_nonlinear));
     DEBUG("Linear state strides    (FYXZ): "
           << suzerain::multi_array::strides_array(*state_linear));
-    DEBUG("Nonlinear state strides (FYXZ): "
-          << suzerain::multi_array::strides_array(*state_nonlinear));
+
+    // Copy (possibly perturbed) state from state_nonlinear into state_linear
+    state_linear->assign(*state_nonlinear);
 
     // Prepare chosen time stepping scheme and required operators
     //
