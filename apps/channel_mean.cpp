@@ -19,7 +19,6 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <Eigen/Core>
 #include <esio/esio.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
