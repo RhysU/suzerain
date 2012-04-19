@@ -432,9 +432,9 @@ static void sample_statistics(real_t t)
        samples.qb()      = common_block.qb();
     } else {
         WARN0("Could not obtain mean samples computed from implicit forcing");
-        samples.f      ().setConstant(numeric_limits<real_t>::epsilon());
-        samples.f_dot_u().setConstant(numeric_limits<real_t>::epsilon());
-        samples.qb     ().setConstant(numeric_limits<real_t>::epsilon());
+        samples.f      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.f_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.qb     ().setConstant(numeric_limits<real_t>::quiet_NaN());
     }
 
     const double elapsed = MPI_Wtime() - starttime;
