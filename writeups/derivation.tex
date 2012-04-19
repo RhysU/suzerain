@@ -3384,6 +3384,13 @@ coefficients have been pulled out of the constitutive relationships and pushed
 into the equations (for example, the factor $1/\Reynolds$ arising from the
 dimensional definition of $\bar{\rho}\epsilon$).
 
+Some locally computed quantities, e.g. the local Mach number, local Reynolds
+number, or local eddy viscosity, require rescaling within to account for
+nondimensionalization.  Other quantities, e.g. the local turbulent Prandtl
+number, do not.  Writing the dimensional definition and re-expressing all
+dimensional terms as a nondimensional value multiplied by a reference value
+allows determining any appropriate multiplicative factors.
+
 \subsection{Sampling logistics}
 
 Statistical quantities are obtained by sampling from a well-resolved,
