@@ -201,6 +201,7 @@ namespace quantity {
     ((local_Ma,   "Local Mach number formed via Ma * bar_u / local_a"))                                                     \
     ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / local_a"))                                 \
     ((local_Prt,  "Local turbulent Prandtl number formed via (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y)")) \
+    ((local_nut,  "Local eddy viscosity formed from - Re * tilde_upp_vpp / tilde_u__y"))                                    \
     ((local_Re,   "Local Reynolds number formed from Re * bar_rho_u L / bar_mu for L = 1"))
 
 /**
@@ -836,18 +837,17 @@ static quantity::storage_map_type process(
     // tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
     // errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
     //
-    // 2)  In local_Prt computation, the nondimensionalization has no effect.
-    // The computation depends on derivatives of derived quantities.
-    //
-    // 3)  In local_Re computation, the coefficient scenario.Re arises because
+    // 2)  In local_Re computation, the coefficient scenario.Re arises because
     // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
     // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
     // cause the nondimensional local_Re to be correctly formed from
-    // dimensional quantities.  Ditto for Ma in local_Ma and local_Mat.
+    // dimensional quantities.  Ditto for Re in the eddy viscosity. Ditto for
+    // Ma in local_Ma and local_Mat.
     C(local_a)   = C(tilde_T).sqrt();
     C(local_Ma)  = Ma * C(bar_u) / C(local_a);
     C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
     C(local_Prt) = (C(tilde_upp_vpp) * C(tilde_T__y)) / (C(tilde_Tpp_vpp) * C(tilde_u__y));
+    C(local_nut) = - Re * C(tilde_upp_vpp) / C(tilde_u__y);
     C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
 
     // Computation of Favre-averaged equation residuals following writeup
