@@ -546,7 +546,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in physical
  * space.
  */
-#define CHANNEL_MEAN_PHYSICAL                               \
+#define CHANNEL_MEAN_PHYSICAL                        \
     ((mu,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
