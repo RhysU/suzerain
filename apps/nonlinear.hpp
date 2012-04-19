@@ -84,8 +84,8 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
-    // must survive from substep to substep while instant profiles do not.
-    common.resize(/* Ny */ swave.shape()[1]);
+    // must survive from nonzero substep to substep while instant profiles do not.
+    if (ZerothSubstep) common.setZero(/* Ny */ swave.shape()[1]);
     common.u().setZero();
 
     // Maintain stable time step values to return to the caller

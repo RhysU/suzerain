@@ -250,14 +250,6 @@ public:
 
     /** @} */
 
-    /** Helper consistently resizing both \c means and \c refs */
-    template<typename Index>
-    void resize(const Index& Ny)
-    {
-        means.resize(Ny, means_t::ColsAtCompileTime);
-        refs.resize(refs_t::RowsAtCompileTime,  Ny);
-    }
-
     /** Helper consistently zeroing both \c means and \c refs */
     template<typename Index>
     void setZero(const Index& Ny)
