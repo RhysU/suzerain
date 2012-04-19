@@ -196,10 +196,11 @@ namespace quantity {
     ((tilde_nupp_gradzTpp,    "Favre-averaged z-component of the kinematic viscosity times the fluctuating temperature gradient"))
 
 /** A Boost.Preprocessor sequence of tuples of locally computed quantities */
-#define SEQ_LOCALS                                                                          \
-    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                         \
-    ((local_Ma,   "Local Mach number formed via Ma * bar_u / local_a"))                     \
-    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / local_a")) \
+#define SEQ_LOCALS                                                                                                          \
+    ((local_a,    "Local speed of sound formed via sqrt(tilde_T)"))                                                         \
+    ((local_Ma,   "Local Mach number formed via Ma * bar_u / local_a"))                                                     \
+    ((local_Mat,  "Local turbulent Mach number formed via Ma * sqrt(2*tilde_k) / local_a"))                                 \
+    ((local_Prt,  "Local turbulent Prandtl number formed via (tilde_upp_vpp * tilde_T__y) / (tilde_Tpp_vpp * tilde_u__y)")) \
     ((local_Re,   "Local Reynolds number formed from Re * bar_rho_u L / bar_mu for L = 1"))
 
 /**
@@ -308,7 +309,7 @@ namespace quantity {
     static void write_names(std::ostream &out)
     {
         for (size_t i = 0; i < quantity::count; ++i) {  // Headings
-            out << std::setw(numeric_limits<real_t>::digits10 + 11)
+            out << std::setw(numeric_limits<real_t>::digits10 + 12)
                 << quantity::name[i];
             if (i < quantity::count - 1) out << " ";
         }
@@ -794,24 +795,6 @@ static quantity::storage_map_type process(
     C(tilde_nupp_gradyTpp) = (C(bar_mu_grady_T) - C(tilde_nu)*C(bar_rho_grady_T))/C(bar_rho);
     C(tilde_nupp_gradzTpp) = (C(bar_mu_gradz_T) - C(tilde_nu)*C(bar_rho_gradz_T))/C(bar_rho);
 
-    // Computations of local quantities (see descriptions for definitions).
-    // Note the following:
-    //
-    // 1)  In local_Mat computation, ".abs()" is present to avoid taking the
-    // square root of very small, negative tilde_k arising from negative
-    // tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
-    // errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
-    //
-    // 2)  In local_Re computation, the coefficient scenario.Re arises because
-    // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
-    // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
-    // cause the nondimensional local_Re to be correctly formed from
-    // dimensional quantities.  Ditto for Ma in local_Ma and local_Mat.
-    C(local_a)   = C(tilde_T).sqrt();
-    C(local_Ma)  = Ma * C(bar_u) / C(local_a);
-    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
-    C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
-
     // Differentiate SAMPLED
     // Uses that bar_rho{,__y,__yy} is the first entry in SAMPLED{,_Y,_YY}
     s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y)
@@ -843,6 +826,29 @@ static quantity::storage_map_type process(
     bop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(quantity::tilde_u__yy).data(),
             1, b->n());
+
+    // Computations of local quantities (see descriptions for definitions).
+    // This must occur after differentitiation of SAMPLED and DERIVED.
+    // Note the following:
+    //
+    // 1)  In local_Mat computation, ".abs()" is present to avoid taking the
+    // square root of very small, negative tilde_k arising from negative
+    // tilde_{upp_upp,vpp_vpp_vpp} in laminar situations due to round off
+    // errors (i.e. tilde_u_u - tilde_u**2 ~= -eps).
+    //
+    // 2)  In local_Prt computation, the nondimensionalization has no effect.
+    // The computation depends on derivatives of derived quantities.
+    //
+    // 3)  In local_Re computation, the coefficient scenario.Re arises because
+    // (bar_rho_u * L / bar_mu) are already nondimensional.  Multiplying by Re
+    // re-incorporates the reference quantities rho_0, u_0, L_0, and mu_0 to
+    // cause the nondimensional local_Re to be correctly formed from
+    // dimensional quantities.  Ditto for Ma in local_Ma and local_Mat.
+    C(local_a)   = C(tilde_T).sqrt();
+    C(local_Ma)  = Ma * C(bar_u) / C(local_a);
+    C(local_Mat) = Ma * (std::sqrt(real_t(2))*C(tilde_k).abs().sqrt()) / C(local_a);
+    C(local_Prt) = (C(tilde_upp_vpp) * C(tilde_T__y)) / (C(tilde_Tpp_vpp) * C(tilde_u__y));
+    C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
 
     // Computation of Favre-averaged equation residuals following writeup
     // FIXME Implement the stationary equation residuals
