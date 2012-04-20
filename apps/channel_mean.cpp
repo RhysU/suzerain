@@ -582,9 +582,7 @@ static quantity::storage_map_type process(
     // Convert samples into collocation point values in s
     auto_ptr<storage_type> s(new storage_type(b->n(),
                 (storage_type::Index) storage_type::ColsAtCompileTime));
-#ifndef NDEBUG
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
-#endif
 
 #define ACCUMULATE(coeff_name, coeff_col, point_name)                 \
     bop->accumulate(0, 1.0, m->coeff_name().col(coeff_col).data(), 1, \
