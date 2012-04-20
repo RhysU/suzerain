@@ -667,7 +667,8 @@ static quantity::storage_map_type process(
     // Introduce shorthand for constants
     const real_t Ma    = scenario.Ma;
     const real_t Re    = scenario.Re;
-    const real_t Pr    = scenario.Pr;    SUZERAIN_UNUSED(Pr); // FIXME
+    const real_t Pr    = scenario.Pr;      SUZERAIN_UNUSED(Pr);     // FIXME
+    const real_t alpha = scenario.alpha;   SUZERAIN_UNUSED(alpha);  // FIXME
     const real_t gamma = scenario.gamma;
 
     // Shorthand for referring to a particular column
@@ -849,13 +850,93 @@ static quantity::storage_map_type process(
     C(local_nut) = - Re * C(tilde_upp_vpp) / C(tilde_u__y);
     C(local_Re)  = Re * C(bar_rho_u) /* L = 1 */ / C(bar_mu);
 
-    // Computation of Favre-averaged equation residuals following writeup
-    // FIXME Implement the stationary equation residuals
-    C(bar_rho__t).fill(numeric_limits<real_t>::quiet_NaN());
-    C(bar_rho_u__t).fill(numeric_limits<real_t>::quiet_NaN());
-    C(bar_rho_v__t).fill(numeric_limits<real_t>::quiet_NaN());
-    C(bar_rho_w__t).fill(numeric_limits<real_t>::quiet_NaN());
+    // Computation of Favre-averaged density equation residual following writeup
+    C(bar_rho__t) =
+        // - \nabla\cdot\bar{\rho}\tilde{u}
+           - C(bar_rho_v__y)
+        ;
+
+    // Computation of Favre-averaged streamwise momentum residual following writeup
+    C(bar_rho_u__t) =
+        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+           - C(tilde_v)*C(bar_rho_u__y) - C(bar_rho_u)*C(tilde_v__y)
+        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
+           - 0
+        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
+           + C(bar_tauxy__y) / Re
+        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
+           - C(bar_rho)*C(tilde_upp_vpp__y) - C(tilde_upp_vpp)*C(bar_rho__y)
+        // + \bar{f}
+           + C(bar_fx)
+        ;
+
+    // Computation of Favre-averaged wall-normal momentum residual following writeup
+    C(bar_rho_v__t) =
+        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+           - C(tilde_v)*C(bar_rho_v__y) - C(bar_rho_v)*C(tilde_v__y)
+        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
+           - C(bar_p__y)
+        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
+           + C(bar_tauyy__y) / Re
+        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
+           - C(bar_rho)*C(tilde_vpp_vpp__y) - C(tilde_vpp_vpp)*C(bar_rho__y)
+        // + \bar{f}
+           + C(bar_fy)
+        ;
+
+    // Computation of Favre-averaged spanwise momentum residual following writeup
+    C(bar_rho_w__t) =
+        // - \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+           - C(tilde_v)*C(bar_rho_w__y) - C(bar_rho_w)*C(tilde_v__y)
+        // - \frac{1}{\Mach^2}\nabla{}\bar{p}
+           - 0
+        // + \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right)
+           + C(bar_tauyz__y) / Re
+        // - \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right)
+           - C(bar_rho)*C(tilde_vpp_wpp__y) - C(tilde_vpp_wpp)*C(bar_rho__y)
+        // + \bar{f}
+           + C(bar_fz)
+        ;
+
+    // Computation of Favre-averaged total energy residual following writeup
+    // - \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
+    // + \Mach^{2} \nabla\cdot\left(
+    //       \left(
+    //           \frac{\bar{\tau}}{\Reynolds}
+    //         - \bar{\rho} \widetilde{u''\otimes{}u''}
+    //       \right) \tilde{u}
+    //     - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+    //     + \frac{\overline{\tau{}u''}}{\Reynolds}
+    //   \right)
+    // + \frac{1}{\gamma-1} \nabla\cdot\left(
+    //     \frac{
+    //        \bar{\mu} \widetilde{\nabla{}T}
+    //      + \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''}
+    //     }{\Reynolds\Prandtl}
+    //     - \bar{\rho} \widetilde{T''u''}
+    //   \right)
+    // + \Mach^{2} \left(
+    //       \bar{f}\cdot\tilde{u}
+    //     + \overline{f\cdot{}u''}
+    //   \right)
+    // + \bar{q}_b
     C(bar_rho_E__t).fill(numeric_limits<real_t>::quiet_NaN());
+
+    // Computation of Favre-averaged turbulent kinetic energy residual following writeup
+    // - \nabla\cdot\bar{\rho}k\tilde{u}
+    // - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+    // - \frac{\bar{\rho} \epsilon}{\Reynolds}
+    // + \nabla\cdot\left(
+    //       -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
+    //     + \frac{\overline{\tau{}u''}}{\Reynolds}
+    //   \right)
+    //
+    // + \frac{1}{\Mach^2} \left(
+    //       \bar{p}\nabla\cdot\overline{u''}
+    //     + \overline{p' \nabla\cdot{}u''}
+    //     - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
+    //   \right)
+    // + \overline{f\cdot{}u''}
     C(bar_rho_k__t).fill(numeric_limits<real_t>::quiet_NaN());
 
 #undef C
