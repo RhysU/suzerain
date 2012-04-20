@@ -900,7 +900,7 @@ static quantity::storage_map_type process(
     // Computation of Favre-averaged total energy residual following writeup
     C(bar_rho_E__t) =
     // - \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
-       - C(bar_rho_u)*C(tilde_H__y) - C(tilde_H)*C(bar_rho_u__y)
+       - C(bar_rho_v)*C(tilde_H__y) - C(tilde_H)*C(bar_rho_v__y)
     // + \Mach^{2} \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right) \tilde{u}
        + (Ma*Ma/Re)*( C(tilde_u)*C(bar_tauxy__y) + C(bar_tauxy)*C(tilde_u__y)
                     + C(tilde_v)*C(bar_tauyy__y) + C(bar_tauyy)*C(tilde_v__y)
@@ -909,8 +909,8 @@ static quantity::storage_map_type process(
        - (Ma*Ma)*( C(bar_rho_u)*C(tilde_upp_vpp__y) + C(tilde_upp_vpp)*C(bar_rho_u__y)
                  + C(bar_rho_v)*C(tilde_vpp_vpp__y) + C(tilde_vpp_vpp)*C(bar_rho_v__y)
                  + C(bar_rho_w)*C(tilde_vpp_wpp__y) + C(tilde_vpp_wpp)*C(bar_rho_w__y) )
-    // - \Mach^{2} \nabla\cdot\left( \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''} \right)
-       - Ma*Ma*( C(bar_rho)*C(tilde_upp2vpp__y) + C(tilde_upp2vpp)*C(bar_rho__y) )
+    // - \frac{1}{2}\Mach^{2} \nabla\cdot\left( \bar{\rho}\widetilde{{u''}^{2}u''} \right)
+       - (Ma*Ma/2)*( C(bar_rho)*C(tilde_upp2vpp__y) + C(tilde_upp2vpp)*C(bar_rho__y) )
     // + \Mach^{2} \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
        + (Ma*Ma/Re)*( C(bar_tauuppy__y) )
 
@@ -939,21 +939,31 @@ static quantity::storage_map_type process(
         ;
 
     // Computation of Favre-averaged turbulent kinetic energy residual following writeup
+    C(bar_rho_k__t) =
     // - \nabla\cdot\bar{\rho}k\tilde{u}
+       - C(bar_rho_v)*C(tilde_k__y) - C(tilde_k)*C(bar_rho_v__y)
     // - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+       - C(bar_rho)*( C(tilde_upp_vpp)*C(tilde_u__y)
+                    + C(tilde_vpp_vpp)*C(tilde_v__y)
+                    + C(tilde_vpp_wpp)*C(tilde_w__y) )
     // - \frac{\bar{\rho} \epsilon}{\Reynolds}
-    // + \nabla\cdot\left(
-    //       -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
-    //     + \frac{\overline{\tau{}u''}}{\Reynolds}
-    //   \right)
-    //
+       - C(bar_rho)*C(tilde_epsilon) / Re
+    // - \frac{1}{2}\nabla\cdot\left( \bar{\rho} \widetilde{{u''}^{2}u''} \right)
+       - C(bar_rho)*C(tilde_upp2vpp__y)/2 - C(tilde_upp2vpp)*C(bar_rho__y)/2
+    // + \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
+       + C(bar_tauuppy__y)/Re
     // + \frac{1}{\Mach^2} \left(
     //       \bar{p}\nabla\cdot\overline{u''}
     //     + \overline{p' \nabla\cdot{}u''}
     //     - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
     //   \right)
+       + 1/(Ma*Ma)*( C(bar_p)*C(bar_vpp__y)
+                   + C(bar_pp_div_upp)
+                   - C(bar_rho)*C(tilde_Tpp_vpp__y)/gamma
+                   - C(tilde_Tpp_vpp)*C(bar_rho__y)/gamma )
     // + \overline{f\cdot{}u''}
-    C(bar_rho_k__t).fill(numeric_limits<real_t>::quiet_NaN());
+       + C(bar_f_dot_upp)
+        ;
 
 #undef C
 
