@@ -667,8 +667,7 @@ static quantity::storage_map_type process(
     // Introduce shorthand for constants
     const real_t Ma    = scenario.Ma;
     const real_t Re    = scenario.Re;
-    const real_t Pr    = scenario.Pr;      SUZERAIN_UNUSED(Pr);     // FIXME
-    const real_t alpha = scenario.alpha;   SUZERAIN_UNUSED(alpha);  // FIXME
+    const real_t Pr    = scenario.Pr;
     const real_t gamma = scenario.gamma;
 
     // Shorthand for referring to a particular column
@@ -899,28 +898,45 @@ static quantity::storage_map_type process(
         ;
 
     // Computation of Favre-averaged total energy residual following writeup
+    C(bar_rho_E__t) =
     // - \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
-    // + \Mach^{2} \nabla\cdot\left(
-    //       \left(
-    //           \frac{\bar{\tau}}{\Reynolds}
-    //         - \bar{\rho} \widetilde{u''\otimes{}u''}
-    //       \right) \tilde{u}
-    //     - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
-    //     + \frac{\overline{\tau{}u''}}{\Reynolds}
-    //   \right)
+       - C(bar_rho_u)*C(tilde_H__y) - C(tilde_H)*C(bar_rho_u__y)
+    // + \Mach^{2} \nabla\cdot\left( \frac{\bar{\tau}}{\Reynolds} \right) \tilde{u}
+       + (Ma*Ma/Re)*( C(tilde_u)*C(bar_tauxy__y) + C(bar_tauxy)*C(tilde_u__y)
+                    + C(tilde_v)*C(bar_tauyy__y) + C(bar_tauyy)*C(tilde_v__y)
+                    + C(tilde_w)*C(bar_tauyz__y) + C(bar_tauyz)*C(tilde_w__y) )
+    // - \Mach^{2} \nabla\cdot\left( \bar{\rho} \widetilde{u''\otimes{}u''} \right) \tilde{u}
+       - (Ma*Ma)*( C(bar_rho_u)*C(tilde_upp_vpp__y) + C(tilde_upp_vpp)*C(bar_rho_u__y)
+                 + C(bar_rho_v)*C(tilde_vpp_vpp__y) + C(tilde_vpp_vpp)*C(bar_rho_v__y)
+                 + C(bar_rho_w)*C(tilde_vpp_wpp__y) + C(tilde_vpp_wpp)*C(bar_rho_w__y) )
+    // - \Mach^{2} \nabla\cdot\left( \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''} \right)
+       - Ma*Ma*( C(bar_rho)*C(tilde_upp2vpp__y) + C(tilde_upp2vpp)*C(bar_rho__y) )
+    // + \Mach^{2} \nabla\cdot\left( \frac{\overline{\tau{}u''}}{\Reynolds} \right)
+       + (Ma*Ma/Re)*( C(bar_tauuppy__y) )
+
     // + \frac{1}{\gamma-1} \nabla\cdot\left(
-    //     \frac{
-    //        \bar{\mu} \widetilde{\nabla{}T}
-    //      + \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''}
-    //     }{\Reynolds\Prandtl}
-    //     - \bar{\rho} \widetilde{T''u''}
+    //     \frac{ \bar{\mu} \widetilde{\nabla{}T} }{\Reynolds\Prandtl}
     //   \right)
-    // + \Mach^{2} \left(
-    //       \bar{f}\cdot\tilde{u}
-    //     + \overline{f\cdot{}u''}
+       + (
+            C(tilde_nu)*C(bar_rho_grady_T__y) + C(bar_rho_grady_T)*C(tilde_nu__y)
+         ) / ((gamma-1)*Re*Pr)
+    // + \frac{1}{\gamma-1} \nabla\cdot\left(
+    //     \frac{ \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''} }{\Reynolds\Prandtl}
     //   \right)
+       + (
+            C(bar_rho)*C(tilde_nupp_gradyTpp) + C(tilde_nupp_gradyTpp)*C(bar_rho__y)
+         ) / ((gamma-1)*Re*Pr)
+    // - \frac{1}{\gamma-1} \nabla\cdot\left( \bar{\rho} \widetilde{T''u''} \right)
+       - (
+            C(bar_rho)*C(tilde_Tpp_vpp__y) + C(tilde_Tpp_vpp)*C(bar_rho__y)
+         ) / (gamma-1)
+    // + \Mach^{2} \bar{f}\cdot\tilde{u}
+       + Ma*Ma*(C(bar_fx)*C(tilde_u)+ C(bar_fy)*C(tilde_v) + C(bar_fz)*C(tilde_w))
+    // + \Mach^{2} \overline{f\cdot{}u''}
+       + Ma*Ma*C(bar_f_dot_upp)
     // + \bar{q}_b
-    C(bar_rho_E__t).fill(numeric_limits<real_t>::quiet_NaN());
+       + C(bar_qb)
+        ;
 
     // Computation of Favre-averaged turbulent kinetic energy residual following writeup
     // - \nabla\cdot\bar{\rho}k\tilde{u}
