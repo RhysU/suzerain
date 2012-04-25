@@ -1,0 +1,94 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{lastpage}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{parskip}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{varioref}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        A covariance estimation procedure for nonuniformly
+        sampled, autocorrelated processes.
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Document-specific commands
+\newcommand{\ii}{\ensuremath{\mathrm{i}}}
+\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
+\DeclareMathOperator{\cov}{cov}
+
+\begin{document}
+
+Assume the existence of two stationary, vector-valued stochastic processes
+$\vec{\mathscr{X}}$ and $\vec{\mathscr{Y}}$ with finite, but unknown and
+possibly distinct, first and second moments and decaying, but unknown and
+possibly distinct, autocorrelations.  Estimate
+$\cov\left(\vec{\mathscr{X}},\vec{\mathscr{Y}}\right)$ given two length $N$
+sequences of samples $\vec{X}_{\iota}$ and $\vec{Y}_{\iota}$ where indices
+$\iota\in{}I\subset\left[0,t\right)$ are strictly increasing but not
+necessarily separated by a fixed $\Delta{}t$.
+
+Assume that $t$ is appreciably larger than the decay time of the
+autocorrelation of both processes and that $I$ ``covers $\left[0,t\right)$
+well-enough'' that interrogating $\OO{\sqrt{N}}$ consecutive samples will provide
+adequate autocorrelation structure without running afoul of the
+Nyquist sampling criterion.  $N$ must be large enough that standard estimates
+of $\operatorname{E}\left[\mathscr{X}\right]$ and
+$\operatorname{E}\left[\mathscr{Y}\right]$ may be taken as known means without
+incurring too much bias as Percival~\cite{Percival1993Three} suggests they
+might.  All-in-all, these imprecise restrictions are meant to suggest that
+$\vec{X}_\iota$ and $\vec{Y}_\iota$ are in situ samples from a converged,
+turbulence simulation.  The nonuniform sampling is intended to account for
+possibly missing samples or sample time drift across a long-running simulation.
+
+The estimation process proceeds in four steps.  First, use a nonuniform
+discrete Fourier transform followed by an inverse, uniform discrete Fourier
+transform to project the nonuniform samples onto a uniform temporal grid.
+Second, estimate the cross-spectra of the two projected sample sets in a way
+maximally reducing the variance of these estimates given limited data.  Third,
+compute the projection covariances from the projection cross-spectra estimates.
+Finally, compute the unprojected covariances corresponding to the original
+sample spacing.  For now, efficiency of the procedure is a secondary concern
+compared the primary concern of robustness.  Outside our purview is assessing
+the stationary of the two processes though the procedure should be amenable to
+building a Geweke-like diagnostic~\cite{Geweke1992Evaluating}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{amsplain}
+\bibliography{references}
+
+\end{document}
