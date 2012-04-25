@@ -69,10 +69,10 @@ autocorrelation of both processes and that $I$ ``covers $\left[0,t\right)$
 well-enough'' that interrogating $\alpha N$ consecutive samples when
 $\alpha<1/2$ will provide adequate autocorrelation information without running
 afoul of the Nyquist sampling criterion.  $N$ must be large enough that
-standard estimates of $\operatorname{E}\left[\mathscr{X}\right]$ and
-$\operatorname{E}\left[\mathscr{Y}\right]$ may be taken as known means without
-incurring too much bias as Percival~\cite{Percival1993Three} suggests they
-might.  All-in-all, these imprecise restrictions are meant to suggest that
+standard estimates of $\operatorname{E}\left[\vec{\mathscr{X}}\right]$ and
+$\operatorname{E}\left[\vec{\mathscr{Y}}\right]$ may be taken as known means
+without incurring too much bias as Percival~\cite{Percival1993Three} suggests
+they might.  All-in-all, these imprecise restrictions are meant to suggest that
 $\vec{x}_i$ and $\vec{y}_i$ are in situ samples from a converged, turbulence
 simulation.  The nonuniform sampling is intended to account for possibly
 missing samples or sample time drift across a long-running simulation.  For
@@ -93,7 +93,7 @@ corresponding to the original $\vec{x}$ and $\vec{y}$ using the linearity of
 the projection.  Finally, when $\mathscr{X}=\mathscr{Y}$, estimate the variance
 of the sample mean in a consistent manner.
 
-\subsection*{Projection onto uniform samples}
+\subsection*{Projection onto uniform temporal samples}
 
 Set $t_0=0$ without loss of generality and define
 $$
@@ -107,12 +107,12 @@ IDFT to produce $N$ uniform samples $\vec{X}\left(2\pi{}i/N\right)$ from the
 original $\vec{x}\left(t_k\right)$.  $\vec{Y}$ is constructed identically from
 $\vec{y}$.
 
-The projection $P$ operates separately on each element $x$ of $\vec{x}$
+The projection $A$ operates separately on each element $x$ of $\vec{x}$
 to produce each element $X$ of $\vec{X}$ according to
 $$
     X\left(2\pi{}i/N\right)
     =
-    P_{ik} x\left(t_k\right)
+    A_{ik} x\left(t_k\right)
     =
     \frac{1}{N}
     \sum_{j=0}^{N-1} \exp\left(\frac{ 2\pi\sqrt{-1} i j   }{N} \right)
@@ -121,16 +121,45 @@ $$
 .
 $$
 As $t_k$ are not known here, the usual discrete orthogonality relations are not
-used to simplify $P$.  Fast algorithms may be used to compute the NDFT (e.g.
-see Kunis and Potts~\cite{Kunis2008Time}), but will likely incur some floating
-point truncation error.  The fast Fourier transform may be used to compute the
-IDFT.  Hermitian symmetry can be used to reduce the cost of both transforms.
+used to simplify $A$.  Fast algorithms may be used to compute the NDFT but will
+incur more floating point error than the naive NDFT (e.g. see Kunis and
+Potts~\cite{Kunis2008Time}).  The fast Fourier transform may be used to compute
+the IDFT.  Hermitian symmetry can be used to reduce the cost of both
+transforms.
 
-\subsection*{Cross-spectra estimation from uniform samples}
+\subsection*{Cross-spectra estimation from the uniform samples}
+
+An estimate of the cross-spectra $\hat{P}$ is computed for each pair in
+$\left(\vec{X} - \operatorname{E}\left[\vec{X}\right]\right) \otimes
+\left(\vec{Y} - \operatorname{E}\left[\vec{Y}\right]\right)$ using Welch's
+approach~\cite{Welch1967Use}.  Only $\hat{P}(0)$ is of interest here.  Notice
+the variance of $\hat{P}(0)$ will be twice that of the rest of $\hat{P}$
+as Welch describes.
+
+Procedurally, Welch's averaging segment length $L$ should be taken as
+$\alpha{}N$ for some $\alpha<1/2$.  A fraction of $N$ is chosen the
+$N\to\infty$ limit might behave reasonably (as mentioned by Thi\'{e}baux and
+Zwiers~\cite{Thiebaux1984Interpretation}, p. 803).  To get a near maximum
+reduction in the covariance from a fixed number of samples, the segments should
+be overlapped by one half their length (i.e.  $D = L / 2 = \alpha{}N$).  The
+spectral window that Welch denotes $W_1$ is suggested though with adequate data
+using either $W_1$ or $W_2$ should give comparable results.
+
+The free parameter $\alpha$ plays a role similar to the ``coarse-graining''
+within the variance estimation procedure described in the appendix of Hoyas and
+Jim\'{e}nez~\cite{Hoyas2008Reynolds}.  When applied to adequate data it is
+expected that Welch's procedure as $\alpha\to{}1/2$ will also converge to a
+single result.  With Welch's overlapping window technique it should be possible
+to glean more information from fixed data than the approach Hoyas and
+Jim\'{e}nez propose.
 
 \subsection*{Covariance computation from cross-spectra estimates}
 
+TODO
+
 \subsection*{Reverse projection of the covariances}
+
+TODO
 
 \subsection*{Checking stationarity}
 
