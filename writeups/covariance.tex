@@ -71,12 +71,12 @@ $\alpha<1/2$ will provide adequate autocorrelation information without running
 afoul of the Nyquist sampling criterion.  $N$ must be large enough that
 standard estimates of $\operatorname{E}\left[\vec{\mathscr{X}}\right]$ and
 $\operatorname{E}\left[\vec{\mathscr{Y}}\right]$ may be taken as known means
-without incurring too much bias as Percival~\cite{Percival1993Three} suggests
-they might.  All-in-all, these imprecise restrictions are meant to suggest that
-$\vec{x}_i$ and $\vec{y}_i$ are in situ samples from a converged, turbulence
-simulation.  The nonuniform sampling is intended to account for possibly
-missing samples or sample time drift across a long-running simulation.  For
-now, efficiency of the procedure is a secondary concern.
+without incurring too awful a bias as Percival~\cite{Percival1993Three}
+suggests they might.  All-in-all, these imprecise restrictions are meant to
+suggest that $\vec{x}_i$ and $\vec{y}_i$ are in situ samples from a converged,
+turbulence simulation.  The nonuniform sampling is intended to account for
+possibly missing samples or sample time drift across a long-running simulation.
+For now, efficiency of the procedure is a secondary concern.
 
 \subsection*{Approach}
 
@@ -129,21 +129,22 @@ transforms.
 
 \subsection*{Cross-spectra estimation from the uniform samples}
 
-An estimate of the cross-spectra $\hat{P}$ is computed for each pair in
+An estimate of the cross-spectra $\hat{P}_{XY}$ is computed for each pair in
 $\left(\vec{X} - \operatorname{E}\left[\vec{X}\right]\right) \otimes
 \left(\vec{Y} - \operatorname{E}\left[\vec{Y}\right]\right)$ using Welch's
-approach~\cite{Welch1967Use}.  Only $\hat{P}(0)$ is of interest here.  Notice
-the variance of $\hat{P}(0)$ will be twice that of the rest of $\hat{P}$
-as Welch describes.
+approach~\cite{Welch1967Use} to the method of smoothed
+periodograms~\cite{Bartlett1948Smoothing}.  Only $\hat{P}_{XY}(0)$ is of
+interest here.  The variance of $\hat{P}_{XY}(0)$ will be twice that of the
+rest of $\hat{P}_{XY}$ as Welch describes.
 
 Procedurally, Welch's averaging segment length $L$ should be taken as
-$\alpha{}N$ for some $\alpha<1/2$.  A fraction of $N$ is chosen the
-$N\to\infty$ limit might behave reasonably (as mentioned by Thi\'{e}baux and
-Zwiers~\cite{Thiebaux1984Interpretation}, p. 803).  To get a near maximum
-reduction in the covariance from a fixed number of samples, the segments should
-be overlapped by one half their length (i.e.  $D = L / 2 = \alpha{}N$).  The
-spectral window that Welch denotes $W_1$ is suggested though with adequate data
-using either $W_1$ or $W_2$ should give comparable results.
+$\alpha{}N$ for some $\alpha<1/2$.  A fraction of $N$ is chosen so the
+$N\to\infty$ limit might possibly be asymptotically unbiased (as mentioned by
+Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation}, p. 803).  To get a
+near maximum reduction in the covariance from a fixed number of samples, the
+segments should be overlapped by one half their length (i.e.  $D = L / 2 =
+\alpha{}N$).  The spectral window that Welch denotes $W_1$ is suggested though
+with adequate data using either $W_1$ or $W_2$ should give comparable results.
 
 The free parameter $\alpha$ plays a role similar to the ``coarse-graining''
 within the variance estimation procedure described in the appendix of Hoyas and
@@ -153,9 +154,30 @@ single result.  With Welch's overlapping window technique it should be possible
 to glean more information from fixed data than the approach Hoyas and
 Jim\'{e}nez propose.
 
-\subsection*{Covariance computation from cross-spectra estimates}
+\subsection*{Covariance estimation from the cross-spectra estimates}
 
-TODO
+In the limit of infinite, uniform samples the zero frequency values from exact
+element-by-element cross-spectra are nothing but $\cov\left( \vec{\mathscr{X}}
+- \operatorname{E}\left[\vec{\mathscr{X}}\right], \vec{\mathscr{Y}} -
+\operatorname{E}\left[\vec{\mathscr{Y}}\right] \right)$ by the Wiener--Khinchin
+theorem.  We use $\hat{P}_{XY}(0)$ as an estimate of the covariance of each
+pair of elements.
+
+Following Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation},
+one global effective sample size $N'$ is defined by
+$$
+    N' = \frac{N}{N-1} \min
+    \frac{\sum_i \left(x(t_i) - \bar{x}\right)\left(y(t_i) - \bar{y}\right)}
+         {\hat{P}_{XY}(0)}
+$$
+where the minimum is found over all elements in $\vec{x}\otimes\vec{y}$ and
+$\hat{P}_{XY}$ is taken from the corresponding $\left(\vec{X} -
+\operatorname{E}\left[\vec{X}\right]\right) \otimes \left(\vec{Y} -
+\operatorname{E}\left[\vec{Y}\right]\right)$ element.  The summation is a
+naive, unbiased covariance estimate assuming all original samples are
+independent (and therefore their temporal spacing is irrelevant).  This global
+$N'$ gauges the number of independent samples effectively present in the entire
+data set.
 
 \subsection*{Reverse projection of the covariances}
 
