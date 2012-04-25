@@ -52,58 +52,79 @@
 
 \subsection*{Problem}
 
-Assume the existence of two stationary, vector-valued stochastic processes
+Assume the existence of two stationary, real-valued stochastic processes
 $\vec{\mathscr{X}}$ and $\vec{\mathscr{Y}}$ with finite, but unknown and
 possibly distinct, first and second moments and decaying, but unknown and
 possibly distinct, autocorrelations.  Estimate
-$\cov\left(\vec{\mathscr{X}},\vec{\mathscr{Y}}\right)$ given two length $N$
-sequences of samples $\vec{X}_{\iota}$ and $\vec{Y}_{\iota}$ where indices
-$\iota\in{}I\subset\left[0,t\right)$ are strictly increasing but not
-necessarily separated by a fixed $\Delta{}t$.
+$\cov\left(\vec{\mathscr{X}},\vec{\mathscr{Y}}\right)$ given two realization
+sequences $\vec{x}\left(t_i\right)$ and $\vec{y}\left(t_i\right)$ for
+$i\in\left\{0,1,\dots,N-1\right\}$ where $t_i < t_{i+1}$.  Further, when
+$\mathscr{X}=\mathscr{Y}$, estimate the variance of the sample mean in a
+consistent manner.
 
 \subsection*{Assumptions}
 
 Assume that $t$ is appreciably larger than the decay time of the
 autocorrelation of both processes and that $I$ ``covers $\left[0,t\right)$
-well-enough'' that interrogating $\OO{\sqrt{N}}$ consecutive samples will provide
-adequate autocorrelation structure without running afoul of the
-Nyquist sampling criterion.  $N$ must be large enough that standard estimates
-of $\operatorname{E}\left[\mathscr{X}\right]$ and
+well-enough'' that interrogating $\alpha N$ consecutive samples when
+$\alpha<1/2$ will provide adequate autocorrelation information without running
+afoul of the Nyquist sampling criterion.  $N$ must be large enough that
+standard estimates of $\operatorname{E}\left[\mathscr{X}\right]$ and
 $\operatorname{E}\left[\mathscr{Y}\right]$ may be taken as known means without
 incurring too much bias as Percival~\cite{Percival1993Three} suggests they
 might.  All-in-all, these imprecise restrictions are meant to suggest that
-$\vec{X}_\iota$ and $\vec{Y}_\iota$ are in situ samples from a converged,
-turbulence simulation.  The nonuniform sampling is intended to account for
-possibly missing samples or sample time drift across a long-running simulation.
+$\vec{x}_i$ and $\vec{y}_i$ are in situ samples from a converged, turbulence
+simulation.  The nonuniform sampling is intended to account for possibly
+missing samples or sample time drift across a long-running simulation.  For
+now, efficiency of the procedure is a secondary concern.
 
 \subsection*{Approach}
 
-The estimation process proceeds in four steps.  First, use a nonuniform
-discrete Fourier transform followed by an inverse, uniform discrete Fourier
-transform to project the nonuniform samples onto a uniform temporal grid.
-Second, estimate the cross-spectra of the two projected sample sets in a way
-maximally reducing the variance of these estimates given limited data.  Third,
-compute the projection covariances from the projection cross-spectra estimates.
-Finally, compute the unprojected covariances corresponding to the original
-sample spacing.  For now, efficiency of the procedure is a secondary concern.
+The estimation process proceeds in five steps.  First, construct uniform
+temporal samples $\vec{X}$ and $\vec{Y}$ from the nonuniform $\vec{x}$ and
+$\vec{y}$ via a discrete Fourier transform-based projection.  Second, estimate
+the cross-spectra of $\vec{X}$ and $\vec{Y}$ following
+Welch~\cite{Welch1967Use} to maximally reduce the variance of these estimates
+given limited data.  Next, compute the projected covariances from the
+cross-spectra estimates obtaining an ``effective sample size'' along the way
+per recommendations by Thi\'{e}baux and
+Zwiers~\cite{Thiebaux1984Interpretation}.  Then, compute the covariances
+corresponding to the original $\vec{x}$ and $\vec{y}$ using the linearity of
+the projection.  Finally, when $\mathscr{X}=\mathscr{Y}$, estimate the variance
+of the sample mean in a consistent manner.
 
 \subsection*{Projection onto uniform samples}
 
-Define
+Set $t_0=0$ without loss of generality and define
 $$
-T = \frac{t N}{N-1}
+T = \frac{t_{N-1} N}{N-1}.
 $$
-to be the sampling window for the purposes of a non-uniform discrete Fourier
-transform (NDFT).  $T$ is chosen so a subsequent inverse fast Fourier transform
-(IFFT) produces signals with the same physical wavelengths.  Define the
-projection matrix $P$ by
+$T$ will be the sampling window for a non-uniform discrete transform (NDFT).
+It was chosen so that a subsequent uniform, inverse discrete Fourier transform
+(IDFT) will exactly recover $\vec{X}=\vec{x}$ when $\vec{x}$ was sampled
+uniformly in time.  The temporal projection performs an NDFT followed by an
+IDFT to produce $N$ uniform samples $\vec{X}\left(2\pi{}i/N\right)$ from the
+original $\vec{x}\left(t_k\right)$.  $\vec{Y}$ is constructed identically from
+$\vec{y}$.
+
+The projection $P$ operates separately on each element $x$ of $\vec{x}$
+to produce each element $X$ of $\vec{X}$ according to
 $$
-    P \vec{X}
-    = 
+    X\left(2\pi{}i/N\right)
+    =
+    P_{ik} x\left(t_k\right)
+    =
     \frac{1}{N}
-    \sum_j \exp\left(-2\pi \sqrt{-1} k t_j T^{-1} \right) X_j
+    \sum_{j=0}^{N-1} \exp\left(\frac{ 2\pi\sqrt{-1} i j   }{N} \right)
+    \sum_{k=0}^{N-1} \exp\left(\frac{-2\pi\sqrt{-1} j t_k }{T} \right)
+    x\left(t_k\right)
+.
 $$
-where $j$ indexes the strictly increasing entries of $I\subset\left[0,t\right)$
+As $t_k$ are not known here, the usual discrete orthogonality relations are not
+used to simplify $P$.  Fast algorithms may be used to compute the NDFT (e.g.
+see Kunis and Potts~\cite{Kunis2008Time}), but will likely incur some floating
+point truncation error.  The fast Fourier transform may be used to compute the
+IDFT.  Hermitian symmetry can be used to reduce the cost of both transforms.
 
 \subsection*{Cross-spectra estimation from uniform samples}
 
@@ -112,6 +133,10 @@ where $j$ indexes the strictly increasing entries of $I\subset\left[0,t\right)$
 \subsection*{Reverse projection of the covariances}
 
 \subsection*{Checking stationarity}
+
+Small changes to the periodogram averaging segment size $\alpha N$
+should cause small perturbations to the results when $N$ is sufficiently
+large and $t_i$ are sufficiently distributed.
 
 This procedure should be amenable to applying the Geweke
 diagnostic~\cite{Geweke1992Evaluating} as a way to assess convergence.
