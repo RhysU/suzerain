@@ -44,12 +44,13 @@
 \pagestyle{plain}
 
 % Document-specific commands
-\newcommand{\ii}{\ensuremath{\mathrm{i}}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
 \newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
 \DeclareMathOperator{\cov}{cov}
 
 \begin{document}
+
+\subsection*{Problem}
 
 Assume the existence of two stationary, vector-valued stochastic processes
 $\vec{\mathscr{X}}$ and $\vec{\mathscr{Y}}$ with finite, but unknown and
@@ -59,6 +60,8 @@ $\cov\left(\vec{\mathscr{X}},\vec{\mathscr{Y}}\right)$ given two length $N$
 sequences of samples $\vec{X}_{\iota}$ and $\vec{Y}_{\iota}$ where indices
 $\iota\in{}I\subset\left[0,t\right)$ are strictly increasing but not
 necessarily separated by a fixed $\Delta{}t$.
+
+\subsection*{Assumptions}
 
 Assume that $t$ is appreciably larger than the decay time of the
 autocorrelation of both processes and that $I$ ``covers $\left[0,t\right)$
@@ -73,6 +76,8 @@ $\vec{X}_\iota$ and $\vec{Y}_\iota$ are in situ samples from a converged,
 turbulence simulation.  The nonuniform sampling is intended to account for
 possibly missing samples or sample time drift across a long-running simulation.
 
+\subsection*{Approach}
+
 The estimation process proceeds in four steps.  First, use a nonuniform
 discrete Fourier transform followed by an inverse, uniform discrete Fourier
 transform to project the nonuniform samples onto a uniform temporal grid.
@@ -80,10 +85,37 @@ Second, estimate the cross-spectra of the two projected sample sets in a way
 maximally reducing the variance of these estimates given limited data.  Third,
 compute the projection covariances from the projection cross-spectra estimates.
 Finally, compute the unprojected covariances corresponding to the original
-sample spacing.  For now, efficiency of the procedure is a secondary concern
-compared the primary concern of robustness.  Outside our purview is assessing
-the stationary of the two processes though the procedure should be amenable to
-building a Geweke-like diagnostic~\cite{Geweke1992Evaluating}.
+sample spacing.  For now, efficiency of the procedure is a secondary concern.
+
+\subsection*{Projection onto uniform samples}
+
+Define
+$$
+T = \frac{t N}{N-1}
+$$
+to be the sampling window for the purposes of a non-uniform discrete Fourier
+transform (NDFT).  $T$ is chosen so a subsequent inverse fast Fourier transform
+(IFFT) produces signals with the same physical wavelengths.  Define the
+projection matrix $P$ by
+$$
+    P \vec{X}
+    = 
+    \frac{1}{N}
+    \sum_j \exp\left(-2\pi \sqrt{-1} k t_j T^{-1} \right) X_j
+$$
+where $j$ indexes the strictly increasing entries of $I\subset\left[0,t\right)$
+
+\subsection*{Cross-spectra estimation from uniform samples}
+
+\subsection*{Covariance computation from cross-spectra estimates}
+
+\subsection*{Reverse projection of the covariances}
+
+\subsection*{Checking stationarity}
+
+This procedure should be amenable to applying the Geweke
+diagnostic~\cite{Geweke1992Evaluating} as a way to assess convergence.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
