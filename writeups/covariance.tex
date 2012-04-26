@@ -11,7 +11,6 @@
 \usepackage{lastpage}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
-\usepackage{parskip}
 \usepackage{setspace}
 \usepackage{txfonts}
 \usepackage{varioref}
@@ -34,8 +33,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        A covariance estimation procedure for nonuniformly
-        sampled, autocorrelated processes.
+        Covariance estimation from nonuniform, autocorrelated samples.
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -58,40 +56,37 @@ possibly distinct, first and second moments and decaying, but unknown and
 possibly distinct, autocorrelations.  Estimate
 $\cov\left(\vec{\mathscr{X}},\vec{\mathscr{Y}}\right)$ given two realization
 sequences $\vec{x}\left(t_i\right)$ and $\vec{y}\left(t_i\right)$ for
-$i\in\left\{0,1,\dots,N-1\right\}$ where $t_i < t_{i+1}$.  Further, when
-$\mathscr{X}=\mathscr{Y}$, estimate the variance of the sample mean in a
-consistent manner.
+$i\in\left\{0,1,\dots,N-1\right\}$ where $t_i < t_{i+1}$.
 
 \subsection*{Assumptions}
 
-Assume that $t$ is appreciably larger than the decay time of the
-autocorrelation of both processes and that $I$ ``covers $\left[0,t\right)$
-well-enough'' that interrogating $\alpha N$ consecutive samples when
-$\alpha<1/2$ will provide adequate autocorrelation information without running
-afoul of the Nyquist sampling criterion.  $N$ must be large enough that
-standard estimates of $\operatorname{E}\left[\vec{\mathscr{X}}\right]$ and
-$\operatorname{E}\left[\vec{\mathscr{Y}}\right]$ may be taken as known means
-without incurring too awful a bias as Percival~\cite{Percival1993Three}
-suggests they might.  All-in-all, these imprecise restrictions are meant to
-suggest that $\vec{x}_i$ and $\vec{y}_i$ are in situ samples from a converged,
+Data was sampled across times appreciably larger than the decay of the
+autocorrelation of both processes and $I$ ``covers $\left[0,t\right)$
+well-enough'' that interrogating $\alpha \sqrt{N}$ consecutive samples for some
+fixed $1\le\alpha\le\sqrt{N}$ will provide adequate autocorrelation information
+without running afoul of the Nyquist criterion.  $N$ must be large enough that
+sample means of $\vec{x}$ and $\vec{y}$ may be taken as known means without
+incurring too awful a bias as Percival~\cite{Percival1993Three} suggests they
+might.  All-in-all, these imprecise restrictions are meant to be consistent
+with $\vec{x}$ and $\vec{y}$ being in situ samples from a long-running
 turbulence simulation.  The nonuniform sampling is intended to account for
 possibly missing samples or sample time drift across a long-running simulation.
-For now, efficiency of the procedure is a secondary concern.
+In the ideal case, the sampling will of course be uniform.
 
 \subsection*{Approach}
 
-The estimation process proceeds in five steps.  First, construct uniform
-temporal samples $\vec{X}$ and $\vec{Y}$ from the nonuniform $\vec{x}$ and
-$\vec{y}$ via a discrete Fourier transform-based projection.  Second, estimate
-the cross-spectra of $\vec{X}$ and $\vec{Y}$ following
-Welch~\cite{Welch1967Use} to maximally reduce the variance of these estimates
-given limited data.  Next, compute the projected covariances from the
-cross-spectra estimates obtaining an ``effective sample size'' along the way
-per recommendations by Thi\'{e}baux and
-Zwiers~\cite{Thiebaux1984Interpretation}.  Then, compute the covariances
-corresponding to the original $\vec{x}$ and $\vec{y}$ using the linearity of
-the projection.  Finally, when $\mathscr{X}=\mathscr{Y}$, estimate the variance
-of the sample mean in a consistent manner.
+The procedure has four steps.  First, construct uniform temporal samples
+$\vec{X}$ and $\vec{Y}$ from the nonuniform $\vec{x}$ and $\vec{y}$ via a
+Fourier-based projection.  Second, estimate the cross-spectra of $\vec{X}$ and
+$\vec{Y}$ following Welch~\cite{Welch1967Use} to maximally reduce the variance
+of these estimates given limited data.  Third, estimate the covariances from
+the cross-spectra and compute an effective sample size $N'$ per recommendations
+by Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation}.  Finally, compute
+the sample covariance of $\vec{x}_i$ and $\vec{y}_i$ thinned to contain only
+$N'$ effectively i.i.d. samples.  This thinned sample covariance, not the
+estimate based on the projection, is the output of the procedure.  When
+$\mathscr{X}=\mathscr{Y}$, the thinned sample variance should be reported as
+the variance of a sample mean taken across all of $\vec{x}$.
 
 \subsection*{Projection onto uniform temporal samples}
 
@@ -125,7 +120,9 @@ used to simplify $A$.  Fast algorithms may be used to compute the NDFT but will
 incur more floating point error than the naive NDFT (e.g. see Kunis and
 Potts~\cite{Kunis2008Time}).  The fast Fourier transform may be used to compute
 the IDFT.  Hermitian symmetry can be used to reduce the cost of both
-transforms.
+transforms.  The interpolation error near $t_0$ and $t_{N-1}$ arising from
+assuming $\vec{x}$ and $\vec{y}$ during this projection process is somewhat
+assuaged by subsequent windowing during the cross-spectra estimation.
 
 \subsection*{Cross-spectra estimation from the uniform samples}
 
@@ -138,21 +135,22 @@ interest here.  The variance of $\hat{P}_{XY}(0)$ will be twice that of the
 rest of $\hat{P}_{XY}$ as Welch describes.
 
 Procedurally, Welch's averaging segment length $L$ should be taken as
-$\alpha{}N$ for some $\alpha<1/2$.  A fraction of $N$ is chosen so the
-$N\to\infty$ limit might possibly be asymptotically unbiased (as mentioned by
-Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation}, p. 803).  To get a
-near maximum reduction in the covariance from a fixed number of samples, the
-segments should be overlapped by one half their length (i.e.  $D = L / 2 =
-\alpha{}N$).  The spectral window that Welch denotes $W_1$ is suggested though
-with adequate data using either $W_1$ or $W_2$ should give comparable results.
+$\alpha\sqrt{N}$ for some $1\le\alpha\le\sqrt{N}$.  A fraction of $\sqrt{N}$ is
+chosen so the $N\to\infty$ limit might possibly be asymptotically unbiased (as
+mentioned by Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation}, p.
+803).  To get a near maximum reduction in the covariance from a fixed number of
+samples, the segments should be overlapped by one half their length (i.e.  $D =
+L / 2 = \alpha{}N$).  The spectral window that Welch denotes $W_1$ is suggested
+though with adequate data using either $W_1$ or $W_2$ should give comparable
+results.
 
 The free parameter $\alpha$ plays a role similar to the ``coarse-graining''
 within the variance estimation procedure described in the appendix of Hoyas and
 Jim\'{e}nez~\cite{Hoyas2008Reynolds}.  When applied to adequate data it is
-expected that Welch's procedure as $\alpha\to{}1/2$ will also converge to a
-single result.  With Welch's overlapping window technique it should be possible
-to glean more information from fixed data than the approach Hoyas and
-Jim\'{e}nez propose.
+expected that Welch's procedure as $\alpha\to\sqrt{N}$ will also converge.
+With Welch's overlapping window technique it should be possible to glean more
+information from a fixed amount of data than the approach Hoyas and Jim\'{e}nez
+proposed.
 
 \subsection*{Covariance estimation from the cross-spectra estimates}
 
@@ -160,37 +158,46 @@ In the limit of infinite, uniform samples the zero frequency values from exact
 element-by-element cross-spectra are nothing but $\cov\left( \vec{\mathscr{X}}
 - \operatorname{E}\left[\vec{\mathscr{X}}\right], \vec{\mathscr{Y}} -
 \operatorname{E}\left[\vec{\mathscr{Y}}\right] \right)$ by the Wiener--Khinchin
-theorem.  We use $\hat{P}_{XY}(0)$ as an estimate of the covariance of each
-pair of elements.
+theorem.  $\hat{P}_{XY}(0)$ is used to estimate of the covariance of each pair
+of elements.
 
 Following Thi\'{e}baux and Zwiers~\cite{Thiebaux1984Interpretation},
-one global effective sample size $N'$ is defined by
+one possible effective sample size $N'$ is defined by
 $$
-    N' = \frac{N}{N-1} \min
-    \frac{\sum_i \left(x(t_i) - \bar{x}\right)\left(y(t_i) - \bar{y}\right)}
-         {\hat{P}_{XY}(0)}
+    N' = N \min \frac{\cov(x,y)} {\hat{P}_{XY}(0)}
 $$
-where the minimum is found over all elements in $\vec{x}\otimes\vec{y}$ and
-$\hat{P}_{XY}$ is taken from the corresponding $\left(\vec{X} -
+where the minimum is found over all elements in $\vec{x}\otimes\vec{y}$,
+$\hat{P}_{XY}$ is taken from the corresponding element within $\left(\vec{X} -
 \operatorname{E}\left[\vec{X}\right]\right) \otimes \left(\vec{Y} -
-\operatorname{E}\left[\vec{Y}\right]\right)$ element.  The summation is a
-naive, unbiased covariance estimate assuming all original samples are
-independent (and therefore their temporal spacing is irrelevant).  This global
-$N'$ gauges the number of independent samples effectively present in the entire
-data set.
+\operatorname{E}\left[\vec{Y}\right]\right)$, and $\cov(x,y)$ is an unbiased
+sample covariance computed assuming all original samples are independent (and
+therefore their temporal spacing is irrelevant).  This single value $N'$ gauges
+the number of independent samples present in the entire data given the
+discovered autocorrelation structure.
 
-\subsection*{Reverse projection of the covariances}
+\subsection*{Thinning to effectively i.i.d samples}
 
-TODO
+The original $N$ samples $\vec{x}(t_i)$ and $\vec{y}(t_i)$ should be thinned so
+that only $N'$ samples, separated maximally in time, remain.  While not truly
+i.i.d. they should be approximately so because the autocorrelation was
+accounted for within the determination of $N'$.  From those samples the
+classical unbiased covariance is computed.  This thinned covariance is reported
+as the output of the procedure.
 
-\subsection*{Checking stationarity}
+When $\mathscr{X}=\mathscr{Y}$, the thinned sample variance should be reported
+as the variance of a sample mean taken across all of $\vec{x}$.  This should
+provide the best possible estimate of the mean given fixed data while providing
+a reasonable estimate of its variance.
 
-Small changes to the periodogram averaging segment size $\alpha N$
+\subsection*{Checking consistency and stationarity}
+
+Small changes to the periodogram averaging segment factor $\alpha$
 should cause small perturbations to the results when $N$ is sufficiently
-large and $t_i$ are sufficiently distributed.
+large and the $t_i$ are adequately spaced.
 
-This procedure should be amenable to applying the Geweke
-diagnostic~\cite{Geweke1992Evaluating} as a way to assess convergence.
+This procedure might be amenable to applying the Geweke
+diagnostic~\cite{Geweke1992Evaluating} as a way to assess simulation statistics
+convergence.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
