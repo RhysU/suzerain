@@ -2233,6 +2233,7 @@ have superscripts indicating the relevant equation and
 subscripts indicating the associated term.
 
 \subsubsection{Discretization of the implicitly-treated terms}
+\label{sec:discretizationofimplicitterms}
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
 from~\ref{sec:formingoperators}, we must implement $M+\varphi{}L$ for arbitrary
@@ -2650,19 +2651,20 @@ are selected over Poinsot and Lele's locally one-dimensional inviscid
 (``LODI'') relations~\cite{Poinsot1992Boundary} because other codes with
 identical discretization choices have successfully employed Giles' approach on
 our problems of interest.  The practical performance of the two methods is
-expected to be nearly identical.  In Section 4.3.2 of his thesis,
+expected to be nearly identical.  In section 4.3.2 of his thesis,
 Guarini~\cite{Guarini1998} extended Giles' analysis to three directions with
-$y$ being the inhomogeneous direction (Equation 4.71).
+$y$ being the inhomogeneous direction.
 
-We review Giles' approach following Guarini.  For complete details the papers
-of Giles and Guarini's thesis should be consulted.  For the state vector $U =
-\left\{ \rho, u, v, w, p, \rho\phi \right\}$ the dimensional Euler equations,
-augmented by a conserved passive scalar equation, may be written as follows:
+We review Giles' approach following Guarini.  For complete details, especially
+motivations and proofs, the papers of Giles and Guarini's thesis should be
+consulted.  For the state vector $U = \left\{ \rho, u, v, w, p, \rho\phi
+\right\}$ the dimensional Euler equations, augmented by a conserved passive
+scalar equation, may be written as follows:
 $$
-    \frac{\partial{}U}{\partial{}t}
-+ A \frac{\partial{}U}{\partial{}x}
-+ B \frac{\partial{}U}{\partial{}y}
-+ C \frac{\partial{}U}{\partial{}z}
+    \frac{\partial}{\partial{}t}U
++ A \frac{\partial}{\partial{}x}U
++ B \frac{\partial}{\partial{}y}U
++ C \frac{\partial}{\partial{}z}U
 = 0
 $$
 \begin{align}
@@ -2694,42 +2696,43 @@ $$
        \end{bmatrix}
 \end{align}
 The conserved passive scalar $\phi$ has been added to this derivation in
-anticipation of future simulation needs.  Any number of conserved passive
-scalars will behave in a manner identical to the final row and column of
-matrices $A$, $B$, and $C$.
+anticipation of future simulation needs.  Any number of scalars will behave
+identically to the final row and column of matrices $A$, $B$, and $C$.
 
 Consider perturbations $\delta{}U = \left\{ \delta{}\rho, \delta{}u, \delta{}v,
 \delta{}w, \delta{}p, \delta{}\rho\phi \right\}$ taken about some steady,
 uniform reference state $U_0$ so that $U = U_0 + \delta{}U$.  The short-time
-evolution of small perturbations is governed by the linearized Euler equations
+evolution of perturbations is governed by the linearized Euler equations
 \begin{align}
 \label{eq:dimeulerperturb}
-      \frac{\partial\delta{}U}{\partial{}t}
-+ A_0 \frac{\partial\delta{}U}{\partial{}x}
-+ B_0 \frac{\partial\delta{}U}{\partial{}y}
-+ C_0 \frac{\partial\delta{}U}{\partial{}z}
-= 0
+      \frac{\partial}{\partial{}t}\delta{}U
++ A_0 \frac{\partial}{\partial{}x}\delta{}U
++ B_0 \frac{\partial}{\partial{}y}\delta{}U
++ C_0 \frac{\partial}{\partial{}z}\delta{}U
+&= 0
 \end{align}
 where matrices $A_0$, $B_0$, and $C_0$ are evaluated at $U_0$.  Assuming
 a solution of the form
-$$
-  \delta{}U = e^{\ii\left(
+\begin{align}
+  \delta{}U &= e^{\ii\left(
     k_x x + k_y y + k_z z - \omega t
   \right)}
   \delta\hat{U}^R
-$$
+\end{align}
 and substituting into the linearized equations reduces the equations to
-$$
+\begin{align}
+\label{eq:dimeulerreduced}
   \ii\left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right)
-  \delta\hat{U}^R = 0
-$$
+  \delta\hat{U}^R &= 0
+\end{align}
 which has nontrivial solutions only if the so-called dispersion relation
-$$
+\begin{align}
 \label{eq:dimeulerdisp}
-  \det \left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right) = 0
-$$ holds.
-Applying $- \ii^{-1} B_0^{-1}$, one finds a family of wavenumber-dependent
-eigenvalue problems for $k_y$
+  \det \left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right) &= 0
+\end{align}
+holds.
+Applying $- \ii^{-1} B_0^{-1}$ to equation~\eqref{eq:dimeulerreduced}, one
+finds a family of eigenvalue problems in $k_y$
 $$
   \left( \omega B_0^{-1} - k_x B_0^{-1} A_0 - k_y I - k_z B_0^{-1} C_0 \right)
   \delta\hat{U}^R = 0
@@ -2743,39 +2746,103 @@ $$
 $$
 naturally gives rise to the associated left null vector $V^L$.  Guarini,
 following Giles, used the orthogonality properties of eigenvectors satisfying
-the dispersion to arrive at the exact, nonreflecting boundary conditions
-$$
-  V_n^L \delta{}U = 0
-$$
+the dispersion to build the exact, nonreflecting boundary conditions
+\begin{align}
+\label{eq:dimeulerexact}
+  V_n^L \delta{}U &= 0
+\end{align}
 for each $V_n^L = V^L\!\left(k_{y_n}\right)$ corresponding to an incoming wave.
+This exact condition is approximated for reasons of computational tractability.
+Dividing the dispersion relation~\eqref{eq:dimeulerdisp} by $\omega$ and
+noticing $V_n^L$ therefore is only a bivariate function of $\lambda_x =
+k_x/\omega$ and $\lambda_z/\omega$ suggests employing a Taylor series.
+Truncating the series is equivalent to assuming waves have a small angle of
+incidence.  To first order,
+\begin{align}
+  \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
+  \delta{}U
+  +
+  \lambda_x
+  \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
+  \delta{}U
+  +
+  \lambda_z
+  \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
+  \delta{}U
+  &\approx 0
+  .
+\end{align}
+Multiplying through by $-\ii\omega$, Fourier transforming in time,
+and using linearity one arrives at the result
+\begin{align}
+\label{eq:dimeulerapprox}
+  \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
+  \frac{\partial}{\partial{}t}\delta{}U
+  &\approx
+  \ii k_x
+  \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
+  \delta{}U
+  +
+  \ii k_z
+  \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
+  \delta{}U
+  .
+\end{align}
 
+Comparing the above result with equation~\eqref{eq:spatial_discretization} and
+the implicit operator from section~\ref{sec:discretizationofimplicitterms}, the
+condition fits well into Suzerain's implicit discretization.  The implicit
+operator rows corresponding to nonreflecting boundaries must modified at every
+wavenumber.  Care must be taken to only adjust the incoming or outgoing
+characteristics.  Two issues, however, must be addressed.
 
+First, the result is not expressed for Suzerain's conservative state variables.
+In section 4.3.2 of his thesis, Guarini~\cite{Guarini1998} proved that the
+linear structure of the Euler equations permits translating Giles' approach to
+another collection of state variables using the Jacobian matrix of the
+coordinate transformation.  For some other state variable selection $V$,
+reference state $V_0$, and perturbation $\delta{}V = V - V_0$, the Jacobian
+matrix
+$$
+   S = \frac{\partial{}U}{\partial{}V}
+$$
+may be used to rewrite the approximate boundary
+condition~\eqref{eq:dimeulerapprox} as
+\begin{align}
+\label{eq:dimeulertransform}
+  \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
+  S
+  \frac{\partial}{\partial{}t}\delta{}V
+  &\approx
+  \ii k_x
+  \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
+  S
+  \delta{}V
+  +
+  \ii k_z
+  \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
+  S
+  \delta{}V
+  .
+\end{align}
 
+Second, it is not appropriately nondimensionalized.
+FIXME
 
+Concrete matrices.
+FIXME
 
-Guarini~\cite{Guarini1998} proved that the linear structure of the Euler
-equations permits translating Giles' approach to another collection of state
-variables using the Jacobian matrix of the coordinate transformation (see
-Equation 4.81).  Guarini also rotated the nonreflecting boundary to match the
-nonorthogonal coordinate system used for his spatially-homogenized boundary
-layer.  Personal communications with Victor Topalian regarding his
-temporally-homogenized work suggests reorienting the nonreflecting coordinate
-system is unnecessary (though Victor has employed modest grid stretching near
-the freestream and other ``solution conditioning'' tools like low pass
-filtering).
-
-We now translate Guarini's orthogonal, dimensional results to Suzerain's
-state variable and nondimensionalization choices.
-
-
-
-
-\begin{enumerate}
-\item Work through Guarini's transformation of Giles' result for our particular state variables (we use density and total energy unlike Guarini's specific volume and pressure).
-\item Get to Guarini's equation (4.90) post haste.
-\item Note the Poinsot and Lele 1992 reference discussing viscous conditions
-\item Comment on implementation considerations
-\end{enumerate}
+Guarini mentions that Poinsot and Lele~cite{Poinsot1992Boundary} suggest two
+additional viscous conditions be supplied when conditions like these are
+applied to the Navier--Stokes equations.  These are currently omitted but that
+choice may need to be revisited.  Finally, Guarini rotated the nonreflecting
+boundary to match the nonorthogonal coordinate system used for his
+spatially-homogenized boundary layer.  Personal communications with Victor
+Topalian regarding his temporally-homogenized work suggests reorienting the
+nonreflecting coordinate system is unnecessary.  However, modest grid
+stretching near the freestream and other ``solution conditioning'' tools like
+low pass filtering have been employed in his work.  This choice, too, might
+need to be reviewed.
 
 \subsection{Imposing a favorable streamwise pressure gradient}
 
