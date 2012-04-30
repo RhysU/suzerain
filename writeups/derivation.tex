@@ -2649,28 +2649,15 @@ Euler equations using primitive state variables.  Giles' boundary conditions
 are selected over Poinsot and Lele's locally one-dimensional inviscid
 (``LODI'') relations~\cite{Poinsot1992Boundary} because other codes with
 identical discretization choices have successfully employed Giles' approach on
-our problems of interest.
+our problems of interest.  The practical performance of the two methods is
+expected to be nearly identical.  In Section 4.3.2 of his thesis,
+Guarini~\cite{Guarini1998} extended Giles' analysis to three directions with
+$y$ being the inhomogeneous direction (Equation 4.71).
 
-In Section 4.3.2 of his thesis, Guarini~\cite{Guarini1998} extended Giles'
-analysis to three directions with $y$ being the inhomogeneous direction (see
-Equation 4.71).  Guarini proved that the linear structure of the Euler
-equations permits translating Giles' approach to another collection of state
-variables using the Jacobian matrix of the coordinate transformation (see
-Equation 4.81).  Guarini also rotated the nonreflecting boundary to match the
-nonorthogonal coordinate system used for his spatially-homogenized boundary
-layer.  Personal communications with Victor Topalian regarding his
-temporally-homogenized work suggests reorienting the nonreflecting coordinate
-system is unnecessary (though Victor has employed modest grid stretching near
-the freestream and other ``solution conditioning'' tools like low pass
-filtering).
-
-We now translate Guarini's orthogonal, dimensional results to Suzerain's
-state variable and nondimensionalization choices.  For complete details
-Guarini's thesis and the papers of Giles should be consulted.
-
-For the state vector $U = \left\{ \rho, u, v, w, p, \rho\phi \right\}$ the
-dimensional Euler equations, augmented by a conserved passive scalar equation,
-may be written as follows:
+We review Giles' approach following Guarini.  For complete details the papers
+of Giles and Guarini's thesis should be consulted.  For the state vector $U =
+\left\{ \rho, u, v, w, p, \rho\phi \right\}$ the dimensional Euler equations,
+augmented by a conserved passive scalar equation, may be written as follows:
 $$
     \frac{\partial{}U}{\partial{}t}
 + A \frac{\partial{}U}{\partial{}x}
@@ -2706,21 +2693,80 @@ $$
         0 & 0        & 0 & 0 & 0              & w
        \end{bmatrix}
 \end{align}
-The conserved passive scalar $\phi$ has been added in anticipation of future
-needs.  Any number of conserved passive scalars will behave in a manner
-identical to the final row and column of matrices $A$, $B$, and $C$.  Consider
-perturbations $\delta{}U = \left\{ \delta{}\rho, \delta{}u, \delta{}v,
+The conserved passive scalar $\phi$ has been added to this derivation in
+anticipation of future simulation needs.  Any number of conserved passive
+scalars will behave in a manner identical to the final row and column of
+matrices $A$, $B$, and $C$.
+
+Consider perturbations $\delta{}U = \left\{ \delta{}\rho, \delta{}u, \delta{}v,
 \delta{}w, \delta{}p, \delta{}\rho\phi \right\}$ taken about some steady,
-uniform reference state $U_0$ so that $U = U_0 + \delta{}U$.  These
-perturbations evolve according to the linearized Euler equations
-$$
+uniform reference state $U_0$ so that $U = U_0 + \delta{}U$.  The short-time
+evolution of small perturbations is governed by the linearized Euler equations
+\begin{align}
+\label{eq:dimeulerperturb}
       \frac{\partial\delta{}U}{\partial{}t}
 + A_0 \frac{\partial\delta{}U}{\partial{}x}
 + B_0 \frac{\partial\delta{}U}{\partial{}y}
 + C_0 \frac{\partial\delta{}U}{\partial{}z}
 = 0
+\end{align}
+where matrices $A_0$, $B_0$, and $C_0$ are evaluated at $U_0$.  Assuming
+a solution of the form
 $$
-where matrices $A_0$, $B_0$, and $C_0$ are evaluated at $U_0$.
+  \delta{}U = e^{\ii\left(
+    k_x x + k_y y + k_z z - \omega t
+  \right)}
+  \delta\hat{U}^R
+$$
+and substituting into the linearized equations reduces the equations to
+$$
+  \ii\left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right)
+  \delta\hat{U}^R = 0
+$$
+which has nontrivial solutions only if the so-called dispersion relation
+$$
+\label{eq:dimeulerdisp}
+  \det \left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right) = 0
+$$ holds.
+Applying $- \ii^{-1} B_0^{-1}$, one finds a family of wavenumber-dependent
+eigenvalue problems for $k_y$
+$$
+  \left( \omega B_0^{-1} - k_x B_0^{-1} A_0 - k_y I - k_z B_0^{-1} C_0 \right)
+  \delta\hat{U}^R = 0
+$$
+where $\delta\hat{U}^R$ is the eigenvector and a solution to the right null
+space problem.  The left null space problem
+$$
+  V^{L}
+  \left( \omega B_0^{-1} - k_x B_0^{-1} A_0 - k_y I - k_z B_0^{-1} C_0 \right)
+  = 0
+$$
+naturally gives rise to the associated left null vector $V^L$.  Guarini,
+following Giles, used the orthogonality properties of eigenvectors satisfying
+the dispersion to arrive at the exact, nonreflecting boundary conditions
+$$
+  V_n^L \delta{}U = 0
+$$
+for each $V_n^L = V^L\!\left(k_{y_n}\right)$ corresponding to an incoming wave.
+
+
+
+
+
+Guarini~\cite{Guarini1998} proved that the linear structure of the Euler
+equations permits translating Giles' approach to another collection of state
+variables using the Jacobian matrix of the coordinate transformation (see
+Equation 4.81).  Guarini also rotated the nonreflecting boundary to match the
+nonorthogonal coordinate system used for his spatially-homogenized boundary
+layer.  Personal communications with Victor Topalian regarding his
+temporally-homogenized work suggests reorienting the nonreflecting coordinate
+system is unnecessary (though Victor has employed modest grid stretching near
+the freestream and other ``solution conditioning'' tools like low pass
+filtering).
+
+We now translate Guarini's orthogonal, dimensional results to Suzerain's
+state variable and nondimensionalization choices.
+
 
 
 
