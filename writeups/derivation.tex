@@ -2737,9 +2737,9 @@ $\lambda_z/\omega$, the dispersion relation may be equivalently expressed as
   \det \left( - I + \lambda_x A_0 + \lambda_y B_0 + \lambda_z C_0 \right) &= 0
   .
 \end{align}
-Applying $- \left(\ii\omega{}B_0\right)^{-1}$ to
-equation~\eqref{eq:dimeulerreduced}, one finds a family of eigenvalue problems
-in $\lambda_y$
+Assuming $B_0$ is invertible and applying $- \left(\ii\omega{}B_0\right)^{-1}$
+to equation~\eqref{eq:dimeulerreduced}, one finds an eigenvalue problem in
+$\lambda_y$
 \begin{align}
   \left(   B_0^{-1}
          - \lambda_x B_0^{-1} A_0
@@ -2819,6 +2819,19 @@ $$
 \end{bmatrix}
 .
 $$
+The characteristic polynomial expressed as a function of $\lambda_y$ is
+\begin{align}
+-\left(\frac{-1+u {\lambda_x}+v {\lambda_y}+w {\lambda_z}}{v}\right)^4
+\frac{1}{a^2-v^2} \biggl(
+     u^2 {\lambda_x}^2
+  &+ 2 u {\lambda_x} \left(-1+v {\lambda_y}+w {\lambda_z}\right)
+\\
+  &+ \left(-1+v {\lambda_y}+w {\lambda_z}\right)^2
+   - a^2 \left({\lambda_x}^2+{\lambda_y}^2+{\lambda_z}^2\right)
+\biggr)
+.
+\end{align}
+
 
 The associated matrices have been calculated using commodity symbolic
 manipulation software.  The results are:
