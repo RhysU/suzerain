@@ -1092,7 +1092,7 @@ algorithm~\vref{alg:substep}.
 \begin{algorithm}
 \label{alg:substep}
 \caption{Compute one substep in the SMR91 scheme following
-         equation (\ref{eq:generaloperatormasssubstep}) %FIXME \eqref?
+         equation~(\ref{eq:generaloperatormasssubstep})
          }
 \begin{algorithmic}
   \REQUIRE Storage $a = u^i$;
@@ -1122,7 +1122,7 @@ follows algorithm~\vref{alg:step}.
 
 \begin{algorithm}
 \caption{Compute all substeps in the SMR91 scheme following
-         equation (\ref{eq:generaloperatormasssubstep}) % FIXME \eqref?
+         equation~(\ref{eq:generaloperatormasssubstep})
          }
 \label{alg:step}
 \begin{algorithmic}
@@ -2773,7 +2773,7 @@ incidence.  To first order,
   .
 \end{align}
 Multiplying through by $-\ii\omega$, Fourier transforming in time,
-and using linearity one arrives at the result
+and using linearity one arrives at Giles' result
 \begin{align}
 \label{eq:dimeulerapprox}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
@@ -2789,12 +2789,14 @@ and using linearity one arrives at the result
   .
 \end{align}
 
-Comparing the above result with equation~\eqref{eq:spatial_discretization} and
-the implicit operator from section~\ref{sec:discretizationofimplicitterms}, the
-condition fits well into Suzerain's implicit discretization.  The implicit
-operator rows corresponding to nonreflecting boundaries must modified at every
-wavenumber.  Care must be taken to only adjust the incoming or outgoing
-characteristics.  Two issues, however, must be addressed.
+
+Comparing the result~\eqref{eq:dimeulerapprox} with
+equation~\eqref{eq:spatial_discretization} and the implicit operator from
+section~\ref{sec:discretizationofimplicitterms}, the condition fits well into
+Suzerain's implicit discretization.  The implicit operator rows corresponding
+to nonreflecting boundaries must modified at every wavenumber.  Care must be
+taken to only adjust the incoming or outgoing characteristics.  Two issues,
+however, must be addressed.
 
 First, the result is not expressed for Suzerain's conservative state variables.
 In section 4.3.2 of his thesis, Guarini~\cite{Guarini1998} proved that the
@@ -2806,8 +2808,7 @@ matrix
 $$
    S = \frac{\partial{}U}{\partial{}V}
 $$
-may be used to rewrite the approximate boundary
-condition~\eqref{eq:dimeulerapprox} as
+Guarini rewrote the approximate boundary condition~\eqref{eq:dimeulerapprox} as
 \begin{align}
 \label{eq:dimeulertransform}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
