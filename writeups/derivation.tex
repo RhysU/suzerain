@@ -2788,7 +2788,7 @@ small angle of incidence to the boundary.  To first order,
   .
 \end{align}
 Multiplying through by $-\ii\omega$, Fourier transforming in time,
-and using linearity one arrives at Giles' result
+and using linearity gives Giles' result
 \begin{align}
 \label{eq:dimeulerapprox}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
@@ -2819,18 +2819,38 @@ $$
 \end{bmatrix}
 .
 $$
-The characteristic polynomial expressed as a function of $\lambda_y$ is
+The characteristic polynomial expressed as a function of unadorned $\lambda$ is
 \begin{align}
--\left(\frac{-1+u {\lambda_x}+v {\lambda_y}+w {\lambda_z}}{v}\right)^4
+-\left(\frac{-1+u {\lambda_x}+v {\lambda}+w {\lambda_z}}{v}\right)^4
 \frac{1}{a^2-v^2} \biggl(
      u^2 {\lambda_x}^2
-  &+ 2 u {\lambda_x} \left(-1+v {\lambda_y}+w {\lambda_z}\right)
+  &+ 2 u {\lambda_x} \left(-1+v {\lambda}+w {\lambda_z}\right)
 \\
-  &+ \left(-1+v {\lambda_y}+w {\lambda_z}\right)^2
-   - a^2 \left({\lambda_x}^2+{\lambda_y}^2+{\lambda_z}^2\right)
+  &+ \left(-1+v {\lambda}+w {\lambda_z}\right)^2
+   - a^2 \left({\lambda_x}^2+{\lambda}^2+{\lambda_z}^2\right)
 \biggr)
+= 0
 .
 \end{align}
+The zero of multiplicity four evidently yields four identical eigenvalues
+\begin{align}
+\lambda_{3,4,5,6}
+=
+\frac{1-u {\lambda_x}-w {\lambda_z}}{v}
+=
+\frac{ \omega - u k_x - w k_z }{ \omega{} v }
+.
+\end{align}
+The remaining two eigenvalues are the roots of the quadratic equation
+\begin{align}
+{\lambda_{1,2}}^2
++ \lambda_{1,2} \frac{2 v  \left(u {\lambda_x}+w {\lambda_z}-1\right)}{v^2-a^2}
++ \frac{u^2 {\lambda_x}^2+2 u {\lambda_x} \left(w {\lambda_z}-1\right)+\left(w {\lambda_z}-1\right)^2-a^2 \left({\lambda_x}^2+{\lambda_z}^2\right)}{v^2-a^2}
+= 0
+\end{align}
+which are
+FIXME
+
 
 
 The associated matrices have been calculated using commodity symbolic
@@ -2878,6 +2898,9 @@ Second, it is not appropriately nondimensionalized.
 FIXME
 
 Concrete matrices.
+FIXME
+
+Applying to $V$ not $\delta{}V$.
 FIXME
 
 Guarini mentions that Poinsot and Lele~cite{Poinsot1992Boundary} suggest two
