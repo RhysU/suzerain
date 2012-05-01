@@ -2819,20 +2819,25 @@ $$
 \end{bmatrix}
 .
 $$
-The characteristic polynomial expressed as a function of unadorned $\lambda$ is
+The characteristic polynomial expressed as a function of an unadorned $\lambda$ is
 \begin{align}
--\left(\frac{-1+u {\lambda_x}+v {\lambda}+w {\lambda_z}}{v}\right)^4
-\frac{1}{a^2-v^2} \biggl(
-     u^2 {\lambda_x}^2
-  &+ 2 u {\lambda_x} \left(-1+v {\lambda}+w {\lambda_z}\right)
+\left(
+  \lambda^2
++ \lambda
+  \frac{2 v \left(u {\lambda_x}+w {\lambda_z}-1\right)}{v^2-a^2}
++ \frac{u^2 {\lambda_x}^2+2 u {\lambda_x} \left(w {\lambda_z}-1\right)+\left(w {\lambda_z}-1\right)^2 - a^2 \left({\lambda_x}^2+{\lambda_z}^2\right)}{v^2-a^2}
+\right)
+\times
+\quad
 \\
-  &+ \left(-1+v {\lambda}+w {\lambda_z}\right)^2
-   - a^2 \left({\lambda_x}^2+{\lambda}^2+{\lambda_z}^2\right)
-\biggr)
-= 0
+\left(\frac{u {\lambda_x}+v {\lambda}+w {\lambda_z}-1}{v}\right)^4
+=0
 .
 \end{align}
-The zero of multiplicity four evidently yields four identical eigenvalues
+Two of the roots come from a quadratic equation with discriminant
+FIXME.
+
+The characteristic polynomial zero of multiplicity four evidently yields the four remaining eigenvalues
 \begin{align}
 \lambda_{3,4,5,6}
 =
@@ -2841,15 +2846,6 @@ The zero of multiplicity four evidently yields four identical eigenvalues
 \frac{ \omega - u k_x - w k_z }{ \omega{} v }
 .
 \end{align}
-The remaining two eigenvalues are the roots of the quadratic equation
-\begin{align}
-{\lambda_{1,2}}^2
-+ \lambda_{1,2} \frac{2 v  \left(u {\lambda_x}+w {\lambda_z}-1\right)}{v^2-a^2}
-+ \frac{u^2 {\lambda_x}^2+2 u {\lambda_x} \left(w {\lambda_z}-1\right)+\left(w {\lambda_z}-1\right)^2-a^2 \left({\lambda_x}^2+{\lambda_z}^2\right)}{v^2-a^2}
-= 0
-\end{align}
-which are
-FIXME
 
 
 
