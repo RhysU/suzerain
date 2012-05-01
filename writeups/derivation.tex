@@ -2810,13 +2810,14 @@ problem~\eqref{eq:dimeulereigenprob}.  The matrix of interest, \textit{viz}.
 $B_0^{-1}-\lambda_x B_0^{-1}A_0 - \lambda_z B_0^{-1}C_0$, may be expanded as
 $$
 \begin{bmatrix}
- -\frac{-1+u {\lambda_x}+w {\lambda_z}}{v} & \frac{v {\lambda_x} \rho }{a^2-v^2} & -\frac{(-1+u {\lambda_x}+w {\lambda_z}) \rho }{a^2-v^2} & \frac{v {\lambda_z} \rho }{a^2-v^2} & \frac{-1+u {\lambda_x}+w {\lambda_z}}{v \left(a^2-v^2\right)} & 0 \\
- 0 & -\frac{-1+u {\lambda_x}+w {\lambda_z}}{v} & 0 & 0 & -\frac{{\lambda_x}}{v \rho } & 0 \\
- 0 & -\frac{a^2 {\lambda_x}}{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & -\frac{a^2 {\lambda_z}}{a^2-v^2} & -\frac{-1+u {\lambda_x}+w {\lambda_z}}{a^2 \rho -v^2 \rho } & 0 \\
- 0 & 0 & 0 & -\frac{-1+u {\lambda_x}+w {\lambda_z}}{v} & -\frac{{\lambda_z}}{v \rho } & 0 \\
- 0 & \frac{a^2 v {\lambda_x} \rho }{a^2-v^2} & -\frac{a^2 (-1+u {\lambda_x}+w {\lambda_z}) \rho }{a^2-v^2} & \frac{a^2 v {\lambda_z} \rho }{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & 0 \\
- 0 & 0 & 0 & 0 & 0 & -\frac{-1+u {\lambda_x}+w {\lambda_z}}{v}
+ \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & \frac{v {\lambda_x} \rho }{a^2-v^2} & \frac{\rho(1-u {\lambda_x}-w {\lambda_z})}{a^2-v^2} & \frac{v {\lambda_z} \rho }{a^2-v^2} & \frac{-1+u {\lambda_x}+w {\lambda_z}}{v \left(a^2-v^2\right)} & 0 \\
+ 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & 0 & 0 & -\frac{{\lambda_x}}{v \rho } & 0 \\
+ 0 & -\frac{a^2 {\lambda_x}}{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & -\frac{a^2 {\lambda_z}}{a^2-v^2} & \frac{1-u {\lambda_x}-w {\lambda_z}}{\rho (a^2 -v^2) } & 0 \\
+ 0 & 0 & 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & -\frac{{\lambda_z}}{v \rho } & 0 \\
+ 0 & \frac{a^2 v {\lambda_x} \rho }{a^2-v^2} & \frac{a^2 (1-u {\lambda_x}-w {\lambda_z}) \rho }{a^2-v^2} & \frac{a^2 v {\lambda_z} \rho }{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & 0 \\
+ 0 & 0 & 0 & 0 & 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v}
 \end{bmatrix}
+.
 $$
 
 The associated matrices have been calculated using commodity symbolic
