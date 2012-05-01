@@ -2727,22 +2727,34 @@ and substituting into the linearized equations reduces the equations to
 \end{align}
 which has nontrivial solutions only if the so-called dispersion relation
 \begin{align}
-\label{eq:dimeulerdisp}
   \det \left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right) &= 0
 \end{align}
-holds.
-Applying $- \ii^{-1} B_0^{-1}$ to equation~\eqref{eq:dimeulerreduced}, one
-finds a family of eigenvalue problems in $k_y$
+holds.  Defining $\lambda_x = k_x/\omega$, $\lambda_y = k_y/\omega$, and
+$\lambda_z/\omega$, the dispersion relation may be rearranged as
+\begin{align}
+\label{eq:dimeulerdisp}
+  \det \left( - I + \lambda_x A_0 + \lambda_y B_0 + \lambda_z C_0 \right) &= 0
+  .
+\end{align}
+Applying $- \left(\ii\omega{}B_0\right)^{-1}$ to
+equation~\eqref{eq:dimeulerreduced}, one finds a family of eigenvalue problems
+in $\lambda_y$
 $$
-  \left( \omega B_0^{-1} - k_x B_0^{-1} A_0 - k_y I - k_z B_0^{-1} C_0 \right)
-  \delta\hat{U}^R = 0
+  \left(   B_0^{-1}
+         - \lambda_x B_0^{-1} A_0
+         - \lambda_y I
+         - \lambda_z B_0^{-1} C_0
+  \right) \delta\hat{U}^R = 0
 $$
 where $\delta\hat{U}^R$ is the eigenvector and a solution to the right null
 space problem.  The left null space problem
 $$
   V^{L}
-  \left( \omega B_0^{-1} - k_x B_0^{-1} A_0 - k_y I - k_z B_0^{-1} C_0 \right)
-  = 0
+  \left(   B_0^{-1}
+         - \lambda_x B_0^{-1} A_0
+         - \lambda_y I
+         - \lambda_z B_0^{-1} C_0
+  \right) = 0
 $$
 naturally gives rise to the associated left null vector $V^L$.  Guarini,
 following Giles, used the orthogonality properties of eigenvectors satisfying
@@ -2751,13 +2763,11 @@ the dispersion to build the exact, nonreflecting boundary conditions
 \label{eq:dimeulerexact}
   V_n^L \delta{}U &= 0
 \end{align}
-for each $V_n^L = V^L\!\left(k_{y_n}\right)$ corresponding to an incoming wave.
-This exact condition is approximated for reasons of computational tractability.
-Dividing the dispersion relation~\eqref{eq:dimeulerdisp} by $\omega$ and
-noticing $V_n^L$ therefore is only a bivariate function of $\lambda_x =
-k_x/\omega$ and $\lambda_z/\omega$ suggests employing a Taylor series.
-Truncating the series is equivalent to assuming waves have a small angle of
-incidence.  To first order,
+for each $V_n^L = V^L\!\left(k_{y_n}\right)$ corresponding to \textit{either
+incoming or outgoing waves}.  This exact condition is approximated using a
+Taylor series in $\lambda_x$ and $\lambda_z$ for reasons of computational
+tractability.  Truncating the series is equivalent to assuming waves have a
+small angle of incidence to the boundary.  To first order,
 \begin{align}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
   \delta{}U
