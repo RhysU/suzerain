@@ -2650,17 +2650,16 @@ approximate two-dimensional, unsteady nonreflecting boundary conditions for the
 Euler equations using primitive state variables.  Giles' boundary conditions
 are selected over Poinsot and Lele's ``locally one-dimensional inviscid''
 relations~\cite{Poinsot1992Boundary} because other codes with identical
-discretization choices have successfully employed Giles' approach on our
-problems of interest.  The practical performance of the two methods for
-Suzerain's problems of interest is expected to be nearly identical.  If
-necessary, Rowley and Colonius~\cite{Rowley2000Discretely} review several
-higher order techniques expected to perform better than the selected approach.
-In section 4.3.2 of his thesis, Guarini~\cite{Guarini1998} extended Giles'
-analysis to three directions with $y$ being the inhomogeneous direction.  We
-review Giles' approach following Guarini.  For complete details, especially
-motivations and proofs, the papers of Giles, Guarini's thesis, and a
-particularly lucid catalog of results by Medida~\cite{Medida2007} should be
-consulted.
+discretization choices have successfully employed Giles' approach to our
+problems of interest.  Rowley and Colonius~\cite{Rowley2000Discretely} present
+higher order techniques expected to perform better than Giles' approach but
+these suffer from considerably greater implementation complexity.
+Guarini~\cite{Guarini1998} extended Giles' analysis to three directions with
+$y$ being the inhomogeneous direction.  Medida~\cite{Medida2007} lucidly
+catalogs the intermediate results necessary for the three dimensional
+extension.  We review Giles' approach following Guarini.  For complete details,
+especially motivations and proofs, the work of Giles, Guarini, and
+Medida should be consulted.
 
 For the state vector $U = \left\{ \rho, u, v, w, p, \phi \right\}$ the
 dimensional Euler equations, using the ideal equation of state $\rho a^2 =
@@ -2793,7 +2792,7 @@ small angle of incidence to the boundary.  To first order,
   .
 \end{align}
 Multiplying through by
-$-\ii\omega$, Fourier transforming in time, and using linearity gives the
+$-\ii\omega$ and Fourier transforming in time gives the
 spatially-spectral result
 \begin{align}
 \label{eq:dimeulerapprox}
@@ -2810,7 +2809,7 @@ spatially-spectral result
   .
 \end{align}
 Fourier transforming in space recovers the corresponding pointwise
-approximation,
+expression,
 \begin{align}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
   \frac{\partial}{\partial{}t}\delta{}U
@@ -2824,7 +2823,11 @@ approximation,
 \end{align}
 As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later by
 Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only some series
-truncations of this form lead to well-posed conditions.
+truncations of this form lead to well-posed conditions.  Moreover, the
+straightfoward application of even this first order approximation requires
+either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007} or
+systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
+inflow constraints.
 
 Any implementation of the boundary conditions~\eqref{eq:dimeulerapprox} requires
 the eigenvalues and left eigenvectors from
