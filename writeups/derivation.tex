@@ -2788,12 +2788,9 @@ small angle of incidence to the boundary.  To first order,
   &\approx 0
   .
 \end{align}
-As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later by
-Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only some truncated
-approximations lead to well-posed conditions.
-
-Multiplying through by $-\ii\omega$, Fourier transforming in time,
-and using linearity gives Giles' result
+Multiplying through by
+$-\ii\omega$, Fourier transforming in time, and using linearity gives the
+spatially-spectral result
 \begin{align}
 \label{eq:dimeulerapprox}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
@@ -2808,8 +2805,24 @@ and using linearity gives Giles' result
   \delta{}U
   .
 \end{align}
+Fourier transforming in space recovers the corresponding pointwise
+approximation,
+\begin{align}
+  \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
+  \frac{\partial}{\partial{}t}\delta{}U
+  &\approx
+  \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
+  \frac{\partial}{\partial{}x}\delta{}U
+  +
+  \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
+  \frac{\partial}{\partial{}z}\delta{}U
+  .
+\end{align}
+As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later by
+Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only some series
+truncations of this form lead to well-posed conditions.
 
-An implementation of the boundary conditions~\eqref{eq:dimeulerapprox} requires
+Any implementation of the boundary conditions~\eqref{eq:dimeulerapprox} requires
 the eigenvalues and left eigenvectors from
 problem~\eqref{eq:dimeulereigenprob}.  The matrix of interest, \textit{viz}.
 $B_0^{-1}-\lambda_x B_0^{-1}A_0 - \lambda_z B_0^{-1}C_0$, may be expanded as
