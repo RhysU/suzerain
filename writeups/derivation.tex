@@ -2650,16 +2650,16 @@ approximate two-dimensional, unsteady nonreflecting boundary conditions for the
 Euler equations using primitive state variables.  Giles' boundary conditions
 are selected over Poinsot and Lele's ``locally one-dimensional inviscid''
 relations~\cite{Poinsot1992Boundary} because other codes with identical
-discretization choices have successfully employed Giles' approach to our
-problems of interest.  Rowley and Colonius~\cite{Rowley2000Discretely} present
-higher order techniques expected to perform better than Giles' approach but
-these suffer from considerably greater implementation complexity.
-Guarini~\cite{Guarini1998} extended Giles' analysis to three directions with
-$y$ being the inhomogeneous direction.  Medida~\cite{Medida2007} lucidly
+numerics have successfully employed Giles' conditions to our problems of
+interest.  Rowley and Colonius~\cite{Rowley2000Discretely} present higher order
+techniques expected to perform better than Giles' approach but these suffer
+from considerably greater implementation complexity.
+Guarini~\cite{Guarini1998} reports an extension to three spatial dimensions
+without reproducing the necessary analysis.  Medida~\cite{Medida2007} lucidly
 catalogs the intermediate results necessary for the three dimensional
 extension.  We review Giles' approach following Guarini.  For complete details,
-especially motivations and proofs, the work of Giles, Guarini, and
-Medida should be consulted.
+especially motivations and proofs, the work of Giles, Guarini, and Medida
+should be consulted.
 
 For the state vector $U = \left\{ \rho, u, v, w, p, \phi \right\}$ the
 dimensional Euler equations, using the ideal equation of state $\rho a^2 =
@@ -2791,13 +2791,16 @@ small angle of incidence to the boundary.  To first order,
   &\approx 0
   .
 \end{align}
-Multiplying through by
-$-\ii\omega$ and Fourier transforming in time gives the
-spatially-spectral result
+As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later expounded
+upon by Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only
+particular higher-order series truncations of this form lead to well-posedness.
+Multiplying through by $-\ii\omega$ and Fourier transforming in time gives the
+spectral result
 \begin{align}
 \label{eq:dimeulerapprox}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
-  \frac{\partial}{\partial{}t}\delta{}U
+  \frac{\partial}{\partial{}t}
+  \delta{}U
   &\approx
   \ii k_x
   \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
@@ -2808,23 +2811,51 @@ spatially-spectral result
   \delta{}U
   .
 \end{align}
-Fourier transforming in space recovers the corresponding pointwise
-expression,
+% Fourier transforming in space recovers the corresponding pointwise expression,
+% \begin{align}
+%   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
+%   \frac{\partial}{\partial{}t}\delta{}U
+%   &\approx
+%   \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
+%   \frac{\partial}{\partial{}x}\delta{}U
+%   +
+%   \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
+%   \frac{\partial}{\partial{}z}\delta{}U
+%   .
+% \end{align}
+Guarini~\cite{Guarini1998} proved the linear structure of the Euler equations
+permits translating this result to another set of state variables $V$ with
+reference state $V_0$ and therefore perturbations $\delta{}V = V - V_0$.  In
+this new setting, the coordinate transformation Jacobian matrix
+$$
+   S = \frac{\partial{}U}{\partial{}V}
+$$
+may be used to rewrite the exact nonreflecting requirement as
 \begin{align}
+  \left(V_n^L S\right) \delta{}V &= 0
+\end{align}
+which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
+\begin{align}
+\label{eq:dimeulertransform}
   \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
-  \frac{\partial}{\partial{}t}\delta{}U
+  S
+  \frac{\partial}{\partial{}t}
+  \delta{}V
   &\approx
+  \ii k_x
   \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
-  \frac{\partial}{\partial{}x}\delta{}U
+  S
+  \delta{}V
   +
+  \ii k_z
   \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
-  \frac{\partial}{\partial{}z}\delta{}U
+  S
+  \delta{}V
   .
 \end{align}
-As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later by
-Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only some series
-truncations of this form lead to well-posed conditions.  Moreover, the
-straightfoward application of even this first order approximation requires
+
+Moreover, the
+straightforward application of even this first order approximation requires
 either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007} or
 systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
 inflow constraints.
@@ -2886,34 +2917,6 @@ to nonreflecting boundaries must modified at every wavenumber.  Care must be
 taken to only adjust the incoming or outgoing characteristics.  Two issues,
 however, must be addressed.
 
-First, the result is not expressed for Suzerain's conservative state variables.
-In section 4.3.2 of his thesis, Guarini~\cite{Guarini1998} proved that the
-linear structure of the Euler equations permits translating Giles' approach to
-another collection of state variables using the Jacobian matrix of the
-coordinate transformation.  For some other state variable selection $V$,
-reference state $V_0$, and perturbation $\delta{}V = V - V_0$, the Jacobian
-matrix
-$$
-   S = \frac{\partial{}U}{\partial{}V}
-$$
-Guarini rewrote the approximate boundary condition~\eqref{eq:dimeulerapprox} as
-\begin{align}
-\label{eq:dimeulertransform}
-  \left.V_n^L\right|_{\lambda_x,\lambda_z=0}
-  S
-  \frac{\partial}{\partial{}t}\delta{}V
-  &\approx
-  \ii k_x
-  \left.\frac{dV_n^L}{d\lambda_x}\right|_{\lambda_x,\lambda_z=0}
-  S
-  \delta{}V
-  +
-  \ii k_z
-  \left.\frac{dV_n^L}{d\lambda_z}\right|_{\lambda_x,\lambda_z=0}
-  S
-  \delta{}V
-  .
-\end{align}
 
 Second, it is not appropriately nondimensionalized.
 FIXME
