@@ -2653,8 +2653,11 @@ because other codes with similar numerics have successfully employed Giles'
 conditions for our problems of interest.  While Rowley and
 Colonius~\cite{Rowley2000Discretely} present higher order techniques expected
 to perform better than Giles' approach, what they describe is considerably more
-complex to implement.  Guarini~\cite{Guarini1998} summarizes an extension of
-Giles' results to three spatial dimensions without reproducing the necessary
+complex to implement.  Saxer and Giles~\cite{Saxer1993QuasiThreeDimensional}
+extended the technique to three dimensions but with a presentation aimed
+towards transonic axial flow turbomachinery computations.
+Guarini~\cite{Guarini1998} summarizes the Cartesian extension of Giles'
+approach to three spatial dimensions without reproducing the associated
 analysis.  Medida~\cite{Medida2007} lucidly catalogs the intermediate results
 necessary in three dimensions.
 
@@ -2875,9 +2878,11 @@ magnitude of $u_0$ relative to $a_0$, in complete generality the matrix
 equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
 \begin{align}
 \label{eq:dimeulerapproxcharpart}
+\renewcommand*{\arraystretch}{1.2}
   \frac{\partial}{\partial{}t}
   \left[\begin{array}{c}\delta{}C_{I}\\\hline\delta{}C_{O}\end{array}\right]
   &\approx
+\renewcommand*{\arraystretch}{1.2}
   \left[\begin{array}{c} B^G_{I} \\ \hline B^G_{O} \end{array}\right]
   \frac{\partial}{\partial{}y}
   \delta{}C
@@ -2889,7 +2894,84 @@ equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
 where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
 respectively.  For some $U_0$ possessing an agreed upon relationship between
 $u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
-submatrices concretely states a Giles-like nonreflecting boundary condition.
+submatrices concretely states a Giles-like nonreflecting $x$ boundary
+condition for the Euler equations.
+
+In section 5.8 of his thesis, Medida presents two such concrete nonreflecting
+boundary condition specifications for subsonic inflows and outflows (i.e. $0 <
+u_0 < a_0$) for the dimensional Euler equations.  Medida's equations~(5.78)
+and~(5.79) specify the transformations to and from characteristic variables:
+\begin{align}
+\label{eq:dimeulerapproxmedidaproj}
+  V^L &= \begin{bmatrix}
+    -a_0^2 & 0           & 0          & 0          & 1 \\
+    0      & 0           & \rho_0 a_0 & 0          & 0 \\
+    0      & 0           & 0          & \rho_0 a_0 & 0 \\
+    0      & \rho_0 a_0  & 0          & 0          & 1 \\
+    0      & -\rho_0 a_0 & 0          & 0          & 1 \\
+  \end{bmatrix}
+&
+  {V^L}^{-1} &= \begin{bmatrix}
+    -\frac{1}{a_0^2} & 0                    & 0                    & \frac{1}{2a_0^2}      & \frac{1}{2a_0^2}        \\
+    0                & 0                    & 0                    & \frac{1}{2\rho_0 a_0} & - \frac{1}{2\rho_0 a_0} \\
+    0                & \frac{1}{\rho_0 a_0} & 0                    & 0                     & 0                       \\
+    0                & 0                    & \frac{1}{\rho_0 a_0} & 0                     & 0                       \\
+    0                & 0                    & 0                    & \frac{1}{2}           & \frac{1}{2}             \\
+  \end{bmatrix}
+\end{align}
+Medida's equations~(5.82) and~(5.83) provide one pair of inflow and outflow
+conditions for which reflection coefficients were not reported:
+\begin{align}
+\label{eq:dimeulerapproxmedidaopt1}
+  B^G_1 &= \left[\begin{array}{ccccc}
+    0 & 0                 & 0   & 0                   & 0                 \\
+    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\
+    0 & 0                 & v_0 & 0                   & 0                 \\
+    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \hline
+    0 & u_0               & 0   & 0                   & v_0               \\
+  \end{array}\right]
+&
+  C^G_1 &= \left[\begin{array}{ccccc}
+    0 & 0   & 0                 & 0                 & 0                 \\
+    0 & w_0 & 0                 & 0                 & 0                 \\
+    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\
+    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \hline
+    0 & 0   & u_0               & 0                 & w_0               \\
+  \end{array}\right]
+\end{align}
+where partitioning has been used to delineate inflow versus outflow submatrices
+within $B^G$ and $C^G$.  We assume, but have not verified, analysis like that
+presented in section~3.7.4 of Giles~\cite{Giles1988Nonreflecting} extends to
+Medida's analogous results.  At the inflow, the outgoing pressure wave produces
+no reflected entropy or vorticity waves and generates a fourth-order pressure
+reflection.  At the outflow, the outgoing entropy and vorticity waves produce
+no reflections while the outgoing pressure wave produces a second order
+reflection.
+In contrast, Medida's equation~(5.84), which arises from modifying the
+already-well-posed outflow condition to match the well-posed inflow condition,
+provides different outflow submatrices:
+\begin{align}
+\label{eq:dimeulerapproxmedidaopt2}
+  B^G_2 &= \left[\begin{array}{ccccc}
+    0 & 0                 & 0   & 0                   & 0                 \\
+    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\
+    0 & 0                 & v_0 & 0                   & 0                 \\
+    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \hline
+    0 & \frac{a_0+u_0}{2} & 0   & 0                   & v_0               \\
+  \end{array}\right]
+&
+  C^G_2 &= \left[\begin{array}{ccccc}
+    0 & 0   & 0                 & 0                 & 0                 \\
+    0 & w_0 & 0                 & 0                 & 0                 \\
+    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\
+    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \hline
+    0 & 0   & \frac{a_0+u_0}{2} & 0                 & w_0               \\
+  \end{array}\right]
+\end{align}
+At the outflow, these matrices cause outgoing pressure waves to produce fourth
+and first order reflections, respectively.  As Giles
+notes~\cite{Giles1990Nonreflecting}), this ``modified'' outflow condition is
+preferably only when one knows there will be no outgoing vorticity wave.
 
 
 Guarini~\cite{Guarini1998} proved the linear structure of the Euler equations
