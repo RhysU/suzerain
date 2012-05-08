@@ -2658,10 +2658,11 @@ Giles' results to three spatial dimensions without reproducing the necessary
 analysis.  Medida~\cite{Medida2007} lucidly catalogs the intermediate results
 necessary in three dimensions.
 
-We now review Giles' approach following Guarini's notation with the goal of
-arriving at Medida's results.  For complete details, especially motivations and
-proofs, the work of Giles, Medida, and Guarini should be consulted in that
-respective order.  For the state vector
+We now review Giles' approach following Guarini's presentation with the goal of
+setting notation suitable for presenting and manipulating Medida's results.
+For complete details, especially motivations and proofs, the work of Giles,
+Medida, and Guarini should be consulted in that respective order.  For the
+state vector
 $$
 U = \left\{ \rho, u, v, w, p \right\}
 $$
@@ -2683,7 +2684,7 @@ may be written as follows:
         0 & u        & 0 & 0 & \frac{1}{\rho} \\
         0 & 0        & u & 0 & 0              \\
         0 & 0        & 0 & u & 0              \\
-        0 & \rho a^2 & 0 & 0 & u              \\
+        0 & \gamma p & 0 & 0 & u              \\
        \end{bmatrix}
 &
  B &= \begin{bmatrix}
@@ -2691,7 +2692,7 @@ may be written as follows:
         0 & v & 0        & 0 & 0              \\
         0 & 0 & v        & 0 & \frac{1}{\rho} \\
         0 & 0 & 0        & v & 0              \\
-        0 & 0 & \rho a^2 & 0 & v              \\
+        0 & 0 & \gamma p & 0 & v              \\
        \end{bmatrix}
 &
  C &= \begin{bmatrix}
@@ -2699,10 +2700,10 @@ may be written as follows:
         0 & w & 0 & 0        & 0              \\
         0 & 0 & w & 0        & 0              \\
         0 & 0 & 0 & w        & \frac{1}{\rho} \\
-        0 & 0 & 0 & \rho a^2 & w              \\
+        0 & 0 & 0 & \gamma p & w              \\
        \end{bmatrix}
 \end{align}
-Now consider perturbations 
+Consider perturbations
 $$
 \delta{}U = \left\{ \delta{}\rho, \delta{}u,
 \delta{}v, \delta{}w, \delta{}p \right\}
@@ -2712,8 +2713,8 @@ uniform reference state $U_0$ so that
 $$
 U = U_0 + \delta{}U.
 $$
-The short-time evolution of perturbations is governed by the linearized Euler
-equations
+The short-time evolution of such perturbations is governed by the linearized
+Euler equations
 \begin{align}
 \label{eq:dimeulerperturb}
       \frac{\partial}{\partial{}t}\delta{}U
@@ -2759,10 +2760,10 @@ $\lambda_x$
   \right) \delta\hat{U}^R = 0
 \end{align}
 where $\delta\hat{U}^R$ is the eigenvector and a solution to the right null
-space problem.  The signs of the associated eigenvalues, in conjunction with
-the magnitude of the reference velocities relative to the sound speed $a$, are
-required to determine how many characteristics are entering or exiting through
-the boundary.  The left null space problem
+space problem.  The signs of the associated eigenvalues, determined using
+the magnitude of $u_0$ relative to $a_0$, are required to determine how many
+characteristics are entering or exiting through the boundary.  The left null
+space problem
 \begin{align}
 \label{eq:dimeulereigenprob}
   V^{L}
@@ -2773,8 +2774,8 @@ the boundary.  The left null space problem
   \right) &= 0
 \end{align}
 naturally gives rise to the associated left null vector $V^L$.  Giles,
-following Engquist and Majda, used the orthogonality properties of eigenvectors
-to build the exact, nonreflecting boundary conditions
+following Engquist and Majda, used several orthogonality properties to build
+the exact, nonreflecting boundary conditions
 \begin{align}
 \label{eq:dimeulerexact}
   V_n^L \delta{}U &= 0
@@ -2802,62 +2803,93 @@ As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later expounded
 upon by Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only
 particular higher-order series truncations of this form lead to well-posedness.
 Multiplying through by $-\ii\omega$, Fourier transforming in both time and
-space, and using the assumption that $U_0$ is both steady and uniform yields
+space, and using that $U_0$ and therefore $V_n^L$ are both steady and uniform
+yields
 \begin{align}
 \label{eq:dimeulerapprox}
   \frac{\partial}{\partial{}t}
-  V_n^L
+  V^L
   \delta{}U
   &\approx
-  \frac{dV_n^L}{d\lambda_y}
+  \frac{dV^L}{d\lambda_y}
   \frac{\partial}{\partial{}y}\delta{}U
   +
-  \frac{dV_n^L}{d\lambda_z}
+  \frac{dV^L}{d\lambda_z}
   \frac{\partial}{\partial{}z}\delta{}U
 \end{align}
-where the cumbersome $\lambda_y,\lambda_z=0$ notation is herein and henceforth
-suppressed.  Inserting ${V_n^L}^{-1} V_n^L$ twice,
+where the cumbersome $\lambda_y,\lambda_z=0$ and subscript $n$ are herein
+and henceforth suppressed.  Inserting ${V^L}^{-1} V^L$,
 \begin{align}
   \frac{\partial}{\partial{}t}
-  V_n^L
+  V^L
   \delta{}U
   &\approx
-  \frac{dV_n^L}{d\lambda_y}
-  {V_n^L}^{-1}
+  \frac{dV^L}{d\lambda_y}
+  {V^L}^{-1}
   \frac{\partial}{\partial{}y}
-  V_n^L
+  V^L
   \delta{}U
   +
-  \frac{dV_n^L}{d\lambda_z}
-  {V_n^L}^{-1}
+  \frac{dV^L}{d\lambda_z}
+  {V^L}^{-1}
   \frac{\partial}{\partial{}z}
-  V_n^L
+  V^L
   \delta{}U
 .
 \end{align}
-Defining characteristic variables using the action of $V_n^L$, \textit{viz.}
+Defining characteristic variables using the action of $V^L$, \textit{viz.}
 \begin{align}
-  \delta{}C &= V_n^L \delta{}U
+  \delta{}C &= V^L \delta{}U
   ,
 \end{align}
-allows rewriting equation~\eqref{eq:dimeulerapprox} in a compact
-form showing temporal interactions amongst the various waves,
+allows writing a more compact form
 \begin{align}
 \label{eq:dimeulerapproxchar}
   \frac{\partial}{\partial{}t}
   \delta{}C
   &\approx
-  \frac{dV_n^L}{d\lambda_y}
-  {V_n^L}^{-1}
+  B^G
   \frac{\partial}{\partial{}y}
   \delta{}C
   +
-  \frac{dV_n^L}{d\lambda_z}
-  {V_n^L}^{-1}
+  C^G
   \frac{\partial}{\partial{}z}
   \delta{}C
-.
 \end{align}
+employing the notation
+\begin{align}
+  B^G
+&=
+  \frac{dV^L}{d\lambda_y}
+  {V^L}^{-1}
+&
+  C^G
+&=
+  \frac{dV^L}{d\lambda_z}
+  {V^L}^{-1}
+\end{align}
+where the superscript $G$ is meant to suggest ``Giles''.  This last statement
+intermixes the constraints for inflow and outflow conditions.  While the
+submatrices vary depending on the choices made to express $V^L$ and the
+magnitude of $u_0$ relative to $a_0$, in complete generality the matrix
+equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
+\begin{align}
+\label{eq:dimeulerapproxcharpart}
+  \frac{\partial}{\partial{}t}
+  \left[\begin{array}{c}\delta{}C_{I}\\\hline\delta{}C_{O}\end{array}\right]
+  &\approx
+  \left[\begin{array}{c} B^G_{I} \\ \hline B^G_{O} \end{array}\right]
+  \frac{\partial}{\partial{}y}
+  \delta{}C
+  +
+  \left[\begin{array}{c} C^G_{I} \\ \hline C^G_{O} \end{array}\right]
+  \frac{\partial}{\partial{}z}
+  \delta{}C
+\end{align}
+where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
+respectively.  For some $U_0$ possessing an agreed upon relationship between
+$u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
+submatrices concretely states a Giles-like nonreflecting boundary condition.
 
 
 Guarini~\cite{Guarini1998} proved the linear structure of the Euler equations
