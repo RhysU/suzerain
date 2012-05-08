@@ -2805,9 +2805,12 @@ small angle of incidence to the boundary.  To first order,
 As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later expounded
 upon by Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only
 particular higher-order series truncations of this form lead to well-posedness.
-Multiplying through by $-\ii\omega$, Fourier transforming in both time and
-space, and using that $U_0$ and therefore $V_n^L$ are both steady and uniform
-yields
+Moreover, the straightforward application of even this first order
+approximation requires either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007}
+or systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
+inflow constraints.  Multiplying through by $-\ii\omega$, Fourier transforming
+in both time and space, and using that $U_0$ and therefore $V_n^L$ are both
+steady and uniform yields
 \begin{align}
 \label{eq:dimeulerapprox}
   \frac{\partial}{\partial{}t}
@@ -2898,9 +2901,9 @@ submatrices concretely states a Giles-like nonreflecting $x$ boundary
 condition for the Euler equations.
 
 In section 5.8 of his thesis, Medida presents two such concrete nonreflecting
-boundary condition specifications for subsonic inflows and outflows (i.e. $0 <
-u_0 < a_0$) for the dimensional Euler equations.  Medida's equations~(5.78)
-and~(5.79) specify the transformations to and from characteristic variables:
+boundary condition specifications for subsonic inflows and outflows where $0 <
+u_0 < a_0$.  Medida's equations~(5.78) and~(5.79) specify the transformations
+to and from characteristic variables:
 \begin{align}
 \label{eq:dimeulerapproxmedidaproj}
   V^L &= \begin{bmatrix}
@@ -2946,10 +2949,9 @@ Medida's analogous results.  At the inflow, the outgoing pressure wave produces
 no reflected entropy or vorticity waves and generates a fourth-order pressure
 reflection.  At the outflow, the outgoing entropy and vorticity waves produce
 no reflections while the outgoing pressure wave produces a second order
-reflection.
-In contrast, Medida's equation~(5.84), which arises from modifying the
-already-well-posed outflow condition to match the well-posed inflow condition,
-provides different outflow submatrices:
+reflection.  In contrast, Medida's equation~(5.84), which arises from modifying
+the already-well-posed outflow condition to match the well-posed inflow
+condition, provides different outflow submatrices:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt2}
   B^G_2 &= \left[\begin{array}{ccccc}
@@ -2972,12 +2974,13 @@ At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
 notes~\cite{Giles1990Nonreflecting}), this ``modified'' outflow condition is
 preferably only when one knows there will be no outgoing vorticity wave.
+This should be the case for some problems computed with Suzerain.
 
-
-Guarini~\cite{Guarini1998} proved the linear structure of the Euler equations
-permits translating these results to another set of state variables $V$ with
-reference state $V_0$ and therefore perturbations $\delta{}V = V - V_0$.  In
-this new setting, the coordinate transformation Jacobian matrix
+In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
+structure of the Euler equations admits a straightforward translation of these
+boundary conditions to another set of state variables $V$ with reference state
+$V_0$ and therefore perturbations $\delta{}V = V - V_0$.  In this new setting,
+the coordinate transformation Jacobian matrix
 $$
    S = \frac{\partial{}U}{\partial{}V}
 $$
@@ -2996,7 +2999,6 @@ which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
   \frac{dV_n^L}{d\lambda_y}
   S
   \frac{\partial}{\partial{}y}
-  V_n^L
   \delta{}V
   +
   \frac{dV_n^L}{d\lambda_z}
@@ -3006,60 +3008,7 @@ which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
   .
 \end{align}
 
-Moreover, the
-straightforward application of even this first order approximation requires
-either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007} or
-systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
-inflow constraints.
 
-Any implementation of the boundary conditions~\eqref{eq:dimeulerapprox} requires
-the eigenvalues and left eigenvectors from
-problem~\eqref{eq:dimeulereigenprob}.  The matrix of interest, \textit{viz}.
-$B_0^{-1}-\lambda_x B_0^{-1}A_0 - \lambda_z B_0^{-1}C_0$, may be expanded as
-$$
-\begin{bmatrix}
- \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & \frac{v {\lambda_x} \rho }{a^2-v^2} & \frac{\rho(1-u {\lambda_x}-w {\lambda_z})}{a^2-v^2} & \frac{v {\lambda_z} \rho }{a^2-v^2} & \frac{-1+u {\lambda_x}+w {\lambda_z}}{v \left(a^2-v^2\right)} & 0 \\
- 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & 0 & 0 & -\frac{{\lambda_x}}{v \rho } & 0 \\
- 0 & -\frac{a^2 {\lambda_x}}{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & -\frac{a^2 {\lambda_z}}{a^2-v^2} & \frac{1-u {\lambda_x}-w {\lambda_z}}{\rho (a^2 -v^2) } & 0 \\
- 0 & 0 & 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v} & -\frac{{\lambda_z}}{v \rho } & 0 \\
- 0 & \frac{a^2 v {\lambda_x} \rho }{a^2-v^2} & \frac{a^2 (1-u {\lambda_x}-w {\lambda_z}) \rho }{a^2-v^2} & \frac{a^2 v {\lambda_z} \rho }{a^2-v^2} & \frac{v (-1+u {\lambda_x}+w {\lambda_z})}{a^2-v^2} & 0 \\
- 0 & 0 & 0 & 0 & 0 & \frac{1-u {\lambda_x}-w {\lambda_z}}{v}
-\end{bmatrix}
-.
-$$
-The characteristic polynomial expressed as a function of an unadorned $\lambda$ is
-\begin{multline}
-\left(
-  \lambda^2
-+ \lambda
-  \frac{2 v \left(u {\lambda_x}+w {\lambda_z}-1\right)}{v^2-a^2}
-+ \frac{u^2 {\lambda_x}^2+2 u {\lambda_x} \left(w {\lambda_z}-1\right)+\left(w {\lambda_z}-1\right)^2 - a^2 \left({\lambda_x}^2+{\lambda_z}^2\right)}{v^2-a^2}
-\right)
-\times{}{}
-\\
-{}\times{}
-\left(\frac{u {\lambda_x}+v {\lambda}+w {\lambda_z}-1}{v}\right)^4
-=0
-.
-\end{multline}
-Two of the roots evidently come from a quadratic subproblem with discriminant
-FIXME.
-
-The characteristic polynomial zero of multiplicity four yields the four remaining eigenvalues
-\begin{align}
-\lambda_{3,4,5,6}
-=
-\frac{1-u {\lambda_x}-w {\lambda_z}}{v}
-=
-\frac{ \omega - u k_x - w k_z }{ \omega{} v }
-.
-\end{align}
-
-
-
-The associated matrices have been calculated using commodity symbolic
-manipulation software.  The results are:
-FIXME
 
 Comparing the result~\eqref{eq:dimeulerapprox} with
 equation~\eqref{eq:spatial_discretization} and the implicit operator from
