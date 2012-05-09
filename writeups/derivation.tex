@@ -2990,8 +2990,8 @@ coordinate transformation Jacobian matrix
 $$
    S = \frac{\partial{}U}{\partial{}V}
 $$
-and any orthogonal transformation $R$ may be used to rewrite the exact
-nonreflecting conditions~\eqref{eq:dimeulerexact} as
+and any rotation matrix $R$ may be used to rewrite the exact nonreflecting
+conditions~\eqref{eq:dimeulerexact} as
 \begin{align}
   \left(V^L S R\right) \delta{}V &= 0
 \end{align}
@@ -3014,7 +3014,9 @@ which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
   \delta{}V
   .
 \end{align}
-Using notation and matrices from the compact characteristic
+Choosing an $R\ne{}I$ permits orienting the nonreflecting condition to best
+handle waves traveling normal to something other than the $x$ boundary.  Using
+notation and matrices from the compact
 representation~\eqref{eq:dimeulerapproxBG},
 \begin{align}
 \label{eq:dimeulertransformcharnot}
@@ -3032,26 +3034,6 @@ representation~\eqref{eq:dimeulerapproxBG},
   S R
   \frac{\partial}{\partial{}z}
   \delta{}V
-  .
-\end{align}
-Substituting $\delta{}V = V - V_0$ and taking advantage of the steadiness and
-uniformity of the reference state $V_0$,
-\begin{align}
-\label{eq:dimeulertransformcharstate}
-  V^L
-  S R
-  \frac{\partial}{\partial{}t}
-  V
-  &\approx
-  B^G V^L
-  S R
-  \frac{\partial}{\partial{}y}
-  V
-  +
-  C^G V^L
-  S R
-  \frac{\partial}{\partial{}z}
-  V
   .
 \end{align}
 
@@ -3073,6 +3055,9 @@ FIXME
 
 Applying to $V$ not $\delta{}V$.
 FIXME
+
+Comment on the condition not applying to the zero-zero modes when
+one is willing to permit evolution of the mean state (as we must). FIXME
 
 Guarini mentions that Poinsot and Lele~\cite{Poinsot1992Boundary} suggest two
 additional viscous conditions be supplied when conditions like these are
