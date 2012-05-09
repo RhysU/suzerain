@@ -2896,10 +2896,11 @@ equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
   \delta{}C
 \end{align}
 where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
-respectively.  For some $U_0$ possessing an agreed upon relationship between
+respectively.  Only the conditions arising from one set of submatrices is meant
+to be applied.  For some $U_0$ possessing an agreed upon relationship between
 $u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
-submatrices concretely states a Giles-like nonreflecting $x$ boundary
-condition for the Euler equations.
+submatrices concretely states a Giles-like nonreflecting $x$ boundary condition
+for the Euler equations.
 
 In section 5.8 of his thesis, Medida presents two such concrete nonreflecting
 boundary condition specifications for subsonic inflows and outflows where $0 <
@@ -2907,40 +2908,40 @@ u_0 < a_0$.  Medida's equations~(5.78) and~(5.79) specify the transformations
 to and from characteristic variables:
 \begin{align}
 \label{eq:dimeulerapproxmedidaproj}
-  V^L &= \begin{bmatrix}
-    -a_0^2 & 0           & 0          & 0          & 1 \\
-    0      & 0           & \rho_0 a_0 & 0          & 0 \\
-    0      & 0           & 0          & \rho_0 a_0 & 0 \\
-    0      & \rho_0 a_0  & 0          & 0          & 1 \\
-    0      & -\rho_0 a_0 & 0          & 0          & 1 \\
-  \end{bmatrix}
+  V^L &= \left[\begin{array}{ccccc}
+    -a_0^2 & 0           & 0          & 0          & 1 \\ \noalign{\smallskip}
+    0      & 0           & \rho_0 a_0 & 0          & 0 \\ \noalign{\smallskip}
+    0      & 0           & 0          & \rho_0 a_0 & 0 \\ \noalign{\smallskip}
+    0      & \rho_0 a_0  & 0          & 0          & 1 \\ \noalign{\smallskip}
+    0      & -\rho_0 a_0 & 0          & 0          & 1 \\ \noalign{\smallskip}
+  \end{array}\right]
 &
-  {V^L}^{-1} &= \begin{bmatrix}
-    -\frac{1}{a_0^2} & 0                    & 0                    & \frac{1}{2a_0^2}      & \frac{1}{2a_0^2}        \\
-    0                & 0                    & 0                    & \frac{1}{2\rho_0 a_0} & - \frac{1}{2\rho_0 a_0} \\
-    0                & \frac{1}{\rho_0 a_0} & 0                    & 0                     & 0                       \\
-    0                & 0                    & \frac{1}{\rho_0 a_0} & 0                     & 0                       \\
-    0                & 0                    & 0                    & \frac{1}{2}           & \frac{1}{2}             \\
-  \end{bmatrix}
+  {V^L}^{-1} &= \left[\begin{array}{ccccc}
+    -\frac{1}{a_0^2} & 0                    & 0                    & \frac{1}{2a_0^2}      & \frac{1}{2a_0^2}        \\ \noalign{\smallskip}
+    0                & 0                    & 0                    & \frac{1}{2\rho_0 a_0} & - \frac{1}{2\rho_0 a_0} \\ \noalign{\smallskip}
+    0                & \frac{1}{\rho_0 a_0} & 0                    & 0                     & 0                       \\ \noalign{\smallskip}
+    0                & 0                    & \frac{1}{\rho_0 a_0} & 0                     & 0                       \\ \noalign{\smallskip}
+    0                & 0                    & 0                    & \frac{1}{2}           & \frac{1}{2}             \\ \noalign{\smallskip}
+  \end{array}\right]
 \end{align}
 Medida's equations~(5.82) and~(5.83) provide one pair of inflow and outflow
 conditions for which reflection coefficients were not reported:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt1}
   B^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0                 & 0   & 0                   & 0                 \\
-    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\
-    0 & 0                 & v_0 & 0                   & 0                 \\
-    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \hline
-    0 & u_0               & 0   & 0                   & v_0               \\
+    0 & 0                 & 0   & 0                   & 0                 \\ \noalign{\smallskip}
+    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
+    0 & 0                 & v_0 & 0                   & 0                 \\ \noalign{\smallskip}
+    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline
+    0 & u_0               & 0   & 0                   & v_0               \\ \noalign{\smallskip}
   \end{array}\right]
 &
   C^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0   & 0                 & 0                 & 0                 \\
-    0 & w_0 & 0                 & 0                 & 0                 \\
-    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\
-    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \hline
-    0 & 0   & u_0               & 0                 & w_0               \\
+    0 & 0   & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
+    0 & w_0 & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
+    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
+    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline
+    0 & 0   & u_0               & 0                 & w_0               \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 where partitioning has been used to delineate inflow versus outflow submatrices
@@ -2956,26 +2957,26 @@ condition, provides different outflow submatrices:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt2}
   B^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0                 & 0   & 0                   & 0                 \\
-    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\
-    0 & 0                 & v_0 & 0                   & 0                 \\
-    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \hline
-    0 & \frac{a_0+u_0}{2} & 0   & 0                   & v_0               \\
+    0 & 0                 & 0   & 0                   & 0                 \\ \noalign{\smallskip}
+    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
+    0 & 0                 & v_0 & 0                   & 0                 \\ \noalign{\smallskip}
+    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline
+    0 & \frac{a_0+u_0}{2} & 0   & 0                   & v_0               \\ \noalign{\smallskip}
   \end{array}\right]
 &
   C^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0   & 0                 & 0                 & 0                 \\
-    0 & w_0 & 0                 & 0                 & 0                 \\
-    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\
-    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \hline
-    0 & 0   & \frac{a_0+u_0}{2} & 0                 & w_0               \\
+    0 & 0   & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
+    0 & w_0 & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
+    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
+    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline
+    0 & 0   & \frac{a_0+u_0}{2} & 0                 & w_0               \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
-notes~\cite{Giles1990Nonreflecting}), this ``modified'' outflow condition is
-preferably only when one knows there will be no outgoing vorticity wave.
-This should be the case for some problems computed with Suzerain.
+notes~\cite{Giles1990Nonreflecting}), this second outflow condition is
+preferable only when one knows there will be no outgoing vorticity wave.  This
+should be the case for some problems computed with Suzerain.
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
