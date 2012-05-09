@@ -939,6 +939,7 @@ We use Spalart, Moser, and Rogers' low storage hybrid implicit/explicit
 time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This time stepper
 advances the system
 \begin{align}
+\label{eq:timediscretization}
  u_t &= Lu + N(u,t)
 \end{align}
 from $u(t)$ to $u\left( t+\Delta{}t \right)$.  Here $L$ and $N$ are a linear
@@ -2896,9 +2897,9 @@ equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
   \delta{}C
 \end{align}
 where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
-respectively.  Only the conditions arising from one set of submatrices is meant
-to be applied.  For some $U_0$ possessing an agreed upon relationship between
-$u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
+respectively.  Only the conditions arising from one set of submatrices are
+meant to be applied.  For some $U_0$ possessing an agreed upon relationship
+between $u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
 submatrices concretely states a Giles-like nonreflecting $x$ boundary condition
 for the Euler equations.
 
@@ -2960,7 +2961,7 @@ condition, provides different outflow submatrices:
     0 & 0                 & 0   & 0                   & 0                 \\ \noalign{\smallskip}
     0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
     0 & 0                 & v_0 & 0                   & 0                 \\ \noalign{\smallskip}
-    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline
+    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline \noalign{\smallskip} 
     0 & \frac{a_0+u_0}{2} & 0   & 0                   & v_0               \\ \noalign{\smallskip}
   \end{array}\right]
 &
@@ -2968,15 +2969,15 @@ condition, provides different outflow submatrices:
     0 & 0   & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
     0 & w_0 & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
     0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
-    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline
+    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline \noalign{\smallskip} 
     0 & 0   & \frac{a_0+u_0}{2} & 0                 & w_0               \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
-notes~\cite{Giles1990Nonreflecting}), this second outflow condition is
+notes~\cite{Giles1990Nonreflecting}, this second outflow condition is
 preferable only when one knows there will be no outgoing vorticity wave.  This
-should be the case for some problems computed with Suzerain.
+should be the case for some of our problems of interest.
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
@@ -2985,59 +2986,77 @@ reference state $V_0$ and therefore perturbations
 $$
   \delta{}V = V - V_0.
 $$
-As Guarini alludes, because of their frame indifference the Euler equations
-accommodate simple rotations and reflections.  In this new setting, the
-coordinate transformation Jacobian matrix
+In this new setting, the coordinate transformation Jacobian matrix
 $$
    S = \frac{\partial{}U}{\partial{}V}
 $$
-and any rotation matrix $R$ may be used to rewrite the exact nonreflecting
+may be used to rewrite the exact nonreflecting
 conditions~\eqref{eq:dimeulerexact} as
 \begin{align}
-  \left(V^L S R\right) \delta{}V &= 0
+  \left(V^L S\right) \delta{}V &= 0
 \end{align}
 which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
 \begin{align}
 \label{eq:dimeulertransform}
   V^L
-  S R
+  S
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
   \frac{dV^L}{d\lambda_y}
-  S R
+  S
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
   \frac{dV^L}{d\lambda_z}
-  S R
+  S
   \frac{\partial}{\partial{}z}
   \delta{}V
   .
 \end{align}
-Choosing an $R\ne{}I$ permits orienting the nonreflecting condition to best
-handle waves traveling normal to something other than the $x$ boundary.  Using
-notation and matrices from the compact
-representation~\eqref{eq:dimeulerapproxBG},
+Applying $\left(V^L S\right)^{-1}$, and using notation from the compact
+representation~\eqref{eq:dimeulerapproxBG} gives the result,
 \begin{align}
 \label{eq:dimeulertransformcharnot}
-  V^L
-  S R
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
-  B^G V^L
-  S R
+  \left(
+    {S}^{-1}
+    {V^L}^{-1}
+    B^G
+    V^L
+    S
+  \right)
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
-  C^G V^L
-  S R
+  \left(
+    {S}^{-1}
+    {V^L}^{-1}
+    C^G
+    V^L
+    S
+  \right)
   \frac{\partial}{\partial{}z}
   \delta{}V
   .
 \end{align}
 
+While the derivation up to result~\eqref{eq:dimeulertransformcharnot} has
+assumed $U_0$ and $V_0$ are known and steady, in practice they are not.  For
+example, the instantaneous wall-normal outflow reference velocity generated by
+a homogenized boundary layer problem is unknown.  While the mean value might
+possibly be computed \textit{a priori}, such a calculation would only be
+correct in a statistical sense.  It would certainly be wrong while simulating
+transients prior to reaching stationarity. FIXME
+
+To implement this  FIXME
+% To match the 
+% \label{sec:timediscretization}
+% \label{eq:timediscretization}
+% While the derivations up to now have 
+% \label{eq:dimeulertransformcharnot}
 
 Comparing the result~\eqref{eq:dimeulerapprox} with
 equation~\eqref{eq:spatial_discretization} and the implicit operator from
@@ -3065,12 +3084,12 @@ additional viscous conditions be supplied when conditions like these are
 applied to the Navier--Stokes equations.  These are currently omitted but that
 choice may need to be revisited.  Finally, Guarini rotated the nonreflecting
 boundary to match the nonorthogonal coordinate system used for his
-spatially-homogenized boundary layer (i.e. $R\ne{}I$).  Personal communications
-with Victor Topalian regarding his temporally-homogenized work suggests
-reorienting the nonreflecting coordinate system is unnecessary.  However,
-modest grid stretching near the freestream and other ``solution conditioning''
-tools like low pass filtering have been employed in his work.  This choice,
-too, might need to be reviewed.
+spatially-homogenized boundary layer.  Personal communications with Victor
+Topalian regarding his temporally-homogenized work suggests reorienting the
+nonreflecting coordinate system is unnecessary.  However, modest grid
+stretching near the freestream and other ``solution conditioning'' tools like
+low pass filtering have been employed in his work.  This choice, too, might
+need to be reviewed.
 
 \subsection{Imposing a favorable streamwise pressure gradient}
 
