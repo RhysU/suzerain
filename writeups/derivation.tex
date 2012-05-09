@@ -2864,6 +2864,7 @@ allows writing a more compact form
 \end{align}
 employing the notation
 \begin{align}
+\label{eq:dimeulerapproxBG}
   B^G
 &=
   \frac{dV^L}{d\lambda_y}
@@ -2978,36 +2979,81 @@ This should be the case for some problems computed with Suzerain.
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
-boundary conditions to another set of state variables $V$ with reference state
-$V_0$ and therefore perturbations $\delta{}V = V - V_0$.  In this new setting,
-the coordinate transformation Jacobian matrix
+boundary conditions to another set of state variables $V$ with steady, uniform
+reference state $V_0$ and therefore perturbations
+$$
+  \delta{}V = V - V_0.
+$$
+As Guarini alludes, because of their frame indifference the Euler equations
+accommodate simple rotations and reflections.  In this new setting, the
+coordinate transformation Jacobian matrix
 $$
    S = \frac{\partial{}U}{\partial{}V}
 $$
-may be used to rewrite the exact nonreflecting requirement as
+and any orthogonal transformation $R$ may be used to rewrite the exact
+nonreflecting conditions~\eqref{eq:dimeulerexact} as
 \begin{align}
-  \left(V_n^L S\right) \delta{}V &= 0
+  \left(V^L S R\right) \delta{}V &= 0
 \end{align}
 which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
 \begin{align}
 \label{eq:dimeulertransform}
-  V_n^L
-  S
+  V^L
+  S R
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
-  \frac{dV_n^L}{d\lambda_y}
-  S
+  \frac{dV^L}{d\lambda_y}
+  S R
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
-  \frac{dV_n^L}{d\lambda_z}
-  S
-  \frac{\partial}{\partial{}y}
+  \frac{dV^L}{d\lambda_z}
+  S R
+  \frac{\partial}{\partial{}z}
   \delta{}V
   .
 \end{align}
-
+Using notation and matrices from the compact characteristic
+representation~\eqref{eq:dimeulerapproxBG},
+\begin{align}
+\label{eq:dimeulertransformcharnot}
+  V^L
+  S R
+  \frac{\partial}{\partial{}t}
+  \delta{}V
+  &\approx
+  B^G V^L
+  S R
+  \frac{\partial}{\partial{}y}
+  \delta{}V
+  +
+  C^G V^L
+  S R
+  \frac{\partial}{\partial{}z}
+  \delta{}V
+  .
+\end{align}
+Substituting $\delta{}V = V - V_0$ and taking advantage of the steadiness and
+uniformity of the reference state $V_0$,
+\begin{align}
+\label{eq:dimeulertransformcharstate}
+  V^L
+  S R
+  \frac{\partial}{\partial{}t}
+  V
+  &\approx
+  B^G V^L
+  S R
+  \frac{\partial}{\partial{}y}
+  V
+  +
+  C^G V^L
+  S R
+  \frac{\partial}{\partial{}z}
+  V
+  .
+\end{align}
 
 
 Comparing the result~\eqref{eq:dimeulerapprox} with
@@ -3028,17 +3074,17 @@ FIXME
 Applying to $V$ not $\delta{}V$.
 FIXME
 
-Guarini mentions that Poinsot and Lele~cite{Poinsot1992Boundary} suggest two
+Guarini mentions that Poinsot and Lele~\cite{Poinsot1992Boundary} suggest two
 additional viscous conditions be supplied when conditions like these are
 applied to the Navier--Stokes equations.  These are currently omitted but that
 choice may need to be revisited.  Finally, Guarini rotated the nonreflecting
 boundary to match the nonorthogonal coordinate system used for his
-spatially-homogenized boundary layer.  Personal communications with Victor
-Topalian regarding his temporally-homogenized work suggests reorienting the
-nonreflecting coordinate system is unnecessary.  However, modest grid
-stretching near the freestream and other ``solution conditioning'' tools like
-low pass filtering have been employed in his work.  This choice, too, might
-need to be reviewed.
+spatially-homogenized boundary layer (i.e. $R\ne{}I$).  Personal communications
+with Victor Topalian regarding his temporally-homogenized work suggests
+reorienting the nonreflecting coordinate system is unnecessary.  However,
+modest grid stretching near the freestream and other ``solution conditioning''
+tools like low pass filtering have been employed in his work.  This choice,
+too, might need to be reviewed.
 
 \subsection{Imposing a favorable streamwise pressure gradient}
 
