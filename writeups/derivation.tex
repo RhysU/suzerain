@@ -2713,23 +2713,23 @@ $$
 \delta{}v, \delta{}w, \delta{}p \right\}
 $$
 taken about some steady,
-uniform reference state $U_0$ so that
+uniform reference state $\bar{U}$ so that
 $$
-U = U_0 + \delta{}U.
+U = \bar{U} + \delta{}U.
 $$
 The short-time evolution of such perturbations is governed by the linearized
 Euler equations
 \begin{align}
 \label{eq:dimeulerperturb}
-      \frac{\partial}{\partial{}t}\delta{}U
-+ A_0 \frac{\partial}{\partial{}x}\delta{}U
-+ B_0 \frac{\partial}{\partial{}y}\delta{}U
-+ C_0 \frac{\partial}{\partial{}z}\delta{}U
+               \frac{\partial}{\partial{}t}\delta{}U
++ \bar{A} \frac{\partial}{\partial{}x}\delta{}U
++ \bar{B} \frac{\partial}{\partial{}y}\delta{}U
++ \bar{C} \frac{\partial}{\partial{}z}\delta{}U
 &= 0
 \end{align}
-where matrices $A_0$, $B_0$, and $C_0$ are evaluated at $U_0$.  This
-linearized system satisfies the prerequisites for Giles' analysis.
-Assuming a solution of the form
+where matrices $\bar{A}$, $\bar{B}$, and $\bar{C}$ are evaluated
+at $\bar{U}$.  This linearized system satisfies the prerequisites for
+Giles' analysis.  Assuming a solution of the form
 \begin{align}
   \delta{}U &= e^{\ii\left(
     k_x x + k_y y + k_z z - \omega t
@@ -2739,42 +2739,55 @@ Assuming a solution of the form
 and substituting into the linearized equations reduces the equations to
 \begin{align}
 \label{eq:dimeulerreduced}
-  \ii\left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right)
+  \ii\left( - \omega I
+            + k_x \bar{A}
+            + k_y \bar{B}
+            + k_z \bar{C}
+  \right)
   \delta\hat{U}^R &= 0
 \end{align}
 which has nontrivial solutions only if the so-called dispersion relation
 \begin{align}
-  \det \left( - \omega I + k_x A_0 + k_y B_0 + k_z C_0 \right) &= 0
+  \det \left( - \omega I
+              + k_x \bar{A}
+              + k_y \bar{B}
+              + k_z \bar{C}
+       \right) &= 0
 \end{align}
 holds.  Defining $\lambda_x = k_x/\omega$, $\lambda_y = k_y/\omega$, and
 $\lambda_z/\omega$, the dispersion relation may be equivalently expressed as
 \begin{align}
 \label{eq:dimeulerdisp}
-  \det \left( - I + \lambda_x A_0 + \lambda_y B_0 + \lambda_z C_0 \right) &= 0
+  \det \left( - I
+              + \lambda_x \bar{A}
+              + \lambda_y \bar{B}
+              + \lambda_z \bar{C}
+       \right) &= 0
   .
 \end{align}
-Assuming $A_0$ is invertible and applying $- \left(\ii\omega{}A_0\right)^{-1}$
-to equation~\eqref{eq:dimeulerreduced}, one finds an eigenvalue problem in
+Assuming $\bar{A}$ is invertible and applying
+$-\left(\ii\omega{}\bar{A}\right)^{-1}$ to
+equation~\eqref{eq:dimeulerreduced}, one finds an eigenvalue problem in
 $\lambda_x$
 \begin{align}
-  \left(   A_0^{-1}
+  \left(   \bar{A}^{-1}
          - \lambda_x I
-         - \lambda_y A_0^{-1} B_0
-         - \lambda_z A_0^{-1} C_0
+         - \lambda_y \bar{A}^{-1} \bar{B}
+         - \lambda_z \bar{A}^{-1} \bar{C}
   \right) \delta\hat{U}^R = 0
 \end{align}
 where $\delta\hat{U}^R$ is the eigenvector and a solution to the right null
-space problem.  The signs of the associated eigenvalues, determined using
-the magnitude of $u_0$ relative to $a_0$, are required to determine how many
-characteristics are entering or exiting through the boundary.  The left null
-space problem
+space problem.  The signs of the associated eigenvalues, determined using the
+magnitude of $\bar{u}$ relative to $\bar{a}$, are required to determine how
+many characteristics are entering or exiting through the boundary.  The left
+null space problem
 \begin{align}
 \label{eq:dimeulereigenprob}
   V^{L}
-  \left(   A_0^{-1}
+  \left(   \bar{A}^{-1}
          - \lambda_x I
-         - \lambda_y A_0^{-1} B_0
-         - \lambda_z A_0^{-1} C_0
+         - \lambda_y \bar{A}^{-1} \bar{B}
+         - \lambda_z \bar{A}^{-1} \bar{C}
   \right) &= 0
 \end{align}
 naturally gives rise to the associated left null vector $V^L$.  Giles,
@@ -2810,7 +2823,7 @@ Moreover, the straightforward application of even this first order
 approximation requires either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007}
 or systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
 inflow constraints.  Multiplying through by $-\ii\omega$, Fourier transforming
-in both time and space, and using that $U_0$ and therefore $V_n^L$ are both
+in both time and space, and using that $\bar{U}$ and therefore $V_n^L$ are both
 steady and uniform yields
 \begin{align}
 \label{eq:dimeulerapprox}
@@ -2879,7 +2892,7 @@ employing the notation
 where the superscript $G$ is meant to suggest ``Giles''.  This last statement
 intermixes the constraints for inflow and outflow conditions.  While the
 submatrices vary depending on the choices made to express $V^L$ and the
-magnitude of $u_0$ relative to $a_0$, in complete generality the matrix
+magnitude of $\bar{u}$ relative to $\bar{a}$, in complete generality the matrix
 equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
 \begin{align}
 \label{eq:dimeulerapproxcharpart}
@@ -2898,31 +2911,31 @@ equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
 \end{align}
 where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
 respectively.  Only the conditions arising from one set of submatrices are
-meant to be applied.  For some $U_0$ possessing an agreed upon relationship
-between $u_0$ and $a_0$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned
-submatrices concretely states a Giles-like nonreflecting $x$ boundary condition
-for the Euler equations.
+meant to be applied.  For some $\bar{U}$ possessing an agreed upon relationship
+between $\bar{u}$ and $\bar{a}$, specifying $V^L$, ${V^L}^{-1}$, and these
+partitioned submatrices concretely states a Giles-like nonreflecting $x$
+boundary condition for the Euler equations.
 
 In section 5.8 of his thesis, Medida presents two such concrete nonreflecting
 boundary condition specifications for subsonic inflows and outflows where $0 <
-u_0 < a_0$.  Medida's equations~(5.78) and~(5.79) specify the transformations
-to and from characteristic variables:
+\bar{u} < \bar{a}$.  Medida's equations~(5.78) and~(5.79) specify the
+transformations to and from characteristic variables:
 \begin{align}
 \label{eq:dimeulerapproxmedidaproj}
   V^L &= \left[\begin{array}{ccccc}
-    -a_0^2 & 0           & 0          & 0          & 1 \\ \noalign{\smallskip}
-    0      & 0           & \rho_0 a_0 & 0          & 0 \\ \noalign{\smallskip}
-    0      & 0           & 0          & \rho_0 a_0 & 0 \\ \noalign{\smallskip}
-    0      & \rho_0 a_0  & 0          & 0          & 1 \\ \noalign{\smallskip}
-    0      & -\rho_0 a_0 & 0          & 0          & 1 \\ \noalign{\smallskip}
+    -\bar{a}^2 & 0                   & 0                  & 0                  & 1 \\ \noalign{\smallskip}
+    0          & 0                   & \bar{\rho} \bar{a} & 0                  & 0 \\ \noalign{\smallskip}
+    0          & 0                   & 0                  & \bar{\rho} \bar{a} & 0 \\ \noalign{\smallskip}
+    0          & \bar{\rho} \bar{a}  & 0                  & 0                  & 1 \\ \noalign{\smallskip}
+    0          & -\bar{\rho} \bar{a} & 0                  & 0                  & 1 \\ \noalign{\smallskip}
   \end{array}\right]
 &
   {V^L}^{-1} &= \left[\begin{array}{ccccc}
-    -\frac{1}{a_0^2} & 0                    & 0                    & \frac{1}{2a_0^2}      & \frac{1}{2a_0^2}        \\ \noalign{\smallskip}
-    0                & 0                    & 0                    & \frac{1}{2\rho_0 a_0} & - \frac{1}{2\rho_0 a_0} \\ \noalign{\smallskip}
-    0                & \frac{1}{\rho_0 a_0} & 0                    & 0                     & 0                       \\ \noalign{\smallskip}
-    0                & 0                    & \frac{1}{\rho_0 a_0} & 0                     & 0                       \\ \noalign{\smallskip}
-    0                & 0                    & 0                    & \frac{1}{2}           & \frac{1}{2}             \\ \noalign{\smallskip}
+    -\frac{1}{\bar{a}^2} & 0                            & 0                            & \frac{1}{2\bar{a}^2}          & \frac{1}{2\bar{a}^2}            \\ \noalign{\smallskip}
+    0                    & 0                            & 0                            & \frac{1}{2\bar{\rho} \bar{a}} & - \frac{1}{2\bar{\rho} \bar{a}} \\ \noalign{\smallskip}
+    0                    & \frac{1}{\bar{\rho} \bar{a}} & 0                            & 0                             & 0                               \\ \noalign{\smallskip}
+    0                    & 0                            & \frac{1}{\bar{\rho} \bar{a}} & 0                             & 0                               \\ \noalign{\smallskip}
+    0                    & 0                            & 0                            & \frac{1}{2}                   & \frac{1}{2}                     \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 Medida's equations~(5.82) and~(5.83) provide one pair of inflow and outflow
@@ -2930,19 +2943,19 @@ conditions for which reflection coefficients were not reported:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt1}
   B^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0                 & 0   & 0                   & 0                 \\ \noalign{\smallskip}
-    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
-    0 & 0                 & v_0 & 0                   & 0                 \\ \noalign{\smallskip}
-    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline
-    0 & u_0               & 0   & 0                   & v_0               \\ \noalign{\smallskip}
+    0 & 0                         & 0       & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & \bar{v}                   & 0       & \frac{\bar{a} + \bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0                         & \bar{v} & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & \frac{\bar{a}-\bar{u}}{2} & 0       & \bar{v}                     & 0                         \\ \noalign{\smallskip} \hline
+    0 & \bar{u}                   & 0       & 0                           & \bar{v}                   \\ \noalign{\smallskip}
   \end{array}\right]
 &
   C^G_1 &= \left[\begin{array}{ccccc}
-    0 & 0   & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
-    0 & w_0 & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
-    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
-    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline
-    0 & 0   & u_0               & 0                 & w_0               \\ \noalign{\smallskip}
+    0 & 0       & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & \bar{w} & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & 0       & \bar{w}                   & \frac{\bar{a}+\bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0       & \frac{\bar{a}-\bar{u}}{2} & \bar{w}                   & 0                         \\ \noalign{\smallskip} \hline
+    0 & 0       & \bar{u}                   & 0                         & \bar{w}                   \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 where partitioning has been used to delineate inflow versus outflow submatrices
@@ -2958,19 +2971,19 @@ condition, provides different outflow submatrices:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt2}
   B^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0                 & 0   & 0                   & 0                 \\ \noalign{\smallskip}
-    0 & v_0               & 0   & \frac{a_0 + u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
-    0 & 0                 & v_0 & 0                   & 0                 \\ \noalign{\smallskip}
-    0 & \frac{a_0-u_0}{2} & 0   & v_0                 & 0                 \\ \noalign{\smallskip} \hline \noalign{\smallskip} 
-    0 & \frac{a_0+u_0}{2} & 0   & 0                   & v_0               \\ \noalign{\smallskip}
+    0 & 0                         & 0       & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & \bar{v}                   & 0       & \frac{\bar{a} + \bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0                         & \bar{v} & 0                           & 0                         \\ \noalign{\smallskip}
+    0 & \frac{\bar{a}-\bar{u}}{2} & 0       & \bar{v}                     & 0                         \\ \noalign{\smallskip} \hline \noalign{\smallskip}
+    0 & \frac{\bar{a}+\bar{u}}{2} & 0       & 0                           & \bar{v}                   \\ \noalign{\smallskip}
   \end{array}\right]
 &
   C^G_2 &= \left[\begin{array}{ccccc}
-    0 & 0   & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
-    0 & w_0 & 0                 & 0                 & 0                 \\ \noalign{\smallskip}
-    0 & 0   & w_0               & \frac{a_0+u_0}{2} & \frac{a_0-u_0}{2} \\ \noalign{\smallskip}
-    0 & 0   & \frac{a_0-u_0}{2} & w_0               & 0                 \\ \noalign{\smallskip} \hline \noalign{\smallskip} 
-    0 & 0   & \frac{a_0+u_0}{2} & 0                 & w_0               \\ \noalign{\smallskip}
+    0 & 0       & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & \bar{w} & 0                         & 0                         & 0                         \\ \noalign{\smallskip}
+    0 & 0       & \bar{w}                   & \frac{\bar{a}+\bar{u}}{2} & \frac{\bar{a}-\bar{u}}{2} \\ \noalign{\smallskip}
+    0 & 0       & \frac{\bar{a}-\bar{u}}{2} & \bar{w}                   & 0                         \\ \noalign{\smallskip} \hline \noalign{\smallskip}
+    0 & 0       & \frac{\bar{a}+\bar{u}}{2} & 0                         & \bar{w}                   \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
 At the outflow, these matrices cause outgoing pressure waves to produce fourth
@@ -2982,9 +2995,9 @@ should be the case for some of our problems of interest.
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
 boundary conditions to another set of state variables $V$ with steady, uniform
-reference state $V_0$ and therefore perturbations
+reference state $\bar{V}$ and therefore perturbations
 $$
-  \delta{}V = V - V_0.
+  \delta{}V = V - \bar{V}.
 $$
 In this new setting, the coordinate transformation Jacobian matrix
 $$
@@ -3043,19 +3056,90 @@ representation~\eqref{eq:dimeulerapproxBG} gives the result,
   .
 \end{align}
 
+The particular coordinate transformation Jacobian we require maps the
+dimensional $U = \left\{ \rho, u, v, w, p \right\}$ to the nondimensional $V =
+\left\{ \rho^{*},\,\rho^{*}u^{*}, \,\rho^{*}v^{*}, \,\rho^{*}w^{*},
+\,\rho^{*}E^{*}, \right\}$ described by sections~\ref{sec:nondimrefq}
+and~\ref{nondim_equations}.  Several intermediate results are pertinent:
+\begin{align}
+  \rho &= \rho_0 \rho^{*}
+&
+  u &= \frac{u_0 \rho^{*}u^{*}}{\rho^{*}}
+&
+  v &= \frac{u_0 \rho^{*}v^{*}}{\rho^{*}}
+&
+  w &= \frac{u_0 \rho^{*}w^{*}}{\rho^{*}}
+\end{align}
+\begin{align}
+  p &= \frac{\rho_0 a_0^2  \rho^{*} T^{*}}{\gamma}
+     = \rho_0 a_0^2 \left(\gamma-1\right)\rho^{*}E^{*}
+     + \frac{\rho_0 u_0^2}{2\rho^{*}}\left(1-\gamma\right)\left(
+           \left(\rho^{*}u^{*}\right)^2
+         + \left(\rho^{*}v^{*}\right)^2
+         + \left(\rho^{*}w^{*}\right)^2
+       \right)
+\end{align}
+The Jacobian for this transformation evaluated at reference $\bar{U}$ is
+\begin{align}
+S = \frac{\partial{}U}{\partial{}V} &= \left[\begin{array}{ccccc}
+    \rho_0               % 11
+  & \frac{\rho_0}{u^{*}} % 12
+  & \frac{\rho_0}{v^{*}} % 13
+  & \frac{\rho_0}{w^{*}} % 14
+  & \frac{\rho_0}{E^{*}} % 15
+  \\ \noalign{\medskip}
+    0                    % 21
+  & \frac{u_0}{\rho^{*}} % 22
+  & 0                    % 23
+  & 0                    % 24
+  & 0                    % 25
+  \\ \noalign{\medskip}
+    0                    % 31
+  & 0                    % 32
+  & \frac{u_0}{\rho^{*}} % 33
+  & 0                    % 34
+  & 0                    % 35
+  \\ \noalign{\medskip}
+    0                    % 41
+  & 0                    % 42
+  & 0                    % 43
+  & \frac{u_0}{\rho^{*}} % 44
+  & 0                    % 45
+  \\ \noalign{\medskip}
+    \frac{\rho_0 a_0^2 T^{*}}{\gamma}          % 51
+  & \rho_0 u_0^2 \left(1 - \gamma\right) u^{*} % 52
+  & \rho_0 u_0^2 \left(1 - \gamma\right) v^{*} % 53
+  & \rho_0 u_0^2 \left(1 - \gamma\right) w^{*} % 54
+  & \rho_0 a_0^2 \left(\gamma-1\right)         % 55
+  \\ \noalign{\medskip}
+\end{array}\right]
+.
+\end{align}
+FIXME
+
+% Nondimensionalizing result~\eqref{eq:dimeulertransformcharnot} would
+% certainly be possible.  The advantage of isolating the changes to the
+% transformation Jacobian is that it permits easily reworking nondimensional
+% choices
+
+Given the nondimensionalization choices
+\ref{sec:nondimrefq}
+\ref{nondim_equations}
+
 While the derivation up to result~\eqref{eq:dimeulertransformcharnot} has
-assumed $U_0$ and $V_0$ are known and steady, in practice they are not.  For
-example, the instantaneous wall-normal outflow reference velocity generated by
-a homogenized boundary layer problem is unknown.  While the mean value might
+assumed $\bar{U}$ and $\bar{V}$ are known and steady, in practice they are not.
+For example, the instantaneous wall-normal outflow reference velocity generated
+by a homogenized boundary layer problem is unknown.  While the mean value might
 possibly be computed \textit{a priori}, such a calculation would only be
 correct in a statistical sense.  It would certainly be wrong while simulating
 transients prior to reaching stationarity. FIXME
 
 To implement this  FIXME
-% To match the 
+% \ref{sec:timediscretization}
+% To match the
 % \label{sec:timediscretization}
 % \label{eq:timediscretization}
-% While the derivations up to now have 
+% While the derivations up to now have
 % \label{eq:dimeulertransformcharnot}
 
 Comparing the result~\eqref{eq:dimeulerapprox} with
