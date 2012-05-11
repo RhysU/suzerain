@@ -405,6 +405,7 @@ so we assume
 \end{align}
 
 \subsection{Dimensional equations}
+\label{sec:dimensionalmodelequations}
 
 By combining the conservation laws with our constitutive relations
 and assumptions, we arrive at the dimensional equations
@@ -3027,129 +3028,123 @@ which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
   \delta{}V
   .
 \end{align}
-Applying $\left(V^L S\right)^{-1}$, and using notation from the compact
-representation~\eqref{eq:dimeulerapproxBG} gives the result,
+Using notation from the compact representation~\eqref{eq:dimeulerapproxBG}
+gives the dimensional result,
 \begin{align}
 \label{eq:dimeulertransformcharnot}
+  V^L
+  S
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
-  \left(
-    {S}^{-1}
-    {V^L}^{-1}
     B^G
     V^L
     S
-  \right)
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
-  \left(
-    {S}^{-1}
-    {V^L}^{-1}
-    C^G
-    V^L
-    S
-  \right)
+  C^G
+  V^L
+  S
   \frac{\partial}{\partial{}z}
   \delta{}V
   .
 \end{align}
 
-The particular coordinate transformation Jacobian we require maps the
-dimensional $U = \left\{ \rho, u, v, w, p \right\}$ to the nondimensional $V =
-\left\{ \rho^{*},\,\rho^{*}u^{*}, \,\rho^{*}v^{*}, \,\rho^{*}w^{*},
-\,\rho^{*}E^{*}, \right\}$ described by sections~\ref{sec:nondimrefq}
-and~\ref{nondim_equations}.  Several intermediate results are pertinent:
+The particular coordinate transformation Jacobian we require maps the primitive
+state $U = \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V =
+\left\{ \rho, \,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.
+Observing that
 \begin{align}
-  \rho &= \rho_0 \rho^{*}
+  u &= \frac{\rho{}u}{\rho}
 &
-  u &= \frac{u_0 \rho^{*}u^{*}}{\rho^{*}}
+  v &= \frac{\rho{}v}{\rho}
 &
-  v &= \frac{u_0 \rho^{*}v^{*}}{\rho^{*}}
+  w &= \frac{\rho{}w}{\rho}
 &
-  w &= \frac{u_0 \rho^{*}w^{*}}{\rho^{*}}
-\end{align}
-\begin{align}
-  p &= \frac{\rho_0 a_0^2  \rho^{*} {a^{*}}^2}{\gamma}
-     = \rho_0 a_0^2 \left(\gamma-1\right)\rho^{*}E^{*}
-     + \frac{\rho_0 u_0^2}{2\rho^{*}}\left(1-\gamma\right)\left(
-           \left(\rho^{*}u^{*}\right)^2
-         + \left(\rho^{*}v^{*}\right)^2
-         + \left(\rho^{*}w^{*}\right)^2
+  p &= \frac{\rho{}a^2}{\gamma}
+     = \left(\gamma-1\right)\rho{}E
+     + \frac{1-\gamma}{2\rho}\left(
+           \left(\rho{}u\right)^2
+         + \left(\rho{}v\right)^2
+         + \left(\rho{}w\right)^2
        \right)
 \end{align}
-The Jacobian for this transformation evaluated at either a dimensionless or a
-dimensional reference $\bar{U}$ is
+permits computing the Jacobian evaluated at $\bar{U}$,
 \begin{align}
-S = \frac{\partial{}U}{\partial{}V} &= \left[\begin{array}{ccccc}
-    \rho_0                     % 11
-  & \frac{\rho_0}{\bar{u}^{*}} % 12
-  & \frac{\rho_0}{\bar{v}^{*}} % 13
-  & \frac{\rho_0}{\bar{w}^{*}} % 14
-  & \frac{\rho_0}{\bar{E}^{*}} % 15
+S &= \left[\begin{array}{ccccc}
+    1                 % 11
+  & \frac{1}{\bar{u}} % 12
+  & \frac{1}{\bar{v}} % 13
+  & \frac{1}{\bar{w}} % 14
+  & \frac{1}{\bar{E}} % 15
   \\ \noalign{\medskip}
-    0                          % 21
-  & \frac{u_0}{\bar{\rho}^{*}} % 22
-  & 0                          % 23
-  & 0                          % 24
-  & 0                          % 25
+    0                    % 21
+  & \frac{1}{\bar{\rho}} % 22
+  & 0                    % 23
+  & 0                    % 24
+  & 0                    % 25
   \\ \noalign{\medskip}
-    0                          % 31
-  & 0                          % 32
-  & \frac{u_0}{\bar{\rho}^{*}} % 33
-  & 0                          % 34
-  & 0                          % 35
+    0                    % 31
+  & 0                    % 32
+  & \frac{1}{\bar{\rho}} % 33
+  & 0                    % 34
+  & 0                    % 35
   \\ \noalign{\medskip}
-    0                          % 41
-  & 0                          % 42
-  & 0                          % 43
-  & \frac{u_0}{\bar{\rho}^{*}} % 44
-  & 0                          % 45
+    0                    % 41
+  & 0                    % 42
+  & 0                    % 43
+  & \frac{1}{\bar{\rho}} % 44
+  & 0                    % 45
   \\ \noalign{\medskip}
-    \frac{\rho_0 a_0^2 {\bar{a}^{*}}^2}{\gamma}      % 51
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{u}^{*} % 52
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{v}^{*} % 53
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{w}^{*} % 54
-  & \rho_0 a_0^2 \left(\gamma-1\right)               % 55
+    \frac{\bar{a}^2}{\gamma}        % 51
+  & \left(1 - \gamma\right) \bar{u} % 52
+  & \left(1 - \gamma\right) \bar{v} % 53
+  & \left(1 - \gamma\right) \bar{w} % 54
+  & \gamma-1                        % 55
   \\ \noalign{\medskip}
 \end{array}\right]
-\\
-&= \left[\begin{array}{ccccc}
-    \rho_0                     % 11
-  & \frac{\rho_0 u_0}{\bar{u}} % 12
-  & \frac{\rho_0 u_0}{\bar{v}} % 13
-  & \frac{\rho_0 u_0}{\bar{w}} % 14
-  & \frac{\rho_0 u_0}{\bar{E}} % 15
+,
+\end{align}
+as well as the useful product of the left eigenvectors and this Jacobian (FIXME),
+\begin{align}
+V^L S &= \left[\begin{array}{ccccc}
+    1                 % 11
+  & \frac{1}{\bar{u}} % 12
+  & \frac{1}{\bar{v}} % 13
+  & \frac{1}{\bar{w}} % 14
+  & \frac{1}{\bar{E}} % 15
   \\ \noalign{\medskip}
-    0                             % 21
-  & \frac{\rho_0 u_0}{\bar{\rho}} % 22
-  & 0                             % 23
-  & 0                             % 24
-  & 0                             % 25
+    0                    % 21
+  & \frac{1}{\bar{\rho}} % 22
+  & 0                    % 23
+  & 0                    % 24
+  & 0                    % 25
   \\ \noalign{\medskip}
-    0                             % 31
-  & 0                             % 32
-  & \frac{\rho_0 u_0}{\bar{\rho}} % 33
-  & 0                             % 34
-  & 0                             % 35
+    0                    % 31
+  & 0                    % 32
+  & \frac{1}{\bar{\rho}} % 33
+  & 0                    % 34
+  & 0                    % 35
   \\ \noalign{\medskip}
-    0                             % 41
-  & 0                             % 42
-  & 0                             % 43
-  & \frac{\rho_0 u_0}{\bar{\rho}} % 44
-  & 0                             % 45
+    0                    % 41
+  & 0                    % 42
+  & 0                    % 43
+  & \frac{1}{\bar{\rho}} % 44
+  & 0                    % 45
   \\ \noalign{\medskip}
-    \frac{\rho_0 {\bar{a}}^2}{\gamma}          % 51
-  & \rho_0 u_0 \left(1 - \gamma\right) \bar{u} % 52
-  & \rho_0 u_0 \left(1 - \gamma\right) \bar{v} % 53
-  & \rho_0 u_0 \left(1 - \gamma\right) \bar{w} % 54
-  & \rho_0 a_0^2 \left(\gamma-1\right)         % 55
+    \frac{\bar{a}^2}{\gamma}        % 51
+  & \left(1 - \gamma\right) \bar{u} % 52
+  & \left(1 - \gamma\right) \bar{v} % 53
+  & \left(1 - \gamma\right) \bar{w} % 54
+  & \gamma-1                        % 55
   \\ \noalign{\medskip}
 \end{array}\right]
 .
 \end{align}
-FIXME
+
+
+\eqref{eq:dimeulertransformcharnot}
 
 % Nondimensionalizing result~\eqref{eq:dimeulertransformcharnot} would
 % certainly be possible.  The advantage of isolating the changes to the
