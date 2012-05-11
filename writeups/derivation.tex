@@ -3071,7 +3071,7 @@ and~\ref{nondim_equations}.  Several intermediate results are pertinent:
   w &= \frac{u_0 \rho^{*}w^{*}}{\rho^{*}}
 \end{align}
 \begin{align}
-  p &= \frac{\rho_0 a_0^2  \rho^{*} T^{*}}{\gamma}
+  p &= \frac{\rho_0 a_0^2  \rho^{*} {a^{*}}^2}{\gamma}
      = \rho_0 a_0^2 \left(\gamma-1\right)\rho^{*}E^{*}
      + \frac{\rho_0 u_0^2}{2\rho^{*}}\left(1-\gamma\right)\left(
            \left(\rho^{*}u^{*}\right)^2
@@ -3079,37 +3079,71 @@ and~\ref{nondim_equations}.  Several intermediate results are pertinent:
          + \left(\rho^{*}w^{*}\right)^2
        \right)
 \end{align}
-The Jacobian for this transformation evaluated at reference $\bar{U}$ is
+The Jacobian for this transformation evaluated at either a dimensionless or a
+dimensional reference $\bar{U}$ is
 \begin{align}
 S = \frac{\partial{}U}{\partial{}V} &= \left[\begin{array}{ccccc}
-    \rho_0               % 11
-  & \frac{\rho_0}{u^{*}} % 12
-  & \frac{\rho_0}{v^{*}} % 13
-  & \frac{\rho_0}{w^{*}} % 14
-  & \frac{\rho_0}{E^{*}} % 15
+    \rho_0                     % 11
+  & \frac{\rho_0}{\bar{u}^{*}} % 12
+  & \frac{\rho_0}{\bar{v}^{*}} % 13
+  & \frac{\rho_0}{\bar{w}^{*}} % 14
+  & \frac{\rho_0}{\bar{E}^{*}} % 15
   \\ \noalign{\medskip}
-    0                    % 21
-  & \frac{u_0}{\rho^{*}} % 22
-  & 0                    % 23
-  & 0                    % 24
-  & 0                    % 25
+    0                          % 21
+  & \frac{u_0}{\bar{\rho}^{*}} % 22
+  & 0                          % 23
+  & 0                          % 24
+  & 0                          % 25
   \\ \noalign{\medskip}
-    0                    % 31
-  & 0                    % 32
-  & \frac{u_0}{\rho^{*}} % 33
-  & 0                    % 34
-  & 0                    % 35
+    0                          % 31
+  & 0                          % 32
+  & \frac{u_0}{\bar{\rho}^{*}} % 33
+  & 0                          % 34
+  & 0                          % 35
   \\ \noalign{\medskip}
-    0                    % 41
-  & 0                    % 42
-  & 0                    % 43
-  & \frac{u_0}{\rho^{*}} % 44
-  & 0                    % 45
+    0                          % 41
+  & 0                          % 42
+  & 0                          % 43
+  & \frac{u_0}{\bar{\rho}^{*}} % 44
+  & 0                          % 45
   \\ \noalign{\medskip}
-    \frac{\rho_0 a_0^2 T^{*}}{\gamma}          % 51
-  & \rho_0 u_0^2 \left(1 - \gamma\right) u^{*} % 52
-  & \rho_0 u_0^2 \left(1 - \gamma\right) v^{*} % 53
-  & \rho_0 u_0^2 \left(1 - \gamma\right) w^{*} % 54
+    \frac{\rho_0 a_0^2 {\bar{a}^{*}}^2}{\gamma}      % 51
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{u}^{*} % 52
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{v}^{*} % 53
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{w}^{*} % 54
+  & \rho_0 a_0^2 \left(\gamma-1\right)               % 55
+  \\ \noalign{\medskip}
+\end{array}\right]
+\\
+&= \left[\begin{array}{ccccc}
+    \rho_0                     % 11
+  & \frac{\rho_0 u_0}{\bar{u}} % 12
+  & \frac{\rho_0 u_0}{\bar{v}} % 13
+  & \frac{\rho_0 u_0}{\bar{w}} % 14
+  & \frac{\rho_0 u_0}{\bar{E}} % 15
+  \\ \noalign{\medskip}
+    0                             % 21
+  & \frac{\rho_0 u_0}{\bar{\rho}} % 22
+  & 0                             % 23
+  & 0                             % 24
+  & 0                             % 25
+  \\ \noalign{\medskip}
+    0                             % 31
+  & 0                             % 32
+  & \frac{\rho_0 u_0}{\bar{\rho}} % 33
+  & 0                             % 34
+  & 0                             % 35
+  \\ \noalign{\medskip}
+    0                             % 41
+  & 0                             % 42
+  & 0                             % 43
+  & \frac{\rho_0 u_0}{\bar{\rho}} % 44
+  & 0                             % 45
+  \\ \noalign{\medskip}
+    \frac{\rho_0 {\bar{a}}^2}{\gamma}          % 51
+  & \rho_0 u_0 \left(1 - \gamma\right) \bar{u} % 52
+  & \rho_0 u_0 \left(1 - \gamma\right) \bar{v} % 53
+  & \rho_0 u_0 \left(1 - \gamma\right) \bar{w} % 54
   & \rho_0 a_0^2 \left(\gamma-1\right)         % 55
   \\ \noalign{\medskip}
 \end{array}\right]
