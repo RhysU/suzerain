@@ -6,20 +6,20 @@
 # always use mpiexec on some login nodes.  Better to warn the user that a test
 # was skipped then worry them when make check fails as a result.
 
-# Check prerequisites and either warn and pass or die loudly
+# Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
 for tool in egrep cut mpiexec h5diff h5dump h5ls
 do
     if ! which $tool >/dev/null ; then
-        echo "WARNING: Unable to find utility $tool" 1>&2
-        prereq_status=0
+        echo "ERROR: Unable to find utility $tool" 1>&2
+        prereq_status=1
     fi
 done
 for binary in ./channel_init ./channel
 do
     if [ ! -x $binary ]; then
         echo "ERROR: $binary not found or not executable" 1>&2
-        prereq_status=1
+        prereq_status=2
     fi
 done
 if test x$prereq_status != x ; then
