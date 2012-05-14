@@ -2939,10 +2939,10 @@ transformations to and from characteristic variables:
     0                    & 0                            & 0                            & \frac{1}{2}                   & \frac{1}{2}                     \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
-Direct computation shows $\det V^L = -2\bar{\rho}^3\bar{a}^5$ and so $V^L$ is
-always nonsingular for a realizable reference state.  Medida's equations~(5.82)
-and~(5.83) provide one pair of inflow and outflow conditions for which
-reflection coefficients were not reported:
+Direct computation shows $\det\left(V^L\right) = -2\bar{\rho}^3\bar{a}^5$ and
+so $V^L$ is always nonsingular for a realizable reference state.  Medida's
+equations~(5.82) and~(5.83) provide one pair of inflow and outflow conditions
+for which reflection coefficients were not reported:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt1}
   B^G_1 &= \left[\begin{array}{ccccc}
@@ -3053,10 +3053,9 @@ gives the dimensional result,
   .
 \end{align}
 
-The particular coordinate transformation Jacobian we require maps the primitive
-state $U = \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V =
-\left\{ \rho, \,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.
-Observing that
+The particular coordinate transformation we require maps the primitive state $U
+= \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{
+\rho, \,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.  Observing that
 \begin{align}
   u &= \frac{\rho{}u}{\rho}
 &
@@ -3072,32 +3071,32 @@ Observing that
          + \left(\rho{}w\right)^2
        \right)
 \end{align}
-permits computing the Jacobian evaluated at $\bar{U}$,
+permits computing the Jacobian matrix evaluated at $\bar{U}$,
 \begin{align}
 S &= \left[\begin{array}{ccccc}
-    1                 % 11
-  & \frac{1}{\bar{u}} % 12
-  & \frac{1}{\bar{v}} % 13
-  & \frac{1}{\bar{w}} % 14
-  & \frac{1}{\bar{E}} % 15
+    1 % 11
+  & 0 % 12
+  & 0 % 13
+  & 0 % 14
+  & 0 % 15
   \\ \noalign{\medskip}
-    0                    % 21
-  & \frac{1}{\bar{\rho}} % 22
-  & 0                    % 23
-  & 0                    % 24
-  & 0                    % 25
+    -\frac{\bar{u}}{\bar{\rho}} % 21
+  & \frac{1}{\bar{\rho}}        % 22
+  & 0                           % 23
+  & 0                           % 24
+  & 0                           % 25
   \\ \noalign{\medskip}
-    0                    % 31
+    -\frac{\bar{v}}{\bar{\rho}} % 31
   & 0                    % 32
   & \frac{1}{\bar{\rho}} % 33
   & 0                    % 34
   & 0                    % 35
   \\ \noalign{\medskip}
-    0                    % 41
-  & 0                    % 42
-  & 0                    % 43
-  & \frac{1}{\bar{\rho}} % 44
-  & 0                    % 45
+    -\frac{\bar{w}}{\bar{\rho}} % 41
+  & 0                           % 42
+  & 0                           % 43
+  & \frac{1}{\bar{\rho}}        % 44
+  & 0                           % 45
   \\ \noalign{\medskip}
     \frac{\bar{a}^2}{\gamma}        % 51
   & \left(1 - \gamma\right) \bar{u} % 52
@@ -3108,29 +3107,58 @@ S &= \left[\begin{array}{ccccc}
 \end{array}\right]
 .
 \end{align}
-Forming the product of the left eigenvectors and the Jacobian,
+Examining relationships like $\rho = \rho{}u/u$ closely confirms the zeros in
+the first row of $S$ because
+$$
+    \frac{\partial}{\partial\rho{}u} \rho
+  = \frac{\partial}{\partial\rho{}u} \frac{\rho{}u}{u\!\left(\rho,\rho{}u\right)}
+  = \frac{1}{u\!\left(\rho,\rho{}u\right)}
+  - \frac{\rho{}u}{u^2\!\left(\rho,\rho{}u\right)}
+    \frac{\partial}{\partial\rho{}u}u\!\left(\rho,\rho{}u\right)
+  = \frac{1}{u}
+  - \frac{\rho{}u}{u^2}\frac{1}{\rho}
+  = 0
+.
+$$
+As expected, the transformation is nonsingular for realizable fields because
+$\det\left(S\right) = \frac{\gamma-1}{\bar{\rho}^3}$.  The inverse is
+\begin{align}
+S^{-1} &= \left[\begin{array}{ccccc}
+  1                                                                & 0                  & 0                  & 0                  & 0                  \\
+  \bar{u}                                                          & \bar{\rho}         & 0                  & 0                  & 0                  \\
+  \bar{v}                                                          & 0                  & \bar{\rho}         & 0                  & 0                  \\
+  \bar{w}                                                          & 0                  & 0                  & \bar{\rho}         & 0                  \\
+  \bar{u}^2+\bar{v}^2+\bar{w}^2-\frac{\bar{a}^2}{\gamma(\gamma-1)} & \bar{\rho} \bar{u} & \bar{\rho} \bar{v} & \bar{\rho} \bar{w} & \frac{1}{\gamma-1}
+\end{array}\right]
+.
+\end{align}
+The product of the left eigenvectors and our Jacobian matrix,
 \begin{align}
 V^L S &=
 \left[\begin{array}{ccccc}
-  \frac{1-\gamma}{\gamma}\bar{a}^2 & \bar{u}\left(1-\gamma-\frac{\bar{a}^2}{\bar{u}^2}\right) & \bar{v}\left(1-\gamma-\frac{\bar{a}^2}{\bar{v}^2}\right) & \bar{w}\left(1-\gamma-\frac{\bar{a}^2}{\bar{w}^2}\right) & \gamma-1-\frac{\bar{a}^2}{E} \\ \noalign{\smallskip}
-  0                          & 0                                      & \bar{a}                                      & 0                                      & 0                      \\ \noalign{\smallskip}
-  0                          & 0                                      & 0                                      & \bar{a}                                      & 0                      \\ \noalign{\smallskip}
-  \frac{\bar{a}^2}{\gamma }        & \bar{u}\left(1-\gamma\right)+\bar{a}               & \bar{v}\left(1-\gamma\right)                 & \bar{w}\left(1-\gamma\right)                 & \gamma-1               \\ \noalign{\smallskip}
-  \frac{\bar{a}^2}{\gamma }        & \bar{u}\left(1-\gamma\right)-\bar{a}               & \bar{v}\left(1-\gamma\right)                 & \bar{w}\left(1-\gamma\right)                 & \gamma-1               \\ \noalign{\smallskip}
+ \frac{\bar{a}^2}{\gamma}\left(1-\gamma\right) & \bar{u} \left(1-\gamma \right)       & \bar{v} \left(1-\gamma \right) & \bar{w} \left(1-\gamma \right) & \gamma-1 \\
+ -\bar{a} \bar{v}                              & 0                                    & \bar{a}                        & 0                              & 0        \\
+ -\bar{a} \bar{w}                              & 0                                    & 0                              & \bar{a}                        & 0        \\
+ \frac{\bar{a}^2}{\gamma}-\bar{a}\bar{u}       & \bar{u}\left(1-\gamma\right)+\bar{a} & \bar{v} \left(1-\gamma \right) & \bar{w} \left(1-\gamma \right) & \gamma-1 \\
+ \frac{\bar{a}^2}{\gamma}+\bar{a}\bar{u}       & \bar{u}\left(1-\gamma\right)-\bar{a} & \bar{v} \left(1-\gamma \right) & \bar{w} \left(1-\gamma \right) & \gamma-1
 \end{array}\right]
 ,
 \end{align}
-we find that
-\begin{align}
-  \det V^L S &= 2 \bar{a}^5 \left(1-\gamma+\frac{\bar{a}^2}{E \gamma } \right)
-\end{align}
-which can be zero only when
-$$
-  \frac{\bar{a}^2}{\gamma\left(\gamma-1\right)}
- = E
- = \frac{\bar{a}^2}{\gamma\left(\gamma-1\right)} + \frac{\bar{u}^2+\bar{v}^2+\bar{w}^2}{2}
-$$
-holds.  Therefore, our $V^L S$ is singular whenever $\bar{u}=\bar{v}=\bar{w}=0$.
+is simple enough to useful when implementing
+equation~\eqref{eq:dimeulertransformcharnot}.  Implementing the more
+complicated $\left(V^L S\right)^{-1}$ is best done by using the separate
+inverses ${V^L}^{-1}$ and $S^{-1}$.
+%% Yea, verily, this is a mess:
+%%\begin{align}
+%%\left(V^L S\right)^{-1} &= \left[\begin{array}{ccccc}
+%% -\frac{1}{\bar{a}^2}                                                          & 0                       & 0                       & \frac{1}{2 \bar{a}^2}                                                            & \frac{1}{2 \bar{a}^2}                                                            \\ \noalign{\medskip}
+%% -\frac{\bar{u}}{\bar{a}^2}                                                    & 0                       & 0                       & \frac{\bar{u}+\bar{a}}{2 \bar{a}^2}                                              & \frac{\bar{u}-\bar{a}}{2 \bar{a}^2}                                              \\ \noalign{\medskip}
+%% -\frac{\bar{v}}{\bar{a}^2}                                                    & \frac{1}{\bar{a}}       & 0                       & \frac{\bar{v}}{2 \bar{a}^2}                                                      & \frac{\bar{v}}{2 \bar{a}^2}                                                      \\ \noalign{\medskip}
+%% -\frac{\bar{w}}{\bar{a}^2}                                                    & 0                       & \frac{1}{\bar{a}}       & \frac{\bar{w}}{2 \bar{a}^2}                                                      & \frac{\bar{w}}{2 \bar{a}^2}                                                      \\ \noalign{\medskip}
+%% \frac{1}{(\gamma-1 ) \gamma }-\frac{\bar{u}^2+\bar{v}^2+\bar{w}^2}{\bar{a}^2} & \frac{\bar{v}}{\bar{a}} & \frac{\bar{w}}{\bar{a}} & \frac{1}{2\gamma }+\frac{\bar{u}^2+\bar{v}^2+\bar{w}^2}{2a^2}+\frac{\bar{u}}{2a} & \frac{1}{2\gamma }+\frac{\bar{u}^2+\bar{v}^2+\bar{w}^2}{2a^2}-\frac{\bar{u}}{2a} \\ \noalign{\medskip}
+%%\end{array}\right]
+%%.
+%%\end{align}
 
 
 % Nondimensionalizing result~\eqref{eq:dimeulertransformcharnot} would
