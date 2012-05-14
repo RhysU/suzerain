@@ -2993,7 +2993,28 @@ At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
 notes~\cite{Giles1990Nonreflecting}, this second outflow condition is
 preferable only when one knows there will be no outgoing vorticity wave.  This
-should be the case for some of our problems of interest.
+should be the case for some of our problems of interest.  Later we will desire
+$P^G$, a projection matrix defined to preserve exactly those characteristics
+not set to zero by $B^G$ and $C^G$.  We define the projections as follows at an
+inflow and outflow boundary, respectively:
+\begin{align}
+\label{eq:PG}
+  P^G &= \left[\begin{array}{ccccc}
+    0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 0 \\
+    0 & 0 & 0 & 0 & 1 \\
+  \end{array}\right]
+&
+  P^G &= \left[\begin{array}{ccccc}
+    1 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 0 & 0 \\
+  \end{array}\right]
+\end{align}
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
@@ -3198,12 +3219,13 @@ space-invariance of $\bar{V}$, and rearranging slightly one obtains
   \frac{\partial}{\partial{}z}
   V
   +
-  V^L S \left(
+  P^G V^L S \left(
       L \bar{V}
     + N(\bar{V},t)
   \right)
-  .
 \end{align}
+where the projection $P^G$ was defined \vpageref{eq:PG}.
+
 
 To implement this  FIXME
 % \ref{sec:timediscretization}
