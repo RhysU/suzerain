@@ -2939,8 +2939,10 @@ transformations to and from characteristic variables:
     0                    & 0                            & 0                            & \frac{1}{2}                   & \frac{1}{2}                     \\ \noalign{\smallskip}
   \end{array}\right]
 \end{align}
-Medida's equations~(5.82) and~(5.83) provide one pair of inflow and outflow
-conditions for which reflection coefficients were not reported:
+Direct computation shows $\det V^L = -2\bar{\rho}^3\bar{a}^5$ and so $V^L$ is
+always nonsingular for a realizable reference state.  Medida's equations~(5.82)
+and~(5.83) provide one pair of inflow and outflow conditions for which
+reflection coefficients were not reported:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt1}
   B^G_1 &= \left[\begin{array}{ccccc}
@@ -3104,47 +3106,32 @@ S &= \left[\begin{array}{ccccc}
   & \gamma-1                        % 55
   \\ \noalign{\medskip}
 \end{array}\right]
-,
-\end{align}
-as well as the useful product of the left eigenvectors and this Jacobian (FIXME),
-\begin{align}
-V^L S &= \left[\begin{array}{ccccc}
-    1                 % 11
-  & \frac{1}{\bar{u}} % 12
-  & \frac{1}{\bar{v}} % 13
-  & \frac{1}{\bar{w}} % 14
-  & \frac{1}{\bar{E}} % 15
-  \\ \noalign{\medskip}
-    0                    % 21
-  & \frac{1}{\bar{\rho}} % 22
-  & 0                    % 23
-  & 0                    % 24
-  & 0                    % 25
-  \\ \noalign{\medskip}
-    0                    % 31
-  & 0                    % 32
-  & \frac{1}{\bar{\rho}} % 33
-  & 0                    % 34
-  & 0                    % 35
-  \\ \noalign{\medskip}
-    0                    % 41
-  & 0                    % 42
-  & 0                    % 43
-  & \frac{1}{\bar{\rho}} % 44
-  & 0                    % 45
-  \\ \noalign{\medskip}
-    \frac{\bar{a}^2}{\gamma}        % 51
-  & \left(1 - \gamma\right) \bar{u} % 52
-  & \left(1 - \gamma\right) \bar{v} % 53
-  & \left(1 - \gamma\right) \bar{w} % 54
-  & \gamma-1                        % 55
-  \\ \noalign{\medskip}
-\end{array}\right]
 .
 \end{align}
+Forming the product of the left eigenvectors and the Jacobian,
+\begin{align}
+V^L S &=
+\left[\begin{array}{ccccc}
+  \frac{1-\gamma}{\gamma}\bar{a}^2 & \bar{u}\left(1-\gamma-\frac{\bar{a}^2}{\bar{u}^2}\right) & \bar{v}\left(1-\gamma-\frac{\bar{a}^2}{\bar{v}^2}\right) & \bar{w}\left(1-\gamma-\frac{\bar{a}^2}{\bar{w}^2}\right) & \gamma-1-\frac{\bar{a}^2}{E} \\ \noalign{\smallskip}
+  0                          & 0                                      & \bar{a}                                      & 0                                      & 0                      \\ \noalign{\smallskip}
+  0                          & 0                                      & 0                                      & \bar{a}                                      & 0                      \\ \noalign{\smallskip}
+  \frac{\bar{a}^2}{\gamma }        & \bar{u}\left(1-\gamma\right)+\bar{a}               & \bar{v}\left(1-\gamma\right)                 & \bar{w}\left(1-\gamma\right)                 & \gamma-1               \\ \noalign{\smallskip}
+  \frac{\bar{a}^2}{\gamma }        & \bar{u}\left(1-\gamma\right)-\bar{a}               & \bar{v}\left(1-\gamma\right)                 & \bar{w}\left(1-\gamma\right)                 & \gamma-1               \\ \noalign{\smallskip}
+\end{array}\right]
+,
+\end{align}
+we find that
+\begin{align}
+  \det V^L S &= 2 \bar{a}^5 \left(1-\gamma+\frac{\bar{a}^2}{E \gamma } \right)
+\end{align}
+which can be zero only when
+$$
+  \frac{\bar{a}^2}{\gamma\left(\gamma-1\right)}
+ = E
+ = \frac{\bar{a}^2}{\gamma\left(\gamma-1\right)} + \frac{\bar{u}^2+\bar{v}^2+\bar{w}^2}{2}
+$$
+holds.  Therefore, our $V^L S$ is singular whenever $\bar{u}=\bar{v}=\bar{w}=0$.
 
-
-\eqref{eq:dimeulertransformcharnot}
 
 % Nondimensionalizing result~\eqref{eq:dimeulertransformcharnot} would
 % certainly be possible.  The advantage of isolating the changes to the
