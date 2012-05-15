@@ -2911,11 +2911,45 @@ equation~\eqref{eq:dimeulerapproxchar} may be partitioned as
   \delta{}C
 \end{align}
 where subscripts $I$ and $O$ denote inflow or outflow condition submatrices,
-respectively.  Only the conditions arising from one set of submatrices are
-meant to be applied.  For some $\bar{U}$ possessing an agreed upon relationship
-between $\bar{u}$ and $\bar{a}$, specifying $V^L$, ${V^L}^{-1}$, and these
-partitioned submatrices concretely states a Giles-like nonreflecting $x$
-boundary condition for the Euler equations.
+respectively.  Only the conditions arising from one set of submatrices are to
+be applied at any location.  The ``other'' submatrices are defined to be zero
+depending on the use case at hand:
+\begin{align}
+  B^G &=
+\renewcommand*{\arraystretch}{1.2}
+  \left[\begin{array}{c} B^G_{I} \\ \hline 0       \end{array}\right]
+  &
+  C^G &=
+\renewcommand*{\arraystretch}{1.2}
+  \left[\begin{array}{c} C^G_{I} \\ \hline 0       \end{array}\right]
+  &
+  &\left(\text{inflow boundary}\right)
+\\
+  B^G &=
+\renewcommand*{\arraystretch}{1.2}
+  \left[\begin{array}{c} 0       \\ \hline B^G_{O} \end{array}\right]
+  &
+  C^G &=
+\renewcommand*{\arraystretch}{1.2}
+  \left[\begin{array}{c} 0       \\ \hline C^G_{O} \end{array}\right]
+  &
+  &\left(\text{outflow boundary}\right)
+\end{align}
+Notationally, it will later be convenient to have a projection
+\begin{align}
+\label{eq:PG}
+\renewcommand*{\arraystretch}{1.2}
+  P^G
+  &=
+  \left[\begin{array}{c} P^G_{I} \\ \hline P^G_{O} \end{array}\right]
+\end{align}
+defined to preserve only the characteristic(s) constrained by a boundary
+condition with the ``other'' submatrix again being zero.  Notice $I - P^G$ then
+recovers the characteristics \emph{not} constrained by the boundary condition.
+For some $\bar{U}$ possessing an agreed upon relationship between $\bar{u}$ and
+$\bar{a}$, specifying $V^L$, ${V^L}^{-1}$, and these partitioned submatrices
+concretely state a Giles-like nonreflecting $x$ boundary condition for the
+Euler equations.
 
 In section 5.8 of his thesis, Medida presents two such concrete nonreflecting
 boundary condition specifications for subsonic inflows and outflows where $0 <
@@ -2962,15 +2996,28 @@ for which reflection coefficients were not reported:
   \end{array}\right]
 \end{align}
 where partitioning has been used to delineate inflow versus outflow submatrices
-within $B^G$ and $C^G$.  We assume, but have not verified, analysis like that
-presented in section~3.7.4 of Giles~\cite{Giles1988Nonreflecting} extends to
-Medida's analogous results.  At the inflow, the outgoing pressure wave produces
-no reflected entropy or vorticity waves and generates a fourth-order pressure
-reflection.  At the outflow, the outgoing entropy and vorticity waves produce
-no reflections while the outgoing pressure wave produces a second order
-reflection.  In contrast, Medida's equation~(5.84), which arises from modifying
-the already-well-posed outflow condition to match the well-posed inflow
-condition, provides different outflow submatrices:
+within $B^G$ and $C^G$.  The characteristic-preserving projection operator is
+\begin{align}
+\label{eq:PG}
+  P^G
+  &= \left[\begin{array}{ccccc}
+    1 & 0 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 & 0 \\
+    0 & 0 & 1 & 0 & 0 \\
+    0 & 0 & 0 & 1 & 0 \\ \hline
+    0 & 0 & 0 & 0 & 1 \\
+  \end{array}\right]
+.
+\end{align}
+We assume, but have not verified, analysis like that presented in section~3.7.4
+of Giles~\cite{Giles1988Nonreflecting} extends to Medida's analogous results.
+At the inflow, the outgoing pressure wave produces no reflected entropy or
+vorticity waves and generates a fourth-order pressure reflection.  At the
+outflow, the outgoing entropy and vorticity waves produce no reflections while
+the outgoing pressure wave produces a second order reflection.  In contrast,
+Medida's equation~(5.84), which arises from modifying the already-well-posed
+outflow condition to match the well-posed inflow condition, provides different
+outflow submatrices:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt2}
   B^G_2 &= \left[\begin{array}{ccccc}
@@ -2993,28 +3040,7 @@ At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
 notes~\cite{Giles1990Nonreflecting}, this second outflow condition is
 preferable only when one knows there will be no outgoing vorticity wave.  This
-should be the case for some of our problems of interest.  Later we will desire
-$P^G$, a projection matrix defined to preserve exactly those characteristics
-not set to zero by $B^G$ and $C^G$.  We define the projections as follows at an
-inflow and outflow boundary, respectively:
-\begin{align}
-\label{eq:PG}
-  P^G &= \left[\begin{array}{ccccc}
-    0 & 0 & 0 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 0 \\
-    0 & 0 & 0 & 0 & 1 \\
-  \end{array}\right]
-&
-  P^G &= \left[\begin{array}{ccccc}
-    1 & 0 & 0 & 0 & 0 \\
-    0 & 1 & 0 & 0 & 0 \\
-    0 & 0 & 1 & 0 & 0 \\
-    0 & 0 & 0 & 1 & 0 \\
-    0 & 0 & 0 & 0 & 0 \\
-  \end{array}\right]
-\end{align}
+should be the case for some of our problems of interest.
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of these
@@ -3194,16 +3220,18 @@ become small as a stationary state is reached.  From here on,
 .
 \end{align}
 In light of this relaxed assumption and to fit into the time advancement
-framework described in section~\ref{sec:timediscretization}, we need to advance
+framework described in section~\ref{sec:timediscretization}, we wish to advance
 $V$ and not $\delta{}V$.  Towards addressing these concerns, the general
 evolution equation~\eqref{eq:timediscretization} applied to reference state
 $\bar{V}$ is scaled to become
 \begin{align}
-  V^L S \frac{\partial}{\partial{}t} \bar{V} &= V^L S L \bar{V} + V^L S N(\bar{V},t)
+  V^L S \frac{\partial}{\partial{}t} \bar{V}
+  &=
+  V^L S \left( L \bar{V} + N(\bar{V},t) \right)
   .
 \end{align}
-Adding that expression to result~\eqref{eq:dimeulertransformcharnot}, using the
-space-invariance of $\bar{V}$, and rearranging slightly one obtains
+Adding that expression to result~\eqref{eq:dimeulertransformcharnot} and using
+the space-invariance of $\bar{V}$ one obtains
 \begin{align}
   V^L S \frac{\partial}{\partial{}t} V
   &\approx
@@ -3219,12 +3247,13 @@ space-invariance of $\bar{V}$, and rearranging slightly one obtains
   \frac{\partial}{\partial{}z}
   V
   +
-  P^G V^L S \left(
+  V^L S \left(
       L \bar{V}
     + N(\bar{V},t)
   \right)
 \end{align}
-where the projection $P^G$ was defined \vpageref{eq:PG}.
+where the projection $P^G$ was defined \vpageref{eq:PG}.  $P^G$ is used
+to only incorporate
 
 
 To implement this  FIXME
