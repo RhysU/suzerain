@@ -1350,8 +1350,8 @@ case.  Both Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
     + \frac{\left|u_{z}\right| + a}{\Delta{}z}
   \right) \Delta{}t \leq \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}
 \end{align}
-where $a$ is the local acoustic velocity, $u_{x}$ denotes the velocity in the X
-direction, $\Delta{}x$ represents the local grid size in the X direction, etc.
+where $a$ is the local acoustic velocity, $u_{x}$ denotes the velocity in the $x$
+direction, $\Delta{}x$ represents the local grid size in the $x$ direction, etc.
 The maximum pure imaginary eigenvalue magnitude,
 $\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
 timestepping method.  For the SMR91 scheme,
@@ -2664,10 +2664,10 @@ analysis.  Medida~\cite{Medida2007} lucidly catalogs the intermediate results
 necessary in three dimensions.
 
 We now review Giles' approach following Guarini's presentation with the goal of
-setting notation suitable for presenting and manipulating Medida's results.
-For complete details, especially motivations and proofs, the work of Giles,
-Medida, and Guarini should be consulted in that respective order.  For the
-state vector
+setting notation suitable for presenting and manipulating Medida's results for
+nonreflecting $x$ boundaries in three-dimensional, Cartesian coordinates.  For
+complete details, especially motivations and proofs, the work of Giles, Medida,
+and Guarini should be consulted in that respective order.  For the state vector
 $$
 U = \left\{ \rho, u, v, w, p \right\}
 $$
@@ -3056,60 +3056,70 @@ reference state $\bar{V}$ and therefore perturbations
 $$
   \delta{}V = V - \bar{V}.
 $$
-In this new setting, the coordinate transformation Jacobian matrix
+The corresponding coordinate transformation Jacobian matrix is
 $$
    S = \frac{\partial{}U}{\partial{}V}
+   .
 $$
-may be used to rewrite the exact nonreflecting
+While the definition of $V$ could include a change of spatial coordinates
+relative to $U$, instead we separately accommodate a time-invariant rotation
+$R$ where, as usual,
+\begin{align}
+  \trans{R} &= R^{-1}
+  &
+  \det R &= 1
+.
+\end{align}
+In this new setting, Guarini rewrote the exact nonreflecting
 conditions~\eqref{eq:dimeulerexact} as
 \begin{align}
-  \left(V^L S\right) \delta{}V &= 0
+  \left(V^L S R\right) \delta{}V &= 0
 \end{align}
 which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
 \begin{align}
 \label{eq:dimeulertransform}
   V^L
   S
+  R
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
   \frac{dV^L}{d\lambda_y}
   S
+  R
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
   \frac{dV^L}{d\lambda_z}
   S
+  R
   \frac{\partial}{\partial{}z}
   \delta{}V
   .
 \end{align}
-Using notation from the compact representation~\eqref{eq:dimeulerapproxBG}
-gives the dimensional result,
+Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 \begin{align}
 \label{eq:dimeulertransformcharnot}
   V^L
   S
+  R
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
-    B^G
-    V^L
-    S
+  B^G V^L S R
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
-  C^G
-  V^L
-  S
+  C^G V^L S R
   \frac{\partial}{\partial{}z}
   \delta{}V
-  .
 \end{align}
+gives the simplest form for using Medida's boundary condition matrices with
+alternate state variables.
 
-The particular coordinate transformation we require maps the primitive state $U
-= \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{
-\rho, \,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.  Observing that
+The particular transformation we require maps the primitive state $U = \left\{
+\rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{ \rho,
+\,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.  Observing that
 \begin{align}
   u &= \frac{\rho{}u}{\rho}
 &
