@@ -3050,7 +3050,7 @@ preferable only when one knows there will be no outgoing vorticity wave.  This
 should be the case for some of our problems of interest.
 
 In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
-structure of the Euler equations admits a straightforward translation of these
+structure of the Euler equations admits a straightforward translation of Giles'
 boundary conditions to another set of state variables $V$ with steady, uniform
 reference state $\bar{V}$ and therefore perturbations
 $$
@@ -3061,38 +3061,26 @@ $$
    S = \frac{\partial{}U}{\partial{}V}
    .
 $$
-While the definition of $V$ could include a change of spatial coordinates
-relative to $U$, instead we separately accommodate a time-invariant rotation
-$R$ where, as usual,
-\begin{align}
-  \trans{R} &= R^{-1}
-  &
-  \det R &= 1
-.
-\end{align}
 In this new setting, Guarini rewrote the exact nonreflecting
 conditions~\eqref{eq:dimeulerexact} as
 \begin{align}
-  \left(V^L S R\right) \delta{}V &= 0
+  \left(V^L S\right) \delta{}V &= 0
 \end{align}
 which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
 \begin{align}
 \label{eq:dimeulertransform}
   V^L
   S
-  R
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
   \frac{dV^L}{d\lambda_y}
   S
-  R
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
   \frac{dV^L}{d\lambda_z}
   S
-  R
   \frac{\partial}{\partial{}z}
   \delta{}V
   .
@@ -3100,26 +3088,24 @@ which causes the approximate condition~\eqref{eq:dimeulerapprox} to become
 Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 \begin{align}
 \label{eq:dimeulertransformcharnot}
-  V^L
-  S
-  R
+  V^L S
   \frac{\partial}{\partial{}t}
   \delta{}V
   &\approx
-  B^G V^L S R
+  B^G V^L S
   \frac{\partial}{\partial{}y}
   \delta{}V
   +
-  C^G V^L S R
+  C^G V^L S
   \frac{\partial}{\partial{}z}
   \delta{}V
 \end{align}
-gives the simplest form for using Medida's boundary condition matrices with
+is the simplest form for using Medida's $x$ boundary condition matrices with
 alternate state variables.
 
-The particular transformation we require maps the primitive state $U = \left\{
-\rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{ \rho,
-\,\rho{}u, \,\rho{}v,\, \,\rho{}w, \,\rho{}E, \right\}$.  Observing that
+The particular coordinate transformation we require maps the primitive state $U
+= \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{
+\rho, \,\rho{}u, \,\rho{}v, \,\rho{}w, \,\rho{}E \right\}$.  Observing that
 \begin{align}
   u &= \frac{\rho{}u}{\rho}
 &
@@ -3171,7 +3157,7 @@ S &= \left[\begin{array}{ccccc}
 \end{array}\right]
 .
 \end{align}
-Examining relationships like $\rho = \rho{}u/u$ closely confirms the zeros in
+Examining $\rho = \rho{}u/u$ closely confirms the slightly unintuitive zeros in
 the first row of $S$ because
 $$
     \frac{\partial}{\partial\rho{}u} \rho
@@ -3223,6 +3209,74 @@ inverses ${V^L}^{-1}$ and $S^{-1}$.
 %%\end{array}\right]
 %%.
 %%\end{align}
+
+Thus far nonreflecting $x$ boundary conditions have been presented.  Suzerain
+requires rotating these results to handle nonreflecting $y$ boundaries.
+Defining
+\begin{align}
+  x' &= z &
+  y' &= x &
+  z' &= y
+\intertext{
+induces the following relationships:
+}
+  u &= v' &
+  v &= w' &
+  w &= u'
+\\
+  \frac{\partial}{\partial{}x} &= \frac{\partial}{\partial{}y'} &
+  \frac{\partial}{\partial{}y} &= \frac{\partial}{\partial{}z'} &
+  \frac{\partial}{\partial{}z} &= \frac{\partial}{\partial{}x'}
+\end{align}
+The perturbed state vector may be reordered more conventionally by defining
+$R^Y$ and $\delta{}V'$ per
+\begin{align}
+  \delta{}V
+  &= \begin{bmatrix}
+       \delta\rho     \\
+       \delta\rho{}v' \\
+       \delta\rho{}w' \\
+       \delta\rho{}u' \\
+       \delta\rho{}E  \\
+     \end{bmatrix}
+  = R^Y \delta{}V'
+  = \begin{bmatrix}
+      1 & 0 & 0 & 0 & 0 \\
+      0 & 0 & 1 & 0 & 0 \\
+      0 & 0 & 0 & 1 & 0 \\
+      0 & 1 & 0 & 0 & 0 \\
+      0 & 0 & 0 & 0 & 1 \\
+    \end{bmatrix}
+    \begin{bmatrix}
+      \delta\rho     \\
+      \delta\rho{}u' \\
+      \delta\rho{}v' \\
+      \delta\rho{}w' \\
+      \delta\rho{}E  \\
+    \end{bmatrix}
+  .
+\end{align}
+Substituting these details into equation~\eqref{eq:dimeulertransformcharnot}
+produces the desired nonreflecting $y$ boundary condition,
+$$
+\label{eq:dimeulertransformcharnotY}
+\left.
+\left[
+  V^L S R^Y
+  \frac{\partial}{\partial{}t}
+  \delta{}V'
+\approx
+  C^G V^L S R^Y
+  \frac{\partial}{\partial{}x'}
+  \delta{}V'
+  +
+  B^G V^L S R^Y
+  \frac{\partial}{\partial{}z'}
+  \delta{}V'
+\right]
+\right|_{\bar{u}=\bar{v}', \bar{v}=\bar{w}', \bar{w}=\bar{u}'}
+.
+$$
 
 While the exposition up to now has assumed $\bar{U}$ and $\bar{V}$ are known
 and steady, in practice they are not.  For example, the spatially-averaged,
