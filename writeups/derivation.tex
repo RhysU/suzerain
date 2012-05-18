@@ -3331,10 +3331,10 @@ coefficients because the boundary value for a B-spline basis expansion is
 nothing but the boundary coefficient.
 
 While constraint~\eqref{eq:dimeulertransformcharnotYwave} fixes the
-characteristics arriving from outside the boundary, it does not evolve the
-remaining ones per the simulation interior.  Returning to the time
-discretization of section~\ref{sec:timediscretization},
-equation~\eqref{eq:timediscretization} evolves coefficients more or less like
+characteristics arriving from beyond the boundary, it does not evolve the
+remaining ones per the simulation.  Returning to the time discretization of
+section~\ref{sec:timediscretization}, equation~\eqref{eq:timediscretization}
+evolves coefficients more or less like
 \begin{align}
   \frac{\partial}{\partial{}t} \hat{V} &= L \hat{V} + N(\hat{V})
   .
@@ -3432,13 +3432,19 @@ collecting linear terms,
 &\forall{}k_x,k_z\neq{}0
 .
 \end{align}
-Further auxiliary definitions could improve the previous expression's brevity
-but they would obfuscate the physics.  Besides, definitions already abound.
-Evidently, Giles' conditions can be shoehorned into
-section~\ref{sec:imextreatment}'s hybrid implicit/explicit Runge--Kutta
-framework by modifying the action of any existing global operators $L$ and $N$
-to obtain the boundary-specific $L^G$ and $N^G$ behavior specified by
-equation~\eqref{eq:dimeulertransformevolve}.
+Further auxiliary definitions could improve the previous equation's brevity but
+they would obfuscate the physics.  Evidently, Giles' conditions can be
+shoehorned into section~\ref{sec:imextreatment}'s hybrid implicit/explicit
+Runge--Kutta framework by modifying the action of any existing global operators
+$L$ and $N$ to obtain the boundary-specific $L^G$ and $N^G$ behavior specified
+by equation~\eqref{eq:dimeulertransformevolve}.
+
+Care must be taken to nondimensionalize $L^G$ and $N^G$ matching the choices
+made in sections~\ref{sec:nondimrefq} and~\ref{nondim_equations} for Suzerain's
+$L$, $N$, and $V$.  $R^Y$ and $P^G$ are already dimensionless.  Because $V^L$
+and $S$ are always applied and then inverted in tandem with other linear
+operators, FIXME
+
 
 
 
