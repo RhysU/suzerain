@@ -3104,9 +3104,10 @@ Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 is the simplest form for applying Medida's $x$ boundary condition matrices to
 alternative state variables.
 
-The particular coordinate transformation we require maps the primitive state $U
-= \left\{ \rho, u, v, w, p \right\}$ to the conserved variables $V = \left\{
-\rho, \,\rho{}u, \,\rho{}v, \,\rho{}w, \,\rho{}E \right\}$.  Observing that
+The particular coordinate transformation we require maps the dimensional
+primitive state $U = \left\{ \rho, u, v, w, p \right\}$ to the nondimensional
+conserved quantities $V = \left\{ \rho^{*}, \,\rho^{*}u^{*}, \,\rho^{*}v^{*},
+\,\rho^{*}w^{*}, \,\rho^{*}E^{*} \right\}$.  Observing that
 \begin{align}
   u &= \frac{\rho{}u}{\rho}
 &
@@ -3122,44 +3123,46 @@ The particular coordinate transformation we require maps the primitive state $U
          + \left(\rho{}w\right)^2
        \right)
 \end{align}
-permits computing the Jacobian matrix evaluated at $\bar{U}$,
+aids computing the Jacobian matrix evaluated at some $\bar{V}$,
 \begin{align}
 S &= \left[\begin{array}{ccccc}
-    1 % 11
-  & 0 % 12
-  & 0 % 13
-  & 0 % 14
-  & 0 % 15
+    \rho_0 % 11
+  & 0      % 12
+  & 0      % 13
+  & 0      % 14
+  & 0      % 15
   \\ \noalign{\medskip}
-    -\frac{\bar{u}}{\bar{\rho}} % 21
-  & \frac{1}{\bar{\rho}}        % 22
-  & 0                           % 23
-  & 0                           % 24
-  & 0                           % 25
+    - u_0 \frac{\bar{u}^*}{\bar{\rho}^*} % 21
+  & \frac{u_0}{\bar{\rho}^*}             % 22
+  & 0                                    % 23
+  & 0                                    % 24
+  & 0                                    % 25
   \\ \noalign{\medskip}
-    -\frac{\bar{v}}{\bar{\rho}} % 31
-  & 0                    % 32
-  & \frac{1}{\bar{\rho}} % 33
-  & 0                    % 34
-  & 0                    % 35
+    - u_0 \frac{\bar{v}^*}{\bar{\rho}^*} % 31
+  & 0                                    % 32
+  & \frac{u_0}{\bar{\rho}^*}             % 33
+  & 0                                    % 34
+  & 0                                    % 35
   \\ \noalign{\medskip}
-    -\frac{\bar{w}}{\bar{\rho}} % 41
-  & 0                           % 42
-  & 0                           % 43
-  & \frac{1}{\bar{\rho}}        % 44
-  & 0                           % 45
+    - u_0 \frac{\bar{w}^*}{\bar{\rho}^*} % 41
+  & 0                                    % 42
+  & 0                                    % 43
+  & \frac{u_0}{\bar{\rho}^*}             % 44
+  & 0                                    % 45
   \\ \noalign{\medskip}
-    \frac{\bar{a}^2}{\gamma}        % 51
-  & \left(1 - \gamma\right) \bar{u} % 52
-  & \left(1 - \gamma\right) \bar{v} % 53
-  & \left(1 - \gamma\right) \bar{w} % 54
-  & \gamma-1                        % 55
+    \rho_0 a_0^2 \frac{{\bar{a}^*}^2}{\gamma}      % 51
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{u}^* % 52
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{v}^* % 53
+  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{w}^* % 54
+  & \rho_0 E_0\left(\gamma-1\right)                % 55
   \\ \noalign{\medskip}
 \end{array}\right]
 .
 \end{align}
-Examining $\rho = \rho{}u/u$ closely confirms the slightly unintuitive zeros in
-the first row of $S$ because
+Aside from requiring minimal consistency between the density and momentum
+references, no assumptions about the relationships among reference quantities
+have been made.  Examining $\rho = \rho{}u/u$ closely confirms the slightly
+unintuitive zeros in the first row of $S$ because
 $$
     \frac{\partial}{\partial\rho{}u} \rho
   = \frac{\partial}{\partial\rho{}u} \frac{\rho{}u}{u\!\left(\rho,\rho{}u\right)}
