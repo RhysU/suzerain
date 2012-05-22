@@ -2669,15 +2669,17 @@ setting notation suitable for presenting and manipulating Medida's results for
 nonreflecting $x$ boundaries in three-dimensional, Cartesian coordinates.  For
 complete details, especially motivations and proofs, the work of Giles, Medida,
 and Guarini should be consulted in that respective order.  For the state vector
-$$
-U = \left\{ \rho, u, v, w, p \right\}
-$$
-the dimensional Euler equations, using the ideal gas equation of state
-$$
-\rho a^2 = \gamma p,
-$$
+\begin{subequations}
+\begin{align}
+U &= \left\{ \rho, u, v, w, p \right\}
+\end{align}
+the Euler equations, using the ideal gas equation of state
+\begin{align}
+\rho a^2 &= \gamma p,
+\end{align}
 may be written as follows:
 \begin{align}
+\label{eq:eulerprimmatrix}
     \frac{\partial}{\partial{}t}U
 + A \frac{\partial}{\partial{}x}U
 + B \frac{\partial}{\partial{}y}U
@@ -2709,6 +2711,7 @@ may be written as follows:
         0 & 0 & 0 & \gamma p & w              \\
        \end{bmatrix}
 \end{align}
+\end{subequations}
 Consider perturbations
 $$
 \delta{}U = \left\{ \delta{}\rho, \delta{}u,
@@ -3104,10 +3107,27 @@ Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 is the simplest form for applying Medida's $x$ boundary condition matrices to
 alternative state variables.
 
+As used so far, the Euler system in primitive form~\eqref{eq:eulerprimmatrix}
+identically describes either dimensional $U$ or any nondimensional $U$ where
+the chosen reference quantities satisfy $t_0 = l_0/u_0$ and $p_0 = \rho_0
+u_0^2$.  When $a_0=u_0$, $a=\sqrt{\gamma p/\rho}$ holds for either type of $U$
+and thus Medida's matrices may be used unchanged in conformant
+nondimensionalizations.  However, the nondimensionalization in
+sections~\ref{sec:nondimrefq} and~\ref{nondim_equations} does not satisfy these
+requirements because $p_0 = \rho_0 a_0^2$ where it may be the case that
+$\Mach=u_0/a_0\neq{}1$.  Further, FIXME
+
+
 The particular coordinate transformation we require maps the dimensional
 primitive state $U = \left\{ \rho, u, v, w, p \right\}$ to the nondimensional
 conserved quantities $V = \left\{ \rho^{*}, \,\rho^{*}u^{*}, \,\rho^{*}v^{*},
-\,\rho^{*}w^{*}, \,\rho^{*}E^{*} \right\}$.  Observing that
+\,\rho^{*}w^{*}, \,\rho^{*}E^{*} \right\}$.
+
+
+
+
+
+Observing that
 \begin{align}
   u &= \frac{\rho{}u}{\rho}
 &
