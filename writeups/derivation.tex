@@ -2635,10 +2635,6 @@ implicit treatment using how B-spline basis support limits the number of
 nonzero coefficients at the wall as discussed in
 section~\ref{sec:formingoperators}.
 
-\subsubsection{Isothermal, transpiring wall boundary condition}
-
-TODO
-
 \subsubsection{Nonreflecting freestream boundary conditions}
 
 When simulating problems on semi-infinite domains, such as flat plates,
@@ -3511,6 +3507,11 @@ temporally-homogenized work suggests reorienting the nonreflecting coordinate
 system is unnecessary.  However, modest grid stretching near the freestream and
 other ``solution conditioning'' tools like low pass filtering have been
 employed in his work.  This choice, too, might need to be reviewed.
+
+\subsubsection{Isothermal, transpiring wall boundary condition}
+
+TODO  Reuse nonreflecting freestream conditions with pegged inflow momentum and
+total energy?
 
 \subsection{Imposing a favorable streamwise pressure gradient}
 
