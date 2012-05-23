@@ -3129,76 +3129,117 @@ Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 is the simplest form for applying Medida's $x$ boundary condition matrices to
 alternative state variables.
 
-The particular coordinate transformation we require maps the dimensional
-primitive state $U = \left\{ \rho, u, v, w, p \right\}$ to the nondimensional
-conserved quantities $V = \left\{ \rho^{*}, \,\rho^{*}u^{*}, \,\rho^{*}v^{*},
-\,\rho^{*}w^{*}, \,\rho^{*}E^{*} \right\}$.  Observing that
+The particular coordinate transformation we require maps the nondimensional
+primitive state $U^*$ satisfying requirements~\eqref{eq:eulerprimnondim} to the
+conserved state $V^*$ nondimensionalized per sections~\ref{sec:nondimrefq}
+and~\ref{nondim_equations}:
 \begin{align}
-  u &= \frac{\rho{}u}{\rho}
+\label{eq:eulerconsnondim}
+V^{*}
+&= \left\{
+  \frac{\rho}{\rho_0},
+  \frac{\rho u}{\rho_0 u_0},
+  \frac{\rho v}{\rho_0 u_0},
+  \frac{\rho w}{\rho_0 u_0},
+  \frac{\rho E}{\rho_0 a_0^2}
+\right\}
+= \left\{
+    \rho^{*},
+  \,\rho^{*} u^{*},
+  \,\rho^{*} v^{*},
+  \,\rho^{*} w^{*},
+  \,\rho^{*} E^{*}
+\right\}
 &
-  v &= \frac{\rho{}v}{\rho}
+a^{*} &= \frac{a}{a_0}
 &
-  w &= \frac{\rho{}w}{\rho}
+\Mach &= \frac{u_0}{a_0}
 &
-  p &= \frac{\rho{}a^2}{\gamma}
-     = \left(\gamma-1\right)\rho{}E
-     + \frac{1-\gamma}{2\rho}\left(
+t_0 &= \frac{l_0}{u_0}
+\end{align}
+Observing several relationships between $U^*$ and $V^*$
+\begin{align}
+  \frac{\rho}{\rho_0} &= \rho^*
+&
+  \frac{u}{u_0} &=
+  \frac{\frac{\rho{}u}{\rho_0u_0}}{\frac{\rho}{\rho_0}}
+  =
+  \frac{\rho^{*}u^{*}}{\rho^{*}}
+&
+  \frac{v}{u_0} &= \frac{\rho^{*}v^*}{\rho^*}
+&
+  \frac{w}{u_0} &= \frac{\rho^{*}w^*}{\rho^*}
+&
+ \frac{p}{\rho_0 u_0^2} &= \frac{\rho a^2}{\gamma \rho_0 u_0^2}
+                         = \frac{\rho^{*} {a^{*}}^2}{\gamma\Mach^2}
+\end{align}
+\begin{align}
+ \frac{p}{\rho_0 u_0^2}
+&=
+   \frac{\gamma-1}{\rho_0 u_0^2} \rho E
+ + \frac{1-\gamma}{2 \rho_0 u_0^2 \rho}\left(
            \left(\rho{}u\right)^2
          + \left(\rho{}v\right)^2
          + \left(\rho{}w\right)^2
-       \right)
+   \right)
+=
+   \frac{\gamma-1}{\Mach^2} \rho^{*} E^{*}
+ + \frac{1-\gamma}{2 \rho^{*}}\left(
+           \left(\rho^{*}u^{*}\right)^2
+         + \left(\rho^{*}v^{*}\right)^2
+         + \left(\rho^{*}w^{*}\right)^2
+   \right)
 \end{align}
-aids computing the Jacobian matrix evaluated at some $\bar{V}$,
+aids computing the Jacobian matrix evaluated at some $\bar{V}^{*}$,
 \begin{align}
 S &= \left[\begin{array}{ccccc}
-    \rho_0 % 11
+    1      % 11
   & 0      % 12
   & 0      % 13
   & 0      % 14
   & 0      % 15
   \\ \noalign{\medskip}
-    - u_0 \frac{\bar{u}^*}{\bar{\rho}^*} % 21
-  & \frac{u_0}{\bar{\rho}^*}             % 22
-  & 0                                    % 23
-  & 0                                    % 24
-  & 0                                    % 25
+    - \frac{\bar{u}^*}{\bar{\rho}^*} % 21
+  & \frac{1}{\bar{\rho}^*}           % 22
+  & 0                                % 23
+  & 0                                % 24
+  & 0                                % 25
   \\ \noalign{\medskip}
-    - u_0 \frac{\bar{v}^*}{\bar{\rho}^*} % 31
-  & 0                                    % 32
-  & \frac{u_0}{\bar{\rho}^*}             % 33
-  & 0                                    % 34
-  & 0                                    % 35
+    - \frac{\bar{v}^*}{\bar{\rho}^*} % 31
+  & 0                                % 32
+  & \frac{1}{\bar{\rho}^*}           % 33
+  & 0                                % 34
+  & 0                                % 35
   \\ \noalign{\medskip}
-    - u_0 \frac{\bar{w}^*}{\bar{\rho}^*} % 41
-  & 0                                    % 42
-  & 0                                    % 43
-  & \frac{u_0}{\bar{\rho}^*}             % 44
-  & 0                                    % 45
+    - \frac{\bar{w}^*}{\bar{\rho}^*} % 41
+  & 0                                % 42
+  & 0                                % 43
+  & \frac{1}{\bar{\rho}^*}           % 44
+  & 0                                % 45
   \\ \noalign{\medskip}
-    \rho_0 a_0^2 \frac{{\bar{a}^*}^2}{\gamma}      % 51
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{u}^* % 52
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{v}^* % 53
-  & \rho_0 u_0^2 \left(1 - \gamma\right) \bar{w}^* % 54
-  & \rho_0 E_0\left(\gamma-1\right)                % 55
+    \frac{{a^*}^2}{\gamma\Mach^2}     % 51
+  & \left(1 - \gamma\right) \bar{u}^* % 52
+  & \left(1 - \gamma\right) \bar{v}^* % 53
+  & \left(1 - \gamma\right) \bar{w}^* % 54
+  & \frac{\gamma-1}{\Mach^2}          % 55
   \\ \noalign{\medskip}
 \end{array}\right]
 .
 \end{align}
-Aside from requiring minimal consistency between the density and momentum
-references, no assumptions about the relationships among reference quantities
-have been made.  Examining $\rho = \rho{}u/u$ closely confirms the slightly
-unintuitive zeros in the first row of $S$ because
-\[
-    \frac{\partial}{\partial\rho{}u} \rho
-  = \frac{\partial}{\partial\rho{}u} \frac{\rho{}u}{u\!\left(\rho,\rho{}u\right)}
-  = \frac{1}{u\!\left(\rho,\rho{}u\right)}
-  - \frac{\rho{}u}{u^2\!\left(\rho,\rho{}u\right)}
-    \frac{\partial}{\partial\rho{}u}u\!\left(\rho,\rho{}u\right)
-  = \frac{1}{u}
-  - \frac{\rho{}u}{u^2}\frac{1}{\rho}
-  = 0
-.
-\]
+%Examining $\rho = \rho{}u/u$ closely confirms the slightly
+%unintuitive zeros in the first row of $S$ because
+%\[
+%    \frac{\partial}{\partial\rho{}u} \rho
+%  = \frac{\partial}{\partial\rho{}u} \frac{\rho{}u}{u\!\left(\rho,\rho{}u\right)}
+%  = \frac{1}{u\!\left(\rho,\rho{}u\right)}
+%  - \frac{\rho{}u}{u^2\!\left(\rho,\rho{}u\right)}
+%    \frac{\partial}{\partial\rho{}u}u\!\left(\rho,\rho{}u\right)
+%  = \frac{1}{u}
+%  - \frac{\rho{}u}{u^2}\frac{1}{\rho}
+%  = 0
+%.
+%\]
+FIXME STARTHERE
 As expected, the transformation is nonsingular for realizable fields because
 $\det\left(S\right) = \frac{\gamma-1}{\bar{\rho}^3}$.  The inverse is
 \begin{align}
