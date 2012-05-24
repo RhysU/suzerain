@@ -462,8 +462,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // once everything is in L2 cache and (b) always solving the
             // equations well using iterative refinement will save us from the
             // woes of modest resolution and possibly less-than-perfectly
-            // conditioned operators stemming (from reference values during
-            // transients and high wavenumbers).  So we'll run with gbsvx until
+            // conditioned operators stemming from reference values during
+            // transients and high wavenumbers.  So we'll run with gbsvx until
             // it's demonstrably a bad idea.
 
             const char *method;             // Used for error reporting
