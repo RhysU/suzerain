@@ -3477,14 +3477,12 @@ collecting linear terms,
   \left[V^L S\right] R^Y
   N(\hat{V})
 }_{N^G\left(\hat{V}\right)}
-.
+,
 \end{align}
-Further auxiliary definitions could improve the previous equation's brevity but
-they would obfuscate the physics.  Evidently, Giles' conditions can be
-shoehorned into section~\ref{sec:imextreatment}'s hybrid implicit/explicit
-Runge--Kutta framework by modifying the action of any existing global operators
-$L$ and $N$ to obtain the boundary-specific $L^G$ and $N^G$ behavior specified
-by equation~\eqref{eq:dimeulertransformevolve}.
+we recover a boundary evolution equation matching the
+form~\eqref{eq:coeffspaceevolve}.  Further auxiliary definitions could improve
+the previous equation's brevity but they would obfuscate the derivation and the
+physics.
 
 While the derivation of this section's results has assumed a steady $\bar{V}$,
 in practice $\bar{V}$ is not constant.  For example, the spatially-averaged,
@@ -3495,6 +3493,35 @@ $\bar{V}$ for the direction of the time step.  The mean state should be evolved
 according to equation~\eqref{eq:dimeulertransformevolve} modified to account
 for any auxiliary forcing constraints (e.g. holding freestream streamwise
 momentum constant at each substep).
+
+Evidently, Giles' conditions can be shoehorned into
+section~\ref{sec:imextreatment}'s hybrid implicit/explicit Runge--Kutta
+framework by modifying the action of any existing global operators $L$ and $N$
+to obtain the boundary-specific $L^G$ and $N^G$ behavior specified by
+equation~\eqref{eq:dimeulertransformevolve}.  Implementing
+$\left(M+\varphi{}L^G\right)\hat{V}$ in an $L$-agnostic way atop an existing
+routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place is best
+done by having the latter routine return $\varphi{}L\hat{V}$ so that the
+incremental action of $L^G$ relative to $L$ can be further accumulated:
+\begin{alignat}{10}
+% Makes no sense to me that I needed to use phantom below...
+\left(M+\varphi{}L^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
+  &={}   &&\ii \varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[C^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
+  &{}+{} &&\ii \varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[B^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
+  &{}-{} &&                     &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\phantom{\Bigl[}P^G\phantom{\Bigr]} &&\left[V^L S\right] {R^Y} &&\left(\varphi{}L\hat{V}\right)
+\end{alignat}
+The auxiliary work and storage required is small and scales like two times the
+number of equations as $\varphi{}L\hat{V}$ need only be returned for at most
+the two boundaries of $\hat{V}$.  No special handling is required for in-place
+application as it is currently implemented by incrementally applying
+out-of-place routines using auxiliary buffers.  Implementing
+$\left(M+\varphi{}L^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
+best done by modifying the boundary equations after $M+\varphi{}L$ is formed
+but before the matrix is factorized.  Happily, $N^G(\hat{V})$ can be found by a
+straightforward linear transformation of $N(\hat{V})$ after the latter has been
+computed.  The required $C^G$-, $B^G$-, and $P^G$-related matrices may be
+computed only once per nonreflecting boundary per Runge--Kutta time step from
+$\bar{V}$ and then cached for repeated use.
 
 Finally, Guarini~\cite{Guarini1998} mentions that Poinsot and
 Lele~\cite{Poinsot1992Boundary} suggest two additional viscous conditions be
