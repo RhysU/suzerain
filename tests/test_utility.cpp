@@ -3,11 +3,11 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/assign.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
 #include <suzerain/utility.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/assign.hpp>
+#include <boost/test/test_case_template.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( to_yxz )
 {

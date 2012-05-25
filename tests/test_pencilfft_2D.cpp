@@ -2,11 +2,11 @@
 #include <suzerain/config.h>
 #endif
 #include <suzerain/common.hpp>
-#include <suzerain/pencilfft.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
+#include <suzerain/pencilfft.hpp>
+#define BOOST_TEST_MAIN
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/test/unit_test.hpp>
 #include <fftw3.h>
 #include "test_tools.hpp"
 

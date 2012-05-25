@@ -3,10 +3,10 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
 #include <suzerain/math.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/test_case_template.hpp>
+#include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
 typedef boost::mpl::list< double, float > test_types;

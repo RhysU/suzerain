@@ -3,15 +3,14 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/floating_point_comparison.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <gsl/gsl_poly.h>
 #include <suzerain/bspline.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/unit_test.hpp>
+#include <gsl/gsl_poly.h>
 #include <suzerain/countof.h>
 #include <suzerain/function.h>
 #include <suzerain/math.hpp>
-
 #include "test_tools.hpp"
 
 using suzerain::bspline;

@@ -3,17 +3,15 @@
 //  Modified to use Boost Test for error reporting.
 //  Original authors retain their copyright, of course.
 
-
-
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/RngStream.hpp>
+#define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 using namespace std;
 using suzerain::RngStream;

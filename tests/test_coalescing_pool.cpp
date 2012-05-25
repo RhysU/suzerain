@@ -3,11 +3,11 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/coalescing_pool.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/tuple/tuple.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
 
 // Shorthand

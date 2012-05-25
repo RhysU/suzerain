@@ -3,9 +3,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
 #include <suzerain/timecontroller.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
 // TODO Add tests for taken_{min,max,mean,stddev}

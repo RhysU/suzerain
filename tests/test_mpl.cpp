@@ -3,10 +3,10 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/mpl.hpp>
+#define BOOST_TEST_MAIN
 #include <boost/mpl/vector_c.hpp>
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_SUITE( sequence_array )
 

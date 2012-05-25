@@ -3,9 +3,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
 #include <fftw3.h>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
 // Not so much a test as a way to check our periodic test function definition.

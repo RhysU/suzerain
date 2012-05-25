@@ -3,12 +3,12 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/concept/assert.hpp>
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <suzerain/complex.hpp>
 #include <suzerain/multi_array.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/concept/assert.hpp>
+#include <boost/test/test_case_template.hpp>
+#include <boost/test/unit_test.hpp>
+#include <suzerain/complex.hpp>
 
 BOOST_AUTO_TEST_SUITE( shape_and_strides_array )
 

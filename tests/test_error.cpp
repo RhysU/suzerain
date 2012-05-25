@@ -22,9 +22,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/error.h>
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 
 #define CHECK(x) errors[n].number = x ; errors[n].name = #x ; n++ ;
 #define MAX_ERRS 64

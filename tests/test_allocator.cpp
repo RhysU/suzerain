@@ -38,9 +38,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
 #include <suzerain/allocator.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include "test_tools.hpp"
 

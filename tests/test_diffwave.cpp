@@ -3,15 +3,14 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
+#include <suzerain/diffwave.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_pow_int.h>
 #include <suzerain/inorder.h>
-#include <suzerain/diffwave.h>
-#include <suzerain/diffwave.hpp>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

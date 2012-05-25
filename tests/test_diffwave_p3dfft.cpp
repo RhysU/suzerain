@@ -3,13 +3,13 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
+#include <suzerain/pencil_grid.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/diffwave.h>
 #include <suzerain/fftw.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/utility.hpp>
 #include "test_tools.hpp"
 

@@ -3,11 +3,11 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/state.hpp>
+#define BOOST_TEST_MAIN
 #include <boost/concept/assert.hpp>
-#include <boost/test/included/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
+#include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
 // Explicit template instantiation to flush out compilation errors

@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <iterator>
-#include <numeric>
 #include <memory>
+#include <numeric>
 #include <boost/array.hpp>
 #include <boost/concept/assert.hpp>
 #include <boost/concept_check.hpp>
@@ -11,8 +11,8 @@
 #include <boost/range/concepts.hpp>
 #include <boost/range.hpp>
 
-#define BOOST_TEST_MODULE test_shared_range
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include <boost/test/output_test_stream.hpp>
 
 // Explicit instantiation to flush out compilation errors

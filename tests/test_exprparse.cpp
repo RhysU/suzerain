@@ -4,8 +4,8 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <suzerain/exprparse.hpp>
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 
 #pragma warning(disable:1572)
 

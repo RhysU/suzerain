@@ -3,9 +3,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
 #include <suzerain/mpi_datatype.hpp>
-#include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 
 #pragma warning(disable:1572)
 

@@ -3,16 +3,15 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <boost/test/included/unit_test.hpp>
+#include <suzerain/rholut_imexop.h>
 #include <boost/test/parameterized_test.hpp>
+#include <boost/test/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/complex.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/gbmatrix.h>
-#include <suzerain/rholut_imexop.h>
-
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
@@ -212,12 +211,11 @@ static void operator_consistency(const parameters& p)
     BOOST_CHECK_LT(abs(B1[imaxabs]), macheps/rcond); // Check on estimate
 }
 
-boost::unit_test::test_suite*
-init_unit_test_suite( int argc, char* argv[] )
-{
-
-    (void) argc; // Unused
-    (void) argv; // Unused
+#ifdef BOOST_TEST_ALTERNATIVE_INIT_API
+bool init_unit_test_suite() {
+#else
+::boost::unit_test::test_suite* init_unit_test_suite( int, char* [] )   {
+#endif
 
     using boost::unit_test::framework::master_test_suite;
     master_test_suite().p_name.value = __FILE__;
@@ -243,5 +241,15 @@ init_unit_test_suite( int argc, char* argv[] )
         }
     }
 
+#ifdef BOOST_TEST_ALTERNATIVE_INIT_API
+    return true;
+}
+#else
     return 0;
+}
+#endif
+
+int main( int argc, char* argv[] )
+{
+    return ::boost::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
 }

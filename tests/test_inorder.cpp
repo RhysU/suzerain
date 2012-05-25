@@ -3,10 +3,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
-#include <suzerain/inorder.h>
 #include <suzerain/inorder.hpp>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
 BOOST_AUTO_TEST_CASE( wavenumber )

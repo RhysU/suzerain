@@ -3,16 +3,16 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
-#include <boost/test/test_case_template.hpp>
-#include <suzerain/state.hpp>
 #include <suzerain/timestepper.hpp>
-#include <suzerain/richardson.h>
+#define BOOST_TEST_MAIN
+#include <boost/test/test_case_template.hpp>
+#include <boost/test/unit_test.hpp>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+#include <suzerain/richardson.h>
+#include <suzerain/state.hpp>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

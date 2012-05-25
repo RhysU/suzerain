@@ -3,9 +3,9 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#define BOOST_TEST_MODULE $Id$
-#include <boost/test/included/unit_test.hpp>
 #include <suzerain/kahan.h>
+#define BOOST_TEST_MAIN
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE( correctness_double_3 )
 {
