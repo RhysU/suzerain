@@ -3491,8 +3491,8 @@ layer problem may be unknown and will vary in time.  The mean state at the
 beginning of the first Runge--Kutta substep should be taken as the ``steady''
 $\bar{V}$ for the direction of the time step.  The mean state should be evolved
 according to equation~\eqref{eq:dimeulertransformevolve} modified to account
-for any auxiliary forcing constraints (e.g. holding freestream streamwise
-momentum constant at each substep).
+for any auxiliary constraints (e.g. holding freestream streamwise momentum
+constant at each substep).
 
 Evidently, Giles' conditions can be shoehorned into
 section~\ref{sec:imextreatment}'s hybrid implicit/explicit Runge--Kutta
@@ -3505,6 +3505,7 @@ done by having the latter routine return $\varphi{}L\hat{V}$ so that the
 incremental action of $L^G$ relative to $L$ can be further accumulated:
 \begin{alignat}{10}
 % Makes no sense to me that I needed to use phantom below...
+% ...instead of being able to just use alignat directly.
 \left(M+\varphi{}L^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
   &={}   &&\ii \varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[C^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
   &{}+{} &&\ii \varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[B^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
@@ -3517,7 +3518,9 @@ application as it is currently implemented by incrementally applying
 out-of-place routines using auxiliary buffers.  Implementing
 $\left(M+\varphi{}L^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
 best done by modifying the boundary equations after $M+\varphi{}L$ is formed
-but before the matrix is factorized.  Happily, $N^G(\hat{V})$ can be found by a
+but before the matrix is factorized.  Doing so requires using that, for a
+B-spline basis, $M$ contains only a single one in the boundary equations with
+all other entries being zero.  Happily, $N^G(\hat{V})$ can be found by a
 straightforward linear transformation of $N(\hat{V})$ after the latter has been
 computed.  The required $C^G$-, $B^G$-, and $P^G$-related matrices may be
 computed only once per nonreflecting boundary per Runge--Kutta time step from
