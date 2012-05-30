@@ -936,9 +936,9 @@ matrix in the time derivative term.
 \subsection{Time discretization}
 \label{sec:timediscretization}
 
-We use Spalart, Moser, and Rogers' low storage hybrid implicit/explicit
-time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This time stepper
-advances the system
+We use Spalart, Moser, and Rogers' low storage hybrid implicit--explicit
+(``IMEX'') time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This
+time stepper advances the system
 \begin{align}
 \label{eq:timediscretization}
  u_t &= Lu + N(u,t)
@@ -1712,7 +1712,7 @@ wave space to physical space, forming 5 scalars representing the right hand
 sides of equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy}, and
 converting 5 scalar fields back to wave space.
 
-While not nearly as efficient as a hybrid implicit/explicit treatment due
+While not nearly as efficient as an IMEX treatment due
 to~\eqref{eq:convectivestability} and~\eqref{eq:diffusivestability}, in
 conjunction with Venugopal's wall-normal modification to the convective
 stability, a fully explicit treatment does allow slow progress to be made on
@@ -3495,9 +3495,9 @@ for any auxiliary constraints (e.g. holding freestream streamwise momentum
 constant at each substep).
 
 Evidently, Giles' conditions can be shoehorned into
-section~\ref{sec:imextreatment}'s hybrid implicit/explicit Runge--Kutta
-framework by modifying the action of any existing global operators $L$ and $N$
-to obtain the boundary-specific $L^G$ and $N^G$ behavior specified by
+section~\ref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
+action of any existing global operators $L$ and $N$ to obtain the
+boundary-specific $L^G$ and $N^G$ behavior specified by
 equation~\eqref{eq:dimeulertransformevolve}.  Implementing
 $\left(M+\varphi{}L^G\right)\hat{V}$ in an $L$-agnostic way atop an existing
 routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place is best
