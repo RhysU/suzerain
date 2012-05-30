@@ -282,7 +282,7 @@ suzerain_bsplineop_accumulate_complex(
     }
 
     for (int j = 0; j < nrhs; ++j) {
-        suzerain_blas_zgbmv_d(
+        suzerain_blas_zgbmv_d_z(
                 'T', w->n, w->n, w->kl[nderiv], w->ku[nderiv],
                 alpha, w->D_T[nderiv], w->ld, x + j*ldx, incx,
                 beta,                         y + j*ldy, incy);

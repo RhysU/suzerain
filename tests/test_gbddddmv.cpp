@@ -323,7 +323,7 @@ static void test_gbddddmv_dzz(const gbddddmzv_tc_type& t)
     const complex_double beta  ( t.beta[0],   t.beta[1]  );
 
     // Compute expected result using external BLAS
-    suzerain_blasext_zgbddddmv_d_external(
+    suzerain_blasext_zgbddddmv_d_z_external(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), t.ldd0,
             alpha1, d1.get(), t.ldd1,

@@ -264,7 +264,7 @@ static void test_sbmv_dzz(const sbmzv_tc_type& t)
     const complex_double beta ( t.beta[0],  t.beta[1]  );
 
     // Compute expected result using external BLAS
-    suzerain_blas_zsbmv_d_external(
+    suzerain_blas_zsbmv_d_z_external(
             t.uplo, t.n, t.k,
             alpha, a.get(), t.lda, (const complex_double *) x.get(), t.incx,
             beta,                  (      complex_double *) e.get(), t.incy);
