@@ -89,6 +89,48 @@ suzerain_gbdmv_d(
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$ \f$A\f$,
+ * and \f$x\$.
+ *
+ * \copydetails suzerain_gbdmv_s
+ */
+int
+suzerain_gbdmv_ssc(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *d,
+        const int ldd,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_gbdmv_ssc */
+int
+suzerain_gbdmv_ddz(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *d,
+        const int ldd,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$
  * and \f$A\f$.
  *

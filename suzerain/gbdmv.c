@@ -52,11 +52,11 @@
 #include "gbdmv.def"
 
 #define STATIC   static
-#define FUNCTION suzerain_gbdmv_internal_d
-#define TYPE_D   double
-#define TYPE_A   double
-#define TYPE_X   double
-#define TYPE_Y   double
+#define FUNCTION suzerain_gbdmv_internal_ssc
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   complex_float
 #define KL       const int kl,
 #define KU       const int ku,
 #include "gbdmv.def"
@@ -67,6 +67,26 @@
 #define TYPE_A   float
 #define TYPE_X   complex_float
 #define TYPE_Y   complex_float
+#define KL       const int kl,
+#define KU       const int ku,
+#include "gbdmv.def"
+
+#define STATIC   static
+#define FUNCTION suzerain_gbdmv_internal_d
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL       const int kl,
+#define KU       const int ku,
+#include "gbdmv.def"
+
+#define STATIC   static
+#define FUNCTION suzerain_gbdmv_internal_ddz
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   complex_double
 #define KL       const int kl,
 #define KU       const int ku,
 #include "gbdmv.def"
@@ -121,6 +141,68 @@ suzerain_gbdmv_s(
 }
 
 int
+suzerain_gbdmv_ssc(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *d,
+        const int ldd,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+            BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                    FIXEDBW_CASE, suzerain_gbdmv_internal_ssc)
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbdmv_internal_ssc(trans, n, kl, ku,
+                                       alpha, d, ldd, a, lda, x, incx,
+                                       beta,                  y, incy);
+}
+
+int
+suzerain_gbdmv_scc(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *d,
+        const int ldd,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+            BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                    FIXEDBW_CASE, suzerain_gbdmv_internal_scc)
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbdmv_internal_scc(trans, n, kl, ku,
+                                       alpha, d, ldd, a, lda, x, incx,
+                                       beta,                  y, incy);
+}
+
+int
 suzerain_gbdmv_d(
         const char trans,
         const int n,
@@ -152,32 +234,32 @@ suzerain_gbdmv_d(
 }
 
 int
-suzerain_gbdmv_scc(
+suzerain_gbdmv_ddz(
         const char trans,
         const int n,
         const int kl,
         const int ku,
-        const complex_float alpha,
-        const float *d,
+        const complex_double alpha,
+        const double *d,
         const int ldd,
-        const float *a,
+        const double *a,
         const int lda,
-        const complex_float *x,
+        const double *x,
         const int incx,
-        const complex_float beta,
-        complex_float *y,
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     if (kl == ku) {
         switch (kl) {
             BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                    FIXEDBW_CASE, suzerain_gbdmv_internal_scc)
+                                    FIXEDBW_CASE, suzerain_gbdmv_internal_ddz)
         }
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbdmv_internal_scc(trans, n, kl, ku,
+    return suzerain_gbdmv_internal_ddz(trans, n, kl, ku,
                                        alpha, d, ldd, a, lda, x, incx,
                                        beta,                  y, incy);
 }
@@ -232,11 +314,11 @@ suzerain_gbdmv_dzz(
 #include "gbdmv.def"
 
 #define STATIC   static
-#define FUNCTION BOOST_PP_CAT(suzerain_gbdmv_internal_d, BOOST_PP_ITERATION())
-#define TYPE_D   double
-#define TYPE_A   double
-#define TYPE_X   double
-#define TYPE_Y   double
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdmv_internal_ssc, BOOST_PP_ITERATION())
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   complex_float
 #define KL
 #define KU
 #include "gbdmv.def"
@@ -247,6 +329,26 @@ suzerain_gbdmv_dzz(
 #define TYPE_A   float
 #define TYPE_X   complex_float
 #define TYPE_Y   complex_float
+#define KL
+#define KU
+#include "gbdmv.def"
+
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdmv_internal_d, BOOST_PP_ITERATION())
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL
+#define KU
+#include "gbdmv.def"
+
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdmv_internal_ddz, BOOST_PP_ITERATION())
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   complex_double
 #define KL
 #define KU
 #include "gbdmv.def"

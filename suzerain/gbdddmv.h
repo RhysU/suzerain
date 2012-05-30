@@ -110,6 +110,61 @@ suzerain_gbdddmv_d(
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
  * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
+ * \f$D_2\f$, \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_gbdddmv_s
+ */
+int
+suzerain_gbdddmv_ssc(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_gbdddmv_ssc */
+int
+suzerain_gbdddmv_ddz(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
+ * \f$x\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$,
  * \f$D_2\f$, and \f$A\f$.
  *
  * \copydetails suzerain_gbdddmv_s

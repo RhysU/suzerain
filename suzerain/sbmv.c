@@ -50,10 +50,10 @@
 #include "sbmv.def"
 
 #define STATIC   static
-#define FUNCTION suzerain_sbmv_internal_d
-#define TYPE_A   double
-#define TYPE_X   double
-#define TYPE_Y   double
+#define FUNCTION suzerain_sbmv_internal_ssc
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   complex_float
 #define K        const int k,
 #include "sbmv.def"
 
@@ -62,6 +62,22 @@
 #define TYPE_A   float
 #define TYPE_X   complex_float
 #define TYPE_Y   complex_float
+#define K        const int k,
+#include "sbmv.def"
+
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_d
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define K        const int k,
+#include "sbmv.def"
+
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_ddz
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   complex_double
 #define K        const int k,
 #include "sbmv.def"
 
@@ -108,6 +124,58 @@ suzerain_sbmv_s(
 }
 
 int
+suzerain_sbmv_ssc(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    switch (k) {
+        BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                FIXEDBW_CASE, suzerain_sbmv_internal_ssc)
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_sbmv_internal_ssc(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+}
+
+int
+suzerain_sbmv_scc(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    switch (k) {
+        BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                FIXEDBW_CASE, suzerain_sbmv_internal_scc)
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_sbmv_internal_scc(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
+}
+
+int
 suzerain_sbmv_d(
         const char uplo,
         const int n,
@@ -134,27 +202,27 @@ suzerain_sbmv_d(
 }
 
 int
-suzerain_sbmv_scc(
+suzerain_sbmv_ddz(
         const char uplo,
         const int n,
         const int k,
-        const complex_float alpha,
-        const float *a,
+        const complex_double alpha,
+        const double *a,
         const int lda,
-        const complex_float *x,
+        const double *x,
         const int incx,
-        const complex_float beta,
-        complex_float *y,
+        const complex_double beta,
+        complex_double *y,
         const int incy)
 {
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     switch (k) {
         BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                FIXEDBW_CASE, suzerain_sbmv_internal_scc)
+                                FIXEDBW_CASE, suzerain_sbmv_internal_ddz)
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_sbmv_internal_scc(uplo, n, k,
+    return suzerain_sbmv_internal_ddz(uplo, n, k,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
 }
@@ -201,10 +269,10 @@ suzerain_sbmv_dzz(
 #include "sbmv.def"
 
 #define STATIC   static
-#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_d, BOOST_PP_ITERATION())
-#define TYPE_A   double
-#define TYPE_X   double
-#define TYPE_Y   double
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_ssc, BOOST_PP_ITERATION())
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   complex_float
 #define K
 #include "sbmv.def"
 
@@ -213,6 +281,22 @@ suzerain_sbmv_dzz(
 #define TYPE_A   float
 #define TYPE_X   complex_float
 #define TYPE_Y   complex_float
+#define K
+#include "sbmv.def"
+
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_d, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define K
+#include "sbmv.def"
+
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_ddz, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   complex_double
 #define K
 #include "sbmv.def"
 

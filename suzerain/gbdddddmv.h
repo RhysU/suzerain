@@ -127,6 +127,74 @@ suzerain_gbdddddmv_d(
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
  * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) A x + \beta{} y
+ * \f$ for complex \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued
+ * \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_gbdddddmv_s
+ */
+int
+suzerain_gbdddddmv_ssc(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const complex_float alpha3,
+        const float *d3,
+        const int ldd3,
+        const complex_float alpha4,
+        const float *d4,
+        const int ldd4,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_gbdddddmv_ssc */
+int
+suzerain_gbdddddmv_ddz(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        const int ldd3,
+        const complex_double alpha4,
+        const double *d4,
+        const int ldd4,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2 + \alpha_{3} D_{3} + \alpha_{4} D_{4} \right) A x + \beta{} y
  * \f$ for complex \f$\alpha{}\f$, \f$x\f$, \f$\beta\f$, and \f$y\f$ but
  * real-valued \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, and
  * \f$A\f$.
