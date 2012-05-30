@@ -41,36 +41,40 @@
 // Generate general bandwidth routines
 // -----------------------------------
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_s
-#define GBMV_COMPONENT float
-#define GBMV_SCALAR    float
-#define GBMV_KL        const int kl,
-#define GBMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_s
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_d
-#define GBMV_COMPONENT double
-#define GBMV_SCALAR    double
-#define GBMV_KL        const int kl,
-#define GBMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_d
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_scc
-#define GBMV_COMPONENT float
-#define GBMV_SCALAR    complex_float
-#define GBMV_KL        const int kl,
-#define GBMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_scc
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_dzz
-#define GBMV_COMPONENT double
-#define GBMV_SCALAR    complex_double
-#define GBMV_KL        const int kl,
-#define GBMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_dzz
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbmv.def"
 
 // ------------------------------------------------------------------
@@ -209,40 +213,40 @@ suzerain_gbmv_dzz(
 #define kl BOOST_PP_ITERATION()
 #define ku BOOST_PP_ITERATION()
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_s, \
-                                    BOOST_PP_ITERATION())
-#define GBMV_COMPONENT float
-#define GBMV_SCALAR    float
-#define GBMV_KL
-#define GBMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_s, BOOST_PP_ITERATION())
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define KL
+#define KU
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_d, \
-                                    BOOST_PP_ITERATION())
-#define GBMV_COMPONENT double
-#define GBMV_SCALAR    double
-#define GBMV_KL
-#define GBMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_d, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL
+#define KU
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_scc, \
-                                    BOOST_PP_ITERATION())
-#define GBMV_COMPONENT float
-#define GBMV_SCALAR    complex_float
-#define GBMV_KL
-#define GBMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_scc, BOOST_PP_ITERATION())
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL
+#define KU
 #include "gbmv.def"
 
-#define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_dzz, \
-                                    BOOST_PP_ITERATION())
-#define GBMV_COMPONENT double
-#define GBMV_SCALAR    complex_double
-#define GBMV_KL
-#define GBMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_dzz, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL
+#define KU
 #include "gbmv.def"
 
 #undef kl

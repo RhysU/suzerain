@@ -15,11 +15,12 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define SBMV_STATIC    /*empty*/         /* Use for static function    */
-// #define SBMV_FUNCTION  dsbmv             /* Function name              */
-// #define SBMV_COMPONENT double            /* Type of matrices           */
-// #define SBMV_SCALAR    double            /* Type of coeffs and vectors */
-// #define SBMV_K         const int k,      /* Matrix bandwidth           */
+// #define STATIC    /*empty*/         /* Use for static function    */
+// #define FUNCTION  dsbmv             /* Function name              */
+// #define TYPE_A    double            /* Type of matrix             */
+// #define TYPE_X    double            /* Type of input vector       */
+// #define TYPE_Y    double            /* Type of coeffs and output  */
+// #define K         const int k,      /* Matrix bandwidth           */
 
 #ifndef __SBMV_INTERNAL_ONCE
 #define __SBMV_INTERNAL_ONCE
@@ -27,11 +28,11 @@ static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 #endif /* __SBMV_INTERNAL_ONCE */
 
-SBMV_STATIC int SBMV_FUNCTION(
-    char uplo, const int n, SBMV_K
-    const SBMV_SCALAR alpha, const SBMV_COMPONENT *       restrict a, int lda,
-                             const    SBMV_SCALAR * const restrict x, const int incx,
-    const SBMV_SCALAR beta,           SBMV_SCALAR * const restrict y, const int incy)
+STATIC int FUNCTION(
+    char uplo, const int n, K
+    const TYPE_Y alpha, const TYPE_A *       restrict a,       int lda,
+                        const TYPE_X * const restrict x, const int incx,
+    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dsbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -112,8 +113,8 @@ SBMV_STATIC int SBMV_FUNCTION(
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - k);
-                const SBMV_SCALAR temp1 = alpha*x[j];
-                SBMV_SCALAR       temp2 = 0;
+                const TYPE_Y temp1 = alpha*x[j];
+                TYPE_Y       temp2 = 0;
                 for (int i = il; i < j; ++i) {
                     y[i]  += temp1*a[i];
                     temp2 += a[i]*x[i];
@@ -126,8 +127,8 @@ SBMV_STATIC int SBMV_FUNCTION(
             int jy = ky;
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - k);
-                const SBMV_SCALAR temp1 = alpha*x[jx];
-                SBMV_SCALAR temp2       = 0;
+                const TYPE_Y temp1 = alpha*x[jx];
+                TYPE_Y temp2       = 0;
                 int ix = kx;
                 int iy = ky;
 #ifdef __INTEL_COMPILER
@@ -160,8 +161,8 @@ SBMV_STATIC int SBMV_FUNCTION(
         if (incx == 1 && incy == 1) {  // ...for contiguous x and y
             for (int j = 0; j < n; ++j) {
                 const int iu = ndxmin(n, j + kp1);
-                const SBMV_SCALAR temp1 = alpha*x[j];
-                SBMV_SCALAR       temp2 = 0;
+                const TYPE_Y temp1 = alpha*x[j];
+                TYPE_Y       temp2 = 0;
                 y[j] += temp1*a[j];
                 for (int i = j + 1; i < iu; ++i) {
                     y[i]  += temp1*a[i];
@@ -175,8 +176,8 @@ SBMV_STATIC int SBMV_FUNCTION(
             int jy = ky;
             for (int j = 0; j < n; ++j) {
                 const int iu = ndxmin(n, j + kp1);
-                const SBMV_SCALAR temp1 = alpha*x[jx];
-                SBMV_SCALAR temp2       = 0;
+                const TYPE_Y temp1 = alpha*x[jx];
+                TYPE_Y temp2       = 0;
                 y[jy] += temp1*a[j];
                 int ix = jx;
                 int iy = jy;
@@ -201,8 +202,9 @@ SBMV_STATIC int SBMV_FUNCTION(
     return 0;
 }
 
-#undef SBMV_STATIC
-#undef SBMV_FUNCTION
-#undef SBMV_COMPONENT
-#undef SBMV_SCALAR
-#undef SBMV_K
+#undef STATIC
+#undef FUNCTION
+#undef TYPE_A
+#undef TYPE_X
+#undef TYPE_Y
+#undef K

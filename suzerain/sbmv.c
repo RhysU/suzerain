@@ -41,32 +41,36 @@
 // Generate general bandwidth routines
 // -----------------------------------
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_s
-#define SBMV_COMPONENT float
-#define SBMV_SCALAR    float
-#define SBMV_K         const int k,
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_s
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define K        const int k,
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_d
-#define SBMV_COMPONENT double
-#define SBMV_SCALAR    double
-#define SBMV_K         const int k,
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_d
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define K        const int k,
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_scc
-#define SBMV_COMPONENT float
-#define SBMV_SCALAR    complex_float
-#define SBMV_K         const int k,
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_scc
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define K        const int k,
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_dzz
-#define SBMV_COMPONENT double
-#define SBMV_SCALAR    complex_double
-#define SBMV_K         const int k,
+#define STATIC   static
+#define FUNCTION suzerain_sbmv_internal_dzz
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define K        const int k,
 #include "sbmv.def"
 
 // ------------------------------------------------------------------
@@ -188,36 +192,36 @@ suzerain_sbmv_dzz(
 // ------------------------------------------------------------
 #define k BOOST_PP_ITERATION()
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_s, \
-                                    BOOST_PP_ITERATION())
-#define SBMV_COMPONENT float
-#define SBMV_SCALAR    float
-#define SBMV_K
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_s, BOOST_PP_ITERATION())
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define K
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_d, \
-                                    BOOST_PP_ITERATION())
-#define SBMV_COMPONENT double
-#define SBMV_SCALAR    double
-#define SBMV_K
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_d, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define K
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_scc, \
-                                    BOOST_PP_ITERATION())
-#define SBMV_COMPONENT float
-#define SBMV_SCALAR    complex_float
-#define SBMV_K
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_scc, BOOST_PP_ITERATION())
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define K
 #include "sbmv.def"
 
-#define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_dzz, \
-                                    BOOST_PP_ITERATION())
-#define SBMV_COMPONENT double
-#define SBMV_SCALAR    complex_double
-#define SBMV_K
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_sbmv_internal_dzz, BOOST_PP_ITERATION())
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define K
 #include "sbmv.def"
 
 #undef k

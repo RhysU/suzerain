@@ -15,12 +15,14 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define GBDMV_STATIC    /*empty*/         /* Use for static function    */
-// #define GBDMV_FUNCTION  dgbdmv            /* Function name              */
-// #define GBDMV_COMPONENT double            /* Type of matrices           */
-// #define GBDMV_SCALAR    double            /* Type of coeffs and vectors */
-// #define GBDMV_KL        const int kl,     /* Matrix lower bandwidth     */
-// #define GBDMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define STATIC    /*empty*/         /* Use for static function    */
+// #define FUNCTION  dgbdmv            /* Function name              */
+// #define TYPE_D    double            /* Type of diagonal matrix    */
+// #define TYPE_A    double            /* Type of banded matrix      */
+// #define TYPE_X    double            /* Type of input vector       */
+// #define TYPE_Y    double            /* Type of coeffs and output  */
+// #define KL        const int kl,     /* Matrix lower bandwidth     */
+// #define KU        const int ku,     /* Matrix upper bandwidth     */
 
 #ifndef __GBDMV_INTERNAL_ONCE
 #define __GBDMV_INTERNAL_ONCE
@@ -28,12 +30,12 @@ static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 #endif /* __GBDMV_INTERNAL_ONCE */
 
-GBDMV_STATIC int GBDMV_FUNCTION(
-    char trans, const int n, GBDMV_KL GBDMV_KU
-    const GBDMV_SCALAR alpha, const GBDMV_COMPONENT *       restrict d, const int ldd,
-                              const GBDMV_COMPONENT *       restrict a, int lda,
-                              const    GBDMV_SCALAR * const restrict x, const int incx,
-    const GBDMV_SCALAR beta,           GBDMV_SCALAR * const restrict y, const int incy)
+STATIC int FUNCTION(
+    char trans, const int n, KL KU
+    const TYPE_Y alpha, const TYPE_D *       restrict d, const int ldd,
+                        const TYPE_A *       restrict a,       int lda,
+                        const TYPE_X * const restrict x, const int incx,
+    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -122,7 +124,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                const GBDMV_SCALAR temp = alpha*x[jx];
+                const TYPE_Y temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
                     y[i] += temp*d[i*ldd]*a[i];
                 }
@@ -133,7 +135,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                const GBDMV_SCALAR temp = alpha*x[jx];
+                const TYPE_Y temp = alpha*x[jx];
                 int iy = ky;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -157,7 +159,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBDMV_SCALAR temp = 0;
+                TYPE_Y temp = 0;
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
@@ -170,7 +172,7 @@ GBDMV_STATIC int GBDMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(n, j + klp1);
-                GBDMV_SCALAR temp = 0;
+                TYPE_Y temp = 0;
                 int ix = kx;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -193,9 +195,11 @@ GBDMV_STATIC int GBDMV_FUNCTION(
     return 0;
 }
 
-#undef GBDMV_STATIC
-#undef GBDMV_FUNCTION
-#undef GBDMV_COMPONENT
-#undef GBDMV_SCALAR
-#undef GBDMV_KL
-#undef GBDMV_KU
+#undef STATIC
+#undef FUNCTION
+#undef TYPE_D
+#undef TYPE_A
+#undef TYPE_X
+#undef TYPE_Y
+#undef KL
+#undef KU

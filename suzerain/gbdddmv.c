@@ -41,36 +41,44 @@
 // Generate general bandwidth routines
 // -----------------------------------
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  suzerain_gbdddmv_internal_s
-#define GBDDDMV_COMPONENT float
-#define GBDDDMV_SCALAR    float
-#define GBDDDMV_KL        const int kl,
-#define GBDDDMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbdddmv_internal_s
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  suzerain_gbdddmv_internal_d
-#define GBDDDMV_COMPONENT double
-#define GBDDDMV_SCALAR    double
-#define GBDDDMV_KL        const int kl,
-#define GBDDDMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbdddmv_internal_d
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  suzerain_gbdddmv_internal_scc
-#define GBDDDMV_COMPONENT float
-#define GBDDDMV_SCALAR    complex_float
-#define GBDDDMV_KL        const int kl,
-#define GBDDDMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbdddmv_internal_scc
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  suzerain_gbdddmv_internal_dzz
-#define GBDDDMV_COMPONENT double
-#define GBDDDMV_SCALAR    complex_double
-#define GBDDDMV_KL        const int kl,
-#define GBDDDMV_KU        const int ku,
+#define STATIC   static
+#define FUNCTION suzerain_gbdddmv_internal_dzz
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL       const int kl,
+#define KU       const int ku,
 #include "gbdddmv.def"
 
 // ------------------------------------------------------------------
@@ -246,40 +254,48 @@ suzerain_gbdddmv_dzz(
 #define kl BOOST_PP_ITERATION()
 #define ku BOOST_PP_ITERATION()
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbdddmv_internal_s, \
-                                       BOOST_PP_ITERATION())
-#define GBDDDMV_COMPONENT float
-#define GBDDDMV_SCALAR    float
-#define GBDDDMV_KL
-#define GBDDDMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdddmv_internal_s, \
+                              BOOST_PP_ITERATION())
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   float
+#define TYPE_Y   float
+#define KL
+#define KU
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbdddmv_internal_d, \
-                                       BOOST_PP_ITERATION())
-#define GBDDDMV_COMPONENT double
-#define GBDDDMV_SCALAR    double
-#define GBDDDMV_KL
-#define GBDDDMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdddmv_internal_d, \
+                              BOOST_PP_ITERATION())
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   double
+#define TYPE_Y   double
+#define KL
+#define KU
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbdddmv_internal_scc, \
-                                       BOOST_PP_ITERATION())
-#define GBDDDMV_COMPONENT float
-#define GBDDDMV_SCALAR    complex_float
-#define GBDDDMV_KL
-#define GBDDDMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdddmv_internal_scc, \
+                              BOOST_PP_ITERATION())
+#define TYPE_D   float
+#define TYPE_A   float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL
+#define KU
 #include "gbdddmv.def"
 
-#define GBDDDMV_STATIC    static
-#define GBDDDMV_FUNCTION  BOOST_PP_CAT(suzerain_gbdddmv_internal_dzz, \
-                                       BOOST_PP_ITERATION())
-#define GBDDDMV_COMPONENT double
-#define GBDDDMV_SCALAR    complex_double
-#define GBDDDMV_KL
-#define GBDDDMV_KU
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbdddmv_internal_dzz, \
+                              BOOST_PP_ITERATION())
+#define TYPE_D   double
+#define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL
+#define KU
 #include "gbdddmv.def"
 
 #undef kl

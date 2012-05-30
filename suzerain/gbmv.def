@@ -15,12 +15,13 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define GBMV_STATIC    /*empty*/         /* Use for static function    */
-// #define GBMV_FUNCTION  dgbmv             /* Function name              */
-// #define GBMV_COMPONENT double            /* Type of matrices           */
-// #define GBMV_SCALAR    double            /* Type of coeffs and vectors */
-// #define GBMV_KL        const int kl,     /* Matrix lower bandwidth     */
-// #define GBMV_KU        const int ku,     /* Matrix upper bandwidth     */
+// #define STATIC    /*empty*/         /* Use for static function    */
+// #define FUNCTION  dgbmv             /* Function name              */
+// #define TYPE_A    double            /* Type of matrix             */
+// #define TYPE_X    double            /* Type of input vector       */
+// #define TYPE_Y    double            /* Type of coeffs and output  */
+// #define KL        const int kl,     /* Matrix lower bandwidth     */
+// #define KU        const int ku,     /* Matrix upper bandwidth     */
 
 #ifndef __GBMV_INTERNAL_ONCE
 #define __GBMV_INTERNAL_ONCE
@@ -28,11 +29,11 @@ static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
 #endif /* __GBMV_INTERNAL_ONCE */
 
-GBMV_STATIC int GBMV_FUNCTION(
-    char trans, const int m, const int n, GBMV_KL GBMV_KU
-    const GBMV_SCALAR alpha, const GBMV_COMPONENT *       restrict a, int lda,
-                             const    GBMV_SCALAR * const restrict x, const int incx,
-    const GBMV_SCALAR beta,           GBMV_SCALAR * const restrict y, const int incy)
+STATIC int FUNCTION(
+    char trans, const int m, const int n, KL KU
+    const TYPE_Y alpha, const TYPE_A *       restrict a,       int lda,
+                        const TYPE_X * const restrict x, const int incx,
+    const TYPE_Y beta,        TYPE_Y * const restrict y, const int incy)
 {
     // Logic from http://www.netlib.org/blas/dgbmv.f revised
     // for zero-indexed, vectorization-ready code on GCC and Intel.
@@ -124,7 +125,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
-                const GBMV_SCALAR temp = alpha*x[jx];
+                const TYPE_Y temp = alpha*x[jx];
                 for (int i = il; i < iu; ++i) {
                     y[i] += temp*a[i];
                 }
@@ -135,7 +136,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
-                const GBMV_SCALAR temp = alpha*x[jx];
+                const TYPE_Y temp = alpha*x[jx];
                 int iy = ky;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -159,7 +160,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
-                GBMV_SCALAR temp = 0;
+                TYPE_Y temp = 0;
                 for (int i = il; i < iu; ++i) {
                     temp += a[i]*x[i];
                 }
@@ -171,7 +172,7 @@ GBMV_STATIC int GBMV_FUNCTION(
             for (int j = 0; j < n; ++j) {
                 const int il = ndxmax(0, j - ku);
                 const int iu = ndxmin(m, j + klp1);
-                GBMV_SCALAR temp = 0;
+                TYPE_Y temp = 0;
                 int ix = kx;
 #ifdef __INTEL_COMPILER
 #pragma unroll
@@ -193,9 +194,10 @@ GBMV_STATIC int GBMV_FUNCTION(
     return 0;
 }
 
-#undef GBMV_STATIC
-#undef GBMV_FUNCTION
-#undef GBMV_COMPONENT
-#undef GBMV_SCALAR
-#undef GBMV_KL
-#undef GBMV_KU
+#undef STATIC
+#undef FUNCTION
+#undef TYPE_A
+#undef TYPE_X
+#undef TYPE_Y
+#undef KL
+#undef KU
