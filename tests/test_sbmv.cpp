@@ -206,7 +206,7 @@ static void test_sbmv_d(const sbmv_tc_type& t)
                             close_enough);
 }
 
-static void test_sbmv_sc(const sbmzv_tc_type& t)
+static void test_sbmv_scc(const sbmzv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*50;
     const float inv_rand_max = float(1) / RAND_MAX;
@@ -233,7 +233,7 @@ static void test_sbmv_sc(const sbmzv_tc_type& t)
             beta,                  (      complex_float *) e.get(), t.incy);
 
     // Compute observed result using our implementation
-    BOOST_REQUIRE_EQUAL(0, suzerain_sbmv_sc(
+    BOOST_REQUIRE_EQUAL(0, suzerain_sbmv_scc(
             t.uplo, t.n, t.k,
             alpha, a.get(), t.lda, (const complex_float *) x.get(), t.incx,
             beta,                  (      complex_float *) y.get(), t.incy));
@@ -243,7 +243,7 @@ static void test_sbmv_sc(const sbmzv_tc_type& t)
                             close_enough);
 }
 
-static void test_sbmv_dz(const sbmzv_tc_type& t)
+static void test_sbmv_dzz(const sbmzv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*50;
     const double inv_rand_max = double(1) / RAND_MAX;
@@ -270,7 +270,7 @@ static void test_sbmv_dz(const sbmzv_tc_type& t)
             beta,                  (      complex_double *) e.get(), t.incy);
 
     // Compute observed result using our implementation
-    BOOST_REQUIRE_EQUAL(0, suzerain_sbmv_dz(
+    BOOST_REQUIRE_EQUAL(0, suzerain_sbmv_dzz(
             t.uplo, t.n, t.k,
             alpha, a.get(), t.lda, (const complex_double *) x.get(), t.incx,
             beta,                  (      complex_double *) y.get(), t.incy));
@@ -410,65 +410,65 @@ bool init_unit_test_suite() {
                 &test_sbmv_d, name.str(), sbmv_tc + i, sbmv_tc + i + 1));
     }
 
-    // Register test_sbmv_sc cases
+    // Register test_sbmv_scc cases
     for (size_t i = 0; i < gcases; ++i) {
 
         sbmzv_tc_type c(sbmv_tc[i]);
 
         { // Real-valued alpha, beta
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " real " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " real " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_sc, name.str(), &c, &c + 1));
+                    &test_sbmv_scc, name.str(), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
             std::swap(c.alpha[0], c.alpha[1]);
             std::swap(c.beta[0],  c.beta[1]);
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " imag " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " imag " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_sc, name.str(), &c, &c + 1));
+                    &test_sbmv_scc, name.str(), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
             c.alpha[0] += 1.5;
             c.beta[0]  -= 1.5;
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " complex " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " complex " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_sc, name.str(), &c, &c + 1));
+                    &test_sbmv_scc, name.str(), &c, &c + 1));
         }
     }
 
-    // Register test_sbmv_dz cases
+    // Register test_sbmv_dzz cases
     for (size_t i = 0; i < gcases; ++i) {
 
         sbmzv_tc_type c(sbmv_tc[i]);
 
         { // Real-valued alpha, beta
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " real " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " real " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_dz, name.str(), &c, &c + 1));
+                    &test_sbmv_dzz, name.str(), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
             std::swap(c.alpha[0], c.alpha[1]);
             std::swap(c.beta[0],  c.beta[1]);
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " imag " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " imag " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_dz, name.str(), &c, &c + 1));
+                    &test_sbmv_dzz, name.str(), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
             c.alpha[0] += 1.5;
             c.beta[0]  -= 1.5;
             std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " complex " << c;
+            name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " complex " << c;
             master_test_suite().add(make_test_case(
-                    &test_sbmv_dz, name.str(), &c, &c + 1));
+                    &test_sbmv_dzz, name.str(), &c, &c + 1));
         }
     }
 
@@ -540,61 +540,61 @@ bool init_unit_test_suite() {
                         &test_sbmv_d, name.str(), &r, &r + 1));
             }
 
-            { // Register test_sbmv_sc cases
+            { // Register test_sbmv_scc cases
                 sbmzv_tc_type c(r);
 
                 { // Real-valued alpha, beta
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " real " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " real " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_sc, name.str(), &c, &c + 1));
+                            &test_sbmv_scc, name.str(), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
                     std::swap(c.alpha[0], c.alpha[1]);
                     std::swap(c.beta[0],  c.beta[1]);
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " imag " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " imag " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_sc, name.str(), &c, &c + 1));
+                            &test_sbmv_scc, name.str(), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
                     c.alpha[0] += 1.5;
                     c.beta[0]  -= 1.5;
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_sc) << " complex " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_scc) << " complex " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_sc, name.str(), &c, &c + 1));
+                            &test_sbmv_scc, name.str(), &c, &c + 1));
                 }
             }
 
-            { // Register test_sbmv_dz cases
+            { // Register test_sbmv_dzz cases
                 sbmzv_tc_type c(r);
 
                 { // Real-valued alpha, beta
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " real " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " real " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_dz, name.str(), &c, &c + 1));
+                            &test_sbmv_dzz, name.str(), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
                     std::swap(c.alpha[0], c.alpha[1]);
                     std::swap(c.beta[0],  c.beta[1]);
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " imag " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " imag " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_dz, name.str(), &c, &c + 1));
+                            &test_sbmv_dzz, name.str(), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
                     c.alpha[0] += 1.5;
                     c.beta[0]  -= 1.5;
                     std::ostringstream name;
-                    name << BOOST_TEST_STRINGIZE(test_sbmv_dz) << " complex " << c;
+                    name << BOOST_TEST_STRINGIZE(test_sbmv_dzz) << " complex " << c;
                     master_test_suite().add(make_test_case(
-                            &test_sbmv_dz, name.str(), &c, &c + 1));
+                            &test_sbmv_dzz, name.str(), &c, &c + 1));
                 }
             }
 

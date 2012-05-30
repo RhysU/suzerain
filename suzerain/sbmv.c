@@ -56,14 +56,14 @@
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_sc
+#define SBMV_FUNCTION  suzerain_sbmv_internal_scc
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    complex_float
 #define SBMV_K         const int k,
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
-#define SBMV_FUNCTION  suzerain_sbmv_internal_dz
+#define SBMV_FUNCTION  suzerain_sbmv_internal_dzz
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    complex_double
 #define SBMV_K         const int k,
@@ -130,7 +130,7 @@ suzerain_sbmv_d(
 }
 
 int
-suzerain_sbmv_sc(
+suzerain_sbmv_scc(
         const char uplo,
         const int n,
         const int k,
@@ -146,17 +146,17 @@ suzerain_sbmv_sc(
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     switch (k) {
         BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                FIXEDBW_CASE, suzerain_sbmv_internal_sc)
+                                FIXEDBW_CASE, suzerain_sbmv_internal_scc)
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_sbmv_internal_sc(uplo, n, k,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
+    return suzerain_sbmv_internal_scc(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
 }
 
 int
-suzerain_sbmv_dz(
+suzerain_sbmv_dzz(
         const char uplo,
         const int n,
         const int k,
@@ -172,13 +172,13 @@ suzerain_sbmv_dz(
     // Dispatch to fixed bandwidth specialization for small bandwidth...
     switch (k) {
         BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                FIXEDBW_CASE, suzerain_sbmv_internal_dz)
+                                FIXEDBW_CASE, suzerain_sbmv_internal_dzz)
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_sbmv_internal_dz(uplo, n, k,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
+    return suzerain_sbmv_internal_dzz(uplo, n, k,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
 }
 
 #else
@@ -205,7 +205,7 @@ suzerain_sbmv_dz(
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_sc, \
+#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_scc, \
                                     BOOST_PP_ITERATION())
 #define SBMV_COMPONENT float
 #define SBMV_SCALAR    complex_float
@@ -213,7 +213,7 @@ suzerain_sbmv_dz(
 #include "sbmv.def"
 
 #define SBMV_STATIC    static
-#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_dz, \
+#define SBMV_FUNCTION  BOOST_PP_CAT(suzerain_sbmv_internal_dzz, \
                                     BOOST_PP_ITERATION())
 #define SBMV_COMPONENT double
 #define SBMV_SCALAR    complex_double

@@ -98,7 +98,7 @@ suzerain_sbmv_d(
  * \see A BLAS reference for for general band storage matrix requirements.
  */
 int
-suzerain_sbmv_sc(
+suzerain_sbmv_scc(
         const char uplo,
         const int n,
         const int k,
@@ -111,9 +111,9 @@ suzerain_sbmv_sc(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_sbmv_sc */
+/*! \copydoc suzerain_sbmv_scc */
 int
-suzerain_sbmv_dz(
+suzerain_sbmv_dzz(
         const char uplo,
         const int n,
         const int k,

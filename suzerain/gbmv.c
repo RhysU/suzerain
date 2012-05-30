@@ -58,7 +58,7 @@
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_sc
+#define GBMV_FUNCTION  suzerain_gbmv_internal_scc
 #define GBMV_COMPONENT float
 #define GBMV_SCALAR    complex_float
 #define GBMV_KL        const int kl,
@@ -66,7 +66,7 @@
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
-#define GBMV_FUNCTION  suzerain_gbmv_internal_dz
+#define GBMV_FUNCTION  suzerain_gbmv_internal_dzz
 #define GBMV_COMPONENT double
 #define GBMV_SCALAR    complex_double
 #define GBMV_KL        const int kl,
@@ -142,7 +142,7 @@ suzerain_gbmv_d(
 }
 
 int
-suzerain_gbmv_sc(
+suzerain_gbmv_scc(
         const char trans,
         const int m,
         const int n,
@@ -161,18 +161,18 @@ suzerain_gbmv_sc(
     if (kl == ku) {
         switch (kl) {
             BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                    FIXEDBW_CASE, suzerain_gbmv_internal_sc)
+                                    FIXEDBW_CASE, suzerain_gbmv_internal_scc)
         }
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbmv_internal_sc(trans, m, n, kl, ku,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
+    return suzerain_gbmv_internal_scc(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
 }
 
 int
-suzerain_gbmv_dz(
+suzerain_gbmv_dzz(
         const char trans,
         const int m,
         const int n,
@@ -191,14 +191,14 @@ suzerain_gbmv_dz(
     if (kl == ku) {
         switch (kl) {
             BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
-                                    FIXEDBW_CASE, suzerain_gbmv_internal_dz)
+                                    FIXEDBW_CASE, suzerain_gbmv_internal_dzz)
         }
     }
 
     // ...otherwise employ a general bandwidth implementation
-    return suzerain_gbmv_internal_dz(trans, m, n, kl, ku,
-                                     alpha, a, lda, x, incx,
-                                     beta,          y, incy);
+    return suzerain_gbmv_internal_dzz(trans, m, n, kl, ku,
+                                      alpha, a, lda, x, incx,
+                                      beta,          y, incy);
 }
 
 #else
@@ -228,7 +228,7 @@ suzerain_gbmv_dz(
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_sc, \
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_scc, \
                                     BOOST_PP_ITERATION())
 #define GBMV_COMPONENT float
 #define GBMV_SCALAR    complex_float
@@ -237,7 +237,7 @@ suzerain_gbmv_dz(
 #include "gbmv.def"
 
 #define GBMV_STATIC    static
-#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_dz, \
+#define GBMV_FUNCTION  BOOST_PP_CAT(suzerain_gbmv_internal_dzz, \
                                     BOOST_PP_ITERATION())
 #define GBMV_COMPONENT double
 #define GBMV_SCALAR    complex_double

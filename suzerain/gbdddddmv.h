@@ -134,7 +134,7 @@ suzerain_gbdddddmv_d(
  * \copydetails suzerain_gbdddddmv_s
  */
 int
-suzerain_gbdddddmv_sc(
+suzerain_gbdddddmv_scc(
         const char trans,
         const int n,
         const int kl,
@@ -162,9 +162,9 @@ suzerain_gbdddddmv_sc(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_gbdddddmv_sc */
+/*! \copydoc suzerain_gbdddddmv_scc */
 int
-suzerain_gbdddddmv_dz(
+suzerain_gbdddddmv_dzz(
         const char trans,
         const int n,
         const int kl,
