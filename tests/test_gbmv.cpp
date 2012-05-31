@@ -261,7 +261,7 @@ static void test_gbmv_ssc(const gbmzv_tc_type& t)
             beta,                  (complex_float *) e.get(), t.incy);
 
     // Compute observed result using a different mixed precision implementation
-    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_ssc(
+    BOOST_REQUIRE_EQUAL(0, suzerain_blas_cgbmv_s_s(
             t.trans, t.m, t.n, t.kl, t.ku,
             alpha, a.get(), t.lda,                   x.get(), 2*t.incx,
             beta,                  (complex_float *) y.get(),   t.incy));
@@ -301,7 +301,7 @@ static void test_gbmv_ddz(const gbmzv_tc_type& t)
             beta,                  (complex_double *) e.get(), t.incy);
 
     // Compute observed result using a different mixed precision implementation
-    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_ddz(
+    BOOST_REQUIRE_EQUAL(0, suzerain_blas_zgbmv_d_d(
             t.trans, t.m, t.n, t.kl, t.ku,
             alpha, a.get(), t.lda,                    x.get(), 2*t.incx,
             beta,                  (complex_double *) y.get(),   t.incy));
