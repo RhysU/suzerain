@@ -685,7 +685,7 @@ suzerain_blas_dgbmv_external(
 
 /*! \copydoc suzerain_blas_sgbmv_external */
 void
-suzerain_blas_cgbmv_s_external(
+suzerain_blas_cgbmv_s_c_external(
         const char trans,
         const int m,
         const int n,
@@ -759,7 +759,7 @@ suzerain_blas_dgbmv(
 
 /*! \copydoc suzerain_blas_sgbmv */
 int
-suzerain_blas_cgbmv_s(
+suzerain_blas_cgbmv_s_c(
         const char trans,
         const int m,
         const int n,
@@ -841,7 +841,7 @@ suzerain_blas_dsbmv_external(
 
 /*! \copydoc suzerain_blas_ssbmv_external */
 void
-suzerain_blas_csbmv_s_external(
+suzerain_blas_csbmv_s_c_external(
         const char uplo,
         const int n,
         const int k,
@@ -908,7 +908,7 @@ suzerain_blas_dsbmv(
 
 /*! \copydoc suzerain_blas_ssbmv */
 int
-suzerain_blas_csbmv_s(
+suzerain_blas_csbmv_s_c(
         const char uplo,
         const int n,
         const int k,
@@ -921,7 +921,7 @@ suzerain_blas_csbmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blas_csbmv_s */
+/*! \copydoc suzerain_blas_csbmv_s_c */
 int
 suzerain_blas_zsbmv_d_z(
         const char uplo,
@@ -1652,7 +1652,7 @@ suzerain_blasext_dgbdmv_external(
  * \copydetails suzerain_blasext_sgbdmv_external
  */
 int
-suzerain_blasext_cgbdmv_s_external(
+suzerain_blasext_cgbdmv_s_c_external(
         const char trans,
         const int n,
         const int kl,
@@ -1668,7 +1668,7 @@ suzerain_blasext_cgbdmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdmv_s_external */
+/*! \copydoc suzerain_blasext_cgbdmv_s_c_external */
 int
 suzerain_blasext_zgbdmv_d_z_external(
         const char trans,
@@ -1735,7 +1735,7 @@ suzerain_blasext_dgbdmv(
  * \copydetails suzerain_blasext_sgbdmv
  */
 int
-suzerain_blasext_cgbdmv_s(
+suzerain_blasext_cgbdmv_s_c(
         const char trans,
         const int n,
         const int kl,
@@ -1751,7 +1751,7 @@ suzerain_blasext_cgbdmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdmv_s */
+/*! \copydoc suzerain_blasext_cgbdmv_s_c */
 int
 suzerain_blasext_zgbdmv_d_z(
         const char trans,
@@ -1826,7 +1826,7 @@ suzerain_blasext_dgbddmv_external(
  * \copydetails suzerain_blasext_sgbddmv_external
  */
 int
-suzerain_blasext_cgbddmv_s_external(
+suzerain_blasext_cgbddmv_s_c_external(
         const char trans,
         const int n,
         const int kl,
@@ -1845,7 +1845,7 @@ suzerain_blasext_cgbddmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbddmv_s_external */
+/*! \copydoc suzerain_blasext_cgbddmv_s_c_external */
 int
 suzerain_blasext_zgbddmv_d_z_external(
         const char trans,
@@ -1921,7 +1921,7 @@ suzerain_blasext_dgbddmv(
  * \copydetails suzerain_blasext_sgbddmv
  */
 int
-suzerain_blasext_cgbddmv_s(
+suzerain_blasext_cgbddmv_s_c(
         const char trans,
         const int n,
         const int kl,
@@ -1940,7 +1940,7 @@ suzerain_blasext_cgbddmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbddmv_s */
+/*! \copydoc suzerain_blasext_cgbddmv_s_c */
 int
 suzerain_blasext_zgbddmv_d_z(
         const char trans,
@@ -2024,7 +2024,7 @@ suzerain_blasext_dgbdddmv_external(
  * \copydetails suzerain_blasext_sgbdddmv_external
  */
 int
-suzerain_blasext_cgbdddmv_s_external(
+suzerain_blasext_cgbdddmv_s_c_external(
         const char trans,
         const int n,
         const int kl,
@@ -2046,7 +2046,7 @@ suzerain_blasext_cgbdddmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdddmv_s_external */
+/*! \copydoc suzerain_blasext_cgbdddmv_s_c_external */
 int
 suzerain_blasext_zgbdddmv_d_z_external(
         const char trans,
@@ -2132,7 +2132,7 @@ suzerain_blasext_dgbdddmv(
  * \copydetails suzerain_blasext_sgbdddmv
  */
 int
-suzerain_blasext_cgbdddmv_s(
+suzerain_blasext_cgbdddmv_s_c(
         const char trans,
         const int n,
         const int kl,
@@ -2154,7 +2154,7 @@ suzerain_blasext_cgbdddmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdddmv_s */
+/*! \copydoc suzerain_blasext_cgbdddmv_s_c */
 int
 suzerain_blasext_zgbdddmv_d_z(
         const char trans,
@@ -2248,7 +2248,7 @@ suzerain_blasext_dgbddddmv_external(
  * \copydetails suzerain_blasext_sgbddddmv_external
  */
 int
-suzerain_blasext_cgbddddmv_s_external(
+suzerain_blasext_cgbddddmv_s_c_external(
         const char trans,
         const int n,
         const int kl,
@@ -2273,7 +2273,7 @@ suzerain_blasext_cgbddddmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbddddmv_s_external */
+/*! \copydoc suzerain_blasext_cgbddddmv_s_c_external */
 int
 suzerain_blasext_zgbddddmv_d_z_external(
         const char trans,
@@ -2368,7 +2368,7 @@ suzerain_blasext_dgbddddmv(
  * \copydetails suzerain_blasext_sgbddddmv
  */
 int
-suzerain_blasext_cgbddddmv_s(
+suzerain_blasext_cgbddddmv_s_c(
         const char trans,
         const int n,
         const int kl,
@@ -2393,7 +2393,7 @@ suzerain_blasext_cgbddddmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbddddmv_s */
+/*! \copydoc suzerain_blasext_cgbddddmv_s_c */
 int
 suzerain_blasext_zgbddddmv_d_z(
         const char trans,
@@ -2497,7 +2497,7 @@ suzerain_blasext_dgbdddddmv_external(
  * \copydetails suzerain_blasext_sgbdddddmv_external
  */
 int
-suzerain_blasext_cgbdddddmv_s_external(
+suzerain_blasext_cgbdddddmv_s_c_external(
         const char trans,
         const int n,
         const int kl,
@@ -2525,7 +2525,7 @@ suzerain_blasext_cgbdddddmv_s_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdddddmv_s_external */
+/*! \copydoc suzerain_blasext_cgbdddddmv_s_c_external */
 int
 suzerain_blasext_zgbdddddmv_d_z_external(
         const char trans,
@@ -2631,7 +2631,7 @@ suzerain_blasext_dgbdddddmv(
  * \copydetails suzerain_blasext_sgbdddddmv
  */
 int
-suzerain_blasext_cgbdddddmv_s(
+suzerain_blasext_cgbdddddmv_s_c(
         const char trans,
         const int n,
         const int kl,
@@ -2659,7 +2659,7 @@ suzerain_blasext_cgbdddddmv_s(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blasext_cgbdddddmv_s */
+/*! \copydoc suzerain_blasext_cgbdddddmv_s_c */
 int
 suzerain_blasext_zgbdddddmv_d_z(
         const char trans,

@@ -188,7 +188,7 @@ static void test_gbdmv_scc(const gbdmzv_tc_type& t)
     const complex_float beta( t.beta[0],  t.beta[1]  );
 
     // Compute expected result using external BLAS
-    suzerain_blasext_cgbdmv_s_external(
+    suzerain_blasext_cgbdmv_s_c_external(
             t.trans, t.n, t.kl, t.ku,
             alpha, d.get(), t.ldd,
             a.get(), t.lda, (complex_float *) x.get(), t.incx,
