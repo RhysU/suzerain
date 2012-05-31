@@ -17,15 +17,6 @@
 #endif
 #include <suzerain/common.h>
 #pragma hdrstop
-
-#ifdef SUZERAIN_HAVE_MKL
-#include <mkl_types.h>
-#include <mkl_blas.h>
-#include <mkl_lapack.h>
-#else
-#error "No suitable BLAS and/or LAPACK library found during configuration"
-#endif
-
 #include <suzerain/blas_et_al.h>
 #include <suzerain/gbdddddmv.h>
 #include <suzerain/gbddddmv.h>
@@ -35,18 +26,38 @@
 #include <suzerain/gbmv.h>
 #include <suzerain/sbmv.h>
 
-static inline int imin(int a, int b) { return a < b ? a : b; }
-static inline int imax(int a, int b) { return a > b ? a : b; }
+// Odd looking, unused, anonymous enumerations are globally-scoped versions
+// of "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
+#define assert_static(e) do{ enum { assert_static__## line = 1/(e) }; }while(0)
+
+enum { // Required for strict aliasing workarounds
+    assert_floatp  = 1/(sizeof(float*)  == sizeof(complex_float*) ),
+    assert_doublep = 1/(sizeof(double*) == sizeof(complex_double*))
+};
+
+#ifdef SUZERAIN_HAVE_MKL
+# include <mkl_types.h>
+# include <mkl_blas.h>
+# include <mkl_lapack.h>
+# define BLAS_FUNC(name,NAME)   name             /* Think AC_F77_WRAPPERS */
+# define LAPACK_FUNC(name,NAME) name             /* Think AC_F77_WRAPPERS */
+enum { // Required for binary interoperability with MKL
+    assert_mkl_i = 1 /(sizeof(MKL_INT)       == sizeof(int)           ),
+    assert_mkl_c = 1 /(sizeof(MKL_Complex8)  == sizeof(complex_float) ),
+    assert_mkl_z = 1 /(sizeof(MKL_Complex16) == sizeof(complex_double))
+};
+#else
+# error "No suitable BLAS and/or LAPACK library found during configuration"
+#endif
 
 // Shorthand
+static inline int imin(int a, int b) { return a < b ? a : b; }
+static inline int imax(int a, int b) { return a > b ? a : b; }
 #define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
 
-// From "Compile Time Assertions" by Ralf Holly (http://drdobbs.com/184401873)
-#define assert_static(e) do { enum { assert_static__ = 1/(e) }; } while (0)
-
 // Many of the short methods have "inline" though their declarations do not.
-// This allows inlining them latter within this particular translation unit.
-// We don't pay for needless function call overhead when our BLAS wrapper
+// This allows inlining them later within this particular translation unit so
+// we don't pay for needless function call overhead when our BLAS wrapper
 // routines call other BLAS wrapper routines (e.g. within suzerain_blasext_*).
 
 // Thank you captain obvious...
@@ -55,19 +66,14 @@ static inline int imax(int a, int b) { return a > b ? a : b; }
 int
 suzerain_blas_xerbla(const char *srname, const int info)
 {
-#ifdef SUZERAIN_HAVE_MKL
     const int lsrname = srname ? strlen(srname) : 0;
-    xerbla(srname, &info, lsrname);
+    BLAS_FUNC(xerbla,XERBLA)(srname, &info, lsrname);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 void *
 suzerain_blas_malloc(size_t size)
 {
-#ifdef SUZERAIN_HAVE_MKL
     void * p = NULL;
 
     /* We do not use MKL_malloc to avoid later needing MKL_free calls. */
@@ -84,35 +90,24 @@ suzerain_blas_malloc(size_t size)
                     __FILE__, __LINE__, strerror(status));
             abort();
     }
-#else
-#error "Sanity failure"
-#endif
 }
 
 void *
 suzerain_blas_calloc(size_t nmemb, size_t size)
 {
-#ifdef SUZERAIN_HAVE_MKL
     const size_t total_bytes = nmemb * size;
     void * p = suzerain_blas_malloc(total_bytes);
     if (p != NULL) {
         memset(p, 0, total_bytes);
     }
     return p;
-#else
-#error "Sanity failure"
-#endif
 }
 
 void
 suzerain_blas_free(void *ptr)
 {
-#ifdef SUZERAIN_HAVE_MKL
     // Must match suzerain_blas_malloc's malloc-like routine!
     if (ptr) free(ptr);
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline void
@@ -122,12 +117,7 @@ suzerain_blas_sscal(
         float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sscal(&n, &alpha, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(sscal,SSCAL)(&n, &alpha, x, &incx);
 }
 
 inline void
@@ -137,12 +127,7 @@ suzerain_blas_dscal(
         double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dscal(&n, &alpha, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dscal,DSCAL)(&n, &alpha, x, &incx);
 }
 
 inline void
@@ -152,14 +137,8 @@ suzerain_blas_cscal(
         complex_float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return cscal(&n,
-                 (const MKL_Complex8 *) &alpha,
-                 (      MKL_Complex8 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(cscal,CSCAL)(
+            &n, (const void *) &alpha, (void *) x, &incx);
 }
 
 inline void
@@ -169,14 +148,8 @@ suzerain_blas_zscal(
         complex_double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zscal(&n,
-                 (const MKL_Complex16 *) &alpha,
-                 (      MKL_Complex16 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(zscal,ZSCAL)(
+            &n, (const void *) &alpha, (void *) x, &incx);
 }
 
 inline void
@@ -187,12 +160,7 @@ suzerain_blas_sswap(
         float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sswap(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(sswap,SSWAP)(&n, x, &incx, y, &incy);
 }
 
 inline void
@@ -203,12 +171,7 @@ suzerain_blas_dswap(
         double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dswap(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dswap,DSWAP)(&n, x, &incx, y, &incy);
 }
 
 inline void
@@ -219,12 +182,7 @@ suzerain_blas_cswap(
         complex_float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return cswap(&n, (MKL_Complex8 *) x, &incx, (MKL_Complex8 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(cswap,CSWAP)(&n, (void *) x, &incx, (void *) y, &incy);
 }
 
 inline void
@@ -235,12 +193,7 @@ suzerain_blas_zswap(
         complex_double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zswap(&n, (MKL_Complex16 *) x, &incx, (MKL_Complex16 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(zswap,ZSWAP)(&n, (void *) x, &incx, (void *) y, &incy);
 }
 
 inline void
@@ -251,12 +204,7 @@ suzerain_blas_scopy(
         float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return scopy(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(scopy,SCOPY)(&n, x, &incx, y, &incy);
 }
 
 inline void
@@ -267,12 +215,7 @@ suzerain_blas_dcopy(
         double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dcopy(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dcopy,DCOPY)(&n, x, &incx, y, &incy);
 }
 
 inline void
@@ -283,14 +226,8 @@ suzerain_blas_ccopy(
         complex_float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return ccopy(&n,
-                 (const MKL_Complex8 *) x, &incx,
-                 (      MKL_Complex8 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(ccopy,CCOPY)(
+            &n, (const void *) x, &incx, (void *) y, &incy);
 }
 
 inline void
@@ -301,14 +238,8 @@ suzerain_blas_zcopy(
         complex_double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zcopy(&n,
-                 (const MKL_Complex16 *) x, &incx,
-                 (      MKL_Complex16 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(zcopy,ZCOPY)(
+            &n, (const void *) x, &incx, (void *) y, &incy);
 }
 
 inline float
@@ -319,12 +250,7 @@ suzerain_blas_sdot(
         const float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sdot(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(sdot,SDOT)(&n, x, &incx, y, &incy);
 }
 
 inline double
@@ -335,12 +261,7 @@ suzerain_blas_ddot(
         const double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return ddot(&n, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(ddot,DDOT)(&n, x, &incx, y, &incy);
 }
 
 inline void
@@ -352,14 +273,9 @@ suzerain_blas_cdotc(
         const int incy,
         complex_float *dotc)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return cdotc((      MKL_Complex8 *)dotc, &n,
-                 (const MKL_Complex8 *)x,    &incx,
-                 (const MKL_Complex8 *)y,    &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(cdotc,CDOTC)((      void *)dotc, &n,
+                                  (const void *)x,    &incx,
+                                  (const void *)y,    &incy);
 }
 
 inline void
@@ -371,14 +287,9 @@ suzerain_blas_zdotc(
         const int incy,
         complex_double *dotc)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zdotc((      MKL_Complex16 *)dotc, &n,
-                 (const MKL_Complex16 *)x,    &incx,
-                 (const MKL_Complex16 *)y,    &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(zdotc,ZDOTC)((      void *)dotc, &n,
+                                  (const void *)x,    &incx,
+                                  (const void *)y,    &incy);
 }
 
 inline float
@@ -387,12 +298,7 @@ suzerain_blas_snrm2(
         const float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return snrm2(&n, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(snrm2,SNRM2)(&n, x, &incx);
 }
 
 inline double
@@ -401,12 +307,7 @@ suzerain_blas_dnrm2(
         const double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dnrm2(&n, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dnrm2,DNRM2)(&n, x, &incx);
 }
 
 inline float
@@ -415,12 +316,7 @@ suzerain_blas_scnrm2(
         const complex_float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return scnrm2(&n, (const MKL_Complex8 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(scnrm2,SCNRM2)(&n, (const void *) x, &incx);
 }
 
 inline double
@@ -429,12 +325,7 @@ suzerain_blas_dznrm2(
         const complex_double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dznrm2(&n, (const MKL_Complex16 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dznrm2,DZNRM2)(&n, (const void *) x, &incx);
 }
 
 inline float
@@ -443,12 +334,7 @@ suzerain_blas_sasum(
         const float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sasum(&n, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(sasum,SASUM)(&n, x, &incx);
 }
 
 inline double
@@ -457,12 +343,7 @@ suzerain_blas_dasum(
         const double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dasum(&n, x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dasum,DASUM)(&n, x, &incx);
 }
 
 inline float
@@ -471,12 +352,7 @@ suzerain_blas_scasum(
         const complex_float *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return scasum(&n, (MKL_Complex8 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(scasum,SCASUM)(&n, (void *) x, &incx);
 }
 
 inline double
@@ -485,12 +361,7 @@ suzerain_blas_dzasum(
         const complex_double *x,
         const int incx)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dzasum(&n, (MKL_Complex16 *) x, &incx);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dzasum,DZASUM)(&n, (void *) x, &incx);
 }
 
 inline int
@@ -500,10 +371,9 @@ suzerain_blas_isamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return isamax(&n, x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_isamax not implemented for BLAS"
 #endif
 }
 
@@ -514,10 +384,9 @@ suzerain_blas_idamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return idamax(&n, x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_idamax not implemented for BLAS"
 #endif
 }
 
@@ -528,10 +397,9 @@ suzerain_blas_icamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return icamax(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_icamax not implemented for BLAS"
 #endif
 }
 
@@ -542,10 +410,9 @@ suzerain_blas_izamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return izamax(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_izamax not implemented for BLAS"
 #endif
 }
 
@@ -556,10 +423,9 @@ suzerain_blas_isamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return isamin(&n, x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_isamin not implemented for BLAS"
 #endif
 }
 
@@ -570,10 +436,9 @@ suzerain_blas_idamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return idamin(&n, x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_idamin not implemented for BLAS"
 #endif
 }
 
@@ -584,10 +449,9 @@ suzerain_blas_icamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return icamin(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_icamin not implemented for BLAS"
 #endif
 }
 
@@ -598,10 +462,9 @@ suzerain_blas_izamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     return izamin(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_izamin not implemented for BLAS"
 #endif
 }
 
@@ -614,12 +477,7 @@ suzerain_blas_saxpy(
         float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return saxpy(&n, &alpha, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(saxpy,SAXPY)(&n, &alpha, x, &incx, y, &incy);
 }
 
 inline void
@@ -631,12 +489,7 @@ suzerain_blas_daxpy(
         double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return daxpy(&n, &alpha, x, &incx, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(daxpy,DAXPY)(&n, &alpha, x, &incx, y, &incy);
 }
 
 inline void
@@ -648,15 +501,9 @@ suzerain_blas_caxpy(
         complex_float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return caxpy(&n,
-                 (const MKL_Complex8 *) &alpha,
-                 (const MKL_Complex8 *) x, &incx,
-                 (      MKL_Complex8 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(caxpy,CAXPY)(&n, (const void *) &alpha,
+                                      (const void *) x, &incx,
+                                      (      void *) y, &incy);
 }
 
 inline void
@@ -668,15 +515,9 @@ suzerain_blas_zaxpy(
         complex_double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zaxpy(&n,
-                 (const MKL_Complex16 *) &alpha,
-                 (const MKL_Complex16 *) x, &incx,
-                 (      MKL_Complex16 *) y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(zaxpy,ZAXPY)(&n, (const void *) &alpha,
+                                      (const void *) x, &incx,
+                                      (      void *) y, &incy);
 }
 
 inline void
@@ -708,7 +549,7 @@ suzerain_blas_zaxpy_d(
 
     }
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_zaxpy_d not implemented for BLAS"
 #endif
 }
 
@@ -724,14 +565,13 @@ suzerain_blas_saxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate saxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
 #pragma warning(push,disable:1572)
     if (beta != 1.0f)
 #pragma warning(pop)
         sscal(&n, &beta, y, &incy);
     saxpy(&n, &alpha, x, &incx, y, &incy);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(saxpby,SAXPBY)(&n, &alpha, x, &incx, &beta, y, &incy);
 #endif
 }
 
@@ -747,14 +587,13 @@ suzerain_blas_daxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate daxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
 #pragma warning(push,disable:1572)
     if (beta != 1.0)
 #pragma warning(pop)
         dscal(&n, &beta, y, &incy);
     daxpy(&n, &alpha, x, &incx, y, &incy);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(daxpby,DAXPBY)(&n, &alpha, x, &incx, &beta, y, &incy);
 #endif
 }
 
@@ -770,14 +609,15 @@ suzerain_blas_caxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
 #pragma warning(push,disable:1572)
     if (beta != 1.0f)
 #pragma warning(pop)
         suzerain_blas_cscal(n, beta, y, incy);
     suzerain_blas_caxpy(n, alpha, x, incx, y, incy);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(caxpby,CAXPBY)(&n,
+                             (const void *) &alpha, (const void *) x, &incx,
+                             (const void *) &beta,  (      void *) y, &incy);
 #endif
 }
 
@@ -793,14 +633,15 @@ suzerain_blas_zaxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate caxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
 #pragma warning(push,disable:1572)
     if (beta != 1.0)
 #pragma warning(pop)
         suzerain_blas_zscal(n, beta, y, incy);
     suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(zaxpby,ZAXPBY)(&n,
+                             (const void *) &alpha, (const void *) x, &incx,
+                             (const void *) &beta,  (      void *) y, &incy);
 #endif
 }
 
@@ -855,7 +696,7 @@ suzerain_blas_zaxpby_d(
 
     }
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_zaxpby_d not implemented for BLAS"
 #endif
 }
 
@@ -873,7 +714,6 @@ suzerain_blas_swaxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate swaxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     scopy(&n, y, &incy, w, &incw);
 #pragma warning(push,disable:1572)
     if (beta != 1.0f)
@@ -881,7 +721,10 @@ suzerain_blas_swaxpby(
         sscal(&n, &beta, w, &incw);
     saxpy(&n, &alpha, x, &incx, w, &incw);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(swaxpby,SWAXPBY)(&n,
+                               &alpha, x, &incx,
+                               &beta,  y, &incy,
+                                       w, &incw);
 #endif
 }
 
@@ -899,7 +742,6 @@ suzerain_blas_dwaxpby(
 {
 #ifdef SUZERAIN_HAVE_MKL
     /* Simulate dwaxpby since MKL lacks the routine. */
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     dcopy(&n, y, &incy, w, &incw);
 #pragma warning(push,disable:1572)
     if (beta != 1.0)
@@ -907,7 +749,10 @@ suzerain_blas_dwaxpby(
         dscal(&n, &beta, w, &incw);
     daxpy(&n, &alpha, x, &incx, w, &incw);
 #else
-#error "Sanity failure"
+    BLAS_FUNC(dwaxpby,DWAXPBY)(&n,
+                               &alpha, x, &incx,
+                               &beta,  y, &incy,
+                                       w, &incw);
 #endif
 }
 
@@ -927,13 +772,9 @@ suzerain_blas_sgbmv_external(
         float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return sgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
-                 x, &incx, &beta, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(sgbmv,SGBMV)(&trans, &m, &n, &kl, &ku,
+                                  &alpha, a, &lda, x, &incx,
+                                  &beta,           y, &incy);
 }
 
 inline void
@@ -952,13 +793,9 @@ suzerain_blas_dgbmv_external(
         double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dgbmv(&trans, &m, &n, &kl, &ku, &alpha, a, &lda,
-                 x, &incx, &beta, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dgbmv,DGBMV)(&trans, &m, &n, &kl, &ku,
+                                  &alpha, a, &lda, x, &incx,
+                                  &beta,           y, &incy);
 }
 
 void
@@ -977,8 +814,6 @@ suzerain_blas_cgbmv_s_c_external(
         complex_float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(float*) == sizeof(complex_float*));
     float *x_re, *y_re;
     memcpy(&x_re, &x, sizeof(x));
     memcpy(&y_re, &y, sizeof(y));
@@ -1015,9 +850,6 @@ suzerain_blas_cgbmv_s_c_external(
                                      -cimag(alpha), a, lda, x_re+1, 2*incx,
                                      1.0, y_re, 2*incy);
     }
-#else
-#error "Sanity failure"
-#endif
 }
 
 void
@@ -1036,8 +868,6 @@ suzerain_blas_zgbmv_d_z_external(
         complex_double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(double*) == sizeof(complex_double*));
     double *x_re, *y_re;
     memcpy(&x_re, &x, sizeof(x));
     memcpy(&y_re, &y, sizeof(y));
@@ -1074,9 +904,6 @@ suzerain_blas_zgbmv_d_z_external(
                                      -cimag(alpha), a, lda, x_re+1, 2*incx,
                                      1.0, y_re, 2*incy);
     }
-#else
-#error "Sanity failure"
-#endif
 }
 
 
@@ -1187,13 +1014,8 @@ suzerain_blas_ssbmv_external(
         float *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return ssbmv(&uplo, &n, &k, &alpha, a, &lda,
-                 x, &incx, &beta, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(ssbmv,SSBMV)(&uplo, &n, &k, &alpha, a, &lda,
+                                  x, &incx, &beta, y, &incy);
 }
 
 inline void
@@ -1210,13 +1032,8 @@ suzerain_blas_dsbmv_external(
         double *y,
         const int incy)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dsbmv(&uplo, &n, &k, &alpha, a, &lda,
-                 x, &incx, &beta, y, &incy);
-#else
-#error "Sanity failure"
-#endif
+    return BLAS_FUNC(dsbmv,DSBMV)(&uplo, &n, &k, &alpha, a, &lda,
+                                  x, &incx, &beta, y, &incy);
 }
 
 inline int
@@ -1323,7 +1140,7 @@ suzerain_blas_sgb_acc(
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_sgb_acc not implemented for BLAS"
 #endif
 }
 
@@ -1347,7 +1164,7 @@ suzerain_blas_dgb_acc(
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_dgb_acc not implemented for BLAS"
 #endif
 }
 
@@ -1371,7 +1188,7 @@ suzerain_blas_cgb_acc(
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_cgb_acc not implemented for BLAS"
 #endif
 }
 
@@ -1395,7 +1212,7 @@ suzerain_blas_zgb_acc(
                                                alpha, &one, 0, a, 1, lda,
                                                beta,           b, 1, ldb);
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_zgb_acc not implemented for BLAS"
 #endif
 }
 
@@ -1418,7 +1235,7 @@ suzerain_blas_zgb_acc_d(
                                                 alpha, &one, 0, a, 1, lda,
                                                 beta,           b, 1, ldb);
 #else
-#error "Sanity failure"
+#error "Sanity: suzerain_blas_zgb_acc_d not implemented for BLAS"
 #endif
 }
 
@@ -1432,17 +1249,10 @@ suzerain_lapack_sgbtrf(
         const int ldab,
         int *ipiv)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    sgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-           ab, (int*)&ldab, ipiv, &info);
+    LAPACK_FUNC(sgbtrf,SGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
+                               ab, (int*)&ldab, ipiv, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1455,17 +1265,10 @@ suzerain_lapack_dgbtrf(
         const int ldab,
         int *ipiv)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    dgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-           ab, (int*)&ldab, ipiv, &info);
+    LAPACK_FUNC(dgbtrf,DGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
+                               ab, (int*)&ldab, ipiv, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1478,17 +1281,10 @@ suzerain_lapack_cgbtrf(
         const int ldab,
         int *ipiv)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    cgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-           (MKL_Complex8*)ab, (int *)&ldab, ipiv, &info);
+    LAPACK_FUNC(cgbtrf,CGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
+                               (void*)ab, (int *)&ldab, ipiv, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1501,17 +1297,10 @@ suzerain_lapack_zgbtrf(
         const int ldab,
         int *ipiv)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    zgbtrf((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-           (MKL_Complex16*)ab, (int *)&ldab, ipiv, &info);
+    LAPACK_FUNC(zgbtrf,ZGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
+                               (void*)ab, (int *)&ldab, ipiv, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1527,17 +1316,11 @@ suzerain_lapack_sgbtrs(
         float *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    sgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-           (float *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
+    LAPACK_FUNC(sgbtrs,SGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (float *)ab, (int*)&ldab,
+                               (int *)ipiv, b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1553,17 +1336,11 @@ suzerain_lapack_dgbtrs(
         double *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    dgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-           (double *)ab, (int*)&ldab, (int *)ipiv, b, (int*)&ldb, &info);
+    LAPACK_FUNC(dgbtrs,DGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (double *)ab, (int*)&ldab,
+                               (int *)ipiv, b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1579,18 +1356,11 @@ suzerain_lapack_cgbtrs(
         complex_float *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    cgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-           (MKL_Complex8*)ab, (int*)&ldab, (int *)ipiv,
-           (MKL_Complex8*)b,  (int*)&ldb, &info);
+    LAPACK_FUNC(cgbtrs,CGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (void*)ab, (int*)&ldab,
+                               (int *)ipiv, (void*)b,  (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1606,18 +1376,11 @@ suzerain_lapack_zgbtrs(
         complex_double *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    zgbtrs((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-           (MKL_Complex16*)ab, (int*)&ldab, (int *)ipiv,
-           (MKL_Complex16*)b,  (int*)&ldb, &info);
+    LAPACK_FUNC(zgbtrs,ZGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (void*)ab, (int*)&ldab,
+                               (int *)ipiv, (void*)b,  (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1634,18 +1397,11 @@ suzerain_lapack_sgbcon(
         float *work,
         int *iwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    sgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-           (float*)ab, (int*)&ldab, (int*) ipiv, (float*)&anorm,
-           rcond, work, iwork, &info);
+    LAPACK_FUNC(sgbcon,SGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                               (float*)ab, (int*)&ldab, (int*) ipiv,
+                               (float*)&anorm, rcond, work, iwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1662,18 +1418,11 @@ suzerain_lapack_dgbcon(
         double *work,
         int *iwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    dgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-           (double*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
-           rcond, work, iwork, &info);
+    LAPACK_FUNC(dgbcon,DGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                               (double*)ab, (int*)&ldab, (int*) ipiv,
+                               (double*)&anorm, rcond, work, iwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1690,18 +1439,12 @@ suzerain_lapack_cgbcon(
         complex_float *work,
         float  *rwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    cgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-           (MKL_Complex8*)ab, (int*)&ldab, (int*)ipiv, (float*)&anorm,
-           rcond, (MKL_Complex8*)work, rwork, &info);
+    LAPACK_FUNC(cgbcon,CGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                               (void*)ab, (int*)&ldab, (int*)ipiv,
+                               (float*)&anorm, rcond, (void*)work, rwork,
+                               &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1718,18 +1461,12 @@ suzerain_lapack_zgbcon(
         complex_double *work,
         double  *rwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info = 0;
-    zgbcon((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-           (MKL_Complex16*)ab, (int*)&ldab, (int*) ipiv, (double*)&anorm,
-           rcond, (MKL_Complex16*)work, rwork, &info);
+    LAPACK_FUNC(zgbcon,ZGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
+                               (void*)ab, (int*)&ldab, (int*) ipiv,
+                               (double*)&anorm, rcond, (void*)work, rwork,
+                               &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1744,17 +1481,10 @@ suzerain_lapack_sgbsv(
         float *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    sgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
+    LAPACK_FUNC(sgbsv,SGBSV)((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
+                             ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1769,17 +1499,10 @@ suzerain_lapack_dgbsv(
         double *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    dgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
+    LAPACK_FUNC(dgbsv,DGBSV)((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
+                             ab, (int*)&ldab, ipiv, b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1794,18 +1517,11 @@ suzerain_lapack_cgbsv(
         complex_float *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    cgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          (MKL_Complex8*)ab, (int*)&ldab, ipiv,
-          (MKL_Complex8*)b, (int*)&ldb, &info);
+    LAPACK_FUNC(cgbsv,CGBSV)((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
+                             (void*)ab, (int*)&ldab, ipiv,
+                             (void*)b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1820,18 +1536,11 @@ suzerain_lapack_zgbsv(
         complex_double *b,
         const int ldb)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
     zgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          (MKL_Complex16*)ab, (int*)&ldab, ipiv,
-          (MKL_Complex16*)b, (int*)&ldb, &info);
+          (void*)ab, (int*)&ldab, ipiv,
+          (void*)b, (int*)&ldb, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1860,19 +1569,13 @@ suzerain_lapack_sgbsvx(
         float *work,
         int *iwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    sgbsvx((char*)&fact, (char*)&trans,
-           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
-           afb, (int*)&ldafb, ipiv, equed, r, c, b, (int*)&ldb, x,
-           (int*)&ldx, rcond, ferr, berr, work, iwork, &info);
+    LAPACK_FUNC(sgbsvx,SGBSVX)((char*)&fact, (char*)&trans,
+                               (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab,
+                               (int*)&ldab, afb, (int*)&ldafb, ipiv, equed, r,
+                               c, b, (int*)&ldb, x, (int*)&ldx, rcond, ferr,
+                               berr, work, iwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1901,19 +1604,13 @@ suzerain_lapack_dgbsvx(
         double *work,
         int *iwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    dgbsvx((char*)&fact, (char*)&trans,
-           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, ab, (int*)&ldab,
-           afb, (int*)&ldafb, ipiv, equed, r, c, b, (int*)&ldb, x,
-           (int*)&ldx, rcond, ferr, berr, work, iwork, &info);
+    LAPACK_FUNC(dgbsvx,DGBSVX)((char*)&fact, (char*)&trans, (int*)&n,
+                               (int*)&kl, (int*)&ku, (int*)&nrhs, ab,
+                               (int*)&ldab, afb, (int*)&ldafb, ipiv, equed, r,
+                               c, b, (int*)&ldb, x, (int*)&ldx, rcond, ferr,
+                               berr, work, iwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1942,20 +1639,14 @@ suzerain_lapack_cgbsvx(
         complex_float *work,
         float *rwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    cgbsvx((char*)&fact, (char*)&trans,
-           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex8*)ab,
-           (int*)&ldab, (MKL_Complex8*)afb, (int*)&ldafb, ipiv, equed, r,
-           c, (MKL_Complex8*)b, (int*)&ldb, (MKL_Complex8*)x, (int*)&ldx,
-           rcond, ferr, berr, (MKL_Complex8*)work, rwork, &info);
+    LAPACK_FUNC(cgbsvx,CGBSVX)((char*)&fact, (char*)&trans, (int*)&n,
+                               (int*)&kl, (int*)&ku, (int*)&nrhs, (void*)ab,
+                               (int*)&ldab, (void*)afb, (int*)&ldafb, ipiv,
+                               equed, r, c, (void*)b, (int*)&ldb, (void*)x,
+                               (int*)&ldx, rcond, ferr, berr, (void*)work,
+                               rwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline int
@@ -1984,20 +1675,15 @@ suzerain_lapack_zgbsvx(
         complex_double *work,
         double *rwork)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
     int info;
-    zgbsvx((char*)&fact, (char*)&trans,
-           (int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs, (MKL_Complex16*)ab,
-           (int*)&ldab, (MKL_Complex16*)afb, (int*)&ldafb, ipiv, equed, r,
-           c, (MKL_Complex16*)b, (int*)&ldb, (MKL_Complex16*)x, (int*)&ldx,
-           rcond, ferr, berr, (MKL_Complex16*)work, rwork, &info);
+    LAPACK_FUNC(zgbsvx,ZGBSVX)((char*)&fact, (char*)&trans,
+                               (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (void*)ab, (int*)&ldab,
+                               (void*)afb, (int*)&ldafb, ipiv, equed,
+                               r, c, (void*)b, (int*)&ldb, (void*)x,
+                               (int*)&ldx, rcond, ferr, berr, (void*)work,
+                               rwork, &info);
     return info;
-#else
-#error "Sanity failure"
-#endif
 }
 
 inline float
@@ -2010,15 +1696,9 @@ suzerain_lapack_slangb(
         const int ldab,
         float *work)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return slangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                  (float*)ab, (int*)&ldab, work);
-#else
-#error "Sanity failure"
-#endif
+    return LAPACK_FUNC(slangb,SLANGB)((char*)&norm, (int*)&n, (int*)&kl,
+                                      (int*)&ku, (float*)ab, (int*)&ldab,
+                                      work);
 }
 
 inline double
@@ -2031,15 +1711,9 @@ suzerain_lapack_dlangb(
         const int ldab,
         double *work)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return dlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                  (double*)ab, (int*)&ldab, work);
-#else
-#error "Sanity failure"
-#endif
+    return LAPACK_FUNC(dlangb,DLANGB)((char*)&norm, (int*)&n, (int*)&kl,
+                                      (int*)&ku, (double*)ab, (int*)&ldab,
+                                      work);
 }
 
 inline float
@@ -2052,15 +1726,8 @@ suzerain_lapack_clangb(
         const int ldab,
         float *work)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return clangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                  (MKL_Complex8*)ab, (int*)&ldab, work);
-#else
-#error "Sanity failure"
-#endif
+    return LAPACK_FUNC(clangb,CLANGB)((char*)&norm, (int*)&n, (int*)&kl,
+                                      (int*)&ku, (void*)ab, (int*)&ldab, work);
 }
 
 inline double
@@ -2073,15 +1740,8 @@ suzerain_lapack_zlangb(
         const int ldab,
         double *work)
 {
-#ifdef SUZERAIN_HAVE_MKL
-    // Casts away const; MKL LAPACK API does not enforce its logical const-ness
-    // software.intel.com/en-us/forums/intel-math-kernel-library/topic/70025/
-    assert_static(sizeof(MKL_INT) == sizeof(int));
-    return zlangb((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                  (MKL_Complex16*)ab, (int*)&ldab, work);
-#else
-#error "Sanity failure"
-#endif
+    return LAPACK_FUNC(zlangb,ZLANGB)((char*)&norm, (int*)&n, (int*)&kl,
+                                      (int*)&ku, (void*)ab, (int*)&ldab, work);
 }
 
 void
@@ -2098,7 +1758,6 @@ suzerain_blas_csbmv_s_c_external(
         complex_float *y,
         const int incy)
 {
-    assert_static(sizeof(float*) == sizeof(complex_float*));
     float *x_re, *y_re;
     memcpy(&x_re, &x, sizeof(x));
     memcpy(&y_re, &y, sizeof(y));
@@ -2151,7 +1810,6 @@ suzerain_blas_zsbmv_d_z_external(
         complex_double *y,
         const int incy)
 {
-    assert_static(sizeof(double*) == sizeof(complex_double*));
     double *x_re, *y_re;
     memcpy(&x_re, &x, sizeof(x));
     memcpy(&y_re, &y, sizeof(y));
