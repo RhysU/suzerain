@@ -791,6 +791,40 @@ suzerain_blas_zgbmv_d_z(
         complex_double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_sgbmv */
+int
+suzerain_blas_cgbmv_s_s(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sgbmv */
+int
+suzerain_blas_zgbmv_d_d(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$
  * for symmetric \f$ A \f$ using an external BLAS's sbmv.
@@ -936,6 +970,35 @@ suzerain_blas_zsbmv_d_z(
         complex_double *y,
         const int incy);
 
+/*! \copydoc suzerain_blas_ssbmv */
+int
+suzerain_blas_csbmv_s_s(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_float alpha,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_csbmv_s_s */
+int
+suzerain_blas_zsbmv_d_d(
+        const char uplo,
+        const int n,
+        const int k,
+        const complex_double alpha,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
 
 /*!
  * \brief Compute \f$ B \leftarrow{} \alpha{}A + \beta{}B \f$ using
@@ -1770,6 +1833,48 @@ suzerain_blasext_zgbdmv_d_z(
         const int incy);
 
 /*!
+ * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$, \f$A\f$,
+ * and \f$x\f$.
+ *
+ * \copydetails suzerain_blasext_sgbdmv
+ */
+int
+suzerain_blasext_cgbdmv_s_s(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const float *d,
+        const int ldd,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blasext_cgbdmv_s_s */
+int
+suzerain_blasext_zgbdmv_d_d(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const double *d,
+        const int ldd,
+        const double *a,
+        const int lda,
+        const double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
  * D_1\right) A x + \beta{} y \f$ using an external BLAS.
  *
@@ -1956,6 +2061,54 @@ suzerain_blasext_zgbddmv_d_z(
         const double *a,
         const int lda,
         const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1}
+ * D_1\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$, \f$\beta\f$, and
+ * \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_blasext_sgbddmv
+ */
+int
+suzerain_blasext_cgbddmv_s_s(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blasext_cgbddmv_s_s */
+int
+suzerain_blasext_zgbddmv_d_d(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const double *a,
+        const int lda,
+        const double *x,
         const int incx,
         const complex_double beta,
         complex_double *y,
@@ -2173,6 +2326,61 @@ suzerain_blasext_zgbdddmv_d_z(
         const double *a,
         const int lda,
         const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2\right) A x + \beta{} y \f$ for complex \f$\alpha{}\f$,
+ * \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$, \f$D_1\f$, \f$D_2\f$,
+ * \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_blasext_sgbdddmv
+ */
+int
+suzerain_blasext_cgbdddmv_s_s(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blasext_cgbdddmv_s_s */
+int
+suzerain_blasext_zgbdddmv_d_d(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const double *a,
+        const int lda,
+        const double *x,
         const int incx,
         const complex_double beta,
         complex_double *y,
@@ -2415,6 +2623,67 @@ suzerain_blasext_zgbddddmv_d_z(
         const double *a,
         const int lda,
         const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2 + \alpha_{3} D_3 \right) A x + \beta{} y \f$ for complex
+ * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D_0\f$,
+ * \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_blasext_sgbddddmv
+ */
+int
+suzerain_blasext_cgbddddmv_s_s(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const complex_float alpha3,
+        const float *d3,
+        const int ldd3,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blasext_cgbddddmv_s_s */
+int
+suzerain_blasext_zgbddddmv_d_d(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        const int ldd3,
+        const double *a,
+        const int lda,
+        const double *x,
         const int incx,
         const complex_double beta,
         complex_double *y,
@@ -2684,6 +2953,73 @@ suzerain_blasext_zgbdddddmv_d_z(
         const double *a,
         const int lda,
         const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*!
+ * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1 +
+ * \alpha_{2} D_2 + \alpha_{3} D_3 + \alpha_{4} D_4 \right) A x + \beta{} y \f$
+ * for complex \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued
+ * \f$D_0\f$, \f$D_1\f$, \f$D_2\f$, \f$D_3\f$, \f$D_4\f$, \f$A\f$, and \f$x\f$.
+ *
+ * \copydetails suzerain_blasext_sgbdddddmv
+ */
+int
+suzerain_blasext_cgbdddddmv_s_s(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha0,
+        const float *d0,
+        const int ldd0,
+        const complex_float alpha1,
+        const float *d1,
+        const int ldd1,
+        const complex_float alpha2,
+        const float *d2,
+        const int ldd2,
+        const complex_float alpha3,
+        const float *d3,
+        const int ldd3,
+        const complex_float alpha4,
+        const float *d4,
+        const int ldd4,
+        const float *a,
+        const int lda,
+        const float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blasext_cgbdddddmv_s_s */
+int
+suzerain_blasext_zgbdddddmv_d_d(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha0,
+        const double *d0,
+        const int ldd0,
+        const complex_double alpha1,
+        const double *d1,
+        const int ldd1,
+        const complex_double alpha2,
+        const double *d2,
+        const int ldd2,
+        const complex_double alpha3,
+        const double *d3,
+        const int ldd3,
+        const complex_double alpha4,
+        const double *d4,
+        const int ldd4,
+        const double *a,
+        const int lda,
+        const double *x,
         const int incx,
         const complex_double beta,
         complex_double *y,
