@@ -233,7 +233,7 @@ static void test_gbmv_dzz(const gbmzv_tc_type& t)
 
 static void test_gbmv_ssc(const gbmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*200;
+    const float close_enough = numeric_limits<float>::epsilon(); // Precise!
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
@@ -273,7 +273,7 @@ static void test_gbmv_ssc(const gbmzv_tc_type& t)
 
 static void test_gbmv_ddz(const gbmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*250;
+    const double close_enough = numeric_limits<double>::epsilon(); // Precise!
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);

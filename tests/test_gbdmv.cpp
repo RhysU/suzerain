@@ -253,7 +253,7 @@ static void test_gbdmv_dzz(const gbdmzv_tc_type& t)
 
 static void test_gbdmv_ssc(const gbdmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*2500;
+    const float close_enough = numeric_limits<float>::epsilon(); // Precise!
     const float inv_rand_max = float(1) / RAND_MAX;
     const int lend = t.ldd * t.n;
     const int lena = t.lda * t.n;
@@ -298,7 +298,7 @@ static void test_gbdmv_ssc(const gbdmzv_tc_type& t)
 
 static void test_gbdmv_ddz(const gbdmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*10000;
+    const double close_enough = numeric_limits<double>::epsilon(); // Precise!
     const double inv_rand_max = double(1) / RAND_MAX;
     const int lend = t.ldd * t.n;
     const int lena = t.lda * t.n;
