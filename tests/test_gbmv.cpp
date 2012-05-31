@@ -16,6 +16,9 @@ using boost::unit_test::make_test_case;
 using std::numeric_limits;
 using std::size_t;
 
+// I said button yer lip Mugsy.
+#pragma warning(disable:1418 1572)
+
 // Test suzerain_gbmv_?  against suzerain_blas_*gbmv_external
 // Test suzerain_gbmv_?? against suzerain_blasext_?gbmzv_external
 // Idea behind testing is that matching the BLAS is goodness
@@ -228,6 +231,86 @@ static void test_gbmv_dzz(const gbmzv_tc_type& t)
                             close_enough);
 }
 
+static void test_gbmv_ssc(const gbmzv_tc_type& t)
+{
+    const float close_enough = numeric_limits<float>::epsilon()*t.m*t.n*200;
+    const float inv_rand_max = float(1) / RAND_MAX;
+    const int lena = t.lda * t.n;
+    const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
+    const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
+
+    // Allocate random data for testing purposes
+    boost::scoped_array<float> a(new float[lena]);
+    boost::scoped_array<float> x(new float[lenx]);
+    boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
+    for (int i = 0; i < lena; ++i) a[i] = random() * inv_rand_max;
+    for (int i = 0; i < lenx; ++i) x[i] = random() * inv_rand_max;
+    for (int i = 0; i < leny; ++i) e[i] = y[i] = random() * inv_rand_max;
+
+    // Set Im(x) = 0 to allow comparing scc and ssc variants for equivalence
+    for (int i = 0; i < lenx/2/abs(t.incx); ++i) x[2*i*abs(t.incx)+1] = 0;
+
+    // Get appropriately typed alpha and beta constants
+    const complex_float alpha(t.alpha[0], t.alpha[1]);
+    const complex_float beta( t.beta[0],  t.beta[1]);
+
+    // Compute expected result using scc implementation
+    suzerain_blas_cgbmv_s_c(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda, (complex_float *) x.get(), t.incx,
+            beta,                  (complex_float *) e.get(), t.incy);
+
+    // Compute observed result using a different mixed precision implementation
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_ssc(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda,                   x.get(), 2*t.incx,
+            beta,                  (complex_float *) y.get(),   t.incy));
+
+    check_close_collections(e.get(), e.get() + leny,
+                            y.get(), y.get() + leny,
+                            close_enough);
+}
+
+static void test_gbmv_ddz(const gbmzv_tc_type& t)
+{
+    const double close_enough = numeric_limits<double>::epsilon()*t.m*t.n*250;
+    const double inv_rand_max = double(1) / RAND_MAX;
+    const int lena = t.lda * t.n;
+    const int lenx = 2 * abs(t.incx) * (toupper(t.trans) == 'N' ? t.n : t.m);
+    const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
+
+    // Allocate random data for testing purposes
+    boost::scoped_array<double> a(new double[lena]);
+    boost::scoped_array<double> x(new double[lenx]);
+    boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
+    for (int i = 0; i < lena; ++i) a[i] = random() * inv_rand_max;
+    for (int i = 0; i < lenx; ++i) x[i] = random() * inv_rand_max;
+    for (int i = 0; i < leny; ++i) e[i] = y[i] = random() * inv_rand_max;
+
+    // Set Im(x) = 0 to allow comparing dzz and ddz variants for equivalence
+    for (int i = 0; i < lenx/2/abs(t.incx); ++i) x[2*i*abs(t.incx)+1] = 0;
+
+    // Get appropriately typed alpha and beta constants
+    const complex_double alpha(t.alpha[0], t.alpha[1]);
+    const complex_double beta( t.beta[0],  t.beta[1]);
+
+    // Compute expected result using dzz implementation
+    suzerain_blas_zgbmv_d_z(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda, (complex_double *) x.get(), t.incx,
+            beta,                  (complex_double *) e.get(), t.incy);
+
+    // Compute observed result using a different mixed precision implementation
+    BOOST_REQUIRE_EQUAL(0, suzerain_gbmv_ddz(
+            t.trans, t.m, t.n, t.kl, t.ku,
+            alpha, a.get(), t.lda,                    x.get(), 2*t.incx,
+            beta,                  (complex_double *) y.get(),   t.incy));
+
+    check_close_collections(e.get(), e.get() + leny,
+                            y.get(), y.get() + leny,
+                            close_enough);
+}
+
 #ifdef BOOST_TEST_ALTERNATIVE_INIT_API
 bool init_unit_test_suite() {
 #else
@@ -422,7 +505,7 @@ bool init_unit_test_suite() {
                 &test_gbmv_d, name.str(), gbmv_tc + i, gbmv_tc + i + 1));
     }
 
-    // Register test_gbmv_scc cases
+    // Register test_gbmv_scc and test_gbmv_ssc cases
     for (size_t i = 0; i < gcases; ++i) {
 
         gbmzv_tc_type c(gbmv_tc[i]);
@@ -432,6 +515,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " real " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_scc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ssc, name.str(), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
@@ -441,6 +526,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " imag " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_scc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ssc, name.str(), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
@@ -450,10 +537,12 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " complex " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_scc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ssc, name.str(), &c, &c + 1));
         }
     }
 
-    // Register test_gbmv_dzz cases
+    // Register test_gbmv_dzz and test_gbmv_ddz cases
     for (size_t i = 0; i < gcases; ++i) {
 
         gbmzv_tc_type c(gbmv_tc[i]);
@@ -463,6 +552,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " real " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_dzz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ddz, name.str(), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
@@ -472,6 +563,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " imag " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_dzz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ddz, name.str(), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
@@ -481,6 +574,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " complex " << c;
             master_test_suite().add(make_test_case(
                     &test_gbmv_dzz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(
+                    &test_gbmv_ddz, name.str(), &c, &c + 1));
         }
     }
 
@@ -584,7 +679,7 @@ bool init_unit_test_suite() {
                         &test_gbmv_d, name.str(), &r, &r + 1));
             }
 
-            { // Register test_gbmv_scc cases
+            { // Register test_gbmv_scc and test_gbmv_ssc cases
                 gbmzv_tc_type c(r);
 
                 { // Real-valued alpha, beta
@@ -592,6 +687,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " real " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_scc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ssc, name.str(), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
@@ -601,6 +698,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " imag " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_scc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ssc, name.str(), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
@@ -610,6 +709,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_scc) << " complex " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_scc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ssc, name.str(), &c, &c + 1));
                 }
             }
 
@@ -621,6 +722,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " real " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_dzz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ddz, name.str(), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
@@ -630,6 +733,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " imag " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_dzz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ddz, name.str(), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
@@ -639,6 +744,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbmv_dzz) << " complex " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbmv_dzz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(
+                            &test_gbmv_ddz, name.str(), &c, &c + 1));
                 }
             }
 
