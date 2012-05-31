@@ -101,6 +101,8 @@ suzerain_blas_free(void *ptr);
 /*! @} */
 
 /*! \name BLAS level 1 operations
+ *
+ * \see A BLAS reference for more details.
  * @{
  */
 
@@ -112,8 +114,6 @@ suzerain_blas_free(void *ptr);
  * \param incx Source vector stride.
  * \param y Target vector.
  * \param incy Target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_sswap(
@@ -158,8 +158,6 @@ suzerain_blas_zswap(
  * \param incx Source vector stride.
  * \param y Target vector.
  * \param incy Target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_scopy(
@@ -206,8 +204,6 @@ suzerain_blas_zcopy(
  * \param incy Second source vector stride.
  *
  * \return \f$ x \cdot{} y \f$.
- *
- * \see A BLAS reference for more details.
  */
 float
 suzerain_blas_sdot(
@@ -235,8 +231,6 @@ suzerain_blas_ddot(
  * \param[in]  y Second source vector.
  * \param[in]  incy Second source vector stride.
  * \param[out] dotc The complex-valued result \f$ x \cdot{} y \f$.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_cdotc(
@@ -265,8 +259,6 @@ suzerain_blas_zdotc(
  * \param incx Source vector stride.
  *
  * \return \f$ \left|\left| x \right|\right|_{2} \f$
- *
- * \see A BLAS reference for more details.
  */
 float
 suzerain_blas_snrm2(
@@ -303,8 +295,6 @@ suzerain_blas_dznrm2(
  * \param incx Source vector stride.
  *
  * \return \f$ \left|\left| x \right|\right|_{1} \f$
- *
- * \see A BLAS reference for more details.
  */
 float
 suzerain_blas_sasum(
@@ -343,8 +333,6 @@ suzerain_blas_dzasum(
  * \param incx Source vector stride.
  *
  * \return Zero-indexed \f$i\f$ on success.  On nonpositive \c n returns -1.
- *
- * \see A BLAS reference for more details.
  */
 int
 suzerain_blas_isamax(
@@ -389,8 +377,6 @@ suzerain_blas_izamax(
  * \param incx Source vector stride.
  *
  * \return Zero-indexed \f$i\f$ on success.  On nonpositive \c n returns -1.
- *
- * \see A BLAS reference for more details.
  */
 int
 suzerain_blas_isamin(
@@ -434,8 +420,6 @@ suzerain_blas_izamin(
  * \param incx First source vector stride.
  * \param y Second source vector and target vector.
  * \param incy Second source vector and target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_saxpy(
@@ -499,8 +483,6 @@ suzerain_blas_zaxpy_d(
  * \param beta Multiplicative scalar \f$ \beta \f$
  * \param y Second source vector and target vector.
  * \param incy Second source vector and target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_saxpby(
@@ -571,8 +553,6 @@ suzerain_blas_zaxpby_d(
  * \param incy Second source vector.
  * \param w Target vector.
  * \param incw Target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_swaxpby(
@@ -607,8 +587,6 @@ suzerain_blas_dwaxpby(
  * \param alpha Multiplicative scalar \f$ \alpha \f$
  * \param x Source and target vector.
  * \param incx Source and target vector stride.
- *
- * \see A BLAS reference for more details.
  */
 void
 suzerain_blas_sscal(
@@ -644,6 +622,8 @@ suzerain_blas_zscal(
 /*! @} */
 
 /*! \name BLAS level 2 operations
+ *
+ * \see A BLAS reference for more details.
  * @{
  */
 
@@ -668,8 +648,7 @@ suzerain_blas_zscal(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y.
  *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  */
 void
 suzerain_blas_sgbmv_external(
@@ -829,8 +808,7 @@ suzerain_blas_zgbmv_d_z(
  * \param y Vector to be added to product and to contain result.
  * \param incy Stride of vector \c y.
  *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  */
 void
 suzerain_blas_ssbmv_external(
@@ -978,8 +956,7 @@ suzerain_blas_zsbmv_d_z(
  * \param b General band storage of the matrix \f$ B \f$.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  */
 int
 suzerain_blas_sgb_acc(
@@ -1054,12 +1031,16 @@ suzerain_blas_zgb_acc_d(
 /*! @} */
 
 /*! \name BLAS level 3 operations
+ *
+ * \see A BLAS reference for more details.
  * @{
  */
 
 /*! @} */
 
 /*! \name LAPACK operations
+ *
+ * \see A LAPACK reference for more details.
  * @{
  */
 
@@ -1083,9 +1064,8 @@ suzerain_blas_zgb_acc_d(
  *
  * \see gbtrs for how to solve a linear system
  *      once you have decomposed the matrix.
- * \see A LAPACK reference for more details, especially for the
- *      <tt>lda >= 2*kl + ku + 1</tt> storage requirement and the resulting
- *      factored storage format.
+ * \see A LAPACK reference for the <tt>lda >= 2*kl + ku + 1</tt> storage
+ *      requirement and the resulting factored storage format.
  */
 int
 suzerain_lapack_sgbtrf(
@@ -1155,7 +1135,6 @@ suzerain_lapack_zgbtrf(
  * \return Zero on successful execution.  Nonzero otherwise.
  *
  * \see gbtrf for how to decompose the matrix \f$ A \f$.
- * \see A LAPACK reference for more details.
  */
 int
 suzerain_lapack_sgbtrs(
@@ -1237,7 +1216,6 @@ suzerain_lapack_zgbtrs(
  * \return Zero on successful execution.  Nonzero otherwise.
  *
  * \see gbtrf for how to decompose the matrix \f$ A \f$.
- * \see A LAPACK reference for more details.
  */
 int
 suzerain_lapack_sgbcon(
@@ -1293,7 +1271,6 @@ suzerain_lapack_dgbcon(
  * \return Zero on successful execution.  Nonzero otherwise.
  *
  * \see gbtrf for how to decompose the matrix \f$ A \f$.
- * \see A LAPACK reference for more details.
  */
 int
 suzerain_lapack_cgbcon(
@@ -1339,8 +1316,6 @@ suzerain_lapack_zgbcon(
  * \param[in]     ldb   Minimum \c n
  *
  * \return Zero on successful execution.  Nonzero otherwise.
- *
- * \see A LAPACK reference for the details.
  */
 int
 suzerain_lapack_sgbsv(
@@ -1423,8 +1398,6 @@ suzerain_lapack_zgbsv(
  * \param[out]    iwork Dimension \c n
  *
  * \return Zero on successful execution.  Nonzero otherwise.
- *
- * \see A LAPACK reference for the details.
  */
 int
 suzerain_lapack_sgbsvx(
@@ -1509,8 +1482,6 @@ suzerain_lapack_dgbsvx(
  * \param[out]    rwork Dimension \c n
  *
  * \return Zero on successful execution.  Nonzero otherwise.
- *
- * \see A LAPACK reference for the details.
  */
 int
 suzerain_lapack_cgbsvx(
@@ -1568,8 +1539,6 @@ suzerain_lapack_zgbsvx(
 /*!
  * \brief Compute the one norm, or the Frobenius norm, or the infinity
  * norm, or the element of largest absolute value of square band matrix.
- *
- * \see A LAPACK reference for more details.
  */
 float
 suzerain_lapack_slangb(
@@ -1617,8 +1586,9 @@ suzerain_lapack_zlangb(
 /*! @} */
 
 /*! \name BLAS-like extensions
- * These are extensions built atop the BLAS, on vendor-specific BLAS-like routines,
- * and/or on custom coded loops.
+ * These are extensions built atop the BLAS, on vendor-specific BLAS-like
+ * routines, and/or on custom coded loops.  Some of these extensions resemble
+ * those found in the <a href="http://www.netlib.org/xblas/">XBLAS</a>.
  *
  * Some of these extensions refer to interleaved versus split complex storage.
  * Interleaved complex storage stores the imaginary component immediately after
@@ -2881,7 +2851,7 @@ suzerain_blasext_zgb_diag_scale_acc_d(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for banded matrix storage requirements.
+ * \see A BLAS reference for general banded matrix storage requirements.
  */
 int
 suzerain_blasext_zgb_ddiag_scale_acc_d(
@@ -2940,7 +2910,7 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for banded matrix storage requirements.
+ * \see A BLAS reference for general banded matrix storage requirements.
  */
 int
 suzerain_blasext_zgb_dddiag_scale_acc_d(
@@ -3005,7 +2975,7 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for banded matrix storage requirements.
+ * \see A BLAS reference for general banded matrix storage requirements.
  */
 int
 suzerain_blasext_zgb_ddddiag_scale_acc_d(
@@ -3077,7 +3047,7 @@ suzerain_blasext_zgb_ddddiag_scale_acc_d(
  * \param incb Strictly positive stride between values in \c b.
  * \param ldb Leading dimension of \c b.
  *
- * \see A BLAS reference for banded matrix storage requirements.
+ * \see A BLAS reference for general banded matrix storage requirements.
  */
 int
 suzerain_blasext_zgb_dddddiag_scale_acc_d(
@@ -3173,8 +3143,7 @@ suzerain_blasext_i2s_zaxpby2(
  * \param lda Leading dimension of \c a.
  * \param norm1 The one norm of the matrix.
  *
- * \see A BLAS reference for more details, especially for general
- *      band matrix storage requirements.
+ * \see A BLAS reference for general band matrix storage requirements.
  *
  * \return Zero on successful execution.  Nonzero otherwise.
  */
