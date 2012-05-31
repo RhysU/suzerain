@@ -412,9 +412,6 @@ static void test_gbdddddmv_ssc(const gbdddddmzv_tc_type& t)
     for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
     for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
-    // Set Im(x) = 0 to allow comparing scc and ssc variants for equivalence
-    for (int i = 0; i < lenx/2/abs(t.incx); ++i) x[2*i*abs(t.incx)+1] = 0;
-
     // Get appropriately typed alpha and beta constants
     const complex_float alpha0( t.alpha0[0], t.alpha0[1] );
     const complex_float alpha1( t.alpha1[0], t.alpha1[1] );
@@ -423,7 +420,10 @@ static void test_gbdddddmv_ssc(const gbdddddmzv_tc_type& t)
     const complex_float alpha4( t.alpha4[0], t.alpha4[1] );
     const complex_float beta  ( t.beta[0],   t.beta[1]  );
 
-    // Compute expected result using scc implementation
+    // Compute expected result using scc implementation with Im(x) = 0
+    for (int i = 0; i < t.n; i++) {
+        x[2*i*abs(t.incx)+1] = 0;
+    }
     suzerain_blasext_cgbdddddmv_s_c(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), t.ldd0,
@@ -434,7 +434,10 @@ static void test_gbdddddmv_ssc(const gbdddddmzv_tc_type& t)
             a.get(), t.lda, (const complex_float *) x.get(), t.incx,
             beta,           (      complex_float *) e.get(), t.incy);
 
-    // Compute observed result using a different mixed precision implementation
+    // Compute observed result using ssc with a poisoned Im(x) = NaN
+    for (int i = 0; i < t.n; i++) {
+        x[2*i*abs(t.incx)+1] = std::numeric_limits<float>::quiet_NaN();
+    }
     BOOST_REQUIRE_EQUAL(0, suzerain_blasext_cgbdddddmv_s_s(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), t.ldd0,
@@ -481,9 +484,6 @@ static void test_gbdddddmv_ddz(const gbdddddmzv_tc_type& t)
     for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
     for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
 
-    // Set Im(x) = 0 to allow comparing dzz and ddz variants for equivalence
-    for (int i = 0; i < lenx/2/abs(t.incx); ++i) x[2*i*abs(t.incx)+1] = 0;
-
     // Get appropriately typed alpha and beta constants
     const complex_double alpha0( t.alpha0[0], t.alpha0[1] );
     const complex_double alpha1( t.alpha1[0], t.alpha1[1] );
@@ -492,7 +492,10 @@ static void test_gbdddddmv_ddz(const gbdddddmzv_tc_type& t)
     const complex_double alpha4( t.alpha4[0], t.alpha4[1] );
     const complex_double beta  ( t.beta[0],   t.beta[1]  );
 
-    // Compute expected result using dzz implementation
+    // Compute expected result using dzz implementation with Im(x) = 0
+    for (int i = 0; i < t.n; i++) {
+        x[2*i*abs(t.incx)+1] = 0;
+    }
     suzerain_blasext_zgbdddddmv_d_z(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), t.ldd0,
@@ -503,7 +506,10 @@ static void test_gbdddddmv_ddz(const gbdddddmzv_tc_type& t)
             a.get(), t.lda, (const complex_double *) x.get(), t.incx,
             beta,           (      complex_double *) e.get(), t.incy);
 
-    // Compute observed result using a different mixed precision implementation
+    // Compute observed result using ddz with a poisoned Im(x) = NaN
+    for (int i = 0; i < t.n; i++) {
+        x[2*i*abs(t.incx)+1] = std::numeric_limits<double>::quiet_NaN();
+    }
     BOOST_REQUIRE_EQUAL(0, suzerain_blasext_zgbdddddmv_d_d(
             t.trans, t.n, t.kl, t.ku,
             alpha0, d0.get(), t.ldd0,
