@@ -28,6 +28,19 @@
 extern "C" {
 #endif
 
+/**
+ * Call <a
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Setting-up-your-IEEE-environment.html">
+ * gsl_ieee_env_setup()</a> in an MPI-friendly way.  Processes with nonzero
+ * rank will have their \c stdout and \c stderr redirected to
+ * <tt>/dev/null</tt> during \c gsl_ieee_env_setup.
+ *
+ * @param rank MPI rank of this process.  Output from \c gsl_ieee_env_setup
+ *             will only be observable from rank zero.
+ */
+void
+mpi_gsl_ieee_env_setup(const int rank);
+
 // gsl_integration_glfixed in GSL 1.14 but
 // gsl_integration_glfixed_point is 1.14+ so build it atop 1.14's public API
 // FIXME: Remove this logic once GSL 1.15 becomes widespread

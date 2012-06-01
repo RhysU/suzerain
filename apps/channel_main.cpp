@@ -36,11 +36,12 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
-#include <suzerain/statistics_definition.hpp>
 #include <suzerain/signal_definition.hpp>
+#include <suzerain/statistics_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/version.hpp>
@@ -991,6 +992,10 @@ int main(int argc, char **argv)
                   << scenario.bulk_rhou);
         }
     }
+
+    // Modify IEEE settings after startup complete as startup relies on NaNs
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
     assert(b->k() == grid.k);

@@ -19,6 +19,7 @@
 #include <esio/esio.h>
 #include <suzerain/bspline.hpp>
 #include <suzerain/math.hpp>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
 
@@ -77,6 +78,10 @@ int main(int argc, char **argv)
             return EXIT_FAILURE;
         }
     }
+
+    // Modify IEEE settings after startup complete as startup relies on NaNs
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     Eigen::VectorXr  exp(N);
     exp.setZero(N, 1);

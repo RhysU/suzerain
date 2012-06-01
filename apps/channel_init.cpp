@@ -17,12 +17,13 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <boost/math/special_functions/gamma.hpp>
-#include <esio/esio.h>
 #include <esio/error.h>
+#include <esio/esio.h>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
@@ -261,6 +262,10 @@ int main(int argc, char **argv)
     } else {
         msoln.reset();
     }
+
+    // Modify IEEE settings after startup complete as startup relies on NaNs
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));

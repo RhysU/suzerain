@@ -22,6 +22,7 @@
 #include <esio/esio.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/program_options.hpp>
 
 #include "logging.hpp"
@@ -349,6 +350,9 @@ int main(int argc, char **argv)
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
     logging::initialize(MPI_COMM_WORLD,             // Initialize logging
                         channel::log4cxx_config_console);
+
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     // Process incoming arguments
     std::vector<std::string> restart_files;

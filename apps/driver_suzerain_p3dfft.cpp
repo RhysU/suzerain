@@ -19,11 +19,12 @@
 #include <fftw3.h>
 #include <p3dfft_d.h>
 #include <suzerain/fftw.hpp>
+#include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
-#include <suzerain/grid_definition.hpp>
 #include <suzerain/program_options.hpp>
 #include "logging.hpp"
 
@@ -48,6 +49,9 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                   // Initialize MPI on startup
     atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
     logging::initialize(MPI_COMM_WORLD);      // Initialize logging
+
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     // Process command line options
     suzerain::ProgramOptions options(
