@@ -6,10 +6,14 @@
 #include <suzerain/gbddmv.h>
 #include <boost/test/parameterized_test.hpp>
 #include <boost/test/unit_test.hpp>
+#include <gsl/gsl_ieee_utils.h>
+#include <gsl/gsl_rng.h>
 #include <suzerain/blas_et_al.h>
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
+
+static gsl_rng * rng;  // Managed within main()
 
 using boost::unit_test::framework::master_test_suite;
 using boost::unit_test::make_test_case;
@@ -100,7 +104,6 @@ std::basic_ostream<charT,traits>& operator<<(
 static void test_gbddmv_s(const gbddmv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*15;
-    const float inv_rand_max = float(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda  * t.n;
@@ -113,11 +116,11 @@ static void test_gbddmv_s(const gbddmv_tc_type& t)
     boost::scoped_array<float> a(new float[lena]);
     boost::scoped_array<float> x(new float[lenx]);
     boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Get appropriately typed alpha and beta constants
     const float alpha0 = (float) t.alpha0;
@@ -146,7 +149,6 @@ static void test_gbddmv_s(const gbddmv_tc_type& t)
 static void test_gbddmv_d(const gbddmv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*15;
-    const double inv_rand_max = double(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda  * t.n;
@@ -159,11 +161,11 @@ static void test_gbddmv_d(const gbddmv_tc_type& t)
     boost::scoped_array<double> a(new double[lena]);
     boost::scoped_array<double> x(new double[lenx]);
     boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Compute expected result using external BLAS
     suzerain_blasext_dgbddmv_external(
@@ -187,7 +189,6 @@ static void test_gbddmv_d(const gbddmv_tc_type& t)
 static void test_gbddmv_scc(const gbddmzv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*2500;
-    const float inv_rand_max = float(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda  * t.n;
@@ -200,11 +201,11 @@ static void test_gbddmv_scc(const gbddmzv_tc_type& t)
     boost::scoped_array<float> a(new float[lena]);
     boost::scoped_array<float> x(new float[lenx]);
     boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Get appropriately typed alpha and beta constants
     const complex_float alpha0( t.alpha0[0], t.alpha0[1] );
@@ -233,7 +234,6 @@ static void test_gbddmv_scc(const gbddmzv_tc_type& t)
 static void test_gbddmv_dzz(const gbddmzv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*5000;
-    const double inv_rand_max = double(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda * t.n;
@@ -246,11 +246,11 @@ static void test_gbddmv_dzz(const gbddmzv_tc_type& t)
     boost::scoped_array<double> a(new double[lena]);
     boost::scoped_array<double> x(new double[lenx]);
     boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Get appropriately typed alpha and beta constants
     const complex_double alpha0( t.alpha0[0], t.alpha0[1] );
@@ -279,7 +279,6 @@ static void test_gbddmv_dzz(const gbddmzv_tc_type& t)
 static void test_gbddmv_ssc(const gbddmzv_tc_type& t)
 {
     const float close_enough = numeric_limits<float>::epsilon(); // Precise!
-    const float inv_rand_max = float(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda  * t.n;
@@ -292,11 +291,11 @@ static void test_gbddmv_ssc(const gbddmzv_tc_type& t)
     boost::scoped_array<float> a(new float[lena]);
     boost::scoped_array<float> x(new float[lenx]);
     boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Get appropriately typed alpha and beta constants
     const complex_float alpha0( t.alpha0[0], t.alpha0[1] );
@@ -331,7 +330,6 @@ static void test_gbddmv_ssc(const gbddmzv_tc_type& t)
 static void test_gbddmv_ddz(const gbddmzv_tc_type& t)
 {
     const double close_enough = numeric_limits<double>::epsilon(); // Precise!
-    const double inv_rand_max = double(1) / RAND_MAX;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lena  = t.lda * t.n;
@@ -344,11 +342,11 @@ static void test_gbddmv_ddz(const gbddmzv_tc_type& t)
     boost::scoped_array<double> a(new double[lena]);
     boost::scoped_array<double> x(new double[lenx]);
     boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
-    for (int i = 0; i < lend0; ++i) d0[i] = random() * inv_rand_max;
-    for (int i = 0; i < lend1; ++i) d1[i] = random() * inv_rand_max;
-    for (int i = 0; i < lena;  ++i) a[i]  = random() * inv_rand_max;
-    for (int i = 0; i < lenx;  ++i) x[i]  = random() * inv_rand_max;
-    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = random() * inv_rand_max;
+    for (int i = 0; i < lend0; ++i) d0[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lend1; ++i) d1[i] = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lena;  ++i) a[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < lenx;  ++i) x[i]  = gsl_rng_uniform_pos(rng);
+    for (int i = 0; i < leny;  ++i) e[i]  = y[i] = gsl_rng_uniform_pos(rng);
 
     // Get appropriately typed alpha and beta constants
     const complex_double alpha0( t.alpha0[0], t.alpha0[1] );
@@ -775,5 +773,10 @@ bool init_unit_test_suite() {
 
 int main( int argc, char* argv[] )
 {
-    return ::boost::unit_test::unit_test_main( &init_unit_test_suite, argc, argv );
+    gsl_ieee_env_setup();
+    if (!(rng = gsl_rng_alloc(gsl_rng_env_setup()))) return 1;
+    const int retval = ::boost::unit_test::unit_test_main(
+            &init_unit_test_suite, argc, argv);
+    gsl_rng_free(rng);
+    return retval;
 }
