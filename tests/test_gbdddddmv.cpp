@@ -384,7 +384,7 @@ static void test_gbdddddmv_dzz(const gbdddddmzv_tc_type& t)
 
 static void test_gbdddddmv_ssc(const gbdddddmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon();  // Precise!
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*25000;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lend2 = t.ldd2 * t.n;
@@ -455,7 +455,7 @@ static void test_gbdddddmv_ssc(const gbdddddmzv_tc_type& t)
 
 static void test_gbdddddmv_ddz(const gbdddddmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon();  // Precise!
+    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*25000;
     const int lend0 = t.ldd0 * t.n;
     const int lend1 = t.ldd1 * t.n;
     const int lend2 = t.ldd2 * t.n;

@@ -286,7 +286,7 @@ static void test_sbmv_dzz(const sbmzv_tc_type& t)
 
 static void test_sbmv_ssc(const sbmzv_tc_type& t)
 {
-    const float close_enough = numeric_limits<float>::epsilon(); // Precise!
+    const float close_enough = numeric_limits<float>::epsilon()*t.n*t.n*10;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * t.n;
     const int leny = 2 * abs(t.incy) * t.n;
@@ -328,7 +328,7 @@ static void test_sbmv_ssc(const sbmzv_tc_type& t)
 
 static void test_sbmv_ddz(const sbmzv_tc_type& t)
 {
-    const double close_enough = numeric_limits<double>::epsilon(); // Precise!
+    const double close_enough = numeric_limits<double>::epsilon()*t.n*t.n*10;
     const int lena = t.lda * t.n;
     const int lenx = 2 * abs(t.incx) * t.n;
     const int leny = 2 * abs(t.incy) * t.n;
