@@ -48,34 +48,34 @@ STATIC int FUNCTION(
     trans = toupper(trans);  // Simplifies case-insensitive checks
 
     // Test the input parameters
-    if (trans != 'N' && trans != 'T' && trans != 'C') {
+    if (SUZERAIN_UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
         return 1;
-    } else if (n < 0) {
+    } else if (SUZERAIN_UNLIKELY(n < 0)) {
         return 2;
-    } else if (kl < 0) {
+    } else if (SUZERAIN_UNLIKELY(kl < 0)) {
         return 3;
-    } else if (ku < 0) {
+    } else if (SUZERAIN_UNLIKELY(ku < 0)) {
         return 4;
-    } else if (ldd0 < 0) {
+    } else if (SUZERAIN_UNLIKELY(ldd0 < 0)) {
         return 7;
-    } else if (ldd1 < 0) {
+    } else if (SUZERAIN_UNLIKELY(ldd1 < 0)) {
         return 10;
-    } else if (ldd2 < 0) {
+    } else if (SUZERAIN_UNLIKELY(ldd2 < 0)) {
         return 13;
-    } else if (ldd3 < 0) {
+    } else if (SUZERAIN_UNLIKELY(ldd3 < 0)) {
         return 16;
-    } else if (ldd4 < 0) {
+    } else if (SUZERAIN_UNLIKELY(ldd4 < 0)) {
         return 19;
-    } else if (lda <= kl + ku) {
+    } else if (SUZERAIN_UNLIKELY(lda <= kl + ku)) {
         return 21;
-    } else if (incx == 0) {
+    } else if (SUZERAIN_UNLIKELY(incx == 0)) {
         return 23;
-    } else if (incy == 0) {
+    } else if (SUZERAIN_UNLIKELY(incy == 0)) {
         return 26;
     }
 
     // Quick return if possible
-    if (n == 0 || (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0 && alpha4 == 0 && beta == 1)) {
+    if (SUZERAIN_UNLIKELY(n == 0)) {
         return 0;
     }
 
@@ -113,13 +113,14 @@ STATIC int FUNCTION(
     }
 
     // Quick return when the matrices used are irrelevant
-    if (alpha0 == 0 && alpha1 == 0 && alpha2 == 0 && alpha3 == 0 && alpha4 == 0) {
+    if (SUZERAIN_UNLIKELY(alpha0 == 0 && alpha1 == 0 && alpha2 == 0
+                                      && alpha3 == 0 && alpha4 == 0)) {
         return 0;
     }
 
     // Set up the start points in x and y.
-    int kx = incx > 0 ? 0 : incx*(1 - n);
-    int ky = incy > 0 ? 0 : incy*(1 - n);
+    int kx = SUZERAIN_LIKELY(incx > 0) ? 0 : incx*(1 - n);
+    int ky = SUZERAIN_LIKELY(incy > 0) ? 0 : incy*(1 - n);
 
     // Banded matrix dereference is always of form a[ku + i + j*(lda - 1)].
     // Incorporate the ku offset and decrement lda to speed indexing in loops.
