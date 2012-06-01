@@ -46,12 +46,24 @@
 
 #if __GNUC__ >= 3
 /**
+ * Provides hint to the compiler to optimize for the expression being true.
+ * @param expr boolean expression.
+ * @returns value of expression.
+ */
+#define SUZERAIN_LIKELY(expr) __builtin_expect(expr, 1)
+/**
  * Provides hint to the compiler to optimize for the expression being false.
  * @param expr boolean expression.
  * @returns value of expression.
  */
 #define SUZERAIN_UNLIKELY(expr) __builtin_expect(expr, 0)
 #else
+/**
+ * Provides hint to the compiler to optimize for the expression being true.
+ * @param expr boolean expression.
+ * @returns value of expression.
+ */
+#define SUZERAIN_LIKELY(expr) expr
 /**
  * Provides hint to the compiler to optimize for the expression being false.
  * @param expr boolean expression.
