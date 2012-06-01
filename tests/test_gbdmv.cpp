@@ -15,6 +15,7 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 static gsl_rng * rng;  // Managed within main()
 
+using boost::algorithm::replace_first_copy;
 using boost::unit_test::framework::master_test_suite;
 using boost::unit_test::make_test_case;
 using std::numeric_limits;
@@ -517,8 +518,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " real " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_scc, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ssc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                    replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
@@ -528,8 +529,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " imag " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_scc, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ssc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                    replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
@@ -539,8 +540,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " complex " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_scc, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ssc, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                    replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
         }
     }
 
@@ -554,8 +555,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " real " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_dzz, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ddz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                    replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
         }
 
         { // Imaginary-valued alpha, beta
@@ -565,8 +566,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " imag " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_dzz, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ddz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                    replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
         }
 
         { // Truly complex alpha, beta
@@ -576,8 +577,8 @@ bool init_unit_test_suite() {
             name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " complex " << c;
             master_test_suite().add(make_test_case(
                     &test_gbdmv_dzz, name.str(), &c, &c + 1));
-            master_test_suite().add(make_test_case(
-                    &test_gbdmv_ddz, name.str(), &c, &c + 1));
+            master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                    replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
         }
     }
 
@@ -657,8 +658,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " real " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_scc, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ssc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                            replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
@@ -668,8 +669,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " imag " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_scc, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ssc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                            replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
@@ -679,8 +680,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_scc) << " complex " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_scc, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ssc, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ssc,
+                            replace_first_copy(name.str(), "scc", "ssc"), &c, &c + 1));
                 }
             }
 
@@ -692,8 +693,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " real " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_dzz, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ddz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                            replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
                 }
 
                 { // Imaginary-valued alpha, beta
@@ -703,8 +704,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " imag " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_dzz, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ddz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                            replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
                 }
 
                 { // Truly complex alpha, beta
@@ -714,8 +715,8 @@ bool init_unit_test_suite() {
                     name << BOOST_TEST_STRINGIZE(test_gbdmv_dzz) << " complex " << c;
                     master_test_suite().add(make_test_case(
                             &test_gbdmv_dzz, name.str(), &c, &c + 1));
-                    master_test_suite().add(make_test_case(
-                            &test_gbdmv_ddz, name.str(), &c, &c + 1));
+                    master_test_suite().add(make_test_case(&test_gbdmv_ddz,
+                            replace_first_copy(name.str(), "dzz", "ddz"), &c, &c + 1));
                 }
             }
 
