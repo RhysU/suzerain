@@ -1,7 +1,6 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2011, 2012 The PECOS Development Team
-// Please see http://pecos.ices.utexas.edu for more information on PECOS.
+// Copyright (C) 2011, 2012 Rhys Ulerich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,10 +8,9 @@
 //
 //--------------------------------------------------------------------------
 // coalescing_pool.hpp: a memory pool for contiguous state storage
-// $Id$
 
-#ifndef __SUZERAIN_COALESCING_POOL_HPP
-#define __SUZERAIN_COALESCING_POOL_HPP
+#ifndef COALESCING_POOL_HPP
+#define COALESCING_POOL_HPP
 
 #include <algorithm>
 #include <cstring>
@@ -47,14 +45,17 @@ struct coalescing_pool_policy
 /**
  * A free list-based memory pool designed for memory-constrained situations
  * where large, contiguous blocks are repeatedly acquired and released.  The
- * pool grows slowly and in a way that optimizes serving large contiguous
- * requests relative to the memory resources consumed.  Memory is returned
- * to the operating system when the pool is either destroyed or explicitly
- * drained.
+ * pool grows _as slowly as possible_ and in a way that optimizes serving
+ * large, contiguous requests relative to the memory resources consumed.  This
+ * policy of minimal growth and maximal contiguity makes it differ from many
+ * other pool implementations.  Its simple implementation uses the Boost
+ * Intrusive and Pointer Container libraries.
  *
- * Thread safety, alignment, and object construction and destruction issues are
- * left to the user.  Block sizes below \c minimum_blocksize may be padded to
- * provide enough working space for free list headers.
+ * Memory is returned to the operating system when the pool is either destroyed
+ * or explicitly drained.  Thread safety, alignment, and object construction
+ * and destruction issues are left to the user.  Block sizes below \c
+ * minimum_blocksize may be padded to provide enough working space for free
+ * list headers.
  *
  * @tparam T              Data type used by the pool.  All size_type arguments
  *                        work in units of <tt>sizeof(T)</tt>.
@@ -64,10 +65,10 @@ struct coalescing_pool_policy
  */
 template<
     typename T,
-    class ArenaAllocator = std::allocator<T>,
+    class ArenaAllocator = ::std::allocator<T>,
     class Policy = coalescing_pool_policy<T>
 >
-class coalescing_pool : public boost::noncopyable
+class coalescing_pool : public ::boost::noncopyable
 {
 private:
 
@@ -88,8 +89,8 @@ public:
     typedef typename allocator_type::const_pointer   const_pointer;
     typedef typename allocator_type::pointer         iterator;
     typedef typename allocator_type::const_pointer   const_iterator;
-    typedef std::reverse_iterator<iterator>          reverse_iterator;
-    typedef std::reverse_iterator<const_iterator>    const_reverse_iterator;
+    typedef ::std::reverse_iterator<iterator>        reverse_iterator;
+    typedef ::std::reverse_iterator<const_iterator>  const_reverse_iterator;
     /** @} */
 
     enum {
@@ -115,7 +116,7 @@ public:
      */
     explicit coalescing_pool(size_type blocksize,
                              size_type initial_nblocks = 0)
-        : blocksize_(std::max((size_type) minimum_blocksize, blocksize)) {
+        : blocksize_(::std::max((size_type) minimum_blocksize, blocksize)) {
         if (initial_nblocks) anticipate(initial_nblocks);
     }
 
@@ -263,14 +264,15 @@ public:
 
         /** Does this instance wholly contain the given block? */
         bool contains(const blocks& o) const {
-            return std::distance(b_, o.b_) >= 0 && std::distance(o.e_, e_) >= 0;
+            return    ::std::distance(b_, o.b_) >= 0
+                   && ::std::distance(o.e_, e_) >= 0;
         }
 
         /** How many elements of type \c T are contained in this block? */
-        size_type nelems() const { return std::distance(b_, e_); }
+        size_type nelems() const { return ::std::distance(b_, e_); }
 
         /** Set the memory contained by this instance to zero. */
-        void zero() { std::memset(b_, 0, std::distance(b_,e_)*sizeof(T)); }
+        void zero() { ::std::memset(b_, 0, ::std::distance(b_,e_)*sizeof(T)); }
 
         /** Is this instance equivalent to another? */
         bool operator==(const blocks& o) const {
@@ -305,8 +307,8 @@ public:
 
         /** Output the range spanned by this instance. */
         template< typename CharT, class Traits >
-        friend std::basic_ostream<CharT,Traits>& operator<<(
-            std::basic_ostream<CharT,Traits>& os, const blocks& b) {
+        friend ::std::basic_ostream<CharT,Traits>& operator<<(
+            ::std::basic_ostream<CharT,Traits>& os, const blocks& b) {
             return os << '[' << b.b_ << ',' << b.e_ << ')';
         }
 
@@ -326,7 +328,7 @@ public:
      * initialization pattern.  Blocks are acquired from a coalescing_pool at
      * construction time and are automatically released at destruction.
      */
-    class scoped_blocks : public boost::noncopyable, private blocks
+    class scoped_blocks : public ::boost::noncopyable, private blocks
     {
     public:
 
@@ -372,7 +374,7 @@ public:
 
         /** Swap the contents of this instance with \c o. */
         void swap(scoped_blocks &o) {
-            using std::swap;
+            using ::std::swap;
             swap(this->b_,  o.b_);
             swap(this->e_,  o.e_);
             swap(this->p_, o.p_);
@@ -413,8 +415,8 @@ public:
 
         /** Output the range spanned by this instance. */
         template< typename CharT, class Traits >
-        friend std::basic_ostream<CharT,Traits>& operator<<(
-            std::basic_ostream<CharT,Traits>& os, const scoped_blocks& b) {
+        friend ::std::basic_ostream<CharT,Traits>& operator<<(
+            ::std::basic_ostream<CharT,Traits>& os, const scoped_blocks& b) {
             return os << reinterpret_cast<const blocks&>(b);
         }
 
@@ -429,7 +431,7 @@ private:
     size_type blocksize_;
 
     struct compare_locations
-        : public std::binary_function<const blocks&, const blocks&, bool>
+        : public ::std::binary_function<const blocks&, const blocks&, bool>
     {
         bool operator() (const blocks& l, const blocks& r) const {
             return l.b_ != r.b_ ? l.b_ < r.b_ : l.e_ < r.e_;
@@ -445,7 +447,7 @@ private:
     };
 
     struct compare_extents
-        : public std::binary_function<const blocks&, const blocks&, bool>
+        : public ::std::binary_function<const blocks&, const blocks&, bool>
     {
         bool operator() (const blocks& l, const blocks& r) const {
             const size_type ln = l.nelems(), rn = r.nelems();
@@ -463,8 +465,8 @@ private:
 
     class fl_entry
         : public blocks,
-          public boost::intrusive::set_base_hook<
-                boost::intrusive::link_mode<boost::intrusive::normal_link>
+          public ::boost::intrusive::set_base_hook<
+                ::boost::intrusive::link_mode< ::boost::intrusive::normal_link>
           >
     {
     public:
@@ -472,12 +474,12 @@ private:
         fl_entry(pointer p, size_type n) : blocks(p, n) {}
     };
 
-    typedef typename boost::intrusive::set<
-            fl_entry, boost::intrusive::compare<compare_locations>
+    typedef typename ::boost::intrusive::set<
+            fl_entry, ::boost::intrusive::compare<compare_locations>
         > fl_type;
 
     class arena : public  blocks,
-                  public  boost::noncopyable,
+                  public  ::boost::noncopyable,
                   private ArenaAllocator
     {
     public:
@@ -492,7 +494,7 @@ private:
         fl_type fl;
     };
 
-    typedef boost::ptr_set<arena,compare_extents> arenas_type;
+    typedef ::boost::ptr_set<arena,compare_extents> arenas_type;
 
     arenas_type arenas;
 
@@ -508,11 +510,11 @@ coalescing_pool<T,ArenaAllocator,Policy>::blocksize(
 {
     if (blocksize_ == newsize) return blocksize_;   // Short circuit on NOP
 
-    if (any_blocks_used()) throw std::logic_error(
-          std::string(__PRETTY_FUNCTION__)
+    if (any_blocks_used()) throw ::std::logic_error(
+          ::std::string(__PRETTY_FUNCTION__)
         + " cannot set new block size when pool is actively in use");
 
-    newsize = std::max((size_type) minimum_blocksize, newsize);  // Constrain
+    newsize = ::std::max((size_type) minimum_blocksize, newsize);  // Constrain
 
     // Purge existing arenas unless newsize evenly divides blocksize_
     if (blocksize_ % newsize) arenas.clear();
@@ -524,7 +526,7 @@ template< typename T, class ArenaAllocator, class Policy >
 typename coalescing_pool<T,ArenaAllocator,Policy>::size_type
 coalescing_pool<T,ArenaAllocator,Policy>::nblocks()
 {
-    if (!blocksize_) throw std::logic_error(std::string(__PRETTY_FUNCTION__)
+    if (!blocksize_) throw ::std::logic_error(::std::string(__PRETTY_FUNCTION__)
             + " requires blocksize to be previously specified");
 
     size_type total = 0;
@@ -541,7 +543,7 @@ typename coalescing_pool<T,ArenaAllocator,Policy>::size_type
 coalescing_pool<T,ArenaAllocator,Policy>::nblocks(
         U& used, V& free, W& contig)
 {
-    if (!blocksize_) throw std::logic_error(std::string(__PRETTY_FUNCTION__)
+    if (!blocksize_) throw ::std::logic_error(::std::string(__PRETTY_FUNCTION__)
             + " requires blocksize to be previously specified");
 
     size_type total = 0;
@@ -554,7 +556,7 @@ coalescing_pool<T,ArenaAllocator,Policy>::nblocks(
         for (j = i->fl.begin(), je = i->fl.end(); j != je; ++j) {
             const size_type n = j->nelems() / blocksize_;
             free += n;
-            contig = std::max(contig, static_cast<W>(n));
+            contig = ::std::max(contig, static_cast<W>(n));
         }
     }
 
@@ -608,7 +610,7 @@ void coalescing_pool<T,ArenaAllocator,Policy>::anticipate_(
         typename coalescing_pool::arenas_type::iterator& i,
         typename coalescing_pool::fl_type::iterator& j)
 {
-    if (!blocksize_) throw std::logic_error(std::string(__PRETTY_FUNCTION__)
+    if (!blocksize_) throw ::std::logic_error(::std::string(__PRETTY_FUNCTION__)
             + " requires blocksize to be previously specified");
 
     if (!nblocks) return;  // Short circuit on degenerate request
@@ -617,7 +619,7 @@ void coalescing_pool<T,ArenaAllocator,Policy>::anticipate_(
 
     // Search for first arena containing nblocks contiguous, unused blocks
     const typename arenas_type::iterator ie  = arenas.end();
-    const typename arenas_type::iterator ilb = std::lower_bound(
+    const typename arenas_type::iterator ilb = ::std::lower_bound(
             arenas.begin(), ie, nelems, compare_extents());
     for (i = ilb; i != ie; ++i) {
         const typename fl_type::iterator je = i->fl.end();
@@ -628,7 +630,7 @@ void coalescing_pool<T,ArenaAllocator,Policy>::anticipate_(
     }
 
     // No existing arena satisfies request; coalesce while allocating new arena
-    i = arenas.insert(ilb, new arena(std::max(blocksize_*drain(), nelems)));
+    i = arenas.insert(ilb, new arena(::std::max(blocksize_*drain(), nelems)));
     j = i->fl.begin();
 }
 
@@ -637,7 +639,7 @@ typename coalescing_pool<T,ArenaAllocator,Policy>::blocks
 coalescing_pool<T,ArenaAllocator,Policy>::acquire(
         coalescing_pool::size_type nblocks)
 {
-    if (!blocksize_) throw std::logic_error(std::string(__PRETTY_FUNCTION__)
+    if (!blocksize_) throw ::std::logic_error(::std::string(__PRETTY_FUNCTION__)
             + " requires blocksize to be previously specified");
 
     if (!nblocks) return blocks();  // Short circuit on degenerate request
@@ -662,7 +664,7 @@ coalescing_pool<T,ArenaAllocator,Policy>::acquire(
         }
     }
 
-    if (b == je) throw std::runtime_error(std::string(__PRETTY_FUNCTION__)
+    if (b == je) throw ::std::runtime_error(::std::string(__PRETTY_FUNCTION__)
             + " sanity failure: anticipate_ did not return a usable arena");
 
     // Split head off *b, record tail in fl, and used head to satisfy request
@@ -676,20 +678,20 @@ template< typename T, class ArenaAllocator, class Policy >
 void coalescing_pool<T,ArenaAllocator,Policy>::release(
         coalescing_pool::blocks& b)
 {
-    using std::invalid_argument;
-    using std::string;
+    using ::std::invalid_argument;
+    using ::std::string;
 
     if (!b) return;  // Short circuit on release of inactive block
 
     const typename arenas_type::iterator end = arenas.end();
-    typename arenas_type::iterator i = std::lower_bound(
-            arenas.begin(), end, std::distance(b.b_, b.e_), compare_extents());
+    typename arenas_type::iterator i = ::std::lower_bound(
+            arenas.begin(), end, ::std::distance(b.b_, b.e_), compare_extents());
     for (; i != end; ++i) {
         if (i->contains(b)) {
 
             // Prepare the fl_entry header in block b and add to arena fl
             // Double release detection necessary since copies of b may exist
-            std::pair<typename fl_type::iterator,bool> j
+            ::std::pair<typename fl_type::iterator,bool> j
                 = i->fl.insert(*(new (b.b_) fl_entry(b.b_, b.e_)));
             if (!j.second) throw invalid_argument(string(__PRETTY_FUNCTION__)
                     + " detected invalid argument or double release");
@@ -701,14 +703,14 @@ void coalescing_pool<T,ArenaAllocator,Policy>::release(
             // because we perform it on every release invocation
 
             // Possibly coalesce the next fl entry into j
-            typename fl_type::iterator n = boost::next(j.first);
+            typename fl_type::iterator n = ::boost::next(j.first);
             if (n != i->fl.end() && j.first->e_ == n->b_) {
                 j.first->e_ = n->e_;
                 i->fl.erase(n);
             }
 
             // Possibly coalesce j into the prior fl entry
-            typename fl_type::iterator p = boost::prior(j.first);   // Invalid?
+            typename fl_type::iterator p = ::boost::prior(j.first); // Invalid?
             if (j.first != i->fl.begin() && p->e_ == j.first->b_) { // Valid!
                 p->e_ = j.first->e_;
                 i->fl.erase(j.first);
@@ -731,6 +733,7 @@ void swap(
     a.swap(b);
 }
 
+
 } // namespace suzerain
 
-#endif /* __SUZERAIN_COALESCING_POOL_HPP */
+#endif /* COALESCING_POOL_HPP */
