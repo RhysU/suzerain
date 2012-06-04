@@ -495,6 +495,11 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
  * <tt>alpha=1</tt> and <tt>beta=0</tt> may be used to initialize a
  * manufactured solution field.  Setting <tt>alpha=-1</tt> and <tt>beta=1</tt>
  * may be used to compute error against the manufactured solution.
+ *
+ * On non-dealiased modes, care is taken to accumulate only the real part of
+ * modes for which suzerain::inorder::wavenumber_imagzero() is true.  The
+ * entire real and imaginary portions of modes present only for dealiasing are
+ * should be considered junk after this method completes.
  */
 void accumulate_manufactured_solution(
         const real_t alpha,

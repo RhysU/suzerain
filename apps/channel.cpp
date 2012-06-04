@@ -2109,6 +2109,68 @@ void accumulate_manufactured_solution(
         const suzerain::bsplineop &bop,
         const real_t simulation_time)
 {
+    // Shorthand
+    using Eigen::ArrayXc;
+    using Eigen::ArrayXXr;
+    using Eigen::Map;
+    using suzerain::inorder::wavenumber;
+    using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_imagzero;
+    using suzerain::inorder::wavenumber_max;
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
+    // Allocate storage to stash imag parts of wavenumber_imagzero() modes
+    Eigen::ArrayXXr stash;
+    {
+        // How many imagzero() wavenumbers are in the non-dealiased X modes?
+        int numcols = 0;
+        for (int m = dkbx; m < dkex; ++m) {
+            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
+            numcols += suzerain::inorder::wavenumber_imagzero(Nx, m);
+        }
+
+        // ...scale that by the number of non-dealiased Z modes...
+        // (plus a fudge factor; examine Nz=8, dNz=12 case in next loop)
+        int szb[2], sze[2], tzb[2], tze[2];
+        suzerain::inorder::wavenumber_translate(Nz, dNz, dkbz, dkez,
+                                                szb[0], sze[0], szb[1], sze[1],
+                                                tzb[0], tze[0], tzb[1], tze[1]);
+        numcols *= (sze[0]-szb[0]) + (sze[1]-szb[1]) + 2;
+
+        // ...scale that by the number of fields...
+        numcols *= field::count;
+
+        // ...and resize the stash accordingly:
+        stash.resize(Ny, numcols);
+    }
+
+    // Stash beta*imag parts of non-dealiased wavenumber_imagzero() modes
+    // Traversal walks ContiguousState linearly in wave-space
+    {
+        int colnum = 0;
+        for (size_t k = 0; k < field::count; ++k) {
+            for (int n = dkbz; n < dkez; ++n) {
+                if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
+                for (int m = dkbx; m < dkex; ++m) {
+                    if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
+
+                    if (suzerain::inorder::wavenumber_imagzero(Nx, m)) {
+                        stash.col(colnum++) = beta*Map<ArrayXc>(
+                                &swave[k][0][m-dkbx][n-dkbz], Ny).imag();
+                    }
+                }
+            }
+        }
+    }
+
     // Initializing OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
 
@@ -2181,6 +2243,25 @@ void accumulate_manufactured_solution(
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
         obase.bop_solve(massluz, swave, i);                       // Y
+    }
+
+    // Unstash beta*imag parts of non-dealiased wavenumber_imagzero() modes
+    // Doing so effectively sets alpha*mms to be zero for these portions.
+    {
+        int colnum = 0;
+        for (size_t k = 0; k < field::count; ++k) {
+            for (int n = dkbz; n < dkez; ++n) {
+                if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
+                for (int m = dkbx; m < dkex; ++m) {
+                    if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
+
+                    if (suzerain::inorder::wavenumber_imagzero(Nx, m)) {
+                        Map<ArrayXc>(&swave[k][0][m-dkbx][n-dkbz], Ny).imag()
+                            = stash.col(colnum++);
+                    }
+                }
+            }
+        }
     }
 }
 
