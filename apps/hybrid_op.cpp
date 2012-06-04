@@ -480,13 +480,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // it's demonstrably a bad idea.
 
             const char *method;             // Used for error reporting
-            static const char fact  = 'E';  // Common inputs for ?gbsvx
-            static const char trans = 'T';  // Un-transpose transposed operator
-            int info;                       // Common outputs for ?gbsvx
-            char equed;
-            real_t rcond, ferr[1], berr[1];
-
-            GRVY_TIMER_BEGIN("implicit operator solve");
             switch (solve_type) {
             case gbsvx:
                 method = "zgbsvx";
@@ -495,14 +488,24 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 method = "zgbsv";
                 break;
             }
+            static const char fact  = 'E';  // Common inputs for ?gbsvx
+            static const char trans = 'T';  // Un-transpose transposed operator
+            int info;                       // Common outputs for ?gbsvx
+            char equed;                     // ?gbsvx equilibration type
+            real_t rcond, ferr[1], berr[1]; // ?gbsvx outputs for one RHS
+
+            GRVY_TIMER_BEGIN("implicit operator solve");
+
             GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
             GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+
             // When necessary, zero imaginary part of coefficients prior to
             // solve because the X direction uses real-to-complex transforms.
             if (SUZERAIN_UNLIKELY(wavenumber_imagzero(Nx, m))) {
                 b.imag().setZero();
             }
+
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
@@ -514,6 +517,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     break;
             }
             GRVY_TIMER_END("implicit operator BCs");
+
             switch (solve_type) {
             case gbsvx:
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
@@ -533,8 +537,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
+
+            // When necessary, zero imaginary part of coefficients after
+            // solve because the X direction uses real-to-complex transforms.
+            if (SUZERAIN_UNLIKELY(wavenumber_imagzero(Nx, m))) {
+                Eigen::Map<Eigen::ArrayXc>(p, A.N).imag().setZero();
+            }
+
             GRVY_TIMER_END("implicit operator solve");
 
+            // Report any errors that occurred during the solve
             char buffer[128];
             if (info == 0) {
                 // Success
