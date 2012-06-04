@@ -59,6 +59,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
@@ -108,10 +109,13 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             // Copy pencil into temporary storage
             suzerain::blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
 
-            // Accumulate result back into state storage
+            // Accumulate result back into state storage automatically
+            // adjusting for when imaginary part should be zero a priori
+            // because the X direction uses real-to-complex transforms
+            const bool imagzero = wavenumber_imagzero(Nx, m);
+            GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(),
-                    /* TODO imagzero */ 0,
+                    phi, km, kn, &s, &ref, &ld, bop.get(), imagzero,
                     tmp.data() + field::ndx::rho *Ny,
                     tmp.data() + field::ndx::rhou*Ny,
                     tmp.data() + field::ndx::rhov*Ny,
@@ -123,6 +127,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
                     p + field::ndx::rhov*Ny,
                     p + field::ndx::rhow*Ny,
                     p + field::ndx::rhoe*Ny);
+            GRVY_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
 
@@ -141,6 +146,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
@@ -186,9 +192,12 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
             if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wavenumber(dNx, m);
 
+            // Automatically adjusts for when imaginary part should be zero
+            // because the X direction uses real-to-complex transforms
+            const bool imagzero = wavenumber_imagzero(Nx, m);
+            GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(),
-                    /* TODO imagzero */ 0,
+                    phi, km, kn, &s, &ref, &ld, bop.get(), imagzero,
                     &input [field::ndx::rho ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhou][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhov][0][m - dkbx][n - dkbz],
@@ -200,6 +209,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
                     &output[field::ndx::rhov][0][m - dkbx][n - dkbz],
                     &output[field::ndx::rhow][0][m - dkbx][n - dkbz],
                     &output[field::ndx::rhoe][0][m - dkbx][n - dkbz]);
+            GRVY_TIMER_END("suzerain_rholut_imexop_accumulate");
 
         }
     }
@@ -336,6 +346,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Shorthand
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_abs;
+    using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
@@ -414,7 +425,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     enum solve_types { gbsvx, gbsv };
     static const solve_types solve_type = gbsvx;
 
-    // Iterate across local wavenumbers and "invert" operator "in-place".
+    // Iterate across local wavenumbers and "invert" operator "in-place"
     // Short circuits on wavenumbers present only for dealiasing
     for (int n = dkbz; n < dkez; ++n) {
         if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
@@ -487,6 +498,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
             GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            // When necessary, zero imaginary part of coefficients prior to
+            // solve because the X direction uses real-to-complex transforms.
+            if (SUZERAIN_UNLIKELY(wavenumber_imagzero(Nx, m))) {
+                b.imag().setZero();
+            }
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
