@@ -28,6 +28,7 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
+        const int imagzero,
         const complex_double *in_rho ,
         const complex_double *in_rhou,
         const complex_double *in_rhov,
@@ -132,11 +133,19 @@ suzerain_rholut_imexop_accumulate(
     gbddddmv_t  *p_gbddddmv  = (gbddddmv_t *)  & suzerain_blasext_zgbddddmv_d_z;
     gbdddddmv_t *p_gbdddddmv = (gbdddddmv_t *) &suzerain_blasext_zgbdddddmv_d_z;
 
-    // ...but in the second case, treat x arguments as real with stride two
-    // TODO Second case implementation and updates to method signatures
+    // ...but in the second case, treat x arguments as real with stride two.
+    if (SUZERAIN_UNLIKELY(imagzero)) {
+        inc_in = 2;
+        p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_d;
+        p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_d;
+        p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_d;
+        p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_d;
+        p_gbddddmv  = (gbddddmv_t *)  & suzerain_blasext_zgbddddmv_d_d;
+        p_gbdddddmv = (gbdddddmv_t *) &suzerain_blasext_zgbdddddmv_d_d;
+    }
 
     // Shorthand for the common pattern of providing "in_foo, inc" pairs.
-#   define IN(quantity)  (const void *) in_##quantity, inc_in
+#   define IN(quantity)  in_##quantity, inc_in
 #   define OUT(quantity) out_##quantity, 1
 
     // Shorthand for the common pattern of providing a "r->foo, ld->foo" pair.

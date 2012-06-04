@@ -111,6 +111,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             // Accumulate result back into state storage
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
+                    /* TODO imagzero */ 0,
                     tmp.data() + field::ndx::rho *Ny,
                     tmp.data() + field::ndx::rhou*Ny,
                     tmp.data() + field::ndx::rhov*Ny,
@@ -187,6 +188,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
+                    /* TODO imagzero */ 0,
                     &input [field::ndx::rho ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhou][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhov][0][m - dkbx][n - dkbz],
