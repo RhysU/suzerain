@@ -30,6 +30,7 @@ struct parameters
 {
     real_t km;
     real_t kn;
+    bool   imagzero;
     int    refndx;
 };
 
@@ -37,9 +38,10 @@ template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{km="      << p.km
-              << ", kn="     << p.kn
-              << ", refndx=" << p.refndx << '}';
+    return os << "{km="        << p.km
+              << ", kn="       << p.kn
+              << ", imagzero=" << p.imagzero
+              << ", refndx="   << p.refndx << '}';
 }
 
 // Free function checking if the apply and pack operations are
@@ -99,19 +101,22 @@ static void operator_consistency(const parameters& p)
     fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
 
     // Allocate state storage and initialize B1 to eye(N)
+    // along with a poison NaN entry whenever p.imagzero is true.
     boost::scoped_array<complex_t> B1(new complex_t[N*N]);
     boost::scoped_array<complex_t> B2(new complex_t[N*N]);
     fill(B1.get(), B1.get() + N*N, 0);
     fill(B2.get(), B2.get() + N*N, 0);
     for (int i = 0; i < N; ++i) {
-        B1[i + i*N] = 1;
+        B1[i + i*N] = complex_t(1,   p.imagzero
+                                   ? std::numeric_limits<real_t>::quiet_NaN()
+                                   : 0);
     }
 
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
-        suzerain_rholut_imexop_accumulate(phi, km, kn, &s, &r, &ld, op.get(),
-            /* TODO imagzero */ 0,
+        suzerain_rholut_imexop_accumulate(
+            phi, km, kn, &s, &r, &ld, op.get(), p.imagzero,
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
     }
@@ -226,19 +231,33 @@ bool init_unit_test_suite() {
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {    0,      0, /*refndx*/-1},
-                       {    0, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      0, /*refndx*/-1},
-                       {    1, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      1, /*refndx*/-1},
-                       {7*M_E, 3*M_PI, /*refndx*/-1} };
+    parameters p[] = { {    0,      0, /*imagzero*/0, /*refndx*/-1},
+                       {    0, 3*M_PI, /*imagzero*/0, /*refndx*/-1},
+                       {7*M_E,      0, /*imagzero*/0, /*refndx*/-1},
+                       {    1, 3*M_PI, /*imagzero*/0, /*refndx*/-1},
+                       {7*M_E,      1, /*imagzero*/0, /*refndx*/-1},
+                       {7*M_E, 3*M_PI, /*imagzero*/0, /*refndx*/-1} };
     for (int i = -1; i < (int) NREFS; ++i) {
         for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
             p[j].refndx = i;
-            std::ostringstream name;
-            name << BOOST_TEST_STRINGIZE(operator_consistency) << ' ' << p[j];
-            master_test_suite().add(boost::unit_test::make_test_case(
-                    &operator_consistency, name.str(), p + j, p + j + 1));
+
+            p[j].imagzero = 0;
+            {
+                std::ostringstream name;
+                name << BOOST_TEST_STRINGIZE(operator_consistency)
+                     << ' ' << p[j];
+                master_test_suite().add(boost::unit_test::make_test_case(
+                        &operator_consistency, name.str(), p + j, p + j + 1));
+            }
+
+            p[j].imagzero = 1;
+            {
+                std::ostringstream name;
+                name << BOOST_TEST_STRINGIZE(operator_consistency)
+                     << ' ' << p[j];
+                master_test_suite().add(boost::unit_test::make_test_case(
+                        &operator_consistency, name.str(), p + j, p + j + 1));
+            }
         }
     }
 
