@@ -135,6 +135,28 @@ int suzerain_inorder_wavenumber_max(const int N)
 }
 
 /**
+ * For a \e logically length <tt>N</tt> DFT of a real-valued function, are the
+ * imaginary components of the wavenumber associated with index <tt>i</tt> \e
+ * necessarily zero due to conjugate symmetry?
+ *
+ * For example, for <tt>N=6</tt> the values <tt>{ 1, 0, 0, 1, 0, 0 }</tt> will
+ * be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.  For <tt>N=5</tt> the values
+ * <tt>{ 1, 0, 0, 0, 0 }</tt> will be returned for <tt>i = 0, 1, 2, 3, 4</tt>.
+ *
+ * @param N The \e logical length of the DFT.
+ * @param i The index of interest.
+ *
+ * @return The wavenumber associated with index <tt>i</tt>.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_imagzero(const int N, const int i)
+{
+    assert(0 <= i && i < N);
+    return (i == 0) + (i == N/2)*(1 - (N % 2));
+}
+
+/**
  * Determine if the provided wavenumber is valid for a length <tt>N</tt> DFT.
  *
  * @param N The length of the DFT.

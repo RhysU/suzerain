@@ -142,6 +142,32 @@ BOOST_AUTO_TEST_CASE( wavenumber_abs )
     }
 }
 
+BOOST_AUTO_TEST_CASE( wavenumber_imagzero )
+{
+    using suzerain::inorder::wavenumber_imagzero;
+
+    const int expected[][10] = {
+        { 1                                    },
+        { 1, 1                                 },
+        { 1, 0,                              0 },
+        { 1, 0,  1,                          0 },
+        { 1, 0,  0,                      0,  0 },
+        { 1, 0,  0,  1,                  0,  0 },
+        { 1, 0,  0,  0,              0,  0,  0 },
+        { 1, 0,  0,  0,  1,          0,  0,  0 },
+        { 1, 0,  0,  0,  0,      0,  0,  0,  0 },
+        { 1, 0,  0,  0,  0,  1,  0,  0,  0,  0 }
+    };
+    for (int i = 0; i < (int) (sizeof(expected)/sizeof(expected[0])); ++i) {
+        int result[sizeof(expected[0])/sizeof(expected[0][0])];
+        for (int j = 0; j < i+1; ++j) {
+            result[j] = wavenumber_imagzero(i + 1, j);
+        }
+        BOOST_CHECK_EQUAL_COLLECTIONS(
+                expected[i], expected[i] + i + 1, result, result + i + 1);
+    }
+}
+
 BOOST_AUTO_TEST_CASE( wavenumber_diff_nodealiasing )
 {
     using suzerain::inorder::wavenumber_diff;
