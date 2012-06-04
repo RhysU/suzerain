@@ -142,6 +142,9 @@ suzerain_rholut_imexop_accumulate(
     // Shorthand for the common pattern of providing a "r->foo, ld->foo" pair.
 #   define REF(quantity) r->quantity, ld->quantity
 
+    // Just plain shorthand
+#   define LIKELY(expr) SUZERAIN_LIKELY(expr)
+
     // We need to account for suzerain_bsplineop_workspace storing the
     // transpose of the operators when we invoke suzerain_blaseext_* routines.
     static const char trans = 'T';
@@ -152,30 +155,30 @@ suzerain_rholut_imexop_accumulate(
     static const int D2      = 2;
     const int        n       = w->n;
 
-    if (in_rho ) {  // Accumulate density terms into out_rho
+    if (LIKELY(in_rho )) {  // Accumulate density terms into out_rho
 
         suzerain_blas_zscal(n, beta, OUT(rho));
 
-        if (in_rhou) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
+        if (LIKELY(in_rhou)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
                 -phi*ikm, w->D_T[M], w->ld, IN(rhou),  1.0, OUT(rho));
 
-        if (in_rhov) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
+        if (LIKELY(in_rhov)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
                 -phi,     w->D_T[D1], w->ld, IN(rhov), 1.0, OUT(rho));
 
-        if (in_rhow) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
+        if (LIKELY(in_rhow)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
                 -phi*ikn, w->D_T[M], w->ld, IN(rhow),  1.0, OUT(rho));
 
-        if (in_rhoe) {/* NOP */};
+        if (LIKELY(in_rhoe)) {/* NOP */};
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
     }
 
-    if (in_rhou) {  // Accumulate X momentum terms into out_rhou
+    if (LIKELY(in_rhou)) {  // Accumulate X momentum terms into out_rhou
 
         suzerain_blas_zscal(n, beta, OUT(rhou));
 
-        if (in_rho) {
+        if (LIKELY(in_rho)) {
             (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*0.5*gm1*ikm,          REF(u2),
                 phi*ikm,                   REF(uxux),
@@ -210,7 +213,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhou), 1.0, OUT(rhou));
         }
 
-        if (in_rhov) {
+        if (LIKELY(in_rhov)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
                 phi*gm1*ikm,               REF(uy),
                 w->D_T[M],  w->ld, IN(rhov), 1.0, OUT(rhou));
@@ -221,7 +224,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rhov), 1.0, OUT(rhou));
         }
 
-        if (in_rhow) {
+        if (LIKELY(in_rhow)) {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*ikn,                  REF(ux),
                  phi*gm1*ikm,              REF(uz),
@@ -229,7 +232,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rhow), 1.0, OUT(rhou));
         }
 
-        if (in_rhoe) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
                 -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rhoe),
                 1.0, OUT(rhou));
 
@@ -237,11 +240,11 @@ suzerain_rholut_imexop_accumulate(
             1.0, w->D_T[M], w->ld, IN(rhou), 1.0, OUT(rhou));
     }
 
-    if (in_rhov) {  // Accumulate Y momentum terms into out_rhov
+    if (LIKELY(in_rhov)) {  // Accumulate Y momentum terms into out_rhov
 
         suzerain_blas_zscal(n, beta, OUT(rhov));
 
-        if (in_rho) {
+        if (LIKELY(in_rho)) {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
                 phi*ikm,              REF(uxuy),
                 phi*ikn,              REF(uyuz),
@@ -260,7 +263,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhov));
         }
 
-        if (in_rhou) {
+        if (LIKELY(in_rhou)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*ikm,             REF(uy),
                 w->D_T[M],   w->ld, IN(rhou), 1.0, OUT(rhov));
@@ -287,7 +290,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhov), 1.0, OUT(rhov));
         }
 
-        if (in_rhow) {
+        if (LIKELY(in_rhow)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*ikn,             REF(uy),
                 w->D_T[M],   w->ld, IN(rhow), 1.0, OUT(rhov));
@@ -298,7 +301,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rhow), 1.0, OUT(rhov));
         }
 
-        if (in_rhoe) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
+        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
                 -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rhoe),
                 1.0, OUT(rhov));
 
@@ -306,11 +309,11 @@ suzerain_rholut_imexop_accumulate(
             1.0, w->D_T[M], w->ld, IN(rhov), 1.0, OUT(rhov));
     }
 
-    if (in_rhow) {  // Accumulate Z momentum terms into out_rhow
+    if (LIKELY(in_rhow)) {  // Accumulate Z momentum terms into out_rhow
 
         suzerain_blas_zscal(n, beta, OUT(rhow));
 
-        if (in_rho) {
+        if (LIKELY(in_rho)) {
             (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*0.5*gm1*ikn,          REF(u2),
                 phi*ikm,                   REF(uxuz),
@@ -329,7 +332,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhow));
         }
 
-        if (in_rhou) {
+        if (LIKELY(in_rhou)) {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
                  phi*gm1*ikn,              REF(ux),
                 -phi*ikm,                  REF(uz),
@@ -337,7 +340,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rhou), 1.0, OUT(rhow));
         }
 
-        if (in_rhov) {
+        if (LIKELY(in_rhov)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
                 phi*gm1*ikn,               REF(uy),
                 w->D_T[M],  w->ld, IN(rhov), 1.0, OUT(rhow));
@@ -364,7 +367,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhow));
         }
 
-        if (in_rhoe) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
                 -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rhoe),
                 1.0, OUT(rhow));
 
@@ -372,11 +375,11 @@ suzerain_rholut_imexop_accumulate(
             1.0, w->D_T[M], w->ld, IN(rhow), 1.0, OUT(rhow));
     }
 
-    if (in_rhoe) {  // Accumulate total energy terms into out_rhoe
+    if (LIKELY(in_rhoe)) {  // Accumulate total energy terms into out_rhoe
 
         suzerain_blas_zscal(n, beta, OUT(rhoe));
 
-        if (in_rho) {
+        if (LIKELY(in_rho)) {
 
             // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
             // Writing such a beast may provide a tiny speedup.
@@ -405,7 +408,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhoe));
         }
 
-        if (in_rhou) {
+        if (LIKELY(in_rhou)) {
             const double coeff_nuux
                 = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
@@ -423,7 +426,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhou), 1.0, OUT(rhoe));
         }
 
-        if (in_rhov) {
+        if (LIKELY(in_rhov)) {
             const double coeff_nuuy
                 = Ma2*invRe*(ginvPr-1)*(km2+kn2);
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
@@ -441,7 +444,7 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhov), 1.0, OUT(rhoe));
         }
 
-        if (in_rhow) {
+        if (LIKELY(in_rhow)) {
             const double coeff_nuuz
                 = Ma2*invRe*((ginvPr-1)*km2 + (ginvPr-ap43)*kn2);
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
@@ -479,6 +482,7 @@ suzerain_rholut_imexop_accumulate(
             1.0, w->D_T[M], w->ld, IN(rhoe), 1.0, OUT(rhoe));
     }
 
+#   undef LIKELY
 #   undef REF
 #   undef IN
 #   undef OUT
