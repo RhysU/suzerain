@@ -58,7 +58,6 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("applyMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_abs;
     using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
@@ -147,7 +146,6 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("accumulateMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_abs;
     using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
@@ -350,7 +348,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // Shorthand
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_abs;
     using suzerain::inorder::wavenumber_imagzero;
     using suzerain::inorder::wavenumber_max;
     namespace field = channel::field;
