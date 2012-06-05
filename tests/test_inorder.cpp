@@ -8,6 +8,17 @@
 #include <boost/test/unit_test.hpp>
 #include "test_tools.hpp"
 
+BOOST_AUTO_TEST_CASE( wavenumber_misc )
+{
+    BOOST_CHECK_EQUAL(-3, suzerain::inorder::wavenumber_min   (7));
+    BOOST_CHECK_EQUAL( 3, suzerain::inorder::wavenumber_absmin(7));
+    BOOST_CHECK_EQUAL( 3, suzerain::inorder::wavenumber_max   (7));
+
+    BOOST_CHECK_EQUAL(-3, suzerain::inorder::wavenumber_min   (8));
+    BOOST_CHECK_EQUAL( 3, suzerain::inorder::wavenumber_absmin(8));
+    BOOST_CHECK_EQUAL( 4, suzerain::inorder::wavenumber_max   (8));
+}
+
 BOOST_AUTO_TEST_CASE( wavenumber )
 {
     using suzerain::inorder::wavenumber;

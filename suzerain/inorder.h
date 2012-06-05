@@ -109,18 +109,37 @@ int suzerain_inorder_wavenumber_abs(const int N, const int i)
  *
  * @param N The length of the DFT.
  *
- * @return the minimum wavenumber <tt>(-N+1)/2</tt>.
+ * @return the minimum wavenumber <tt>(1-N)/2</tt>.
  * @see The documentation for inorder.h for terminology details.
  */
 inline
 int suzerain_inorder_wavenumber_min(const int N)
 {
     assert(0 < N);
-    return (-N+1)/2;
+    return (1-N)/2;
+}
+
+/**
+ * Find the absolute value of the minimum wavenumber contained in a length
+ * <tt>N</tt> DFT.  For even or odd <tt>N</tt>, this is the highest wavenumber
+ * for which both a positive and negative mode is supported (e.g. 3 for N = 7
+ * and N = 8).  For even <tt>N</tt>, this is one less than the Nyquist mode.
+ *
+ * @param N The length of the DFT.
+ *
+ * @return the absolute of the minimum wavenumber <tt>(N-1)/2</tt>.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_absmin(const int N)
+{
+    assert(0 < N);
+    return (N-1)/2;
 }
 
 /**
  * Find the maximum wavenumber contained in a length <tt>N</tt> DFT.
+ * For even <tt>N</tt> this is the Nyquist mode.
  *
  * @param N The length of the DFT.
  *

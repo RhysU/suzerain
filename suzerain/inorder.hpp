@@ -48,6 +48,13 @@ int wavenumber_min(const int N)
     return suzerain_inorder_wavenumber_min(N);
 }
 
+/** @copydoc suzerain_inorder_wavenumber_absmin() */
+inline
+int wavenumber_absmin(const int N)
+{
+    return suzerain_inorder_wavenumber_absmin(N);
+}
+
 /** @copydoc suzerain_inorder_wavenumber_max() */
 inline
 int wavenumber_max(const int N)

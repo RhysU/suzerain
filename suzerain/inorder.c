@@ -31,7 +31,13 @@ extern
 int suzerain_inorder_wavenumber_min(const int N);
 
 extern
+int suzerain_inorder_wavenumber_absmin(const int N);
+
+extern
 int suzerain_inorder_wavenumber_max(const int N);
+
+extern
+int suzerain_inorder_wavenumber_imagezero(const int N, const int w);
 
 extern
 int suzerain_inorder_wavenumber_valid(const int N, const int w);
@@ -45,7 +51,6 @@ int suzerain_inorder_wavenumber_translatable(
 
 extern
 int suzerain_inorder_index(const int N, const int w);
-
 
 void suzerain_inorder_wavenumber_translate(
         const int S, const int T, const int tb, const int te,
