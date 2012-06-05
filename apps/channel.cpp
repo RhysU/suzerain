@@ -2109,6 +2109,46 @@ void accumulate_manufactured_solution(
         const suzerain::bsplineop &bop,
         const real_t simulation_time)
 {
+    // Shorthand
+    using Eigen::ArrayXc;
+    using Eigen::ArrayXXr;
+    using Eigen::Map;
+    using suzerain::inorder::wavenumber;
+    using suzerain::inorder::wavenumber_imagzero;
+    using suzerain::inorder::wavenumber_max;
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
+    // Allocate storage to stash imaginary parts of zero-zero and Nyquist modes
+    // (at most four such modes appear for a 2D r2C FFT regardless of Nx, Nz)
+    ArrayXXr stash(Ny, field::count*4);
+
+    // Stash beta*imag parts of zero-zero and Nyquist modes
+    // TODO: Linear traversal process is both ugly and inefficient
+    for (size_t k = 0, colnum = 0; k < field::count; ++k) {
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+            if (std::abs(wn) > wavenumber_max(Nz)) continue;
+
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+                if (std::abs(wm) > wavenumber_max(Nx)) continue;
+
+                if (wavenumber_imagzero(Nz, wn)*wavenumber_imagzero(Nx, wm)) {
+                    stash.col(colnum++) = beta * Map<ArrayXc>(
+                            &swave[k][0][m-dkbx][n-dkbz], Ny).imag();
+                }
+            }
+        }
+    }
+
     // Initializing OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
 
@@ -2182,6 +2222,27 @@ void accumulate_manufactured_solution(
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
         obase.bop_solve(massluz, swave, i);                       // Y
+        obase.diffwave_apply(0, 0, 1, swave, i);
+    }
+
+    // Unstash beta*imag parts of zero-zero and Nyquist modes
+    // Doing so effectively sets alpha*mms to be zero for this wavenumbers
+    // TODO: Linear traversal process is both ugly and inefficient
+    for (size_t k = 0, colnum = 0; k < field::count; ++k) {
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+            if (std::abs(wn) > wavenumber_max(Nz)) continue;
+
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+                if (std::abs(wm) > wavenumber_max(Nx)) continue;
+
+                if (wavenumber_imagzero(Nz, wn)*wavenumber_imagzero(Nx, wm)) {
+                    Map<ArrayXc>(&swave[k][0][m-dkbx][n-dkbz], Ny).imag()
+                            = stash.col(colnum++);
+                }
+            }
+        }
     }
 }
 
