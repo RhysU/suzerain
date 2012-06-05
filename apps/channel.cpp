@@ -2125,6 +2125,7 @@ void accumulate_manufactured_solution(
     } else {
         // ...or scale data by beta and transform it to physical space.
         for (size_t i = 0; i < field::count; ++i) {
+            obase.diffwave_apply(0, 0, 1, swave, i);
             obase.bop_apply(0, beta, swave, i);
             dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
         }
