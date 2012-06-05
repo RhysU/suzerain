@@ -94,14 +94,17 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Iterate across local wavenumbers and apply operator "in-place".
-    // Short circuits on wavenumbers present only for dealiasing
+    // Iterate across local wavenumbers and apply operator "in-place"
+    // Short circuit "continues" should NOT occur for Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
-        const real_t kn = twopioverLz*wavenumber(dNz, n);
+        const int wn = wavenumber(dNz, n);
+        if (std::abs(wn) > wavenumber_max(Nz)) continue;
+        const real_t kn = twopioverLz*wn;
+
         for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
-            const real_t km = twopioverLx*wavenumber(dNx, m);
+            const int wm = wavenumber(dNx, m);
+            if (std::abs(wm) > wavenumber_max(Nx)) continue;
+            const real_t km = twopioverLx*wm;
 
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
@@ -110,12 +113,11 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             suzerain::blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
 
             // Accumulate result back into state storage automatically
-            // adjusting for when imaginary part should be zero a priori
-            // because the X direction uses real-to-complex transforms
-            const bool imagzero = wavenumber_imagzero(Nx, m);
+            // adjusting for when input imaginary part a priori should be zero
             GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(), imagzero,
+                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    wavenumber_imagzero(Nz, wn) * wavenumber_imagzero(Nx, wm),
                     tmp.data() + field::ndx::rho *Ny,
                     tmp.data() + field::ndx::rhou*Ny,
                     tmp.data() + field::ndx::rhov*Ny,
@@ -183,21 +185,24 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Iterate across local wavenumbers and apply operator "in-place".
-    // Short circuits on wavenumbers present only for dealiasing
+    // Iterate across local wavenumbers and apply operator "in-place"
+    // Short circuit "continues" should NOT occur for Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
-        const real_t kn = twopioverLz*wavenumber(dNz, n);
-        for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
-            const real_t km = twopioverLx*wavenumber(dNx, m);
+        const int wn = wavenumber(dNz, n);
+        if (std::abs(wn) > wavenumber_max(Nz)) continue;
+        const real_t kn = twopioverLz*wn;
 
-            // Automatically adjusts for when imaginary part should be zero
-            // because the X direction uses real-to-complex transforms
-            const bool imagzero = wavenumber_imagzero(Nx, m);
+        for (int m = dkbx; m < dkex; ++m) {
+            const int wm = wavenumber(dNx, m);
+            if (std::abs(wm) > wavenumber_max(Nx)) continue;
+            const real_t km = twopioverLx*wm;
+
+            // Accumulate result automatically adjusting for when input
+            // imaginary part a priori should be zero
             GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(), imagzero,
+                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    wavenumber_imagzero(Nz, wn) * wavenumber_imagzero(Nx, wm),
                     &input [field::ndx::rho ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhou][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhov][0][m - dkbx][n - dkbz],
@@ -426,14 +431,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     static const solve_types solve_type = gbsvx;
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
-    // Short circuits on wavenumbers present only for dealiasing
+    // Short circuit "continues" should NOT occur for Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
-        if (wavenumber_abs(dNz, n) > wavenumber_max(Nz)) continue;
-        const real_t kn = twopioverLz*wavenumber(dNz, n);
+        const int wn = wavenumber(dNz, n);
+        if (std::abs(wn) > wavenumber_max(Nz)) continue;
+        const real_t kn = twopioverLz*wn;
 
         for (int m = dkbx; m < dkex; ++m) {
-            if (wavenumber_abs(dNx, m) > wavenumber_max(Nx)) continue;
-            const real_t km = twopioverLx*wavenumber(dNx, m);
+            const int wm = wavenumber(dNx, m);
+            if (std::abs(wm) > wavenumber_max(Nx)) continue;
+            const real_t km = twopioverLx*wm;
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
@@ -500,9 +507,15 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
             GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
 
-            // When necessary, zero imaginary part of coefficients prior to
-            // solve because the X direction uses real-to-complex transforms.
-            if (SUZERAIN_UNLIKELY(wavenumber_imagzero(Nx, m))) {
+            // Must the imaginary portion of these wavenumbers be zero by
+            // conjugate symmetry arguments applied to the non-dealiased grid?
+            const bool imagzero = wavenumber_imagzero(Nz, wn)
+                                * wavenumber_imagzero(Nx, wm);
+
+            // When appropriate, zero imaginary part prior to solve.  This is
+            // either defensive (i.e. zero-zero modes) or absolutely required
+            // (e.g. Nyquist modes for even Nx, Nz).
+            if (SUZERAIN_UNLIKELY(imagzero)) {
                 b.imag().setZero();
             }
 
@@ -538,9 +551,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 break;
             }
 
-            // When necessary, zero imaginary part of coefficients after
-            // solve because the X direction uses real-to-complex transforms.
-            if (SUZERAIN_UNLIKELY(wavenumber_imagzero(Nx, m))) {
+            // When appropriate, zero imaginary part after solve.  Should be
+            // strictly speaking unnecessary but good defensive practice.
+            if (SUZERAIN_UNLIKELY(imagzero)) {
                 Eigen::Map<Eigen::ArrayXc>(p, A.N).imag().setZero();
             }
 

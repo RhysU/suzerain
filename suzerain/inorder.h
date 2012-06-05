@@ -155,6 +155,25 @@ int suzerain_inorder_wavenumber_max(const int N)
 
 /**
  * For a \e logically length <tt>N</tt> DFT of a real-valued function, are the
+ * imaginary components of the wavenumber <tt>w</tt> \e necessarily zero due to
+ * conjugate symmetry?
+ *
+ * @param N The \e logical length of the DFT.
+ * @param w The wavenumber of interest.
+ *
+ * @return One if the wavenumber must have zero imaginary components.
+ *         Zero otherwise.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_imagzero(const int N, const int w)
+{
+    // Deliberately no assertions on out-of-range wavenumbers!
+    return (w == 0) + (w == N/2)*(1 - (N % 2));
+}
+
+/**
+ * For a \e logically length <tt>N</tt> DFT of a real-valued function, are the
  * imaginary components of the wavenumber associated with index <tt>i</tt> \e
  * necessarily zero due to conjugate symmetry?
  *
@@ -165,11 +184,12 @@ int suzerain_inorder_wavenumber_max(const int N)
  * @param N The \e logical length of the DFT.
  * @param i The index of interest.
  *
- * @return The wavenumber associated with index <tt>i</tt>.
+ * @return One if the indexed wavenumber must have zero imaginary components.
+ *         Zero otherwise.
  * @see The documentation for inorder.h for terminology details.
  */
 inline
-int suzerain_inorder_wavenumber_imagzero(const int N, const int i)
+int suzerain_inorder_wavenumber_imagzero_index(const int N, const int i)
 {
     assert(0 <= i && i < N);
     return (i == 0) + (i == N/2)*(1 - (N % 2));

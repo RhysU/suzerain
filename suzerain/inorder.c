@@ -37,7 +37,10 @@ extern
 int suzerain_inorder_wavenumber_max(const int N);
 
 extern
-int suzerain_inorder_wavenumber_imagezero(const int N, const int w);
+int suzerain_inorder_wavenumber_imagzero(const int N, const int w);
+
+extern
+int suzerain_inorder_wavenumber_imagzero_index(const int N, const int i);
 
 extern
 int suzerain_inorder_wavenumber_valid(const int N, const int w);

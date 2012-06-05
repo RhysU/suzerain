@@ -64,9 +64,16 @@ int wavenumber_max(const int N)
 
 /** @copydoc suzerain_inorder_wavenumber_imagzero() */
 inline
-int wavenumber_imagzero(const int N, const int i)
+int wavenumber_imagzero(const int N, const int w)
 {
-    return suzerain_inorder_wavenumber_imagzero(N, i);
+    return suzerain_inorder_wavenumber_imagzero(N, w);
+}
+
+/** @copydoc suzerain_inorder_wavenumber_imagzero_index() */
+inline
+int wavenumber_imagzero_index(const int N, const int i)
+{
+    return suzerain_inorder_wavenumber_imagzero_index(N, i);
 }
 
 /** @copydoc suzerain_inorder_wavenumber_valid() */
