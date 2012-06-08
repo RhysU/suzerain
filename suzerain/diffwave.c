@@ -78,6 +78,10 @@ void suzerain_diffwave_apply(
     // maintain-- zero_wavenumbers_used_only_for_dealiasing has been removed.
 
     // Compute loop independent constants
+    const int min_wm = suzerain_inorder_wavenumber_min(Nx);
+    const int max_wm = suzerain_inorder_wavenumber_max(Nx);
+    const int min_wn = suzerain_inorder_wavenumber_min(Nz);
+    const int max_wn = suzerain_inorder_wavenumber_max(Nz);
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
     complex_double alpha_ipow;
@@ -87,21 +91,23 @@ void suzerain_diffwave_apply(
     const int sx = Ny, sz = (dkex - dkbx)*sx;
 
     // Overwrite x with alpha*D*x for storage, dealiasing assumptions
+    int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
+    int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        int nfreqidx;
+        const int wn   = suzerain_inorder_wavenumber(dNz, n);
         const int nkeeper  = (dzcnt > 0)
             ? (nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n))
-            : suzerain_inorder_wavenumber_translatable(Nz, dNz, n);
+            : (min_wn <= wn && wn <= max_wn /* translatable? */);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                int mfreqidx;
+                const int wm   = suzerain_inorder_wavenumber(dNx, m);
                 const int mkeeper = (dxcnt > 0)
                     ? (mfreqidx = suzerain_inorder_wavenumber_diff(Nx, dNx, m))
-                    : suzerain_inorder_wavenumber_translatable(Nx, dNx, m);
+                    : (min_wm <= wm && wm <= max_wm /* translatable? */);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
@@ -143,6 +149,10 @@ void suzerain_diffwave_accumulate(
     assert(dkbz <= dkez);
 
     // Compute loop independent constants
+    const int min_wm = suzerain_inorder_wavenumber_min(Nx);
+    const int max_wm = suzerain_inorder_wavenumber_max(Nx);
+    const int min_wn = suzerain_inorder_wavenumber_min(Nz);
+    const int max_wn = suzerain_inorder_wavenumber_max(Nz);
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
     const double twopioverLz = twopiover(Lz);  // Weird looking for FP control
     complex_double alpha_ipow;
@@ -152,21 +162,23 @@ void suzerain_diffwave_accumulate(
     const int sx = Ny, sz = (dkex - dkbx)*sx;
 
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
+    int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
+    int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        int nfreqidx;
+        const int wn   = suzerain_inorder_wavenumber(dNz, n);
         const int nkeeper = (dzcnt > 0)
             ? (nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n))
-            : suzerain_inorder_wavenumber_translatable(Nz, dNz, n);
+            : (min_wn <= wn && wn <= max_wn /* translatable? */);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                int mfreqidx;
+                const int wm   = suzerain_inorder_wavenumber(dNx, m);
                 const int mkeeper  = (dxcnt > 0)
                     ? (mfreqidx = suzerain_inorder_wavenumber_diff(Nx, dNx, m))
-                    : suzerain_inorder_wavenumber_translatable(Nx, dNx, m);
+                    : (min_wm <= wm && wm <= max_wm /* translatable? */);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
