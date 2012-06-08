@@ -101,7 +101,8 @@ void suzerain_diffwave_apply(
         const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
         const int nkeeper  = (dzcnt > 0)
                 ? nfreqidx
-                : suzerain_inorder_wavenumber_abs(dNz, n) <= (Nz-1)/2;
+                :    suzerain_inorder_wavenumber_abs(dNz, n)
+                  <= suzerain_inorder_wavenumber_absmin(Nz);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
@@ -111,7 +112,8 @@ void suzerain_diffwave_apply(
                         = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
                 const int mkeeper  = (dxcnt > 0)
                         ? mfreqidx
-                        : suzerain_inorder_wavenumber_abs(dNx, m) <= (Nx-1)/2;
+                        :    suzerain_inorder_wavenumber_abs(dNx, m)
+                          <= suzerain_inorder_wavenumber_absmin(Nx);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
@@ -151,9 +153,11 @@ static void zero_wavenumbers_used_only_for_dealiasing(
     // Examine suzerain_diffwave_apply() to help unravel this loop logic
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        if (suzerain_inorder_wavenumber_abs(dNz, n) <= (Nz-1)/2) {
+        if (    suzerain_inorder_wavenumber_abs(dNz, n)
+             <= suzerain_inorder_wavenumber_absmin(Nz)) {
             for (int m = dkbx; m < dkex; ++m) {
-                if (suzerain_inorder_wavenumber_abs(dNx, m) > (Nx-1)/2) {
+                if (   suzerain_inorder_wavenumber_abs(dNx, m)
+                     > suzerain_inorder_wavenumber_absmin(Nx)) {
                     const int moff = noff + sx*(m - dkbx);
                     memset(x + moff, 0, Ny*sizeof(x[0]));
                 }
@@ -203,7 +207,8 @@ void suzerain_diffwave_accumulate(
         const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
         const int nkeeper  = (dzcnt > 0)
                 ? nfreqidx
-                : suzerain_inorder_wavenumber_abs(dNz, n) <= (Nz-1)/2;
+                :    suzerain_inorder_wavenumber_abs(dNz, n)
+                  <= suzerain_inorder_wavenumber_absmin(Nz);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
@@ -213,7 +218,8 @@ void suzerain_diffwave_accumulate(
                     = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
                 const int mkeeper  = (dxcnt > 0)
                         ? mfreqidx
-                        : suzerain_inorder_wavenumber_abs(dNx, m) <= (Nx-1)/2;
+                        :    suzerain_inorder_wavenumber_abs(dNx, m)
+                          <= suzerain_inorder_wavenumber_absmin(Nx);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
