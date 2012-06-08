@@ -78,7 +78,8 @@ void suzerain_diffwave_apply(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
-    // Special logic for common-but-degenerate case
+    // Special logic for common-but-degenerate case zeroing dealiasing modes
+    // FIXME: The conditional below should permit alpha to be 1 as well.
 #pragma warning(push,disable:1572)
     if (dxcnt == 0 && dzcnt == 0 && alpha == 0) {
 #pragma warning(pop)
