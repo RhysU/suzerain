@@ -100,10 +100,16 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
             for (int l = 0; l < Ny; ++l) {
                 const gsl_complex observed = gsl_complex_rect((*q)[0],(*q)[1]);
 
-                const gsl_complex xsrc = gsl_complex_rect(
+                gsl_complex xsrc = gsl_complex_rect(
                      (l+1+ 2)*(m+1+ 3)*(n+1+ 5), -(l+1+ 7)*(m+1+11)*(n+1+13));
                 const gsl_complex ysrc = gsl_complex_rect(
                      (l+1+17)*(m+1+19)*(n+1+23), -(l+1+29)*(m+1+31)*(n+1+37));
+
+                const int wn  = suzerain_inorder_wavenumber(dNz, n);
+                const int wm  = suzerain_inorder_wavenumber(dNx, m);
+                const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz, wn);
+                const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx, wm);
+                if (ni0 && mi0) GSL_SET_IMAG(&xsrc, 0);
 
                 const gsl_complex alpha_D_x
                     = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);
@@ -250,8 +256,14 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
             for (int l = 0; l < Ny; ++l) {
                 const gsl_complex observed = gsl_complex_rect((*p)[0],(*p)[1]);
 
-                const gsl_complex xsrc = gsl_complex_rect(
+                gsl_complex xsrc = gsl_complex_rect(
                      (l+1+ 2)*(m+1+ 3)*(n+1+ 5), -(l+1+ 7)*(m+1+11)*(n+1+13));
+
+                const int wn  = suzerain_inorder_wavenumber(dNz, n);
+                const int wm  = suzerain_inorder_wavenumber(dNx, m);
+                const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz, wn);
+                const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx, wm);
+                if (ni0 && mi0) GSL_SET_IMAG(&xsrc, 0);
 
                 const gsl_complex alpha_D_x
                     = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);

@@ -71,13 +71,10 @@ void suzerain_diffwave_apply(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
-    // Used to have a special case for diffwave_apply when dxcnt = dzcnt = 0
-    // and alpha = 1 but when used the non-optimized case was under a quarter
-    // of a percent of the runtime on explicitly-advanced channels.  Some
-    // Nyquist-related fixes required per bug #2383 will make it harder to
-    // maintain-- zero_wavenumbers_used_only_for_dealiasing has been removed.
+    // Compute X, Z strides based on locally contiguous storage assumption
+    const int sx = Ny, sz = (dkex - dkbx)*sx;
 
-    // Compute loop independent constants
+    // Precompute loop independent constants
     const int min_wm = suzerain_inorder_wavenumber_min(Nx);
     const int max_wm = suzerain_inorder_wavenumber_max(Nx);
     const int min_wn = suzerain_inorder_wavenumber_min(Nz);
@@ -87,10 +84,8 @@ void suzerain_diffwave_apply(
     complex_double alpha_ipow;
     scale_by_imaginary_power(alpha, &alpha_ipow, dxcnt + dzcnt);
 
-    // Compute X, Z strides
-    const int sx = Ny, sz = (dkex - dkbx)*sx;
-
-    // Overwrite x with alpha*D*x for storage, dealiasing assumptions
+    // Overwrite x with alpha*D*x for storage, dealiasing details
+    // Generalized loops are hideous but permit one linear pass through memory
     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
@@ -102,6 +97,7 @@ void suzerain_diffwave_apply(
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
+            const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz,wn);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
                 const int wm   = suzerain_inorder_wavenumber(dNx, m);
@@ -113,7 +109,13 @@ void suzerain_diffwave_apply(
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
                     const complex_double malpha = mscale*alpha_ipow;
-                    suzerain_blas_zscal(Ny,malpha,x+moff,1);
+                    const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx,wm);
+                    if (SUZERAIN_UNLIKELY(ni0 && mi0)) {
+                        for (int i = 2*moff + 1; i < 2*(moff + Ny); i += 2) {
+                            ((double *)x)[i] = 0;  // Zero imaginary part
+                        }
+                    }
+                    suzerain_blas_zscal(Ny, malpha, x+moff, 1);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
                 }
@@ -148,7 +150,10 @@ void suzerain_diffwave_accumulate(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
-    // Compute loop independent constants
+    // Compute X, Z strides based on locally contiguous storage assumption
+    const int sx = Ny, sz = (dkex - dkbx)*sx;
+
+    // Precompute loop independent constants
     const int min_wm = suzerain_inorder_wavenumber_min(Nx);
     const int max_wm = suzerain_inorder_wavenumber_max(Nx);
     const int min_wn = suzerain_inorder_wavenumber_min(Nz);
@@ -158,10 +163,8 @@ void suzerain_diffwave_accumulate(
     complex_double alpha_ipow;
     scale_by_imaginary_power(alpha, &alpha_ipow, dxcnt + dzcnt);
 
-    // Compute X, Z strides
-    const int sx = Ny, sz = (dkex - dkbx)*sx;
-
-    // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
+    // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing details
+    // Generalized loops are hideous but permit one linear pass through memory
     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
@@ -173,6 +176,7 @@ void suzerain_diffwave_accumulate(
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
+            const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz, wn);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
                 const int wm   = suzerain_inorder_wavenumber(dNx, m);
@@ -184,7 +188,14 @@ void suzerain_diffwave_accumulate(
                     const double mscale
                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
                     const complex_double malpha = mscale*alpha_ipow;
-                    suzerain_blas_zaxpby(Ny,malpha,x+moff,1,beta,y+moff,1);
+                    const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx,wm);
+                    if (SUZERAIN_UNLIKELY(ni0 && mi0)) {
+                        suzerain_blas_zaxpby_d( // Ignore imaginary part
+                                Ny, malpha,(double *)(x+moff),2,beta,y+moff,1);
+                    } else {                              // Use imag part
+                        suzerain_blas_zaxpby(   // Honor imaginary part
+                                Ny,malpha,x+moff,1,beta,y+moff,1);
+                    }
                 } else {
                     suzerain_blas_zscal(Ny,beta,y+moff,1);
                 }
