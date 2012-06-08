@@ -511,7 +511,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             // When appropriate, zero imaginary part prior to solve.  This is
             // either defensive (i.e. zero-zero modes) or absolutely required
-            // (e.g. Nyquist modes for even Nx, Nz).
+            // (i.e. not using imaginary part of Nyquist modes for even Nx, Nz).
             if (SUZERAIN_UNLIKELY(imagzero)) {
                 b.imag().setZero();
             }
@@ -548,11 +548,13 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 break;
             }
 
-            // When appropriate, zero imaginary part after solve.  Should be
-            // strictly speaking unnecessary but good defensive practice.
-            if (SUZERAIN_UNLIKELY(imagzero)) {
-                Eigen::Map<Eigen::ArrayXc>(p, A.N).imag().setZero();
-            }
+            // Do /not/ zero imaginary part after solve when imagzero is true.
+            //
+            // Imaginary part should already be zero for zero-zero as operator
+            // was real-valued and we applied it to real-valued state.  For
+            // Nyquist modes, zeroing the imaginary part now effectively
+            // introduces high frequency noise for subsequent linear operator
+            // application (as the solution residual would no longer be zero).
 
             GRVY_TIMER_END("implicit operator solve");
 
