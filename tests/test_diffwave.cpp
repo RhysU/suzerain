@@ -111,8 +111,8 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                     = gsl_complex_mul(beta, ysrc);
 
                 gsl_complex expected;
-                if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
-                    && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
+                if (   (n <= Nz/2 || n >= (dNz - (Nz-1)/2))
+                    && (m <= Nx/2 || m >= (dNx - (Nx-1)/2))) {
                     expected = gsl_complex_add(alpha_D_x, beta_y);
                 } else {
                     expected = beta_y;
@@ -257,8 +257,8 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
                     = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);
 
                 gsl_complex expected;
-                if (   (n <= (Nz-1)/2 || n >= (dNz - (Nz-1)/2))
-                    && (m <= (Nx-1)/2 || m >= (dNx - (Nx-1)/2))) {
+                if (   (n <= Nz/2 || n >= (dNz - (Nz-1)/2))
+                    && (m <= Nx/2 || m >= (dNx - (Nx-1)/2))) {
                     expected = alpha_D_x;
                 } else {
                     expected = gsl_complex_rect(0, 0);

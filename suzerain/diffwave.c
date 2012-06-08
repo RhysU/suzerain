@@ -97,23 +97,20 @@ void suzerain_diffwave_apply(
 
     // Overwrite x with alpha*D*x for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
-        const int noff     = sz*(n - dkbz);
-        const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
+        const int noff = sz*(n - dkbz);
+        int nfreqidx;
         const int nkeeper  = (dzcnt > 0)
-                ? nfreqidx
-                :    suzerain_inorder_wavenumber_abs(dNz, n)
-                  <= suzerain_inorder_wavenumber_absmin(Nz);
+            ? (nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n))
+            : suzerain_inorder_wavenumber_translatable(Nz, dNz, n);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
-                const int moff     = noff + sx*(m - dkbx);
-                const int mfreqidx
-                        = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
-                const int mkeeper  = (dxcnt > 0)
-                        ? mfreqidx
-                        :    suzerain_inorder_wavenumber_abs(dNx, m)
-                          <= suzerain_inorder_wavenumber_absmin(Nx);
+                const int moff = noff + sx*(m - dkbx);
+                int mfreqidx;
+                const int mkeeper = (dxcnt > 0)
+                    ? (mfreqidx = suzerain_inorder_wavenumber_diff(Nx, dNx, m))
+                    : suzerain_inorder_wavenumber_translatable(Nx, dNx, m);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
@@ -153,11 +150,9 @@ static void zero_wavenumbers_used_only_for_dealiasing(
     // Examine suzerain_diffwave_apply() to help unravel this loop logic
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        if (    suzerain_inorder_wavenumber_abs(dNz, n)
-             <= suzerain_inorder_wavenumber_absmin(Nz)) {
+        if (suzerain_inorder_wavenumber_translatable(Nz, dNz, n)) {
             for (int m = dkbx; m < dkex; ++m) {
-                if (   suzerain_inorder_wavenumber_abs(dNx, m)
-                     > suzerain_inorder_wavenumber_absmin(Nx)) {
+                if (!suzerain_inorder_wavenumber_translatable(Nx, dNx, m)) {
                     const int moff = noff + sx*(m - dkbx);
                     memset(x + moff, 0, Ny*sizeof(x[0]));
                 }
@@ -203,23 +198,20 @@ void suzerain_diffwave_accumulate(
 
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing assumptions
     for (int n = dkbz; n < dkez; ++n) {
-        const int noff     = sz*(n - dkbz);
-        const int nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n);
-        const int nkeeper  = (dzcnt > 0)
-                ? nfreqidx
-                :    suzerain_inorder_wavenumber_abs(dNz, n)
-                  <= suzerain_inorder_wavenumber_absmin(Nz);
+        const int noff = sz*(n - dkbz);
+        int nfreqidx;
+        const int nkeeper = (dzcnt > 0)
+            ? (nfreqidx = suzerain_inorder_wavenumber_diff(Nz, dNz, n))
+            : suzerain_inorder_wavenumber_translatable(Nz, dNz, n);
         if (nkeeper) {
             // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mfreqidx
-                    = suzerain_inorder_wavenumber_diff(Nx, dNx, m);
+                int mfreqidx;
                 const int mkeeper  = (dxcnt > 0)
-                        ? mfreqidx
-                        :    suzerain_inorder_wavenumber_abs(dNx, m)
-                          <= suzerain_inorder_wavenumber_absmin(Nx);
+                    ? (mfreqidx = suzerain_inorder_wavenumber_diff(Nx, dNx, m))
+                    : suzerain_inorder_wavenumber_translatable(Nx, dNx, m);
                 if (mkeeper) {
                     // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
                     const double mscale
