@@ -49,13 +49,6 @@ double twopiover(const double L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
-// Special case for diffwave_apply when dxcnt = dzcnt = 0 and alpha = 1
-static void zero_wavenumbers_used_only_for_dealiasing(
-    complex_double * const x,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez);
-
 void suzerain_diffwave_apply(
     const int dxcnt,
     const int dzcnt,
@@ -78,14 +71,11 @@ void suzerain_diffwave_apply(
     assert(dkez <= dNz);
     assert(dkbz <= dkez);
 
-    // Special logic for common-but-degenerate case zeroing dealiasing modes
-    // FIXME: The conditional below should permit alpha to be 1 as well.
-#pragma warning(push,disable:1572)
-    if (dxcnt == 0 && dzcnt == 0 && alpha == 0) {
-#pragma warning(pop)
-        return zero_wavenumbers_used_only_for_dealiasing(
-                x, Ny, Nx, dNx, dkbx, dkex, Nz, dNz, dkbz, dkez);
-    }
+    // Used to have a special case for diffwave_apply when dxcnt = dzcnt = 0
+    // and alpha = 1 but when used the non-optimized case was under a quarter
+    // of a percent of the runtime on explicitly-advanced channels.  Some
+    // Nyquist-related fixes required per bug #2383 will make it harder to
+    // maintain-- zero_wavenumbers_used_only_for_dealiasing has been removed.
 
     // Compute loop independent constants
     const double twopioverLx = twopiover(Lx);  // Weird looking for FP control
@@ -124,42 +114,6 @@ void suzerain_diffwave_apply(
             }
         } else {
             memset(x+noff, 0, sz*sizeof(x[0]));  // Scale by zero
-        }
-    }
-}
-
-static void zero_wavenumbers_used_only_for_dealiasing(
-    complex_double * const x,
-    const int Ny,
-    const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
-{
-    assert(Ny >= 0);                // Sanity check Y direction
-    assert(Nx >= 0);                // Sanity check X direction
-    assert(dNx >= Nx);
-    assert(dkex <= dNx);            // Often dkex <= (dNx/2+1)
-    assert(dkbx <= dkex);
-    assert(Nz >= 0);                // Sanity check Z direction
-    assert(dNz >= Nz);
-    assert(dkez <= dNz);
-    assert(dkbz <= dkez);
-
-    // Compute X, Z strides
-    const int sx = Ny, sz = (dkex - dkbx)*sx;
-
-    // Zero only non-dealiased wavenumbers in x using storage assumptions
-    // Examine suzerain_diffwave_apply() to help unravel this loop logic
-    for (int n = dkbz; n < dkez; ++n) {
-        const int noff = sz*(n - dkbz);
-        if (suzerain_inorder_wavenumber_translatable(Nz, dNz, n)) {
-            for (int m = dkbx; m < dkex; ++m) {
-                if (!suzerain_inorder_wavenumber_translatable(Nx, dNx, m)) {
-                    const int moff = noff + sx*(m - dkbx);
-                    memset(x + moff, 0, Ny*sizeof(x[0]));
-                }
-            }
-        } else {
-            memset(x+noff, 0, sz*sizeof(x[0]));
         }
     }
 }
