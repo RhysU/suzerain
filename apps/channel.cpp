@@ -2226,7 +2226,7 @@ void accumulate_manufactured_solution(
     }
 
     // Unstash beta*imag parts of zero-zero and Nyquist modes
-    // Doing so effectively sets alpha*mms to be zero for this wavenumbers
+    // Doing so effectively sets alpha*mms to be zero for these wavenumbers
     // TODO: Linear traversal process is both ugly and inefficient
     for (size_t k = 0, colnum = 0; k < field::count; ++k) {
         for (int n = dkbz; n < dkez; ++n) {
