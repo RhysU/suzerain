@@ -11,8 +11,8 @@
 // multi_array.hpp: Utilities for Boost.MultiArray
 // $Id$
 
-#ifndef __SUZERAIN_MULTIARRAY_H
-#define __SUZERAIN_MULTIARRAY_H
+#ifndef SUZERAIN_MULTIARRAY_HPP
+#define SUZERAIN_MULTIARRAY_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>
@@ -618,4 +618,4 @@ public:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_MULTIARRAY_H
+#endif // SUZERAIN_MULTIARRAY_HPP

@@ -11,8 +11,8 @@
 // complex.hpp: utilities for manipulating various complex number formats
 // $Id$
 
-#ifndef __SUZERAIN_COMPLEX_HPP
-#define __SUZERAIN_COMPLEX_HPP
+#ifndef SUZERAIN_COMPLEX_HPP
+#define SUZERAIN_COMPLEX_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>
@@ -625,4 +625,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_COMPLEX_HPP
+#endif // SUZERAIN_COMPLEX_HPP

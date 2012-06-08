@@ -11,8 +11,8 @@
 // fftw.hpp: miscellaneous utilities for working with FFTW's C interface
 // $Id$
 
-#ifndef __SUZERAIN_FFTW_HPP
-#define __SUZERAIN_FFTW_HPP
+#ifndef SUZERAIN_FFTW_HPP
+#define SUZERAIN_FFTW_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -158,4 +158,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_FFTW_HPP
+#endif // SUZERAIN_FFTW_HPP

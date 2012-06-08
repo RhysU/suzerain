@@ -11,8 +11,8 @@
 // statistics_definition.hpp: classes handling statistics output definitions
 // $Id$
 
-#ifndef __SUZERAIN_STATISTICS_DEFINITION_HPP
-#define __SUZERAIN_STATISTICS_DEFINITION_HPP
+#ifndef SUZERAIN_STATISTICS_DEFINITION_HPP
+#define SUZERAIN_STATISTICS_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -82,4 +82,4 @@ public:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_STATISTICS_DEFINITION_HPP
+#endif // SUZERAIN_STATISTICS_DEFINITION_HPP

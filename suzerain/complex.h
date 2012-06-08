@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_COMPLEX_H
-#define __SUZERAIN_COMPLEX_H
+#ifndef SUZERAIN_COMPLEX_H
+#define SUZERAIN_COMPLEX_H
 
 /** @file
  * Compatibility file for C99 \c _Complex and C++ <tt>std::complex</tt> types.
@@ -63,4 +63,4 @@ typedef _Complex long double complex_long_double;
 
 #endif  // #ifdef __cplusplus
 
-#endif  // #ifndef __SUZERAIN_COMPLEX_H
+#endif  // #ifndef SUZERAIN_COMPLEX_H

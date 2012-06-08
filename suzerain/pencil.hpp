@@ -11,8 +11,8 @@
 // pencil.hpp: Class to support P3DFFT's physical and wave space data layout
 // $Id$
 
-#ifndef __SUZERAIN_PENCIL_HPP
-#define __SUZERAIN_PENCIL_HPP
+#ifndef SUZERAIN_PENCIL_HPP
+#define SUZERAIN_PENCIL_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -274,4 +274,4 @@ pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PENCIL_HPP
+#endif // SUZERAIN_PENCIL_HPP

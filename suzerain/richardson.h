@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_RICHARDSON_H
-#define __SUZERAIN_RICHARDSON_H
+#ifndef SUZERAIN_RICHARDSON_H
+#define SUZERAIN_RICHARDSON_H
 
 #include <suzerain/common.h>
 #include <gsl/gsl_matrix_double.h>
@@ -97,4 +97,4 @@ suzerain_richardson_extrapolation(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_RICHARDSON_H */
+#endif /* SUZERAIN_RICHARDSON_H */

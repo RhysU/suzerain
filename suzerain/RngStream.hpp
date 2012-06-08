@@ -16,8 +16,8 @@
  * Declares <tt>RngStream</tt> by L'Ecuyer <i>et al</i>, 2002.
  */
 
-#ifndef __SUZERAIN_RNGSTREAM_HPP
-#define __SUZERAIN_RNGSTREAM_HPP
+#ifndef SUZERAIN_RNGSTREAM_HPP
+#define SUZERAIN_RNGSTREAM_HPP
 
 #include <iosfwd>
 #include <string>
@@ -221,4 +221,4 @@ private:
 
 }  // end namespace suzerain
 
-#endif  /* __SUZERAIN_RNGSTREAM_HPP */
+#endif  /* SUZERAIN_RNGSTREAM_HPP */

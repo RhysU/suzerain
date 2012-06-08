@@ -11,8 +11,8 @@
 // pencilfft.hpp: perform FFTs atop boost::multi_array using FFTW
 // $Id$
 
-#ifndef __SUZERAIN_PENCILFFT_HPP
-#define __SUZERAIN_PENCILFFT_HPP
+#ifndef SUZERAIN_PENCILFFT_HPP
+#define SUZERAIN_PENCILFFT_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
@@ -1583,4 +1583,4 @@ void backward_c2r(
 
 } /* pencilfft */ } /* suzerain */
 
-#endif // __SUZERAIN_PENCILFFT_HPP
+#endif // SUZERAIN_PENCILFFT_HPP

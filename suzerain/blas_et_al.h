@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_BLAS_ET_AL_H
-#define __SUZERAIN_BLAS_ET_AL_H
+#ifndef SUZERAIN_BLAS_ET_AL_H
+#define SUZERAIN_BLAS_ET_AL_H
 
 #include <suzerain/common.h>
 #include <suzerain/complex.h>
@@ -3532,4 +3532,4 @@ suzerain_blasext_zgbnorm1(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_BLAS_ET_AL_H */
+#endif /* SUZERAIN_BLAS_ET_AL_H */

@@ -11,8 +11,8 @@
 // mpi_datatype.hpp: lookup functionality for MPI_Datatype constants
 // $Id$
 
-#ifndef __SUZERAIN_MPI_DATATYPE_HPP
-#define __SUZERAIN_MPI_DATATYPE_HPP
+#ifndef SUZERAIN_MPI_DATATYPE_HPP
+#define SUZERAIN_MPI_DATATYPE_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.h>
@@ -210,4 +210,4 @@ MPI_Datatype datatype_of(const T& t)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_MPI_DATATYPE_HPP
+#endif // SUZERAIN_MPI_DATATYPE_HPP

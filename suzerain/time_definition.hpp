@@ -11,8 +11,8 @@
 // time_definition.hpp: classes handling advance definitions
 // $Id$
 
-#ifndef __SUZERAIN_TIME_DEFINITION_HPP
-#define __SUZERAIN_TIME_DEFINITION_HPP
+#ifndef SUZERAIN_TIME_DEFINITION_HPP
+#define SUZERAIN_TIME_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -310,4 +310,4 @@ TimeDefinition<FPT>::TimeDefinition(const char * evmagfactor)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_TIME_DEFINITION_HPP
+#endif // SUZERAIN_TIME_DEFINITION_HPP

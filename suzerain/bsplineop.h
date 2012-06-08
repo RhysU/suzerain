@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_BSPLINEOP_H
-#define __SUZERAIN_BSPLINEOP_H
+#ifndef SUZERAIN_BSPLINEOP_H
+#define SUZERAIN_BSPLINEOP_H
 
 #include <gsl/gsl_bspline.h>
 #include <suzerain/common.h>
@@ -975,4 +975,4 @@ suzerain_bsplineop_luz_factor_mass(
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_BSPLINEOP_H
+#endif // SUZERAIN_BSPLINEOP_H

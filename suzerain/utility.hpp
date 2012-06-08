@@ -11,8 +11,8 @@
 // utility.hpp: miscellaneous utilities that seemingly fit nowhere else
 // $Id$
 
-#ifndef __SUZERAIN_UTILITY_HPP
-#define __SUZERAIN_UTILITY_HPP
+#ifndef SUZERAIN_UTILITY_HPP
+#define SUZERAIN_UTILITY_HPP
 
 #include <suzerain/common.hpp>
 
@@ -303,4 +303,4 @@ bool all(InputIterator first, InputIterator last)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_UTILITY_HPP
+#endif // SUZERAIN_UTILITY_HPP

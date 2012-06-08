@@ -11,8 +11,8 @@
 // iterator.hpp: iterator tools
 // $Id$
 
-#ifndef __SUZERAIN_ITERATOR_HPP
-#define __SUZERAIN_ITERATOR_HPP
+#ifndef SUZERAIN_ITERATOR_HPP
+#define SUZERAIN_ITERATOR_HPP
 
 #include <suzerain/common.hpp>
 
@@ -64,4 +64,4 @@ infinite_constant<T> make_infinite_constant(const T& t)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_ITERATOR_HPP
+#endif // SUZERAIN_ITERATOR_HPP

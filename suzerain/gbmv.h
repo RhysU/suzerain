@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_GBMV_H
-#define __SUZERAIN_GBMV_H
+#ifndef SUZERAIN_GBMV_H
+#define SUZERAIN_GBMV_H
 
 #include <suzerain/complex.h>
 
@@ -166,4 +166,4 @@ suzerain_gbmv_dzz(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_GBMV_H */
+#endif /* SUZERAIN_GBMV_H */

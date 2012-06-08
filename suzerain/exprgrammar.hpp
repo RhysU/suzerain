@@ -11,8 +11,8 @@
 // exprgrammar.hpp: constant arithmetic expression evaluation via Boost Spirit
 // $Id$
 
-#ifndef __SUZERAIN_EXPRGRAMMAR_HPP
-#define __SUZERAIN_EXPRGRAMMAR_HPP
+#ifndef SUZERAIN_EXPRGRAMMAR_HPP
+#define SUZERAIN_EXPRGRAMMAR_HPP
 
 #include <cmath>
 #include <limits>
@@ -239,4 +239,4 @@ bool parse(Iterator &iter,
 
 } // end namespace suzerain
 
-#endif // __SUZERAIN_EXPRGRAMMAR_HPP
+#endif // SUZERAIN_EXPRGRAMMAR_HPP

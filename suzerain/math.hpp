@@ -11,8 +11,8 @@
 // math.hpp: provides general mathematics routines
 // $Id$
 
-#ifndef __SUZERAIN_MATH_HPP
-#define __SUZERAIN_MATH_HPP
+#ifndef SUZERAIN_MATH_HPP
+#define SUZERAIN_MATH_HPP
 
 #include <suzerain/common.hpp>
 
@@ -291,4 +291,4 @@ OutputIterator stretchspace(const FPT xbegin,
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_MATH_HPP
+#endif // SUZERAIN_MATH_HPP

@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_KAHAN_H
-#define __SUZERAIN_KAHAN_H
+#ifndef SUZERAIN_KAHAN_H
+#define SUZERAIN_KAHAN_H
 
 #include <suzerain/complex.h>
 
@@ -121,4 +121,4 @@ complex_double suzerain_kahanz5(const complex_double a0,
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_KAHAN_H */
+#endif /* SUZERAIN_KAHAN_H */

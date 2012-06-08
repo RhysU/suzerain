@@ -11,8 +11,8 @@
 // program_options.hpp: handles parsing program options from CLI, files
 // $Id$
 
-#ifndef __SUZERAIN_PROGRAM_OPTIONS_HPP
-#define __SUZERAIN_PROGRAM_OPTIONS_HPP
+#ifndef SUZERAIN_PROGRAM_OPTIONS_HPP
+#define SUZERAIN_PROGRAM_OPTIONS_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
@@ -287,4 +287,4 @@ protected:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PROGRAM_OPTIONS_HPP
+#endif // SUZERAIN_PROGRAM_OPTIONS_HPP

@@ -11,8 +11,8 @@
 // timestepper.hpp: low storage Runge-Kutta timestepper interface
 // $Id$
 
-#ifndef __SUZERAIN_TIMESTEPPER_HPP
-#define __SUZERAIN_TIMESTEPPER_HPP
+#ifndef SUZERAIN_TIMESTEPPER_HPP
+#define SUZERAIN_TIMESTEPPER_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
@@ -1419,4 +1419,4 @@ make_LowStorageTimeController(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_TIMESTEPPER_HPP
+#endif // SUZERAIN_TIMESTEPPER_HPP

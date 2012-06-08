@@ -11,8 +11,8 @@
 // exprparse_impl.hpp: constant arithmetic expression evaluation (private)
 // $Id$
 
-#ifndef __SUZERAIN_EXPRPARSE_IMPL_HPP
-#define __SUZERAIN_EXPRPARSE_IMPL_HPP
+#ifndef SUZERAIN_EXPRPARSE_IMPL_HPP
+#define SUZERAIN_EXPRPARSE_IMPL_HPP
 
 #include <algorithm>
 #include <cstring>

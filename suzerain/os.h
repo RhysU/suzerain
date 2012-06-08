@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_OS_H
-#define __SUZERAIN_OS_H
+#ifndef SUZERAIN_OS_H
+#define SUZERAIN_OS_H
 
 #include <suzerain/common.h>
 #include <fcntl.h>
@@ -87,4 +87,4 @@ const char * suzerain_temporary_directory();
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_OS_H */
+#endif /* SUZERAIN_OS_H */

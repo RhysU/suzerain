@@ -11,8 +11,8 @@
 // timecontroller.hpp: higher-level time advance management
 // $Id$
 
-#ifndef __SUZERAIN_TIMECONTROLLER_HPP
-#define __SUZERAIN_TIMECONTROLLER_HPP
+#ifndef SUZERAIN_TIMECONTROLLER_HPP
+#define SUZERAIN_TIMECONTROLLER_HPP
 
 #include <suzerain/common.hpp>
 #include <boost/accumulators/accumulators.hpp>
@@ -566,4 +566,4 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_TIMECONTROLLER_HPP
+#endif // SUZERAIN_TIMECONTROLLER_HPP

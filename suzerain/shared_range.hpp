@@ -2,8 +2,8 @@
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef __SUZERAIN_SHARED_RANGE_HPP
-#define __SUZERAIN_SHARED_RANGE_HPP
+#ifndef SUZERAIN_SHARED_RANGE_HPP
+#define SUZERAIN_SHARED_RANGE_HPP
 
 #include <algorithm>
 #include <memory>
@@ -426,4 +426,4 @@ shared_range<typename A::value_type> clone_shared_range(
 
 } // namespace suzerain
 
-#endif /* __SUZERAIN_SHARED_RANGE_HPP */
+#endif /* SUZERAIN_SHARED_RANGE_HPP */

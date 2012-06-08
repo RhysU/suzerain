@@ -11,8 +11,8 @@
 // traits.hpp: utilities for manipulating various types
 // $Id$
 
-#ifndef __SUZERAIN_TRAITS_HPP
-#define __SUZERAIN_TRAITS_HPP
+#ifndef SUZERAIN_TRAITS_HPP
+#define SUZERAIN_TRAITS_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
@@ -57,4 +57,4 @@ struct component<T, typename boost::enable_if<
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_TRAITS_HPP
+#endif // SUZERAIN_TRAITS_HPP

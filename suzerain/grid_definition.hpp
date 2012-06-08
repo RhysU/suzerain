@@ -11,8 +11,8 @@
 // grid_definition.hpp: classes handling grid definitions
 // $Id$
 
-#ifndef __SUZERAIN_GRID_DEFINITION_HPP
-#define __SUZERAIN_GRID_DEFINITION_HPP
+#ifndef SUZERAIN_GRID_DEFINITION_HPP
+#define SUZERAIN_GRID_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -198,4 +198,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_GRID_DEFINITION_HPP
+#endif // SUZERAIN_GRID_DEFINITION_HPP

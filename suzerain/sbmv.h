@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_SBMV_H
-#define __SUZERAIN_SBMV_H
+#ifndef SUZERAIN_SBMV_H
+#define SUZERAIN_SBMV_H
 
 #include <suzerain/complex.h>
 
@@ -180,4 +180,4 @@ suzerain_sbmv_dzz(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_SBMV_H */
+#endif /* SUZERAIN_SBMV_H */

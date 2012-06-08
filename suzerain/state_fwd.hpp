@@ -11,8 +11,8 @@
 // state_fwd.hpp: Interfaces for manipulating mutable state vectors
 // $Id$
 
-#ifndef __SUZERAIN_STATE_FWD_HPP
-#define __SUZERAIN_STATE_FWD_HPP
+#ifndef SUZERAIN_STATE_FWD_HPP
+#define SUZERAIN_STATE_FWD_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -376,4 +376,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_STATE_FWD_HPP
+#endif // SUZERAIN_STATE_FWD_HPP

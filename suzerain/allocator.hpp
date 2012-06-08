@@ -17,8 +17,8 @@
 // allocator.hpp: Allocator implementations, including aligned allocators
 // $Id$
 
-#ifndef __SUZERAIN_ALLOCATOR_HPP
-#define __SUZERAIN_ALLOCATOR_HPP
+#ifndef SUZERAIN_ALLOCATOR_HPP
+#define SUZERAIN_ALLOCATOR_HPP
 
 #include <boost/utility.hpp>
 
@@ -242,4 +242,4 @@ inline bool operator!=(allocator<T, P, Tr> const& lhs,
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_ALLOCATOR_HPP
+#endif // SUZERAIN_ALLOCATOR_HPP

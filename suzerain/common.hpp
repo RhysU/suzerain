@@ -11,8 +11,8 @@
 // common.hpp: C++ common definitions, utility macros, and inline functions
 // $Id$
 
-#ifndef __SUZERAIN_COMMON_HPP
-#define __SUZERAIN_COMMON_HPP
+#ifndef SUZERAIN_COMMON_HPP
+#define SUZERAIN_COMMON_HPP
 
 // Include all of the C common material
 #include <suzerain/common.h>
@@ -193,4 +193,4 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
 #include <Eigen/Core>
 #endif // SUZERAIN_HAVE_EIGEN
 
-#endif // __SUZERAIN_COMMON_HPP
+#endif // SUZERAIN_COMMON_HPP

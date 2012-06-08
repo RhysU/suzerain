@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_MPI_H
-#define __SUZERAIN_MPI_H
+#ifndef SUZERAIN_MPI_H
+#define SUZERAIN_MPI_H
 
 #ifdef __GNUC__
 /* Some older implementations trigger many warnings.  Suppress them. */
@@ -42,4 +42,4 @@ extern "C" {
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_MPI_H */
+#endif /* SUZERAIN_MPI_H */

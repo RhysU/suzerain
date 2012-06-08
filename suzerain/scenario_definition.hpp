@@ -11,8 +11,8 @@
 // scenario_definition.hpp: classes handling problem scenario parameters
 // $Id$
 
-#ifndef __SUZERAIN_SCENARIO_DEFINITION_HPP
-#define __SUZERAIN_SCENARIO_DEFINITION_HPP
+#ifndef SUZERAIN_SCENARIO_DEFINITION_HPP
+#define SUZERAIN_SCENARIO_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
@@ -291,4 +291,4 @@ void ScenarioDefinition<FPT>::initialize_options(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_SCENARIO_DEFINITION_HPP
+#endif // SUZERAIN_SCENARIO_DEFINITION_HPP

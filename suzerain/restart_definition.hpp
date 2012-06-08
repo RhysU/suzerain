@@ -11,8 +11,8 @@
 // restart_definition.hpp: classes handling restart definitions
 // $Id$
 
-#ifndef __SUZERAIN_RESTART_DEFINITION_HPP
-#define __SUZERAIN_RESTART_DEFINITION_HPP
+#ifndef SUZERAIN_RESTART_DEFINITION_HPP
+#define SUZERAIN_RESTART_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -103,4 +103,4 @@ public:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_RESTART_DEFINITION_HPP
+#endif // SUZERAIN_RESTART_DEFINITION_HPP

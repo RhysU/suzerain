@@ -11,8 +11,8 @@
 // contiguous_memory.hpp: Provides ContiguousMemory class
 // $Id$
 
-#ifndef __SUZERAIN_CONTIGUOUS_MEMORY_HPP
-#define __SUZERAIN_CONTIGUOUS_MEMORY_HPP
+#ifndef SUZERAIN_CONTIGUOUS_MEMORY_HPP
+#define SUZERAIN_CONTIGUOUS_MEMORY_HPP
 
 #include <suzerain/common.hpp>
 
@@ -119,4 +119,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_CONTIGUOUS_MEMORY_HPP
+#endif // SUZERAIN_CONTIGUOUS_MEMORY_HPP

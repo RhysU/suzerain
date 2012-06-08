@@ -23,8 +23,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_FUNCTION_H
-#define __SUZERAIN_FUNCTION_H
+#ifndef SUZERAIN_FUNCTION_H
+#define SUZERAIN_FUNCTION_H
 
 #include <suzerain/common.h>
 #include <suzerain/complex.h>
@@ -145,4 +145,4 @@ typedef struct {
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_FUNCTION_H */
+#endif /* SUZERAIN_FUNCTION_H */

@@ -11,8 +11,8 @@
 // functional.hpp: functional tools
 // $Id$
 
-#ifndef __SUZERAIN_FUNCTIONAL_HPP
-#define __SUZERAIN_FUNCTIONAL_HPP
+#ifndef SUZERAIN_FUNCTIONAL_HPP
+#define SUZERAIN_FUNCTIONAL_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/utility.hpp>
@@ -164,4 +164,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_FUNCTIONAL_HPP
+#endif // SUZERAIN_FUNCTIONAL_HPP

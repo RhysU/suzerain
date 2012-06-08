@@ -11,8 +11,8 @@
 // rholt.hpp: Kernels using reference density, length, and temperature
 // $Id$
 
-#ifndef __SUZERAIN_RHOLT_HPP
-#define __SUZERAIN_RHOLT_HPP
+#ifndef SUZERAIN_RHOLT_HPP
+#define SUZERAIN_RHOLT_HPP
 
 #include <suzerain/common.hpp>
 
@@ -2260,4 +2260,4 @@ Vector curl_curl_u(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_RHOLT_HPP
+#endif // SUZERAIN_RHOLT_HPP

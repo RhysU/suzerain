@@ -11,8 +11,8 @@
 // problem.hpp: classes handling problem definitions
 // $Id$
 
-#ifndef __SUZERAIN_PROBLEM_HPP
-#define __SUZERAIN_PROBLEM_HPP
+#ifndef SUZERAIN_PROBLEM_HPP
+#define SUZERAIN_PROBLEM_HPP
 
 #include <suzerain/common.hpp>
 
@@ -103,4 +103,4 @@ protected:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PROBLEM_HPP
+#endif // SUZERAIN_PROBLEM_HPP

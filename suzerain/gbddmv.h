@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_GBDDMV_H
-#define __SUZERAIN_GBDDMV_H
+#ifndef SUZERAIN_GBDDMV_H
+#define SUZERAIN_GBDDMV_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -197,4 +197,4 @@ suzerain_gbddmv_dzz(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_GBDDMV_H */
+#endif /* SUZERAIN_GBDDMV_H */

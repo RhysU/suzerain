@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_COMMON_H
-#define __SUZERAIN_COMMON_H
+#ifndef SUZERAIN_COMMON_H
+#define SUZERAIN_COMMON_H
 
 #include <suzerain/suzerain-config.h>
 
@@ -160,4 +160,4 @@
 #include <boost/preprocessor.hpp>
 #endif /* SUZERAIN_HAVE_BOOST */
 
-#endif // __SUZERAIN_COMMON_H
+#endif // SUZERAIN_COMMON_H

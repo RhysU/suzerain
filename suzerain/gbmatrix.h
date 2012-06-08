@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_GBMATRIX_H
-#define __SUZERAIN_GBMATRIX_H
+#ifndef SUZERAIN_GBMATRIX_H
+#define SUZERAIN_GBMATRIX_H
 
 #include <assert.h>
 #include <stddef.h>
@@ -164,4 +164,4 @@ void *suzerain_gbmatrix_row(int m, int n, int kl, int ku,
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_GBMATRIX_H
+#endif // SUZERAIN_GBMATRIX_H

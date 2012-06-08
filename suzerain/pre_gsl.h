@@ -21,8 +21,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_PRE_GSL_H
-#define __SUZERAIN_PRE_GSL_H
+#ifndef SUZERAIN_PRE_GSL_H
+#define SUZERAIN_PRE_GSL_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,4 +74,4 @@ gsl_bspline_knots_greville(const gsl_vector *abscissae,
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_PRE_GSL_H
+#endif // SUZERAIN_PRE_GSL_H

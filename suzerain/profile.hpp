@@ -11,8 +11,8 @@
 // profile.hpp: miscellaneous utilities for profiling parallel transposes
 // $Id$
 
-#ifndef __SUZERAIN_PROFILE_HPP
-#define __SUZERAIN_PROFILE_HPP
+#ifndef SUZERAIN_PROFILE_HPP
+#define SUZERAIN_PROFILE_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -85,4 +85,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PROFILE_HPP
+#endif // SUZERAIN_PROFILE_HPP

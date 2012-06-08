@@ -11,8 +11,8 @@
 // storage.hpp: Marker classes indicating storage ordering
 // $Id$
 
-#ifndef __SUZERAIN_STORAGE_HPP
-#define __SUZERAIN_STORAGE_HPP
+#ifndef SUZERAIN_STORAGE_HPP
+#define SUZERAIN_STORAGE_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/iterator.hpp>
@@ -271,4 +271,4 @@ template<> class contiguous<6>
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_STORAGE_HPP
+#endif // SUZERAIN_STORAGE_HPP

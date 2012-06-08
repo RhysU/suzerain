@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_BSMBSM_H
-#define __SUZERAIN_BSMBSM_H
+#ifndef SUZERAIN_BSMBSM_H
+#define SUZERAIN_BSMBSM_H
 
 #include <assert.h>
 #include <gsl/gsl_permutation.h>
@@ -547,4 +547,4 @@ suzerain_bsmbsm_zdpackf(const suzerain_bsmbsm *A, int ihat, int jhat,
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_BSMBSM_H */
+#endif /* SUZERAIN_BSMBSM_H */

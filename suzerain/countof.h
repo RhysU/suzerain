@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_COUNTOF_H
-#define __SUZERAIN_COUNTOF_H
+#ifndef SUZERAIN_COUNTOF_H
+#define SUZERAIN_COUNTOF_H
 
 /** @file
  * Macros to count the number of array elements at compile time.  Provides both
@@ -53,4 +53,4 @@ public:
 
 #endif /* __cplusplus */
 
-#endif /* __SUZERAIN_COUNTOF_H */
+#endif /* SUZERAIN_COUNTOF_H */

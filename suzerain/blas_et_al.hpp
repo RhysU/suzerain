@@ -11,8 +11,8 @@
 // blas_et_al.hpp: C++ wrappers around blas_et_al.h's functionality
 // $Id$
 
-#ifndef __SUZERAIN_BLAS_ET_AL_HPP
-#define __SUZERAIN_BLAS_ET_AL_HPP
+#ifndef SUZERAIN_BLAS_ET_AL_HPP
+#define SUZERAIN_BLAS_ET_AL_HPP
 
 #include <suzerain/blas_et_al.h>
 #include <boost/numeric/conversion/cast.hpp>
@@ -2062,4 +2062,4 @@ inline typename boost::enable_if<
 
 } // namespace suzerain
 
-#endif /* __SUZERAIN_BLAS_ET_AL_HPP */
+#endif /* SUZERAIN_BLAS_ET_AL_HPP */

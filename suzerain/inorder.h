@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_INORDER_H
-#define __SUZERAIN_INORDER_H
+#ifndef SUZERAIN_INORDER_H
+#define SUZERAIN_INORDER_H
 
 /** @file
  * Provides utilities for manipulating one dimensional discrete Fourier
@@ -327,4 +327,4 @@ int suzerain_inorder_index(const int N, const int w)
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_INORDER_H
+#endif // SUZERAIN_INORDER_H

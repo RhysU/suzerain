@@ -11,8 +11,8 @@
 // mpl.hpp: tools related to Boost.MPL
 // $Id$
 
-#ifndef __SUZERAIN_MPL_HPP
-#define __SUZERAIN_MPL_HPP
+#ifndef SUZERAIN_MPL_HPP
+#define SUZERAIN_MPL_HPP
 
 #include <suzerain/common.hpp>
 
@@ -66,4 +66,4 @@ public:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_MPL_HPP
+#endif // SUZERAIN_MPL_HPP

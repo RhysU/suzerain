@@ -11,8 +11,8 @@
 // operator_base.hpp: useful base class for operator implementation work
 // $Id$
 
-#ifndef __SUZERAIN_OPERATOR_BASE_HPP
-#define __SUZERAIN_OPERATOR_BASE_HPP
+#ifndef SUZERAIN_OPERATOR_BASE_HPP
+#define SUZERAIN_OPERATOR_BASE_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
@@ -296,4 +296,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* __SUZERAIN_OPERATOR_BASE_HPP */
+#endif  /* SUZERAIN_OPERATOR_BASE_HPP */

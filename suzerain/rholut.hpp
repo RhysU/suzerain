@@ -11,8 +11,8 @@
 // rholut.hpp: Kernels for ref. density, length, velocity, and temperature
 // $Id$
 
-#ifndef __SUZERAIN_RHOLUT_HPP
-#define __SUZERAIN_RHOLUT_HPP
+#ifndef SUZERAIN_RHOLUT_HPP
+#define SUZERAIN_RHOLUT_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/rholt.hpp>
@@ -978,4 +978,4 @@ using suzerain::rholt::curl_curl_u;
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_RHOLUT_HPP
+#endif // SUZERAIN_RHOLUT_HPP

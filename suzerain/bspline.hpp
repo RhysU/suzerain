@@ -11,8 +11,8 @@
 // bspline.hpp: C++ wrappers for the C-based GSL and Suzerain B-spline APIs
 // $Id$
 
-#ifndef __SUZERAIN_BSPLINE_HPP
-#define __SUZERAIN_BSPLINE_HPP
+#ifndef SUZERAIN_BSPLINE_HPP
+#define SUZERAIN_BSPLINE_HPP
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -832,4 +832,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_BSPLINE_HPP
+#endif // SUZERAIN_BSPLINE_HPP

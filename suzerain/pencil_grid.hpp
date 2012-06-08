@@ -11,8 +11,8 @@
 // pencil_grid.hpp: Class to manage data layout concerns for P3DFFT usage
 // $Id$
 
-#ifndef __SUZERAIN_PENCIL_GRID_H
-#define __SUZERAIN_PENCIL_GRID_H
+#ifndef SUZERAIN_PENCIL_GRID_HPP
+#define SUZERAIN_PENCIL_GRID_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
@@ -331,4 +331,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_PENCIL_GRID_H
+#endif // SUZERAIN_PENCIL_GRID_HPP

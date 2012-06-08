@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_DIFFWAVE_H
-#define __SUZERAIN_DIFFWAVE_H
+#ifndef SUZERAIN_DIFFWAVE_H
+#define SUZERAIN_DIFFWAVE_H
 
 /** @file
  * Provides computational kernels for differentiating a three dimensional
@@ -141,4 +141,4 @@ void suzerain_diffwave_accumulate(
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_DIFFWAVE_H
+#endif // SUZERAIN_DIFFWAVE_H

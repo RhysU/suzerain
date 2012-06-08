@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_SVEHLA_H
-#define __SUZERAIN_SVEHLA_H
+#ifndef SUZERAIN_SVEHLA_H
+#define SUZERAIN_SVEHLA_H
 
 #include <gsl/gsl_spline.h>
 
@@ -49,4 +49,4 @@ gsl_spline * suzerain_svehla_air_mu_vs_T();
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_SVEHLA_H */
+#endif /* SUZERAIN_SVEHLA_H */

@@ -31,8 +31,8 @@
  * See http://www.mail-archive.com/gsl-discuss@sourceware.org/msg00764.html
  ******************************************************************************/
 
-#ifndef __SUZERAIN_ERROR_H
-#define __SUZERAIN_ERROR_H
+#ifndef SUZERAIN_ERROR_H
+#define SUZERAIN_ERROR_H
 
 #include <suzerain/common.h>
 
@@ -349,4 +349,4 @@ FILE * suzerain_set_stream(FILE * new_stream);
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_ERROR_H */
+#endif /* SUZERAIN_ERROR_H */

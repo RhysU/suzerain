@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_BSPLINE_H
-#define __SUZERAIN_BSPLINE_H
+#ifndef SUZERAIN_BSPLINE_H
+#define SUZERAIN_BSPLINE_H
 
 #include <gsl/gsl_bspline.h>
 #include <suzerain/pre_gsl.h>
@@ -232,4 +232,4 @@ suzerain_bspline_linear_combination_matrix(
 } /* extern "C" */
 #endif
 
-#endif // __SUZERAIN_BSPLINE_H
+#endif // SUZERAIN_BSPLINE_H

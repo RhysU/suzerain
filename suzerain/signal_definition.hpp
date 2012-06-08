@@ -11,8 +11,8 @@
 // signal_definition.hpp: classes handling signal processing definitions
 // $Id$
 
-#ifndef __SUZERAIN_SIGNAL_DEFINITION_HPP
-#define __SUZERAIN_SIGNAL_DEFINITION_HPP
+#ifndef SUZERAIN_SIGNAL_DEFINITION_HPP
+#define SUZERAIN_SIGNAL_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
@@ -82,4 +82,4 @@ private:
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_SIGNAL_DEFINITION_HPP
+#endif // SUZERAIN_SIGNAL_DEFINITION_HPP

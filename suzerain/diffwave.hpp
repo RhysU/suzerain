@@ -11,8 +11,8 @@
 // diffwave.hpp: C++ wrappers for the C-based suzerain_diffwave_* API
 // $Id$
 
-#ifndef __SUZERAIN_DIFFWAVE_HPP
-#define __SUZERAIN_DIFFWAVE_HPP
+#ifndef SUZERAIN_DIFFWAVE_HPP
+#define SUZERAIN_DIFFWAVE_HPP
 
 #include <suzerain/diffwave.h>
 #include <suzerain/complex.hpp>
@@ -94,4 +94,4 @@ typename boost::enable_if<boost::mpl::and_<
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_DIFFWAVE_HPP
+#endif // SUZERAIN_DIFFWAVE_HPP

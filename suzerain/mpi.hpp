@@ -11,8 +11,8 @@
 // mpi.hpp: miscellaneous utilities for working with MPI's C interface
 // $Id$
 
-#ifndef __SUZERAIN_MPI_HPP
-#define __SUZERAIN_MPI_HPP
+#ifndef SUZERAIN_MPI_HPP
+#define SUZERAIN_MPI_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.h>
@@ -197,4 +197,4 @@ std::basic_ostream<charT,traits>& sleep_barrier(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_MPI_HPP
+#endif // SUZERAIN_MPI_HPP

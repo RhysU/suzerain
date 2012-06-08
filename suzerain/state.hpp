@@ -11,8 +11,8 @@
 // state.hpp: Implementations of State classes
 // $Id$
 
-#ifndef __SUZERAIN_STATE_HPP
-#define __SUZERAIN_STATE_HPP
+#ifndef SUZERAIN_STATE_HPP
+#define SUZERAIN_STATE_HPP
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -625,4 +625,4 @@ void InterleavedState<NumDims,Element>::exchange(
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_STATE_HPP
+#endif // SUZERAIN_STATE_HPP

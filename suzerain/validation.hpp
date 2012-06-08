@@ -11,8 +11,8 @@
 // validation.hpp: helpers that ensure values meet some validation criteria
 // $Id$
 
-#ifndef __SUZERAIN_VALIDATION_HPP
-#define __SUZERAIN_VALIDATION_HPP
+#ifndef SUZERAIN_VALIDATION_HPP
+#define SUZERAIN_VALIDATION_HPP
 
 #include <suzerain/common.hpp>
 
@@ -100,4 +100,4 @@ throw(std::invalid_argument)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_VALIDATION_HPP
+#endif // SUZERAIN_VALIDATION_HPP

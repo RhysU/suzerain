@@ -11,8 +11,8 @@
 // inorder.hpp: C++ wrappers for the C-based suzerain_inorder_* API
 // $Id$
 
-#ifndef __SUZERAIN_INORDER_HPP
-#define __SUZERAIN_INORDER_HPP
+#ifndef SUZERAIN_INORDER_HPP
+#define SUZERAIN_INORDER_HPP
 
 #include <suzerain/inorder.h>
 
@@ -118,4 +118,4 @@ int index(const int N, const int w)
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_INORDER_HPP
+#endif // SUZERAIN_INORDER_HPP

@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_HTSTRETCH_H
-#define __SUZERAIN_HTSTRETCH_H
+#ifndef SUZERAIN_HTSTRETCH_H
+#define SUZERAIN_HTSTRETCH_H
 
 /** @file
  * Computes quantities related to the common hyperbolic tangent-based grid
@@ -279,4 +279,4 @@ suzerain_htstretch2_find_delta(const double L,
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_HTSTRETCH_H */
+#endif /* SUZERAIN_HTSTRETCH_H */

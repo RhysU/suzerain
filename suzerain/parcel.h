@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_PARCEL_H
-#define __SUZERAIN_PARCEL_H
+#ifndef SUZERAIN_PARCEL_H
+#define SUZERAIN_PARCEL_H
 
 #include <inttypes.h>
 #include <stddef.h>
@@ -150,4 +150,4 @@
 
 #endif // DOXYGEN_SHOULD_SKIP_THIS
 
-#endif // __SUZERAIN_PARCEL_H
+#endif // SUZERAIN_PARCEL_H

@@ -12,8 +12,8 @@
  * $Id$
  */
 
-#ifndef __SUZERAIN_RHOLUT_IMEXOP_H
-#define __SUZERAIN_RHOLUT_IMEXOP_H
+#ifndef SUZERAIN_RHOLUT_IMEXOP_H
+#define SUZERAIN_RHOLUT_IMEXOP_H
 
 #include <suzerain/bsmbsm.h>
 #include <suzerain/bsplineop.h>
@@ -306,4 +306,4 @@ suzerain_rholut_imexop_packf(
 } /* extern "C" */
 #endif
 
-#endif /* __SUZERAIN_RHOLUT_IMEXOP_H */
+#endif /* SUZERAIN_RHOLUT_IMEXOP_H */

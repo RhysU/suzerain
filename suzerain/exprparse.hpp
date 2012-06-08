@@ -11,8 +11,8 @@
 // exprparse.hpp: constant arithmetic expression evaluation
 // $Id$
 
-#ifndef __SUZERAIN_EXPRPARSE_HPP
-#define __SUZERAIN_EXPRPARSE_HPP
+#ifndef SUZERAIN_EXPRPARSE_HPP
+#define SUZERAIN_EXPRPARSE_HPP
 
 #include <string>
 
@@ -127,4 +127,4 @@ FPT exprparse(const char *s)
 
 } // end namespace suzerain
 
-#endif // __SUZERAIN_EXPRPARSE_HPP
+#endif // SUZERAIN_EXPRPARSE_HPP

@@ -11,8 +11,8 @@
 // version.hpp: generate a nice program version message
 // $Id$
 
-#ifndef __SUZERAIN_VERSION_HPP
-#define __SUZERAIN_VERSION_HPP
+#ifndef SUZERAIN_VERSION_HPP
+#define SUZERAIN_VERSION_HPP
 
 #include <iosfwd>
 #include <string>
@@ -34,4 +34,4 @@ std::string version(const std::string &application_name    = "",
 
 } // namespace suzerain
 
-#endif // __SUZERAIN_VERSION_HPP
+#endif // SUZERAIN_VERSION_HPP
