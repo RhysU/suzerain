@@ -270,8 +270,8 @@ FILE * suzerain_set_stream(FILE * new_stream);
     do { \
         const int _chk_stat = (stmt); \
         if (_chk_stat != MPI_SUCCESS) { \
-            char _chk_reason[255]; \
-            char *_chk_mpistring = NULL; \
+            char _chk_reason[384]; \
+            char *_chk_mpistring[MPI_MAX_ERROR_STRING]; \
             int _chk_len; \
             const int _chk_string_stat \
                 = MPI_Error_string(_chk_stat,_chk_mpistring,&_chk_len); \
