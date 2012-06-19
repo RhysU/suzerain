@@ -88,6 +88,7 @@ runq ./channel_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
 chmod +r "$testdir/mms0.h5"
 
+
 banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
 (
     cd $testdir
@@ -118,6 +119,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
     # Ensure that the entire fourth column (the imaginary component) is identically zero
     awk $awk_h5dump_dataonly realmodes | awk '$4 != 0.0 { exit 1 }' || (cat realmodes && false)
 )
+
 
 banner "Building --exclude-paths for filtering samples"
 datasets_bar=$(h5ls -f "$testdir/mms0.h5" | egrep '^/bar_' | cut "-d " -f 1)
