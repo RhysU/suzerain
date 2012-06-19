@@ -62,7 +62,8 @@ differ() {
     outfile=`mktemp --tmpdir="$testdir"`
     echo h5diff "$@"  2>&1 | tee -a $outfile
     echo              2>&1 |      >>$outfile
-    h5diff -r -v "$@" 2>&1        >>$outfile || (cat $outfile && false)
+    # tail not cat because h5diff echos its invocation arguments
+    h5diff -r -v "$@" 2>&1        >>$outfile || (tail -n +2 $outfile && false)
 }
 differ_exclude() {
     h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
