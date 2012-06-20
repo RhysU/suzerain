@@ -844,10 +844,13 @@ std::vector<real_t> applyNonlinearOperator(
 
         } else {
 
-            // Otherwise, bring the field back to wave space
+            // Otherwise, bring the field back to wave space...
             GRVY_TIMER_BEGIN("transform_physical_to_wave");
             o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
             GRVY_TIMER_END("transform_physical_to_wave");
+            // ...and zero wavenumbers present only for dealiasing to
+            // prevent "leakage" of dealiasing modes to other routines.
+            o.diffwave_apply(0, 0, 1.0, swave, i);
 
         }
 

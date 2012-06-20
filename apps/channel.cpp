@@ -955,12 +955,6 @@ void store_coefficients(
     assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // Allocate one field of temporary storage for scratch purposes
-    using suzerain::ContiguousState;
-    boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
-            allocate_padded_state<ContiguousState<4,complex_t> >(1, dgrid));
-    ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
-
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
     suzerain::inorder::wavenumber_translate(grid.N.x(),
@@ -986,7 +980,7 @@ void store_coefficients(
     // Save each scalar field in turn...
     for (size_t i = 0; i < field::count; ++i) {
 
-        // ...first generating a metadata comment...
+        // ...first generate a metadata comment...
         std::string comment = "Nondimensional ";
         comment += field::description[i];
         comment += " stored row-major ZXY using a Fourier basis in Z stored"
@@ -994,27 +988,8 @@ void store_coefficients(
                    " Hermitian symmetry per /kx; and a B-spline basis in Y"
                    " defined by /k, /breakpoints_y, and /knots";
 
-        // ...next eliminating dealiased content via a copy into scratch[0]...
-        suzerain::diffwave::accumulate(
-                0, 0,
-                complex_t(1), swave[i].origin(),
-                complex_t(0), scratch[0].origin(),
-                scenario.Lx, scenario.Lz, dgrid.global_wave_extent.y(),
-                grid.N.x(), grid.dN.x(),
-                dgrid.local_wave_start.x(), dgrid.local_wave_end.x(),
-                grid.N.z(), grid.dN.z(),
-                dgrid.local_wave_start.z(), dgrid.local_wave_end.z());
-
         // ...followed by two collective writes per field (once per Z range)
         for (int j = 0; j < 2; ++j) {
-
-            // Source of write is NULL for empty WRITE operations
-            // Required since MultiArray triggers asserts on invalid indices
-            const complex_t * src = NULL;
-            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                src = &scratch[0][0][mxb[0] - dgrid.local_wave_start.x()]
-                                    [mzb[j] - dgrid.local_wave_start.z()];
-            }
 
             // Collectively establish size of write across all ranks
             esio_field_establish(h,
@@ -1022,11 +997,19 @@ void store_coefficients(
                                  grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
                                  grid.N.y(),     0,      (     grid.N.y()));
 
-            // Perform collective write operation from scratch
+            // Source of write is NULL for empty WRITE operations
+            // Required since MultiArray triggers asserts on invalid indices
+            const complex_t * src = NULL;
+            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
+                src = &swave[i][0][mxb[0] - dgrid.local_wave_start.x()]
+                                  [mzb[j] - dgrid.local_wave_start.z()];
+            }
+
+            // Perform collective write operation
             complex_field_write(h, field::name[i], src,
-                                scratch.strides()[3],
-                                scratch.strides()[2],
-                                scratch.strides()[1],
+                                swave.strides()[3],
+                                swave.strides()[2],
+                                swave.strides()[1],
                                 comment.c_str());
         }
     }
@@ -1141,7 +1124,6 @@ void load_coefficients(const esio_handle h,
             esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
                                     Fx, fxb[0], (fxe[0] - fxb[0]),
                                     Fy,      0, (            Fy));
-
 
             // Destination of read is NULL for empty READ operations.
             // Otherwise find starting point for coefficient loading.
@@ -2165,15 +2147,14 @@ void accumulate_manufactured_solution(
     } else {
         // ...or scale data by beta and transform it to physical space.
         for (size_t i = 0; i < field::count; ++i) {
-            obase.diffwave_apply(0, 0, 1, swave, i);
+            obase.diffwave_apply(0, 0, 1.0, swave, i);
             obase.bop_apply(0, beta, swave, i);
             dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
         }
     }
 
-    // Physical space is traversed linearly using a single offset 'offset'.
-    // The three loop structure is present to provide the global absolute
-    // positions x(i), y(j), and z(k) where necessary.
+    // Physical space is traversed linearly using a single offset 'offset'
+    // with three loops to provides global positions x(i), y(j), and z(k).
     size_t offset = 0;
     for (int j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
@@ -2222,7 +2203,7 @@ void accumulate_manufactured_solution(
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
         obase.bop_solve(massluz, swave, i);                       // Y
-        obase.diffwave_apply(0, 0, 1, swave, i);
+        obase.diffwave_apply(0, 0, 1.0, swave, i);
     }
 
     // Unstash beta*imag parts of zero-zero and Nyquist modes
