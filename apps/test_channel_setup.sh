@@ -63,7 +63,8 @@ differ() {
     echo h5diff "$@"  2>&1 | tee -a $outfile
     echo              2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
-    h5diff -r "$@"    2>&1        >>$outfile || (tail -n +2 $outfile && false)
+    h5diff -r "$@"    2>&1        >>$outfile \
+        || (tail -n +2 $outfile | egrep -v "^0 differences found$" && false)
 }
 differ_exclude() {
     h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
@@ -108,7 +109,8 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
     done
     cmd+=(-w 8 -m %22.14g mms0.h5)
     echo ${cmd[*]}
-    ${cmd[*]} > realmodes 2>&1 || (cat realmodes && false)
+    ${cmd[*]} > realmodes 2>&1 \
+        || (cat realmodes && false)
 
     # awk program keeping only the h5dump lines between 'DATA {' and '}'
     declare -r awk_h5dump_dataonly='                                        \
@@ -117,7 +119,8 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
         keep == 1 { print $0 }'
 
     # Ensure that the entire fourth column (the imaginary component) is identically zero
-    awk $awk_h5dump_dataonly realmodes | awk '$4 != 0.0 { exit 1 }' || (cat realmodes && false)
+    awk $awk_h5dump_dataonly realmodes | awk '$4 != 0.0 { exit 1 }' \
+        || (cat realmodes && false)
 )
 
 
