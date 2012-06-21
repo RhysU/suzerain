@@ -63,8 +63,45 @@ differ() {
     echo h5diff "$@"  2>&1 | tee -a $outfile
     echo              2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
-    h5diff -r "$@"    2>&1        >>$outfile \
-        || (tail -n +2 $outfile | egrep -v "^0 differences found$" && false)
+    # embedded awk script used to add a ratio column and pretty up the output
+    h5diff -r "$@"    2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
+            BEGIN { OFMT=" %+10.6g"; aligner="column -t" }
+            {
+                sub("[[:space:]]*$", "")
+            }
+            $0 ~ /[[:space:]]+difference([[:space:]]+relative)?$/ {
+                print $0"    ratio"
+                getline
+                print $0"---------"
+                augment = 1
+                next
+            }
+            $0 ~ /^[[:space:]]*[[:digit:]]+[[:space:]]+differences?[[:space:]]+found$/ {
+                close(aligner)
+                print
+                augment = 0
+                next;
+            }
+            augment == 1 {
+                split($0,   a, /\][[:space:]]+/)
+                printf "%s ]", a[1] | aligner
+                n = split(a[2], b)
+                for (i = 1; i <= n; ++i) {
+                    printf OFMT, b[i] | aligner
+                }
+                if (b[2] != 0) {
+                    printf OFMT, b[1]/b[2] | aligner
+                } else {
+                    printf " NaN" | aligner
+                }
+                printf "\n"| aligner
+                next
+            }
+            {
+                print
+            }
+HERE
+    ) && false)
 }
 differ_exclude() {
     h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
