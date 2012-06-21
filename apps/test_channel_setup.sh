@@ -65,7 +65,7 @@ differ() {
     # tail not cat because h5diff echos its invocation arguments
     # embedded awk script used to add a ratio column and pretty up the output
     h5diff -r "$@"    2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
-            BEGIN { OFMT=" %+10.6g"; aligner="column -t" }
+            BEGIN { OFMT=" %+14.8g"; aligner="column -t" }
             {
                 sub("[[:space:]]*$", "")
             }
