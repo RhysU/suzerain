@@ -1361,7 +1361,7 @@ void load_collocation_values(
 
         // Compute conserved quantities from primitive ones
         const real_t rho = gamma * p / T;   // Assumes EOS
-        m               *= rho;             // Not m contains momentum
+        m               *= rho;             // Now m contains momentum
         const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
                             + suzerain::rholut::energy_internal(gamma, p);
 
