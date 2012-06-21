@@ -30,7 +30,10 @@ EXPRTEST(literal1, "1.234", 1.234)
 EXPRTEST(literal2, "4.2e2", 420)
 EXPRTEST(literal3, "5e-01", 0.5)
 EXPRTEST(literal4, "-3",    -3)
-EXPRTEST(literal5, "pi", boost::math::constants::pi<double>())
+EXPRTEST(literal5, "pi",       boost::math::constants::pi<double>())
+EXPRTEST(literal6, "epsilon",  std::numeric_limits<double>::epsilon())
+EXPRTEST(literal7, "digits",   std::numeric_limits<double>::digits)
+EXPRTEST(literal8, "digits10", std::numeric_limits<double>::digits10)
 
 EXPRTEST(basicop1, " 2 +\t3\n",   5)       // Whitespace ignored
 EXPRTEST(basicop2, " 2 -\t3\n",  -1)
@@ -65,8 +68,10 @@ EXPRTEST(func_sqrt,  "sqrt( 1.0)", std::sqrt(1.0))
 EXPRTEST(func_tan,   "tan ( 1.0)", std::tan(1.0))
 EXPRTEST(func_tanh,  "tanh( 1.0)", std::tanh(1.0))
 
-EXPRTEST(func_pow,   "pow  (2.0, 3.0)", std::pow(2.0,3.0))
 EXPRTEST(func_atan2, "atan2(2.0, 3.0)", std::atan2(2.0,3.0))
+EXPRTEST(func_max,   "max  (2.0, 3.0)", std::max(2.0,3.0))
+EXPRTEST(func_min,   "min  (2.0, 3.0)", std::min(2.0,3.0))
+EXPRTEST(func_pow,   "pow  (2.0, 3.0)", std::pow(2.0,3.0))
 
 BOOST_AUTO_TEST_CASE( parse_inf )
 {

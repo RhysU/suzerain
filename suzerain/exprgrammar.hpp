@@ -14,6 +14,7 @@
 #ifndef SUZERAIN_EXPRGRAMMAR_HPP
 #define SUZERAIN_EXPRGRAMMAR_HPP
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <iterator>
@@ -78,6 +79,16 @@ struct lazy_bfunc_
     }
 };
 
+template <class T>
+T max_by_value ( const T a, const T b ) {
+    return std::max(a, b);
+}
+
+template <class T>
+T min_by_value ( const T a, const T b ) {
+    return std::min(a, b);
+}
+
 } // end namespace anonymous
 
 /** A Boost Spirit.Qi-based constant arithmetic expression grammar. */
@@ -98,7 +109,10 @@ struct grammar
         constant_()
         {
             this->add
-                ("pi", boost::math::constants::pi<FPT>()  )
+                ("digits10", std::numeric_limits<FPT>::digits10  )
+                ("digits",   std::numeric_limits<FPT>::digits    )
+                ("epsilon",  std::numeric_limits<FPT>::epsilon() )
+                ("pi",       boost::math::constants::pi<FPT>()   )
             ;
         }
     } constant;
@@ -113,22 +127,22 @@ struct grammar
         ufunc_()
         {
             this->add
-                ("abs"   , (FPT (*)(FPT)) std::abs  )
-                ("acos"  , (FPT (*)(FPT)) std::acos )
-                ("asin"  , (FPT (*)(FPT)) std::asin )
-                ("atan"  , (FPT (*)(FPT)) std::atan )
-                ("ceil"  , (FPT (*)(FPT)) std::ceil )
-                ("cos"   , (FPT (*)(FPT)) std::cos  )
-                ("cosh"  , (FPT (*)(FPT)) std::cosh )
-                ("exp"   , (FPT (*)(FPT)) std::exp  )
-                ("floor" , (FPT (*)(FPT)) std::floor)
-                ("log"   , (FPT (*)(FPT)) std::log  )
-                ("log10" , (FPT (*)(FPT)) std::log10)
-                ("sin"   , (FPT (*)(FPT)) std::sin  )
-                ("sinh"  , (FPT (*)(FPT)) std::sinh )
-                ("sqrt"  , (FPT (*)(FPT)) std::sqrt )
-                ("tan"   , (FPT (*)(FPT)) std::tan  )
-                ("tanh"  , (FPT (*)(FPT)) std::tanh )
+                ("abs"  , static_cast<FPT (*)(FPT)>(&std::abs  ))
+                ("acos" , static_cast<FPT (*)(FPT)>(&std::acos ))
+                ("asin" , static_cast<FPT (*)(FPT)>(&std::asin ))
+                ("atan" , static_cast<FPT (*)(FPT)>(&std::atan ))
+                ("ceil" , static_cast<FPT (*)(FPT)>(&std::ceil ))
+                ("cos"  , static_cast<FPT (*)(FPT)>(&std::cos  ))
+                ("cosh" , static_cast<FPT (*)(FPT)>(&std::cosh ))
+                ("exp"  , static_cast<FPT (*)(FPT)>(&std::exp  ))
+                ("floor", static_cast<FPT (*)(FPT)>(&std::floor))
+                ("log"  , static_cast<FPT (*)(FPT)>(&std::log  ))
+                ("log10", static_cast<FPT (*)(FPT)>(&std::log10))
+                ("sin"  , static_cast<FPT (*)(FPT)>(&std::sin  ))
+                ("sinh" , static_cast<FPT (*)(FPT)>(&std::sinh ))
+                ("sqrt" , static_cast<FPT (*)(FPT)>(&std::sqrt ))
+                ("tan"  , static_cast<FPT (*)(FPT)>(&std::tan  ))
+                ("tanh" , static_cast<FPT (*)(FPT)>(&std::tanh ))
             ;
         }
     } ufunc;
@@ -143,8 +157,10 @@ struct grammar
         bfunc_()
         {
             this->add
-                ("pow"  , (FPT (*)(FPT, FPT)) std::pow  )
-                ("atan2", (FPT (*)(FPT, FPT)) std::atan2)
+                ("atan2", static_cast<FPT (*)(FPT, FPT)>(&std::atan2  ))
+                ("max"  , static_cast<FPT (*)(FPT, FPT)>(&max_by_value))
+                ("min"  , static_cast<FPT (*)(FPT, FPT)>(&min_by_value))
+                ("pow"  , static_cast<FPT (*)(FPT, FPT)>(&std::pow    ))
             ;
         }
     } bfunc;
