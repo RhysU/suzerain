@@ -1363,7 +1363,7 @@ void load_collocation_values(
         const real_t rho = gamma * p / T;   // Assumes EOS
         m               *= rho;             // Now m contains momentum
         const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
-                            + suzerain::rholut::energy_internal(gamma, p);
+                         + suzerain::rholut::energy_internal(gamma, p);
 
         // Pack conserved quantities into fields (by name)
         sphys(field::ndx::rho,  o) = rho;
