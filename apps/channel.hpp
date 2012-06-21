@@ -494,8 +494,8 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
  * msoln times \c beta times the given wave-space state \c swave.  Setting
  * <tt>alpha=1</tt> and <tt>beta=0</tt> may be used to initialize a
  * manufactured solution field.  Setting <tt>alpha=-1</tt> and <tt>beta=1</tt>
- * may be used to compute error against the manufactured solution.  Modes
- * present only for dealiasing within \c swave will be zeroed.
+ * may be used to compute error against the manufactured solution.  The
+ * manufactured solution lives on \e only the non-dealiased, non-Nyquist modes.
  */
 void accumulate_manufactured_solution(
         const real_t alpha,

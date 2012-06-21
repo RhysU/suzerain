@@ -18,6 +18,7 @@
 #pragma hdrstop
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
+#include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
@@ -2093,139 +2094,104 @@ void accumulate_manufactured_solution(
         const suzerain::bsplineop &bop,
         const real_t simulation_time)
 {
-    // Shorthand
-    using Eigen::ArrayXc;
-    using Eigen::ArrayXXr;
-    using Eigen::Map;
-    using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_imagzero;
-    using suzerain::inorder::wavenumber_max;
-    const int Ny   = dgrid.global_wave_extent.y();
-    const int Nx   = grid.N.x();
-    const int dNx  = grid.dN.x();
-    const int dkbx = dgrid.local_wave_start.x();
-    const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
-    const int dNz  = grid.dN.z();
-    const int dkbz = dgrid.local_wave_start.z();
-    const int dkez = dgrid.local_wave_end.z();
-
-    // Allocate storage to stash imaginary parts of zero-zero and Nyquist modes
-    // (at most four such modes appear for a 2D r2C FFT regardless of Nx, Nz)
-    ArrayXXr stash(Ny, field::count*4);
-
-    // Stash beta*imag parts of zero-zero and Nyquist modes
-    // TODO: Linear traversal process is both ugly and inefficient
-    for (size_t k = 0, colnum = 0; k < field::count; ++k) {
-        for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
-            if (std::abs(wn) > wavenumber_max(Nz)) continue;
-
-            for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
-                if (std::abs(wm) > wavenumber_max(Nx)) continue;
-
-                if (wavenumber_imagzero(Nz, wn)*wavenumber_imagzero(Nx, wm)) {
-                    stash.col(colnum++) = beta * Map<ArrayXc>(
-                            &swave[k][0][m-dkbx][n-dkbz], Ny).imag();
-                }
-            }
-        }
-    }
-
-    // Initializing OperatorBase to access decomposition-ready utilities
+    // Initialize OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
 
-    // Prepare physical-space view of the wave-space storage
-    physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, swave);
+    // Allocate one field of temporary storage for scratch purposes
+    using suzerain::ContiguousState;
+    boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
+            allocate_padded_state<ContiguousState<4,complex_t> >(1, dgrid));
+    ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
+    suzerain::multi_array::fill(scratch, 0);                       // Defensive
 
-    // Depending on whether or not we need swave's data...
-#pragma warning(push,disable:1572)
-    if (beta == 0) {
-#pragma warning(pop)
-        // ...either clear out any lingering NaNs or Infs from storage...
-        suzerain::multi_array::fill(swave, 0);
-    } else {
-        // ...or scale data by beta and transform it to physical space.
-        for (size_t i = 0; i < field::count; ++i) {
-            obase.diffwave_apply(0, 0, 1.0, swave, i);
-            obase.bop_apply(0, beta, swave, i);
-            dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
-        }
-    }
+    // Prepare physical-space view of the wave-space scratch storage
+    physical_view<1>::type phys = physical_view<1>::create(dgrid, scratch);
 
-    // Physical space is traversed linearly using a single offset 'offset'
-    // with three loops to provides global positions x(i), y(j), and z(k).
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
-         j < dgrid.local_physical_end.y();
-         ++j) {
-
-        const real_t y = obase.y(j);
-
-        for (int k = dgrid.local_physical_start.z();
-            k < dgrid.local_physical_end.z();
-            ++k) {
-
-            const real_t z = obase.z(k);
-
-            for (int i = dgrid.local_physical_start.x();
-                i < dgrid.local_physical_end.x();
-                ++i, /* NB */ ++offset) {
-
-                const real_t x = obase.x(i);
-
-                // Initialize manufactured solution's conserved state...
-                const real_t rho  = msoln.rho (x, y, z, simulation_time);
-                const real_t rhou = msoln.rhou(x, y, z, simulation_time);
-                const real_t rhov = msoln.rhov(x, y, z, simulation_time);
-                const real_t rhow = msoln.rhow(x, y, z, simulation_time);
-                const real_t rhoe = msoln.rhoe(x, y, z, simulation_time);
-
-                // ...and accumulate it into the desired storage
-                sphys(field::ndx::rho,  offset) += alpha * rho;
-                sphys(field::ndx::rhou, offset) += alpha * rhou;
-                sphys(field::ndx::rhov, offset) += alpha * rhov;
-                sphys(field::ndx::rhow, offset) += alpha * rhow;
-                sphys(field::ndx::rhoe, offset) += alpha * rhoe;
-
-            } // end X
-
-        } // end Z
-
-    } // end Y
-
-    // Now convert physical state back to wave space coefficients,
-    // building FFT normalization constant into Y direction's mass matrix.
+    // Prepare factored mass matrix for repeated use
     suzerain::bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
-    for (size_t i = 0; i < field::count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
-        obase.bop_solve(massluz, swave, i);                       // Y
-        obase.diffwave_apply(0, 0, 1.0, swave, i);
-    }
 
-    // Unstash beta*imag parts of zero-zero and Nyquist modes
-    // Doing so effectively sets alpha*mms to be zero for these wavenumbers
-    // TODO: Linear traversal process is both ugly and inefficient
-    for (size_t k = 0, colnum = 0; k < field::count; ++k) {
-        for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
-            if (std::abs(wn) > wavenumber_max(Nz)) continue;
+    // For each scalar field...
+    for (size_t f = 0; f < field::count; ++f) {
 
-            for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
-                if (std::abs(wm) > wavenumber_max(Nx)) continue;
+        // ...compute the manufactured solution in physical space...
+        size_t offset = 0;
+        for (int j = dgrid.local_physical_start.y();
+            j < dgrid.local_physical_end.y();
+            ++j) {
 
-                if (wavenumber_imagzero(Nz, wn)*wavenumber_imagzero(Nx, wm)) {
-                    Map<ArrayXc>(&swave[k][0][m-dkbx][n-dkbz], Ny).imag()
-                            = stash.col(colnum++);
-                }
+            const real_t y = obase.y(j);
+
+            for (int k = dgrid.local_physical_start.z();
+                k < dgrid.local_physical_end.z();
+                ++k) {
+
+                const real_t z = obase.z(k);
+
+                for (int i = dgrid.local_physical_start.x();
+                    i < dgrid.local_physical_end.x();
+                    ++i, /* NB */ ++offset) {
+
+                    const real_t x = obase.x(i);
+
+                    // (ugly, slow switch but performance irrelevant here)
+                    switch (f) {
+                    case field::ndx::rho:
+                        phys(0, offset) = msoln.rho (x, y, z, simulation_time);
+                        break;
+                    case field::ndx::rhou:
+                        phys(0, offset) = msoln.rhou(x, y, z, simulation_time);
+                        break;
+                    case field::ndx::rhov:
+                        phys(0, offset) = msoln.rhov(x, y, z, simulation_time);
+                        break;
+                    case field::ndx::rhow:
+                        phys(0, offset) = msoln.rhow(x, y, z, simulation_time);
+                        break;
+                    case field::ndx::rhoe:
+                        phys(0, offset) = msoln.rhoe(x, y, z, simulation_time);
+                        break;
+                    default:
+                        SUZERAIN_ERROR_REPORT("unknown field", SUZERAIN_ESANITY);
+                    }
+
+                } // end X
+
+            } // end Z
+
+        } // end Y
+
+        // ...convert collocation values to non-dealiased coefficients...
+        dgrid.transform_physical_to_wave(&phys.coeffRef(0, 0));  // X, Z
+        obase.bop_solve(massluz, scratch, 0);                    // Y
+        obase.diffwave_apply(0, 0, 1.0, scratch, 0);
+
+        // ...and accumulate into the corresponding scalar field of swave
+        assert(std::equal(scratch.shape() + 1, scratch.shape() + 4, swave.shape() + 1));
+        if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) continue;  // Sidestep assertions
+        typedef typename ContiguousState<4,complex_t>::index index;
+        const index ku = boost::numeric_cast<index>(
+                                scratch.index_bases()[2] + scratch.shape()[2]);
+        const index lu = boost::numeric_cast<index>(
+                                scratch.index_bases()[3] + scratch.shape()[3]);
+        for (index lx = scratch.index_bases()[3], ly = swave.index_bases()[3];
+            lx < lu;
+            ++lx, ++ly) {
+
+            for (index kx = scratch.index_bases()[2], ky = swave.index_bases()[2];
+                kx < ku;
+                ++kx, ++ky) {
+
+                suzerain::blas::axpby(scratch.shape()[1], alpha,
+                        &scratch[0][scratch.index_bases()[1]][kx][lx],
+                        scratch.strides()[1], beta,
+                        &swave[f][swave.index_bases()[1]][ky][ly],
+                        swave.strides()[1]);
             }
         }
+
     }
 }
 
