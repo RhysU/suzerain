@@ -311,12 +311,11 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
             Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
     suzerain::diffwave::accumulate(dxcnt, dzcnt, alpha.dat, x, -1.0, y,
             Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
-    const int idamax = suzerain_blas_idamax(2*nelem, &y[0][0], 1);
-    const double damax = std::abs(((const complex_double *) y)[idamax]);
-    const double tol = (dxcnt + dzcnt + 1)
-                     * std::sqrt(nelem)
-                     * std::numeric_limits<double>::epsilon();
-    BOOST_CHECK_SMALL(damax, tol);
+    const int idamax[2] = { suzerain_blas_idamax(nelem, &y[0][0], 2),
+                            suzerain_blas_idamax(nelem, &y[0][1], 2) };
+    const double damax[2] = { y[idamax[0]][0], y[idamax[1]][1] };
+    BOOST_CHECK_SMALL(damax[0], small_enough);
+    BOOST_CHECK_SMALL(damax[1], small_enough);
 
     // Deallocate test arrays
     free(x);
