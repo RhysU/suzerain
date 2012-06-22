@@ -10,6 +10,7 @@
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_pow_int.h>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/inorder.h>
 #include "test_tools.hpp"
 
@@ -62,6 +63,8 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                 }
             }
         }
+        BOOST_REQUIRE_EQUAL(p - x, nelem);  // Covered all of x?
+        BOOST_REQUIRE_EQUAL(q - y, nelem);  // Covered all of y?
     }
 
     // Call the function under test
@@ -219,6 +222,7 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
                 }
             }
         }
+        BOOST_REQUIRE_EQUAL(p - x, nelem);  // Covered all of x?
     }
 
     // Call the function under test
@@ -285,8 +289,38 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
         }
     }
 
+    // Check that apply is equivalent to accumulate to within small
+    // tolerances (Prepare identical fields in x and y, apply to y,
+    // accumulate x to negative y, ensure the difference is small).
+    {
+        double (*p)[2] = x;
+        for (int n = 0; n < dNz; ++n) {
+            for (int m = 0; m < (dNx/2+1); ++m) {
+                for (int l = 0; l < Ny; ++l) {
+                    (*p)[0] =  (l+1+ 2)*(m+1+ 3)*(n+1+ 5); // Fill x
+                    (*p)[1] = -(l+1+ 7)*(m+1+11)*(n+1+13);
+                    p++;
+                }
+            }
+        }
+        BOOST_REQUIRE_EQUAL(p - x, nelem);  // Covered all of x?
+    }
+    double (* const y)[2] = (double (*)[2]) malloc(nelem*sizeof(y[0]));
+    memcpy(y, x, nelem*sizeof(y[0]));
+    suzerain::diffwave::apply(dxcnt, dzcnt, alpha.dat, y,
+            Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
+    suzerain::diffwave::accumulate(dxcnt, dzcnt, alpha.dat, x, -1.0, y,
+            Lx, Lz, Ny, Nx, dNx, 0, (dNx/2+1), Nz, dNz, 0, dNz);
+    const int idamax = suzerain_blas_idamax(2*nelem, &y[0][0], 1);
+    const double damax = std::abs(((const complex_double *) y)[idamax]);
+    const double tol = (dxcnt + dzcnt + 1)
+                     * std::sqrt(nelem)
+                     * std::numeric_limits<double>::epsilon();
+    BOOST_CHECK_SMALL(damax, tol);
+
     // Deallocate test arrays
     free(x);
+    free(y);
 }
 
 BOOST_AUTO_TEST_CASE( apply )
