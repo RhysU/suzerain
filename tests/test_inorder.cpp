@@ -10,6 +10,18 @@
 
 BOOST_AUTO_TEST_CASE( wavenumber_misc )
 {
+    BOOST_CHECK_EQUAL( 0, suzerain::inorder::wavenumber_min   (1));
+    BOOST_CHECK_EQUAL( 0, suzerain::inorder::wavenumber_absmin(1));
+    BOOST_CHECK_EQUAL( 0, suzerain::inorder::wavenumber_max   (1));
+
+    BOOST_CHECK_EQUAL( 0, suzerain::inorder::wavenumber_min   (2));
+    BOOST_CHECK_EQUAL( 0, suzerain::inorder::wavenumber_absmin(2));
+    BOOST_CHECK_EQUAL( 1, suzerain::inorder::wavenumber_max   (2));
+
+    BOOST_CHECK_EQUAL(-1, suzerain::inorder::wavenumber_min   (3));
+    BOOST_CHECK_EQUAL( 1, suzerain::inorder::wavenumber_absmin(3));
+    BOOST_CHECK_EQUAL( 1, suzerain::inorder::wavenumber_max   (3));
+
     BOOST_CHECK_EQUAL(-3, suzerain::inorder::wavenumber_min   (7));
     BOOST_CHECK_EQUAL( 3, suzerain::inorder::wavenumber_absmin(7));
     BOOST_CHECK_EQUAL( 3, suzerain::inorder::wavenumber_max   (7));
