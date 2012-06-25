@@ -256,8 +256,9 @@ void store_coefficients(
  * Store the current simulation primitive state as collocation point values
  * into an open restart file.  Note that <tt>state</tt>'s contents are
  * destroyed.  Collocation point values required only for dealiasing purposes
- * <i>are</i> stored.  This method is less efficient and the restart data less
- * flexible than that produced by store_coefficients().
+ * <i>are</i> stored but only those points informed by non-dealiased state.
+ * This method is less efficient and the restart data less flexible than that
+ * produced by store_coefficients().
  */
 void store_collocation_values(
         const esio_handle h,
@@ -270,8 +271,8 @@ void store_collocation_values(
 
 /**
  * Load the current simulation state from an open coefficient-based restart
- * file.  Handles the very non-trivial task of adjusting the restart to match
- * the provided \c grid, \c dgrid, \c b, and \c bop.
+ * file.  Handles the non-trivial task of adjusting the restart to match the
+ * provided \c grid, \c dgrid, \c b, and \c bop.
  */
 void load_coefficients(const esio_handle h,
                        suzerain::ContiguousState<4,complex_t> &state,
