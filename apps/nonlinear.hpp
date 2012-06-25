@@ -850,7 +850,7 @@ std::vector<real_t> applyNonlinearOperator(
             GRVY_TIMER_END("transform_physical_to_wave");
             // ...and zero wavenumbers present only for dealiasing to
             // prevent "leakage" of dealiasing modes to other routines.
-            o.diffwave_apply(0, 0, 1.0, swave, i);
+            o.zero_dealiasing_modes(swave, i);
 
         }
 
