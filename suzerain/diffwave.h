@@ -36,7 +36,8 @@ extern "C" {
  * distributed across multiple machines, and representing a domain of arbitrary
  * length in the X and Z directions.  This routine may also be used to
  * efficiently zero higher wavenumbers used only for dealiasing when <tt>dxcnt
- * == 0</tt>, <tt>dzcnt == 0</tt>, and \f$\alpha = 1\f$.
+ * == 0</tt>, <tt>dzcnt == 0</tt> (where usually \f$\alpha = 1\f$).  All
+ * Nyquist modes \e are zeroed when <tt>dxcnt == 0</tt>, <tt>dzcnt == 0</tt>.
  *
  * The input and output data \c x is stored column-major over the Y direction
  * (index range <tt>0</tt> to <tt>Ny-1</tt>), X direction (index range

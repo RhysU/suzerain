@@ -108,20 +108,18 @@ static void test_accumulate_helper(const int dxcnt, const int dzcnt,
                 const gsl_complex ysrc = gsl_complex_rect(
                      (l+1+17)*(m+1+19)*(n+1+23), -(l+1+29)*(m+1+31)*(n+1+37));
 
-                const int wn  = suzerain_inorder_wavenumber(dNz, n);
-                const int wm  = suzerain_inorder_wavenumber(dNx, m);
-                const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz, wn);
-                const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx, wm);
-                if (ni0 && mi0) GSL_SET_IMAG(&xsrc, 0);
-
                 const gsl_complex alpha_D_x
                     = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);
                 const gsl_complex beta_y
                     = gsl_complex_mul(beta, ysrc);
 
+                const bool n_keeper = suzerain_inorder_wavenumber_abs(dNz, n)
+                                   <= suzerain_inorder_wavenumber_absmin(Nz);
+                const bool m_keeper = suzerain_inorder_wavenumber_abs(dNx, m)
+                                   <= suzerain_inorder_wavenumber_absmin(Nx);
+
                 gsl_complex expected;
-                if (   (n <= Nz/2 || n >= (dNz - (Nz-1)/2))
-                    && (m <= Nx/2 || m >= (dNx - (Nx-1)/2))) {
+                if (n_keeper && m_keeper) {
                     expected = gsl_complex_add(alpha_D_x, beta_y);
                 } else {
                     expected = beta_y;
@@ -263,18 +261,16 @@ static void test_apply_helper(const int dxcnt, const int dzcnt,
                 gsl_complex xsrc = gsl_complex_rect(
                      (l+1+ 2)*(m+1+ 3)*(n+1+ 5), -(l+1+ 7)*(m+1+11)*(n+1+13));
 
-                const int wn  = suzerain_inorder_wavenumber(dNz, n);
-                const int wm  = suzerain_inorder_wavenumber(dNx, m);
-                const int ni0 = suzerain_inorder_wavenumber_imagzero(Nz, wn);
-                const int mi0 = suzerain_inorder_wavenumber_imagzero(Nx, wm);
-                if (ni0 && mi0) GSL_SET_IMAG(&xsrc, 0);
+                const bool n_keeper = suzerain_inorder_wavenumber_abs(dNz, n)
+                                   <= suzerain_inorder_wavenumber_absmin(Nz);
+                const bool m_keeper = suzerain_inorder_wavenumber_abs(dNx, m)
+                                   <= suzerain_inorder_wavenumber_absmin(Nx);
 
                 const gsl_complex alpha_D_x
                     = gsl_complex_mul(gsl_complex_mul(xzscale, alpha), xsrc);
 
                 gsl_complex expected;
-                if (   (n <= Nz/2 || n >= (dNz - (Nz-1)/2))
-                    && (m <= Nx/2 || m >= (dNx - (Nx-1)/2))) {
+                if (n_keeper && m_keeper) {
                     expected = alpha_D_x;
                 } else {
                     expected = gsl_complex_rect(0, 0);
