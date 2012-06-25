@@ -280,7 +280,6 @@ void load_coefficients(const esio_handle h,
                        const suzerain::bspline& b,
                        const suzerain::bsplineop& bop);
 
-
 /**
  * Load the current simulation state from an open collocation point value
  * restart file.  Cannot handle interpolating onto a different grid.
