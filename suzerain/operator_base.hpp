@@ -233,6 +233,23 @@ public:
                 dgrid.local_wave_end.z());
     }
 
+    /** Shorthand for zeroing modes present only for dealiasing */
+    template<typename MultiArray>
+    void zero_dealiasing_modes(
+                        MultiArray &x,
+                        int ndx_x) const
+    {
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+        struct Guard {
+            Guard()  { grvy_timer_begin("OperatorBase::zero_dealiasing_modes"); }
+            ~Guard() { grvy_timer_end(  "OperatorBase::zero_dealiasing_modes"); }
+        } scope_guard;
+#endif
+        // Applying the dx^0 dz^0 operator with a scale factor of 1
+        // zeros the dealiasing-only wavenumbers within the field
+        return this->diffwave_apply(0, 0, 1.0, x, ndx_x);
+    }
+
     /**
      * Return the <tt>i</tt>th \c globally-indexed x grid point.
      */
