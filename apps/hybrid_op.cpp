@@ -58,8 +58,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("applyMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_imagzero;
-    using suzerain::inorder::wavenumber_max;
+    using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -94,15 +93,16 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
-    // Short circuit "continues" should NOT occur for Nyquist modes
+    // Short circuit "continues" occur for Nyquist and non-dealiased modes...
+    // ...where the former will be zeroed during the later invert call.
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
-        if (std::abs(wn) > wavenumber_max(Nz)) continue;
+        if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
         const real_t kn = twopioverLz*wn;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
-            if (std::abs(wm) > wavenumber_max(Nx)) continue;
+            if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
             const real_t km = twopioverLx*wm;
 
             // Get pointer to (.,m,n)-th state pencil
@@ -116,7 +116,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
-                    wavenumber_imagzero(Nz, wn) * wavenumber_imagzero(Nx, wm),
+                    wn == 0 && wm == 0,
                     tmp.data() + field::ndx::rho *Ny,
                     tmp.data() + field::ndx::rhou*Ny,
                     tmp.data() + field::ndx::rhov*Ny,
@@ -146,8 +146,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     GRVY_TIMER_BEGIN("accumulateMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_imagzero;
-    using suzerain::inorder::wavenumber_max;
+    using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -184,15 +183,16 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
-    // Short circuit "continues" should NOT occur for Nyquist modes
+    // Short circuit "continues" occur for Nyquist and non-dealiased modes...
+    // ...where the former will be zeroed during the later invert call.
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
-        if (std::abs(wn) > wavenumber_max(Nz)) continue;
+        if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
         const real_t kn = twopioverLz*wn;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
-            if (std::abs(wm) > wavenumber_max(Nx)) continue;
+            if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
             const real_t km = twopioverLx*wm;
 
             // Accumulate result automatically adjusting for when input
@@ -200,7 +200,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
             GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
-                    wavenumber_imagzero(Nz, wn) * wavenumber_imagzero(Nx, wm),
+                    wn == 0 && wm == 0,
                     &input [field::ndx::rho ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhou][0][m - dkbx][n - dkbz],
                     &input [field::ndx::rhov][0][m - dkbx][n - dkbz],
@@ -348,8 +348,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // Shorthand
     using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_imagzero;
-    using suzerain::inorder::wavenumber_max;
+    using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(delta_t);
@@ -428,16 +427,23 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     static const solve_types solve_type = gbsvx;
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
-    // Short circuit "continues" should NOT occur for Nyquist modes
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
-        if (std::abs(wn) > wavenumber_max(Nz)) continue;
         const real_t kn = twopioverLz*wn;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
-            if (std::abs(wm) > wavenumber_max(Nx)) continue;
             const real_t km = twopioverLx*wm;
+
+            // Get pointer to (.,m,n)-th state pencil
+            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+            // Short circuiting did NOT occur for Nyquist or dealiasing modes...
+            if (   std::abs(wn) > wavenumber_absmin(Nz)
+                || std::abs(wm) > wavenumber_absmin(Nx)) {
+                memset(p, 0, A.N*sizeof(p[0]));  // ...so we may zero them
+                continue;                        // ...and now we short circuit
+            }
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
@@ -457,9 +463,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 break;
             }
             GRVY_TIMER_END("implicit operator assembly");
-
-            // Get pointer to (.,m,n)-th state pencil
-            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
             // Given state pencil "p" the rest of the solve loop looks like
             //
@@ -504,18 +507,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
             GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
 
-            // Must the imaginary portion of these wavenumbers be zero by
-            // conjugate symmetry arguments applied to the non-dealiased grid?
-            const bool imagzero = wavenumber_imagzero(Nz, wn)
-                                * wavenumber_imagzero(Nx, wm);
-
-            // When appropriate, zero imaginary part prior to solve.  This is
-            // either defensive (i.e. zero-zero modes) or absolutely required
-            // (i.e. not using imaginary part of Nyquist modes for even Nx, Nz).
-            if (SUZERAIN_UNLIKELY(imagzero)) {
-                b.imag().setZero();
-            }
-
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
@@ -547,14 +538,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
-
-            // Do /not/ zero imaginary part after solve when imagzero is true.
-            //
-            // Imaginary part should already be zero for zero-zero as operator
-            // was real-valued and we applied it to real-valued state.  For
-            // Nyquist modes, zeroing the imaginary part now effectively
-            // introduces high frequency noise for subsequent linear operator
-            // application (as the solution residual would no longer be zero).
 
             GRVY_TIMER_END("implicit operator solve");
 
