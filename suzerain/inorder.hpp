@@ -62,6 +62,20 @@ int wavenumber_max(const int N)
     return suzerain_inorder_wavenumber_max(N);
 }
 
+/** @copydoc suzerain_inorder_wavenumber_nyquist() */
+inline
+int wavenumber_nyquist(const int N, const int w)
+{
+    return suzerain_inorder_wavenumber_nyquist(N, w);
+}
+
+/** @copydoc suzerain_inorder_wavenumber_nyquist_index() */
+inline
+int wavenumber_nyquist_index(const int N, const int i)
+{
+    return suzerain_inorder_wavenumber_nyquist_index(N, i);
+}
+
 /** @copydoc suzerain_inorder_wavenumber_imagzero() */
 inline
 int wavenumber_imagzero(const int N, const int w)

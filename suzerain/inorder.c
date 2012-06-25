@@ -37,6 +37,12 @@ extern
 int suzerain_inorder_wavenumber_max(const int N);
 
 extern
+int suzerain_inorder_wavenumber_nyquist(const int N, const int w);
+
+extern
+int suzerain_inorder_wavenumber_nyquist_index(const int N, const int i);
+
+extern
 int suzerain_inorder_wavenumber_imagzero(const int N, const int w);
 
 extern

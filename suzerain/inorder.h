@@ -154,6 +154,46 @@ int suzerain_inorder_wavenumber_max(const int N)
 }
 
 /**
+ * For a \e logically even length <tt>N</tt> DFT of a real-valued function, is
+ * the wavenumber <tt>w</tt> the Nyquist mode?
+ *
+ * @param N The \e logical length of the DFT.
+ * @param w The wavenumber of interest.
+ *
+ * @return One if the wavenumber is the Nyquist mode for <tt>N</tt> even.
+ *         Zero otherwise.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_nyquist(const int N, const int w)
+{
+    // Deliberately no assertions on out-of-range wavenumbers!
+    return (w == N/2)*(1 - (N % 2));
+}
+
+/**
+ * For a \e logically even length <tt>N</tt> DFT of a real-valued function, is
+ * the wavenumber associated with index <tt>i</tt> the Nyquist mode?
+ *
+ * For example, for <tt>N=6</tt> the values <tt>{ 0, 0, 0, 1, 0, 0 }</tt> will
+ * be returned for <tt>i = 0, 1, 2, 3, 4, 5</tt>.  For <tt>N=5</tt> the values
+ * <tt>{ 0, 0, 0, 0, 0 }</tt> will be returned for <tt>i = 0, 1, 2, 3, 4</tt>.
+ *
+ * @param N The \e logical length of the DFT.
+ * @param i The index of interest.
+ *
+ * @return One if the indexed wavenumber is the Nyquist mode for <tt>N</tt>
+ *         even.  Zero otherwise.
+ * @see The documentation for inorder.h for terminology details.
+ */
+inline
+int suzerain_inorder_wavenumber_nyquist_index(const int N, const int i)
+{
+    assert(0 <= i && i < N);
+    return (i == N/2)*(1 - (N % 2));
+}
+
+/**
  * For a \e logically length <tt>N</tt> DFT of a real-valued function, are the
  * imaginary components of the wavenumber <tt>w</tt> \e necessarily zero due to
  * conjugate symmetry?
@@ -168,8 +208,7 @@ int suzerain_inorder_wavenumber_max(const int N)
 inline
 int suzerain_inorder_wavenumber_imagzero(const int N, const int w)
 {
-    // Deliberately no assertions on out-of-range wavenumbers!
-    return (w == 0) + (w == N/2)*(1 - (N % 2));
+    return (w == 0) + suzerain_inorder_wavenumber_nyquist(N, w);
 }
 
 /**
@@ -191,8 +230,7 @@ int suzerain_inorder_wavenumber_imagzero(const int N, const int w)
 inline
 int suzerain_inorder_wavenumber_imagzero_index(const int N, const int i)
 {
-    assert(0 <= i && i < N);
-    return (i == 0) + (i == N/2)*(1 - (N % 2));
+    return (i == 0) + suzerain_inorder_wavenumber_nyquist_index(N, i);
 }
 
 /**
