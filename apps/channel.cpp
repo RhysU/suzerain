@@ -1218,6 +1218,7 @@ void store_collocation_values(
     suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
     for (size_t i = 0; i < channel::field::count; ++i) {
         obase.bop_apply(0, 1, swave, i);
+        obase.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
                 reinterpret_cast<real_t *>(swave[i].origin()));
     }
@@ -1388,6 +1389,7 @@ void load_collocation_values(
 
     for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
+        obase.zero_dealiasing_modes(state, i);
         obase.bop_solve(massluz, state, i);                      // Y
     }
 }
@@ -2165,8 +2167,8 @@ void accumulate_manufactured_solution(
 
         // ...convert collocation values to non-dealiased coefficients...
         dgrid.transform_physical_to_wave(&phys.coeffRef(0, 0));  // X, Z
+        obase.zero_dealiasing_modes(scratch, 0);
         obase.bop_solve(massluz, scratch, 0);                    // Y
-        obase.diffwave_apply(0, 0, 1.0, scratch, 0);
 
         // ...and accumulate into the corresponding scalar field of swave
         assert(std::equal(scratch.shape() + 1, scratch.shape() + 4, swave.shape() + 1));
