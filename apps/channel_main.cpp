@@ -1400,8 +1400,47 @@ int main(int argc, char **argv)
     if (tc->current_nt() && dgrid->has_zero_zero_modes()) {
         // Only summarize when time advance took long enough to be interesting
         if (wtime_advance_end - wtime_advance_start > 5 /*seconds*/) {
-            INFO("Displaying GRVY timings from MPI rank with zero-zero modes:");
+
+            static const char header[]
+                = "GRVY timings from MPI rank with zero-zero modes:";
+
+            // GRVY uses printf so futzing required to employ logging subsystem
+            // Error handling is unsophisticated and ugly.  Quel dommage, but
+            // some attempt is made to fail back to printf if tmpfile fails.
+
+            int saved_stdout = -1;
+            FILE * const tmp = tmpfile();
+            if (!tmp) {
+                WARN("Could not open temporary file to read "
+                     << header << " " << strerror(errno));
+                INFO(header);
+            } else {
+                fflush(stdout);
+                saved_stdout = dup(STDOUT_FILENO);
+                dup2(fileno(tmp), STDOUT_FILENO);
+                puts(header);
+            }
+
             grvy_timer_summarize();
+
+            if (tmp) {
+                fflush(stdout);
+                fflush(tmp);
+                const long len = ftell(tmp);
+                char * const buf = (char *) calloc(len + 1, 1);
+                rewind(tmp);
+                if (!buf) {
+                    WARN("Could not allocate buffer to read "
+                         << header << " " << strerror(errno));
+                } else {
+                    fread(buf, sizeof(buf[0]), len, tmp);
+                }
+                dup2(saved_stdout, STDOUT_FILENO);
+                close(saved_stdout);
+                if (buf) INFO(buf);
+                free(buf);
+                fclose(tmp);
+            }
         }
     }
 #endif
