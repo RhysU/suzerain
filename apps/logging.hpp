@@ -14,6 +14,9 @@
 #ifndef LOGGING_HPP
 #define LOGGING_HPP
 
+#include <streambuf>
+#include <ostream>
+#include <string>
 #include <mpi.h>
 #include <log4cxx/logger.h>
 
@@ -309,6 +312,26 @@ extern logger_type rankzero;
  * TRACE, DEBUG, INFO, WARN, ERROR, and FATAL macros to employ this logger.
  */
 extern logger_type allranks;
+
+/**
+ * RAII class that redirects all output from a stream through #allranks.
+ * Implementation adapted from http://stackoverflow.com/questions/533038.
+ * Implementation inlined for brevity, not because virtual inlining works.
+ */
+class interceptor : public ::std::streambuf {
+
+public:
+    interceptor(::std::ostream& stream);
+    ~interceptor();
+
+protected:
+    virtual ::std::streamsize xsputn(const char *m, ::std::streamsize c);
+
+private:
+    ::std::ostream   &s;
+    ::std::streambuf *b;
+
+};
 
 /** Retrieve a particular logger by name */
 template <typename S>

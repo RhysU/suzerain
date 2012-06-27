@@ -122,6 +122,23 @@ logger_type rankzero;
 
 logger_type allranks;
 
+interceptor::interceptor(::std::ostream& stream)
+    : s(stream), b(s.rdbuf(this))
+{
+}
+
+interceptor::~interceptor()
+{
+    s.rdbuf(b);
+}
+
+::std::streamsize
+interceptor::xsputn(const char *m, ::std::streamsize c)
+{
+    allranks->forcedLog(::log4cxx::Level::getAll(), ::std::string(m, c));
+    return c;
+}
+
 void initialize(MPI_Comm, const char * const default_conf)
 {
     static const char log4j_config_envvar[]   = "log4j.configuration";
