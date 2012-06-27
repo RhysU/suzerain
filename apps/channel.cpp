@@ -2173,7 +2173,7 @@ void accumulate_manufactured_solution(
         // ...and accumulate into the corresponding scalar field of swave
         assert(std::equal(scratch.shape() + 1, scratch.shape() + 4, swave.shape() + 1));
         if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) continue;  // Sidestep assertions
-        typedef typename ContiguousState<4,complex_t>::index index;
+        typedef ContiguousState<4,complex_t>::index index;
         const index ku = boost::numeric_cast<index>(
                                 scratch.index_bases()[2] + scratch.shape()[2]);
         const index lu = boost::numeric_cast<index>(
