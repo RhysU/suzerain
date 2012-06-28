@@ -1,5 +1,9 @@
 \documentclass[letterpaper,11pt,nointlimits,reqno,draft]{amsart}
 
+% Avoid "Too many math alphabets used in version normal" issue
+\newcommand\hmmax{0}
+\newcommand\bmmax{0}
+
 % Packages
 \usepackage{accents}
 \usepackage{algorithm}
@@ -2259,29 +2263,19 @@ Switching to a blocked matrix representation employing five scalar conserved
 state fields, the complete, SMR91-ready discrete operator $M+\varphi{}L$ is
 shown in figure~\vref{fig:discreteimplicitop}.  The representation chosen
 highlights how the full operator is built from discrete operators applied to
-individual state fields.  Applying the operator does not require assembling it
-within a contiguous region of memory.  ``Inverting'' the operator (more
-correctly, factorizing and solving for unknown coefficients given collocation
-point values) does require assembly.  Employing an appropriate permutation
-matrix $P$ causes the renumbered operator $P\left(M+\varphi{}L\right)\trans{P}$
-to be globally banded with a small bandwidth independent of the number of
-wall-normal degrees of freedom.  This $P\left(M+\varphi{}L\right)\trans{P}$
-allows efficient banded factorization and back substitution.  Recent work has
-shown forthcoming ``manycore'' architectures to be efficient at performing many
-such conveniently parallel factorizations~\cite{Schulz2012Early}.
-
-Strong Dirichlet boundary conditions may be enforced in the usual way.  Neumann
-boundary condition implementations are less straightforward.  For simulations
-with no mean bulk velocity in the spanwise direction, the reference coefficient
-matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may be treated as effectively zero.  This
-reduces the required linear algebra.  If desired, the density equation and
-density terms in the other equations may removed from the result in
-figure~\ref{fig:discreteimplicitop} to greatly reduce operator assembly and
-factorization overhead.  Previous work by Guarini did not treat density
-implicitly~\cite{Guarini1998}.  Finally, implicitly handling only the
-wall-normal directions may be accomplished by setting $k_{m}$ and $k_{n}$ to
-zero.  Doing so results in a wavenumber independent operator requiring
-factorization only once per substep.
+individual state fields.  Strong Dirichlet boundary conditions may be enforced
+in the usual way.  Neumann boundary condition implementations are less
+straightforward.  For simulations with no mean bulk velocity in the spanwise
+direction, the reference coefficient matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may
+be treated as effectively zero.  This reduces the required linear algebra.  If
+desired, the density equation and density terms in the other equations may
+removed from the result in figure~\ref{fig:discreteimplicitop} to greatly
+reduce operator assembly and factorization overhead.  Previous work by Guarini
+did not treat density implicitly~\cite{Guarini1998}.  Note, however, implicit
+density treatment will be assumed in section~\ref{sec:nonreflectingbcs}.
+Finally, implicitly handling only the wall-normal directions may be
+accomplished by setting $k_{m}$ and $k_{n}$ to zero.  Doing so results in a
+wavenumber independent operator requiring factorization only once per substep.
 
 \begin{sidewaysfigure}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
@@ -2621,6 +2615,61 @@ wall-normal B-spline coefficients to B-spline collocation point values.
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
 
+\subsubsection{Implementation of the discretized implicit operator}
+
+The discretized implicit operator $M+\varphi{}L$ depicted in
+figure~\ref{fig:discreteimplicitop} is a blocked square matrix with banded
+submatrices (BSMBSM).  Matrix $A$ is said to be a BSMBSM when
+\[A = \begin{pmatrix}
+    B^{0,0}  & \cdots & B^{0,S-1}   \\
+    \vdots    & \ddots & \vdots       \\
+    B^{S-1,0} & \cdots & B^{S-1,S-1}
+\end{pmatrix}\]
+where every $B^{i,j}$ is an $\mathtt{n}$ by $\mathtt{n}$ banded submatrix
+containing $\mathtt{kl}$ subdiagonals and $\mathtt{ku}$ superdiagonals.  In
+this section we set the convention that lowercase fixed-width identifiers
+indicate submatrix details while uppercase ones indicate global details for
+$A$.  The structure of a BSMBSM is defined completely by the parameters
+$\mathtt{S}$, $\mathtt{n}$, $\mathtt{kl}$, and $\mathtt{ku}$.  The number of
+rows and columns is $\mathtt{N} = \mathtt{S}\,\mathtt{n}$.
+
+Applying $A$ from individually contiguous, banded submatrices $B_{i,j}$ within
+$A$ is both convenient and efficient.  For example, banded matrix accumulation
+operations and boundary condition imposition are simple in such a storage
+format.  However, using individually contiguous, banded submatrices is grossly
+inefficient for solving linear equations.
+
+With appropriate renumbering of $A$, solving linear equations can be done
+efficiently.  The zero-indexed permutation vector \[q(i) =
+\left(i\bmod{}S\right)n + \lfloor{}i/S\rfloor{}\] may always be used to convert
+a BSMBSM into a globally banded $\mathtt{N}$ by $\mathtt{N}$ matrix with
+minimum bandwidth.  More concretely, the permutation matrix $P$ uniquely
+defined by vector $q$ causes $P A \trans{P}$ to have $\mathtt{KL} =
+\mathtt{S}\left(\mathtt{kl}+1\right)-1$ subdiagonals and
+$\mathtt{KU}=~\mathtt{S}\left(\mathtt{ku}+1\right)-1$ superdiagonals summing to
+overall bandwidth $\mathtt{KL} + 1 + \mathtt{KU} = \mathtt{S}\left(\mathtt{kl}
++ \mathtt{ku} + 2\right)-1$.  The reverse permutation vector has a simple
+closed form \[q^{-1}(i) = \left(i\bmod{}n\right)S + \lfloor{}i/n\rfloor{}.\]
+With $A_{i,j}$ in hand, the banded renumbering may formed using the
+relationships
+\begin{align*}
+       \left.A\right|_{i,j}
+    &= \left.P A \trans{P}\right|_{q^{-1}(i),q^{-1}(j)}
+    &
+       \left.P A \trans{P}\right|_{i,j}
+    &= \left.A\right|_{q(i),q(j)}.
+\end{align*}
+This renumbering can be LU factorized in order $\mathtt{N}\left(\mathtt{KL} + 1
++ \mathtt{KU}\right)^2 =
+\mathtt{S}\,\mathtt{n}\left(\mathtt{S}\left(\mathtt{kl} + \mathtt{ku} +
+2\right)-1\right)^2$ floating point operations to find $LU = P A \trans{P}$.
+Recent work has shown forthcoming ``manycore'' architectures to be efficient at
+performing many such conveniently parallel
+factorizations~\cite{Schulz2012Early}.  The linear equation $AX=B$, which is
+equivalent to $LUPX=PB$, then has the solution \[X = A^{-1}B =
+\trans{P}\left(LU\right)^{-1}PB\] where inversion has been used as a notational
+convenience representing triangular back substitution.
+
 \subsection{Boundary conditions}
 
 \subsubsection{Isothermal, no slip boundary condition}
@@ -2636,6 +2685,7 @@ nonzero coefficients at the wall as discussed in
 section~\ref{sec:formingoperators}.
 
 \subsubsection{Nonreflecting freestream boundary conditions}
+\label{sec:nonreflectingbcs}
 
 When simulating problems on semi-infinite domains, such as flat plates,
 Suzerain requires nonreflecting freestream boundary conditions.  Without these,

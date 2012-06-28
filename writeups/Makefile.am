@@ -5,7 +5,6 @@
 .NOTPARALLEL:
 
 # LaTeX and BiBTeX source files
-TEXSOURCES  = bsmbsm.tex
 TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += derivation.tex
