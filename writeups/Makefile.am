@@ -5,7 +5,7 @@
 .NOTPARALLEL:
 
 # LaTeX and BiBTeX source files
-TEXSOURCES += channel_treatment.tex
+TEXSOURCES  = channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += derivation.tex
 TEXSOURCES += L2.tex
