@@ -24,7 +24,7 @@ banner "Preparation of physical-space version of wave-based test field${OPER:+ (
                                  --advance_nt=0 --restart_physical
     $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
                      --restart_physical
-    differ pmms0.h5 a0.h5
+    differ --delta=5e-16 pmms0.h5 a0.h5
 )
 
 banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
@@ -53,7 +53,7 @@ banner "Equivalence of a field advanced both with and without a physical space r
                       --restart_physical --max_dt=1e-5
     $channel pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P \
                       --restart_physical --max_dt=1e-5
-    differ_exclude $exclude_datasets_bar --delta=6e-13 --relative=6e-13 b0.h5 c0.h5
+    differ_exclude $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test
 )
 
