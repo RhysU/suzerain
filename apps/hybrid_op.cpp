@@ -571,7 +571,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             }
 
             if (solve_type == gbsvx) {
-                // TODO Track and statistics on rcond, equed, ferr, and berr
+                // TODO Track statistics on rcond, equed, ferr, and berr
             }
         }
     }
