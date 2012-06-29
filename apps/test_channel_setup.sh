@@ -29,7 +29,7 @@ fi
 
 # Create directory for scratch use
 test -z "${TMPDIR-}" && export TMPDIR=.
-testdir=`mktemp -d`
+testdir="$(readlink -f "$(mktemp -d)")"
 
 # Install teardown() function at exit unless TEST_CHANNEL_DEBUG is non-empty
 declare -ir starttime=`date +%s`
