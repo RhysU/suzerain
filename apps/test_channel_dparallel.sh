@@ -37,8 +37,10 @@ banner "Idempotence of serial versus degenerate parallel without time advance"
 banner "Idempotence of serial versus degenerate parallel with time advance"
 (
     cd $testdir
-    $s_channel mms0.h5 --restart_destination "a#.h5" --advance_nt=3
-    $p_channel mms0.h5 --restart_destination "b#.h5" --advance_nt=3 $P
+    $s_channel mms0.h5 --restart_destination "a#.h5" --advance_nt=3 \
+                       --status_nt=1 --evmagfactor=0.2
+    $p_channel mms0.h5 --restart_destination "b#.h5" --advance_nt=3 \
+                       --status_nt=1 --evmagfactor=0.2 $P
     differ --use-system-epsilon a0.h5 b0.h5
 )
 
