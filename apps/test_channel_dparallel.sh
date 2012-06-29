@@ -9,8 +9,8 @@ source "`dirname $0`/test_channel_setup.sh"
 
 # Shorthand for serial/parallel run truncating to only 1D problem
 # Such runs certainly stress the MPI pencil decomposition routines
-s_channel="runq  ../channel --Nx=1 --Nz=1"
-p_channel="prunq ../channel --Nx=1 --Nz=1"
+s_channel="run  ../channel --Nx=1 --Nz=1"
+p_channel="prun ../channel --Nx=1 --Nz=1"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
