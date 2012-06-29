@@ -55,8 +55,8 @@ public:
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
-        : one_over_delta_x(scenario.Lx / grid.N.x() /* !dN.x() */),
-          one_over_delta_z(scenario.Lz / grid.N.z() /* !dN.z() */),
+        : one_over_delta_x(grid.N.x() /* !dN.x() */ / scenario.Lx),
+          one_over_delta_z(grid.N.z() /* !dN.z() */ / scenario.Lz),
           scenario(scenario),
           grid(grid),
           dgrid(dgrid),
