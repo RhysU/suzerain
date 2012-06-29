@@ -114,7 +114,7 @@ differ_exclude() {
 }
 
 
-banner "Creating initial field to use for tests in $testdir"
+banner "Creating initial field to use for tests"
 declare -r  Re=100
 declare -r  Ma=1.15
 declare -ir Nx=4
