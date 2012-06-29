@@ -1228,8 +1228,11 @@ $\tilde{N}$ take B-spline coefficients as input and return collocation point
 values.  When following \eqref{eq:spatial_discretization_gridpoints} the
 operators both take and return collocation point values.  We choose to work
 with \eqref{eq:spatial_discretization} because it provides computational
-advantages.  For a discussion on moving operators between these two
-representations, see \textsection{}5.5 in~\cite{Boyd2001}.
+advantages.  Namely, obtaining $y$ derivatives at collocation points requires
+only matrix-vector products and factorization and back substitution need be
+performed at most once per Runge--Kutta substep.  For a discussion on moving
+operators between these two representations, see \textsection{}5.5
+in~\cite{Boyd2001}.
 
 \subsection{Forming discrete operators}
 \label{sec:formingoperators}
