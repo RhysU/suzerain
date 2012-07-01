@@ -69,13 +69,12 @@ operator depends explicitly on time.  Typically $L$ is stiff and requires an
 implicit scheme to allow for reasonable time steps.  $N$ is hard to linearize
 in a spectral method and so we want to use an explicit method to avoid
 iterating.  Spalart, Moser, and Rogers presented a popular low-storage, hybrid
-implicit/explicit, three-stage Runge--Kutta scheme.  However, their implicit
-operator differed at each substep and the implicit treatment was not truly
-third order.  Maintaining the same operator at each substep permits reuse of
-operator factorizations and can provide a significant speedup when operator
-factorization dominates runtime cost.  We add a fourth substep to the scheme
-and seek to address both shortcomings without unduly impacting the favorable
-stability properties of the earlier scheme.
+implicit/explicit, three-stage Runge--Kutta scheme.  However, their scheme
+required accommodating  a different implicit operator at each substep.  Solving
+for the same linear operator at each substep can provide a significant speedup
+when operator factorization dominates runtime cost.  We will add a fourth
+substep in hope of creating a ``singly diagonally implicit'' variant that
+retains the favorable properties of its three stage ancestor.
 
 Let $\mathcal{D}$ and $\mathcal{E}$ be the first and second
 Fr\'echet derivatives of $N$ with respect to $u$.  Then
@@ -811,9 +810,9 @@ $u'''-u_{n} = (u'''-u'')+(u''-u_{n})$:
   + \order{\Delta{}t}{4}
 \end{align}
 
-Comparing the above $u''' - u_{n}$ result term-by-term with our
-original Taylor expansion we can deduce Spalart, Moser, and Rogers'
-three-stage order conditions (A6)--(A8):
+Comparing the above $u''' - u_{n}$ result term-by-term with our original Taylor
+expansion we have rederived Spalart, Moser, and Rogers' three-stage order
+conditions (A6)--(A8):
 \begin{align*}
 \tag{A6, $\Delta{}t R_{n}$}
 1
@@ -928,8 +927,7 @@ three-stage order conditions (A6)--(A8):
 +
 \gamma_{3} \left( \gamma_{1} + \zeta_{1} + \gamma_{2} \right)^{2}
 \end{align*}
-Reproducing their order conditions increases our confidence in our algebra thus
-far.
+Reproducing their order conditions gives us confidence in our algebra thus far.
 
 Again noting that $u''' = u_{n} + \left( u''' - u_{n} \right)$, we apply the
 operator expansions:
