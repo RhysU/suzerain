@@ -931,6 +931,85 @@ three-stage order conditions (A6)--(A8):
 Reproducing their order conditions increases our confidence in our algebra thus
 far.
 
+Again noting that $u''' = u_{n} + \left( u''' - u_{n} \right)$, we apply the
+operator expansions:
+\begin{subequations}
+\begin{align}
+  L'''
+  &=
+  L_{n}
+  +
+  L(u'''-u_{n})
+\\
+&=
+\trans{\begin{bmatrix}
+  &1 \\
+  &0 \\
+  &\gamma_{3} + \zeta_{2}
+  + \gamma_{1} + \gamma_{2} + \zeta_{1} \\
+  &0 \\
+  &0 \\
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2} + \gamma_{1} \gamma_{2} \\
+\bigg(\mspace{-18mu}
+\begin{split}
+  &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \gamma_{1} \zeta_{2}
+  + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+  \\
+  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right)
+  + \gamma_{1} \left( \beta_{1} + \gamma_{2} + \zeta_{1} \right)
+  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
+\end{split}
+\mspace{18mu}\bigg)
+  \\
+  &0
+\end{bmatrix}}
+\begin{bmatrix}
+  L_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\\
+  N'''
+  &=
+  N_{n}
+  + \mathcal{D} \left( u''' - u_{n} \right)
+  + \frac{1}{2} \mathcal{E} \left( u'''-u_{n}, u'''-u_{n} \right)
+  + \order{\left(u'''-u_{n}\right)}{3}
+\\
+  &=
+\trans{\begin{bmatrix} % FIXME
+  1 \\
+  0 \\
+  0 \\
+  0 \\
+  0 \\
+  0 \\
+  0 \\
+  0
+\end{bmatrix}}
+\begin{bmatrix}
+  N_{n} \\
+  \Delta{}t D R_{n} \\
+  \Delta{}t L R_{n} \\
+  \Delta{}t^{2} D^{2} R_{n} \\
+  \Delta{}t^{2} D L R_{n} \\
+  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} L^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
+\end{bmatrix}
+  + \order{\Delta{}t}{3}
+\notag
+\end{align}
+\end{subequations}
+
 We next compute $u_{n+1}-u'''$ using $L'''$, $N'''$, and $N''$ followed by
 tallying $u_{n+1}-u_{n} = (u_{n+1}-u''')+(u'''-u_{n})$:
 
