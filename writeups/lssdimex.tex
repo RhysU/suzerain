@@ -34,8 +34,8 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Derivation of SMR's third-order, low-storage,
-        hybrid implicit/explicit Runge--Kutta scheme
+        A third-order, low-storage, singly diagonally
+        implicit-explicit Runge-Kutta scheme
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -64,12 +64,18 @@ The time evolution of a state vector $u$ can be expressed as
   \equiv
   R(u)
 \end{align}
-where $L$ and $N$ are linear and nonlinear operators, respectively.
-Neither operator depends explicitly on time.  Typically $L$ is stiff
-and requires an implicit scheme to allow for reasonable time steps.
-$N$ is hard to linearize in a spectral method and so we want to use
-an explicit method to avoid iterating.  We seek a low-storage, hybrid
-implicit/explicit, three-stage Runge--Kutta scheme.
+where $L$ and $N$ are linear and nonlinear operators, respectively.  Neither
+operator depends explicitly on time.  Typically $L$ is stiff and requires an
+implicit scheme to allow for reasonable time steps.  $N$ is hard to linearize
+in a spectral method and so we want to use an explicit method to avoid
+iterating.  Spalart, Moser, and Rogers presented a popular low-storage, hybrid
+implicit/explicit, three-stage Runge--Kutta scheme.  However, their implicit
+operator differed at each substep and the implicit treatment was not truly
+third order.  Maintaining the same operator at each substep permits reuse of
+operator factorizations and can provide a significant speedup when operator
+factorization dominates runtime cost.  We add a fourth substep to the scheme
+and seek to address both shortcomings without unduly impacting the favorable
+stability properties of the earlier scheme.
 
 Let $\mathcal{D}$ and $\mathcal{E}$ be the first and second
 Fr\'echet derivatives of $N$ with respect to $u$.  Then
@@ -187,7 +193,7 @@ allows us to obtain
   .
 \end{align}
 
-We want our three stage Runge--Kutta scheme to advance
+We want our four stage Runge--Kutta scheme to advance
 $u_{n}$, at time $t$, to $u_{n+1}$, at time $t+\Delta{}t$:
 \begin{subequations}
 \begin{align}
@@ -207,12 +213,20 @@ $u_{n}$, at time $t$, to $u_{n+1}$, at time $t+\Delta{}t$:
     + \gamma_{2} N(u') + \zeta_{1} N(u_{n})
   \right]
 \\
-  u_{n+1}
+  u'''
   &=
   u''
   + \Delta{}t\left[
-      L\left( \alpha_{3}u'' + \beta_{3}u_{n+1} \right)
+      L\left( \alpha_{3}u'' + \beta_{3}u''' \right)
     + \gamma_{3} N(u'') + \zeta_{2} N(u')
+  \right]
+\\
+  u_{n+1}
+  &=
+  u'''
+  + \Delta{}t\left[
+      L\left( \alpha_{4}u''' + \beta_{4}u_{n+1} \right)
+    + \gamma_{4} N(u''') + \zeta_{3} N(u'')
   \right]
 \end{align}
 \end{subequations}
@@ -232,11 +246,17 @@ and $\zeta$ by rearranging the scheme as follows:
   &&+ \Delta{}t \gamma_{2} N(u')
   &&+ \Delta{}t \zeta_{1}  N(u_{n})
 \\
-  \left( I - \Delta{}t \beta_{3} L \right) &u_{n+1}
+  \left( I - \Delta{}t \beta_{3} L \right) &u'''
   &&= u''
   &&+ \Delta{}t \alpha_{3} L(u'')
   &&+ \Delta{}t \gamma_{3} N(u'')
   &&+ \Delta{}t \zeta_{2}  N(u')
+\\
+  \left( I - \Delta{}t \beta_{4} L \right) &u_{n+1}
+  &&= u'''
+  &&+ \Delta{}t \alpha_{4} L(u''')
+  &&+ \Delta{}t \gamma_{4} N(u''')
+  &&+ \Delta{}t \zeta_{3}  N(u'')
 \end{alignat}
 \end{subequations}
 
@@ -249,9 +269,13 @@ substep lengths using the choices
   \alpha_{2} + \beta_{2} &= \gamma_{2}+\zeta_{1}
   \\
   \alpha_{3} + \beta_{3} &= \gamma_{3}+\zeta_{2}
+  \\
+  \alpha_{4} + \beta_{4} &= \gamma_{4}+\zeta_{3}
 \end{align}
 \end{subequations}
-to eliminate the unknown $\alpha$'s from the equations.
+to eliminate the unknown $\alpha$'s from the equations.  Though a singly
+diagonally implicit treatment of $L$ will require all $\beta$ coefficients to
+be equal, we will not use that assumption while deriving the order conditions.
 \begin{subequations}
 \begin{align}
   u' - u_{n}
@@ -268,12 +292,20 @@ to eliminate the unknown $\alpha$'s from the equations.
     + \zeta_{1} N(u_{n})
   \right)
 \\
-  u_{n+1} - u''
+  u''' - u''
   &=
   \Delta{}t \left( I - \Delta{}t \beta_{3} L \right)^{-1} \left(
       \gamma_{3} R(u'')
     + \zeta_{2}  L(u'')
     + \zeta_{2}  N(u')
+  \right)
+\\
+  u_{n+1} - u'''
+  &=
+  \Delta{}t \left( I - \Delta{}t \beta_{4} L \right)^{-1} \left(
+      \gamma_{4} R(u''')
+    + \zeta_{3}  L(u''')
+    + \zeta_{3}  N(u'')
   \right)
 \end{align}
 \end{subequations}
@@ -284,6 +316,7 @@ For brevity, we also introduce the notation
 $L_{n}=L(u_{n})$,
 $L'=L(u')$,
 $L''=L(u'')$,
+$L'''=L(u''')$,
 and similarly for $N_{n}$, $R_{n}$, etc.
 \begin{subequations}
 \begin{align}
@@ -315,7 +348,7 @@ and similarly for $N_{n}$, $R_{n}$, etc.
   \right)
   + \order{\Delta{}t}{4}
 \\
-  u_{n+1} - u''
+  u''' - u''
   &=
   \Delta{}t
   \left(
@@ -327,6 +360,21 @@ and similarly for $N_{n}$, $R_{n}$, etc.
       \gamma_{3} R''
     + \zeta_{2}  L''
     + \zeta_{2}  N'
+  \right)
+  + \order{\Delta{}t}{4}
+\\
+  u_{n+1} - u'''
+  &=
+  \Delta{}t
+  \left(
+      I
+    + \Delta{}t \beta_{4} L
+    + \Delta{}t^{2} \beta_{4}^{2} L^{2}
+  \right)
+  \left(
+      \gamma_{4} R'''
+    + \zeta_{3}  L'''
+    + \zeta_{3}  N''
   \right)
   + \order{\Delta{}t}{4}
 \end{align}
@@ -382,7 +430,7 @@ we apply the operator expansions:
   \beta_{1} \gamma_{1} \\
   0 \\
   0 \\
-  \frac{1}{2} \gamma_{1}^{2} 
+  \frac{1}{2} \gamma_{1}^{2}
 \end{bmatrix}}
 \begin{bmatrix}
   N_{n} \\
@@ -440,8 +488,8 @@ $u''-u_{n} = (u''-u')+(u'-u_{n})$:
   \beta_{2} \gamma_{1} \gamma_{2} \\
     \left( \beta_{1} + \beta_{2} \right) \gamma_{1} \zeta_{1}
   + \beta_{2}^{2} \left( \gamma_{2} + \zeta_{1} \right)
-  + \beta_{1} \gamma_{1} \gamma_{2} 
-  + \beta_{2} \gamma_{1} \gamma_{2} 
+  + \beta_{1} \gamma_{1} \gamma_{2}
+  + \beta_{2} \gamma_{1} \gamma_{2}
   \\
   \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
 \end{bmatrix}}
@@ -462,15 +510,15 @@ $u''-u_{n} = (u''-u')+(u'-u_{n})$:
 \begin{bmatrix}
   \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   \gamma_{1} \gamma_{2} \\
-    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right)
   + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
   0 \\
   \beta_{1} \gamma_{1} \gamma_{2} \\
   \beta_{2} \gamma_{1} \gamma_{2} \\
     \gamma_{1} \left(
-        \beta_{1}^2 + \left(\gamma_{2} + \zeta_{1}\right) \beta_{1} 
+        \beta_{1}^2 + \left(\gamma_{2} + \zeta_{1}\right) \beta_{1}
       + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right)
-    \right) 
+    \right)
     + \beta_{2}^2 \left(\gamma_{2} + \zeta_{1}\right)
   \\
   \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
@@ -538,7 +586,7 @@ we apply the operator expansions:
   \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   0 \\
   \gamma_{1} \gamma_{2} \\
-    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right)
   + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
   \gamma_{1} \gamma_{2} \\
   0 \\
@@ -559,8 +607,8 @@ we apply the operator expansions:
 \end{align}
 \end{subequations}
 
-We determine $u_{n+1}-u''$ using $L''$, $N''$, and $N'$ followed by tallying
-$u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
+We determine $u'''-u''$ using $L''$, $N''$, and $N'$ followed by tallying
+$u'''-u_{n} = (u'''-u'')+(u''-u_{n})$:
 \begin{align}
       \gamma_{3} R''
     + \zeta_{2}  L''
@@ -571,14 +619,14 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
     &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   + \gamma_{1} \zeta_{2} \\
     &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
-  + \gamma_{1} \zeta_{2} 
+  + \gamma_{1} \zeta_{2}
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right) \\
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
     &\gamma_{3} \left(
        \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
       +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
     \right)
-  + \gamma_{1} \gamma_{2} \gamma_{3} 
+  + \gamma_{1} \gamma_{2} \gamma_{3}
   + \beta_{1} \gamma_{1} \zeta_{2} \\
     &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2} \\
@@ -615,7 +663,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
 \end{bmatrix}
   + \order{\Delta{}t}{3}
 \\
-  u_{n+1}-u''
+  u'''-u''
   &=
 \trans{\begin{bmatrix}
   &\gamma_{3} + \zeta_{2} \\
@@ -626,7 +674,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   + \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) \\
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -634,14 +682,14 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{1} \gamma_{1} \zeta_{2} \\
   &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2}
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right) \\
 %
 \Bigg(\mspace{-18mu}
 \begin{split}
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -655,7 +703,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
   &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right)
@@ -678,10 +726,10 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
 \end{bmatrix}
   + \order{\Delta{}t}{4}
 \\
-  u_{n+1} - u_{n}
+  u''' - u_{n}
   &=
 \trans{\begin{bmatrix}
-  &\gamma_{3} + \zeta_{2} 
+  &\gamma_{3} + \zeta_{2}
   + \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   + \gamma_{1} \zeta_{2} + \gamma_{1} \gamma_{2} \\
@@ -692,32 +740,32 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \gamma_{1} \zeta_{2}
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
-  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) 
+  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right)
   + \gamma_{1} \left( \beta_{1} + \gamma_{2} + \zeta_{1} \right)
-  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right) 
+  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
 \end{split}
 \mspace{18mu}\bigg)
   \\
 %
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
   + \gamma_{1} \gamma_{2} \gamma_{3}
-  + \beta_{1} \gamma_{1} \zeta_{2} 
+  + \beta_{1} \gamma_{1} \zeta_{2}
   + \beta_{1} \gamma_{1} \gamma_{2} \\
   &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2}
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
-    \right) 
+    \right)
   + \beta_{2} \gamma_{1} \gamma_{2} \\
 %
 \Bigg(\mspace{-18mu}
 \begin{split}
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -731,12 +779,12 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
   &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right)
   \\
-  &\quad+ \gamma_{1} \left( 
+  &\quad+ \gamma_{1} \left(
       \beta_{1}^{2}
       + \left( \gamma_{2} + \zeta_{1} \right)\beta_{1}
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
@@ -763,23 +811,23 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \order{\Delta{}t}{4}
 \end{align}
 
-Comparing the above $u_{n+1} - u_{n}$ result term-by-term with our
-original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
-(A6)--(A8):
+Comparing the above $u''' - u_{n}$ result term-by-term with our
+original Taylor expansion we can deduce Spalart, Moser, and Rogers'
+three-stage order conditions (A6)--(A8):
 \begin{align*}
 \tag{A6, $\Delta{}t R_{n}$}
-1 
-&= 
+1
+&=
 \gamma_{1} + \gamma_{2} + \gamma_{3} + \zeta_{1} + \zeta_{2}
 \\
 \tag{A7a, $\Delta{}t^{2} D R_{n}$}
-\frac{1}{2} 
+\frac{1}{2}
 &=
-\gamma_{3} \left( 
+\gamma_{3} \left(
   \gamma_{1} + \gamma_{2} + \zeta_{1}
 \right)
 +
-\gamma_{1} \left( 
+\gamma_{1} \left(
   \zeta_{2} + \gamma_{2}
 \right)
 \\
@@ -794,7 +842,7 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \left( \gamma_{2} + \zeta_{1} \right) \beta_{2}
 \\
 &\quad{}+
-\left( \gamma_{3} + \zeta_{2} \right)\left( 
+\left( \gamma_{3} + \zeta_{2} \right)\left(
   \gamma_{1} + \gamma_{2} + \zeta_{1}
 \right)
 +
@@ -809,20 +857,20 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \tag{A8d, $\Delta{}t^{3} D L R_{n}$}
 \frac{1}{6}
 &=
-\gamma_{3} \left( 
-  \gamma_{1} \beta_{1} 
-  + 
+\gamma_{3} \left(
+  \gamma_{1} \beta_{1}
+  +
   \left( \gamma_{2} + \zeta_{1}\right) \left( \gamma_{1} + \beta_{2} \right)
 \right)
 +
-\gamma_{1} \beta_{1} \left( 
+\gamma_{1} \beta_{1} \left(
   \gamma_{2} + \zeta_{2}
 \right)
 \\
 \tag{A8c, $\Delta{}t^{3} L D R_{n}$}
 \frac{1}{6}
 &=
-\beta_{3} \left( 
+\beta_{3} \left(
   \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   +
   \gamma_{1} \zeta_{2}
@@ -836,17 +884,17 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \begin{split}
 \frac{1}{6}
 &=
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right)
   \left( \zeta_{1} + \gamma_{2} \right)
   +
-  \left( \beta_{3} + \beta_{1} \right) \gamma_{1} 
+  \left( \beta_{3} + \beta_{1} \right) \gamma_{1}
   +
   \beta_{3}^{2}
 \right) \zeta_{2}
 \\
 &\quad{}+
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{3}
   +
   \left( \beta_{2} + \beta_{1} \right) \gamma_{1}
@@ -855,7 +903,7 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \right) \zeta_{1}
 \\
 &\quad{}+
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{2}
   +
   \left( \beta_{3} + \beta_{1} \right) \gamma_{1}
@@ -864,8 +912,8 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \right) \gamma_{3}
 \\
 &\quad{}+
-\left( 
-  \left( \beta_{2} + \beta_{1} \right) \gamma_{1} 
+\left(
+  \left( \beta_{2} + \beta_{1} \right) \gamma_{1}
   +
   \beta_{2}^{2}
 \right) \gamma_{2}
@@ -880,6 +928,11 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 +
 \gamma_{3} \left( \gamma_{1} + \zeta_{1} + \gamma_{2} \right)^{2}
 \end{align*}
+Reproducing their order conditions increases our confidence in our algebra thus
+far.
+
+We next compute $u_{n+1}-u'''$ using $L'''$, $N'''$, and $N''$ followed by
+tallying $u_{n+1}-u_{n} = (u_{n+1}-u''')+(u'''-u_{n})$:
 
 
 \end{document}

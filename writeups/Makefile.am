@@ -9,6 +9,7 @@ TEXSOURCES  = channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += derivation.tex
 TEXSOURCES += L2.tex
+TEXSOURCES += lssdimex.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 EXTRA_DIST  = references.bib
