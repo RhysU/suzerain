@@ -355,11 +355,11 @@ we apply the operator expansions:
 \end{bmatrix}}
 \begin{bmatrix}
   L_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -382,15 +382,15 @@ we apply the operator expansions:
   \beta_{1} \gamma_{1} \\
   0 \\
   0 \\
-  \frac{1}{2} \gamma_{1}^{2} 
+  \frac{1}{2} \gamma_{1}^{2}
 \end{bmatrix}}
 \begin{bmatrix}
   N_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -418,11 +418,11 @@ $u''-u_{n} = (u''-u')+(u'-u_{n})$:
 \end{bmatrix}}
 \begin{bmatrix}
   R_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -440,18 +440,18 @@ $u''-u_{n} = (u''-u')+(u'-u_{n})$:
   \beta_{2} \gamma_{1} \gamma_{2} \\
     \left( \beta_{1} + \beta_{2} \right) \gamma_{1} \zeta_{1}
   + \beta_{2}^{2} \left( \gamma_{2} + \zeta_{1} \right)
-  + \beta_{1} \gamma_{1} \gamma_{2} 
-  + \beta_{2} \gamma_{1} \gamma_{2} 
+  + \beta_{1} \gamma_{1} \gamma_{2}
+  + \beta_{2} \gamma_{1} \gamma_{2}
   \\
   \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
 \end{bmatrix}}
 \begin{bmatrix}
   \Delta{}t R_{n} \\
-  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} \mathcal{D} R_{n} \\
   \Delta{}t^{2} L R_{n} \\
-  \Delta{}t^{3} D^{2} R_{n} \\
-  \Delta{}t^{3} D L R_{n} \\
-  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{D} L R_{n} \\
+  \Delta{}t^{3} L \mathcal{D} R_{n} \\
   \Delta{}t^{3} L^{2} R_{n} \\
   \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -462,26 +462,26 @@ $u''-u_{n} = (u''-u')+(u'-u_{n})$:
 \begin{bmatrix}
   \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   \gamma_{1} \gamma_{2} \\
-    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right)
   + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
   0 \\
   \beta_{1} \gamma_{1} \gamma_{2} \\
   \beta_{2} \gamma_{1} \gamma_{2} \\
     \gamma_{1} \left(
-        \beta_{1}^2 + \left(\gamma_{2} + \zeta_{1}\right) \beta_{1} 
+        \beta_{1}^2 + \left(\gamma_{2} + \zeta_{1}\right) \beta_{1}
       + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right)
-    \right) 
+    \right)
     + \beta_{2}^2 \left(\gamma_{2} + \zeta_{1}\right)
   \\
   \frac{1}{2} \gamma_{1}^{2} \gamma_{2}
 \end{bmatrix}
 \begin{bmatrix}
   \Delta{}t R_{n} \\
-  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} \mathcal{D} R_{n} \\
   \Delta{}t^{2} L R_{n} \\
-  \Delta{}t^{3} D^{2} R_{n} \\
-  \Delta{}t^{3} D L R_{n} \\
-  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{D} L R_{n} \\
+  \Delta{}t^{3} L \mathcal{D} R_{n} \\
   \Delta{}t^{3} L^{2} R_{n} \\
   \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -515,11 +515,11 @@ we apply the operator expansions:
 \end{bmatrix}}
 \begin{bmatrix}
   L_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -538,7 +538,7 @@ we apply the operator expansions:
   \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   0 \\
   \gamma_{1} \gamma_{2} \\
-    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right) 
+    \gamma_{1} \left(\beta_{1} + \gamma_{2} + \zeta_{1}\right)
   + \beta_{2} \left(\gamma_{2} + \zeta_{1}\right) \\
   \gamma_{1} \gamma_{2} \\
   0 \\
@@ -546,11 +546,11 @@ we apply the operator expansions:
 \end{bmatrix}}
 \begin{bmatrix}
   N_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -571,14 +571,14 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
     &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   + \gamma_{1} \zeta_{2} \\
     &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
-  + \gamma_{1} \zeta_{2} 
+  + \gamma_{1} \zeta_{2}
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right) \\
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
     &\gamma_{3} \left(
        \gamma_{1} \left(\beta_{1}+\zeta_{1}\right)
       +\beta_{2} \left(\gamma_{2}+\zeta_{1}\right)
     \right)
-  + \gamma_{1} \gamma_{2} \gamma_{3} 
+  + \gamma_{1} \gamma_{2} \gamma_{3}
   + \beta_{1} \gamma_{1} \zeta_{2} \\
     &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2} \\
@@ -605,11 +605,11 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
 \end{bmatrix}}
 \begin{bmatrix}
   R_{n} \\
-  \Delta{}t D R_{n} \\
+  \Delta{}t \mathcal{D} R_{n} \\
   \Delta{}t L R_{n} \\
-  \Delta{}t^{2} D^{2} R_{n} \\
-  \Delta{}t^{2} D L R_{n} \\
-  \Delta{}t^{2} L D R_{n} \\
+  \Delta{}t^{2} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{2} \mathcal{D} L R_{n} \\
+  \Delta{}t^{2} L \mathcal{D} R_{n} \\
   \Delta{}t^{2} L^{2} R_{n} \\
   \Delta{}t^{2} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -626,7 +626,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   + \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) \\
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -634,14 +634,14 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{1} \gamma_{1} \zeta_{2} \\
   &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2}
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right) \\
 %
 \Bigg(\mspace{-18mu}
 \begin{split}
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -655,7 +655,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
   &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right)
@@ -668,11 +668,11 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
 \end{bmatrix}}
 \begin{bmatrix}
   \Delta{}t R_{n} \\
-  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} \mathcal{D} R_{n} \\
   \Delta{}t^{2} L R_{n} \\
-  \Delta{}t^{3} D^{2} R_{n} \\
-  \Delta{}t^{3} D L R_{n} \\
-  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{D} L R_{n} \\
+  \Delta{}t^{3} L \mathcal{D} R_{n} \\
   \Delta{}t^{3} L^{2} R_{n} \\
   \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -681,7 +681,7 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   u_{n+1} - u_{n}
   &=
 \trans{\begin{bmatrix}
-  &\gamma_{3} + \zeta_{2} 
+  &\gamma_{3} + \zeta_{2}
   + \gamma_{1} + \gamma_{2} + \zeta_{1} \\
   &\gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   + \gamma_{1} \zeta_{2} + \gamma_{1} \gamma_{2} \\
@@ -692,32 +692,32 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \gamma_{1} \zeta_{2}
   + \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
-  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right) 
+  &\quad+ \beta_{3} \left( \gamma_{3} + \zeta_{2} \right)
   + \gamma_{1} \left( \beta_{1} + \gamma_{2} + \zeta_{1} \right)
-  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right) 
+  + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
 \end{split}
 \mspace{18mu}\bigg)
   \\
 %
   &\gamma_{1} \gamma_{2} \gamma_{3} \\
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
   + \gamma_{1} \gamma_{2} \gamma_{3}
-  + \beta_{1} \gamma_{1} \zeta_{2} 
+  + \beta_{1} \gamma_{1} \zeta_{2}
   + \beta_{1} \gamma_{1} \gamma_{2} \\
   &\gamma_{1} \gamma_{2} \gamma_{3}
   + \gamma_{1} \gamma_{2} \zeta_{2}
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
-    \right) 
+    \right)
   + \beta_{2} \gamma_{1} \gamma_{2} \\
 %
 \Bigg(\mspace{-18mu}
 \begin{split}
-  &\gamma_{3} \left( 
+  &\gamma_{3} \left(
       \gamma_{1} \left(  \beta_{1} + \zeta_{1} \right)
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
     \right)
@@ -731,12 +731,12 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
   + \beta_{3} \zeta_{2} \left( \gamma_{2} + \zeta_{1} \right)
   \\
   &\quad+ \beta_{3}^{2} \left( \gamma_{3} + \zeta_{2} \right)
-  + \beta_{3} \left( 
+  + \beta_{3} \left(
       \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
     + \gamma_{1} \zeta_{2}
     \right)
   \\
-  &\quad+ \gamma_{1} \left( 
+  &\quad+ \gamma_{1} \left(
       \beta_{1}^{2}
       + \left( \gamma_{2} + \zeta_{1} \right)\beta_{1}
       + \beta_{2} \left( \gamma_{2} + \zeta_{1} \right)
@@ -752,11 +752,11 @@ $u_{n+1}-u_{n} = (u_{n+1}-u'')+(u''-u_{n})$:
 \end{bmatrix}}
 \begin{bmatrix}
   \Delta{}t R_{n} \\
-  \Delta{}t^{2} D R_{n} \\
+  \Delta{}t^{2} \mathcal{D} R_{n} \\
   \Delta{}t^{2} L R_{n} \\
-  \Delta{}t^{3} D^{2} R_{n} \\
-  \Delta{}t^{3} D L R_{n} \\
-  \Delta{}t^{3} L D R_{n} \\
+  \Delta{}t^{3} \mathcal{D}^{2} R_{n} \\
+  \Delta{}t^{3} \mathcal{D} L R_{n} \\
+  \Delta{}t^{3} L \mathcal{D} R_{n} \\
   \Delta{}t^{3} L^{2} R_{n} \\
   \Delta{}t^{3} \mathcal{E}\left( R_{n}, R_{n} \right)
 \end{bmatrix}
@@ -768,18 +768,18 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 (A6)--(A8):
 \begin{align*}
 \tag{A6, $\Delta{}t R_{n}$}
-1 
-&= 
+1
+&=
 \gamma_{1} + \gamma_{2} + \gamma_{3} + \zeta_{1} + \zeta_{2}
 \\
-\tag{A7a, $\Delta{}t^{2} D R_{n}$}
-\frac{1}{2} 
+\tag{A7a, $\Delta{}t^{2} \mathcal{D} R_{n}$}
+\frac{1}{2}
 &=
-\gamma_{3} \left( 
+\gamma_{3} \left(
   \gamma_{1} + \gamma_{2} + \zeta_{1}
 \right)
 +
-\gamma_{1} \left( 
+\gamma_{1} \left(
   \zeta_{2} + \gamma_{2}
 \right)
 \\
@@ -794,35 +794,35 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \left( \gamma_{2} + \zeta_{1} \right) \beta_{2}
 \\
 &\quad{}+
-\left( \gamma_{3} + \zeta_{2} \right)\left( 
+\left( \gamma_{3} + \zeta_{2} \right)\left(
   \gamma_{1} + \gamma_{2} + \zeta_{1}
 \right)
 +
 \beta_{3} \left( \gamma_{3} + \zeta_{2} \right)
 \end{split}
 \\
-\tag{A8a, $\Delta{}t^{3} D^{2} R_{n}$}
+\tag{A8a, $\Delta{}t^{3} \mathcal{D}^{2} R_{n}$}
 \frac{1}{6}
 &=
 \gamma_{1} \gamma_{2} \gamma_{3}
 \\
-\tag{A8d, $\Delta{}t^{3} D L R_{n}$}
+\tag{A8d, $\Delta{}t^{3} \mathcal{D} L R_{n}$}
 \frac{1}{6}
 &=
-\gamma_{3} \left( 
-  \gamma_{1} \beta_{1} 
-  + 
+\gamma_{3} \left(
+  \gamma_{1} \beta_{1}
+  +
   \left( \gamma_{2} + \zeta_{1}\right) \left( \gamma_{1} + \beta_{2} \right)
 \right)
 +
-\gamma_{1} \beta_{1} \left( 
+\gamma_{1} \beta_{1} \left(
   \gamma_{2} + \zeta_{2}
 \right)
 \\
-\tag{A8c, $\Delta{}t^{3} L D R_{n}$}
+\tag{A8c, $\Delta{}t^{3} L \mathcal{D} R_{n}$}
 \frac{1}{6}
 &=
-\beta_{3} \left( 
+\beta_{3} \left(
   \gamma_{3} \left( \gamma_{1} + \gamma_{2} + \zeta_{1} \right)
   +
   \gamma_{1} \zeta_{2}
@@ -836,17 +836,17 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \begin{split}
 \frac{1}{6}
 &=
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right)
   \left( \zeta_{1} + \gamma_{2} \right)
   +
-  \left( \beta_{3} + \beta_{1} \right) \gamma_{1} 
+  \left( \beta_{3} + \beta_{1} \right) \gamma_{1}
   +
   \beta_{3}^{2}
 \right) \zeta_{2}
 \\
 &\quad{}+
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{3}
   +
   \left( \beta_{2} + \beta_{1} \right) \gamma_{1}
@@ -855,7 +855,7 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \right) \zeta_{1}
 \\
 &\quad{}+
-\left( 
+\left(
   \left( \gamma_{1} + \beta_{3} + \beta_{2} \right) \gamma_{2}
   +
   \left( \beta_{3} + \beta_{1} \right) \gamma_{1}
@@ -864,8 +864,8 @@ original Taylor expansion we deduce Spalart, Moser, and Rogers' equations
 \right) \gamma_{3}
 \\
 &\quad{}+
-\left( 
-  \left( \beta_{2} + \beta_{1} \right) \gamma_{1} 
+\left(
+  \left( \beta_{2} + \beta_{1} \right) \gamma_{1}
   +
   \beta_{2}^{2}
 \right) \gamma_{2}
