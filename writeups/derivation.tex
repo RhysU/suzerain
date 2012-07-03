@@ -21,6 +21,7 @@
 \usepackage{latexsym}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{rotating}
@@ -31,9 +32,19 @@
 \usepackage{wrapfig}
 \usepackage{yhmath}
 
+\usepackage[obeyDraft,textsize=scriptsize]{todonotes}
+
 % Hyperref package must be last otherwise the contents are jumbled
 % hypertexnames disabled to fix links pointing to incorrect locations
-\usepackage[hypertexnames=false,final]{hyperref}
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            urlcolor=blue,
+            citecolor=blue,
+            final,
+            hypertexnames=false]{hyperref}
+
+% Fix Todonotes wrongly placed in the margin
+\setlength{\marginparwidth}{2cm}
 
 % Environment sidewaysfigure from rotating plays poorly with amsart class
 % Fix per http://www.latex-community.org/forum/viewtopic.php?f=4&t=1742
@@ -74,18 +85,23 @@
     Engineering and Sciences, The University of Texas at Austin
     (rhys@ices.utexas.edu)}
 
-\begin{abstract}
-\end{abstract}
-
 \maketitle
 \renewcommand{\contentsname}{} % No idea why "Contents" appears in wrong location
+% From http://www.latex-community.org/forum/viewtopic.php?f=47&t=10536
+\setcounter{tocdepth}{3}
+\let\oldtocsection=\tocsection
+\let\oldtocsubsection=\tocsubsection
+\let\oldtocsubsubsection=\tocsubsubsection
+\renewcommand{\tocsection}[2]{\hspace{0em}\oldtocsection{#1}{#2}}
+\renewcommand{\tocsubsection}[2]{\hspace{1em}\oldtocsubsection{#1}{#2}}
+\renewcommand{\tocsubsubsection}[2]{\hspace{2em}\oldtocsubsubsection{#1}{#2}}
 \tableofcontents
 \newpage
 
 \section{Model derivation}
 \label{sec:derivation}
 
-Here we derive the mathematical model used in Suzerain.  Special attention is
+Here the mathematical model used in Suzerain is derived.  Special attention is
 paid to the origins of all conservation laws and constitutive relations
 employed.  The model will nondimensionalized after derivation is complete.
 
@@ -119,7 +135,7 @@ and mass conservation requires $\frac{d}{dt}M=0$,
   =
   \int_{\Omega}\frac{\partial}{\partial{}t}\rho+\nabla\cdot{}u\rho{}\,dV.
 \end{align}
-Because the result must hold for any control volume, we obtain
+Because the result must hold for any control volume, locally it must hold that
 \begin{align}
   \label{eq:cons_mass}
   \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
@@ -152,7 +168,7 @@ Because the control volume may be arbitrary,
 &= \nabla\cdot\sigma + f
 .
 \end{align}
-Lastly, we separate the pressure $p$ and viscous contributions $\tau$ to
+Lastly, separating the pressure $p$ and viscous contributions $\tau$ to
 the Cauchy stress tensor so that $\sigma = -p I + \tau$,
 \begin{align}
 \label{eq:cons_momentum}
@@ -215,7 +231,8 @@ Again, since the control volume was arbitrary,
   + q_{b}
   .
 \end{align}
-After splitting $\sigma$'s pressure and viscous stress contributions we have
+Splitting $\sigma$'s pressure and viscous stress contributions into separate
+terms,
 \begin{align}
   \label{eq:cons_energy}
   \frac{\partial}{\partial{}t} \rho{}E
@@ -235,7 +252,7 @@ After splitting $\sigma$'s pressure and viscous stress contributions we have
 
 \subsubsection{Perfect gas}
 
-We assume our fluid is a thermally and calorically perfect gas governed by
+Assume our fluid is a thermally and calorically perfect gas governed by
 \begin{align}
   \label{eq:perfectgaseos}
   p &= \rho{} R T
@@ -255,7 +272,7 @@ relationships follow:
   &
   a^{2} = \gamma{}RT
 \end{align}
-We assume $\gamma$ and therefore $C_{v}$ and $C_{p}$ are constant.
+Also assume $C_{v}$ and $C_{p}$ and therefore $\gamma$ are constant.
 The total (internal and kinetic) energy density is
 \begin{align}
   \label{eq:perfectgastotalenergy}
@@ -275,12 +292,13 @@ The total enthalpy density $H$ and (internal) enthalpy density $h$ are
      = \frac{\gamma{}RT}{\gamma-1}
   .
 \end{align}
-See a gas dynamics reference, e.g.~\cite{LiepmannRoshko2002}, for more details.
+See a gas dynamics reference, e.g.~\citet{LiepmannRoshko2002}, for more
+details.
 
 \subsubsection{Newtonian fluid}
 \label{sec:newtonianfluid}
 
-If we seek a constitutive law for the viscous stress tensor $\tau$
+If one seeks a constitutive law for the viscous stress tensor $\tau$
 using only velocity information, the principle of material frame
 indifference implies that uniform translation (given by velocity $u$)
 and solid-body rotation (given by the skew-symmetric rotation tensor
@@ -292,7 +310,7 @@ $\varepsilon=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}\right)$
 and its principal invariants.
 
 Assuming $\tau$ is isotropic and depends linearly upon only $\varepsilon$,
-we can express it as
+one can express it as
 \begin{align}
 \tau_{ij}
 &= c_{ijmn} \varepsilon_{mn}
@@ -312,14 +330,13 @@ we can express it as
 \end{align}
 where $\mu=\frac{1}{2}\left( B + C \right)$ is the dynamic coefficient of
 viscosity (shear) and $\lambda=A$ is the second coefficient of viscosity
-(dilatational).  Reverting to direct notation we have
+(dilatational).  Reverting to direct notation,
 \begin{align}
 \tau
 &= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
-\notag \\
 \label{eq:taunewt}
-&=   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
-  + \lambda \left( \nabla\cdot{}u \right) I
+ =   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
+   + \lambda \left( \nabla\cdot{}u \right) I
 .
 \end{align}
 
@@ -345,8 +362,8 @@ are often used to simplify notation.
 \subsubsection{Stokes' hypothesis}
 \label{sec:stokeshypothesis}
 
-We allow the bulk viscosity $\mu_{B}$ to be a fixed multiple of the dynamic
-viscosity $\mu$.  One may write this relationship as either
+Set the bulk viscosity $\mu_{B}$ to be a fixed multiple of the dynamic
+viscosity $\mu$.  This relationship may be written as either
 \begin{align}
 \label{eq:secondviscosityclaw}
 \mu_{B} &= \alpha \mu
@@ -355,53 +372,51 @@ viscosity $\mu$.  One may write this relationship as either
 &
 \lambda &= \left( \alpha - \frac{2}{3} \right) \mu
 \end{align}
-where we have introduced a dimensionless proportionality constant $\alpha$.
+where a dimensionless proportionality constant $\alpha$ has been introduced.
 Stokes' hypothesis that the bulk viscosity is negligible may be recovered by
 selecting $\alpha = 0$.  Though Stokes' hypothesis is valid for most
-circumstances~\cite{GadelHak1995}, we choose to separately track $\mu$ and
+circumstances~\citep{GadelHak1995}, we choose to separately track $\mu$ and
 $\lambda$ terms in the model.
 
 \subsubsection{Power law viscosity}
 
-We assume that viscosity varies only with temperature according to
+Assume that viscosity varies only with temperature according to
 \begin{align}
 \label{eq:powerlawviscosity}
 \frac{\mu}{\mu_{0}}=\left(\frac{T}{T_{0}}\right)^{\beta}
 \end{align}
 where $\mu_{0}$ and $T_{0}$ are suitable reference values.  This
 relationship models air well for temperatures up to several thousand
-degrees Kelvin~\cite{NASA-TR-R-132}.
+degrees Kelvin~\citep{NASA-TR-R-132}.
 
 \subsubsection{Fourier's equation}
 
-% TODO Radiative heat transfer negligible due to low temperature
-% TODO Is heat transfer by molecular diffusion neglected due to time scale?
-Neglecting the transport of energy by molecular diffusion and radiative
-heat transfer, we seek a relation between the surface heat flux $q_{s}$
-and the temperature $T$.  The principle of frame indifference implies
-we may only use the temperature gradient so that
+Neglecting the transport of energy by molecular diffusion and radiative heat
+transfer, we seek a linear relation between the surface heat flux $q_{s}$ and
+the temperature $T$.  The principle of frame indifference implies only the
+temperature gradient is relevant so that
 \begin{align}
   \label{eq:fouriertensorlaw}
   q_{s} &= \underline{\kappa} \cdot \nabla{} T
 \end{align}
 where $\underline{\kappa}$ is a thermal conductivity tensor.
-Consistent with our assumption that $\tau$ is isotropic, we assume
+Consistent with our assumption that $\tau$ is isotropic, assume
 $\underline{\kappa}$ is isotropic to obtain
 \begin{align}
   \label{eq:fourierlaw}
   q_{s} &= - \kappa \nabla{} T
 \end{align}
-where $\kappa$ is the scalar thermal conductivity.  We introduce the
-negative sign so that heat flows from hot to cold when $\kappa>0$.
+where $\kappa$ is the scalar thermal conductivity.  The negative sign has been
+introduced so that heat flows from hot to cold when $\kappa>0$.
 
 \subsubsection{Constant Prandtl number}
 
-We assume the Prandtl number $\Prandtl = \frac{\mu{}C_{p}}{\kappa}$ is constant.
+Assume the Prandtl number $\Prandtl = \frac{\mu{}C_{p}}{\kappa}$ is constant.
 Because $C_{p}$ is constant the ratio $\frac{\mu}{\kappa}$ must be
 constant.  The viscosity and thermal conductivity must either grow at
 identical rates or they must grow according to an inverse relationship.
-The latter is not observed in practice for our class of fluids, and
-so we assume
+The latter is not observed in practice for this class of fluids, and
+so further assume
 \begin{align}
   \frac{\mu}{\mu_{0}} = \frac{\kappa}{\kappa_{0}}
   .
@@ -468,11 +483,11 @@ and assumptions, we arrive at the dimensional equations
 
 We rewrite the dimensional equations using nondimensional variables
 combined with arbitrary reference quantities.  For each dimensional
-quantity in the dimensional model we introduce a nondimensional variable
+quantity in the dimensional model, introduce a nondimensional variable
 or operator denoted by a superscript star, e.g. $\nabla^{*}$.
 
-We introduce $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{l_{0}}$ for some
-reference $t_{0}$ and $l_{0}$.  This induces the following relationships:
+Select $t^{*}=\frac{t}{t_{0}}$ and $x^{*}=\frac{x}{l_{0}}$ for some reference
+$t_{0}$ and $l_{0}$.  This induces the following relationships:
 \begin{align}
   \frac{\partial{}}{\partial{}t}
   &=
@@ -498,8 +513,8 @@ reference $t_{0}$ and $l_{0}$.  This induces the following relationships:
   \label{eq:nondim_derivops}
 \end{align}
 
-We introduce more nondimensional quantities (e.g. $\rho^{*} =
-\frac{\rho}{\rho_{0}}$) and use them to reexpress the model
+Introducing more nondimensional quantities (e.g. $\rho^{*} =
+\frac{\rho}{\rho_{0}}$) and using them to reexpress the model
 \begin{subequations}\label{eq:dimwithref_model}
 \begin{align}
   \label{eq:dimwithref_continuity}
@@ -555,13 +570,13 @@ We introduce more nondimensional quantities (e.g. $\rho^{*} =
 \end{align}
 \end{subequations}
 Notice that $\lambda$ has been nondimensionalized using $\mu_{0}$.  At this
-stage, we have many more reference quantities than the underlying quantity
+stage, there are many more reference quantities than the underlying quantity
 dimensions warrant.
 
 \subsubsection{Reference quantity selections}
 \label{sec:nondimrefq}
 
-We choose a reference density $\rho_{0}$, length $l_{0}$, velocity $u_{0}$, and
+Choose a reference density $\rho_{0}$, length $l_{0}$, velocity $u_{0}$, and
 temperature $T_{0}$.  These selections fix all other dimensional reference
 quantities:
 \begin{align}
@@ -579,12 +594,13 @@ quantities:
   &
   q_{0} &= \frac{\rho_{0}a_{0}^{2}}{t_{0}}
 \end{align}
-Because we assume viscosity varies only with temperature, $\mu_{0}=\mu\!\left(
-T_{0} \right)$ is fixed by $T_{0}$.  Because we assume a constant Prandtl
-number, $\kappa_{0}=\kappa\!\left( \mu\!\left( T_{0} \right) \right)$ is also
-fixed by $T_{0}$.  Choosing this form for $p_{0}$ in lieu of employing
-equation~\eqref{eq:perfectgaseos} is customary and removes many instances of
-$\gamma$ from the resulting equations.  Note that these reference choices imply
+Because viscosity is assumed to vary only with temperature,
+$\mu_{0}=\mu\!\left( T_{0} \right)$ is fixed by $T_{0}$.  By the constant
+Prandtl number assumption, $\kappa_{0}=\kappa\!\left( \mu\!\left( T_{0} \right)
+\right)$ is also fixed by $T_{0}$.  Choosing this form for $p_{0}$ in lieu of
+employing equation~\eqref{eq:perfectgaseos} is customary and removes many
+instances of $\gamma$ from the resulting equations.  Note that these reference
+choices imply
 \begin{align}
 a^{*}&=\sqrt{T^{*}}
 &
@@ -599,9 +615,9 @@ h^{*}&=\frac{T^{*}}{\gamma-1}
 
 We employ the reference quantity relationships after multiplying the
 continuity, momentum, and energy equations by $\frac{t_{0}}{\rho_{0}}$,
-$\frac{t_{0}}{\rho_{0}u_{0}}$, and $\frac{t_{0}}{\rho_{0}E_{0}}$
-respectively.  Henceforth we suppress the superscript star notation because all
-terms are dimensionless.  We arrive at the following nondimensional equations
+$\frac{t_{0}}{\rho_{0}u_{0}}$, and $\frac{t_{0}}{\rho_{0}E_{0}}$ respectively.
+Henceforth suppress the superscript star notation is suppressed because all
+terms are dimensionless.  The following nondimensional equations are the result
 \begin{subequations}
 \begin{align}
   \label{eq:nondim_continuity}
@@ -668,14 +684,14 @@ $\Mach\to{}0$ limits.
 \section{Discretization}
 \label{sec:discretization}
 
-Here we discuss the space and time discretization techniques employed to solve
-the continuous model equations.  In this section $u$ denotes an arbitrary state
-vector and not fluid velocity.
+Here the space and time discretization techniques employed to solve the
+continuous model equations are discussed.  In this section $u$ denotes an
+arbitrary state vector and not fluid velocity.
 
 \subsection{Spatial discretization}
 \label{sec:spatialdiscretization}
 
-We start with the continuous system
+Start with the continuous system
 \begin{align}
   \frac{\partial}{\partial{}t} u &= \mathscr{L}u + \mathscr{N}\!\left(u\right)
 \end{align}
@@ -683,7 +699,7 @@ on the spatial domain $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{}
 [0,L_y] \times{} \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$.  The operators
 $\mathscr{L}$ and $\mathscr{N}$ are linear and nonlinear, respectively.  For
 brevity, the section suppresses any time dependence in the operators.  To begin
-spatially discretizing the system, we introduce its finite dimensional analog
+spatially discretizing the system, its finite dimensional analog is introduced
 \begin{align}
   \frac{\partial}{\partial{}t} u^h
   &=
@@ -694,7 +710,7 @@ where continuous $u = u\!\left(x,y,z,t\right)$ has been replaced by discrete
 $u^h = u^h\!\left(x,y,z,t\right)$ with $N_x\times{}N_y\times{}N_z$ degrees of
 freedom.  Here, $R^h$ is the discretization error that arises because the
 discrete solution cannot satisfy the continuous equations everywhere in space.
-We select Fourier expansions for the periodic $x$ and $z$ directions and a
+Select Fourier expansions for the periodic $x$ and $z$ directions and a
 B-spline expansion for the non-periodic $y$ direction.  That is,
 \begin{align}
 u^h(x,y,z,t)
@@ -720,8 +736,8 @@ Galerkin/collocation approach (often called a ``pseudospectral'' technique)
 employing the $L_{2}$ inner product and test ``functions'' like
 $\delta(y-y_{l'}) e^{\ii k_{m'} x}e^{\ii k_{n'} z}$ where $l'$, $m'$, and $n'$
 range over the same values as $l$, $m$, and $n$, respectively.  The fixed
-collocation points $y_{l'}$ depend on the B-spline basis details.  We catalog
-three relevant results
+collocation points $y_{l'}$ depend on the B-spline basis details.  Three
+relevant results are
 \begin{align}
    \int_0^{L_y} \varphi(y) \, \delta(y-y_{l'}) \,d\!y
 &= \varphi(y_{l'}),
@@ -733,8 +749,8 @@ three relevant results
 &= L_z \delta_{n n'}
 \end{align}
 where the inner product's conjugate operation is accounted for by introducing a
-negative sign into the latter two exponentials.  We force the weighted residual
-to be zero in the sense that
+negative sign into the latter two exponentials.  The weighted residual is
+forced to be zero in the sense that
 \begin{align}
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
@@ -748,7 +764,7 @@ to be zero in the sense that
 holds for all $l'$, $m'$, and $n'$.  Inserting \eqref{eq:u_h_expansion} into
 \eqref{eq:discrete_system_with_residual}, testing with our test functions,
 applying \eqref{eq:R_h_weighted_residual_zero}, and simplifying each remaining
-term separately we obtain the following:
+term separately one obtains the following:
 \begin{align}
  \int_0^{L_y}
  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
@@ -818,7 +834,7 @@ term separately we obtain the following:
   \right)
   \, dz \, dx
 \intertext{
-  Reequating the terms we have
+  Reequating the terms,
 }
   L_x L_z
   \sum_{l} B_l\!\left(y_{l'}\right)
@@ -850,7 +866,7 @@ term separately we obtain the following:
  \end{align}
 
 Finally, approximating the two integrals by discrete sums and dividing
-by $L_x$ and $L_z$ leaves us with
+by $L_x$ and $L_z$ leaves
 \begin{align}
   \sum_{l} B_l\!\left(y_{l'}\right)
   \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
@@ -880,15 +896,14 @@ by $L_x$ and $L_z$ leaves us with
   \label{eq:spatial_discretization}
 \end{align}
 where $x_{m'}=L_x m' / N_x$ and $z_{n'}=L_z n' / N_z$.  This approximation is
-nothing but a quadrature error (see, e.g., theorem~19 in~\cite{Boyd2001}).
-With knowledge of the nonlinear operator $\mathscr{N}$, such quadrature error
-can be mitigated via an appropriate dealiasing technique (see,
-e.g.,~\cite{Canuto2006}).  Interestingly, our weighted residual
-\eqref{eq:R_h_weighted_residual_zero} need now only be zero in this weaker,
-discrete sense.  We are left with $N_x\times{}N_z$ time-dependent systems
-containing $N_y$ equations coupled in the $x$ and $z$ directions only through
-discrete Fourier transforms and the requirements of the $\mathscr{L}$ and
-$\mathscr{N}$ operators.
+nothing but a quadrature error \citep[see][theorem~19]{Boyd2001}.  With
+knowledge of the nonlinear operator $\mathscr{N}$, such quadrature error can be
+mitigated via an appropriate dealiasing technique \citep[see][]{Canuto2006}.
+Interestingly, our weighted residual \eqref{eq:R_h_weighted_residual_zero} need
+now only be zero in this weaker, discrete sense.  We are left with
+$N_x\times{}N_z$ time-dependent systems containing $N_y$ equations coupled in
+the $x$ and $z$ directions only through discrete Fourier transforms and the
+requirements of the $\mathscr{L}$ and $\mathscr{N}$ operators.
 
 Calling $\hat{u}_{l m n}(t)$ the wave space coefficients of the solution at
 some time $t$, the nonlinear portion of \eqref{eq:spatial_discretization} may
@@ -905,7 +920,7 @@ be efficiently computed by
 \end{enumerate}
 Note that the left hand side of \eqref{eq:spatial_discretization} contains a
 time-independent mass matrix arising from the B-spline basis and collocation
-point choices.  We retain the mass matrix on the same side as the time
+point choices.  The mass matrix is retained on the same side as the time
 derivative in anticipation of the time discretization scheme.  The
 computational cost of the scaling factor $\left(N_x N_z\right)^{-1}$
 can be hidden within the time advancement scheme.
@@ -940,9 +955,9 @@ matrix in the time derivative term.
 \subsection{Time discretization}
 \label{sec:timediscretization}
 
-We use Spalart, Moser, and Rogers' low storage hybrid implicit--explicit
-(``IMEX'') time stepper from appendix A of~\cite{spalart_lowstoragerk}.  This
-time stepper advances the system
+Suzerain uses the low storage hybrid implicit--explicit (``IMEX'') time stepper
+from \citet*[appendix A]{spalart_lowstoragerk}.  This time stepper advances the
+system
 \begin{align}
 \label{eq:timediscretization}
  u_t &= Lu + N(u,t)
@@ -952,10 +967,10 @@ and nonlinear operator, respectively, distinct from but related to the
 preceding section's $\mathscr{L}$ and $\mathscr{N}$ (see
 \textsection\ref{sec:combineddiscretization} for the exact relationships).  The
 operator $L$ must be time-independent throughout each interval $\left[t,
-t+\Delta{}t\right)$.  In contrast to the discussion
-in~\cite{spalart_lowstoragerk} and following S. Yang (personal communication),
-we allow $N$ to vary in time.  The ``SMR91'' scheme advances according to the
-following equations:
+t+\Delta{}t\right)$.  In contrast to the discussion in
+\citet{spalart_lowstoragerk} and following S. Yang (personal communication),
+$N$ is permitted to vary in time.  The ``SMR91'' scheme advances according to
+the following equations:
 \begin{subequations}
 \begin{align}
   u'
@@ -1024,9 +1039,9 @@ The authors determined suitable values for the above coefficients to be
     0, 0, \frac{8}{15}, \frac{2}{3}
   \Biggr\}
 \end{align*}
-We have added $\zeta_0$ and $\eta_0$ for notational convenience.  The
-$\eta_{1}$--$\eta_{3}$ coefficients used to extend the SMR91 scheme for
-time-dependent $N$ are discussed by Yang~\cite{ShanYang2011}.  Each substep
+Coefficients $\zeta_0$ and $\eta_0$ have been added for notational convenience.
+The $\eta_{1}$--$\eta_{3}$ coefficients used to extend the SMR91 scheme for
+time-dependent $N$ are discussed by \citet{ShanYang2011}.  Each substep
 \eqref{eq:SMR91_A4a}--\eqref{eq:SMR91_A4c} has the general form
 \begin{align}
   u^{i+1} &= u^i + \Delta{}t \left[
@@ -1038,7 +1053,7 @@ time-dependent $N$ are discussed by Yang~\cite{ShanYang2011}.  Each substep
   \label{eq:generalsubstep}
 \end{align}
 where $i\in\left\{ 1,2,3 \right\}$ is the substep number.
-We rewrite the general substep equation as
+The general substep equation may be rewritten as
 \begin{align}
   \left(I - \Delta{}t\beta_{i}L\right) u^{i+1}
   &=
@@ -1049,10 +1064,10 @@ We rewrite the general substep equation as
   .
 \end{align}
 The scheme treats $N$ with third-order accuracy and $L$ with second-order
-accuracy.  See both the top of page 323 in~\cite{spalart_lowstoragerk} and
-chapter 6 in~\cite{ShanYang2011} for more accuracy-related details.
+accuracy.  See both \citet[page 323]{spalart_lowstoragerk} and
+\citet[chapter 6]{ShanYang2011} for more accuracy-related details.
 
-We wish to advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}\left( u,t
+Suzerain will advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}\left( u,t
 \right)$ where $\chi$ is a time-independent scalar and both $\tilde{L}$ and
 $\tilde{N}$ take state values to some non-state representation which can be
 converted back to state by the linear ``mass matrix'' operator $M$.  Then by
@@ -1069,7 +1084,7 @@ gives
     \tilde{N}\left(u^{i-1}, t_{n}+\eta_{i-1}\Delta{}t\right)
   .
 \end{align}
-We multiply through by $M$ to obtain
+Multiply through by $M$ to obtain
 \begin{align}
   \left(M - \Delta{}t\beta_{i}\tilde{L}\right) u^{i+1}
   &=
@@ -1081,9 +1096,9 @@ We multiply through by $M$ to obtain
   \label{eq:generaloperatormasssubstep}
 \end{align}
 which is just \eqref{eq:generaloperatorsubstep} with $M$ replacing $I$,
-$\tilde{L}$ replacing $L$, and $\chi{}\tilde{N}$ replacing $N$.  We now drop
-the tildes on $L$ and $N$ with the understanding that they are implied whenever
-$M\neq{}I$.
+$\tilde{L}$ replacing $L$, and $\chi{}\tilde{N}$ replacing $N$.  The tildes on
+$L$ and $N$ are now dropped with the understanding that they are implied
+whenever $M\neq{}I$.
 
 The time advancement scheme in \eqref{eq:generaloperatormasssubstep} requires
 implementations of $u\mapsto{}{N}\left(u\right)$,
@@ -1122,7 +1137,7 @@ the implementation of $\left(M+\varphi{}L\right)$ must also support in-place
 application.  For the second and subsequent substeps, either
 $\left(M+\varphi{}L\right)$ must support a decidedly non-BLAS-like, complicated
 out-of-place-apply-and-swap operation or the underlying state storage must
-support a swap operation.  We choose the latter and denote the swap operation
+support a swap operation.  Suzerain chooses the latter and denote the swap operation
 as $a\leftrightarrow{}b$.  Under these considerations, time step computation
 follows algorithm~\vref{alg:step}.
 
@@ -1231,8 +1246,8 @@ with \eqref{eq:spatial_discretization} because it provides computational
 advantages.  Namely, obtaining $y$ derivatives at collocation points requires
 only matrix-vector products and factorization and back substitution need be
 performed at most once per Runge--Kutta substep.  For a discussion on moving
-operators between these two representations, see \textsection{}5.5
-in~\cite{Boyd2001}.
+operators between these two representations, see
+\citet[\textsection{}5.5]{Boyd2001}.
 
 \subsection{Forming discrete operators}
 \label{sec:formingoperators}
@@ -1328,10 +1343,10 @@ Laplacian.  By employing the Helmholtz decomposition and modest smoothness
 assumptions, one may show $\nabla\times\nabla\times\vec{\phi}$ is nothing but a
 negated Laplacian acting on only the solenoidal portion of $\vec{\phi}$.
 
-We comment that while the Fourier bases are discretely conservative, the
-B-spline basis is not in general.  However, the relative discrete conservation
-error in the wall normal direction is small enough that using a conservative
-continuous formulation remains worthwhile.
+While the Fourier bases are discretely conservative, the B-spline basis is not
+in general.  However, the relative discrete conservation error in the wall
+normal direction is small enough that using a conservative continuous
+formulation remains worthwhile.
 
 \subsection{Time step stability criteria}
 \label{sec:stabilitycriteria}
@@ -1341,15 +1356,16 @@ convective and a diffusive stability criterion.  The time step used is taken to
 be the minimum stable time step possible according to either restriction.  As
 both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
 by a safety factor less than one.  Safety factors like $0.70-0.77$ are often
-used~\cite{Venugopal2003,spalart_lowstoragerk}.
+used~\citep{Venugopal2003,spalart_lowstoragerk}.
 
 \subsubsection{Convective stability criterion}
 \label{sec:convectivestability}
 
 The convective criterion uses the maximum imaginary eigenvalue magnitude from
 the Euler equations as a surrogate for the more complicated Navier--Stokes
-case.  Both Kwok~\cite{Kwok2002} (equation~2.39) and Guarini~\cite{Guarini1998}
-(equations~4.20 and~4.21) derive the dimensional stability result that
+case.  Both \citet[equation~2.39]{Kwok2002} and
+\citet[equations~4.20--21]{Guarini1998} derive the dimensional stability result
+that
 \begin{align}\label{eq:convectivestability}
   \pi\left(
       \frac{\left|u_{x}\right| + a}{\Delta{}x}
@@ -1375,25 +1391,24 @@ nondimensionalization.  Using an A-stable scheme, like the implicit portion of
 SMR91, to compute acoustic terms effectively sets the sound speed to zero when
 computing this convective criterion.
 
-When Venugopal~\cite{Venugopal2003} used a nearly identical convective
-criterion (equation~3.10), he found the constraint to be overly conservative in
-the wall-normal direction because its derivation (incorrectly) assumes a
-periodic wall-normal basis.  Venugopal (section~3.2) presents a linearized
-analysis taking into account the inhomogeneous nature of the wall-normal
-direction.  He determined that the wall-normal imaginary eigenvalue magnitude
-dropped by nearly an order of magnitude after taking into account the
-inhomogeneity (i.e., using discrete operators like those in
-section~\ref{sec:formingoperators}).  He concluded that using an effective
-$1/\Delta{}y$ four times smaller than the nominal value was feasible
-(equation~3.29).
+When \citeauthor{Venugopal2003} used a nearly identical convective criterion,
+he found the constraint to be overly conservative in the wall-normal direction
+because its derivation (incorrectly) assumes a periodic wall-normal basis.
+\citet[\textsection{}3.2]{Venugopal2003} presents a linearized analysis taking
+into account the inhomogeneous nature of the wall-normal direction.  He
+determined that the wall-normal imaginary eigenvalue magnitude dropped by
+nearly an order of magnitude after taking into account the inhomogeneity (i.e.,
+using discrete operators like those in section~\ref{sec:formingoperators}).  He
+concluded that using an effective $1/\Delta{}y$ four times smaller than the
+nominal value was feasible \citep[equation~3.29]{Venugopal2003}.
 
 \subsubsection{Diffusive stability criterion}
 \label{sec:diffusivestability}
 
 The diffusive criterion uses the maximum real eigenvalue magnitude from a model
 diffusion equation as a surrogate for the more complicated Navier--Stokes case.
-Both Kwok~\cite{Kwok2002} (equations~2.40) and Guarini~\cite{Guarini1998}
-(equations~4.29 and~4.30) derive the dimensional stability result that
+Both \citet[equation~2.40]{Kwok2002} and \citet[equations~4.29--30]{Guarini1998}
+derive the dimensional stability result that
 \begin{align}\label{eq:diffusivestability}
     \mbox{max}\!\left(
       \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
@@ -1421,39 +1436,39 @@ kinematic viscosities $\nu_0$ and $\nu_{B0}$ when computing this diffusive
 criterion.  The absolute values within the maximum operations account for the
 possibility that $\nu<\nu_{0}$.
 
-Venugopal~\cite{Venugopal2003} used a nearly identical diffusive criterion
-(equation~3.15).  His analysis determined that the diffusive stability
-criterion was not overly conservative for a non-periodic B-spline
-discretization.
+\citeauthor{Venugopal2003} used a nearly identical diffusive criterion
+\citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
+diffusive stability criterion was not overly conservative for a non-periodic
+B-spline discretization.
 
 \section{Numerical considerations}
 
 Here we take the complete mathematical model from section \ref{sec:derivation}
-and put it into the form which we will compute per section
+and put it into the form which Suzerain will compute per section
 \ref{sec:discretization}.  Though less clean in appearance, this section's
 equations will better reflect the spectral implementation details used in
 Suzerain than those given in earlier sections.
 
 \subsection{Convective derivative operator form}
 
-We choose to use the conservative form of the convective derivative operator,
-$\nabla\cdot\left(u\otimes{}\rho{}u\right)$, instead of the skew-symmetric
-form, $\frac{1}{2}u\cdot\nabla{}\rho{}u +
+The conservative form of the convective derivative operator,
+$\nabla\cdot\left(u\otimes{}\rho{}u\right)$, is used instead of the
+skew-symmetric form, $\frac{1}{2}u\cdot\nabla{}\rho{}u +
 \frac{1}{2}\nabla\cdot{}u\otimes{}\rho{}u$.  The former is simpler to compute,
 retains the conservative nature of the equations, and behaves comparably to the
 latter in the incompressible case when aliasing errors are
-removed~\cite{Zang1991Rotation}.  This choice may need to be revisited as the
+removed~\citep{Zang1991Rotation}.  This choice may need to be revisited as the
 wall-normal direction is not dealiased.
 
 \subsection{State variable selection}
 \label{state_variable_selection}
 
-We use nondimensional density $\rho$, momentum $m=\rho{}u$, and total energy
-$e=\rho{}E$ as the state variables for our computations.  Though it
-eliminates division and potentially allows for fully dealiased calculations, we
-do not use specific density $\sigma=1/\rho$ because it requires using a
-nonconservative mass equation.  When rewritten using the state variables
-the equations in section~\ref{nondim_equations} become
+Nondimensional density $\rho$, momentum $m=\rho{}u$, and total energy
+$e=\rho{}E$ are used as the state variables within the computations.  Though it
+eliminates division and potentially allows for fully dealiased calculations,
+specific density $\sigma=1/\rho$ is not used because it would require a
+nonconservative mass equation.  When rewritten using the state variables the
+equations in section~\ref{nondim_equations} become
 \begin{subequations}
 \begin{align}
   \label{eq:state_continuity}
@@ -1498,25 +1513,25 @@ the equations in section~\ref{nondim_equations} become
         + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I
 \end{align}
 \end{subequations}
-and we have employed the notation
-$\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$.
+and the notation $\symmetricpart{A}=\frac{1}{2}\left(A+\trans{A}\right)$ has
+been employed.
 
 \subsection{Communications overhead}
 \label{sec:commoverhead}
 
-As detailed in section~\ref{sec:combineddiscretization}, we perform time
-advancement in wave space but must compute nonlinear terms in physical space.
+As detailed in section~\ref{sec:combineddiscretization}, time advancement
+occurs in wave space but nonlinear terms must be computed in physical space.
 The communications and computation cost required to convert state data from
-wave space to physical space or vice versa is very high.  Consequently, we
-transform back and forth only once per time integration substep.
+wave space to physical space or vice versa is very high.  Consequently, the
+transformation back and forth happens only once per time integration substep.
 
 \subsection{Velocity derivative expansions}
 \label{velocity_derivative_expansions}
 
-Because we transform to and from physical space only once per substep, we must
-be able to compute derived quantity derivatives using only state derivatives.
-We expand several velocity derivatives into a combination of terms each
-containing derivative operators applied only to state quantities:
+Because Suzerain transforms to and from physical space only once per substep,
+derived quantity derivatives must be computable using only state derivatives.
+Reasonable smoothness assumptions followed by expansion permit expressing
+velocity derivatives as combination of state quantity derivatives:
 \begin{subequations}
 \begin{align}
   \nabla\cdot\frac{m}{\rho}
@@ -1586,7 +1601,7 @@ containing derivative operators applied only to state quantities:
 \end{align}
 \end{subequations}
 
-We note some relationships amongst the information appearing in such
+Note several relationships amongst the information appearing in such
 derivatives:
 \begin{align}\label{eq:relationships}
   \Delta\rho
@@ -1606,8 +1621,8 @@ derivatives:
 Unlike a Fourier basis, for B-splines the repeated application of a discrete
 first derivative operator gives a result that differs significantly from
 applying a discrete second derivative operator.  In particular, repeated first
-differentiation severely abates high frequency modes (see figures 2 and 3 in
-~\cite{Kwok2001}).
+differentiation severely abates high frequency modes
+\citep[see][figures~2--3]{Kwok2001}.
 
 Second differentiation enters equations~\eqref{eq:state_continuity},
 \eqref{eq:state_momentum}, and~\eqref{eq:state_energy} through the terms
@@ -1618,7 +1633,8 @@ ensure that these three terms have the most physically correct diffusive impact
 on high frequency content at a given spatial resolution.  These results will
 also be used in the course of developing our implicit diffusive treatment.
 
-We expand the three mixed order, nonlinear terms and use the symmetry of $\tau$:
+Expanding the three mixed order, nonlinear terms and using the symmetry of
+$\tau$:
 \begin{align}
 \label{eq:nabla_cdot_tau_expansion}
   \nabla\cdot\tau
@@ -1650,7 +1666,7 @@ One may also write
 \end{align}
 which highlights the isotropic diffusion of velocity within the viscous terms.
 
-Many of the above term contains non-state derivatives which we now expand:
+Many of the above term contains non-state derivatives which are found to be
 \begin{align}
   \nabla{}p &= (\gamma-1)\left[
         \nabla{}e + \frac{\Mach^{2}}{\rho} \left[
@@ -1695,8 +1711,8 @@ Many of the above term contains non-state derivatives which we now expand:
 \end{align}
 
 Though we could have found these expressions for only the wall-normal
-direction, writing them for the complete $\nabla$ operator allows us to reuse
-them later.
+direction, writing them for the complete $\nabla$ operator allows reusing them
+later.
 
 \subsection{Implications of a fully explicit treatment}
 
@@ -1705,7 +1721,7 @@ permits repeated first differentiation, it is useful to examine the
 communication costs for a purely explicit implementation.  In this context, all
 terms within equations~\eqref{eq:state_continuity}, \eqref{eq:state_momentum},
 and~\eqref{eq:state_energy} are formed by $\tilde{N}$ in physical space.
-Further, we do not mix derivatives of different orders.  The only linear solve
+Further, derivatives of different orders are never mixed.  The only linear solve
 required uses a wavenumber-independent factorization of the mass matrix $M$.
 
 Using the information in sections~\ref{velocity_derivative_expansions}
@@ -1862,9 +1878,10 @@ The SMR91 time scheme requires the implicit operator $\tilde{L}$ be linear in
 the state variables and time-independent.  Precious little of the
 Navier--Stokes operator as written in
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} meets these
-criteria.  We must carve it up by linearizing about some reference state.  This
-approach separates each quantity into an explicitly-treated nonlinear portion
-plus a linear contribution that satisfies our implicit operator restrictions.
+criteria.  It must be carved up by linearization about some reference state.
+This approach separates each quantity into an explicitly-treated nonlinear
+portion plus a linear contribution that satisfies our implicit operator
+restrictions.
 
 One example is $\rho^{-1}\Delta{}m = \lessreference{\rho^{-1}}\Delta{}m +
 \reference{\rho^{-1}}\Delta{}m$ where $\reference{\rho^{-1}}$ indicates the
@@ -1891,10 +1908,11 @@ associated programming and runtime overhead.
 \subsubsection{Linearization of viscous terms}
 
 Because second derivatives give rise to the most restrictive eigenvalues for
-timestepping, we focus on how second order terms enter the full operator.  We
-take the quantities from sections~\ref{velocity_derivative_expansions}
-and~\ref{sec:separate_first_second_deriv} and expand the nonlinear coefficients on
-second order terms about reference states.
+timestepping, we first focus on how second order terms enter the full operator.
+Nonlinear coefficients found in second order quantities from
+sections~\ref{velocity_derivative_expansions}
+and~\ref{sec:separate_first_second_deriv} will be linearized about a reference
+state.
 
 Beginning with the nonlinear linearization candidates within $\nabla\cdot\tau$
 from \eqref{eq:nabla_cdot_tau_expansion}:
@@ -2020,8 +2038,8 @@ equation~\eqref{eq:mu_delta_T} and its dependencies:
        } \Delta\rho
 \end{align}
 The final line of each expansion contains linearized, implicit-ready portion.
-Note that we will recover an explicit-only operator if we choose identically
-zero reference values.
+Note that an explicit-only operator is recovered if identically zero reference
+values are chosen.
 
 \subsubsection{Linearization of acoustic terms}
 
@@ -2031,7 +2049,7 @@ pressure gives rise to the acoustic characteristics traveling at speeds
 $u\pm{}a$.  Pressure is fundamentally an off-diagonal phenomenon requiring
 off-diagonal implicit treatment.
 
-Guarini~\cite{Guarini1998} (page~45) treated the pressure gradient term in the
+\citet[page~45]{Guarini1998} treated the pressure gradient term in the
 wall-normal momentum equation and the linearized pressure work term implicitly.
 The pressure gradient may be linearized as
 \begin{align}
@@ -2070,7 +2088,7 @@ The total energy convection and pressure work terms may be linearized as
       }\cdot\nabla\rho
 .
 \end{align}
-We have linearized the two terms together as doing so is algebraically simple
+The two terms have been linearized together as doing so is algebraically simple
 and introduces no additional state derivatives.
 
 \subsubsection{Linearity of the continuity equation}
@@ -2140,7 +2158,7 @@ communication overhead stemming from sections~\ref{sec:commoverhead}
 and~\ref{sec:separate_first_second_deriv}.  Improving the computation to
 communication ratio bolsters scalability.
 
-Accordingly, we choose to implicitly treat all terms identified as candidates
+Accordingly, Suzerain implicitly treats all terms identified as candidates
 in the preceding discussion.  In the full context of
 equations~\eqref{eq:state_continuity}--\eqref{eq:state_energy} these terms are
 \begin{align}
@@ -2246,9 +2264,9 @@ subscripts indicating the associated term.
 \label{sec:discretizationofimplicitterms}
 
 Following~\eqref{eq:generaloperatormasssubstep} and using results
-from~\ref{sec:formingoperators}, we must implement $M+\varphi{}L$ for arbitrary
-$\varphi$, $k_m$, and $k_n$. $L$ is nothing but the discrete form of the linear
-terms from the previous section.  Notice for any reference values
+from~\ref{sec:formingoperators}, $M+\varphi{}L$ must be implemented for
+arbitrary $\varphi$, $k_m$, and $k_n$. $L$ is nothing but the discrete form of
+the linear terms from the previous section.  Notice for any reference values
 $c^{\bullet}$ left-multiplying by the diagonal matrix
 \begin{align}
   C^{\bullet} &= \begin{bmatrix}
@@ -2273,8 +2291,8 @@ direction, the reference coefficient matrices $C^{u_z}$ and $C^{\nu{}u_z}$ may
 be treated as effectively zero.  This reduces the required linear algebra.  If
 desired, the density equation and density terms in the other equations may
 removed from the result in figure~\ref{fig:discreteimplicitop} to greatly
-reduce operator assembly and factorization overhead.  Previous work by Guarini
-did not treat density implicitly~\cite{Guarini1998}.  Note, however, implicit
+reduce operator assembly and factorization overhead.  Previous work by
+\citet{Guarini1998} did not treat density implicitly.  Note, however, implicit
 density treatment will be assumed in section~\ref{sec:nonreflectingbcs}.
 Finally, implicitly handling only the wall-normal directions may be
 accomplished by setting $k_{m}$ and $k_{n}$ to zero.  Doing so results in a
@@ -2668,7 +2686,7 @@ This renumbering can be LU factorized in order $\mathtt{N}\left(\mathtt{KL} + 1
 2\right)-1\right)^2$ floating point operations to find $LU = P A \trans{P}$.
 Recent work has shown forthcoming ``manycore'' architectures to be efficient at
 performing many such conveniently parallel
-factorizations~\cite{Schulz2012Early}.  The linear equation $AX=B$, which is
+factorizations~\citep{Schulz2012Early}.  The linear equation $AX=B$, which is
 equivalent to $LUPX=PB$, then has the solution \[X = A^{-1}B =
 \trans{P}\left(LU\right)^{-1}PB\] where inversion has been used as a notational
 convenience representing triangular back substitution.
@@ -2696,29 +2714,27 @@ acoustic waves generated by the flow cannot be leave the domain.   The trapped
 acoustics pile up causing a non-physical partition of energy and spoiling the
 simulated statistics.
 
-Following Engquist and Majda~\cite{Engquist1977Absorbing},
-Giles~\cite{Giles1988Nonreflecting,Giles1990Nonreflecting} developed localized,
+Following \citet{Engquist1977Absorbing},
+\citet{Giles1988Nonreflecting,Giles1990Nonreflecting} developed localized,
 approximate two-dimensional, unsteady nonreflecting boundary conditions for the
-Euler equations.  We select Giles' boundary conditions over Poinsot and Lele's
-``locally one-dimensional inviscid'' relations~\cite{Poinsot1992Boundary}
-because other codes with similar numerics have successfully employed Giles'
-conditions for our problems of interest.  While Rowley and
-Colonius~\cite{Rowley2000Discretely} present higher order techniques expected
-to perform better than Giles' approach, what they describe is considerably more
-complex to implement.  Saxer and Giles~\cite{Saxer1993QuasiThreeDimensional}
-extended the technique to three dimensions but with a presentation aimed
-towards transonic axial flow turbomachinery computations.
-Guarini~\cite{Guarini1998} summarizes the Cartesian extension of Giles'
-approach to three spatial dimensions without reproducing the associated
-analysis.  Medida~\cite{Medida2007} lucidly catalogs the intermediate results
-necessary in three dimensions.
+Euler equations.  Giles' boundary conditions are adopted over the ``locally
+one-dimensional inviscid'' relations of \citet{Poinsot1992Boundary} because
+other codes with similar numerics have successfully employed Giles' conditions
+for our problems of interest.  While \citet{Rowley2000Discretely} present
+higher order techniques expected to perform better than Giles' approach, what
+they describe is considerably more complex to implement.
+\citet{Saxer1993QuasiThreeDimensional} extended the technique to three
+dimensions but with a presentation aimed towards transonic axial flow
+turbomachinery computations.  \citet{Guarini1998} summarizes the Cartesian
+extension of Giles' approach to three spatial dimensions without reproducing
+the associated analysis.  \citet{Medida2007} lucidly catalogs the intermediate
+results necessary in three dimensions.
 
-We now review Giles' approach following Guarini's presentation with
-the goal of setting notation suitable for presenting and manipulating
-Medida's results for nonreflecting $x$ boundaries in three-dimensional,
-Cartesian coordinates.  For complete details, especially motivations
-and proofs, the work of Giles, Medida, and Guarini should be consulted
-in that respective order.
+We now review Giles' approach following Guarini's presentation with the goal of
+setting notation suitable for presenting and manipulating Medida's results for
+nonreflecting $x$ boundaries in three-dimensional, Cartesian coordinates.  For
+complete details, especially motivations and proofs, the work of Giles, Medida,
+and Guarini should be consulted in that respective order.
 
 For the state vector
 \begin{subequations}
@@ -2892,12 +2908,12 @@ small angle of incidence to the boundary.  To first order,
   &\approx 0
   .
 \end{align}
-As noted by Engquist and Majda~\cite{Engquist1977Absorbing} and later expounded
-upon by Trefethen and Halpern~\cite{Trefethen1986Wellposedness}, only
-particular higher-order series truncations of this form lead to well-posedness.
-Moreover, the straightforward application of even this first order
-approximation requires either ad~hoc~\cite{Giles1988Nonreflecting,Medida2007}
-or systematic~\cite{Rowley2000Discretely} modification to produce well-behaved
+As noted by \citet{Engquist1977Absorbing} and later expounded upon by
+\citet{Trefethen1986Wellposedness}, only particular higher-order series
+truncations of this form lead to well-posedness.  Moreover, the straightforward
+application of even this first order approximation requires either
+ad~hoc~\citep{Giles1988Nonreflecting,Medida2007} or
+systematic~\citep{Rowley2000Discretely} modification to produce well-behaved
 inflow constraints.  Multiplying through by $-\ii\omega$, Fourier transforming
 in both time and space, and using that $\bar{U}$ and therefore $V_n^L$ are both
 steady and uniform yields
@@ -3095,15 +3111,15 @@ within $B^G$ and $C^G$.  The characteristic-preserving projection operator is
   \end{array}\right]
 .
 \end{align}
-We assume, but have not verified, analysis like that presented in section~3.7.4
-of Giles~\cite{Giles1988Nonreflecting} extends to Medida's analogous results.
-At the inflow, the outgoing pressure wave produces no reflected entropy or
-vorticity waves and generates a fourth-order pressure reflection.  At the
-outflow, the outgoing entropy and vorticity waves produce no reflections while
-the outgoing pressure wave produces a second order reflection.  In contrast,
-Medida's equation~(5.84), which arises from modifying the already-well-posed
-outflow condition to match the well-posed inflow condition, provides different
-outflow submatrices:
+We assume, but have not verified, analysis like that presented in
+\citet[\textsection{}3.7.4]{Giles1988Nonreflecting} extends to Medida's
+analogous results.  At the inflow, the outgoing pressure wave produces no
+reflected entropy or vorticity waves and generates a fourth-order pressure
+reflection.  At the outflow, the outgoing entropy and vorticity waves produce
+no reflections while the outgoing pressure wave produces a second order
+reflection.  In contrast, Medida's equation~(5.84), which arises from modifying
+the already-well-posed outflow condition to match the well-posed inflow
+condition, provides different outflow submatrices:
 \begin{align}
 \label{eq:dimeulerapproxmedidaopt2}
   B^G_2 &= \left[\begin{array}{ccccc}
@@ -3124,11 +3140,11 @@ outflow submatrices:
 \end{align}
 At the outflow, these matrices cause outgoing pressure waves to produce fourth
 and first order reflections, respectively.  As Giles
-notes~\cite{Giles1990Nonreflecting}, this second outflow condition is
+notes~\citep{Giles1990Nonreflecting}, this second outflow condition is
 preferable only when one knows there will be no outgoing vorticity wave.  This
 should be the case for some of our problems of interest.
 
-In section~4.3 of his thesis, Guarini~\cite{Guarini1998} proved the linear
+In section~4.3 of his thesis, \citet{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of Giles'
 boundary conditions to another set of state variables $V$ with steady, uniform
 reference state $\bar{V}$ and therefore perturbations
@@ -3182,9 +3198,10 @@ Using notation from the compact representation~\eqref{eq:dimeulerapproxBG},
 is the simplest form for applying Medida's $x$ boundary condition matrices to
 alternative state variables.
 
-The particular coordinate transformation we require maps the nondimensional
-primitive state $U^*$ satisfying requirements~\eqref{eq:eulerprimnondim} to the
-conserved state $V^*$ nondimensionalized per sections~\ref{sec:nondimrefq}
+The particular coordinate transformation Suzerain requires maps the
+nondimensional primitive state $U^*$ satisfying
+requirements~\eqref{eq:eulerprimnondim} to the conserved state $V^*$
+nondimensionalized per sections~\ref{sec:nondimrefq}
 and~\ref{nondim_equations}:
 \begin{align}
 \label{eq:eulerconsnondim}
@@ -3532,10 +3549,9 @@ collecting linear terms,
 }_{N^G\left(\hat{V}\right)}
 ,
 \end{align}
-we recover a boundary evolution equation matching the
-form~\eqref{eq:coeffspaceevolve}.  Further auxiliary definitions could improve
-the previous equation's brevity but they would obfuscate the derivation and the
-physics.
+a boundary evolution equation matching the form~\eqref{eq:coeffspaceevolve} is
+recovered.  Further auxiliary definitions could improve the previous equation's
+brevity but they would obfuscate the derivation and the physics.
 
 While the derivation of this section's results has assumed a steady $\bar{V}$,
 in practice $\bar{V}$ is not constant.  For example, the spatially-averaged,
@@ -3579,17 +3595,17 @@ computed.  The required $C^G$-, $B^G$-, and $P^G$-related matrices may be
 computed only once per nonreflecting boundary per Runge--Kutta time step from
 $\bar{V}$ and then cached for repeated use.
 
-Finally, Guarini~\cite{Guarini1998} mentions that Poinsot and
-Lele~\cite{Poinsot1992Boundary} suggest two additional viscous conditions be
-supplied when conditions like these are applied to the Navier--Stokes
-equations.  These are currently omitted but that choice may need to be
-revisited.  Guarini also rotated the nonreflecting boundary to match the
-nonorthogonal coordinate system used for his spatially-homogenized boundary
-layer.  Personal communications with Victor Topalian regarding his
-temporally-homogenized work suggests reorienting the nonreflecting coordinate
-system is unnecessary.  However, modest grid stretching near the freestream and
-other ``solution conditioning'' tools like low pass filtering have been
-employed in his work.  This choice, too, might need to be reviewed.
+Finally, \citet{Guarini1998} mentions that \citet{Poinsot1992Boundary}
+suggest two additional viscous conditions be supplied when conditions like
+these are applied to the Navier--Stokes equations.  These are currently omitted
+but that choice may need to be revisited.  Guarini also rotated the
+nonreflecting boundary to match the nonorthogonal coordinate system used for
+his spatially-homogenized boundary layer.  Personal communications with Victor
+Topalian regarding his temporally-homogenized work suggests reorienting the
+nonreflecting coordinate system is unnecessary.  However, modest grid
+stretching near the freestream and other ``solution conditioning'' tools like
+low pass filtering have been employed in his work.  This choice, too, might
+need to be reviewed.
 
 \subsubsection{Isothermal, transpiring wall boundary condition}
 
@@ -3610,15 +3626,13 @@ the mean effects of turbulence.  The unclosed FANS equations require modeling
 approximations to be solvable.  Statistics gathered from Suzerain's solution of
 the Navier--Stokes equations may be used to inform the development and
 application of FANS closures.  Extensive background may be found in
-books by Chassaing et.~al.~\cite{Chassaing2010} or Smits and
-Dussauge~\cite{SmitsDussauge2005}.
+\citet{Chassaing2010} or \citet{SmitsDussauge2005}.
 
-The material in this section borrows liberally (and often literally) from work
-by Todd Oliver~\cite{OliverFANSModels2011}.  It departs from that particular
-document in that it employs Suzerain's constitutive relationships, avoids
-introducing customary assumptions about the relative importance of unclosed
-terms, accounts for forcing, and nondimensionalizes the results.
-
+The material in this section borrows liberally (and often literally) from
+\citet{OliverFANSModels2011}.  It departs from that particular document in that
+it employs Suzerain's constitutive relationships, avoids introducing customary
+assumptions about the relative importance of unclosed terms, accounts for
+forcing, and nondimensionalizes the results.
 
 \subsection{Reynolds- and Favre-averages}
 \label{sec:averaging}
@@ -3708,10 +3722,10 @@ averaging and differentiation do not, in general, commute:
      \bar{\rho} \nabla{\tilde{q}}
    - \overline{q''\nabla\rho}
 \end{align}
-We have adopted the common convention that taking Favre fluctuations
-$\left(\cdot\right)''$ has higher precedence than $\nabla\left(\cdot\right)$.
-Rearranging to better examine the difference between $\widetilde{\nabla{}q}$
-and $\nabla\tilde{q}$ in terms of mean quantities,
+Here the common convention that taking Favre fluctuations
+$\left(\cdot\right)''$ has higher precedence than $\nabla\left(\cdot\right)$
+has been adopted.  Rearranging to better examine the difference between
+$\widetilde{\nabla{}q}$ and $\nabla\tilde{q}$ in terms of mean quantities,
 \begin{align}
   \label{eq:favremeancommute}
   \widetilde{\nabla{}q}
@@ -3775,13 +3789,13 @@ and~\eqref{eq:cons_energy} may be written as
   + f\cdot{}u
   + q_b
 \end{align}
-where we have employed total enthalpy $H$ to reduce the number of terms in the
-energy equation.
+where using total enthalpy $H$ reduces the number of terms in the energy
+equation.
 
-A lengthy algebraic procedure (detailed in section~2
-of~\cite{OliverFANSModels2011}) produces exact equations governing the
-evolution of mean conserved quantities $\bar{\rho}$, $\overline{\rho{}u}=
-\bar{\rho}\tilde{u}$, and $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
+A lengthy algebraic procedure \citep[\textsection{}2]{OliverFANSModels2011}
+produces exact equations governing the evolution of mean conserved quantities
+$\bar{\rho}$, $\overline{\rho{}u}= \bar{\rho}\tilde{u}$, and
+$\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
 \begin{subequations}\label{eq:unclosedfansequations}
 \begin{align}
     \frac{\partial}{\partial{}t}\bar{\rho}
@@ -3869,8 +3883,8 @@ arises from averaging the total energy given by
 + k
 \end{align}
 
-An exact equation may be derived for the evolution of $k$ (details in section~5
-of~\cite{OliverFANSModels2011})
+An exact equation may be derived for the evolution of $k$
+\citep[\textsection{}5]{OliverFANSModels2011}
 \begin{align}
 \label{eq:fanstke1}
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
@@ -3895,7 +3909,7 @@ energy, is defined by
   \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
 .
 \end{align}
-As page~216 of Lele~\cite{Lele1994Compressibility} suggests, expanding $h$,
+As \citet[page 216]{Lele1994Compressibility} suggests, expanding $h$,
 averaging, removing the mean state from both sides, and applying perfect gas
 assumptions demonstrates the exact relationship
 \begin{align}
@@ -3927,7 +3941,7 @@ Rearranging the above result to mimic terms within~\eqref{eq:fanstke1}
   \bar{p}\nabla\cdot\overline{u''}
 - \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
 \end{align}
-allows us to trade an occurrence of $\overline{p'u''}$ for the Reynolds heat
+allows trading an occurrence of $\overline{p'u''}$ for the Reynolds heat
 flux in the exact $k$ equation:
 \begin{align}
 \label{eq:fanstke}
@@ -3952,12 +3966,12 @@ equations.  It also, as Lele suggests, encourages thermodynamic consistency
 when working with pressure correlation information.
 
 Returning to the constitutive relations, combining~\eqref{eq:tauSmub}
-and~\eqref{eq:secondviscosityclaw} we obtain
+and~\eqref{eq:secondviscosityclaw} one obtains
 \begin{align}
   \tau
 &= 2 \mu{} S + \alpha \mu \left( \nabla\cdot{}u \right) I.
 \end{align}
-Using the kinematic viscosity $\nu = \mu / \rho$ and averaging we find
+Using the kinematic viscosity $\nu = \mu / \rho$ and averaging,
 \begin{align}
    \tilde{S}
 &=
@@ -3988,7 +4002,7 @@ $\widetilde{\nabla{}\cdot{}u}\approx\nabla\cdot\tilde{u}$ are equivalent to
 neglecting $\widetilde{\nabla{}u''} + \trans{\widetilde{\nabla{}u''}}$ and
 $\widetilde{\nabla{}\cdot{}u''}$ per~\eqref{eq:favremeancommute}.
 
-To find $\bar{q}_s$ we combine~\eqref{eq:fourierlaw} and our assumption of a
+To find $\bar{q}_s$, combine~\eqref{eq:fourierlaw} and our assumption of a
 constant Prandtl number
 \begin{align}
   q_{s} &= - \kappa \nabla{} T
@@ -4460,7 +4474,7 @@ notation and the summation convention.  Using the identities
 &=
   \widetilde{u_{i}u_{j}u_{k}} - \widetilde{u_{i}u_{j}}\tilde{u}_{k}
 \shortintertext{
-and ignoring any symmetry-related simplifications, we obtain
+and ignoring any symmetry-related simplifications,
 }
   \widetilde{u_{i}''u_{j}''u_{k}''}
   &= \bar{\rho}^{-1} \overline{\rho{}\left(u_{i}-\tilde{u}_{i}\right)
@@ -4495,7 +4509,7 @@ Contracting the first two indices and relabelling the third index,
    .
 \shortintertext{
 Reverting to direct notation and employing the symmetry of
-$\widetilde{u\otimes{}u}$, we arrive at
+$\widetilde{u\otimes{}u}$,
 }
   \widetilde{{u''}^{2}u''}
 &=
@@ -4543,7 +4557,8 @@ TODO
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{amsplain}
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 
