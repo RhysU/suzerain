@@ -310,7 +310,7 @@ namespace quantity {
     static void write_names(std::ostream &out)
     {
         for (size_t i = 0; i < quantity::count; ++i) {  // Headings
-            out << std::setw(numeric_limits<real_t>::digits10 + 12)
+            out << std::setw(numeric_limits<real_t>::digits10 + 11)
                 << quantity::name[i];
             if (i < quantity::count - 1) out << " ";
         }
