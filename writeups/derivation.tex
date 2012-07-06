@@ -66,6 +66,7 @@
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
 \newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+\newcommand{\Knudsen}[1][]{\ensuremath{\mbox{Kn}_{#1}}}
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
 \newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
@@ -673,7 +674,13 @@ where the nondimensional quantities
   &
   \Prandtl &= \frac{\mu_{0}C_{p}}{\kappa_{0}}
 \end{align}
-are the Reynolds, Mach, and Prandtl numbers, respectively.
+are the Reynolds, Mach, and Prandtl numbers, respectively.  In this setting the
+von~K\'arm\'an relationship for the Knudsen number becomes
+\begin{align}
+  \Knudsen &= \frac{\Mach}{\Reynolds}\sqrt{\frac{\gamma\pi}{2}}.
+\end{align}
+which permits checking $\Knudsen\ll{}1$ to confirm that our continuum
+assumptions are justified.
 
 Introducing a velocity reference $u_{0}$ separate from the sound speed $a_{0}$
 was not necessary from a dimensional standpoint.  Doing so is the origin of the
