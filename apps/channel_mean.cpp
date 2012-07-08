@@ -830,7 +830,7 @@ static quantity::storage_map_type process(
             1, b->n());
 
     // Computations of local quantities (see descriptions for definitions).
-    // This must occur after differentitiation of SAMPLED and DERIVED.
+    // This must occur after differentiation of SAMPLED and DERIVED.
     // Note the following:
     //
     // 1)  In local_Mat computation, ".abs()" is present to avoid taking the
