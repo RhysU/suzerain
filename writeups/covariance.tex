@@ -37,7 +37,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Covariance estimation from thinning nonuniform, autocorrelated samples.
+        Covariance estimation from nonuniform, autocorrelated samples.
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -76,16 +76,14 @@ simulation.  Ideally, samples will be collected uniformly in time.
 
 \subsection*{Approach}
 
-The procedure has four steps.  First, construct uniform temporal samples
+The procedure has three steps.  First, construct uniform temporal samples
 $\vec{X}$ and $\vec{Y}$ from the nonuniform $\vec{x}$ and $\vec{y}$ via a
 Fourier-based projection.  Second, estimate the cross-spectra of $\vec{X}$ and
 $\vec{Y}$ following \citet{Welch1967Use} to maximally reduce the variance of
 these estimates given limited data.  Third, estimate the covariances from the
 cross-spectra and compute an effective sample size $N'$ per recommendations by
-\citet{Thiebaux1984Interpretation}.  Finally, compute the sample covariance of
-$\vec{x}_i$ and $\vec{y}_i$ thinned to contain only $N'$ effectively i.i.d.
-samples.  This thinned sample covariance, not the estimate based on the
-projections, is the output.
+\citet{Thiebaux1984Interpretation}.  The sample covariance of $\vec{x}_i$ and
+$\vec{y}_i$ computed using the modified $N'$ is reported.
 
 \subsection*{Projection onto uniform temporal samples}
 
@@ -176,15 +174,6 @@ computed assuming all original samples are independent (and therefore their
 temporal spacing is irrelevant).  This single value $N'$ gauges the number of
 independent samples present in the overall data given the estimated
 autocorrelation structure.
-
-\subsection*{Thinning to effectively i.i.d samples}
-
-The original $N$ samples $\vec{x}(t_i)$ and $\vec{y}(t_i)$ should be thinned so
-that only $N'$ samples, separated as maximally in time as possible, remain.
-From those samples the classical unbiased covariance is computed.  This thinned
-covariance is reported as the output of the procedure.  When
-$\mathscr{X}=\mathscr{Y}$, the thinned sample variance should be reported
-alongside the thinned sample mean.
 
 \subsection*{Checking consistency and stationarity}
 
