@@ -16,6 +16,7 @@
 \usepackage{latexsym}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{setspace}
@@ -266,7 +267,8 @@ Following advice from Moser, this approach may be implemented as follows:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{amsplain}
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 

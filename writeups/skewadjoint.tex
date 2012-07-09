@@ -11,6 +11,7 @@
 \usepackage{lastpage}
 \usepackage{latexsym}
 \usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
 \usepackage{pstricks}
 \usepackage{setspace}
@@ -165,9 +166,10 @@ By employing the above three results and combining the boundary terms, we see
 Beyond the smoothness requirements necessary to apply integration by parts, the
 boundary integral must also vanish for the operator to be self-adjoint.
 
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \nocite{Zang1991Rotation}
 \nocite{Boyd2001Page213}
-\bibliographystyle{amsplain}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 \end{document}

@@ -11,6 +11,7 @@
 \usepackage{lastpage}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
 \usepackage{setspace}
 \usepackage{txfonts}
@@ -187,7 +188,8 @@ diagnostic~\cite{Geweke1992Evaluating} as a way to assess stationarity.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliographystyle{amsplain}
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
 \bibliography{references}
 
 \end{document}
