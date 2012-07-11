@@ -39,12 +39,12 @@ is minimal.},
 }
 
 @article{Kwok2001,
-    abstract = {Resolution properties of B-spline and compact finite
+    abstract = {Resolution properties of {B}-spline and compact finite
 difference schemes are compared using Fourier analysis in periodic
 domains, and tests based on solution of the wave and heat equations
 in finite domains, with uniform and nonuniform grids. Results show
 that compact finite difference schemes have a higher convergence
-rate and in some cases better resolution.  However, B-spline schemes
+rate and in some cases better resolution.  However, {B}-spline schemes
 have a more straightforward and robust formulation, particularly
 near boundaries on nonuniform meshes.},
     author = {Kwok, Wai Y. and Moser, Robert D. and Jim\'{e}nez, Javier},
@@ -79,12 +79,12 @@ decrease in cross-stream velocity fluctuations, Reynolds shear stress, and
 magnitude of pressure fluctuations, consistent with the growth suppression
 mechanism proposed by Vreman et al. and Freund et al. Direct numerical
 simulations of turbulent flows require numerical schemes with high resolution
-and grid flexibility. Resolution properties of B-spline and compact
+and grid flexibility. Resolution properties of {B}-spline and compact
 finite-difference schemes are evaluated using Fourier analysis in periodic
 domains, and tests based on solution of the wave and heat equations in finite
 domains, with uniform and non-uniform grids. Results show that compact
 finite-difference schemes have a higher convergence rate and in some cases
-better resolution on uniform grids. However, B-spline schemes have more
+better resolution on uniform grids. However, {B}-spline schemes have more
 consistent behavior on non-uniform grids, and a more straightforward and robust
 formulation.},
     author = {Kwok, Wai Y.},
@@ -108,9 +108,9 @@ modified system of equations (Navier-Stokes plus some extra terms, which we
 call "slow growth terms") that are homogeneous in both the streamwise and
 spanwise directions and represent the state of the boundary layer at a given
 streamwise location (or, equivalently, a given thickness). The compressible
-Navier-Stokes equations are solved using a mixed Fourier and B-spline
+Navier-Stokes equations are solved using a mixed Fourier and {B}-spline
 "spectral" method. The dependent variables are expanded in terms of a Fourier
-representation in the horizontal directions and a B-spline representation in
+representation in the horizontal directions and a {B}-spline representation in
 the wall-normal direction. In the wall-normal direction non-reflecting boundary
 conditions are used at the freestream boundary, and zero-heat-flux no-slip
 boundary conditions are used at the wall. This combination of splines and
@@ -817,4 +817,125 @@ variability within an ``unchanging climate.'' As such it is a measure of the
 variability are discussed in the context of potential long-range
 predictability. A characteristic time between independent estimates is
 determined.}
+}
+
+@article{Seghouane2004Small,
+    abstract = {The {K}ullback information criterion ({KIC}) is a recently
+developed tool for statistical model selection. {KIC} serves as an
+asymptotically unbiased estimator of a variant (within a constant) of the
+{K}ullback symmetric divergence, known also as -divergence between the generating
+model and the fitted candi- date model. In this paper, a bias correction to
+{KIC} is derived for linear regression models. The correction is of particular
+use when the sample size is small or when the number of fitted parameters is a
+moderate to large fraction of the sample size. For linear regression models,
+the corrected criterion, called {KICc} is an exactly unbiased estimator of the
+variant of the {K}ullback symmetric divergence, assuming that the true model is
+correctly specified or overfitted. Furthermore, when applied to polynomial
+regression and autoregressive time-series modeling, {KICc} is found to estimate
+the model order more accurately than any other asymptotically efficient method.
+Finally, {KICc} is tested on real data to forecast foreign currency exchange
+rate; the result is very interesting in comparison to classical techniques.},
+    author = {Seghouane, A. K. and Bekara, M.},
+    doi = {10.1109/TSP.2004.837416},
+    issn = {1053-587X},
+    journal = {IEEE Transactions on Signal Processing},
+    month = dec,
+    number = {12},
+    pages = {3314--3323},
+    title = {A Small Sample Model Selection Criterion Based on {K}ullback's Symmetric Divergence},
+    volume = {52},
+    year = {2004}
+}
+
+@article{Ibrahim1989Correction,
+    abstract = {My purpose is to indicate that the second estimate of the first
+reflection coefficient given in the above paper is not new and can be found in
+[2]-[4].},
+    author = {Ibrahim, M. K.},
+    doi = {10.1109/29.17511},
+    journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+    number = {1},
+    pages = {128},
+    title = {Correction to "{I}mprovement in the speed of the data-adaptive weighted {B}urg technique"},
+    volume = {37},
+    year = {1989}
+}
+
+@article{Ibrahim1987Line,
+    abstract = {A modification to the optimum tapered Burg algorithm is
+presented which has the same cost as that required by the original algorithm.
+Simulation results have shown that the new spectra exhibit no spontaneous line
+splitting and are independent of the initial phase in the case of a single
+sinusoid.},
+    author = {Ibrahim, M. K.},
+    doi = {10.1109/TASSP.1987.1165047},
+    issn = {0096-3518},
+    journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+    month = oct,
+    number = {10},
+    pages = {1476--1479},
+    title = {On line splitting in the optimum tapered {B}urg algorithm},
+    volume = {35},
+    year = {1987}
+}
+
+@article{Ibrahim1987Improvement,
+    abstract = {Despite the improvement in the spectra of the data-adaptive
+weighted Burg technique ({DAB}) proposed by Helme and Nikias over other
+well-known techniques, the {DAB} requires an iterative algorithm to generate
+the first- and second-order reflection coefficients. In this correspondence, a
+new initialization procedure is presented that computes the first- and
+second-order reflection coefficients recursively rather than iteratively. This
+will make the speed of the {DAB} comparable to that of the Burg technique.},
+    author = {Ibrahim, M. K.},
+    doi = {10.1109/TASSP.1987.1165046},
+    journal = {IEEE Transactions on Acoustics, Speech, and Signal Processing},
+    month = oct,
+    number = {10},
+    pages = {1474--1476},
+    title = {Improvement in the speed of the data-adaptive weighted {B}urg technique},
+    url = {http://dx.doi.org/10.1109/TASSP.1987.1165046},
+    volume = {35},
+    year = {1987}
+}
+
+@article{Swingler1991Frequency,
+    abstract = {The variance of the Burg frequency estimate is computed for the
+simplest case of a single noisy complex sinusoid through a Monte Carlo
+simulation over a useful range of data lengths, signal-to-noise ratios, and
+model orders. It is demonstrated that it is possible to provide a reasonable
+fit to this data by a relatively simple expression which provides considerable
+insight into the performance of the Burg algorithm, especially when used in
+conjunction with the expression for the {Cramer-Rao} lower bound, which is
+itself particularly simple in this case},
+    author = {Swingler, D. N.},
+    doi = {10.1109/78.80938},
+    journal = {IEEE Transactions on Signal Processing},
+    month = apr,
+    number = {4},
+    pages = {1003--1005},
+    title = {Frequency estimation variance with the {B}urg algorithm},
+    volume = {39},
+    year = {1991}
+}
+
+@article{Campbell1993Frequency,
+    abstract = {The frequency estimation performance of a set of weighted Burg
+algorithms is investigated for single complex and real sinusoids in noise. It
+is demonstrated that in the complex case, an extension of Ibrahim's (1987,
+1989) modification of Kaveh and Lipert's (1983) optimum tapered Burg algorithm
+meets the {Cramer-Rao} lower bound for a sufficiently high signal-to-noise
+ratio and a sufficiently large model order. This is in contrast with the
+original Burg method. In the case of a real sinusoid, the same algorithm most
+closely approaches this bound, making it the technique of choice for both
+applications. Spectral resolution is addressed briefly},
+    author = {Campbell, W. and Swingler, D. N.},
+    doi = {10.1109/78.205726},
+    journal = {IEEE Transactions on Signal Processing},
+    month = mar,
+    number = {3},
+    pages = {1237--1247},
+    title = {Frequency estimation performance of several weighted {B}urg algorithms},
+    volume = {41},
+    year = {1993}
 }
