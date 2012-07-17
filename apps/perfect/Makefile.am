@@ -2,23 +2,32 @@
 
 include ../Common.am
 
+###
+### Logic common to many different binaries within this subdirectory
+###
+
+noinst_LTLIBRARIES    += libperfect.la
+libperfect_la_SOURCES  = # ../precision.hpp                         # FIXME
+libperfect_la_SOURCES += # perfect.cpp perfect.hpp                  # FIXME
+libperfect_la_SOURCES += # nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp  # FIXME
+libperfect_la_LIBADD   = ../libsupport.la
+libperfect_la_LIBADD  += ../../suzerain/libsuzerain.la
+
 ##
 ## Channel-based applications
 ##
 
 bin_PROGRAMS         += channel_init
-channel_init_LDADD    = ../libsupport.la
-channel_init_LDADD   += ../../suzerain/libsuzerain.la
 channel_init_SOURCES  = channel_init.cpp
 channel_init_SOURCES += channel_init_svnrev.c
 BUILT_SOURCES        += channel_init_svnrev.h
+channel_init_LDADD    = ./libperfect.la
 channel_init_svnrev.h: $(channel_init_SOURCES)                       \
+                       $(libperfect_la_SOURCES)                      \
                        $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS    += channel
-channel_LDADD    = ../libsupport.la
-channel_LDADD   += ../../suzerain/libsuzerain.la
 channel_SOURCES  = channel_main.cpp
 channel_SOURCES += channel_treatment.hpp
 channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
@@ -27,17 +36,19 @@ channel_SOURCES += hybrid_op.cpp   hybrid_op.hpp
 channel_SOURCES += ../timers.hpp
 channel_SOURCES += channel_main_svnrev.c
 BUILT_SOURCES   += channel_main_svnrev.h
+channel_LDADD    = ./libperfect.la
 channel_main_svnrev.h: $(channel_SOURCES)                            \
+                       $(libperfect_la_SOURCES)                      \
                        $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS         += channel_mean
-channel_mean_LDADD    = ../libsupport.la
-channel_LDADD        += ../../suzerain/libsuzerain.la
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_SOURCES += channel_mean_svnrev.c
 BUILT_SOURCES        += channel_mean_svnrev.h
+channel_mean_LDADD    = ./libperfect.la
 channel_mean_svnrev.h: $(channel_mean_SOURCES)                       \
+                       $(libperfect_la_SOURCES)                      \
                        $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
