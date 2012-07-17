@@ -3,7 +3,7 @@
 include Common.am
 
 # Build targets in current directory before any subdirectories
-SUBDIRS = . perfect
+SUBDIRS = . perfect reacting
 
 ##
 ## MPI-aware logging built atop log4cxx

@@ -223,6 +223,12 @@ BOOST_TYPETRAITS
 AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
+dnl ----------------------------------------------
+dnl Chemistry library requirements
+dnl ----------------------------------------------
+AM_CONDITIONAL([HAVE_CANTERA], [true])  dnl Implement!
+AC_CACHE_SAVE
+
 dnl ------------------------------------------------
 dnl C/C++ compilation strictness and compatibility
 dnl ------------------------------------------------
@@ -302,6 +308,8 @@ AC_CONFIG_FILES([
     Makefile
     apps/Makefile
     apps/perfect/Makefile
+    apps/reacting/Makefile
+    apps/reacting/cantera/Makefile
     build-aux/Makefile
     fields/Makefile
     jobscripts/Makefile
