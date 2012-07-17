@@ -14,17 +14,17 @@ liblogging_la_SOURCES  = logging.cpp logging.hpp
 liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
-## Logic common to potentially many applications kept in subdirectories
+## Support logic common to potentially many applications kept in subdirectories
 ##
 
-lib_LTLIBRARIES       += libchannel.la
-libchannel_la_SOURCES  = precision.hpp
-libchannel_la_SOURCES += channel.cpp channel.hpp
-libchannel_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
-libchannel_la_LDFLAGS  = -release $(PACKAGE_VERSION)
-libchannel_la_LIBADD   = $(ESIO_LIBS)
-libchannel_la_LIBADD  += ../suzerain/libsuzerain.la
-libchannel_la_LIBADD  += ./liblogging.la
+noinst_LTLIBRARIES    += libsupport.la
+libsupport_la_SOURCES  = precision.hpp
+libsupport_la_SOURCES += support.cpp support.hpp
+libsupport_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
+libsupport_la_LDFLAGS  = -release $(PACKAGE_VERSION)
+libsupport_la_LIBADD   = $(ESIO_LIBS)
+libsupport_la_LIBADD  += ../suzerain/libsuzerain.la
+libsupport_la_LIBADD  += ./liblogging.la
 
 ##
 ## Miscellaneous programs and/or performance drivers
@@ -32,7 +32,7 @@ libchannel_la_LIBADD  += ./liblogging.la
 
 noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
-conservation_LDADD    = libchannel.la
+conservation_LDADD    = libsupport.la
 
 if HAVE_P3DFFT
 bin_PROGRAMS                    += driver_suzerain_p3dfft

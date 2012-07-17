@@ -31,7 +31,7 @@
 
 #include "../logging.hpp"
 #include "../precision.hpp"
-#include "../channel.hpp"
+#include "../support.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];

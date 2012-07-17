@@ -22,7 +22,7 @@
 #include <suzerain/state_fwd.hpp>
 
 #include "../precision.hpp"
-#include "../channel.hpp"
+#include "../support.hpp"
 
 #include "nonlinear_fwd.hpp"
 

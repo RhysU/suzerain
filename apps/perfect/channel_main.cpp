@@ -55,7 +55,7 @@
 
 #include "../logging.hpp"
 #include "../precision.hpp"
-#include "../channel.hpp"
+#include "../support.hpp"
 
 #include "channel_treatment.hpp"
 #include "explicit_op.hpp"

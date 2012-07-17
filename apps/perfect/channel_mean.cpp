@@ -27,7 +27,7 @@
 
 #include "../logging.hpp"
 #include "../precision.hpp"
-#include "../channel.hpp"
+#include "../support.hpp"
 
 // Introduce shorthand for common names
 using boost::make_shared;

@@ -8,7 +8,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// channel.cpp: Channel-related functionality spanning binaries
+// support.cpp: Support logic spanning potentially many applications
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -34,7 +34,7 @@
 #include <sys/file.h>
 
 #include "logging.hpp"
-#include "channel.hpp"
+#include "support.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<real_t>;

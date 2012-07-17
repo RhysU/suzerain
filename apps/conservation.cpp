@@ -25,7 +25,7 @@
 
 #include "logging.hpp"
 #include "precision.hpp"
-#include "channel.hpp"
+#include "support.hpp"
 
 #pragma warning(disable:383 1572)
 

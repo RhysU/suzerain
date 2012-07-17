@@ -8,7 +8,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// channel.hpp: Channel-related functionality spanning binaries
+// support.hpp: Support logic spanning potentially many applications
 // $Id$
 
 #ifndef CHANNEL_HPP

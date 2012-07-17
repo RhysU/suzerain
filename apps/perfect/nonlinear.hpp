@@ -23,7 +23,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 
-#include "../channel.hpp"
+#include "../support.hpp"
 
 #pragma warning(disable:383 1572)
 

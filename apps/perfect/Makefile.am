@@ -7,16 +7,16 @@ include ../Common.am
 ##
 
 bin_PROGRAMS         += channel_init
-channel_init_LDADD    = ../libchannel.la
+channel_init_LDADD    = ../libsupport.la
 channel_init_SOURCES  = channel_init.cpp
 channel_init_SOURCES += channel_init_svnrev.c
 BUILT_SOURCES        += channel_init_svnrev.h
 channel_init_svnrev.h: $(channel_init_SOURCES)                       \
-                       $(__top_builddir__apps_libchannel_la_SOURCES)
+                       $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS    += channel
-channel_LDADD    = ../libchannel.la
+channel_LDADD    = ../libsupport.la
 channel_SOURCES  = channel_main.cpp
 channel_SOURCES += channel_treatment.hpp
 channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
@@ -26,16 +26,16 @@ channel_SOURCES += ../timers.hpp
 channel_SOURCES += channel_main_svnrev.c
 BUILT_SOURCES   += channel_main_svnrev.h
 channel_main_svnrev.h: $(channel_SOURCES)                            \
-                       $(__top_builddir__apps_libchannel_la_SOURCES)
+                       $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS         += channel_mean
-channel_mean_LDADD    = ../libchannel.la
+channel_mean_LDADD    = ../libsupport.la
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_SOURCES += channel_mean_svnrev.c
 BUILT_SOURCES        += channel_mean_svnrev.h
 channel_mean_svnrev.h: $(channel_mean_SOURCES)                       \
-                       $(__top_builddir__apps_libchannel_la_SOURCES)
+                       $(__top_builddir__apps_libsupport_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
