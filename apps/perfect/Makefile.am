@@ -11,7 +11,6 @@ libperfect_la_SOURCES  = # ../precision.hpp                         # FIXME
 libperfect_la_SOURCES += # perfect.cpp perfect.hpp                  # FIXME
 libperfect_la_SOURCES += # nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp  # FIXME
 libperfect_la_LIBADD   = ../libsupport.la
-libperfect_la_LIBADD  += ../../suzerain/libsuzerain.la
 
 ##
 ## Channel-based applications

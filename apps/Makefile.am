@@ -23,6 +23,7 @@ libsupport_la_SOURCES += support.cpp support.hpp
 libsupport_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
 libsupport_la_LIBADD   = $(ESIO_LIBS)
 libsupport_la_LIBADD  += ./liblogging.la
+libsupport_la_LIBADD  += ../suzerain/libsuzerain.la
 
 ##
 ## Miscellaneous programs and/or performance drivers
@@ -30,7 +31,7 @@ libsupport_la_LIBADD  += ./liblogging.la
 
 noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
-conservation_LDADD    = libsupport.la
+conservation_LDADD    = ./libsupport.la
 
 if HAVE_P3DFFT
 bin_PROGRAMS                    += driver_suzerain_p3dfft
