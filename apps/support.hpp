@@ -11,8 +11,8 @@
 // support.hpp: Support logic spanning potentially many applications
 // $Id$
 
-#ifndef CHANNEL_HPP
-#define CHANNEL_HPP
+#ifndef SUPPORT_HPP
+#define SUPPORT_HPP
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -742,4 +742,4 @@ void load(const esio_handle h, mean& m);
 
 } // end namespace channel
 
-#endif // CHANNEL_HPP
+#endif // SUPPORT_HPP
