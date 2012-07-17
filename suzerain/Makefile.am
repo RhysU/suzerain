@@ -175,5 +175,8 @@ libsuzerain_precise_la_CXXFLAGS       = $(AM_CXXFLAGS) $(CXXFLAGS_PRECISE)
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 CLEANFILES += *.pchi
 
+# Clean up from buildaux/svnrev-generated headers
+CLEANFILES += *_svnrev.h
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

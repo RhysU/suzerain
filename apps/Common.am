@@ -24,6 +24,9 @@ CC  = @MPICC@
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
 CLEANFILES += *.pchi
 
+# Clean up from buildaux/svnrev-generated headers
+CLEANFILES += *_svnrev.h
+
 # Specify test environment for 'make check'
 TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
 TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields
