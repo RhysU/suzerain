@@ -8,6 +8,7 @@ include ../Common.am
 
 bin_PROGRAMS         += channel_init
 channel_init_LDADD    = ../libsupport.la
+channel_init_LDADD   += ../../suzerain/libsuzerain.la
 channel_init_SOURCES  = channel_init.cpp
 channel_init_SOURCES += channel_init_svnrev.c
 BUILT_SOURCES        += channel_init_svnrev.h
@@ -17,6 +18,7 @@ channel_init_svnrev.h: $(channel_init_SOURCES)                       \
 
 bin_PROGRAMS    += channel
 channel_LDADD    = ../libsupport.la
+channel_LDADD   += ../../suzerain/libsuzerain.la
 channel_SOURCES  = channel_main.cpp
 channel_SOURCES += channel_treatment.hpp
 channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
@@ -31,6 +33,7 @@ channel_main_svnrev.h: $(channel_SOURCES)                            \
 
 bin_PROGRAMS         += channel_mean
 channel_mean_LDADD    = ../libsupport.la
+channel_LDADD        += ../../suzerain/libsuzerain.la
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_SOURCES += channel_mean_svnrev.c
 BUILT_SOURCES        += channel_mean_svnrev.h

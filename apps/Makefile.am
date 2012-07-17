@@ -14,16 +14,14 @@ liblogging_la_SOURCES  = logging.cpp logging.hpp
 liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 
 ##
-## Support logic common to potentially many applications kept in subdirectories
+## Support logic common to many applications kept in subdirectories
 ##
 
 noinst_LTLIBRARIES    += libsupport.la
 libsupport_la_SOURCES  = precision.hpp
 libsupport_la_SOURCES += support.cpp support.hpp
 libsupport_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
-libsupport_la_LDFLAGS  = -release $(PACKAGE_VERSION)
 libsupport_la_LIBADD   = $(ESIO_LIBS)
-libsupport_la_LIBADD  += ../suzerain/libsuzerain.la
 libsupport_la_LIBADD  += ./liblogging.la
 
 ##
