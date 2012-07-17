@@ -48,5 +48,11 @@ driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES) $(liblogging_
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 endif
 
+##
+## Common test infrastructure and tests
+##
+
+dist_check_SCRIPTS += test_infrastructure.sh
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
