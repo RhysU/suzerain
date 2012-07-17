@@ -21,8 +21,9 @@
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state_fwd.hpp>
 
-#include "precision.hpp"
-#include "channel.hpp"
+#include "../precision.hpp"
+#include "../channel.hpp"
+
 #include "nonlinear_fwd.hpp"
 
 #pragma warning(disable:383 1572)

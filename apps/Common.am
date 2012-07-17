@@ -1,0 +1,29 @@
+# Common Automake snippets used here and in subdirectories
+# vim:set filetype=automake:
+
+AM_CPPFLAGS         = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS        += -I$(top_builddir)/lib -I$(top_srcdir)/lib -I$(builddir)
+AM_CPPFLAGS        += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS)
+AM_CPPFLAGS        += $(FFTW3_THREADS_CFLAGS) $(MKL_CFLAGS) $(GSL_CFLAGS)
+AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
+AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
+bin_PROGRAMS        = # Append elsewhere
+noinst_PROGRAMS     = # Append elsewhere
+dist_check_SCRIPTS  = # Append elsewhere
+CLEANFILES          = # Append elsewhere
+TESTS               = # Append elsewhere
+lib_LTLIBRARIES     = # Append elsewhere
+noinst_LTLIBRARIES  = # Append elsewhere
+BUILT_SOURCES       = # Append elsewhere
+
+# MPI-based compilation and linking
+CXX = @MPICXX@
+CC  = @MPICC@
+
+# Clean up from Intel Compiler's -prof-gen output and precomiled headers
+CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
+CLEANFILES += *.pchi
+
+# Specify test environment for 'make check'
+TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT += FIELDSDIR=$(abs_top_srcdir)/fields

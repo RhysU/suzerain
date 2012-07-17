@@ -1,6 +1,3 @@
-/channel_explicit
-/channel_init
-/channel_mean
 /conservation
 /*.dat
 /*.log

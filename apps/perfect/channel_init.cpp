@@ -29,9 +29,9 @@
 #include <suzerain/utility.hpp>
 #include <suzerain/version.hpp>
 
-#include "logging.hpp"
-#include "precision.hpp"
-#include "channel.hpp"
+#include "../logging.hpp"
+#include "../precision.hpp"
+#include "../channel.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];

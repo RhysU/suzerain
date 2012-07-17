@@ -19,7 +19,7 @@
         Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ";", "", "", "[", "]")
 
 // Must appear before Suzerain header includes to obtain timer hooks
-#include "timers.hpp"
+#include "../timers.hpp"
 
 #include <suzerain/common.hpp>
 #include <gsl/gsl_errno.h>
@@ -53,10 +53,11 @@
 #include <underling/error.h>
 #endif
 
-#include "logging.hpp"
-#include "precision.hpp"
+#include "../logging.hpp"
+#include "../precision.hpp"
+#include "../channel.hpp"
+
 #include "channel_treatment.hpp"
-#include "channel.hpp"
 #include "explicit_op.hpp"
 #include "hybrid_op.hpp"
 

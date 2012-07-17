@@ -23,7 +23,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 
-#include "precision.hpp"
+#include "../precision.hpp"
 
 namespace channel {
 

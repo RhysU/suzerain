@@ -25,9 +25,9 @@
 #include <suzerain/pre_gsl.h>
 #include <suzerain/program_options.hpp>
 
-#include "logging.hpp"
-#include "precision.hpp"
-#include "channel.hpp"
+#include "../logging.hpp"
+#include "../precision.hpp"
+#include "../channel.hpp"
 
 // Introduce shorthand for common names
 using boost::make_shared;

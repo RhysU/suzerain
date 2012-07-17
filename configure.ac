@@ -301,6 +301,7 @@ dnl ------------------------------------------------
 AC_CONFIG_FILES([
     Makefile
     apps/Makefile
+    apps/perfect/Makefile
     build-aux/Makefile
     fields/Makefile
     jobscripts/Makefile
