@@ -5,7 +5,6 @@
 #include <memory>
 #include <numeric>
 #include <boost/array.hpp>
-#include <boost/concept/assert.hpp>
 #include <boost/concept_check.hpp>
 #include <boost/iterator/iterator_concepts.hpp>
 #include <boost/range/concepts.hpp>

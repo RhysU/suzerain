@@ -5,7 +5,7 @@
 #pragma hdrstop
 #include <suzerain/multi_array.hpp>
 #define BOOST_TEST_MAIN
-#include <boost/concept/assert.hpp>
+#include <boost/concept_check.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
 #include <suzerain/complex.hpp>
