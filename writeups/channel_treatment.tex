@@ -215,8 +215,8 @@ Specifically, the final implicit solve in each low storage substep resembles
 ${m_x}^{i+1} = A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A = \left(M -
 \Delta{}t\beta_{i}L\right)$, $\vec{n}$ is an intermediate result, and $\vec{f}$
 contains the value $1$ for $y\neq{}0,2\delta$.  Then $\Gamma = \bar{m}_x^{i+1}
-= c \cdot m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + \phi{}A^{-1}\vec{f}$ requires
-selecting
+= c \cdot m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + c \cdot{} \phi{}A^{-1}\vec{f}$
+requires selecting
 \begin{align}
   \phi &= \frac{\Gamma - c \cdot{} A^{-1} \vec{n}}{c \cdot{} A^{-1} \vec{f}}
   \label{eq:phitarget}
