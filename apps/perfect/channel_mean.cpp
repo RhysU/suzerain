@@ -36,6 +36,9 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
+using suzerain::problem::GridDefinition;
+using suzerain::problem::ScenarioDefinition;
+using suzerain::problem::TimeDefinition;
 
 // Provided by channel_mean_svnrev.{c,h} to speed recompilation
 extern "C" const char revstr[];
@@ -328,21 +331,28 @@ namespace quantity {
  * collections present in \c filename using the wall-normal discretization from
  * \c filename.
  *
- * @param filename To be loaded.
- * @param i_b      If <tt>!!i_b</tt> on entry, after computation interpolate
- *                 the results onto the collocation points given by \c i_b.
- *                 Otherwise, perform no additional interpolation and
- *                 update \c i_b with the basis in \c filename.
- * @param i_bop    Handled identically to \c i_b.
- * @param i_boplu  Handled identically to \c i_b.
+ * @param filename   To be loaded.
+ * @param i_scenario If <tt>!i_scenario</tt>,
+ *                   populated with the ScenarioDefinition from the file.
+ * @param i_grid     Handled identically to <tt>i_scenario</tt>.
+ * @param i_timedef  Handled identically to <tt>i_scenario</tt>.
+ * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
+ *                   the results onto the collocation points given by \c i_b.
+ *                   Otherwise, perform no additional interpolation and
+ *                   update \c i_b with the basis in \c filename.
+ * @param i_bop      Handled identically to \c i_b.
+ * @param i_boplu    Handled identically to \c i_b.
  *
  * @return A map of quantities keyed on the nondimensional simulation time.
  */
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<suzerain::bspline>& i_b,
-        shared_ptr<suzerain::bsplineop>& i_bop,
-        shared_ptr<suzerain::bsplineop_lu>& i_boplu);
+        shared_ptr<ScenarioDefinition<real_t> >& i_scenario,
+        shared_ptr<GridDefinition             >& i_grid,
+        shared_ptr<TimeDefinition<real_t>     >& i_timedef,
+        shared_ptr<suzerain::bspline          >& i_b,
+        shared_ptr<suzerain::bsplineop        >& i_bop,
+        shared_ptr<suzerain::bsplineop_lu     >& i_boplu);
 
 int main(int argc, char **argv)
 {
@@ -428,19 +438,23 @@ int main(int argc, char **argv)
         std::cout << std::flush;
     }
 
+    // Scenario and grid details provided to process(...)
+    shared_ptr<ScenarioDefinition<real_t> > scenario;
+    shared_ptr<GridDefinition             > grid;
+    shared_ptr<TimeDefinition<real_t>     > timedef;
+    shared_ptr<suzerain::bspline          > b;
+    shared_ptr<suzerain::bsplineop        > bop;
+    shared_ptr<suzerain::bsplineop_lu     > boplu;
+
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
     if (!use_hdf5 && !use_stdout) {
 
         BOOST_FOREACH(const std::string& filename, restart_files) {
 
-            // Numerics details reset on each new file
-            shared_ptr<suzerain::bspline> b;
-            shared_ptr<suzerain::bsplineop> bop;
-            shared_ptr<suzerain::bsplineop_lu> boplu;
-
             // Load data from filename
-            quantity::storage_map_type data = process(filename, b, bop, boplu);
+            quantity::storage_map_type data = process(
+                    filename, scenario, grid, timedef, b, bop, boplu);
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -462,6 +476,14 @@ int main(int argc, char **argv)
                     << std::endl;
             }
             ofs.close();
+
+            // Numerics details reset to avoid carrying grid across files.
+            scenario.reset();
+            grid.reset();
+            timedef.reset();
+            b.reset();
+            bop.reset();
+            boplu.reset();
         }
 
     } else {
@@ -471,16 +493,19 @@ int main(int argc, char **argv)
         // unique set of data across all files.
         quantity::storage_map_type pool;
 
-        // Numerics details preserved across multiple files
-        // Notice that the first file determines the grid.
-        shared_ptr<suzerain::bspline> b;
-        shared_ptr<suzerain::bsplineop> bop;
-        shared_ptr<suzerain::bsplineop_lu> boplu;
+        // Scenario and grid details preserved across multiple files!
+        // The last file on the command line determines the projection target
+        // grid because of the BOOST_REVERSE_FOREACH below.  That causes
+        // date-sorting input files to behave sensibly.
+        BOOST_REVERSE_FOREACH(const std::string& filename, restart_files) {
 
-        BOOST_FOREACH(const std::string& filename, restart_files) {
+            if (!scenario) INFO0("Output file has scenario per " << filename);
+            if (!grid)     INFO0("Output file has grid per "     << filename);
+            if (!timedef)  INFO0("Output file has timedef per "  << filename);
 
             // Load data from filename
-            quantity::storage_map_type data = process(filename, b, bop, boplu);
+            quantity::storage_map_type data = process(
+                    filename, scenario, grid, timedef, b, bop, boplu);
 
             // Transfer data into larger pool (which erases it from data)
             pool.transfer(data);
@@ -503,6 +528,24 @@ int main(int argc, char **argv)
         }
 
         if (use_hdf5) {
+            // Create a file-specific ESIO handle using RAII
+            shared_ptr<boost::remove_pointer<esio_handle>::type> h(
+                    esio_handle_initialize(MPI_COMM_WORLD),
+                    esio_handle_finalize);
+
+            // Create output file
+            DEBUG("Creating file " << outfile);
+            esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
+
+            // Store the scenario and numerics metadata
+            channel::store(h.get(), (*scenario));
+            channel::store(h.get(), *grid, scenario->Lx, scenario->Lz);
+            shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
+                        *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
+            channel::store(h.get(), b, bop, gop);
+            gop.reset();
+            channel::store(h.get(), *timedef);
+
             FATAL("HDF5 output not yet implemented"); // FIXME Implement
             return EXIT_FAILURE;
         }
@@ -540,9 +583,12 @@ static Eigen::VectorXr compute_bulk_weights(
 
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<suzerain::bspline>& i_b,
-        shared_ptr<suzerain::bsplineop>& i_bop,
-        shared_ptr<suzerain::bsplineop_lu>& i_boplu)
+        shared_ptr<ScenarioDefinition<real_t> >& i_scenario,
+        shared_ptr<GridDefinition             >& i_grid,
+        shared_ptr<TimeDefinition<real_t>     >& i_timedef,
+        shared_ptr<suzerain::bspline          >& i_b,
+        shared_ptr<suzerain::bsplineop        >& i_bop,
+        shared_ptr<suzerain::bsplineop_lu     >& i_boplu)
 {
     using quantity::storage_type;
     using quantity::storage_map_type;
@@ -556,17 +602,32 @@ static quantity::storage_map_type process(
     DEBUG("Loading file " << filename);
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
-    // Load time, scenario, grid, and B-spline details from file
+    // Load time, scenario, grid, timedef, and B-spline details from file.
+    // The TimeDefinition defaults are ignored but required as that
+    // class lacks a default constructor (by design).
     real_t time;
-    suzerain::problem::ScenarioDefinition<real_t> scenario;
-    suzerain::problem::GridDefinition grid;
+    ScenarioDefinition<real_t> scenario;
+    GridDefinition grid;
+    TimeDefinition<real_t> timedef(/* advance_dt */ 0,
+                                   /* advance_nt */ 0,
+                                   /* advance_wt */ 0,
+                                   /* status_dt  */ 0,
+                                   /* status_nt  */ 0,
+                                   /* min_dt     */ 0,
+                                   /* max_dt     */ 0);
     shared_ptr<suzerain::bspline> b;
     shared_ptr<suzerain::bsplineop> bop;
     channel::load_time(h.get(), time);
     channel::load(h.get(), scenario);
     channel::load(h.get(), grid);
+    channel::load(h.get(), timedef);
     channel::load(h.get(), b, bop);
     assert(b->n() == grid.N.y());
+
+    // Return the scenario, grid, and timedef to the caller if not already set
+    if (!i_scenario) i_scenario.reset(new ScenarioDefinition<real_t>(scenario));
+    if (!i_grid)     i_grid    .reset(new GridDefinition            (grid)    );
+    if (!i_timedef)  i_timedef .reset(new TimeDefinition<real_t>    (timedef) );
 
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu
