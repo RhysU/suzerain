@@ -599,6 +599,8 @@ int main(int argc, char **argv)
 
                 // ...and adding the time value to the running vector of times.
                 t.push_back(i->first);
+                INFO0("Wrote sample " << t.size() << " of " << Nt);
+
             }
 
             // Set "/t" to be the one-dimensional vector containing all times.
