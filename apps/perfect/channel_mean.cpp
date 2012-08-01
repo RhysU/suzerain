@@ -534,6 +534,12 @@ int main(int argc, char **argv)
             quantity::storage_map_type data = process(
                     filename, scenario, grid, timedef, b, bop, boplu);
 
+            // Output status to the user so they don't thing we're hung.
+            BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
+                INFO0("Read sample for t = " << i->first
+                       << " from " << filename);
+            }
+
             // Transfer data into larger pool (which erases it from data)
             pool.transfer(data);
 
@@ -599,7 +605,10 @@ int main(int argc, char **argv)
 
                 // ...and adding the time value to the running vector of times.
                 t.push_back(i->first);
-                INFO0("Wrote sample " << t.size() << " of " << Nt);
+
+                // Output status to the user so they don't thing we're hung.
+                INFO0("Wrote sample " << t.size() << " of " << Nt
+                      << " for t = " << t.back());
 
             }
 
