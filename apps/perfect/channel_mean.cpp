@@ -11,7 +11,7 @@
 // channel_mean.cpp: Dump mean statistics for one or more restart files
 // $Id$
 
-// FIXME Support multiple sample collections per file
+// FIXME Support loading multiple sample collections per file
 // FIXME Allow excluding particular time ranges in the output
 
 #ifdef HAVE_CONFIG_H
@@ -327,6 +327,33 @@ namespace quantity {
 } // namespace quantity
 
 /**
+ * Compute the integration weights necessary to compute a bulk quantity from
+ * the quantity's value at collocation points using a dot product.
+ */
+static Eigen::VectorXr compute_bulk_weights(
+        real_t Ly,
+        suzerain::bspline& b,
+        suzerain::bsplineop_lu& boplu)
+{
+    // Obtain coefficient -> bulk quantity weights
+    Eigen::VectorXr bulkcoeff(b.n());
+    b.integration_coefficients(0, bulkcoeff.data());
+    bulkcoeff /= Ly;
+
+    // Form M^-1 to map from collocation point values to coefficients
+    Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b.n(),b.n());
+    boplu.solve(b.n(), mat.data(), 1, b.n());
+
+    // Dot the coefficients with each column of M^-1
+    Eigen::VectorXr retval(b.n());
+    for (int i = 0; i < b.n(); ++i) {
+        retval[i] = bulkcoeff.dot(mat.col(i));
+    }
+
+    return retval;
+}
+
+/**
  * Compute all quantities from namespace \ref quantity using the sample
  * collections present in \c filename using the wall-normal discretization from
  * \c filename.
@@ -499,9 +526,9 @@ int main(int argc, char **argv)
         // date-sorting input files to behave sensibly.
         BOOST_REVERSE_FOREACH(const std::string& filename, restart_files) {
 
-            if (!scenario) INFO0("Output file has scenario per " << filename);
-            if (!grid)     INFO0("Output file has grid per "     << filename);
-            if (!timedef)  INFO0("Output file has timedef per "  << filename);
+            if (!scenario) INFO0 ("Output file has scenario per " << filename);
+            if (!grid)     DEBUG0("Output file has grid per "     << filename);
+            if (!timedef)  DEBUG0("Output file has timedef per "  << filename);
 
             // Load data from filename
             quantity::storage_map_type data = process(
@@ -546,39 +573,60 @@ int main(int argc, char **argv)
             gop.reset();
             channel::store(h.get(), *timedef);
 
-            FATAL("HDF5 output not yet implemented"); // FIXME Implement
-            return EXIT_FAILURE;
+            // Determine how many time indices and collocation points we have.
+            // We'll build a vector of time values to write after iteration.
+            const int Nt = pool.size();
+            const int Ny = grid->N.y();
+            std::vector<real_t> t;
+            t.reserve(Nt);
+
+            // Loop over each entry in pool...
+            BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
+
+                // ...writing every wall-normal pencil of data to file...
+                esio_plane_establish(h.get(), Nt, t.size(), 1, Ny, 0, Ny);
+                for (std::size_t j = 0; j < quantity::count; ++j) {
+                    // ...skipping those which do not vary in time...
+                    if (    j == quantity::t
+                         || j == quantity::y
+                         || j == quantity::bulk_weights) {
+                        continue;
+                    }
+                    esio_plane_write(h.get(), quantity::name[j],
+                                     i->second->col(j).data(), 0, 0,
+                                     quantity::desc[j]);
+                }
+
+                // ...and adding the time value to the running vector of times.
+                t.push_back(i->first);
+            }
+
+            // Set "/t" to be the one-dimensional vector containing all times.
+            esio_line_establish(h.get(), Nt, 0, t.size());
+            esio_line_write(h.get(), quantity::name[quantity::t],
+                            t.size() ? &t.front() : NULL,
+                            0, quantity::desc[quantity::t]);
+
+            // Set "/y" to be the one-dimensional vector of collocation points.
+            // Strictly speaking unnecessary, but useful shorthand for scripts.
+            t.resize(Ny);
+            esio_line_establish(h.get(), t.size(), 0, t.size());
+            for (int i = 0; i < Ny; ++i) t[i] = b->collocation_point(i);
+            esio_line_write(h.get(), quantity::name[quantity::y], &t.front(),
+                            0, quantity::desc[quantity::y]);
+
+            // (Re-) compute the bulk weights and then output those as well.
+            const Eigen::VectorXr bulk_weights
+                    = compute_bulk_weights(scenario->Ly, *b, *boplu);
+            esio_line_establish(h.get(), bulk_weights.size(),
+                                0, bulk_weights.size());
+            esio_line_write(h.get(), quantity::name[quantity::bulk_weights],
+                            bulk_weights.data(), 0,
+                            quantity::desc[quantity::bulk_weights]);
         }
     }
 
     return EXIT_SUCCESS;
-}
-
-/**
- * Compute the integration weights necessary to compute a bulk quantity from
- * the quantity's value at collocation points using a dot product.
- */
-static Eigen::VectorXr compute_bulk_weights(
-        real_t Ly,
-        suzerain::bspline& b,
-        suzerain::bsplineop_lu& boplu)
-{
-    // Obtain coefficient -> bulk quantity weights
-    Eigen::VectorXr bulkcoeff(b.n());
-    b.integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= Ly;
-
-    // Form M^-1 to map from collocation point values to coefficients
-    Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b.n(),b.n());
-    boplu.solve(b.n(), mat.data(), 1, b.n());
-
-    // Dot the coefficients with each column of M^-1
-    Eigen::VectorXr retval(b.n());
-    for (int i = 0; i < b.n(); ++i) {
-        retval[i] = bulkcoeff.dot(mat.col(i));
-    }
-
-    return retval;
 }
 
 static quantity::storage_map_type process(
