@@ -66,7 +66,7 @@ static GridDefinition grid(
         /* DAFx    */ 1.5,
         /* Ny      */ 32,
         /* k       */ 8,
-        /* htdelta */ 3,
+        /* htdelta */ 2,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static TimeDefinition<real_t> timedef(
