@@ -748,13 +748,12 @@ std::vector<real_t> applyNonlinearOperator(
                 const int y_modifier = (Linearize == linearize::none) ? 4 : 4;
 
                 // Strictly speaking, linearize::rhome's implicit treatment of
-                // the convective terms in all equations entitles us to compute
-                // convective stability using the difference between u and
-                // ref_u.  However, the resulting time steps are in general too
-                // large for reasonable accuracy.  We computed those terms
+                // the convective terms in all equations "entitles" us to
+                // compute convective stability using the difference between u
+                // and ref_u.  However, the resulting time steps are in general
+                // too large for reasonable accuracy.  We computed those terms
                 // implicitly to buy an incremental bump in the stability
-                // safety factor (here already incorporated into
-                // evmaxmag_imag).
+                // safety factor (already incorporated into evmaxmag_imag).
                 //
                 // TODO Permit large steps to avoid thermal transients (#2127)
                 convective_delta_t = suzerain::math::minnan(
