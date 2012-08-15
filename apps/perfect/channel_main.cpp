@@ -110,7 +110,7 @@ static const TimeDefinition<real_t> timedef(
         /* status_dt                 */ 0,
         /* status_nt                 */ 0,
         /* min_dt                    */ 1e-8,
-        /* max_dt                    */ 0);
+        /* max_dt                    */ 1);
 static const NoiseDefinition  noisedef;
 static const SignalDefinition sigdef;
 
