@@ -743,6 +743,10 @@ std::vector<real_t> applyNonlinearOperator(
                         break;
                 }
 
+                // See convective_stability_criterion documentation for why a
+                // magic number might modify one_over_delta_y for convection.
+                const int y_modifier = (Linearize == linearize::none) ? 4 : 4;
+
                 // Strictly speaking, linearize::rhome's implicit treatment of
                 // the convective terms in all equations entitles us to compute
                 // convective stability using the difference between u and
@@ -753,14 +757,11 @@ std::vector<real_t> applyNonlinearOperator(
                 // evmaxmag_imag).
                 //
                 // TODO Permit large steps to avoid thermal transients (#2127)
-
-                // See convective_stability_criterion documentation for why the
-                // magic number 4 modifies one_over_delta_y only here.
                 convective_delta_t = suzerain::math::minnan(
                         convective_delta_t,
                         suzerain::timestepper::convective_stability_criterion(
                                 u.x(), one_over_delta_x,
-                                u.y(), one_over_delta_y_j / 4,
+                                u.y(), one_over_delta_y_j / y_modifier,
                                 u.z(), one_over_delta_z,
                                 evmaxmag_imag, a));
 
