@@ -74,6 +74,7 @@ eta      = arsel((Re^(-3) * tilde_nu.data.**3 ./ tilde_epsilon.data).**(0.25));
 printf(' in %g seconds\n', toc());
 
 printf('Displaying basic grid metrics\n');
+y = y.';  % Wall-normal location (space) varies across rows
 Nx
 Ny
 Nz
@@ -82,6 +83,7 @@ Ly
 Lz
 delta_x = Lx / double(Nx)
 delta_z = Lz / double(Nz)
+delta_y = max([diff(y); 0],[0; diff(y)]);
 % Everything in plus units "lives" within the plus struct
 plus   = struct('delta_x', delta_x / delta_nu.mu, ...
                 'delta_z', delta_z / delta_nu.mu)
