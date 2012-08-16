@@ -15,10 +15,11 @@ if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
 SUBDIRS = lib build-aux suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
-          $(MAYBE_WRITEUPS_SUBDIR) jobscripts
+          $(MAYBE_WRITEUPS_SUBDIR) jobscripts postproc
 
-# Distribute these items:
-DIST_SUBDIRS = lib build-aux suzerain tests apps writeups fields jobscripts
+# Distribute these directories:
+DIST_SUBDIRS = lib build-aux suzerain tests fields apps \
+               writeups jobscripts postproc
 EXTRA_DIST   = bootstrap $(DX_CONFIG)
 
 # Eliminate .svn and/or .git directories in dist tarball

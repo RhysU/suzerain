@@ -313,6 +313,7 @@ AC_CONFIG_FILES([
     build-aux/Makefile
     fields/Makefile
     jobscripts/Makefile
+    postproc/Makefile
     lib/Makefile
     suzerain/Makefile
     tests/Makefile
