@@ -27,7 +27,7 @@
 #
 # LAST MODIFICATION
 #
-#   2011-04-27
+#   2012-08-16
 #
 # COPYLEFT
 #
@@ -165,7 +165,7 @@ if test "${with_mkl}" != no ; then
     MKL_LIBS=""
     MKL_LIBS="${MKL_LIBS} ${acx_mkl_interfacelayer}"
     MKL_LIBS="${MKL_LIBS} ${acx_mkl_threadinglayer}"
-    MKL_LIBS="${MKL_LIBS} -lmkl_lapack -lmkl_core"
+    MKL_LIBS="${MKL_LIBS} -lmkl_core"
     MKL_LIBS="${MKL_LIBS} ${acx_mkl_rtllayer}"
     MKL_LIBS="${MKL_LIBS} -lm"
 
