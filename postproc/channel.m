@@ -52,6 +52,9 @@ else
 end
 
 printf('Processing all available samples in the workspace\n');
+% The speed here is acceptable but not ideal from a user perspective.
+% Either take advantage of multiple cores (difficult in Octave?) or wrap data
+% within objects and imbue them with just-in-time processing (preferred?).
 tic();
 S = cat(1, who('bar_*'),   ...            % Reynolds averages
            who('tilde_*'), ...            % Favre averages
