@@ -1,0 +1,54 @@
+#!/bin/bash
+octave -qf <(cat <<-OCTAVESCRIPT
+
+    # Here be dragons...
+    warning("off");
+
+    # Process incoming arguments
+    args = str2num("$*");
+    nargs = length(args);
+    !any(isnan(args)) || error("unable to parse arguments $*\n");
+    nargs >= 6        || error("orderest h A(h) s*h A(h/s) t*h A(h/t)\n");
+    mod(nargs,2) == 0 || error("require argument pairs like v*h A(h/v)");
+
+    # Procedure to estimate an order of convergence given three results
+    # Also uses the second and third result to extrapolate a better value
+    function [k0, info, extrap] = estimate_order(h, Ah, sh, Ahs, th, Aht)
+        s = sh / h;
+        t = th / h;
+
+        # See http://wikipedia.org/wikipedia/en/wiki/Richardson_extrapolation
+        f = @(k0)    (Aht + (Aht - Ah) ./ (t.**k0 - 1))...
+                   - (Ahs + (Ahs - Ah) ./ (s.**k0 - 1));
+
+        # Brute force a starting guess for k0 by checking many integer orders
+        [res, k0] = min(abs(f(1:25)));
+
+        # Polish the starting guess
+        try
+            [k0, res, info] = fzero(f, k0);
+        catch
+            k0     =  NaN; # Report NaN on error
+            info   = -2;   # Report "A general unexpected error."
+        end_try_catch
+
+        # Perform one Richardson extrapolation step using (possibly NaN) k0
+        tsk0   = (t/s)**k0;
+        extrap = (tsk0*Aht - Ahs) / (tsk0 - 1);
+
+    endfunction
+
+    # Display the order of convergence using all possible result triples
+    printf("# %5s %4s %4s %4s  %12s  %12s\n",                         ...
+           "fzero", "h", "s*h", "t*h", "orderest", "extrap");
+    for i = transpose(nchoosek(1:(nargs/2),3))
+        i = transpose((i-1)*2+1);
+        [k0, info, extrap] = estimate_order(args(i(1)), args(i(1)+1), ...
+                                            args(i(2)), args(i(2)+1), ...
+                                            args(i(3)), args(i(3)+1));
+        printf(" %6d %4d %4d %4d  %12f  %12g\n", ...
+               info, args(i(1)), args(i(2)), args(i(3)), k0, extrap);
+    endfor
+
+OCTAVESCRIPT
+)
