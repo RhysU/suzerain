@@ -29,6 +29,10 @@
 format compact;
 more off;
 
+% TODO Determine if launching from CLI using --persist is possible.
+% For example, './channel.m samples.h5' could enter an
+% interactive Octave shell for browsing the data.  Slick.
+
 % Ensure arsel/arcov post-processing utilities are available.
 % Build these somewhere and use addpath(...) to inform Octave they exist.
 if exist('arsel', 'file') != 3
