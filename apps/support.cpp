@@ -377,7 +377,7 @@ void store(const esio_handle h,
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
     cbuf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
+    suzerain::diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
             Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
     esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
     esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
