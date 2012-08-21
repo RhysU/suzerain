@@ -144,6 +144,9 @@ namespace quantity {
     ((bar_p,                  "Reynolds-averaged pressure"))                                                                                                        \
     ((bar_tau_colon_grad_upp, "Reynolds-averaged contraction of the viscous stress tensor against the fluctuating velocity gradient"))                              \
     ((tilde_epsilon,          "Turbulent kinetic energy dissipation rate density"))                                                                                 \
+    ((bar_rhop_up,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating streamwise velocity"))                                 \
+    ((bar_rhop_vp,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating wall-normal velocity"))                                \
+    ((bar_rhop_wp,            "Reynolds-averaged Reynolds-fluctuating density times the Reynolds-fluctuating spanwise velocity"))                                   \
     ((bar_upp,                "Reynolds-averaged Favre-fluctuating streamwise velocity"))                                                                           \
     ((bar_vpp,                "Reynolds-averaged Favre-fluctuating wall-normal velocity"))                                                                          \
     ((bar_wpp,                "Reynolds-averaged Favre-fluctuating spanwise velocity"))                                                                             \
@@ -837,6 +840,9 @@ static quantity::storage_map_type process(
                               - C(bar_tauyy)*C(tilde_v__y)
                               - C(bar_tauyz)*C(tilde_w__y);
     C(tilde_epsilon) = C(bar_tau_colon_grad_upp)/C(bar_rho);
+    C(bar_rhop_up) = C(bar_rho_u) - C(bar_rho)*C(bar_u);
+    C(bar_rhop_vp) = C(bar_rho_v) - C(bar_rho)*C(bar_v);
+    C(bar_rhop_wp) = C(bar_rho_w) - C(bar_rho)*C(bar_w);
     C(bar_upp) = C(bar_u) - C(tilde_u);
     C(bar_vpp) = C(bar_v) - C(tilde_v);
     C(bar_wpp) = C(bar_w) - C(tilde_w);
