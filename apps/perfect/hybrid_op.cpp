@@ -422,9 +422,25 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
-    // How will we solve the linear system of equations?
-    enum solve_types { gbsvx, gbsv };
+    // How will we solve the linear system(s) of equations?
+    enum solve_types { gbrfs, gbsvx, gbsv };
     static const solve_types solve_type = gbsvx;
+
+    // Solver-related operational details
+    const char *method;             // Used for error reporting
+    switch (solve_type) {
+    case gbsvx:
+        method = "zgbsvx";
+        break;
+    case gbsv:
+        method = "zgbsv";
+        break;
+    }
+    static const char fact  = 'E';  // Common inputs for ?gbsvx
+    static const char trans = 'T';  // Un-transpose transposed operator
+    int info;                       // Common outputs for ?gbsvx
+    char equed;                     // ?gbsvx equilibration type
+    real_t rcond, ferr[1], berr[1]; // ?gbsvx outputs for one RHS
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -485,21 +501,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // conditioned operators stemming from reference values during
             // transients and high wavenumbers.  So we'll run with gbsvx until
             // it's demonstrably a bad idea.
-
-            const char *method;             // Used for error reporting
-            switch (solve_type) {
-            case gbsvx:
-                method = "zgbsvx";
-                break;
-            case gbsv:
-                method = "zgbsv";
-                break;
-            }
-            static const char fact  = 'E';  // Common inputs for ?gbsvx
-            static const char trans = 'T';  // Un-transpose transposed operator
-            int info;                       // Common outputs for ?gbsvx
-            char equed;                     // ?gbsvx equilibration type
-            real_t rcond, ferr[1], berr[1]; // ?gbsvx outputs for one RHS
 
             GRVY_TIMER_BEGIN("implicit operator solve");
 
