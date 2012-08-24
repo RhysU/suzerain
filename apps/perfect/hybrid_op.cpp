@@ -565,34 +565,50 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 break;
 
             case gbrfs:
-                // Where sensible, attempt reuse of prior factorization within
-                // a first call to ?gbsvx.  If iterative refinement using the
-                // incorrect factorization (which looks like Newton stepping
-                // with an approximate Jacobian, see e.g. Demmel section 2.5
-                // ISBN 978-0898713893) works, sweet.  If not, fall back to a
-                // factorize-and-solve operation saving the factorization for
-                // an attempt on the next wavenumber.  The 'switching behavior'
-                // depends on the value of variable 'fact' which is 'F' when a
-                // prior factorization should be tried and 'N' otherwise.
+                // Where sensible, attempt reuse of prior factorization.  If
+                // iterative refinement using the incorrect factorization
+                // (which looks like Newton stepping with an approximate
+                // Jacobian, e.g. see Demmel section 2.5 ISBN 978-0898713893)
+                // works, sweet.  If not, fall back to a factorize-and-solve
+                // operation saving the factorization for an attempt on the
+                // next wavenumber.  The variable 'fact' is 'F' when a prior
+                // factorization should be tried and 'N' otherwise.
                 //
                 // TODO Track and report how often this works in practice
                 // TODO Try more than five iterations using ?gbrfs or ?gbsvxx
                 // TODO Should the current empirical tolerance vary with A.N?
                 // TODO Determine a better empirical tolerance (LAWN 165/277?)
                 double tol_ferr = 10*A.N*std::numeric_limits<double>::epsilon();
-                do {
-                    info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                        patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
-                        ipiv.data(), &equed, r.data(), c.data(),
-                        b.data(), A.N, x.data(), A.N,
+                *ferr = std::numeric_limits<double>::max();
+                if (fact == 'F') {
+                    suzerain_blas_zcopy(A.N, b.data(), 1, x.data(), 1);
+                    info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU, 1,
+                        lu.data(), lu.colStride(), ipiv.data(), x.data(), A.N);
+                    if (info) { method = "zgbtrs"; goto engulfed_in_flames; }
+                    info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
+                        A.KU, 1, patpt.data(), patpt.colStride(),
+                        lu.data(), lu.colStride(), ipiv.data(), b.data(),
+                        A.N, x.data(), A.N, ferr, berr, work.data(),
+                        rwork.data());
+                    if (info) { method = "zgbrfs"; goto engulfed_in_flames; }
+                    // TODO Round two of zgbrfs
+                }
+                if (*ferr > tol_ferr) {
+                    fact = 'N';
+                    info = suzerain_lapack_zgbsvx(fact, trans, A.N,
+                        A.KL, A.KU, 1, patpt.data(), patpt.colStride(),
+                        lu.data(), lu.colStride(), ipiv.data(), &equed,
+                        r.data(), c.data(), b.data(), A.N, x.data(), A.N,
                         &rcond, ferr, berr, work.data(), rwork.data());
-                    fact = (fact == 'N' || *ferr < tol_ferr) ? 'F' : 'N';
-                } while (fact != 'F');
+                    fact = 'F';
+                }
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
+
+engulfed_in_flames: // Yes, this is a jump label.  Details in method/info.
 
             GRVY_TIMER_END("implicit operator solve");
 
