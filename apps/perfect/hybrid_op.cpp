@@ -429,11 +429,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         gbsvx, ///< Assemble, factorize out-of-place, iteratively refine
         gbrfs  ///< As in 'gbsvx' but attempting to reuse stale factorizations
     };
-    static const solve_types solve_type = gbrfs; // FIXME Experimental
+    static const solve_types solve_type = gbsvx;
 
     // Solver-related operational details
     const char *method;             // Used for error reporting
-    char fact = 'N';                // Should matrices be equilibriated?
+    char fact = 'N';                // Should matrices be equilibrated?
     switch (solve_type) {
     default:
         SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
@@ -442,7 +442,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         break;
     case gbsvx:
         method = "zgbsvx";
-        fact   = 'E';               // TODO Quantify expense, add flag
         break;
     case gbrfs:
         method = "zgbsvx";
