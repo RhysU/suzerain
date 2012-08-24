@@ -428,15 +428,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
     // Solver-related operational details
     const char *method;             // Used for error reporting
+    char fact = 'N';                // Should matrices be equilibriated?
     switch (solve_type) {
     case gbsv:
         method = "zgbsv";
         break;
     case gbsvx:
         method = "zgbsvx";
+        fact   = 'E';
         break;
     }
-    static const char fact  = 'E';  // Common inputs for ?gbsvx
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common outputs for ?gbsvx
     char equed;                     // ?gbsvx equilibration type
