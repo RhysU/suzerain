@@ -439,7 +439,10 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         break;
     case gbsvx:
         method = "zgbsvx";
-        fact   = 'E';
+        fact   = 'E';               // TODO Quantify how expensive
+        break;
+    case gbrfs:
+        method = "zgbsvx";
         break;
     }
     static const char trans = 'T';  // Un-transpose transposed operator
@@ -477,6 +480,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                         buf.data(), &A, lu.data());
                 break;
             case gbsvx:
+            case gbrfs:
                 suzerain_rholut_imexop_packc(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
@@ -520,6 +524,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
                 break;
             case gbsvx:
+            case gbrfs:
                 bc_enforcer.op(A, patpt.data(), patpt.colStride());
                 break;
             }
@@ -539,6 +544,25 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
                     &rcond, ferr, berr, work.data(), rwork.data());
+                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
+                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                break;
+            case gbrfs:
+                // Always attempt to reuse an existing factorization first,
+                // and then fall back to direct solve when that fails.
+                // First entry behavior relies on fact == 'N' from above.
+                do {
+                    info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
+                        patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
+                        ipiv.data(), &equed, r.data(), c.data(),
+                        b.data(), A.N, x.data(), A.N,
+                        &rcond, ferr, berr, work.data(), rwork.data());
+
+                    static const double tol_ferr = 5e-13; // Empirical
+                    fact = (fact == 'N' || *ferr > tol_ferr) ? 'F' : 'N';
+                } while (fact != 'F');
+
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
