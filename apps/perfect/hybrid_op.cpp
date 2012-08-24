@@ -610,6 +610,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                         if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
                     }
 
+                    // Ditto
+                    if (tol_ferr < ferr && ferr < sqrt_sqrt_tol_ferr) {
+                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
+                            A.KU, 1, patpt.data(), patpt.colStride(),
+                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
+                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
+                            rwork.data());
+                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                    }
+
                     // If we've gotten somewhere but not yet finished, try five
                     // more iterations.  ?gbrfsx uses suggests one hundred
                     // for aggressive situations with lousy factorizations.
