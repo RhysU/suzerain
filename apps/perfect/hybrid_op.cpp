@@ -423,7 +423,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
     // How will we solve the linear system(s) of equations?
-    enum solve_types { gbsv, gbsvx, gbrfs };
+    enum solve_types {
+        gbsv,  ///< Assemble, factorize, back substitute in-place
+        gbsvx, ///< Assemble, factorize out-of-place, iteratively refine
+        gbrfs  ///< As in 'gbsvx' but attempting to reuse stale factorizations
+    };
     static const solve_types solve_type = gbsvx;
 
     // Solver-related operational details
