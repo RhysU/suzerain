@@ -636,6 +636,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
                 // If we had no factorization or refinement was insufficient,
                 // pay to factorize the current operator and solve the problem.
+                // TODO Use copy/gbtrf/gbtrs/gbrfs as it may be cheaper
                 if (ferr > tol_ferr) {
                     fact = 'N';
                     info = suzerain_lapack_zgbsvx(fact, trans, A.N,
