@@ -429,7 +429,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         gbsvx, ///< Assemble, factorize out-of-place, iteratively refine
         gbrfs  ///< As in 'gbsvx' but attempting to reuse stale factorizations
     };
-    static const solve_types solve_type = gbsvx;
+    static const solve_types solve_type = gbrfs; // FIXME Experimental
 
     // Solver-related operational details
     const char *method;             // Used for error reporting
@@ -457,7 +457,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // TODO Should the current empirical tolerance vary with A.N?
     // TODO Determine a better empirical tolerance (LAWN 165/277?)
     const double eps                = std::numeric_limits<double>::epsilon();
-    const double tol_ferr           = 10 * A.N * eps;
+    const double tol_ferr           = 1000 * A.N * eps;
     const double sqrt_tol_ferr      = std::sqrt(tol_ferr);
     const double sqrt_sqrt_tol_ferr = std::sqrt(sqrt_tol_ferr);
 
