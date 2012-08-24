@@ -423,6 +423,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
     // How will we solve the linear system(s) of equations?
+    // TODO Permit selection at runtime via driver flags
     enum solve_types {
         gbsv,  ///< Assemble, factorize, back substitute in-place
         gbsvx, ///< Assemble, factorize out-of-place, iteratively refine
@@ -434,12 +435,14 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     const char *method;             // Used for error reporting
     char fact = 'N';                // Should matrices be equilibriated?
     switch (solve_type) {
+    default:
+        SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
     case gbsv:
         method = "zgbsv";
         break;
     case gbsvx:
         method = "zgbsvx";
-        fact   = 'E';               // TODO Quantify how expensive
+        fact   = 'E';               // TODO Quantify expense, add flag
         break;
     case gbrfs:
         method = "zgbsvx";
@@ -455,6 +458,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const int wn = wavenumber(dNz, n);
         const real_t kn = twopioverLz*wn;
 
+        // Factorization reuse will not aid us across large jumps in km
+        fact = (solve_type == gbrfs && dkex - dkbx > 1) ? 'N' : fact;
+
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
             const real_t km = twopioverLx*wm;
@@ -465,14 +471,17 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // Short circuiting did NOT occur for Nyquist or dealiasing modes...
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
-                memset(p, 0, A.N*sizeof(p[0]));  // ...so we may zero them
-                continue;                        // ...and now we short circuit
+                memset(p, 0, A.N*sizeof(p[0]));             // so we may zero,
+                fact = (solve_type == gbrfs) ? 'N' : fact;  // flag reuse moot,
+                continue;                                   // and then bail.
             }
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
             GRVY_TIMER_BEGIN("implicit operator assembly");
             switch (solve_type) {
+            default:
+                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
             case gbsv:
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
@@ -520,6 +529,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
+            default:
+                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
             case gbsv:
                 bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
                 break;
@@ -531,6 +542,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             GRVY_TIMER_END("implicit operator BCs");
 
             switch (solve_type) {
+            default:
+                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
+
             case gbsv:
                 info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
@@ -538,6 +552,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
+
             case gbsvx:
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
@@ -548,21 +563,31 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
+
             case gbrfs:
-                // Always attempt to reuse an existing factorization first,
-                // and then fall back to direct solve when that fails.
-                // First entry behavior relies on fact == 'N' from above.
+                // Where sensible, attempt reuse of prior factorization within
+                // a first call to ?gbsvx.  If iterative refinement using the
+                // incorrect factorization (which looks like Newton stepping
+                // with an approximate Jacobian, see e.g. Demmel section 2.5
+                // ISBN 978-0898713893) works, sweet.  If not, fall back to a
+                // factorize-and-solve operation saving the factorization for
+                // an attempt on the next wavenumber.  The 'switching behavior'
+                // depends on the value of variable 'fact' which is 'F' when a
+                // prior factorization should be tried and 'N' otherwise.
+                //
+                // TODO Track and report how often this works in practice
+                // TODO Try more than five iterations using ?gbrfs or ?gbsvxx
+                // TODO Should the current empirical tolerance vary with A.N?
+                // TODO Determine a better empirical tolerance (LAWN 165/277?)
+                double tol_ferr = 10*A.N*std::numeric_limits<double>::epsilon();
                 do {
                     info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                         patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                         ipiv.data(), &equed, r.data(), c.data(),
                         b.data(), A.N, x.data(), A.N,
                         &rcond, ferr, berr, work.data(), rwork.data());
-
-                    static const double tol_ferr = 5e-13; // Empirical
-                    fact = (fact == 'N' || *ferr > tol_ferr) ? 'F' : 'N';
+                    fact = (fact == 'N' || *ferr < tol_ferr) ? 'F' : 'N';
                 } while (fact != 'F');
-
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
