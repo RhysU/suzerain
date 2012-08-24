@@ -1603,7 +1603,6 @@ suzerain_lapack_zgbsvx(
  * \brief Iteratively refine the solution to a banded system of linear
  * equations \f$AX=B\f$ and obtain error estimates.
  *
- * \param[in]     fact
  * \param[in]     trans
  * \param[in]     n
  * \param[in]     kl
@@ -1627,7 +1626,6 @@ suzerain_lapack_zgbsvx(
  */
 int
 suzerain_lapack_sgbrfs(
-        const char fact,
         const char trans,
         const int n,
         const int kl,
@@ -1650,7 +1648,6 @@ suzerain_lapack_sgbrfs(
 /*! \copydoc suzerain_lapack_sgbrfs */
 int
 suzerain_lapack_dgbrfs(
-        const char fact,
         const char trans,
         const int n,
         const int kl,
@@ -1674,7 +1671,6 @@ suzerain_lapack_dgbrfs(
  * \brief Iteratively refine the solution to a banded system of linear
  * equations \f$AX=B\f$ and obtain error estimates.
  *
- * \param[in]     fact
  * \param[in]     trans
  * \param[in]     n
  * \param[in]     kl
@@ -1698,7 +1694,6 @@ suzerain_lapack_dgbrfs(
  */
 int
 suzerain_lapack_cgbrfs(
-        const char fact,
         const char trans,
         const int n,
         const int kl,
@@ -1721,7 +1716,6 @@ suzerain_lapack_cgbrfs(
 /*! \copydoc suzerain_lapack_cgbrfs */
 int
 suzerain_lapack_zgbrfs(
-        const char fact,
         const char trans,
         const int n,
         const int kl,

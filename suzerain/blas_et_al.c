@@ -1773,6 +1773,129 @@ suzerain_lapack_zgbsvx(
     return info;
 }
 
+inline int
+suzerain_lapack_sgbrfs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        float *afb,
+        const int ldafb,
+        int *ipiv,
+        float *b,
+        const int ldb,
+        float *x,
+        const int ldx,
+        float *ferr,
+        float *berr,
+        float *work,
+        int *iwork)
+{
+    int info;
+    LAPACK_FUNC(sgbrfs,SGBRFS)((char*)&trans,
+                               (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, ab, (int*)&ldab, afb,
+                               (int*)&ldafb, ipiv, b, (int*)&ldb, x,
+                               (int*)&ldx, ferr, berr, work, iwork,
+                               &info);
+    return info;
+}
+
+inline int
+suzerain_lapack_dgbrfs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        double *afb,
+        const int ldafb,
+        int *ipiv,
+        double *b,
+        const int ldb,
+        double *x,
+        const int ldx,
+        double *ferr,
+        double *berr,
+        double *work,
+        int *iwork)
+{
+    int info;
+    LAPACK_FUNC(dgbrfs,DGBRFS)((char*)&trans, (int*)&n,
+                               (int*)&kl, (int*)&ku, (int*)&nrhs, ab,
+                               (int*)&ldab, afb, (int*)&ldafb, ipiv, b,
+                               (int*)&ldb, x, (int*)&ldx, ferr, berr,
+                               work, iwork, &info);
+    return info;
+}
+
+inline int
+suzerain_lapack_cgbrfs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_float *ab,
+        const int ldab,
+        complex_float *afb,
+        const int ldafb,
+        int *ipiv,
+        complex_float *b,
+        const int ldb,
+        complex_float *x,
+        const int ldx,
+        float *ferr,
+        float *berr,
+        complex_float *work,
+        float *rwork)
+{
+    int info;
+    LAPACK_FUNC(cgbrfs,CGBRFS)((char*)&trans, (int*)&n,
+                               (int*)&kl, (int*)&ku, (int*)&nrhs,
+                               (void*)ab, (int*)&ldab, (void*)afb,
+                               (int*)&ldafb, ipiv, (void*)b, (int*)&ldb,
+                               (void*)x, (int*)&ldx, ferr, berr,
+                               (void*)work, rwork, &info);
+    return info;
+}
+
+inline int
+suzerain_lapack_zgbrfs(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_double *ab,
+        const int ldab,
+        complex_double *afb,
+        const int ldafb,
+        int *ipiv,
+        complex_double *b,
+        const int ldb,
+        complex_double *x,
+        const int ldx,
+        double *ferr,
+        double *berr,
+        complex_double *work,
+        double *rwork)
+{
+    int info;
+    LAPACK_FUNC(zgbrfs,ZGBRFS)((char*)&trans,
+                               (int*)&n, (int*)&kl, (int*)&ku,
+                               (int*)&nrhs, (void*)ab, (int*)&ldab,
+                               (void*)afb, (int*)&ldafb, ipiv, (void*)b,
+                               (int*)&ldb, (void*)x, (int*)&ldx, ferr,
+                               berr, (void*)work, rwork, &info);
+    return info;
+}
+
 inline float
 suzerain_lapack_slangb(
         const char norm,
