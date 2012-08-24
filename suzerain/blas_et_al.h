@@ -1600,6 +1600,148 @@ suzerain_lapack_zgbsvx(
         double *rwork);
 
 /*!
+ * \brief Iteratively refine the solution to a banded system of linear
+ * equations \f$AX=B\f$ and obtain error estimates.
+ *
+ * \param[in]     fact
+ * \param[in]     trans
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ * \param[in,out] x     Dimension (<tt>ldx</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldx   Minimum \c n
+ * \param[out]    ferr  Dimension \c nrhs
+ * \param[out]    berr  Dimension \c nrhs
+ * \param[out]    work  Dimension <tt>3*n</tt>
+ * \param[out]    iwork Dimension \c n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ */
+int
+suzerain_lapack_sgbrfs(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        float *afb,
+        const int ldafb,
+        int *ipiv,
+        float *b,
+        const int ldb,
+        float *x,
+        const int ldx,
+        float *ferr,
+        float *berr,
+        float *work,
+        int *iwork);
+
+/*! \copydoc suzerain_lapack_sgbrfs */
+int
+suzerain_lapack_dgbrfs(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        double *afb,
+        const int ldafb,
+        int *ipiv,
+        double *b,
+        const int ldb,
+        double *x,
+        const int ldx,
+        double *ferr,
+        double *berr,
+        double *work,
+        int *iwork);
+
+/*!
+ * \brief Iteratively refine the solution to a banded system of linear
+ * equations \f$AX=B\f$ and obtain error estimates.
+ *
+ * \param[in]     fact
+ * \param[in]     trans
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ * \param[in,out] x     Dimension (<tt>ldx</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldx   Minimum \c n
+ * \param[out]    ferr  Dimension \c nrhs
+ * \param[out]    berr  Dimension \c nrhs
+ * \param[out]    work  Dimension <tt>2*n</tt>
+ * \param[out]    rwork Dimension \c n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ */
+int
+suzerain_lapack_cgbrfs(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_float *ab,
+        const int ldab,
+        complex_float *afb,
+        const int ldafb,
+        int *ipiv,
+        complex_float *b,
+        const int ldb,
+        complex_float *x,
+        const int ldx,
+        float *ferr,
+        float *berr,
+        complex_float *work,
+        float *rwork);
+
+/*! \copydoc suzerain_lapack_cgbrfs */
+int
+suzerain_lapack_zgbrfs(
+        const char fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_double *ab,
+        const int ldab,
+        complex_double *afb,
+        const int ldafb,
+        int *ipiv,
+        complex_double *b,
+        const int ldb,
+        complex_double *x,
+        const int ldx,
+        double *ferr,
+        double *berr,
+        complex_double *work,
+        double *rwork);
+
+/*!
  * \brief Compute the one norm, or the Frobenius norm, or the infinity
  * norm, or the element of largest absolute value of square band matrix.
  */
