@@ -451,7 +451,15 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common outputs for ?gbsvx
     char equed;                     // ?gbsvx equilibration type
-    real_t rcond, ferr[1], berr[1]; // ?gbsvx outputs for one RHS
+    real_t rcond, ferr, berr;       // ?gbsvx outputs for one RHS
+
+    // Tolerances for iterative refinement behavior when solve_type == gbrfs
+    // TODO Should the current empirical tolerance vary with A.N?
+    // TODO Determine a better empirical tolerance (LAWN 165/277?)
+    const double eps                = std::numeric_limits<double>::epsilon();
+    const double tol_ferr           = 10 * A.N * eps;
+    const double sqrt_tol_ferr      = std::sqrt(tol_ferr);
+    const double sqrt_sqrt_tol_ferr = std::sqrt(sqrt_tol_ferr);
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -558,7 +566,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
-                    &rcond, ferr, berr, work.data(), rwork.data());
+                    &rcond, &ferr, &berr, work.data(), rwork.data());
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
@@ -573,42 +581,83 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 // operation saving the factorization for an attempt on the
                 // next wavenumber.  The variable 'fact' is 'F' when a prior
                 // factorization should be tried and 'N' otherwise.
-                //
-                // TODO Track and report how often this works in practice
-                // TODO Try more than five iterations using ?gbrfs or ?gbsvxx
-                // TODO Should the current empirical tolerance vary with A.N?
-                // TODO Determine a better empirical tolerance (LAWN 165/277?)
-                double tol_ferr = 10*A.N*std::numeric_limits<double>::epsilon();
-                *ferr = std::numeric_limits<double>::max();
+
+                ferr = std::numeric_limits<double>::max();
                 if (fact == 'F') {
+
+                    // Another factorization is available.
+                    // Try it with initially up to five refinement steps.
                     suzerain_blas_zcopy(A.N, b.data(), 1, x.data(), 1);
                     info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU, 1,
                         lu.data(), lu.colStride(), ipiv.data(), x.data(), A.N);
-                    if (info) { method = "zgbtrs"; goto engulfed_in_flames; }
+                    if (info) {method = "zgbtrs"; goto engulfed_in_flames;}
                     info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
                         A.KU, 1, patpt.data(), patpt.colStride(),
                         lu.data(), lu.colStride(), ipiv.data(), b.data(),
-                        A.N, x.data(), A.N, ferr, berr, work.data(),
+                        A.N, x.data(), A.N, &ferr, &berr, work.data(),
                         rwork.data());
-                    if (info) { method = "zgbrfs"; goto engulfed_in_flames; }
-                    // TODO Round two of zgbrfs
+                    if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+
+                    // If we're getting anywhere but not yet done, try five
+                    // more iterations.  ?gbrfsx uses ten by default so using
+                    // at most five + five feels right in this circumstance.
+                    if (tol_ferr < ferr && ferr < sqrt_sqrt_tol_ferr) {
+                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
+                            A.KU, 1, patpt.data(), patpt.colStride(),
+                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
+                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
+                            rwork.data());
+                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                    }
+
+                    // If we've gotten somewhere but not yet finished, try five
+                    // more iterations.  ?gbrfsx uses suggests one hundred
+                    // for aggressive situations with lousy factorizations.
+                    if (tol_ferr < ferr && ferr < sqrt_tol_ferr) {
+                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
+                            A.KU, 1, patpt.data(), patpt.colStride(),
+                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
+                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
+                            rwork.data());
+                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                    }
+
                 }
-                if (*ferr > tol_ferr) {
+
+                // If we had no factorization or refinement was insufficient,
+                // pay to factorize the current operator and solve the problem.
+                //
+                // TODO ?gbsvx incurs unnecessary expense because of rcond
+                if (ferr > tol_ferr) {
                     fact = 'N';
                     info = suzerain_lapack_zgbsvx(fact, trans, A.N,
                         A.KL, A.KU, 1, patpt.data(), patpt.colStride(),
                         lu.data(), lu.colStride(), ipiv.data(), &equed,
                         r.data(), c.data(), b.data(), A.N, x.data(), A.N,
-                        &rcond, ferr, berr, work.data(), rwork.data());
+                        &rcond, &ferr, &berr, work.data(), rwork.data());
                     fact = 'F';
                 }
+
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
 
-engulfed_in_flames: // Yes, this is a jump label.  Details in method/info.
+            // Maintain running statistics on our linear algebra
+            switch (solve_type) {
+            default:
+                break;
+            case gbsvx:
+                // TODO Track statistics on rcond, equed, ferr, and berr
+                break;
+            case gbrfs:
+                // TODO Track statistics refinement successes vs failures
+                // TODO Track statistics on ferr and berr
+                break;
+            }
+
+engulfed_in_flames: // Yes, this is a goto label.  Details in method/info.
 
             GRVY_TIMER_END("implicit operator solve");
 
@@ -639,10 +688,6 @@ engulfed_in_flames: // Yes, this is a jump label.  Details in method/info.
                     "suzerain_lapack_%s reported unknown error %d",
                     method, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            }
-
-            if (solve_type == gbsvx) {
-                // TODO Track statistics on rcond, equed, ferr, and berr
             }
         }
     }
