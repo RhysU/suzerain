@@ -743,10 +743,6 @@ std::vector<real_t> applyNonlinearOperator(
                         break;
                 }
 
-                // See convective_stability_criterion documentation for why a
-                // magic number might modify one_over_delta_y for convection.
-                const int y_mod = (Linearize == linearize::none) ? 4 : 1;
-
                 // Strictly speaking, linearize::rhome's implicit treatment of
                 // the convective terms in all equations "entitles" us to
                 // compute convective stability using the difference between u
@@ -757,13 +753,14 @@ std::vector<real_t> applyNonlinearOperator(
                 // reasonable accuracy, we expect to be limited by diffusive
                 // stability and so we do take (u - ref_u) here.
                 //
-                // TODO Permit large steps to avoid thermal transients (#2127)
+                // See convective_stability_criterion documentation for why the
+                // magic number four modifies one_over_delta_y for convection.
                 convective_delta_t = suzerain::math::minnan(
                         convective_delta_t,
                         suzerain::timestepper::convective_stability_criterion(
-                                u.x() - ref_u.x(), one_over_delta_x,
-                                u.y() - ref_u.y(), one_over_delta_y_j / y_mod,
-                                u.z() - ref_u.z(), one_over_delta_z,
+                                u.x(), one_over_delta_x,
+                                u.y(), one_over_delta_y_j / 4,
+                                u.z(), one_over_delta_z,
                                 evmaxmag_imag, a));
 
                 // The diffusive stability uses ref_nu which has been
