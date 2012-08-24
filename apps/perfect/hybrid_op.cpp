@@ -423,17 +423,17 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
     // How will we solve the linear system(s) of equations?
-    enum solve_types { gbrfs, gbsvx, gbsv };
+    enum solve_types { gbsv, gbsvx, gbrfs };
     static const solve_types solve_type = gbsvx;
 
     // Solver-related operational details
     const char *method;             // Used for error reporting
     switch (solve_type) {
-    case gbsvx:
-        method = "zgbsvx";
-        break;
     case gbsv:
         method = "zgbsv";
+        break;
+    case gbsvx:
+        method = "zgbsvx";
         break;
     }
     static const char fact  = 'E';  // Common inputs for ?gbsvx
@@ -465,17 +465,17 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // This is the transpose of the implicit operator we desire.
             GRVY_TIMER_BEGIN("implicit operator assembly");
             switch (solve_type) {
-            case gbsvx:
-                suzerain_rholut_imexop_packc(
-                        phi, km, kn, &s, &ref, &ld, bop.get(),
-                        ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
-                        buf.data(), &A, patpt.data());
-                break;
             case gbsv:
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
                         buf.data(), &A, lu.data());
+                break;
+            case gbsvx:
+                suzerain_rholut_imexop_packc(
+                        phi, km, kn, &s, &ref, &ld, bop.get(),
+                        ndx::rho, ndx::rhou, ndx::rhov, ndx::rhow, ndx::rhoe,
+                        buf.data(), &A, patpt.data());
                 break;
             }
             GRVY_TIMER_END("implicit operator assembly");
@@ -511,16 +511,23 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             GRVY_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
-                case gbsvx:
-                    bc_enforcer.op(A, patpt.data(), patpt.colStride());
-                    break;
-                case gbsv:
-                    bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
-                    break;
+            case gbsv:
+                bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
+                break;
+            case gbsvx:
+                bc_enforcer.op(A, patpt.data(), patpt.colStride());
+                break;
             }
             GRVY_TIMER_END("implicit operator BCs");
 
             switch (solve_type) {
+            case gbsv:
+                info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
+                    lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
+                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
+                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                break;
             case gbsvx:
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
@@ -529,13 +536,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     &rcond, ferr, berr, work.data(), rwork.data());
                 GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
-                break;
-            case gbsv:
-                info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
-                    lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
-                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
                 GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
