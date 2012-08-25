@@ -4786,3 +4786,63 @@ suzerain_blasext_zgbnorm1(
 
     return 0;
 }
+
+int
+suzerain_blasext_ddemote(
+        const int n,
+        double *x)
+{
+    if (UNLIKELY(n < 0)) return -1;
+    if (UNLIKELY(!x))    return -2;
+
+    for (int i = 0; i < n; ++i) {
+        ((float *)x)[i] = x[i];
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_dpromote(
+        const int n,
+        double *x)
+{
+    if (UNLIKELY(n < 0)) return -1;
+    if (UNLIKELY(!x))    return -2;
+
+    for (int i = n; i --> 0 ;) {
+        x[i] = ((float *)x)[i];
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_zdemote(
+        const int n,
+        complex_double *x)
+{
+    if (UNLIKELY(n < 0)) return -1;
+    if (UNLIKELY(!x))    return -2;
+
+    for (int i = 0; i < n; ++i) {
+        ((complex_float *)x)[i] = x[i];
+    }
+
+    return 0;
+}
+
+int
+suzerain_blasext_zpromote(
+        const int n,
+        complex_double *x)
+{
+    if (UNLIKELY(n < 0)) return -1;
+    if (UNLIKELY(!x))    return -2;
+
+    for (int i = n; i --> 0 ;) {
+        x[i] = ((complex_float *)x)[i];
+    }
+
+    return 0;
+}
