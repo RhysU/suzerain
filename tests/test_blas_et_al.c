@@ -2814,7 +2814,7 @@ test_lapack_dgbcon()
 
     // Prepare factorization
     const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*kl + ku + 1, ipiv);
-    gsl_test_int(0, f, "%s:%d factorization success", __func__);
+    gsl_test_int(0, f, "%s:%d factorization success", __func__, __LINE__);
 
     // Compute reciprocal of condition number
     double rcond = -555;
@@ -2822,12 +2822,74 @@ test_lapack_dgbcon()
     int    iwork[n];
     const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*kl + ku + 1,
                                          ipiv, norm1, &rcond, work, iwork);
-    gsl_test_int(0, g, "%s:%d condition number estimation success", __func__);
+    gsl_test_int(0, g, "%s:%d condition number estimation success",
+                 __func__, __LINE__);
 
     // Check result against expected
     gsl_test_abs(rcond, 25.0/748.0, GSL_DBL_EPSILON,
             "%s:%d condition number estimation result %d",
             __func__, __LINE__, rcond);
+}
+
+void test_blasext_ddemote()
+{
+    int info;
+    double x[]   = {1, 2, 3, 4, 5, 6, 7};
+    float  e[]   = {1, 2, 3, 4, 5, 6, 7};
+    const int n = sizeof(x)/sizeof(x[0]);
+
+    info = suzerain_blasext_ddemote(n, x);
+    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+
+    info = memcmp(x, e, sizeof(e));
+    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+}
+
+void test_blasext_dpromote()
+{
+    int info;
+    double  e[]   = {1, 2, 3, 4, 5, 6, 7};
+    float   x[]   = {1, 2, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 0, 0};
+    const int n = sizeof(e)/sizeof(e[0]);
+    gsl_test_int(2*n, sizeof(x)/sizeof(x[0]),
+            "%s.%d consistency", __func__, __LINE__);
+
+    info = suzerain_blasext_dpromote(n, (void *) x);
+    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+
+    info = memcmp(x, e, sizeof(e));
+    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+}
+
+void test_blasext_zdemote()
+{
+    int info;
+    double x[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7}};
+    float  e[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7}};
+    const int n = sizeof(x)/sizeof(x[0]);
+
+    info = suzerain_blasext_zdemote(n, (void *) x);
+    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+
+    info = memcmp(x, e, sizeof(e));
+    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+}
+
+void test_blasext_zpromote()
+{
+    int info;
+    float  x[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7},
+                       {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}};
+    double e[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7}};
+    const int n = sizeof(e)/sizeof(e[0]);
+    gsl_test_int(2*n, sizeof(x)/sizeof(x[0]),
+            "%s.%d consistency", __func__, __LINE__);
+
+    info = suzerain_blasext_zpromote(n, (void *) x);
+    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+
+    info = memcmp(x, e, sizeof(e));
+    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
 }
 
 int
@@ -2931,6 +2993,11 @@ main(int argc, char **argv)
     test_blasext_dgbnorm1();
     test_blasext_cgbnorm1();
     test_blasext_zgbnorm1();
+
+    test_blasext_ddemote();
+    test_blasext_dpromote();
+    test_blasext_zdemote();
+    test_blasext_zpromote();
 
     /* TODO Add test_lapack_{c,z}gbtr{f,s} */
     /* Already exercised to some extent in test_bsplineop */
