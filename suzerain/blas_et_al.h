@@ -3662,6 +3662,78 @@ suzerain_blasext_zgbnorm1(
         const int lda,
         double *norm1);
 
+/**
+ * Demote a contiguous double precision vector to single
+ * precision as an in-place operation.
+ *
+ * \param[in]     n Number of elements in \c x.
+ * \param[in,out] x Source and target vector.
+ *                On input, \c x contains double precision data.
+ *                On output, \c x contains single precision data.
+ *
+ * @return On success, return zero.  A negative return
+ *         value indicates an error in the corresponding
+ *         argument.
+ */
+int
+suzerain_blasext_ddemote(
+        const int n,
+        double *x);
+
+/**
+ * Promote a contiguous single precision vector to
+ * double precision as an in-place operation.
+ *
+ * \param[in]     n Number of elements in \c x.
+ * \param[in,out] x Source and target vector.
+ *                On input, \c x contains single precision data.
+ *                On output, \c x contains double precision data.
+ *
+ * @return On success, return zero.  A negative return
+ *         value indicates an error in the corresponding
+ *         argument.
+ */
+int
+suzerain_blasext_dpromote(
+        const int n,
+        double *x);
+
+/**
+ * Demote a contiguous complex double precision vector to
+ * complex single precision as an in-place operation.
+ *
+ * \param[in]     n Number of elements in \c x.
+ * \param[in,out] x Source and target vector.
+ *                On input, \c x contains double precision data.
+ *                On output, \c x contains single precision data.
+ *
+ * @return On success, return zero.  A negative return
+ *         value indicates an error in the corresponding
+ *         argument.
+ */
+int
+suzerain_blasext_zdemote(
+        const int n,
+        complex_double *x);
+
+/**
+ * Promote a contiguous complex single precision vector to
+ * complex double precision as an in-place operation.
+ *
+ * \param[in]     n Number of elements in \c x.
+ * \param[in,out] x Source and target vector.
+ *                On input, \c x contains single precision data.
+ *                On output, \c x contains double precision data.
+ *
+ * @return On success, return zero.  A negative return
+ *         value indicates an error in the corresponding
+ *         argument.
+ */
+int
+suzerain_blasext_zpromote(
+        const int n,
+        complex_double *x);
+
 /*! @} */
 
 #ifdef __cplusplus
