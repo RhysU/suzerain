@@ -1954,6 +1954,51 @@ suzerain_lapack_zlangb(
                                       (int*)&ku, (void*)ab, (int*)&ldab, work);
 }
 
+int
+suzerain_lapackext_dgbsirsv(
+        char * const fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        double * const ab,
+        double * const afrob,
+        double * const afb,
+        int * const ipiv,
+        double * const b,
+        double * const x,
+        int * const siter,
+        int * const diter,
+        double tolsc,
+        double * const r,
+        double * const res2)
+{
+    return -999; // FIXME Implement
+}
+
+/*! \copydoc suzerain_lapackext_dgbsirsv */
+int
+suzerain_lapackext_zgbsirsv(
+        char * const fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        complex_double * const ab,
+        complex_double * const afrob,
+        complex_double * const afb,
+        int * const ipiv,
+        complex_double * const b,
+        complex_double * const x,
+        int * const siter,
+        int * const diter,
+        complex_double tolsc,
+        complex_double * const r,
+        complex_double * const res2)
+{
+    return -999; // FIXME Implement
+}
+
 void
 suzerain_blas_csbmv_s_c_external(
         const char uplo,

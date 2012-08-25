@@ -1784,6 +1784,155 @@ suzerain_lapack_zlangb(
 
 /*! @} */
 
+/*! \name LAPACK-like extensions
+ * These are extensions built atop LAPACK, the BLAS, and/or on custom coded
+ * loops.  Some of these extensions resemble newer LAPACK features which
+ * have not trickled down to banded matrices from general matrices.
+ * @{
+ */
+
+/*!
+ * \brief Compute the solution to a banded system of linear equations \f$A x =
+ * b$ using single precision LU factorization followed by double precision
+ * iterative refinement.
+ *
+ * The approach follows the DGESIRSV algorithm presented in June 2006 as <a
+ * href="http://www.netlib.org/lapack/lawnspdf/lawn175.pdf"> Exploiting the
+ * Performance of 32 bit Floating Point Arithmetic in Obtaining 64 bit Accuracy
+ * (Revisiting Iterative Refinement for Linear Systems)</a> by Langou et al.
+ * Unlike their algorithm, this routine
+ * <ol>
+ *   <li>permits the user to provide a pre-existing single
+ *       or double precision factorization,</li>
+ *   <li>returns the single or double precision factorization
+ *       for subsequent reuse,<li>
+ *   <li>permits the caller to provide the Frobenius norm of \f$A\f$,</li>
+ *   <li>assumes only one right hand side is of interest
+ *       (above changes, however, permit efficient repeated invocation),</li>
+ *   <li>requires that matrix storage is contiguous (i.e.
+ *       <tt>ldab == kl + ku + 1</tt>, <tt>ldafb == 2*kl + ku + 1</tt>),</li>
+ *       for reasons of cache-friendliness,</li>
+ *   <li>performs precision demotion and promotion in-place
+ *       for reasons of cache-friendliness,</li>
+ *   <li>performs iterative refinement after the double-precision
+ *       fallback LU factorization if the direct solution fails
+ *       to meet the solution tolerance,</li>
+ *   <li>permits the user to scale the required tolerance by some
+ *       amount to accommodate situations where lower precision
+ *       results are acceptable,</li>
+ *   <li>requires the user to specify the maximum number of refinements
+ *       to attempt (Langou et al. suggested thirty, <tt>?gbrfsx</tt> suggests
+ *       up to one hundred in aggressive circumstances like providing
+ *       approximate factorizations),<li>
+ *   <li>makes accessible the number iterative refinements attempted,</li>
+ *   <li>and makes accessible the final residual vector and residual.</li>
+ * </ol>
+ * All in all, these changes are designed to permit combining single precision
+ * factorization along with possibly using approximate factorizations and
+ * refinement as a means to Newton iteration.  The consistent error bound
+ * testing in either single precision factorization or double precision
+ * factorization is intended to permit the results to be \e indistinguishable
+ * regardless of solution method.
+ *
+ * \param[in,out] fact  On input, 'N' if factorization must be performed;
+ *                      'S' if a single precision factorization is
+ *                      provided in \c afb and \c ipiv; 'D' if a double
+ *                      precision factorization is provided in \c afb
+ *                      and \c ipiv.  On output, either 'S' or 'D'
+ *                      indicating which factorization precision has
+ *                      been returned in \c afb and \c ipiv.
+ * \param[in]     trans If 'N' solve \f$A      x = b\f$.
+ *                      If 'T' solve \f$A^\top x = b\f$.
+ *                      If 'C' solve \f$A^H    x = b\f$.
+ * \param[in]     n     Number of rows and columns in \f$ A \f$.
+ * \param[in]     kl    Number of subdiagonals in \f$ A \f$.
+ * \param[in]     ku    Number of superdiagonals in \f$ A \f$.
+ * \param[in]     ab    Double precision matrix in banded storage of
+ *                      dimension (<tt>ldab == kl + ku + 1</tt>,<tt>n</tt>)
+ * \param[in,out] afrob The Frobenius norm of \f$ A \f$.
+ *                      If negative on entry, the norm is computed
+ *                      and returned to permit caching the result.
+ * \param[in,out] afb   Single or double precision LU factorization
+ *                      of \f$ A \f$ of dimension (<tt>ldfab == 2*kl + ku
+ *                      + 1</tt>,<tt>n</tt>).  Whether a single or double
+ *                      precision result is returned is communicated by
+ *                      \c fact on return.
+ * \param[in,out] ipiv  LU pivoting information for the factorization
+ *                      in \c afb of dimension \c n.
+ * \param[in]     b     Right hand side \f$ b \f$ of length \c n.
+ * \param[out]    x     Computed solution \f$ x \f$ of length \c n.
+ * \param[in,out] siter On input, the maximum number of single precision
+ *                      iterative refinements to attempt.  Zero specifies
+ *                      no single precision refinements are to occur.
+ *                      If negative, no single precision factorization
+ *                      or solve will be formed and double precision
+ *                      processing occurs.  On output, the number of
+ *                      such refinements performed.
+ * \param[in,out] diter On input, the maximum number of double precision
+ *                      iterative refinements to attempt.  Zero specifies
+ *                      no double precision refinements are to occur.
+ *                      If negative, no double precision factorization or
+ *                      solve will be performed.  On output, the number
+ *                      of such refinements performed.
+ * \param[in,out] tolsc On input, a multiplicative factor used to scale the
+ *                      Langou et al. stopping criterion \f$ n \eps
+ *                      \|A\|_\text{Fro}^2 \|x\|_2^2 \f$.  One is the
+ *                      recommended from their work to regain full double
+ *                      precision accuracy.  On output, the fraction of the
+ *                      tolerance represented by the returned solution.  Values
+ *                      greater than one indicate the desired tolerance could
+ *                      not be met.
+ * \param[out]    r     Solution residual \f$ b - A x \f$.
+ * \param[out]    res2  Squared 2-norm of the residual.
+ *                      That is, \f$\|b - A x\|_2^2\f$.
+ *
+ * Either \c siter or \c diter must be nonnegative on entry.
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ *         Errors related to the <tt>i</tt>-th argument are indicated
+ *         by a return value of <tt>-i</tt>.
+ */
+int
+suzerain_lapackext_dgbsirsv(
+        char * const fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        double * const ab,
+        double * const afrob,
+        double * const afb,
+        int * const ipiv,
+        double * const b,
+        double * const x,
+        int * const siter,
+        int * const diter,
+        double tolsc,
+        double * const r,
+        double * const res2);
+
+/*! \copydoc suzerain_lapackext_dgbsirsv */
+int
+suzerain_lapackext_zgbsirsv(
+        char * const fact,
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        complex_double * const ab,
+        complex_double * const afrob,
+        complex_double * const afb,
+        int * const ipiv,
+        complex_double * const b,
+        complex_double * const x,
+        int * const siter,
+        int * const diter,
+        complex_double tolsc,
+        complex_double * const r,
+        complex_double * const res2);
+
+/*! @} */
+
 /*! \name BLAS-like extensions
  * These are extensions built atop the BLAS, on vendor-specific BLAS-like
  * routines, and/or on custom coded loops.  Some of these extensions resemble
