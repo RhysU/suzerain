@@ -2014,7 +2014,8 @@ suzerain_lapackext_dsgbsvx(
     (void) r;
     (void) res2;
 
-    return suzerain_blas_xerbla(__func__, -999); // FIXME Implement
+    // FIXME Implement per personal notes dated 27 August 2012
+    return suzerain_blas_xerbla(__func__, -999);
 }
 
 int
@@ -2077,7 +2078,8 @@ suzerain_lapackext_zcgbsvx(
     (void) r;
     (void) res2;
 
-    return suzerain_blas_xerbla(__func__, -999); // FIXME Implement
+    // FIXME Implement per personal notes dated 27 August 2012
+    return suzerain_blas_xerbla(__func__, -999);
 }
 
 void
