@@ -1,5 +1,9 @@
 #!/bin/bash
 # Common functionality sourced from multiple test scripts
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Must use mpiexec to run serial-but-MPI-enabled tests on some MPI stacks.  In
 # particular, mvapich seems to exhibit this problem.  Moreover, we cannot
