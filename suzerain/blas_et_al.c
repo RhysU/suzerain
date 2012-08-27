@@ -1955,9 +1955,10 @@ suzerain_lapack_zlangb(
 }
 
 int
-suzerain_lapackext_dgbsirsv(
+suzerain_lapackext_dsgbsvx(
         char * const fact,
-        const char trans,
+        int * const apprx,
+        char trans,
         const int n,
         const int kl,
         const int ku,
@@ -1973,14 +1974,54 @@ suzerain_lapackext_dgbsirsv(
         double * const r,
         double * const res2)
 {
-    return -999; // FIXME Implement
+    *fact = toupper(*fact);
+    trans = toupper(trans);
+
+    int info = 0;
+    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
+        info = -1;
+    } else if (UNLIKELY(*apprx < 0)) {
+        info = -2;
+    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
+        info = -3;
+    } else if (UNLIKELY(n < 0)) {
+        info = -4;
+    } else if (UNLIKELY(kl < 0)) {
+        info = -5;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -6;
+    } else if (UNLIKELY(tolsc < 0)) {
+        info = -15;
+    }
+    if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // FIXME Suppress unused warnings for unimplemented function
+    (void) fact;
+    (void) apprx;
+    (void) trans;
+    (void) n;
+    (void) kl;
+    (void) ku;
+    (void) ab;
+    (void) afrob;
+    (void) afb;
+    (void) ipiv;
+    (void) b;
+    (void) x;
+    (void) siter;
+    (void) diter;
+    (void) tolsc;
+    (void) r;
+    (void) res2;
+
+    return suzerain_blas_xerbla(__func__, -999); // FIXME Implement
 }
 
-/*! \copydoc suzerain_lapackext_dgbsirsv */
 int
-suzerain_lapackext_zgbsirsv(
+suzerain_lapackext_zcgbsvx(
         char * const fact,
-        const char trans,
+        int * const apprx,
+        char trans,
         const int n,
         const int kl,
         const int ku,
@@ -1992,11 +2033,51 @@ suzerain_lapackext_zgbsirsv(
         complex_double * const x,
         int * const siter,
         int * const diter,
-        complex_double tolsc,
+        double tolsc,
         complex_double * const r,
         complex_double * const res2)
 {
-    return -999; // FIXME Implement
+    *fact = toupper(*fact);
+    trans = toupper(trans);
+
+    int info = 0;
+    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
+        info = -1;
+    } else if (UNLIKELY(*apprx < 0)) {
+        info = -2;
+    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
+        info = -3;
+    } else if (UNLIKELY(n < 0)) {
+        info = -4;
+    } else if (UNLIKELY(kl < 0)) {
+        info = -5;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -6;
+    } else if (UNLIKELY(tolsc < 0)) {
+        info = -15;
+    }
+    if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // FIXME Suppress unused warnings for unimplemented function
+    (void) fact;
+    (void) apprx;
+    (void) trans;
+    (void) n;
+    (void) kl;
+    (void) ku;
+    (void) ab;
+    (void) afrob;
+    (void) afb;
+    (void) ipiv;
+    (void) b;
+    (void) x;
+    (void) siter;
+    (void) diter;
+    (void) tolsc;
+    (void) r;
+    (void) res2;
+
+    return suzerain_blas_xerbla(__func__, -999); // FIXME Implement
 }
 
 void

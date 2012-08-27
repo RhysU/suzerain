@@ -1796,7 +1796,10 @@ suzerain_lapack_zlangb(
  * b$ using single precision LU factorization followed by double precision
  * iterative refinement.
  *
- * The approach follows the DGESIRSV algorithm presented in June 2006 as <a
+ * The overall functionality is an extension of the capability of LAPACK's <a
+ * href="http://www.netlib.org/lapack/double/dsgesv.f">DSGESV</a> but written
+ * for general banded matrices.  The approach follows DSGESV which is, I
+ * believe, based the DGESIRSV algorithm presented in June 2006 as <a
  * href="http://www.netlib.org/lapack/lawnspdf/lawn175.pdf"> Exploiting the
  * Performance of 32 bit Floating Point Arithmetic in Obtaining 64 bit Accuracy
  * (Revisiting Iterative Refinement for Linear Systems)</a> by Langou et al.
@@ -1841,6 +1844,19 @@ suzerain_lapack_zlangb(
  *                      and \c ipiv.  On output, either 'S' or 'D'
  *                      indicating which factorization precision has
  *                      been returned in \c afb and \c ipiv.
+ * \param[in,out] apprx On input, if \c fact is 'S' or 'D' and \c apprx
+ *                      is strictly positive, assume the factorization
+ *                      provided in \c afb and \c ipiv is \f$ LUP =
+ *                      A + \Delta{}A\f$ for some perturbation \f$
+ *                      \Delta{}A \f$.  At most \c apprx refinements will
+ *                      be attempted before it can be confirmed that the
+ *                      residual is decaying by a factor of 2 on each
+ *                      iteration.  If this decay is not observed by the
+ *                      \c apprx iteration, the perturbed factorization
+ *                      is discarded and the routine operates as if \c
+ *                      fact was <tt>'N'/<tt> and sets \c apprx to be
+ *                      zero on return.  If \c fact is 'N' on input,
+ *                      \c apprx is ignored and set to zero on return.
  * \param[in]     trans If 'N' solve \f$A      x = b\f$.
  *                      If 'T' solve \f$A^\top x = b\f$.
  *                      If 'C' solve \f$A^H    x = b\f$.
@@ -1893,9 +1909,10 @@ suzerain_lapack_zlangb(
  *         by a return value of <tt>-i</tt>.
  */
 int
-suzerain_lapackext_dgbsirsv(
+suzerain_lapackext_dsgbsvx(
         char * const fact,
-        const char trans,
+        int * const apprx,
+        char trans,
         const int n,
         const int kl,
         const int ku,
@@ -1911,11 +1928,12 @@ suzerain_lapackext_dgbsirsv(
         double * const r,
         double * const res2);
 
-/*! \copydoc suzerain_lapackext_dgbsirsv */
+/*! \copydoc suzerain_lapackext_dsgbsvx */
 int
-suzerain_lapackext_zgbsirsv(
+suzerain_lapackext_zcgbsvx(
         char * const fact,
-        const char trans,
+        int * const apprx,
+        char trans,
         const int n,
         const int kl,
         const int ku,
@@ -1927,7 +1945,7 @@ suzerain_lapackext_zgbsirsv(
         complex_double * const x,
         int * const siter,
         int * const diter,
-        complex_double tolsc,
+        double tolsc,
         complex_double * const r,
         complex_double * const res2);
 
