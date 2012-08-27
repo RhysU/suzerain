@@ -2,21 +2,24 @@
  *
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2004, 2007 Gerard Jungman, Brian Gough
  * Adapted from the GNU Scientific Library
+ *
  * Extensions Copyright (C) 2011, 2012 The PECOS Development Team
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
- * This file is free software: you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free
- * Software Foundation, either version 3 of the License, or (at your option)
- * any later version.
+ * This file is part of Suzerain.
  *
- * This file is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
+ * Suzerain is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * You should have received a copy of the GNU General Public License along with
- * this file.  If not, see <http://www.gnu.org/licenses/>.
+ * Suzerain is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
  * function.h: General function evaluation interfaces for ANSI C
@@ -32,11 +35,13 @@
 /** @file
  * Provides a function evaluation interface compatible with the <a
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a>'s <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Providing-the-function-to-solve.html"><tt>gsl_function</tt></a>.
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Providing-the-function-to-solve.html">
+ * <tt>gsl_function</tt></a>.
  *
  * For example, the following snippet establishes a suzerain_function instance
  * which performs an arbitrary order polynomial evaluation via GSL's <a
- * href="http://www.gnu.org/software/gsl/manual/html_node/Polynomial-Evaluation.html"><tt>gsl_poly_eval</tt></a>:
+ * href="http://www.gnu.org/software/gsl/manual/html_node/Polynomial-Evaluation.html">
+ * <tt>gsl_poly_eval</tt></a>:
  * \code
  * // Declarations
  * typedef struct { int n; double c[]; } poly_params; // Flexible array
