@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 postprocdir      = $(pkgdatadir)/postproc
-postproc_SCRIPTS = channel.m orderest
+postproc_SCRIPTS = channel.m orderest gplot
 noinst_SCRIPTS   =
 postproc_DATA    = gb2ge.m
 noinst_DATA      =
