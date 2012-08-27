@@ -1,3 +1,8 @@
+// Copyright Olaf van der Spek and Rhys Ulerich (2011).
+//
+// Use, modification and distribution is subject to the Boost Software License,
+// Version 1.0. (See http://www.boost.org/LICENSE_1_0.txt)
+
 #include <suzerain/shared_range.hpp>
 
 #include <algorithm>
