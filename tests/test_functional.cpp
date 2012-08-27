@@ -7,24 +7,6 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_SUITE( copy_n )
-
-BOOST_AUTO_TEST_CASE( characters )
-{
-    const std::size_t N = 3;
-    const char source[] = { 'a', 'b', 'c', 'd', 'e' };
-    char dest[N];
-
-    suzerain::functional::copy_n(source + 1, N, dest);
-    BOOST_CHECK_EQUAL(dest[0], 'b');
-    BOOST_CHECK_EQUAL(dest[1], 'c');
-    BOOST_CHECK_EQUAL(dest[2], 'd');
-}
-
-
-BOOST_AUTO_TEST_SUITE_END()
-
-
 BOOST_AUTO_TEST_SUITE( product )
 
 using suzerain::functional::product;
