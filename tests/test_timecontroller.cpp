@@ -1,6 +1,7 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2008, 2009, 2010, 2011, 2012 The PECOS Development Team
+// Copyright (C) 2008, 2009, 2010, 2011, 2012 Rhys Ulerich
+// Copyright (C) 2012 The PECOS Development Team
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
 //
 // This Source Code Form is subject to the terms of the Mozilla Public

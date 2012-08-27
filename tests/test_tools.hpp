@@ -1,6 +1,7 @@
 //--------------------------------------------------------------------------
 //
-// Copyright (C) 2010, 2011, 2012 The PECOS Development Team
+// Copyright (C) 2010, 2011, 2012 Rhys Ulerich
+// Copyright (C) 2012 The PECOS Development Team
 // Functionality is based heavily on the Boost Test predicate utilities.
 // Please see http://pecos.ices.utexas.edu for more information on PECOS.
 //

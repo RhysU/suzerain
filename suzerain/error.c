@@ -3,7 +3,8 @@
  * Functionality adopted from the GNU Scientific Library.
  * Copyright (C) 1996, 1997, 1998, 1999, 2000, 2007 Gerard Jungman, Brian Gough
  *
- * Copyright (C) 2010, 2011 The PECOS Development Team
+ * Copyright (C) 2010, 2011 Rhys Ulerich
+ * Copyright (C) 2011 The PECOS Development Team
  * Please see http://pecos.ices.utexas.edu for more information on PECOS.
  *
  * This file is part of Suzerain.
