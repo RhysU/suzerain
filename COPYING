@@ -1,0 +1,5 @@
+The vast majority of Suzerain is licensed as GPL version 3.0 per the terms in
+COPYING.gpl3.  Some code, which can stand by itself and has been incorporated
+from external sources, is licensed as Mozilla Public License version 2.0 per
+the terms in COPYING.mpl2.  Suzerain, as a work combining GPL3 and MPL2 parts,
+is subject to the terms of GPL 3.0.
