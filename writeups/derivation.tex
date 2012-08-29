@@ -4414,6 +4414,17 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &
 &\overline{\mu\nabla{}T}
 \end{align}
+These additional quantities are of interest and their so-far-unlisted
+dependencies are also gathered:
+\begin{align}
+  \overline{\mu{}''}&= f\left(
+      \bar{\rho}, \bar{\mu}, \overline{\rho\mu}
+  \right)
+  &
+  \overline{\nu{}''} &= f\left(
+      \bar{\rho}, \bar{\mu}, \bar{\nu}
+  \right)
+\end{align}
 After averaging across the homogeneous streamwise $x$ and spanwise $z$
 directions, each sample (ignoring tensor order) is a one-dimensional,
 instantaneous profile varying only along the wall-normal B-spline direction.
@@ -4530,7 +4541,13 @@ Continuing the ordered sequence of computations:
 \\
   \widetilde{T''u''} &= \widetilde{Tu} - \tilde{T}\tilde{u}
 \\
-  \tilde{\nu} &= \bar{\rho}^{-1} \overline{\mu}
+  \tilde{\mu} &= \bar{\rho}^{-1} \overline{\rho\mu}
+\\
+  \overline{\mu''} &= \bar{\mu} - \tilde{\mu}
+\\
+  \tilde{\nu} &= \bar{\rho}^{-1} \bar{\mu}
+\\
+  \overline{\nu''} &= \bar{\nu} - \tilde{\nu}
 \\
   \symmetricpart{\widetilde{\nabla{}u}}
   &= \bar{\rho}^{-1} \symmetricpart{\overline{\rho\nabla{}u}}

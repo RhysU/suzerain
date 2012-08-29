@@ -2438,8 +2438,9 @@ mean sample_mean_quantities(
                 const Vector3r tau_u = tau * u;
 
                 // Accumulate quantities into sum_XXX using function syntax.
-
                 sum_mu[0](mu);
+
+                sum_nu[0](mu / rho);
 
                 sum_u[0](u.x());
                 sum_u[1](u.y());
@@ -2492,6 +2493,8 @@ mean sample_mean_quantities(
                 sum_rho_T_u[0](rho * T * u.x());
                 sum_rho_T_u[1](rho * T * u.y());
                 sum_rho_T_u[2](rho * T * u.z());
+
+                sum_rho_mu[0](rho * mu);
 
                 sum_mu_S[0](mu * ( grad_u(0,0)                    - div_u / 3));
                 sum_mu_S[1](mu * ((grad_u(0,1) + grad_u(1,0)) / 2            ));

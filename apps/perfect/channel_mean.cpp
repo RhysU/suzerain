@@ -74,6 +74,7 @@ namespace quantity {
     ((bar_rho_w,            "Reynolds-averaged spanwise momentum"))                                                       \
     ((bar_rho_E,            "Reynolds-averaged total (intrinsic plus kinetic) energy"))                                   \
     ((bar_mu,               "Reynolds-averaged dynamic viscosity"))                                                       \
+    ((bar_nu,               "Reynolds-averaged kinematic viscosity"))                                                     \
     ((bar_u,                "Reynolds-averaged streamwise velocity"))                                                     \
     ((bar_v,                "Reynolds-averaged wall-normal velocity"))                                                    \
     ((bar_w,                "Reynolds-averaged spanwise velocity"))                                                       \
@@ -116,6 +117,7 @@ namespace quantity {
     ((bar_rho_T_u,          "Reynolds-averaged x-component of the temperature times the velocity"))                       \
     ((bar_rho_T_v,          "Reynolds-averaged y-component of the temperature times the velocity"))                       \
     ((bar_rho_T_w,          "Reynolds-averaged z-component of the temperature times the velocity"))                       \
+    ((bar_rho_mu,           "Reynolds-averaged dynamic viscosity times the density"))                                     \
     ((bar_mu_Sxx,           "Reynolds-averaged (x,x)-component of the deviatoric portion of the strain rate"))            \
     ((bar_mu_Sxy,           "Reynolds-averaged (x,y)-component of the deviatoric portion of the strain rate"))            \
     ((bar_mu_Sxz,           "Reynolds-averaged (x,z)-component of the deviatoric portion of the strain rate"))            \
@@ -132,7 +134,7 @@ namespace quantity {
     ((bar_qb,               "Reynolds-averaged volumetric energy forcing"))                                               \
     ((bar_f_dot_u,          "Reynolds-averaged energy contribution due to momentum forcing work"))
 
-/** A Boost.Preprocessor sequence of tuples of directly sampled quantities.  */
+/** A Boost.Preprocessor sequence of tuples of indirectly sampled (i.e. derived) quantities.  */
 #define SEQ_DERIVED                                                                                                                                                 \
     ((tilde_u,                "Favre-averaged streamwise velocity"))                                                                                                \
     ((tilde_v,                "Favre-averaged wall-normal velocity"))                                                                                               \
@@ -189,7 +191,10 @@ namespace quantity {
     ((tilde_Tpp_upp,          "Favre-averaged fluctuating temperature times the fluctuating streamwise velocity"))                                                  \
     ((tilde_Tpp_vpp,          "Favre-averaged fluctuating temperature times the fluctuating wall-normal velocity"))                                                 \
     ((tilde_Tpp_wpp,          "Favre-averaged fluctuating temperature times the fluctuating spanwise velocity"))                                                    \
+    ((tilde_mu,               "Favre-averaged dynamic viscosity"))                                                                                                  \
+    ((bar_mupp,               "Reynolds-averaged Favre-fluctuating dynamic viscosity"))                                                                             \
     ((tilde_nu,               "Favre-averaged kinematic viscosity"))                                                                                                \
+    ((bar_nupp,               "Reynolds-averaged Favre-fluctuating kinematic viscosity"))                                                                           \
     ((tilde_symxx_grad_u,     "Symmetric part (x,x)-component of Favre-averaged velocity gradient"))                                                                \
     ((tilde_symxy_grad_u,     "Symmetric part (x,y)-component of Favre-averaged velocity gradient"))                                                                \
     ((tilde_symxz_grad_u,     "Symmetric part (x,z)-component of Favre-averaged velocity gradient"))                                                                \
@@ -732,6 +737,7 @@ static quantity::storage_map_type process(
     ACCUMULATE(rhou,             2, bar_rho_w             );
     ACCUMULATE(rhoe,             0, bar_rho_E             );
     ACCUMULATE(mu,               0, bar_mu                );
+    ACCUMULATE(nu,               0, bar_nu                );
     ACCUMULATE(u,                0, bar_u                 );
     ACCUMULATE(u,                1, bar_v                 );
     ACCUMULATE(u,                2, bar_w                 );
@@ -774,6 +780,7 @@ static quantity::storage_map_type process(
     ACCUMULATE(rho_T_u,          0, bar_rho_T_u           );
     ACCUMULATE(rho_T_u,          1, bar_rho_T_v           );
     ACCUMULATE(rho_T_u,          2, bar_rho_T_w           );
+    ACCUMULATE(rho_mu,           0, bar_rho_mu            );
     ACCUMULATE(mu_S,             0, bar_mu_Sxx            );
     ACCUMULATE(mu_S,             1, bar_mu_Sxy            );
     ACCUMULATE(mu_S,             2, bar_mu_Sxz            );
@@ -907,7 +914,10 @@ static quantity::storage_map_type process(
     C(tilde_Tpp_upp) = C(tilde_T_u) - C(tilde_T)*C(tilde_u);
     C(tilde_Tpp_vpp) = C(tilde_T_v) - C(tilde_T)*C(tilde_v);
     C(tilde_Tpp_wpp) = C(tilde_T_w) - C(tilde_T)*C(tilde_w);
+    C(tilde_mu) = C(bar_rho_mu)/C(bar_rho);
+    C(bar_mupp) = C(bar_mu) - C(tilde_mu);
     C(tilde_nu) = C(bar_mu)/C(bar_rho);
+    C(bar_nupp) = C(bar_nu) - C(tilde_nu);
     C(tilde_symxx_grad_u) = C(bar_symxx_rho_grad_u)/C(bar_rho);
     C(tilde_symxy_grad_u) = C(bar_symxy_rho_grad_u)/C(bar_rho);
     C(tilde_symxz_grad_u) = C(bar_symxz_rho_grad_u)/C(bar_rho);

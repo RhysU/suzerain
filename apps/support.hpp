@@ -561,6 +561,7 @@ public:
  */
 #define CHANNEL_MEAN_PHYSICAL                        \
     ((mu,                1))  /* scalar           */ \
+    ((nu,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
     ((rho_grad_T,        3))  /* vector           */ \
@@ -571,6 +572,7 @@ public:
     ((rho_u_u,           6))  /* symmetric tensor */ \
     ((rho_u_u_u,        10))  /* symmetric tensor */ \
     ((rho_T_u,           3))  /* vector           */ \
+    ((rho_mu,            1))  /* scalar           */ \
     ((mu_S,              6))  /* symmetric tensor */ \
     ((mu_div_u,          1))  /* scalar           */ \
     ((mu_grad_T,         3))  /* vector           */
