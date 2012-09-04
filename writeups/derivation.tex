@@ -76,6 +76,7 @@
 \newcommand{\symmetricpart}[1]
   {\ensuremath{\operatorname{sym}\left(#1\right)}}
 \DeclareMathOperator{\trace}{tr}
+\newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term due to slow derivative
 
 \begin{document}
 
@@ -424,6 +425,22 @@ so further assume
   \label{eq:mukappa}
 \end{align}
 
+\subsection{Slow growth models}
+\label{sec:slowgrowthmodels}
+A useful approach to perform DNS on some turbulent flow configurations where the
+flow develops in space or time is to perform a homogenization, using the
+assumption of slow variation (or slow growth) of the mean and rms quantities
+as related to the fast variation of turbulent fluctuations. This
+homogenization procedure allows to simulate the turbulent flow at a specific
+stage of the development in space or time. Examples of these procedures are the
+works of Spalart ~\citep{Spalart1988Direct} for incompressible boundary layers,
+and of Venugopal ~\citep{Venugopal2003} for channel flow with wall injection.
+In practice, the slow growth approach introduces source terms in the
+Navier--Stokes equations, were their functional form are specific to the flow
+configuaration that was homogenized and on modeling assumption. These slow
+growth sources will be generically designated with $\Ssd$.
+
+
 \subsection{Dimensional equations}
 \label{sec:dimensionalmodelequations}
 
@@ -435,6 +452,7 @@ and assumptions, we arrive at the dimensional equations
   \frac{\partial}{\partial{}t}\rho
 &=
   - \nabla\cdot\rho{}u
+  + \Ssd_\rho
   \\
   \label{eq:dim_momentum}
   \frac{\partial{}}{\partial{}t}\rho{}u
@@ -443,6 +461,7 @@ and assumptions, we arrive at the dimensional equations
   -\nabla{} p
   + \nabla\cdot{} \tau
   + f
+  + \Ssd_{\rho{} u}
   \\
   \label{eq:dim_energy}
   \frac{\partial}{\partial{}t} \rho{}E
@@ -453,6 +472,7 @@ and assumptions, we arrive at the dimensional equations
   + \nabla\cdot{}\tau{} u
   + f \cdot{} u
   + q_{b}
+  + \Ssd_{\rho{} E}
 \intertext{
   where terms in the right hand side make use of
 }
