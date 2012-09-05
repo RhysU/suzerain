@@ -542,6 +542,7 @@ Introducing more nondimensional quantities (e.g. $\rho^{*} =
   \frac{\rho_{0}}{t_{0}} \frac{\partial}{\partial{}t^{*}}\rho^{*}
 &=
   - \frac{\rho_{0}u_{0}}{l_{0}} \nabla^{*}\cdot\rho^{*}u^{*}
+  + {\Ssd_{\rho}}_0  \Ssd_{\rho}^{*}
   \\
   \label{eq:dimwithref_momentum}
   \frac{\rho_{0}u_{0}}{t_{0}} \frac{\partial{}}{\partial{}t^{*}}\rho^{*}u^{*}
@@ -551,6 +552,7 @@ Introducing more nondimensional quantities (e.g. $\rho^{*} =
   - \frac{p_{0}}{l_{0}} \nabla^{*} p^{*}
   + \frac{\tau_{0}}{l_{0}} \nabla^{*}\cdot{} \tau^{*}
   + f_{0} f^{*}
+  + {\Ssd_{\rho u}}_0  \Ssd_{\rho u}^{*}
   \\
   \label{eq:dimwithref_energy}
   \frac{\rho_{0}E_{0}}{t_{0}}
@@ -564,6 +566,7 @@ Introducing more nondimensional quantities (e.g. $\rho^{*} =
 &\quad{}+ \frac{\tau_{0}u_{0}}{l_{0}} \nabla^{*}\cdot{}\tau^{*} u^{*}
   + f_{0}u_{0} f^{*} \cdot{} u^{*}
   + q_{0} q_{b}^{*}
+  + {\Ssd_{\rho E}}_0  \Ssd_{\rho E}^{*}
 \intertext{
   where terms in the right hand side are computed using
 }
@@ -630,6 +633,18 @@ a^{*}&=\sqrt{T^{*}}
 h^{*}&=\frac{T^{*}}{\gamma-1}
 .
 \end{align}
+The slow growth sources are derived from the streamwise convective terms or
+from the time variation terms for the spatial and temporal formulations
+respectively. Therefore, we set the reference slow growth dimensional quantities
+to be
+\begin{align}
+  {\Ssd_{\rho}}_0 &= \frac{\rho_{0}}{t_0}
+  &
+  {\Ssd_{\rho u}}_0 &= \frac{\rho_{0} u_0}{t_0}
+  &
+  {\Ssd_{\rho E}}_0 &= \frac{\rho_{0} E_0}{t_0}.
+\end{align}
+
 
 \subsubsection{Nondimensional equations}
 \label{nondim_equations}
@@ -645,6 +660,7 @@ terms are dimensionless.  The following nondimensional equations are the result
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot\rho{}u
+  + \Ssd_{\rho{}}
   \\
   \label{eq:nondim_momentum}
   \frac{\partial}{\partial{}t}\rho{}u
@@ -653,6 +669,7 @@ terms are dimensionless.  The following nondimensional equations are the result
   - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + f
+  + \Ssd_{\rho{} u}
   \\
   \label{eq:nondim_energy}
   \frac{\partial}{\partial{}t} \rho{}E
@@ -664,6 +681,7 @@ terms are dimensionless.  The following nondimensional equations are the result
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{} u
   + \Mach^{2} f \cdot{} u
   + q_{b}
+  + \Ssd_{\rho{} E}
 \intertext{
 along with the relationships
 }
