@@ -12,6 +12,7 @@ TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
+TEXSOURCES += reactinggas.tex
 EXTRA_DIST  = references.bib
 
 # Build and install writeups
