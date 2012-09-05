@@ -1522,6 +1522,7 @@ equations in section~\ref{nondim_equations} become
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot{}m
+  + \Ssd_{\rho{}}
   \\
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
@@ -1530,6 +1531,7 @@ equations in section~\ref{nondim_equations} become
   - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + f
+  + \Ssd_{\rho{} u}
   \\
   \label{eq:state_energy}
   \frac{\partial}{\partial{}t} e
@@ -1540,6 +1542,7 @@ equations in section~\ref{nondim_equations} become
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
   + \Mach^{2} f \cdot{} \frac{m}{\rho}
   + q_{b}
+  + \Ssd_{\rho{} E}
 \intertext{
   where the non-state quantities are fixed by
 }
@@ -1909,7 +1912,8 @@ $\nabla\cdot\mu\nabla{}T$
     quantities.  Costs are given relative to the cost of transforming a single
     scalar field from wave space to physical space and do not include floating
     point operations. The total cost for each term is found in the rightmost
-    column of the table.
+    column of the table. The slow growth terms are not included in this
+    analysis.
 }
 \label{tab:nofirstderivnonlinearcost}
 \end{table}
