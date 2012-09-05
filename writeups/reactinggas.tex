@@ -1518,6 +1518,7 @@ equations in section~\ref{nondim_equations} become
   \frac{\partial}{\partial{}t}\rho{}
 &=
   - \nabla\cdot{}m
+  + \Ssd_{\rho{}}
   \\
   \label{eq:state_momentum}
   \frac{\partial}{\partial{}t}m
@@ -1526,6 +1527,7 @@ equations in section~\ref{nondim_equations} become
   - \frac{1}{\Mach^{2}} \nabla{} p
   + \frac{1}{\Reynolds} \nabla\cdot\tau
   + f
+  + \Ssd_{\rho{} u}
   \\
   \label{eq:state_energy}
   \frac{\partial}{\partial{}t} e
@@ -1536,6 +1538,7 @@ equations in section~\ref{nondim_equations} become
   + \frac{\Mach^{2}}{\Reynolds} \nabla\cdot\tau{}\frac{m}{\rho}
   + \Mach^{2} f \cdot{} \frac{m}{\rho}
   + q_{b}
+  + \Ssd_{\rho{} E}
 \intertext{
   where the non-state quantities are fixed by
 }
@@ -1905,7 +1908,8 @@ $\nabla\cdot\mu\nabla{}T$
     quantities.  Costs are given relative to the cost of transforming a single
     scalar field from wave space to physical space and do not include floating
     point operations. The total cost for each term is found in the rightmost
-    column of the table.
+    column of the table. The slow growth terms are not included in this
+    analysis.
 }
 \label{tab:nofirstderivnonlinearcost}
 \end{table}
@@ -3813,17 +3817,19 @@ One useful example is
 
 \subsubsection{Derivation}
 
-Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
-and~\eqref{eq:cons_energy} may be written as
+Recall that equations~\eqref{eq:dim_continuity}, \eqref{eq:dim_momentum},
+and~\eqref{eq:dim_energy} may be written as
 \begin{align}
     \frac{\partial}{\partial{}t}\rho
 &=
   - \nabla\cdot\rho{}u
+  + \Ssd_{\rho{}}
 \\
     \frac{\partial{}}{\partial{}t}\rho{}u
 &=
   - \nabla\cdot(u\otimes{}\rho{}u)
   - \nabla{}p + \nabla\cdot{}\tau + f
+  + \Ssd_{\rho{} u}
 \\
     \frac{\partial}{\partial{}t} \rho{}E
 &=
@@ -3832,6 +3838,7 @@ and~\eqref{eq:cons_energy} may be written as
   - \nabla\cdot{}q_{s}
   + f\cdot{}u
   + q_b
+  + \Ssd_{\rho{} E}
 \end{align}
 where using total enthalpy $H$ reduces the number of terms in the energy
 equation.
@@ -3845,6 +3852,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
     \frac{\partial}{\partial{}t}\bar{\rho}
  =
  &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -3855,6 +3863,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
       - \bar{\rho}\widetilde{u''\otimes{}u''}
     \right)
   + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -3875,6 +3884,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
   + \bar{q}_{b}
+  + \overline{\Ssd_{\rho{} E}}
 \end{align}
 \end{subequations}
 Several correlations impact the evolution of mean quantities: the Reynolds
@@ -3945,8 +3955,10 @@ An exact equation may be derived for the evolution of $k$
   - \nabla\cdot\overline{p' u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
-where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
+where $A:B$ denotes $\trace \left(\trans{A} B\right)$, and the contribution of
+the slow growth terms is being accounted for. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
 energy, is defined by
 \begin{align}
@@ -4003,6 +4015,7 @@ flux in the exact $k$ equation:
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
@@ -4085,6 +4098,7 @@ The Favre-averaged equations of interest are:
     \frac{\partial}{\partial{}t}\bar{\rho}
 =
  &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -4095,6 +4109,7 @@ The Favre-averaged equations of interest are:
       - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
   + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
 \\
     \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -4115,6 +4130,7 @@ The Favre-averaged equations of interest are:
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
   + \bar{q}_b
+  + \overline{\Ssd_{\rho{} E}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -4130,6 +4146,7 @@ The Favre-averaged equations of interest are:
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 The equations are augmented by the following relationships:
 \begin{align}
@@ -4220,6 +4237,15 @@ information:
 &
 &\widetilde{\nu''\left(\nabla{}h\right)''}
 \end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
 Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
 and $\tilde{T}$, could have been chosen.  The information above are natural
 choices following section~\ref{state_variable_selection}.  Favre-fluctuating
@@ -4245,6 +4271,7 @@ are dimensionless.  The results are:
     \frac{\partial}{\partial{}t}\bar{\rho}
 =
  &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
 =
@@ -4255,6 +4282,7 @@ are dimensionless.  The results are:
       - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
   + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
 =
@@ -4280,6 +4308,7 @@ are dimensionless.  The results are:
       + \overline{f\cdot{}u''}
     \right)
   + \bar{q}_b
+  + \overline{\Ssd_{\rho{} E}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -4297,6 +4326,7 @@ are dimensionless.  The results are:
       - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
     \right)
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 The equations are augmented by the following nondimensional relationships:
 \begin{align}
@@ -4381,6 +4411,15 @@ state evolution given the following statistical quantities:
 &
 &\widetilde{\nu''\left(\nabla{}T\right)''}
 \end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
 
 Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
 equation to better mimic \eqref{eq:nondim_energy}.  Enthalpy-based correlations
@@ -4450,6 +4489,15 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &
 &\overline{\mu\nabla{}T}
 \end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u}
+\end{align}
 These additional quantities are of interest and their so-far-unlisted
 dependencies are also gathered:
 \begin{align}
@@ -4508,6 +4556,10 @@ sequence of computations to obtain the desired quantities:
 \\
   \widetilde{u\otimes{}u\otimes{}u}
   &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u\otimes{}u}
+\\
+  \overline{\Ssd_{\rho{} u}\cdot{}u''} 
+  &= \overline{\Ssd_{\rho{} u}\cdot{}u} 
+   - \overline{\Ssd_{\rho{} u}}\cdot{}\tilde{u}
 \end{align}
 }
 
@@ -4572,6 +4624,7 @@ $\widetilde{u\otimes{}u\otimes{}u}$ and $\widetilde{u\otimes{}u}$,
 respectively.
 
 Continuing the ordered sequence of computations:
+{ \allowdisplaybreaks[1]
 \begin{align}
   \widetilde{Tu} &= \bar{\rho}^{-1} \overline{\rho{}Tu}
 \\
@@ -4602,6 +4655,7 @@ Continuing the ordered sequence of computations:
   &= \bar{\rho}^{-1} \overline{\mu\nabla{}T}
    - \tilde{\nu} \bar{\rho}^{-1} \overline{\rho\nabla{}T}
 \end{align}
+}
 
 \subsection{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
