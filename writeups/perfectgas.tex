@@ -1414,15 +1414,32 @@ case.  Both \citet[equation~2.39]{Kwok2002} and
 \citet[equations~4.20--21]{Guarini1998} derive the dimensional stability result
 that
 \begin{align}\label{eq:convectivestability}
-  \pi\left(
-      \frac{\left|u_{x}\right| + a}{\Delta{}x}
-    + \frac{\left|u_{y}\right| + a}{\Delta{}y}
-    + \frac{\left|u_{z}\right| + a}{\Delta{}z}
-  \right) \Delta{}t \leq \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}
+  \Delta{}t &\leq
+  \frac{
+    \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}
+  }{
+      \left(\left|u_{x}\right| + a\right) \lambda^{(1)}_x
+    + \left(\left|u_{y}\right| + a\right) \lambda^{(1)}_y
+    + \left(\left|u_{z}\right| + a\right) \lambda^{(1)}_z
+  }
 \end{align}
-where $a$ is the local acoustic velocity, $u_{x}$ denotes the velocity in the $x$
-direction, $\Delta{}x$ represents the local grid size in the $x$ direction, etc.
-The maximum pure imaginary eigenvalue magnitude,
+where $a$ is the local acoustic velocity, $u_{x}$ denotes the velocity in the
+$x$ direction, $\lambda^{(1)}_x$ represents the maximum eigenvalue of the first
+derivative operator in the $x$ direction, etc.  In the two Fourier directions
+these eigenvalues are exactly known:
+\begin{align}
+    \lambda^{(1)}_x &= \frac{\pi N_x}{L_x} = \frac{\pi}{\Delta{}x}
+    &
+    \lambda^{(1)}_z &= \frac{\pi N_z}{L_z} = \frac{\pi}{\Delta{}z}
+    .
+\end{align}
+For a B-spline first derivative operator $D^{(1)}$ one may similarly estimate
+\begin{align}\label{eq:lambda1deltay}
+    \lambda^{(1)}_y &= \frac{\pi}{C^{(1)}\Delta{}y}
+\end{align}
+where the definition of $\Delta{}y$ and $C^{(1)}$ are for now deferred.
+Analogously to the Fourier case, for a periodic, uniform B-spline basis,
+$C^{(1)}$ would be one.  The maximum pure imaginary eigenvalue magnitude,
 $\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}$, is a feature of the chosen
 timestepping method.  For the SMR91 scheme,
 \begin{align}
@@ -1438,16 +1455,23 @@ nondimensionalization.  Using an A-stable scheme, like the implicit portion of
 SMR91, to compute acoustic terms effectively sets the sound speed to zero when
 computing this convective criterion.
 
-When \citeauthor{Venugopal2003} used a nearly identical convective criterion,
-he found the constraint to be overly conservative in the wall-normal direction
-because its derivation (incorrectly) assumes a periodic wall-normal basis.
-\citet[\textsection{}3.2]{Venugopal2003} presents a linearized analysis taking
+Returning to matter of equation~\eqref{eq:lambda1deltay}, both
+\citeauthor{Guarini1998} and \citeauthor{Kwok2002} used the breakpoint
+separation for $\Delta{}y$ and set $C^{(1)} = 1$.  When
+\citeauthor{Venugopal2003} used a nearly identical convective criterion
+to~\eqref{eq:convectivestability}, he found using $C^{(1)} = 1$ to be overly
+conservative due for non-uniform, aperiodic $D^{(1)}$.
+\citet[\textsection{}3.2]{Venugopal2003} presented a linearized analysis taking
 into account the inhomogeneous nature of the wall-normal direction.  He
 determined that the wall-normal imaginary eigenvalue magnitude dropped by
-nearly an order of magnitude after taking into account the inhomogeneity (i.e.,
-using discrete operators like those in section~\ref{sec:formingoperators}).  He
-concluded that using an effective $1/\Delta{}y$ four times smaller than the
-nominal value was feasible \citep[equation~3.29]{Venugopal2003}.
+nearly an order of magnitude after taking into account the inhomogeneity.  He
+concluded that, taking $\Delta{}y$ to be the breakpoint separation, $C^{(1)} =
+1/4$ was feasible \citep[equation~3.29]{Venugopal2003}.
+
+% FIXME STARTHERE
+% is the distance between \emph{collocation points} and
+% $C^{(1)}$ is an empirical correction factor accounting for both inhomogeneity
+% and grid stretching.
 
 \subsubsection{Diffusive stability criterion}
 \label{sec:diffusivestability}
@@ -4561,8 +4585,8 @@ sequence of computations to obtain the desired quantities:
   \widetilde{u\otimes{}u\otimes{}u}
   &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u\otimes{}u}
 \\
-  \overline{\Ssd_{\rho{} u}\cdot{}u''} 
-  &= \overline{\Ssd_{\rho{} u}\cdot{}u} 
+  \overline{\Ssd_{\rho{} u}\cdot{}u''}
+  &= \overline{\Ssd_{\rho{} u}\cdot{}u}
    - \overline{\Ssd_{\rho{} u}}\cdot{}\tilde{u}
 \end{align}
 }
