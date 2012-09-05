@@ -3817,17 +3817,19 @@ One useful example is
 
 \subsubsection{Derivation}
 
-Recall that equations~\eqref{eq:cons_mass}, \eqref{eq:cons_momentum},
-and~\eqref{eq:cons_energy} may be written as
+Recall that equations~\eqref{eq:dim_continuity}, \eqref{eq:dim_momentum},
+and~\eqref{eq:dim_energy} may be written as
 \begin{align}
     \frac{\partial}{\partial{}t}\rho
 &=
   - \nabla\cdot\rho{}u
+  + \Ssd_{\rho{}}
 \\
     \frac{\partial{}}{\partial{}t}\rho{}u
 &=
   - \nabla\cdot(u\otimes{}\rho{}u)
   - \nabla{}p + \nabla\cdot{}\tau + f
+  + \Ssd_{\rho{} u}
 \\
     \frac{\partial}{\partial{}t} \rho{}E
 &=
@@ -3836,6 +3838,7 @@ and~\eqref{eq:cons_energy} may be written as
   - \nabla\cdot{}q_{s}
   + f\cdot{}u
   + q_b
+  + \Ssd_{\rho{} E}
 \end{align}
 where using total enthalpy $H$ reduces the number of terms in the energy
 equation.
@@ -3849,6 +3852,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
     \frac{\partial}{\partial{}t}\bar{\rho}
  =
  &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -3859,6 +3863,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
       - \bar{\rho}\widetilde{u''\otimes{}u''}
     \right)
   + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -3879,6 +3884,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
   + \bar{q}_{b}
+  + \overline{\Ssd_{\rho{} E}}
 \end{align}
 \end{subequations}
 Several correlations impact the evolution of mean quantities: the Reynolds
@@ -3949,8 +3955,10 @@ An exact equation may be derived for the evolution of $k$
   - \nabla\cdot\overline{p' u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
-where $A:B$ denotes $\trace \left(\trans{A} B\right)$. The dissipation rate
+where $A:B$ denotes $\trace \left(\trans{A} B\right)$, and the contribution of
+the slow growth terms is being accounted for. The dissipation rate
 density $\epsilon$, which governs the conversion rate from $k$ to mean internal
 energy, is defined by
 \begin{align}
@@ -4007,6 +4015,7 @@ flux in the exact $k$ equation:
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
@@ -4089,6 +4098,7 @@ The Favre-averaged equations of interest are:
     \frac{\partial}{\partial{}t}\bar{\rho}
 =
  &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -4099,6 +4109,7 @@ The Favre-averaged equations of interest are:
       - \bar{\rho} \widetilde{u''\otimes{}u''}
     \right)
   + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
 \\
     \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -4119,6 +4130,7 @@ The Favre-averaged equations of interest are:
   + \bar{f}\cdot\tilde{u}
   + \overline{f\cdot{}u''}
   + \bar{q}_b
+  + \overline{\Ssd_{\rho{} E}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -4134,6 +4146,7 @@ The Favre-averaged equations of interest are:
   - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 The equations are augmented by the following relationships:
 \begin{align}
@@ -4223,6 +4236,15 @@ information:
 &\widetilde{\nu''\left(\nabla\cdot{}u\right)''}
 &
 &\widetilde{\nu''\left(\nabla{}h\right)''}
+\end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u''}
 \end{align}
 Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
 and $\tilde{T}$, could have been chosen.  The information above are natural
