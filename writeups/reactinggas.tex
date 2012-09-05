@@ -78,6 +78,14 @@
 \DeclareMathOperator{\trace}{tr}
 \newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term due to slow derivative
 
+% commands I like
+\newcommand{\mbb}[1]{\mathbb{#1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\sbf}[1]{\boldsymbol{#1}}
+\newcommand{\mcal}[1]{\mathcal{#1}}
+\newcommand{\mfk}[1]{\mathfrak{#1}}
+\newcommand{\pp}[2]{\frac{\partial #1}{\partial #2}}
+
 \begin{document}
 
 \title{Suzerain reacting flow model document}
@@ -107,145 +115,28 @@ presented.
 
 \subsection{Conservation laws}
 
-\subsubsection{Reynolds transport theorem}
-
-Consider a time-varying control volume $\Omega$ with surface
-$\partial\Omega$ and unit outward normal $\hat{n}$.  For any
-scalar, vector, or tensor field quantity
-$T$, Leibniz' theorem states
-\begin{align}
-  \label{eq:rtt}
-  \frac{d}{dt}\int_{\Omega(t)}T(x,t)\,dV
-  &=
-  \int_{\Omega}\frac{\partial}{\partial{}t}T\,dV
-  +
-  \int_{\partial\Omega} \hat{n}\cdot{}w T\,dA
-  =
-  \int_{\Omega}\frac{\partial}{\partial{}t}T+\nabla\cdot{}wT\,dV
-\end{align}
-where $w$ is the velocity of $\partial\Omega$.  When $\Omega$ follows
-a fixed set of fluid particles, $w$ becomes the fluid velocity $u$.
-
-\subsubsection{Mass continuity}
-Since mass $M=\int_{\Omega} \rho\,dV$
-and mass conservation requires $\frac{d}{dt}M=0$,
-\begin{align}
-  0 = \frac{d}{dt}M
-  = \frac{d}{dt}\int_{\Omega} \rho\,dV
-  =
-  \int_{\Omega}\frac{\partial}{\partial{}t}\rho+\nabla\cdot{}u\rho{}\,dV.
-\end{align}
-Because the result must hold for any control volume, locally it must hold that
-\begin{align}
-  \label{eq:cons_mass}
-  \frac{\partial}{\partial{}t}\rho+\nabla\cdot\rho{}u &= 0
-  .
-\end{align}
-
-\subsubsection{Momentum equation}
-Separating total force into surface forces and body forces
-\begin{align}
-  \sum{}F
-  &=
-     \int_{\partial\Omega} f_s \, dA
-   + \int_{\Omega} f \, dV
-  =
-     \int_{\partial\Omega} \sigma \hat{n} \, dA
-  +  \int_{\Omega} f \, dV
-  =  \int_{\Omega} \nabla\cdot\sigma + f \, dV
-\end{align}
-where $\sigma$ is the Cauchy stress tensor.  From linear momentum
-$I=\int_{\Omega} \rho{}u\,dV$ and its conservation $\frac{d}{dt}I=\sum{}F$,
-\begin{align}
-    \int_{\Omega}\frac{\partial{}}{\partial{}t}\rho{}u
-  + \nabla\cdot(u\otimes{}\rho{}u)\,dV
-&= \int_{\Omega} \nabla\cdot\sigma + f \, dV
-.
-\end{align}
-Because the control volume may be arbitrary,
-\begin{align}
-  \frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u)
-&= \nabla\cdot\sigma + f
-.
-\end{align}
-Lastly, separating the pressure $p$ and viscous contributions $\tau$ to
-the Cauchy stress tensor so that $\sigma = -p I + \tau$,
-\begin{align}
-\label{eq:cons_momentum}
-\frac{\partial{}}{\partial{}t}\rho{}u + \nabla\cdot(u\otimes{}\rho{}u)
-&= -\nabla{}p + \nabla\cdot{}\tau + f
-.
-\end{align}
-The conservation of angular momentum implies $\sigma=\trans{\sigma}$ and
-therefore $\tau=\trans{\tau}$ holds also.
-
-\subsubsection{Energy equation}
-Lumping internal and kinetic energy into an intrinsic density $E$,
-the energy $\mathscr{E}$ is
-\begin{align}
-  \mathscr{E} &= \int_{\Omega} \rho{}E \, dV
-  .
-\end{align}
-Treating heat input $Q$ as both a surface phenomenon described by an outward
-heat flux $q_{s}$ and as a volumetric phenomenon governed by a
-body heating $q_{b}$,
-\begin{align}
-  Q
-  &=
-   \int_{\Omega}\rho{}q_{b}\,dV
-  -\int_{\partial\Omega}\hat{n}\cdot{}q_{s}\,dA
-  =
-    \int_{\Omega}q_{b} - \nabla\cdot{}q_{s}\,dV
-  .
-\end{align}
-Power input $P=F\cdot{}v$ accounts for surface stress work and body
-force work to give
-\begin{align}
-  P
-  &=
-    \int_{\partial\Omega} \sigma{}\hat{n} \cdot{} u \, dA
-  + \int_{\Omega} f \cdot{} u \, dV
-  = \int_{\Omega} \nabla\cdot{}\sigma{}u + f \cdot{} u \, dV
-  .
-\end{align}
-Demanding energy conservation $\frac{d}{dt}\mathscr{E}=Q+P$,
-\begin{align}
-  \int_{\Omega}\frac{\partial}{\partial{}t} \rho{}E
-  +
-  \nabla\cdot{}u\rho{}E
-  \,dV
-&=
-    \int_{\Omega} q_{b} - \nabla\cdot{}q_{s}\,dV
-  + \int_{\Omega} \nabla\cdot\sigma{}u + f \cdot{} u \, dV
-  .
-\end{align}
-Again, since the control volume was arbitrary,
-\begin{align}
-  \frac{\partial}{\partial{}t} \rho{}E
-  +
-  \nabla\cdot{}\rho{}Eu
-&=
-  - \nabla\cdot{}q_{s}
-  + \nabla\cdot\sigma{}u
-  + f \cdot{} u
-  + q_{b}
-  .
-\end{align}
-Splitting $\sigma$'s pressure and viscous stress contributions into separate
-terms,
-\begin{align}
-  \label{eq:cons_energy}
-  \frac{\partial}{\partial{}t} \rho{}E
-  +
-  \nabla\cdot{}\rho{}Eu
-&=
-  - \nabla\cdot{}q_{s}
-  - \nabla\cdot{}pu
-  + \nabla\cdot{}\tau{}u
-  + f \cdot{} u
-  + q_{b}
-  .
-\end{align}
+This section extends the Favre-averaged slow growth equations to
+chemically reacting flows.  Following~\cite{Anderson_hypersonics,
+  Kirk_2009_FINS_model_doc,
+  Topalian_2011_temporal_slow_growth_reacting}, the conservation of
+mass, momentum, and total energy for a compressible fluid composed of
+$N_s$ constitutive components may be written as
+%
+\begin{gather*}
+  \pp{\rho_{\alpha}}{t} + \pp{}{x_i} (\rho_{\alpha} u_i + \rho_{\alpha} v_{\alpha, i}) = \dot{\omega}_{\alpha}, \\
+  \pp{\rho u_i}{t} + \pp{}{x_j} (\rho u_j u_i) = -\, \pp{p}{x_i} + \pp{\tau_{ji}}{x_j}, \\
+  \pp{\rho E}{t} + \pp{}{x_j} (\rho u_j H) + \pp{}{x_j} \left( \sum_{\alpha=1}^{N_s} \rho_{\alpha} v_{\alpha, j} h_{\alpha} \right) = \pp{\tau_{ji} u_i}{x_j} - \pp{q_j}{x_j},
+\end{gather*}
+% 
+where $\rho_{\alpha}$ is the density of species $\alpha$, $\rho=\sum_{\alpha} \rho_{\alpha}$
+is the mixture density, $u_i$ is the mixture velocity in the $i$th
+direction, $v_{\alpha, i}$ is the diffusion velocity of species $\alpha$ in the
+$i$th direction, $E$ is the total energy per unit mass, $p$ is the
+pressure, $H$ is the total enthalpy per unit mass, $\tau_{ji}$ is the
+viscous stress tensor, and $q_j$ is the heat flux vector.  Note that
+Roman indices ($i$, $j$) indicate spatial directions.  For these,
+repeated indices imply summation.  Greek indices ($\alpha$) indicate
+species, and repeated indices do not imply summation.
 
 \subsection{Constitutive relations and other assumptions}
 \label{sec:constitutive}
