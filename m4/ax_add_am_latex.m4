@@ -16,11 +16,11 @@
 #
 # LAST MODIFICATION
 #
-#   2009-09-14
+#   2012-09-05
 #
 # COPYLEFT
 #
-#   Copyright (c) 2008 Rhys Ulerich <rhys.ulerich@gmail.com>
+#   Copyright (c) 2008-2012 Rhys Ulerich <rhys.ulerich@gmail.com>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
@@ -42,19 +42,20 @@ AC_REQUIRE([ACLTX_PROG_MAKEINDEX])
 
 AC_ARG_VAR(LATEX_FLAGS,[Options for latex used in Makefile rules])
 if test "x$LATEX_FLAGS" = x; then
-    LATEX_FLAGS=-src-specials  # Default to DVI specials insertion
+    # Default to DVI specials insertion
+    LATEX_FLAGS="-shell-escape  -src-specials"
 fi
 AC_ARG_VAR(TEX_FLAGS,[Options for tex used in Makefile rules])
 if test "x$TEX_FLAGS" = x; then
-    TEX_FLAGS=
+    TEX_FLAGS="-shell-escape"
 fi
 AC_ARG_VAR(PDFLATEX_FLAGS,[Options for pdflatex used in Makefile rules])
 if test "x$PDFLATEX_FLAGS" = x; then
-    PDFLATEX_FLAGS=
+    PDFLATEX_FLAGS="-shell-escape"
 fi
 AC_ARG_VAR(PDFTEX_FLAGS,[Options for pdftex used in Makefile rules])
 if test "x$PDFTEX_FLAGS" = x; then
-    PDFTEX_FLAGS=
+    PDFTEX_FLAGS="-shell-escape"
 fi
 
 AX_ADD_AM_MACRO([
