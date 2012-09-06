@@ -1968,7 +1968,18 @@ small problems.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{table}[p]
 \centering
-\vspace{1em}
+\caption{
+    State variable derivatives and the relative computational cost required to
+    completely compute quantities in physical space without using repeated
+    first derivative applications.  A check (\checkmark) indicates that a
+    quantity is required to compute the given term.  A dot ($\cdot$) indicates
+    the quantity is required but it can be computed from other required
+    quantities.  Costs are given relative to the cost of transforming a single
+    scalar field from wave space to physical space and do not include floating
+    point operations. The total cost for each term is found in the rightmost
+    column. Slow growth forcing does not impact this analysis.
+}
+\label{tab:nofirstderivnonlinearcost}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
 \newcommand{\cm}{\checkmark}         % For brevity in the table details
 \newcommand{\cd}{\ensuremath{\cdot}} % For brevity in the table details
@@ -2075,20 +2086,6 @@ $\nabla\cdot\mu\nabla{}T$
 & \cm & \cm & \cm &     & \cm &     &     & \cm & \cm &     & \cm & \cm & \cm
 & 25
 \end{tabular}
-\vspace{1em}
-\caption{
-    State variable derivatives and the relative computational cost required to
-    completely compute quantities in physical space without using repeated
-    first derivative applications.  A check (\checkmark) indicates that a
-    quantity is required to compute the given term.  A dot ($\cdot$) indicates
-    the quantity is required but it can be computed from other required
-    quantities.  Costs are given relative to the cost of transforming a single
-    scalar field from wave space to physical space and do not include floating
-    point operations. The total cost for each term is found in the rightmost
-    column of the table. The slow growth terms are not included in this
-    analysis.
-}
-\label{tab:nofirstderivnonlinearcost}
 \end{table}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
