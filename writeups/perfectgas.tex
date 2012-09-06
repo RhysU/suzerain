@@ -1630,8 +1630,36 @@ inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
 $N_y$ vary; some combination of the three pieces of information is necessary.
 
 Hereafter, unlike Guarini, Kwok, and Venugopal, and following
-section~\ref{sec:formingoperators} \emph{we take $\Delta{}y$ to be the spacing
-between adjacent collocation points}.
+section~\ref{sec:formingoperators} we take $\Delta{}y$ to be the spacing
+between adjacent \emph{collocation points}.  Empirical curve fitting to this
+large database shows good agreement with functions like the following
+\begin{align}
+  \label{eq:C1fit}
+  C^{(1)}\left(k,\delta,N_y\right) &\approx k^a \left(
+      1 + b \frac{\delta}{\ln{} k} + c \frac{k}{N_y}
+      \left(1 + d \delta^e\right)
+  \right)
+  \\
+  \label{eq:C2fit}
+  C^{(2)}\left(k,\delta,N_y\right) &\approx \left(a + \frac{b}{k} + c k^d\right)
+      \left(
+        1 + e \delta^f \left(\ln N_y\right)^g
+        \left(1 + h k^i\right)
+      \right)
+\end{align}
+where $a$--$i$ are arbitrary, equation-specific constants.  Across all of the
+data shown in figure~\ref{fig:inhomogeneity}, one collection of constants
+$a$-$e$ permits equation~\eqref{eq:C1fit} to fit observed data to within
+$\left[-30.2\%,38.3\%\right]$.  One choice of $a$--$i$ for
+equation~\eqref{eq:C2fit} can fit all observed data to within
+$\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for
+the generality of the chosen functional form, they are less than satisfactory
+for production use.  More precise, $k$-specific, coefficients for curve
+fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in table FIXME
+
+% \begin{table}[p]
+% \centering
+% \end{table}
 
 \section{Numerical considerations}
 
