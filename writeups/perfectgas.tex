@@ -1652,14 +1652,97 @@ data shown in figure~\ref{fig:inhomogeneity}, one collection of constants
 $a$-$e$ permits equation~\eqref{eq:C1fit} to fit observed data to within
 $\left[-30.2\%,38.3\%\right]$.  One choice of $a$--$i$ for
 equation~\eqref{eq:C2fit} can fit all observed data to within
-$\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for
-the generality of the chosen functional form, they are less than satisfactory
-for production use.  More precise, $k$-specific, coefficients for curve
-fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in table FIXME
+$\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for the
+generality of the chosen functional form, they are less than satisfactory for
+production use.  More precise, $k$-specific, coefficients for curve
+fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in tables~\ref{tab:C1fit}
+and~\ref{tab:C2fit}.
 
-% \begin{table}[p]
-% \centering
-% \end{table}
+\begin{table}
+\centering
+\caption{
+    B-spline order-specific curve fits for estimating $C^{(1)}$ using
+    equation~\eqref{eq:C1fit} for use in
+    equations~\eqref{eq:convectivestability} and~\eqref{eq:lambda1deltay}.
+}
+\label{tab:C1fit}
+\begin{tabular}{r|ccccc|cc}
+k & a & b & c & d & e & min error & max error
+\\ \hline
+4--17
+\\
+4
+\\
+5
+\\
+6
+\\
+7
+\\
+8
+\\
+9
+\\
+10
+\\
+11
+\\
+12
+\\
+13
+\\
+14
+\\
+15
+\\
+16
+\\
+17
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{
+    B-spline order-specific curve fits for estimating $C^{(2)}$ using
+    equation~\eqref{eq:C2fit} for use in
+    equations~\eqref{eq:diffusivestability} and~\eqref{eq:lambda2deltay}.
+}
+\label{tab:C2fit}
+\begin{tabular}{r|ccccccccc|cc}
+k & a & b & c & d & e & f & g & h & i & min error & max error
+\\ \hline
+4
+\\
+5--17
+\\
+5
+\\
+6
+\\
+7
+\\
+8
+\\
+9
+\\
+10
+\\
+11
+\\
+12
+\\
+13
+\\
+14
+\\
+15
+\\
+16
+\\
+17
+\end{tabular}
+\end{table}
 
 \section{Numerical considerations}
 
