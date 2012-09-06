@@ -9,14 +9,14 @@
 \usepackage{algorithm}
 \usepackage{algorithmic}
 \usepackage{amsfonts}
-\usepackage{amsmath}
+\usepackage{fixltx2e,amsmath}
 \usepackage{amssymb}
 \usepackage{bm}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage{floatpag}
 \usepackage{fullpage}
-\usepackage{graphicx}
+\usepackage[final]{graphicx}
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
@@ -36,7 +36,11 @@
 \usepackage[obeyDraft,textsize=scriptsize]{todonotes}
 
 % In conjunction with -shell-escape, automatically convert EPS to PDF
-\usepackage[outdir=./,suffix=-generated,update]{epstopdf}
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+}
 
 % Hyperref package must be last otherwise the contents are jumbled
 % hypertexnames disabled to fix links pointing to incorrect locations
@@ -56,6 +60,10 @@
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 %%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Permit \eqref inside moving environments
+% http://tex.stackexchange.com/questions/61764/eqref-in-captions-with-mathtools
+\MakeRobust{\eqref}
 
 % Line Spacing
 \singlespacing
@@ -1513,7 +1521,8 @@ into account the inhomogeneous nature of his wall-normal direction.  He
 determined that the wall-normal imaginary eigenvalue magnitude dropped by
 nearly an order of magnitude after taking into account the inhomogeneity.  He
 concluded that, taking $\Delta{}y$ to be the breakpoint separation, $C^{(1)} =
-4$ was feasible \citep[equation~3.29]{Venugopal2003}.
+4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Suzerain's choice of
+$\Delta{}y$ and $C^{(1)}$ will be covered in section~\ref{sec:wallnormaleigval}.
 
 \subsubsection{Diffusive stability criterion}
 \label{sec:diffusivestability}
@@ -1570,20 +1579,59 @@ separation for $\Delta{}y$ and set $C^{(2)} = 1$.  \citeauthor{Venugopal2003}
 used a nearly identical diffusive criterion
 \citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
 diffusive stability criterion was not overly conservative for a non-periodic
-B-spline discretization.
+B-spline discretization.  Suzerain's choice of $\Delta{}y$ and $C^{(2)}$ will
+be covered in section~\ref{sec:wallnormaleigval}.
 
 \subsubsection{Discrete B-spline operator eigenvalue magnitudes}
 \label{sec:wallnormaleigval}
 
-To use stability estimates~\eqref{eq:convectivestability}
+Employing stability estimates~\eqref{eq:convectivestability}
 and~\eqref{eq:diffusivestability} requires information about the wall-normal
 discrete operator eigenvalue magnitudes.  By equations~\eqref{eq:lambda1deltay}
-and~\eqref{eq:lambda2deltay} this is equivalent to defining $\Delta{}y$ and
-then estimating both $C^{(1)}$ and $C^{(2)}$ for our wall-normal
-operators.
+and~\eqref{eq:lambda2deltay} this is equivalent to estimating both $C^{(1)}$
+and $C^{(2)}$ for our wall-normal discrete operators.  Per
+section~\ref{sec:formingoperators}, these operators are a function of three
+parameters: the piecewise polynomial order $k$ where $k=4$ indicates piecewise
+cubic B-splines, the hyperbolic tangent stretching parameter $\delta\geq{}0$,
+and the wall-normal number of degrees of freedom $N_y\geq{}k$.  Given
+numerically obtained exact maximum eigenvalue magnitudes
+$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ and
+$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ from a large collection
+of discrete operators, we computed exact results for
+$C^{(1)}=C^{(1)}\left(k,\delta,N_y\right)$ and
+$C^{(2)}=C^{(2)}\left(k,\delta,N_y\right)$.
 
-% \ref{sec:convectivestability}
-% \ref{sec:diffusivestability}
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\textwidth]{inhomogeneity}
+  \\
+  \caption{
+  Exact values of $C^{(1)}$ and $C^{(2)}$ computed per
+  equations~\eqref{eq:lambda1deltay} and~\eqref{eq:lambda2deltay} for roughly
+  30,000 combinations of $k$, $\delta$, and $N_y$.  Two-sided stretching was
+  performed on collocation points per equation~\eqref{eq:htstretch2}.  The two
+  upward trending curves are for $D^{(1)}$ while the two downward trending ones
+  are for $D^{(2)}$.  The leftmost four ``triangles'' correspond to $k=5$ while
+  $\delta$ was varied slowly and $N_y$ varied quickly.  Moving rightward, the
+  next ``triangles'' are for $k=6$, then $k=7$, etc.  Notice the logarithmic
+  vertical axis.  \label{fig:inhomogeneity}
+  }
+\end{figure}
+
+The results are shown in figure~\ref{fig:inhomogeneity}.  The minimum grid
+spacing $\Delta{}y$ was measured using either adjacent breakpoints or adjacent
+collocation points to admit a comparison.  Considering only breakpoint-based
+results for $k=8$, one can see how \citet{Venugopal2003} might have chosen
+$C^{(1)}=4$ and $C^{(2)}=1$ as discussed in
+sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
+However, it is striking just how non-universal those choices happen to be.
+Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
+inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
+$N_y$ vary; some combination of the three pieces of information is necessary.
+
+Hereafter, unlike Guarini, Kwok, and Venugopal, and following
+section~\ref{sec:formingoperators} \emph{we take $\Delta{}y$ to be the spacing
+between adjacent collocation points}.
 
 \section{Numerical considerations}
 
