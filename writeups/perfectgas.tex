@@ -1593,13 +1593,7 @@ and $C^{(2)}$ for our wall-normal discrete operators.  Per
 section~\ref{sec:formingoperators}, these operators are a function of three
 parameters: the piecewise polynomial order $k$ where $k=4$ indicates piecewise
 cubic B-splines, the hyperbolic tangent stretching parameter $\delta\geq{}0$,
-and the wall-normal number of degrees of freedom $N_y\geq{}k$.  Given
-numerically obtained exact maximum eigenvalue magnitudes
-$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ and
-$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ from a large collection
-of discrete operators, we computed exact results for
-$C^{(1)}=C^{(1)}\left(k,\delta,N_y\right)$ and
-$C^{(2)}=C^{(2)}\left(k,\delta,N_y\right)$.
+and the wall-normal number of degrees of freedom $N_y\geq{}k$.
 
 \begin{figure}
   \centering
@@ -1618,16 +1612,22 @@ $C^{(2)}=C^{(2)}\left(k,\delta,N_y\right)$.
   }
 \end{figure}
 
-The results are shown in figure~\ref{fig:inhomogeneity}.  The minimum grid
-spacing $\Delta{}y$ was measured using either adjacent breakpoints or adjacent
-collocation points to admit a comparison.  Considering only breakpoint-based
-results for $k=8$, one can see how \citet{Venugopal2003} might have chosen
-$C^{(1)}=4$ and $C^{(2)}=1$ as discussed in
-sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
-However, it is striking just how non-universal those choices happen to be.
-Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
-inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
-$N_y$ vary; some combination of the three pieces of information is necessary.
+Using actual maximum eigenvalue magnitudes
+$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ and
+$\lambda^{(1)}=\lambda^{(1)}\left(k,\delta,N_y\right)$ from a large collection
+of discrete operators, we computed exact results for
+$C^{(1)}=C^{(1)}\left(k,\delta,N_y\right)$ and
+$C^{(2)}=C^{(2)}\left(k,\delta,N_y\right)$.  The results are shown in
+figure~\ref{fig:inhomogeneity}.  The minimum grid spacing $\Delta{}y$ was
+measured using either adjacent breakpoints or adjacent collocation points to
+admit a comparison.  Considering only breakpoint-based results for $k=8$, one
+can see how \citet{Venugopal2003} probably chose $C^{(1)}=4$ and $C^{(2)}=1$ as
+discussed in sections~\ref{sec:convectivestability}
+and~\ref{sec:diffusivestability}.  However, it is striking just how
+non-universal those choices happen to be.  Evidently, neither a
+breakpoint-based nor a collocation point-based $\Delta{}y$ inherently captures
+the maximum eigenvalue magnitudes as $k$, $\delta$, and $N_y$ vary--- some
+combination of the three pieces of information is necessary.
 
 Hereafter, unlike Guarini, Kwok, and Venugopal, and following
 section~\ref{sec:formingoperators} we take $\Delta{}y$ to be the spacing
@@ -1651,14 +1651,14 @@ where $a$--$i$ are arbitrary, equation-specific constants.  Across all of the
 data shown in figure~\ref{fig:inhomogeneity}, one collection of constants
 $a$-$e$ permits equation~\eqref{eq:C1fit} to fit observed data to within
 $\left[-30.2\%,38.3\%\right]$.  One choice of $a$--$i$ for
-equation~\eqref{eq:C2fit} can fit all pictured $k=5--17$ data to within
+equation~\eqref{eq:C2fit} can fit all pictured $k=5$--$17$ data to within
 $\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for the
-generality of the chosen functional form, they are less than satisfactory for
+generality of the chosen functional forms, they are less than satisfactory for
 production use.  More precise, $k$-specific, coefficients for curve
 fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in tables~\ref{tab:C1fit}
-and~\ref{tab:C2fit}.  Fit coefficients for $C^{(2)}$ when $k=4$ are kept
-separate because the prominent structure for $k=5--17$ vanishes at this low
-order for unknown reasons.
+and~\ref{tab:C2fit}.  Fit coefficients for $C^{(2)}$ when $k=4$ have been kept
+separate because the prominent structure present when $k=5$--$17$ vanishes at
+this lower order for unknown reasons.
 
 \begin{table}
 \centering
