@@ -780,7 +780,8 @@ u^h(x,y,z,t)
   \label{eq:u_h_expansion}
 \end{align}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
-B-spline basis for some order and knot selection.
+B-spline basis for some order and knot selection.  The precise B-spline basis
+details are deferred until section~\ref{sec:formingoperators}.
 
 Now, within the method of weighted residuals framework, we choose a mixed
 Galerkin/collocation approach (often called a ``pseudospectral'' technique)
@@ -1312,10 +1313,52 @@ derivatives at wall-normal collocation points.  That is,
    \hat{u}_{l m n}
 \end{align}
 where the banded matrix $D^{(k)}$ is wavenumber independent.  $D^{(0)}$ is
-nothing but the ``mass matrix'' $M$.  Boundary conditions may be enforced for
-B-spline derivatives by using that the $k$th derivative of the function at the
-first (last) collocation point depends only on the first (last) $k+1$ B-spline
-coefficients.
+nothing but the ``mass matrix'' $M$.  Similar to, but different from, the
+approaches discussed by \citet[\textsection{}2.1.3]{Kwok2001}, Suzerain uses
+the Greville abscissae as its collocation points \citep{Johnson2005Higher}.
+Selecting these abscissae, also called Marsden--Schoenberg points,
+automatically avoids the near-wall stability problems detailed and worked
+around by \citet[\textsection{}4.4]{Kwok2001}.  Boundary conditions may be
+enforced for B-spline derivatives by using that the $k$th derivative of the
+function at the first (last) collocation point depends only on the first (last)
+$k+1$ B-spline coefficients.
+
+For some piecewise polynomial order and wall-normal number of degrees of
+freedom, the exact collocation point locations must be specified.  For the
+channel flow geometry, the collocation points are stretched via a two-sided
+hyperbolic tangent function
+$f_2:\left[0,1\right]\to\left[0,1\right]$~\citep{Vinokur1983Onedimensional}:
+\begin{align}\label{eq:htstretch2}
+  f_2\!\left(y\right) &= \frac{1}{2}\left(1 + \frac{
+      \tanh\left(\delta\left(y-1/2\right)\right)
+  }{
+      \tanh\left(\delta/2\right)
+  }\right)
+\end{align}
+For the flat plate, a one-sided hyperbolic tangent stretching
+function $f_1:\left[0,1\right]\to\left[0,1\right]$
+is used~\citep{Vinokur1983Onedimensional}:
+\begin{align}\label{eq:htstretch1}
+  f_1\!\left(y\right) &= 1 + \frac{
+      \tanh\left(\delta\left(y-1\right)\right)
+  }{
+      \tanh\left(\delta\right)
+  }
+\end{align}
+Here $\delta\geq{}0$ is an adjustable stretching parameter where setting
+$\delta=0$ recovers uniform spacing.  Values like $1\leq{}\delta\geq{}3$ are
+used in practice.  Through the Greville abscissae relationship between
+collocation points and breakpoints for a uniform order basis, specifying
+collocation points locations uniquely defines a B-spline basis and the discrete
+operators $D^{(k)}$.
+
+Many authors stretch the breakpoint locations and let the collocation points
+fall where they may.  As will be discussed in
+section~\ref{sec:wallnormaleigval}, neither approach is more natural in an
+inhomogeneous setting though stretching breakpoints is simpler operationally.
+Suzerain chooses to prescribe the collocation points because it is at only
+these locations where computation forces the weighted residuals to be zero per
+equation~\eqref{eq:R_h_weighted_residual_zero}.
 
 Computing the streamwise (or spanwise) first derivative of a quantity only
 requires multiplying each Fourier expansion coefficient $\hat{u}_{l m n}$ by
@@ -1528,6 +1571,19 @@ used a nearly identical diffusive criterion
 \citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
 diffusive stability criterion was not overly conservative for a non-periodic
 B-spline discretization.
+
+\subsubsection{Discrete B-spline operator eigenvalue magnitudes}
+\label{sec:wallnormaleigval}
+
+To use stability estimates~\eqref{eq:convectivestability}
+and~\eqref{eq:diffusivestability} requires information about the wall-normal
+discrete operator eigenvalue magnitudes.  By equations~\eqref{eq:lambda1deltay}
+and~\eqref{eq:lambda2deltay} this is equivalent to defining $\Delta{}y$ and
+then estimating both $C^{(1)}$ and $C^{(2)}$ for our wall-normal
+operators.
+
+% \ref{sec:convectivestability}
+% \ref{sec:diffusivestability}
 
 \section{Numerical considerations}
 
