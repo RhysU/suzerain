@@ -14,6 +14,7 @@ TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
 EXTRA_DIST  = inhomogeneity.gz
+EXTRA_DIST += inhomogeneity.eps
 EXTRA_DIST += references.bib
 
 # Build and install writeups
@@ -24,7 +25,8 @@ writeupsdir   = $(pkgdatadir)/writeups
 writeups_DATA = $(PDFS)
 
 # Files to clean up based on common TeX-based tools
-CLEANFILES = *.aux *.bbl *.blg *.dvi *.log *.pdf *.ps
+CLEANFILES  = *.aux *.bbl *.blg *.dvi *.log *.out *.pdf *.ps *.toc
+CLEANFILES += *-generated.pdf
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
