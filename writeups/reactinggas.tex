@@ -136,183 +136,72 @@ pressure, $H$ is the total enthalpy per unit mass, $\tau_{ji}$ is the
 viscous stress tensor, and $q_j$ is the heat flux vector.  Note that
 Roman indices ($i$, $j$) indicate spatial directions.  For these,
 repeated indices imply summation.  Greek indices ($\alpha$) indicate
-species, and repeated indices do not imply summation.
+species, and repeated Greek indices do not imply summation.
 
 \subsection{Constitutive relations and other assumptions}
 \label{sec:constitutive}
 
-\subsubsection{Perfect gas}
+\subsubsection{Mass Diffusion}
+Species diffusion is modeled using Fick's law combined with the
+self-consistent effective binary diffusion model of Ramshaw~\cite{?}.
+Specifically, Fick's law is given by
+%
+\begin{equation*}
+\rho_{\alpha} v_{\alpha, i} = - \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i},
+\end{equation*}
+% 
+where $\mcal{D}_{\alpha}$ is the mass diffusivity for species
+$\alpha$.  These mass diffusivities will be computed using Cantera.
+The form of the mass diffusivity model is not given here, but is
+available in the Cantera model document~\cite{?}.
 
-Assume our fluid is a thermally and calorically perfect gas governed by
-\begin{align}
-  \label{eq:perfectgaseos}
-  p &= \rho{} R T
-\end{align}
-where $R$ is the gas constant. The constant volume $C_{v}$ specific heat,
-constant pressure specific heat $C_{p}$, and acoustic velocity $a$
-relationships follow:
-\begin{align}
-  \label{eq:perfectgasrelations}
-  \gamma &= \frac{C_{p}}{C_{v}}
-  &
-  C_{v} &= \frac{R}{\gamma - 1}
-  &
-  C_{p} &= \frac{\gamma{}R}{\gamma-1}
-  &
-  R &= C_{p} - C_{v}
-  &
-  a^{2} = \gamma{}RT
-\end{align}
-Also assume $C_{v}$ and $C_{p}$ and therefore $\gamma$ are constant.
-The total (internal and kinetic) energy density is
-\begin{align}
-  \label{eq:perfectgastotalenergy}
-  E &= C_{v} T + \frac{1}{2}u^{2}
-     = \frac{RT}{\gamma-1} + \frac{1}{2}u^{2}
-\end{align}
-where the notation $u^2 = u\cdot{}u$ is employed.
-The total enthalpy density $H$ and (internal) enthalpy density $h$ are
-\begin{align}
-  \label{eq:perfectgasenthalpy}
-  H &= E + \frac{p}{\rho}
-     = C_{p} T + \frac{1}{2}u^{2}
-     = \frac{\gamma{}RT}{\gamma-1} + \frac{1}{2}u^{2}
-  &
-  h &= H - \frac{1}{2}u^{2}
-     = C_{p} T
-     = \frac{\gamma{}RT}{\gamma-1}
-  .
-\end{align}
-See a gas dynamics reference, e.g.~\citet{LiepmannRoshko2002}, for more
-details.
+Given that the $\mcal{D}_{\alpha}$ values are in general different for
+each $\alpha$, the Fickian model is not guaranteed to satisfy mass
+conservation.  That is,
+%
+\begin{equation*}
+\sum_{\alpha = 1}^{N_s} \rho_{\alpha} v_{\alpha, i} = - \rho \sum_{\alpha = 1}^{N_s} \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} \neq 0,
+\end{equation*}
+% 
+leading to a net mass creation or destruction term that appears in
+the continuity equation.
 
-\subsubsection{Newtonian fluid}
-\label{sec:newtonianfluid}
+To alleviate this problem, Ramshaw~\cite{} devised the self-consistent
+effective binary diffusion model.  In this model, each flux is
+corrected as follows:
+%
+\begin{equation*}
+\rho_{\alpha} v_{\alpha, i} = - \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} + c_{\alpha} \sum_{\beta = 1}^{N_s} \rho \mcal{D}_{\beta} \pp{c_{\beta}}{x_i}. \quad \textrm{Check me!}
+\end{equation*}
+% 
+Since $\sum_{\alpha} c_{\alpha} = 1$, this form clearly gives
+$\sum_{\alpha} \rho_{\alpha} v_{\alpha,i} = 0$.
 
-If one seeks a constitutive law for the viscous stress tensor $\tau$
-using only velocity information, the principle of material frame
-indifference implies that uniform translation (given by velocity $u$)
-and solid-body rotation (given by the skew-symmetric rotation tensor
-$\omega=\frac{1}{2}\left( \nabla{}u-\trans{\nabla{}u} \right)$)
-may not influence $\tau$.  Considering contributions only up to the
-gradient of velocity, extensional strain (dilatation) and shear strain
-effects may depend on only the symmetric strain rate tensor
-$\varepsilon=\frac{1}{2}\left( \nabla{}u+\trans{\nabla{}u}\right)$
-and its principal invariants.
+\subsubsection{Chemical Reactions}
+The source terms $\dot{\omega}_{\alpha}$ in the species equations
+appear due to chemical reactions.  At a given point in space and time,
+these sources depend only on the state at that point in space and
+time.  These terms will be evaluated from reaction mechanisms and
+reaction rate models implemented in Cantera~\cite{?}.  The details of
+these models will not be discussed further here.
 
-Assuming $\tau$ is isotropic and depends linearly upon only $\varepsilon$,
-one can express it as
-\begin{align}
-\tau_{ij}
-&= c_{ijmn} \varepsilon_{mn}
-\notag \\
-&= \left( A \delta_{ij} \delta_{mn}
-        + B \delta_{im} \delta_{jn}
-        + C \delta_{in} \delta_{jm}
-    \right) \varepsilon_{mn}
-&
-&\text{for some }A, B, C\in\mathbb{R}
-\notag \\
-&= A \delta_{ij} \varepsilon_{mm} + B\varepsilon_{ij} + C\varepsilon_{ji}
-\notag \\
-&= A \delta_{ij} \varepsilon_{mm} + \left( B+C \right)\varepsilon_{ji}
-\notag \\
-&= 2 \mu \varepsilon_{ij} + \lambda\delta_{ij}\nabla\cdot{}u
-\end{align}
-where $\mu=\frac{1}{2}\left( B + C \right)$ is the dynamic coefficient of
-viscosity (shear) and $\lambda=A$ is the second coefficient of viscosity
-(dilatational).  Reverting to direct notation,
-\begin{align}
-\tau
-&= 2 \mu \varepsilon + \lambda \left( \nabla\cdot{}u \right) I
-\label{eq:taunewt}
- =   \mu \left( \nabla{}u + \trans{\nabla{}u} \right)
-   + \lambda \left( \nabla\cdot{}u \right) I
-.
-\end{align}
+\todo{Add more details about Cantera calls?}
 
-The bulk viscosity $\mu_{B}=\lambda + \frac{2}{3}\mu$ and the deviatoric
-component of the strain rate tensor
-\begin{align}
-  S &= \varepsilon - \frac{1}{3} \trace\left(\varepsilon\right) I
-     = \frac{1}{2}\left(\nabla{}u + \trans{\nabla{}u}\right)
-     - \frac{1}{3}\left(\nabla\cdot{}u\right)I
-\end{align}
-may be used to write $\tau$ as
-\begin{align}
-\label{eq:tauSmub}
-  \tau &= 2 \mu S + \mu_b  \left( \nabla\cdot{}u \right) I
-.
-\end{align}
-The kinematic viscosity and bulk kinematic viscosity
-\begin{align}
- \nu &= \frac{\mu}{\rho} & \nu_{B} &= \frac{\mu_{B}}{\rho}
-\end{align}
-are often used to simplify notation.
+\subsubsection{Viscous Stress}
+Usual stress-strain rate relationship with dynamic viscosity determined from Cantera call.
 
-\subsubsection{Stokes' hypothesis}
-\label{sec:stokeshypothesis}
+\subsubsection{Heat Flux}
+Usual Fourier heat flux model with thermal conductivity determined
+from Cantera call.  Note that getting the temperature gradient will
+require evaluating the temperature in physical space (using Cantera),
+inverse transforming $T$ back to wave space, computing derivatives,
+and transforming back to physical space.
 
-Set the bulk viscosity $\mu_{B}$ to be a fixed multiple of the dynamic
-viscosity $\mu$.  This relationship may be written as either
-\begin{align}
-\label{eq:secondviscosityclaw}
-\mu_{B} &= \alpha \mu
-&
-&\text{or}
-&
-\lambda &= \left( \alpha - \frac{2}{3} \right) \mu
-\end{align}
-where a dimensionless proportionality constant $\alpha$ has been introduced.
-Stokes' hypothesis that the bulk viscosity is negligible may be recovered by
-selecting $\alpha = 0$.  Though Stokes' hypothesis is valid for most
-circumstances~\citep{GadelHak1995}, we choose to separately track $\mu$ and
-$\lambda$ terms in the model.
+\subsubsection{Pressure}
+Compute partial pressure for each species using ideal gas equation and sum.
 
-\subsubsection{Power law viscosity}
-
-Assume that viscosity varies only with temperature according to
-\begin{align}
-\label{eq:powerlawviscosity}
-\frac{\mu}{\mu_{0}}=\left(\frac{T}{T_{0}}\right)^{\beta}
-\end{align}
-where $\mu_{0}$ and $T_{0}$ are suitable reference values.  This
-relationship models air well for temperatures up to several thousand
-degrees Kelvin~\citep{NASA-TR-R-132}.
-
-\subsubsection{Fourier's equation}
-
-Neglecting the transport of energy by molecular diffusion and radiative heat
-transfer, we seek a linear relation between the surface heat flux $q_{s}$ and
-the temperature $T$.  The principle of frame indifference implies only the
-temperature gradient is relevant so that
-\begin{align}
-  \label{eq:fouriertensorlaw}
-  q_{s} &= \underline{\kappa} \cdot \nabla{} T
-\end{align}
-where $\underline{\kappa}$ is a thermal conductivity tensor.
-Consistent with our assumption that $\tau$ is isotropic, assume
-$\underline{\kappa}$ is isotropic to obtain
-\begin{align}
-  \label{eq:fourierlaw}
-  q_{s} &= - \kappa \nabla{} T
-\end{align}
-where $\kappa$ is the scalar thermal conductivity.  The negative sign has been
-introduced so that heat flows from hot to cold when $\kappa>0$.
-
-\subsubsection{Constant Prandtl number}
-
-Assume the Prandtl number $\Prandtl = \frac{\mu{}C_{p}}{\kappa}$ is constant.
-Because $C_{p}$ is constant the ratio $\frac{\mu}{\kappa}$ must be
-constant.  The viscosity and thermal conductivity must either grow at
-identical rates or they must grow according to an inverse relationship.
-The latter is not observed in practice for this class of fluids, and
-so further assume
-\begin{align}
-  \frac{\mu}{\mu_{0}} = \frac{\kappa}{\kappa_{0}}
-  .
-  \label{eq:mukappa}
-\end{align}
+\subsubsection{Enthalpies}
+Cantera?
 
 \subsection{Slow growth models}
 \label{sec:slowgrowthmodels}
