@@ -13,7 +13,8 @@ TEXSOURCES += perfectgas.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
-EXTRA_DIST  = references.bib
+EXTRA_DIST  = inhomogeneity.gz
+EXTRA_DIST += references.bib
 
 # Build and install writeups
 all-local:      pdf-local
