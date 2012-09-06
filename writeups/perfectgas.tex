@@ -1651,13 +1651,14 @@ where $a$--$i$ are arbitrary, equation-specific constants.  Across all of the
 data shown in figure~\ref{fig:inhomogeneity}, one collection of constants
 $a$-$e$ permits equation~\eqref{eq:C1fit} to fit observed data to within
 $\left[-30.2\%,38.3\%\right]$.  One choice of $a$--$i$ for
-equation~\eqref{eq:C2fit} can fit all pictured data for $k=5--17$ to within
-$\left[-1.38\%,3.34\%\right]$.  The prominent structure within $C^{(2)}$
-seemingly vanishes for the not-pictured $k=4$.  While those results are
-encouraging for the generality of the chosen functional form, they are less
-than satisfactory for production use.  More precise, $k$-specific, coefficients
-for curve fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in
-tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
+equation~\eqref{eq:C2fit} can fit all pictured $k=5--17$ data to within
+$\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for the
+generality of the chosen functional form, they are less than satisfactory for
+production use.  More precise, $k$-specific, coefficients for curve
+fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in tables~\ref{tab:C1fit}
+and~\ref{tab:C2fit}.  Fit coefficients for $C^{(2)}$ when $k=4$ are kept
+separate because the prominent structure for $k=5--17$ vanishes at this low
+order for unknown reasons.
 
 \begin{table}
 \centering
@@ -1808,34 +1809,184 @@ tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
 k & a & b & c & d & e & f & g & h & i & \multicolumn{2}{c}{relative error}
 \\ \hline
 4
+& $ \frac{570685}{9}$
+& $-\frac{590851}{4}$
+& $\scriptstyle{} -4514312$
+& $-\frac{49033}{14}$
+& $-\frac{  104}{557}$
+& $ \frac{ 4196}{6889}$
+& $-\frac{  603}{2624}$
+& $-\frac{  493}{1455}$
+& $-\frac{ 5736}{793}$
+& -172 &  84.0
 \\
 5--17
+& $\frac{5341 }{1251}$
+& $\frac{13092}{503}$
+& $\scriptstyle{} 125847524$
+& $-\frac{  5254}{533}$
+& $-\frac{   869}{221}$
+& $ \frac{  5793}{3902}$
+& $-\frac{   122}{27}$
+& $ \frac{314573}{8}$
+& $-\frac{  3073}{522}$
+& -1.38 &  3.34
 \\
 5
+& $ \frac{ 4759}{187}$
+& $-\frac{ 1556}{851}$
+& $ \frac{37795}{66}$
+& $ \frac{ -897}{211}$
+& $-\frac{  483}{626}$
+& $ \frac{ 6320}{4273}$
+& $-\frac{ 4206}{937}$
+& $ \frac{ 9881}{2059}$
+& $ \frac{ 3425}{4039}$
+& -0.789 &  3.14
 \\
 6
+& $ \frac{ 8471}{1718}$
+& $-\frac{  939}{1994}$
+& $ \frac{10683}{5}$
+& $-\frac{  490}{151}$
+& $-\frac{   15}{49}$
+& $ \frac{ 3728}{2559}$
+& $-\frac{  486}{109}$
+& $ \frac{  929}{1033}$
+& $ \frac{ 5515}{2987}$
+& -0.387 &  1.37
 \\
 7
+& $ \frac{  5437}{950}$
+& $ \frac{  2886}{553}$
+& $ \frac{169467}{77}$
+& $-\frac{  1522}{431}$
+& $-\frac{  5537}{906}$
+& $ \frac{  9485}{6452}$
+& $-\frac{  1103}{243}$
+& $ \frac{469835}{4}$
+& $\scriptstyle{} -75727$
+& -0.248 &  0.838
 \\
 8
+& $\frac{550042}{11}$
+& $\scriptstyle{} -399968$
+& $\scriptstyle{} -97954581$
+& $-\frac{423998}{9}$
+& $-\frac{   571}{4932}$
+& $ \frac{  8527}{5767}$
+& $-\frac{  1873}{406}$
+& $ \frac{   212}{27}$
+& $ \frac{    79}{92}$
+& -0.187 &  0.622
 \\
 9
+& $ \frac{  2056}{379}$
+& $ \frac{  2385}{623}$
+& $ \frac{128515}{49}$
+& $-\frac{  1387}{401}$
+& $-\frac{   412}{1085}$
+& $ \frac{  4763}{3209}$
+& $-\frac{  2399}{512}$
+& $ \frac{ 24009}{478}$
+& $-\frac{   637}{1051}$
+& -0.153 &  0.508
 \\
 10
+& $ \frac{    187 }{35}$
+& $ \frac{   1389 }{410}$
+& $ \frac{  11333 }{4}$
+& $-\frac{    905 }{266}$
+& $-\frac{    757 }{1996}$
+& $ \frac{   4344 }{2917}$
+& $-\frac{   2161 }{454}$
+& $ \frac{   4763 }{6571}$
+& $ \frac{   6062 }{4759}$
+& -0.130 &  0.432
 \\
 11
+& $ \frac{ 5413}{1024}$
+& $ \frac{ 4073}{1377}$
+& $ \frac{36127}{12}$
+& $-\frac{ 1049}{314}$
+& $-\frac{ 2971}{507}$
+& $ \frac{  611}{409}$
+& $-\frac{ 1592}{329}$
+& $ \frac{ 7858}{1401}$
+& $-\frac{ 1306}{33}$
+& -0.113 &  0.376
 \\
 12
+& $ \frac{ 8787}{1690}$
+& $ \frac{ 8389}{3368}$
+& $ \frac{25183}{8}$
+& $-\frac{ 1765}{542}$
+& $-\frac{ 3149}{496}$
+& $ \frac{ 3589}{2395}$
+& $-\frac{ 2245}{456}$
+& $ \frac{50386}{281}$
+& $-\frac{13591}{28}$
+& -0.0998 &  0.329
 \\
 13
+& $ \frac{  4815}{941}$
+& $ \frac{  2781}{1688}$
+& $ \frac{229996}{71}$
+& $-\frac{   723}{229}$
+& $-\frac{   965}{2096}$
+& $ \frac{  2587}{1721}$
+& $-\frac{  2552}{509}$
+& $ \frac{  9183}{7750}$
+& $ \frac{  4387}{4524}$
+& -0.0873 &  0.288
 \\
 14
+& $ \frac{  5653}{1135}$
+& $-\frac{   863}{855}$
+& $ \frac{153347}{45}$
+& $-\frac{  2020}{671}$
+& $-\frac{   780}{1633}$
+& $ \frac{  9431}{6255}$
+& $-\frac{    46}{9}$
+& $ \frac{  3115}{944}$
+& $ \frac{  4083}{6946}$
+& -0.0893 &  0.249
 \\
 15
+& $ \frac{ 2440}{521}$
+& $-\frac{  620}{137}$
+& $ \frac{46790}{13}$
+& $-\frac{ 1724}{607}$
+& $-\frac{   66}{137}$
+& $ \frac{ 9363}{6191}$
+& $-\frac{ 4987}{956}$
+& $ \frac{ 1542}{703}$
+& $ \frac{  463}{598}$
+& -0.125 &  0.212
 \\
 16
+& $ \frac{   929}{179}$
+& $ \frac{  1147}{349}$
+& $ \frac{251877}{50}$
+& $-\frac{   595}{181}$
+& $-\frac{  3176}{299}$
+& $ \frac{  7861}{5182}$
+& $-\frac{  2879}{540}$
+& $ \frac{   231}{94}$
+& $-\frac{ 45727}{78}$
+& -0.164 &  0.182
 \\
 17
+& $ \frac{  3497}{674}$
+& $ \frac{  2222}{731}$
+& $ \frac{325651}{61}$
+& $-\frac{    75}{23}$
+& $-\frac{  2724}{215}$
+& $ \frac{  3836}{2521}$
+& $-\frac{  2363}{433}$
+& $ \frac{  8405}{906}$
+& $-\frac{  4220}{169}$
+& -0.0021 &  0.0019
 \end{tabular}
 \end{table}
 
