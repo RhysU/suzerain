@@ -288,6 +288,16 @@ enum type {
 
 } // namespace linearize
 
+/** Provides scoping semantics for slowgrowth::type */
+namespace slowgrowth {
+
+/** What slow growth sources are employed? */
+enum type {
+    none,  ///< No slow growth sources
+};
+
+} // namespace slowgrowth
+
 /**
  * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
  * implementation is provided as a common building block for
