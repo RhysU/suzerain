@@ -1651,53 +1651,146 @@ where $a$--$i$ are arbitrary, equation-specific constants.  Across all of the
 data shown in figure~\ref{fig:inhomogeneity}, one collection of constants
 $a$-$e$ permits equation~\eqref{eq:C1fit} to fit observed data to within
 $\left[-30.2\%,38.3\%\right]$.  One choice of $a$--$i$ for
-equation~\eqref{eq:C2fit} can fit all observed data to within
-$\left[-1.38\%,3.34\%\right]$.  While those results are encouraging for the
-generality of the chosen functional form, they are less than satisfactory for
-production use.  More precise, $k$-specific, coefficients for curve
-fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in tables~\ref{tab:C1fit}
-and~\ref{tab:C2fit}.
+equation~\eqref{eq:C2fit} can fit all pictured data for $k=5--17$ to within
+$\left[-1.38\%,3.34\%\right]$.  The prominent structure within $C^{(2)}$
+seemingly vanishes for the not-pictured $k=4$.  While those results are
+encouraging for the generality of the chosen functional form, they are less
+than satisfactory for production use.  More precise, $k$-specific, coefficients
+for curve fits~\eqref{eq:C1fit} and~\eqref{eq:C2fit} appear in
+tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
 
 \begin{table}
 \centering
 \caption{
     B-spline order-specific curve fits for estimating $C^{(1)}$ using
     equation~\eqref{eq:C1fit} for use in
-    equations~\eqref{eq:convectivestability} and~\eqref{eq:lambda1deltay}.
+    equations~\eqref{eq:convectivestability} and~\eqref{eq:lambda1deltay}
+    where $\Delta{}y$ is the minimum distance between collocation points.
 }
 \label{tab:C1fit}
-\begin{tabular}{r|ccccc|cc}
-k & a & b & c & d & e & min error & max error
+\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
+\begin{tabular}{r|ccccc|c@{ -- }c@{\%}}
+ k & a & b & c & d & e & \multicolumn{2}{c}{relative error}
 \\ \hline
 4--17
+& $ \frac{4167}{2549}$
+& $-\frac{ 559}{5836}$
+& $ \frac{ 247}{1328}$
+& $ \frac{3085}{776}$
+& $ \frac{4839}{2084}$
+& -30.2 & 38.3
 \\
 4
+& $ \frac{  1037}{641   }$
+& $ \frac{   473}{20764 }$
+& $ \frac{    39}{224212}$
+& $ \frac{792520}{93    }$
+& $ \frac{  3155}{2478  }$
+& -2.66 & 1.41
 \\
 5
+&  $\frac{   739}{455}$
+&  $\frac{   167}{6799}$
+&  $\frac{    60}{641219}$
+&  $\frac{369130}{27}$
+&  $\frac{   610}{457}$
+& -2.72 & 1.26
 \\
 6
+& $\frac{  1849}{1135}$
+& $\frac{   600}{24907}$
+& $\frac{    51}{804298}$
+& $\frac{422796}{23}$
+& $\frac{  3585}{2537}$
+& -2.80 & 2.30
 \\
 7
+& $\frac{  4829}{2957}$
+& $\frac{    22}{1053}$
+& $\frac{    39}{374987}$
+& $\frac{358703}{34}$
+& $\frac{  3643}{2423}$
+& -2.81 & 5.94
 \\
 8
+& $\frac{3275}{2003}$
+& $\frac{ 583}{37716}$
+& $\frac{  57}{47897}$
+& $\frac{5279}{6}$
+& $\frac{ 779}{491}$
+& -4.19 & 9.87
 \\
 9
+& $\frac{ 9125}{5576}$
+& $\frac{  282}{62887}$
+& $\frac{  155}{47511}$
+& $\frac{94118}{309}$
+& $\frac{ 2235}{1316}$
+& -6.82 & 15.9
 \\
 10
+& $ \frac{ 1369}{836}$
+& $-\frac{   39}{3434}$
+& $ \frac{  501}{74569}$
+& $ \frac{27691}{196}$
+& $ \frac{ 5078}{2803}$
+& -10.0 & 20.5
 \\
 11
+& $ \frac{4046}{2469}$
+& $-\frac{ 252}{7727}$
+& $ \frac{ 693}{53629}$
+& $ \frac{ 279}{4}$
+& $ \frac{9532}{4927}$
+& -13.9 & 25.8
 \\
 12
+& $ \frac{ 1186}{723}$
+& $-\frac{  424}{6971}$
+& $ \frac{  911}{94585}$
+& $ \frac{73428}{823}$
+& $ \frac{ 1443}{701}$
+& -18.7 &  29.6
 \\
 13
+& $ \frac{ 4945}{3012}$
+& $-\frac{  653}{7141}$
+& $ \frac{  625}{41087}$
+& $ \frac{45539}{842}$
+& $ \frac{ 2321}{1071}$
+& -23.3 &  31.0
 \\
 14
+& $ \frac{ 2523}{1535}$
+& $-\frac{  531}{4168}$
+& $ \frac{  601}{16577}$
+& $ \frac{17133}{827}$
+& $ \frac{  508}{219}$
+& -28.7 &  34.2
 \\
 15
+& $ \frac{1876}{1143}$
+& $-\frac{ 937}{7195}$
+& $ \frac{ 338}{4835}$
+& $ \frac{5994}{571}$
+& $ \frac{5600}{2413}$
+& -27.1 &  25.0
 \\
 16
+& $ \frac{3177}{1936}$
+& $-\frac{ 617}{3756}$
+& $ \frac{ 217}{1839}$
+& $ \frac{5409}{839}$
+& $ \frac{4429}{1898}$
+& -30.5 &  25.6
 \\
 17
+& $ \frac{9839}{6006}$
+& $-\frac{ 172}{891}$
+& $ \frac{1199}{3983}$
+& $ \frac{5723}{2355}$
+& $ \frac{2442}{1015}$
+& -33.9 &  36.3
 \end{tabular}
 \end{table}
 
@@ -1706,11 +1799,13 @@ k & a & b & c & d & e & min error & max error
 \caption{
     B-spline order-specific curve fits for estimating $C^{(2)}$ using
     equation~\eqref{eq:C2fit} for use in
-    equations~\eqref{eq:diffusivestability} and~\eqref{eq:lambda2deltay}.
+    equations~\eqref{eq:diffusivestability} and~\eqref{eq:lambda2deltay}
+    where $\Delta{}y$ is the minimum distance between collocation points.
 }
 \label{tab:C2fit}
-\begin{tabular}{r|ccccccccc|cc}
-k & a & b & c & d & e & f & g & h & i & min error & max error
+\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
+\begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
+k & a & b & c & d & e & f & g & h & i & \multicolumn{2}{c}{relative error}
 \\ \hline
 4
 \\
