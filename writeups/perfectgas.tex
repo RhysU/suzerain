@@ -16,6 +16,7 @@
 \usepackage{fancyhdr}
 \usepackage{floatpag}
 \usepackage{fullpage}
+\usepackage{graphicx}
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
@@ -33,6 +34,9 @@
 \usepackage{yhmath}
 
 \usepackage[obeyDraft,textsize=scriptsize]{todonotes}
+
+% In conjunction with -shell-escape, automatically convert EPS to PDF
+\usepackage[outdir=./,suffix=-generated,update]{epstopdf}
 
 % Hyperref package must be last otherwise the contents are jumbled
 % hypertexnames disabled to fix links pointing to incorrect locations
