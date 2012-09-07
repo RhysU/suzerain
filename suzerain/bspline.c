@@ -223,8 +223,8 @@ suzerain_bspline_htstretch2_evdeltascale1(
     const double c    = p[ndx][2];
     const double d    = p[ndx][3];
     const double e    = p[ndx][4];
-    const double errl = p[ndx][5];
-    const double errh = p[ndx][6];
+    const double errl = p[ndx][5]; // Measured in percent
+    const double errh = p[ndx][6]; // Measured in percent
 
     // C^{(1)} &\approx k^a \left(
     //     1 + b \frac{\delta}{\ln{} k} + c \frac{k}{N_y}
@@ -233,8 +233,10 @@ suzerain_bspline_htstretch2_evdeltascale1(
     *C  = pow(k, a);
     *C *= 1 + b*(htdelta/log(k)) + c*(k/N)*(1 + d*pow(htdelta,e));
 
-    if (Clow)  *Clow  = 0; // FIXME Implement
-    if (Chigh) *Chigh = 0; // FIXME Implement
+    // Using percent error bounds on the fit, estimate true range
+    if (Clow)  *Clow  = *C / (1 - errl/100);
+    if (Chigh) *Chigh = *C / (1 - errh/100);
+
     return SUZERAIN_SUCCESS;
 }
 
@@ -289,8 +291,8 @@ suzerain_bspline_htstretch2_evdeltascale2(
     const double g    = p[ndx][ 6];
     const double h    = p[ndx][ 7];
     const double i    = p[ndx][ 8];
-    const double errl = p[ndx][ 9];
-    const double errh = p[ndx][10];
+    const double errl = p[ndx][ 9]; // Measured in percent
+    const double errh = p[ndx][10]; // Measured in percent
 
     // C^{(2)} &\approx \left(a + \frac{b}{k} + c k^d\right)
     //     \left(
@@ -300,8 +302,10 @@ suzerain_bspline_htstretch2_evdeltascale2(
     *C  = a + b/k + c*pow(k,d);
     *C *= 1 + e*pow(htdelta,f)*pow(log(N),g)*(1 + h*pow(k,i));
 
-    if (Clow)  *Clow  = 0; // FIXME Implement
-    if (Chigh) *Chigh = 0; // FIXME Implement
+    // Using percent error bounds on the fit, estimate true range
+    if (Clow)  *Clow  = *C / (1 - errl/100);
+    if (Chigh) *Chigh = *C / (1 - errh/100);
+
     return SUZERAIN_SUCCESS;
 }
 
