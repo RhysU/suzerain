@@ -174,3 +174,62 @@ suzerain_bspline_integration_coefficients(
 
     return SUZERAIN_SUCCESS;
 }
+
+static int
+suzerain_bspline_htstretch2_evdeltascale1(
+    int k,
+    double htdelta,
+    int n,
+    double *C)
+{
+    // FIXME Implement
+    *C = 0;
+    return SUZERAIN_SUCCESS;
+}
+
+static int
+suzerain_bspline_htstretch2_evdeltascale2(
+    int k,
+    double htdelta,
+    int n,
+    double *C)
+{
+    // FIXME Implement
+    *C = 0;
+    return SUZERAIN_SUCCESS;
+}
+
+int
+suzerain_bspline_htstretch2_evdeltascale(
+    int nderiv,
+    int k,
+    double htdelta,
+    int n,
+    double *C)
+{
+    /* Parameter sanity checks */
+    if (nderiv < 0) {
+        SUZERAIN_ERROR("Requested derivative nderiv must be nonnegative",
+                       SUZERAIN_EINVAL);
+    } else if (k < 1) {
+        SUZERAIN_ERROR("B-spline order k must be strictly positive",
+                       SUZERAIN_EINVAL);
+    } else if (htdelta < 0) {
+        SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
+                       SUZERAIN_EINVAL);
+    } else if (n < k) {
+        SUZERAIN_ERROR("Number of degrees of freedom n < B-spline order k",
+                       SUZERAIN_EINVAL);
+    }
+
+    /* Dispatch to derivative-specific fits */
+    switch (nderiv) {
+        default:
+            SUZERAIN_ERROR("Derivative nderiv unimplemented",
+                           SUZERAIN_FAILURE);
+        case 1:
+            return suzerain_bspline_htstretch2_evdeltascale1(k, htdelta, n, C);
+        case 2:
+            return suzerain_bspline_htstretch2_evdeltascale2(k, htdelta, n, C);
+    }
+}

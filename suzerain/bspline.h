@@ -240,6 +240,34 @@ suzerain_bspline_linear_combination_matrix(
     gsl_bspline_deriv_workspace dw);
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
+/**
+ * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
+ * \f$\left(\frac{pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
+ * eigenvalue for the \f$i\f$th Greville abscissae-based, collocation
+ * derivative operator when using two-sided hyperbolic tangent stretching.
+ * \f$\Delta{}x\f$ must measure the distance between adjacent <em>collocation
+ * points</em>.  See the Suzerain model document for more details.
+ *
+ * @param[in]  nderiv  The desired derivative order.
+ *                     Currently only the values \c 1 and \c 2 are acceptable.
+ * @param[in]  k       The B-spline order following GSL conventions.
+ *                     For example, <tt>k=4</tt> denotes piecewise cubics.
+ * @param[in]  htdelta The nonnegative grid stretching parameter.
+ * @param[in]  N       The number of degrees of freedom in the basis.
+ * @param[out] C       The grid spacing scaling factor \f$C^{(i)}\f$.
+ *
+ * @see suzerain_htstretch2() for more information on the grid stretching.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_htstretch2_evdeltascale(
+    int nderiv,
+    int k,
+    double htdelta,
+    int n,
+    double *C);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
