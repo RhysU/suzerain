@@ -213,8 +213,13 @@ std::vector<real_t> applyNonlinearOperator(
     }
 
     // Retrieve constants and compute derived constants before inner loops
-    const real_t one_over_delta_x = o.one_over_delta_x;
-    const real_t one_over_delta_z = o.one_over_delta_z;
+    // First, eigenvalue magnitudes for the Fourier derivative operators
+    const real_t pi        = boost::math::constants::pi<real_t>();
+    const real_t lambda1_x = pi * o.one_over_delta_x;
+    const real_t lambda1_z = pi * o.one_over_delta_z;
+    const real_t lambda2_x = pi * pi * o.one_over_delta_x * o.one_over_delta_x;
+    const real_t lambda2_z = pi * pi * o.one_over_delta_z * o.one_over_delta_z;
+    // Next, derived scenario parameters
     const real_t alpha            = o.scenario.alpha;
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
     const real_t beta             = o.scenario.beta;
@@ -488,6 +493,12 @@ std::vector<real_t> applyNonlinearOperator(
 
         // Wall-normal grid spacing depends on wall-normal location
         const real_t one_over_delta_y_j = o.one_over_delta_y(j);
+
+        // Wall-normal operator eigenvalue estimates depend on location
+        // See model documentation for why the
+        // magic number four modifies one_over_delta_y for convection.
+        const real_t lambda1_y = pi*one_over_delta_y_j / 4;
+        const real_t lambda2_y = pi*pi*one_over_delta_y_j*one_over_delta_y_j;
 
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref_ux        ()[j],
@@ -764,16 +775,13 @@ std::vector<real_t> applyNonlinearOperator(
                 // the resulting time steps are in general too large for
                 // reasonable accuracy, we expect to be limited by diffusive
                 // stability and so we do take (u - ref_u) here.
-                //
-                // See convective_stability_criterion documentation for why the
-                // magic number four modifies one_over_delta_y for convection.
                 convective_delta_t = suzerain::math::minnan(
                         convective_delta_t,
                         suzerain::timestepper::convective_stability_criterion(
-                                u.x(), one_over_delta_x,
-                                u.y(), one_over_delta_y_j / 4,
-                                u.z(), one_over_delta_z,
-                                evmaxmag_imag, a));
+                                u.x(), a, lambda1_x,
+                                u.y(), a, lambda1_y,
+                                u.z(), a, lambda1_z,
+                                evmaxmag_imag));
 
                 // The diffusive stability uses ref_nu which has been
                 // previously set as appropriate for Linearize.  This form
@@ -782,9 +790,7 @@ std::vector<real_t> applyNonlinearOperator(
                 diffusive_delta_t = suzerain::math::minnan(
                         diffusive_delta_t,
                         suzerain::timestepper::diffusive_stability_criterion(
-                                one_over_delta_x,
-                                one_over_delta_y_j,
-                                one_over_delta_z,
+                                lambda2_x, lambda2_y, lambda2_z,
                                 Re, Pr, gamma, evmaxmag_real,
                                 nu, ref_nu, alpha*nu, alpha*ref_nu));
             }

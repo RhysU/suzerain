@@ -95,18 +95,23 @@ public:
  * operator.  This criterion appears as equation 2.39 in Wai Y. Kwok's thesis
  * (2002) and equations 4.20 and 4.21 in Stephen Guarini's thesis (1998):
  * \f[
- *     \pi\left(
- *         \frac{\left|u_{x}\right| + a}{\Delta{}x}
- *       + \frac{\left|u_{y}\right| + a}{\Delta{}y}
- *       + \frac{\left|u_{z}\right| + a}{\Delta{}z}
- *     \right) \Delta{}t \leq \left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}
+ *     \Delta{}t \leq
+ *     \frac{
+ *       \left|\lambda_{I}\Delta{}t\right|_{\max}
+ *     }{
+ *         \left(\left|u_{x}\right| + a\right) \lambda^{(1)}_x
+ *       + \left(\left|u_{y}\right| + a\right) \lambda^{(1)}_y
+ *       + \left(\left|u_{z}\right| + a\right) \lambda^{(1)}_z
+ *     }
  * \f]
  * where \f$a\f$ is the local acoustic velocity, \f$u_{x}\f$ denotes the
- * velocity in the X direction, \f$\Delta{}x\f$ represents the grid size in the
- * X direction, etc.  The maximum pure imaginary eigenvalue magnitude,
+ * velocity in the X direction, $\lambda^{(1)}_x$ represents the maximum
+ * imaginary eigenvalue magnitude of the first derivative operator in the $x$
+ * direction, etc.  The maximum pure imaginary eigenvalue magnitude,
  * \f$\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}\f$, is a feature of the
  * chosen timestepping method.  For example, it is \f$\sqrt{3}\f$ for the SMR91
- * scheme.
+ * scheme.  See the Suzerain model document for details on estimating
+ * \f$\lambda^{(1)}_x\f$, \f$\lambda^{(1)}_y\f$, and \f$\lambda^{(1)}_z\f$.
  *
  * For formulations in which an explicit Mach number
  * \f$\mbox{Ma}=\frac{u_0}{a_0}\f$ appears, one \em must provide the velocities
@@ -117,31 +122,26 @@ public:
  *
  * Using a hybrid implicit/explicit %timestepper with acoustic terms computed
  * implicitly effectively sets the sound speed to be zero for this CFL
- * calculation.
- *
- * @note Prem Venugopal's 2003 thesis used a nearly identical convective
- * stability criterion (equation 3.10).  Venugopal found the constraint to be
- * overly conservative in the wall-normal direction because the derivation
- * assumed periodicity.  In section 3.2 he presents a linearized analysis
- * taking into account the inhomogeneous nature of the wall-normal direction.
- * He determined that the wall-normal imaginary eigenvalue magnitude dropped by
- * nearly an order of magnitude after taking into account the inhomogeneity.
- * He concluded that using an effective \f$1/\Delta{}y\f$ <em>four</em> times
- * smaller than the nominal value was feasible (equation 3.29).  His approach
- * can be accomplished by specifying <tt>one_over_delta_y / 4</tt> when
- * invoking this method.
+ * calculation.  Three different acoustic velocities \f$a_x\f$, \f$a_y\f$ and
+ * \f$a_z\f$ may be specified to accommodate when only some directions have
+ * implicitly treated acoustics.
  *
  * @param u_x              Velocity in the X direction \f$u_{x}\f$
- * @param one_over_delta_x Inverse local X grid spacing \f$1/\Delta{}x\f$
+ * @param a_x              The local sound speed \f$a\f$ for the X direction.
+ * @param lambda1_x        The maximum pure imaginary eigenvalue magnitude
+ *                         for the first derivative in the X direction.
  * @param u_y              Velocity in the Y direction \f$u_{y}\f$
- * @param one_over_delta_y Inverse local Y grid spacing \f$1/\Delta{}y\f$
+ * @param a_y              The local sound speed \f$a\f$ for the Y direction.
+ * @param lambda1_y        The maximum pure imaginary eigenvalue magnitude
+ *                         for the first derivative in the Y direction.
  * @param u_z              Velocity in the Z direction \f$u_{z}\f$
- * @param one_over_delta_z Inverse local Z grid spacing \f$1/\Delta{}z\f$
+ * @param a_z              The local sound speed \f$a\f$ for the Z direction.
+ * @param lambda1_z        The maximum pure imaginary eigenvalue magnitude
+ *                         for the first derivative in the Z direction.
  * @param evmaxmag_imag    The maximum pure imaginary eigenvalue magnitude
  *                         for some Runge-Kutta scheme, denoted \f$\left|
  *                         \lambda_{I}\Delta_{}t \right|_{\mbox{max}}\f$
  *                         in Guarini's thesis.
- * @param a                The local sound speed \f$a\f$.
  *
  * @return The maximum stable time step \f$\Delta{}t\f$ according to
  *         the convective CFL criterion.
@@ -149,59 +149,107 @@ public:
 template<typename FPT>
 FPT convective_stability_criterion(
         const FPT u_x,
-        const FPT one_over_delta_x,
+        const FPT a_x,
+        const FPT lambda1_x,
         const FPT u_y,
-        const FPT one_over_delta_y,
+        const FPT a_y,
+        const FPT lambda1_y,
         const FPT u_z,
-        const FPT one_over_delta_z,
-        const FPT evmaxmag_imag,
-        const FPT a = 0)
+        const FPT a_z,
+        const FPT lambda1_z,
+        const FPT evmaxmag_imag)
 {
-    // Precision for a 128-bit IEEE quad found via Sage's N(1/pi,digits=34)
-    static const FPT one_over_pi
-        = (FPT) 0.3183098861837906715377675267450287L;
-
-    return (evmaxmag_imag * one_over_pi)
-        /  (   (std::abs(u_x) + a)*one_over_delta_x
-             + (std::abs(u_y) + a)*one_over_delta_y
-             + (std::abs(u_z) + a)*one_over_delta_z);
+    using ::std::abs;
+    return  evmaxmag_imag
+        /  (   (abs(u_x) + a_x)*lambda1_x
+             + (abs(u_y) + a_y)*lambda1_y
+             + (abs(u_z) + a_z)*lambda1_z);
 }
 
 /**
  * Compute an approximation to the maximum stable time step according to the
- * viscous stability criterion for a three dimensional model diffusion
+ * convective criterion for the one dimensional Euler equations.  This
+ * surrogate is a model for the convective portion of the one-dimensional
+ * Navier-Stokes operator:
+ * \f[
+ *     \Delta{}t \leq
+ *     \frac{
+ *       \left|\lambda_{I}\Delta{}t\right|_{\max}
+ *     }{
+ *         \left(\left|u\right| + a\right) \lambda^{(1)}
+ *     }
+ * \f]
+ * where \f$a\f$ is the local acoustic velocity, \f$u\f$ denotes the velocity,
+ * and represents the maximum imaginary eigenvalue magnitude of the first
+ * derivative operator.
+ *
+ * @param u                Velocity \f$u\f$
+ * @param a                The local sound speed \f$a\f$.
+ * @param lambda1          The maximum pure imaginary eigenvalue magnitude
+ *                         for the first derivative.
+ * @param evmaxmag_imag    The maximum pure imaginary eigenvalue magnitude
+ *                         for some Runge-Kutta scheme, denoted \f$\left|
+ *                         \lambda_{I}\Delta_{}t \right|_{\mbox{max}}\f$
+ *                         in Guarini's thesis.
+ *
+ * @see convective_stability_criterion(FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT)
+ *      for more details.
+ * @return The maximum stable time step \f$\Delta{}t\f$ according to
+ *         the convective CFL criterion.
+ */
+template<typename FPT>
+FPT convective_stability_criterion(
+        const FPT u,
+        const FPT a,
+        const FPT lambda1,
+        const FPT evmaxmag_imag)
+{
+    using ::std::abs;
+    return evmaxmag_imag / ((abs(u) + a)*lambda1);
+}
+
+/**
+ * Compute an approximation to the maximum stable time step according to the
+ * viscous stability criterion for a three-dimensional model diffusion
  * equation.  This surrogate is a model for the diffusive part of the
  * Navier-Stokes operator.  This criterion appears as equation 2.40 in Wai Y.
  * Kwok's thesis (2002) and equations 4.29 and 4.30 in Stephen Guarini's thesis
- * (1998)
+ * (1998):
  * \f[
- *   \mbox{max}\!\left(
- *     \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
- *     \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
- *     \left|\frac{\nu_{B}-\nu_{B0}}{\mbox{Re}}\right|
- *   \right)
- *   \pi^{2}
- *   \left(
- *       \frac{1}{\Delta{}x^{2}}
- *     + \frac{1}{\Delta{}y^{2}}
- *     + \frac{1}{\Delta{}z^{2}}
- *   \right)
- *   \Delta{}t \leq \left|\lambda_{R}\Delta_{}t\right|_{\mbox{max}}
+ *  \Delta{}t \leq
+ *  \frac{
+ *      \left|\lambda_{R}\Delta_{}t\right|_{\max}
+ *  }{
+ *    \max\left(
+ *      \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
+ *      \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
+ *      \left|\frac{\nu_{B}-\nu_{B0}}{\mbox{Re}}\right|
+ *    \right)
+ *    \left(
+ *        \lambda^{(2)}_x
+ *      + \lambda^{(2)}_y
+ *      + \lambda^{(2)}_z
+ *    \right)
+ *  }
  * \f]
- * where a bulk kinematic viscosity \f$\nu_{B}\f$ has
- * been added.  The maximum pure real eigenvalue magnitude,
- * \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$, is a feature
- * of the chosen timestepping method.  For example, it is 2.512 for
- * the SMR91 scheme.  The absolute values within the maximum operation
+ * where a bulk kinematic viscosity \f$\nu_{B}\f$ has been added.  See the
+ * Suzerain model document for details on estimating \f$\lambda^{(2)}_x\f$,
+ * \f$\lambda^{(2)}_y\f$, and \f$\lambda^{(2)}_z\f$.  The maximum pure real
+ * eigenvalue magnitude, \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$,
+ * is a feature of the chosen timestepping method.  For example, it is 2.512
+ * for the SMR91 scheme.  The absolute values within the maximum operation
  * account for the possibility that \f$\nu<\nu_{0}\f$.
  *
  * Using a hybrid implicit/explicit %timestepper with viscous terms computed
  * implicitly sets \f$\nu_0\f$ to be the reference kinematic viscosity about
  * which the viscous terms were linearized.
  *
- * @param one_over_delta_x Inverse local X grid spacing \f$1/\Delta{}x\f$
- * @param one_over_delta_y Inverse local Y grid spacing \f$1/\Delta{}y\f$
- * @param one_over_delta_z Inverse local Z grid spacing \f$1/\Delta{}z\f$
+ * @param lambda2_x        The maximum pure real eigenvalue magnitude
+ *                         for the second derivative in the X direction.
+ * @param lambda2_y        The maximum pure real eigenvalue magnitude
+ *                         for the second derivative in the Y direction.
+ * @param lambda2_z        The maximum pure real eigenvalue magnitude
+ *                         for the second derivative in the Z direction.
  * @param Re               The Reynolds number \f$\mbox{Re}\f$
  * @param Pr               The Prandtl number \f$\mbox{Pr}\f$
  * @param gamma            The ratio of specific heats \f$\gamma\f$
@@ -221,17 +269,17 @@ FPT convective_stability_criterion(
  */
 template<typename FPT>
 FPT diffusive_stability_criterion(
-        const FPT one_over_delta_x,
-        const FPT one_over_delta_y,
-        const FPT one_over_delta_z,
+        const FPT lambda2_x,
+        const FPT lambda2_y,
+        const FPT lambda2_z,
         const FPT Re,
         const FPT Pr,
         const FPT gamma,
         const FPT evmaxmag_real,
         const FPT nu,
-        const FPT nu0 = 0,
-        const FPT nuB = 0,
-        const FPT nuB0 = 0)
+        const FPT nu0,
+        const FPT nuB,
+        const FPT nuB0)
 {
 
     // Find maximum diffusive coefficient amongst all possible criteria
@@ -240,14 +288,73 @@ FPT diffusive_stability_criterion(
     const FPT maxcoeff = max(max(gamma/Pr,FPT(1))*abs(nu  - nu0 )/Re,
                                                   abs(nuB - nuB0)/Re);
 
-    // Precision for a 128-bit quad found via Sage's N(1/(pi*pi),digits=34)
-    static const FPT one_over_pi_squared
-        = (FPT) 0.1013211836423377714438794632097276L;
+    return  evmaxmag_real
+        /  (maxcoeff * (lambda2_x + lambda2_y + lambda2_z));
+}
 
-    return (evmaxmag_real * one_over_pi_squared)
-        /  (maxcoeff * (   one_over_delta_x*one_over_delta_x
-                         + one_over_delta_y*one_over_delta_y
-                         + one_over_delta_z*one_over_delta_z));
+/**
+ * Compute an approximation to the maximum stable time step according to the
+ * viscous stability criterion for a one-dimensional model diffusion
+ * equation.  This surrogate is a model for the diffusive part of the
+ * Navier-Stokes operator:
+ * \f[
+ *  \Delta{}t \leq
+ *  \frac{
+ *      \left|\lambda_{R}\Delta_{}t\right|_{\max}
+ *  }{
+ *    \max\left(
+ *      \left|\frac{\gamma\left(\nu-\nu_{0}\right)}{\mbox{Re}\mbox{Pr}}\right|,
+ *      \left|\frac{\nu-\nu_{0}}{\mbox{Re}}\right|,
+ *      \left|\frac{\nu_{B}-\nu_{B0}}{\mbox{Re}}\right|
+ *    \right)
+ *    \left(
+ *        \lambda^{(2)}
+ *    \right)
+ *  }
+ * \f]
+ * where a bulk kinematic viscosity \f$\nu_{B}\f$ has been added.
+ *
+ * @param lambda2          The maximum pure real eigenvalue magnitude
+ *                         for the second derivative.
+ * @param Re               The Reynolds number \f$\mbox{Re}\f$
+ * @param Pr               The Prandtl number \f$\mbox{Pr}\f$
+ * @param gamma            The ratio of specific heats \f$\gamma\f$
+ * @param evmaxmag_real    The maximum pure real eigenvalue magnitude
+ *                         for some Runge-Kutta scheme, denoted \f$\left|
+ *                         \lambda_{R}\Delta_{}t \right|_{\mbox{max}}\f$
+ *                         in Guarini's thesis.
+ * @param nu               The local kinematic viscosity \f$\nu\f$
+ * @param nu0              The kinematic viscosity reference value
+ *                         \f$\nu_{0}\f$
+ * @param nuB              The local bulk kinematic viscosity \f$\nu\f$
+ * @param nuB0             The bulk kinematic viscosity reference value
+ *                         \f$\nu_{0}\f$
+ *
+ * @see diffusive_stability_criterion(FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT,FPT)
+ *      for more details.
+ * @return The maximum stable time step \f$\Delta{}t\f$ according to
+ *         the diffusive criterion.
+ */
+template<typename FPT>
+FPT diffusive_stability_criterion(
+        const FPT lambda2,
+        const FPT Re,
+        const FPT Pr,
+        const FPT gamma,
+        const FPT evmaxmag_real,
+        const FPT nu,
+        const FPT nu0,
+        const FPT nuB,
+        const FPT nuB0)
+{
+
+    // Find maximum diffusive coefficient amongst all possible criteria
+    using std::abs;
+    using std::max;
+    const FPT maxcoeff = max(max(gamma/Pr,FPT(1))*abs(nu  - nu0 )/Re,
+                                                  abs(nuB - nuB0)/Re);
+
+    return  evmaxmag_real / (maxcoeff * lambda2);
 }
 
 namespace { // anonymous
