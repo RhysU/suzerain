@@ -268,13 +268,13 @@ suzerain_bspline_linear_combination_matrix(
  */
 int
 suzerain_bspline_htstretch2_evdeltascale(
-    int nderiv,
-    int k,
-    double htdelta,
-    int n,
-    double *C,
-    double *Clow,
-    double *Chigh);
+    const int nderiv,
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh);
 
 #ifdef __cplusplus
 } /* extern "C" */

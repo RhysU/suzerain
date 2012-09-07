@@ -177,17 +177,19 @@ suzerain_bspline_integration_coefficients(
 
 static int
 suzerain_bspline_htstretch2_evdeltascale1(
-    int k,
-    double htdelta,
-    int n,
-    double *C,
-    double *Clow,
-    double *Chigh)
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh)
 {
 
     /* Coefficient lookup table for orders 4 through 17 from model document */
     /* The final two columns are the low and higher estimated error bounds */
-    static const double p[17 - 4 + 1][7] = {
+#define KLOW  ( 4)
+#define KHIGH (17)
+    static const double p[KHIGH - KLOW + 1][7] = {
         /* 4*/ {1037./641., 473./20764., 39./224212., 792520./93., 3155./2478., -2.66 , 1.41},
         /* 5*/ {739./455., 167./6799., 60./641219., 369130./27., 610./457., -2.72 , 1.26},
         /* 6*/ {1849./1135., 600./24907., 51./804298., 422796./23., 3585./2537., -2.80 , 2.30},
@@ -204,7 +206,33 @@ suzerain_bspline_htstretch2_evdeltascale1(
         /*17*/ {9839./6006., -172./891., 1199./3983., 5723./2355., 2442./1015., -33.9 ,  36.3}
     };
 
-    *C = 0;                // FIXME Implement
+    /* Where are we in the coefficient table? */
+    const int ndx = k - KLOW;
+    if (ndx < 0 || (size_t) ndx >= sizeof(p)/sizeof(p[0])) {
+#define XSTR(s) STR(s)
+#define STR(s)  #s
+        SUZERAIN_ERROR("B-spline order k outside of implemented range: ["
+                       XSTR(KLOW) "," XSTR(KHIGH) "]",SUZERAIN_EINVAL);
+#undef STR
+#undef XSTR
+    }
+#undef KLOW
+#undef KHIGH
+    const double a    = p[ndx][0];
+    const double b    = p[ndx][1];
+    const double c    = p[ndx][2];
+    const double d    = p[ndx][3];
+    const double e    = p[ndx][4];
+    const double errl = p[ndx][5];
+    const double errh = p[ndx][6];
+
+    // C^{(1)} &\approx k^a \left(
+    //     1 + b \frac{\delta}{\ln{} k} + c \frac{k}{N_y}
+    //     \left(1 + d \delta^e\right)
+    // \right)
+    *C  = pow(k, a);
+    *C *= 1 + b*(htdelta/log(k)) + c*(k/N)*(1 + d*pow(htdelta,e));
+
     if (Clow)  *Clow  = 0; // FIXME Implement
     if (Chigh) *Chigh = 0; // FIXME Implement
     return SUZERAIN_SUCCESS;
@@ -212,16 +240,18 @@ suzerain_bspline_htstretch2_evdeltascale1(
 
 static int
 suzerain_bspline_htstretch2_evdeltascale2(
-    int k,
-    double htdelta,
-    int n,
-    double *C,
-    double *Clow,
-    double *Chigh)
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh)
 {
     /* Coefficient lookup table for orders 4 through 17 from model document */
     /* The final two columns are the low and higher estimated error bounds */
-    static const double p[17 - 4 + 1][11] = {
+#define KLOW  ( 4)
+#define KHIGH (17)
+    static const double p[KHIGH - KLOW + 1][11] = {
         /* 4*/{ 570685./9., -590851./4., -4514312., -49033./14., -104./557., 4196./6889., -603./2624., -493./1455., -5736./793., -172 ,  84.0 },
         /* 5*/{ 4759./187., -1556./851., 37795./66., -897./211., -483./626., 6320./4273., -4206./937., 9881./2059., 3425./4039., -0.789 ,  3.14 },
         /* 6*/{ 8471./1718., -939./1994., 10683./5., -490./151., -15./49., 3728./2559., -486./109., 929./1033., 5515./2987., -0.387 ,  1.37 },
@@ -238,7 +268,38 @@ suzerain_bspline_htstretch2_evdeltascale2(
         /*17*/{ 3497./674., 2222./731., 325651./61., -75./23., -2724./215., 3836./2521., -2363./433., 8405./906., -4220./169., -0.0021 ,  0.0019 }
     };
 
-    *C = 0;                // FIXME Implement
+    /* Where are we in the coefficient table? */
+    const int ndx = k - KLOW;
+    if (ndx < 0 || (size_t) ndx >= sizeof(p)/sizeof(p[0])) {
+#define XSTR(s) STR(s)
+#define STR(s)  #s
+        SUZERAIN_ERROR("B-spline order k outside of implemented range: ["
+                       XSTR(KLOW) "," XSTR(KHIGH) "]",SUZERAIN_EINVAL);
+#undef STR
+#undef XSTR
+    }
+#undef KLOW
+#undef KHIGH
+    const double a    = p[ndx][ 0];
+    const double b    = p[ndx][ 1];
+    const double c    = p[ndx][ 2];
+    const double d    = p[ndx][ 3];
+    const double e    = p[ndx][ 4];
+    const double f    = p[ndx][ 5];
+    const double g    = p[ndx][ 6];
+    const double h    = p[ndx][ 7];
+    const double i    = p[ndx][ 8];
+    const double errl = p[ndx][ 9];
+    const double errh = p[ndx][10];
+
+    // C^{(2)} &\approx \left(a + \frac{b}{k} + c k^d\right)
+    //     \left(
+    //       1 + e \delta^f \left(\ln N_y\right)^g
+    //       \left(1 + h k^i\right)
+    //     \right)
+    *C  = a + b/k + c*pow(k,d);
+    *C *= 1 + e*pow(htdelta,f)*pow(log(N),g)*(1 + h*pow(k,i));
+
     if (Clow)  *Clow  = 0; // FIXME Implement
     if (Chigh) *Chigh = 0; // FIXME Implement
     return SUZERAIN_SUCCESS;
@@ -246,13 +307,13 @@ suzerain_bspline_htstretch2_evdeltascale2(
 
 int
 suzerain_bspline_htstretch2_evdeltascale(
-    int nderiv,
-    int k,
-    double htdelta,
-    int n,
-    double *C,
-    double *Clow,
-    double *Chigh)
+    const int nderiv,
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh)
 {
     /* Parameter sanity checks */
     if (nderiv < 0) {
@@ -264,8 +325,8 @@ suzerain_bspline_htstretch2_evdeltascale(
     } else if (htdelta < 0) {
         SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (n < k) {
-        SUZERAIN_ERROR("Number of degrees of freedom n < B-spline order k",
+    } else if (N < k) {
+        SUZERAIN_ERROR("Number of degrees of freedom N < B-spline order k",
                        SUZERAIN_EINVAL);
     }
 
@@ -276,9 +337,9 @@ suzerain_bspline_htstretch2_evdeltascale(
                            SUZERAIN_FAILURE);
         case 1:
             return suzerain_bspline_htstretch2_evdeltascale1(
-                    k, htdelta, n, C, Clow, Chigh);
+                    k, htdelta, N, C, Clow, Chigh);
         case 2:
             return suzerain_bspline_htstretch2_evdeltascale2(
-                    k, htdelta, n, C, Clow, Chigh);
+                    k, htdelta, N, C, Clow, Chigh);
     }
 }
