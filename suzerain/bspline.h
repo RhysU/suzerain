@@ -254,7 +254,13 @@ suzerain_bspline_linear_combination_matrix(
  *                     For example, <tt>k=4</tt> denotes piecewise cubics.
  * @param[in]  htdelta The nonnegative grid stretching parameter.
  * @param[in]  N       The number of degrees of freedom in the basis.
- * @param[out] C       The grid spacing scaling factor \f$C^{(i)}\f$.
+ * @param[out] C       The computed grid spacing scaling factor \f$C^{(i)}\f$.
+ * @param[out] Clow    If not NULL, a lower error bound on \c C.  That is,
+ *                     a reasonable lower bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
+ * @param[out] Chigh   If not NULL, an upper error bound on \c C.  That is,
+ *                     a reasonable upper bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
  *
  * @see suzerain_htstretch2() for more information on the grid stretching.
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -266,7 +272,9 @@ suzerain_bspline_htstretch2_evdeltascale(
     int k,
     double htdelta,
     int n,
-    double *C);
+    double *C,
+    double *Clow,
+    double *Chigh);
 
 #ifdef __cplusplus
 } /* extern "C" */

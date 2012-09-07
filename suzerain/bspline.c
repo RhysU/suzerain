@@ -180,10 +180,13 @@ suzerain_bspline_htstretch2_evdeltascale1(
     int k,
     double htdelta,
     int n,
-    double *C)
+    double *C,
+    double *Clow,
+    double *Chigh)
 {
-    // FIXME Implement
-    *C = 0;
+    *C = 0;                // FIXME Implement
+    if (Clow)  *Clow  = 0; // FIXME Implement
+    if (Chigh) *Chigh = 0; // FIXME Implement
     return SUZERAIN_SUCCESS;
 }
 
@@ -192,10 +195,13 @@ suzerain_bspline_htstretch2_evdeltascale2(
     int k,
     double htdelta,
     int n,
-    double *C)
+    double *C,
+    double *Clow,
+    double *Chigh)
 {
-    // FIXME Implement
-    *C = 0;
+    *C = 0;                // FIXME Implement
+    if (Clow)  *Clow  = 0; // FIXME Implement
+    if (Chigh) *Chigh = 0; // FIXME Implement
     return SUZERAIN_SUCCESS;
 }
 
@@ -205,7 +211,9 @@ suzerain_bspline_htstretch2_evdeltascale(
     int k,
     double htdelta,
     int n,
-    double *C)
+    double *C,
+    double *Clow,
+    double *Chigh)
 {
     /* Parameter sanity checks */
     if (nderiv < 0) {
@@ -228,8 +236,10 @@ suzerain_bspline_htstretch2_evdeltascale(
             SUZERAIN_ERROR("Derivative nderiv unimplemented",
                            SUZERAIN_FAILURE);
         case 1:
-            return suzerain_bspline_htstretch2_evdeltascale1(k, htdelta, n, C);
+            return suzerain_bspline_htstretch2_evdeltascale1(
+                    k, htdelta, n, C, Clow, Chigh);
         case 2:
-            return suzerain_bspline_htstretch2_evdeltascale2(k, htdelta, n, C);
+            return suzerain_bspline_htstretch2_evdeltascale2(
+                    k, htdelta, n, C, Clow, Chigh);
     }
 }
