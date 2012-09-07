@@ -123,6 +123,7 @@ mass, momentum, and total energy for a compressible fluid composed of
 $N_s$ constitutive components may be written as
 %
 \begin{gather*}
+  \pp{\rho}{t} + \pp{}{x_i} (\rho u_i) = 0, \\
   \pp{\rho_{\alpha}}{t} + \pp{}{x_i} (\rho_{\alpha} u_i + \rho_{\alpha} v_{\alpha, i}) = \dot{\omega}_{\alpha}, \\
   \pp{\rho u_i}{t} + \pp{}{x_j} (\rho u_j u_i) = -\, \pp{p}{x_i} + \pp{\tau_{ji}}{x_j}, \\
   \pp{\rho E}{t} + \pp{}{x_j} (\rho u_j H) + \pp{}{x_j} \left( \sum_{\alpha=1}^{N_s} \rho_{\alpha} v_{\alpha, j} h_{\alpha} \right) = \pp{\tau_{ji} u_i}{x_j} - \pp{q_j}{x_j},
@@ -138,6 +139,16 @@ Roman indices ($i$, $j$) indicate spatial directions.  For these,
 repeated indices imply summation.  Greek indices ($\alpha$) indicate
 species, and repeated Greek indices do not imply summation.
 
+Further note that there are more governing equations here than
+unknowns.  This is resolved by the consistency between the
+conservation of mass equation and the species conservation equations.
+However, we must choose what set of equations to model and discretize.
+Here, we choose to include the conservation of mass equation and $N_s
+-1$ species conservation equations.  Further, the state variables will
+be $\rho$, $\rho_{\alpha}$ for $\alpha \in 1, \ldots, N_s -1$, $\rho
+u_i$ for $i = 1, 2, 3$, and $\rho E$.  Thus, we have $N_s + 4$ state
+variables.
+
 \subsection{Constitutive relations and other assumptions}
 \label{sec:constitutive}
 
@@ -151,9 +162,9 @@ Specifically, Fick's law is given by
 \end{equation*}
 % 
 where $\mcal{D}_{\alpha}$ is the mass diffusivity for species
-$\alpha$.  These mass diffusivities will be computed using Cantera.
-The form of the mass diffusivity model is not given here, but is
-available in the Cantera model document~\cite{?}.
+$\alpha$ and $c_{\alpha}$ is the mass fraction $\rho_{\alpha} / \rho$.
+These mass diffusivities depend only on the state and will be computed
+using Cantera.
 
 Given that the $\mcal{D}_{\alpha}$ values are in general different for
 each $\alpha$, the Fickian model is not guaranteed to satisfy mass
@@ -163,15 +174,15 @@ conservation.  That is,
 \sum_{\alpha = 1}^{N_s} \rho_{\alpha} v_{\alpha, i} = - \rho \sum_{\alpha = 1}^{N_s} \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} \neq 0,
 \end{equation*}
 % 
-leading to a net mass creation or destruction term that appears in
-the continuity equation.
+leading to an extra term in the implied conservation of mass
+equation.
 
-To alleviate this problem, Ramshaw~\cite{} devised the self-consistent
+To alleviate this problem, Ramshaw~\cite{?} devised the self-consistent
 effective binary diffusion model.  In this model, each flux is
 corrected as follows:
 %
 \begin{equation*}
-\rho_{\alpha} v_{\alpha, i} = - \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} + c_{\alpha} \sum_{\beta = 1}^{N_s} \rho \mcal{D}_{\beta} \pp{c_{\beta}}{x_i}. \quad \textrm{Check me!}
+\rho_{\alpha} v_{\alpha, i} = - \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} + c_{\alpha} \sum_{\beta = 1}^{N_s} \rho \mcal{D}_{\beta} \pp{c_{\beta}}{x_i}.
 \end{equation*}
 % 
 Since $\sum_{\alpha} c_{\alpha} = 1$, this form clearly gives
@@ -185,23 +196,103 @@ time.  These terms will be evaluated from reaction mechanisms and
 reaction rate models implemented in Cantera~\cite{?}.  The details of
 these models will not be discussed further here.
 
-\todo{Add more details about Cantera calls?}
-
 \subsubsection{Viscous Stress}
-Usual stress-strain rate relationship with dynamic viscosity determined from Cantera call.
+The viscous stress is given by
+%
+\begin{equation*}
+\tau_{ij} =  2 \mu \left[ \frac{1}{2} \left(\pp{u_i}{x_j} + \pp{u_j}{x_i} \right) - \frac{1}{3} \pp{u_k}{x_k} \delta_{ij} \right].
+\end{equation*}
+% 
+Velocity derivatives are easily computed from the state derivatives,
+and the viscosity $\mu$ is computed via a call to Cantera.
 
 \subsubsection{Heat Flux}
-Usual Fourier heat flux model with thermal conductivity determined
-from Cantera call.  Note that getting the temperature gradient will
-require evaluating the temperature in physical space (using Cantera),
-inverse transforming $T$ back to wave space, computing derivatives,
-and transforming back to physical space.
+The heat flux is given by
+%
+\begin{equation*}
+q_j = - \kappa \pp{T}{x_j}.
+\end{equation*}
+% 
+The temperature gradient is not easy to compute from derivatives of
+state because an explicit functional form for the temperature given
+the state is not available.  Thus, we will proceed by computing the
+temperature field in physical space, transforming back to wave space,
+differentiating, and transforming to physical space again.
+
+The thermal conductivity is computed via a call to Cantera.
 
 \subsubsection{Pressure}
-Compute partial pressure for each species using ideal gas equation and sum.
+The mixture pressure is a sum of the species partial pressures:
+%
+\begin{equation*}
+p = \sum_{\alpha = 1}^{N_s} p_{\alpha}.
+\end{equation*}
+%
+Each partial pressure is computed from the ideal gas law,
+%
+\begin{equation*}
+p_{\alpha} = \rho_{\alpha} R_{\alpha} T,
+\end{equation*}
+% 
+where $R_{\alpha}$ is the gas constant for the species $\alpha$.
+These values can by obtained from Cantera.
 
-\subsubsection{Enthalpies}
-Cantera?
+\subsubsection{Species Enthalpies}
+Species enthalpies are determined using Cantera.
+
+\subsection{Transforms}
+This section examines trips between wave and physical space.
+
+The wave to physical space transforms are summarized in
+Table~\ref{tbl:w2p}.
+%
+\begin{table}[ht]
+\caption{Wave to physical.  NOTE: This count is tentative.}
+\begin{tabular}{|c|c|}
+\hline
+Quantity & \# of Fields \\
+\hline
+\hline
+$\rho$ & 1 \\
+$\rho_{\alpha}$ & $N_s - 1$ \\
+$\rho u_i$ & 3 \\
+$\rho E$ & 1 \\
+$\pp{\rho}{x_j}$ & 3 \\
+$\pp{\rho_{\alpha}}{x_j}$ & $3 (N_s - 1)$ \\
+$\pp{\rho u_i}{x_j}$ & 9 \\
+$\pp{T}{x_j}$ & 3 \\
+\hline
+Total & $4(N_s + 4)$\\
+\hline
+\end{tabular}
+\label{tbl:w2p}
+\end{table}
+% 
+Note that this does \emph{not} include the energy derivatives
+($\partial \rho E / \partial x_j$).  Need to make sure this is
+correct.
+
+The physical to wave space transforms are summarized in
+Table~\ref{tbl:p2w}.
+%
+\begin{table}[ht]
+\caption{Physical to wave.  NOTE: This count is tentative.}
+\begin{tabular}{|c|c|}
+\hline
+Quantity & \# of Fields \\
+\hline
+\hline
+Sources ($\dot{\omega}_{\alpha}$ \& SG) & $N_s + 4$ \\
+Fluxes & $3 (N_s +4)$ \\
+T & 1 \\
+\hline
+Total & $4(N_s + 4) + 1$\\
+\hline
+\end{tabular}
+\label{tbl:p2w}
+\end{table}
+% 
+
 
 \subsection{Slow growth models}
 \label{sec:slowgrowthmodels}
