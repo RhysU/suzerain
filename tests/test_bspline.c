@@ -716,15 +716,32 @@ static void test_bspline_htstretch2_evdeltascale()
 
         double C, Clow, Chigh;
 
+        // For C^{(1)} we want...
         gsl_test(suzerain_bspline_htstretch2_evdeltascale(
                         1, k, htdelta, N, &C, &Clow, &Chigh),
-                 "suzerain_bspline_htstretch2_evdeltascale(%d, %d, %g, %d, ...)",
-                 1, k, htdelta, N);
+                 "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
 
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency1 k=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, k, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
+                "%s:%d accuracy1 k=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, k, Clow, cc1, Chigh);
+
+        // For C^{(2)} we want...
         gsl_test(suzerain_bspline_htstretch2_evdeltascale(
                         2, k, htdelta, N, &C, &Clow, &Chigh),
-                 "suzerain_bspline_htstretch2_evdeltascale(%d, %d, %g, %d, ...)",
-                 2, k, htdelta, N);
+                 "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
+
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency2 k=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, k, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
+                 "%s:%d accuracy2 k=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, k, Clow, cc2, Chigh);
+
     }
 
 }
