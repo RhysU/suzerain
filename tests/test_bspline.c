@@ -45,6 +45,7 @@ static void free_workspaces(
 static void test_integration_coefficients();
 static void test_linear_combination();
 static void test_linear_combination_complex();
+static void test_bspline_htstretch2_evdeltascale();
 
 int
 main(int argc, char **argv)
@@ -57,6 +58,7 @@ main(int argc, char **argv)
     test_integration_coefficients();
     test_linear_combination();
     test_linear_combination_complex();
+    test_bspline_htstretch2_evdeltascale();
 
     exit(gsl_test_summary());
 }
@@ -680,4 +682,49 @@ static void test_linear_combination_complex()
 
     gsl_vector_complex_free(coeffs);
     free_workspaces(&w, &dw, &scratch);
+}
+
+// Test that curve fits reasonably reproduce the source data
+// Mainly meant as a sanity check on the coded coefficients
+// Test cases chosen at random from the original fit data
+static void test_bspline_htstretch2_evdeltascale()
+{
+    static const double data[14][5] = {
+        {  4, 0.25, 197,  9.4995 , 16284.1 },
+        {  5, 2.25, 127,  16.3466, 24.5249 },
+        {  6, 2.00, 757,  19.4491, 11.1824 },
+        {  7, 1.75, 491,  25.4483, 8.72098 },
+        {  8, 0.00, 727,  29.7909, 7.72303 },
+        {  9, 2.25, 263,  41.7296, 7.12156 },
+        { 10, 2.00, 809,  45.4335, 6.7925  },
+        { 11, 1.25, 797,  51.6752, 6.54841 },
+        { 12, 2.25, 839,  61.5748, 6.36001 },
+        { 13, 1.25, 181,  72.9038, 6.21279 },
+        { 14, 1.00, 373,  76.9372, 6.11104 },
+        { 15, 1.00,  48,  104.342, 5.98301 },
+        { 16, 1.25, 571,  95.1626, 5.94511 },
+        { 17, 2.75, 421,  119.228, 5.86762 },
+    };
+    static const size_t ncases = sizeof(data)/sizeof(data[0]);
+
+    for (size_t i = 0; i < ncases; ++i) {
+        const int k          = (int) data[i][0];
+        const double htdelta =       data[i][1];
+        const int N          = (int) data[i][2];
+        const double cc1     =       data[i][3];
+        const double cc2     =       data[i][4];
+
+        double C, Clow, Chigh;
+
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale(
+                        1, k, htdelta, N, &C, &Clow, &Chigh),
+                 "suzerain_bspline_htstretch2_evdeltascale(%d, %d, %g, %d, ...)",
+                 1, k, htdelta, N);
+
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale(
+                        2, k, htdelta, N, &C, &Clow, &Chigh),
+                 "suzerain_bspline_htstretch2_evdeltascale(%d, %d, %g, %d, ...)",
+                 2, k, htdelta, N);
+    }
+
 }
