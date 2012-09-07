@@ -309,7 +309,6 @@ AC_CONFIG_FILES([
     apps/Makefile
     apps/perfect/Makefile
     apps/reacting/Makefile
-    apps/reacting/cantera/Makefile
     build-aux/Makefile
     fields/Makefile
     jobscripts/Makefile

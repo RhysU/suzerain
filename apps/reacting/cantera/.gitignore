@@ -1,8 +1,0 @@
-/channel_explicit
-/channel_init
-/channel_mean
-/*.dat
-/*.log
-/.deps
-/Makefile
-/Makefile.in
