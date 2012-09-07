@@ -686,12 +686,12 @@ static void test_linear_combination_complex()
 
 // Test that curve fits reasonably reproduce the source data
 // Mainly meant as a sanity check on the coded coefficients
-// Test cases chosen at random from the original fit data
+// Test cases chosen pseudo-randomly from the original fit data
 static void test_bspline_htstretch2_evdeltascale()
 {
     static const double data[14][5] = {
         {  4, 0.25, 197,  9.4995 , 16284.1 },
-        {  5, 2.25, 127,  16.3466, 24.5249 },
+        {  5, 1.25, 1021, 13.9698, 25.5979 },
         {  6, 2.00, 757,  19.4491, 11.1824 },
         {  7, 1.75, 491,  25.4483, 8.72098 },
         {  8, 0.00, 727,  29.7909, 7.72303 },
