@@ -242,7 +242,7 @@ suzerain_bspline_linear_combination_matrix(
 
 /**
  * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
- * \f$\left(\frac{pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
+ * \f$\left(\frac{\pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
  * eigenvalue for the \f$i\f$th Greville abscissae-based, collocation
  * derivative operator when using two-sided hyperbolic tangent stretching.
  * \f$\Delta{}x\f$ must measure the distance between adjacent <em>collocation
