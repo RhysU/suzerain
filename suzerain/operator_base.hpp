@@ -68,7 +68,19 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
         : one_over_delta_x(grid.N.x() /* !dN.x() */ / scenario.Lx),
+          lambda1_x(  boost::math::constants::pi<FPT>()
+                    * one_over_delta_x),
+          lambda2_x(  boost::math::constants::pi<FPT>()
+                    * boost::math::constants::pi<FPT>()
+                    * one_over_delta_x
+                    * one_over_delta_x),
           one_over_delta_z(grid.N.z() /* !dN.z() */ / scenario.Lz),
+          lambda1_z(  boost::math::constants::pi<FPT>()
+                    * one_over_delta_z),
+          lambda2_z(  boost::math::constants::pi<FPT>()
+                    * boost::math::constants::pi<FPT>()
+                    * one_over_delta_z
+                    * one_over_delta_z),
           scenario(scenario),
           grid(grid),
           dgrid(dgrid),
@@ -79,9 +91,20 @@ public:
           one_over_delta_y_(
                   boost::extents[boost::multi_array_types::extent_range(
                         dgrid.local_physical_start.y(),
+                        dgrid.local_physical_end.y())]),
+          lambda1_y_(
+                  boost::extents[boost::multi_array_types::extent_range(
+                        dgrid.local_physical_start.y(),
+                        dgrid.local_physical_end.y())]),
+          lambda2_y_(
+                  boost::extents[boost::multi_array_types::extent_range(
+                        dgrid.local_physical_start.y(),
                         dgrid.local_physical_end.y())])
     {
+        const FPT pi = boost::math::constants::pi<FPT>();
+
         // Compute y collocation point locations and spacing local to this rank
+        // Then compute wall-normal eigenvalue magnitude estimates
         for (int j = dgrid.local_physical_start.y();
              j < dgrid.local_physical_end.y();
              ++j) {
@@ -93,6 +116,11 @@ public:
                     std::abs(b.collocation_point(jm) - y_[j]),
                     std::abs(b.collocation_point(jp) - y_[j]));
             one_over_delta_y_[j] = 1.0 / delta_y;
+
+            // See model documentation for why the magic number four
+            // modifies one_over_delta_y for convection.
+            lambda1_y_[j] = pi*one_over_delta_y_[j]/4;
+            lambda2_y_[j] = pi*pi*one_over_delta_y_[j]*one_over_delta_y_[j];
         }
     }
 
@@ -292,11 +320,41 @@ public:
         return one_over_delta_y_[j];
     }
 
+    /**
+     * Return the globally-indexed maximum pure imaginary eigenvalue estimate
+     * for the first derivative operator in y at the <tt>j</tt>th collocation
+     * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
+     */
+    FPT lambda1_y(std::size_t j) const {
+        return lambda1_y_[j];
+    }
+
+    /**
+     * Return the globally-indexed maximum pure real eigenvalue estimate
+     * for the second derivative operator in y at the <tt>j</tt>th collocation
+     * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
+     */
+    FPT lambda2_y(std::size_t j) const {
+        return lambda2_y_[j];
+    }
+
     /** Uniform grid spacing in x */
     const FPT one_over_delta_x;
 
+    /** Maximum pure imaginary eigenvalue magnitude for first derivatives in x */
+    const FPT lambda1_x;
+
+    /** Maximum pure real eigenvalue magnitude for second derivatives in x */
+    const FPT lambda2_x;
+
     /** Uniform grid spacing in z */
     const FPT one_over_delta_z;
+
+    /** Maximum pure imaginary eigenvalue magnitude for first derivatives in z */
+    const FPT lambda1_z;
+
+    /** Maximum pure real eigenvalue magnitude for second derivatives in z */
+    const FPT lambda2_z;
 
     /** The scenario in which the operator is used */
     const typename suzerain::problem::ScenarioDefinition<FPT> &scenario;
@@ -317,6 +375,12 @@ private:
 
     /** Stores y grid spacing on this rank in wave space */
     boost::multi_array<FPT,1> one_over_delta_y_;
+
+    /** Stores pure imaginary eigenvalue magnitudes for y first derivatives */
+    boost::multi_array<FPT,1> lambda1_y_;
+
+    /** Stores pure real eigenvalue magnitudes for y second derivatives */
+    boost::multi_array<FPT,1> lambda2_y_;
 
     // Noncopyable
     OperatorBase(const OperatorBase&);

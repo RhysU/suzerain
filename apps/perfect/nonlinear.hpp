@@ -213,13 +213,6 @@ std::vector<real_t> applyNonlinearOperator(
     }
 
     // Retrieve constants and compute derived constants before inner loops
-    // First, eigenvalue magnitudes for the Fourier derivative operators
-    const real_t pi        = boost::math::constants::pi<real_t>();
-    const real_t lambda1_x = pi * o.one_over_delta_x;
-    const real_t lambda1_z = pi * o.one_over_delta_z;
-    const real_t lambda2_x = pi * pi * o.one_over_delta_x * o.one_over_delta_x;
-    const real_t lambda2_z = pi * pi * o.one_over_delta_z * o.one_over_delta_z;
-    // Next, derived scenario parameters
     const real_t alpha            = o.scenario.alpha;
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
     const real_t beta             = o.scenario.beta;
@@ -231,6 +224,10 @@ std::vector<real_t> applyNonlinearOperator(
     const real_t inv_Ma2          = 1 / (Ma * Ma);
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
+    const real_t lambda1_x        = o.lambda1_x;
+    const real_t lambda1_z        = o.lambda1_z;
+    const real_t lambda2_x        = o.lambda2_x;
+    const real_t lambda2_z        = o.lambda2_z;
 
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
@@ -491,14 +488,9 @@ std::vector<real_t> applyNonlinearOperator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-        // Wall-normal grid spacing depends on wall-normal location
-        const real_t one_over_delta_y_j = o.one_over_delta_y(j);
-
         // Wall-normal operator eigenvalue estimates depend on location
-        // See model documentation for why the
-        // magic number four modifies one_over_delta_y for convection.
-        const real_t lambda1_y = pi*one_over_delta_y_j / 4;
-        const real_t lambda2_y = pi*pi*one_over_delta_y_j*one_over_delta_y_j;
+        const real_t lambda1_y = o.lambda1_y(j);
+        const real_t lambda2_y = o.lambda2_y(j);
 
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref_ux        ()[j],
