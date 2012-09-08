@@ -1457,8 +1457,7 @@ The step size $\Delta{}t$ used within the SMR91 scheme is limited by both a
 convective and a diffusive stability criterion.  The time step used is taken to
 be the minimum stable time step possible according to either restriction.  As
 both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
-by a safety factor less than one.  Safety factors like $0.70-0.77$ are often
-used~\citep{Venugopal2003,spalart_lowstoragerk}.
+by a safety factor less than one.
 
 \subsubsection{Convective stability criterion}
 \label{sec:convectivestability}
@@ -1521,8 +1520,11 @@ into account the inhomogeneous nature of his wall-normal direction.  He
 determined that the wall-normal imaginary eigenvalue magnitude dropped by
 nearly an order of magnitude after taking into account the inhomogeneity.  He
 concluded that, taking $\Delta{}y$ to be the breakpoint separation, $C^{(1)} =
-4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Suzerain's choice of
-$\Delta{}y$ and $C^{(1)}$ will be covered in section~\ref{sec:wallnormaleigval}.
+4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Safety factors like
+$0.70-0.77$ are often used in conjunction with these
+choices~\citep{Venugopal2003,spalart_lowstoragerk}.  Suzerain's choice of
+$\Delta{}y$ and $C^{(1)}$ will be covered in
+section~\ref{sec:wallnormaleigval}.
 
 \subsubsection{Diffusive stability criterion}
 \label{sec:diffusivestability}
@@ -1579,8 +1581,10 @@ separation for $\Delta{}y$ and set $C^{(2)} = 1$.  \citeauthor{Venugopal2003}
 used a nearly identical diffusive criterion
 \citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
 diffusive stability criterion was not overly conservative for a non-periodic
-B-spline discretization.  Suzerain's choice of $\Delta{}y$ and $C^{(2)}$ will
-be covered in section~\ref{sec:wallnormaleigval}.
+B-spline discretization.  Again, safety factors like $0.70-0.77$ are often used
+alongside these choices~\citep{Venugopal2003,spalart_lowstoragerk}.  Suzerain's
+determination of $\Delta{}y$ and $C^{(2)}$ will be covered in
+section~\ref{sec:wallnormaleigval}.
 
 \subsubsection{Discrete B-spline operator eigenvalue magnitudes}
 \label{sec:wallnormaleigval}
