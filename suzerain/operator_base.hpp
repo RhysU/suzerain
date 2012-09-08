@@ -95,25 +95,40 @@ public:
     {
         const FPT pi = boost::math::constants::pi<FPT>();
 
-        // Compute y collocation point locations and spacing local to this rank
-        // Then compute wall-normal eigenvalue magnitude estimates
+        // Compute the B-spline-dependent correction factor to obtain
+        // good maximum eigenvalue estimates given wall-normal inhomogeneity.
+        // See model document for definitions of C^{(1)} and C^{(2)}.
+        double C1, Clow1, Chigh1;
+        suzerain_bspline_htstretch2_evdeltascale(
+                1, b.k(), grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
+        double C2, Clow2, Chigh2;
+        suzerain_bspline_htstretch2_evdeltascale(
+                2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
+
+        // Compute collocation point-based information local to this rank
         for (int j = dgrid.local_physical_start.y();
              j < dgrid.local_physical_end.y();
              ++j) {
 
+            // Collocation point locations
             y_[j] = b.collocation_point(j);
+
+            // Minimum spacing to the next adjacent collocation point
+            using std::abs;
+            using std::min;
             const int jm = (j == 0        ) ? 1         : j - 1;
             const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
-            const FPT delta_y = std::min<FPT>(
-                    std::abs(b.collocation_point(jm) - y_[j]),
-                    std::abs(b.collocation_point(jp) - y_[j]));
-            one_over_delta_y_[j] = 1.0 / delta_y;
+            const FPT delta_y = min<FPT>(abs(b.collocation_point(jm) - y_[j]),
+                                         abs(b.collocation_point(jp) - y_[j]));
+            one_over_delta_y_[j] = 1 / delta_y;
 
-            // See model documentation for why C^{(1)} = 4
-            // modifies one_over_delta_y for convection.
-            lambda1_y_[j] = pi * one_over_delta_y_[j] / 4;
+            // Estimating wall-normal first derivative eigenvalue magnitudes
+            // TODO: Use estimates of C^{(1)} after working out safety factor
+            lambda1_y_[j]  = pi * one_over_delta_y_[j] / 4;
 
-            lambda2_y_[j]  = pi * one_over_delta_y_[j];
+            // Estimating wall-normal second derivative eigenvalue magnitudes
+            // TODO: Use estimates of C^{(2)} after working out safety factor
+            lambda2_y_[j]  = pi * one_over_delta_y_[j] / 1;
             lambda2_y_[j] *= lambda2_y_[j];
         }
     }
