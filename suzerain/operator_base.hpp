@@ -68,19 +68,11 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
         : one_over_delta_x(grid.N.x() /* !dN.x() */ / scenario.Lx),
-          lambda1_x(  boost::math::constants::pi<FPT>()
-                    * one_over_delta_x),
-          lambda2_x(  boost::math::constants::pi<FPT>()
-                    * boost::math::constants::pi<FPT>()
-                    * one_over_delta_x
-                    * one_over_delta_x),
+          lambda1_x(boost::math::constants::pi<FPT>() * one_over_delta_x),
+          lambda2_x(lambda1_x * lambda1_x),
           one_over_delta_z(grid.N.z() /* !dN.z() */ / scenario.Lz),
-          lambda1_z(  boost::math::constants::pi<FPT>()
-                    * one_over_delta_z),
-          lambda2_z(  boost::math::constants::pi<FPT>()
-                    * boost::math::constants::pi<FPT>()
-                    * one_over_delta_z
-                    * one_over_delta_z),
+          lambda1_z(boost::math::constants::pi<FPT>() * one_over_delta_z),
+          lambda2_z(lambda1_z * lambda1_z),
           scenario(scenario),
           grid(grid),
           dgrid(dgrid),
@@ -117,10 +109,12 @@ public:
                     std::abs(b.collocation_point(jp) - y_[j]));
             one_over_delta_y_[j] = 1.0 / delta_y;
 
-            // See model documentation for why the magic number four
+            // See model documentation for why C^{(1)} = 4
             // modifies one_over_delta_y for convection.
-            lambda1_y_[j] = pi*one_over_delta_y_[j]/4;
-            lambda2_y_[j] = pi*pi*one_over_delta_y_[j]*one_over_delta_y_[j];
+            lambda1_y_[j] = pi * one_over_delta_y_[j] / 4;
+
+            lambda2_y_[j]  = pi * one_over_delta_y_[j];
+            lambda2_y_[j] *= lambda2_y_[j];
         }
     }
 
