@@ -189,8 +189,8 @@ suzerain_bspline_spacing_greville_abscissae(
     double xm = gsl_bspline_greville_abscissa(im, w);
     double xp = gsl_bspline_greville_abscissa(ip, w);
 
-    double dxm = x  - xm;
-    double dxp = xp - x;
+    double dxm = fabs(x  - xm);
+    double dxp = fabs(xp - x);
     return dxm < dxp ? dxm : dxp;
 }
 
