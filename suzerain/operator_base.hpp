@@ -113,16 +113,19 @@ public:
             // Collocation point locations
             y_[j] = b.collocation_point(j);
 
-            // Inverse of spacing to the next adjacent collocation point
+            // Inverse spacing to next adjacent collocation point
             one_over_delta_y_[j] = 1 / b.spacing_collocation_point(j);
+
+            // Eigenvalue estimates using collocation point spacing
+            const double inverse_spacing = one_over_delta_y_[j];
 
             // Estimating wall-normal first derivative eigenvalue magnitudes
             // TODO: Use estimates of C^{(1)} after working out safety factor
-            lambda1_y_[j]  = pi * one_over_delta_y_[j] / 4;
+            lambda1_y_[j]  = pi * inverse_spacing / 4;
 
             // Estimating wall-normal second derivative eigenvalue magnitudes
             // TODO: Use estimates of C^{(2)} after working out safety factor
-            lambda2_y_[j]  = pi * one_over_delta_y_[j] / 1;
+            lambda2_y_[j]  = pi * inverse_spacing / 1;
             lambda2_y_[j] *= lambda2_y_[j];
         }
     }
