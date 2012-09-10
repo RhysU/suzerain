@@ -178,7 +178,7 @@ suzerain_bspline_integration_coefficients(
 double
 suzerain_bspline_spacing_greville_abscissae(
     size_t i,
-    const gsl_bspline_workspace *w)
+    gsl_bspline_workspace *w)
 {
     /* Find nearest abscissae indices silently folding back into range */
     size_t im = (i == 0       ) ? 1        : i - 1;
@@ -192,6 +192,33 @@ suzerain_bspline_spacing_greville_abscissae(
     double dxm = x  - xm;
     double dxp = xp - x;
     return dxm < dxp ? dxm : dxp;
+}
+
+double
+suzerain_bspline_spacing_breakpoints(
+    size_t i,
+    gsl_bspline_workspace *w)
+{
+    // Make indices {first,...,last} span the required portion of the knots
+    size_t stride  = w->knots->stride;
+    size_t k       = w->k;
+    double * first = w->knots->data + (i  )*stride;
+    double * last  = w->knots->data + (i+k)*stride;
+
+    // Determine the minimum non-zero spacing between adjacent knots
+    double retval = GSL_DBL_MAX;
+    while (first != last) {
+
+        double left  = *first;
+        first       += stride;
+        double right = *first;
+
+        double dist = right - left;
+        if (dist > 0 && dist < retval) {
+            retval = dist;
+        }
+    }
+    return retval;
 }
 
 static int

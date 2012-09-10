@@ -186,6 +186,15 @@ public:
         return suzerain_bspline_spacing_greville_abscissae(i, bw);
     }
 
+    /**
+     * Retrieve the minimum separation between the breakpoints
+     * providing the support for the <tt>i</tt>th basis function.
+     */
+    double spacing_breakpoint(int i) const
+    {
+        return suzerain_bspline_spacing_breakpoints(i, bw);
+    }
+
 /**@}*/
 
 /** @name Operations */

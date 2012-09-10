@@ -254,7 +254,23 @@ suzerain_bspline_linear_combination_matrix(
 double
 suzerain_bspline_spacing_greville_abscissae(
     size_t i,
-    const gsl_bspline_workspace *w);
+    gsl_bspline_workspace *w);
+
+/**
+ * Find the minimum distance between the breakpoints comprising
+ * the support of the <tt>i</tt>th B-spline basis function.
+ *
+ * @param[in] i Degree of freedom of interest.
+ * @param[in] w Workspace to use.
+ *
+ * @return Minimum distance between breakpoints for basis function <tt>i</tt>.
+ *         Equivalently, this is the minimum distance between knots
+ *         once repeated knots are eliminated.
+ */
+double
+suzerain_bspline_spacing_breakpoints(
+    size_t i,
+    gsl_bspline_workspace *w);
 
 /**
  * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
