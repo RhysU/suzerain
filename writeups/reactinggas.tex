@@ -26,7 +26,7 @@
 \usepackage{pstricks}
 \usepackage{rotating}
 \usepackage{setspace}
-\usepackage{txfonts}
+%\usepackage{txfonts}
 \usepackage{units}
 \usepackage{varioref}
 \usepackage{wrapfig}
@@ -122,12 +122,12 @@ chemically reacting flows.  Following~\cite{Anderson_hypersonics,
 mass, momentum, and total energy for a compressible fluid composed of
 $N_s$ constitutive components may be written as
 %
-\begin{gather*}
-  \pp{\rho}{t} + \pp{}{x_i} (\rho u_i) = 0, \\
-  \pp{\rho_{\alpha}}{t} + \pp{}{x_i} (\rho_{\alpha} u_i + \rho_{\alpha} v_{\alpha, i}) = \dot{\omega}_{\alpha}, \\
-  \pp{\rho u_i}{t} + \pp{}{x_j} (\rho u_j u_i) = -\, \pp{p}{x_i} + \pp{\tau_{ji}}{x_j}, \\
-  \pp{\rho E}{t} + \pp{}{x_j} (\rho u_j H) + \pp{}{x_j} \left( \sum_{\alpha=1}^{N_s} \rho_{\alpha} v_{\alpha, j} h_{\alpha} \right) = \pp{\tau_{ji} u_i}{x_j} - \pp{q_j}{x_j},
-\end{gather*}
+\begin{align*}
+  \pp{\rho_{\alpha}}{t} & + \pp{}{x_j} (\rho_{\alpha} u_j + \rho_{\alpha} v_{\alpha, j}) = \dot{\omega}_{\alpha}, \\
+  \pp{\rho}{t} & + \pp{}{x_j} (\rho u_j) = 0, \\
+  \pp{\rho u_i}{t} & + \pp{}{x_j} (\rho u_j u_i + p \delta_{ji} - \tau_{ji}) = 0, \\
+  \pp{\rho E}{t} & + \pp{}{x_j} \left(\rho u_j H + \sum_{\alpha=1}^{N_s} \rho_{\alpha} v_{\alpha, j} h_{\alpha}  - \tau_{ji} u_i + q_j \right) = 0,\\
+\end{align*}
 % 
 where $\rho_{\alpha}$ is the density of species $\alpha$, $\rho=\sum_{\alpha} \rho_{\alpha}$
 is the mixture density, $u_i$ is the mixture velocity in the $i$th
