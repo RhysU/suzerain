@@ -177,6 +177,15 @@ public:
         return gsl_bspline_greville_abscissa(i, bw);
     }
 
+    /**
+     * Retrieve the minimum separation between collocation points
+     * <tt>[i-1,i]</tt> and <tt>[i,i+1]</tt>.
+     */
+    double spacing_collocation_point(int i) const
+    {
+        return suzerain_bspline_spacing_greville_abscissae(i, bw);
+    }
+
 /**@}*/
 
 /** @name Operations */

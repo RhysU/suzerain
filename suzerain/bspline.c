@@ -175,6 +175,25 @@ suzerain_bspline_integration_coefficients(
     return SUZERAIN_SUCCESS;
 }
 
+double
+suzerain_bspline_spacing_greville_abscissae(
+    size_t i,
+    const gsl_bspline_workspace *w)
+{
+    /* Find nearest abscissae indices silently folding back into range */
+    size_t im = (i == 0       ) ? 1        : i - 1;
+    size_t ip = (i == w->n - 1) ? w->n - 2 : i + 1;
+
+    /* Compute and return the minimum distance */
+    double x  = gsl_bspline_greville_abscissa(i,  w);
+    double xm = gsl_bspline_greville_abscissa(im, w);
+    double xp = gsl_bspline_greville_abscissa(ip, w);
+
+    double dxm = x  - xm;
+    double dxp = xp - x;
+    return dxm < dxp ? dxm : dxp;
+}
+
 static int
 suzerain_bspline_htstretch2_evdeltascale1(
     const int k,

@@ -241,6 +241,22 @@ suzerain_bspline_linear_combination_matrix(
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
+ * Find the minimum distance to Greville abscissae <tt>i-1</tt> and
+ * <tt>i+1</tt> from abscissa <tt>i</tt>.  Accounts for the edge cases
+ * when <tt>i == 0</tt> or <tt>i == N-1</tt> for a basis with <tt>N</tt>
+ * degrees of freedom.
+ *
+ * @param[in] i Abscissa of interest.
+ * @param[in] w Workspace to use.
+ *
+ * @return Minimum distance to the next nearest abscissae.
+ */
+double
+suzerain_bspline_spacing_greville_abscissae(
+    size_t i,
+    const gsl_bspline_workspace *w);
+
+/**
  * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
  * \f$\left(\frac{\pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
  * eigenvalue for the \f$i\f$th Greville abscissae-based, collocation

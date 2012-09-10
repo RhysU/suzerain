@@ -113,14 +113,8 @@ public:
             // Collocation point locations
             y_[j] = b.collocation_point(j);
 
-            // Minimum spacing to the next adjacent collocation point
-            using std::abs;
-            using std::min;
-            const int jm = (j == 0        ) ? 1         : j - 1;
-            const int jp = (j == b.n() - 1) ? b.n() - 2 : j + 1;
-            const FPT delta_y = min<FPT>(abs(b.collocation_point(jm) - y_[j]),
-                                         abs(b.collocation_point(jp) - y_[j]));
-            one_over_delta_y_[j] = 1 / delta_y;
+            // Inverse of spacing to the next adjacent collocation point
+            one_over_delta_y_[j] = 1 / b.spacing_collocation_point(j);
 
             // Estimating wall-normal first derivative eigenvalue magnitudes
             // TODO: Use estimates of C^{(1)} after working out safety factor
