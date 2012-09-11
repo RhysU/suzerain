@@ -1628,8 +1628,8 @@ sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
 However, it is striking just how non-universal those choices happen to be.
 Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
 inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
-$N_y$ vary--- some nonlinear combination of the relevant parameters is
-necessary.
+$N_y$ vary--- some nonlinear combination of the complete set of grid parameters
+is necessary.
 
 Performing Levenberg--Marquardt nonlinear regression against the empirical data
 in figure~\ref{fig:inhomogeneity} shows good agreement with curve fits like the
@@ -1673,7 +1673,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{            2325}{           14692}$
 &  $\frac{           36604}{            7681}$
 &  $\frac{           14122}{            6121}$
-&  -33.4505 &  39.0745
+&  -33.5 &  39.1
 \\
 4
 &  $\frac{           28199}{           18559}$
@@ -1682,7 +1682,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          176331}$
 &  $\frac{      4065883270}{           15549}$
 &  $\frac{           14177}{           11138}$
-&  -2.66829 &  1.41034
+&  -2.67 &  1.41
 \\
 5
 &  $\frac{            7757}{            3927}$
@@ -1691,7 +1691,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          265878}$
 &  $\frac{      2128419709}{            6255}$
 &  $\frac{            5259}{            3941}$
-&  -2.72126 &  1.25945
+&  -2.72 &  1.23
 \\
 6
 &  $\frac{           10865}{            5099}$
@@ -1700,7 +1700,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          453003}$
 &  $\frac{      5432575189}{           10284}$
 &  $\frac{           21811}{           15439}$
-&  -2.79917 &  2.30086
+&  -2.80 &  2.30
 \\
 7
 &  $\frac{           13884}{            6317}$
@@ -1709,7 +1709,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          255011}$
 &  $\frac{      3769915654}{           13467}$
 &  $\frac{            7944}{            5285}$
-&  -2.81245 &  5.94085
+&  -2.81 &  5.94
 \\
 8
 &  $\frac{           12229}{            5291}$
@@ -1718,7 +1718,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           58399}$
 &  $\frac{       795198202}{           12991}$
 &  $\frac{            9161}{            5777}$
-&  -4.18652 &  9.86606
+&  -4.19 &  9.87
 \\
 9
 &  $\frac{           25027}{           10442}$
@@ -1727,7 +1727,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           35517}$
 &  $\frac{       392916968}{           11105}$
 &  $\frac{           13529}{            7975}$
-&  -6.81445 &  15.9405
+&  -6.81 &  15.9
 \\
 10
 &  $\frac{           71736}{           26099}$
@@ -1736,7 +1736,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           10349}$
 &  $\frac{        55467055}{            5618}$
 &  $\frac{           15653}{            8658}$
-&  -10.0368 &  20.5059
+&  -10.0 &  20.5
 \\
 11
 &  $\frac{            8894}{            3301}$
@@ -1745,7 +1745,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{            3321}$
 &  $\frac{         5203926}{            1723}$
 &  $\frac{           79529}{           41257}$
-&  -13.9119 &  25.845
+&  -13.91 &  25.8
 \\
 12
 &  $\frac{           36035}{           11981}$
@@ -1754,7 +1754,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               3}{            9793}$
 &  $\frac{        11432778}{            4049}$
 &  $\frac{           20121}{            9800}$
-&  -18.6748 &  29.6078
+&  -18.7 &  29.6
 \\
 13
 &  $\frac{           15247}{            6749}$
@@ -1763,7 +1763,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               3}{            8105}$
 &  $\frac{        12399465}{            5524}$
 &  $\frac{           31808}{           14733}$
-&  -23.3238 &  30.9646
+&  -23.3 &  31.0
 \\
 14
 &  $\frac{           18863}{            8900}$
@@ -1772,7 +1772,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               5}{           11174}$
 &  $\frac{        15662698}{            9109}$
 &  $\frac{           21891}{            9520}$
-&  -28.7053 &  34.1588
+&  -28.7 &  34.2
 \\
 15
 &  $\frac{           32932}{           12113}$
@@ -1781,7 +1781,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{              23}{           37123}$
 &  $\frac{        17525538}{           14141}$
 &  $\frac{           19083}{            8363}$
-&  -26.9606 &  25.0396
+&  -27.0 &  25.0
 \\
 16
 &  $\frac{            7881}{            2593}$
@@ -1790,7 +1790,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{             451}{            4271}$
 &  $\frac{           52824}{            7273}$
 &  $\frac{           77819}{           33448}$
-&  -30.4527 &  25.6106
+&  -30.1 &  25.6
 \\
 17
 &  $\frac{           10021}{            4643}$
@@ -1799,7 +1799,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{            6721}{           22696}$
 &  $\frac{           10302}{            4157}$
 &  $\frac{            3285}{            1367}$
-&  -33.8901 &  36.3572
+&  -33.9 &  36.4
 \end{tabular}
 \end{table}
 
@@ -1823,7 +1823,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          266113}$
 &  $\frac{      3672286074}{           14915}$
 &  $\frac{           10959}{            8753}$
-&  -1.53049 &  0.891313
+&  -1.53 &  0.891
 \\
 5--17
 &  $\frac{            9681}{           11906}$
@@ -1832,7 +1832,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{             265}{            4924}$
 &  $\frac{          654065}{           49877}$
 &  $\frac{           14983}{            6769}$
-&  -37.9035 &  32.6059
+&  -37.9 &  32.6
 \\
 5
 &  $\frac{            6539}{            4135}$
@@ -1841,7 +1841,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           78781}$
 &  $\frac{        94818740}{            1793}$
 &  $\frac{           15697}{            9319}$
-&  -2.97134 &  6.64492
+&  -2.97 &  6.64
 \\
 6
 &  $\frac{           25651}{           16404}$
@@ -1850,7 +1850,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          297667}$
 &  $\frac{       922006952}{            3639}$
 &  $\frac{            7060}{            4537}$
-&  -2.06882 &  4.92784
+&  -2.07 &  4.93
 \\
 7
 &  $\frac{           17713}{            9399}$
@@ -1859,7 +1859,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          136002}$
 &  $\frac{       755158481}{            6247}$
 &  $\frac{            4541}{            2910}$
-&  -3.01587 &  7.5327
+&  -3.02 &  7.53
 \\
 8
 &  $\frac{           18994}{            9237}$
@@ -1868,7 +1868,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{          111904}$
 &  $\frac{       577913389}{            5810}$
 &  $\frac{            9851}{            6166}$
-&  -3.98446 &  9.65512
+&  -3.98 &  9.66
 \\
 9
 &  $\frac{            5092}{            2353}$
@@ -1877,7 +1877,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           16535}$
 &  $\frac{       145714069}{           10323}$
 &  $\frac{           11201}{            6507}$
-&  -6.81316 &  15.7747
+&  -6.81 &  15.8
 \\
 10
 &  $\frac{           23815}{           11282}$
@@ -1886,7 +1886,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{           17887}$
 &  $\frac{       199358385}{           13336}$
 &  $\frac{           24985}{           13879}$
-&  -8.9425 &  19.0496
+&  -8.94 &  19.0
 \\
 11
 &  $\frac{           54551}{           23412}$
@@ -1895,7 +1895,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               1}{            7601}$
 &  $\frac{        59931439}{            9921}$
 &  $\frac{           16247}{            8406}$
-&  -12.9056 &  23.974
+&  -12.9 &  24.0
 \\
 12
 &  $\frac{            4520}{            1879}$
@@ -1904,7 +1904,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               2}{            6037}$
 &  $\frac{        45877661}{           19725}$
 &  $\frac{           29355}{           14462}$
-&  -16.3028 &  25.888
+&  -16.3 &  25.9
 \\
 13
 &  $\frac{           10841}{            5071}$
@@ -1913,7 +1913,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               3}{           10337}$
 &  $\frac{        42626923}{           16678}$
 &  $\frac{            7193}{            3383}$
-&  -19.6423 &  27.0879
+&  -19.6 &  27.1
 \\
 14
 &  $\frac{           16455}{            6572}$
@@ -1922,7 +1922,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               2}{            7185}$
 &  $\frac{        37896608}{           14629}$
 &  $\frac{           22877}{           10405}$
-&  -22.4358 &  25.605
+&  -22.4 &  25.6
 \\
 15
 &  $\frac{           70913}{           29232}$
@@ -1931,7 +1931,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               2}{            4523}$
 &  $\frac{        16300312}{           10573}$
 &  $\frac{           28627}{           12682}$
-&  -22.8306 &  22.186
+&  -22.8 &  22.2
 \\
 16
 &  $\frac{           47761}{           23309}$
@@ -1940,7 +1940,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{               8}{           10739}$
 &  $\frac{         4825216}{            5155}$
 &  $\frac{           24509}{           10946}$
-&  -22.5741 &  22.3821
+&  -22.6 &  22.4
 \\
 17
 &  $\frac{           54429}{           16724}$
@@ -1949,7 +1949,7 @@ and thence $\lambda_y^{(i)}$ from these empirical coefficient tables.
 &  $\frac{            1091}{            9833}$
 &  $\frac{           41415}{            6419}$
 &  $\frac{           16851}{            7441}$
-&  -25.8329 &  28.8395
+&  -25.8 &  28.8
 \end{tabular}
 \end{table}
 
