@@ -221,140 +221,6 @@ suzerain_bspline_spacing_breakpoints(
     return retval;
 }
 
-static int
-suzerain_bspline_htstretch2_evdeltascale1(
-    const int k,
-    const double htdelta,
-    const int N,
-    double * const C,
-    double * const Clow,
-    double * const Chigh)
-{
-
-    /* Coefficient lookup table for orders 4 through 17 from model document */
-    /* The final two columns are the low and higher estimated error bounds */
-#define KLOW  ( 4)
-#define KHIGH (17)
-    static const double p[KHIGH - KLOW + 1][7] = {
-        /* 4*/ {1037./641., 473./20764., 39./224212., 792520./93., 3155./2478., -2.66 , 1.41},
-        /* 5*/ {739./455., 167./6799., 60./641219., 369130./27., 610./457., -2.72 , 1.26},
-        /* 6*/ {1849./1135., 600./24907., 51./804298., 422796./23., 3585./2537., -2.80 , 2.30},
-        /* 7*/ {4829./2957., 22./1053., 39./374987., 358703./34., 3643./2423., -2.81 , 5.94},
-        /* 8*/ {3275./2003., 583./37716., 57./47897., 5279./6., 779./491., -4.19 , 9.87},
-        /* 9*/ {9125./5576., 282./62887., 155./47511., 94118./309., 2235./1316., -6.82 , 15.9},
-        /*10*/ {1369./836., -39./3434., 501./74569., 27691./196., 5078./2803., -10.0 , 20.5},
-        /*11*/ {4046./2469., -252./7727., 693./53629., 279./4., 9532./4927., -13.9 , 25.8},
-        /*12*/ {1186./723., -424./6971., 911./94585., 73428./823., 1443./701., -18.7 ,  29.6},
-        /*13*/ {4945./3012., -653./7141., 625./41087., 45539./842., 2321./1071., -23.3 ,  31.0},
-        /*14*/ {2523./1535., -531./4168., 601./16577., 17133./827., 508./219., -28.7 ,  34.2},
-        /*15*/ {1876./1143., -937./7195., 338./4835., 5994./571., 5600./2413., -27.1 ,  25.0},
-        /*16*/ {3177./1936., -617./3756., 217./1839., 5409./839., 4429./1898., -30.5 ,  25.6},
-        /*17*/ {9839./6006., -172./891., 1199./3983., 5723./2355., 2442./1015., -33.9 ,  36.3}
-    };
-
-    /* Where are we in the coefficient table? */
-    const int ndx = k - KLOW;
-    if (ndx < 0 || (size_t) ndx >= sizeof(p)/sizeof(p[0])) {
-#define XSTR(s) STR(s)
-#define STR(s)  #s
-        SUZERAIN_ERROR("B-spline order k outside of implemented range: ["
-                       XSTR(KLOW) "," XSTR(KHIGH) "]",SUZERAIN_EINVAL);
-#undef STR
-#undef XSTR
-    }
-#undef KLOW
-#undef KHIGH
-    const double a    = p[ndx][0];
-    const double b    = p[ndx][1];
-    const double c    = p[ndx][2];
-    const double d    = p[ndx][3];
-    const double e    = p[ndx][4];
-    const double errl = p[ndx][5]; // Measured in percent
-    const double errh = p[ndx][6]; // Measured in percent
-
-    // C^{(1)} &\approx k^a \left(
-    //     1 + b \frac{\delta}{\ln{} k} + c \frac{k}{N_y}
-    //     \left(1 + d \delta^e\right)
-    // \right)
-    *C  = pow(k, a);
-    *C *= 1 + b*(htdelta/log(k)) + c*(k/N)*(1 + d*pow(htdelta,e));
-
-    // Using percent error bounds on the fit, estimate true range
-    if (Clow)  *Clow  = *C / (1 - errl/100);
-    if (Chigh) *Chigh = *C / (1 - errh/100);
-
-    return SUZERAIN_SUCCESS;
-}
-
-static int
-suzerain_bspline_htstretch2_evdeltascale2(
-    const int k,
-    const double htdelta,
-    const int N,
-    double * const C,
-    double * const Clow,
-    double * const Chigh)
-{
-    /* Coefficient lookup table for orders 4 through 17 from model document */
-    /* The final two columns are the low and higher estimated error bounds */
-#define KLOW  ( 4)
-#define KHIGH (17)
-    static const double p[KHIGH - KLOW + 1][11] = {
-        /* 4*/{ 570685./9., -590851./4., -4514312., -49033./14., -104./557., 4196./6889., -603./2624., -493./1455., -5736./793., -172 ,  84.0 },
-        /* 5*/{ 4759./187., -1556./851., 37795./66., -897./211., -483./626., 6320./4273., -4206./937., 9881./2059., 3425./4039., -0.789 ,  3.14 },
-        /* 6*/{ 8471./1718., -939./1994., 10683./5., -490./151., -15./49., 3728./2559., -486./109., 929./1033., 5515./2987., -0.387 ,  1.37 },
-        /* 7*/{ 5437./950., 2886./553., 169467./77., -1522./431., -5537./906., 9485./6452., -1103./243., 469835./4., -75727., -0.248 ,  0.838 },
-        /* 8*/{ 550042./11., -1599875./4., -2147483648./23., -423998./9., -571./4932., 8527./5767., -1873./406., 212./27., 79./92., -0.187 ,  0.622 },
-        /* 9*/{ 2056./379., 2385./623., 128515./49., -1387./401., -412./1085., 4763./3209., -2399./512., 24009./478., -637./1051., -0.153 ,  0.508 },
-        /*10*/{ 187./35., 1389./410., 11333./4., -905./266., -757./1996., 4344./2917., -2161./454., 4763./6571., 6062./4759., -0.130 ,  0.432 },
-        /*11*/{ 5413./1024., 4073./1377., 36127./12., -1049./314., -2971./507., 611./409., -1592./329., 7858./1401., -1306./33., -0.113 ,  0.376 },
-        /*12*/{ 8787./1690., 8389./3368., 25183./8., -1765./542., -3149./496., 3589./2395., -2245./456., 50386./281., -13591./28., -0.0998 ,  0.329 },
-        /*13*/{ 4815./941., 2781./1688., 229996./71., -723./229., -965./2096., 2587./1721., -2552./509., 9183./7750., 4387./4524., -0.0873 ,  0.288 },
-        /*14*/{ 5653./1135., -863./855., 153347./45., -2020./671., -780./1633., 9431./6255., -46./9., 3115./944., 4083./6946., -0.0893 ,  0.249 },
-        /*15*/{ 2440./521., -620./137., 46790./13., -1724./607., -66./137., 9363./6191., -4987./956., 1542./703., 463./598., -0.125 ,  0.212 },
-        /*16*/{ 929./179., 1147./349., 251877./50., -595./181., -3176./299., 7861./5182., -2879./540., 231./94., -45727./78., -0.164 ,  0.182 },
-        /*17*/{ 3497./674., 2222./731., 325651./61., -75./23., -2724./215., 3836./2521., -2363./433., 8405./906., -4220./169., -0.207 ,  0.193 }
-    };
-
-    /* Where are we in the coefficient table? */
-    const int ndx = k - KLOW;
-    if (ndx < 0 || (size_t) ndx >= sizeof(p)/sizeof(p[0])) {
-#define XSTR(s) STR(s)
-#define STR(s)  #s
-        SUZERAIN_ERROR("B-spline order k outside of implemented range: ["
-                       XSTR(KLOW) "," XSTR(KHIGH) "]",SUZERAIN_EINVAL);
-#undef STR
-#undef XSTR
-    }
-#undef KLOW
-#undef KHIGH
-    const double a    = p[ndx][ 0];
-    const double b    = p[ndx][ 1];
-    const double c    = p[ndx][ 2];
-    const double d    = p[ndx][ 3];
-    const double e    = p[ndx][ 4];
-    const double f    = p[ndx][ 5];
-    const double g    = p[ndx][ 6];
-    const double h    = p[ndx][ 7];
-    const double i    = p[ndx][ 8];
-    const double errl = p[ndx][ 9]; // Measured in percent
-    const double errh = p[ndx][10]; // Measured in percent
-
-    // C^{(2)} &\approx \left(a + \frac{b}{k} + c k^d\right)
-    //     \left(
-    //       1 + e \delta^f \left(\ln N_y\right)^g
-    //       \left(1 + h k^i\right)
-    //     \right)
-    *C  = a + b/k + c*pow(k,d);
-    *C *= 1 + e*pow(htdelta,f)*pow(log(N),g)*(1 + h*pow(k,i));
-
-    // Using percent error bounds on the fit, estimate true range
-    if (Clow)  *Clow  = *C / (1 - errl/100);
-    if (Chigh) *Chigh = *C / (1 - errh/100);
-
-    return SUZERAIN_SUCCESS;
-}
-
 int
 suzerain_bspline_htstretch2_evdeltascale(
     const int nderiv,
@@ -380,16 +246,85 @@ suzerain_bspline_htstretch2_evdeltascale(
                        SUZERAIN_EINVAL);
     }
 
-    /* Dispatch to derivative-specific fits */
-    switch (nderiv) {
-        default:
-            SUZERAIN_ERROR("Derivative nderiv unimplemented",
-                           SUZERAIN_FAILURE);
-        case 1:
-            return suzerain_bspline_htstretch2_evdeltascale1(
-                    k, htdelta, N, C, Clow, Chigh);
-        case 2:
-            return suzerain_bspline_htstretch2_evdeltascale2(
-                    k, htdelta, N, C, Clow, Chigh);
+    /* Coefficient lookup table for orders 4 through 17 from model document */
+    /* The final two columns are the low and higher estimated error bounds */
+#define NDERIVLOW  ( 1)
+#define NDERIVHIGH ( 2)
+#define KLOW       ( 4)
+#define KHIGH      (17)
+#define XSTR(s) STR(s)
+#define STR(s)  #s
+    static const double p[NDERIVHIGH - NDERIVLOW + 1][KHIGH - KLOW + 1][8] = {
+    /* nderiv = 1 */ {
+        /*  4 */  {  28199. / 18559. , 3927.  / 2984.  , 279.   / 12247. , 1.    / 176331. , 4065883270. / 15549. , 14177. / 11138. , -2.67  , 1.41  },
+        /*  5 */  {  7757.  / 3927.  , 20542. / 17101. , 230.   / 9363.  , 1.    / 265878. , 2128419709. / 6255.  , 5259.  / 3941.  , -2.72  , 1.23  },
+        /*  6 */  {  10865. / 5099.  , 1091.  / 904.   , 164.   / 6807.  , 1.    / 453003. , 5432575189. / 10284. , 21811. / 15439. , -2.80  , 2.30  },
+        /*  7 */  {  13884. / 6317.  , 14388. / 11713. , 608.   / 29097. , 1.    / 255011. , 3769915654. / 13467. , 7944.  / 5285.  , -2.81  , 5.94  },
+        /*  8 */  {  12229. / 5291.  , 4835.  / 3924.  , 75.    / 4861.  , 1.    / 58399.  , 795198202.  / 12991. , 9161.  / 5777.  , -4.19  , 9.87  },
+        /*  9 */  {  25027. / 10442. , 15387. / 12422. , 29.    / 6615.  , 1.    / 35517.  , 392916968.  / 11105. , 13529. / 7975.  , -6.81  , 15.9  },
+        /* 10 */  {  71736. / 26099. , 658.   / 549.   , -132.  / 11383. , 1.    / 10349.  , 55467055.   / 5618.  , 15653. / 8658.  , -10.0  , 20.5  },
+        /* 11 */  {  8894.  / 3301.  , 3852.  / 3143.  , -501.  / 15115. , 1.    / 3321.   , 5203926.    / 1723.  , 79529. / 41257. , -13.91 , 25.8  },
+        /* 12 */  {  36035. / 11981. , 2123.  / 1773.  , -343.  / 5598.  , 3.    / 9793.   , 11432778.   / 4049.  , 20121. / 9800.  , -18.7  , 29.6  },
+        /* 13 */  {  15247. / 6749.  , 9584.  / 7237.  , -239.  / 2591.  , 3.    / 8105.   , 12399465.   / 5524.  , 31808. / 14733. , -23.3  , 31.0  },
+        /* 14 */  {  18863. / 8900.  , 7703.  / 5665.  , -3485. / 26908. , 5.    / 11174.  , 15662698.   / 9109.  , 21891. / 9520.  , -28.7  , 34.2  },
+        /* 15 */  {  32932. / 12113. , 18604. / 14609. , -1466. / 10879. , 23.   / 37123.  , 17525538.   / 14141. , 19083. / 8363.  , -27.0  , 25.0  },
+        /* 16 */  {  7881.  / 2593.  , 7488.  / 6037.  , -1943. / 11766. , 451.  / 4271.   , 52824.      / 7273.  , 77819. / 33448. , -30.1  , 25.6  },
+        /* 17 */  {  10021. / 4643.  , 4088.  / 2991.  , -1824. / 9431.  , 6721. / 22696.  , 10302.      / 4157.  , 3285.  / 1367.  , -33.9  , 36.4  },
+    },
+    /* nderiv = 2 */ {
+        /*  4 */  {  9977.  / 7732.  , 10631. / 11380. , 161.   / 11392. , 1.    / 266113. , 3672286074. / 14915. , 10959. / 8753.  , -1.53  , 0.891 },
+        /*  5 */  {  6539.  / 4135.  , 14393. / 13401. , 1.     / 3263.  , 1.    / 78781.  , 94818740.   / 1793.  , 15697. / 9319.  , -2.97  , 6.64  },
+        /*  6 */  {  25651. / 16404. , 3609.  / 3068.  , 76.    / 8979.  , 1.    / 297667. , 922006952.  / 3639.  , 7060.  / 4537.  , -2.07  , 4.93  },
+        /*  7 */  {  17713. / 9399.  , 8075.  / 7143.  , 138.   / 11605. , 1.    / 136002. , 755158481.  / 6247.  , 4541.  / 2910.  , -3.02  , 7.53  },
+        /*  8 */  {  18994. / 9237.  , 3977.  / 3539.  , 73.    / 7282.  , 1.    / 111904. , 577913389.  / 5810.  , 9851.  / 6166.  , -3.98  , 9.66  },
+        /*  9 */  {  5092.  / 2353.  , 22628. / 20033. , -5.    / 6396.  , 1.    / 16535.  , 145714069.  / 10323. , 11201. / 6507.  , -6.81  , 15.8  },
+        /* 10 */  {  23815. / 11282. , 5713.  / 4909.  , -57.   / 4691.  , 1.    / 17887.  , 199358385.  / 13336. , 24985. / 13879. , -8.94  , 19.0  },
+        /* 11 */  {  54551. / 23412. , 8530.  / 7467.  , -921.  / 28645. , 1.    / 7601.   , 59931439.   / 9921.  , 16247. / 8406.  , -12.9  , 24.0  },
+        /* 12 */  {  4520.  / 1879.  , 9869.  / 8601.  , -190.  / 3569.  , 2.    / 6037.   , 45877661.   / 19725. , 29355. / 14462. , -16.3  , 25.9  },
+        /* 13 */  {  10841. / 5071.  , 3286.  / 2717.  , -166.  / 2157.  , 3.    / 10337.  , 42626923.   / 16678. , 7193.  / 3383.  , -19.6  , 27.1  },
+        /* 14 */  {  16455. / 6572.  , 4577.  / 3939.  , -1623. / 16238. , 2.    / 7185.   , 37896608.   / 14629. , 22877. / 10405. , -22.4  , 25.6  },
+        /* 15 */  {  70913. / 29232. , 15681. / 13229. , -7270. / 65299. , 2.    / 4523.   , 16300312.   / 10573. , 28627. / 12682. , -22.8  , 22.2  },
+        /* 16 */  {  47761. / 23309. , 21087. / 16793. , -541.  / 4410.  , 8.    / 10739.  , 4825216.    / 5155.  , 24509. / 10946. , -22.6  , 22.4  },
+        /* 17 */  {  54429. / 16724. , 5829.  / 5306.  , -1289. / 8489.  , 1091. / 9833.   , 41415.      / 6419.  , 16851. / 7441.  , -25.8  , 28.8  },
     }
+    };
+
+    /* Where are we in the coefficient table? */
+    const int ndx = nderiv - NDERIVLOW;
+    if (ndx < 0 || (size_t) ndx >= sizeof(p)/sizeof(p[0])) {
+        SUZERAIN_ERROR("Derivative nderiv outside of implemented range: ["
+                XSTR(NDERIVLOW) "," XSTR(NDERIVHIGH) "]", SUZERAIN_EINVAL);
+    }
+    const int kdx = k - KLOW;
+    if (kdx < 0 || (size_t) kdx >= sizeof(p[0])/sizeof(p[0][0])) {
+        SUZERAIN_ERROR("B-spline order k outside of implemented range: ["
+                XSTR(KLOW) "," XSTR(KHIGH) "]", SUZERAIN_EINVAL);
+    }
+
+#undef STR
+#undef XSTR
+#undef KHIGH
+#undef KLOW
+#undef NDERIVHIGH
+#undef NDERIVLOW
+
+    /* Now that we know where we are, assign symbolic names to bits of data */
+    const double a    = p[ndx][kdx][0];
+    const double b    = p[ndx][kdx][1];
+    const double c    = p[ndx][kdx][2];
+    const double d    = p[ndx][kdx][3];
+    const double e    = p[ndx][kdx][4];
+    const double f    = p[ndx][kdx][5];
+    const double errl = p[ndx][kdx][6]; // Measured in percent
+    const double errh = p[ndx][kdx][7]; // Measured in percent
+
+    /* Compute the empirical fit using */
+    *C  = a * pow(k, b);
+    *C *= 1 + c*(htdelta/log(k)) + d*(k/N)*(1 + e*pow(htdelta,f));
+
+    // Using percent error bounds on the fit, estimate true range
+    if (Clow)  *Clow  = *C / (1 - errl/100);
+    if (Chigh) *Chigh = *C / (1 - errh/100);
+
+    return SUZERAIN_SUCCESS;
 }

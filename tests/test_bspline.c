@@ -684,26 +684,51 @@ static void test_linear_combination_complex()
     free_workspaces(&w, &dw, &scratch);
 }
 
-// Test that curve fits reasonably reproduce the source data
-// Mainly meant as a sanity check on the coded coefficients
-// Test cases chosen pseudo-randomly from the original fit data
+// Test that curve fits reasonably reproduce the source data.
+// Mainly meant as a sanity check on the coded coefficients.
+// Test cases chosen pseudo-randomly from the original fit data.
+// Choice required that we could nail at least one output per k.
 static void test_bspline_htstretch2_evdeltascale()
 {
-    static const double data[14][5] = {
-        {  4, 0.25, 197,  9.4995 , 16284.1 },
-        {  5, 1.25, 1021, 13.9698, 25.5979 },
-        {  6, 2.00, 757,  19.4491, 11.1824 },
-        {  7, 1.75, 491,  25.4483, 8.72098 },
-        {  8, 0.00, 727,  29.7909, 7.72303 },
-        {  9, 2.25, 263,  41.7296, 7.12156 },
-        { 10, 2.00, 809,  45.4335, 6.7925  },
-        { 11, 1.25, 797,  51.6752, 6.54841 },
-        { 12, 2.25, 839,  61.5748, 6.36001 },
-        { 13, 1.25, 181,  72.9038, 6.21279 },
-        { 14, 1.00, 373,  76.9372, 6.11104 },
-        { 15, 1.00,  48,  104.342, 5.98301 },
-        { 16, 1.25, 571,  95.1626, 5.94511 },
-        { 17, 2.75, 421,  119.228, 5.86762 },
+    static const double data[][5] = {
+        { 4 , 2.25 , 1013, 9.83618 , 4.8408 },
+        { 5 , 0    , 359 , 13.6535 , 8.88577},
+        { 5 , 1.25 , 864 , 14.0076 , 8.96922},
+        { 6 , 0.25 , 79  , 18.7573 , 12.9593},
+        { 7 , 0.25 , 151 , 24.1604 , 17.0773},
+        { 7 , 0.25 , 967 , 23.9894 , 16.9784},
+        { 7 , 0.75 , 509 , 24.4256 , 17.2219},
+        { 7 , 2.25 , 811 , 25.3349 , 17.7313},
+        { 7 , 2.75 , 541 , 26.2486 , 18.247 },
+        { 8 , 0    , 311 , 29.7928 , 21.1687},
+        { 8 , 2    , 733 , 31.5743 , 22.2062},
+        { 9 , 0.5  , 109 , 37.4689 , 26.4809},
+        { 9 , 0.75 , 383 , 37.1283 , 26.2643},
+        { 9 , 1    , 941 , 36.9064 , 26.1312},
+        { 9 , 1.75 , 563 , 38.4603 , 27.055 },
+        { 9 , 3    , 577 , 40.2814 , 28.1462},
+        {10 , 0.25 , 256 , 43.1311 , 30.6061},
+        {10 , 2    , 1021, 45.02   , 31.7251},
+        {10 , 2.75 , 809 , 46.52   , 32.6284},
+        {11 , 0.5  , 1024, 50.2771 , 35.6544},
+        {11 , 2.5  , 269 , 59.6683 , 41.3622},
+        {12 , 0.25 , 937 , 57.4376 , 40.755 },
+        {12 , 2.25 , 389 , 65.0779 , 45.3835},
+        {13 , 0.5  , 157 , 67.2587 , 47.4961},
+        {13 , 1    , 480 , 67.7568 , 47.7768},
+        {13 , 1.25 , 709 , 67.8002 , 47.8005},
+        {13 , 1.5  , 137 , 77.9162 , 54.0603},
+        {13 , 2    , 337 , 74.0694 , 51.6422},
+        {14 , 0.25 , 769 , 73.3352 , 51.9978},
+        {15 , 2    , 271 , 96.3712 , 66.9385},
+        {15 , 3    , 659 , 92.9606 , 64.7959},
+        {16 , 0.75 , 821 , 91.9739 , 65.0077},
+        {16 , 0.75 , 1013, 91.7011 , 64.8432},
+        {17 , 0    , 349 , 98.9434 , 70.1646},
+        {17 , 0.25 , 199 , 100.13  , 70.8887},
+        {17 , 1.25 , 223 , 111.099 , 77.6304},
+        {17 , 1.25 , 599 , 104.594 , 73.5744},
+        {17 , 2    , 757 , 107.589 , 75.4156}
     };
     static const size_t ncases = sizeof(data)/sizeof(data[0]);
 
@@ -722,12 +747,12 @@ static void test_bspline_htstretch2_evdeltascale()
                  "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
 
         gsl_test(!(Clow <= C && C <= Chigh),
-                 "%s:%d self-consistency1 k=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, k, Clow, C, Chigh);
+                 "%s:%d self-consistency1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
 
         gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
-                "%s:%d accuracy1 k=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, k, Clow, cc1, Chigh);
+                "%s:%d accuracy1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc1, Chigh);
 
         // For C^{(2)} we want...
         gsl_test(suzerain_bspline_htstretch2_evdeltascale(
@@ -735,12 +760,12 @@ static void test_bspline_htstretch2_evdeltascale()
                  "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
 
         gsl_test(!(Clow <= C && C <= Chigh),
-                 "%s:%d self-consistency2 k=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, k, Clow, C, Chigh);
+                 "%s:%d self-consistency2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
 
         gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
-                 "%s:%d accuracy2 k=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, k, Clow, cc2, Chigh);
+                 "%s:%d accuracy2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc2, Chigh);
 
     }
 
