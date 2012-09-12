@@ -1316,25 +1316,29 @@ Consistent with employing \eqref{eq:spatial_discretization}, discrete operators
 for differentiation in the wall-normal direction map B-spline coefficients to
 derivatives at wall-normal collocation points.  That is,
 \begin{align}
-  D^{(k)} u\bigr|_{m n}
-&= \sum_{l} B^{(k)}_l\!\left(y_{l'}\right)
+  D^{(j)} u\bigr|_{m n}
+&= \sum_{l} B^{(j)}_l\!\left(y_{l'}\right)
    \hat{u}_{l m n}
 \end{align}
-where the banded matrix $D^{(k)}$ is wavenumber independent.  $D^{(0)}$ is
-nothing but the ``mass matrix'' $M$.  Similar to, but different from, the
-approaches discussed by \citet[\textsection{}2.1.3]{Kwok2001}, Suzerain uses
-the Greville abscissae as its collocation points \citep{Johnson2005Higher}.
-Selecting these abscissae, also called Marsden--Schoenberg points,
-automatically avoids the near-wall stability problems detailed and worked
-around by \citet[\textsection{}4.4]{Kwok2001}.  Boundary conditions may be
-enforced for B-spline derivatives by using that the $k$th derivative of the
-function at the first (last) collocation point depends only on the first (last)
-$k+1$ B-spline coefficients.
+where the banded matrix $D^{(j)}$ is wavenumber independent.  $D^{(0)}$ is
+nothing but the ``mass matrix'' $M$, viz.
+\begin{align}
+  M &= D^{(0)}
+\end{align}
+Similar to, but different from, the approaches discussed by
+\citet[\textsection{}2.1.3]{Kwok2001}, Suzerain uses the Greville abscissae as
+its collocation points \citep{Johnson2005Higher}.  Selecting these abscissae,
+also called Marsden--Schoenberg points, automatically avoids the near-wall
+stability problems detailed and worked around by
+\citet[\textsection{}4.4]{Kwok2001}.  Boundary conditions may be enforced for
+B-spline derivatives by using that the $j$th derivative of the function at the
+first (last) collocation point depends only on the first (last) $j+1$ B-spline
+coefficients.
 
-For some piecewise polynomial order and wall-normal number of degrees of
-freedom, the exact collocation point locations must be specified.  For the
-channel flow geometry, the collocation points are stretched via a two-sided
-hyperbolic tangent function
+For some uniform B-spline order $k$ and wall-normal number of degrees of
+freedom $N_y$, $N_y - k + 2$ breakpoint locations must be specified.  Here
+$k=4$ denotes a piecewise cubic basis.  For the channel flow geometry, these
+breakpoints are stretched via a two-sided hyperbolic tangent function
 $f_2:\left[0,1\right]\to\left[0,1\right]$~\citep{Vinokur1983Onedimensional}:
 \begin{align}\label{eq:htstretch2}
   f_2\!\left(y\right) &= \frac{1}{2}\left(1 + \frac{
@@ -1355,18 +1359,9 @@ is used~\citep{Vinokur1983Onedimensional}:
 \end{align}
 Here $\delta\geq{}0$ is an adjustable stretching parameter where setting
 $\delta=0$ recovers uniform spacing.  Values like $1\leq{}\delta\leq{}3$ are
-used in practice.  Through the Greville abscissae relationship between
-collocation points and breakpoints for a uniform order basis, specifying
-collocation points locations uniquely defines a B-spline basis and the discrete
-operators $D^{(k)}$.
-
-Many authors stretch the breakpoint locations and let the collocation points
-fall where they may.  As will be discussed in
-section~\ref{sec:wallnormaleigval}, neither approach is more natural in an
-inhomogeneous setting though stretching breakpoints is simpler operationally.
-Suzerain chooses to prescribe the collocation points because it is at only
-these locations where computation forces the weighted residuals to be zero per
-equation~\eqref{eq:R_h_weighted_residual_zero}.
+used in practice.  These breakpoint locations fix the collocation points and
+consequently the collocation-based discrete operators $D^{(j)}$ through the
+definition of the Greville abscissae applied for order $k$.
 
 Computing the streamwise (or spanwise) first derivative of a quantity only
 requires multiplying each Fourier expansion coefficient $\hat{u}_{l m n}$ by
@@ -1402,7 +1397,7 @@ vector field $\vec{\phi}=\trans{\begin{pmatrix}\phi_{x} & \phi_{y} &
   \left.\nabla\cdot\vec{\phi}\right|_{m n}
 &=
   \left.\left(\ii k_m M \phi_{x} + D^{(1)} \phi_{y} + \ii k_n M \phi_{z}\right)\right|_{m n}
-\\
+\\ \displaybreak[0]
   \left.\nabla\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
@@ -1410,7 +1405,7 @@ vector field $\vec{\phi}=\trans{\begin{pmatrix}\phi_{x} & \phi_{y} &
     \ii k_m M \phi_{y} & D^{(1)} \phi_{y} & \ii k_n M \phi_{y} \\
     \ii k_m M \phi_{z} & D^{(1)} \phi_{z} & \ii k_n M \phi_{z}
   \end{pmatrix}\right|_{m n}
-\\
+\\ \displaybreak[0]
   \left.\Delta\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
@@ -1418,7 +1413,7 @@ vector field $\vec{\phi}=\trans{\begin{pmatrix}\phi_{x} & \phi_{y} &
     \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi_{y} \\
     \left( -\left(k_m^2 + k_n^2\right)M + D^{(2)} \right) \phi_{z}
   \end{pmatrix}\right|_{m n}
-\\
+\\ \displaybreak[0]
   \left.\nabla\nabla\cdot\vec{\phi}\right|_{m n}
 &=
   \left.\begin{pmatrix}
@@ -1487,7 +1482,8 @@ two Fourier directions these eigenvalues are exactly known:
     \lambda^{(1)}_z &= \frac{\pi N_z}{L_z} = \frac{\pi}{\Delta{}z}
     .
 \end{align}
-For a B-spline first derivative operator $D^{(1)}$ one may similarly estimate
+For the B-spline operator $M^{-1} D^{(1)}$ which maps function coefficients to
+first derivative coefficients, one may similarly estimate
 \begin{align}\label{eq:lambda1deltay}
     \lambda^{(1)}_y &= \frac{\pi}{C^{(1)}\Delta{}y}
 \end{align}
@@ -1562,10 +1558,11 @@ known and we introduce $C^{(2)}$ in the wall-normal B-spline direction:
     \lambda^{(2)}_z &= \left(\frac{\pi N_z}{L_z}\right)^2
                      = \frac{\pi^2}{\Delta{}z^2}
 \end{align}
-Again, the definition of $\Delta{}y$ and $C^{(2)}$ are for now deferred.  The
-maximum pure real eigenvalue magnitude,
-$\left|\lambda_{R}\Delta{}t\right|_{\max}$, is a feature of the chosen
-timestepping method.  For the SMR91 scheme,
+Here $M^{-1}D^{(2)}$ is the B-spline operator of interest which maps function
+coefficients to second derivative coefficients.  Again, the definition of
+$\Delta{}y$ and $C^{(2)}$ are for now deferred.  The maximum pure real
+eigenvalue magnitude, $\left|\lambda_{R}\Delta{}t\right|_{\max}$, is a feature
+of the chosen timestepping method.  For the SMR91 scheme,
 \begin{align}
 \left|\lambda_{R}\Delta{}t\right|_{\max} &\approx 2.512.
 \end{align}
@@ -1625,11 +1622,11 @@ or adjacent collocation points to admit a comparison.  Considering only
 breakpoint-based results for $k=8$, one can see how \citet{Venugopal2003}
 probably chose $C^{(1)}=4$ and $C^{(2)}=1$ as discussed in
 sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
-However, it is striking just how non-universal those choices happen to be.
-Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
-inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
-$N_y$ vary--- some nonlinear combination of the complete set of grid parameters
-is necessary.
+However, it is striking just how non-universal those choices happen to
+be\todo{Or not, depending on the TBD bugfixing\dots}.  Evidently, neither a
+breakpoint-based nor a collocation point-based $\Delta{}y$ inherently captures
+the maximum eigenvalue magnitudes as $k$, $\delta$, and $N_y$ vary--- some
+nonlinear combination of the complete set of grid parameters is necessary.
 
 Performing Levenberg--Marquardt nonlinear regression against the empirical data
 in figure~\ref{fig:inhomogeneity} shows good agreement with curve fits like the
@@ -3462,7 +3459,7 @@ and henceforth suppressed.  Inserting ${V^L}^{-1} V^L$,
   \delta{}U
 .
 \end{align}
-Defining characteristic variables using the action of $V^L$, \textit{viz.}
+Defining characteristic variables using the action of $V^L$, viz.
 \begin{align}
   \delta{}C &= V^L \delta{}U
   ,
