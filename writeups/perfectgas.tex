@@ -4,7 +4,10 @@
 \newcommand\hmmax{0}
 \newcommand\bmmax{0}
 
-% Packages
+% Load the color package first to avoid option clashes
+\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+% General packages
 \usepackage{accents}
 \usepackage{algorithm}
 \usepackage{algorithmic}
@@ -2827,17 +2830,18 @@ wavenumber independent operator requiring factorization only once per substep.
 \newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
 \renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
 \renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
+\newcommand{\ind}[1]{\textcolor{BrickRed}{#1}}  % Wavenumber independent term
 \hspace{-.04\textwidth}
 {\resizebox{1.08\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
-\bm{\vp}
+\ind{\bm{\vp}}
 \renewcommand{\arraystretch}{9.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
 % Density row
   \entry{\rho\rho}
   \subcoeff{
-      \bm{\frac{1}{\vp}} % M
+      \ind{\bm{\frac{1}{\vp}}} % M
   }{
   }{
   }
@@ -2850,7 +2854,7 @@ wavenumber independent operator requiring factorization only once per substep.
 & \entry{\rho\my }
   \subcoeff{
   }{
-    - 1
+    \ind{- 1}
   }{
   }
 & \entry{\rho\mz }
@@ -2860,7 +2864,7 @@ wavenumber independent operator requiring factorization only once per substep.
   }{
   }
 & \entry{\rho{}e }
-  0
+  \ind{0}
 % Streamwise momentum row
 \\\entry{\mx\rho }
   \subcoeff{
@@ -2874,26 +2878,26 @@ wavenumber independent operator requiring factorization only once per substep.
     \end{pmatrix}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu{}u_y}{}
-    + \C{u_x u_y}{}
+    + \ind{\C{u_x u_y}{}}
   }{
-    - \frac{1}{\Re}\C{\nu{}u_x}{}
+    \ind{- \frac{1}{\Re}\C{\nu{}u_x}{}}
   }
 & \entry{\mx\mx  }
   \subcoeff{
-      \bm{\frac{1}{\vp}} % M
+      \ind{\bm{\frac{1}{\vp}}} % M
     + \left(\g-3\right)\ii\km\C{u_x}{}
     - \ii\kn\C{u_z}{}
     - \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
-    - \C{u_y}{}
+    \ind{- \C{u_y}{}}
   }{
-      \frac{1}{\Re}\C{\nu}{}
+    \ind{  \frac{1}{\Re}\C{\nu}{}}
   }
 & \entry{\mx\my  }
   \subcoeff{
       \left(\g-1\right)\ii\km\C{u_y}{}
   }{
-    - \C{u_x}{}
+    \ind{- \C{u_x}{}}
     + \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu}{}
   }{
   }
@@ -2918,45 +2922,45 @@ wavenumber independent operator requiring factorization only once per substep.
     + \ii\km\C{u_x u_y}{}
     + \ii\kn\C{u_y u_z}{}
   }{
-      \frac{1-\g}{2}\C{u^2}{}
+      \ind{\frac{1-\g}{2}\C{u^2}{}}
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(
          \km\C{\nu{}u_x}{} + \kn\C{\nu{}u_z}{}
       \right)
-    + \C{u_y u_y}{}
+    + \ind{\C{u_y u_y}{}}
   }{
-    - \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu{}u_y}{}
+    \ind{- \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu{}u_y}{}}
   }
 & \entry{\my\mx  }
   \subcoeff{
     - \ii\km\C{u_y}{}
   }{
-      \left(\g-1\right)\C{u_x}{}
+      \ind{\left(\g-1\right)\C{u_x}{}}
     + \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\my\my  }
   \subcoeff{
-      \bm{\frac{1}{\vp}} % M
+      \ind{\bm{\frac{1}{\vp}}} % M
     - \ii\km\C{u_x}{}
     - \ii\kn\C{u_z}{}
     - \frac{\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
-      \left(\g-3\right)\C{u_y}{}
+      \ind{\left(\g-3\right)\C{u_y}{}}
   }{
-      \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu}{}
+      \ind{\frac{\alpha+\frac{4}{3}}{\Re}\C{\nu}{}}
   }
 & \entry{\my\mz  }
   \subcoeff{
     - \ii\kn\C{u_y}{}
   }{
-      \left(\g-1\right)\C{u_z}{}
+      \ind{\left(\g-1\right)\C{u_z}{}}
     + \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\my{}e  }
   \subcoeff{
   }{
-      \frac{1-\g}{\Ma^2}
+      \ind{\frac{1-\g}{\Ma^2}}
   }{
   }
 % Spanwise momentum row
@@ -2972,9 +2976,9 @@ wavenumber independent operator requiring factorization only once per substep.
     \end{pmatrix}
   }{
     - \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu{}u_y}{}
-    + \C{u_y u_z}{}
+    + \ind{\C{u_y u_z}{}}
   }{
-    - \frac{1}{\Re}\C{\nu{}u_z}{}
+    \ind{- \frac{1}{\Re}\C{\nu{}u_z}{}}
   }
 & \entry{\mz\mx }
   \subcoeff{
@@ -2988,20 +2992,20 @@ wavenumber independent operator requiring factorization only once per substep.
   \subcoeff{
       \left(\g-1\right)\ii\kn\C{u_y}{}
   }{
-    - \C{u_z}{}
+    \ind{- \C{u_z}{}}
     + \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\mz\mz }
   \subcoeff{
-      \bm{\frac{1}{\vp}} % M
+      \ind{\bm{\frac{1}{\vp}}} % M
     - \ii\km\C{u_x}{}
     + \left(\g-3\right)\ii\kn\C{u_z}{}
     - \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu}{}
   }{
-    - \C{u_y}{}
+    \ind{- \C{u_y}{}}
   }{
-      \frac{1}{\Re}\C{\nu}{}
+    \ind{  \frac{1}{\Re}\C{\nu}{}}
   }
 & \entry{\mz{}e }
   \subcoeff{
@@ -3025,15 +3029,17 @@ wavenumber independent operator requiring factorization only once per substep.
         \right)
     \end{pmatrix}
   }{
-    - \C{e_y}{\nabla\rho}
+    \ind{- \C{e_y}{\nabla\rho}}
     + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
        - 2\ii\km\C{\nu{}u_x u_y}{}
        - 2\ii\kn\C{\nu{}u_y u_z}{}
       \right)
   }{
-      \frac{\g}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}
+    \ind{
+      {\frac{\g}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}}
     - \frac{\Ma^2}{\Re}\C{\nu{}u^2}{}
     - \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\C{\nu{}u_y u_y}{}
+    }
   }
 & \entry{e\mx   }
   \subcoeff{
@@ -3049,22 +3055,24 @@ wavenumber independent operator requiring factorization only once per substep.
   }{
     \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\km\C{\nu{}u_y}{}
   }{
-    \frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right)\C{\nu{}u_x}{}
+    \ind{\frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right)\C{\nu{}u_x}{}}
   }
 & \entry{e\my   }
   \subcoeff{
     \frac{\Ma^2}{\Re}\left(\frac{\g}{\Pr} - 1\right)
     \left(\km^2+\kn^2\right)\C{\nu{}u_y}{}
   }{
-    - \C{e}{\nabla\cdot{}m}
+    \ind{- \C{e}{\nabla\cdot{}m}}
     + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
           \ii\km\C{\nu{}u_x}{}
         + \ii\kn\C{\nu{}u_z}{}
       \right)
   }{
+    \ind{
     \frac{\Ma^2}{\Re}\left[
       \left(\alpha+\frac{4}{3}\right) - \frac{\g}{\Pr}
     \right] \C{\nu{}u_y}{}
+    }
   }
 & \entry{e\mz   }
   \subcoeff{
@@ -3080,17 +3088,17 @@ wavenumber independent operator requiring factorization only once per substep.
   }{
     \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\kn\C{\nu{}u_y}{}
   }{
-    \frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right) \C{\nu{}u_z}{}
+    \ind{\frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right) \C{\nu{}u_z}{}}
   }
 & \entry{ee     }
   \subcoeff{
-      \bm{\frac{1}{\vp}} % M
+      \ind{\bm{\frac{1}{\vp}}} % M
     - \g\ii\left(\km\C{u_x}{} + \kn\C{u_z}{}\right)
     - \frac{\g}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu}{}
   }{
-    - \g\C{u_y}{}
+    \ind{- \g\C{u_y}{}}
   }{
-      \frac{\g}{\Re\Pr}\C{\nu}{}
+    \ind{  \frac{\g}{\Re\Pr}\C{\nu}{}}
   }
 \end{bmatrix}
 \renewcommand{\arraystretch}{1.0}
@@ -3132,17 +3140,20 @@ wavenumber independent operator requiring factorization only once per substep.
 \end{minipage}}}  % END SCALE-TO-FIT!
 \vspace{2em}
 \\
- \caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]{
-The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
-depicted.  Notice the leftmost scalar factor $\bm{\vp}$.  The $3 N_y \times
-N_y$ blocked vectors surrounded by curly braces are to be ``dotted'' against
-the blocked vector $
-  \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}}
-$ to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
-$N_y \times N_y$ banded matrix.  Reference quantities like $C^\nu$ are $N_y
-\times N_y$ diagonal matrices.  The wavenumber-dependent operator takes
-wall-normal B-spline coefficients to B-spline collocation point values.
- }
+\caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]
+{
+    The complete discrete operator $M+\varphi{}L$ used for implicit time advance is
+    depicted.  Notice the leftmost scalar factor $\bm{\vp}$.  The $3 N_y \times
+    N_y$ blocked vectors surrounded by curly braces are to be ``dotted'' against
+    the blocked vector $ \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}} $
+    to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
+    $N_y \times N_y$ banded matrix.  Reference quantities like $C^\nu$ are $N_y
+    \times N_y$ diagonal matrices.  The complex-valued, wavenumber-dependent
+    operator takes wall-normal B-spline coefficients to B-spline collocation point
+    values.  A real-valued, wavenumber-independent operator is the degenerate case
+    obtained by setting $\km=kn=0$; the nonzero terms in this special circumstance
+    are \ind{colored}.
+}
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
 
