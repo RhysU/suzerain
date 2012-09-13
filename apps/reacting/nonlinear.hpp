@@ -39,6 +39,14 @@
 
 #pragma warning(disable:383 1572)
 
+namespace constitutive {
+
+  // TODO: Add declarations of constitutive law classes
+
+  // TODO: Move this code to a separate file 
+
+} // end namespace constitutive
+
 
 // oliver: should we change the namespace here (to something like
 // reacting)?  I'm not yet b/c other stuff in this namespace gets
@@ -84,6 +92,7 @@ namespace channel {
 // TODO: Template this on chemistry/constitutive law class.
 template<bool ZerothSubstep,
          linearize::type Linearize,
+	 class ConstitutiveLaws,
          class ManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
             const suzerain::OperatorBase<real_t> &o,
@@ -93,6 +102,7 @@ std::vector<real_t> applyNonlinearOperator(
             suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
+	    boost::shared_ptr<ConstitutiveLaws>& claws,
 	    const unsigned int Ns )
 {
     GRVY_TIMER_BEGIN("applyNonlinearOperator");
@@ -108,7 +118,7 @@ std::vector<real_t> applyNonlinearOperator(
     // State enters method as coefficients in X, Y, and Z directions
 
     // Get total number of conserved state fields
-    const int state_count = Ns+4;
+    const int state_count = Ns+4; // = (Ns-1) species + 5 (rho, ru, rv, rw, rE)
 
     // Get total number of fields in aux storage
     const int aux_count = (aux::species      +   // everything *except* species derivatives
@@ -268,6 +278,9 @@ std::vector<real_t> applyNonlinearOperator(
     // back.
 
 
+    // Dereference the claws smart pointer outside the compute loop
+    ConstitutiveLaws &cl = *claws;
+
     // Traversal:
     // (2) Compute most of sources and fluxes (everything but the heat flux)
     GRVY_TIMER_BEGIN("nonlinear right hand sides");
@@ -324,7 +337,18 @@ std::vector<real_t> applyNonlinearOperator(
 	const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
 	const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
 	    
-	// TODO: This call will have to be replaced with Cantera calls
+	// TODO: The call below (to p_T_mu_lambda) will have to be
+	// replaced with ConstitutiveLaws calls... e.g., something
+	// like
+	// 
+	// cl.evaluate(e, m, rho, species,         // inputs 
+	//             T, p, Ds, mu, kap, hs, om); // outputs
+	//
+	// The (currently notional) function cl.evaluate takes state
+	// and returns temp, pressure, mass diffusivities, viscosity,
+	// thermal conductivity, species enthalpies, and reaction
+	// source terms.
+	//
 	// Compute quantities related to the equation of state
 	real_t p, T, mu, lambda;
 	Vector3r grad_p, grad_T, grad_mu, grad_lambda;
@@ -382,8 +406,8 @@ std::vector<real_t> applyNonlinearOperator(
 	  
 	// Finally, put temperature and thermal conductivity data
 	// into auxp for later use
-	auxp(aux::kap, offset) = 0;
-	auxp(aux::T  , offset) = 0;
+	auxp(aux::kap, offset) = kap;
+	auxp(aux::T  , offset) = T;
 	  
 	  
 	// TODO: Add in time step handling once Rhys has it sorted out
@@ -437,7 +461,7 @@ std::vector<real_t> applyNonlinearOperator(
     o.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::z,0));
     GRVY_TIMER_END("transform_wave_to_physical");
 
-    // Now have temperature gradient in at collocation points.
+    // Now have temperature gradient at collocation points.
     //-----------------------------------------------------------------
     
     
@@ -532,26 +556,13 @@ std::vector<real_t> applyNonlinearOperator(
     // Collectively convert source to wave space using parallel FFTs
     for (size_t i = 0; i < state_count; ++i) {
 
-      if (Linearize == linearize::rhome && i == state::rho && !msoln) {
-	
-	// When density equation is handled fully implicitly AND no
-	// manufactured solution is employed, save some communications by
-	// using that the density right hand side is identically zero.
-	assert(suzerain::multi_array::is_contiguous(swave[i]));
-	std::memset(swave[i].origin(), 0,
-                    sizeof(complex_t)*o.dgrid.local_wave_extent.prod());
-	
-      } else {
-	
-	// Otherwise, bring the field back to wave space...
-	GRVY_TIMER_BEGIN("transform_physical_to_wave");
-	o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
-	GRVY_TIMER_END("transform_physical_to_wave");
-	// ...and zero wavenumbers present only for dealiasing to
-	// prevent "leakage" of dealiasing modes to other routines.
-	o.zero_dealiasing_modes(swave, i);
-	
-      }
+      // Otherwise, bring the field back to wave space...
+      GRVY_TIMER_BEGIN("transform_physical_to_wave");
+      o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+      GRVY_TIMER_END("transform_physical_to_wave");
+      // ...and zero wavenumbers present only for dealiasing to
+      // prevent "leakage" of dealiasing modes to other routines.
+      o.zero_dealiasing_modes(swave, i);
       
     }
 
