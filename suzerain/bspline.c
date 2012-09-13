@@ -318,9 +318,11 @@ suzerain_bspline_htstretch2_evdeltascale(
     const double errl = p[ndx][kdx][6]; // Measured in percent
     const double errh = p[ndx][kdx][7]; // Measured in percent
 
-    /* Compute the empirical fit using */
-    *C  = a * pow(k, b);
-    *C *= 1 + c*(htdelta/log(k)) + d*(k/N)*(1 + e*pow(htdelta,f));
+    /* Compute the empirical fit being careful about integer types */
+    *C  = a * pow((double)k, b);
+    *C *= 1
+        + c * htdelta / log((double)k)
+        + d * (double)k / N * (1 + e * pow((double)htdelta, f));
 
     // Using percent error bounds on the fit, estimate true range
     if (Clow)  *Clow  = *C / (1 - errl/100);
