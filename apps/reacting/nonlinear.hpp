@@ -97,6 +97,8 @@ std::vector<real_t> applyNonlinearOperator(
 {
     GRVY_TIMER_BEGIN("applyNonlinearOperator");
 
+    assert(Ns>0);
+
     // Shorthand
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     using Eigen::Vector3r;
@@ -167,24 +169,27 @@ std::vector<real_t> applyNonlinearOperator(
     o.diffwave_apply(0, 0, 1, swave, state::e);
     o.bop_apply     (0,    1, swave, state::e);
 
+    int ind=0;
+
     // Everything else (all spatial derivatives)
-    for (int var=1; var<state_count; ++var) {
+    for (int var=state::e; var<state_count; ++var) {
 
       // Indexing note: aux::mx is beginning of derivatives of
-      // conserved state in aux ordering.  Thermal conductivity and
-      // temperature derivatives appear *before* this but will be
-      // computed later.
+      // conserved state in aux ordering.  Things appearing ahead of
+      // aux::mx are not used until later.
+
+      ind = var-state::e;
 
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
       o.diffwave_apply(0, 0, 1, swave, var);
-      o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::mx + dir::count*var + dir::y);
+      o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::mx + dir::count*ind + dir::y);
       o.bop_apply     (0,    1, swave, var);
       
       // Compute X- and Z- derivatives of variable var at collocation points
       // Zeros wavenumbers present only for dealiasing in the target storage
-      o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::mx + dir::count*var + dir::x );
-      o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::mx + dir::count*var + dir::z );
+      o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::mx + dir::count*ind + dir::x );
+      o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::mx + dir::count*ind + dir::z );
     }
 
     // Collectively convert swave and auxw to physical space using parallel
@@ -214,43 +219,18 @@ std::vector<real_t> applyNonlinearOperator(
 
 
     
-    // TODO: Have to refactor scenario.
+    // TODO: Removed scenario info and constants calc here.  Have to
+    // refactor how scenario-like info comes in.  Is it through the
+    // chemistry/constitutive law class?
 
-    // Retrieve constants and compute derived constants before inner loops
-    const real_t alpha            = o.scenario.alpha;
-    const real_t alpha13          = alpha + real_t(1)/real_t(3);
-    const real_t beta             = o.scenario.beta;
-    const real_t gamma            = o.scenario.gamma;
-    const real_t Ma               = o.scenario.Ma;
-    const real_t Pr               = o.scenario.Pr;
-    const real_t Re               = o.scenario.Re;
-    const real_t inv_Re           = 1 / Re;
-    const real_t inv_Ma2          = 1 / (Ma * Ma);
-    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
-    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
-    const real_t lambda1_x        = o.lambda1_x;
-    const real_t lambda1_z        = o.lambda1_z;
-    const real_t lambda2_x        = o.lambda2_x;
-    const real_t lambda2_z        = o.lambda2_z;
 
-    // Type of Boost.Accumulator to use for summation processes.
-    // Kahan summation preferred when available as incremental cost is small
-    // and we will add many small numbers to a large magnitude sum.
-    // During debugging, also make the number of samples available.
-    typedef boost::accumulators::accumulator_set<
-                real_t,
-                boost::accumulators::stats<
-#if BOOST_VERSION >= 104700
-                    boost::accumulators::tag::sum_kahan
-#else
-                    boost::accumulators::tag::sum
-#endif
-#ifndef NDEBUG
-                    , boost::accumulators::tag::count
-#endif
-                >
-            > summing_accumulator_type;
+    // TODO: Removed boost accumulator typedef here.  Add back when
+    // necessary (should be when adding computation of reference
+    // profiles for linearization).
 
+
+    //********************************************************************
+    //
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
@@ -259,13 +239,14 @@ std::vector<real_t> applyNonlinearOperator(
     // (1) Computing reference quantities and mean velocity OR mean quantities
     //     (depending on linearization and which substep is being performed).
     //
-    // (2) Computing as much of the sources and fluxes given *only*
-    //     conserved state and conserved state gradients.  In theory this
-    //     is everything.  In practice, we don't do the heat flux in this
-    //     pass b/c the temperature gradient isn't available.
+    // (2) Computing as much of the sources and fluxes as possible
+    //     given *only* conserved state and conserved state gradients.
+    //     In theory this is everything.  In practice, we don't do the
+    //     heat flux in this pass b/c the temperature gradient isn't
+    //     available.
     //
-    // (3) (After going back to wave space with T and back down the
-    //      grad(T)), Compute heat flux contribution.
+    // (3) (After going to wave space with T and back down to physical
+    //     space with grad(T)), Compute heat flux contribution.
     //
     // (4) Computing any manufactured solution forcing (when enabled).
     //
@@ -275,13 +256,14 @@ std::vector<real_t> applyNonlinearOperator(
     // that the rest are equivalent but lack information on x(i)
     // and z(k).
 
+
     // Traversal:
     // (1) Computing reference quantities and mean velocity OR mean velocity
     //     (depending on linearization and which substep is being performed).
     //
 
-    // TODO: Write this code!  Removed block from originally copied
-    // from ../perfect/nonlinear.hpp for clarity/simplicity during
+    // TODO: Write this code!  Removed block originally copied from
+    // ../perfect/nonlinear.hpp for clarity/simplicity during
     // refactor.  Use that as a template when adding this capability
     // back.
 
@@ -295,131 +277,135 @@ std::vector<real_t> applyNonlinearOperator(
          ++j) {
 
 
-        // Wall-normal operator eigenvalue estimates depend on location
-        const real_t lambda1_y = o.lambda1_y(j);
-        const real_t lambda2_y = o.lambda2_y(j);
+      // TODO: Removed lambda gets here.  Add back for time step calc.
 
 
-	// TODO: Got rid of unpacking of reference quantities here.
-	// Will this need to be added back?
+      // TODO: Got rid of unpacking of reference quantities here.
+      // Will this need to be added back?
 
-        // Iterate across the j-th ZX plane
-        const size_t last_zxoffset = offset
-                                   + o.dgrid.local_physical_extent.z()
-                                   * o.dgrid.local_physical_extent.x();
-        for (; offset < last_zxoffset; ++offset) {
+      // Iterate across the j-th ZX plane
+      const size_t last_zxoffset = offset
+	+ o.dgrid.local_physical_extent.z()
+	* o.dgrid.local_physical_extent.x();
+      for (; offset < last_zxoffset; ++offset) {
 
-	  // oliver: comment out unnecessary second derivatives
+	// TODO: Unpack species variables
 
-	  // Unpack density-related quantities
-	  const real_t   rho         ( sphys(state::rho,    offset));
-	  const Vector3r grad_rho    (  auxp(aux::rho+dim::x,  offset),
-					auxp(aux::rho+dim::y,  offset),
-					auxp(aux::rho+dim::z,  offset));
+	// Unpack density-related quantities
+	const real_t   rho         ( sphys(state::rho,    offset));
+	const Vector3r grad_rho    (  auxp(aux::rho+dim::x,  offset),
+				      auxp(aux::rho+dim::y,  offset),
+				      auxp(aux::rho+dim::z,  offset));
 	  
-	  // Unpack momentum-related quantities
-	  const Vector3r m    ( sphys(state::mx, offset),
-				sphys(state::my, offset),
-				sphys(state::mz, offset));
-	  const real_t   div_m(  auxp(aux::mx+dim::x, offset)
-			       + auxp(aux::my+dim::y, offset)
-			       + auxp(aux::mz+dim::z, offset));
-	  const Matrix3r grad_m;
-	  const_cast<Matrix3r&>(grad_m) <<
-      	                                  auxp(aux::mx+dim::x,  offset),
-	                                  auxp(aux::mx+dim::y,  offset),
-	                                  auxp(aux::mx+dim::z,  offset),
-	                                  auxp(aux::my+dim::x,  offset),
-	                                  auxp(aux::my+dim::y,  offset),
-	                                  auxp(aux::my+dim::z,  offset),
-	                                  auxp(aux::mz+dim::x,  offset),
-	                                  auxp(aux::mz+dim::y,  offset),
-	                                  auxp(aux::mz+dim::z,  offset);
+	// Unpack momentum-related quantities
+	const Vector3r m    ( sphys(state::mx, offset),
+			      sphys(state::my, offset),
+			      sphys(state::mz, offset));
+	const real_t   div_m(  auxp(aux::mx+dim::x, offset)
+			     + auxp(aux::my+dim::y, offset)
+			     + auxp(aux::mz+dim::z, offset));
+	const Matrix3r grad_m;
+	const_cast<Matrix3r&>(grad_m) <<
+	                                 auxp(aux::mx+dim::x,  offset),
+	                                 auxp(aux::mx+dim::y,  offset),
+	                                 auxp(aux::mx+dim::z,  offset),
+	                                 auxp(aux::my+dim::x,  offset),
+	                                 auxp(aux::my+dim::y,  offset),
+	                                 auxp(aux::my+dim::z,  offset),
+	                                 auxp(aux::mz+dim::x,  offset),
+	                                 auxp(aux::mz+dim::y,  offset),
+	                                 auxp(aux::mz+dim::z,  offset);
 
-	  // Unpack total energy-related quantities
-	  const real_t e        (sphys(state::e,       offset));
+	// Unpack total energy-related quantities
+	const real_t e        (sphys(state::e,       offset));
 	  
-	  // Compute velocity-related quantities
-	  const Vector3r u          = suzerain::rholut::u(rho, m);
-	  const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
-	  const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
+	// Compute velocity-related quantities
+	const Vector3r u          = suzerain::rholut::u(rho, m);
+	const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
+	const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
 	    
-	  // TODO: This call will have to be replaced with Cantera calls
-	  // Compute quantities related to the equation of state
-	  real_t p, T, mu, lambda;
-	  Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-	  suzerain::rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
-	    rho, grad_rho, m, grad_m, e, grad_e,
-	    p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+	// TODO: This call will have to be replaced with Cantera calls
+	// Compute quantities related to the equation of state
+	real_t p, T, mu, lambda;
+	Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+	suzerain::rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
+					rho, grad_rho, m, grad_m, e, grad_e,
+					p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-	  // Compute quantities related to the viscous stress tensor
-	  const Matrix3r tau     = suzerain::rholut::tau(mu, lambda, div_u, grad_u);
+	// Compute quantities related to the viscous stress tensor
+	const Matrix3r tau     = suzerain::rholut::tau(mu, lambda, div_u, grad_u);
 
-	  // Source terms get accumulated into state storage 
-	  // 
-	  // NOTE: Sign correct for source appearing on the RHS---i.e.,
-	  // U_t + div(F) = S.
-	  //
-	  // TODO: Generalize this from perfect gas, non-reacting case to reacting!
-	  sphys(state::e  , offset) = 0.0;
-	  sphys(state::mx , offset) = 0.0;
-	  sphys(state::my , offset) = 0.0;
-	  sphys(state::mz , offset) = 0.0;
-	  sphys(state::rho, offset) = 0.0;
+	// Source terms get accumulated into state storage 
+	// 
+	// NOTE: Sign correct for source appearing on the RHS---i.e.,
+	// U_t + div(F) = S.
+	//
+	// TODO: Generalize this from non-reacting case to reacting!
+	// TODO: Add species equations!
+	sphys(state::e  , offset) = 0.0;
+	sphys(state::mx , offset) = 0.0;
+	sphys(state::my , offset) = 0.0;
+	sphys(state::mz , offset) = 0.0;
+	sphys(state::rho, offset) = 0.0;
 	  
 
-	  // Fluxes get accumulated into auxp
-	  //
-	  // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
-	  // U_t + div(F) = S(U).
-	  //
-	  // TODO: Replace zeros with fluxes
+	// Fluxes get accumulated into auxp
+	//
+	// NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
+	// U_t + div(F) = S(U).
+	//
+	// TODO: Replace zeros with fluxes!
+	// TODO: Add species equations!
 	  
-	  // energy
-	  auxp(aux::e +dir::x, offset) = 0;
-	  auxp(aux::e +dir::y, offset) = 0;
-	  auxp(aux::e +dir::z, offset) = 0;
+	// energy
+	auxp(aux::e +dir::x, offset) = 0;
+	auxp(aux::e +dir::y, offset) = 0;
+	auxp(aux::e +dir::z, offset) = 0;
 	  
-	  // momentum
-	  auxp(aux::mx+dir::x, offset) = 0;
-	  auxp(aux::mx+dir::y, offset) = 0;
-	  auxp(aux::mx+dir::z, offset) = 0;
+	// momentum
+	auxp(aux::mx+dir::x, offset) = 0;
+	auxp(aux::mx+dir::y, offset) = 0;
+	auxp(aux::mx+dir::z, offset) = 0;
 	  
-	  auxp(aux::my+dir::x, offset) = 0;
-	  auxp(aux::my+dir::y, offset) = 0;
-	  auxp(aux::my+dir::z, offset) = 0;
+	auxp(aux::my+dir::x, offset) = 0;
+	auxp(aux::my+dir::y, offset) = 0;
+	auxp(aux::my+dir::z, offset) = 0;
 	  
-	  auxp(aux::mz+dir::x, offset) = 0;
-	  auxp(aux::mz+dir::y, offset) = 0;
-	  auxp(aux::mz+dir::z, offset) = 0;
+	auxp(aux::mz+dir::x, offset) = 0;
+	auxp(aux::mz+dir::y, offset) = 0;
+	auxp(aux::mz+dir::z, offset) = 0;
 	  
-	  // mass
-	  auxp(aux::rho+dir::x, offset) = m.x();
-	  auxp(aux::rho+dir::y, offset) = m.y();
-	  auxp(aux::rho+dir::z, offset) = m.z();
+	// mass
+	auxp(aux::rho+dir::x, offset) = m.x();
+	auxp(aux::rho+dir::y, offset) = m.y();
+	auxp(aux::rho+dir::z, offset) = m.z();
 	  
-	  // Finally, put temperature and thermal conductivity data
-	  // into auxp for later use
-	  auxp(aux::kap, offset) = 0;
-	  auxp(aux::T  , offset) = 0;
+	// Finally, put temperature and thermal conductivity data
+	// into auxp for later use
+	auxp(aux::kap, offset) = 0;
+	auxp(aux::T  , offset) = 0;
 	  
 	  
-	  // TODO: Drop in time step handling once Rhys has it
-	  // sorted out in perfect gas case.
+	// TODO: Add in time step handling once Rhys has it sorted out
+	// in perfect gas case.
 	  
-	  // TODO: Generalize time step handling for reacting case.
+	// TODO: Generalize time step handling for reacting case.
 	  
-        } // end X // end Z
+      } // end X // end Z
 
     } // end Y
     GRVY_TIMER_END("nonlinear right hand sides");
 
-    //------------------------------------------------------------------------------------
+    //------------------------------------------------------------------
     //
-    // At this point, we have done everything except the heat flux.  To do this, we will
+    // At this point, we have done everything except the heat flux.
+    // To do this, we will
     //
-    // (1) Take temperature from physical to wave space.
-    // (2) Differentiate temperature in wave space and bring back to physical space.
+    // (1) Take temperature from physical to wave space.  
+    // (2) Differentiate temperature in wave space and bring grad(T)
+    //     back to physical space.
+    //
+    // This is the second transform stage.
     
 
     // (1) Temperature from physical to wave space
@@ -452,7 +438,7 @@ std::vector<real_t> applyNonlinearOperator(
     GRVY_TIMER_END("transform_wave_to_physical");
 
     // Now have temperature gradient in at collocation points.
-    //----------------------------------------------------------------------------------
+    //-----------------------------------------------------------------
     
     
     // Traversal:
@@ -464,77 +450,77 @@ std::vector<real_t> applyNonlinearOperator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-        // Iterate across the j-th ZX plane
-        const size_t last_zxoffset = offset
-                                   + o.dgrid.local_physical_extent.z()
-                                   * o.dgrid.local_physical_extent.x();
-        for (; offset < last_zxoffset; ++offset) {
+      // Iterate across the j-th ZX plane
+      const size_t last_zxoffset = offset
+	+ o.dgrid.local_physical_extent.z()
+	* o.dgrid.local_physical_extent.x();
+      for (; offset < last_zxoffset; ++offset) {
 
-	  // Thermal conductivity
-	  const real_t   kap       ( auxp(aux::kap     ,   offset));
+	// Thermal conductivity
+	const real_t   kap       ( auxp(aux::kap     ,   offset));
 
-	  // Extract grad(T)
-	  const Vector3r grad_T    ( auxp(aux::gT+dim::x,  offset),
-				     auxp(aux::gT+dim::y,  offset),
-				     auxp(aux::gT+dim::z,  offset));
+	// Extract grad(T)
+	const Vector3r grad_T    ( auxp(aux::gT+dim::x,  offset),
+				   auxp(aux::gT+dim::y,  offset),
+				   auxp(aux::gT+dim::z,  offset));
 	  
-	  // Accumulate into energy fluxes
-	  //
-	  // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
-	  // U_t + div(F) = S(U).
-	  auxp(aux::e +dir::x, offset) -= kap*grad_T.x();
-	  auxp(aux::e +dir::y, offset) -= kap*grad_T.y();
-	  auxp(aux::e +dir::z, offset) -= kap*grad_T.z();
+	// Accumulate into energy fluxes
+	//
+	// NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
+	// U_t + div(F) = S(U).
+	auxp(aux::e +dir::x, offset) -= kap*grad_T.x();
+	auxp(aux::e +dir::y, offset) -= kap*grad_T.y();
+	auxp(aux::e +dir::z, offset) -= kap*grad_T.z();
 
 
-	} // end x,z
+      } // end x,z
     } // end y
 
     // Traversal:
     // (4) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
-        GRVY_TIMER_BEGIN("manufactured forcing");
+      GRVY_TIMER_BEGIN("manufactured forcing");
 
-        // Dereference the msoln smart pointer outside the compute loop
-        const channel::manufactured_solution &ms = *msoln;
+      // Dereference the msoln smart pointer outside the compute loop
+      const channel::manufactured_solution &ms = *msoln;
 
-        offset = 0;
-        for (int j = o.dgrid.local_physical_start.y();
-             j < o.dgrid.local_physical_end.y();
-             ++j) {
+      offset = 0;
+      for (int j = o.dgrid.local_physical_start.y();
+	   j < o.dgrid.local_physical_end.y();
+	   ++j) {
 
-            const real_t y = o.y(j);
+	const real_t y = o.y(j);
 
-            for (int k = o.dgrid.local_physical_start.z();
-                k < o.dgrid.local_physical_end.z();
-                ++k) {
+	for (int k = o.dgrid.local_physical_start.z();
+	     k < o.dgrid.local_physical_end.z();
+	     ++k) {
 
-                const real_t z = o.z(k);
+	  const real_t z = o.z(k);
 
-                for (int i = o.dgrid.local_physical_start.x();
-                    i < o.dgrid.local_physical_end.x();
-                    ++i, /* NB */ ++offset) {
+	  for (int i = o.dgrid.local_physical_start.x();
+	       i < o.dgrid.local_physical_end.x();
+	       ++i, /* NB */ ++offset) {
 
-                    const real_t x = o.x(i);
+	    const real_t x = o.x(i);
 
-                    real_t Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe;
-                    ms.Q_conservative(x, y, z, time,
-                                      Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
+	    real_t Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe;
+	    ms.Q_conservative(x, y, z, time,
+			      Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
 
-                    sphys(state::rho, offset) += Q_rho;
-                    sphys(state::mx , offset) += Q_rhou;
-                    sphys(state::my , offset) += Q_rhov;
-                    sphys(state::mz , offset) += Q_rhow;
-                    sphys(state::e  , offset) += Q_rhoe;
+	    sphys(state::rho, offset) += Q_rho;
+	    sphys(state::mx , offset) += Q_rhou;
+	    sphys(state::my , offset) += Q_rhov;
+	    sphys(state::mz , offset) += Q_rhow;
+	    sphys(state::e  , offset) += Q_rhoe;
 
-                } // end X
+	  } // end X
 
-            } // end Z
+	} // end Z
 
-        } // end Y
+      } // end Y
 
-        GRVY_TIMER_END("manufactured forcing");
+      GRVY_TIMER_END("manufactured forcing");
     } // end msoln
 
 
@@ -589,6 +575,8 @@ std::vector<real_t> applyNonlinearOperator(
 
     // TODO: Get divergence of fluxes.
 
+    // TODO: Add (actually subtract) divergence of fluxes to sources to get total RHS
+
     GRVY_TIMER_END("applyNonlinearOperator");
 
     // Return the stable time step criteria separately on each rank.  The time
@@ -599,7 +587,8 @@ std::vector<real_t> applyNonlinearOperator(
 
     // State leaves method as coefficients in X and Z directions
     // State leaves method as collocation point values in Y direction
-}
+
+} // end applyNonlinearOperator
 
 } // namespace channel
 
