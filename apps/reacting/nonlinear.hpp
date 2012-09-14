@@ -445,9 +445,9 @@ std::vector<real_t> applyNonlinearOperator(
     //
     // Compute Y derivatives of variable var at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, aux, aux::T);
-    o.bop_accumulate(1,    1, aux, aux::T, 0, auxw, aux::gT + dir::y);
-    o.bop_apply     (0,    1, aux::T, aux::T); // Do we need this????
+    o.diffwave_apply(0, 0, 1, auxw, aux::T);
+    o.bop_accumulate(1,    1, auxw, aux::T, 0, auxw, aux::gT + dir::y);
+    o.bop_apply     (0,    1, auxw, aux::T); // Do we need this????
     
     // Compute X- and Z- derivatives of variable var at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
@@ -581,12 +581,47 @@ std::vector<real_t> applyNonlinearOperator(
 
 
     // Now we have sources and fluxes in wave space.  The last piece
-    // is to apply the divergence to the sources.  I assume that need
-    // to be done here (as opposed to outside this function).
+    // is to apply the divergence to the fluxes and accumulate into
+    // the sources.
 
-    // TODO: Get divergence of fluxes.
+    // oliver: I'm slightly confused about necessary calls here.
+    // Check carefully w/ Rhys.
 
-    // TODO: Add (actually subtract) divergence of fluxes to sources to get total RHS
+    // Compute divergence of flux vector.
+    {
+
+      suzerain::bsplineop_lu boplu(o.bop);
+
+      for (size_t i = 0; i < state_count; ++i) {
+
+	// Apply inverse mass matrix to get Y derivatives to pure
+	// coefficient representation
+	o.bop_solve(boplu, auxw, aux::e + dir::count*i + dir::y);
+
+	// Apply derivative operator (note: I'm assuming this gets me
+	// to collocation points in Y.  Check this!)
+	o.diffwave_apply(0, 0, 1, auxw, aux::e + dir::count*i + dir::y);
+	o.bop_apply     (1,    1, auxw, aux::e + dir::count*i + dir::y);
+
+	// Now have Y derivative of Y flux (at collocation points (?))
+	// in Y and coefficients in X,Z)
+
+	// Accumulate X and Z derivatives of X and Z fluxes into Y
+	// derivative of Y flux storage
+	o.diffwave_accumulate(1, 0, 1, auxw, aux::e + dir::count*i + dir::x,  
+                                    1, auxw, aux::e + dir::count*i + dir::y );
+
+	o.diffwave_accumulate(0, 1, 1, auxw, aux::e + dir::count*i + dir::z,  
+                                    1, auxw, aux::e + dir::count*i + dir::y );
+
+	// Now have divergence of the flux (at collocation points (?))
+	// in Y and coefficieents in X,Z)
+
+      } // end for
+
+    } // end apply divergence
+
+    // Seems like I need to apply inverse mass matrix to get back to coefficient space entirely.  Then differentiate.  Then 
 
     GRVY_TIMER_END("applyNonlinearOperator");
 
