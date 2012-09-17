@@ -113,6 +113,7 @@ std::vector<real_t> applyNonlinearOperator(
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     using Eigen::Vector3r;
     using Eigen::Matrix3r;
+    using Eigen::VectorXr;
     using std::size_t;
 
     // State enters method as coefficients in X, Y, and Z directions
@@ -279,9 +280,12 @@ std::vector<real_t> applyNonlinearOperator(
     // back.
 
 
-    // TODO: Instantiate Eigen variable length arrays here to store
-    // species specific info (i.e., species densities, mass
-    // diffusivities, enthalpies, rxn rates)
+    // Instantiate Eigen variable length arrays to store species
+    // specific info
+    VectorXr species(Ns);
+    VectorXr Ds     (Ns);
+    VectorXr hs     (Ns);
+    VectorXr om     (Ns);
 
     // Dereference the claws smart pointer outside the compute loop
     ConstitutiveLaws &cl = *claws;
@@ -303,8 +307,6 @@ std::vector<real_t> applyNonlinearOperator(
 	+ o.dgrid.local_physical_extent.z()
 	* o.dgrid.local_physical_extent.x();
       for (; offset < last_zxoffset; ++offset) {
-
-	// TODO: Unpack species variables
 
 	// Unpack density-related quantities
 	const real_t   rho         ( sphys(state::rho,    offset));
@@ -333,35 +335,39 @@ std::vector<real_t> applyNonlinearOperator(
 
 	// Unpack total energy-related quantities
 	const real_t e        (sphys(state::e,       offset));
+
+	// Unpack species variables 
+	// NOTE: In species vector, idx 0 is the dilluter (the species
+	// that is not explicitly part of the state vector)
+	species(0) = rho;
+	for (unsigned int s=1; s<Ns; ++s) {
+	  species(s) = sphys(state::species + s - 1, offset);
+	  species(0) -= species(s);
+	}
+
 	  
 	// Compute velocity-related quantities
 	const Vector3r u          = suzerain::rholut::u(rho, m);
 	const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
 	const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
-	    
-	// TODO: The call below (to p_T_mu_lambda) will have to be
-	// replaced with ConstitutiveLaws calls... e.g., something
-	// like
-	// 
-	// cl.evaluate(e, m, rho, species,         // inputs 
-	//             T, p, Ds, mu, kap, hs, om); // outputs
-	//
-	// The (currently notional) function cl.evaluate takes state
-	// and returns temp, pressure, mass diffusivities, viscosity,
-	// thermal conductivity, species enthalpies, and reaction
-	// source terms.
-	//
-	// TODO: Add bulk viscosity (\lambda) here
-	//
-	// Compute quantities related to the equation of state
-	real_t p, T, mu, lambda;
-	Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-	suzerain::rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
-					rho, grad_rho, m, grad_m, e, grad_e,
-					p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+
+	// Compute temperature, pressure, mass diffusivities,
+	// viscosity, thermal conductivity, species enthalpies, and
+	// reaction source terms
+	real_t T, p, mu, kap, lam;
+	cl.evaluate(e, m.data(), rho, species.data(),
+		    T, p, Ds.data(), mu, kap, hs.data(), om.data());
+
+	// // Compute quantities related to the equation of state
+	// real_t p, T, mu, lambda;
+	// Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+	// suzerain::rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
+	// 				rho, grad_rho, m, grad_m, e, grad_e,
+	// 				p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
 	// Compute quantities related to the viscous stress tensor
-	const Matrix3r tau     = suzerain::rholut::tau(mu, lambda, div_u, grad_u);
+	const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
 
 	// Source terms get accumulated into state storage 
 	// 
