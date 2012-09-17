@@ -73,9 +73,10 @@ namespace channel {
 
   // Indices for auxiliary storage.  
   //
-  // NOTE: Don't need energy derivatives in physical space, but we
-  // need a place to accumulate the energy equation fluxes.  Can we
-  // hide this somewhere s.t. we don't have an "e" entry in this enum.
+  // NOTE: Could eliminate 1 field here by accumulating T derivatives
+  // back into T storage.  Makes code more complex for minimal gain,
+  // so I didn't do it.
+  //
   stuct aux { enum {
       kap     = 0,
       T       = 1,
@@ -89,10 +90,9 @@ namespace channel {
     }; };
 
 
-// TODO: Template this on chemistry/constitutive law class.
 template<bool ZerothSubstep,
          linearize::type Linearize,
-	 class ConstitutiveLaws,
+	 class ConstitutiveLaws, // name here doesn't really fit.  Anything better??
          class ManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
             const suzerain::OperatorBase<real_t> &o,
@@ -102,7 +102,7 @@ std::vector<real_t> applyNonlinearOperator(
             suzerain::ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
-	    boost::shared_ptr<ConstitutiveLaws>& claws,
+	    boost::shared_ptr<ConstitutiveLaws>& claws, // TODO: Decide if claws carries Ns (almost has to, right?)
 	    const unsigned int Ns )
 {
     GRVY_TIMER_BEGIN("applyNonlinearOperator");
@@ -145,8 +145,6 @@ std::vector<real_t> applyNonlinearOperator(
                       auxw.strides() + 1));
 
 
-    // oliver: don't quite understand next statement.
-
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
     // must survive from nonzero substep to substep while instant profiles do not.
@@ -179,27 +177,23 @@ std::vector<real_t> applyNonlinearOperator(
     o.diffwave_apply(0, 0, 1, swave, state::e);
     o.bop_apply     (0,    1, swave, state::e);
 
-    int ind=0;
-
     // Everything else (all spatial derivatives)
-    for (int var=state::e; var<state_count; ++var) {
+    for (int var=state::mx; var<state_count; ++var) {
 
       // Indexing note: aux::mx is beginning of derivatives of
       // conserved state in aux ordering.  Things appearing ahead of
       // aux::mx are not used until later.
 
-      ind = var-state::e;
-
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
       o.diffwave_apply(0, 0, 1, swave, var);
-      o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::mx + dir::count*ind + dir::y);
+      o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::e + dir::count*var + dir::y);
       o.bop_apply     (0,    1, swave, var);
       
       // Compute X- and Z- derivatives of variable var at collocation points
       // Zeros wavenumbers present only for dealiasing in the target storage
-      o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::mx + dir::count*ind + dir::x );
-      o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::mx + dir::count*ind + dir::z );
+      o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::x );
+      o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::z );
     }
 
     // Collectively convert swave and auxw to physical space using parallel
@@ -207,6 +201,11 @@ std::vector<real_t> applyNonlinearOperator(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
+
+    // FIXME: aux_count and state_count aren't known at compile time,
+    // so this can't work.  However, notionally this is what I want.
+    // Need to modify physical_view api to support runtime count info
+    // I suppose.
     typename channel::physical_view<aux_count>::type auxp
         = channel::physical_view<aux_count>::create(o.dgrid, auxw);
     typename channel::physical_view<state_count>::type sphys
@@ -245,7 +244,7 @@ std::vector<real_t> applyNonlinearOperator(
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
     //
-    // Three traversals occur:
+    // Four traversals occur:
     // (1) Computing reference quantities and mean velocity OR mean quantities
     //     (depending on linearization and which substep is being performed).
     //
@@ -265,6 +264,8 @@ std::vector<real_t> applyNonlinearOperator(
     // must be known within them.  Study (4) and convince yourself
     // that the rest are equivalent but lack information on x(i)
     // and z(k).
+    // 
+    // TODO: Combine some of these traversals (e.g., 1 and 2)
 
 
     // Traversal:
@@ -277,6 +278,10 @@ std::vector<real_t> applyNonlinearOperator(
     // refactor.  Use that as a template when adding this capability
     // back.
 
+
+    // TODO: Instantiate Eigen variable length arrays here to store
+    // species specific info (i.e., species densities, mass
+    // diffusivities, enthalpies, rxn rates)
 
     // Dereference the claws smart pointer outside the compute loop
     ConstitutiveLaws &cl = *claws;
@@ -292,9 +297,6 @@ std::vector<real_t> applyNonlinearOperator(
 
       // TODO: Removed lambda gets here.  Add back for time step calc.
 
-
-      // TODO: Got rid of unpacking of reference quantities here.
-      // Will this need to be added back?
 
       // Iterate across the j-th ZX plane
       const size_t last_zxoffset = offset
@@ -348,6 +350,8 @@ std::vector<real_t> applyNonlinearOperator(
 	// and returns temp, pressure, mass diffusivities, viscosity,
 	// thermal conductivity, species enthalpies, and reaction
 	// source terms.
+	//
+	// TODO: Add bulk viscosity (\lambda) here
 	//
 	// Compute quantities related to the equation of state
 	real_t p, T, mu, lambda;
@@ -592,6 +596,12 @@ std::vector<real_t> applyNonlinearOperator(
 
       suzerain::bsplineop_lu boplu(o.bop);
 
+      // FIXME: Need form mass matrix call
+      // FIXME: Move these ops outside this function
+
+      // FIXME: Accumulate div directly into state (sources) rather
+      // than accumulate div and then add
+
       for (size_t i = 0; i < state_count; ++i) {
 
 	// Apply inverse mass matrix to get Y derivatives to pure
@@ -621,7 +631,20 @@ std::vector<real_t> applyNonlinearOperator(
 
     } // end apply divergence
 
-    // Seems like I need to apply inverse mass matrix to get back to coefficient space entirely.  Then differentiate.  Then 
+
+    // FIXME: Eliminate this step b/c accumulate div directly into state
+
+    // Add div(flux) to source
+    {
+      
+      for (size_t i = 0; i < state_count; ++i) {
+	
+	o.diffwave_accumulate(0, 0, 1, auxw , aux::e + dir::count*i + dir::y,  
+                                    1, swave, i );
+
+      } // end for
+
+    } // end accumulate
 
     GRVY_TIMER_END("applyNonlinearOperator");
 
