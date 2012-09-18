@@ -112,7 +112,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, swave, ndx::rho);
+    o.zero_dealiasing_modes(swave, ndx::rho);
     o.bop_accumulate(1,    1, swave, ndx::rho, 0, auxw, aux::rho_y);
     o.bop_accumulate(2,    1, swave, ndx::rho, 0, auxw, aux::rho_yy);
     o.bop_apply     (0,    1, swave, ndx::rho);
@@ -129,7 +129,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, swave, ndx::rhou);
+    o.zero_dealiasing_modes(swave, ndx::rhou);
     o.bop_accumulate(1,    1, swave, ndx::rhou, 0, auxw, aux::mx_y);
     o.bop_accumulate(2,    1, swave, ndx::rhou, 0, auxw, aux::mx_yy);
     o.bop_apply     (0,    1, swave, ndx::rhou);
@@ -146,7 +146,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, swave, ndx::rhov);
+    o.zero_dealiasing_modes(swave, ndx::rhov);
     o.bop_accumulate(1,    1, swave, ndx::rhov, 0, auxw, aux::my_y);
     o.bop_accumulate(2,    1, swave, ndx::rhov, 0, auxw, aux::my_yy);
     o.bop_apply     (0,    1, swave, ndx::rhov);
@@ -163,7 +163,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, swave, ndx::rhow);
+    o.zero_dealiasing_modes(swave, ndx::rhow);
     o.bop_accumulate(1,    1, swave, ndx::rhow, 0, auxw, aux::mz_y);
     o.bop_accumulate(2,    1, swave, ndx::rhow, 0, auxw, aux::mz_yy);
     o.bop_apply     (0,    1, swave, ndx::rhow);
@@ -180,7 +180,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, swave, ndx::rhoe);
+    o.zero_dealiasing_modes(swave, ndx::rhoe);
     o.bop_accumulate(1,    1, swave, ndx::rhoe, 0, auxw, aux::e_y);
     o.bop_accumulate(2,    1, swave, ndx::rhoe, 0, auxw, aux::div_grad_e);
     o.bop_apply     (0,    1, swave, ndx::rhoe);
