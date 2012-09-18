@@ -282,10 +282,16 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Instantiate Eigen variable length arrays to store species
     // specific info
-    VectorXr species(Ns);
-    VectorXr Ds     (Ns);
-    VectorXr hs     (Ns);
-    VectorXr om     (Ns);
+    VectorXr species(Ns); // species densities
+    VectorXr Ds     (Ns); // mass diffusivities
+    VectorXr hs     (Ns); // species enthalpies
+    VectorXr om     (Ns); // reaction source terms
+    VectorXr cs     (Ns); // species mass fractions
+
+    // TODO: check eigen syntax here
+    MatrixX3r grad_species (Ns); // spatial derivatives of species densities
+    MatrixX3r grad_cs      (Ns); // spatial derivatives of species mass fractions
+    MatrixX3r sdiff        (Ns); // diffusive fluxes for species equations
 
     // Dereference the claws smart pointer outside the compute loop
     ConstitutiveLaws &cl = *claws;
@@ -310,6 +316,9 @@ std::vector<real_t> applyNonlinearOperator(
 
 	// Unpack density-related quantities
 	const real_t   rho         ( sphys(state::rho,    offset));
+
+	const real_t  irho = 1.0/rho;
+
 	const Vector3r grad_rho    (  auxp(aux::rho+dim::x,  offset),
 				      auxp(aux::rho+dim::y,  offset),
 				      auxp(aux::rho+dim::z,  offset));
@@ -340,9 +349,24 @@ std::vector<real_t> applyNonlinearOperator(
 	// NOTE: In species vector, idx 0 is the dilluter (the species
 	// that is not explicitly part of the state vector)
 	species(0) = rho;
+
+	grad_species(0,0) = grad_rho(0);
+	grad_species(0,1) = grad_rho(1);
+	grad_species(0,2) = grad_rho(2);
+
 	for (unsigned int s=1; s<Ns; ++s) {
 	  species(s) = sphys(state::species + s - 1, offset);
-	  species(0) -= species(s);
+
+	  grad_species(s,0) = auxp(aux::species + s - 1 + dim::x, offset);
+	  grad_species(s,1) = auxp(aux::species + s - 1 + dim::y, offset);
+	  grad_species(s,2) = auxp(aux::species + s - 1 + dim::z, offset);
+
+	  // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+	  species(0)        -= species(s);
+
+	  grad_species(0,0) -= grad_species(s,0);
+	  grad_species(0,1) -= grad_species(s,1);
+	  grad_species(0,2) -= grad_species(s,2);
 	}
 
 	  
@@ -369,18 +393,58 @@ std::vector<real_t> applyNonlinearOperator(
 	// Compute quantities related to the viscous stress tensor
 	const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
 
+	// Compute mass fractions and mass fraction gradients
+	for (unsigned int s=0; s<Ns; ++s) {
+	  
+	  cs(s) = irho * species(s);
+
+	  grad_cs(s,0) = irho * grad_species(s,0) - irho * cs(s) * grad_rho(0);
+	  grad_cs(s,1) = irho * grad_species(s,1) - irho * cs(s) * grad_rho(1);
+	  grad_cs(s,2) = irho * grad_species(s,2) - irho * cs(s) * grad_rho(2);
+
+	}
+
+	// Place to sum species fluxes from Fick's model
+	Vector3r sdifftot (0.0, 0.0, 0.0);
+
+	// Compute Fick's model contribution to diffusive fluxes and sum
+	for (unsigned int s=0; s<Ns; ++s) {
+
+	  sdiff(s,0) = rho * Ds(s) * grad_cs(s,0);
+	  sdiff(s,1) = rho * Ds(s) * grad_cs(s,1);
+	  sdiff(s,2) = rho * Ds(s) * grad_cs(s,2);
+
+	  sdifftot(0) += sdiff(s,0);
+	  sdifftot(1) += sdiff(s,1);
+	  sdifftot(2) += sdiff(s,2);
+	  
+	}
+
+	// Subtract off cs*sdifftot to get SCEBD fluxes
+	for (unsigned int s=0; s<Ns; ++s) {
+
+	  sdiff(s,0) -= cs(s) * sdifftot(0);
+	  sdiff(s,1) -= cs(s) * sdifftot(1);
+	  sdiff(s,2) -= cs(s) * sdifftot(2);
+
+	}
+	
+
 	// Source terms get accumulated into state storage 
 	// 
 	// NOTE: Sign correct for source appearing on the RHS---i.e.,
 	// U_t + div(F) = S.
 	//
-	// TODO: Generalize this from non-reacting case to reacting!
-	// TODO: Add species equations!
+	// TODO: Add slow growth terms.
 	sphys(state::e  , offset) = 0.0;
 	sphys(state::mx , offset) = 0.0;
 	sphys(state::my , offset) = 0.0;
 	sphys(state::mz , offset) = 0.0;
 	sphys(state::rho, offset) = 0.0;
+
+	for (unsigned int s=1; s<Ns; ++s) {
+	  sphys(state::rho+s, offset) = om(s);
+	}
 	  
 
 	// Fluxes get accumulated into auxp
@@ -388,31 +452,63 @@ std::vector<real_t> applyNonlinearOperator(
 	// NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
 	// U_t + div(F) = S(U).
 	//
-	// TODO: Replace zeros with fluxes!
-	// TODO: Add species equations!
+	// TODO: "Eigenify" these calcs where appropriate
 	  
-	// energy
-	auxp(aux::e +dir::x, offset) = 0;
-	auxp(aux::e +dir::y, offset) = 0;
-	auxp(aux::e +dir::z, offset) = 0;
+	Vector3r vwork = tau*u; // TODO: check that this does what I think
+
+	//----------------------------------------------------------------------
+	// ENERGY                    = u     * (rho*H) - viscous work ...
+	auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
+	auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
+	auxp(aux::e +dir::z, offset) = u.z() * (e + p) - vwork.z() ;
+
+	// ... - species enthalpy term
+	if (Ns>1) {
+	  // NOTE: If Ns=1, we should have sdiff(0,*) = 0.0.  Thus,
+	  // this loop would be entered but shouldn't do anything.
+	  for (unsigned int s=0; s<Ns; ++s) {
+	    auxp(aux::e +dir::x, offset) -= sdiff(s, 0) * hs(s);
+	    auxp(aux::e +dir::y, offset) -= sdiff(s, 1) * hs(s);
+	    auxp(aux::e +dir::z, offset) -= sdiff(s, 2) * hs(s);
+	  }
+	}
+	// NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
+	//----------------------------------------------------------------------
 	  
-	// momentum
-	auxp(aux::mx+dir::x, offset) = 0;
-	auxp(aux::mx+dir::y, offset) = 0;
-	auxp(aux::mx+dir::z, offset) = 0;
+	//----------------------------------------------------------------------
+	// MOMENTUM                  = convection     - viscous    + pressure
+	auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
+	auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
+	auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
 	  
-	auxp(aux::my+dir::x, offset) = 0;
-	auxp(aux::my+dir::y, offset) = 0;
-	auxp(aux::my+dir::z, offset) = 0;
+	auxp(aux::my+dir::x, offset) = u.y() * m.x()  -  tau(0,1)       ;
+	auxp(aux::my+dir::y, offset) = u.y() * m.y()  -  tau(1,1)  +  p ;
+	auxp(aux::my+dir::z, offset) = u.y() * m.z()  -  tau(2,1)       ;
 	  
-	auxp(aux::mz+dir::x, offset) = 0;
-	auxp(aux::mz+dir::y, offset) = 0;
-	auxp(aux::mz+dir::z, offset) = 0;
+	auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
+	auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
+	auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
+	//----------------------------------------------------------------------
 	  
-	// mass
+	//----------------------------------------------------------------------
+	// mass                       = mass flux
 	auxp(aux::rho+dir::x, offset) = m.x();
 	auxp(aux::rho+dir::y, offset) = m.y();
 	auxp(aux::rho+dir::z, offset) = m.z();
+	//----------------------------------------------------------------------
+
+	//----------------------------------------------------------------------
+	// species
+	for (unsigned int s=0; s<Ns-1; ++s) {
+	  // NOTE: species(0) is the species that is not explicitly carried!
+
+	  //                                = convection               - diffusion
+	  auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
+	  auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
+	  auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
+
+	}
+	//----------------------------------------------------------------------
 	  
 	// Finally, put temperature and thermal conductivity data
 	// into auxp for later use
