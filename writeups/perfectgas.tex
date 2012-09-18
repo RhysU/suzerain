@@ -1455,7 +1455,8 @@ The step size $\Delta{}t$ used within the SMR91 scheme is limited by both a
 convective and a diffusive stability criterion.  The time step used is taken to
 be the minimum stable time step possible according to either restriction.  As
 both criteria are approximate, the resulting $\Delta{}t$ is further multiplied
-by a safety factor less than one.
+by a safety factor less than one.  Safety factors like 0.70--0.77 are often
+used~\citep{Venugopal2003,spalart_lowstoragerk}.
 
 \subsubsection{Convective stability criterion}
 \label{sec:convectivestability}
@@ -1519,9 +1520,7 @@ into account the inhomogeneous nature of his wall-normal direction.  He
 determined that the wall-normal imaginary eigenvalue magnitude dropped by
 nearly an order of magnitude after taking into account the inhomogeneity.  He
 concluded that, taking $\Delta{}y$ to be the breakpoint separation, $C^{(1)} =
-4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Safety factors like
-$0.70-0.77$ are often used in conjunction with these
-choices~\citep{Venugopal2003,spalart_lowstoragerk}.  Suzerain's choice of
+4$ was feasible \citep[equation~3.29]{Venugopal2003}.  Suzerain's choice of
 $\Delta{}y$ and $C^{(1)}$ will be covered in
 section~\ref{sec:wallnormaleigval}.
 
@@ -1581,10 +1580,8 @@ separation for $\Delta{}y$ and set $C^{(2)} = 1$.  \citeauthor{Venugopal2003}
 used a nearly identical diffusive criterion
 \citep[equation~3.15]{Venugopal2003}.  His analysis determined that the
 diffusive stability criterion was not overly conservative for a non-periodic
-B-spline discretization.  Again, safety factors like $0.70-0.77$ are often used
-alongside these choices~\citep{Venugopal2003,spalart_lowstoragerk}.  Suzerain's
-determination of $\Delta{}y$ and $C^{(2)}$ will be covered in
-section~\ref{sec:wallnormaleigval}.
+B-spline discretization.  Suzerain's determination of $\Delta{}y$ and $C^{(2)}$
+will be covered in section~\ref{sec:wallnormaleigval}.
 
 \subsubsection{Empirical stability limits from inhomogeneous B-spline operators}
 \label{sec:wallnormaleigval}
@@ -1593,11 +1590,11 @@ Employing stability estimates \eqref{eq:convectivestability}
 and~\eqref{eq:diffusivestability} requires information about the wall-normal
 discrete operator eigenvalue magnitudes.  By equations~\eqref{eq:lambda1deltay}
 and~\eqref{eq:lambda2deltay} this is equivalent to estimating both $C^{(1)}$
-and $C^{(2)}$ for our wall-normal discrete operators.  Per
-section~\ref{sec:formingoperators}, these operators are a function of three
-parameters: the piecewise polynomial order $k$ where $k=4$ indicates piecewise
-cubic B-splines, the hyperbolic tangent stretching parameter $\delta\geq{}0$,
-and the wall-normal number of degrees of freedom $N_y\geq{}k$.
+and $C^{(2)}$.  Per section~\ref{sec:formingoperators}, our operators are a
+function of three parameters: the piecewise polynomial order $k$ where $k=4$
+indicates piecewise cubic B-splines, the hyperbolic tangent stretching
+parameter $\delta\geq{}0$, and the wall-normal number of degrees of freedom
+$N_y\geq{}k$.
 
 \begin{figure}
   \centering
@@ -1616,12 +1613,12 @@ and the wall-normal number of degrees of freedom $N_y\geq{}k$.
 \end{figure}
 
 Using actual eigenvalue magnitudes
-$\lambda^{(1)}={\lambda^{(1)}_y}\left(k,\delta,N_y\right)$ and
-$\lambda^{(2)}={\lambda^{(2)}_y}\left(k,\delta,N_y\right)$ from a large
+$\lambda^{(1)}=\lambda^{(1)}_y\!\left(k,\delta,N_y\right)$ and
+$\lambda^{(2)}=\lambda^{(2)}_y\!\left(k,\delta,N_y\right)$ from a large
 collection of discrete operators, we computed exact results for $C^{(1)}$ and
 $C^{(2)}$.  The results are shown in figure~\ref{fig:inhomogeneity}.  The
 minimum grid spacing $\Delta{}y$ was measured using either adjacent breakpoints
-or adjacent collocation points to admit a comparison.  Considering only
+or adjacent collocation points to permit a comparison.  Considering only
 breakpoint-based results for $k=8$, one can see how \citet{Venugopal2003}
 probably chose $C^{(1)}=4$ and $C^{(2)}=1$ as discussed in
 sections~\ref{sec:convectivestability} and~\ref{sec:diffusivestability}.
@@ -1629,16 +1626,17 @@ However, it is striking just how non-universal those choices happen to be.
 Evidently, neither a breakpoint-based nor a collocation point-based $\Delta{}y$
 inherently captures the maximum eigenvalue magnitudes as $k$, $\delta$, and
 $N_y$ vary--- some nonlinear combination of the complete set of grid parameters
-is necessary.  Hereafter, unlike Guarini, Kwok, and Venugopal, and following
-section~\ref{sec:formingoperators} we take $\Delta{}y$ to be the spacing
-between adjacent \emph{collocation points}.
+is necessary.
 
-Performing Levenberg--Marquardt nonlinear regression against the vast majority
-of the empirical data in figure~\ref{fig:inhomogeneity} shows good agreement
-with curve fits like the following
+Hereafter, unlike \citeauthor{Guarini1998}, \citeauthor{Kwok2002}, and
+\citeauthor{Venugopal2003} we take $\Delta{}y$ to be the spacing between
+adjacent \emph{collocation points}.  Performing Levenberg--Marquardt nonlinear
+regression against the vast majority of the empirical data in
+figure~\ref{fig:inhomogeneity} shows good agreement with curve fits like the
+following
 \begin{align}
   \label{eq:Cfit}
-  C^{(i)}\!\left(k,\delta,N_y;a\text{--}h\right)
+  C_\text{approx}^{(i)}\!\left(k,\delta,N_y\right)
   &\approx
     a k
   + b \hat\delta
@@ -1652,25 +1650,49 @@ with curve fits like the following
   .
 \end{align}
 The data from ``nearly spectral'' discrete operators, defined as when $N_y \leq
-k \leq 3 N_y$, was omitted.  Such results look like outliers in
-figure~\ref{fig:inhomogeneity} and are not operationally important as Suzerain
-is not run in production using a spectral wall-normal basis.  One collection of
-constants $a$--$h$ permits fitting the retained $C^{(1)}$ observations for
-$k=5$ through $11$ to within [-4.76\%, 8.87\%].  Another collection permits
-fitting retained $C^{(2)}$ observations to within [-23.3\%, 21.5\%].  While
-those results are encouraging for the generality of the chosen functional
-forms, they are less than satisfactory for production use.  More precise,
-$k$-specific, coefficients appear in tables~\ref{tab:C1fit}
-and~\ref{tab:C2fit}.  Suzerain approximates $C^{(i)}$ and thence
-$\lambda_y^{(i)}$ from these empirical coefficient tables.
+3 k$, proved difficult to fit and was omitted.  Such cases look like outliers
+in figure~\ref{fig:inhomogeneity} and are not operationally important as
+Suzerain is not run in production using a spectral wall-normal basis.  One
+collection of constants $a$--$h$ permits fitting the retained $C^{(1)}$
+observations for $k=5$ through $11$ to within relative errors of [-4.76\%,
+8.87\%].  Another collection permits fitting retained $C^{(2)}$ observations to
+within [-23.3\%, 21.5\%].  While those results are encouraging for the
+generality of the chosen functional forms, they are less than satisfactory for
+production use.  More precise, $k$-specific, coefficients appear in
+tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
+
+Unfortunately, using either $C_\text{approx}^{(1)}$ or $C_\text{approx}^{(2)}$
+directly proves to be overly aggressive as measured using a collection of
+contrived test problems known \emph{a priori} to be either convectively- or
+diffusively-limited.  Scaling these a single safety factor is problematic as no
+unique value allowed pushing up against both criteria simultaneously.  Against
+the same test problems, however, using the square root of
+$C_\text{approx}^{(i)}$ did permit using a uniform safety factor across a
+variety of test conditions.
+
+In summary, Suzerain takes the square root of a conservative estimate of
+$C_\text{approx}^{(i)}$.  That is, the code computes
+\begin{align}
+  C^{(i)} &= \left(
+      \frac{C_\text{approx}^{(i)}}
+           {1 - \text{(negative relative error percentage)}/100}
+  \right)^{1/2}
+\end{align}
+where the fit-specific, negative-valued lower error bounds appear in
+tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.  Adjusting to the empirical fits'
+lower bounds delivers slightly conservative $\lambda_y^{(i)}$ estimates.  These
+values of $C^{(i)}$ are plugged into equations~\eqref{eq:lambda1deltay}
+and~\eqref{eq:lambda2deltay} with those results feeding into
+equations~\eqref{eq:diffusivestability} and~\eqref{eq:convectivestability}.
+Safety factors like 0.70--0.77 continue to be appropriate with these estimates
+whenever $N_y > 3k$.
 
 \begin{table}
 \centering
 \caption{
-    B-spline order-specific curve fits for estimating $C^{(1)}$ using
-    equation~\eqref{eq:Cfit} for use in
-    equations~\eqref{eq:convectivestability} and~\eqref{eq:lambda1deltay}
-    where $\Delta{}y$ is the minimum distance between collocation points.
+    B-spline order-specific curve fits for estimating $C_\text{approx}^{(1)}$
+    using equation~\eqref{eq:Cfit} where $\Delta{}y$ is the minimum distance
+    between collocation points.
 }
 \label{tab:C1fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
@@ -1848,10 +1870,9 @@ $\lambda_y^{(i)}$ from these empirical coefficient tables.
 \begin{table}
 \centering
 \caption{
-    B-spline order-specific curve fits for estimating $C^{(2)}$ using
-    equation~\eqref{eq:Cfit} for use in
-    equations~\eqref{eq:diffusivestability} and~\eqref{eq:lambda2deltay}
-    where $\Delta{}y$ is the minimum distance between collocation points.
+    B-spline order-specific curve fits for estimating $C_\text{approx}^{(2)}$
+    using equation~\eqref{eq:Cfit} where $\Delta{}y$ is the minimum distance
+    between collocation points.
 }
 \label{tab:C2fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
@@ -2086,16 +2107,16 @@ equations in section~\ref{nondim_equations} become
 }
   \label{eq:state_pressure}
   p &= \left(\gamma-1\right) \left( e - \Mach^{2}\frac{m^2}{2\rho} \right)
-  \\
+  \\ \displaybreak[0]
   \label{eq:state_temperature}
   T &= \gamma{} \frac{p}{\rho}
-  \\
+  \\ \displaybreak[0]
   \label{eq:state_viscosity}
   \mu &= T^{\beta}
-  \\
+  \\ \displaybreak[0]
   \label{eq:state_secondviscosity}
   \lambda &= \left(\alpha- \frac{2}{3}\right) \mu
-  \\
+  \\ \displaybreak[0]
   \label{eq:state_viscousstress}
   \tau &= 2 \mu \symmetricpart{\nabla{}\frac{m}{\rho}}
         + \lambda\left(\nabla\cdot{}\frac{m}{\rho}\right) I

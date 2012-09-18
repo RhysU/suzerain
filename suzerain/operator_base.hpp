@@ -105,6 +105,15 @@ public:
         suzerain_bspline_htstretch2_evdeltascale(
                 2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
 
+        // In practice, directly using C^{(1)} and C^{(2)} is too aggressive
+        // as it requires using inconsistent safety factors when computing
+        // convectively- or diffusively-limited test problems.  Softening
+        // via taking sqrt(C^{(i)}) seems to permit a single safety factor
+        // to address both convective and diffusive stability restrictions.
+        using std::sqrt;
+        C1 = sqrt(C1); Clow1 = sqrt(Clow1); Chigh1 = sqrt(Chigh1);
+        C2 = sqrt(C2); Clow2 = sqrt(Clow2); Chigh2 = sqrt(Chigh2);
+
         // Compute collocation point-based information local to this rank
         for (int j = dgrid.local_physical_start.y();
              j < dgrid.local_physical_end.y();
@@ -120,12 +129,12 @@ public:
             const double inverse_spacing = one_over_delta_y_[j];
 
             // Estimating wall-normal first derivative eigenvalue magnitudes
-            // TODO: Use estimates of C^{(1)} after working out safety factor
-            lambda1_y_[j]  = pi * inverse_spacing / 4;
+            // Use Clow1 rather than C1 as it is always slightly conservative
+            lambda1_y_[j]  = pi * inverse_spacing / Clow1;
 
             // Estimating wall-normal second derivative eigenvalue magnitudes
-            // TODO: Use estimates of C^{(2)} after working out safety factor
-            lambda2_y_[j]  = pi * inverse_spacing / 1;
+            // Use Clow2 rather than C2 as it is always slightly conservative
+            lambda2_y_[j]  = pi * inverse_spacing / Clow2;
             lambda2_y_[j] *= lambda2_y_[j];
         }
     }
