@@ -799,7 +799,7 @@ std::vector<real_t> applyNonlinearOperator(
         GRVY_TIMER_BEGIN("manufactured forcing");
 
         // Dereference the msoln smart pointer outside the compute loop
-        const channel::manufactured_solution &ms = *msoln;
+        const ManufacturedSolution &ms = *msoln;
 
         offset = 0;
         for (int j = o.dgrid.local_physical_start.y();
