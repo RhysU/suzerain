@@ -288,10 +288,13 @@ std::vector<real_t> applyNonlinearOperator(
     VectorXr om     (Ns); // reaction source terms
     VectorXr cs     (Ns); // species mass fractions
 
-    // TODO: check eigen syntax here
-    MatrixX3r grad_species (Ns); // spatial derivatives of species densities
-    MatrixX3r grad_cs      (Ns); // spatial derivatives of species mass fractions
-    MatrixX3r sdiff        (Ns); // diffusive fluxes for species equations
+    // TODO: check eigen syntax here.  It appears that we need to pass
+    // 3 to the ctor even though it knows this size at compile time.
+    // Am I crazy?
+    //
+    MatrixX3r grad_species (Ns,3); // spatial derivatives of species densities
+    MatrixX3r grad_cs      (Ns,3); // spatial derivatives of species mass fractions
+    MatrixX3r sdiff        (Ns,3); // diffusive fluxes for species equations
 
     // Dereference the claws smart pointer outside the compute loop
     ConstitutiveLaws &cl = *claws;
