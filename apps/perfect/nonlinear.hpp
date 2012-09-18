@@ -108,8 +108,6 @@ std::vector<real_t> applyNonlinearOperator(
     real_t &convective_delta_t = delta_t_candidates[0];
     real_t &diffusive_delta_t  = delta_t_candidates[1];
 
-    // GRVY_TIMER_{BEGIN,END} pairs for differentiation done in OperatorBase
-
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
     o.zero_dealiasing_modes(swave, ndx::rho);
@@ -202,14 +200,10 @@ std::vector<real_t> applyNonlinearOperator(
     typename channel::physical_view<channel::field::count>::type sphys
         = channel::physical_view<channel::field::count>::create(o.dgrid, swave);
     for (size_t i = 0; i < channel::field::count; ++i) {
-        GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
-        GRVY_TIMER_END("transform_wave_to_physical");
     }
     for (size_t i = 0; i < aux::count; ++i) {
-        GRVY_TIMER_BEGIN("transform_wave_to_physical");
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
-        GRVY_TIMER_END("transform_wave_to_physical");
     }
 
     // Retrieve constants and compute derived constants before inner loops
@@ -854,9 +848,7 @@ std::vector<real_t> applyNonlinearOperator(
         } else {
 
             // Otherwise, bring the field back to wave space...
-            GRVY_TIMER_BEGIN("transform_physical_to_wave");
             o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
-            GRVY_TIMER_END("transform_physical_to_wave");
             // ...and zero wavenumbers present only for dealiasing to
             // prevent "leakage" of dealiasing modes to other routines.
             o.zero_dealiasing_modes(swave, i);

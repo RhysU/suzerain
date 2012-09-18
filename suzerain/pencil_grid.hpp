@@ -185,7 +185,16 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    virtual void transform_wave_to_physical(double * inout) const = 0;
+    void transform_wave_to_physical(double * inout) const
+    {
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+        struct Guard {
+            Guard()  { grvy_timer_begin("transform_wave_to_physical"); }
+            ~Guard() { grvy_timer_end(  "transform_wave_to_physical"); }
+        } scope_guard;
+#endif
+        return  transform_wave_to_physical_(inout);
+    }
 
     /**
      * Collectively transform a field from physical space to wave space.  The
@@ -196,15 +205,32 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    virtual void transform_physical_to_wave(double * inout) const = 0;
+    void transform_physical_to_wave(double * inout) const
+    {
+#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
+        struct Guard {
+            Guard()  { grvy_timer_begin("transform_physical_to_wave"); }
+            ~Guard() { grvy_timer_end(  "transform_physical_to_wave"); }
+        } scope_guard;
+#endif
+        return transform_physical_to_wave_(inout);
+    }
 
 protected:
 
     /**
      * Compute the value of \ref rank_zero_zero_modes.  Should be used by
-     * subclasses to after the pencil decomposition is established.
+     * subclasses after the pencil decomposition is established.
      */
     int compute_rank_zero_zero_modes_() const;
+
+private:
+
+    /** Subclasses override to implement transform_wave_to_physical(). */
+    virtual void transform_wave_to_physical_(double * inout) const = 0;
+
+    /** Subclasses override to implement transform_physical_to_wave(). */
+    virtual void transform_physical_to_wave_(double * inout) const = 0;
 
 };
 
@@ -255,11 +281,11 @@ public:
 
     virtual std::size_t local_wave_storage() const;
 
-    virtual void transform_wave_to_physical(double * inout) const;
-
-    virtual void transform_physical_to_wave(double * inout) const;
-
 private:
+
+    virtual void transform_wave_to_physical_(double * inout) const;
+
+    virtual void transform_physical_to_wave_(double * inout) const;
 
     /** Was p3dfft_setup successfully called during construction? */
     bool p3dfft_setup_called_;
@@ -315,11 +341,11 @@ public:
 
     virtual std::size_t local_wave_storage() const;
 
-    virtual void transform_wave_to_physical(double * inout) const;
-
-    virtual void transform_physical_to_wave(double * inout) const;
-
 private:
+
+    virtual void transform_wave_to_physical_(double * inout) const;
+
+    virtual void transform_physical_to_wave_(double * inout) const;
 
     /** Internal routine performing construction-like tasks */
     void construct_(int Nx, int Ny, int Nz, int Pa, int Pb,

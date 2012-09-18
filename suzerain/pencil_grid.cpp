@@ -180,12 +180,12 @@ std::size_t pencil_grid_p3dfft::local_wave_storage() const
     return std::max(prodwave, prodphys/2 + (prodphys % 2));
 }
 
-void pencil_grid_p3dfft::transform_wave_to_physical(double * inout) const
+void pencil_grid_p3dfft::transform_wave_to_physical_(double * inout) const
 {
     p3dfft_btran_c2r(inout, inout);
 }
 
-void pencil_grid_p3dfft::transform_physical_to_wave(double * inout) const
+void pencil_grid_p3dfft::transform_physical_to_wave_(double * inout) const
 {
     p3dfft_ftran_r2c(inout, inout);
 }
@@ -219,7 +219,7 @@ std::size_t pencil_grid_underling::local_physical_storage() const
 }
 
 void
-pencil_grid_underling::transform_wave_to_physical(double * inout) const
+pencil_grid_underling::transform_wave_to_physical_(double * inout) const
 {
     transpose->execute_long_n0_to_long_n1(inout, buf.get());
     n1_c2c_backward->execute(buf.get(), inout);
@@ -228,7 +228,7 @@ pencil_grid_underling::transform_wave_to_physical(double * inout) const
 }
 
 void
-pencil_grid_underling::transform_physical_to_wave(double * inout) const
+pencil_grid_underling::transform_physical_to_wave_(double * inout) const
 {
     n2_r2c_forward->execute(inout, buf.get());
     transpose->execute_long_n2_to_long_n1(buf.get(), inout);
