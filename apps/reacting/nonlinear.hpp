@@ -212,14 +212,10 @@ std::vector<real_t> applyNonlinearOperator(
     typename channel::physical_view<state_count>::type sphys
         = channel::physical_view<state_count>::create(o.dgrid, swave);
     for (size_t i = 0; i < state_count; ++i) {
-        GRVY_TIMER_BEGIN("transform_wave_to_physical");
-        o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
-        GRVY_TIMER_END("transform_wave_to_physical");
+      o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = aux::mx; i < aux_count; ++i) {
-        GRVY_TIMER_BEGIN("transform_wave_to_physical");
-        o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
-        GRVY_TIMER_END("transform_wave_to_physical");
+      o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
 
     //
@@ -542,9 +538,7 @@ std::vector<real_t> applyNonlinearOperator(
     
 
     // (1) Temperature from physical to wave space
-    GRVY_TIMER_BEGIN("transform_physical_to_wave");
     o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0)); // FIXME: Index here????
-    GRVY_TIMER_END("transform_physical_to_wave");
     // ...and zero wavenumbers present only for dealiasing to
     // prevent "leakage" of dealiasing modes to other routines.
     o.zero_dealiasing_modes(auxw, aux::T); // FIXME: Doing the right thing here???
@@ -564,11 +558,9 @@ std::vector<real_t> applyNonlinearOperator(
     o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::gT + dir::z );
     
     // FFTs to get to physical space
-    GRVY_TIMER_BEGIN("transform_wave_to_physical");
     o.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::y,0));
     o.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::x,0));
     o.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::z,0));
-    GRVY_TIMER_END("transform_wave_to_physical");
 
     // Now have temperature gradient at collocation points.
     //-----------------------------------------------------------------
@@ -666,9 +658,7 @@ std::vector<real_t> applyNonlinearOperator(
     for (size_t i = 0; i < state_count; ++i) {
 
       // Otherwise, bring the field back to wave space...
-      GRVY_TIMER_BEGIN("transform_physical_to_wave");
       o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
-      GRVY_TIMER_END("transform_physical_to_wave");
       // ...and zero wavenumbers present only for dealiasing to
       // prevent "leakage" of dealiasing modes to other routines.
       o.zero_dealiasing_modes(swave, i);
@@ -679,9 +669,7 @@ std::vector<real_t> applyNonlinearOperator(
     for (size_t i = aux::e; i < aux_count; ++i) {
 
       // Otherwise, bring the field back to wave space...
-      GRVY_TIMER_BEGIN("transform_physical_to_wave");
       o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
-      GRVY_TIMER_END("transform_physical_to_wave");
       // ...and zero wavenumbers present only for dealiasing to
       // prevent "leakage" of dealiasing modes to other routines.
       o.zero_dealiasing_modes(auxw, i);
