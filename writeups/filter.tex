@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}% insert '[draft]' option to show overfull boxes
 \usepackage{authblk}
 
+\usepackage{fullpage}
 \usepackage{todonotes}
 \usepackage{graphicx}
 \usepackage{color}
@@ -14,21 +15,21 @@ filecolor=black,%
 linkcolor=black,%
 urlcolor=black}
 
-% Fix the margins
-\setlength{\topmargin}{-0.4in}          % distance from top of page to begining of text
-\setlength{\textheight}{9.0in}          % height of main text
-\setlength{\textwidth}{6.5in}                   % width of text
-\setlength{\oddsidemargin}{0.in}        % odd page left margin
-\setlength{\evensidemargin}{0.in}       % even page left margin
+% In conjunction with -shell-escape, automatically convert EPS to PDF
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+}
 
 %\newcolumntype{d}{D{.}{.}{-1}}
 
-%========================================================================                                                                                                                                                                  
+%========================================================================
 % New Commands
 %========================================================================
 %\newcommand{\todo}[1]{ {\color{red} TODO: #1} }
 
-%========================================================================                                                                                                                                                                  
+%========================================================================
 % Title Stuff
 %========================================================================
 \title{Filtering Formulation for Suzerain}
@@ -40,7 +41,7 @@ urlcolor=black}
 
 %
 
-%========================================================================                                                                                                                                                                  
+%========================================================================
 % Document starts here
 %========================================================================
 \begin{document}
@@ -121,7 +122,7 @@ by Cook \& Cabot, the transfer function is shown in figure~\ref{fig:transfer}.
 
 \begin{figure}[t]
 \begin{center}
-\includegraphics[width=4in]{figs/transfer_function.pdf}
+\includegraphics[width=4in]{transfer_function}
 \end{center}
  \caption{Transfer function (\ref{eq:transfer}) of the $8^{\rm th}$ order filter defined in
  (\ref{eq:filter}) and table~\ref{tab:coefficients}.}
@@ -141,7 +142,7 @@ parameters, which are constrained by a number of requirements:
 \begin{itemize}
 \item Eighth order accuracy introduced 4 linear constraints required to
       force the $0^{\rm th}$, $2^{\rm nd}$, $4^{\rm th}$ and $6^{\rm
-      th}$ 
+      th}$
       order errors to zero. Odd order errors are zero by symmetry.
 \item The Transfer function should be zero at $\hat k=\pi$, and ideally
       it would have a number of zero derivatives at $\pi$. The odd order

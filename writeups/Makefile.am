@@ -7,15 +7,19 @@
 # LaTeX and BiBTeX source files
 TEXSOURCES  = channel_treatment.tex
 TEXSOURCES += covariance.tex
+TEXSOURCES += filter.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
+
+# Images, References, etc.
 EXTRA_DIST  = inhomogeneity.gz
 EXTRA_DIST += inhomogeneity.eps
 EXTRA_DIST += references.bib
+EXTRA_DIST += transfer_function.eps
 
 # Build and install writeups
 all-local:      pdf-local
