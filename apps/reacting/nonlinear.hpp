@@ -681,10 +681,9 @@ std::vector<real_t> applyNonlinearOperator(
     // is to apply the divergence to the fluxes and accumulate into
     // the sources.
 
-    // oliver: I'm slightly confused about necessary calls here.
-    // Check carefully w/ Rhys.
-
-    // Compute divergence of flux vector.
+    // Note that the divergence is never formed explicitly.  We
+    // accumulate the Y, X, and Z derivatives into the source
+    // separately.
     {
 
       suzerain::bsplineop_lu boplu(o.bop);
@@ -701,43 +700,33 @@ std::vector<real_t> applyNonlinearOperator(
 	// coefficient representation
 	o.bop_solve(boplu, auxw, aux::e + dir::count*i + dir::y);
 
-	// Apply derivative operator (note: I'm assuming this gets me
-	// to collocation points in Y.  Check this!)
 	o.diffwave_apply(0, 0, 1, auxw, aux::e + dir::count*i + dir::y);
-	o.bop_apply     (1,    1, auxw, aux::e + dir::count*i + dir::y);
+
+	// Accumulate Y derivative of Y flux into source
+	// alpha = -1 b/c we need to subtract divergence from source
+	o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
+			       1, swave, i );
 
 	// Now have Y derivative of Y flux (at collocation points (?))
 	// in Y and coefficients in X,Z)
 
-	// Accumulate X and Z derivatives of X and Z fluxes into Y
-	// derivative of Y flux storage
-	o.diffwave_accumulate(1, 0, 1, auxw, aux::e + dir::count*i + dir::x,  
-                                    1, auxw, aux::e + dir::count*i + dir::y );
+	// Accumulate X and Z derivatives of X and Z fluxes into source
 
-	o.diffwave_accumulate(0, 1, 1, auxw, aux::e + dir::count*i + dir::z,  
-                                    1, auxw, aux::e + dir::count*i + dir::y );
+	// alpha = -1 b/c we need to subtract divergence from source
+	o.diffwave_accumulate(1, 0, -1, auxw , aux::e + dir::count*i + dir::x,  
+                                     1, swave, i );
+
+	// alpha = -1 b/c we need to subtract divergence from source
+	o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,  
+                                     1, swave, aux::e + dir::count*i + dir::y );
 
 	// Now have divergence of the flux (at collocation points (?))
 	// in Y and coefficieents in X,Z)
 
       } // end for
 
-    } // end apply divergence
-
-
-    // FIXME: Eliminate this step b/c accumulate div directly into state
-
-    // Add div(flux) to source
-    {
-      
-      for (size_t i = 0; i < state_count; ++i) {
-	
-	o.diffwave_accumulate(0, 0, 1, auxw , aux::e + dir::count*i + dir::y,  
-                                    1, swave, i );
-
-      } // end for
-
     } // end accumulate
+
 
     GRVY_TIMER_END("applyNonlinearOperator");
 
