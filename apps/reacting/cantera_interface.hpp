@@ -52,7 +52,8 @@ namespace constitutive {
     void evaluate (const double e, const double* m, const double rho, const double* species, const double* cs,
 		   double& T, double& p, double* Ds, double& mu, double& kap, double* hs, double* om);
 
-    // Number of species
+    // Number of species (TODO: Set me... should be able to get from
+    // IdealGasMix object, right?)
     int Ns;
 
   private:
