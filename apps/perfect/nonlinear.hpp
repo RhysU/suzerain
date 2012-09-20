@@ -60,7 +60,12 @@ std::vector<real_t> applyNonlinearOperator(
     namespace ndx = channel::field::ndx;
     using Eigen::Vector3r;
     using Eigen::Matrix3r;
+    using std::abs;
+    using std::equal;
+    using std::max;
+    using std::min;
     using std::size_t;
+    using std::sqrt;
 
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -89,24 +94,45 @@ std::vector<real_t> applyNonlinearOperator(
     assert((unsigned) swave.strides()[1] == 1u);
     assert((unsigned) swave.strides()[2] == swave.shape()[1]);
     assert((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
-    assert(std::equal(swave.shape() + 1, swave.shape() + 4,
-                      auxw.shape() + 1));
-    assert(std::equal(swave.strides() + 1, swave.strides() + 4,
-                      auxw.strides() + 1));
+    assert(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
+    assert(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
-    // must survive from nonzero substep to substep while instant profiles do not.
+    // must survive across nonzero substeps while instant profiles must not.
     if (ZerothSubstep) common.setZero(/* Ny */ swave.shape()[1]);
     common.u().setZero();
 
-    // Maintain stable time step values to return to the caller
-    boost::array<real_t, 2> delta_t_candidates = {{
-            std::numeric_limits<real_t>::max(),
-            std::numeric_limits<real_t>::max()
-    }};
-    real_t &convective_delta_t = delta_t_candidates[0];
-    real_t &diffusive_delta_t  = delta_t_candidates[1];
+    // Maintain stable time step values to return to the caller:
+    //
+    //   convtotal_* is convective stability using total velocity.
+    //               It may or may not have acoustics included as necessary.
+    //   convfluct_* is convective stability using only velocity fluctuations.
+    //               It permits measuring any advantage in treating mean
+    //               convection implicitly.
+    //   diffusive_* is diffusive stability linearized however is appropriate.
+    //   *_xyz_*     accounts for restrictions in all three directions.
+    //               It must be more retrictive than any single direction.
+    //   *_x_*       accounts for restrictions in streamwise direction only.
+    //   *_y_*       accounts for restrictions in wall-normal direction only
+    //   *_z_*       accounts for restrictions in spanwise direction only
+    //
+    // Results reported by the code are reported in this order.
+    boost::array<real_t, 12> delta_t_candidates;
+    std::fill(delta_t_candidates.begin(), delta_t_candidates.end(),
+              std::numeric_limits<real_t>::max());
+    real_t &convtotal_xyz_delta_t = delta_t_candidates[ 0];
+    real_t &convfluct_xyz_delta_t = delta_t_candidates[ 1];
+    real_t &diffusive_xyz_delta_t = delta_t_candidates[ 2];
+    real_t &convtotal_x_delta_t   = delta_t_candidates[ 3];
+    real_t &convfluct_x_delta_t   = delta_t_candidates[ 4];
+    real_t &diffusive_x_delta_t   = delta_t_candidates[ 5];
+    real_t &convtotal_y_delta_t   = delta_t_candidates[ 6];
+    real_t &convfluct_y_delta_t   = delta_t_candidates[ 7];
+    real_t &diffusive_y_delta_t   = delta_t_candidates[ 8];
+    real_t &convtotal_z_delta_t   = delta_t_candidates[ 9];
+    real_t &convfluct_z_delta_t   = delta_t_candidates[10];
+    real_t &diffusive_z_delta_t   = delta_t_candidates[11];
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
@@ -222,6 +248,7 @@ std::vector<real_t> applyNonlinearOperator(
     const real_t lambda1_z        = o.lambda1_z;
     const real_t lambda2_x        = o.lambda2_x;
     const real_t lambda2_z        = o.lambda2_z;
+    const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
 
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
@@ -637,6 +664,8 @@ std::vector<real_t> applyNonlinearOperator(
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
+                default:
+                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
                 case linearize::none:
                     sphys(ndx::rho, offset) = - div_m; // Explicit convection
                     break;
@@ -651,6 +680,8 @@ std::vector<real_t> applyNonlinearOperator(
                   inv_Re * div_tau
                 ;
             switch (Linearize) {
+                default:
+                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
                 case linearize::none:
                     momentum_rhs +=
                         // Explicit convective term
@@ -691,6 +722,8 @@ std::vector<real_t> applyNonlinearOperator(
                     )
                 ;
             switch (Linearize) {
+                default:
+                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
                 case linearize::none:
                     sphys(ndx::rhoe, offset) +=
                         // Explicit convective and acoustic terms
@@ -738,47 +771,111 @@ std::vector<real_t> applyNonlinearOperator(
             }
 
             // Determine the minimum observed stable time step when necessary
+            // This logic used to call some canned routines, but additional
+            // monitoring requirements forced inlining many of these details.
+            // See delta_t_candidates declaration (above) for descriptions.
+            //
+            // details on these computations in the three-directional case.
             if (ZerothSubstep) {
 
-                // Implicit acoustic handling sets the effective sound speed to
-                // zero when computing the convective_stability_criterion.
-                real_t a;
+                // minnan(...) calls only required on *_xyz_delta_t as the
+                // three-dimensional criterion should collect any NaNs
+                // occurring within the direction-dependent criteria.  min(...)
+                // is presumably a touch faster and is preferred when possible.
+                using suzerain::math::minnan;
+
+                // See suzerain::timestepper::convective_stability_criterion
+                const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
+                real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
+                real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
+                    default:
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
+
+                    // Explicit treatment forces including acoustics
+                    // in stability and has a zero reference velocity.
                     case linearize::none:
-                        a = std::sqrt(T) / Ma; // a/u_0 = sqrt(T*)/Ma
+                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                        fluct_ua_l1_x = ua_l1_x;
+                        fluct_ua_l1_y = ua_l1_y;
+                        fluct_ua_l1_z = ua_l1_z;
                         break;
+
+                    // Implicit acoustics sets the effective sound speed
+                    // to zero within the convective_stability_criterion.
+                    // Fluctuating velocity is taken relative to references.
                     case linearize::rhome:
-                        a = 0;
+                        ua_l1_x       = abs(u.x()            ) * lambda1_x;
+                        ua_l1_y       = abs(u.y()            ) * lambda1_y;
+                        ua_l1_z       = abs(u.z()            ) * lambda1_z;
+                        fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
+                        fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                        fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
                         break;
                 }
+                convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
+                        evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
+                convtotal_x_delta_t   = min   (convtotal_x_delta_t,
+                        evmaxmag_imag / ua_l1_x);
+                convtotal_y_delta_t   = min   (convtotal_y_delta_t,
+                        evmaxmag_imag / ua_l1_y);
+                convtotal_z_delta_t   = min   (convtotal_z_delta_t,
+                        evmaxmag_imag / ua_l1_z);
+                convfluct_xyz_delta_t = minnan(convfluct_xyz_delta_t,
+                        evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
+                convfluct_x_delta_t   = min   (convfluct_x_delta_t,
+                        evmaxmag_imag / ua_l1_x);
+                convfluct_y_delta_t   = min   (convfluct_y_delta_t,
+                        evmaxmag_imag / ua_l1_y);
+                convfluct_z_delta_t   = min   (convfluct_z_delta_t,
+                        evmaxmag_imag / ua_l1_z);
 
-                // Strictly speaking, linearize::rhome's implicit treatment of
-                // the convective terms in all equations "entitles" us to
-                // compute convective stability using the difference between u
-                // and ref_u.  We computed those terms implicitly to buy an
-                // incremental bump in the stability safety factor (which
-                // should have already incorporated into evmaxmag_imag).  While
-                // the resulting time steps are in general too large for
-                // reasonable accuracy, we expect to be limited by diffusive
-                // stability and so we do take (u - ref_u) here.
-                convective_delta_t = suzerain::math::minnan(
-                        convective_delta_t,
-                        suzerain::timestepper::convective_stability_criterion(
-                                u.x(), a, lambda1_x,
-                                u.y(), a, lambda1_y,
-                                u.z(), a, lambda1_z,
-                                evmaxmag_imag));
-
-                // The diffusive stability uses ref_nu which has been
-                // previously set as appropriate for Linearize.  This form
-                // assumes "isotropic linearization" across X, Y, and Z.
+                // See suzerain::timestepper::diffusive_stability_criterion
+                // Antidiffusive locations might be ignored when linearized.
+                // Hence we compute criteria within the switch statment.
                 const real_t nu = mu / rho;
-                diffusive_delta_t = suzerain::math::minnan(
-                        diffusive_delta_t,
-                        suzerain::timestepper::diffusive_stability_criterion(
-                                lambda2_x, lambda2_y, lambda2_z,
-                                Re, Pr, gamma, evmaxmag_real,
-                                nu, ref_nu, alpha*nu, alpha*ref_nu));
+                real_t diffusivity;
+                switch (Linearize) {
+                    default:
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
+
+                    // Explicit treatment forces a zero reference diffusivity
+                    case linearize::none:
+                        diffusivity = maxdiffconst * nu;
+                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                  evmaxmag_real
+                                / diffusivity
+                                / (lambda2_x + lambda2_y + lambda2_z));
+                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_x);
+                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_y);
+                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_z);
+                        break;
+
+                    // Implicit diffusion permits removing a reference value.
+                    // Antidiffusive (nu - ref_nu) is fine and not computed.
+                    case linearize::rhome:
+                        diffusivity = nu - ref_nu;    // Compute sign wrt ref.
+                        if (diffusivity <= 0) break;  // NaN => false, proceed
+                        diffusivity *= maxdiffconst;  // Rescale as necessary.
+                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                  evmaxmag_real
+                                / diffusivity
+                                / (lambda2_x + lambda2_y + lambda2_z));
+                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_x);
+                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_y);
+                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_z);
+                        break;
+                }
             }
 
         } // end X // end Z
