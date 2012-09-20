@@ -31,6 +31,9 @@
 
 #ifdef HAVE_CANTERA 
 
+#include <Cantera.h>
+#include <IdealGasMix.h>
+#include <transport.h>
 
 
 namespace constitutive {
