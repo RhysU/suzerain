@@ -168,7 +168,7 @@ std::vector<real_t> applyNonlinearOperator(
     // stored first.
 
     // Energy (no derivatives)
-    o.diffwave_apply(0, 0, 1, swave, state::e); // switch to zero_dealiasing_modes?
+    o.zero_dealiasing_modes(swave, state::e);
     o.bop_apply     (0,    1, swave, state::e);
 
     // Everything else (all spatial derivatives)
@@ -180,7 +180,7 @@ std::vector<real_t> applyNonlinearOperator(
 
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
-      o.diffwave_apply(0, 0, 1, swave, var);  // switch to zero_dealiasing_modes?
+      o.zero_dealiasing_modes(swave, var);
       o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::e + dir::count*var + dir::y);
       o.bop_apply     (0,    1, swave, var);
       
@@ -361,6 +361,17 @@ std::vector<real_t> applyNonlinearOperator(
 	  grad_species(0,2) -= grad_species(s,2);
 	}
 
+	// Compute mass fractions and mass fraction gradients
+	for (unsigned int s=0; s<Ns; ++s) {
+	  
+	  cs(s) = irho * species(s);
+
+	  grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
+	  grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
+	  grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
+
+	}
+
 	  
 	// Compute velocity-related quantities
 	const Vector3r u          = suzerain::rholut::u(rho, m);
@@ -382,16 +393,6 @@ std::vector<real_t> applyNonlinearOperator(
 	// Compute quantities related to the viscous stress tensor
 	const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
 
-	// Compute mass fractions and mass fraction gradients
-	for (unsigned int s=0; s<Ns; ++s) {
-	  
-	  cs(s) = irho * species(s);
-
-	  grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
-	  grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
-	  grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
-
-	}
 
 	// Place to sum species fluxes from Fick's model
 	Vector3r sdifftot (0.0, 0.0, 0.0);
@@ -530,12 +531,11 @@ std::vector<real_t> applyNonlinearOperator(
     // (1) Temperature from physical to wave space
     o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
 
+
+    // TODO: Apply inverse mass matrix to get to pure coefficient space
+
     // ...and zero wavenumbers present only for dealiasing
     o.zero_dealiasing_modes(auxw, aux::T);
-
-
-    // TODO: Check w/ Rhys that dealiasing modes handled correctly.
-    // (eliminated  o.diffwave_apply(0, 0, 1, auxw, aux::T); below)
 
 
     // (2) Get derivatives.
@@ -640,33 +640,23 @@ std::vector<real_t> applyNonlinearOperator(
     } // end msoln
 
 
+    // TODO: Anything related to BCs that must be done in physical
+    // space.
+
+
     // At this point we have accumulated sources (into sphys/swave)
     // and fluxes (into auxp/auxw) in physical space.  Now we need to
-    // transorm back to wave space.
+    // get back to wave space to finish accumulating the RHS.
 
 
     // Collectively convert source to wave space using parallel FFTs
     for (size_t i = 0; i < state_count; ++i) {
-
-      // Otherwise, bring the field back to wave space...
       o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
-      
-      // ...and zero wavenumbers present only for dealiasing to
-      // prevent "leakage" of dealiasing modes to other routines.
-      //o.zero_dealiasing_modes(swave, i);
-      
     }
 
     // Collectively convert fluxes to wave space using parallel FFTs
     for (size_t i = aux::e; i < aux_count; ++i) {
-
-      // Otherwise, bring the field back to wave space...
       o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
-      
-      // ...and zero wavenumbers present only for dealiasing to
-      // prevent "leakage" of dealiasing modes to other routines.
-      //o.zero_dealiasing_modes(auxw, i);
-      
     }
 
 
@@ -707,7 +697,7 @@ std::vector<real_t> applyNonlinearOperator(
 
 	// alpha = -1 b/c we need to subtract divergence from source
 	o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,  
-                                     1, swave, aux::e + dir::count*i + dir::y );
+                                     1, swave, i );
 
 	// and zero wavenumbers present only for dealiasing to
 	// prevent "leakage" of dealiasing modes to other routines.
@@ -716,6 +706,8 @@ std::vector<real_t> applyNonlinearOperator(
       } // end for
 
     } // end accumulate
+
+
 
 
     GRVY_TIMER_END("applyNonlinearOperator");
