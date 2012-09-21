@@ -7,7 +7,8 @@ set -e
 : ${MMS_CASE_NPROC:=4}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+# FIXME Unknown options cannot be passed though getopt(1)!
+OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
 ARGS=$(getopt -a -n$0 -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -64,9 +65,9 @@ EOF
         --htdelta)  htdelta="$2";  shift 2;;
         --np)       np="$2";       shift 2;;
         --tfinal)   tfinal="$2";   shift 2;;
-        --N)        Nx=$(expr 2 \* $2 / 3);
+        --N)        Nx=$(expr 2 \* "$2" / 3);
                     Ny="$2";
-                    Nz=$(expr 2 \* $Ny / 3);
+                    Nz=$(expr 2 \* "$2" / 3);
                     shift 2;;
         --no_x)     no+=(--a_rhox=0  --a_ux=0  --a_vx=0  --a_wx=0  --a_Tx=0)
                     shift;;
