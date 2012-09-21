@@ -27,7 +27,6 @@ do
         --)                        shift 1;break;;
         -h|--help)  echo "Usage: $0 [OPTIONS]..."
                     echo "Execute code on a manufactured solution on your workstation."
-                    echo "Unknown options (e.g. --explicit) are passed to the solver."
                     echo
                     echo "Options:"
                     cat <<EOF | column -t -s "\&" | sed -e 's/^/    /'
@@ -52,6 +51,11 @@ EOF
                     echo "GNU parallel is great for managing multiple cases.  For example,"
                     echo "    parallel -u -j1 mms_case.perfect --np=4 --N={} ::: 24 36 48 72 96"
                     echo "runs a sequence of MPI-parallel cases one after another."
+                    echo
+                    echo "Output is stored in an Ny-specific directory name so that"
+                    echo "Grepping through Ny*/log.dat permits extracting results across runs."
+                    echo
+                    echo "Unknown options (e.g. --explicit) are passed to the solver."
                     exit;;
         --k)        k="$2";        shift 2;;
         --Nx)       Nx="$2";       shift 2;;
