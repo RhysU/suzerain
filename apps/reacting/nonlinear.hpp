@@ -39,22 +39,13 @@
 
 #pragma warning(disable:383 1572)
 
-namespace constitutive {
-
-  // TODO: Add declarations of constitutive law classes
-
-  // TODO: Move this code to a separate file 
-
-} // end namespace constitutive
-
-
 // oliver: should we change the namespace here (to something like
 // reacting)?  I'm not yet b/c other stuff in this namespace gets
 // defined in ../support.hpp, which I'm not mucking with right now.
 namespace channel {
 
   // Indices for state.
-  stuct state { enum {
+  struct state { enum {
       e, 
       mx, 
       my, 
@@ -77,7 +68,7 @@ namespace channel {
   // back into T storage.  Makes code more complex for minimal gain,
   // so I didn't do it.
   //
-  stuct aux { enum {
+  struct aux { enum {
       kap     = 0,
       T       = 1,
       gT      = 2,
@@ -114,6 +105,7 @@ std::vector<real_t> applyNonlinearOperator(
     using Eigen::Vector3r;
     using Eigen::Matrix3r;
     using Eigen::VectorXr;
+    using Eigen::MatrixX3r;
     using std::size_t;
 
     // State enters method as coefficients in X, Y, and Z directions
@@ -130,7 +122,7 @@ std::vector<real_t> applyNonlinearOperator(
     // We assume no garbage values in the memory will impact us (for speed).
     typename boost::scoped_ptr<state_type> _auxw_ptr(
             allocate_padded_state<state_type>(aux_count, o.dgrid)); // RAII
-    state_type &auxw = *_auxw_ptr;                                   // Brevity
+    state_type &auxw = *_auxw_ptr;                                  // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
     assert(swave.shape()[0] == state_count);
@@ -144,6 +136,7 @@ std::vector<real_t> applyNonlinearOperator(
                       auxw.shape() + 1));
     assert(std::equal(swave.strides() + 1, swave.strides() + 4,
                       auxw.strides() + 1));
+
 
 
     // Prepare common-block-like storage used to pass details from N to L.
@@ -175,7 +168,7 @@ std::vector<real_t> applyNonlinearOperator(
     // stored first.
 
     // Energy (no derivatives)
-    o.diffwave_apply(0, 0, 1, swave, state::e);
+    o.diffwave_apply(0, 0, 1, swave, state::e); // switch to zero_dealiasing_modes?
     o.bop_apply     (0,    1, swave, state::e);
 
     // Everything else (all spatial derivatives)
@@ -187,7 +180,7 @@ std::vector<real_t> applyNonlinearOperator(
 
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
-      o.diffwave_apply(0, 0, 1, swave, var);
+      o.diffwave_apply(0, 0, 1, swave, var);  // switch to zero_dealiasing_modes?
       o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::e + dir::count*var + dir::y);
       o.bop_apply     (0,    1, swave, var);
       
@@ -378,16 +371,13 @@ std::vector<real_t> applyNonlinearOperator(
 	// Compute temperature, pressure, mass diffusivities,
 	// viscosity, thermal conductivity, species enthalpies, and
 	// reaction source terms
-	real_t T, p, mu, kap, lam;
-	cl.evaluate(e, m.data(), rho, species.data(),
+	real_t T, p, mu, kap;
+	cl.evaluate(e, m.data(), rho, species.data(), cs.data(),
 		    T, p, Ds.data(), mu, kap, hs.data(), om.data());
 
-	// // Compute quantities related to the equation of state
-	// real_t p, T, mu, lambda;
-	// Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-	// suzerain::rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
-	// 				rho, grad_rho, m, grad_m, e, grad_e,
-	// 				p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+	// TODO: Compute bulk viscosity.
+	// TODO: Get alpha here
+	const reat_t lam = (alpha - 2.0/3.0)*mu;
 
 	// Compute quantities related to the viscous stress tensor
 	const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
@@ -397,9 +387,9 @@ std::vector<real_t> applyNonlinearOperator(
 	  
 	  cs(s) = irho * species(s);
 
-	  grad_cs(s,0) = irho * grad_species(s,0) - irho * cs(s) * grad_rho(0);
-	  grad_cs(s,1) = irho * grad_species(s,1) - irho * cs(s) * grad_rho(1);
-	  grad_cs(s,2) = irho * grad_species(s,2) - irho * cs(s) * grad_rho(2);
+	  grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
+	  grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
+	  grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
 
 	}
 
@@ -501,7 +491,7 @@ std::vector<real_t> applyNonlinearOperator(
 	for (unsigned int s=0; s<Ns-1; ++s) {
 	  // NOTE: species(0) is the species that is not explicitly carried!
 
-	  //                                = convection               - diffusion
+	  //                                = convection     - diffusion
 	  auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
 	  auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
 	  auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
@@ -538,24 +528,25 @@ std::vector<real_t> applyNonlinearOperator(
     
 
     // (1) Temperature from physical to wave space
-    o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0)); // FIXME: Index here????
-    // ...and zero wavenumbers present only for dealiasing to
-    // prevent "leakage" of dealiasing modes to other routines.
-    o.zero_dealiasing_modes(auxw, aux::T); // FIXME: Doing the right thing here???
+    o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
+
+    // ...and zero wavenumbers present only for dealiasing
+    o.zero_dealiasing_modes(auxw, aux::T);
+
+
+    // TODO: Check w/ Rhys that dealiasing modes handled correctly.
+    // (eliminated  o.diffwave_apply(0, 0, 1, auxw, aux::T); below)
 
 
     // (2) Get derivatives.
     //
     // Compute Y derivatives of variable var at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    o.diffwave_apply(0, 0, 1, auxw, aux::T);
     o.bop_accumulate(1,    1, auxw, aux::T, 0, auxw, aux::gT + dir::y);
-    o.bop_apply     (0,    1, auxw, aux::T); // Do we need this????
     
     // Compute X- and Z- derivatives of variable var at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::gT + dir::x );
-    o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::gT + dir::z );
+    o.diffwave_accumulate(1, 0, 1, auxw, aux::T,  0, auxw, aux::gT + dir::x );
+    o.diffwave_accumulate(0, 1, 1, auxw, aux::T,  0, auxw, aux::gT + dir::z );
     
     // FFTs to get to physical space
     o.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::y,0));
@@ -659,9 +650,10 @@ std::vector<real_t> applyNonlinearOperator(
 
       // Otherwise, bring the field back to wave space...
       o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+      
       // ...and zero wavenumbers present only for dealiasing to
       // prevent "leakage" of dealiasing modes to other routines.
-      o.zero_dealiasing_modes(swave, i);
+      //o.zero_dealiasing_modes(swave, i);
       
     }
 
@@ -670,16 +662,18 @@ std::vector<real_t> applyNonlinearOperator(
 
       // Otherwise, bring the field back to wave space...
       o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
+      
       // ...and zero wavenumbers present only for dealiasing to
       // prevent "leakage" of dealiasing modes to other routines.
-      o.zero_dealiasing_modes(auxw, i);
+      //o.zero_dealiasing_modes(auxw, i);
       
     }
 
 
-    // Now we have sources and fluxes in wave space.  The last piece
-    // is to apply the divergence to the fluxes and accumulate into
-    // the sources.
+    // Now we have sources and fluxes in wave space.  More
+    // specifically, we have X,Z coefficients and Y collocation pts.
+    // The last piece is to apply the divergence to the fluxes and
+    // accumulate into the sources.
 
     // Note that the divergence is never formed explicitly.  We
     // accumulate the Y, X, and Z derivatives into the source
@@ -691,24 +685,19 @@ std::vector<real_t> applyNonlinearOperator(
       // FIXME: Need form mass matrix call
       // FIXME: Move these ops outside this function
 
-      // FIXME: Accumulate div directly into state (sources) rather
-      // than accumulate div and then add
-
       for (size_t i = 0; i < state_count; ++i) {
 
-	// Apply inverse mass matrix to get Y derivatives to pure
+	// Apply inverse mass matrix to Y flux to get to pure
 	// coefficient representation
 	o.bop_solve(boplu, auxw, aux::e + dir::count*i + dir::y);
 
-	o.diffwave_apply(0, 0, 1, auxw, aux::e + dir::count*i + dir::y);
+	//o.diffwave_apply(0, 0, 1, auxw, aux::e + dir::count*i + dir::y);
 
-	// Accumulate Y derivative of Y flux into source
-	// alpha = -1 b/c we need to subtract divergence from source
+	// Accumulate Y derivative of Y flux (at collocation pts in Y
+	// and coefficients in X,Z) into source.  Note that alpha = -1
+	// b/c we need to subtract divergence from source
 	o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
 			       1, swave, i );
-
-	// Now have Y derivative of Y flux (at collocation points (?))
-	// in Y and coefficients in X,Z)
 
 	// Accumulate X and Z derivatives of X and Z fluxes into source
 
@@ -720,8 +709,9 @@ std::vector<real_t> applyNonlinearOperator(
 	o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,  
                                      1, swave, aux::e + dir::count*i + dir::y );
 
-	// Now have divergence of the flux (at collocation points (?))
-	// in Y and coefficieents in X,Z)
+	// and zero wavenumbers present only for dealiasing to
+	// prevent "leakage" of dealiasing modes to other routines.
+	o.zero_dealiasing_modes(swave, i);
 
       } // end for
 
