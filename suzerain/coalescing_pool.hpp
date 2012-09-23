@@ -484,12 +484,12 @@ private:
     {
     public:
         arena(size_type nelems, const_pointer hint = 0)
-            : blocks(allocate(nelems, hint), nelems) {
+            : blocks(this->allocate(nelems, hint), nelems) {
             if (Policy::zero_new_arenas) this->zero();
             fl.insert(*(new (this->b_) fl_entry(this->b_, this->e_)));
         }
 
-        ~arena() { fl.clear(); deallocate(this->b_, this->nelems()); }
+        ~arena() { fl.clear(); this->deallocate(this->b_, this->nelems()); }
 
         fl_type fl;
     };
