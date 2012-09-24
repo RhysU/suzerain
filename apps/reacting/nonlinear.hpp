@@ -196,14 +196,10 @@ std::vector<real_t> applyNonlinearOperator(
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
 
-    // FIXME: aux_count and state_count aren't known at compile time,
-    // so this can't work.  However, notionally this is what I want.
-    // Need to modify physical_view api to support runtime count info
-    // I suppose.
-    typename channel::physical_view<aux_count>::type auxp
-        = channel::physical_view<aux_count>::create(o.dgrid, auxw);
-    typename channel::physical_view<state_count>::type sphys
-        = channel::physical_view<state_count>::create(o.dgrid, swave);
+    typename channel::physical_view<>::type auxp
+        = channel::physical_view<>::create(o.dgrid, auxw, aux_count);
+    typename channel::physical_view<>::type sphys
+        = channel::physical_view<>::create(o.dgrid, swave, state_count);
     for (size_t i = 0; i < state_count; ++i) {
       o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

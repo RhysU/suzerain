@@ -442,10 +442,14 @@ void complex_field_write(esio_handle h,
 
 /**
  * A template typedef for how to view multiple state fields in physical space,
- * Including a convenient method for constructing such an instance.
+ * Including a convenient method for constructing such an instance.  The
+ * optional first template parameter may be specified to provide a number of
+ * fields known at compile time.
  */
-template <int NFields>
+template <int NFields = Eigen::Dynamic>
 struct physical_view {
+
+    BOOST_STATIC_ASSERT(NFields == Eigen::Dynamic || NFields >= 0);
 
     /**
      * In physical space, we'll employ a view to reshape the 4D row-major (F,
@@ -454,27 +458,35 @@ struct physical_view {
      * and eases indexing overhead.
      */
     typedef Eigen::Map<
-                    Eigen::Array<real_t, NFields,
-                                 Eigen::Dynamic, Eigen::RowMajor>,
-                    Eigen::Unaligned, // FIXME Defensive but likely unnecessary
-                    Eigen::OuterStride<Eigen::Dynamic>
-                > type;
+                Eigen::Array<real_t, NFields, Eigen::Dynamic, Eigen::RowMajor>,
+                Eigen::Unaligned, // FIXME Defensive but likely unnecessary
+                Eigen::OuterStride<Eigen::Dynamic>
+            > type;
 
     /**
      * Create a view instance given state storage and sufficient information
-     * about the parallel decomposition.
-     * */
+     * about the parallel decomposition.  The default value of \c nfields may
+     * only be used when the template parameter \c NFields was not
+     * Eigen::Dynamic.
+     */
     static inline type create(
             const suzerain::pencil_grid &dgrid,
-            suzerain::ContiguousState<4,complex_t> &state)
+            suzerain::ContiguousState<4,complex_t> &state,
+            const int nfields = NFields)
     {
-        type retval(reinterpret_cast<real_t *>(state.origin()),
-                    NFields,                            // F
-                    dgrid.local_physical_extent.prod(), // Y*Z*X
-                    Eigen::OuterStride<>(  state.strides()[0]
-                                         * sizeof(complex_t)/sizeof(real_t)));
+        if (NFields == Eigen::Dynamic || NFields == nfields) {
+            using Eigen::OuterStride;
+            type retval(reinterpret_cast<real_t *>(state.origin()),
+                        nfields,                            // F
+                        dgrid.local_physical_extent.prod(), // Y*Z*X
+                        OuterStride<>(  state.strides()[0]
+                                     * sizeof(complex_t)/sizeof(real_t)));
 
-        return retval;
+            return retval;
+        }
+
+        throw std::invalid_argument(
+                "NFields, nfields mismatch in physical_view::create");
     }
 
 };
