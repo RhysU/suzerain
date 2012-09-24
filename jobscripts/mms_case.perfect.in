@@ -7,7 +7,6 @@ set -e
 : ${MMS_CASE_NPROC:=4}
 
 # Parse incoming parameters
-# FIXME Unknown options cannot be passed though getopt(1)!
 OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
 ARGS=$(getopt -a -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
@@ -25,8 +24,8 @@ no=()
 while true;
 do
     case "$1" in
-        --)                        shift 1;break;;
-        -h|--help)  echo "Usage: $0 [OPTIONS]..."
+        --)         shift 1;break;;
+        -h|--help)  echo "Usage: $(basename -- "$0") [OPTIONS]... -- [SOLVEROPTS]..."
                     echo "Execute code on a manufactured solution on your workstation."
                     echo
                     echo "Options:"
@@ -50,13 +49,16 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u -j1 mms_case.perfect --np=4 --N={} ::: 24 36 48 72 96"
-                    echo "runs a sequence of MPI-parallel cases one after another."
+                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 36 48 72"
+                    echo "runs a sequence of MPI-parallel cases one after another passing"
+                    echo "option --explicit to the solver to force explicit time stepping."
                     echo
-                    echo "Output is stored in an Ny-specific directory name so that"
-                    echo "Grepping through Ny*/log.dat permits extracting results across runs."
-                    echo
-                    echo "Unknown options (e.g. --explicit) are passed to the solver."
+                    echo "Output is stored in an Ny-specific directory name so that grepping"
+                    echo "through Ny*/log.dat permits extracting results across runs.  For example,"
+                    echo "    parallel -k grep -H mms.abserr {} \| tail -n 1 ::: Ny*/log.dat"
+                    echo "will print the final MMS absolute error for each executed case."
+                    echo "With @pkgdatadir@/postproc/orderest such"
+                    echo "results may be used to compute the observed order of convergence."
                     exit;;
         --k)        k="$2";        shift 2;;
         --Nx)       Nx="$2";       shift 2;;
