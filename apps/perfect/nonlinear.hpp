@@ -825,13 +825,15 @@ std::vector<real_t> applyNonlinearOperator(
                 convtotal_z_delta_t   = min   (convtotal_z_delta_t,
                         evmaxmag_imag / ua_l1_z);
                 convfluct_xyz_delta_t = minnan(convfluct_xyz_delta_t,
-                        evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
+                        evmaxmag_imag / (  fluct_ua_l1_x
+                                         + fluct_ua_l1_y
+                                         + fluct_ua_l1_z));
                 convfluct_x_delta_t   = min   (convfluct_x_delta_t,
-                        evmaxmag_imag / ua_l1_x);
+                        evmaxmag_imag / fluct_ua_l1_x);
                 convfluct_y_delta_t   = min   (convfluct_y_delta_t,
-                        evmaxmag_imag / ua_l1_y);
+                        evmaxmag_imag / fluct_ua_l1_y);
                 convfluct_z_delta_t   = min   (convfluct_z_delta_t,
-                        evmaxmag_imag / ua_l1_z);
+                        evmaxmag_imag / fluct_ua_l1_z);
 
                 // See suzerain::timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
