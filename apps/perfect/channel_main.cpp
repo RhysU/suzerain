@@ -1355,27 +1355,32 @@ int main(int argc, char **argv)
     switch ((!!timedef.advance_dt << 1) + !!timedef.advance_nt) {
         case 3:
             INFO0("Advancing simulation by at most " << timedef.advance_dt
-                   << " units of physical time");
+                   << " units of physical time using evmagfactor "
+                   << timedef.evmagfactor);
             INFO0("Advancing simulation by at most " << timedef.advance_nt
-                   << " discrete time steps");
+                   << " discrete time steps using evmagfactor "
+                   << timedef.evmagfactor);
             advance_success = tc->advance(initial_t + timedef.advance_dt,
                                           timedef.advance_nt);
             break;
         case 2:
             INFO0("Advancing simulation by " << timedef.advance_dt
-                  << " units of physical time");
+                  << " units of physical time using evmagfactor "
+                  << timedef.evmagfactor);
             advance_success = tc->advance(initial_t + timedef.advance_dt);
             break;
         case 1:
             INFO0("Advancing simulation " << timedef.advance_nt
-                   << " discrete time steps");
+                   << " discrete time steps using evmagfactor "
+                   << timedef.evmagfactor);
             advance_success = tc->step(timedef.advance_nt);
             break;
         case 0:
             if (!default_advance_nt) {
                 INFO0("Simulation will not be advanced");
             } else {
-                INFO0("Advancing simulation until terminated by a signal");
+                INFO0("Advancing simulation until terminated by a signal"
+                      " using evmagfactor " << timedef.evmagfactor);
                 advance_success = tc->advance();
             }
             break;
