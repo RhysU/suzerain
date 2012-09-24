@@ -9,7 +9,7 @@ set -e
 # Parse incoming parameters
 # FIXME Unknown options cannot be passed though getopt(1)!
 OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
-ARGS=$(getopt -a -n$0 -o "h" -l "$OPTS,help" -- "$@")
+ARGS=$(getopt -a -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
