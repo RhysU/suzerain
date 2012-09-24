@@ -293,7 +293,7 @@ namespace slowgrowth {
 
 /** What slow growth sources are employed? */
 enum type {
-    none,  ///< No slow growth sources
+    none   ///< No slow growth sources
 };
 
 } // namespace slowgrowth
