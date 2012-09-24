@@ -1794,7 +1794,7 @@ suzerain_lapack_zlangb(
 
 /*!
  * \brief Compute the solution to a banded system of linear equations \f$A x =
- * b$ using single precision LU factorization followed by double precision
+ * b \f$ using single precision LU factorization followed by double precision
  * iterative refinement.
  *
  * The overall functionality is an extension of the capability of LAPACK's <a
