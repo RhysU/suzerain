@@ -37,7 +37,7 @@
 
 #include "../support.hpp"
 
-#pragma warning(disable:383 1572)
+#pragma warning(disable:280 383 1572)
 
 namespace channel {
 
