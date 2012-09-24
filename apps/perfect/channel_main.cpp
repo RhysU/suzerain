@@ -74,7 +74,9 @@
 #include "hybrid_op.hpp"
 
 // Provided by channel_main_svnrev.{c,h} to speed recompilation
+#pragma warning(push,disable:1419)
 extern "C" const char revstr[];
+#pragma warning(pop)
 
 #pragma warning(disable:383 1572)
 

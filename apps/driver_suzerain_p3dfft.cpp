@@ -41,7 +41,9 @@
 #include "logging.hpp"
 
 // Provided by driver_suzerain_p3dfft_svnrev.{c,h} to speed recompilation
+#pragma warning(push,disable:1419)
 extern "C" const char revstr[];
+#pragma warning(pop)
 
 static double real_data(const double x, const double y, const double z)
 {

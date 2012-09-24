@@ -46,7 +46,9 @@
 #include "../support.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
+#pragma warning(push,disable:1419)
 extern "C" const char revstr[];
+#pragma warning(pop)
 
 #pragma warning(disable:383 1572)
 
