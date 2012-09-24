@@ -1855,7 +1855,7 @@ suzerain_lapack_zlangb(
  *                      iteration.  If this decay is not observed by the
  *                      \c apprx iteration, the perturbed factorization
  *                      is discarded and the routine operates as if \c
- *                      fact was <tt>'N'/<tt> and sets \c apprx to be
+ *                      fact was <tt>'N'</tt> and sets \c apprx to be
  *                      zero on return.  If \c fact is 'N' on input,
  *                      \c apprx is ignored and set to zero on return.
  * \param[in]     trans If 'N' solve \f$A      x = b\f$.
