@@ -37,7 +37,7 @@
 
 #include "../support.hpp"
 
-#pragma warning(disable:383 1572)
+#pragma warning(disable:280 383 1572)
 
 // oliver: should we change the namespace here (to something like
 // reacting)?  I'm not yet b/c other stuff in this namespace gets
