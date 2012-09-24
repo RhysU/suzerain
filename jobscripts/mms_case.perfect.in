@@ -7,8 +7,8 @@ set -e
 : ${MMS_CASE_NPROC:=4}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
-ARGS=$(getopt -a -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
+OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,gamma:,Re:,Ma:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
@@ -20,6 +20,11 @@ Nz=1
 htdelta=0
 np=
 tfinal=0.0125
+alpha=1
+beta=
+gamma=
+Re=
+Ma=
 no=()
 while true;
 do
@@ -29,16 +34,21 @@ do
                     echo "Execute code on a manufactured solution on your workstation."
                     echo
                     echo "Options:"
-                    cat <<EOF | column -t -s "\&" | sed -e 's/^/    /'
+                    cat <<EOF | column -t -s "\&" | sed -e 's/^/    /' | sort
 -h&--help&Show this help message.
--k&--k&Specify the wall-normal B-spline order
+  &--k&Specify the wall-normal B-spline order
   &--Nx&Set number of degrees of freedom in the X direction
   &--Ny&Set number of degrees of freedom in the Y direction
   &--Nz&Set number of degrees of freedom in the Z direction
   &--htdelta&Set grid stretching factor
   &--np&Use MPI and specify number of processors to use
   &--tfinal&Time to which manufactured field should be advanced
--N&--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
+  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
+  &--beta&Temperature power law exponent within manufactured solution
+  &--gamma&Ratio of specific heats within manufactured solution
+  &--Re&Reynolds number within manufactured solution
+  &--Ma&Mach number within manufactured solution
+  &--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
   &--no_x&Disable all X derivatives in the solution
   &--no_xy&Disable all X-Y mixed derivatives in the solution
   &--no_xz&Disable all X-Z mixed derivatives in the solution
@@ -67,6 +77,11 @@ EOF
         --htdelta)  htdelta="$2";  shift 2;;
         --np)       np="$2";       shift 2;;
         --tfinal)   tfinal="$2";   shift 2;;
+        --alpha)    alpha="$2";    shift 2;;
+        --beta)     beta="$2";     shift 2;;
+        --gamma)    gamma="$2";    shift 2;;
+        --Re)       Re="$2";       shift 2;;
+        --Ma)       Ma="$2";       shift 2;;
         --N)        Nx=$(expr 2 \* "$2" / 3);
                     Ny="$2";
                     Nz=$(expr 2 \* "$2" / 3);
@@ -106,9 +121,13 @@ cd $dir
 # Generate an initial condition and final condition
 "$MMS_CASE_INITIAL" initial.h5                                       \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta             \
+    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}                   \
+    ${gamma:+--gamma=$gamma} ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma}         \
     --mms=0       "${no[@]}"
 "$MMS_CASE_INITIAL" final.h5                                         \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta             \
+    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}                   \
+    ${gamma:+--gamma=$gamma} ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma}         \
     --mms=$tfinal "${no[@]}"
 
 # Advance the initial condition until the final time is reached
