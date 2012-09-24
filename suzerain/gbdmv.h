@@ -90,8 +90,8 @@ suzerain_gbdmv_d(
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} D A x + \beta{} y \f$ for complex
- * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$ \f$A\f$,
- * and \f$x\$.
+ * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$D\f$, \f$A\f$,
+ * and \f$x\f$.
  *
  * \copydetails suzerain_gbdmv_s
  */
