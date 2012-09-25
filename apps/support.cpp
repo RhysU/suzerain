@@ -2286,7 +2286,7 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.diffwave_apply(0, 0, 1., swave, ndx::rho);
+    obase.zero_dealiasing_modes(swave, ndx::rho);
     obase.bop_accumulate(1,    1., swave, ndx::rho, 0., auxw, aux::rho_y);
     obase.bop_apply     (0,    1., swave, ndx::rho);
 
@@ -2297,7 +2297,7 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.diffwave_apply(0, 0, 1., swave, ndx::rhou);
+    obase.zero_dealiasing_modes(swave, ndx::rhou);
     obase.bop_accumulate(1,    1., swave, ndx::rhou, 0., auxw, aux::mx_y);
     obase.bop_apply     (0,    1., swave, ndx::rhou);
 
@@ -2308,7 +2308,7 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.diffwave_apply(0, 0, 1., swave, ndx::rhov);
+    obase.zero_dealiasing_modes(swave, ndx::rhov);
     obase.bop_accumulate(1,    1., swave, ndx::rhov, 0., auxw, aux::my_y);
     obase.bop_apply     (0,    1., swave, ndx::rhov);
 
@@ -2319,7 +2319,7 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.diffwave_apply(0, 0, 1., swave, ndx::rhow);
+    obase.zero_dealiasing_modes(swave, ndx::rhow);
     obase.bop_accumulate(1,    1., swave, ndx::rhow, 0., auxw, aux::mz_y);
     obase.bop_apply     (0,    1., swave, ndx::rhow);
 
@@ -2330,7 +2330,7 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.diffwave_apply(0, 0, 1., swave, ndx::rhoe);
+    obase.zero_dealiasing_modes(swave, ndx::rhoe);
     obase.bop_accumulate(1,    1., swave, ndx::rhoe, 0., auxw, aux::e_y);
     obase.bop_apply     (0,    1., swave, ndx::rhoe);
 
