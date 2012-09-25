@@ -70,7 +70,7 @@ dt=(5000 1000 1000 18000)
 
 # Generate an initial condition
 "$LAMINAR_INITIAL" t0.h5                                                    \
-    --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1--htdelta=$htdelta                    \
+    --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1 --htdelta=$htdelta                   \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
     ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}
 cp t0.h5 restart0.h5
