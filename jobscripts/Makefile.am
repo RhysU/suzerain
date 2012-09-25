@@ -2,13 +2,14 @@
 dist_check_SCRIPTS  = # Append below
 TESTS               = # Append below
 
-JOBSCRIPTS = qsub.lonestar qsub.ranger mms_case.perfect
-UTILITIES  = qlast
+JOBSCRIPTS  = qsub.lonestar qsub.ranger
+UTILITIES   = qlast
+UTILITIES  += laminar.perfect mms_case.perfect
 
 # Installation, distribution, and clean up details
 jobscriptsdir      = $(pkgdatadir)/jobscripts
 jobscripts_SCRIPTS = $(JOBSCRIPTS) $(UTILITIES)
-EXTRA_DIST         = qsub.tacc.in
+EXTRA_DIST         = qsub.tacc.in mms_case.perfect.in laminar.perfect.in
 CLEANFILES         = $(JOBSCRIPTS)
 
 # Job scripts are generated following the sed-based example at
@@ -16,17 +17,15 @@ CLEANFILES         = $(JOBSCRIPTS)
 do_subst = $(SED) -e 's,[@]bindir[@],$(bindir),g'         \
                   -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
 
-$(JOBSCRIPTS) : Makefile
-
-mms_case.perfect : mms_case.perfect.in
+%.perfect : %.perfect.in Makefile
 	$(do_subst) "$<" > "$@"
 	chmod +x "$@"
 
-qsub.lonestar : qsub.tacc.in
+qsub.lonestar : qsub.tacc.in Makefile
 	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],12,g' > "$@"
 	chmod +x "$@"
 
-qsub.ranger : qsub.tacc.in
+qsub.ranger : qsub.tacc.in Makefile
 	$(do_subst) "$<" | $(SED) -e 's,[@]corespernode[@],16,g' > "$@"
 	chmod +x "$@"
 

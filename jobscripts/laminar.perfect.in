@@ -2,140 +2,86 @@
 set -e
 
 # Specify operational defaults which may be overridden in the environment
-: ${MMS_CASE_INITIAL:=@bindir@/channel_init}
-: ${MMS_CASE_ADVANCE:=@bindir@/channel}
-: ${MMS_CASE_NPROC:=4}
+: ${LAMINAR_INITIAL:=@bindir@/channel_init}
+: ${LAMINAR_ADVANCE:=@bindir@/channel}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,gamma:,Re:,Ma:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Re:,Ma:,Pr:"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
 # Process incoming parameters versus defaults
-k=6
-Nx=1
-Ny=32
-Nz=1
-htdelta=0
-np=
-tfinal=0.0125
-alpha=1
-beta=
+# Defaults based on Coleman, Kim, and Moser JFM 1995
+k=8
+htdelta=3
+alpha=
+beta=0.7
 gamma=
-Re=
-Ma=
-no=()
+Re=3000
+Ma=1.5
+Pr=0.7
 while true;
 do
     case "$1" in
         --)         shift 1;break;;
         -h|--help)  echo "Usage: $(basename -- "$0") [OPTIONS]... -- [SOLVEROPTS]..."
-                    echo "Execute code on a manufactured solution on your workstation."
+                    echo "Generate a laminar solution on your workstation."
                     echo
                     echo "Options:"
                     cat <<EOF | column -t -s "\&" | sed -e 's/^/    /' | sort
 -h&--help&Show this help message.
   &--k&Specify the wall-normal B-spline order
-  &--Nx&Set number of degrees of freedom in the X direction
-  &--Ny&Set number of degrees of freedom in the Y direction
-  &--Nz&Set number of degrees of freedom in the Z direction
   &--htdelta&Set grid stretching factor
-  &--np&Use MPI and specify number of processors to use
-  &--tfinal&Time to which manufactured field should be advanced
   &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
   &--beta&Temperature power law exponent within manufactured solution
   &--gamma&Ratio of specific heats within manufactured solution
   &--Re&Reynolds number within manufactured solution
   &--Ma&Mach number within manufactured solution
-  &--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
-  &--no_x&Disable all X derivatives in the solution
-  &--no_xy&Disable all X-Y mixed derivatives in the solution
-  &--no_xz&Disable all X-Z mixed derivatives in the solution
-  &--no_y&Disable all Y derivatives in the solution
-  &--no_yz&Disable all Y-Z mixed derivatives in the solution
-  &--no_z&Disable all Z derivatives in the solution
-  &--no_t&Disable all temporal derivatives in the solution
+  &--Pr&Prandtl number within manufactured solution
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 36 48 72"
-                    echo "runs a sequence of MPI-parallel cases one after another passing"
-                    echo "option --explicit to the solver to force explicit time stepping."
-                    echo
-                    echo "Output is stored in an Ny-specific directory name so that grepping"
-                    echo "through Ny*/log.dat permits extracting results across runs.  For example,"
-                    echo "    parallel -k grep -H mms.abserr {} \| tail -n 1 ::: Ny*/log.dat"
-                    echo "will print the final MMS absolute error for each executed case."
-                    echo "With @pkgdatadir@/postproc/orderest such"
-                    echo "results may be used to compute the observed order of convergence."
+                    echo "    parallel -u '@pkgdatadir@/jobscripts/laminar.perfect --k={} -- --evmagfactor=0.8' ::: 6 7 8 9"
+                    echo "runs a collection of independent cases in parallel passing"
+                    echo "--evmagfactor to the solver to modify time step aggressiveness."
+                    echo "Output is stored in a k-specific directory name like laminar_k08."
                     exit;;
         --k)        k="$2";        shift 2;;
-        --Nx)       Nx="$2";       shift 2;;
-        --Ny)       Ny="$2";       shift 2;;
-        --Nz)       Nz="$2";       shift 2;;
         --htdelta)  htdelta="$2";  shift 2;;
-        --np)       np="$2";       shift 2;;
-        --tfinal)   tfinal="$2";   shift 2;;
         --alpha)    alpha="$2";    shift 2;;
         --beta)     beta="$2";     shift 2;;
         --gamma)    gamma="$2";    shift 2;;
         --Re)       Re="$2";       shift 2;;
         --Ma)       Ma="$2";       shift 2;;
-        --N)        Nx=$(expr 2 \* "$2" / 3);
-                    Ny="$2";
-                    Nz=$(expr 2 \* "$2" / 3);
-                    shift 2;;
-        --no_x)     no+=(--a_rhox=0  --a_ux=0  --a_vx=0  --a_wx=0  --a_Tx=0)
-                    shift;;
-        --no_xy)    no+=(--a_rhoxy=0 --a_uxy=0 --a_vxy=0 --a_wxy=0 --a_Txy=0)
-                    shift;;
-        --no_xz)    no+=(--a_rhoxz=0 --a_uxz=0 --a_vxz=0 --a_wxz=0 --a_Txz=0)
-                    shift;;
-        --no_y)     no+=(--a_rhoy=0  --a_uy=0  --a_vy=0  --a_wy=0  --a_Ty=0)
-                    shift;;
-        --no_yz)    no+=(--a_rhoyz=0 --a_uyz=0 --a_vyz=0 --a_wyz=0 --a_Tyz=0)
-                    shift;;
-        --no_z)     no+=(--a_rhoz=0  --a_uz=0  --a_vz=0  --a_wz=0  --a_Tz=0)
-                    shift;;
-        --no_t)     no+=(--f_rho0=0 --f_rhox=0 --f_rhoxy=0 --f_rhoxz=0 --f_rhoy=0 --f_rhoyz=0 --f_rhoz=0)
-                    no+=(--f_u0=0   --f_ux=0   --f_uxy=0   --f_uxz=0   --f_uy=0   --f_uyz=0   --f_uz=0)
-                    no+=(--f_v0=0   --f_vx=0   --f_vxy=0   --f_vxz=0   --f_vy=0   --f_vyz=0   --f_vz=0)
-                    no+=(--f_w0=0   --f_wx=0   --f_wxy=0   --f_wxz=0   --f_wy=0   --f_wyz=0   --f_wz=0)
-                    no+=(--f_T0=0   --f_Tx=0   --f_Txy=0   --f_Txz=0   --f_Ty=0   --f_Tyz=0   --f_Tz=0)
-                    no+=(--g_rho0=0 --g_rhox=0 --g_rhoxy=0 --g_rhoxz=0 --g_rhoy=0 --g_rhoyz=0 --g_rhoz=0)
-                    no+=(--g_u0=0   --g_ux=0   --g_uxy=0   --g_uxz=0   --g_uy=0   --g_uyz=0   --g_uz=0)
-                    no+=(--g_v0=0   --g_vx=0   --g_vxy=0   --g_vxz=0   --g_vy=0   --g_vyz=0   --g_vz=0)
-                    no+=(--g_w0=0   --g_wx=0   --g_wxy=0   --g_wxz=0   --g_wy=0   --g_wyz=0   --g_wz=0)
-                    no+=(--g_T0=0   --g_Tx=0   --g_Txy=0   --g_Txz=0   --g_Ty=0   --g_Tyz=0   --g_Tz=0)
-                    shift;;
+        --Pr)       Pr="$2";       shift 2;;
     esac
 done
 
 # Create or overwrite a directory and then change into it
-dir=$(printf "Ny%03d" $Ny)
+dir=$(printf "laminar_k%02d" $k)
 rm -rvf $dir
 mkdir -v $dir
 cd $dir
 
-# Generate an initial condition and final condition
-"$MMS_CASE_INITIAL" initial.h5                                       \
-    --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta             \
-    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}                   \
-    ${gamma:+--gamma=$gamma} ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma}         \
-    --mms=0       "${no[@]}"
-"$MMS_CASE_INITIAL" final.h5                                         \
-    --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta             \
-    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}                   \
-    ${gamma:+--gamma=$gamma} ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma}         \
-    --mms=$tfinal "${no[@]}"
+# Table of incremental cases to run towards getting steady state
+Ny=(  16   32   64    96)
+dt=(5000 1000 1000 18000)
 
-# Advance the initial condition until the final time is reached
-# Notice any unknown arguments from the command line appear here
-${np+mpiexec -np $np} "$MMS_CASE_ADVANCE" initial.h5                 \
-    --statistics_nt=0 --statistics_dt=0 --status_nt=25 --status_dt=0 \
-    --advance_nt=0 --advance_dt=$tfinal "$@"
+# Generate an initial condition
+"$LAMINAR_INITIAL" t0.h5                                                    \
+    --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1--htdelta=$htdelta                    \
+    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
+    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}
+cp t0.h5 restart0.h5
 
-# Now, look in 'mms.abserr' in the resulting log.dat for global error.
-# Check convergence rates across three or more runs using 'orderest'.
-# Or, use h5diff against restart0.h5 vs final.h5 to compare detailed results.
+# Advance through each situation in the incremental table
+declare -i t=0
+for i in "${!Ny[@]}"
+do
+    "$LAMINAR_ADVANCE" restart0.h5 --Ny=${Ny[$i]} --advance_dt=${dt[$i]} \
+        --status_nt=100 --statistics_dt=0 --statistics_nt=0              \
+        --restart_retain=10 "$@"
+    t+=${dt[$i]}
+    cp -v restart0.h5 t${t}.h5
+done
