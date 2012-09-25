@@ -2403,16 +2403,17 @@ mean sample_mean_quantities(
                 const real_t div_m = auxp(aux::mx_x, offset)
                                    + auxp(aux::my_y, offset)
                                    + auxp(aux::mz_z, offset);
-                Matrix3r grad_m;
-                grad_m(0,0)        = auxp(aux::mx_x, offset);
-                grad_m(0,1)        = auxp(aux::mx_y, offset);
-                grad_m(0,2)        = auxp(aux::mx_z, offset);
-                grad_m(1,0)        = auxp(aux::my_x, offset);
-                grad_m(1,1)        = auxp(aux::my_y, offset);
-                grad_m(1,2)        = auxp(aux::my_z, offset);
-                grad_m(2,0)        = auxp(aux::mz_x, offset);
-                grad_m(2,1)        = auxp(aux::mz_y, offset);
-                grad_m(2,2)        = auxp(aux::mz_z, offset);
+                const Matrix3r grad_m;
+                const_cast<Matrix3r&>(grad_m) <<
+                                     auxp(aux::mx_x,  offset),
+                                     auxp(aux::mx_y,  offset),
+                                     auxp(aux::mx_z,  offset),
+                                     auxp(aux::my_x,  offset),
+                                     auxp(aux::my_y,  offset),
+                                     auxp(aux::my_z,  offset),
+                                     auxp(aux::mz_x,  offset),
+                                     auxp(aux::mz_y,  offset),
+                                     auxp(aux::mz_z,  offset);
 
                 // Unpack total energy-related quantities
                 const real_t e(sphys(ndx::rhoe, offset));
