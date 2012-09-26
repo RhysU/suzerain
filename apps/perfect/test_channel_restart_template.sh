@@ -32,9 +32,9 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=2 --max_dt=0.1 $P
-    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=2 --max_dt=0.1 $P
-    $channel mms0.h5 --restart_destination "c#.h5" --advance_nt=4 --max_dt=0.1 $P
+    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
+    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=2 $P
+    $channel mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --delta=3e-15 --nan b0.h5 c0.h5 /t
