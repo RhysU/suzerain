@@ -833,7 +833,7 @@ std::basic_ostream<charT,traits>& operator<<(
  * Compute redundant information for an ILowStorageMethod given essential,
  * scheme-specific constants.
  *
- * The \c SchemeConstants parameter must be a templated, static-only struct
+ * The \c Scheme parameter must be a templated, static-only struct
  * encapsulating a small number of independent pieces of information:
  * <dl>
  * <dt>name</dt>
@@ -856,32 +856,32 @@ std::basic_ostream<charT,traits>& operator<<(
  * results may be accessed as if contained in static arrays.  For example,
  * <code>eta[1]</code> or <code>iota_beta[2]</code>.
  *
- * @tparam SchemeConstants A class encapsulating the minimum constants
+ * @tparam Scheme A class encapsulating the minimum constants
  *         required to describe a low storage scheme.
  * @tparam Component Real-valued type for which constants are returned.
  * @tparam Integer Signed integer type used for indexing and computation.
  *
  * @see ILowStorageMethod for a full definition of the constants involved.
- * @see SMR91Constants for an example implementation.
+ * @see SMR91 for an example implementation.
  */
-template <template <typename,typename> class SchemeConstants,
+template <template <typename,typename> class Scheme,
           typename Component,
           typename Integer = std::ptrdiff_t>
-class LowStorageConstants : private SchemeConstants<Component,Integer>
+class LowStorageConstants : private Scheme<Component,Integer>
 {
 
 private:
 
     /** Encapsulates only the constants necessary to define the scheme. */
-    typedef SchemeConstants<Component,Integer> base;
+    typedef Scheme<Component,Integer> scheme;
 
 public:
 
-    using base::name;
-    using base::substeps;
+    using scheme::name;
+    using scheme::substeps;
 
     /**
-     * Computes \f$\alpha_i\f$ given \c SchemeConstants as <tt>alpha[i]</tt>.
+     * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
      * @see ILowStorageMethod::alpha
      */
     static const struct alpha_type {
@@ -890,13 +890,13 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(base::alpha_numerator[i]) / base::denominator;
+            return Component(scheme::alpha_numerator[i]) / scheme::denominator;
         }
 
     } alpha;
 
     /**
-     * Compute \f$\beta_i\f$ given \c SchemeConstants as <tt>beta[i]</tt>.
+     * Compute \f$\beta_i\f$ given \c Scheme as <tt>beta[i]</tt>.
      * @see ILowStorageMethod::beta
      */
     static const struct beta_type {
@@ -905,13 +905,13 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(base::beta_numerator[i]) / base::denominator;
+            return Component(scheme::beta_numerator[i]) / scheme::denominator;
         }
 
     } beta;
 
     /**
-     * Compute \f$\gamma_i\f$ given \c SchemeConstants as <tt>gamma[i]</tt>.
+     * Compute \f$\gamma_i\f$ given \c Scheme as <tt>gamma[i]</tt>.
      * @see ILowStorageMethod::gamma
      */
     static const struct gamma_type {
@@ -920,13 +920,13 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(base::gamma_numerator[i]) / base::denominator;
+            return Component(scheme::gamma_numerator[i]) / scheme::denominator;
         }
 
     } gamma;
 
     /**
-     * Compute \f$\zeta_i\f$ given \c SchemeConstants as <tt>zeta[i]</tt>.
+     * Compute \f$\zeta_i\f$ given \c Scheme as <tt>zeta[i]</tt>.
      * @see ILowStorageMethod::zeta
      */
     static const struct zeta_type {
@@ -935,22 +935,22 @@ public:
         Integer numerator(const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return base::alpha_numerator[i]
-                 + base::beta_numerator [i]
-                 - base::gamma_numerator[i];
+            return scheme::alpha_numerator[i]
+                 + scheme::beta_numerator [i]
+                 - scheme::gamma_numerator[i];
         }
 
         /** Computes \f$\zeta_i\f$ */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(numerator(i)) / base::denominator;
+            return Component(numerator(i)) / scheme::denominator;
         }
 
     } zeta;
 
     /**
-     * Compute \f$\eta_i\f$ given \c SchemeConstants as <tt>eta[i]</tt>.
+     * Compute \f$\eta_i\f$ given \c Scheme as <tt>eta[i]</tt>.
      * @see ILowStorageMethod::eta
      */
     static const struct eta_type {
@@ -961,8 +961,8 @@ public:
             assert(0 <= i && i <= substeps); // i == substeps OK
             Integer v = 0;
             for (Integer j = i; j --> 0 ;) {
-                v += base::alpha_numerator[j];
-                v += base::beta_numerator [j];
+                v += scheme::alpha_numerator[j];
+                v += scheme::beta_numerator [j];
             }
             return v;
         }
@@ -971,13 +971,13 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i <= substeps); // i == substeps OK
-            return Component(numerator(i)) / base::denominator;
+            return Component(numerator(i)) / scheme::denominator;
         }
 
     } eta;
 
     /**
-     * Compute \f$\iota_i\f$ given \c SchemeConstants as <tt>iota[i]</tt>.
+     * Compute \f$\iota_i\f$ given \c Scheme as <tt>iota[i]</tt>.
      * @see ILowStorageMethod::iota
      */
     static const struct iota_type {
@@ -994,7 +994,7 @@ public:
 
     /**
      * Compute \f$\iota_{\alpha,i}\f$ given
-     * \c SchemeConstants as <tt>iota_alpha[i]</tt>.
+     * \c Scheme as <tt>iota_alpha[i]</tt>.
      * @see ILowStorageMethod::iota_alpha
      */
     static const struct iota_alpha_type {
@@ -1003,14 +1003,14 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(base::alpha_numerator[i]) / eta.numerator(i+1);
+            return Component(scheme::alpha_numerator[i]) / eta.numerator(i+1);
         }
 
     } iota_alpha;
 
     /**
      * Compute \f$\iota_{\beta,i}\f$ given
-     * \c SchemeConstants as <tt>iota_beta[i]</tt>.
+     * \c Scheme as <tt>iota_beta[i]</tt>.
      * @see ILowStorageMethod::iota_beta
      */
     static const struct iota_beta_type {
@@ -1019,7 +1019,7 @@ public:
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
-            return Component(base::beta_numerator[i]) / eta.numerator(i+1);
+            return Component(scheme::beta_numerator[i]) / eta.numerator(i+1);
         }
 
     } iota_beta;
@@ -1084,7 +1084,7 @@ LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
  * @see Designed to be used with the LowStorageConstants template.
  */
 template <typename Component, typename Integer>
-struct SMR91Constants
+struct SMR91
 {
     /** A human-readable name for the scheme */
     static const char *name;
@@ -1109,24 +1109,24 @@ struct SMR91Constants
 };
 
 template <typename Component, typename Integer>
-const char * SMR91Constants<Component,Integer>::name = "SMR91";
+const char * SMR91<Component,Integer>::name = "SMR91";
 
 template <typename Component, typename Integer>
-const Integer SMR91Constants<Component,Integer>::alpha_numerator[substeps] = {
+const Integer SMR91<Component,Integer>::alpha_numerator[substeps] = {
          29 * (denominator / 96),
         - 3 * (denominator / 40),
           1 * (denominator /  6)
 };
 
 template <typename Component, typename Integer>
-const Integer SMR91Constants<Component,Integer>::beta_numerator[substeps] = {
+const Integer SMR91<Component,Integer>::beta_numerator[substeps] = {
          37 * (denominator / 160),
           5 * (denominator /  24),
           1 * (denominator /   6)
 };
 
 template <typename Component, typename Integer>
-const Integer SMR91Constants<Component,Integer>::gamma_numerator[substeps] = {
+const Integer SMR91<Component,Integer>::gamma_numerator[substeps] = {
           8 * (denominator /  15),
           5 * (denominator /  12),
           3 * (denominator /   4)
@@ -1140,7 +1140,7 @@ const Integer SMR91Constants<Component,Integer>::gamma_numerator[substeps] = {
  * @see Designed to be used with the LowStorageConstants template.
  */
 template <typename Component, typename Integer>
-struct Yang11Constants
+struct Yang11
 {
     /** A human-readable name for the scheme */
     static const char *name;
@@ -1165,24 +1165,24 @@ struct Yang11Constants
 };
 
 template <typename Component, typename Integer>
-const char * Yang11Constants<Component,Integer>::name = "Yang11";
+const char * Yang11<Component,Integer>::name = "Yang11";
 
 template <typename Component, typename Integer>
-const Integer Yang11Constants<Component,Integer>::alpha_numerator[substeps] = {
+const Integer Yang11<Component,Integer>::alpha_numerator[substeps] = {
          1 * (denominator / 3),
         -1 * (denominator / 2),
          1 * (denominator / 3)
 };
 
 template <typename Component, typename Integer>
-const Integer Yang11Constants<Component,Integer>::beta_numerator[substeps] = {
+const Integer Yang11<Component,Integer>::beta_numerator[substeps] = {
          1 * (denominator / 6),
          2 * (denominator / 3),
          0 * (denominator / 1)
 };
 
 template <typename Component, typename Integer>
-const Integer Yang11Constants<Component,Integer>::gamma_numerator[substeps] = {
+const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
          1 * (denominator / 2),
          1 * (denominator / 3),
          1 * (denominator / 1)
@@ -1194,8 +1194,8 @@ const Integer Yang11Constants<Component,Integer>::gamma_numerator[substeps] = {
  * with One Infinite and Two Periodic Directions'' published in the
  * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
  *
- * @see SMR91Constants for the essential constant definitions.
- * @see LowStorageConstants for how fundamental SMR91Constants are combined.
+ * @see SMR91 for the essential constant definitions.
+ * @see LowStorageConstants for how fundamental SMR91 are combined.
  */
 template< typename Element >
 class SMR91Method : public ILowStorageMethod<Element>
@@ -1207,7 +1207,7 @@ public:
     typedef typename ILowStorageMethod<Element>::component component;
 
     /** Access to the static constants specifying this scheme. */
-    typedef LowStorageConstants<SMR91Constants,component> constants;
+    typedef LowStorageConstants<SMR91,component> constants;
 
     /**
      * Explicit constructor.
@@ -1276,8 +1276,8 @@ private:
  * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
  * effects on fluid flows''.
  *
- * @see Yang11Constants for the essential constant definitions.
- * @see LowStorageConstants for how fundamental Yang11Constants are combined.
+ * @see Yang11 for the essential constant definitions.
+ * @see LowStorageConstants for how fundamental Yang11 are combined.
  */
 template< typename Element >
 class Yang11Method : public ILowStorageMethod<Element>
@@ -1289,7 +1289,7 @@ public:
     typedef typename ILowStorageMethod<Element>::component component;
 
     /** Access to the static constants specifying this scheme. */
-    typedef LowStorageConstants<Yang11Constants,component> constants;
+    typedef LowStorageConstants<Yang11,component> constants;
 
     /**
      * Explicit constructor.
