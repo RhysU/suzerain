@@ -54,6 +54,13 @@ namespace constitutive {
 
     // Number of species (TODO: Set me... should be able to get from
     // IdealGasMix object, right?)
+    //
+    // update: I believe we can, e.g.
+    // IdealGasMix g("gri30.xml", "gri30_mix");
+    // int nsp = g.nSpecies();
+    //
+    // so this would look something like:
+    // int Ns = _cgas.npecies();
     int Ns;
 
   private:
@@ -134,6 +141,12 @@ namespace constitutive {
     p = _cgas->pressure ();
 
     // TODO: Do we have to do this?  Cantera can't give us hs directly?
+    //
+    // update: we might be able to: enthalpy_mole() looks like it might be correct
+    //         are we trying to pull down the molar enthalpy? Or is this the enthalpy of formation?
+    //
+    // http://cantera.github.com/docs/doxygen/html/classCantera_1_1IdealGasPhase.html#a6dd87c68aea566830f1e6af8b2412d63
+
     _cgas->getEnthalpy_RT(hs);
 
     for (int s=0; s<Ns; ++s)
@@ -145,6 +158,10 @@ namespace constitutive {
   void canteraInterface::transport (double* Ds, double& mu, double& kap) {
     // TODO: This right diffusivity call?  Check w/ Nick re: mass flux
     // vs. mole flux resolution.
+    // UPDATE: Looks good to me (Nick)
+
+    // the call below returns coefficients for calculating 
+    // the diffusive mass fluxes
     _ctrans->getMixDiffCoeffsMass (Ds);
     mu  = _ctrans->viscosity ();
     kap = _ctrans->thermalConductivity ();
