@@ -830,18 +830,328 @@ std::basic_ostream<charT,traits>& operator<<(
 }
 
 /**
+ * Compute redundant information for an ILowStorageMethod given essential,
+ * scheme-specific constants.
+ *
+ * The \c SchemeConstants parameter must be a templated, static-only struct
+ * encapsulating a small number of independent pieces of information:
+ * <dl>
+ * <dt>name</dt>
+ * <dd>A human-readable name for the scheme</dd>
+ * <dt>substeps</dt>
+ * <dd>Number of substeps within the scheme</dd>
+ * <dt>alpha_numerator</dt>
+ * <dd>The numerators for the \f$\alpha_i\f$ written using \c denominator</dd>
+ * <dt>beta_numerator</dt><dd></dd>
+ * <dd>The numerators for the \f$\beta_i\f$ written using \c denominator</dd>
+ * <dt>gamma_numerator</dt><dd></dd>
+ * <dd>The numerators for the \f$\gamma_i\f$ written using \c denominator</dd>
+ * <dt>denominator</dt><dd></dd>
+ * <dd>The least common multiple of all denominators appearing within
+ *     \f$\alpha\f$, \f$\beta\f$, or \f$\gamma\f$.
+ * </dl>
+ * Numerators and denominators are tracked separately to permit performing
+ * integer operations wherever possible.  This permits maintaining full
+ * precision constants via very simple rational operations.  All computed
+ * results may be accessed as if contained in static arrays.  For example,
+ * <code>eta[1]</code> or <code>iota_beta[2]</code>.
+ *
+ * @tparam SchemeConstants A class encapsulating the minimum constants
+ *         required to describe a low storage scheme.
+ * @tparam Component Real-valued type for which constants are returned.
+ * @tparam Integer Signed integer type used for indexing and computation.
+ *
+ * @see ILowStorageMethod for a full definition of the constants involved.
+ * @see SMR91Constants for an example implementation.
+ */
+template <template <typename,typename> class SchemeConstants,
+          typename Component,
+          typename Integer = std::ptrdiff_t>
+class LowStorageConstants : private SchemeConstants<Component,Integer>
+{
+
+private:
+
+    /** Encapsulates only the constants necessary to define the scheme. */
+    typedef SchemeConstants<Component,Integer> base;
+
+public:
+
+    using base::name;
+    using base::substeps;
+
+    /**
+     * Computes \f$\alpha_i\f$ given \c SchemeConstants as <tt>alpha[i]</tt>.
+     * @see ILowStorageMethod::alpha
+     */
+    static const struct alpha_type {
+
+        /** Computes \f$\alpha_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(base::alpha_numerator[i]) / base::denominator;
+        }
+
+    } alpha;
+
+    /**
+     * Compute \f$\beta_i\f$ given \c SchemeConstants as <tt>beta[i]</tt>.
+     * @see ILowStorageMethod::beta
+     */
+    static const struct beta_type {
+
+        /** Computes \f$\beta_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(base::beta_numerator[i]) / base::denominator;
+        }
+
+    } beta;
+
+    /**
+     * Compute \f$\gamma_i\f$ given \c SchemeConstants as <tt>gamma[i]</tt>.
+     * @see ILowStorageMethod::gamma
+     */
+    static const struct gamma_type {
+
+        /** Computes \f$\gamma_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(base::gamma_numerator[i]) / base::denominator;
+        }
+
+    } gamma;
+
+    /**
+     * Compute \f$\zeta_i\f$ given \c SchemeConstants as <tt>zeta[i]</tt>.
+     * @see ILowStorageMethod::zeta
+     */
+    static const struct zeta_type {
+
+        /** Computes numerator of \f$\zeta_i\f$ */
+        Integer numerator(const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return base::alpha_numerator[i]
+                 + base::beta_numerator [i]
+                 - base::gamma_numerator[i];
+        }
+
+        /** Computes \f$\zeta_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(numerator(i)) / base::denominator;
+        }
+
+    } zeta;
+
+    /**
+     * Compute \f$\eta_i\f$ given \c SchemeConstants as <tt>eta[i]</tt>.
+     * @see ILowStorageMethod::eta
+     */
+    static const struct eta_type {
+
+        /** Computes numerator of \f$\eta_i\f$ */
+        Integer numerator(const Integer i) const
+        {
+            assert(0 <= i && i <= substeps); // i == substeps OK
+            Integer v = 0;
+            for (Integer j = i; j --> 0 ;) {
+                v += base::alpha_numerator[j];
+                v += base::beta_numerator [j];
+            }
+            return v;
+        }
+
+        /** Computes \f$\eta_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i <= substeps); // i == substeps OK
+            return Component(numerator(i)) / base::denominator;
+        }
+
+    } eta;
+
+    /**
+     * Compute \f$\iota_i\f$ given \c SchemeConstants as <tt>iota[i]</tt>.
+     * @see ILowStorageMethod::iota
+     */
+    static const struct iota_type {
+
+        /** Computes \f$\iota_i\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(eta.numerator(i+1) - eta.numerator(i))
+                /           (eta.numerator(i+1) - eta.numerator(0));
+        }
+
+    } iota;
+
+    /**
+     * Compute \f$\iota_{\alpha,i}\f$ given
+     * \c SchemeConstants as <tt>iota_alpha[i]</tt>.
+     * @see ILowStorageMethod::iota_alpha
+     */
+    static const struct iota_alpha_type {
+
+        /** Computes \f$\iota_{\alpha,i}\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(base::alpha_numerator[i]) / eta.numerator(i+1);
+        }
+
+    } iota_alpha;
+
+    /**
+     * Compute \f$\iota_{\beta,i}\f$ given
+     * \c SchemeConstants as <tt>iota_beta[i]</tt>.
+     * @see ILowStorageMethod::iota_beta
+     */
+    static const struct iota_beta_type {
+
+        /** Computes \f$\iota_{\beta,i}\f$ */
+        Component operator[](const Integer i) const
+        {
+            assert(0 <= i && i < substeps);
+            return Component(base::beta_numerator[i]) / eta.numerator(i+1);
+        }
+
+    } iota_beta;
+
+};
+
+// **************************************************************************
+// BEGIN hideousness to for static constant structs within LowStorageContants
+// **************************************************************************
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::alpha_type
+LowStorageConstants<MethodConstants,Component,Integer>::alpha = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::beta_type
+LowStorageConstants<MethodConstants,Component,Integer>::beta = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::gamma_type
+LowStorageConstants<MethodConstants,Component,Integer>::gamma = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::zeta_type
+LowStorageConstants<MethodConstants,Component,Integer>::zeta = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::eta_type
+LowStorageConstants<MethodConstants,Component,Integer>::eta = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_type
+LowStorageConstants<MethodConstants,Component,Integer>::iota = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_alpha_type
+LowStorageConstants<MethodConstants,Component,Integer>::iota_alpha = {};
+
+template <template <typename,typename> class MethodConstants,
+          typename Component, typename Integer>
+const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_beta_type
+LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
+
+// ************************************************************************
+// END hideousness to for static constant structs within LowStorageContants
+// ************************************************************************
+
+/**
+ * Encapsulates essential constants for the three stage, third order scheme
+ * from Appendix A of Spalart, Moser, and Rogers' 1991 ``Spectral Methods for
+ * the Navier-Stokes Equations with One Infinite and Two Periodic Directions''
+ * published in the <em>Journal of Computational Physics</em> volume 96 pages
+ * 297-324.
+ *
+ * @see Designed to be used with the LowStorageConstants template.
+ */
+template <typename Component, typename Integer>
+struct SMR91Constants
+{
+    /** A human-readable name for the scheme */
+    static const char *name;
+
+    /** Number of substeps within the scheme */
+    static const Integer substeps = 3;
+
+    /** The numerators for the \f$\alpha_i\f$ written using \c denominator */
+    static const Integer alpha_numerator[substeps];
+
+    /** The numerators for the \f$\beta_i\f$ written using \c denominator */
+    static const Integer beta_numerator [substeps];
+
+    /** The numerators for the \f$\gamma_i\f$ written using \c denominator */
+    static const Integer gamma_numerator[substeps];
+
+    /**
+     * The least common multiple of all denominators appearing within
+     * \f$\alpha\f$, \f$\beta\f$, or \f$\gamma\f$.
+     */
+    static const Integer denominator = 480;
+};
+
+template <typename Component, typename Integer>
+const char * SMR91Constants<Component,Integer>::name = "SMR91";
+
+template <typename Component, typename Integer>
+const Integer SMR91Constants<Component,Integer>::alpha_numerator[substeps] = {
+         29 * (denominator / 96),
+        - 3 * (denominator / 40),
+          1 * (denominator /  6)
+};
+
+template <typename Component, typename Integer>
+const Integer SMR91Constants<Component,Integer>::beta_numerator[substeps] = {
+         37 * (denominator / 160),
+          5 * (denominator /  24),
+          1 * (denominator /   6)
+};
+
+template <typename Component, typename Integer>
+const Integer SMR91Constants<Component,Integer>::gamma_numerator[substeps] = {
+          8 * (denominator /  15),
+          5 * (denominator /  12),
+          3 * (denominator /   4)
+};
+
+/**
  * Encapsulates the three stage, third order scheme from Appendix A of Spalart,
  * Moser, and Rogers' 1991 ``Spectral Methods for the Navier-Stokes Equations
  * with One Infinite and Two Periodic Directions'' published in the
  * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
+ *
+ * @see SMR91Constants for the essential constant definitions.
+ * @see LowStorageConstants for how fundamental SMR91Constants are combined.
  */
 template< typename Element >
 class SMR91Method : public ILowStorageMethod<Element>
 {
+
 public:
 
     /** The real-valued scalar corresponding to \c Element */
     typedef typename ILowStorageMethod<Element>::component component;
+
+    /** Access to the static constants specifying this scheme. */
+    typedef LowStorageConstants<SMR91Constants,component> constants;
 
     /**
      * Explicit constructor.
@@ -854,86 +1164,47 @@ public:
     explicit SMR91Method(component evmagfactor = 1)
         : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
           evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
-    {
-        assert(evmagfactor > 0);
-    }
+        { assert(evmagfactor > 0); }
 
     /** @copydoc ILowStorageMethod::name */
     virtual const char * name() const
-    {
-        return "SMR91";
-    }
+    { return constants::name; }
 
     /** @copydoc ILowStorageMethod::substeps */
     virtual std::size_t substeps() const
-    {
-        return 3;
-    }
+    { return constants::substeps; }
 
     /** @copydoc ILowStorageMethod::alpha */
     virtual component alpha(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component( 29)/component(96),
-                                            component(- 3)/component(40),
-                                            component(  1)/component( 6)  };
-        return coeff[substep];
-    }
+    { return constants::alpha[substep]; }
 
     /** @copydoc ILowStorageMethod::beta */
     virtual component beta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(37)/component(160),
-                                            component( 5)/component( 24),
-                                            component( 1)/component(  6)  };
-        return coeff[substep];
-    }
+    { return constants::beta[substep]; }
 
     /** @copydoc ILowStorageMethod::gamma */
     virtual component gamma(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(8)/component(15),
-                                            component(5)/component(12),
-                                            component(3)/component( 4)  };
-        return coeff[substep];
-    }
+    { return constants::gamma[substep]; }
 
     /** @copydoc ILowStorageMethod::zeta */
     virtual component zeta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(  0),
-                                            component(-17)/component(60),
-                                            component(- 5)/component(12)  };
-        return coeff[substep];
-    }
+    { return constants::zeta[substep]; }
 
     /** @copydoc ILowStorageMethod::eta */
     virtual component eta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(0),
-                                            component(8)/component(15),
-                                            component(2)/component( 3)  };
-        return coeff[substep];
-    }
+    { return constants::eta[substep]; }
 
     /** @copydoc ILowStorageMethod::iota */
     virtual component iota(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(1),
-                                            component(1)/component(5),
-                                            component(1)/component(3)  };
-        return coeff[substep];
-    }
+    { return constants::iota[substep]; }
 
     /** @copydoc ILowStorageMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
-    {
-        return evmaxmag_real_;
-    }
+    { return evmaxmag_real_; }
 
     /** @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual component evmaxmag_imag() const {
-        return evmaxmag_imag_;
-    }
+    virtual component evmaxmag_imag() const
+    { return evmaxmag_imag_; }
 
 private:
 
