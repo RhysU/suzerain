@@ -1026,9 +1026,9 @@ public:
 
 };
 
-// **************************************************************************
-// BEGIN hideousness to for static constant structs within LowStorageContants
-// **************************************************************************
+// ***********************************************************************
+// BEGIN hideousness for static constant structs within LowStorageContants
+// ***********************************************************************
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
@@ -1070,9 +1070,9 @@ template <template <typename,typename> class MethodConstants,
 const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_beta_type
 LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
 
-// ************************************************************************
-// END hideousness to for static constant structs within LowStorageContants
-// ************************************************************************
+// *********************************************************************
+// END hideousness for static constant structs within LowStorageContants
+// *********************************************************************
 
 /**
  * Encapsulates essential constants for the three stage, third order scheme
@@ -1130,6 +1130,62 @@ const Integer SMR91Constants<Component,Integer>::gamma_numerator[substeps] = {
           8 * (denominator /  15),
           5 * (denominator /  12),
           3 * (denominator /   4)
+};
+
+/**
+ * Encapsulates the three stage, second-order, adjoint-consistent scheme from
+ * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
+ * effects on fluid flows''.
+ *
+ * @see Designed to be used with the LowStorageConstants template.
+ */
+template <typename Component, typename Integer>
+struct Yang11Constants
+{
+    /** A human-readable name for the scheme */
+    static const char *name;
+
+    /** Number of substeps within the scheme */
+    static const Integer substeps = 3;
+
+    /** The numerators for the \f$\alpha_i\f$ written using \c denominator */
+    static const Integer alpha_numerator[substeps];
+
+    /** The numerators for the \f$\beta_i\f$ written using \c denominator */
+    static const Integer beta_numerator [substeps];
+
+    /** The numerators for the \f$\gamma_i\f$ written using \c denominator */
+    static const Integer gamma_numerator[substeps];
+
+    /**
+     * The least common multiple of all denominators appearing within
+     * \f$\alpha\f$, \f$\beta\f$, or \f$\gamma\f$.
+     */
+    static const Integer denominator = 6;
+};
+
+template <typename Component, typename Integer>
+const char * Yang11Constants<Component,Integer>::name = "Yang11";
+
+template <typename Component, typename Integer>
+const Integer Yang11Constants<Component,Integer>::alpha_numerator[substeps] = {
+         1 * (denominator / 3),
+        -1 * (denominator / 2),
+         1 * (denominator / 3)
+};
+
+template <typename Component, typename Integer>
+const Integer Yang11Constants<Component,Integer>::beta_numerator[substeps] = {
+         1 * (denominator / 6),
+         2 * (denominator / 3),
+         0 * (denominator / 1)
+};
+
+template <typename Component, typename Integer>
+const Integer Yang11Constants<Component,Integer>::gamma_numerator[substeps] = {
+         1 * (denominator / 2),
+         1 * (denominator / 3),
+         1 * (denominator / 1)
 };
 
 /**
@@ -1219,14 +1275,21 @@ private:
  * Encapsulates the three stage, second-order, adjoint-consistent scheme from
  * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
  * effects on fluid flows''.
+ *
+ * @see Yang11Constants for the essential constant definitions.
+ * @see LowStorageConstants for how fundamental Yang11Constants are combined.
  */
 template< typename Element >
 class Yang11Method : public ILowStorageMethod<Element>
 {
+
 public:
 
     /** The real-valued scalar corresponding to \c Element */
     typedef typename ILowStorageMethod<Element>::component component;
+
+    /** Access to the static constants specifying this scheme. */
+    typedef LowStorageConstants<Yang11Constants,component> constants;
 
     /**
      * Explicit constructor.
@@ -1239,96 +1302,56 @@ public:
     explicit Yang11Method(component evmagfactor = 1)
         : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
           evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
-    {
-        assert(evmagfactor > 0);
-    }
+        { assert(evmagfactor > 0); }
 
-    /*! @copydoc ILowStorageMethod::name */
+    /** @copydoc ILowStorageMethod::name */
     virtual const char * name() const
-    {
-        return "Yang11";
-    }
+    { return constants::name; }
 
-    /*! @copydoc ILowStorageMethod::substeps */
+    /** @copydoc ILowStorageMethod::substeps */
     virtual std::size_t substeps() const
-    {
-        return 3;
-    }
+    { return constants::substeps; }
 
-    /*! @copydoc ILowStorageMethod::alpha */
+    /** @copydoc ILowStorageMethod::alpha */
     virtual component alpha(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component( 1)/component(3),
-                                            component(-1)/component(2),
-                                            component( 1)/component(3)  };
-        return coeff[substep];
-    }
+    { return constants::alpha[substep]; }
 
-    /*! @copydoc ILowStorageMethod::beta */
+    /** @copydoc ILowStorageMethod::beta */
     virtual component beta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(1)/component(6),
-                                            component(2)/component(3),
-                                            component(0)               };
-        return coeff[substep];
-    }
+    { return constants::beta[substep]; }
 
-    /*! @copydoc ILowStorageMethod::gamma */
+    /** @copydoc ILowStorageMethod::gamma */
     virtual component gamma(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(1)/component(2),
-                                            component(1)/component(3),
-                                            component(1)               };
-        return coeff[substep];
-    }
+    { return constants::gamma[substep]; }
 
-    /*! @copydoc ILowStorageMethod::zeta */
+    /** @copydoc ILowStorageMethod::zeta */
     virtual component zeta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component( 0),
-                                            component(-1)/component(6),
-                                            component(-2)/component(3)  };
-        return coeff[substep];
-    }
+    { return constants::zeta[substep]; }
 
-    /*! @copydoc ILowStorageMethod::eta */
+    /** @copydoc ILowStorageMethod::eta */
     virtual component eta(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(0),
-                                            component(1)/component(2),
-                                            component(2)/component(3)   };
-        return coeff[substep];
-    }
+    { return constants::eta[substep]; }
 
     /** @copydoc ILowStorageMethod::iota */
     virtual component iota(const std::size_t substep) const
-    {
-        static const component coeff[3] = { component(1),
-                                            component(1)/component(4),
-                                            component(1)/component(3)  };
-        return coeff[substep];
-    }
+    { return constants::iota[substep]; }
 
-    /*! @copydoc ILowStorageMethod::evmaxmag_real */
+    /** @copydoc ILowStorageMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
-    {
-        return evmaxmag_real_;
-    }
+    { return evmaxmag_real_; }
 
-    /*! @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual component evmaxmag_imag() const {
-        return evmaxmag_imag_;
-    }
+    /** @copydoc ILowStorageMethod::evmaxmag_imag */
+    virtual component evmaxmag_imag() const
+    { return evmaxmag_imag_; }
 
 private:
 
-    /**< Value to report from evmaxmag_real(). */
+    /** Value to report from evmaxmag_real(). */
     component evmaxmag_real_;
 
-    /**< Value to report from evmaxmag_imag(). */
+    /** Value to report from evmaxmag_imag(). */
     component evmaxmag_imag_;
 };
-
 
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
