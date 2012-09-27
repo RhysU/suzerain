@@ -840,6 +840,10 @@ std::basic_ostream<charT,traits>& operator<<(
  * <dd>A human-readable name for the scheme</dd>
  * <dt>substeps</dt>
  * <dd>Number of substeps within the scheme</dd>
+ * <dt>evmaxmag_real</dt>
+ * <dd>The maximum purely real stable eigenvalue magnitude</dd>
+ * <dt>evmaxmag_imag</dt>
+ * <dd>The maximum purely imaginary stable eigenvalue magnitude</dd>
  * <dt>alpha_numerator</dt>
  * <dd>The numerators for the \f$\alpha_i\f$ written using \c denominator</dd>
  * <dt>beta_numerator</dt><dd></dd>
@@ -879,6 +883,8 @@ public:
 
     using scheme::name;
     using scheme::substeps;
+    using scheme::evmaxmag_real;
+    using scheme::evmaxmag_imag;
 
     /**
      * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
@@ -1092,6 +1098,22 @@ struct SMR91
     /** Number of substeps within the scheme */
     static const Integer substeps = 3;
 
+    /**
+     * The maximum purely real eigenvalue magnitude for the scheme, denoted
+     * \f$\left| \lambda_{R}\Delta_{}t \right|_{\mbox{max}}\f$ in Guarini's
+     * thesis.
+     */
+    static Component evmaxmag_real()
+    { return Component(2.51274532661832862402373L); }
+
+    /**
+     * The maximum purely imaginary eigenvalue magnitude for the scheme, denoted
+     * \f$\left| \lambda_{I}\Delta_{}t \right|_{\mbox{max}}\f$ in Guarini's
+     * thesis.
+     */
+    static Component evmaxmag_imag()
+    { using std::sqrt; return sqrt(3); }
+
     /** The numerators for the \f$\alpha_i\f$ written using \c denominator */
     static const Integer alpha_numerator[substeps];
 
@@ -1147,6 +1169,14 @@ struct Yang11
 
     /** Number of substeps within the scheme */
     static const Integer substeps = 3;
+
+    /** The maximum purely real eigenvalue magnitude for the scheme. */
+    static Component evmaxmag_real()
+    { return Component(2.51274532661832862402373L); }
+
+    /** The maximum purely imaginary eigenvalue magnitude for the scheme. */
+    static Component evmaxmag_imag()
+    { using std::sqrt; return sqrt(3); }
 
     /** The numerators for the \f$\alpha_i\f$ written using \c denominator */
     static const Integer alpha_numerator[substeps];
@@ -1218,8 +1248,8 @@ public:
      *                    respectively.
      */
     explicit SMR91Method(component evmagfactor = 1)
-        : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
-          evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
+        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
+          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
         { assert(evmagfactor > 0); }
 
     /** @copydoc ILowStorageMethod::name */
@@ -1300,8 +1330,8 @@ public:
      *                    respectively.
      */
     explicit Yang11Method(component evmagfactor = 1)
-        : evmaxmag_real_(evmagfactor * component(2.51274532661832862402373L)),
-          evmaxmag_imag_(evmagfactor * std::sqrt(component(3)))
+        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
+          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
         { assert(evmagfactor > 0); }
 
     /** @copydoc ILowStorageMethod::name */
