@@ -707,6 +707,23 @@ make_multiplicator_operator(
  * mean)</tt>.  One use case for \f$\iota_i\f$ is obtaining running means of
  * quantities varying at each substep using minimal space and time overhead.
  *
+ * Similarly to \f$\iota_i\f$, for quantities in effect only during linear
+ * operator application, \f$\Delta{}t \alpha_i L\f$, one can define
+ * \f[
+ *   \iota_{\alpha,N-1} = \frac{\alpha_i}{\eta_{i+1}}.
+ * \f]
+ * Analagously,
+ * \f[
+ *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
+ * \f]
+ * for is defined for quantities in effect only during linear operator
+ * "inversion", \f$\left(M - \Delta{}t \beta_i L)^{-1}\f$.  The former is
+ * useful for obtaining averages implicitly-computed forcing terms which are
+ * applied for duration \f$\alpha_i \Delta{}t\f$ but computed during the
+ * operator inversion stage.  In both cases, running weighted means are
+ * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt>.  or
+ * <tt>mean += iota_beta_i * (sample - mean)</tt>.
+ *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
  * @see SMR91 and Yang11 for examples of essential information
@@ -741,7 +758,7 @@ public:
     /**
      * Obtain the scheme's \f$\alpha_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -750,7 +767,7 @@ public:
     /**
      * Obtain the scheme's \f$\beta_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -759,7 +776,7 @@ public:
     /**
      * Obtain the scheme's \f$\gamma_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -768,7 +785,7 @@ public:
     /**
      * Obtain the scheme's \f$\zeta_i\f$ coefficient.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -778,7 +795,7 @@ public:
      * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
      * derived from other scheme coefficients.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps()]</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
@@ -788,11 +805,31 @@ public:
      * Compute the scheme's derived \f$\iota_i\f$ coefficient, which is used to
      * accumulate a running time-averaged value across substeps.
      *
-     * @param substep A substep number \f$i\f$ in the range [0,substeps()).
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
      *
      * @return The coefficient associated with the requested substep.
      */
     virtual component iota(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_alpha_i\f$ coefficient, which is
+     * used to accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota_alpha(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_beta_i\f$ coefficient, which is
+     * used to accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota_beta(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -1040,42 +1077,50 @@ public:
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::alpha_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::alpha_type
 LowStorageConstants<MethodConstants,Component,Integer>::alpha = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::beta_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::beta_type
 LowStorageConstants<MethodConstants,Component,Integer>::beta = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::gamma_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::gamma_type
 LowStorageConstants<MethodConstants,Component,Integer>::gamma = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::zeta_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::zeta_type
 LowStorageConstants<MethodConstants,Component,Integer>::zeta = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::eta_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::eta_type
 LowStorageConstants<MethodConstants,Component,Integer>::eta = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::iota_type
 LowStorageConstants<MethodConstants,Component,Integer>::iota = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_alpha_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::iota_alpha_type
 LowStorageConstants<MethodConstants,Component,Integer>::iota_alpha = {};
 
 template <template <typename,typename> class MethodConstants,
           typename Component, typename Integer>
-const typename LowStorageConstants<MethodConstants,Component,Integer>::iota_beta_type
+const typename LowStorageConstants<
+    MethodConstants,Component,Integer>::iota_beta_type
 LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
 
 // *********************************************************************
@@ -1149,6 +1194,14 @@ public:
     /** @copydoc ILowStorageMethod::iota */
     virtual component iota(const std::size_t substep) const
     { return constants::iota[substep]; }
+
+    /** @copydoc ILowStorageMethod::iota_alpha */
+    virtual component iota_alpha(const std::size_t substep) const
+    { return constants::iota_alpha[substep]; }
+
+    /** @copydoc ILowStorageMethod::iota_beta */
+    virtual component iota_beta(const std::size_t substep) const
+    { return constants::iota_beta[substep]; }
 
     /** @copydoc ILowStorageMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
