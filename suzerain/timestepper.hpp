@@ -398,6 +398,221 @@ namespace lowstorage
 {
 
 /**
+ * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
+ * advance \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.  The method consists of one or
+ * more substeps governed by coefficients \f$\alpha_i\f$, \f$\beta_i\f$,
+ * \f$\gamma_i\f$, \f$\zeta_i\f$, and \f$\eta_i\f$ where \f$i\f$ is less than
+ * the number of substeps.  Each substep obeys
+ * \f[
+ *   \left(M - \Delta{}t\beta_{i}L\right) u^{i+1}
+ *   =
+ *   \left(M + \Delta{}t\alpha_{i}L\right) u^{i}
+ *   + \Delta{}t\gamma_{i}
+ *     N\left(u^{i},t + \eta_{i}\Delta{}t\right)
+ *   + \Delta{}t\zeta_{i}
+ *     N\left(u^{i-1}, t + \eta_{i}\Delta{}t\right)
+ * \f]
+ * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i\f$ and \f$\eta_{i} =
+ * \sum_{i=0}^{i-1} \alpha_{i} + \beta{i} \f$. Note that the indexing on the
+ * \f$\zeta_i\f$ coefficients differs slightly from other sources.  Note also
+ * that not all literature sources include the possibility of a time-dependent
+ * \f$N\f$ operator.
+ *
+ * The <tt>i</tt>th substep has a "duration" \f$d_i = \left(\eta_{i+1} -
+ * \eta_i\right)\Delta{}t\f$ where \f$i+1\f$ greater than the number of
+ * substeps is treated as 1.  A running mean quantity across \f$N\f$ substeps,
+ * denoted \f$\bar{q}_{N-1}\f$, may be accumulated via
+ * \f[
+ *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-1} d_{i} q_{i}}
+ *                        {\sum_{i=0}^{N-1} d_{i}      }.
+ * \f]
+ * Rearranging the result in terms of means from earlier substeps,
+ * \f[
+ *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-2}}
+ *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} \bar{q}_{N-2}
+ *                 + \frac{d_{N-1}}
+ *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} q_{N-1}
+ * \f]
+ * motivates defining
+ * \f[
+ *   \iota_{N-1} = \frac{d_i}{\sum_{i=0}^{N-1} d_i}
+ *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1} - \eta_{0}}
+ *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1}}
+ * \f]
+ * since the factor \f$\Delta{}t\f$ may be omitted without changing
+ * \f$\bar{q}_{N-1}\f$ and \f$\eta_{0} = 0\f$.  Then maintaining the running
+ * mean
+ * \f[
+ *   \bar{q}_{N-1} = \left(1 - \iota_{N-1}\right) \bar{q}_{N-2}
+ *                 + \iota_{N-1} q_{N-1}
+ * \f]
+ * may be done via a simple update operation <tt>mean += iota_i * (sample -
+ * mean)</tt>.  One use case for \f$\iota_i\f$ is obtaining running means of
+ * quantities varying at each substep using minimal space and time overhead.
+ *
+ * Similarly to \f$\iota_i\f$, for quantities in effect only during linear
+ * operator application, \f$\Delta{}t \alpha_i L\f$, one can define
+ * \f[
+ *   \iota_{\alpha,N-1} = \frac{\alpha_i}{\eta_{i+1}}.
+ * \f]
+ * Analagously,
+ * \f[
+ *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
+ * \f]
+ * for is defined for quantities in effect only during linear operator
+ * "inversion", \f$\left(M - \Delta{}t \beta_i L\right)^{-1}\f$.  The former is
+ * useful for obtaining averages implicitly-computed forcing terms which are
+ * applied for duration \f$\alpha_i \Delta{}t\f$ but computed during the
+ * operator inversion stage.  In both cases, running weighted means are
+ * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt> or
+ * <tt>mean += iota_beta_i * (sample - mean)</tt>.
+ *
+ * @see ILinearOperator for the interface that \f$L\f$ must implement.
+ * @see INonlinearOperator for the interface that \f$N\f$ must implement.
+ * @see SMR91 and Yang11 for examples of essential information
+ *      for a concrete scheme.
+ * @see step() or substep() for methods that can advance state variables
+ *      according to a timestepping method.
+ */
+template<typename Element>
+class ILowStorageMethod
+{
+public:
+
+    /** The real-valued scalar corresponding to \c Element */
+    typedef typename suzerain::traits::component<Element>::type component;
+
+    /**
+     * A human-readable name for the timestepping method.
+     * Intended to be used in tracing and logging.
+     *
+     * @return The time advancement scheme's name.
+     */
+    virtual const char * name() const = 0;
+
+    /**
+     * The number of substeps required to advance \f$u(t)\f$ to
+     * \f$u(t+\Delta{}t)\f$.
+     *
+     * @return The number of substeps per time step.
+     */
+    virtual std::size_t substeps() const = 0;
+
+    /**
+     * Obtain the scheme's \f$\alpha_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component alpha(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\beta_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component beta(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\gamma_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component gamma(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\zeta_i\f$ coefficient.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component zeta(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
+     * derived from other scheme coefficients.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps()]</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component eta(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_i\f$ coefficient, which is used to
+     * accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_alpha_i\f$ coefficient, which is
+     * used to accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota_alpha(std::size_t substep) const = 0;
+
+    /**
+     * Compute the scheme's derived \f$\iota_beta_i\f$ coefficient, which is
+     * used to accumulate a running time-averaged value across substeps.
+     *
+     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
+     *
+     * @return The coefficient associated with the requested substep.
+     */
+    virtual component iota_beta(std::size_t substep) const = 0;
+
+    /**
+     * Obtain the scheme's maximum pure real eigenvalue magnitude.
+     *
+     * @return The scheme's maximum pure real eigenvalue magnitude.
+     * @see diffusive_stability_criterion() for one use of this magnitude.
+     */
+    virtual component evmaxmag_real() const = 0;
+
+    /**
+     * Obtain the scheme's maximum pure imaginary eigenvalue magnitude.
+     *
+     * @return The scheme's maximum pure imaginary eigenvalue magnitude.
+     * @see convective_stability_criterion() for one use of this magnitude.
+     */
+    virtual component evmaxmag_imag() const = 0;
+
+    /** Virtual destructor to support interface-like behavior. */
+    virtual ~ILowStorageMethod() {}
+};
+
+/**
+ * Output the timestepping scheme <tt>m</tt>'s name on the given
+ * output stream.
+ *
+ * @param os output stream to use.
+ * @param m scheme's name to output.
+ *
+ * @return The output stream.
+ */
+template< typename charT, typename traits, typename Element >
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits>& os,
+        const ILowStorageMethod<Element>& m)
+{
+    return os << m.name();
+}
+
+
+/**
  * Defines the linear operator interface required for low storage timestepping.
  *
  * @see tparam StateA A state type which must provide an \c element \c typedef
@@ -651,222 +866,6 @@ make_multiplicator_operator(
 {
     MultiplicativeOperator<StateA,StateB> retval(factor, delta_t);
     return retval;
-}
-
-// TODO ILowStorageMethod could employ the CRTP to avoid virtual overhead
-
-/**
- * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
- * advance \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$.  The method consists of one or
- * more substeps governed by coefficients \f$\alpha_i\f$, \f$\beta_i\f$,
- * \f$\gamma_i\f$, \f$\zeta_i\f$, and \f$\eta_i\f$ where \f$i\f$ is less than
- * the number of substeps.  Each substep obeys
- * \f[
- *   \left(M - \Delta{}t\beta_{i}L\right) u^{i+1}
- *   =
- *   \left(M + \Delta{}t\alpha_{i}L\right) u^{i}
- *   + \Delta{}t\gamma_{i}
- *     N\left(u^{i},t + \eta_{i}\Delta{}t\right)
- *   + \Delta{}t\zeta_{i}
- *     N\left(u^{i-1}, t + \eta_{i}\Delta{}t\right)
- * \f]
- * where \f$\alpha_i+\beta_i=\gamma_i+\zeta_i\f$ and \f$\eta_{i} =
- * \sum_{i=0}^{i-1} \alpha_{i} + \beta{i} \f$. Note that the indexing on the
- * \f$\zeta_i\f$ coefficients differs slightly from other sources.  Note also
- * that not all literature sources include the possibility of a time-dependent
- * \f$N\f$ operator.
- *
- * The <tt>i</tt>th substep has a "duration" \f$d_i = \left(\eta_{i+1} -
- * \eta_i\right)\Delta{}t\f$ where \f$i+1\f$ greater than the number of
- * substeps is treated as 1.  A running mean quantity across \f$N\f$ substeps,
- * denoted \f$\bar{q}_{N-1}\f$, may be accumulated via
- * \f[
- *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-1} d_{i} q_{i}}
- *                        {\sum_{i=0}^{N-1} d_{i}      }.
- * \f]
- * Rearranging the result in terms of means from earlier substeps,
- * \f[
- *   \bar{q}_{N-1} = \frac{\sum_{i=0}^{N-2}}
- *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} \bar{q}_{N-2}
- *                 + \frac{d_{N-1}}
- *                        {d_{N-1} + \sum_{i=0}^{N-2} d_i} q_{N-1}
- * \f]
- * motivates defining
- * \f[
- *   \iota_{N-1} = \frac{d_i}{\sum_{i=0}^{N-1} d_i}
- *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1} - \eta_{0}}
- *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1}}
- * \f]
- * since the factor \f$\Delta{}t\f$ may be omitted without changing
- * \f$\bar{q}_{N-1}\f$ and \f$\eta_{0} = 0\f$.  Then maintaining the running
- * mean
- * \f[
- *   \bar{q}_{N-1} = \left(1 - \iota_{N-1}\right) \bar{q}_{N-2}
- *                 + \iota_{N-1} q_{N-1}
- * \f]
- * may be done via a simple update operation <tt>mean += iota_i * (sample -
- * mean)</tt>.  One use case for \f$\iota_i\f$ is obtaining running means of
- * quantities varying at each substep using minimal space and time overhead.
- *
- * Similarly to \f$\iota_i\f$, for quantities in effect only during linear
- * operator application, \f$\Delta{}t \alpha_i L\f$, one can define
- * \f[
- *   \iota_{\alpha,N-1} = \frac{\alpha_i}{\eta_{i+1}}.
- * \f]
- * Analagously,
- * \f[
- *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
- * \f]
- * for is defined for quantities in effect only during linear operator
- * "inversion", \f$\left(M - \Delta{}t \beta_i L\right)^{-1}\f$.  The former is
- * useful for obtaining averages implicitly-computed forcing terms which are
- * applied for duration \f$\alpha_i \Delta{}t\f$ but computed during the
- * operator inversion stage.  In both cases, running weighted means are
- * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt> or
- * <tt>mean += iota_beta_i * (sample - mean)</tt>.
- *
- * @see ILinearOperator for the interface that \f$L\f$ must implement.
- * @see INonlinearOperator for the interface that \f$N\f$ must implement.
- * @see SMR91 and Yang11 for examples of essential information
- *      for a concrete scheme.
- * @see step() or substep() for methods that can advance state variables
- *      according to a timestepping method.
- */
-template<typename Element>
-class ILowStorageMethod
-{
-public:
-
-    /** The real-valued scalar corresponding to \c Element */
-    typedef typename suzerain::traits::component<Element>::type component;
-
-    /**
-     * A human-readable name for the timestepping method.
-     * Intended to be used in tracing and logging.
-     *
-     * @return The time advancement scheme's name.
-     */
-    virtual const char * name() const = 0;
-
-    /**
-     * The number of substeps required to advance \f$u(t)\f$ to
-     * \f$u(t+\Delta{}t)\f$.
-     *
-     * @return The number of substeps per time step.
-     */
-    virtual std::size_t substeps() const = 0;
-
-    /**
-     * Obtain the scheme's \f$\alpha_i\f$ coefficient.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component alpha(std::size_t substep) const = 0;
-
-    /**
-     * Obtain the scheme's \f$\beta_i\f$ coefficient.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component beta(std::size_t substep) const = 0;
-
-    /**
-     * Obtain the scheme's \f$\gamma_i\f$ coefficient.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component gamma(std::size_t substep) const = 0;
-
-    /**
-     * Obtain the scheme's \f$\zeta_i\f$ coefficient.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component zeta(std::size_t substep) const = 0;
-
-    /**
-     * Obtain the scheme's \f$\eta_i\f$ coefficient, which is
-     * derived from other scheme coefficients.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps()]</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component eta(std::size_t substep) const = 0;
-
-    /**
-     * Compute the scheme's derived \f$\iota_i\f$ coefficient, which is used to
-     * accumulate a running time-averaged value across substeps.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component iota(std::size_t substep) const = 0;
-
-    /**
-     * Compute the scheme's derived \f$\iota_alpha_i\f$ coefficient, which is
-     * used to accumulate a running time-averaged value across substeps.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component iota_alpha(std::size_t substep) const = 0;
-
-    /**
-     * Compute the scheme's derived \f$\iota_beta_i\f$ coefficient, which is
-     * used to accumulate a running time-averaged value across substeps.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component iota_beta(std::size_t substep) const = 0;
-
-    /**
-     * Obtain the scheme's maximum pure real eigenvalue magnitude.
-     *
-     * @return The scheme's maximum pure real eigenvalue magnitude.
-     * @see diffusive_stability_criterion() for one use of this magnitude.
-     */
-    virtual component evmaxmag_real() const = 0;
-
-    /**
-     * Obtain the scheme's maximum pure imaginary eigenvalue magnitude.
-     *
-     * @return The scheme's maximum pure imaginary eigenvalue magnitude.
-     * @see convective_stability_criterion() for one use of this magnitude.
-     */
-    virtual component evmaxmag_imag() const = 0;
-
-    /** Virtual destructor to support interface-like behavior. */
-    virtual ~ILowStorageMethod() {}
-};
-
-/**
- * Output the timestepping scheme <tt>m</tt>'s name on the given
- * output stream.
- *
- * @param os output stream to use.
- * @param m scheme's name to output.
- *
- * @return The output stream.
- */
-template< typename charT, typename traits, typename Element >
-std::basic_ostream<charT,traits>& operator<<(
-        std::basic_ostream<charT,traits>& os,
-        const ILowStorageMethod<Element>& m)
-{
-    return os << m.name();
 }
 
 /**
