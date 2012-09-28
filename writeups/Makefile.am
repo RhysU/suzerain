@@ -14,6 +14,7 @@ TEXSOURCES += perfectgas.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
+TEXSOURCES += reacting_linearization.tex
 
 # Images, References, etc.
 EXTRA_DIST  = inhomogeneity.gz
