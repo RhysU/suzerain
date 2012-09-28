@@ -64,6 +64,7 @@ namespace channel {
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -72,6 +73,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
@@ -152,6 +154,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const suzerain::multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
         suzerain::ContiguousState<4,complex_t> &output,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -160,6 +163,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
@@ -352,9 +356,9 @@ public:
 void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
-        const std::size_t substep_index,
-        const real_t iota) const
+        const std::size_t substep_index) const
 {
     GRVY_TIMER_BEGIN("invertMassPlusScaledOperator");
 
@@ -363,9 +367,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     using suzerain::inorder::wavenumber_absmin;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
-    SUZERAIN_UNUSED(iota);
 
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -444,19 +448,19 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     static const solve_types solve_type = gbsvx;
 
     // Solver-related operational details
-    const char *method;             // Used for error reporting
+    const char *fname;              // Used for error reporting
     char fact = 'N';                // Should matrices be equilibrated?
     switch (solve_type) {
     default:
         SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
     case gbsv:
-        method = "zgbsv";
+        fname = "zgbsv";
         break;
     case gbsvx:
-        method = "zgbsvx";
+        fname = "zgbsvx";
         break;
     case gbrfs:
-        method = "zgbsvx";
+        fname = "zgbsvx";
         break;
     }
     static const char trans = 'T';  // Un-transpose transposed operator
@@ -601,13 +605,13 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     suzerain_blas_zcopy(A.N, b.data(), 1, x.data(), 1);
                     info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU, 1,
                         lu.data(), lu.colStride(), ipiv.data(), x.data(), A.N);
-                    if (info) {method = "zgbtrs"; goto engulfed_in_flames;}
+                    if (info) {fname = "zgbtrs"; goto engulfed_in_flames;}
                     info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
                         A.KU, 1, patpt.data(), patpt.colStride(),
                         lu.data(), lu.colStride(), ipiv.data(), b.data(),
                         A.N, x.data(), A.N, &ferr, &berr, work.data(),
                         rwork.data());
-                    if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                    if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
 
                     // If we're getting anywhere but not yet done, try five
                     // more iterations.  ?gbrfsx uses ten by default so using
@@ -618,7 +622,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                             lu.data(), lu.colStride(), ipiv.data(), b.data(),
                             A.N, x.data(), A.N, &ferr, &berr, work.data(),
                             rwork.data());
-                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
                     }
 
                     // Ditto
@@ -628,7 +632,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                             lu.data(), lu.colStride(), ipiv.data(), b.data(),
                             A.N, x.data(), A.N, &ferr, &berr, work.data(),
                             rwork.data());
-                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
                     }
 
                     // If we've gotten somewhere but not yet finished, try five
@@ -640,7 +644,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                             lu.data(), lu.colStride(), ipiv.data(), b.data(),
                             A.N, x.data(), A.N, &ferr, &berr, work.data(),
                             rwork.data());
-                        if (info) {method = "zgbrfs"; goto engulfed_in_flames;}
+                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
                     }
 
                 }
@@ -677,7 +681,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 break;
             }
 
-engulfed_in_flames: // Yes, this is a goto label.  Details in method/info.
+engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
 
             GRVY_TIMER_END("implicit operator solve");
 
@@ -688,25 +692,25 @@ engulfed_in_flames: // Yes, this is a goto label.  Details in method/info.
             } else if (info < 0) {
                 snprintf(buffer, sizeof(buffer),
                     "suzerain_lapack_%s reported error in argument %d",
-                    method, -info);
+                    fname, -info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (info <= A.N) {
                 snprintf(buffer, sizeof(buffer),
                     "suzerain_lapack_%s reported singularity in PA^TP^T row %d"
                     " corresponding to A row %d for state scalar %d",
-                    method, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
+                    fname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (info == A.N+1) {
                 snprintf(buffer, sizeof(buffer),
                     "suzerain_lapack_%s reported condition number like %g for "
                     " m=%d, n=%d with km=%g, kn=%g",
-                    method, 1/rcond, m, n, km, kn);
+                    fname, 1/rcond, m, n, km, kn);
                 WARN(buffer); // Warn user but continue...
             } else {
                 snprintf(buffer, sizeof(buffer),
                     "suzerain_lapack_%s reported unknown error %d",
-                    method, info);
+                    fname, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
         }

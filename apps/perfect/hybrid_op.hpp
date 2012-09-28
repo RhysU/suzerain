@@ -73,6 +73,7 @@ public:
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
              suzerain::multi_array::ref<complex_t,4> &state,
+             const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
              const component delta_t,
              const std::size_t substep_index) const;
 
@@ -81,6 +82,7 @@ public:
             const suzerain::multi_array::ref<complex_t,4> &input,
             const complex_t &beta,
             suzerain::ContiguousState<4,complex_t> &output,
+            const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
             const component delta_t,
             const std::size_t substep_index) const;
 
@@ -102,9 +104,9 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             suzerain::multi_array::ref<complex_t,4> &state,
+            const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
             const component delta_t,
-            const std::size_t substep_index,
-            const real_t iota) const;
+            const std::size_t substep_index) const;
 
 protected:
 

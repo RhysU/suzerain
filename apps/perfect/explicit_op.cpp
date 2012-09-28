@@ -59,6 +59,7 @@ BsplineMassOperator::BsplineMassOperator(
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -66,6 +67,7 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
     // a la HybridIsothermalLinearOperator::applyMassPlusScaledOperator
 
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
@@ -85,6 +87,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const suzerain::multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
         suzerain::ContiguousState<4,complex_t> &output,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -92,6 +95,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     // a la HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator
 
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
@@ -128,14 +132,14 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
-        const std::size_t substep_index,
-        const real_t iota) const
+        const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
+    SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
-    SUZERAIN_UNUSED(iota);
 
     // Verify required assumptions
     SUZERAIN_ENSURE(state.strides()[1] == 1);
@@ -173,9 +177,9 @@ public:
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const component delta_t,
-        const std::size_t substep_index,
-        const real_t iota) const
+        const std::size_t substep_index) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -217,7 +221,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
     // channel_treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(
-            phi, state, delta_t, substep_index, iota);
+            phi, state, method, delta_t, substep_index);
 
     // State leaves method as coefficients in X, Y, and Z directions
 }

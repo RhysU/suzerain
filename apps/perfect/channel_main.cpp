@@ -1535,10 +1535,10 @@ int main(int argc, char **argv)
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
         L->accumulateMassPlusScaledOperator(
-                1.0, *state_linear, chi,  *state_nonlinear, 0, /*substep*/0);
+                1.0, *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
         common_block.setZero(grid.dN.y());  // Zero reference quantities
         L->accumulateMassPlusScaledOperator(
-                1.0, *state_linear, -1.0, *state_nonlinear, 0, /*substep*/0);
+                1.0, *state_linear, -1.0, *state_nonlinear, *m, 0, /*substep*/0);
         for (size_t k = 0; k < channel::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
                 scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),

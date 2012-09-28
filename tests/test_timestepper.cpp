@@ -470,6 +470,7 @@ BOOST_AUTO_TEST_CASE( applyOperator )
 
 BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 {
+    const LowStorageMethod<SMR91,double> m;
     typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -478,19 +479,20 @@ BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
     b[0][0][0] = 3.0;
 
     op_type op(5.0);
-    op.accumulateMassPlusScaledOperator(7.0, a, 1.0, b);
+    op.accumulateMassPlusScaledOperator(7.0, a, 1.0, b, m);
     BOOST_CHECK_CLOSE(b[0][0][0], 75.0, close_enough);
-    op.accumulateMassPlusScaledOperator(0.0, b, 1.0, a);
+    op.accumulateMassPlusScaledOperator(0.0, b, 1.0, a, m);
     BOOST_CHECK_CLOSE(a[0][0][0], 77.0, close_enough);
 
     // Ensure we catch an operation between two nonconforming states
     ContiguousState<3,double> c(size3(2,1,1));
-    BOOST_CHECK_THROW(op.accumulateMassPlusScaledOperator(3.0, b, 1.0, c),
+    BOOST_CHECK_THROW(op.accumulateMassPlusScaledOperator(3.0, b, 1.0, c, m),
                       std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 {
+    const LowStorageMethod<SMR91,double> m;
     typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -498,7 +500,7 @@ BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
     a[0][0][0] = 2.0;
 
     op_type op(3.0);
-    op.invertMassPlusScaledOperator(5.0, a);
+    op.invertMassPlusScaledOperator(5.0, a, m);
     BOOST_CHECK_CLOSE(a[0][0][0], 1.0/8.0, close_enough);
 }
 

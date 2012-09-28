@@ -646,6 +646,7 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
+            const ILowStorageMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -666,6 +667,7 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
+            const ILowStorageMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -685,9 +687,9 @@ public:
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
+            const ILowStorageMethod<element>& method,
             const component delta_t,
-            const std::size_t substep_index,
-            const component iota) const = 0;
+            const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
     virtual ~ILinearOperator() {}
@@ -779,9 +781,11 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
+            const ILowStorageMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         state.scale(phi*factor + element(1));
@@ -804,9 +808,11 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
+            const ILowStorageMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         output.scale(beta);
@@ -827,13 +833,13 @@ public:
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
+            const ILowStorageMethod<element>& method,
             const component delta_t = 0,
-            const std::size_t substep_index = 0,
-            const component iota = 0) const
+            const std::size_t substep_index = 0) const
     {
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
-        SUZERAIN_UNUSED(iota);
         state.scale((element(1))/(phi*factor + element(1)));
     }
 
@@ -1434,13 +1440,12 @@ const typename suzerain::traits::component<Element>::type substep(
     L.accumulateMassPlusScaledOperator(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b,
-            delta_t, substep_index);
+            m, delta_t, substep_index);
     N.applyOperator(time + delta_t * m.eta(substep_index), a,
                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.addScaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator(-delta_t * m.beta(substep_index), b,
-                                   delta_t, substep_index,
-                                   m.iota(substep_index));
+                                   m, delta_t, substep_index);
 
     return delta_t;
 }
@@ -1513,23 +1518,21 @@ const typename suzerain::traits::component<Element>::type step(
     if (max_delta_t > 0) {
         delta_t = suzerain::math::minnan(delta_t, max_delta_t);
     }
-    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, delta_t, 0);
+    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, m, delta_t, 0);
     a.addScaled(chi * delta_t * m.gamma(0), b);
-    L.invertMassPlusScaledOperator(-delta_t * m.beta(0), a,
-                                   delta_t, 0, m.iota(0));
+    L.invertMassPlusScaledOperator(-delta_t * m.beta(0), a, m, delta_t, 0);
 
     // Second and subsequent substeps are identical
     for (std::size_t i = 1; i < m.substeps(); ++i) {
         L.accumulateMassPlusScaledOperator(
                 delta_t * m.alpha(i),      a,
                 chi * delta_t * m.zeta(i), b,
-                delta_t, i);
+                m, delta_t, i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(time + delta_t * m.eta(i), b,
                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.addScaled(chi * delta_t * m.gamma(i), b);
-        L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a,
-                                       delta_t, i, m.iota(i));
+        L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a, m, delta_t, i);
     }
 
     return delta_t;

@@ -94,9 +94,9 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             suzerain::multi_array::ref<complex_t,4> &state,
+            const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
             const real_t delta_t,
-            const std::size_t substep_index,
-            const real_t iota) const;
+            const std::size_t substep_index) const;
 
 private:
 
@@ -167,9 +167,9 @@ template< typename BaseClass >
 void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
+        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
         const real_t delta_t,
-        const std::size_t substep_index,
-        const real_t iota) const
+        const std::size_t substep_index) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -230,12 +230,13 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // channel_treatment step (9) sets isothermal conditions at walls
     // using rho_wall = e_wall * gamma * (gamma - 1).
     BaseClass::invertMassPlusScaledOperator(
-            phi, state, delta_t, substep_index, iota);
+            phi, state, method, delta_t, substep_index);
 
     // Only the rank with zero-zero modes proceeds!
     if (!dgrid.has_zero_zero_modes()) return;
 
     // If necessary, constrain the bulk streamwise momentum.
+    const real_t iota = method.iota(substep_index); // FIXME Wrong, #2444
     if (constrain_bulk_rhou()) {
 
         // channel_treatment step (3) was already performed for state.
