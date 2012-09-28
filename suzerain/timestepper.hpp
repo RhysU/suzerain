@@ -1075,53 +1075,45 @@ public:
 // BEGIN hideousness for static constant structs within LowStorageContants
 // ***********************************************************************
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::alpha_type
-LowStorageConstants<MethodConstants,Component,Integer>::alpha = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::alpha_type
+LowStorageConstants<Scheme,Component,Integer>::alpha = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::beta_type
-LowStorageConstants<MethodConstants,Component,Integer>::beta = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::beta_type
+LowStorageConstants<Scheme,Component,Integer>::beta = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::gamma_type
-LowStorageConstants<MethodConstants,Component,Integer>::gamma = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::gamma_type
+LowStorageConstants<Scheme,Component,Integer>::gamma = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::zeta_type
-LowStorageConstants<MethodConstants,Component,Integer>::zeta = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::zeta_type
+LowStorageConstants<Scheme,Component,Integer>::zeta = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::eta_type
-LowStorageConstants<MethodConstants,Component,Integer>::eta = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::eta_type
+LowStorageConstants<Scheme,Component,Integer>::eta = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::iota_type
-LowStorageConstants<MethodConstants,Component,Integer>::iota = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::iota_type
+LowStorageConstants<Scheme,Component,Integer>::iota = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::iota_alpha_type
-LowStorageConstants<MethodConstants,Component,Integer>::iota_alpha = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::iota_alpha_type
+LowStorageConstants<Scheme,Component,Integer>::iota_alpha = {};
 
-template <template <typename,typename> class MethodConstants,
+template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<
-    MethodConstants,Component,Integer>::iota_beta_type
-LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
+const typename LowStorageConstants<Scheme,Component,Integer>::iota_beta_type
+LowStorageConstants<Scheme,Component,Integer>::iota_beta = {};
 
 // *********************************************************************
 // END hideousness for static constant structs within LowStorageContants
