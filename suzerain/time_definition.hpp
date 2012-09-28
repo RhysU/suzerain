@@ -102,7 +102,7 @@ public:
      * Factor used to pre-multiply a scheme's pure real and imaginary
      * eigenvalue magnitudes.
      *
-     * @see suzerain::timestepper::lowstorage::SMR91Method for more details.
+     * @see suzerain::timestepper::lowstorage::LowStorageMethod for details.
      */
     FPT evmagfactor;
 

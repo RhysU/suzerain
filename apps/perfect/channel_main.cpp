@@ -1242,8 +1242,10 @@ int main(int argc, char **argv)
     // ContiguousState and InterleavedState to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
-    suzerain::timestepper::lowstorage::SMR91Method<complex_t> m(
-                timedef.evmagfactor);
+    suzerain::timestepper::lowstorage::LowStorageMethod<
+            suzerain::timestepper::lowstorage::SMR91,
+            complex_t
+        > m(timedef.evmagfactor);
     shared_ptr<suzerain::timestepper::lowstorage::ILinearOperator<
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type

@@ -708,7 +708,8 @@ make_multiplicator_operator(
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
- * @see SMR91Method and Yang11Method for examples of concrete schemes.
+ * @see SMR91 and Yang11 for examples of essential information
+ *      for a concrete scheme.
  * @see step() or substep() for methods that can advance state variables
  *      according to a timestepping method.
  */
@@ -1304,171 +1305,6 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
 };
 
 /**
- * Encapsulates the three stage, third order scheme from Appendix A of Spalart,
- * Moser, and Rogers' 1991 ``Spectral Methods for the Navier-Stokes Equations
- * with One Infinite and Two Periodic Directions'' published in the
- * <em>Journal of Computational Physics</em> volume 96 pages 297-324.
- *
- * @see SMR91 for the essential constant definitions.
- * @see LowStorageConstants for how fundamental SMR91 are combined.
- */
-template< typename Element >
-class SMR91Method : public ILowStorageMethod<Element>
-{
-
-public:
-
-    /** The real-valued scalar corresponding to \c Element */
-    typedef typename ILowStorageMethod<Element>::component component;
-
-    /** Access to the static constants specifying this scheme. */
-    typedef LowStorageConstants<SMR91,component> constants;
-
-    /**
-     * Explicit constructor.
-     *
-     * @param evmagfactor The multiplicative factor to use when reporting
-     *                    maximum pure real and pure imaginary eigenvalue
-     *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
-     *                    respectively.
-     */
-    explicit SMR91Method(component evmagfactor = 1)
-        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
-          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
-        { assert(evmagfactor > 0); }
-
-    /** @copydoc ILowStorageMethod::name */
-    virtual const char * name() const
-    { return constants::name; }
-
-    /** @copydoc ILowStorageMethod::substeps */
-    virtual std::size_t substeps() const
-    { return constants::substeps; }
-
-    /** @copydoc ILowStorageMethod::alpha */
-    virtual component alpha(const std::size_t substep) const
-    { return constants::alpha[substep]; }
-
-    /** @copydoc ILowStorageMethod::beta */
-    virtual component beta(const std::size_t substep) const
-    { return constants::beta[substep]; }
-
-    /** @copydoc ILowStorageMethod::gamma */
-    virtual component gamma(const std::size_t substep) const
-    { return constants::gamma[substep]; }
-
-    /** @copydoc ILowStorageMethod::zeta */
-    virtual component zeta(const std::size_t substep) const
-    { return constants::zeta[substep]; }
-
-    /** @copydoc ILowStorageMethod::eta */
-    virtual component eta(const std::size_t substep) const
-    { return constants::eta[substep]; }
-
-    /** @copydoc ILowStorageMethod::iota */
-    virtual component iota(const std::size_t substep) const
-    { return constants::iota[substep]; }
-
-    /** @copydoc ILowStorageMethod::evmaxmag_real */
-    virtual component evmaxmag_real() const
-    { return evmaxmag_real_; }
-
-    /** @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual component evmaxmag_imag() const
-    { return evmaxmag_imag_; }
-
-private:
-
-    /** Value to report from evmaxmag_real(). */
-    component evmaxmag_real_;
-
-    /** Value to report from evmaxmag_imag(). */
-    component evmaxmag_imag_;
-};
-
-/**
- * Encapsulates the three stage, second-order, adjoint-consistent scheme from
- * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
- * effects on fluid flows''.
- *
- * @see Yang11 for the essential constant definitions.
- * @see LowStorageConstants for how fundamental Yang11 are combined.
- */
-template< typename Element >
-class Yang11Method : public ILowStorageMethod<Element>
-{
-
-public:
-
-    /** The real-valued scalar corresponding to \c Element */
-    typedef typename ILowStorageMethod<Element>::component component;
-
-    /** Access to the static constants specifying this scheme. */
-    typedef LowStorageConstants<Yang11,component> constants;
-
-    /**
-     * Explicit constructor.
-     *
-     * @param evmagfactor The multiplicative factor to use when reporting
-     *                    maximum pure real and pure imaginary eigenvalue
-     *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
-     *                    respectively.
-     */
-    explicit Yang11Method(component evmagfactor = 1)
-        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
-          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
-        { assert(evmagfactor > 0); }
-
-    /** @copydoc ILowStorageMethod::name */
-    virtual const char * name() const
-    { return constants::name; }
-
-    /** @copydoc ILowStorageMethod::substeps */
-    virtual std::size_t substeps() const
-    { return constants::substeps; }
-
-    /** @copydoc ILowStorageMethod::alpha */
-    virtual component alpha(const std::size_t substep) const
-    { return constants::alpha[substep]; }
-
-    /** @copydoc ILowStorageMethod::beta */
-    virtual component beta(const std::size_t substep) const
-    { return constants::beta[substep]; }
-
-    /** @copydoc ILowStorageMethod::gamma */
-    virtual component gamma(const std::size_t substep) const
-    { return constants::gamma[substep]; }
-
-    /** @copydoc ILowStorageMethod::zeta */
-    virtual component zeta(const std::size_t substep) const
-    { return constants::zeta[substep]; }
-
-    /** @copydoc ILowStorageMethod::eta */
-    virtual component eta(const std::size_t substep) const
-    { return constants::eta[substep]; }
-
-    /** @copydoc ILowStorageMethod::iota */
-    virtual component iota(const std::size_t substep) const
-    { return constants::iota[substep]; }
-
-    /** @copydoc ILowStorageMethod::evmaxmag_real */
-    virtual component evmaxmag_real() const
-    { return evmaxmag_real_; }
-
-    /** @copydoc ILowStorageMethod::evmaxmag_imag */
-    virtual component evmaxmag_imag() const
-    { return evmaxmag_imag_; }
-
-private:
-
-    /** Value to report from evmaxmag_real(). */
-    component evmaxmag_real_;
-
-    /** Value to report from evmaxmag_imag(). */
-    component evmaxmag_imag_;
-};
-
-/**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
@@ -1476,7 +1312,8 @@ private:
  * swapped after each substep, and in contrast to step(), only a single state
  * type may be supplied to this method.
  *
- * @param m The low storage scheme to use.  For example, SMR91Method.
+ * @param m The low storage scheme to use.
+ *          For example, LowStorageMethod in conjunction with SMR91.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
@@ -1542,7 +1379,8 @@ const typename suzerain::traits::component<Element>::type substep(
  * value computed during the first nonlinear operator application as well as an
  * optional fixed maximum step size.
  *
- * @param m       The low storage scheme to use.  For example, SMR91Method.
+ * @param m       The low storage scheme to use.
+ *                For example, LowStorageMethod in conjunction with SMR91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
  *                employ a custom functor compatible with DeltaTReducer to add
@@ -1631,7 +1469,8 @@ const typename suzerain::traits::component<Element>::type step(
  * value computed during the first nonlinear operator application as well as an
  * optional fixed maximum step size.
  *
- * @param m       The low storage scheme to use.  For example, SMR91Method.
+ * @param m       The low storage scheme to use.
+ *                For example, LowStorageMethod in conjunction with SMR91.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N       The nonlinear operator to be treated explicitly.
@@ -1716,7 +1555,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, SMR91Method.
+     *                  For example, LowStorageMethod in conjunction with SMR91.
      * @param reducer   A stateful functor taking a vector of stable time step
      *                  candidates down to a single stable time step.  Users
      *                  may employ a custom functor compatible with
@@ -1814,7 +1653,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, SMR91Method.
+     *                  For example, LowStorageMethod in conjunction with SMR91.
      * @param L         The linear operator to be treated implicitly.
      * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
      *                  operator.
