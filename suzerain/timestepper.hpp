@@ -1081,6 +1081,91 @@ LowStorageConstants<MethodConstants,Component,Integer>::iota_beta = {};
 // *********************************************************************
 
 /**
+ * Given a \c Scheme and \c Element type, encapsulates a low storage
+ * method behind the ILowStorageMethod interface using LowStorageConstants.
+ *
+ * @tparam Scheme An essential set of scheme-specific constants usable
+ *         within the LowStorageConstants class.
+ * @tparam A real- or complex-valued scalar type to be used.
+ *         Constants are returned as the corresponding real type,
+ *         called \c component.
+ * @see SMR91 or Yang11 for examples of valid Schemes to supply.
+ */
+template <template <typename,typename> class Scheme, typename Element>
+class LowStorageMethod : public ILowStorageMethod<Element>
+{
+
+public:
+
+    /** The real-valued scalar corresponding to \c Element */
+    typedef typename ILowStorageMethod<Element>::component component;
+
+    /** Access to the static constants specifying this scheme. */
+    typedef LowStorageConstants<Scheme,component> constants;
+
+    /**
+     * Explicit constructor.
+     *
+     * @param evmagfactor The multiplicative factor to use when reporting
+     *                    maximum pure real and pure imaginary eigenvalue
+     *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
+     *                    respectively.
+     */
+    explicit LowStorageMethod(component evmagfactor = 1)
+        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
+          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
+        { assert(evmagfactor > 0); }
+
+    /** @copydoc ILowStorageMethod::name */
+    virtual const char * name() const
+    { return constants::name; }
+
+    /** @copydoc ILowStorageMethod::substeps */
+    virtual std::size_t substeps() const
+    { return constants::substeps; }
+
+    /** @copydoc ILowStorageMethod::alpha */
+    virtual component alpha(const std::size_t substep) const
+    { return constants::alpha[substep]; }
+
+    /** @copydoc ILowStorageMethod::beta */
+    virtual component beta(const std::size_t substep) const
+    { return constants::beta[substep]; }
+
+    /** @copydoc ILowStorageMethod::gamma */
+    virtual component gamma(const std::size_t substep) const
+    { return constants::gamma[substep]; }
+
+    /** @copydoc ILowStorageMethod::zeta */
+    virtual component zeta(const std::size_t substep) const
+    { return constants::zeta[substep]; }
+
+    /** @copydoc ILowStorageMethod::eta */
+    virtual component eta(const std::size_t substep) const
+    { return constants::eta[substep]; }
+
+    /** @copydoc ILowStorageMethod::iota */
+    virtual component iota(const std::size_t substep) const
+    { return constants::iota[substep]; }
+
+    /** @copydoc ILowStorageMethod::evmaxmag_real */
+    virtual component evmaxmag_real() const
+    { return evmaxmag_real_; }
+
+    /** @copydoc ILowStorageMethod::evmaxmag_imag */
+    virtual component evmaxmag_imag() const
+    { return evmaxmag_imag_; }
+
+private:
+
+    /** Value to report from evmaxmag_real(). */
+    component evmaxmag_real_;
+
+    /** Value to report from evmaxmag_imag(). */
+    component evmaxmag_imag_;
+};
+
+/**
  * Encapsulates essential constants for the three stage, third order scheme
  * from Appendix A of Spalart, Moser, and Rogers' 1991 ``Spectral Methods for
  * the Navier-Stokes Equations with One Infinite and Two Periodic Directions''
