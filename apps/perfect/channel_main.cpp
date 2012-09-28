@@ -890,6 +890,8 @@ int main(int argc, char **argv)
     std::string restart_file;
     bool use_explicit  = false;
     bool use_implicit  = false;
+    bool use_yang11    = false;
+    bool use_smr91     = false;
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     bool use_p3dfft    = false;
     bool use_underling = false;
@@ -920,6 +922,8 @@ int main(int argc, char **argv)
         options.add_options()
             ("explicit", "Use purely explicit operators")
             ("implicit", "Use hybrid implicit/explicit operators")
+            ("smr91",    "Advance time per Spalart, Moser, and Rogers 1991")
+            ("yang11",   "Advance time per Shan Yang's 2011 thesis")
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
             ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
             ("underling", "Use underling for MPI-parallel FFTs")
@@ -933,6 +937,14 @@ int main(int argc, char **argv)
             use_explicit = true;
         } else {
             use_implicit = true;
+        }
+
+        // Select type of timestepping schemes to use (default smr91)
+        options.conflicting_options("smr91", "yang11");
+        if (options.variables().count("yang11")) {
+            use_yang11 = true;
+        } else {
+            use_smr91 = true;
         }
 
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
@@ -1242,10 +1254,23 @@ int main(int argc, char **argv)
     // ContiguousState and InterleavedState to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
-    suzerain::timestepper::lowstorage::LowStorageMethod<
-            suzerain::timestepper::lowstorage::SMR91,
+    shared_ptr<suzerain::timestepper::lowstorage::ILowStorageMethod<
             complex_t
-        > m(timedef.evmagfactor);
+        > > m;
+    if (use_smr91) {
+        m.reset(new suzerain::timestepper::lowstorage::LowStorageMethod<
+                    suzerain::timestepper::lowstorage::SMR91,
+                    complex_t
+                >(timedef.evmagfactor));
+    } else if (use_yang11) {
+        m.reset(new suzerain::timestepper::lowstorage::LowStorageMethod<
+                    suzerain::timestepper::lowstorage::Yang11,
+                    complex_t
+                >(timedef.evmagfactor));
+    } else {
+        FATAL0("Sanity error in timestepping scheme selection");
+        return EXIT_FAILURE;
+    }
     shared_ptr<suzerain::timestepper::lowstorage::ILinearOperator<
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type
@@ -1278,7 +1303,7 @@ int main(int argc, char **argv)
     using suzerain::timestepper::TimeController;
     const real_t chi = real_t(1)/(grid.dN.x()*grid.dN.z());
     scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
-                m, delta_t_allreducer, *L, chi, *N,
+                *m, delta_t_allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
 
@@ -1508,7 +1533,7 @@ int main(int argc, char **argv)
         state_nonlinear->assign(*state_linear);
         common_block.setZero(grid.dN.y());  // Defensive
         N->applyOperator(tc->current_t(), *state_nonlinear,
-                m.evmaxmag_real(), m.evmaxmag_imag(), /*substep*/0);
+                m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
         L->accumulateMassPlusScaledOperator(
                 1.0, *state_linear, chi,  *state_nonlinear, 0, /*substep*/0);
         common_block.setZero(grid.dN.y());  // Zero reference quantities
@@ -1524,7 +1549,7 @@ int main(int argc, char **argv)
         }
         state_nonlinear->exchange(*state_linear);
         N->applyOperator(tc->current_t(), *state_nonlinear,
-                m.evmaxmag_real(), m.evmaxmag_imag(), /*substep*/1);
+                m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
         for (size_t k = 0; k < channel::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
                 scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),
