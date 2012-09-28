@@ -392,7 +392,7 @@ struct DeltaTReducer {
  * respectively.  \f$M\f$ is referred to as the mass matrix.  No operator may
  * depend on time.
  *
- * @see ILowStorageMethod for details on this class of timestepping schemes.
+ * @see IMethod for details on this class of timestepping schemes.
  */
 namespace lowstorage
 {
@@ -475,7 +475,7 @@ namespace lowstorage
  *      according to a timestepping method.
  */
 template<typename Element>
-class ILowStorageMethod
+class IMethod
 {
 public:
 
@@ -591,7 +591,7 @@ public:
     virtual component evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
-    virtual ~ILowStorageMethod() {}
+    virtual ~IMethod() {}
 };
 
 /**
@@ -606,7 +606,7 @@ public:
 template< typename charT, typename traits, typename Element >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits>& os,
-        const ILowStorageMethod<Element>& m)
+        const IMethod<Element>& m)
 {
     return os << m.name();
 }
@@ -646,7 +646,7 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -667,7 +667,7 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -682,12 +682,12 @@ public:
      * @param substep_index The (zero-indexed) time stepper substep index.
      * @param iota The \f$iota_i\f$ value appropriate for \c substep_index.
      *
-     * @see ILowStorageMethod for details on how to use \c iota.
+     * @see IMethod for details on how to use \c iota.
      */
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -781,7 +781,7 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
@@ -808,7 +808,7 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
@@ -833,7 +833,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const ILowStorageMethod<element>& method,
+            const IMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
@@ -875,7 +875,7 @@ make_multiplicator_operator(
 }
 
 /**
- * Compute redundant information for an ILowStorageMethod given essential,
+ * Compute redundant information for an IMethod given essential,
  * scheme-specific constants.
  *
  * The \c Scheme parameter must be a templated, static-only struct
@@ -910,13 +910,13 @@ make_multiplicator_operator(
  * @tparam Component Real-valued type for which constants are returned.
  * @tparam Integer Signed integer type used for indexing and computation.
  *
- * @see ILowStorageMethod for a full definition of the constants involved.
+ * @see IMethod for a full definition of the constants involved.
  * @see SMR91 for an example implementation.
  */
 template <template <typename,typename> class Scheme,
           typename Component,
           typename Integer = std::ptrdiff_t>
-class LowStorageConstants : private Scheme<Component,Integer>
+class Constants : private Scheme<Component,Integer>
 {
 
 private:
@@ -1055,126 +1055,126 @@ public:
 
     /**
      * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
-     * @see ILowStorageMethod::alpha
+     * @see IMethod::alpha
      */
     static const alpha_type alpha;
 
     /**
      * Computes \f$\beta_i\f$ given \c Scheme as <tt>beta[i]</tt>.
-     * @see ILowStorageMethod::beta
+     * @see IMethod::beta
      */
     static const beta_type beta;
 
     /**
      * Computes \f$\gamma_i\f$ given \c Scheme as <tt>gamma[i]</tt>.
-     * @see ILowStorageMethod::gamma
+     * @see IMethod::gamma
      */
     static const gamma_type gamma;
 
     /**
      * Computes \f$\zeta_i\f$ given \c Scheme as <tt>zeta[i]</tt>.
-     * @see ILowStorageMethod::zeta
+     * @see IMethod::zeta
      */
     static const zeta_type zeta;
 
     /**
      * Computes \f$\eta_i\f$ given \c Scheme as <tt>eta[i]</tt>.
-     * @see ILowStorageMethod::eta
+     * @see IMethod::eta
      */
     static const eta_type eta;
 
     /**
      * Computes \f$\iota_i\f$ given \c Scheme as <tt>iota[i]</tt>.
-     * @see ILowStorageMethod::iota
+     * @see IMethod::iota
      */
     static const iota_type iota;
 
     /**
      * Computes \f$\iota_{\alpha,i}\f$ given
      * \c Scheme as <tt>iota_alpha[i]</tt>.
-     * @see ILowStorageMethod::iota_alpha
+     * @see IMethod::iota_alpha
      */
     static const iota_alpha_type iota_alpha;
 
     /**
      * Computes \f$\iota_{\beta,i}\f$ given
      * \c Scheme as <tt>iota_beta[i]</tt>.
-     * @see ILowStorageMethod::iota_beta
+     * @see IMethod::iota_beta
      */
     static const iota_beta_type iota_beta;
 
 };
 
-// ***********************************************************************
-// BEGIN hideousness for static constant structs within LowStorageContants
-// ***********************************************************************
+// *************************************************************
+// BEGIN hideousness for static constant structs within Contants
+// *************************************************************
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::alpha_type
-LowStorageConstants<Scheme,Component,Integer>::alpha = {};
+const typename Constants<Scheme,Component,Integer>::alpha_type
+Constants<Scheme,Component,Integer>::alpha = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::beta_type
-LowStorageConstants<Scheme,Component,Integer>::beta = {};
+const typename Constants<Scheme,Component,Integer>::beta_type
+Constants<Scheme,Component,Integer>::beta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::gamma_type
-LowStorageConstants<Scheme,Component,Integer>::gamma = {};
+const typename Constants<Scheme,Component,Integer>::gamma_type
+Constants<Scheme,Component,Integer>::gamma = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::zeta_type
-LowStorageConstants<Scheme,Component,Integer>::zeta = {};
+const typename Constants<Scheme,Component,Integer>::zeta_type
+Constants<Scheme,Component,Integer>::zeta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::eta_type
-LowStorageConstants<Scheme,Component,Integer>::eta = {};
+const typename Constants<Scheme,Component,Integer>::eta_type
+Constants<Scheme,Component,Integer>::eta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::iota_type
-LowStorageConstants<Scheme,Component,Integer>::iota = {};
+const typename Constants<Scheme,Component,Integer>::iota_type
+Constants<Scheme,Component,Integer>::iota = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::iota_alpha_type
-LowStorageConstants<Scheme,Component,Integer>::iota_alpha = {};
+const typename Constants<Scheme,Component,Integer>::iota_alpha_type
+Constants<Scheme,Component,Integer>::iota_alpha = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename LowStorageConstants<Scheme,Component,Integer>::iota_beta_type
-LowStorageConstants<Scheme,Component,Integer>::iota_beta = {};
+const typename Constants<Scheme,Component,Integer>::iota_beta_type
+Constants<Scheme,Component,Integer>::iota_beta = {};
 
-// *********************************************************************
-// END hideousness for static constant structs within LowStorageContants
-// *********************************************************************
+// ***********************************************************
+// END hideousness for static constant structs within Contants
+// ***********************************************************
 
 /**
  * Given a \c Scheme and \c Element type, encapsulates a low storage
- * method behind the ILowStorageMethod interface using LowStorageConstants.
+ * method behind the IMethod interface using Constants.
  *
  * @tparam Scheme An essential set of scheme-specific constants usable
- *         within the LowStorageConstants class.
+ *         within the Constants class.
  * @tparam A real- or complex-valued scalar type to be used.
  *         Constants are returned as the corresponding real type,
  *         called \c component.
  * @see SMR91 or Yang11 for examples of valid Schemes to supply.
  */
 template <template <typename,typename> class Scheme, typename Element>
-class LowStorageMethod : public ILowStorageMethod<Element>
+class Method : public IMethod<Element>
 {
 
 public:
 
     /** The real-valued scalar corresponding to \c Element */
-    typedef typename ILowStorageMethod<Element>::component component;
+    typedef typename IMethod<Element>::component component;
 
     /** Access to the static constants specifying this scheme. */
-    typedef LowStorageConstants<Scheme,component> constants;
+    typedef Constants<Scheme,component> constants;
 
     /**
      * Explicit constructor.
@@ -1184,56 +1184,56 @@ public:
      *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
      *                    respectively.
      */
-    explicit LowStorageMethod(component evmagfactor = 1)
+    explicit Method(component evmagfactor = 1)
         : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
           evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
         { assert(evmagfactor > 0); }
 
-    /** @copydoc ILowStorageMethod::name */
+    /** @copydoc IMethod::name */
     virtual const char * name() const
     { return constants::name; }
 
-    /** @copydoc ILowStorageMethod::substeps */
+    /** @copydoc IMethod::substeps */
     virtual std::size_t substeps() const
     { return constants::substeps; }
 
-    /** @copydoc ILowStorageMethod::alpha */
+    /** @copydoc IMethod::alpha */
     virtual component alpha(const std::size_t substep) const
     { return constants::alpha[substep]; }
 
-    /** @copydoc ILowStorageMethod::beta */
+    /** @copydoc IMethod::beta */
     virtual component beta(const std::size_t substep) const
     { return constants::beta[substep]; }
 
-    /** @copydoc ILowStorageMethod::gamma */
+    /** @copydoc IMethod::gamma */
     virtual component gamma(const std::size_t substep) const
     { return constants::gamma[substep]; }
 
-    /** @copydoc ILowStorageMethod::zeta */
+    /** @copydoc IMethod::zeta */
     virtual component zeta(const std::size_t substep) const
     { return constants::zeta[substep]; }
 
-    /** @copydoc ILowStorageMethod::eta */
+    /** @copydoc IMethod::eta */
     virtual component eta(const std::size_t substep) const
     { return constants::eta[substep]; }
 
-    /** @copydoc ILowStorageMethod::iota */
+    /** @copydoc IMethod::iota */
     virtual component iota(const std::size_t substep) const
     { return constants::iota[substep]; }
 
-    /** @copydoc ILowStorageMethod::iota_alpha */
+    /** @copydoc IMethod::iota_alpha */
     virtual component iota_alpha(const std::size_t substep) const
     { return constants::iota_alpha[substep]; }
 
-    /** @copydoc ILowStorageMethod::iota_beta */
+    /** @copydoc IMethod::iota_beta */
     virtual component iota_beta(const std::size_t substep) const
     { return constants::iota_beta[substep]; }
 
-    /** @copydoc ILowStorageMethod::evmaxmag_real */
+    /** @copydoc IMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
     { return evmaxmag_real_; }
 
-    /** @copydoc ILowStorageMethod::evmaxmag_imag */
+    /** @copydoc IMethod::evmaxmag_imag */
     virtual component evmaxmag_imag() const
     { return evmaxmag_imag_; }
 
@@ -1253,7 +1253,7 @@ private:
  * published in the <em>Journal of Computational Physics</em> volume 96 pages
  * 297-324.
  *
- * @see Designed to be used with the LowStorageConstants template.
+ * @see Designed to be used with the Constants template.
  */
 template <typename Component, typename Integer>
 struct SMR91
@@ -1325,7 +1325,7 @@ const Integer SMR91<Component,Integer>::gamma_numerator[substeps] = {
  * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
  * effects on fluid flows''.
  *
- * @see Designed to be used with the LowStorageConstants template.
+ * @see Designed to be used with the Constants template.
  */
 template <typename Component, typename Integer>
 struct Yang11
@@ -1393,7 +1393,7 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
  * type may be supplied to this method.
  *
  * @param m The low storage scheme to use.
- *          For example, LowStorageMethod in conjunction with SMR91.
+ *          For example, Method in conjunction with SMR91.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
@@ -1408,7 +1408,7 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It will always equal \c delta_t.
  *
- * @see ILowStorageMethod for the equation governing time advancement.
+ * @see IMethod for the equation governing time advancement.
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
@@ -1417,7 +1417,7 @@ template< typename Element,
           typename NonlinearState,
           typename State >
 const typename suzerain::traits::component<Element>::type substep(
-    const ILowStorageMethod<Element>& m,
+    const IMethod<Element>& m,
     const ILinearOperator<LinearState>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<NonlinearState>& N,
@@ -1459,7 +1459,7 @@ const typename suzerain::traits::component<Element>::type substep(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, LowStorageMethod in conjunction with SMR91.
+ *                For example, Method in conjunction with SMR91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
  *                employ a custom functor compatible with DeltaTReducer to add
@@ -1478,13 +1478,13 @@ const typename suzerain::traits::component<Element>::type substep(
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It may be less than \c max_delta_t.
  *
- * @see ILowStorageMethod for the equation governing time advancement.
+ * @see IMethod for the equation governing time advancement.
  */
 template< typename Element, typename Reducer,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
 const typename suzerain::traits::component<Element>::type step(
-    const ILowStorageMethod<Element>& m,
+    const IMethod<Element>& m,
     Reducer& reducer,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename suzerain::traits::component<Element>::type chi,
@@ -1547,7 +1547,7 @@ const typename suzerain::traits::component<Element>::type step(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, LowStorageMethod in conjunction with SMR91.
+ *                For example, Method in conjunction with SMR91.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N       The nonlinear operator to be treated explicitly.
@@ -1562,13 +1562,13 @@ const typename suzerain::traits::component<Element>::type step(
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It may be less than \c max_delta_t.
  *
- * @see ILowStorageMethod for the equation governing time advancement.
+ * @see IMethod for the equation governing time advancement.
  */
 template< typename Element,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
 const typename suzerain::traits::component<Element>::type step(
-    const ILowStorageMethod<Element>& m,
+    const IMethod<Element>& m,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename suzerain::traits::component<Element>::type chi,
     const INonlinearOperator<NonlinearB>& N,
@@ -1591,7 +1591,7 @@ const typename suzerain::traits::component<Element>::type step(
  * with step().
  *
  * @see TimeController for details on the time controller logic.
- * @see make_LowStorageTimeController for an easy way to create
+ * @see make_TimeController for an easy way to create
  *      an instance with the appropriate type signature.
  */
 template< typename StateA,
@@ -1600,15 +1600,15 @@ template< typename StateA,
           typename LinearA    = StateA,
           typename LinearB    = StateB,
           typename NonlinearB = StateB >
-class LowStorageTimeController
-    : public TimeController< typename suzerain::traits::component<
+class TimeController
+    : public timestepper::TimeController< typename suzerain::traits::component<
             typename StateA::element
       >::type >
 {
 protected:
 
     /** Shorthand for the superclass */
-    typedef TimeController< typename suzerain::traits::component<
+    typedef timestepper::TimeController< typename suzerain::traits::component<
                 typename StateA::element
             >::type > super;
 
@@ -1632,7 +1632,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, LowStorageMethod in conjunction with SMR91.
+     *                  For example, Method in conjunction with SMR91.
      * @param reducer   A stateful functor taking a vector of stable time step
      *                  candidates down to a single stable time step.  Users
      *                  may employ a custom functor compatible with
@@ -1661,8 +1661,8 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    LowStorageTimeController(
-            const ILowStorageMethod<element>& m,
+    TimeController(
+            const IMethod<element>& m,
             Reducer& reducer,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename suzerain::traits::component<element>::type chi,
@@ -1672,7 +1672,7 @@ public:
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
-        : super(boost::bind(&LowStorageTimeController::stepper, this, _1),
+        : super(boost::bind(&TimeController::stepper, this, _1),
                 initial_t,
                 min_dt,
                 max_dt),
@@ -1680,7 +1680,7 @@ public:
 
 private:
 
-    const ILowStorageMethod<element>& m;
+    const IMethod<element>& m;
     Reducer &reducer;
     const ILinearOperator<LinearA,LinearB>& L;
     const typename suzerain::traits::component<element>::type chi;
@@ -1697,7 +1697,7 @@ private:
 };
 
 /**
- * A partial specialization of the LowStorageTimeController template for the
+ * A partial specialization of the TimeController template for the
  * case when default DeltaTReducer behavior is desired.  Empty base class
  * optimization eliminates the DeltaTReducer instance overhead.
  */
@@ -1706,22 +1706,22 @@ template< typename StateA,
           typename LinearA,
           typename LinearB,
           typename NonlinearB >
-class LowStorageTimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>
+class TimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>
     : private DeltaTReducer,
-      public LowStorageTimeController<
+      public TimeController<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >
 {
 
 protected:
 
-    typedef typename LowStorageTimeController<
+    typedef typename TimeController<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >::super super;
 
 public:
 
-    typedef typename LowStorageTimeController<
+    typedef typename TimeController<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >::element element;
 
@@ -1730,7 +1730,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, LowStorageMethod in conjunction with SMR91.
+     *                  For example, Method in conjunction with SMR91.
      * @param L         The linear operator to be treated implicitly.
      * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
      *                  operator.
@@ -1754,8 +1754,8 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    LowStorageTimeController(
-            const ILowStorageMethod<element>& m,
+    TimeController(
+            const IMethod<element>& m,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename suzerain::traits::component<element>::type chi,
             const INonlinearOperator<NonlinearB>& N,
@@ -1765,7 +1765,7 @@ public:
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
         : DeltaTReducer(),
-          LowStorageTimeController<
+          TimeController<
                 StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
             >(m, *reinterpret_cast<DeltaTReducer*>(this),
               L, chi, N, a, b, initial_t, min_dt, max_dt)
@@ -1775,9 +1775,9 @@ public:
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a LowStorageTimeController employing a custom Reducer.
+ * types for a TimeController employing a custom Reducer.
  *
- * \copydoc LowStorageTimeController
+ * \copydoc TimeController
  */
 template< typename StateA,
           typename StateB,
@@ -1786,35 +1786,35 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-LowStorageTimeController<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
-make_LowStorageTimeController(
-        const ILowStorageMethod<typename StateA::element>& m,
+TimeController<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
+make_TimeController(
+        const IMethod<typename StateA::element>& m,
         Reducer &reducer,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
         const INonlinearOperator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<
+    return new TimeController<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
         >(m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a LowStorageTimeController employing DeltaTReducer.
+ * types for a TimeController employing DeltaTReducer.
  *
- * \copydoc LowStorageTimeController
+ * \copydoc TimeController
  */
 template< typename StateA,
           typename StateB,
@@ -1822,25 +1822,25 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-LowStorageTimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
-make_LowStorageTimeController(
-        const ILowStorageMethod<typename StateA::element>& m,
+TimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
+make_TimeController(
+        const IMethod<typename StateA::element>& m,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
         const INonlinearOperator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename LowStorageTimeController<
+        typename TimeController<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new LowStorageTimeController<
+    return new TimeController<
             StateA,StateB,void,LinearA,LinearB,NonlinearB
         >(m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }

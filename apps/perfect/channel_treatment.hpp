@@ -94,7 +94,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             suzerain::multi_array::ref<complex_t,4> &state,
-            const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
+            const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
             const real_t delta_t,
             const std::size_t substep_index) const;
 
@@ -167,7 +167,7 @@ template< typename BaseClass >
 void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         const complex_t &phi,
         suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::ILowStorageMethod<complex_t> &method,
+        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
         const real_t delta_t,
         const std::size_t substep_index) const
 {
@@ -199,8 +199,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Means of the implicit momentum and energy forcing coefficients(!) are
     // maintained across each individual time step for sampling the statistics
     // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock via
-    // ILowStorageMethod::iota a la mean += iota*(sample - mean).  Note that
-    // the sample must be divided by delta_t to account for step sizes.
+    // IMethod::iota a la mean += iota*(sample - mean).  Note that the sample
+    // must be divided by delta_t to account for step sizes.
 
     // See channel_treatment writeup for general information on the steps below.
     //

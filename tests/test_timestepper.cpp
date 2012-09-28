@@ -51,8 +51,8 @@ using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91;
 using suzerain::timestepper::lowstorage::Yang11;
-using suzerain::timestepper::lowstorage::LowStorageMethod;
-using suzerain::timestepper::lowstorage::LowStorageTimeController;
+using suzerain::timestepper::lowstorage::Method;
+using suzerain::timestepper::lowstorage::TimeController;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_SUITE( SMR91_sanity )
 
 BOOST_AUTO_TEST_CASE( name )
 {
-    const LowStorageMethod<SMR91,float> m;
+    const Method<SMR91,float> m;
     BOOST_CHECK(m.name());
 }
 
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
 {
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
-        const LowStorageMethod<SMR91,T> m;
+        const Method<SMR91,T> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
     { // Complex-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
-        const LowStorageMethod<SMR91,complex> m;
+        const Method<SMR91,complex> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
 {
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
-        const LowStorageMethod<Yang11,T> m;
+        const Method<Yang11,T> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
     { // Complex-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
-        const LowStorageMethod<Yang11,complex> m;
+        const Method<Yang11,complex> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE( applyOperator )
 
 BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 {
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 
 BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 {
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -556,7 +556,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const MultiplicativeOperator<State> trivial_linop(0);
     const RiccatiExplicitOperator riccati_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const RiccatiNonlinearOperator nonlinear_op(2, 3);
     const RiccatiLinearOperator<State> linear_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const MultiplicativeOperator<State> trivial_linop(0);
     const CosineExplicitOperator cosine_op;
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const mult_op_type trivial_linop(0);
     state_a_type a(size3(1,1,1));
     state_b_type b(size3(1,1,1));
@@ -877,7 +877,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double t_initial = 0.000, t_final = 0.0125; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const mult_op_type trivial_linop(0);
     state_a_type a(size3(1,1,1));
     state_b_type b(size3(1,1,1));
@@ -977,7 +977,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const RiccatiNonlinearOperator nonlinear_op(soln.a, soln.b);
     const RiccatiLinearOperator<
                 state_a_type, state_b_type
@@ -1055,46 +1055,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-// Tests for control logic of LowStorageTimeController in test_timecontroller.
-// Presumably getting LowStorageTimeController to type check is the big deal.
+// Tests for control logic of TimeController in test_timecontroller.
+// Presumably getting TimeController to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
-// LowStorageTimeController for InterleavedState
-template class LowStorageTimeController<
+// TimeController for InterleavedState
+template class TimeController<
         InterleavedState<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class LowStorageTimeController<
+template class TimeController<
         InterleavedState<3,double>, InterleavedState<3,double>,
         void // Default Reducer behavior
     >;
 
-// LowStorageTimeController for ContiguousState
-template class LowStorageTimeController<
+// TimeController for ContiguousState
+template class TimeController<
         ContiguousState<3,double>, ContiguousState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class LowStorageTimeController<
+template class TimeController<
         ContiguousState<3,double>, ContiguousState<3,double>,
         void // Default reducer behavior
     >;
 
-// LowStorageTimeController for {Interleaved,Contiguous}State
-template class LowStorageTimeController<
+// TimeController for {Interleaved,Contiguous}State
+template class TimeController<
         InterleavedState<3,double>, ContiguousState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class LowStorageTimeController<
+template class TimeController<
         InterleavedState<3,double>, ContiguousState<3,double>,
         void // Default reducer behavior
     >;
 
-// LowStorageTimeController for {Contiguous,Interleaved}State
-template class LowStorageTimeController<
+// TimeController for {Contiguous,Interleaved}State
+template class TimeController<
         ContiguousState<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class LowStorageTimeController<
+template class TimeController<
         ContiguousState<3,double>, InterleavedState<3,double>,
         void // Default reducer behavior
     >;
@@ -1106,7 +1106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
     typedef typename mpl::at<StatePair,mpl::int_<0> >::type state_a_type;
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
 
-    const LowStorageMethod<SMR91,double> m;
+    const Method<SMR91,double> m;
     const MultiplicativeOperator<state_a_type, state_b_type> trivial_linop(0);
     const RiccatiNonlinearOperator riccati_op(2, 3);
     state_a_type a(size3(2,1,1));
@@ -1114,7 +1114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
 
     // Compilation and instantiation is half the battle.  Go Joe!
     boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_LowStorageTimeController(m, trivial_linop,
+        make_TimeController(m, trivial_linop,
                                       1.0, riccati_op, a, b));
 
     BOOST_REQUIRE(p);

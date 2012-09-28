@@ -1254,16 +1254,16 @@ int main(int argc, char **argv)
     // ContiguousState and InterleavedState to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
-    shared_ptr<suzerain::timestepper::lowstorage::ILowStorageMethod<
+    shared_ptr<suzerain::timestepper::lowstorage::IMethod<
             complex_t
         > > m;
     if (use_smr91) {
-        m.reset(new suzerain::timestepper::lowstorage::LowStorageMethod<
+        m.reset(new suzerain::timestepper::lowstorage::Method<
                     suzerain::timestepper::lowstorage::SMR91,
                     complex_t
                 >(timedef.evmagfactor));
     } else if (use_yang11) {
-        m.reset(new suzerain::timestepper::lowstorage::LowStorageMethod<
+        m.reset(new suzerain::timestepper::lowstorage::Method<
                     suzerain::timestepper::lowstorage::Yang11,
                     complex_t
                 >(timedef.evmagfactor));
@@ -1302,7 +1302,7 @@ int main(int argc, char **argv)
     // (Spatial discretization) accounts for dealiasing and included here.
     using suzerain::timestepper::TimeController;
     const real_t chi = real_t(1)/(grid.dN.x()*grid.dN.z());
-    scoped_ptr<TimeController<real_t> > tc(make_LowStorageTimeController(
+    scoped_ptr<TimeController<real_t> > tc(make_TimeController(
                 *m, delta_t_allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));
