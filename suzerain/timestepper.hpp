@@ -695,6 +695,7 @@ make_multiplicator_operator(
  * \f[
  *   \iota_{N-1} = \frac{d_i}{\sum_{i=0}^{N-1} d_i}
  *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1} - \eta_{0}}
+ *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1}}
  * \f]
  * since the factor \f$\Delta{}t\f$ may be omitted without changing
  * \f$\bar{q}_{N-1}\f$.  Then maintaining the running mean
@@ -704,7 +705,7 @@ make_multiplicator_operator(
  * \f]
  * may be done via a simple update operation <tt>mean += iota_i * (sample -
  * mean)</tt>.  One use case for \f$\iota_i\f$ is obtaining running means of
- * implicitly computed quantities using minimal space and time overhead.
+ * quantities varying at each substep using minimal space and time overhead.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
@@ -994,7 +995,7 @@ public:
         {
             assert(0 <= i && i < substeps);
             return Component(eta.numerator(i+1) - eta.numerator(i))
-                /           (eta.numerator(i+1) - eta.numerator(0));
+                 / eta.numerator(i+1);
         }
 
     } iota;
