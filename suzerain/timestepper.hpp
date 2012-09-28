@@ -925,58 +925,48 @@ public:
     using scheme::evmaxmag_real;
     using scheme::evmaxmag_imag;
 
-    /**
-     * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
-     * @see ILowStorageMethod::alpha
-     */
-    static const struct alpha_type {
+private:
 
-        /** Computes \f$\alpha_i\f$ */
+    /** Helper for implementing #alpha */
+    struct alpha_type {
+
+        /** Computes \f$\alpha_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(scheme::alpha_numerator[i]) / scheme::denominator;
         }
 
-    } alpha;
+    };
 
-    /**
-     * Compute \f$\beta_i\f$ given \c Scheme as <tt>beta[i]</tt>.
-     * @see ILowStorageMethod::beta
-     */
-    static const struct beta_type {
+    /** Helper for implementing #beta */
+    struct beta_type {
 
-        /** Computes \f$\beta_i\f$ */
+        /** Computes \f$\beta_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(scheme::beta_numerator[i]) / scheme::denominator;
         }
 
-    } beta;
+    };
 
-    /**
-     * Compute \f$\gamma_i\f$ given \c Scheme as <tt>gamma[i]</tt>.
-     * @see ILowStorageMethod::gamma
-     */
-    static const struct gamma_type {
+    /** Helper for implementing #gamma */
+    struct gamma_type {
 
-        /** Computes \f$\gamma_i\f$ */
+        /** Computes \f$\gamma_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(scheme::gamma_numerator[i]) / scheme::denominator;
         }
 
-    } gamma;
+    };
 
-    /**
-     * Compute \f$\zeta_i\f$ given \c Scheme as <tt>zeta[i]</tt>.
-     * @see ILowStorageMethod::zeta
-     */
-    static const struct zeta_type {
+    /** Helper for implementing #zeta */
+    struct zeta_type {
 
-        /** Computes numerator of \f$\zeta_i\f$ */
+        /** Computes numerator of \f$\zeta_i\f$ given \c Scheme */
         Integer numerator(const Integer i) const
         {
             assert(0 <= i && i < substeps);
@@ -985,22 +975,19 @@ public:
                  - scheme::gamma_numerator[i];
         }
 
-        /** Computes \f$\zeta_i\f$ */
+        /** Computes \f$\zeta_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(numerator(i)) / scheme::denominator;
         }
 
-    } zeta;
+    };
 
-    /**
-     * Compute \f$\eta_i\f$ given \c Scheme as <tt>eta[i]</tt>.
-     * @see ILowStorageMethod::eta
-     */
-    static const struct eta_type {
+    /** Helper for implementing #eta */
+    struct eta_type {
 
-        /** Computes numerator of \f$\eta_i\f$ */
+        /** Computes numerator of \f$\eta_i\f$ given \c Scheme */
         Integer numerator(const Integer i) const
         {
             assert(0 <= i && i <= substeps); // i == substeps OK
@@ -1012,22 +999,19 @@ public:
             return v;
         }
 
-        /** Computes \f$\eta_i\f$ */
+        /** Computes \f$\eta_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i <= substeps); // i == substeps OK
             return Component(numerator(i)) / scheme::denominator;
         }
 
-    } eta;
+    };
 
-    /**
-     * Compute \f$\iota_i\f$ given \c Scheme as <tt>iota[i]</tt>.
-     * @see ILowStorageMethod::iota
-     */
-    static const struct iota_type {
+    /** Helper for implementing #iota */
+    struct iota_type {
 
-        /** Computes \f$\iota_i\f$ */
+        /** Computes \f$\iota_i\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
@@ -1035,39 +1019,83 @@ public:
                  / eta.numerator(i+1);
         }
 
-    } iota;
+    };
 
-    /**
-     * Compute \f$\iota_{\alpha,i}\f$ given
-     * \c Scheme as <tt>iota_alpha[i]</tt>.
-     * @see ILowStorageMethod::iota_alpha
-     */
-    static const struct iota_alpha_type {
+    /** Helper for implementing #iota_alpha */
+    struct iota_alpha_type {
 
-        /** Computes \f$\iota_{\alpha,i}\f$ */
+        /** Computes \f$\iota_{\alpha,i}\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(scheme::alpha_numerator[i]) / eta.numerator(i+1);
         }
 
-    } iota_alpha;
+    };
 
-    /**
-     * Compute \f$\iota_{\beta,i}\f$ given
-     * \c Scheme as <tt>iota_beta[i]</tt>.
-     * @see ILowStorageMethod::iota_beta
-     */
-    static const struct iota_beta_type {
+    /** Helper for implementing #iota_beta */
+    struct iota_beta_type {
 
-        /** Computes \f$\iota_{\beta,i}\f$ */
+        /** Computes \f$\iota_{\beta,i}\f$ given \c Scheme */
         Component operator[](const Integer i) const
         {
             assert(0 <= i && i < substeps);
             return Component(scheme::beta_numerator[i]) / eta.numerator(i+1);
         }
 
-    } iota_beta;
+    };
+
+public:
+
+    /**
+     * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
+     * @see ILowStorageMethod::alpha
+     */
+    static const alpha_type alpha;
+
+    /**
+     * Computes \f$\beta_i\f$ given \c Scheme as <tt>beta[i]</tt>.
+     * @see ILowStorageMethod::beta
+     */
+    static const beta_type beta;
+
+    /**
+     * Computes \f$\gamma_i\f$ given \c Scheme as <tt>gamma[i]</tt>.
+     * @see ILowStorageMethod::gamma
+     */
+    static const gamma_type gamma;
+
+    /**
+     * Computes \f$\zeta_i\f$ given \c Scheme as <tt>zeta[i]</tt>.
+     * @see ILowStorageMethod::zeta
+     */
+    static const zeta_type zeta;
+
+    /**
+     * Computes \f$\eta_i\f$ given \c Scheme as <tt>eta[i]</tt>.
+     * @see ILowStorageMethod::eta
+     */
+    static const eta_type eta;
+
+    /**
+     * Computes \f$\iota_i\f$ given \c Scheme as <tt>iota[i]</tt>.
+     * @see ILowStorageMethod::iota
+     */
+    static const iota_type iota;
+
+    /**
+     * Computes \f$\iota_{\alpha,i}\f$ given
+     * \c Scheme as <tt>iota_alpha[i]</tt>.
+     * @see ILowStorageMethod::iota_alpha
+     */
+    static const iota_alpha_type iota_alpha;
+
+    /**
+     * Computes \f$\iota_{\beta,i}\f$ given
+     * \c Scheme as <tt>iota_beta[i]</tt>.
+     * @see ILowStorageMethod::iota_beta
+     */
+    static const iota_beta_type iota_beta;
 
 };
 
