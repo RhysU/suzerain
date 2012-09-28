@@ -698,7 +698,8 @@ make_multiplicator_operator(
  *               = \frac{\eta_{i+1} - \eta_i}{\eta_{i+1}}
  * \f]
  * since the factor \f$\Delta{}t\f$ may be omitted without changing
- * \f$\bar{q}_{N-1}\f$.  Then maintaining the running mean
+ * \f$\bar{q}_{N-1}\f$ and \f$\eta_{0} = 0\f$.  Then maintaining the running
+ * mean
  * \f[
  *   \bar{q}_{N-1} = \left(1 - \iota_{N-1}\right) \bar{q}_{N-2}
  *                 + \iota_{N-1} q_{N-1}
@@ -717,11 +718,11 @@ make_multiplicator_operator(
  *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
  * \f]
  * for is defined for quantities in effect only during linear operator
- * "inversion", \f$\left(M - \Delta{}t \beta_i L)^{-1}\f$.  The former is
+ * "inversion", \f$\left(M - \Delta{}t \beta_i L\right)^{-1}\f$.  The former is
  * useful for obtaining averages implicitly-computed forcing terms which are
  * applied for duration \f$\alpha_i \Delta{}t\f$ but computed during the
  * operator inversion stage.  In both cases, running weighted means are
- * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt>.  or
+ * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt> or
  * <tt>mean += iota_beta_i * (sample - mean)</tt>.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
