@@ -1,0 +1,79 @@
+\documentclass[10pt]{article}
+
+% useful packages
+\usepackage{amssymb, amsmath, amsfonts, amsthm, wasysym} % math
+\usepackage{epsfig, subfigure} % graphics
+\usepackage{fullpage, url, color} % misc
+
+% commands I like
+\newcommand{\mbb}[1]{\mathbb{#1}}
+\newcommand{\mbf}[1]{\mathbf{#1}}
+\newcommand{\sbf}[1]{\boldsymbol{#1}}
+\newcommand{\mcal}[1]{\mathcal{#1}}
+\newcommand{\mfk}[1]{\mathfrak{#1}}
+\newcommand{\pp}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\dd}[2]{\frac{d #1}{d #2}}
+\newcommand{\rarrow}{\rightarrow}
+\newcommand{\Rarrow}{\Rightarrow}
+\newcommand{\LRarrow}{\Leftrightarrow}
+\newcommand{\jump}[1]{\llbracket #1 \rrbracket}
+\newcommand{\avg}[1]{\{ #1 \}}
+\def\etal{{\it et al.~}}
+\newcommand{\vvvert}{|\kern-1pt|\kern-1pt|}
+\newcommand{\enorm}[1]{\vvvert #1 \vvvert}
+\newcommand{\ud}{\,\mathrm{d}}
+\newcommand{\pdv}[2]{{\frac{\partial{#1}}{\partial{#2}}}}
+\newcommand{\sa}{\nu_{\mathrm{sa}}}
+
+%\newcommand{\red}[1]{\color{red}{#1}}
+\newcommand{\myred}[1]{{\color{red} #1}}
+
+% title and author
+\title{Linearization for Reacting Equations of State}
+\author{Nicholas Malaya \\
+        Todd Oliver \\ 
+	Rhys Ulerich \\ }
+
+%	\thanks{Institute for Computational
+%    	Engineering and Sciences, The University of Texas at Austin,
+%    	Austin, TX 78712 (nick@ices.utexas.edu)}}
+
+
+% lets rock and roll
+\begin{document}
+\maketitle
+
+%-------------------------------------------------
+\section{Problem Statement}
+
+We are attempting to linearize our system of equations for reacting
+flow. The linear piece is designated as the reference state coefficients
+multiplied by the operator acting on the state variables. 
+\newline
+\newline
+e.g. $(R(u)-Lu) + Lu$
+\newline
+\newline
+We will perform this procedure on the Navier-Stokes
+equations. Conservation of Mass and Momentum will be identical to the
+current procedure used in Suzerain. The evolution of species mass
+fractions and the energy equation will need to be modified, however. 
+\newline
+\newline
+Species Equation:
+\begin{equation}
+ \frac{\partial \rho_s}{\partial t} + \frac{\partial}{\partial
+  x_i}(\rho_s u_i) = \frac{\partial}{\partial x_i}(\rho D_s
+  \frac{\partial c_s}{\partial x_i}) + \dot \omega
+\end{equation}
+\newline
+\newline
+Energy Equation:
+\begin{equation}
+\frac{\partial \rho E}{\partial t} + \frac{\partial }{\partial x_j}(\rho
+u_j H) = \frac{\partial }{\partial x_j}(\tau_{ji}u_i) - \frac{\partial
+q_j}{\partial x_j} + \frac{\partial }{\partial x_i}(\rho \sum^{ns}_{s=1}
+h_s D_s \frac{\partial c_s}{\partial x_i})
+\end{equation}
+
+\end{document}
