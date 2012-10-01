@@ -1799,12 +1799,12 @@ suzerain_lapack_zlangb(
  *
  * The overall functionality is an extension of the capability of LAPACK's <a
  * href="http://www.netlib.org/lapack/double/dsgesv.f">DSGESV</a> but written
- * for general banded matrices.  The approach follows DSGESV which is, I
- * believe, based the DGESIRSV algorithm presented in June 2006 as <a
- * href="http://www.netlib.org/lapack/lawnspdf/lawn175.pdf"> Exploiting the
- * Performance of 32 bit Floating Point Arithmetic in Obtaining 64 bit Accuracy
- * (Revisiting Iterative Refinement for Linear Systems)</a> by Langou et al.
- * Unlike their algorithm, this routine
+ * for general banded matrices.  The approach follows DSGESV which is based on
+ * the DGESIRSV algorithm presented in June 2006 as <a
+ * href="http://www.netlib.org/lapack/lawnspdf/lawn175.pdf">LAWN 175:
+ * Exploiting the Performance of 32 bit Floating Point Arithmetic in Obtaining
+ * 64 bit Accuracy (Revisiting Iterative Refinement for Linear Systems)</a> by
+ * Langou et al.  Unlike their algorithm, this routine
  * <ol>
  *   <li>permits the user to provide a pre-existing single
  *       or double precision factorization,</li>
@@ -1892,13 +1892,15 @@ suzerain_lapack_zlangb(
  *                      solve will be performed.  On output, the number
  *                      of such refinements performed.
  * \param[in,out] tolsc On input, a multiplicative factor used to scale the
- *                      Langou et al. stopping criterion \f$ n \eps
- *                      \|A\|_\text{Fro}^2 \|x\|_2^2 \f$.  One is the
- *                      recommended from their work to regain full double
- *                      precision accuracy.  On output, the fraction of the
- *                      tolerance represented by the returned solution.  Values
- *                      greater than one indicate the desired tolerance could
- *                      not be met.
+ *                      Langou et al. tolerance \f$ n \eps
+ *                      \|A\|_\text{Fro}^2 \|x\|_2^2 \f$ against which the
+ *                      residual is compared as a stopping criterion.
+ *                      The recommended from their work is one for
+ *                      regaining full accuracy as measured per backward
+ *                      stability.  On output, the fraction of the
+ *                      tolerance represented by the returned solution.
+ *                      Values greater than one indicate the desired
+ *                      tolerance could not be met.
  * \param[out]    r     Solution residual \f$ b - A x \f$.
  * \param[out]    res2  Squared 2-norm of the residual.
  *                      That is, \f$\|b - A x\|_2^2\f$.
