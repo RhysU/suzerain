@@ -1327,6 +1327,18 @@ suzerain_blas_zgb_acc_d(
 #endif
 }
 
+inline float
+suzerain_lapack_slamch(char cmach)
+{
+    return LAPACK_FUNC(slamch,SLAMCH)((char*)&cmach);
+}
+
+inline double
+suzerain_lapack_dlamch(char cmach)
+{
+    return LAPACK_FUNC(dlamch,DLAMCH)((char*)&cmach);
+}
+
 inline int
 suzerain_lapack_sgbtrf(
         const int m,
