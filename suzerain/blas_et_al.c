@@ -1993,7 +1993,7 @@ suzerain_lapackext_dsgbsvx(
         info = -6;
     } else if (UNLIKELY(tolsc < 0)) {
         info = -15;
-    } else if (UNLIKELY(siter <= 0 && diter <= 0)) {
+    } else if (UNLIKELY(*siter <= 0 && *diter <= 0)) {
         info = -99;
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
