@@ -1108,6 +1108,44 @@ suzerain_blas_zgb_acc_d(
  * @{
  */
 
+/**
+ * Determines machine parameters for floating-point arithmetic.
+ *
+ * The input parameter \c cmach should specify which of the
+ * following values is desired:
+ * <dl>
+ * <dt><tt>E</tt>, <tt>e</tt></dt>
+ * <dd><tt>eps</tt>, relative machine precision</dd>
+ * <dt><tt>S</tt>, <tt>s</tt></dt>
+ * <dd><tt>sfmin</tt>, safe minimum,
+ *     such that <tt>1/sfmin</tt> does not overflow</dd>
+ * <dt><tt>B</tt>, <tt>b</tt></dt>
+ * <dd><tt>base</tt>, base of the machine</dd>
+ * <dt><tt>P</tt>, <tt>p</tt></dt>
+ * <dd><tt>eps*base</tt></dd>
+ * <dt><tt>N</tt>, <tt>n</tt></dt>
+ * <dd><tt>t</tt>, number of (base) digits in the mantissa</dd>
+ * <dt><tt>R</tt>, <tt>r</tt></dt>
+ * <dd><tt>rnd</tt>, 1.0 when rounding occurs in addition, 0.0 otherwise</dd>
+ * <dt><tt>M</tt>, <tt>m</tt></dt>
+ * <dd><tt>emin</tt>, minimum exponent before (gradual) underflow</dd>
+ * <dt><tt>U</tt>, <tt>u</tt></dt>
+ * <dd><tt>rmin</tt>, underflow threshold - <tt>base**(emin-1)</tt></dd>
+ * <dt><tt>L</tt>, <tt>l</tt></dt>
+ * <dd><tt>emax</tt>, largest exponent before overflow</dd>
+ * <dt><tt>O</tt>, <tt>o</tt></dt>
+ * <dd><tt>rmax</tt>, overflow threshold  - <tt>(base**emax)*(1-eps)</tt></dd>
+ * </dl>
+ *
+ * @param cmach The desired machine-specific quantity.
+ *
+ * @return the value requested per parameter \c cmach.
+ */
+float suzerain_lapack_slamch(char cmach);
+
+/*! \copydoc suzerain_blas_slamch */
+double suzerain_lapack_dlamch(char cmach);
+
 /*!
  * \brief Compute the LUP decomposition of a general banded matrix using
  * LAPACK's gbtrf.
