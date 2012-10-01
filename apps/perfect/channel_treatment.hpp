@@ -121,7 +121,6 @@ private:
     /** Precomputed integration coefficients */
     Eigen::VectorXr bulkcoeff;
 
-    // TODO Not strictly necessary beyond constructor.  Save some RAM.
     /** Coefficients for function supported at non-wall points */
     Eigen::ArrayXr interior;
 
@@ -145,13 +144,20 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
     masslu.reset(new suzerain::bsplineop_lu(bop));
     masslu->factor_mass(bop);
 
-    // channel_treatment step (2) loads ones and local mean streamwise
-    // velocity into non-wall collocation points.  Only non-wall points are
-    // used to avoid upsetting Dirichlet boundary conditions.  More
-    // thought will be necessary for Neumann or Robin conditions.
-    interior.setZero(b.n());
-    interior.segment(1, b.n()-2).setOnes();
-    masslu->solve(1, interior.data(), 1, b.n());
+    // channel_treatment step (2) loads ones and local mean streamwise velocity
+    // into non-wall collocation points.  Each additional near-wall coefficient
+    // set to zero increases the smoothness of the forcing at the wall by one
+    // derivative.  Here, "smooth" means enforcing a zero derivative value at
+    // the wall to avoid artificially high derivative magnitudes and not a
+    // genuine discontinuity.  A zero coefficient at only the wall provides no
+    // "smooth" derivatives but avoids upsetting Dirichlet conditions.  One
+    // "smooth" derivative avoids upsetting Neumann or Robin conditions.  Two
+    // "smooth" derivatives avoids introducing anything "visible" to any piece
+    // of the Navier--Stokes operator.
+    enum { how_smooth_wall = 0 };
+    interior.setOnes(b.n());                           // Logically working in
+    interior.head<(1 + how_smooth_wall)>().setZero();  // B-spline coefficients
+    interior.tail<(1 + how_smooth_wall)>().setZero();  // in these statements
 
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
