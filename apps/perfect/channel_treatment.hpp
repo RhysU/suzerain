@@ -199,8 +199,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Means of the implicit momentum and energy forcing coefficients(!) are
     // maintained across each individual time step for sampling the statistics
     // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock via
-    // IMethod::iota a la mean += iota*(sample - mean).  Note that the sample
-    // must be divided by delta_t to account for step sizes.
+    // IMethod::iota_alpha a la mean += iota_alpha*(sample - mean).  Note that
+    // the sample must be divided by alpha*delta_t to account for step sizes.
 
     // See channel_treatment writeup for general information on the steps below.
     //
@@ -236,7 +236,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     if (!dgrid.has_zero_zero_modes()) return;
 
     // If necessary, constrain the bulk streamwise momentum.
-    const real_t iota = method.iota(substep_index); // FIXME Wrong, #2444
+    const real_t iota_alpha = method.iota_alpha(substep_index);
+    const real_t alpha_dt   = method.alpha(substep_index)*delta_t;
     if (constrain_bulk_rhou()) {
 
         // channel_treatment step (3) was already performed for state.
@@ -261,13 +262,15 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         mean_rhoe += (varphi*scenario.Ma*scenario.Ma)*rhs;
 
         // Track the forcing magnitude within statistics.
-        common.f()       += iota*((varphi/delta_t)*interior - common.f());
-        common.f_dot_u() += iota*((varphi/delta_t)*rhs - common.f_dot_u());
+        common.f()       += iota_alpha
+                          * ((varphi/alpha_dt)*interior - common.f()      );
+        common.f_dot_u() += iota_alpha
+                          * ((varphi/alpha_dt)*rhs      - common.f_dot_u());
     } else {
 
         // Track the lack of forcing within statistics.
-        common.f()       += iota*(/* (zero/delta_t) */ - common.f());
-        common.f_dot_u() += iota*(/* (zero/delta_t) */ - common.f_dot_u());
+        common.f()       += iota_alpha*(/* zero */ - common.f()      );
+        common.f_dot_u() += iota_alpha*(/* zero */ - common.f_dot_u());
 
     }
 
@@ -289,7 +292,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     }
 
     // No volumetric energy forcing in performed current substep
-    common.qb() += iota*(/* (zero/delta_t) */ - common.qb());
+    common.qb() += iota_alpha*(/* zero */ - common.qb());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
