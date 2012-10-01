@@ -46,18 +46,18 @@
 %-------------------------------------------------
 \section{Problem Statement}
 
-We are attempting to linearize our system of equations for reacting
-flow. The linear piece is designated as the reference state coefficients
-multiplied by the operator acting on the state variables. 
-\newline
-\newline
-e.g. $(R(u)-Lu) + Lu$
-\newline
-\newline
+We are attempting to linearize our system of equations around a
+reference state for reacting flow. e.g. $(R(u)-Lu) + Lu$
+The linear piece, Lu, is designated as the reference state coefficients
+multiplied by the operator acting on the state variables. For instance,
+\begin{equation}
+ \frac{\Delta m}{\rho} = (\frac{1}{\rho}-\frac{1}{\rho_0})\Delta m +
+  \frac{\Delta m}{\rho_o}
+\end{equation}
 We will perform this procedure on the Navier-Stokes
 equations. Conservation of Mass and Momentum will be identical to the
-current procedure used in Suzerain. The evolution of species mass
-fractions and the energy equation will need to be modified, however. 
+current procedure used in Suzerain. The species mass
+fraction equations and the energy equation will need to be modified, however. 
 \newline
 \newline
 Species Equations:
