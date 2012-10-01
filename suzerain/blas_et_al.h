@@ -1892,8 +1892,8 @@ suzerain_lapack_zlangb(
  *                      solve will be performed.  On output, the number
  *                      of such refinements performed.
  * \param[in,out] tolsc On input, a multiplicative factor used to scale the
- *                      Langou et al. tolerance \f$ n \eps
- *                      \|A\|_\text{Fro}^2 \|x\|_2^2 \f$ against which the
+ *                      Langou et al. tolerance \f$ \sqrt{n} \eps
+ *                      \|A\|_\text{Fro} \|x\|_2 \f$ against which the
  *                      residual is compared as a stopping criterion.
  *                      The recommended from their work is one for
  *                      regaining full accuracy as measured per backward
@@ -1905,7 +1905,7 @@ suzerain_lapack_zlangb(
  * \param[out]    res2  Squared 2-norm of the residual.
  *                      That is, \f$\|b - A x\|_2^2\f$.
  *
- * Either \c siter or \c diter must be nonnegative on entry.
+ * One or both of \c siter or \c diter must be nonnegative on entry.
  *
  * \return Zero on successful execution.  Nonzero otherwise.
  *         Errors related to the <tt>i</tt>-th argument are indicated

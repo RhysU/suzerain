@@ -1993,6 +1993,8 @@ suzerain_lapackext_dsgbsvx(
         info = -6;
     } else if (UNLIKELY(tolsc < 0)) {
         info = -15;
+    } else if (UNLIKELY(siter <= 0 && diter <= 0)) {
+        info = -99;
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
 
@@ -2014,6 +2016,74 @@ suzerain_lapackext_dsgbsvx(
     (void) tolsc;
     (void) r;
     (void) res2;
+
+////// IMPLEMENTATION NOTES
+/// if (afrob < 0) {
+///     Compute Frobenius norm of A
+/// }
+/// tolconst = afrob * 0.5 * eps;
+/// tolconst *= tolconst;
+/// tolconst *= n * tolsc;
+///
+/// normx2 = 0;
+/// x = 0
+/// r = b;
+/// res2 = |r|_2^2
+/// resdecay2 = 2*2;
+/// lastres2 = resdecay2 * (res2 + 1);
+///
+/// const int smax = siter; siter = -1;
+/// const int dmax = diter; diter = -1;
+///
+/// if (residual > tolerance && smax >= 0 && fact != 'D') {
+///
+///     if (fact != 'S') {
+///         fact = 'S';
+///         apprx = 0;
+///         Factorize operator using single precision
+///     }
+///
+///     while (siter < smax && residual > tolerance) {
+///         Solve the system using the single precision factorization
+///         if (smax > 0) {
+///             Perform one step of mixed precision iterative refinement
+///             Update computation of |x|_2^2 in normx2
+///         }
+///         lastres2 = res2;
+///         Update residual computation in r and res2
+///         if (!(apprx < siter || lastres2 >= resdecay2 * res2)) {
+///             fact = 'N'; siter = smax; diter = dmax;
+///             return SELF_INVOCATION
+///         }
+///         ++siter;
+///     }
+///
+/// }
+///
+/// if (residual > tolerance && dmax >= 0) {
+///
+///     if (fact != 'D') {
+///         fact = 'D';
+///         apprx = 0;
+///         Factorize operator using double precision
+///     }
+///
+///     while (diter < dmax && residual > tolerance) {
+///         Solve the system using the double precision factorization
+///         if (dmax > 0) {
+///             Perform one step of double precision iterative refinement
+///             Update computation of |x|_2^2 in normx2
+///         }
+///         lastres2 = res2;
+///         Update residual computation in r and res2
+///         if (!(apprx < diter || lastres2 >= resdecay2 * res2)) {
+///             fact = 'N'; diter = smax; diter = dmax;
+///             return SELF_INVOCATION
+///         }
+///         ++diter;
+///     }
+///
+/// }
 
     // FIXME Implement per personal notes dated 27 August 2012
     return suzerain_blas_xerbla(__func__, -999);
