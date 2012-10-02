@@ -25,31 +25,41 @@
 #ifndef CANTERA_INTERFACE_HPP
 #define CANTERA_INTERFACE_HPP
 
-// TODO: Decide how HAVE_CANTERA gets set.  Presumably some config
-// will get included here.
+// No HAVE_CANTERA #ifdef as any HAVE_CANTERA checks occur
+// well before anyone tries to compile this file.
 
-#ifdef HAVE_CANTERA 
+#include <cassert>
+#include <string>
 
-#include <Cantera.h>
-#include <IdealGasMix.h>
-#include <transport.h>
-
+#include <cantera/Cantera.h>
+#include <cantera/IdealGasMix.h>
+#include <cantera/transport.h>
 
 namespace constitutive {
 
-  class canteraInterface {
+class canteraInterface {
 
-  public:
-    
+public:
+
     // Ctor: require cantera input file and desired mixture construct
-    canteraInterface (const std::string cantera_chem_file, 
-		      const std::string cantera_mixture_name);
+    canteraInterface (const std::string& cantera_chem_file,
+                      const std::string& cantera_mixture_name);
 
     ~canteraInterface ();
 
     // Pass in conserved state and get back everything in one shot
-    void evaluate (const double e, const double* m, const double rho, const double* species, const double* cs,
-		   double& T, double& p, double* Ds, double& mu, double& kap, double* hs, double* om);
+    void evaluate (const double  e,
+                   const double* m,
+                   const double  rho,
+                   const double* species,
+                   const double* cs,
+                   double& T,
+                   double& p,
+                   double* Ds,
+                   double& mu,
+                   double& kap,
+                   double* hs,
+                   double* om);
 
     // Number of species (TODO: Set me... should be able to get from
     // IdealGasMix object, right?)
@@ -62,65 +72,96 @@ namespace constitutive {
     // int Ns = _cgas.npecies();
     int Ns;
 
-  private:
+private:
 
-    void setCanteraState (const double e, const double* m, const double rho, const double* species);
-    void TPhs (double& T, double& p, double* hs);
-    void transport (double* Ds, double& mu, double& kap);
+    // TODO: Is "species" actually rho_s? c_s?  "species" is wildly ambiguous.
+    void setCanteraState (const double  e,
+                          const double* m,
+                          const double  rho,
+                          const double* species);
+
+    void TPhs (double& T,
+               double& p,
+               double* hs);
+
+    void transport (double* Ds,
+                    double& mu,
+                    double& kap);
+
     void enthalpies (double* hs);
+
     void sources (double *om);
-    
+
+    // TODO Address member ownership semantics.
+    //
+    // Either canteraInterface shouldn't be copyable or assignable or a
+    // copy/assignment operator combo should be declared or these resources
+    // could be shared amongst multiple instances using smart pointers.
+    //
+    // Odd to just have naked pointer members otherwise.
+
     // Cantera ideal gas object
     Cantera::IdealGasMix* _cgas; // any namespace issue here??
 
     // Cantera transport object
     Cantera::Transport* _ctrans;
-    
-  };
-    
-  // Public interface
 
-  // 
-  // Ctor instantiates cantera ideal gas and cantera transport
-  canteraInterface::canteraInterface (const std::string cantera_chem_file, 
-				      const std::string cantera_mixture_name) 
-    : 
+};
+
+// Public interface
+
+// Ctor instantiates cantera ideal gas and cantera transport
+canteraInterface::canteraInterface (const std::string& cantera_chem_file,
+                                    const std::string& cantera_mixture_name)
+    :
     _cgas(new Cantera::IdealGasMix(cantera_chem_file, cantera_mixture_name)),
     _ctrans(Cantera::newTransportMgr("Pecos", _cgas))
-  {
+{
     // NOP
-  }
-  
-  //
-  // Dtor deletes cantera ideal gas and cantera transport
-  canteraInterface::~canteraInterface () {
+}
+
+// Dtor deletes cantera ideal gas and cantera transport
+canteraInterface::~canteraInterface ()
+{
     delete _cgas;
     delete _ctrans;
-  }
+}
 
-  //
-  // Evaluate: takes state and gives back everything we need from
-  // cantera, including temp, pres, transport props, enthalpies, and
-  // reaction rates
-  void canteraInterface::evaluate (const double e, const double* m, const double rho, const double* species, const double* cs,
-				   double& T, double& p, double* Ds, double& mu, double& kap, double* hs, double* om) {
+// Evaluate: takes state and gives back everything we need from
+// cantera, including temp, pres, transport props, enthalpies, and
+// reaction rates
+void canteraInterface::evaluate (const double  e,
+                                 const double* m,
+                                 const double  rho,
+                                 const double* species,
+                                 const double* cs,
+                                 double& T,
+                                 double& p,
+                                 double* Ds,
+                                 double& mu,
+                                 double& kap,
+                                 double* hs,
+                                 double* om)
+{
     setCanteraState(e, m, rho, species);
     TPhs(T, p, hs);
     transport(Ds, mu, kap);
     sources(om);
-  }
+}
 
 
-  // Private methods
+// Private methods
 
-  //
-  // Set cantera state given input info
-  void canteraInterface::setCanteraState (const double e, const double* m, const double rho, 
-					  const double* species, const double* cs) {
-
-    assert(m      !=NULL);
-    assert(species!=NULL);
-    assert(cs     !=NULL);
+// Set cantera state given input info
+void canteraInterface::setCanteraState (const double  e,
+                                        const double* m,
+                                        const double  rho,
+                                        const double* species,
+                                        const double* cs)
+{
+    assert(m);
+    assert(species);
+    assert(cs);
 
     double irho = 1.0/rho;
     double einternal = e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
@@ -129,13 +170,14 @@ namespace constitutive {
     // (per unit mass), and specific volume
     _cgas->setMassFractions(cs);
     _cgas->setState_UV(e, irho);
+}
 
-  }
 
-
-  //
-  // Get temperature and pressure 
-  void canteraInterface::TPhs (double& T, double& p, double* hs) {
+// Get temperature and pressure
+void canteraInterface::TPhs (double& T,
+                             double& p,
+                             double* hs)
+{
     T = _cgas->temperature ();
     p = _cgas->pressure ();
 
@@ -149,25 +191,28 @@ namespace constitutive {
     _cgas->getEnthalpy_RT(hs);
 
     for (int s=0; s<Ns; ++s)
-      hs[s] *= Cantera::GasConstant * T / _cgas->molecularWeight(s);
-  }
+        hs[s] *= Cantera::GasConstant * T / _cgas->molecularWeight(s);
+}
 
-  //
-  // Get transport properties
-  void canteraInterface::transport (double* Ds, double& mu, double& kap) {
+// Get transport properties
+void canteraInterface::transport (double* Ds,
+                                  double& mu,
+                                  double& kap)
+{
     // TODO: This right diffusivity call?  Check w/ Nick re: mass flux
     // vs. mole flux resolution.
     // UPDATE: Looks good to me (Nick)
 
-    // the call below returns coefficients for calculating 
+    // the call below returns coefficients for calculating
     // the diffusive mass fluxes
     _ctrans->getMixDiffCoeffsMass (Ds);
     mu  = _ctrans->viscosity ();
     kap = _ctrans->thermalConductivity ();
-  }
+}
 
-  // Get reaction rates
-  void canteraInterface::sources (double* om) {
+// Get reaction rates
+void canteraInterface::sources (double* om)
+{
     // Get sources in kmol/m^3/s
     _cgas->getNetProductionRates(om);
 
@@ -175,12 +220,10 @@ namespace constitutive {
 
     // Convert to kg/m^3/s
     for (int s=0; s<Ns; ++s)
-      om[s] *= _cgas->molecularWeight(s);
+        om[s] *= _cgas->molecularWeight(s);
 
-  }
+}
 
 } // end namespace constitutive
 
-
-#endif
 #endif
