@@ -76,4 +76,18 @@ q_j}{\partial x_j} + \frac{\partial }{\partial x_i}(\rho \sum^{ns}_{s=1}
 h_s D_s \frac{\partial c_s}{\partial x_i})
 \end{equation}
 
+\section{Species Equations}
+Let us begin with the species equations. The only term we need consider here is the diffusivity. 
+This term, in Gibbs notation, is 
+\begin{equation}
+  \nabla \cdot (\rho_s D_s \nabla c_s)
+\end{equation}
+Note that $c_s$, the mass fractions, are defined as: $\frac{\rho_s}{\rho} = c_s$. 
+Therefore, 
+\begin{eqnarray}
+  \nabla c_s &= \nabla (\frac{\rho_s}{\rho} = \nabla (\rho_s \rho^{-1}\\
+             &= \rho^{-1} \nabla \rho_s - \rho^{-2} \rho_s \nabla \rho
+\end{eqnarray}
+
+
 \end{document}
