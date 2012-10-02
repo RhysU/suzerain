@@ -29,6 +29,7 @@
 // well before anyone tries to compile this file.
 
 #include <cassert>
+#include <cstddef>
 #include <string>
 
 #include <cantera/Cantera.h>
@@ -61,16 +62,7 @@ public:
                    double* hs,
                    double* om);
 
-    // Number of species (TODO: Set me... should be able to get from
-    // IdealGasMix object, right?)
-    //
-    // update: I believe we can, e.g.
-    // IdealGasMix g("gri30.xml", "gri30_mix");
-    // int nsp = g.nSpecies();
-    //
-    // so this would look something like:
-    // int Ns = _cgas.npecies();
-    int Ns;
+    std::size_t Ns() { return _cgas.nSpecies(); }
 
 private:
 

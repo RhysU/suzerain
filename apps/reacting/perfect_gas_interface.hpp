@@ -25,6 +25,8 @@
 #ifndef PERFECT_GAS_INTERFACE_HPP
 #define PERFECT_GAS_INTERFACE_HPP
 
+#include <cstddef>
+
 namespace constitutive {
 
 class perfectGasInterface {
@@ -57,25 +59,27 @@ public:
                    double* om);
 
     // Number of species
-    const int Ns;
+    std::size_t Ns() { return _Ns; }
 
 private:
 
+    // Number of species
+    std::size_t _Ns;
+
     // Thermo constants
-    const double _Cp;
-    const double _Cv;
-    const double _R;
-    const double _gam;
-    const double _gmi;
+    double _Cp;
+    double _Cv;
+    double _R;
+    double _gam;
+    double _gmi;
 
     // Prandtl number
-    const double _Pr;
+    double _Pr;
 
     // Power law viscosity
-    const double _T0;
-    const double _mu0;
-    const double _beta;
-
+    double _T0;
+    double _mu0;
+    double _beta;
 
 };
 
@@ -89,7 +93,7 @@ perfectGasInterface::perfectGasInterface (const double Cp,
                                           const double mu0,
                                           const double beta)
     :
-    Ns(1),
+    _Ns(1u),
     _Cp(Cp),
     _Cv(Cv),
     _R(Cp - Cv),
