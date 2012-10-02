@@ -1143,7 +1143,7 @@ suzerain_blas_zgb_acc_d(
  */
 float suzerain_lapack_slamch(char cmach);
 
-/*! \copydoc suzerain_blas_slamch */
+/*! \copydoc suzerain_lapack_slamch */
 double suzerain_lapack_dlamch(char cmach);
 
 /*!
