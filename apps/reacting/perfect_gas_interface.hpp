@@ -27,26 +27,39 @@
 
 namespace constitutive {
 
-  class perfectGasInterface {
+class perfectGasInterface {
 
-  public:
-    
+public:
+
     // Ctor
-    perfectGasInterface (const double Cp, const double Cv, 
-			 const double Pr, 
-			 const double T0, const double mu0, const double beta);
+    perfectGasInterface (const double Cp,
+                         const double Cv,
+                         const double Pr,
+                         const double T0,
+                         const double mu0,
+                         const double beta);
 
     // Dtor
     ~perfectGasInterface ();
 
     // Pass in conserved state and get back everything in one shot
-    void evaluate (const double e, const double* m, const double rho, const double* species, const double* cs,
-		   double& T, double& p, double* Ds, double& mu, double& kap, double* hs, double* om);
+    void evaluate (const double  e,
+                   const double* m,
+                   const double  rho,
+                   const double* species,
+                   const double* cs,
+                   double& T,
+                   double& p,
+                   double* Ds,
+                   double& mu,
+                   double& kap,
+                   double* hs,
+                   double* om);
 
     // Number of species
-    int Ns;
+    const int Ns;
 
-  private:
+private:
 
     // Thermo constants
     const double _Cp;
@@ -64,16 +77,18 @@ namespace constitutive {
     const double _beta;
 
 
-  };
-    
-  // Public interface
+};
 
-  // 
-  // Ctor 
-  perfectGasInterface::perfectGasInterface (const double Cp, const double Cv, 
-					    const double Pr, 
-					    const double T0, const double mu0, const double beta)
-    : 
+// Public interface
+
+// Ctor
+perfectGasInterface::perfectGasInterface (const double Cp,
+                                          const double Cv,
+                                          const double Pr,
+                                          const double T0,
+                                          const double mu0,
+                                          const double beta)
+    :
     Ns(1),
     _Cp(Cp),
     _Cv(Cv),
@@ -84,20 +99,32 @@ namespace constitutive {
     _T0(T0),
     _mu0(mu0),
     _beta(beta)
-  {
+{
     // NOP
-  }
-  
-  //
-  // Dtor 
-  perfectGasInterface::~canteraInterface () { /* NOP */ }
+}
 
-  //
-  // Evaluate: takes state and gives back everything we need from
-  // cantera, including temp, pres, transport props, enthalpies, and
-  // reaction rates
-  void perfectGasInterface::evaluate (const double e, const double* m, const double rho, const double* species, const double* cs,
-				      double& T, double& p, double* Ds, double& mu, double& kap, double* hs, double* om) {
+// Dtor
+perfectGasInterface::~perfectGasInterface ()
+{
+    // NOP
+}
+
+// Evaluate: takes state and gives back everything we need from
+// Cantera, including temp, pres, transport props, enthalpies, and
+// reaction rates
+void perfectGasInterface::evaluate (const double  e,
+                                    const double* m,
+                                    const double  rho,
+                                    const double* species,
+                                    const double* cs,
+                                    double& T,
+                                    double& p,
+                                    double* Ds,
+                                    double& mu,
+                                    double& kap,
+                                    double* hs,
+                                    double* om)
+{
 
     // NOTE: Really only have e, m, rho input and T, p, mu, kap
     // output.  Everything else is used for the multispecies case.
@@ -112,10 +139,8 @@ namespace constitutive {
 
     kap = mu * _Cp / _Pr;
 
-  }
-
+}
 
 } // end namespace constitutive
-
 
 #endif
