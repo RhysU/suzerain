@@ -49,6 +49,33 @@ enum suzerain_filterop_method {
     SUZERAIN_FILTEROP_COOKCABOT2005 = 1
 };
 
+/** Indicates the chosen filtering behavior at the boundaries.  */
+enum suzerain_filterop_boundary_treatment {
+
+    /**
+     * Apply the interior scheme at all points, including the points near the
+     * wall.  Out-of-domain values are treated as if they are zero.
+     */
+    SUZERAIN_FILTEROP_BOUNDARY_IGNORE = 1,
+
+    /**
+     * No filtering is performed at the boundary points nearest the
+     * edge of the domain.
+     */
+    SUZERAIN_FILTEROP_BOUNDARY_NOFILTER,
+
+    /**
+     * Reflect near-boundary points outside the domain and apply
+     * the interior scheme.
+     */
+    SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY,
+
+    /**
+     * Enforce periodic conditions across the domain boundaries.
+     */
+    SUZERAIN_FILTEROP_BOUNDARY_PERIODIC
+};
+
 /**
  * Encapsulates filter operator information.  Callers obtain a workspace using
  * suzerain_filterop_alloc() and release it using suzerain_filterop_free().
@@ -57,6 +84,18 @@ typedef struct suzerain_filterop_workspace {
 
     /** Method chosen to form derivative operators */
     enum suzerain_filterop_method method;
+
+    /**
+     * Boundary treatment chosen for first vector index.  That is,
+     * <tt>y[0]</tt>.
+     */
+    enum suzerain_filterop_boundary_treatment b_first;
+
+    /**
+     * Boundary treatment chosen for last vector index.  That is,
+     * <tt>y[n - 1]</tt>.
+     */
+    enum suzerain_filterop_boundary_treatment b_last;
 
     /** Number of degrees of freedom in each vector */
     int n;
@@ -115,6 +154,8 @@ typedef struct suzerain_filterop_workspace {
  *                          \c method_params required depends upon the method.
  *                          For example, SUZERAIN_FILTEROP_COOKCABOT2005 takes
  *                          only <tt>method_params[0]</tt>.
+ * @param[in] b_first       Boundary treatment for the first vector index.
+ * @param[in] b_last        Boundary treatment for the last vector index.
  *
  * @return a workspace instance on success.
  *      On failure calls suzerain_error() and returns NULL.
@@ -125,7 +166,9 @@ suzerain_filterop_workspace *
 suzerain_filterop_alloc(
     const int n,
     const enum suzerain_filterop_method method,
-    const double *method_params);
+    const double *method_params,
+    const enum suzerain_filterop_boundary_treatment b_first,
+    const enum suzerain_filterop_boundary_treatment b_last);
 
 /**
  * Factorize the \f$A^\mathrm{T}\f$ operator within the workspace.

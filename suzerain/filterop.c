@@ -64,6 +64,7 @@ static int suzerain_filterop_operator_bandwidths(
         case SUZERAIN_FILTEROP_COOKCABOT2005:
             retval = suzerain_filterop_operator_bandwidths_cookcabot2005(
                         method_params, klat, kuat, klbt, kubt);
+            break;
         default:
             SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
     }
@@ -91,20 +92,54 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
 }
 
 static int suzerain_filterop_operator_assemble(
-    const enum suzerain_filterop_method method,
     const double *method_params,
     suzerain_filterop_workspace *w)
 {
     int retval;
 
     // Add new method-specific routines here, when necessary
-    switch (method) {
+    switch (w->method) {
         case SUZERAIN_FILTEROP_COOKCABOT2005:
             retval = suzerain_filterop_operator_assemble_cookcabot2005(
                         method_params, w);
+            break;
         default:
             SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
     }
+
+    return retval;
+}
+
+static int suzerain_filterop_operator_boundaries(
+    suzerain_filterop_workspace *w)
+{
+    int retval = SUZERAIN_SUCCESS;
+
+    // Add new boundary-type routines here, when necessary
+    switch (w->b_first) {
+        case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
+            /* Nothing to be done */
+            break;
+        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER: // TODO
+        case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
+        case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
+        default:
+            SUZERAIN_ERROR_NULL("Unknown first boundary treatment",
+                                SUZERAIN_ESANITY);
+    }
+
+    switch (w->b_last) {
+        case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
+            /* Nothing to be done */
+            break;
+        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER: // TODO
+        case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
+        case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
+        default:
+            SUZERAIN_ERROR_NULL("Unknown last boundary treatment",
+                                SUZERAIN_ESANITY);
+    }
+
     return retval;
 }
 
@@ -112,7 +147,9 @@ suzerain_filterop_workspace *
 suzerain_filterop_alloc(
     const int n,
     const enum suzerain_filterop_method method,
-    const double *method_params)
+    const double *method_params,
+    const enum suzerain_filterop_boundary_treatment b_first,
+    const enum suzerain_filterop_boundary_treatment b_last)
 {
     /* Parameter sanity checks */
     if (n < 1) {
@@ -137,14 +174,16 @@ suzerain_filterop_alloc(
     }
 
     /* Populate initial workspace values */
-    w->method = method;
-    w->n      = n;
-    w->klat   = klat;
-    w->kuat   = kuat;
-    w->ldat   = ldat;
-    w->klbt   = klbt;
-    w->kubt   = kubt;
-    w->ldbt   = ldbt;
+    w->method  = method;
+    w->b_first = b_first;
+    w->b_last  = b_last;
+    w->n       = n;
+    w->klat    = klat;
+    w->kuat    = kuat;
+    w->ldat    = ldat;
+    w->klbt    = klbt;
+    w->kubt    = kubt;
+    w->ldbt    = ldbt;
 
     /* Allocate one contiguous block for B and A, in that order */
     w->B_T = suzerain_blas_calloc((w->n * w->ldbt) + (w->n * w->ldat),
@@ -166,9 +205,16 @@ suzerain_filterop_alloc(
 
     /* Initialize A_T and B_T depending on the method */
     if (SUZERAIN_SUCCESS != suzerain_filterop_operator_assemble(
-                method, method_params, w)) {
+                method_params, w)) {
         suzerain_filterop_free(w);
         SUZERAIN_ERROR_NULL("failed to assemble A_T and B_T",
+                            SUZERAIN_EFAILED);
+    }
+
+    /* Apply chosen boundary treatment */
+    if (SUZERAIN_SUCCESS != suzerain_filterop_operator_boundaries(w)) {
+        suzerain_filterop_free(w);
+        SUZERAIN_ERROR_NULL("failed to modify A_T and B_T for boundaries",
                             SUZERAIN_EFAILED);
     }
 
@@ -224,6 +270,8 @@ suzerain_filterop_apply(
     const int incy,
     const suzerain_filterop_workspace *w)
 {
+    // TODO Periodic boundary treatments require additional processing
+
     return suzerain_blas_dgbmv('T', w->n, w->n, w->klbt, w->kubt,
                                alpha, w->B_T, w->ldbt, x, incx,
                                /* overwrite */ 0,      y, incy);
@@ -236,6 +284,8 @@ suzerain_filterop_solve(
     const int ldx,
     const suzerain_filterop_workspace * w)
 {
+    // TODO Periodic boundary treatments require additional processing
+
     if (w->ipiva[0] <= 0) {
         SUZERAIN_ERROR(
                 "suzerain_filterop_factorize not called before solve",
