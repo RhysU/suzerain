@@ -71,15 +71,15 @@ Species Equations:
 \begin{equation}
  \frac{\partial}{\partial t} \rho_s + \frac{\partial}{\partial
   x_i}\left(\rho_s u_i\right) = \frac{\partial}{\partial x_i}\left(\rho D_s
-  \frac{\partial}{\partial x_i} c_s\right) + \dot \omega_s
+  \frac{\partial c_s}{\partial x_i} \right) + \dot \omega_s
 \end{equation}
 
 Energy Equation:
 \begin{equation}
 \frac{\partial}{\partial t} \rho E + \frac{\partial }{\partial x_j}\left(\rho
-u_j H\right) = \frac{\partial }{\partial x_i}\left(\tau_{ij}u_j\right) - \frac{\partial
-}{\partial x_j} q_j + \frac{\partial }{\partial x_i}\left(\rho \sum^{N_s}_{s=1}
-h_s D_s \frac{\partial}{\partial x_i} c_s\right)
+u_j H\right) = \frac{\partial }{\partial x_i}\left(\tau_{ij}u_j\right) - \frac{\partial q_j
+}{\partial x_j} + \frac{\partial }{\partial x_i}\left(\rho \sum^{N_s}_{s=1}
+h_s D_s \frac{\partial c_s}{\partial x_i} \right)
 \end{equation}
 
 \myred{Might mention the role of the dilluter and why various species-related
@@ -105,9 +105,9 @@ In other words,
 \end{equation}
 We distribute the $\rho^{-1}$ and expand several of the derivatives,
 \begin{equation}
-  \nabla D_s \cdot \nabla \rho_s + D_s \Delta \rho_s - \nabla \cdot (D_s \rho^{-1} \rho_s \nabla \rho) - D_s \rho^{-1} \rho_s \nabla \rho - \nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho
+  \nabla D_s \cdot \nabla \rho_s + D_s \Delta \rho_s - \nabla \cdot (D_s \rho^{-1} \rho_s \nabla \rho) - D_s \rho^{-1} \rho_s \Delta \rho - \nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho
 \end{equation}
-Thus, the first and last terms ($\nabla D_s \cdot \nabla \rho_s$ and $\nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho$) are components of the linear operator.
+Thus, the second and third terms ($D_s \Delta \rho_s$ and $D_s \rho^{-1} \rho_s \Delta \rho$) are components of the linear operator.
 
 \section{Energy Equation}
 
@@ -130,8 +130,8 @@ Likewise, $\nabla \cdot (\tau u)$ can be expanded as,
 where $\nabla \tau$ is defined in section 3.5 of the Suzerain documentation and
 $\nabla u$ rewritten as $\nabla \frac{m}{\rho}$.
 
-The heat flux term ($\nabla \cdot q$) is also a simple expansion of the derivatives:
-\myred{Worth mentioning Fourier law in use.  I added a cdot, please check.}
+The heat flux term ($\nabla \cdot q$) is also a simple expansion of the
+derivatives, using the assumption of Fourier's Law ($q=-k\nabla T$):
 \begin{equation}
   \nabla \cdot q = \nabla k \cdot \nabla T + k \Delta T
 \end{equation}
@@ -152,15 +152,17 @@ Next, we distribute the divergence operator,
 }
   &= \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \Delta \rho_s - \nabla \cdot (\sum_s h_s D_s \rho^{-1} \rho_s \nabla \rho)
 \end{align}
-Our final result is: \myred{Think you're missing cdots in the grad cdot grad
-terms.} \myred{For terms which we'll not linearize there's not harm in
-rewriting with $c_s$, for brevity.}
+Our final result is:
 \begin{equation}
-  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \Delta \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \Delta \rho - \nabla (\sum_s h_s D_s \rho^{-1} \rho_s) \cdot \nabla \rho
+  = \sum_s \nabla (h_s D_s) \cdot \nabla \rho_s + \sum_s h_s D_s \Delta \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \Delta \rho - \nabla (\sum_s h_s D_s \rho^{-1} \rho_s) \cdot \nabla \rho
 \end{equation}
+We will use the second and third terms in the linear operator. 
 
-\myred{Once you're happy with the above, a summary section containing the
-complete $L$ will be useful.  That way passing to the discrete implementation
-need only reference the summary.  Much easier to not miss terms.}
+
+\section{Full Linear Operator}
+
+Once we are happy with the above, a summary section containing the
+complete $L$ will be placed here. This way passing to the discrete
+implementation need only reference the summary.
 
 \end{document}
