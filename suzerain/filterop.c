@@ -30,6 +30,7 @@
 #pragma hdrstop
 #include <suzerain/blas_et_al.h>
 #include <suzerain/error.h>
+#include <suzerain/gbmatrix.h>
 #include <suzerain/filterop.h>
 
 // TODO Account for non-banded nature of periodicity (Toeplitz)
@@ -86,9 +87,49 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     const double *method_params,
     suzerain_filterop_workspace *w)
 {
-    SUZERAIN_UNUSED(method_params);
-    SUZERAIN_UNUSED(w);
-    SUZERAIN_ERROR("Unimplemented", SUZERAIN_ESANITY); // FIXME
+    const int n = w->n;
+    const double alpha = method_params ? method_params[0] : 66624./100000.;
+    SUZERAIN_UNUSED(alpha);
+
+    /* Assemble B^T into w->B_T using w->klbt, w->kubt, and w->ldbt.        */
+    /* Fill all nonzero entries in the transpose of the operator's storage. */
+    /* Because w->klbt = w->kubt we can simply transpose at storage time    */
+    {
+        assert(w->klbt == w->kubt);
+        double * const B_T = w->B_T;
+        const int k = w->klbt, ld = w->ldbt;
+
+        for (int j = 0; j < n; ++j) {
+            for (int i = j - k; i < j + k; ++i) {
+
+                /* Compute B(i,j) and store it as B_T(j, i) */
+                const int ji_off = suzerain_gbmatrix_offset(ld, k, k, j, i);
+                B_T[ji_off] = i*100 + j; // FIXME Implement
+
+            }
+        }
+    }
+
+    /* Assemble A^T into w->A_T using w->klat, w->kuat, and w->ldat.        */
+    /* Fill all nonzero entries in the transpose of the operator's storage. */
+    /* Because w->klat = w->kuat we can simply transpose at storage time    */
+    {
+        assert(w->klat == w->kuat);
+        double * const A_T = w->A_T;
+        const int k = w->klat, ld = w->ldat;
+
+        for (int j = 0; j < n; ++j) {
+            for (int i = j - k; i < j + k; ++i) {
+
+                /* Compute A(i,j) and store it as A_T(j, i) */
+                const int ji_off = suzerain_gbmatrix_offset(ld, k, k, j, i);
+                A_T[ji_off] = i*100 + j; // FIXME Implement
+
+            }
+        }
+    }
+
+    return SUZERAIN_SUCCESS;
 }
 
 static int suzerain_filterop_operator_assemble(
