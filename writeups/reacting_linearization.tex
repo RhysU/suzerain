@@ -94,7 +94,7 @@ In other words,
 \end{equation}
 We distribute the $\rho^{-1}$ and expand several of the derivatives,
 \begin{equation}
-  \nabla D_s \cdot \nabla \rho_s + D_s \nabla^2 \rho_s - \nabla \cdot (D_s \rho^{-1} \rho_s \nabla \rho) - D_s \rho^{-1} \rho_s \nabla \rho - \nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho
+  \nabla D_s \cdot \nabla \rho_s + D_s \Delta \rho_s - \nabla \cdot (D_s \rho^{-1} \rho_s \nabla \rho) - D_s \rho^{-1} \rho_s \nabla \rho - \nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho
 \end{equation}
 Thus, the first and last terms ($\nabla D_s \cdot \nabla \rho_s$ and $\nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho$) are components of the linear operator. 
 
@@ -112,9 +112,17 @@ We will consider each term individually. Let's start with $\nabla \cdot (\rho u 
 \begin{equation}
   \nabla \cdot (\rho u H) = H \nabla \cdot (\rho u) + \rho u \nabla H 
 \end{equation}
+Likewise, $\nabla \cdot (\tau u)$ can be expanded as,
+\begin{equation}
+ \nabla \cdot (\tau u) = u \cdot \nabla \tau + \tau \cdot \nabla u 
+\end{equation}
+Where $\nabla \tau$ is defined in section 3.5 of the suzerain
+documentation. 
+\newline
+\newline
 The heat flux term ($\nabla \cdot q$) is also a simple expansion of the derivatives:
 \begin{equation}
-  \nabla \cdot q = \nabla k \nabla T + k \nabla^2 T
+  \nabla \cdot q = \nabla k \nabla T + k \Delta T
 \end{equation}
 Finally, the more tricky operator is:
 \begin{equation}
@@ -131,11 +139,11 @@ As before, we distribute $\rho$,
 \end{equation}
 Next, we distribute the divergence operator,
 \begin{equation}
-  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \nabla^2 \rho_s - \nabla \cdot (\sum_s h_s D_s \rho^{-1} \rho_s \nabla \rho)
+  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \Delta \rho_s - \nabla \cdot (\sum_s h_s D_s \rho^{-1} \rho_s \nabla \rho)
 \end{equation}
 Our final result is:
 \begin{equation}
-  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \nabla^2 \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \nabla^2 \rho - \nabla (\sum_s h_s D_s \rho^{-1} \rho_s) \cdot \nabla \rho 
+  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \Delta \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \Delta \rho - \nabla (\sum_s h_s D_s \rho^{-1} \rho_s) \cdot \nabla \rho 
 \end{equation}
 
 \end{document}
