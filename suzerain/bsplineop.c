@@ -608,7 +608,7 @@ compute_banded_collocation_derivative_submatrix_transpose(
     /* PRECONDITION: D_T[0]...D_T[nderiv] must have been filled with zeros */
 
     /*
-     * Fill all nonzero entries in the tranpose of the operator's storage.
+     * Fill all nonzero entries in the transpose of the operator's storage.
      * B-spline basis evaluation routines make d^k/dx^k B_j(\xi_i) easier
      * to compute so we loop over B_j(\xi_i) while storing B_i(\xi_j).
      */
