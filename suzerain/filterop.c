@@ -35,6 +35,10 @@
 
 // TODO Account for non-banded nature of periodicity (Toeplitz)
 
+// Indexing utilities for banded matrices
+static inline int imin(int a, int b) { return a < b ? a : b; }
+static inline int imax(int a, int b) { return a > b ? a : b; }
+
 static int suzerain_filterop_operator_bandwidths_cookcabot2005(
     const double *method_params,
     int *klat,
@@ -87,44 +91,45 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     const double *method_params,
     suzerain_filterop_workspace *w)
 {
-    const int n = w->n;
+    // Unpack method-specific parameters using defaults whenever NULL
     const double alpha = method_params ? method_params[0] : 66624./100000.;
     SUZERAIN_UNUSED(alpha);
 
-    /* Assemble B^T into w->B_T using w->klbt, w->kubt, and w->ldbt.        */
-    /* Fill all nonzero entries in the transpose of the operator's storage. */
-    /* Because w->klbt = w->kubt we can simply transpose at storage time    */
+    static const int inc = 1;   // Column vectors are contiguous in memory
+    const int n = w->n, m = n;  // Filtering matrices are square
+
+    // Place nonzero B^T values in w->B_T using w->klbt, w->kubt, and w->ldbt.
     {
-        assert(w->klbt == w->kubt);
-        double * const B_T = w->B_T;
-        const int k = w->klbt, ld = w->ldbt;
+        // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
+        // Incorporate the ku offset and decrement ld to speed indexing.
+        // Further, increment kl anticipating calls like imin(m, j + kl + 1).
+        int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+        double * bt = w->B_T;
+        bt += ku*inc;
+        ld -= inc;
+        ++kl;
 
-        for (int j = 0; j < n; ++j) {
-            for (int i = j - k; i < j + k; ++i) {
-
-                /* Compute B(i,j) and store it as B_T(j, i) */
-                const int ji_off = suzerain_gbmatrix_offset(ld, k, k, j, i);
-                B_T[ji_off] = i*100 + j; // FIXME Implement
-
+        for (int j = 0; j < n; bt += ld, ++j) {
+            const int il = imax(0, j - ku), iu = imin(m, j + kl);
+            for (int i = il; i < iu; ++i) {
+                bt[i*inc] =  100*i + j; // FIXME Modify B_T(i,j)
             }
         }
     }
 
-    /* Assemble A^T into w->A_T using w->klat, w->kuat, and w->ldat.        */
-    /* Fill all nonzero entries in the transpose of the operator's storage. */
-    /* Because w->klat = w->kuat we can simply transpose at storage time    */
+    // Place nonzero A^T values in w->A_T using w->klat, w->kuat, and w->ldat.
     {
-        assert(w->klat == w->kuat);
-        double * const A_T = w->A_T;
-        const int k = w->klat, ld = w->ldat;
+        // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+        int kl = w->klat, ku = w->kuat, ld = w->ldat;
+        double * at = w->A_T;
+        at += ku*inc;
+        ld -= inc;
+        ++kl;
 
-        for (int j = 0; j < n; ++j) {
-            for (int i = j - k; i < j + k; ++i) {
-
-                /* Compute A(i,j) and store it as A_T(j, i) */
-                const int ji_off = suzerain_gbmatrix_offset(ld, k, k, j, i);
-                A_T[ji_off] = i*100 + j; // FIXME Implement
-
+        for (int j = 0; j < n; at += ld, ++j) {
+            const int il = imax(0, j - ku), iu = imin(m, j + kl);
+            for (int i = il; i < iu; ++i) {
+                at[i*inc] =  100*i + j; // FIXME Modify A_T(i,j)
             }
         }
     }
@@ -208,7 +213,7 @@ suzerain_filterop_alloc(
 
     /* Allocate space for the workspace struct and initialize to zero */
     suzerain_filterop_workspace * const w
-        = suzerain_blas_calloc(1, sizeof(suzerain_filterop_workspace));
+            = calloc(1, sizeof(suzerain_filterop_workspace));
     if (w == NULL) {
         SUZERAIN_ERROR_NULL("failed to allocate space for workspace",
                             SUZERAIN_ENOMEM);
@@ -274,6 +279,7 @@ suzerain_filterop_free(
         suzerain_blas_free(w->ipiva);
         w->ipiva = NULL;
     }
+    free(w);
 }
 
 int

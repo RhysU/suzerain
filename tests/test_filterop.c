@@ -73,7 +73,11 @@ main(int argc, char **argv)
 
 static void test_filterop()
 {
-    // FIXME Test it
-    // alloc_workspaces(3, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
-    // free_workspaces(&w, &dw, &scratch);
+    suzerain_filterop_workspace *w = suzerain_filterop_alloc(
+            7, SUZERAIN_FILTEROP_COOKCABOT2005,
+            /* default params */ NULL,
+            SUZERAIN_FILTEROP_BOUNDARY_IGNORE,
+            SUZERAIN_FILTEROP_BOUNDARY_IGNORE);
+
+    suzerain_filterop_free(w);
 }
