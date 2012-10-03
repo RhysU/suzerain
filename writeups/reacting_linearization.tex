@@ -98,4 +98,44 @@ We distribute the $\rho^{-1}$ and expand several of the derivatives,
 \end{equation}
 Thus, the first and last terms ($\nabla D_s \cdot \nabla \rho_s$ and $\nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho$) are components of the linear operator. 
 
+\section{Energy Equation}
+
+Let's perform a similar analysis for the Energy Equation:
+\begin{equation}
+\frac{\partial \rho E}{\partial t} + \frac{\partial }{\partial x_j}(\rho
+u_j H) = \frac{\partial }{\partial x_j}(\tau_{ji}u_i) - \frac{\partial
+q_j}{\partial x_j} + \frac{\partial }{\partial x_i}(\rho \sum^{ns}_{s=1}
+h_s D_s \frac{\partial c_s}{\partial x_i})
+\end{equation}
+
+We will consider each term individually. Let's start with $\nabla \cdot (\rho u H)$. A simple expansion of this provides:
+\begin{equation}
+  \nabla \cdot (\rho u H) = H \nabla \cdot (\rho u) + \rho u \nabla H 
+\end{equation}
+The heat flux term ($\nabla \cdot q$) is also a simple expansion of the derivatives:
+\begin{equation}
+  \nabla \cdot q = \nabla k \nabla T + k \nabla^2 T
+\end{equation}
+Finally, the more tricky operator is:
+\begin{equation}
+  \nabla \cdot (\rho \sum_s h_s \nabla c_s)
+\end{equation}
+Remember that $c_s$, the mass fractions, can be expressed as: $\nabla \cdot (\rho_s D_s \nabla c_s) = \nabla \cdot \rho D_s (\rho^{-1} \nabla \rho_s - \rho^{-2} \rho_s \nabla \rho)$. 
+Therefore, 
+\begin{equation}
+  \nabla \cdot (\rho \sum_s h_s \nabla c_s) = \nabla \cdot (\rho \sum_s h_s D_s ( \rho^{-1} \nabla \rho_s - \rho^{-2} \rho_s \nabla \rho))
+\end{equation}
+As before, we distribute $\rho$,
+\begin{equation}
+  = \nabla \cdot (\sum_s h_s D_s \nabla \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \nabla \rho)
+\end{equation}
+Next, we distribute the divergence operator,
+\begin{equation}
+  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \nabla^2 \rho_s - \nabla \cdot (\sum_s h_s D_s \rho^{-1} \rho_s \nabla \rho)
+\end{equation}
+Our final result is:
+\begin{equation}
+  = \sum_s \nabla h_s D_s \nabla \rho_s + \sum_s h_s \nabla D_s \nabla \rho_s + \sum_s h_s D_s \nabla^2 \rho_s - \sum_s h_s D_s \rho^{-1} \rho_s \nabla^2 \rho - \nabla (\sum_s h_s D_s \rho^{-1} \rho_s) \cdot \nabla \rho 
+\end{equation}
+
 \end{document}
