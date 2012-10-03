@@ -86,9 +86,16 @@ h_s D_s \frac{\partial c_s}{\partial x_i} \right)
 summations have varying limits}.
 
 \section{Species Equations}
-Let us begin with the species equations. The only term we need consider here is
-the diffusivity.  \myred{Convection could be handled too, which may be helpful
-in wall transpiration cases.} This term, in Gibbs notation, is
+Let us begin with the species equations. We start with the convective
+term, $\nabla \cdot (\rho_s u)$, and replace $u$ with $\frac{m}{\rho}$
+\begin{equation}
+  \nabla \cdot (\rho_s u) = u \cdot \nabla \rho_s + \rho_s \cdot \nabla
+   u 
+\end{equation}
+\newline
+\newline
+The only other term we need consider here is 
+the diffusivity. This term, in Gibbs notation, is
 \begin{equation}
   \nabla \cdot (\rho_s D_s \nabla c_s)
 \end{equation}
