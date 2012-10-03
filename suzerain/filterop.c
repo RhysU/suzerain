@@ -104,15 +104,15 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
         // Incorporate the ku offset and decrement ld to speed indexing.
         // Further, increment kl anticipating calls like imin(m, j + kl + 1).
         int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
-        double * bt = w->B_T;
-        bt += ku*inc;
+        double * bt_j = w->B_T;
+        bt_j += ku*inc;
         ld -= inc;
         ++kl;
 
-        for (int j = 0; j < n; bt += ld, ++j) {
+        for (int j = 0; j < n; bt_j += ld, ++j) {
             const int il = imax(0, j - ku), iu = imin(m, j + kl);
             for (int i = il; i < iu; ++i) {
-                bt[i*inc] =  100*i + j; // FIXME Modify B_T(i,j)
+                bt_j[i*inc] =  100*i + j; // FIXME Modify B_T(i,j)
             }
         }
     }
@@ -121,15 +121,15 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     {
         // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
         int kl = w->klat, ku = w->kuat, ld = w->ldat;
-        double * at = w->A_T;
-        at += ku*inc;
+        double * at_j = w->A_T + kl; // Accounts for factorization-ready data
+        at_j += ku*inc;
         ld -= inc;
         ++kl;
 
-        for (int j = 0; j < n; at += ld, ++j) {
+        for (int j = 0; j < n; at_j += ld, ++j) {
             const int il = imax(0, j - ku), iu = imin(m, j + kl);
             for (int i = il; i < iu; ++i) {
-                at[i*inc] =  100*i + j; // FIXME Modify A_T(i,j)
+                at_j[i*inc] =  100*i + j; // FIXME Modify A_T(i,j)
             }
         }
     }
