@@ -67,6 +67,9 @@ typedef struct suzerain_filterop_workspace {
     /** Number of superdiagonals in operator \f$A^\mathrm{T}\f$. */
     int kuat;
 
+    /** Leading dimension of storage for operator \f$A^{\mathrm{T}}\f$. */
+    int ldat;
+
     /**
      * Raw data storage for the unfactored and factored \f$A^{\mathrm{T}}\f$.
      * The transpose of the operator is stored according to LAPACK \c GBTRF
@@ -86,6 +89,9 @@ typedef struct suzerain_filterop_workspace {
 
     /** Number of superdiagonals in operator \f$B^\mathrm{T}\f$. */
     int kubt;
+
+    /** Leading dimension of storage for operator \f$B^{\mathrm{T}}\f$. */
+    int ldbt;
 
     /**
      * Raw data storage for the unfactored \f$B^{\mathrm{T}}\f$.  The operator
@@ -117,9 +123,9 @@ typedef struct suzerain_filterop_workspace {
  */
 suzerain_filterop_workspace *
 suzerain_filterop_alloc(
-    int n,
-    enum suzerain_filterop_method method,
-    double *method_params);
+    const int n,
+    const enum suzerain_filterop_method method,
+    const double *method_params);
 
 /**
  * Factorize the \f$A^\mathrm{T}\f$ operator within the workspace.
@@ -169,20 +175,21 @@ suzerain_filterop_free(
  */
 int
 suzerain_filterop_apply(
-    double alpha,
+    const double alpha,
     const double *x,
-    int incx,
+    const int incx,
     double *y,
-    int incy,
+    const int incy,
     const suzerain_filterop_workspace *w);
 
 /**
- * Apply \f$A^{-1}\f$ in place to vector \c x using the previously factored
+ * Apply \f$A^{-1}\f$ in place to matrix \c X using the previously factored
  * operator \f$A^{\mathrm{T}}\f$.
  *
- * @param[in,out] x     Right hand side to solve and the resulting solution.
- * @param[in]     incx  Stride between elements in vector \c x.
- * @param[in]     w     Workspace to use.
+ * @param[in]     nrhs Number of right hand sides within \c X.
+ * @param[in,out] X    Right hand sides to solve and the resulting solution.
+ * @param[in]     ldx  Leading dimension between columns in matrix \c X.
+ * @param[in]     w    Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -191,10 +198,10 @@ suzerain_filterop_apply(
  */
 int
 suzerain_filterop_solve(
-    double *x,
-    int incx,
+    const int nrhs,
+    double *X,
+    const int ldx,
     const suzerain_filterop_workspace * w);
-
 
 /**@}*/
 
@@ -208,8 +215,7 @@ suzerain_filterop_solve(
  * @param[in]  alpha Real scaling factor \f$\alpha\f$ to apply.
  * @param[in]  x    Coefficients to be multiplied.
  * @param[in]  incx Stride between elements stored in \c x.
- * @param[out] y    Storage for the result.  Will be overwritten.
- * @param[in]  incy Stride between elements stored in \c x.
+ * @param[out] y    Contiguous storage for the result.  Will be overwritten.
  * @param[in]  w Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
@@ -219,11 +225,10 @@ suzerain_filterop_solve(
  */
 int
 suzerain_filterop_filter(
-    double alpha,
+    const double alpha,
     const double *x,
-    int incx,
+    const int incx,
     double *y,
-    int incy,
     const suzerain_filterop_workspace *w);
 
 /**@}*/
