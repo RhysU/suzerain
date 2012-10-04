@@ -108,7 +108,6 @@ suzerain_htstretch1_dx(const double delta,
     }
 }
 
-
 double
 suzerain_htstretch2(const double delta,
                     const double L,
