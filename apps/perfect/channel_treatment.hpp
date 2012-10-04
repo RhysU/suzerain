@@ -145,19 +145,17 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
     masslu->factor_mass(bop);
 
     // channel_treatment step (2) loads ones and local mean streamwise velocity
-    // into non-wall collocation points.  Each additional near-wall coefficient
-    // set to zero increases the smoothness of the forcing at the wall by one
-    // derivative.  Here, "smooth" means enforcing a zero derivative value at
-    // the wall to avoid artificially high derivative magnitudes and not a
-    // genuine discontinuity.  A zero coefficient at only the wall provides no
-    // "smooth" derivatives but avoids upsetting Dirichlet conditions.  One
-    // "smooth" derivative avoids upsetting Neumann or Robin conditions.  Two
-    // "smooth" derivatives avoids introducing anything "visible" to any piece
-    // of the Navier--Stokes operator.
-    enum { how_smooth_wall = 0 };
-    interior.setOnes(b.n());                           // Logically working in
-    interior.head<(1 + how_smooth_wall)>().setZero();  // B-spline coefficients
-    interior.tail<(1 + how_smooth_wall)>().setZero();  // in these statements
+    // into non-wall collocation points.  We need an 'interior-only' forcing
+    // profile.  The most pressure-gradient-like profile (as measured by
+    // reproducing a constant \partial_y \tau_{x,y}) has zeros at the wall
+    // collocation point and ones everywhere else.  Consequently, it has large
+    // derivatives near the walls and will introduce small magnitude
+    // oscillations near the channel center.  See Redmine ticket #2568 for
+    // further background.
+    interior.setOnes(b.n());                     // Set as collocation values
+    interior.head<1>().setZero();                // Zero at lower wall
+    interior.tail<1>().setZero();                // Zero at upper wall
+    masslu->solve(1, interior.data(), 1, b.n()); // Convert to coefficients
 
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
