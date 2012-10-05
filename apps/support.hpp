@@ -397,12 +397,10 @@ inline
 void complex_field_read(esio_handle h, const char *name, complex_t *field,
                         I cstride = 0, I bstride = 0, I astride = 0)
 {
-    using boost::numeric_cast;
-
     esio_field_readv(h, name, reinterpret_cast<real_t *>(field),
-                     2*numeric_cast<int>(cstride),
-                     2*numeric_cast<int>(bstride),
-                     2*numeric_cast<int>(astride),
+                     2*boost::numeric_cast<int>(cstride),
+                     2*boost::numeric_cast<int>(bstride),
+                     2*boost::numeric_cast<int>(astride),
                      2);
 }
 
@@ -422,12 +420,10 @@ void complex_field_write(esio_handle h,
                          I cstride = 0, I bstride = 0, I astride = 0,
                          const char * comment = 0)
 {
-    using boost::numeric_cast;
-
     esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
-                      2*numeric_cast<int>(cstride),
-                      2*numeric_cast<int>(bstride),
-                      2*numeric_cast<int>(astride),
+                      2*boost::numeric_cast<int>(cstride),
+                      2*boost::numeric_cast<int>(bstride),
+                      2*boost::numeric_cast<int>(astride),
                       2, comment);
 }
 
