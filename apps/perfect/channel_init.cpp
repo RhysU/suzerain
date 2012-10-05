@@ -39,6 +39,7 @@
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
+#include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>
 
 #include "../logging.hpp"
@@ -83,7 +84,7 @@ static GridDefinition grid(
         /* Lz      */ "4*pi/3",
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
-static TimeDefinition<real_t> timedef(
+static TimeDefinition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static shared_ptr<const suzerain::pencil_grid> dgrid;
 static shared_ptr<channel::manufactured_solution> msoln(

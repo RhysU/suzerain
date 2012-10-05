@@ -117,7 +117,7 @@ static const RestartDefinition restart(
         /* nt          */ 0);
 static const StatisticsDefinition statsdef(
         /* destination */ "sample#.h5");
-static const TimeDefinition<real_t> timedef(
+static const TimeDefinition timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
         /* advance_wt                */ 0,
@@ -902,22 +902,14 @@ int main(int argc, char **argv)
         suzerain::ProgramOptions options(
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
-        options.add_definition(
-                const_cast<ScenarioDefinition&>(scenario));
-        options.add_definition(
-                const_cast<GridDefinition&>(grid));
-        options.add_definition(
-                const_cast<FFTWDefinition&>(fftwdef));
-        options.add_definition(
-                const_cast<RestartDefinition&>(restart));
-        options.add_definition(
-                const_cast<StatisticsDefinition&>(statsdef));
-        options.add_definition(
-                const_cast<TimeDefinition<real_t>&>(timedef));
-        options.add_definition(
-                const_cast<NoiseDefinition&>(noisedef));
-        options.add_definition(
-                const_cast<SignalDefinition&>(sigdef));
+        options.add_definition(const_cast<ScenarioDefinition  &>(scenario));
+        options.add_definition(const_cast<GridDefinition      &>(grid    ));
+        options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
+        options.add_definition(const_cast<RestartDefinition   &>(restart ));
+        options.add_definition(const_cast<StatisticsDefinition&>(statsdef));
+        options.add_definition(const_cast<TimeDefinition      &>(timedef ));
+        options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
+        options.add_definition(const_cast<SignalDefinition    &>(sigdef  ));
 
         options.add_options()
             ("explicit", "Use purely explicit operators")
@@ -1004,7 +996,7 @@ int main(int argc, char **argv)
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
     channel::load(esioh, const_cast<GridDefinition&>(grid));
-    channel::load(esioh, const_cast<TimeDefinition<real_t>&>(timedef));
+    channel::load(esioh, const_cast<TimeDefinition&>(timedef));
     channel::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);
 

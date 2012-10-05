@@ -43,6 +43,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/RngStream.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/validation.hpp>
 #include <sys/file.h>
 
 #include "logging.hpp"
@@ -486,7 +487,7 @@ void load(const esio_handle h,
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition<real_t>& timedef)
+           const suzerain::problem::TimeDefinition& timedef)
 {
     DEBUG0("Storing TimeDefinition parameters");
 
@@ -501,7 +502,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          suzerain::problem::TimeDefinition<real_t>& timedef)
+          suzerain::problem::TimeDefinition& timedef)
 {
     DEBUG0("Loading TimeDefinition parameters");
 

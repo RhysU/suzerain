@@ -396,12 +396,12 @@ static Eigen::VectorXr compute_bulk_weights(
  */
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<ScenarioDefinition     >& i_scenario,
-        shared_ptr<GridDefinition         >& i_grid,
-        shared_ptr<TimeDefinition<real_t> >& i_timedef,
-        shared_ptr<suzerain::bspline      >& i_b,
-        shared_ptr<suzerain::bsplineop    >& i_bop,
-        shared_ptr<suzerain::bsplineop_lu >& i_boplu);
+        shared_ptr<ScenarioDefinition    >& i_scenario,
+        shared_ptr<GridDefinition        >& i_grid,
+        shared_ptr<TimeDefinition        >& i_timedef,
+        shared_ptr<suzerain::bspline     >& i_b,
+        shared_ptr<suzerain::bsplineop   >& i_bop,
+        shared_ptr<suzerain::bsplineop_lu>& i_boplu);
 
 int main(int argc, char **argv)
 {
@@ -488,12 +488,12 @@ int main(int argc, char **argv)
     }
 
     // Scenario and grid details provided to process(...)
-    shared_ptr<ScenarioDefinition     > scenario;
-    shared_ptr<GridDefinition         > grid;
-    shared_ptr<TimeDefinition<real_t> > timedef;
-    shared_ptr<suzerain::bspline      > b;
-    shared_ptr<suzerain::bsplineop    > bop;
-    shared_ptr<suzerain::bsplineop_lu > boplu;
+    shared_ptr<ScenarioDefinition    > scenario;
+    shared_ptr<GridDefinition        > grid;
+    shared_ptr<TimeDefinition        > timedef;
+    shared_ptr<suzerain::bspline     > b;
+    shared_ptr<suzerain::bsplineop   > bop;
+    shared_ptr<suzerain::bsplineop_lu> boplu;
 
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
@@ -664,12 +664,12 @@ int main(int argc, char **argv)
 
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<ScenarioDefinition     >& i_scenario,
-        shared_ptr<GridDefinition         >& i_grid,
-        shared_ptr<TimeDefinition<real_t> >& i_timedef,
-        shared_ptr<suzerain::bspline      >& i_b,
-        shared_ptr<suzerain::bsplineop    >& i_bop,
-        shared_ptr<suzerain::bsplineop_lu >& i_boplu)
+        shared_ptr<ScenarioDefinition    >& i_scenario,
+        shared_ptr<GridDefinition        >& i_grid,
+        shared_ptr<TimeDefinition        >& i_timedef,
+        shared_ptr<suzerain::bspline     >& i_b,
+        shared_ptr<suzerain::bsplineop   >& i_bop,
+        shared_ptr<suzerain::bsplineop_lu>& i_boplu)
 {
     using quantity::storage_type;
     using quantity::storage_map_type;
@@ -689,13 +689,13 @@ static quantity::storage_map_type process(
     real_t time;
     ScenarioDefinition scenario;
     GridDefinition grid;
-    TimeDefinition<real_t> timedef(/* advance_dt */ 0,
-                                   /* advance_nt */ 0,
-                                   /* advance_wt */ 0,
-                                   /* status_dt  */ 0,
-                                   /* status_nt  */ 0,
-                                   /* min_dt     */ 0,
-                                   /* max_dt     */ 0);
+    TimeDefinition timedef(/* advance_dt */ 0,
+                           /* advance_nt */ 0,
+                           /* advance_wt */ 0,
+                           /* status_dt  */ 0,
+                           /* status_nt  */ 0,
+                           /* min_dt     */ 0,
+                           /* max_dt     */ 0);
     shared_ptr<suzerain::bspline> b;
     shared_ptr<suzerain::bsplineop> bop;
     channel::load_time(h.get(), time);
@@ -706,9 +706,9 @@ static quantity::storage_map_type process(
     assert(b->n() == grid.N.y());
 
     // Return the scenario, grid, and timedef to the caller if not already set
-    if (!i_scenario) i_scenario.reset(new ScenarioDefinition    (scenario));
-    if (!i_grid)     i_grid    .reset(new GridDefinition        (grid    ));
-    if (!i_timedef)  i_timedef .reset(new TimeDefinition<real_t>(timedef ));
+    if (!i_scenario) i_scenario.reset(new ScenarioDefinition(scenario));
+    if (!i_grid)     i_grid    .reset(new GridDefinition    (grid    ));
+    if (!i_timedef)  i_timedef .reset(new TimeDefinition    (timedef ));
 
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu

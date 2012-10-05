@@ -143,6 +143,7 @@ libsuzerain_la_SOURCES       += signal_definition.cpp
 libsuzerain_la_SOURCES       += scenario_definition.cpp
 libsuzerain_la_SOURCES       += statistics_definition.cpp
 libsuzerain_la_SOURCES       += svehla.c
+libsuzerain_la_SOURCES       += time_definition.cpp
 libsuzerain_la_SOURCES       += version.cpp
 EXTRA_libsuzerain_la_SOURCES  = bsmbsm_aPxpby_complex.def
 EXTRA_libsuzerain_la_SOURCES += bsmbsm_aPxpby_real.def

@@ -155,11 +155,11 @@ void load(const esio_handle h,
 
 /** Store a TimeDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition<real_t>& timedef);
+           const suzerain::problem::TimeDefinition& timedef);
 
 /** Load a TimeDefinition from a restart file */
 void load(const esio_handle h,
-          suzerain::problem::TimeDefinition<real_t>& timedef);
+          suzerain::problem::TimeDefinition& timedef);
 
 /**
  * Store manufactured solution parameters in a restart file.

@@ -12,6 +12,9 @@
 // scenario_definition.cpp: classes handling problem scenario parameters
 // $Id$
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
 #include <suzerain/common.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/exprparse.hpp>
