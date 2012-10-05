@@ -243,7 +243,7 @@ static void information_L2(const std::string& prefix,
 
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
-    const array<channel::L2,field::count> L2
+    const std::vector<channel::L2> L2
         = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
@@ -356,13 +356,13 @@ static void information_manufactured_solution_absolute_error(
     channel::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             scenario, grid, *dgrid, *b, *bop, simulation_time);
-    const array<channel::L2,channel::field::count> L2
+    const std::vector<channel::L2> L2
         = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
     std::ostringstream msg;
     msg << prefix;
-    for (size_t k = 0; k < channel::field::count; ++k) {
+    for (size_t k = 0; k < L2.size(); ++k) {
         append_real(msg << ' ', L2[k].total());
     }
     INFO0(mms_abserr, msg.str());
@@ -1551,7 +1551,7 @@ int main(int argc, char **argv)
                 dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
         }
         state_nonlinear->addScaled(1/chi, *state_linear);
-        const array<channel::L2,channel::field::count> L2
+        const std::vector<channel::L2> L2
             = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
@@ -1561,7 +1561,7 @@ int main(int argc, char **argv)
         std::ostringstream msg;
         msg << "Linearization error";
         append_real(msg, L2[0].total());
-        for (size_t k = 1; k < channel::field::count; ++k) {
+        for (size_t k = 1; k < L2.size(); ++k) {
             append_real(msg << ' ', L2[k].total());
         }
         INFO0("lin.abserr", msg.str());

@@ -1992,14 +1992,14 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     }
 }
 
-boost::array<L2,field::count>
+std::vector<L2>
 field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
+    // Notice state.shape()[0] may be any value
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
@@ -2036,16 +2036,16 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     tmp.setZero(grid.N.y());
 
     // Temporary storage for accumulating and broadcasting results
-    complex_t buf[2*field::count];
+    Eigen::VectorXc buf(2*state.shape()[0]);
     typedef Eigen::Map<Eigen::Array<complex_t,field::count,1> > results_type;
-    results_type total2(buf);
-    results_type mean2(buf + field::count);
+    results_type total2(buf.data());
+    results_type mean2 (buf.data() + state.shape()[0]);
 
     // Compute the local L2 contribution towards each L^2 norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
     // more-or-less recursive summation using large partitioning factors.
     total2.setZero();
-    for (size_t k = 0; k < field::count; ++k) {
+    for (size_t k = 0; k < state.shape()[0]; ++k) {
         complex_t jsum = 0;
         for (int j = 0; j < 2; ++j) {
             complex_t nsum = 0;
@@ -2074,14 +2074,14 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // Reduce total2 sum onto processor housing the zero-zero mode using
     // mean2 as a scratch buffer to simulate MPI_IN_PLACE
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
-                mean2.data(), field::count * sizeof(complex_t)/sizeof(real_t),
+                mean2.data(), state.shape()[0] * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
                 MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
     // Compute the mean-only L^2 squared for each field using zero-zero modes
     if (dgrid.has_zero_zero_modes()) {
-        for (size_t k = 0; k < field::count; ++k) {
+        for (size_t k = 0; k < state.shape()[0]; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
             mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
@@ -2091,13 +2091,13 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
 
     // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(
-                buf, SUZERAIN_COUNTOF(buf) * sizeof(complex_t)/sizeof(real_t),
+                buf.data(), buf.size() * sizeof(complex_t)/sizeof(real_t),
                 suzerain::mpi::datatype<real_t>(),
                 dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
-    boost::array<L2,field::count> retval;
-    for (size_t k = 0; k < field::count; ++k) {
+    std::vector<L2> retval(state.shape()[0]);
+    for (size_t k = 0; k < state.shape()[0]; ++k) {
         retval[k].mean2        = std::abs(mean2[k]);
         retval[k].fluctuating2 = std::abs(total2[k] - mean2[k]);
     }

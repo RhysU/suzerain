@@ -506,7 +506,7 @@ struct L2 {
  * Compute information about the \f$L^2\f$ norm of all scalar fields.
  * See writeup/L2.tex for full details.
  */
-boost::array<L2,field::count>
+std::vector<L2>
 field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
