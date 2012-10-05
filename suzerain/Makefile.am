@@ -140,6 +140,7 @@ libsuzerain_la_SOURCES       += richardson.c
 libsuzerain_la_SOURCES       += RngStream.cpp
 libsuzerain_la_SOURCES       += sbmv.c
 libsuzerain_la_SOURCES       += signal_definition.cpp
+libsuzerain_la_SOURCES       += scenario_definition.cpp
 libsuzerain_la_SOURCES       += statistics_definition.cpp
 libsuzerain_la_SOURCES       += svehla.c
 libsuzerain_la_SOURCES       += version.cpp

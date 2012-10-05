@@ -56,7 +56,7 @@ class NonlinearOperator
 public:
 
     NonlinearOperator(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -103,7 +103,7 @@ class BsplineMassOperator
 public:
 
     BsplineMassOperator(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -152,7 +152,7 @@ class BsplineMassOperatorIsothermal
 public:
 
     BsplineMassOperatorIsothermal(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,

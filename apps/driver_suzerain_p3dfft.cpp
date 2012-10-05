@@ -71,13 +71,16 @@ int main(int argc, char **argv)
     suzerain::ProgramOptions options(
             "suzerain::pencil_grid_p3dfft performance benchmark",
             "", /* TODO description */ "", revstr);
-    suzerain::problem::GridDefinition grid(/* Nx      */ 16,
-                                           /* DAFx    */ 1.,
-                                           /* Ny      */ 16,
-                                           /* k       */ 6,
-                                           /* htdelta */ 0,
-                                           /* Nz      */ 16,
-                                           /* DAFz    */ 1.);
+    suzerain::problem::GridDefinition grid(/* Lx UNUSED */ "NaN",
+                                           /* Nx        */ 16,
+                                           /* DAFx      */ 1.,
+                                           /* Ly UNUSED*/ "NaN",
+                                           /* Ny        */ 16,
+                                           /* k         */ 6,
+                                           /* htdelta   */ 0,
+                                           /* Lz UNUSED*/ "NaN",
+                                           /* Nz        */ 16,
+                                           /* DAFz      */ 1.);
     options.add_definition(grid);
     suzerain::fftw::FFTWDefinition fftwdef(
             suzerain::fftw::measure, suzerain::fftw::estimate);

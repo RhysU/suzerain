@@ -224,7 +224,7 @@ void wisdom_gather(const std::string& wisdom_file)
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario)
+           const suzerain::problem::ScenarioDefinition& scenario)
 {
     DEBUG0("Storing ScenarioDefinition parameters");
 
@@ -257,19 +257,10 @@ void store(const esio_handle h,
 
     esio_line_write(h, "gamma", &scenario.gamma, 0,
             scenario.options().find("gamma",false).description().c_str());
-
-    esio_line_write(h, "Lx", &scenario.Lx, 0,
-            scenario.options().find("Lx",false).description().c_str());
-
-    esio_line_write(h, "Ly", &scenario.Ly, 0,
-            scenario.options().find("Ly",false).description().c_str());
-
-    esio_line_write(h, "Lz", &scenario.Lz, 0,
-            scenario.options().find("Lz",false).description().c_str());
 }
 
 void load(const esio_handle h,
-          suzerain::problem::ScenarioDefinition<real_t>& scenario)
+          suzerain::problem::ScenarioDefinition& scenario)
 {
     DEBUG0("Loading ScenarioDefinition parameters");
 
@@ -322,30 +313,10 @@ void load(const esio_handle h,
     } else {
         esio_line_read(h, "gamma", &scenario.gamma, 0);
     }
-
-    if (!(boost::math::isnan)(scenario.Lx)) {
-        INFO0("Overriding scenario using Lx = " << scenario.Lx);
-    } else {
-        esio_line_read(h, "Lx", &scenario.Lx, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.Ly)) {
-        INFO0("Overriding scenario using Ly = " << scenario.Ly);
-    } else {
-        esio_line_read(h, "Ly", &scenario.Ly, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.Lz)) {
-        INFO0("Overriding scenario using Lz = " << scenario.Lz);
-    } else {
-        esio_line_read(h, "Lz", &scenario.Lz, 0);
-    }
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid,
-           const real_t Lx,
-           const real_t Lz)
+           const suzerain::problem::GridDefinition& grid)
 {
     // Only root writes data
     int procid;
@@ -355,11 +326,17 @@ void store(const esio_handle h,
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
+    esio_line_write(h, "Lx", &grid.L.x(), 0,
+            grid.options().find("Lx",false).description().c_str());
+
     esio_line_write(h, "Nx", &grid.N.x(), 0,
             grid.options().find("Nx",false).description().c_str());
 
     esio_line_write(h, "DAFx", &grid.DAF.x(), 0,
             grid.options().find("DAFx",false).description().c_str());
+
+    esio_line_write(h, "Ly", &grid.L.y(), 0,
+            grid.options().find("Ly",false).description().c_str());
 
     esio_line_write(h, "Ny", &grid.N.y(), 0,
             grid.options().find("Ny",false).description().c_str());
@@ -369,6 +346,9 @@ void store(const esio_handle h,
 
     esio_line_write(h, "htdelta", &grid.htdelta, 0,
             grid.options().find("htdelta",false).description().c_str());
+
+    esio_line_write(h, "Lz", &grid.L.z(), 0,
+            grid.options().find("Lz",false).description().c_str());
 
     esio_line_write(h, "Nz", &grid.N.z(), 0,
             grid.options().find("Nz",false).description().c_str());
@@ -382,7 +362,8 @@ void store(const esio_handle h,
     // Obtain wavenumbers via computing 1*(i*kx)/i
     cbuf.fill(complex_t(1,0));
     suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
-            Lx, Lz, 1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
+            grid.L.x(), grid.L.z(),
+            1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
     esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
     esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
             2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
@@ -390,7 +371,8 @@ void store(const esio_handle h,
     // Obtain wavenumbers via computing 1*(i*kz)/i
     cbuf.fill(complex_t(1,0));
     suzerain::diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
-            Lx, Lz, 1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
+            grid.L.x(), grid.L.z(),
+            1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
     esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
     esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
             2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
@@ -402,8 +384,8 @@ void store(const esio_handle h,
     if (grid.dN.x() > 1) {
         rbuf = Eigen::ArrayXr::LinSpaced(
                 Eigen::Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
-        rbuf *= Lx / grid.dN.x();
-        rbuf -= Lx/2;
+        rbuf *= grid.L.x() / grid.dN.x();
+        rbuf -= grid.L.x() / 2;
     } else {
         rbuf = Eigen::ArrayXr::Constant(grid.dN.x(), 0);
     }
@@ -415,8 +397,8 @@ void store(const esio_handle h,
     if (grid.dN.z() > 1) {
         rbuf = Eigen::ArrayXr::LinSpaced(
                 Eigen::Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
-        rbuf *= Lz / grid.dN.z();
-        rbuf -= Lz/2;
+        rbuf *= grid.L.z() / grid.dN.z();
+        rbuf -= grid.L.z() / 2;
     } else {
         rbuf = Eigen::ArrayXr::Constant(grid.dN.z(), 0);
     }
@@ -432,6 +414,12 @@ void load(const esio_handle h,
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 
+    if (!(boost::math::isnan)(grid.L.x())) {
+        INFO0("Overriding grid using Lx = " << grid.L.x());
+    } else {
+        esio_line_read(h, "Lx", &grid.L.x(), 0);
+    }
+
     if (grid.N.x()) {
         INFO0("Overriding grid using Nx = " << grid.N.x());
     } else {
@@ -446,6 +434,12 @@ void load(const esio_handle h,
         double factor;
         esio_line_read(h, "DAFx", &factor, 0);
         grid.DAFx(factor);
+    }
+
+    if (!(boost::math::isnan)(grid.L.y())) {
+        INFO0("Overriding grid using Ly = " << grid.L.y());
+    } else {
+        esio_line_read(h, "Ly", &grid.L.y(), 0);
     }
 
     if (grid.N.y()) {
@@ -466,6 +460,12 @@ void load(const esio_handle h,
         INFO0("Overriding grid using htdelta = " << grid.htdelta);
     } else {
         esio_line_read(h, "htdelta", &grid.htdelta, 0);
+    }
+
+    if (!(boost::math::isnan)(grid.L.z())) {
+        INFO0("Overriding grid using Lz = " << grid.L.z());
+    } else {
+        esio_line_read(h, "Lz", &grid.L.z(), 0);
     }
 
     if (grid.N.z()) {
@@ -527,7 +527,8 @@ static void attribute_storer(const esio_handle &h,
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+           const suzerain::problem::ScenarioDefinition& scenario,
+           const suzerain::problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
@@ -543,8 +544,9 @@ void store(const esio_handle h,
 
     DEBUG0("Storing channel::manufactured_solution parameters");
 
-    // Check parameters stored with the scenario not the manufactured solution
 #pragma warning(push,disable:1572)
+    // Check parameters stored with the scenario not the manufactured solution
+    // because scenario parameters should be loaded from ScenarioDefinition
     if (msoln->alpha != scenario.alpha)
         WARN0("Manufactured solution alpha mismatches with scenario!");
     if (msoln->beta  != scenario.beta)
@@ -557,22 +559,24 @@ void store(const esio_handle h,
         WARN0("Manufactured solution Re mismatches with scenario!");
     if (msoln->Pr    != scenario.Pr)
         WARN0("Manufactured solution Pr mismatches with scenario!");
-    if (msoln->Lx    != scenario.Lx)
-        WARN0("Manufactured solution Lx mismatches with scenario!");
-    if (msoln->Ly    != scenario.Ly)
-        WARN0("Manufactured solution Ly mismatches with scenario!");
-    if (msoln->Lz    != scenario.Lz)
-        WARN0("Manufactured solution Lz mismatches with scenario!");
+
+    // Check parameters stored with the grid not the manufactured solution
+    // because grid parameters should be loaded from GridDefinition
+    if (msoln->Lx    != grid.L.x())
+        WARN0("Manufactured solution Lx mismatches with grid!");
+    if (msoln->Ly    != grid.L.y())
+        WARN0("Manufactured solution Ly mismatches with grid!");
+    if (msoln->Lz    != grid.L.z())
+        WARN0("Manufactured solution Lz mismatches with grid!");
 #pragma warning(pop)
 
     // Non-scenario solution parameters are stored as attributes under location
-    // Scenario parameters should be taken from ScenarioDefinition
     using boost::bind;
     msoln->rho.foreach_parameter(bind(attribute_storer, h, location, _1, _2));
-    msoln->u.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    msoln->v.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    msoln->w.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
-    msoln->T.foreach_parameter(  bind(attribute_storer, h, location, _1, _2));
+    msoln->u  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
+    msoln->v  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
+    msoln->w  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
+    msoln->T  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
 }
 
 static void attribute_loader(const esio_handle &h,
@@ -590,7 +594,8 @@ static void NaNer(const std::string&, real_t& value)
 }
 
 void load(const esio_handle h,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
+          const suzerain::problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
@@ -621,17 +626,19 @@ void load(const esio_handle h,
     msoln->Ma    = scenario.Ma;
     msoln->Re    = scenario.Re;
     msoln->Pr    = scenario.Pr;
-    msoln->Lx    = scenario.Lx;
-    msoln->Ly    = scenario.Ly;
-    msoln->Lz    = scenario.Lz;
+
+    // Grid parameters taken from GridDefinition
+    msoln->Lx    = grid.L.x();
+    msoln->Ly    = grid.L.y();
+    msoln->Lz    = grid.L.z();
 
     // Non-scenario solution parameters are stored as attributes under location
     using boost::bind;
     msoln->rho.foreach_parameter(bind(attribute_loader, h, location, _1, _2));
-    msoln->u.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    msoln->v.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    msoln->w.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
-    msoln->T.foreach_parameter(  bind(attribute_loader, h, location, _1, _2));
+    msoln->u  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+    msoln->v  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+    msoln->w  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+    msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
 }
 
 real_t create(const int ndof,
@@ -958,7 +965,7 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 void store_coefficients(
         const esio_handle h,
         const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid)
 {
@@ -1215,7 +1222,7 @@ void load_coefficients(const esio_handle h,
 void store_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& swave,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -1302,7 +1309,7 @@ void store_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& state,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -1410,7 +1417,7 @@ void load_collocation_values(
 
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t>& state,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline& b,
@@ -1503,7 +1510,7 @@ static void parse_range(const std::string& s,
 
 void
 adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
-                const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+                const suzerain::problem::ScenarioDefinition& scenario,
                 const suzerain::problem::GridDefinition& grid,
                 const suzerain::pencil_grid& dgrid,
                 suzerain::bspline &b,
@@ -1630,7 +1637,7 @@ NoiseDefinition::NoiseDefinition(real_t percent,
 void
 add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline &b,
@@ -1667,7 +1674,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     real_t maxfluct;
     if (dgrid.has_zero_zero_modes()) {
         complex_t momentum, density;
-        const real_t centerline = scenario.Ly / 2;
+        const real_t centerline = grid.L.y() / 2;
         b.linear_combination(
                 0, &state[ndx::rhou][0][0][0], 1, &centerline, &momentum);
         INFO0("Centerline mean streamwise momentum at y = "
@@ -1986,7 +1993,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
 boost::array<L2,field::count>
 field_L2(const suzerain::ContiguousState<4,complex_t> &state,
-         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop)
@@ -2062,7 +2068,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
         }
         total2[k] += jsum;
     }
-    total2 *= scenario.Lx * scenario.Lz;
+    total2 *= grid.L.x() * grid.L.z();
 
     // Reduce total2 sum onto processor housing the zero-zero mode using
     // mean2 as a scratch buffer to simulate MPI_IN_PLACE
@@ -2079,7 +2085,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
             mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
         }
-        mean2 *= scenario.Lx * scenario.Lz;
+        mean2 *= grid.L.x() * grid.L.z();
     }
 
     // Broadcast total2 and mean2 values to all processors
@@ -2103,7 +2109,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
@@ -2217,7 +2223,7 @@ void accumulate_manufactured_solution(
 // definitely suboptimal but is expected to be invoked very infrequently and
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,

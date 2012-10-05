@@ -17,7 +17,8 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
-#include <suzerain/validation.hpp>
+
+// TODO Distinguish between two- versus one-sided stretching in GridDefinition
 
 /** @file
  * Provides classes handling problem grid definitions.
@@ -44,25 +45,17 @@ public:
      * overwritten.  Integer values will be zeros and floating point
      * values will be NaNs.
      */
-    GridDefinition()
-        : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-          N(0, 0, 0),
-          DAF(std::numeric_limits<double>::quiet_NaN(),
-              1 /* Never dealiased */,
-              std::numeric_limits<double>::quiet_NaN()),
-          dN(0, 0, 0),
-          P(0, 0),
-          k(0),
-          htdelta(std::numeric_limits<double>::quiet_NaN())
-    {
-        initialize_options();
-    }
+    GridDefinition();
 
     /**
      * Construct an instance with the given default values.
      *
+     * @param Lx      Physical domain extent in the X direction
+     *                which is evaluated as a \c double using exprparse().
      * @param Nx      Logical grid size in the X direction.
      * @param DAFx    Dealiasing factor in the X direction.
+     * @param Ly      Physical domain extent in the Y direction
+     *                which is evaluated as a \c double using exprparse().
      * @param Ny      Logical grid size in the Y direction.
      *                This is the number of B-spline basis functions
      *                (equivalently, wall-normal degrees of freedom)
@@ -72,31 +65,29 @@ public:
      *                <tt>default_k == 4</tt>.
      * @param htdelta Hyperbolic tangent stretching parameter
      *                to use when computing breakpoint locations.
+     * @param Lz      Physical domain extent in the Z direction
+     *                which is evaluated as a \c double using exprparse().
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    GridDefinition(int    Nx,
-                   double DAFx,
-                   int    Ny,
-                   int    k,
-                   double htdelta,
-                   int    Nz,
-                   double DAFz)
-        : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-          N(Nx, Ny, Nz),
-          DAF(DAFx, 1 /* Never dealiased */, DAFz),
-          dN(Nx * DAFx, Ny, Nz * DAFz),
-          P(0, 0),
-          k(k),
-          htdelta(htdelta)
-    {
-        initialize_options();
-    }
+    GridDefinition(const char * Lx,
+                   int          Nx,
+                   double       DAFx,
+                   const char * Ly,
+                   int          Ny,
+                   int          k,
+                   double       htdelta,
+                   const char * Lz,
+                   int          Nz,
+                   double       DAFz);
 
     /**@{*/
 
+    /** Physical domain extents in the X, Y, and Z directions. */
+    Eigen::Array3d L;
+
     /** Global logical extents in the X, Y, and Z directions. */
-    const Eigen::Array3i N;
+    Eigen::Array3i N;
 
     /**
      * Set the logical extents in the X direction.
@@ -127,10 +118,10 @@ public:
     /**@{*/
 
     /** Dealiasing factors in the X, Y, and Z directions */
-    const Eigen::Array3d DAF;
+    Eigen::Array3d DAF;
 
     /** Global dealiased logical extents in the X, Y, and Z directions. */
-    const Eigen::Array3i dN;
+    Eigen::Array3i dN;
 
     /**
      * Set the dealiasing factor in the X direction.
@@ -177,7 +168,9 @@ public:
 
 private:
     /** Options initialization common to all constructors */
-    void initialize_options();
+    void initialize_options(const char * default_Lx,
+                            const char * default_Ly,
+                            const char * default_Lz);
 
     /** @copydoc Nx(int) */
     GridDefinition& Nx(const std::string& value);

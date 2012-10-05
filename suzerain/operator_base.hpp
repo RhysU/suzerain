@@ -62,15 +62,15 @@ public:
      * @param bop      B-spline operators to use.
      */
     OperatorBase(
-            const typename suzerain::problem::ScenarioDefinition<FPT> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
             const suzerain::bsplineop &bop)
-        : one_over_delta_x(grid.N.x() /* !dN.x() */ / scenario.Lx),
+        : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
           lambda1_x(boost::math::constants::pi<FPT>() * one_over_delta_x),
           lambda2_x(lambda1_x * lambda1_x),
-          one_over_delta_z(grid.N.z() /* !dN.z() */ / scenario.Lz),
+          one_over_delta_z(grid.N.z() /* !dN.z() */ / grid.L.z()),
           lambda1_z(boost::math::constants::pi<FPT>() * one_over_delta_z),
           lambda2_z(lambda1_z * lambda1_z),
           scenario(scenario),
@@ -246,7 +246,7 @@ public:
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
                 beta,  y[ndx_y].origin(),
-                scenario.Lx, scenario.Lz,
+                grid.L.x(), grid.L.z(),
                 dgrid.global_wave_extent.y(),
                 grid.N.x(),
                 grid.dN.x(),
@@ -276,7 +276,7 @@ public:
         return suzerain::diffwave::apply(
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
-                scenario.Lx, scenario.Lz,
+                grid.L.x(), grid.L.z(),
                 dgrid.global_wave_extent.y(),
                 grid.N.x(),
                 grid.dN.x(),
@@ -309,7 +309,7 @@ public:
      * Return the <tt>i</tt>th \c globally-indexed x grid point.
      */
     FPT x(std::size_t i) const {
-        return i * scenario.Lx / grid.dN.x() - scenario.Lx / 2;
+        return i * grid.L.x() / grid.dN.x() - grid.L.x() / 2;
     }
 
     /**
@@ -324,7 +324,7 @@ public:
      * Return the <tt>k</tt>th \c globally-indexed z grid point.
      */
     FPT z(std::size_t k) const {
-        return k * scenario.Lz / grid.dN.z() - scenario.Lz / 2;
+        return k * grid.L.z() / grid.dN.z() - grid.L.z() / 2;
     }
 
     /**
@@ -372,7 +372,7 @@ public:
     const FPT lambda2_z;
 
     /** The scenario in which the operator is used */
-    const typename suzerain::problem::ScenarioDefinition<FPT> &scenario;
+    const typename suzerain::problem::ScenarioDefinition &scenario;
 
     /** The grid in which the operator is used */
     const suzerain::problem::GridDefinition &grid;

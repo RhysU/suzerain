@@ -40,7 +40,7 @@
 namespace channel {
 
 BsplineMassOperator::BsplineMassOperator(
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,

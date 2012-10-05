@@ -139,17 +139,15 @@ void wisdom_gather(const std::string& wisdom_file);
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario);
+           const suzerain::problem::ScenarioDefinition& scenario);
 
 /** Load a ScenarioDefinition from a restart file */
 void load(const esio_handle h,
-          suzerain::problem::ScenarioDefinition<real_t>& scenario);
+          suzerain::problem::ScenarioDefinition& scenario);
 
 /** Store a GridDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid,
-           const real_t Lx,
-           const real_t Lz);
+           const suzerain::problem::GridDefinition& grid);
 
 /** Load a GridDefinition from a restart file */
 void load(const esio_handle h,
@@ -168,7 +166,8 @@ void load(const esio_handle h,
  * Parameters are only stored when \c msoln evaluates as true.
  */
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+           const suzerain::problem::ScenarioDefinition& scenario,
+           const suzerain::problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution> & msoln);
 
 /**
@@ -178,7 +177,8 @@ void store(const esio_handle h,
  * \c msoln will be reset.
  */
 void load(const esio_handle h,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
+          const suzerain::problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
@@ -260,7 +260,7 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 void store_coefficients(
         const esio_handle h,
         const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid);
 
@@ -275,7 +275,7 @@ void store_coefficients(
 void store_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& swave,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -300,7 +300,7 @@ void load_coefficients(const esio_handle h,
 void load_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& state,
-        const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -312,7 +312,7 @@ void load_collocation_values(
  */
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t>& state,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline& b,
@@ -326,7 +326,7 @@ void load(const esio_handle h,
  */
 void
 adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
-                const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+                const suzerain::problem::ScenarioDefinition& scenario,
                 const suzerain::problem::GridDefinition& grid,
                 const suzerain::pencil_grid& dgrid,
                 suzerain::bspline &b,
@@ -385,7 +385,7 @@ public:
 void
 add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
-          const suzerain::problem::ScenarioDefinition<real_t>& scenario,
+          const suzerain::problem::ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline &b,
@@ -508,7 +508,6 @@ struct L2 {
  */
 boost::array<L2,field::count>
 field_L2(const suzerain::ContiguousState<4,complex_t> &state,
-         const suzerain::problem::ScenarioDefinition<real_t>& scenario,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop);
@@ -526,7 +525,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
@@ -748,7 +747,7 @@ public:
  * @return Mean quantities as B-spline coefficients.
  */
 mean sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,

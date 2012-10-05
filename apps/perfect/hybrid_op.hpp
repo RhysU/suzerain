@@ -60,7 +60,7 @@ public:
     static const linearize::type linearization = linearize::rhome;
 
     HybridIsothermalLinearOperator(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -147,7 +147,7 @@ public:
             = HybridIsothermalLinearOperator::linearization;
 
     HybridNonlinearOperator(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,

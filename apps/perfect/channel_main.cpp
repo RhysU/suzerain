@@ -104,7 +104,7 @@ using suzerain::problem::StatisticsDefinition;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
 using suzerain::problem::TimeDefinition;
-static const ScenarioDefinition<real_t> scenario;
+static const ScenarioDefinition scenario;
 static const GridDefinition grid;
 static const FFTWDefinition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
@@ -244,7 +244,7 @@ static void information_L2(const std::string& prefix,
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
     const array<channel::L2,field::count> L2
-        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
+        = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << prefix;
@@ -255,7 +255,7 @@ static void information_L2(const std::string& prefix,
 
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
-    const real_t rms_coeff = 1/std::sqrt(scenario.Lx*scenario.Ly*scenario.Lz);
+    const real_t rms_coeff = 1/std::sqrt(grid.L.x()*grid.L.y()*grid.L.z());
     msg.str("");
     msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
@@ -291,7 +291,7 @@ static void information_bulk(const std::string& prefix)
     // Compute operator for finding bulk quantities from coefficients
     Eigen::VectorXr bulkcoeff(b->n());
     b->integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= scenario.Ly;
+    bulkcoeff /= grid.L.y();
 
     // Prepare the status message and log it
     msg << prefix;
@@ -357,7 +357,7 @@ static void information_manufactured_solution_absolute_error(
             1, *msoln, -1, *state_nonlinear,
             scenario, grid, *dgrid, *b, *bop, simulation_time);
     const array<channel::L2,channel::field::count> L2
-        = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
+        = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
     std::ostringstream msg;
@@ -903,7 +903,7 @@ int main(int argc, char **argv)
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(
-                const_cast<ScenarioDefinition<real_t>&>(scenario));
+                const_cast<ScenarioDefinition&>(scenario));
         options.add_definition(
                 const_cast<GridDefinition&>(grid));
         options.add_definition(
@@ -992,20 +992,20 @@ int main(int argc, char **argv)
     real_t restart_Ma, restart_gamma;
     {
         real_t cli_Ma = scenario.Ma, cli_gamma = scenario.gamma;
-        const_cast<ScenarioDefinition<real_t>&>(scenario).Ma
-            = const_cast<ScenarioDefinition<real_t>&>(scenario).gamma
+        const_cast<ScenarioDefinition&>(scenario).Ma
+            = const_cast<ScenarioDefinition&>(scenario).gamma
             = numeric_limits<real_t>::quiet_NaN();
-        channel::load(esioh, const_cast<ScenarioDefinition<real_t>&>(scenario));
+        channel::load(esioh, const_cast<ScenarioDefinition&>(scenario));
         restart_Ma    = scenario.Ma;
         restart_gamma = scenario.gamma;
-        const_cast<ScenarioDefinition<real_t>&>(scenario).Ma
+        const_cast<ScenarioDefinition&>(scenario).Ma
                 = ((boost::math::isnan)(cli_Ma)) ? restart_Ma : cli_Ma;
-        const_cast<ScenarioDefinition<real_t>&>(scenario).gamma
+        const_cast<ScenarioDefinition&>(scenario).gamma
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
     channel::load(esioh, const_cast<GridDefinition&>(grid));
     channel::load(esioh, const_cast<TimeDefinition<real_t>&>(timedef));
-    channel::load(esioh, scenario, msoln);
+    channel::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);
 
     if (msoln) {
@@ -1024,7 +1024,7 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
+    channel::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
@@ -1116,10 +1116,10 @@ int main(int argc, char **argv)
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str());
         channel::store(h, scenario);
-        channel::store(h, grid, scenario.Lx, scenario.Lz);
+        channel::store(h, grid);
         channel::store(h, b, bop, gop);
         channel::store(h, timedef);
-        channel::store(h, scenario, msoln);
+        channel::store(h, scenario, grid, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
     }
@@ -1323,7 +1323,7 @@ int main(int argc, char **argv)
     // If no non-default, non-zero values were provided, be sensible.
     if (default_statistics && !statsdef.dt && !statsdef.nt) {
         const real_t flowthrough_time
-                = scenario.Lx/(scenario.bulk_rhou/scenario.bulk_rho);
+                = grid.L.x()/(scenario.bulk_rhou/scenario.bulk_rho);
         if (boost::math::isnormal(flowthrough_time)) {
             const_cast<real_t &>(statsdef.dt) = flowthrough_time / 4;
         }
@@ -1541,7 +1541,7 @@ int main(int argc, char **argv)
                 1.0, *state_linear, -1.0, *state_nonlinear, *m, 0, /*substep*/0);
         for (size_t k = 0; k < channel::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
-                scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),
+                grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
                 dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
                 grid.N.z(), grid.dN.z(),
@@ -1552,7 +1552,7 @@ int main(int argc, char **argv)
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
         for (size_t k = 0; k < channel::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
-                scenario.Lx, scenario.Lz, dgrid->global_wave_extent.y(),
+                grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
                 dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
                 grid.N.z(), grid.dN.z(),
@@ -1560,7 +1560,7 @@ int main(int argc, char **argv)
         }
         state_nonlinear->addScaled(1/chi, *state_linear);
         const array<channel::L2,channel::field::count> L2
-            = channel::field_L2(*state_nonlinear, scenario, grid, *dgrid, *gop);
+            = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
@@ -1622,7 +1622,7 @@ int main(int argc, char **argv)
         // Advance rate measured in flow through based on bulk velocity
         // (where bulk velocity is estimated from bulk momentum and density)
         const real_t flowthrough_time
-                = scenario.Lx/(scenario.bulk_rhou/scenario.bulk_rho);
+                = grid.L.x()/(scenario.bulk_rhou/scenario.bulk_rho);
         const real_t flowthroughs
                 = (tc->current_t() - initial_t)/flowthrough_time;
         if (boost::math::isnormal(flowthrough_time)) {

@@ -36,7 +36,53 @@ static void parse_option(const std::string &s,
     *value = t;
 }
 
-void GridDefinition::initialize_options()
+static const char grid_definition_description[]
+        = "Mixed Fourier/B-spline computational grid definition";
+
+GridDefinition::GridDefinition()
+    : IDefinition(grid_definition_description),
+      L(std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN(),
+        std::numeric_limits<double>::quiet_NaN()),
+      N(0, 0, 0),
+      DAF(std::numeric_limits<double>::quiet_NaN(),
+          1 /* Never dealiased */,
+          std::numeric_limits<double>::quiet_NaN()),
+      dN(0, 0, 0),
+      P(0, 0),
+      k(0),
+      htdelta(std::numeric_limits<double>::quiet_NaN())
+{
+    this->initialize_options("NaN", "NaN", "NaN");  // Must match L!
+}
+
+GridDefinition::GridDefinition(const char * Lx,
+                               int          Nx,
+                               double       DAFx,
+                               const char * Ly,
+                               int          Ny,
+                               int          k,
+                               double       htdelta,
+                               const char * Lz,
+                               int          Nz,
+                               double       DAFz)
+    : IDefinition("Mixed Fourier/B-spline computational grid definition"),
+      L(suzerain::exprparse<double>(Lx, "GridDefinition(..., Lx, ...)"),
+        suzerain::exprparse<double>(Lx, "GridDefinition(..., Ly, ...)"),
+        suzerain::exprparse<double>(Lx, "GridDefinition(..., Lz, ...)")),
+      N(Nx, Ny, Nz),
+      DAF(DAFx, 1 /* Never dealiased */, DAFz),
+      dN(Nx * DAFx, Ny, Nz * DAFz),
+      P(0, 0),
+      k(k),
+      htdelta(htdelta)
+{
+    this->initialize_options(Lx, Ly, Lz);
+}
+
+void GridDefinition::initialize_options(const char * default_Lx,
+                                        const char * default_Ly,
+                                        const char * default_Lz)
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -56,6 +102,14 @@ void GridDefinition::initialize_options()
     std::auto_ptr<boost::program_options::typed_value<std::string> > p;
     std::string *nullstr = NULL;
 
+    // Lx
+    p.reset(boost::program_options::value<std::string>(NULL));
+    p->notifier(bind(&parse_option<double>, _1, &L.x(),
+                     &ensure_positive<double>, "Lx"));
+    if (default_Lx) p->default_value(default_Lx);
+    this->add_options()("Lx", p.release(),
+            "Nondimensional domain length in streamwise X direction");
+
     // Nx
     p.reset(boost::program_options::value(nullstr));
     f = &GridDefinition::Nx;
@@ -71,6 +125,14 @@ void GridDefinition::initialize_options()
     if (!(isnan)(DAF.x())) p->default_value(lexical_cast<string>(DAF.x()));
     this->add_options()("DAFx", p.release(),
             "Dealiasing factor in streamwise X direction");
+
+    // Ly
+    p.reset(boost::program_options::value<std::string>(NULL));
+    p->notifier(bind(&parse_option<double>, _1, &L.y(),
+                     &ensure_positive<double>, "Ly"));
+    if (default_Ly) p->default_value(default_Ly);
+    this->add_options()("Ly", p.release(),
+            "Nondimensional domain length in wall normal Y direction");
 
     // Ny
     p.reset(boost::program_options::value(nullstr));
@@ -100,6 +162,14 @@ void GridDefinition::initialize_options()
     if (!(isnan)(htdelta)) p->default_value(lexical_cast<string>(htdelta));
     this->add_options()("htdelta", p.release(),
             "Wall-normal breakpoint hyperbolic tangent stretching");
+
+    // Lz
+    p.reset(boost::program_options::value<std::string>(NULL));
+    p->notifier(bind(&parse_option<double>, _1, &L.z(),
+                     &ensure_positive<double>, "Lz"));
+    if (default_Lz) p->default_value(default_Lz);
+    this->add_options()("Lz", p.release(),
+            "Nondimensional domain length in spanwise Z direction");
 
     // Nz
     p.reset(boost::program_options::value(nullstr));

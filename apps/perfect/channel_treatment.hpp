@@ -67,7 +67,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     ChannelTreatment(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -130,7 +130,7 @@ private:
 
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
-            const suzerain::problem::ScenarioDefinition<real_t> &scenario,
+            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -160,7 +160,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
     // Precompute operator for finding bulk quantities from coefficients
     bulkcoeff.resize(b.n());
     b.integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= scenario.Ly;
+    bulkcoeff /= grid.L.y();
     bulkcoeff_dot_interior = bulkcoeff.dot(interior.matrix());
 
     // Release resources if not necessary beyond initialization
@@ -183,12 +183,9 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
-    OperatorCommonBlock &common
-            = this->common;
-    const suzerain::problem::ScenarioDefinition<real_t> &scenario
-            = this->scenario;
-    const suzerain::pencil_grid &dgrid
-            = this->dgrid;
+    OperatorCommonBlock &common = this->common;
+    const suzerain::problem::ScenarioDefinition &scenario = this->scenario;
+    const suzerain::pencil_grid &dgrid = this->dgrid;
     const int Ny = dgrid.global_wave_extent.y();
 
     // Sidesteps assertions when local rank contains no wavespace information

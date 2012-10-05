@@ -87,8 +87,8 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
-    const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
+    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
+    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
@@ -177,8 +177,8 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
-    const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
+    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
+    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == input.shape()[1])) return;
@@ -384,8 +384,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     const int dNz  = grid.dN.z();
     const int dkbz = dgrid.local_wave_start.z();
     const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(scenario.Lx);  // Weird looking...
-    const real_t twopioverLz = twopiover(scenario.Lz);  // ...for FP control
+    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
+    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
 
     // Sidesteps assertions when local rank contains no wavespace information
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;

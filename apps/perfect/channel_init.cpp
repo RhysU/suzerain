@@ -63,7 +63,7 @@ using std::numeric_limits;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::TimeDefinition;
-static ScenarioDefinition<real_t> scenario(
+static ScenarioDefinition scenario(
         /* Re        */ "100",
         /* Ma        */ "1.5",
         /* Pr        */ "0.7",
@@ -71,16 +71,16 @@ static ScenarioDefinition<real_t> scenario(
         /* bulk_rhou */ "1",
         /* alpha     */ "0",
         /* beta      */ "2/3",
-        /* gamma     */ "1.4",
-        /* Lx        */ "4*pi",
-        /* Ly        */ "2",
-        /* Lz        */ "4*pi/3");
+        /* gamma     */ "1.4");
 static GridDefinition grid(
+        /* Lx      */ "4*pi",
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
+        /* Ly      */ "2",
         /* Ny      */ 32,
         /* k       */ 8,
         /* htdelta */ 3,
+        /* Lz      */ "4*pi/3",
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static TimeDefinition<real_t> timedef(
@@ -265,9 +265,9 @@ int main(int argc, char **argv)
         msoln->Ma    = scenario.Ma;
         msoln->Re    = scenario.Re;
         msoln->Pr    = scenario.Pr;
-        msoln->Lx    = scenario.Lx;
-        msoln->Ly    = scenario.Ly;
-        msoln->Lz    = scenario.Lz;
+        msoln->Lx    = grid.L.x();
+        msoln->Ly    = grid.L.y();
+        msoln->Lz    = grid.L.z();
 
         INFO0("Disabling bulk_rho and bulk_rhou constraints"
               " due to manufactured solution use");
@@ -281,7 +281,7 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    channel::create(grid.N.y(), grid.k, 0.0, scenario.Ly, grid.htdelta, b, bop);
+    channel::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Creating new restart file " << restart_file);
@@ -289,10 +289,10 @@ int main(int argc, char **argv)
     esio_string_set(esioh, "/", "generated_by",
                     (std::string("channel_init ") + revstr).c_str());
     channel::store(esioh, scenario);
-    channel::store(esioh, grid, scenario.Lx, scenario.Lz);
+    channel::store(esioh, grid);
     channel::store(esioh, b, bop, gop);
     channel::store(esioh, timedef);
-    channel::store(esioh, scenario, msoln);
+    channel::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -331,7 +331,7 @@ int main(int argc, char **argv)
         real_t factor;
         if (npower == 1) {
             // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
-            factor = 6 / std::pow(scenario.Ly, 2);
+            factor = 6 / std::pow(grid.L.y(), 2);
         } else {
             // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
             //      -  (Gamma[-n] Gamma[3/2+n])
@@ -340,10 +340,10 @@ int main(int argc, char **argv)
             const real_t num1   = std::sin(npower * pi<real_t>());
             const real_t num2   = boost::math::tgamma(-npower);
             const real_t num3   = boost::math::tgamma(real_t(3)/2 + npower);
-            const real_t denom1 = std::pow(           2, -1-2*npower);
-            const real_t denom2 = std::pow( scenario.Ly,  1+2*npower);
+            const real_t denom1 = std::pow(         2, -1-2*npower);
+            const real_t denom2 = std::pow(grid.L.y(),  1+2*npower);
             const real_t denom3 = std::pow(pi<real_t>(),  real_t(3)/2);
-            factor = - (num1 * num2 * num3 * scenario.Ly)
+            factor = - (num1 * num2 * num3 * grid.L.y())
                    /   (denom1 * denom2 * denom3);
         }
 
@@ -368,7 +368,7 @@ int main(int argc, char **argv)
                     // Initialize primitive state
                     const real_t rho = 1;
                     const real_t u   = factor
-                                     * std::pow(y * (scenario.Ly - y), npower);
+                                     * std::pow(y * (grid.L.y() - y), npower);
                     const real_t v   = 0;
                     const real_t w   = 0;
                     const real_t T   = 1;
