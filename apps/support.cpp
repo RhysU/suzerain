@@ -2037,7 +2037,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
 
     // Temporary storage for accumulating and broadcasting results
     Eigen::VectorXc buf(2*state.shape()[0]);
-    typedef Eigen::Map<Eigen::Array<complex_t,field::count,1> > results_type;
+    typedef Eigen::Map<Eigen::Array<complex_t,field::count,1> > results_type; // BEWARE BROKEN BROKEN BROKEN BROKEN
     results_type total2(buf.data());
     results_type mean2 (buf.data() + state.shape()[0]);
 
