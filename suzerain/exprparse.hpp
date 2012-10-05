@@ -49,7 +49,7 @@ void exprparse(const std::string& s, float& v, const char *name = NULL);
 void exprparse(const std::string& s, double& v, const char *name = NULL);
 
 /**
- * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * Parse and evaluate a constant-valued arithmetic expression.  Identical to
  * calling <tt>exprparse(const std::string&, FPT&, const char*)</tt> where the
  * result is returned by value rather than being a mutable argument.
  *
@@ -69,7 +69,7 @@ FPT exprparse(const std::string& s, const char *name)
 }
 
 /**
- * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * Parse and evaluate a constant-valued arithmetic expression.  Identical to
  * calling <tt>exprparse(const char*, FPT&, const char*)</tt> where the result
  * is returned by value rather than being a mutable argument.
  *
@@ -89,7 +89,7 @@ FPT exprparse(const char *s, const char *name)
 }
 
 /**
- * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * Parse and evaluate a constant-valued arithmetic expression.  Identical to
  * calling <tt>exprparse(const std::string&, FPT&)</tt> where the result is
  * returned by value rather than being a mutable argument.
  *
@@ -108,7 +108,7 @@ FPT exprparse(const std::string& s)
 }
 
 /**
- * Parse an evaluate a constant-valued arithmetic expression.  Identical to
+ * Parse and evaluate a constant-valued arithmetic expression.  Identical to
  * calling <tt>exprparse(const char*, FPT&)</tt> where the result is returned
  * by value rather than being a mutable argument.
  *
