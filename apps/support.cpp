@@ -41,7 +41,7 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/rholut.hpp>
-#include <suzerain/RngStream.hpp>
+#include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
 #include <suzerain/validation.hpp>
 #include <sys/file.h>

@@ -1,6 +1,6 @@
 /***********************************************************************\
  *
- * File:           RngStream.cpp for multiple streams of Random Numbers
+ * File:           rngstream.cpp for multiple streams of Random Numbers
  * Language:       C++ (ISO 1998)
  * Copyright:      Pierre L'Ecuyer, University of Montreal
  * Notice:         This code can be used freely for personal, academic,

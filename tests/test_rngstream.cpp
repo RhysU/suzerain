@@ -8,7 +8,7 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <suzerain/RngStream.hpp>
+#include <suzerain/rngstream.hpp>
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>

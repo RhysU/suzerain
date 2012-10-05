@@ -132,13 +132,13 @@ EXTRA_PROGRAMS         += test_htstretch
 test_htstretch_SOURCES  = test_htstretch.c
 test_htstretch_LDADD    = ../suzerain/libsuzerain.la
 
-TESTS                  += test_RngStream
-EXTRA_PROGRAMS         += test_RngStream
-test_RngStream_SOURCES  = test_RngStream.cpp
-test_RngStream_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_RngStream_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_RngStream_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-test_RngStream_LDADD   += ../suzerain/libsuzerain.la
+TESTS                  += test_rngstream
+EXTRA_PROGRAMS         += test_rngstream
+test_rngstream_SOURCES  = test_rngstream.cpp
+test_rngstream_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_rngstream_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_rngstream_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_rngstream_LDADD   += ../suzerain/libsuzerain.la
 
 TESTS            += test_mpl
 EXTRA_PROGRAMS   += test_mpl
