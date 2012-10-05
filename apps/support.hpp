@@ -491,27 +491,6 @@ struct physical_view {
 
 };
 
-
-/** Holds information on the \f$L^2\f$ norm of a scalar field */
-struct L2 {
-    real_t mean2;
-    real_t fluctuating2;
-    real_t total2()      const { return mean2 + fluctuating2;    };
-    real_t total()       const { return std::sqrt(total2());     };
-    real_t mean()        const { return std::sqrt(mean2);        };
-    real_t fluctuating() const { return std::sqrt(fluctuating2); };
-};
-
-/**
- * Compute information about the \f$L^2\f$ norm of all scalar fields.
- * See writeup/L2.tex for full details.
- */
-std::vector<L2>
-field_L2(const suzerain::ContiguousState<4,complex_t> &state,
-         const suzerain::problem::GridDefinition& grid,
-         const suzerain::pencil_grid& dgrid,
-         const suzerain::bsplineop& gop);
-
 /**
  * Accumulate the result of adding \c alpha times the manufactured solution \c
  * msoln times \c beta times the given wave-space state \c swave.  Setting

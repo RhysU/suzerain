@@ -42,6 +42,7 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
+#include <suzerain/l2.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -243,8 +244,8 @@ static void information_L2(const std::string& prefix,
 
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
-    const std::vector<channel::L2> L2
-        = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+    const std::vector<suzerain::L2> L2
+        = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << prefix;
@@ -356,8 +357,8 @@ static void information_manufactured_solution_absolute_error(
     channel::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             scenario, grid, *dgrid, *b, *bop, simulation_time);
-    const std::vector<channel::L2> L2
-        = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+    const std::vector<suzerain::L2> L2
+        = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
     std::ostringstream msg;
@@ -1551,8 +1552,8 @@ int main(int argc, char **argv)
                 dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
         }
         state_nonlinear->addScaled(1/chi, *state_linear);
-        const std::vector<channel::L2> L2
-            = channel::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+        const std::vector<suzerain::L2> L2
+            = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
