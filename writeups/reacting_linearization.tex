@@ -99,7 +99,8 @@ the diffusivity. This term, in Gibbs notation, is
 \begin{equation}
   \nabla \cdot (\rho_s D_s \nabla c_s)
 \end{equation}
-Note that $c_s$, the mass fractions, are defined as: $\frac{\rho_s}{\rho} =
+Note that $c_s$, the mass fractions, are defined as:
+$\frac{\rho_s}{\rho} = 
 c_s$.  It can therefore be shown that,
 \begin{equation}
   \nabla c_s = \nabla (\frac{\rho_s}{\rho}) = \nabla (\rho_s \rho^{-1})
@@ -114,7 +115,8 @@ We distribute the $\rho^{-1}$ and expand several of the derivatives,
 \begin{equation}
   \nabla D_s \cdot \nabla \rho_s + D_s \Delta \rho_s - \nabla \cdot (D_s \rho^{-1} \rho_s \nabla \rho) - D_s \rho^{-1} \rho_s \Delta \rho - \nabla(D_s \rho^{-1} \rho_s) \cdot \nabla \rho
 \end{equation}
-Thus, the second and third terms ($D_s \Delta \rho_s$ and $D_s \rho^{-1} \rho_s \Delta \rho$) are components of the linear operator.
+Thus, the second and third terms ($D_s \Delta \rho_s$ and $D_s \rho^{-1}
+\rho_s \Delta \rho$) are components of the linear operator. 
 
 \section{Energy Equation}
 
@@ -171,5 +173,14 @@ We will use the second and third terms in the linear operator.
 Once we are happy with the above, a summary section containing the
 complete $L$ will be placed here. This way passing to the discrete
 implementation need only reference the summary.
+
+
+\section{ToDo}
+
+\begin{itemize}
+ \item What about B.C.?
+ \item What about coupling? (e.g. $\frac{\partial c}{\partial t} =
+       \alpha c''$)
+\end{itemize}
 
 \end{document}
