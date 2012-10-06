@@ -48,7 +48,7 @@ namespace channel {
  * @see channel::applyNonlinearOperator for the guts of the implementation.
  */
 class NonlinearOperator
-    : public suzerain::OperatorBase<real_t>,
+    : public suzerain::OperatorBase,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::ContiguousState<4,complex_t>
       >
@@ -64,7 +64,8 @@ public:
             OperatorCommonBlock &common,
             const boost::shared_ptr<
                   const channel::manufactured_solution>& msoln)
-        : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+        : suzerain::OperatorBase(grid, dgrid, b, bop),
+          scenario(scenario),
           common(common),
           msoln(msoln)
     {}
@@ -77,6 +78,9 @@ public:
             const std::size_t substep_index) const;
 
 protected:
+
+    /** The scenario in which the operator is used */
+    const suzerain::problem::ScenarioDefinition &scenario;
 
     /** Houses data additionally required for some linear operators */
     OperatorCommonBlock &common;
@@ -94,7 +98,7 @@ private:
 
 /** An operator which applies or inverts a B-spline mass matrix */
 class BsplineMassOperator
-  : public suzerain::OperatorBase<real_t>,
+  : public suzerain::OperatorBase,
     public suzerain::timestepper::lowstorage::ILinearOperator<
         suzerain::multi_array::ref<complex_t,4>,
         suzerain::ContiguousState<4,complex_t>
@@ -103,7 +107,6 @@ class BsplineMassOperator
 public:
 
     BsplineMassOperator(
-            const suzerain::problem::ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -158,7 +161,8 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common)
-        : BsplineMassOperator(scenario, grid, dgrid, b, bop),
+        : BsplineMassOperator(grid, dgrid, b, bop),
+          scenario(scenario),
           common(common)
     {}
 
@@ -185,6 +189,9 @@ public:
             const std::size_t substep_index) const;
 
 protected:
+
+    /** The scenario in which the operator is used */
+    const suzerain::problem::ScenarioDefinition &scenario;
 
     /** Houses data required for \ref invertMassPlusScaledOperator */
     OperatorCommonBlock &common;

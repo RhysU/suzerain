@@ -41,11 +41,17 @@
 
 namespace channel {
 
-template<bool ZerothSubstep,
-         linearize::type Linearize,
-         class ManufacturedSolution>
+template <bool ZerothSubstep,
+          linearize::type Linearize,
+          class ManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
-            const suzerain::OperatorBase<real_t> &o,
+            const real_t alpha,
+            const real_t beta,
+            const real_t gamma,
+            const real_t Ma,
+            const real_t Pr,
+            const real_t Re,
+            const suzerain::OperatorBase &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
@@ -232,14 +238,8 @@ std::vector<real_t> applyNonlinearOperator(
         o.dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
 
-    // Retrieve constants and compute derived constants before inner loops
-    const real_t alpha            = o.scenario.alpha;
+    // Compute derived constants before inner loops
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
-    const real_t beta             = o.scenario.beta;
-    const real_t gamma            = o.scenario.gamma;
-    const real_t Ma               = o.scenario.Ma;
-    const real_t Pr               = o.scenario.Pr;
-    const real_t Re               = o.scenario.Re;
     const real_t inv_Re           = 1 / Re;
     const real_t inv_Ma2          = 1 / (Ma * Ma);
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;

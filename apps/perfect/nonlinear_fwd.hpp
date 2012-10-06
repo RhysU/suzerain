@@ -316,8 +316,20 @@ enum type {
  * instantaneous wall-normal velocity is averaged across the streamwise and
  * spanwise directions and stored into <tt>common.u()</tt>.
  *
- * \param o Provides access to discretization, parallel decomposition,
- *        and scenario parameters.
+ * \param alpha Parameter controlling bulk viscosity
+ *        per \f$\alpha\f$ in namespace \ref suzerain::rholut.
+ * \param beta Temperature power law exponent
+ *        per \f$\beta\f$ in namespace \ref suzerain::rholut.
+ * \param gamma Constant ratio of specific heats
+ *        per \f$\gamma\f$ in namespace \ref suzerain::rholut.
+ * \param Ma Mach number
+ *        per \f$\textrm{Ma}\f$ in namespace \ref suzerain::rholut.
+ * \param Pr Prandtl number
+ *        per \f$\textrm{Pr}\f$ in namespace \ref suzerain::rholut.
+ * \param Re Reynolds number
+ *        per \f$\textrm{Re}\f$ in namespace \ref suzerain::rholut.
+ * \param o Provides access to discretization and parallel decomposition
+ *        operational details.
  * \param common Shared storage for interaction with an ILinearOperator
  *        implementation providing forcing and boundary conditions.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
@@ -348,11 +360,17 @@ enum type {
  * @see suzerain::timestepper::INonlinearOperator for the (slighly different)
  *      interface that an actual operator would provide.
  */
-template<bool ZerothSubstep,
-         linearize::type Linearize,
-         class ManufacturedSolution>
+template <bool ZerothSubstep,
+          linearize::type Linearize,
+          class ManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
-            const suzerain::OperatorBase<real_t> &o,
+            const real_t alpha,
+            const real_t beta,
+            const real_t gamma,
+            const real_t Ma,
+            const real_t Pr,
+            const real_t Re,
+            const suzerain::OperatorBase &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,

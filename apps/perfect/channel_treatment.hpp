@@ -100,7 +100,6 @@ public:
 
 private:
 
-
     /** Should bulk streamwise momentum constraint be enforced? */
     bool constrain_bulk_rhou() const
     {

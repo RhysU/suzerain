@@ -40,15 +40,13 @@
 namespace channel {
 
 BsplineMassOperator::BsplineMassOperator(
-        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
-    : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+    : suzerain::OperatorBase(grid, dgrid, b, bop),
       massluz(bop)
 {
-    SUZERAIN_UNUSED(scenario);
     SUZERAIN_UNUSED(grid);
     SUZERAIN_UNUSED(dgrid);
     SUZERAIN_UNUSED(b);
@@ -236,10 +234,22 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return channel::applyNonlinearOperator<true,  channel::linearize::none>
-            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+            (this->scenario.alpha,
+             this->scenario.beta,
+             this->scenario.gamma,
+             this->scenario.Ma,
+             this->scenario.Pr,
+             this->scenario.Re,
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return channel::applyNonlinearOperator<false, channel::linearize::none>
-            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+            (this->scenario.alpha,
+             this->scenario.beta,
+             this->scenario.gamma,
+             this->scenario.Ma,
+             this->scenario.Pr,
+             this->scenario.Re,
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

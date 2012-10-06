@@ -48,7 +48,7 @@ namespace channel {
  * OperatorCommonBlock.
  */
 class HybridIsothermalLinearOperator
-  : public suzerain::OperatorBase<real_t>,
+  : public suzerain::OperatorBase,
     public suzerain::timestepper::lowstorage::ILinearOperator<
         suzerain::multi_array::ref<complex_t,4>,
         suzerain::ContiguousState<4,complex_t>
@@ -66,7 +66,8 @@ public:
             suzerain::bspline &b,
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common)
-        : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+        : suzerain::OperatorBase(grid, dgrid, b, bop),
+          scenario(scenario),
           common(common)
     {}
 
@@ -110,6 +111,9 @@ public:
 
 protected:
 
+    /** The scenario in which the operator is used */
+    const suzerain::problem::ScenarioDefinition &scenario;
+
     /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
 
@@ -135,7 +139,7 @@ private:
  * @see channel::applyNonlinearOperator for the guts of the implementation.
  */
 class HybridNonlinearOperator
-    : public suzerain::OperatorBase<real_t>,
+    : public suzerain::OperatorBase,
       public suzerain::timestepper::INonlinearOperator<
             suzerain::ContiguousState<4,complex_t>
       >
@@ -155,7 +159,8 @@ public:
             OperatorCommonBlock &common,
             const boost::shared_ptr<
                   const channel::manufactured_solution>& msoln)
-        : suzerain::OperatorBase<real_t>(scenario, grid, dgrid, b, bop),
+        : suzerain::OperatorBase(grid, dgrid, b, bop),
+          scenario(scenario),
           common(common),
           msoln(msoln)
     {}
@@ -168,6 +173,9 @@ public:
             const std::size_t substep_index) const;
 
 protected:
+
+    /** The scenario in which the operator is used */
+    const suzerain::problem::ScenarioDefinition &scenario;
 
     /** Houses data additionally required for some linear operators */
     OperatorCommonBlock &common;

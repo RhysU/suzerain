@@ -20,7 +20,7 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// channel_ex.cpp: Initialize restart files for use with Suzerain
+// channel_init.cpp: Initialize restart files for use with Suzerain
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -315,14 +315,14 @@ int main(int argc, char **argv)
 
         // Use a canned manufactured solution routine for initialization
         channel::accumulate_manufactured_solution(
-                1, *msoln, 0, swave, scenario, grid, *dgrid, *b, *bop, mms);
+                1, *msoln, 0, swave, grid, *dgrid, *b, *bop, mms);
 
     } else {
 
         // Use a simple parabolic velocity profile
 
         // Initializing OperatorBase to access decomposition-ready utilities
-        suzerain::OperatorBase<real_t> obase(scenario, grid, *dgrid, *b, *bop);
+        suzerain::OperatorBase obase(grid, *dgrid, *b, *bop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         channel::physical_view<channel::field::count>::type sphys

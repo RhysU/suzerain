@@ -31,118 +31,42 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
-
-// TODO OperatorBase should be templated on, e.g. ContiguousState
 
 namespace suzerain {
 
 /**
- * Provides common B-spline and parallel FFT infrastructure useful across
- * many ILinearOperator and INonlinearOperator implementations.
- *
- * @tparam FPT Floating point type to employ.
+ * Provides common double-precision B-spline and parallel FFT infrastructure
+ * useful across many ILinearOperator and INonlinearOperator implementations.
  */
-template<typename FPT>
 class OperatorBase
 {
 public:
 
     /**
-     * Construct an instance based upon the provided scenario and numerics.
-     * The instance makes the constant arguments available by reference
-     * throughout its lifetime.  Accordingly, the constant reference arguments
-     * should have a lifetime longer than that of this instance.
+     * Construct an instance based upon the provided numeric utilities.  The
+     * instance makes the constant arguments available by reference throughout
+     * its lifetime.  Accordingly, the constant reference arguments should have
+     * a lifetime longer than that of this instance.
      *
-     * @param scenario Scenario definition to store.
      * @param grid     Grid definition to store.
      * @param dgrid    Decomposition providing parallel grid details.
      * @param b        B-spline workspace for obtaining necessary details,
      *                 e.g. integration coefficients.
      * @param bop      B-spline operators to use.
      */
-    OperatorBase(
-            const suzerain::problem::ScenarioDefinition &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop)
-        : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
-          lambda1_x(boost::math::constants::pi<FPT>() * one_over_delta_x),
-          lambda2_x(lambda1_x * lambda1_x),
-          one_over_delta_z(grid.N.z() /* !dN.z() */ / grid.L.z()),
-          lambda1_z(boost::math::constants::pi<FPT>() * one_over_delta_z),
-          lambda2_z(lambda1_z * lambda1_z),
-          scenario(scenario),
-          grid(grid),
-          dgrid(dgrid),
-          bop(bop),
-          y_(boost::extents[boost::multi_array_types::extent_range(
-                  dgrid.local_physical_start.y(),
-                  dgrid.local_physical_end.y())]),
-          one_over_delta_y_(
-                  boost::extents[boost::multi_array_types::extent_range(
-                        dgrid.local_physical_start.y(),
-                        dgrid.local_physical_end.y())]),
-          lambda1_y_(
-                  boost::extents[boost::multi_array_types::extent_range(
-                        dgrid.local_physical_start.y(),
-                        dgrid.local_physical_end.y())]),
-          lambda2_y_(
-                  boost::extents[boost::multi_array_types::extent_range(
-                        dgrid.local_physical_start.y(),
-                        dgrid.local_physical_end.y())])
-    {
-        const FPT pi = boost::math::constants::pi<FPT>();
+    OperatorBase(const suzerain::problem::GridDefinition &grid,
+                 const suzerain::pencil_grid &dgrid,
+                 suzerain::bspline &b,
+                 const suzerain::bsplineop &bop);
 
-        // Compute the B-spline-dependent correction factor to obtain
-        // good maximum eigenvalue estimates given wall-normal inhomogeneity.
-        // See model document for definitions of C^{(1)} and C^{(2)}.
-        double C1, Clow1, Chigh1;
-        suzerain_bspline_htstretch2_evdeltascale(
-                1, b.k(), grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
-        double C2, Clow2, Chigh2;
-        suzerain_bspline_htstretch2_evdeltascale(
-                2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
+    /** Virtual destructor to permit use as a base class */
+    virtual ~OperatorBase();
 
-        // In practice, directly using C^{(1)} and C^{(2)} is too aggressive
-        // as it requires using inconsistent safety factors when computing
-        // convectively- or diffusively-limited test problems.  Softening
-        // via taking sqrt(C^{(i)}) seems to permit a single safety factor
-        // to address both convective and diffusive stability restrictions.
-        using std::sqrt;
-        C1 = sqrt(C1); Clow1 = sqrt(Clow1); Chigh1 = sqrt(Chigh1);
-        C2 = sqrt(C2); Clow2 = sqrt(Clow2); Chigh2 = sqrt(Chigh2);
-
-        // Compute collocation point-based information local to this rank
-        for (int j = dgrid.local_physical_start.y();
-             j < dgrid.local_physical_end.y();
-             ++j) {
-
-            // Collocation point locations
-            y_[j] = b.collocation_point(j);
-
-            // Inverse spacing to next adjacent collocation point
-            one_over_delta_y_[j] = 1 / b.spacing_collocation_point(j);
-
-            // Eigenvalue estimates using collocation point spacing
-            const double inverse_spacing = one_over_delta_y_[j];
-
-            // Estimating wall-normal first derivative eigenvalue magnitudes
-            // Use Clow1 rather than C1 as it is always slightly conservative
-            lambda1_y_[j]  = pi * inverse_spacing / Clow1;
-
-            // Estimating wall-normal second derivative eigenvalue magnitudes
-            // Use Clow2 rather than C2 as it is always slightly conservative
-            lambda2_y_[j]  = pi * inverse_spacing / Clow2;
-            lambda2_y_[j] *= lambda2_y_[j];
-        }
-    }
-
-    /** Virtual destructor for peace of mind */
-    virtual ~OperatorBase() {}
-
-    /** Shorthand for scaled operator accumulation */
+    /**
+     * Perform scaled operator accumulation on two state fields.
+     *
+     * @see suzerain::bsplineop::accumulate
+     */
     template<typename AlphaType, typename MultiArrayX,
              typename BetaType,  typename MultiArrayY>
     int bop_accumulate(
@@ -167,7 +91,11 @@ public:
                 beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
     }
 
-    /** Shorthand for scaled operator application */
+    /**
+     * Perform scaled operator application on one state field.
+     *
+     * @see suzerain::bsplineop::apply
+     */
     template<typename AlphaType, typename MultiArray>
     int bop_apply(
             int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
@@ -186,7 +114,11 @@ public:
                 alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
     }
 
-    /** Shorthand for real-valued operator inversion */
+    /**
+     * Perform real-valued B-spline operator inversion on one state field.
+     *
+     * @see suzerain::bsplineop_lu::solve
+     */
     template<typename MultiArray>
     int bop_solve(
             const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
@@ -204,7 +136,11 @@ public:
                         x.strides()[1], x.strides()[2]);
     }
 
-    /** Shorthand for complex-valued operator inversion */
+    /**
+     * Perform complex-valued B-spline operator inversion on one state field.
+     *
+     * @see suzerain::bsplineop_luz::solve
+     */
     template<typename MultiArray>
     int bop_solve(
             const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
@@ -222,7 +158,11 @@ public:
                          x.strides()[1], x.strides()[2]);
     }
 
-    /** Shorthand for wave space-based differentiation accumulation */
+    /**
+     * Perform wave space-based differentiation using accumulation.
+     *
+     * @see suzerain::diffwave::accumulate
+     */
     template<typename MultiArrayX, typename MultiArrayY>
     void diffwave_accumulate(int dxcnt,
                              int dzcnt,
@@ -259,7 +199,11 @@ public:
 
     }
 
-    /** Shorthand for wave space-based differentiation application */
+    /**
+     * Perform wave space-based differentiation using application.
+     *
+     * @see suzerain::diffwave::apply
+     */
     template<typename MultiArray>
     void diffwave_apply(int dxcnt,
                         int dzcnt,
@@ -288,11 +232,10 @@ public:
                 dgrid.local_wave_end.z());
     }
 
-    /** Shorthand for zeroing modes present only for dealiasing */
+    /** Zero wave-space modes present only for dealiasing purposes */
     template<typename MultiArray>
-    void zero_dealiasing_modes(
-                        MultiArray &x,
-                        int ndx_x) const
+    void zero_dealiasing_modes(MultiArray &x,
+                               int ndx_x) const
     {
 #if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
@@ -308,7 +251,8 @@ public:
     /**
      * Return the <tt>i</tt>th \c globally-indexed x grid point.
      */
-    FPT x(std::size_t i) const {
+    double x(std::size_t i) const
+    {
         return i * grid.L.x() / grid.dN.x() - grid.L.x() / 2;
     }
 
@@ -316,14 +260,16 @@ public:
      * Return the <tt>j</tt>th \c globally-indexed y grid point.
      * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
-    FPT y(std::size_t j) const {
+    double y(std::size_t j) const
+    {
         return y_[j];
     }
 
     /**
      * Return the <tt>k</tt>th \c globally-indexed z grid point.
      */
-    FPT z(std::size_t k) const {
+    double z(std::size_t k) const
+    {
         return k * grid.L.z() / grid.dN.z() - grid.L.z() / 2;
     }
 
@@ -331,7 +277,8 @@ public:
      * Return the <tt>j</tt>th \c globally-indexed y grid spacing.
      * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
-    FPT one_over_delta_y(std::size_t j) const {
+    double one_over_delta_y(std::size_t j) const
+    {
         return one_over_delta_y_[j];
     }
 
@@ -340,7 +287,8 @@ public:
      * for the first derivative operator in y at the <tt>j</tt>th collocation
      * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
      */
-    FPT lambda1_y(std::size_t j) const {
+    double lambda1_y(std::size_t j) const
+    {
         return lambda1_y_[j];
     }
 
@@ -349,30 +297,28 @@ public:
      * for the second derivative operator in y at the <tt>j</tt>th collocation
      * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
      */
-    FPT lambda2_y(std::size_t j) const {
+    double lambda2_y(std::size_t j) const
+    {
         return lambda2_y_[j];
     }
 
     /** Uniform grid spacing in x */
-    const FPT one_over_delta_x;
+    const double one_over_delta_x;
 
-    /** Maximum pure imaginary eigenvalue magnitude for first derivatives in x */
-    const FPT lambda1_x;
+    /** Maximum pure imaginary eigenvalue magnitude for first derivative in x */
+    const double lambda1_x;
 
     /** Maximum pure real eigenvalue magnitude for second derivatives in x */
-    const FPT lambda2_x;
+    const double lambda2_x;
 
     /** Uniform grid spacing in z */
-    const FPT one_over_delta_z;
+    const double one_over_delta_z;
 
-    /** Maximum pure imaginary eigenvalue magnitude for first derivatives in z */
-    const FPT lambda1_z;
+    /** Maximum pure imaginary eigenvalue magnitude for first derivative in z */
+    const double lambda1_z;
 
     /** Maximum pure real eigenvalue magnitude for second derivatives in z */
-    const FPT lambda2_z;
-
-    /** The scenario in which the operator is used */
-    const typename suzerain::problem::ScenarioDefinition &scenario;
+    const double lambda2_z;
 
     /** The grid in which the operator is used */
     const suzerain::problem::GridDefinition &grid;
@@ -386,16 +332,16 @@ public:
 private:
 
     /** Stores y grid points on this rank in wave space */
-    boost::multi_array<FPT,1> y_;
+    boost::multi_array<double,1> y_;
 
     /** Stores y grid spacing on this rank in wave space */
-    boost::multi_array<FPT,1> one_over_delta_y_;
+    boost::multi_array<double,1> one_over_delta_y_;
 
     /** Stores pure imaginary eigenvalue magnitudes for y first derivatives */
-    boost::multi_array<FPT,1> lambda1_y_;
+    boost::multi_array<double,1> lambda1_y_;
 
     /** Stores pure real eigenvalue magnitudes for y second derivatives */
-    boost::multi_array<FPT,1> lambda2_y_;
+    boost::multi_array<double,1> lambda2_y_;
 
     // Noncopyable
     OperatorBase(const OperatorBase&);

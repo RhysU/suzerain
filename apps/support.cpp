@@ -1237,7 +1237,7 @@ void store_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
     for (size_t i = 0; i < channel::field::count; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
@@ -1400,7 +1400,7 @@ void load_collocation_values(
     }
 
     // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
 
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
@@ -1536,7 +1536,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     }
 
     // Convert state to physical space collocation points
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
     physical_view<field::count>::type sphys
             = physical_view<field::count>::create(dgrid, swave);
     for (size_t k = 0; k < channel::field::count; ++k) {
@@ -1821,7 +1821,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         = physical_view<field::count+3>::create(dgrid, s);
 
     // Initializing OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
 
     // From Ax in s[0] compute \partial_y Ax
     obase.bop_apply(1, 1.0, s, 0);
@@ -1997,7 +1997,6 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
@@ -2005,7 +2004,7 @@ void accumulate_manufactured_solution(
         const real_t simulation_time)
 {
     // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
 
     // Allocate one field of temporary storage for scratch purposes
     using suzerain::ContiguousState;
@@ -2176,7 +2175,7 @@ mean sample_mean_quantities(
     }
 
     // Obtain access to helper routines for differentiation
-    suzerain::OperatorBase<real_t> obase(scenario, grid, dgrid, b, bop);
+    suzerain::OperatorBase obase(grid, dgrid, b, bop);
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way

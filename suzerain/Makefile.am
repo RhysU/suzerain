@@ -131,6 +131,7 @@ libsuzerain_la_SOURCES       += htstretch.c
 libsuzerain_la_SOURCES       += inorder.c
 libsuzerain_la_SOURCES       += l2.cpp
 libsuzerain_la_SOURCES       += mpi.cpp
+libsuzerain_la_SOURCES       += operator_base.cpp
 libsuzerain_la_SOURCES       += os.c
 libsuzerain_la_SOURCES       += pencil_grid.cpp
 libsuzerain_la_SOURCES       += pre_gsl.c

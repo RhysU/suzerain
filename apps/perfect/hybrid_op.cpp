@@ -731,10 +731,22 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return channel::applyNonlinearOperator<true,  channel::linearize::rhome>
-            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+            (this->scenario.alpha,
+             this->scenario.beta,
+             this->scenario.gamma,
+             this->scenario.Ma,
+             this->scenario.Pr,
+             this->scenario.Re,
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return channel::applyNonlinearOperator<false, channel::linearize::rhome>
-            (*this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+            (this->scenario.alpha,
+             this->scenario.beta,
+             this->scenario.gamma,
+             this->scenario.Ma,
+             this->scenario.Pr,
+             this->scenario.Re,
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

@@ -500,7 +500,6 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,
