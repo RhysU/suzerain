@@ -59,7 +59,7 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
-    GRVY_TIMER_BEGIN("applyNonlinearOperator");
+    SUZERAIN_TIMER_BEGIN("applyNonlinearOperator");
 
     // Shorthand
     typedef suzerain::ContiguousState<4,complex_t> state_type;
@@ -290,7 +290,7 @@ std::vector<real_t> applyNonlinearOperator(
     if (    ZerothSubstep
          && Linearize != linearize::none) {  // References and mean velocity
 
-        GRVY_TIMER_BEGIN("reference quantities");
+        SUZERAIN_TIMER_BEGIN("reference quantities");
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t leftNotOnRank = o.dgrid.local_physical_start.y();
@@ -438,11 +438,11 @@ std::vector<real_t> applyNonlinearOperator(
         // Copy mean streamwise velocity information into common.u()
         common.u() = common.ref_ux();
 
-        GRVY_TIMER_END("reference quantities");
+        SUZERAIN_TIMER_END("reference quantities");
 
     } else {                                 // Mean velocity profile only
 
-        GRVY_TIMER_BEGIN("mean velocity profile");
+        SUZERAIN_TIMER_BEGIN("mean velocity profile");
 
         // Zero all reference quantities on fully-explicit zeroth substep
         if (ZerothSubstep && Linearize == linearize::none) {
@@ -495,13 +495,13 @@ std::vector<real_t> applyNonlinearOperator(
                     MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         }
 
-        GRVY_TIMER_END("mean velocity profile");
+        SUZERAIN_TIMER_END("mean velocity profile");
 
     }
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
-    GRVY_TIMER_BEGIN("nonlinear right hand sides");
+    SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
     size_t offset = 0;
     for (int j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
@@ -881,13 +881,13 @@ std::vector<real_t> applyNonlinearOperator(
         } // end X // end Z
 
     } // end Y
-    GRVY_TIMER_END("nonlinear right hand sides");
+    SUZERAIN_TIMER_END("nonlinear right hand sides");
 
     // Traversal:
     // (3) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
-        GRVY_TIMER_BEGIN("manufactured forcing");
+        SUZERAIN_TIMER_BEGIN("manufactured forcing");
 
         // Dereference the msoln smart pointer outside the compute loop
         const ManufacturedSolution &ms = *msoln;
@@ -927,7 +927,7 @@ std::vector<real_t> applyNonlinearOperator(
 
         } // end Y
 
-        GRVY_TIMER_END("manufactured forcing");
+        SUZERAIN_TIMER_END("manufactured forcing");
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
@@ -954,7 +954,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     }
 
-    GRVY_TIMER_END("applyNonlinearOperator");
+    SUZERAIN_TIMER_END("applyNonlinearOperator");
 
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce

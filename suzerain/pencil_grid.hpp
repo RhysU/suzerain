@@ -28,6 +28,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/timers.h>
 
 #ifdef SUZERAIN_HAVE_P3DFFT
 #include <p3dfft_d.h>
@@ -187,12 +188,11 @@ public:
      */
     void transform_wave_to_physical(double * inout) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("transform_wave_to_physical"); }
-            ~Guard() { grvy_timer_end(  "transform_wave_to_physical"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("transform_wave_to_physical"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("transform_wave_to_physical"); }
         } scope_guard;
-#endif
+
         return  transform_wave_to_physical_(inout);
     }
 
@@ -207,12 +207,11 @@ public:
      */
     void transform_physical_to_wave(double * inout) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("transform_physical_to_wave"); }
-            ~Guard() { grvy_timer_end(  "transform_physical_to_wave"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("transform_physical_to_wave"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("transform_physical_to_wave"); }
         } scope_guard;
-#endif
+
         return transform_physical_to_wave_(inout);
     }
 

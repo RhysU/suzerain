@@ -31,6 +31,7 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/timers.h>
 
 namespace suzerain {
 
@@ -74,12 +75,11 @@ public:
             const AlphaType& alpha, const MultiArrayX &x, int ndx_x,
             const BetaType& beta,         MultiArrayY &y, int ndx_y) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::bop_accumulate"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::bop_accumulate"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_accumulate"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_accumulate"); }
         } scope_guard;
-#endif
+
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
         assert((unsigned) y.strides()[3] == y.shape()[2] * y.strides()[2] );
@@ -100,12 +100,11 @@ public:
     int bop_apply(
             int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::bop_apply"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::bop_apply"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_apply"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_apply"); }
         } scope_guard;
-#endif
+
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
@@ -123,12 +122,11 @@ public:
     int bop_solve(
             const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::bop_solve(real)"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::bop_solve(real)"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_solve(real)"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_solve(real)"); }
         } scope_guard;
-#endif
+
         assert(x.shape()[1] == (unsigned) lu.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
@@ -145,12 +143,11 @@ public:
     int bop_solve(
             const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::bop_solve(cmplx)"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::bop_solve(cmplx)"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_solve(cmplx)"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_solve(cmplx)"); }
         } scope_guard;
-#endif
+
         assert(x.shape()[1] == (unsigned) luz.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
@@ -173,12 +170,14 @@ public:
                              MultiArrayY &y,
                              int ndx_y) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::diffwave_accumulate"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::diffwave_accumulate"); }
+            Guard()
+            {SUZERAIN_TIMER_BEGIN( "OperatorBase::diffwave_accumulate"); }
+
+            ~Guard()
+            { SUZERAIN_TIMER_END  ("OperatorBase::diffwave_accumulate"); }
         } scope_guard;
-#endif
+
         assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
         assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
 
@@ -211,12 +210,11 @@ public:
                         MultiArray &x,
                         int ndx_x) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::diffwave_apply"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::diffwave_apply"); }
+            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::diffwave_apply"); }
+            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::diffwave_apply"); }
         } scope_guard;
-#endif
+
         return suzerain::diffwave::apply(
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
@@ -237,12 +235,13 @@ public:
     void zero_dealiasing_modes(MultiArray &x,
                                int ndx_x) const
     {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
         struct Guard {
-            Guard()  { grvy_timer_begin("OperatorBase::zero_dealiasing_modes"); }
-            ~Guard() { grvy_timer_end(  "OperatorBase::zero_dealiasing_modes"); }
+            Guard()
+            { SUZERAIN_TIMER_BEGIN("OperatorBase::zero_dealiasing_modes"); }
+            ~Guard()
+            { SUZERAIN_TIMER_END  ("OperatorBase::zero_dealiasing_modes"); }
         } scope_guard;
-#endif
+
         // Applying the dx^0 dz^0 operator with a scale factor of 1
         // zeros the dealiasing-only wavenumbers within the field
         return this->diffwave_apply(0, 0, 1.0, x, ndx_x);

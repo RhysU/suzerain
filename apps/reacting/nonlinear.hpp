@@ -96,7 +96,7 @@ std::vector<real_t> applyNonlinearOperator(
 	    boost::shared_ptr<ConstitutiveLaws>& claws, // TODO: Decide if claws carries Ns (almost has to, right?)
 	    const unsigned int Ns )
 {
-    GRVY_TIMER_BEGIN("applyNonlinearOperator");
+    SUZERAIN_TIMER_BEGIN("applyNonlinearOperator");
 
     assert(Ns>0);
 
@@ -286,7 +286,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Traversal:
     // (2) Compute most of sources and fluxes (everything but the heat flux)
-    GRVY_TIMER_BEGIN("nonlinear right hand sides");
+    SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
     size_t offset = 0;
     for (int j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
@@ -510,7 +510,7 @@ std::vector<real_t> applyNonlinearOperator(
       } // end X // end Z
 
     } // end Y
-    GRVY_TIMER_END("nonlinear right hand sides");
+    SUZERAIN_TIMER_END("nonlinear right hand sides");
 
     //------------------------------------------------------------------
     //
@@ -556,7 +556,7 @@ std::vector<real_t> applyNonlinearOperator(
     // Traversal:
     // (3) (After going back to wave space with T and back down the
     //      grad(T)), Compute heat flux contribution.
-    GRVY_TIMER_BEGIN("nonlinear right hand sides");
+    SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
     size_t offset = 0;
     for (int j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
@@ -592,7 +592,7 @@ std::vector<real_t> applyNonlinearOperator(
     // (4) Computing any manufactured solution forcing (when enabled).
     // Isolating this pass allows skipping the work when unnecessary
     if (msoln) {
-      GRVY_TIMER_BEGIN("manufactured forcing");
+      SUZERAIN_TIMER_BEGIN("manufactured forcing");
 
       // Dereference the msoln smart pointer outside the compute loop
       const channel::manufactured_solution &ms = *msoln;
@@ -632,7 +632,7 @@ std::vector<real_t> applyNonlinearOperator(
 
       } // end Y
 
-      GRVY_TIMER_END("manufactured forcing");
+      SUZERAIN_TIMER_END("manufactured forcing");
     } // end msoln
 
 
@@ -706,7 +706,7 @@ std::vector<real_t> applyNonlinearOperator(
 
 
 
-    GRVY_TIMER_END("applyNonlinearOperator");
+    SUZERAIN_TIMER_END("applyNonlinearOperator");
 
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce

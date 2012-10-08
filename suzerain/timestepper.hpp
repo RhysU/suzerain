@@ -18,6 +18,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/timecontroller.hpp>
+#include <suzerain/timers.h>
 #include <suzerain/traits.hpp>
 
 /** @file
@@ -1494,12 +1495,10 @@ const typename suzerain::traits::component<Element>::type step(
     StateB& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
-#if defined(SUZERAIN_HAVE_GRVY) && defined(GRVY_LIB_VERSION)
     struct Guard {
-         Guard() { grvy_timer_begin("timestepper::lowstorage::step"); }
-        ~Guard() { grvy_timer_end(  "timestepper::lowstorage::step"); }
+         Guard() { SUZERAIN_TIMER_BEGIN("timestepper::lowstorage::step"); }
+        ~Guard() { SUZERAIN_TIMER_END  ("timestepper::lowstorage::step"); }
     } scope_guard;
-#endif
 
     using boost::is_same;
     BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));

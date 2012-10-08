@@ -27,9 +27,6 @@
 #include <suzerain/config.h>
 #endif
 
-// Must appear before Suzerain header includes to obtain timer hooks
-#include "../timers.hpp"
-
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/complex.hpp>
@@ -38,6 +35,7 @@
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/timers.h>
 
 #include "../logging.hpp"
 #include "hybrid_op.hpp"
@@ -68,7 +66,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    GRVY_TIMER_BEGIN("applyMassPlusScaledOperator");
+    SUZERAIN_TIMER_BEGIN("applyMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
@@ -127,7 +125,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 
             // Accumulate result back into state storage automatically
             // adjusting for when input imaginary part a priori should be zero
-            GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
@@ -142,11 +140,11 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
                     p + field::ndx::rhov*Ny,
                     p + field::ndx::rhow*Ny,
                     p + field::ndx::rhoe*Ny);
-            GRVY_TIMER_END("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
 
-    GRVY_TIMER_END("applyMassPlusScaledOperator");
+    SUZERAIN_TIMER_END("applyMassPlusScaledOperator");
 }
 
 void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
@@ -158,7 +156,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    GRVY_TIMER_BEGIN("accumulateMassPlusScaledOperator");
+    SUZERAIN_TIMER_BEGIN("accumulateMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
@@ -213,7 +211,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
             // Accumulate result automatically adjusting for when input
             // imaginary part a priori should be zero
-            GRVY_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
@@ -228,12 +226,12 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
                     &output[field::ndx::rhov][0][m - dkbx][n - dkbz],
                     &output[field::ndx::rhow][0][m - dkbx][n - dkbz],
                     &output[field::ndx::rhoe][0][m - dkbx][n - dkbz]);
-            GRVY_TIMER_END("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
 
         }
     }
 
-    GRVY_TIMER_END("accumulateMassPlusScaledOperator");
+    SUZERAIN_TIMER_END("accumulateMassPlusScaledOperator");
 }
 
 /**
@@ -360,7 +358,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    GRVY_TIMER_BEGIN("invertMassPlusScaledOperator");
+    SUZERAIN_TIMER_BEGIN("invertMassPlusScaledOperator");
 
     // Shorthand
     using suzerain::inorder::wavenumber;
@@ -501,7 +499,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
-            GRVY_TIMER_BEGIN("implicit operator assembly");
+            SUZERAIN_TIMER_BEGIN("implicit operator assembly");
             switch (solve_type) {
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
@@ -519,7 +517,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                         buf.data(), &A, patpt.data());
                 break;
             }
-            GRVY_TIMER_END("implicit operator assembly");
+            SUZERAIN_TIMER_END("implicit operator assembly");
 
             // Given state pencil "p" the rest of the solve loop looks like
             //
@@ -543,13 +541,13 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // transients and high wavenumbers.  So we'll run with gbsvx until
             // it's demonstrably a bad idea.
 
-            GRVY_TIMER_BEGIN("implicit operator solve");
+            SUZERAIN_TIMER_BEGIN("implicit operator solve");
 
-            GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+            SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
-            GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
 
-            GRVY_TIMER_BEGIN("implicit operator BCs");
+            SUZERAIN_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
             switch (solve_type) {
             default:
@@ -562,7 +560,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 bc_enforcer.op(A, patpt.data(), patpt.colStride());
                 break;
             }
-            GRVY_TIMER_END("implicit operator BCs");
+            SUZERAIN_TIMER_END("implicit operator BCs");
 
             switch (solve_type) {
             default:
@@ -571,9 +569,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             case gbsv:
                 info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
-                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
-                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
 
             case gbsvx:
@@ -582,9 +580,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
                     &rcond, &ferr, &berr, work.data(), rwork.data());
-                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
 
             case gbrfs:
@@ -662,9 +660,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     fact = 'F';
                 }
 
-                GRVY_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-                GRVY_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
                 break;
             }
 
@@ -683,7 +681,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
 engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
 
-            GRVY_TIMER_END("implicit operator solve");
+            SUZERAIN_TIMER_END("implicit operator solve");
 
             // Report any errors that occurred during the solve
             char buffer[128];
@@ -718,7 +716,7 @@ engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
 
     // State leaves method as coefficients in X, Y, and Z directions
 
-    GRVY_TIMER_END("invertMassPlusScaledOperator");
+    SUZERAIN_TIMER_END("invertMassPlusScaledOperator");
 }
 
 std::vector<real_t> HybridNonlinearOperator::applyOperator(

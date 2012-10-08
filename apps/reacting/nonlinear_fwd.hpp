@@ -26,13 +26,11 @@
 #ifndef NONLINEAR_FWD_HPP
 #define NONLINEAR_FWD_HPP
 
-// Must appear before Suzerain header includes to obtain timer hooks
-#include "../timers.hpp"
-
 #include <suzerain/operator_base.hpp>
 #include <suzerain/precision.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/timers.h>
 
 namespace channel {
 

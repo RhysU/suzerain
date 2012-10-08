@@ -23,18 +23,23 @@
 // timers.hpp: Conditional wrappers for performance timer routines
 // $Id$
 
-#ifndef TIMERS_HPP
-#define TIMERS_HPP
+#ifndef SUZERAIN_TIMERS_H
+#define SUZERAIN_TIMERS_H
 
 #include <suzerain/suzerain-config.h>
 
+/** @file
+ * Wraps GRVY-based performance timing logic in a way permitting its consistent
+ * use without the need to worry if GRVY is installed.
+ */
+
 #ifdef SUZERAIN_HAVE_GRVY
 #include <grvy.h>
-#define GRVY_TIMER_BEGIN(id)   grvy_timer_begin(id)
-#define GRVY_TIMER_END(id)     grvy_timer_end(id)
+#define SUZERAIN_TIMER_BEGIN(id)   grvy_timer_begin(id)
+#define SUZERAIN_TIMER_END(id)     grvy_timer_end(id)
 #else
-#define GRVY_TIMER_BEGIN(id)
-#define GRVY_TIMER_END(id)
+#define SUZERAIN_TIMER_BEGIN(id)
+#define SUZERAIN_TIMER_END(id)
 #endif
 
-#endif /* TIMERS_HPP */
+#endif /* SUZERAIN_TIMERS_H */
