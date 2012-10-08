@@ -64,8 +64,6 @@ std::vector<real_t> applyNonlinearOperator(
     // Shorthand
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     namespace ndx = channel::field::ndx;
-    using Eigen::Vector3r;
-    using Eigen::Matrix3r;
     using std::abs;
     using std::equal;
     using std::max;
@@ -489,7 +487,7 @@ std::vector<real_t> applyNonlinearOperator(
             common.u() /= (   o.dgrid.global_physical_extent.x()
                             * o.dgrid.global_physical_extent.z());
         } else {
-            Eigen::ArrayXr tmp;
+            ArrayXr tmp;
             tmp.resizeLike(common.u());
             tmp.setZero();
             SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),

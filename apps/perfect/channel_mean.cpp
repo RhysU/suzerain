@@ -35,10 +35,10 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/precision.hpp>
 #include <suzerain/program_options.hpp>
 
 #include "../logging.hpp"
-#include "../precision.hpp"
 #include "../support.hpp"
 
 // Introduce shorthand for common names
@@ -48,9 +48,11 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
+using suzerain::complex_t;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::TimeDefinition;
+using suzerain::real_t;
 
 // Provided by channel_mean_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
@@ -352,22 +354,22 @@ namespace quantity {
  * Compute the integration weights necessary to compute a bulk quantity from
  * the quantity's value at collocation points using a dot product.
  */
-static Eigen::VectorXr compute_bulk_weights(
+static suzerain::VectorXr compute_bulk_weights(
         real_t Ly,
         suzerain::bspline& b,
         suzerain::bsplineop_lu& boplu)
 {
     // Obtain coefficient -> bulk quantity weights
-    Eigen::VectorXr bulkcoeff(b.n());
+    suzerain::VectorXr bulkcoeff(b.n());
     b.integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= Ly;
 
     // Form M^-1 to map from collocation point values to coefficients
-    Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b.n(),b.n());
+    suzerain::MatrixXXr mat = suzerain::MatrixXXr::Identity(b.n(),b.n());
     boplu.solve(b.n(), mat.data(), 1, b.n());
 
     // Dot the coefficients with each column of M^-1
-    Eigen::VectorXr retval(b.n());
+    suzerain::VectorXr retval(b.n());
     for (int i = 0; i < b.n(); ++i) {
         retval[i] = bulkcoeff.dot(mat.col(i));
     }
@@ -649,7 +651,7 @@ int main(int argc, char **argv)
                             0, quantity::desc[quantity::y]);
 
             // (Re-) compute the bulk weights and then output those as well.
-            const Eigen::VectorXr bulk_weights
+            const suzerain::VectorXr bulk_weights
                     = compute_bulk_weights(grid->L.y(), *b, *boplu);
             esio_line_establish(h.get(), bulk_weights.size(),
                                 0, bulk_weights.size());
@@ -1146,7 +1148,7 @@ static quantity::storage_map_type process(
         boplu->solve(quantity::count, s->data(), 1, b->n());
 
         // Obtain target collocation points
-        Eigen::ArrayXr buf(i_b->n());
+        suzerain::ArrayXr buf(i_b->n());
         for (int i = 0; i < i_b->n(); ++i) buf[i] = i_b->collocation_point(i);
 
         // Evaluate coefficients onto the target collocation points

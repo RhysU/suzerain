@@ -32,11 +32,11 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/precision.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
 
 #include "logging.hpp"
-#include "precision.hpp"
 #include "support.hpp"
 
 #pragma warning(disable:383 1572)
@@ -95,20 +95,20 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    Eigen::VectorXr  exp(N);
+    suzerain::VectorXr  exp(N);
     exp.setZero(N, 1);
     exp[0] = -1;
     exp[N-1] = 1;
 
-    Eigen::VectorXr  vec(N);
-    Eigen::MatrixXXr mat(N,N);
-    for (real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
+    suzerain::VectorXr  vec(N);
+    suzerain::MatrixXXr mat(N,N);
+    for (suzerain::real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
         channel::create(N, k, 0.0, L, htdelta, b, bop);
         b->integration_coefficients(0, vec.data());
         boplu = boost::make_shared<suzerain::bsplineop_lu>(*bop);
         boplu->factor_mass(*bop);
 
-        mat = Eigen::MatrixXXr::Identity(N,N);
+        mat = suzerain::MatrixXXr::Identity(N,N);
         boplu->solve(N, mat.data(), 1, N);
         bop->apply(1, N, 1.0, mat.data(), 1, N);
         boplu->solve(N, mat.data(), 1, N);

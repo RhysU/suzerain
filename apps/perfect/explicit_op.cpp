@@ -183,9 +183,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State enters method as collocation point values in Y direction
 
     // Shorthand
-    using Eigen::Map;
-    using Eigen::ArrayXc;
-    using Eigen::ArrayXr;
     namespace ndx = channel::field::ndx;
     const std::size_t Ny          = state.shape()[1];
     const std::size_t wall_lower  = 0;

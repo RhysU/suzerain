@@ -30,10 +30,10 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state_fwd.hpp>
 
-#include "../precision.hpp"
 #include "../support.hpp"
 
 #include "nonlinear_fwd.hpp"

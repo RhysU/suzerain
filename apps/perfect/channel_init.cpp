@@ -38,12 +38,12 @@
 #include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>
 
 #include "../logging.hpp"
-#include "../precision.hpp"
 #include "../support.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
@@ -59,6 +59,8 @@ using boost::math::constants::pi;
 using boost::numeric_cast;
 using boost::shared_ptr;
 using std::numeric_limits;
+using suzerain::complex_t;
+using suzerain::real_t;
 
 // Global parameters initialized in main()
 using suzerain::problem::ScenarioDefinition;

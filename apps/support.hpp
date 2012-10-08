@@ -42,18 +42,30 @@
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
-#include "precision.hpp"
 #include "nsctpl_rholut.hpp"
 
 /**
  * Contains cross-cutting functionality used within the channel binaries.
  */
 namespace channel {
+
+// FIXME Remove once application-specific namespace refactored (#2191)
+typedef suzerain::real_t    real_t;
+typedef suzerain::complex_t complex_t;
+typedef suzerain::ArrayXc   ArrayXc;
+typedef suzerain::ArrayXr   ArrayXr;
+typedef suzerain::ArrayXXr  ArrayXXr;
+typedef suzerain::Matrix3r  Matrix3r;
+typedef suzerain::Vector3r  Vector3r;
+typedef suzerain::VectorXc  VectorXc;
+typedef suzerain::VectorXr  VectorXr;
+using suzerain::Map;
 
 /**
  * Default log4cxx configuration to use when none found in environment.

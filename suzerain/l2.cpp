@@ -37,20 +37,14 @@
 namespace suzerain {
 
 std::vector<L2>
-field_L2(const suzerain::ContiguousState<4,std::complex<double> > &state,
+field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop)
 {
-    // Shorthand
-    typedef double               real_t;
-    typedef std::complex<real_t> complex_t;
-    using Eigen::Map;
-    using Eigen::VectorXcd;
-    using boost::numeric_cast;
-
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
+    using boost::numeric_cast;
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
@@ -83,13 +77,13 @@ field_L2(const suzerain::ContiguousState<4,std::complex<double> > &state,
                                             mzb[0], mze[0], mzb[1], mze[1]);
 
     // Temporary storage for inner product computations
-    VectorXcd tmp;
+    VectorXc tmp;
     tmp.setZero(grid.N.y());
 
     // Contiguous temporary storage for accumulating and broadcasting results
-    VectorXcd buf(2*state.shape()[0]);
-    Map<VectorXcd> total2(buf.data() + 0,                state.shape()[0]);
-    Map<VectorXcd> mean2 (buf.data() + state.shape()[0], state.shape()[0]);
+    VectorXc buf(2*state.shape()[0]);
+    Map<VectorXc> total2(buf.data() + 0,                state.shape()[0]);
+    Map<VectorXc> mean2 (buf.data() + state.shape()[0], state.shape()[0]);
 
     // Compute the local L2 contribution towards each L^2 norm squared
     // Computation uses partial sums at each loop to reduce swamping which is

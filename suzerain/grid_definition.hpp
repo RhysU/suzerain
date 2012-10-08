@@ -16,6 +16,7 @@
 #define SUZERAIN_GRID_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/problem.hpp>
 
 // TODO Distinguish between two- versus one-sided stretching in GridDefinition
@@ -84,7 +85,7 @@ public:
     /**@{*/
 
     /** Physical domain extents in the X, Y, and Z directions. */
-    Eigen::Array3d L;
+    Array3r L;
 
     /** Global logical extents in the X, Y, and Z directions. */
     Eigen::Array3i N;
@@ -118,7 +119,7 @@ public:
     /**@{*/
 
     /** Dealiasing factors in the X, Y, and Z directions */
-    Eigen::Array3d DAF;
+    Array3r DAF;
 
     /** Global dealiased logical extents in the X, Y, and Z directions. */
     Eigen::Array3i dN;

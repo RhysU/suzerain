@@ -30,10 +30,12 @@
 #include "../timers.hpp"
 
 #include <suzerain/operator_base.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
 
-#include "../precision.hpp"
+// FIXME Present only for channel::real_t, etc workarounds (#2191)
+#include "../support.hpp"
 
 namespace channel {
 

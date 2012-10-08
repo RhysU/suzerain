@@ -50,6 +50,7 @@
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/precision.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
@@ -67,7 +68,6 @@
 #endif
 
 #include "../logging.hpp"
-#include "../precision.hpp"
 #include "../support.hpp"
 
 #include "channel_treatment.hpp"
@@ -81,6 +81,7 @@ extern "C" const char revstr[];
 
 #pragma warning(disable:383 1572)
 
+// Introduce shorthand for common names
 using boost::array;
 using boost::make_shared;
 using boost::numeric_cast;
@@ -88,6 +89,8 @@ using boost::scoped_ptr;
 using boost::shared_ptr;
 using std::numeric_limits;
 using std::size_t;
+using suzerain::complex_t;
+using suzerain::real_t;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
@@ -290,14 +293,14 @@ static void information_bulk(const std::string& prefix)
     }
 
     // Compute operator for finding bulk quantities from coefficients
-    Eigen::VectorXr bulkcoeff(b->n());
+    suzerain::VectorXr bulkcoeff(b->n());
     b->integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= grid.L.y();
 
     // Prepare the status message and log it
     msg << prefix;
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
-        Eigen::Map<Eigen::VectorXc> mean(
+        suzerain::Map<suzerain::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         append_real(msg << ' ', bulkcoeff.dot(mean.real()));
     }
@@ -1034,11 +1037,11 @@ int main(int argc, char **argv)
         boplu.factor();
 
         // Compute and display discrete conservation error magnitude
-        Eigen::MatrixXXr mat = Eigen::MatrixXXr::Identity(b->n(),b->n());
+        suzerain::MatrixXXr mat = suzerain::MatrixXXr::Identity(b->n(),b->n());
         boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1
         bop->apply(1, b->n(), 1.0, mat.data(), 1, b->n());  // D*M^-1
         boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1*D*M^-1
-        Eigen::VectorXr vec(b->n());
+        suzerain::VectorXr vec(b->n());
         b->integration_coefficients(0, vec.data());
         vec = vec.transpose() * mat;                        // w^{T}*M^-1*D*M^-1
         vec.head<1>()[0] -= -1;                             // Exact head

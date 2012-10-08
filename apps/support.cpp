@@ -50,7 +50,7 @@
 #include "support.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
-template class nsctpl_rholut::manufactured_solution<real_t>;
+template class nsctpl_rholut::manufactured_solution<channel::real_t>;
 
 using boost::numeric_cast;
 using std::size_t;
@@ -358,7 +358,7 @@ void store(const esio_handle h,
             grid.options().find("DAFz",false).description().c_str());
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
-    Eigen::ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
+    ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
     cbuf.fill(complex_t(1,0));
@@ -379,16 +379,16 @@ void store(const esio_handle h,
             2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
 
     DEBUG0("Storing collocation point vectors for Fourier bases");
-    Eigen::ArrayXr rbuf;
+    ArrayXr rbuf;
 
     // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
     if (grid.dN.x() > 1) {
-        rbuf = Eigen::ArrayXr::LinSpaced(
-                Eigen::Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
+        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
+                                  grid.dN.x(), 0, grid.dN.x() - 1);
         rbuf *= grid.L.x() / grid.dN.x();
         rbuf -= grid.L.x() / 2;
     } else {
-        rbuf = Eigen::ArrayXr::Constant(grid.dN.x(), 0);
+        rbuf = ArrayXr::Constant(grid.dN.x(), 0);
     }
     esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
     esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
@@ -396,12 +396,12 @@ void store(const esio_handle h,
 
     // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
     if (grid.dN.z() > 1) {
-        rbuf = Eigen::ArrayXr::LinSpaced(
-                Eigen::Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
+        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
+                                  grid.dN.z(), 0, grid.dN.z() - 1);
         rbuf *= grid.L.z() / grid.dN.z();
         rbuf -= grid.L.z() / 2;
     } else {
-        rbuf = Eigen::ArrayXr::Constant(grid.dN.z(), 0);
+        rbuf = ArrayXr::Constant(grid.dN.z(), 0);
     }
     esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
     esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
@@ -715,7 +715,7 @@ void store(const esio_handle h,
 
     DEBUG0("Storing B-spline knot details");
 
-    Eigen::ArrayXr buf(b->nknot());
+    Eigen::ArrayXd buf(b->nknot());
 
     for (int i = 0; i < b->nknot(); ++i) buf[i] = b->knot(i);
     esio_line_establish(h, b->nknot(), 0, (procid == 0 ? b->nknot() : 0));
@@ -779,7 +779,7 @@ void store(const esio_handle h,
 // Argument "first" is mutated to return the successful location name.
 // No suitable location may be detected by checking if first == last on return.
 template<typename ForwardIterator>
-static void load_linev(const esio_handle h, Eigen::ArrayXr &line,
+static void load_linev(const esio_handle h, ArrayXr &line,
                        ForwardIterator& first, const ForwardIterator& last)
 {
     for ( ; first != last; ++first ) {
@@ -798,7 +798,7 @@ static void load_linev(const esio_handle h, Eigen::ArrayXr &line,
 // Argument "first" is mutated to return the successful location name.
 // No suitable location may be detected by checking if first == last on return.
 template<typename ForwardIterator>
-static void load_line(const esio_handle h, Eigen::ArrayXr &line,
+static void load_line(const esio_handle h, ArrayXr &line,
                       ForwardIterator& first, const ForwardIterator& last)
 {
     for ( ; first != last; ++first ) {
@@ -833,7 +833,7 @@ real_t load(const esio_handle h,
     // knots are ignored
 
     // All ranks load B-spline breakpoints (as best effort attempt)
-    Eigen::ArrayXr breakpoints;
+    ArrayXr breakpoints;
     boost::array<const char *,2> breakpoints_locs = {{
         "breakpoints_y", "breakpoints"
     }};
@@ -842,7 +842,7 @@ real_t load(const esio_handle h,
     const bool breakpoints_found = (breakpoints_loc != breakpoints_locs.end());
 
     // All ranks load B-spline collocation points (as best effort attempt)
-    Eigen::ArrayXr colpoints;
+    ArrayXr colpoints;
     boost::array<const char *,2> colpoints_locs = {{
         "collocation_points_y", "collocation_points"
     }};
@@ -1256,11 +1256,11 @@ void store_collocation_values(
 
     for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
         // Unpack conserved quantities from fields
-        real_t rho =      sphys(field::ndx::rho,  o);
-        Eigen::Vector3r m(sphys(field::ndx::rhou, o),
-                          sphys(field::ndx::rhov, o),
-                          sphys(field::ndx::rhow, o));
-        real_t e =        sphys(field::ndx::rhoe, o);
+        const real_t   rho(sphys(field::ndx::rho,  o));
+        Vector3r         m(sphys(field::ndx::rhou, o),
+                           sphys(field::ndx::rhov, o),
+                           sphys(field::ndx::rhow, o));
+        const real_t     e(sphys(field::ndx::rhoe, o));
 
         // Compute primitive quantities to be stored
         real_t p, T;
@@ -1379,11 +1379,11 @@ void load_collocation_values(
 
     for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
         // Unpack primitive quantities from fields (by position)
-        Eigen::Vector3r m(sphys(0, o),  // Now just X velocity
-                          sphys(1, o),  // Now just Y velocity
-                          sphys(2, o)); // Now just Z velocity
-        const real_t p =  sphys(3, o);
-        const real_t T =  sphys(4, o);
+        Vector3r       m(sphys(0, o),  // Now just X velocity
+                         sphys(1, o),  // Now just Y velocity
+                         sphys(2, o)); // Now just Z velocity
+        const real_t   p(sphys(3, o));
+        const real_t   T(sphys(4, o));
 
         // Compute conserved quantities from primitive ones
         const real_t rho = gamma * p / T;   // Assumes EOS
@@ -1557,11 +1557,11 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                    * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            const real_t          rho(sphys(field::ndx::rho,  offset));
-            const Eigen::Vector3r m  (sphys(field::ndx::rhou, offset),
-                                      sphys(field::ndx::rhov, offset),
-                                      sphys(field::ndx::rhow, offset));
-            const real_t          e  (sphys(field::ndx::rhoe, offset));
+            const real_t   rho(sphys(field::ndx::rho,  offset));
+            const Vector3r m  (sphys(field::ndx::rhou, offset),
+                               sphys(field::ndx::rhov, offset),
+                               sphys(field::ndx::rhow, offset));
+            const real_t   e  (sphys(field::ndx::rhoe, offset));
 
             // Compute temperature using old_gamma, old_Ma
             real_t p, T;
@@ -1885,9 +1885,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 // where the mean of \partial_x and \partial_z terms must be
                 // zero by periodicity.  Components 1 and 3 may have nonzero
                 // mean because they wall-normal derivatives contributions.
-                Eigen::Vector3r curlA(p(5, offset) - p(3, offset),
-                                      p(1, offset) - p(4, offset),
-                                      p(2, offset) - p(0, offset));
+                const Vector3r curlA(p(5, offset) - p(3, offset),
+                                     p(1, offset) - p(4, offset),
+                                     p(2, offset) - p(0, offset));
 
                 //  5) Store curl A in physical space in the 3 scalar fields.
                 //
@@ -1946,11 +1946,11 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 namespace rholut = suzerain::rholut;
 
                 // Retrieve internal energy
-                const real_t rho( p(ndx::rho,  offset));
-                Eigen::Vector3r m(p(ndx::rhou, offset),
-                                  p(ndx::rhov, offset),
-                                  p(ndx::rhow, offset));
-                real_t       e  ( p(ndx::rhoe, offset));
+                const real_t rho(p(ndx::rho,  offset));
+                Vector3r       m(p(ndx::rhou, offset),
+                                 p(ndx::rhov, offset),
+                                 p(ndx::rhow, offset));
+                real_t         e(p(ndx::rhoe, offset));
                 const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
@@ -2123,11 +2123,7 @@ mean sample_mean_quantities(
     namespace ndx = channel::field::ndx;
     namespace acc = boost::accumulators;
     typedef suzerain::ContiguousState<4,complex_t> state_type;
-    using Eigen::Map;
-    using Eigen::Matrix3r;
     using Eigen::Upper;
-    using Eigen::Vector3r;
-    using Eigen::VectorXc;
 
     // State enters method as coefficients in X, Y, and Z directions
 
@@ -2437,7 +2433,7 @@ mean sample_mean_quantities(
     } else {
 
         // Reduce operation requires temporary storage on non-zero ranks
-        Eigen::ArrayXXr tmp;
+        ArrayXXr tmp;
         tmp.resizeLike(ret.storage);
         tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),

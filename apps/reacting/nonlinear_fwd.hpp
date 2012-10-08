@@ -30,10 +30,9 @@
 #include "../timers.hpp"
 
 #include <suzerain/operator_base.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
-
-#include "../precision.hpp"
 
 namespace channel {
 

@@ -30,18 +30,19 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/state.hpp>
 
 namespace suzerain {
 
 /** Holds information on the \f$L^2\f$ norm of a scalar field */
 struct L2 {
-    double mean2;
-    double fluctuating2;
-    double total2()      const { return mean2 + fluctuating2;    };
-    double total()       const { return std::sqrt(total2());     };
-    double mean()        const { return std::sqrt(mean2);        };
-    double fluctuating() const { return std::sqrt(fluctuating2); };
+    real_t mean2;
+    real_t fluctuating2;
+    real_t total2()      const { return mean2 + fluctuating2;    };
+    real_t total()       const { return std::sqrt(total2());     };
+    real_t mean()        const { return std::sqrt(mean2);        };
+    real_t fluctuating() const { return std::sqrt(fluctuating2); };
 };
 
 /**
@@ -49,7 +50,7 @@ struct L2 {
  * See writeup/L2.tex for full details.
  */
 std::vector<L2>
-field_L2(const suzerain::ContiguousState<4,std::complex<double> > &state,
+field_L2(const suzerain::ContiguousState<4,complex_t> &state,
          const suzerain::problem::GridDefinition& grid,
          const suzerain::pencil_grid& dgrid,
          const suzerain::bsplineop& gop);

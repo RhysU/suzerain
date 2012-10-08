@@ -45,6 +45,8 @@
 
 #pragma warning(disable:383 1572)
 
+namespace channel {
+
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
 #pragma float_control(except, on)
@@ -58,8 +60,6 @@ real_t twopiover(const real_t L)
 #pragma fenv_access(off)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
-
-namespace channel {
 
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
@@ -100,7 +100,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
 
     // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
-    Eigen::VectorXc tmp(Ny*field::count);
+    VectorXc tmp(Ny*field::count);
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
@@ -415,16 +415,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 # define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
 # define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
 #endif
-    SCRATCH_C(Eigen::ArrayXXc, buf,     A.ld,      A.n); // For packc calls
-    SCRATCH_C(Eigen::ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
-    SCRATCH_C(Eigen::ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
-    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);            // Linear solve...
-    SCRATCH_R(Eigen::ArrayXr,  r,       A.N);
-    SCRATCH_R(Eigen::ArrayXr,  c,       A.N);
-    SCRATCH_C(Eigen::ArrayXc,  b,       A.N);
-    SCRATCH_C(Eigen::ArrayXc,  x,       A.N);
-    SCRATCH_C(Eigen::ArrayXc,  work,  2*A.N);
-    SCRATCH_R(Eigen::ArrayXr,  rwork,   A.N);
+    SCRATCH_C(suzerain::ArrayXXc, buf,     A.ld,      A.n); // For packc calls
+    SCRATCH_C(suzerain::ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
+    SCRATCH_C(suzerain::ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
+    SCRATCH_I(Eigen   ::ArrayXi,  ipiv,    A.N);            // Linear solve...
+    SCRATCH_R(suzerain::ArrayXr,  r,       A.N);
+    SCRATCH_R(suzerain::ArrayXr,  c,       A.N);
+    SCRATCH_C(suzerain::ArrayXc,  b,       A.N);
+    SCRATCH_C(suzerain::ArrayXc,  x,       A.N);
+    SCRATCH_C(suzerain::ArrayXc,  work,  2*A.N);
+    SCRATCH_R(suzerain::ArrayXr,  rwork,   A.N);
 #undef SCRATCH_C
 #undef SCRATCH_R
 #undef SCRATCH_I

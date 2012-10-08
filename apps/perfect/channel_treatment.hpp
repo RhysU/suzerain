@@ -33,9 +33,8 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/precision.hpp>
 #include <suzerain/scenario_definition.hpp>
-
-#include "../precision.hpp"
 
 namespace channel {
 
@@ -118,10 +117,10 @@ private:
     boost::scoped_ptr<suzerain::bsplineop_lu> masslu;
 
     /** Precomputed integration coefficients */
-    Eigen::VectorXr bulkcoeff;
+    VectorXr bulkcoeff;
 
     /** Coefficients for function supported at non-wall points */
-    Eigen::ArrayXr interior;
+    ArrayXr interior;
 
     /** Dot product of bulkcoeff against interior */
     real_t bulkcoeff_dot_interior;
@@ -178,7 +177,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // State enters method as collocation point values in Y direction
 
     // Shorthand
-    typedef Eigen::Map<Eigen::ArrayXr,0,Eigen::InnerStride<2> > ModesRealPart;
+    typedef Map<ArrayXr,0,Eigen::InnerStride<2> > ModesRealPart;
     using suzerain::inorder::wavenumber;
     namespace field = channel::field;
     namespace ndx   = field::ndx;
@@ -242,7 +241,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
         // channel_treatment step (3) was already performed for state.
         // Perform mass matrix solve for forcing work contribution.
-        Eigen::ArrayXr rhs = common.u();
+        ArrayXr rhs = common.u();
         rhs[0]    = 0;
         rhs[Ny-1] = 0;
         masslu->solve(1, rhs.data(), 1, rhs.size());
