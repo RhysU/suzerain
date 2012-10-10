@@ -100,9 +100,9 @@ disp(plus.y(plus.y <= 10));
 
 tic();
 printf('Computed TKE-related quantities in plus units');
-plus.upp_upp = arsel(tilde_upp_upp.mu ./ u_tau.mu**2);
-plus.vpp_vpp = arsel(tilde_vpp_vpp.mu ./ u_tau.mu**2);
-plus.wpp_wpp = arsel(tilde_wpp_wpp.mu ./ u_tau.mu**2);
-plus.upp_vpp = arsel(tilde_upp_vpp.mu ./ u_tau.mu**2);
-plus.k       = arsel(tilde_k      .mu ./ u_tau.mu**2);
+plus.upp_upp = arsel(tilde_upp_upp.data / u_tau.mu**2);
+plus.vpp_vpp = arsel(tilde_vpp_vpp.data / u_tau.mu**2);
+plus.wpp_wpp = arsel(tilde_wpp_wpp.data / u_tau.mu**2);
+plus.upp_vpp = arsel(tilde_upp_vpp.data / u_tau.mu**2);
+plus.k       = arsel(tilde_k      .data / u_tau.mu**2);
 printf(' in %g seconds\n', toc());
