@@ -49,7 +49,7 @@ namespace suzerain
  * while the streamwise direction is stride one in physical space.
  */
 template<
-    typename FPT       = double,
+    typename FPT       = real_t,
     typename Allocator = typename suzerain::blas::allocator<FPT>::type
     >
 class pencil
