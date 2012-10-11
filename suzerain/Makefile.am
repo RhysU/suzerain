@@ -77,7 +77,6 @@ pkginclude_HEADERS += parcel.h
 pkginclude_HEADERS += pencilfft.hpp
 pkginclude_HEADERS += pencil_grid.hpp
 pkginclude_HEADERS += pencil.hpp
-pkginclude_HEADERS += precision.hpp
 pkginclude_HEADERS += pre_gsl.h
 pkginclude_HEADERS += problem.hpp
 pkginclude_HEADERS += profile.hpp

@@ -30,7 +30,6 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/precision.hpp>
 #include <suzerain/state.hpp>
 
 namespace suzerain {

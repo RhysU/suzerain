@@ -47,7 +47,6 @@
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/precision.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>

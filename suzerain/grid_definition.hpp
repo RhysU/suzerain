@@ -16,7 +16,6 @@
 #define SUZERAIN_GRID_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/precision.hpp>
 #include <suzerain/problem.hpp>
 
 // TODO Distinguish between two- versus one-sided stretching in GridDefinition

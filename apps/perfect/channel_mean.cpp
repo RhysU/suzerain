@@ -35,7 +35,6 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/precision.hpp>
 #include <suzerain/program_options.hpp>
 
 #include "../logging.hpp"

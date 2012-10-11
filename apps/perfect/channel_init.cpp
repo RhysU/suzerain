@@ -38,7 +38,6 @@
 #include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
-#include <suzerain/precision.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>

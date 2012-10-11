@@ -42,7 +42,6 @@
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/precision.hpp>
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/time_definition.hpp>

@@ -19,7 +19,6 @@
 #include <boost/test/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/precision.hpp>
 #include "test_tools.hpp"
 
 // Files performs no strictly useful test work.
