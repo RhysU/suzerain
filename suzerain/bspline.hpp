@@ -81,7 +81,7 @@ public:
      *      gsl_bspline_knots()
      */
     bspline(int k, const from_breakpoints &tag,
-            int nbreak, const double * breakpts)
+            int nbreak, const real_t * breakpts)
         : bw(gsl_bspline_alloc(k, nbreak)),
           dbw(gsl_bspline_deriv_alloc(k)),
           db_(gsl_matrix_alloc(k, k))
@@ -111,7 +111,7 @@ public:
      *      approximation requirements.
      */
     bspline(int k, const from_abscissae &tag,
-            int nabscissae, const double * abscissae, double * abserr = NULL)
+            int nabscissae, const real_t * abscissae, real_t * abserr = NULL)
         : bw(gsl_bspline_alloc(k, /* nbreak == */ nabscissae - k + 2)),
           dbw(gsl_bspline_deriv_alloc(k)),
           db_(gsl_matrix_alloc(k, k))
@@ -157,13 +157,13 @@ public:
     int n() const { return bw->n; }
 
     /** Retrieve the <tt>i</tt>th breakpoint. */
-    double breakpoint(std::size_t i) const
+    real_t breakpoint(std::size_t i) const
     {
         return gsl_bspline_breakpoint(i, bw);
     }
 
     /** Retrieve the <tt>i</tt>th knot. */
-    double knot(std::size_t i) const
+    real_t knot(std::size_t i) const
     {
         return gsl_vector_get(bw->knots, i);
     }
@@ -172,7 +172,7 @@ public:
      * Retrieve the <tt>i</tt>th collocation point.  These are the Greville
      * abscissae per <code>gsl_bspline_greville_abscissa()</code>.
      */
-    double collocation_point(int i) const
+    real_t collocation_point(int i) const
     {
         return gsl_bspline_greville_abscissa(i, bw);
     }
@@ -181,7 +181,7 @@ public:
      * Retrieve the minimum separation between collocation points
      * <tt>[i-1,i]</tt> and <tt>[i,i+1]</tt>.
      */
-    double spacing_collocation_point(int i) const
+    real_t spacing_collocation_point(int i) const
     {
         return suzerain_bspline_spacing_greville_abscissae(i, bw);
     }
@@ -190,7 +190,7 @@ public:
      * Retrieve the minimum separation between the breakpoints
      * providing the support for the <tt>i</tt>th basis function.
      */
-    double spacing_breakpoint(int i) const
+    real_t spacing_breakpoint(int i) const
     {
         return suzerain_bspline_spacing_breakpoints(i, bw);
     }
@@ -205,10 +205,10 @@ public:
      * @see       suzerain_bspline_linear_combination
      */
     int linear_combination(const std::size_t nderiv,
-                           const double * coeffs,
+                           const real_t * coeffs,
                            const std::size_t npoints,
-                           const double * points,
-                           double * values,
+                           const real_t * points,
+                           real_t * values,
                            const std::size_t ldvalues = 0)
     {
         return suzerain_bspline_linear_combination(nderiv, coeffs, npoints,
@@ -222,20 +222,20 @@ public:
     template< typename Complex1,
               typename Complex2 >
     typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>
+        suzerain::complex::traits::is_complex_t<Complex1>,
+        suzerain::complex::traits::is_complex_t<Complex2>
     >, int>::type linear_combination(const std::size_t nderiv,
                                      const Complex1 *coeffs,
                                      const std::size_t npoints,
-                                     const double * points,
+                                     const real_t * points,
                                      Complex2 *values,
                                      const std::size_t ldvalues = 0)
     {
         return suzerain_bspline_linear_combination_complex(
                 nderiv,
-                reinterpret_cast<const std::complex<double> *>(coeffs),
+                reinterpret_cast<const complex_t *>(coeffs),
                 npoints, points,
-                reinterpret_cast<std::complex<double> *>(values),
+                reinterpret_cast<complex_t *>(values),
                 ldvalues, db_, bw, dbw);
     }
 
@@ -244,7 +244,7 @@ public:
      * @see       suzerain_bspline_integration_coefficients
      */
     int integration_coefficients(const std::size_t nderiv,
-                                 double * coeffs)
+                                 real_t * coeffs)
     {
         return suzerain_bspline_integration_coefficients(
                 nderiv, coeffs, 1, db_, bw, dbw);
@@ -256,7 +256,7 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
+        suzerain::complex::traits::is_complex_t<Complex>, int
     >::type integration_coefficients(const std::size_t nderiv,
                                      Complex *coeffs)
     {
@@ -267,8 +267,8 @@ public:
 
         // Populate the real components
         return suzerain_bspline_integration_coefficients(
-                nderiv, reinterpret_cast<double *>(coeffs),
-                sizeof(Complex)/sizeof(double), db_, bw, dbw);
+                nderiv, reinterpret_cast<real_t *>(coeffs),
+                sizeof(complex_t)/sizeof(real_t), db_, bw, dbw);
     }
 
 /**@}*/
@@ -348,13 +348,13 @@ public:
      * @copybrief suzerain_bsplineop_workspace#D_T
      * @see       suzerain_bsplineop_workspace#D_T
      */
-    const double * D_T(int i) const { return w_->D_T[i]; }
+    const real_t * D_T(int i) const { return w_->D_T[i]; }
 
     /**
      * @copybrief suzerain_bsplineop_workspace#D_T
      * @see       suzerain_bsplineop_workspace#D_T
      */
-    double * D_T(int i) { return w_->D_T[i]; }
+    real_t * D_T(int i) { return w_->D_T[i]; }
 
     /** @return The wrapped suzerain_bsplineop_workspace pointer. */
     const suzerain_bsplineop_workspace* get() const { return w_; }
@@ -369,8 +369,8 @@ public:
      * @see       suzerain_bsplineop_accumulate
      */
     int accumulate(int nderiv, int nrhs,
-                   double alpha, const double *x, int incx, int ldx,
-                   double beta, double *y, int incy, int ldy) const
+                   real_t alpha, const real_t *x, int incx, int ldx,
+                   real_t beta, real_t *y, int incy, int ldy) const
     {
         return suzerain_bsplineop_accumulate(nderiv, nrhs,
                                              alpha, x, incx, ldx,
@@ -382,8 +382,8 @@ public:
      * @see       suzerain_bsplineop_accumulate
      */
     int accumulate(int nderiv,
-                   double alpha, const double *x, int incx,
-                   double beta,        double *y, int incy) const
+                   real_t alpha, const real_t *x, int incx,
+                   real_t beta,        real_t *y, int incy) const
     {
         return this->accumulate(
                 nderiv, 1, alpha, x, incx, 0, beta,  y, incy, 0);
@@ -393,8 +393,8 @@ public:
      * @copybrief suzerain_bsplineop_apply
      * @see       suzerain_bsplineop_apply
      */
-    int apply(int nderiv, int nrhs, double alpha,
-              double *x, int incx, int ldx) const
+    int apply(int nderiv, int nrhs, real_t alpha,
+              real_t *x, int incx, int ldx) const
     {
         return suzerain_bsplineop_apply(nderiv, nrhs, alpha, x, incx, ldx, w_);
     }
@@ -403,7 +403,7 @@ public:
      * @copybrief suzerain_bsplineop_apply
      * @see       suzerain_bsplineop_apply
      */
-    int apply(int nderiv, double alpha, double *x, int incx) const
+    int apply(int nderiv, real_t alpha, real_t *x, int incx) const
     {
         return this->apply(nderiv, 1, alpha, x, incx, 0);
     }
@@ -413,7 +413,7 @@ public:
      * @see       suzerain_bsplineop_interpolation_rhs
      */
     int interpolation_rhs(const suzerain_function * function,
-                          double * rhs,
+                          real_t * rhs,
                           suzerain::bspline &b) const
     {
         return suzerain_bsplineop_interpolation_rhs(function, rhs, b.bw, w_);
@@ -431,24 +431,24 @@ public:
     template< typename AlphaType, typename BetaType,
               typename Complex1,  typename Complex2 >
     typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>
+        suzerain::complex::traits::is_complex_t<Complex1>,
+        suzerain::complex::traits::is_complex_t<Complex2>
     >, int>::type accumulate(
             int nderiv, int nrhs,
             const AlphaType &alpha, const Complex1 *x, int incx, int ldx,
             const BetaType  &beta,        Complex2 *y, int incy, int ldy) const
     {
-        std::complex<double> alpha_complex;
+        complex_t alpha_complex;
         suzerain::complex::assign_complex(alpha_complex, alpha);
-        std::complex<double> beta_complex;
+        complex_t beta_complex;
         suzerain::complex::assign_complex(beta_complex, beta);
         return suzerain_bsplineop_accumulate_complex(
                 nderiv, nrhs,
                 alpha_complex,
-                reinterpret_cast<const std::complex<double> *>(x),
+                reinterpret_cast<const complex_t *>(x),
                 incx, ldx,
                 beta_complex,
-                reinterpret_cast<std::complex<double> *>(y),
+                reinterpret_cast<complex_t *>(y),
                 incy, ldy, w_);
     }
 
@@ -459,8 +459,8 @@ public:
     template< typename AlphaType, typename BetaType,
               typename Complex1,  typename Complex2 >
     typename boost::enable_if<boost::mpl::and_<
-        suzerain::complex::traits::is_complex_double<Complex1>,
-        suzerain::complex::traits::is_complex_double<Complex2>
+        suzerain::complex::traits::is_complex_t<Complex1>,
+        suzerain::complex::traits::is_complex_t<Complex2>
     >, int>::type accumulate(
                 int nderiv,
                 const AlphaType &alpha, const Complex1 *x, int incx,
@@ -475,13 +475,13 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type apply(int nderiv, int nrhs, double alpha,
+        suzerain::complex::traits::is_complex_t<Complex>, int
+    >::type apply(int nderiv, int nrhs, real_t alpha,
                   Complex *x, int incx, int ldx) const
     {
         return suzerain_bsplineop_apply_complex(
                 nderiv, nrhs, alpha,
-                reinterpret_cast<std::complex<double> *>(x),
+                reinterpret_cast<complex_t *>(x),
                 incx, ldx, w_);
     }
 
@@ -491,8 +491,8 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
-    >::type apply(int nderiv, double alpha,
+        suzerain::complex::traits::is_complex_t<Complex>, int
+    >::type apply(int nderiv, real_t alpha,
                   Complex *x, int incx) const
     {
         return this->apply(nderiv, 1, alpha, x, incx, 0);
@@ -504,13 +504,13 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
+        suzerain::complex::traits::is_complex_t<Complex>, int
     >::type interpolation_rhs(const suzerain_zfunction * zfunction,
                               Complex * rhs,
                               suzerain::bspline &b) const
     {
         return suzerain_bsplineop_interpolation_rhs_complex(
-                zfunction, reinterpret_cast<std::complex<double> *>(rhs),
+                zfunction, reinterpret_cast<complex_t *>(rhs),
                 b.bw, w_);
     }
 
@@ -578,13 +578,13 @@ public:
      * @copybrief suzerain_bsplineop_lu_workspace#A_T
      * @see       suzerain_bsplineop_lu_workspace#A_T
      */
-    const double * A_T() const { return luw_->A_T; }
+    const real_t * A_T() const { return luw_->A_T; }
 
     /**
      * @copybrief suzerain_bsplineop_lu_workspace#A_T
      * @see       suzerain_bsplineop_lu_workspace#A_T
      */
-    double * A_T() { return luw_->A_T; }
+    real_t * A_T() { return luw_->A_T; }
 
 /** @name Operations */
 /**@{*/
@@ -594,9 +594,9 @@ public:
      * @see       suzerain_bsplineop_lu_opaccumulate
      */
     int opaccumulate(int ncoefficients,
-                     const double * coefficients,
+                     const real_t * coefficients,
                      const bsplineop &op,
-                     const double scale) const
+                     const real_t scale) const
     {
         return suzerain_bsplineop_lu_opaccumulate(
                 ncoefficients, coefficients, op.get(), scale, luw_);
@@ -606,7 +606,7 @@ public:
      * @copybrief suzerain_bsplineop_lu_opnorm
      * @see       suzerain_bsplineop_lu_opnorm
      */
-    int opnorm(double &norm) const
+    int opnorm(real_t &norm) const
     {
         return suzerain_bsplineop_lu_opnorm(luw_, &norm);
     }
@@ -624,7 +624,7 @@ public:
      * @copybrief suzerain_bsplineop_lu_rcond
      * @see       suzerain_bsplineop_lu_rcond
      */
-    int rcond(const double norm, double &rcond) const
+    int rcond(const real_t norm, real_t &rcond) const
     {
         return suzerain_bsplineop_lu_rcond(norm, &rcond, luw_);
     }
@@ -633,7 +633,7 @@ public:
      * @copybrief suzerain_bsplineop_lu_solve
      * @see       suzerain_bsplineop_lu_solve
      */
-    int solve(int nrhs, double *B, int incb, int ldb) const
+    int solve(int nrhs, real_t *B, int incb, int ldb) const
     {
         return suzerain_bsplineop_lu_solve(nrhs, B, incb, ldb, luw_);
     }
@@ -648,7 +648,7 @@ public:
      * @see       suzerain_bsplineop_lu_opform
      */
     int opform(int ncoefficients,
-               const double * coefficients,
+               const real_t * coefficients,
                const bsplineop &op)
     {
         return suzerain_bsplineop_lu_opform(
@@ -740,13 +740,13 @@ public:
      * @copybrief suzerain_bsplineop_luz_workspace#A_T
      * @see       suzerain_bsplineop_luz_workspace#A_T
      */
-    const std::complex<double> * A_T() const { return luzw_->A_T; }
+    const complex_t * A_T() const { return luzw_->A_T; }
 
     /**
      * @copybrief suzerain_bsplineop_luz_workspace#A_T
      * @see       suzerain_bsplineop_luz_workspace#A_T
      */
-    std::complex<double> * A_T() { return luzw_->A_T; }
+    complex_t * A_T() { return luzw_->A_T; }
 
 /**@}*/
 
@@ -759,17 +759,17 @@ public:
      */
     template< typename ScaleType, typename Complex1 >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex1>, int
+        suzerain::complex::traits::is_complex_t<Complex1>, int
     >::type opaccumulate(int ncoefficients,
                          const Complex1* coefficients,
                          const bsplineop &op,
                          const ScaleType &scale)
     {
-        std::complex<double> scale_complex;
+        complex_t scale_complex;
         suzerain::complex::assign_complex(scale_complex, scale);
         return suzerain_bsplineop_luz_opaccumulate(
                 ncoefficients,
-                reinterpret_cast<const std::complex<double> *>(coefficients),
+                reinterpret_cast<const complex_t *>(coefficients),
                 op.get(), scale_complex, luzw_);
     }
 
@@ -777,7 +777,7 @@ public:
      * @copybrief suzerain_bsplineop_luz_opnorm
      * @see       suzerain_bsplineop_luz_opnorm
      */
-    int opnorm(double &norm) const
+    int opnorm(real_t &norm) const
     {
         return suzerain_bsplineop_luz_opnorm(luzw_, &norm);
     }
@@ -795,7 +795,7 @@ public:
      * @copybrief suzerain_bsplineop_luz_rcond
      * @see       suzerain_bsplineop_luz_rcond
      */
-    int rcond(const double norm, double &rcond) const
+    int rcond(const real_t norm, real_t &rcond) const
     {
         return suzerain_bsplineop_luz_rcond(norm, &rcond, luzw_);
     }
@@ -806,11 +806,11 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
+        suzerain::complex::traits::is_complex_t<Complex>, int
     >::type solve(int nrhs, Complex *B, int incb, int ldb) const
     {
         return suzerain_bsplineop_luz_solve(
-                nrhs, reinterpret_cast<std::complex<double> *>(B),
+                nrhs, reinterpret_cast<complex_t *>(B),
                 incb, ldb, luzw_);
     }
 
@@ -825,14 +825,14 @@ public:
      */
     template< typename Complex >
     typename boost::enable_if<
-        suzerain::complex::traits::is_complex_double<Complex>, int
+        suzerain::complex::traits::is_complex_t<Complex>, int
     >::type opform(int ncoefficients,
                    const Complex* coefficients,
                    const bsplineop &op)
     {
         return suzerain_bsplineop_luz_opform(
                 ncoefficients,
-                reinterpret_cast<const std::complex<double> *>(coefficients),
+                reinterpret_cast<const complex_t *>(coefficients),
                 op.get(), luzw_);
     }
 
