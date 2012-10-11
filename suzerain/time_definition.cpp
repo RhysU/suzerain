@@ -24,6 +24,8 @@
  * Provides classes handling time advancement settings.
  */
 
+namespace suzerain {
+
 /** Helper used to parse string-based options */
 template<typename T>
 static void parse_option(const std::string &s,
@@ -31,7 +33,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<double>(s, name);
+    const T t = suzerain::exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -39,7 +41,7 @@ static void parse_option(const std::string &s,
 
 /** Helper used to parse <tt>dd:hh:mm:ss.ss</tt>-like options */
 static void parse_walltime(const std::string &s,
-                           double *value,
+                           real_t *value,
                            const char *name)
 {
     // Parses dd:hh:mm:ss.ss, ..., mm:ss.ss, or ss.ss into seconds.
@@ -71,15 +73,15 @@ static void parse_walltime(const std::string &s,
             string(name) + " not of format [dd:[hh:[mm:]]]ss.ss");
 
     // Parse dd, hh, mm, and ss into components[0], [1], [2], and [3]
-    vector<double> components(4 - tokens.size(), 0);  // Zero missing values
+    vector<real_t> components(4 - tokens.size(), 0);  // Zero missing values
     components.reserve(4);                            // Preallocate storage
-    double (*f)(const std::string&, const char *)
-            = &suzerain::exprparse<double>;
+    real_t (*f)(const std::string&, const char *)
+            = &suzerain::exprparse<real_t>;
     transform(tokens.begin(), tokens.end(), back_inserter(components),
               bind(f, _1, name));
 
     // Convert components to floating seconds
-    double t =   components[0];  // days
+    real_t t =   components[0];  // days
     t = 24 * t + components[1];  // hours
     t = 60 * t + components[2];  // minutes
     t = 60 * t + components[3];  // seconds
@@ -89,18 +91,16 @@ static void parse_walltime(const std::string &s,
     *value = t;
 }
 
-namespace suzerain {
-
 namespace problem {
 
 void TimeDefinition::initialize_advancement(
-        double default_advance_dt,
+        real_t default_advance_dt,
         int    default_advance_nt,
-        double default_advance_wt,
-        double default_status_dt,
+        real_t default_advance_wt,
+        real_t default_status_dt,
         int    default_status_nt,
-        double default_min_dt,
-        double default_max_dt)
+        real_t default_min_dt,
+        real_t default_max_dt)
 {
     advance_dt = default_advance_dt;
     advance_nt = default_advance_nt;
@@ -119,8 +119,8 @@ void TimeDefinition::initialize_advancement(
 
     this->add_options()
         ("advance_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &advance_dt,
-                            &ensure_nonnegative<double>, "advance_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &advance_dt,
+                            &ensure_nonnegative<real_t>, "advance_dt"))
             ->default_value(lexical_cast<string>(advance_dt)),
          "Maximum amount of physical time to advance the simulation")
         ("advance_nt", value<string>(NULL)
@@ -134,8 +134,8 @@ void TimeDefinition::initialize_advancement(
             "Maximum amount of wall time to advance the simulation"
             " as [dd:[hh:[mm:]]]ss.ss")
         ("status_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &status_dt,
-                            &ensure_nonnegative<double>, "status_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &status_dt,
+                            &ensure_nonnegative<real_t>, "status_dt"))
             ->default_value(lexical_cast<string>(status_dt)),
          "Maximum physical time between status updates")
         ("status_nt", value<string>(NULL)
@@ -144,13 +144,13 @@ void TimeDefinition::initialize_advancement(
             ->default_value(lexical_cast<string>(status_nt)),
          "Maximum number of discrete time steps between status updates")
         ("min_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &min_dt,
-                            &ensure_nonnegative<double>, "min_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &min_dt,
+                            &ensure_nonnegative<real_t>, "min_dt"))
             ->default_value(lexical_cast<string>(min_dt)),
          "Minimum allowable physically-driven time step")
         ("max_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &max_dt,
-                            &ensure_nonnegative<double>, "max_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &max_dt,
+                            &ensure_nonnegative<real_t>, "max_dt"))
             ->default_value(lexical_cast<string>(max_dt)),
          "Maximum allowable physically-driven time step")
     ;
@@ -167,22 +167,22 @@ void TimeDefinition::initialize_scenario(
     using suzerain::validation::ensure_positive;
 
     // evmagfactor
-    evmagfactor = std::numeric_limits<double>::quiet_NaN();
+    evmagfactor = std::numeric_limits<real_t>::quiet_NaN();
     p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_option<double>, _1, &evmagfactor,
-                            &ensure_positive<double>, "evmagfactor"));
+    p->notifier(boost::bind(&parse_option<real_t>, _1, &evmagfactor,
+                            &ensure_positive<real_t>, "evmagfactor"));
     if (default_evmagfactor) p->default_value(default_evmagfactor);
     this->add_options()("evmagfactor", p.release(),
          "Safety factor in (0,1] used to adjust time step aggressiveness");
 }
 
-TimeDefinition::TimeDefinition(double advance_dt,
+TimeDefinition::TimeDefinition(real_t advance_dt,
                                int    advance_nt,
-                               double advance_wt,
-                               double status_dt,
+                               real_t advance_wt,
+                               real_t status_dt,
                                int    status_nt,
-                               double min_dt,
-                               double max_dt)
+                               real_t min_dt,
+                               real_t max_dt)
     : IDefinition("Time advancement parameters")
 {
     initialize_advancement(advance_dt,
@@ -199,13 +199,13 @@ TimeDefinition::TimeDefinition(double advance_dt,
 TimeDefinition::TimeDefinition(const char * evmagfactor)
     : IDefinition("Time advancement parameters")
 {
-    advance_dt = std::numeric_limits<double>::quiet_NaN();
+    advance_dt = std::numeric_limits<real_t>::quiet_NaN();
     advance_nt = 0;
-    advance_wt = std::numeric_limits<double>::quiet_NaN();
-    status_dt  = std::numeric_limits<double>::quiet_NaN();
+    advance_wt = std::numeric_limits<real_t>::quiet_NaN();
+    status_dt  = std::numeric_limits<real_t>::quiet_NaN();
     status_nt  = 0;
-    min_dt     = std::numeric_limits<double>::quiet_NaN();
-    max_dt     = std::numeric_limits<double>::quiet_NaN();
+    min_dt     = std::numeric_limits<real_t>::quiet_NaN();
+    max_dt     = std::numeric_limits<real_t>::quiet_NaN();
 
     initialize_scenario(evmagfactor);
 }

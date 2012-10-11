@@ -53,13 +53,13 @@ public:
      * @param min_dt      Minimum allowable physically-driven time step.
      * @param max_dt      Maximum allowable physically-driven time step.
      */
-    TimeDefinition(double advance_dt,
+    TimeDefinition(real_t advance_dt,
                    int    advance_nt,
-                   double advance_wt,
-                   double status_dt,
+                   real_t advance_wt,
+                   real_t status_dt,
                    int    status_nt,
-                   double min_dt,
-                   double max_dt);
+                   real_t min_dt,
+                   real_t max_dt);
 
     /**
      * Construct an instance with the given default values.  All of these can
@@ -75,25 +75,25 @@ public:
     TimeDefinition(const char * evmagfactor);
 
     /** Maximum amount of physical time to advance the simulation. */
-    double advance_dt;
+    real_t advance_dt;
 
     /** Maximum number of discrete time steps to advance the simulation. */
     int advance_nt;
 
     /** Maximum amount of wall time to advance the simulation. */
-    double advance_wt;
+    real_t advance_wt;
 
     /** Maximum physical time between status updates. */
-    double status_dt;
+    real_t status_dt;
 
     /** Maximum number of discrete time steps between status updates. */
     int status_nt;
 
     /** Minimum allowable physically-driven time step */
-    double min_dt;
+    real_t min_dt;
 
     /** Maximum allowable physically-driven time step */
-    double max_dt;
+    real_t max_dt;
 
     /**
      * Factor used to pre-multiply a scheme's pure real and imaginary
@@ -101,18 +101,18 @@ public:
      *
      * @see suzerain::timestepper::lowstorage::Method for details.
      */
-    double evmagfactor;
+    real_t evmagfactor;
 
 private:
 
     /** Prepare one-time options for time advancement */
-    void initialize_advancement(double default_advance_dt,
+    void initialize_advancement(real_t default_advance_dt,
                                 int    default_advance_nt,
-                                double default_advance_wt,
-                                double default_status_dt,
+                                real_t default_advance_wt,
+                                real_t default_status_dt,
                                 int    default_status_nt,
-                                double default_min_dt,
-                                double default_max_dt);
+                                real_t default_min_dt,
+                                real_t default_max_dt);
 
     /** Prepare repeatedly-used options similar to scenario parameters */
     void initialize_scenario(const char * default_evmagfactor);
