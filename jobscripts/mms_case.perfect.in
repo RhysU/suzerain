@@ -122,6 +122,11 @@ mkdir -v $dir
 cd $dir
 
 # Generate an initial condition and final condition
+#
+# These "realize the exact solution over the computational grid" as discussed
+# in section 4.1 of Tadmor, Eitan. "A review of numerical methods for nonlinear
+# partial differential equations." Bulletin of the American Mathematical
+# Society, Vol. 49, No. 4. (October 2012): 507-554
 "$MMS_CASE_INITIAL" initial.h5                           \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
