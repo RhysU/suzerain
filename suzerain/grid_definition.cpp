@@ -30,7 +30,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<double>(s, name);
+    const T t = suzerain::exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -41,35 +41,35 @@ static const char grid_definition_description[]
 
 GridDefinition::GridDefinition()
     : IDefinition(grid_definition_description),
-      L(std::numeric_limits<double>::quiet_NaN(),
-        std::numeric_limits<double>::quiet_NaN(),
-        std::numeric_limits<double>::quiet_NaN()),
+      L(std::numeric_limits<real_t>::quiet_NaN(),
+        std::numeric_limits<real_t>::quiet_NaN(),
+        std::numeric_limits<real_t>::quiet_NaN()),
       N(0, 0, 0),
-      DAF(std::numeric_limits<double>::quiet_NaN(),
+      DAF(std::numeric_limits<real_t>::quiet_NaN(),
           1 /* Never dealiased */,
-          std::numeric_limits<double>::quiet_NaN()),
+          std::numeric_limits<real_t>::quiet_NaN()),
       dN(0, 0, 0),
       P(0, 0),
       k(0),
-      htdelta(std::numeric_limits<double>::quiet_NaN())
+      htdelta(std::numeric_limits<real_t>::quiet_NaN())
 {
     this->initialize_options("NaN", "NaN", "NaN");  // Must match L!
 }
 
 GridDefinition::GridDefinition(const char * Lx,
                                int          Nx,
-                               double       DAFx,
+                               real_t       DAFx,
                                const char * Ly,
                                int          Ny,
                                int          k,
-                               double       htdelta,
+                               real_t       htdelta,
                                const char * Lz,
                                int          Nz,
-                               double       DAFz)
+                               real_t       DAFz)
     : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      L(suzerain::exprparse<double>(Lx, "GridDefinition(..., Lx, ...)"),
-        suzerain::exprparse<double>(Lx, "GridDefinition(..., Ly, ...)"),
-        suzerain::exprparse<double>(Lx, "GridDefinition(..., Lz, ...)")),
+      L(suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Lx, ...)"),
+        suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Ly, ...)"),
+        suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Lz, ...)")),
       N(Nx, Ny, Nz),
       DAF(DAFx, 1 /* Never dealiased */, DAFz),
       dN(Nx * DAFx, Ny, Nz * DAFz),
@@ -104,8 +104,8 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // Lx
     p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(bind(&parse_option<double>, _1, &L.x(),
-                     &ensure_positive<double>, "Lx"));
+    p->notifier(bind(&parse_option<real_t>, _1, &L.x(),
+                     &ensure_positive<real_t>, "Lx"));
     if (default_Lx) p->default_value(default_Lx);
     this->add_options()("Lx", p.release(),
             "Nondimensional domain length in streamwise X direction");
@@ -128,8 +128,8 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // Ly
     p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(bind(&parse_option<double>, _1, &L.y(),
-                     &ensure_positive<double>, "Ly"));
+    p->notifier(bind(&parse_option<real_t>, _1, &L.y(),
+                     &ensure_positive<real_t>, "Ly"));
     if (default_Ly) p->default_value(default_Ly);
     this->add_options()("Ly", p.release(),
             "Nondimensional domain length in wall normal Y direction");
@@ -157,16 +157,16 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // htdelta
     p.reset(boost::program_options::value(nullstr));
-    p->notifier(bind(&parse_option<double>, _1, &htdelta,
-                        &ensure_nonnegative<double>, "htdelta"));
+    p->notifier(bind(&parse_option<real_t>, _1, &htdelta,
+                        &ensure_nonnegative<real_t>, "htdelta"));
     if (!(isnan)(htdelta)) p->default_value(lexical_cast<string>(htdelta));
     this->add_options()("htdelta", p.release(),
             "Wall-normal breakpoint hyperbolic tangent stretching");
 
     // Lz
     p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(bind(&parse_option<double>, _1, &L.z(),
-                     &ensure_positive<double>, "Lz"));
+    p->notifier(bind(&parse_option<real_t>, _1, &L.z(),
+                     &ensure_positive<real_t>, "Lz"));
     if (default_Lz) p->default_value(default_Lz);
     this->add_options()("Lz", p.release(),
             "Nondimensional domain length in spanwise Z direction");
@@ -246,7 +246,7 @@ GridDefinition& GridDefinition::Nz(int value)
     return *this;
 }
 
-GridDefinition& GridDefinition::DAFx(double factor)
+GridDefinition& GridDefinition::DAFx(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.x() != 0) {
@@ -255,14 +255,14 @@ GridDefinition& GridDefinition::DAFx(double factor)
     } else {
         suzerain::validation::ensure_nonnegative(factor,"DAFx");
     }
-    const_cast<double&>(DAF.x()) = factor;
+    const_cast<real_t&>(DAF.x()) = factor;
 #pragma warning(push,disable:2259)
     const_cast<int&   >(dN.x())  = N.x() * DAF.x();
 #pragma warning(pop)
     return *this;
 }
 
-GridDefinition& GridDefinition::DAFz(double factor)
+GridDefinition& GridDefinition::DAFz(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.z() != 0) {
@@ -271,7 +271,7 @@ GridDefinition& GridDefinition::DAFz(double factor)
     } else {
         suzerain::validation::ensure_nonnegative(factor,"DAFz");
     }
-    const_cast<double&>(DAF.z()) = factor;
+    const_cast<real_t&>(DAF.z()) = factor;
 #pragma warning(push,disable:2259)
     const_cast<int&   >(dN.z())  = N.z() * DAF.z();
 #pragma warning(pop)
@@ -281,32 +281,32 @@ GridDefinition& GridDefinition::DAFz(double factor)
 GridDefinition& GridDefinition::Nx(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Nx(static_cast<int>(suzerain::exprparse<double>(value, "Nx")));
+    return Nx(static_cast<int>(suzerain::exprparse<real_t>(value, "Nx")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Ny(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Ny(static_cast<int>(suzerain::exprparse<double>(value, "Ny")));
+    return Ny(static_cast<int>(suzerain::exprparse<real_t>(value, "Ny")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Nz(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Nz(static_cast<int>(suzerain::exprparse<double>(value, "Nz")));
+    return Nz(static_cast<int>(suzerain::exprparse<real_t>(value, "Nz")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::DAFx(const std::string& value)
 {
-    return DAFx(suzerain::exprparse<double>(value, "DAFx"));
+    return DAFx(suzerain::exprparse<real_t>(value, "DAFx"));
 }
 
 GridDefinition& GridDefinition::DAFz(const std::string& value)
 {
-    return DAFz(suzerain::exprparse<double>(value, "DAFz"));
+    return DAFz(suzerain::exprparse<real_t>(value, "DAFz"));
 }
 
 } // namespace problem

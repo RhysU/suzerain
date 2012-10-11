@@ -51,11 +51,11 @@ public:
      * Construct an instance with the given default values.
      *
      * @param Lx      Physical domain extent in the X direction
-     *                which is evaluated as a \c double using exprparse().
+     *                which is evaluated using exprparse().
      * @param Nx      Logical grid size in the X direction.
      * @param DAFx    Dealiasing factor in the X direction.
      * @param Ly      Physical domain extent in the Y direction
-     *                which is evaluated as a \c double using exprparse().
+     *                which is evaluated using exprparse().
      * @param Ny      Logical grid size in the Y direction.
      *                This is the number of B-spline basis functions
      *                (equivalently, wall-normal degrees of freedom)
@@ -66,20 +66,20 @@ public:
      * @param htdelta Hyperbolic tangent stretching parameter
      *                to use when computing breakpoint locations.
      * @param Lz      Physical domain extent in the Z direction
-     *                which is evaluated as a \c double using exprparse().
+     *                which is evaluated using exprparse().
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
     GridDefinition(const char * Lx,
                    int          Nx,
-                   double       DAFx,
+                   real_t       DAFx,
                    const char * Ly,
                    int          Ny,
                    int          k,
-                   double       htdelta,
+                   real_t       htdelta,
                    const char * Lz,
                    int          Nz,
-                   double       DAFz);
+                   real_t       DAFz);
 
     /**@{*/
 
@@ -129,7 +129,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    GridDefinition& DAFx(double factor);
+    GridDefinition& DAFx(real_t factor);
 
     /**
      * Set the dealiasing factor in the Z direction.
@@ -137,7 +137,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    GridDefinition& DAFz(double factor);
+    GridDefinition& DAFz(real_t factor);
 
     /**@}*/
 
@@ -164,7 +164,7 @@ public:
      * @see suzerain_htstretch1() and suzerain_htstretch2() for examples
      *      of how this parameter is used.
      */
-    double htdelta;
+    real_t htdelta;
 
 private:
     /** Options initialization common to all constructors */
@@ -181,10 +181,10 @@ private:
     /** @copydoc Nz(int) */
     GridDefinition& Nz(const std::string& value);
 
-    /** @copydoc DAFx(double) */
+    /** @copydoc DAFx(real_t) */
     GridDefinition& DAFx(const std::string& value);
 
-    /** @copydoc DAFz(double) */
+    /** @copydoc DAFz(real_t) */
     GridDefinition& DAFz(const std::string& value);
 };
 
