@@ -44,23 +44,23 @@ namespace diffwave {
 /** @see suzerain_diffwave_apply */
 template< typename AlphaType, typename Complex >
 typename boost::enable_if<
-    suzerain::complex::traits::is_complex_double<Complex>
+    suzerain::complex::traits::is_complex_t<Complex>
 >::type apply(
     const int dxcnt,
     const int dzcnt,
     const AlphaType &alpha, Complex *x,
-    const double Lx,
-    const double Lz,
+    const real_t Lx,
+    const real_t Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
-    std::complex<double> alpha_complex;
+    complex_t alpha_complex;
     suzerain::complex::assign_complex(alpha_complex, alpha);
     return suzerain_diffwave_apply(
             dxcnt, dzcnt,
             alpha_complex,
-            reinterpret_cast<std::complex<double> *>(x),
+            reinterpret_cast<complex_t *>(x),
             Lx,
             Lz,
             Ny,
@@ -72,29 +72,29 @@ typename boost::enable_if<
 template< typename AlphaType, typename BetaType,
           typename Complex1,  typename Complex2 >
 typename boost::enable_if<boost::mpl::and_<
-    suzerain::complex::traits::is_complex_double<Complex1>,
-    suzerain::complex::traits::is_complex_double<Complex2>
+    suzerain::complex::traits::is_complex_t<Complex1>,
+    suzerain::complex::traits::is_complex_t<Complex2>
 >, void>::type accumulate(
     const int dxcnt,
     const int dzcnt,
     const AlphaType &alpha, const Complex1 *x,
     const BetaType  &beta,        Complex2 *y,
-    const double Lx,
-    const double Lz,
+    const real_t Lx,
+    const real_t Lz,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
     const int Nz, const int dNz, const int dkbz, const int dkez)
 {
-    std::complex<double> alpha_complex;
+    complex_t alpha_complex;
     suzerain::complex::assign_complex(alpha_complex, alpha);
-    std::complex<double> beta_complex;
+    complex_t beta_complex;
     suzerain::complex::assign_complex(beta_complex, beta);
     return suzerain_diffwave_accumulate(
             dxcnt, dzcnt,
             alpha_complex,
-            reinterpret_cast<const std::complex<double> *>(x),
+            reinterpret_cast<const complex_t *>(x),
             beta_complex,
-            reinterpret_cast<std::complex<double> *>(y),
+            reinterpret_cast<complex_t *>(y),
             Lx,
             Lz,
             Ny,
