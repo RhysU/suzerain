@@ -26,34 +26,34 @@
  * problem setup.
  */
 
-static void parse_positive(const std::string& s, double *t, const char *n)
+namespace suzerain {
+
+static void parse_positive(const std::string& s, real_t *t, const char *n)
 {
-    const double v = suzerain::exprparse<double>(s, n);
+    const real_t v = suzerain::exprparse<real_t>(s, n);
     suzerain::validation::ensure_positive(v, n);
     *t = v;
 }
 
-static void parse_nonnegative(const std::string& s, double *t, const char *n)
+static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 {
-    const double v = suzerain::exprparse<double>(s, n);
+    const real_t v = suzerain::exprparse<real_t>(s, n);
     suzerain::validation::ensure_nonnegative(v, n);
     *t = v;
 }
-
-namespace suzerain {
 
 namespace problem {
 
 ScenarioDefinition::ScenarioDefinition()
     : IDefinition("Nondimensional scenario parameters"),
-      Re(std::numeric_limits<double>::quiet_NaN()),
-      Ma(std::numeric_limits<double>::quiet_NaN()),
-      Pr(std::numeric_limits<double>::quiet_NaN()),
-      bulk_rho(std::numeric_limits<double>::quiet_NaN()),
-      bulk_rhou(std::numeric_limits<double>::quiet_NaN()),
-      alpha(std::numeric_limits<double>::quiet_NaN()),
-      beta(std::numeric_limits<double>::quiet_NaN()),
-      gamma(std::numeric_limits<double>::quiet_NaN())
+      Re(std::numeric_limits<real_t>::quiet_NaN()),
+      Ma(std::numeric_limits<real_t>::quiet_NaN()),
+      Pr(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rhou(std::numeric_limits<real_t>::quiet_NaN()),
+      alpha(std::numeric_limits<real_t>::quiet_NaN()),
+      beta(std::numeric_limits<real_t>::quiet_NaN()),
+      gamma(std::numeric_limits<real_t>::quiet_NaN())
 {
     this->initialize_options(NULL, NULL, NULL,
                              NULL, NULL,
@@ -70,14 +70,14 @@ ScenarioDefinition::ScenarioDefinition(
         const char * beta,
         const char * gamma)
     : IDefinition("Nondimensional scenario parameters"),
-      Re(std::numeric_limits<double>::quiet_NaN()),
-      Ma(std::numeric_limits<double>::quiet_NaN()),
-      Pr(std::numeric_limits<double>::quiet_NaN()),
-      bulk_rho(std::numeric_limits<double>::quiet_NaN()),
-      bulk_rhou(std::numeric_limits<double>::quiet_NaN()),
-      alpha(std::numeric_limits<double>::quiet_NaN()),
-      beta(std::numeric_limits<double>::quiet_NaN()),
-      gamma(std::numeric_limits<double>::quiet_NaN())
+      Re(std::numeric_limits<real_t>::quiet_NaN()),
+      Ma(std::numeric_limits<real_t>::quiet_NaN()),
+      Pr(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rhou(std::numeric_limits<real_t>::quiet_NaN()),
+      alpha(std::numeric_limits<real_t>::quiet_NaN()),
+      beta(std::numeric_limits<real_t>::quiet_NaN()),
+      gamma(std::numeric_limits<real_t>::quiet_NaN())
 {
     this->initialize_options(Re, Ma, Pr,
                                 bulk_rho, bulk_rhou,

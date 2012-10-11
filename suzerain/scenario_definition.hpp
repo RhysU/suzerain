@@ -69,46 +69,46 @@ public:
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
      * l_{0}}{\mu_{0}}\f$.
      */
-    double Re;
+    real_t Re;
 
     /**
      * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
      */
-    double Ma;
+    real_t Ma;
 
     /**
      * The Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
      * C_{p}}{\kappa_{0}}\f$.
      */
-    double Pr;
+    real_t Pr;
 
     /**
      * The bulk density used as a target for integral constraints.
      */
-    double bulk_rho;
+    real_t bulk_rho;
 
     /**
      * The bulk streamwise momentum used as a target for integral constraints.
      */
-    double bulk_rhou;
+    real_t bulk_rhou;
 
     /**
      * The ratio of bulk viscosity to dynamic viscosity according to \f$
      * \mu_{B} = \alpha \mu \f$ or equivalently \f$ \lambda = \left( \alpha -
      * \frac{2}{3}\mu \right)\f$.
      */
-    double alpha;
+    real_t alpha;
 
     /**
      * The temperature power law exponent \f$\beta\f$ where
      * \f$\frac{\mu}{\mu_0} = \left(\frac{T}{T_0}\right)^{\beta}\f$.
      */
-    double beta;
+    real_t beta;
 
     /**
      * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
      */
-    double gamma;
+    real_t gamma;
 
 private:
     /** Options initialization common to all constructors */
