@@ -51,7 +51,7 @@ namespace timestepper
  *                  be easily wrapped in a C-based API using <tt>int</tt>s.
  */
 template<
-    typename TimeType = double,
+    typename TimeType = real_t,
     typename StepType = std::size_t,
     typename StopType = bool
 >
