@@ -172,6 +172,14 @@ BOOST_AUTO_TEST_CASE( is_complex_double )
     BOOST_CHECK(is_complex_double<fftwl_complex>::value == false);
 }
 
+BOOST_AUTO_TEST_CASE( is_complex_t )
+{
+    using suzerain::complex::traits::is_complex_t;
+
+    BOOST_CHECK(is_complex_t<std::complex<suzerain::real_t> >::value == true);
+    BOOST_CHECK(is_complex_t<std::complex<int> >::value == false);
+}
+
 BOOST_AUTO_TEST_CASE( is_complex_long_double )
 {
     using suzerain::complex::traits::is_complex_long_double;

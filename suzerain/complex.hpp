@@ -117,6 +117,20 @@ struct is_complex_double<T, typename boost::enable_if<is_complex<T> >::type>
 
 /**
  * An type trait similar to <tt>is_complex</tt> which additionally checks that
+ * the underlying real type is \ref suzerain::real_t.  Inherits from
+ * <tt>boost::true_type</tt> if that is the case.  Otherwise it inherits from
+ * <tt>boost::false_type</tt>.
+ */
+template<class T, class Enable = void>
+struct is_complex_t : public boost::false_type {};
+
+/** A specialization to handle recognized complex types */
+template<class T>
+struct is_complex_t<T, typename boost::enable_if<is_complex<T> >::type>
+    : public boost::is_same<suzerain::real_t,typename real<T>::type> {};
+
+/**
+ * An type trait similar to <tt>is_complex</tt> which additionally checks that
  * the underlying real type is <tt>long double</tt>.  Inherits from
  * <tt>boost::true_type</tt> if that is the case.  Otherwise it inherits from
  * <tt>boost::false_type</tt>.
