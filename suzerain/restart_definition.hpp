@@ -56,7 +56,7 @@ public:
                       const std::string& uncommitted,
                       const std::string& destination,
                       int retain = 1,
-                      double dt  = 0,
+                      real_t dt  = 0,
                       int nt     = 0);
 
     /**
@@ -86,7 +86,7 @@ public:
     /**
      * The maximum amount of simulation time between writing restart files.
      */
-    double dt;
+    real_t dt;
 
     /**
      * The maximum number of simulation steps to take between writing restart

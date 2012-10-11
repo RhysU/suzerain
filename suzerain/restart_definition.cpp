@@ -30,7 +30,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<double>(s, name);
+    const T t = suzerain::exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -41,7 +41,7 @@ RestartDefinition::RestartDefinition(
         const std::string& uncommitted,
         const std::string& destination,
         int retain,
-        double dt,
+        real_t dt,
         int nt)
     : IDefinition("Restart-related parameters"),
       metadata(metadata),
@@ -80,8 +80,8 @@ RestartDefinition::RestartDefinition(
             ->default_value(lexical_cast<string>(this->retain)),
          "Maximum number of committed restart files to retain")
         ("restart_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &this->dt,
-                            &ensure_nonnegative<double>, "restart_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+                            &ensure_nonnegative<real_t>, "restart_dt"))
             ->default_value(lexical_cast<string>(this->dt)),
          "Maximum amount of simulation time between restart files")
         ("restart_nt", value<string>(NULL)
