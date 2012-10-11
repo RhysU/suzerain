@@ -30,7 +30,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<double>(s, name);
+    const T t = suzerain::exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -39,7 +39,7 @@ static void parse_option(const std::string &s,
 StatisticsDefinition::StatisticsDefinition(
         const std::string& destination,
         int retain,
-        double dt,
+        real_t dt,
         int nt)
     : IDefinition("Statistics sampling parameters"),
       destination(destination),
@@ -67,8 +67,8 @@ StatisticsDefinition::StatisticsDefinition(
             ->default_value(lexical_cast<string>(this->retain)),
          "Maximum number of committed statistics files to retain")
         ("statistics_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<double>, _1, &this->dt,
-                            &ensure_nonnegative<double>, "statistics_dt"))
+            ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+                            &ensure_nonnegative<real_t>, "statistics_dt"))
             ->default_value(lexical_cast<string>(this->dt)),
          "Maximum amount of simulation time between sampling statistics")
         ("statistics_nt", value<string>(NULL)

@@ -51,7 +51,7 @@ public:
     explicit StatisticsDefinition(
             const std::string& destination,
             int retain = (1<<15),
-            double dt  = 0,
+            real_t dt  = 0,
             int nt     = 0);
 
     /**
@@ -70,7 +70,7 @@ public:
     /**
      * The maximum amount of simulation time between sampling statistics.
      */
-    double dt;
+    real_t dt;
 
     /**
      * The maximum number of simulation steps to take between sampling
