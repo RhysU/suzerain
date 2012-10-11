@@ -79,10 +79,10 @@ public:
     virtual const char * implementation() const = 0;
 
     /** Global grid extents using physical space sizes. */
-    Eigen::Array3i global_physical_extent;
+    Array3i global_physical_extent;
 
     /** Global grid extents using wave space sizes. */
-    Eigen::Array3i global_wave_extent;
+    Array3i global_wave_extent;
 
     /**
      * The processor grid extents.
@@ -95,24 +95,24 @@ public:
      * @return the processor grid extents in the \f$ P_0 \f$
      *         and \f$ P_1 \f$ directions as indices 0 and 1, respectively.
      */
-    Eigen::Array2i processor_grid;
+    Array2i processor_grid;
 
     /**
      * Local pencil physical space starting indices (inclusive) within
      * the global extents.
      */
-    Eigen::Array3i local_physical_start;
+    Array3i local_physical_start;
 
     /**
      * Local pencil physical space ending indices (exclusive)
      * within the global extents.
      */
-    Eigen::Array3i local_physical_end;
+    Array3i local_physical_end;
 
     /**
      * Local pencil physical space extents.
      */
-    Eigen::Array3i local_physical_extent;
+    Array3i local_physical_extent;
 
     /**
      * Retrieve the number of contiguous real scalars required to store a
@@ -130,18 +130,18 @@ public:
      * Local pencil wave space starting indices (inclusive) within
      * the global extents.
      */
-    Eigen::Array3i local_wave_start;
+    Array3i local_wave_start;
 
     /**
      * Local pencil wave space ending indices (exclusive)
      * within the global extents.
      */
-    Eigen::Array3i local_wave_end;
+    Array3i local_wave_end;
 
     /**
      * Local pencil wave space extents.
      */
-    Eigen::Array3i local_wave_extent;
+    Array3i local_wave_extent;
 
     /**
      * Does this rank possess the "zero-zero" Fourier modes?

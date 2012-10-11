@@ -87,7 +87,7 @@ public:
     Array3r L;
 
     /** Global logical extents in the X, Y, and Z directions. */
-    Eigen::Array3i N;
+    Array3i N;
 
     /**
      * Set the logical extents in the X direction.
@@ -121,7 +121,7 @@ public:
     Array3r DAF;
 
     /** Global dealiased logical extents in the X, Y, and Z directions. */
-    Eigen::Array3i dN;
+    Array3i dN;
 
     /**
      * Set the dealiasing factor in the X direction.
