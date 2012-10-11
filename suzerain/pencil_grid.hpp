@@ -121,7 +121,7 @@ public:
      * required by the transformation routines, and the fact that wave storage
      * requires complex scalars.
      *
-     * @return Number of real-valued scalars (i.e. <tt>double</tt>s)
+     * @return Number of real-valued scalars (i.e. <tt>suzerain::real_t</tt>s)
      *         required to store one pencil's contiguous data.
      */
     virtual std::size_t local_physical_storage() const = 0;
@@ -173,8 +173,8 @@ public:
      * required by the transformation routines, and the fact that physical
      * space storage requires real-valued scalars.
      *
-     * @return Number of complex-valued scalars (i.e. <tt>double[2]</tt>s)
-     *         required to store one pencil's contiguous data.
+     * @return Number of complex-valued scalars (i.e. <tt>suzerain::real_t[2]
+     *         </tt>s) required to store one pencil's contiguous data.
      */
     virtual std::size_t local_wave_storage() const = 0;
 
@@ -186,7 +186,7 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_wave_to_physical(double * inout) const
+    void transform_wave_to_physical(real_t * inout) const
     {
         struct Guard {
             Guard()  { SUZERAIN_TIMER_BEGIN("transform_wave_to_physical"); }
@@ -205,7 +205,7 @@ public:
      *
      * @param inout Field to transform in place.
      */
-    void transform_physical_to_wave(double * inout) const
+    void transform_physical_to_wave(real_t * inout) const
     {
         struct Guard {
             Guard()  { SUZERAIN_TIMER_BEGIN("transform_physical_to_wave"); }
@@ -226,10 +226,10 @@ protected:
 private:
 
     /** Subclasses override to implement transform_wave_to_physical(). */
-    virtual void transform_wave_to_physical_(double * inout) const = 0;
+    virtual void transform_wave_to_physical_(real_t * inout) const = 0;
 
     /** Subclasses override to implement transform_physical_to_wave(). */
-    virtual void transform_physical_to_wave_(double * inout) const = 0;
+    virtual void transform_physical_to_wave_(real_t * inout) const = 0;
 
 };
 
@@ -282,9 +282,9 @@ public:
 
 private:
 
-    virtual void transform_wave_to_physical_(double * inout) const;
+    virtual void transform_wave_to_physical_(real_t * inout) const;
 
-    virtual void transform_physical_to_wave_(double * inout) const;
+    virtual void transform_physical_to_wave_(real_t * inout) const;
 
     /** Was p3dfft_setup successfully called during construction? */
     bool p3dfft_setup_called_;
@@ -342,9 +342,9 @@ public:
 
 private:
 
-    virtual void transform_wave_to_physical_(double * inout) const;
+    virtual void transform_wave_to_physical_(real_t * inout) const;
 
-    virtual void transform_physical_to_wave_(double * inout) const;
+    virtual void transform_physical_to_wave_(real_t * inout) const;
 
     /** Internal routine performing construction-like tasks */
     void construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
