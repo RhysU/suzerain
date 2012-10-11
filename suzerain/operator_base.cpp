@@ -37,10 +37,10 @@ OperatorBase::OperatorBase(
         suzerain::bspline &b,
         const suzerain::bsplineop &bop)
     : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
-      lambda1_x(boost::math::constants::pi<double>() * one_over_delta_x),
+      lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x),
       lambda2_x(lambda1_x * lambda1_x),
       one_over_delta_z(grid.N.z() /* !dN.z() */ / grid.L.z()),
-      lambda1_z(boost::math::constants::pi<double>() * one_over_delta_z),
+      lambda1_z(boost::math::constants::pi<real_t>() * one_over_delta_z),
       lambda2_z(lambda1_z * lambda1_z),
       grid(grid),
       dgrid(dgrid),
@@ -61,15 +61,15 @@ OperatorBase::OperatorBase(
                     dgrid.local_physical_start.y(),
                     dgrid.local_physical_end.y())])
 {
-    const double pi = boost::math::constants::pi<double>();
+    const real_t pi = boost::math::constants::pi<real_t>();
 
     // Compute the B-spline-dependent correction factor to obtain
     // good maximum eigenvalue estimates given wall-normal inhomogeneity.
     // See model document for definitions of C^{(1)} and C^{(2)}.
-    double C1, Clow1, Chigh1;
+    real_t C1, Clow1, Chigh1;
     suzerain_bspline_htstretch2_evdeltascale(
             1, b.k(), grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
-    double C2, Clow2, Chigh2;
+    real_t C2, Clow2, Chigh2;
     suzerain_bspline_htstretch2_evdeltascale(
             2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
 
@@ -94,7 +94,7 @@ OperatorBase::OperatorBase(
         one_over_delta_y_[j] = 1 / b.spacing_collocation_point(j);
 
         // Eigenvalue estimates using collocation point spacing
-        const double inverse_spacing = one_over_delta_y_[j];
+        const real_t inverse_spacing = one_over_delta_y_[j];
 
         // Estimating wall-normal first derivative eigenvalue magnitudes
         // Use Clow1 rather than C1 as it is always slightly conservative

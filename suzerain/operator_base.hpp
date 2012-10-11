@@ -36,8 +36,8 @@
 namespace suzerain {
 
 /**
- * Provides common double-precision B-spline and parallel FFT infrastructure
- * useful across many ILinearOperator and INonlinearOperator implementations.
+ * Provides common B-spline and parallel FFT infrastructure useful across many
+ * ILinearOperator and INonlinearOperator implementations.
  */
 class OperatorBase
 {
@@ -250,7 +250,7 @@ public:
     /**
      * Return the <tt>i</tt>th \c globally-indexed x grid point.
      */
-    double x(std::size_t i) const
+    real_t x(std::size_t i) const
     {
         return i * grid.L.x() / grid.dN.x() - grid.L.x() / 2;
     }
@@ -259,7 +259,7 @@ public:
      * Return the <tt>j</tt>th \c globally-indexed y grid point.
      * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
-    double y(std::size_t j) const
+    real_t y(std::size_t j) const
     {
         return y_[j];
     }
@@ -267,7 +267,7 @@ public:
     /**
      * Return the <tt>k</tt>th \c globally-indexed z grid point.
      */
-    double z(std::size_t k) const
+    real_t z(std::size_t k) const
     {
         return k * grid.L.z() / grid.dN.z() - grid.L.z() / 2;
     }
@@ -276,7 +276,7 @@ public:
      * Return the <tt>j</tt>th \c globally-indexed y grid spacing.
      * Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y()
      */
-    double one_over_delta_y(std::size_t j) const
+    real_t one_over_delta_y(std::size_t j) const
     {
         return one_over_delta_y_[j];
     }
@@ -286,7 +286,7 @@ public:
      * for the first derivative operator in y at the <tt>j</tt>th collocation
      * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
      */
-    double lambda1_y(std::size_t j) const
+    real_t lambda1_y(std::size_t j) const
     {
         return lambda1_y_[j];
     }
@@ -296,28 +296,28 @@ public:
      * for the second derivative operator in y at the <tt>j</tt>th collocation
      * point.  Only valid for j \f$\in\f$ dgrid.local_physical_{start,end}.y().
      */
-    double lambda2_y(std::size_t j) const
+    real_t lambda2_y(std::size_t j) const
     {
         return lambda2_y_[j];
     }
 
     /** Uniform grid spacing in x */
-    const double one_over_delta_x;
+    const real_t one_over_delta_x;
 
     /** Maximum pure imaginary eigenvalue magnitude for first derivative in x */
-    const double lambda1_x;
+    const real_t lambda1_x;
 
     /** Maximum pure real eigenvalue magnitude for second derivatives in x */
-    const double lambda2_x;
+    const real_t lambda2_x;
 
     /** Uniform grid spacing in z */
-    const double one_over_delta_z;
+    const real_t one_over_delta_z;
 
     /** Maximum pure imaginary eigenvalue magnitude for first derivative in z */
-    const double lambda1_z;
+    const real_t lambda1_z;
 
     /** Maximum pure real eigenvalue magnitude for second derivatives in z */
-    const double lambda2_z;
+    const real_t lambda2_z;
 
     /** The grid in which the operator is used */
     const suzerain::problem::GridDefinition &grid;
@@ -331,16 +331,16 @@ public:
 private:
 
     /** Stores y grid points on this rank in wave space */
-    boost::multi_array<double,1> y_;
+    boost::multi_array<real_t,1> y_;
 
     /** Stores y grid spacing on this rank in wave space */
-    boost::multi_array<double,1> one_over_delta_y_;
+    boost::multi_array<real_t,1> one_over_delta_y_;
 
     /** Stores pure imaginary eigenvalue magnitudes for y first derivatives */
-    boost::multi_array<double,1> lambda1_y_;
+    boost::multi_array<real_t,1> lambda1_y_;
 
     /** Stores pure real eigenvalue magnitudes for y second derivatives */
-    boost::multi_array<double,1> lambda2_y_;
+    boost::multi_array<real_t,1> lambda2_y_;
 
     // Noncopyable
     OperatorBase(const OperatorBase&);
