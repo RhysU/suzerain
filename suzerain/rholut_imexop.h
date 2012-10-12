@@ -135,19 +135,19 @@ typedef struct {
  * @param[in] ld Strides between reference quantity values.
  * @param[in] w  B-spline workspace providing discrete operators.
  * @param[in] imagzero  Treat imaginary part of all input data as if
- *                      were uniformly zero?  That is, assume
-                        <tt>Im(in_rho{,u,v,w,e}) == 0</tt>.
- * @param[in] in_rho    Wall-normal input data for \f$\rho{}\f$.
- * @param[in] in_rhou   Wall-normal input data for \f$\rho{}u\f$.
- * @param[in] in_rhov   Wall-normal input data for \f$\rho{}v\f$.
+ *                      it were uniformly zero?  That is, assume
+                        <tt>Im(in_rho{,u,v,w,E}) == 0</tt>.
+ * @param[in] in_rhoE   Wall-normal input data for \f$\rho{}E\f$.
  * @param[in] in_rhow   Wall-normal input data for \f$\rho{}w\f$.
- * @param[in] in_rhoe   Wall-normal input data for \f$\rho{}e\f$.
+ * @param[in] in_rhov   Wall-normal input data for \f$\rho{}v\f$.
+ * @param[in] in_rhou   Wall-normal input data for \f$\rho{}u\f$.
+ * @param[in] in_rho    Wall-normal input data for \f$\rho{}\f$.
  * @param[in] beta      Accumulation scaling factor \f$\beta\f$.
- * @param[out] out_rho  Wall-normal output data for \f$\rho{}\f$.
- * @param[out] out_rhou Wall-normal output data for \f$\rho{}u\f$.
- * @param[out] out_rhov Wall-normal output data for \f$\rho{}v\f$.
+ * @param[out] out_rhoE Wall-normal output data for \f$\rho{}E\f$.
  * @param[out] out_rhow Wall-normal output data for \f$\rho{}w\f$.
- * @param[out] out_rhoe Wall-normal output data for \f$\rho{}e\f$.
+ * @param[out] out_rhov Wall-normal output data for \f$\rho{}v\f$.
+ * @param[out] out_rhou Wall-normal output data for \f$\rho{}u\f$.
+ * @param[out] out_rho  Wall-normal output data for \f$\rho{}\f$.
  *
  * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
  */
@@ -161,17 +161,17 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int imagzero,
-        const complex_double *in_rho ,
-        const complex_double *in_rhou,
-        const complex_double *in_rhov,
+        const complex_double *in_rhoE,
         const complex_double *in_rhow,
-        const complex_double *in_rhoe,
+        const complex_double *in_rhov,
+        const complex_double *in_rhou,
+        const complex_double *in_rho ,
         const complex_double beta,
-        complex_double *out_rho ,
+        complex_double *out_rhoE,
         complex_double *out_rhou,
         complex_double *out_rhov,
         complex_double *out_rhow,
-        complex_double *out_rhoe);
+        complex_double *out_rho );
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding
@@ -182,7 +182,7 @@ suzerain_rholut_imexop_accumulate(
  * quantities.  Notice that the \e transpose of the operator is assembled.
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
- * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
+ * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoE</tt>) will omit
  * the corresponding rows and columns from the formed matrix.  This may be
  * useful for omitting part of the operator (e.g. the density equation).  All
  * nonnegative order parameters must form a unique, contiguous set starting
@@ -204,7 +204,7 @@ suzerain_rholut_imexop_accumulate(
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
  * @param[in]  w     B-spline workspace providing discrete operators.
- * @param[in]  rho   Order of contiguous density data within a
+ * @param[in]  rhoE  Order of contiguous total energy data within a
  *                   globally contiguous state vector.
  * @param[in]  rhou  Order of contiguous streamwise momentum data within a
  *                   globally contiguous state vector.
@@ -212,7 +212,7 @@ suzerain_rholut_imexop_accumulate(
  *                   globally contiguous state vector.
  * @param[in]  rhow  Order of contiguous spanwise momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhoe  Order of contiguous total energy data within a
+ * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
  * @param[in]  buf   Working storage of size at least
  *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
@@ -234,11 +234,11 @@ suzerain_rholut_imexop_packc(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int rho,
-        const int rhou,
-        const int rhov,
+        const int rhoE,
         const int rhow,
-        const int rhoe,
+        const int rhov,
+        const int rhou,
+        const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
         complex_double * const patpt);
@@ -252,7 +252,7 @@ suzerain_rholut_imexop_packc(
  * quantities.  Notice that the \e transpose of the operator is assembled.
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
- * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoe</tt>) will omit
+ * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoE</tt>) will omit
  * the corresponding rows and columns from the formed matrix.  This may be
  * useful for omitting part of the operator (e.g. the density equation).  All
  * nonnegative order parameters must form a unique, contiguous set starting
@@ -275,7 +275,7 @@ suzerain_rholut_imexop_packc(
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
  * @param[in]  w     B-spline workspace providing discrete operators.
- * @param[in]  rho   Order of contiguous density data within a
+ * @param[in]  rhoE  Order of contiguous total energy data within a
  *                   globally contiguous state vector.
  * @param[in]  rhou  Order of contiguous streamwise momentum data within a
  *                   globally contiguous state vector.
@@ -283,7 +283,7 @@ suzerain_rholut_imexop_packc(
  *                   globally contiguous state vector.
  * @param[in]  rhow  Order of contiguous spanwise momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhoe  Order of contiguous total energy data within a
+ * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
  * @param[in]  buf   Working storage of size at least
  *                   <tt>w->n*(w->max_kl + 1 + w->max_ku)</tt>.
@@ -305,11 +305,11 @@ suzerain_rholut_imexop_packf(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int rho,
-        const int rhou,
-        const int rhov,
+        const int rhoE,
         const int rhow,
-        const int rhoe,
+        const int rhov,
+        const int rhou,
+        const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
         complex_double *const patpt);

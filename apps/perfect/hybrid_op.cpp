@@ -129,17 +129,17 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
-                    tmp.data() + field::ndx::rho * Ny,
+                    tmp.data() + field::ndx::e   * Ny,
                     tmp.data() + field::ndx::mx  * Ny,
                     tmp.data() + field::ndx::my  * Ny,
                     tmp.data() + field::ndx::mz  * Ny,
-                    tmp.data() + field::ndx::e   * Ny,
+                    tmp.data() + field::ndx::rho * Ny,
                     0.0,
-                    p + field::ndx::rho * Ny,
+                    p + field::ndx::e   * Ny,
                     p + field::ndx::mx  * Ny,
                     p + field::ndx::my  * Ny,
                     p + field::ndx::mz  * Ny,
-                    p + field::ndx::e   * Ny);
+                    p + field::ndx::rho * Ny);
             SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
@@ -213,17 +213,17 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
-                    &input [field::ndx::rho][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::e  ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::mx ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::my ][0][m - dkbx][n - dkbz],
                     &input [field::ndx::mz ][0][m - dkbx][n - dkbz],
-                    &input [field::ndx::e  ][0][m - dkbx][n - dkbz],
+                    &input [field::ndx::rho][0][m - dkbx][n - dkbz],
                     beta,
-                    &output[field::ndx::rho ][0][m - dkbx][n - dkbz],
+                    &output[field::ndx::e   ][0][m - dkbx][n - dkbz],
                     &output[field::ndx::mx  ][0][m - dkbx][n - dkbz],
                     &output[field::ndx::my  ][0][m - dkbx][n - dkbz],
                     &output[field::ndx::mz  ][0][m - dkbx][n - dkbz],
-                    &output[field::ndx::e   ][0][m - dkbx][n - dkbz]);
+                    &output[field::ndx::rho ][0][m - dkbx][n - dkbz]);
             SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
 
         }
@@ -502,14 +502,14 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             case gbsv:
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
-                        ndx::rho, ndx::mx, ndx::my, ndx::mz, ndx::e,
+                        ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, lu.data());
                 break;
             case gbsvx:
             case gbrfs:
                 suzerain_rholut_imexop_packc(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
-                        ndx::rho, ndx::mx, ndx::my, ndx::mz, ndx::e,
+                        ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, patpt.data());
                 break;
             }

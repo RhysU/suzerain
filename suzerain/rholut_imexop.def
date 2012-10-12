@@ -39,11 +39,11 @@ FUNCNAME()(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int rho,
+        const int rhoE,
         const int rhou,
         const int rhov,
         const int rhow,
-        const int rhoE,
+        const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
         complex_double * const patpt)
@@ -55,9 +55,9 @@ FUNCNAME()(
     // these two pieces of logic.
 
     // How many rows and columns of banded submatrices will we build?
-    const int nneg = (rho  >= 0)
+    const int nneg = (rhoE >= 0)
                    + (rhou >= 0) + (rhov >= 0) + (rhow >= 0)
-                   + (rhoE >= 0);
+                   + (rho  >= 0);
 
     // Compute the BSMBSM structure and named max_kl, max_ku views of w->D_T.
     *A_T = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);

@@ -41,17 +41,17 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int imagzero,
-        const complex_double *in_rho ,
+        const complex_double *in_rhoE,
         const complex_double *in_rhou,
         const complex_double *in_rhov,
         const complex_double *in_rhow,
-        const complex_double *in_rhoE,
+        const complex_double *in_rho ,
         const complex_double beta,
-        complex_double *out_rho ,
+        complex_double *out_rhoE,
         complex_double *out_rhou,
         complex_double *out_rhov,
         complex_double *out_rhow,
-        complex_double *out_rhoE)
+        complex_double *out_rho )
 {
     // When you modify this routine, you must also modify rholut_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
@@ -60,11 +60,11 @@ suzerain_rholut_imexop_accumulate(
 
     // Sanity checks
     assert(w->nderiv >= 2);          // Adequate workspace?
-    assert(!(!in_rho  ^ !out_rho )); // Both non-NULL or NULL?
+    assert(!(!in_rhoE ^ !out_rhoE)); // Both non-NULL or NULL?
     assert(!(!in_rhou ^ !out_rhou)); // ditto
     assert(!(!in_rhov ^ !out_rhov)); // ditto
     assert(!(!in_rhow ^ !out_rhow)); // ditto
-    assert(!(!in_rhoE ^ !out_rhoE)); // ditto
+    assert(!(!in_rho  ^ !out_rho )); // ditto
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
