@@ -252,7 +252,7 @@ class IsothermalNoSlipPATPTEnforcer
 
     // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
-    int rho[nwalls], noslip[nwalls][nmomentum], rhoe[nwalls];
+    int rho[nwalls], noslip[nwalls][nmomentum], e[nwalls];
 
     // Precomputed coefficient based on the isothermal equation of state
     real_t gamma_times_one_minus_gamma;
@@ -265,11 +265,11 @@ public:
     {
         // Starting offset to named scalars in InterleavedState pencil
         namespace ndx = channel::field::ndx;
-        const int start_rho  = static_cast<int>(ndx::rho)*A.n;
-        const int start_rhou = static_cast<int>(ndx::mx )*A.n;
-        const int start_rhov = static_cast<int>(ndx::my )*A.n;
-        const int start_rhow = static_cast<int>(ndx::mz )*A.n;
-        const int start_rhoe = static_cast<int>(ndx::e  )*A.n;
+        const int start_rho = static_cast<int>(ndx::rho) * A.n;
+        const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
+        const int start_my  = static_cast<int>(ndx::my ) * A.n;
+        const int start_mz  = static_cast<int>(ndx::mz ) * A.n;
+        const int start_e   = static_cast<int>(ndx::e  ) * A.n;
 
         // Relative to start_foo what is the offset to lower, upper walls
         const int wall[nwalls] = { 0, A.n - 1};
@@ -277,11 +277,11 @@ public:
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that A_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
-            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho +wall[i]);
-            noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhou+wall[i]);
-            noslip[i][1] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhov+wall[i]);
-            noslip[i][2] = suzerain_bsmbsm_qinv(A.S, A.n, start_rhow+wall[i]);
-            rhoe  [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rhoe+wall[i]);
+            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho + wall[i]);
+            noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_mx  + wall[i]);
+            noslip[i][1] = suzerain_bsmbsm_qinv(A.S, A.n, start_my  + wall[i]);
+            noslip[i][2] = suzerain_bsmbsm_qinv(A.S, A.n, start_mz  + wall[i]);
+            e     [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_e   + wall[i]);
         }
     }
 
@@ -296,7 +296,7 @@ public:
             for (int eqn = 0; eqn < nmomentum; ++eqn) {
                 b[noslip[wall][eqn]] = 0;
             }
-            b[rhoe[wall]] = 0;
+            b[e[wall]] = 0;
         }
     }
 
@@ -326,10 +326,10 @@ public:
                 }
             }
 
-            // Set constraint const*rho - const*gamma*(gamma-1)*rhoe = 0
+            // Set constraint const*rho - const*gamma*(gamma-1)*rhoE = 0
             T * const col = (T *) suzerain_gbmatrix_col(
                     A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
-                    sizeof(T), rhoe[wall], &begin, &end);
+                    sizeof(T), e[wall], &begin, &end);
             // Necessary to ensure constraint possible in degenerate case
             complex_t &rhocoeff = col[rho[wall]];
             if (rhocoeff == complex_t(0)) rhocoeff = 1;
@@ -337,7 +337,7 @@ public:
             for (int i = begin; i < end; ++i) {
                 if (i == rho[wall]) {
                     // NOP
-                } else if (i == rhoe[wall]) {
+                } else if (i == e[wall]) {
                     col[i] = rhocoeff*gamma_times_one_minus_gamma;
                 } else {
                     col[i] = 0;

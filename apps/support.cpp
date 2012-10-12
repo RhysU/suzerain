@@ -1245,7 +1245,7 @@ void store_collocation_values(
                 reinterpret_cast<real_t *>(swave[i].origin()));
     }
 
-    // Convert conserved rho, rhou, rhov, rhow, rhoe into u, v, w, p, T
+    // Convert conserved rho, rhou, rhov, rhow, rhoE into u, v, w, p, T
     physical_view<field::count>::type sphys
         = physical_view<field::count>::create(dgrid, swave);
 
@@ -1373,7 +1373,7 @@ void load_collocation_values(
     esio_field_read(h, "p", &sphys(3,0), 0, 0, 0);
     esio_field_read(h, "T", &sphys(4,0), 0, 0, 0);
 
-    // Convert primitive u, v, w, p, and T into rho, rhou, rhov, rhow, rhoe
+    // Convert primitive u, v, w, p, and T into rho, rhou, rhov, rhow, rhoE
     const real_t gamma = scenario.gamma;
     const real_t Ma    = scenario.Ma;
 
