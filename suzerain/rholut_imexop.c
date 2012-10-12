@@ -180,33 +180,20 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rhoE));
 
-        if (LIKELY(in_rho)) {
+        /* in_rhoE */ {
+            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
+                -phi*s->gamma*ikm,           REF(ux),
+                -phi*s->gamma*ikn,           REF(uz),
+                -phi*ginvRePr*(km2+kn2),     REF(nu),
+                w->D_T[M],  w->ld, IN(rhoE), 1.0, OUT(rhoE));
 
-            // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
-            // Writing such a beast may provide a tiny speedup.
-            (*p_gbddddmv)(trans, n, w->kl[M], w->ku[M],
-                phi*Ma2*invRe*(km2+kn2),     REF(nuu2),
-                phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
-                phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
-                phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
-            (*p_gbdddmv)( trans, n, w->kl[M], w->ku[M],
-                -phi*ikm,                    REF(ex_gradrho),
-                -phi*ikn,                    REF(ez_gradrho),
-                -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi*s->gamma,               REF(uy),
+                w->D_T[D1], w->ld, IN(rhoE), 1.0, OUT(rhoE));
 
-            (*p_gbdddmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
-                -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
-                -phi,                        REF(ey_gradrho),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhoE));
-
-            (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*Ma2*invRe,              REF(nuu2),
-                -phi*Ma2*invRe*ap13,         REF(nuuyuy),
-                phi*ginvRePr/gm1,            REF(e_deltarho),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhoE));
+            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+                phi*ginvRePr,                REF(nu),
+                w->D_T[D2], w->ld, IN(rhoE), 1.0, OUT(rhoE));
         }
 
         if (LIKELY(in_rhou)) {
@@ -263,20 +250,33 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhoE));
         }
 
-        /* in_rhoE */ {
-            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*s->gamma*ikm,           REF(ux),
-                -phi*s->gamma*ikn,           REF(uz),
-                -phi*ginvRePr*(km2+kn2),     REF(nu),
-                w->D_T[M],  w->ld, IN(rhoE), 1.0, OUT(rhoE));
+        if (LIKELY(in_rho)) {
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi*s->gamma,               REF(uy),
-                w->D_T[D1], w->ld, IN(rhoE), 1.0, OUT(rhoE));
+            // Mass terms done in 2 passes to avoid zgbdddddddmv_d.
+            // Writing such a beast may provide a tiny speedup.
+            (*p_gbddddmv)(trans, n, w->kl[M], w->ku[M],
+                phi*Ma2*invRe*(km2+kn2),     REF(nuu2),
+                phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
+                phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
+                phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
+            (*p_gbdddmv)( trans, n, w->kl[M], w->ku[M],
+                -phi*ikm,                    REF(ex_gradrho),
+                -phi*ikn,                    REF(ez_gradrho),
+                -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*ginvRePr,                REF(nu),
-                w->D_T[D2], w->ld, IN(rhoE), 1.0, OUT(rhoE));
+            (*p_gbdddmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
+                -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
+                -phi,                        REF(ey_gradrho),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhoE));
+
+            (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2],
+                -phi*Ma2*invRe,              REF(nuu2),
+                -phi*Ma2*invRe*ap13,         REF(nuuyuy),
+                phi*ginvRePr/gm1,            REF(e_deltarho),
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhoE));
         }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
@@ -287,24 +287,9 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rhou));
 
-        if (LIKELY(in_rho)) {
-            (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*0.5*gm1*ikm,          REF(u2),
-                phi*ikm,                   REF(uxux),
-                phi*ikn,                   REF(uxuz),
-                phi*invRe*(ap43*km2+kn2),  REF(nuux),
-                phi*ap13*invRe*km*kn,      REF(nuuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhou));
-
-            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi,                       REF(uxuy),
-                -phi*ap13*invRe*ikm,       REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhou));
-
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*invRe,                REF(nuux),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhou));
-        }
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rhoE),
+                1.0, OUT(rhou));
 
         /* in_rhou */ {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
@@ -341,9 +326,25 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rhow), 1.0, OUT(rhou));
         }
 
-        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rhoE),
-                1.0, OUT(rhou));
+        if (LIKELY(in_rho)) {
+            (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
+                -phi*0.5*gm1*ikm,          REF(u2),
+                phi*ikm,                   REF(uxux),
+                phi*ikn,                   REF(uxuz),
+                phi*invRe*(ap43*km2+kn2),  REF(nuux),
+                phi*ap13*invRe*km*kn,      REF(nuuz),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhou));
+
+            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
+                phi,                       REF(uxuy),
+                -phi*ap13*invRe*ikm,       REF(nuuy),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhou));
+
+            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+                -phi*invRe,                REF(nuux),
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhou));
+        }
+
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rhou), 1.0, OUT(rhou));
@@ -353,24 +354,9 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rhov));
 
-        if (LIKELY(in_rho)) {
-            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
-                phi*ikm,              REF(uxuy),
-                phi*ikn,              REF(uyuz),
-                phi*invRe*(km2+kn2),  REF(nuuy),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhov));
-
-            (*p_gbddddmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi*0.5*gm1,         REF(u2),
-                 phi,                 REF(uyuy),
-                -phi*ap13*invRe*ikm,  REF(nuux),
-                -phi*ap13*invRe*ikn,  REF(nuuz),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhov));
-
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*ap43*invRe,      REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhov));
-        }
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
+                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rhoE),
+                1.0, OUT(rhov));
 
         if (LIKELY(in_rhou)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
@@ -410,9 +396,24 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rhow), 1.0, OUT(rhov));
         }
 
-        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
-                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rhoE),
-                1.0, OUT(rhov));
+        if (LIKELY(in_rho)) {
+            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
+                phi*ikm,              REF(uxuy),
+                phi*ikn,              REF(uyuz),
+                phi*invRe*(km2+kn2),  REF(nuuy),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhov));
+
+            (*p_gbddddmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi*0.5*gm1,         REF(u2),
+                 phi,                 REF(uyuy),
+                -phi*ap13*invRe*ikm,  REF(nuux),
+                -phi*ap13*invRe*ikn,  REF(nuuz),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhov));
+
+            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+                -phi*ap43*invRe,      REF(nuuy),
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhov));
+        }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rhov), 1.0, OUT(rhov));
@@ -422,24 +423,9 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rhow));
 
-        if (LIKELY(in_rho)) {
-            (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*0.5*gm1*ikn,          REF(u2),
-                phi*ikm,                   REF(uxuz),
-                phi*ikn,                   REF(uzuz),
-                phi*invRe*(km2+ap43*kn2),  REF(nuuz),
-                phi*ap13*invRe*km*kn,      REF(nuux),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhow));
-
-            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
-                 phi,                      REF(uyuz),
-                -phi*ap13*invRe*ikn,       REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhow));
-
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*invRe,                REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhow));
-        }
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rhoE),
+                1.0, OUT(rhow));
 
         if (LIKELY(in_rhou)) {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
@@ -476,9 +462,24 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhow));
         }
 
-        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rhoE),
-                1.0, OUT(rhow));
+        if (LIKELY(in_rho)) {
+            (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
+                -phi*0.5*gm1*ikn,          REF(u2),
+                phi*ikm,                   REF(uxuz),
+                phi*ikn,                   REF(uzuz),
+                phi*invRe*(km2+ap43*kn2),  REF(nuuz),
+                phi*ap13*invRe*km*kn,      REF(nuux),
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhow));
+
+            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
+                 phi,                      REF(uyuz),
+                -phi*ap13*invRe*ikn,       REF(nuuy),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhow));
+
+            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+                -phi*invRe,                REF(nuuz),
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhow));
+        }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rhow), 1.0, OUT(rhow));
@@ -488,6 +489,8 @@ suzerain_rholut_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho));
 
+        if (LIKELY(in_rhoE)) {/* NOP */};
+
         if (LIKELY(in_rhou)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
                 -phi*ikm, w->D_T[M], w->ld, IN(rhou),  1.0, OUT(rho));
 
@@ -496,8 +499,6 @@ suzerain_rholut_imexop_accumulate(
 
         if (LIKELY(in_rhow)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
                 -phi*ikn, w->D_T[M], w->ld, IN(rhow),  1.0, OUT(rho));
-
-        if (LIKELY(in_rhoE)) {/* NOP */};
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
