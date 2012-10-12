@@ -66,7 +66,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    SUZERAIN_TIMER_BEGIN("applyMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("applyMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
@@ -143,8 +143,6 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
-
-    SUZERAIN_TIMER_END("applyMassPlusScaledOperator");
 }
 
 void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
@@ -156,7 +154,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    SUZERAIN_TIMER_BEGIN("accumulateMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("accumulateMassPlusScaledOperator");
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
@@ -230,8 +228,6 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
         }
     }
-
-    SUZERAIN_TIMER_END("accumulateMassPlusScaledOperator");
 }
 
 /**
