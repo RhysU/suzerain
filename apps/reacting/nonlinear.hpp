@@ -45,8 +45,8 @@
 // defined in ../support.hpp, which I'm not mucking with right now.
 namespace channel {
 
-  // Indices for state.
-  struct state { enum {
+  // Indices for state fields
+  struct ndx { enum {
       e,
       mx,
       my,
@@ -169,11 +169,11 @@ std::vector<real_t> applyNonlinearOperator(
     // stored first.
 
     // Energy (no derivatives)
-    o.zero_dealiasing_modes(swave, state::e);
-    o.bop_apply     (0,    1, swave, state::e);
+    o.zero_dealiasing_modes(swave, ndx::e);
+    o.bop_apply     (0,    1, swave, ndx::e);
 
     // Everything else (all spatial derivatives)
-    for (int var=state::mx; var<state_count; ++var) {
+    for (int var = ndx::mx; var<state_count; ++var) {
 
       // Indexing note: aux::mx is beginning of derivatives of
       // conserved state in aux ordering.  Things appearing ahead of
@@ -304,7 +304,7 @@ std::vector<real_t> applyNonlinearOperator(
       for (; offset < last_zxoffset; ++offset) {
 
         // Unpack density-related quantities
-        const real_t   rho         ( sphys(state::rho,    offset));
+        const real_t   rho         ( sphys(ndx::rho,    offset));
 
         const real_t  irho = 1.0/rho;
 
@@ -313,9 +313,9 @@ std::vector<real_t> applyNonlinearOperator(
                                       auxp(aux::rho+dim::z,  offset));
 
         // Unpack momentum-related quantities
-        const Vector3r m    ( sphys(state::mx, offset),
-                              sphys(state::my, offset),
-                              sphys(state::mz, offset));
+        const Vector3r m    ( sphys(ndx::mx, offset),
+                              sphys(ndx::my, offset),
+                              sphys(ndx::mz, offset));
         const real_t   div_m(  auxp(aux::mx+dim::x, offset)
                              + auxp(aux::my+dim::y, offset)
                              + auxp(aux::mz+dim::z, offset));
@@ -332,7 +332,7 @@ std::vector<real_t> applyNonlinearOperator(
                                          auxp(aux::mz+dim::z,  offset);
 
         // Unpack total energy-related quantities
-        const real_t e        (sphys(state::e,       offset));
+        const real_t e        (sphys(ndx::e,       offset));
 
         // Unpack species variables
         // NOTE: In species vector, idx 0 is the dilluter (the species
@@ -344,7 +344,7 @@ std::vector<real_t> applyNonlinearOperator(
         grad_species(0,2) = grad_rho(2);
 
         for (unsigned int s=1; s<Ns; ++s) {
-          species(s) = sphys(state::species + s - 1, offset);
+          species(s) = sphys(ndx::species + s - 1, offset);
 
           grad_species(s,0) = auxp(aux::species + s - 1 + dim::x, offset);
           grad_species(s,1) = auxp(aux::species + s - 1 + dim::y, offset);
@@ -423,14 +423,14 @@ std::vector<real_t> applyNonlinearOperator(
         // U_t + div(F) = S.
         //
         // TODO: Add slow growth terms.
-        sphys(state::e  , offset) = 0.0;
-        sphys(state::mx , offset) = 0.0;
-        sphys(state::my , offset) = 0.0;
-        sphys(state::mz , offset) = 0.0;
-        sphys(state::rho, offset) = 0.0;
+        sphys(ndx::e  , offset) = 0.0;
+        sphys(ndx::mx , offset) = 0.0;
+        sphys(ndx::my , offset) = 0.0;
+        sphys(ndx::mz , offset) = 0.0;
+        sphys(ndx::rho, offset) = 0.0;
 
         for (unsigned int s=1; s<Ns; ++s) {
-          sphys(state::rho+s, offset) = om(s);
+          sphys(ndx::rho+s, offset) = om(s);
         }
 
 
@@ -621,11 +621,11 @@ std::vector<real_t> applyNonlinearOperator(
             ms.Q_conservative(x, y, z, time,
                               Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
 
-            sphys(state::rho, offset) += Q_rho;
-            sphys(state::mx , offset) += Q_rhou;
-            sphys(state::my , offset) += Q_rhov;
-            sphys(state::mz , offset) += Q_rhow;
-            sphys(state::e  , offset) += Q_rhoe;
+            sphys(ndx::rho, offset) += Q_rho;
+            sphys(ndx::mx , offset) += Q_rhou;
+            sphys(ndx::my , offset) += Q_rhov;
+            sphys(ndx::mz , offset) += Q_rhow;
+            sphys(ndx::e  , offset) += Q_rhoe;
 
           } // end X
 
