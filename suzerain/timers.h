@@ -42,4 +42,24 @@
 #define SUZERAIN_TIMER_END(id)
 #endif
 
+#ifdef __cplusplus
+
+/**
+ * Invoke <tt>SUZERAIN_TIMER_BEGIN(id)</tt> and
+ * <tt>SUZERAIN_TIMER_BEGIN(id)</tt> using a scope guard.
+ */
+#define SUZERAIN_TIMER_SCOPED(id)                                   \
+    SUZERAIN_TIMER_SCOPED_HELPER1(id,__LINE__)
+
+#define SUZERAIN_TIMER_SCOPED_HELPER1(id,line)                      \
+    SUZERAIN_TIMER_SCOPED_HELPER2(id,line)
+
+#define SUZERAIN_TIMER_SCOPED_HELPER2(id,line)                      \
+    struct SuzerainTimerScoped_##line {                             \
+        SuzerainTimerScoped_##line()  { SUZERAIN_TIMER_BEGIN(id); } \
+        ~SuzerainTimerScoped_##line() { SUZERAIN_TIMER_END  (id); } \
+    } suzeraintimerscoped_##line
+
+#endif  // #ifdef __cplusplus
+
 #endif /* SUZERAIN_TIMERS_H */
