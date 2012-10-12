@@ -22,6 +22,8 @@
  *--------------------------------------------------------------------------
  */
 
+// FIXME Missing BOOST_AUTO_TEST_SUITE( test_suite_name ) invocations ?
+
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
