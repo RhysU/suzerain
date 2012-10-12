@@ -43,7 +43,7 @@ FUNCNAME()(
         const int rhou,
         const int rhov,
         const int rhow,
-        const int rhoe,
+        const int rhoE,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
         complex_double * const patpt)
@@ -57,7 +57,7 @@ FUNCNAME()(
     // How many rows and columns of banded submatrices will we build?
     const int nneg = (rho  >= 0)
                    + (rhou >= 0) + (rhov >= 0) + (rhow >= 0)
-                   + (rhoe >= 0);
+                   + (rhoE >= 0);
 
     // Compute the BSMBSM structure and named max_kl, max_ku views of w->D_T.
     *A_T = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
@@ -84,7 +84,7 @@ FUNCNAME()(
 
     // We do not know the leading dimension associated with the definition of
     // PACK() so we must overwrite every possible submatrix within PATPT.
-    // This is only suboptimal for the zero (rho, rhoe) submatrix and
+    // This is only suboptimal for the zero (rho, rhoE) submatrix and
     // brings with it much flexibility.
 
     // This routine assembles the transpose of the operator and hence the
@@ -107,7 +107,7 @@ FUNCNAME()(
 
         if (rhow >= 0) PACK(zd)(A_T, rhow, rho, -ikn*phi, M,  patpt);
 
-        if (rhoe >= 0) PACK(z)( A_T, rhoe, rho,      0.0, 0,  patpt);
+        if (rhoE >= 0) PACK(z)( A_T, rhoE, rho,      0.0, 0,  patpt);
     }
 
     // The provided buf may contain INFs or NANs.  Defensively zero it.
@@ -185,8 +185,8 @@ FUNCNAME()(
             PACK(z)(A_T, rhow, rhou, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) {
-            PACK(zd)(A_T, rhoe, rhou, -gm1*invMa2*ikm*phi, M, patpt);
+        if (rhoE >= 0) {
+            PACK(zd)(A_T, rhoE, rhou, -gm1*invMa2*ikm*phi, M, patpt);
         }
     }
 
@@ -263,8 +263,8 @@ FUNCNAME()(
             PACK(z)(A_T, rhow, rhov, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) {
-            PACK(zd)(A_T, rhoe, rhov, -gm1*invMa2*phi, D1, patpt);
+        if (rhoE >= 0) {
+            PACK(zd)(A_T, rhoE, rhov, -gm1*invMa2*phi, D1, patpt);
         }
     }
 
@@ -338,13 +338,13 @@ FUNCNAME()(
             PACK(z)(A_T, rhow, rhow, 1.0, buf, patpt);
         }
 
-        if (rhoe >= 0) {
-            PACK(zd)(A_T, rhoe, rhow, -gm1*invMa2*ikn*phi, M, patpt);
+        if (rhoE >= 0) {
+            PACK(zd)(A_T, rhoE, rhow, -gm1*invMa2*ikn*phi, M, patpt);
         }
 
     }
 
-    if (rhoe >= 0) { // Prepare total energy row
+    if (rhoE >= 0) { // Prepare total energy row
 
         if (rho  >= 0) {
             // Mass terms done in 2 passes to avoid zgb_dddddddiag_scale_acc_d.
@@ -373,7 +373,7 @@ FUNCNAME()(
                     phi*ginvRePr/gm1,            REF(e_deltarho),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rho, rhoe, 1.0, buf, patpt);
+            PACK(z)(A_T, rho, rhoE, 1.0, buf, patpt);
         }
 
         if (rhou >= 0) {
@@ -393,7 +393,7 @@ FUNCNAME()(
                     phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rhou, rhoe, 1.0, buf, patpt);
+            PACK(z)(A_T, rhou, rhoE, 1.0, buf, patpt);
         }
 
         if (rhov >= 0) {
@@ -413,7 +413,7 @@ FUNCNAME()(
                     phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rhov, rhoe, 1.0, buf, patpt);
+            PACK(z)(A_T, rhov, rhoE, 1.0, buf, patpt);
         }
 
         if (rhow >= 0) {
@@ -433,12 +433,12 @@ FUNCNAME()(
                     phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
                     D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rhow, rhoe, 1.0, buf, patpt);
+            PACK(z)(A_T, rhow, rhoE, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
-        /* rhoe */ {
+        /* rhoE */ {
             suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
                     -s->gamma*ikm,               REF(ux),
                     -s->gamma*ikn,               REF(uz),
@@ -457,7 +457,7 @@ FUNCNAME()(
                     1.0,                         IDENTITY,
                     M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            PACK(z)(A_T, rhoe, rhoe, 1.0, buf, patpt);
+            PACK(z)(A_T, rhoE, rhoE, 1.0, buf, patpt);
         }
     }
 

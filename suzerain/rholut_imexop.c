@@ -45,13 +45,13 @@ suzerain_rholut_imexop_accumulate(
         const complex_double *in_rhou,
         const complex_double *in_rhov,
         const complex_double *in_rhow,
-        const complex_double *in_rhoe,
+        const complex_double *in_rhoE,
         const complex_double beta,
         complex_double *out_rho ,
         complex_double *out_rhou,
         complex_double *out_rhov,
         complex_double *out_rhow,
-        complex_double *out_rhoe)
+        complex_double *out_rhoE)
 {
     // When you modify this routine, you must also modify rholut_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
@@ -64,7 +64,7 @@ suzerain_rholut_imexop_accumulate(
     assert(!(!in_rhou ^ !out_rhou)); // ditto
     assert(!(!in_rhov ^ !out_rhov)); // ditto
     assert(!(!in_rhow ^ !out_rhow)); // ditto
-    assert(!(!in_rhoe ^ !out_rhoe)); // ditto
+    assert(!(!in_rhoE ^ !out_rhoE)); // ditto
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
@@ -189,7 +189,7 @@ suzerain_rholut_imexop_accumulate(
         if (LIKELY(in_rhow)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
                 -phi*ikn, w->D_T[M], w->ld, IN(rhow),  1.0, OUT(rho));
 
-        if (LIKELY(in_rhoe)) {/* NOP */};
+        if (LIKELY(in_rhoE)) {/* NOP */};
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
@@ -253,8 +253,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[M],  w->ld, IN(rhow), 1.0, OUT(rhou));
         }
 
-        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rhoe),
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+                -phi*gm1*invMa2*ikm, w->D_T[M], w->ld, IN(rhoE),
                 1.0, OUT(rhou));
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
@@ -322,8 +322,8 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D1],  w->ld, IN(rhow), 1.0, OUT(rhov));
         }
 
-        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
-                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rhoe),
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
+                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rhoE),
                 1.0, OUT(rhov));
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
@@ -388,17 +388,17 @@ suzerain_rholut_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhow));
         }
 
-        if (LIKELY(in_rhoe)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rhoe),
+        if (LIKELY(in_rhoE)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rhoE),
                 1.0, OUT(rhow));
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rhow), 1.0, OUT(rhow));
     }
 
-    if (LIKELY(in_rhoe)) {  // Accumulate total energy terms into out_rhoe
+    if (LIKELY(in_rhoE)) {  // Accumulate total energy terms into out_rhoE
 
-        suzerain_blas_zscal(n, beta, OUT(rhoe));
+        suzerain_blas_zscal(n, beta, OUT(rhoE));
 
         if (LIKELY(in_rho)) {
 
@@ -409,24 +409,24 @@ suzerain_rholut_imexop_accumulate(
                 phi*Ma2*invRe*ap13*km2,      REF(nuuxux),
                 phi*Ma2*invRe*ap13*2*km*kn,  REF(nuuxuz),
                 phi*Ma2*invRe*ap13*kn2,      REF(nuuzuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
             (*p_gbdddmv)( trans, n, w->kl[M], w->ku[M],
                 -phi*ikm,                    REF(ex_gradrho),
                 -phi*ikn,                    REF(ez_gradrho),
                 -phi*ginvRePr/gm1*(km2+kn2), REF(e_deltarho),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rhoE));
 
             (*p_gbdddmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi*Ma2*invRe*ap13*2*ikm,   REF(nuuxuy),
                 -phi*Ma2*invRe*ap13*2*ikn,   REF(nuuyuz),
                 -phi,                        REF(ey_gradrho),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhoe));
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rhoE));
 
             (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2],
                 -phi*Ma2*invRe,              REF(nuu2),
                 -phi*Ma2*invRe*ap13,         REF(nuuyuy),
                 phi*ginvRePr/gm1,            REF(e_deltarho),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhoe));
+                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rhoE));
         }
 
         if (LIKELY(in_rhou)) {
@@ -436,15 +436,15 @@ suzerain_rholut_imexop_accumulate(
                 phi*coeff_nuux,              REF(nuux),
                 -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
                 -phi*ikm,                    REF(e_divm),
-                w->D_T[M],  w->ld, IN(rhou), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rhou), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
-                w->D_T[D1], w->ld, IN(rhou), 1.0, OUT(rhoe));
+                w->D_T[D1], w->ld, IN(rhou), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
-                w->D_T[D2], w->ld, IN(rhou), 1.0, OUT(rhoe));
+                w->D_T[D2], w->ld, IN(rhou), 1.0, OUT(rhoE));
         }
 
         if (LIKELY(in_rhov)) {
@@ -452,17 +452,17 @@ suzerain_rholut_imexop_accumulate(
                 = Ma2*invRe*(ginvPr-1)*(km2+kn2);
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
                 phi*coeff_nuuy,              REF(nuuy),
-                w->D_T[M],  w->ld, IN(rhov), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rhov), 1.0, OUT(rhoE));
 
             (*p_gbdddmv)(trans, n, w->kl[D1], w->ku[D1],
                 phi*Ma2*invRe*ap13*ikm,      REF(nuux),
                 phi*Ma2*invRe*ap13*ikn,      REF(nuuz),
                 -phi,                        REF(e_divm),
-                w->D_T[D1], w->ld, IN(rhov), 1.0, OUT(rhoe));
+                w->D_T[D1], w->ld, IN(rhov), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
                 phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
-                w->D_T[D2], w->ld, IN(rhov), 1.0, OUT(rhoe));
+                w->D_T[D2], w->ld, IN(rhov), 1.0, OUT(rhoE));
         }
 
         if (LIKELY(in_rhow)) {
@@ -472,35 +472,35 @@ suzerain_rholut_imexop_accumulate(
                 -phi*Ma2*invRe*ap13*km*kn,   REF(nuux),
                 phi*coeff_nuuz,              REF(nuuz),
                 -phi*ikn,                    REF(e_divm),
-                w->D_T[M],  w->ld, IN(rhow), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rhow), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 phi*Ma2*invRe*ap13*ikn,      REF(nuuy),
-                w->D_T[D1], w->ld, IN(rhow), 1.0, OUT(rhoe));
+                w->D_T[D1], w->ld, IN(rhow), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
-                w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhoe));
+                w->D_T[D2], w->ld, IN(rhow), 1.0, OUT(rhoE));
         }
 
-        /* in_rhoe */ {
+        /* in_rhoE */ {
             (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
                 -phi*s->gamma*ikm,           REF(ux),
                 -phi*s->gamma*ikn,           REF(uz),
                 -phi*ginvRePr*(km2+kn2),     REF(nu),
-                w->D_T[M],  w->ld, IN(rhoe), 1.0, OUT(rhoe));
+                w->D_T[M],  w->ld, IN(rhoE), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi*s->gamma,               REF(uy),
-                w->D_T[D1], w->ld, IN(rhoe), 1.0, OUT(rhoe));
+                w->D_T[D1], w->ld, IN(rhoE), 1.0, OUT(rhoE));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
                 phi*ginvRePr,                REF(nu),
-                w->D_T[D2], w->ld, IN(rhoe), 1.0, OUT(rhoe));
+                w->D_T[D2], w->ld, IN(rhoE), 1.0, OUT(rhoE));
         }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-            1.0, w->D_T[M], w->ld, IN(rhoe), 1.0, OUT(rhoe));
+            1.0, w->D_T[M], w->ld, IN(rhoE), 1.0, OUT(rhoE));
     }
 
 #   undef LIKELY
