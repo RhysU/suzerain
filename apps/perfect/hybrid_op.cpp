@@ -43,14 +43,12 @@
 
 #pragma warning(disable:383 1572)
 
-namespace channel {
-
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
 #pragma float_control(except, on)
 #pragma fp_contract(off)
 static inline
-real_t twopiover(const real_t L)
+suzerain::real_t twopiover(const suzerain::real_t L)
 {
     return 2*M_PI/L;
 }
@@ -58,6 +56,8 @@ real_t twopiover(const real_t L)
 #pragma fenv_access(off)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
+
+namespace channel {
 
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
