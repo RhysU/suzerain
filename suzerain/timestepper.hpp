@@ -1495,10 +1495,7 @@ const typename suzerain::traits::component<Element>::type step(
     StateB& b,
     const typename suzerain::traits::component<Element>::type max_delta_t = 0)
 {
-    struct Guard {
-         Guard() { SUZERAIN_TIMER_BEGIN("timestepper::lowstorage::step"); }
-        ~Guard() { SUZERAIN_TIMER_END  ("timestepper::lowstorage::step"); }
-    } scope_guard;
+    SUZERAIN_TIMER_SCOPED("timestepper::lowstorage::step");
 
     using boost::is_same;
     BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));

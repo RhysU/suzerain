@@ -75,10 +75,7 @@ public:
             const AlphaType& alpha, const MultiArrayX &x, int ndx_x,
             const BetaType& beta,         MultiArrayY &y, int ndx_y) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_accumulate"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_accumulate"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_accumulate");
 
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
@@ -100,10 +97,7 @@ public:
     int bop_apply(
             int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_apply"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_apply"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_apply");
 
         assert(x.shape()[1] == (unsigned) bop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
@@ -122,10 +116,7 @@ public:
     int bop_solve(
             const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_solve(real)"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_solve(real)"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(real)");
 
         assert(x.shape()[1] == (unsigned) lu.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
@@ -143,10 +134,7 @@ public:
     int bop_solve(
             const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::bop_solve(cmplx)"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::bop_solve(cmplx)"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(cmplx)");
 
         assert(x.shape()[1] == (unsigned) luz.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
@@ -170,13 +158,7 @@ public:
                              MultiArrayY &y,
                              int ndx_y) const
     {
-        struct Guard {
-            Guard()
-            {SUZERAIN_TIMER_BEGIN( "OperatorBase::diffwave_accumulate"); }
-
-            ~Guard()
-            { SUZERAIN_TIMER_END  ("OperatorBase::diffwave_accumulate"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::diffwave_accumulate");
 
         assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
         assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
@@ -210,10 +192,7 @@ public:
                         MultiArray &x,
                         int ndx_x) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("OperatorBase::diffwave_apply"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("OperatorBase::diffwave_apply"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::diffwave_apply");
 
         return suzerain::diffwave::apply(
                 dxcnt, dzcnt,
@@ -235,12 +214,7 @@ public:
     void zero_dealiasing_modes(MultiArray &x,
                                int ndx_x) const
     {
-        struct Guard {
-            Guard()
-            { SUZERAIN_TIMER_BEGIN("OperatorBase::zero_dealiasing_modes"); }
-            ~Guard()
-            { SUZERAIN_TIMER_END  ("OperatorBase::zero_dealiasing_modes"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("OperatorBase::zero_dealiasing_modes");
 
         // Applying the dx^0 dz^0 operator with a scale factor of 1
         // zeros the dealiasing-only wavenumbers within the field

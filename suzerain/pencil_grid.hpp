@@ -188,10 +188,7 @@ public:
      */
     void transform_wave_to_physical(real_t * inout) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("transform_wave_to_physical"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("transform_wave_to_physical"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("transform_wave_to_physical");
 
         return  transform_wave_to_physical_(inout);
     }
@@ -207,10 +204,7 @@ public:
      */
     void transform_physical_to_wave(real_t * inout) const
     {
-        struct Guard {
-            Guard()  { SUZERAIN_TIMER_BEGIN("transform_physical_to_wave"); }
-            ~Guard() { SUZERAIN_TIMER_END  ("transform_physical_to_wave"); }
-        } scope_guard;
+        SUZERAIN_TIMER_SCOPED("transform_physical_to_wave");
 
         return transform_physical_to_wave_(inout);
     }

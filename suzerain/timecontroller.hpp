@@ -471,10 +471,7 @@ StopType TimeController<TimeType,StepType,StopType>::advance(
         const TimeType final_t,
         const StepType final_nt)
 {
-    struct Guard {
-         Guard() { SUZERAIN_TIMER_BEGIN("TimeController::advance"); }
-        ~Guard() { SUZERAIN_TIMER_END  ("TimeController::advance"); }
-    } scope_guard;
+    SUZERAIN_TIMER_SCOPED("TimeController::advance");
 
 
     assert(min_dt_ <= max_dt_);
