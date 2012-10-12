@@ -247,7 +247,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
         // channel_treatment steps (4), (5), and (6) determine and apply
         // the appropriate bulk momentum forcing to achieve a target value.
-        ModesRealPart mean_rhou((real_t *)state[ndx::rhou].origin(), Ny);
+        ModesRealPart mean_rhou((real_t *)state[ndx::mx].origin(), Ny);
         const real_t observed = bulkcoeff.dot((mean_rhou.matrix()));
         const real_t varphi = (scenario.bulk_rhou - observed)
                             / bulkcoeff_dot_interior;
@@ -256,7 +256,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
-        ModesRealPart mean_rhoe((real_t *)state[ndx::rhoe].origin(), Ny);
+        ModesRealPart mean_rhoe((real_t *)state[ndx::e].origin(), Ny);
         mean_rhoe += (varphi*scenario.Ma*scenario.Ma)*rhs;
 
         // Track the forcing magnitude within statistics.

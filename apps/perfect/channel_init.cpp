@@ -378,12 +378,11 @@ int main(int argc, char **argv)
                     // Compute and store the conserved state from primitives
                     const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
                                    + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
-                    namespace ndx = channel::field::ndx;
-                    sphys(channel::field::ndx::rho,  offset) = rho;
-                    sphys(channel::field::ndx::rhou, offset) = rho * u;
-                    sphys(channel::field::ndx::rhov, offset) = rho * v;
-                    sphys(channel::field::ndx::rhow, offset) = rho * w;
-                    sphys(channel::field::ndx::rhoe, offset) = rho * e;
+                    sphys(channel::field::ndx::rho, offset) = rho;
+                    sphys(channel::field::ndx::mx,  offset) = rho * u;
+                    sphys(channel::field::ndx::my,  offset) = rho * v;
+                    sphys(channel::field::ndx::mz,  offset) = rho * w;
+                    sphys(channel::field::ndx::e,   offset) = rho * e;
 
                 } // end X
 

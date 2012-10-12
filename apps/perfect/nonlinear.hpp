@@ -157,68 +157,68 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::rhou);
-    o.bop_accumulate(1,    1, swave, ndx::rhou, 0, auxw, aux::mx_y);
-    o.bop_accumulate(2,    1, swave, ndx::rhou, 0, auxw, aux::mx_yy);
-    o.bop_apply     (0,    1, swave, ndx::rhou);
+    o.zero_dealiasing_modes(swave, ndx::mx);
+    o.bop_accumulate(1,    1, swave, ndx::mx, 0, auxw, aux::mx_y);
+    o.bop_accumulate(2,    1, swave, ndx::mx, 0, auxw, aux::mx_yy);
+    o.bop_apply     (0,    1, swave, ndx::mx);
 
     // Compute X- and Z- derivatives of X momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhou,  0, auxw, aux::mx_x );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhou,  0, auxw, aux::mx_xx);
-    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhou,  0, auxw, aux::mx_xz);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhou,  0, auxw, aux::mx_z );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhou,  0, auxw, aux::mx_zz);
-    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mx_y,  0, auxw, aux::mx_xy);
-    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mx_y,  0, auxw, aux::mx_yz);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::mx,   0, auxw, aux::mx_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::mx,   0, auxw, aux::mx_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::mx,   0, auxw, aux::mx_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::mx,   0, auxw, aux::mx_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::mx,   0, auxw, aux::mx_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mx_y, 0, auxw, aux::mx_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mx_y, 0, auxw, aux::mx_yz);
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::rhov);
-    o.bop_accumulate(1,    1, swave, ndx::rhov, 0, auxw, aux::my_y);
-    o.bop_accumulate(2,    1, swave, ndx::rhov, 0, auxw, aux::my_yy);
-    o.bop_apply     (0,    1, swave, ndx::rhov);
+    o.zero_dealiasing_modes(swave, ndx::my);
+    o.bop_accumulate(1,    1, swave, ndx::my, 0, auxw, aux::my_y);
+    o.bop_accumulate(2,    1, swave, ndx::my, 0, auxw, aux::my_yy);
+    o.bop_apply     (0,    1, swave, ndx::my);
 
     // Compute X- and Z- derivatives of Y momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhov,  0, auxw, aux::my_x );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhov,  0, auxw, aux::my_xx);
-    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhov,  0, auxw, aux::my_xz);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhov,  0, auxw, aux::my_z );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhov,  0, auxw, aux::my_zz);
-    o.diffwave_accumulate(1, 0, 1, auxw,  aux::my_y,  0, auxw, aux::my_xy);
-    o.diffwave_accumulate(0, 1, 1, auxw,  aux::my_y,  0, auxw, aux::my_yz);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::my,   0, auxw, aux::my_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::my,   0, auxw, aux::my_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::my,   0, auxw, aux::my_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::my,   0, auxw, aux::my_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::my,   0, auxw, aux::my_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::my_y, 0, auxw, aux::my_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::my_y, 0, auxw, aux::my_yz);
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::rhow);
-    o.bop_accumulate(1,    1, swave, ndx::rhow, 0, auxw, aux::mz_y);
-    o.bop_accumulate(2,    1, swave, ndx::rhow, 0, auxw, aux::mz_yy);
-    o.bop_apply     (0,    1, swave, ndx::rhow);
+    o.zero_dealiasing_modes(swave, ndx::mz);
+    o.bop_accumulate(1,    1, swave, ndx::mz, 0, auxw, aux::mz_y);
+    o.bop_accumulate(2,    1, swave, ndx::mz, 0, auxw, aux::mz_yy);
+    o.bop_apply     (0,    1, swave, ndx::mz);
 
     // Compute X- and Z- derivatives of Z momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhow,  0, auxw, aux::mz_x );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhow,  0, auxw, aux::mz_xx);
-    o.diffwave_accumulate(1, 1, 1, swave, ndx::rhow,  0, auxw, aux::mz_xz);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhow,  0, auxw, aux::mz_z );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhow,  0, auxw, aux::mz_zz);
-    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mz_y,  0, auxw, aux::mz_xy);
-    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mz_y,  0, auxw, aux::mz_yz);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::mz,   0, auxw, aux::mz_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::mz,   0, auxw, aux::mz_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::mz,   0, auxw, aux::mz_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::mz,   0, auxw, aux::mz_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::mz,   0, auxw, aux::mz_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::mz_y, 0, auxw, aux::mz_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::mz_y, 0, auxw, aux::mz_yz);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::rhoe);
-    o.bop_accumulate(1,    1, swave, ndx::rhoe, 0, auxw, aux::e_y);
-    o.bop_accumulate(2,    1, swave, ndx::rhoe, 0, auxw, aux::div_grad_e);
-    o.bop_apply     (0,    1, swave, ndx::rhoe);
+    o.zero_dealiasing_modes(swave, ndx::e);
+    o.bop_accumulate(1,    1, swave, ndx::e, 0, auxw, aux::e_y);
+    o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::div_grad_e);
+    o.bop_apply     (0,    1, swave, ndx::e);
 
     // Compute X- and Z- derivatives of total energy at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::rhoe, 0, auxw, aux::e_x       );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::rhoe, 1, auxw, aux::div_grad_e);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::rhoe, 0, auxw, aux::e_z       );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::rhoe, 1, auxw, aux::div_grad_e);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::e, 0, auxw, aux::e_x       );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::e, 0, auxw, aux::e_z       );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
@@ -323,11 +323,11 @@ std::vector<real_t> applyNonlinearOperator(
             for (; offset < last_zxoffset; ++offset) {
 
                 // Unpack conserved state
-                const real_t   rho(sphys(ndx::rho,  offset));
-                const Vector3r m  (sphys(ndx::rhou, offset),
-                                   sphys(ndx::rhov, offset),
-                                   sphys(ndx::rhow, offset));
-                const real_t   e  (sphys(ndx::rhoe, offset));
+                const real_t   rho(sphys(ndx::rho, offset));
+                const Vector3r m  (sphys(ndx::mx,  offset),
+                                   sphys(ndx::my,  offset),
+                                   sphys(ndx::mz,  offset));
+                const real_t   e  (sphys(ndx::e,   offset));
 
                 // Compute quantities related to the equation of state
                 real_t p, T, mu, lambda;
@@ -463,7 +463,7 @@ std::vector<real_t> applyNonlinearOperator(
                                        + o.dgrid.local_physical_extent.z()
                                        * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
-                ux(sphys(ndx::rhou, offset)/sphys(ndx::rho, offset));
+                ux(sphys(ndx::mx, offset)/sphys(ndx::rho, offset));
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
@@ -570,9 +570,9 @@ std::vector<real_t> applyNonlinearOperator(
                                           auxp(aux::rho_zz, offset);
 
             // Unpack momentum-related quantities
-            const Vector3r m    ( sphys(ndx::rhou, offset),
-                                  sphys(ndx::rhov, offset),
-                                  sphys(ndx::rhow, offset));
+            const Vector3r m    ( sphys(ndx::mx,   offset),
+                                  sphys(ndx::my,   offset),
+                                  sphys(ndx::mz,   offset));
             const real_t   div_m(  auxp(aux::mx_x, offset)
                                  + auxp(aux::my_y, offset)
                                  + auxp(aux::mz_z, offset));
@@ -607,7 +607,7 @@ std::vector<real_t> applyNonlinearOperator(
                                       + auxp(aux::mz_zz, offset));
 
             // Unpack total energy-related quantities
-            const real_t e        (sphys(ndx::rhoe,       offset));
+            const real_t e        (sphys(ndx::e,          offset));
             const Vector3r grad_e ( auxp(aux::e_x,        offset),
                                     auxp(aux::e_y,        offset),
                                     auxp(aux::e_z,        offset));
@@ -704,12 +704,12 @@ std::vector<real_t> applyNonlinearOperator(
                         ;
                     break;
             }
-            sphys(ndx::rhou, offset) = momentum_rhs.x();
-            sphys(ndx::rhov, offset) = momentum_rhs.y();
-            sphys(ndx::rhow, offset) = momentum_rhs.z();
+            sphys(ndx::mx, offset) = momentum_rhs.x();
+            sphys(ndx::my, offset) = momentum_rhs.y();
+            sphys(ndx::mz, offset) = momentum_rhs.z();
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
-            sphys(ndx::rhoe, offset) =
+            sphys(ndx::e, offset) =
                 // Explicit viscous work term
                 + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
                         u, grad_u, tau, div_tau
@@ -719,7 +719,7 @@ std::vector<real_t> applyNonlinearOperator(
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
                 case linearize::none:
-                    sphys(ndx::rhoe, offset) +=
+                    sphys(ndx::e, offset) +=
                         // Explicit convective and acoustic terms
                         - suzerain::rholut::div_e_u(
                                 e, grad_e, u, div_u
@@ -735,7 +735,7 @@ std::vector<real_t> applyNonlinearOperator(
                         // No need to adjust explicit viscous work term
                     break;
                 case linearize::rhome:
-                    sphys(ndx::rhoe, offset) +=
+                    sphys(ndx::e, offset) +=
                         // Explicit convective/acoustic less implicit portion
                         - suzerain::rholut::explicit_div_e_plus_p_u(
                                 gamma, Ma, rho, grad_rho,
@@ -911,11 +911,11 @@ std::vector<real_t> applyNonlinearOperator(
                     ms.Q_conservative(x, y, z, time,
                                       Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
 
-                    sphys(ndx::rho,  offset) += Q_rho;
-                    sphys(ndx::rhou, offset) += Q_rhou;
-                    sphys(ndx::rhov, offset) += Q_rhov;
-                    sphys(ndx::rhow, offset) += Q_rhow;
-                    sphys(ndx::rhoe, offset) += Q_rhoe;
+                    sphys(ndx::rho, offset) += Q_rho;
+                    sphys(ndx::mx,  offset) += Q_rhou;
+                    sphys(ndx::my,  offset) += Q_rhov;
+                    sphys(ndx::mz,  offset) += Q_rhow;
+                    sphys(ndx::e,   offset) += Q_rhoe;
 
                 } // end X
 

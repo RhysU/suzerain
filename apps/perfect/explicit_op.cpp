@@ -165,10 +165,10 @@ public:
     void operator()(complex_t &rho) const
     {
         namespace ndx = channel::field::ndx;
-        (&rho)[(ndx::rhou - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::rhov - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::rhow - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::rhoe - ndx::rho)*field_stride] = rho*inv_gamma_gamma1;
+        (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
+        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*inv_gamma_gamma1;
     }
 };
 

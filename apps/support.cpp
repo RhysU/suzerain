@@ -1256,11 +1256,11 @@ void store_collocation_values(
 
     for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
         // Unpack conserved quantities from fields
-        const real_t   rho(sphys(field::ndx::rho,  o));
-        Vector3r         m(sphys(field::ndx::rhou, o),
-                           sphys(field::ndx::rhov, o),
-                           sphys(field::ndx::rhow, o));
-        const real_t     e(sphys(field::ndx::rhoe, o));
+        const real_t   rho(sphys(field::ndx::rho, o));
+        Vector3r         m(sphys(field::ndx::mx,  o),
+                           sphys(field::ndx::my,  o),
+                           sphys(field::ndx::mz,  o));
+        const real_t     e(sphys(field::ndx::e,   o));
 
         // Compute primitive quantities to be stored
         real_t p, T;
@@ -1392,11 +1392,11 @@ void load_collocation_values(
                          + suzerain::rholut::energy_internal(gamma, p);
 
         // Pack conserved quantities into fields (by name)
-        sphys(field::ndx::rho,  o) = rho;
-        sphys(field::ndx::rhou, o) = m.x();
-        sphys(field::ndx::rhov, o) = m.y();
-        sphys(field::ndx::rhow, o) = m.z();
-        sphys(field::ndx::rhoe, o) = e;
+        sphys(field::ndx::rho, o) = rho;
+        sphys(field::ndx::mx,  o) = m.x();
+        sphys(field::ndx::my,  o) = m.y();
+        sphys(field::ndx::mz,  o) = m.z();
+        sphys(field::ndx::e,   o) = e;
     }
 
     // Initialize OperatorBase to access decomposition-ready utilities
@@ -1557,11 +1557,11 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                    * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            const real_t   rho(sphys(field::ndx::rho,  offset));
-            const Vector3r m  (sphys(field::ndx::rhou, offset),
-                               sphys(field::ndx::rhov, offset),
-                               sphys(field::ndx::rhow, offset));
-            const real_t   e  (sphys(field::ndx::rhoe, offset));
+            const real_t   rho(sphys(field::ndx::rho, offset));
+            const Vector3r m  (sphys(field::ndx::mx,  offset),
+                               sphys(field::ndx::my,  offset),
+                               sphys(field::ndx::mz,  offset));
+            const real_t   e  (sphys(field::ndx::e,   offset));
 
             // Compute temperature using old_gamma, old_Ma
             real_t p, T;
@@ -1570,7 +1570,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                   /*out*/ p, /*out*/ T);
             // Compute total energy from new gamma, Ma, rho, T
             suzerain::rholut::p(scenario.gamma, rho, T, /*out*/ p);
-            sphys(field::ndx::rhoe, offset)
+            sphys(field::ndx::e, offset)
                     = suzerain::rholut::energy_internal(scenario.gamma, p)
                     + suzerain::rholut::energy_kinetic(scenario.Ma, rho, m);
         }
@@ -1677,7 +1677,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         complex_t momentum, density;
         const real_t centerline = grid.L.y() / 2;
         b.linear_combination(
-                0, &state[ndx::rhou][0][0][0], 1, &centerline, &momentum);
+                0, &state[ndx::mx][0][0][0], 1, &centerline, &momentum);
         INFO0("Centerline mean streamwise momentum at y = "
               << centerline << " is " << momentum);
         b.linear_combination(
@@ -1946,11 +1946,11 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 namespace rholut = suzerain::rholut;
 
                 // Retrieve internal energy
-                const real_t rho(p(ndx::rho,  offset));
-                Vector3r       m(p(ndx::rhou, offset),
-                                 p(ndx::rhov, offset),
-                                 p(ndx::rhow, offset));
-                real_t         e(p(ndx::rhoe, offset));
+                const real_t rho(p(ndx::rho, offset));
+                Vector3r       m(p(ndx::mx,  offset),
+                                 p(ndx::my,  offset),
+                                 p(ndx::mz,  offset));
+                real_t         e(p(ndx::e,   offset));
                 const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
@@ -1961,10 +1961,10 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 e = e_int + e_kin;
 
                 // Store results back to state fields
-                p(ndx::rhou, offset) = m.x();
-                p(ndx::rhov, offset) = m.y();
-                p(ndx::rhow, offset) = m.z();
-                p(ndx::rhoe, offset) = e;
+                p(ndx::mx, offset) = m.x();
+                p(ndx::my, offset) = m.y();
+                p(ndx::mz, offset) = m.z();
+                p(ndx::e,  offset) = e;
 
             } // end X
 
@@ -1978,16 +1978,16 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
     assert(field::ndx::rho == 0);
-    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
-    for (size_t i = field::ndx::rhou; i < field::count; ++i) {
+    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::mx);
+    for (size_t i = field::ndx::mx; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&p.coeffRef(i, 0));  // X, Z
         obase.bop_solve(massluz, s, i);                       // Y
     }
 
     //  9) Overwrite state storage with the new perturbed state.
     assert(field::ndx::rho == 0);
-    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::rhou);
-    for (size_t i = field::ndx::rhou; i < channel::field::count; ++i) {
+    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::mx);
+    for (size_t i = field::ndx::mx; i < channel::field::count; ++i) {
         state[i] = s[i];
     }
 }
@@ -2045,21 +2045,21 @@ void accumulate_manufactured_solution(
 
                     const real_t x = obase.x(i);
 
-                    // (ugly, slow switch but performance irrelevant here)
+                    // Ugly, slow switch but performance irrelevant here
                     switch (f) {
                     case field::ndx::rho:
                         phys(0, offset) = msoln.rho (x, y, z, simulation_time);
                         break;
-                    case field::ndx::rhou:
+                    case field::ndx::mx:
                         phys(0, offset) = msoln.rhou(x, y, z, simulation_time);
                         break;
-                    case field::ndx::rhov:
+                    case field::ndx::my:
                         phys(0, offset) = msoln.rhov(x, y, z, simulation_time);
                         break;
-                    case field::ndx::rhow:
+                    case field::ndx::mz:
                         phys(0, offset) = msoln.rhow(x, y, z, simulation_time);
                         break;
-                    case field::ndx::rhoe:
+                    case field::ndx::e:
                         phys(0, offset) = msoln.rhoe(x, y, z, simulation_time);
                         break;
                     default:
@@ -2163,11 +2163,11 @@ mean sample_mean_quantities(
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
     if (dgrid.has_zero_zero_modes()) {
-        ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(),  Ny).real();
-        ret.rhou().col(0) = Map<VectorXc>(swave[ndx::rhou].origin(), Ny).real();
-        ret.rhou().col(1) = Map<VectorXc>(swave[ndx::rhov].origin(), Ny).real();
-        ret.rhou().col(2) = Map<VectorXc>(swave[ndx::rhow].origin(), Ny).real();
-        ret.rhoe()        = Map<VectorXc>(swave[ndx::rhoe].origin(), Ny).real();
+        ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
+        ret.rhou().col(0) = Map<VectorXc>(swave[ndx::mx ].origin(), Ny).real();
+        ret.rhou().col(1) = Map<VectorXc>(swave[ndx::my ].origin(), Ny).real();
+        ret.rhou().col(2) = Map<VectorXc>(swave[ndx::mz ].origin(), Ny).real();
+        ret.rhoe()        = Map<VectorXc>(swave[ndx::e  ].origin(), Ny).real();
     }
 
     // Obtain access to helper routines for differentiation
@@ -2186,47 +2186,47 @@ mean sample_mean_quantities(
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(swave, ndx::rhou);
-    obase.bop_accumulate(1,    1., swave, ndx::rhou, 0., auxw, aux::mx_y);
-    obase.bop_apply     (0,    1., swave, ndx::rhou);
+    obase.zero_dealiasing_modes(swave, ndx::mx);
+    obase.bop_accumulate(1,    1., swave, ndx::mx, 0., auxw, aux::mx_y);
+    obase.bop_apply     (0,    1., swave, ndx::mx);
 
     // Compute X- and Z- derivatives of X momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::rhou, 0., auxw, aux::mx_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::rhou, 0., auxw, aux::mx_z);
+    obase.diffwave_accumulate(1, 0, 1., swave, ndx::mx, 0., auxw, aux::mx_x);
+    obase.diffwave_accumulate(0, 1, 1., swave, ndx::mx, 0., auxw, aux::mx_z);
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(swave, ndx::rhov);
-    obase.bop_accumulate(1,    1., swave, ndx::rhov, 0., auxw, aux::my_y);
-    obase.bop_apply     (0,    1., swave, ndx::rhov);
+    obase.zero_dealiasing_modes(swave, ndx::my);
+    obase.bop_accumulate(1,    1., swave, ndx::my, 0., auxw, aux::my_y);
+    obase.bop_apply     (0,    1., swave, ndx::my);
 
     // Compute X- and Z- derivatives of Y momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::rhov, 0., auxw, aux::my_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::rhov, 0., auxw, aux::my_z);
+    obase.diffwave_accumulate(1, 0, 1., swave, ndx::my, 0., auxw, aux::my_x);
+    obase.diffwave_accumulate(0, 1, 1., swave, ndx::my, 0., auxw, aux::my_z);
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(swave, ndx::rhow);
-    obase.bop_accumulate(1,    1., swave, ndx::rhow, 0., auxw, aux::mz_y);
-    obase.bop_apply     (0,    1., swave, ndx::rhow);
+    obase.zero_dealiasing_modes(swave, ndx::mz);
+    obase.bop_accumulate(1,    1., swave, ndx::mz, 0., auxw, aux::mz_y);
+    obase.bop_apply     (0,    1., swave, ndx::mz);
 
     // Compute X- and Z- derivatives of Z momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::rhow, 0., auxw, aux::mz_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::rhow, 0., auxw, aux::mz_z);
+    obase.diffwave_accumulate(1, 0, 1., swave, ndx::mz, 0., auxw, aux::mz_x);
+    obase.diffwave_accumulate(0, 1, 1., swave, ndx::mz, 0., auxw, aux::mz_z);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(swave, ndx::rhoe);
-    obase.bop_accumulate(1,    1., swave, ndx::rhoe, 0., auxw, aux::e_y);
-    obase.bop_apply     (0,    1., swave, ndx::rhoe);
+    obase.zero_dealiasing_modes(swave, ndx::e);
+    obase.bop_accumulate(1,    1., swave, ndx::e, 0., auxw, aux::e_y);
+    obase.bop_apply     (0,    1., swave, ndx::e);
 
     // Compute X- and Z- derivatives of total energy at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::rhoe, 0., auxw, aux::e_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::rhoe, 0., auxw, aux::e_z);
+    obase.diffwave_accumulate(1, 0, 1., swave, ndx::e, 0., auxw, aux::e_x);
+    obase.diffwave_accumulate(0, 1, 1., swave, ndx::e, 0., auxw, aux::e_z);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
@@ -2286,9 +2286,9 @@ mean sample_mean_quantities(
                                         auxp(aux::rho_z, offset));
 
                 // Unpack momentum-related quantities
-                const Vector3r m(sphys(ndx::rhou, offset),
-                                 sphys(ndx::rhov, offset),
-                                 sphys(ndx::rhow, offset));
+                const Vector3r m(sphys(ndx::mx, offset),
+                                 sphys(ndx::my, offset),
+                                 sphys(ndx::mz, offset));
                 const real_t div_m = auxp(aux::mx_x, offset)
                                    + auxp(aux::my_y, offset)
                                    + auxp(aux::mz_z, offset);
@@ -2305,7 +2305,7 @@ mean sample_mean_quantities(
                                      auxp(aux::mz_z,  offset);
 
                 // Unpack total energy-related quantities
-                const real_t e(sphys(ndx::rhoe, offset));
+                const real_t e(sphys(ndx::e, offset));
                 const Vector3r grad_e(auxp(aux::e_x, offset),
                                       auxp(aux::e_y, offset),
                                       auxp(aux::e_z, offset));
