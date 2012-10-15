@@ -41,11 +41,11 @@
 namespace suzerain { namespace perfect {
 
 BsplineMassOperator::BsplineMassOperator(
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop)
-    : suzerain::OperatorBase(grid, dgrid, b, bop),
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop)
+    : OperatorBase(grid, dgrid, b, bop),
       massluz(bop)
 {
     SUZERAIN_UNUSED(grid);
@@ -57,8 +57,8 @@ BsplineMassOperator::BsplineMassOperator(
 
 void BsplineMassOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -73,7 +73,7 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
     // Verify required assumptions
     SUZERAIN_ENSURE(state.strides()[1] == 1);
     SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
-    SUZERAIN_ENSURE(suzerain::multi_array::is_contiguous(state));
+    SUZERAIN_ENSURE(multi_array::is_contiguous(state));
 
     // Those assumptions holding, apply operator to each wall-normal pencil.
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
@@ -83,10 +83,10 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
 
 void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
-        const suzerain::multi_array::ref<complex_t,4> &input,
+        const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
-        suzerain::ContiguousState<4,complex_t> &output,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        ContiguousState<4,complex_t> &output,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -100,15 +100,15 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 
     SUZERAIN_ENSURE(output.isIsomorphic(input));
 
-    const suzerain::multi_array::ref<complex_t,4> &x = input;  // Shorthand
-    suzerain::ContiguousState<4,complex_t>        &y = output; // Shorthand
+    const multi_array::ref<complex_t,4> &x = input;  // Shorthand
+    ContiguousState<4,complex_t>        &y = output; // Shorthand
     const complex_t c_one = 1;
 
     // Sidesteps assertions triggered by dereferencing trivial input and output
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1] * x.shape()[2])) return;
 
     // Loops go from slower to faster indices for ContiguousState<4,complex_t>
-    typedef suzerain::ContiguousState<4,complex_t>::index index;
+    typedef ContiguousState<4,complex_t>::index index;
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
         ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
         ++ix, ++iy) {
@@ -130,8 +130,8 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
 
 void BsplineMassOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -143,7 +143,7 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
     // Verify required assumptions
     SUZERAIN_ENSURE(state.strides()[1] == 1);
     SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
-    SUZERAIN_ENSURE(suzerain::multi_array::is_contiguous(state));
+    SUZERAIN_ENSURE(multi_array::is_contiguous(state));
 
     // Those assumptions holding, invert operator on each wall-normal pencil.
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
@@ -175,8 +175,8 @@ public:
 
 void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -199,7 +199,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     {
         // Prepare a state view of density locations at lower and upper walls
         using boost::multi_array_types::index_range;
-        suzerain::multi_array::ref<complex_t,4>::array_view<3>::type view
+        multi_array::ref<complex_t,4>::array_view<3>::type view
                 = state[boost::indices[ndx::rho]
                                       [index_range(wall_lower,
                                                    wall_upper + 1,
@@ -212,7 +212,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
                 state.strides()[0], scenario.gamma);
 
         // Apply the functor to all wall-only density locations
-        suzerain::multi_array::for_each(view, bc_functor);
+        multi_array::for_each(view, bc_functor);
     }
 
     // channel_treatment step (3) performs the usual operator solve
@@ -224,14 +224,14 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
 std::vector<real_t> NonlinearOperator::applyOperator(
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return perfect::applyNonlinearOperator<true,  perfect::linearize::none>
+        return applyNonlinearOperator<true,  linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -240,7 +240,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return perfect::applyNonlinearOperator<false, perfect::linearize::none>
+        return applyNonlinearOperator<false, linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,

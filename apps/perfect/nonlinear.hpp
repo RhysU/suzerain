@@ -52,18 +52,18 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t Ma,
             const real_t Pr,
             const real_t Re,
-            const suzerain::OperatorBase &o,
+            const OperatorBase &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
 
     // Shorthand
-    typedef suzerain::ContiguousState<4,complex_t> state_type;
+    typedef ContiguousState<4,complex_t> state_type;
     namespace ndx = support::field::ndx;
     using std::abs;
     using std::equal;
@@ -333,13 +333,13 @@ std::vector<real_t> applyNonlinearOperator(
 
                 // Compute quantities related to the equation of state
                 real_t p, T, mu, lambda;
-                suzerain::rholut::p_T_mu_lambda(
+                rholut::p_T_mu_lambda(
                     alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
 
                 // Accumulate reference quantities into running sums...
 
                 // ...including simple velocity-related quantities...
-                const Vector3r u = suzerain::rholut::u(rho, m);
+                const Vector3r u = rholut::u(rho, m);
                 acc[ref::ux](u.x());
                 acc[ref::uy](u.y());
                 acc[ref::uz](u.z());
@@ -366,7 +366,6 @@ std::vector<real_t> applyNonlinearOperator(
                 acc[ref::nuuzuz](nu*u.z()*u.z());
 
                 // ...and other, more complicated expressions.
-                namespace rholut = suzerain::rholut;
                 const Vector3r e_gradrho
                         = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
                                 gamma, rho, m, e, p);
@@ -432,7 +431,7 @@ std::vector<real_t> applyNonlinearOperator(
         // Allreduce and scale common.refs sums to obtain means on all ranks
         // Allreduce mandatory as all ranks need references for linearization
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
-                common.refs.size(), suzerain::mpi::datatype<real_t>::value,
+                common.refs.size(), mpi::datatype<real_t>::value,
                 MPI_SUM, MPI_COMM_WORLD));
         common.refs /= (   o.dgrid.global_physical_extent.x()
                          * o.dgrid.global_physical_extent.z());
@@ -482,7 +481,7 @@ std::vector<real_t> applyNonlinearOperator(
         // Only zero-zero rank needs the information so Reduce is sufficient
         if (o.dgrid.has_zero_zero_modes()) {
             SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    common.u().size(), mpi::datatype<real_t>::value,
                     MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
             common.u() /= (   o.dgrid.global_physical_extent.x()
                             * o.dgrid.global_physical_extent.z());
@@ -491,7 +490,7 @@ std::vector<real_t> applyNonlinearOperator(
             tmp.resizeLike(common.u());
             tmp.setZero();
             SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
-                    common.u().size(), suzerain::mpi::datatype<real_t>::value,
+                    common.u().size(), mpi::datatype<real_t>::value,
                     MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         }
 
@@ -616,40 +615,40 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
             // Compute velocity-related quantities
-            const Vector3r u          = suzerain::rholut::u(
+            const Vector3r u          = rholut::u(
                                             rho, m);
-            const real_t div_u        = suzerain::rholut::div_u(
+            const real_t div_u        = rholut::div_u(
                                             rho, grad_rho, m, div_m);
-            const Matrix3r grad_u     = suzerain::rholut::grad_u(
+            const Matrix3r grad_u     = rholut::grad_u(
                                             rho, grad_rho, m, grad_m);
-            const Vector3r grad_div_u = suzerain::rholut::grad_div_u(
+            const Vector3r grad_div_u = rholut::grad_div_u(
                                             rho, grad_rho, grad_grad_rho,
                                             m, div_m, grad_m, grad_div_m);
-            const Vector3r div_grad_u = suzerain::rholut::div_grad_u(
+            const Vector3r div_grad_u = rholut::div_grad_u(
                                             rho, grad_rho, div_grad_rho,
                                             m, grad_m, div_grad_m);
 
             // Compute quantities related to the equation of state
             real_t p, T, mu, lambda;
             Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-            suzerain::rholut::p_T_mu_lambda(
-                alpha, beta, gamma, Ma,
-                rho, grad_rho, m, grad_m, e, grad_e,
-                p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-            const real_t div_grad_p = suzerain::rholut::div_grad_p(
+            rholut::p_T_mu_lambda(alpha, beta, gamma, Ma,
+                                  rho, grad_rho, m, grad_m, e, grad_e,
+                                  p, grad_p, T, grad_T,
+                                  mu, grad_mu, lambda, grad_lambda);
+            const real_t div_grad_p = rholut::div_grad_p(
                                         gamma, Ma,
                                         rho, grad_rho, div_grad_rho,
                                         m, grad_m, div_grad_m,
                                         e, grad_e, div_grad_e);
-            const real_t div_grad_T = suzerain::rholut::div_grad_T(
+            const real_t div_grad_T = rholut::div_grad_T(
                                         gamma,
                                         rho, grad_rho, div_grad_rho,
                                         p, grad_p, div_grad_p);
 
             // Compute quantities related to the viscous stress tensor
-            const Matrix3r tau     = suzerain::rholut::tau(
+            const Matrix3r tau     = rholut::tau(
                                         mu, lambda, div_u, grad_u);
-            const Vector3r div_tau = suzerain::rholut::div_tau(
+            const Vector3r div_tau = rholut::div_tau(
                                         mu, grad_mu, lambda, grad_lambda,
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
@@ -681,7 +680,7 @@ std::vector<real_t> applyNonlinearOperator(
                 case linearize::none:
                     momentum_rhs +=
                         // Explicit convective term
-                        - suzerain::rholut::div_u_outer_m(m, grad_m, u, div_u)
+                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
                         // Explicit pressure term
                         - inv_Ma2 * grad_p
                         ;
@@ -689,15 +688,15 @@ std::vector<real_t> applyNonlinearOperator(
                 case linearize::rhome:
                     momentum_rhs +=
                         // Explicit convective term less implicit portion
-                        - suzerain::rholut::explicit_div_rho_inverse_m_outer_m(
+                        - rholut::explicit_div_rho_inverse_m_outer_m(
                                 grad_rho, div_m, grad_m, u, ref_u, ref_uu)
                         // Explicit pressure less implicit pressure terms
-                        - inv_Ma2 * suzerain::rholut::explicit_grad_p(
+                        - inv_Ma2 * rholut::explicit_grad_p(
                                 gamma, Ma, rho, grad_rho, m, grad_m,
                                 ref_u2, ref_u)
                         // Subtract implicit portions of viscous terms per
-                        // suzerain::rholut::explicit_mu_div_grad_u and
-                        // suzerain::rholut::explicit_mu_plus_lambda_grad_div_u
+                        // rholut::explicit_mu_div_grad_u and
+                        // rholut::explicit_mu_plus_lambda_grad_div_u
                         - inv_Re * (
                             ref_nu*(div_grad_m + alpha13*grad_div_m)
                           - ref_nuu*div_grad_rho
@@ -713,7 +712,7 @@ std::vector<real_t> applyNonlinearOperator(
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
                 // Explicit viscous work term
-                + Ma2_over_Re * suzerain::rholut::div_tau_u<real_t>(
+                + Ma2_over_Re * rholut::div_tau_u<real_t>(
                         u, grad_u, tau, div_tau
                     )
                 ;
@@ -723,14 +722,14 @@ std::vector<real_t> applyNonlinearOperator(
                 case linearize::none:
                     sphys(ndx::e, offset) +=
                         // Explicit convective and acoustic terms
-                        - suzerain::rholut::div_e_u(
+                        - rholut::div_e_u(
                                 e, grad_e, u, div_u
                             )
-                        - suzerain::rholut::div_p_u(
+                        - rholut::div_p_u(
                                 p, grad_p, u, div_u
                             )
                         // Explicit energy diffusion terms
-                        + inv_Re_Pr_gamma1 * suzerain::rholut::div_mu_grad_T(
+                        + inv_Re_Pr_gamma1 * rholut::div_mu_grad_T(
                                 grad_T, div_grad_T, mu, grad_mu
                             )
                         ;
@@ -739,14 +738,14 @@ std::vector<real_t> applyNonlinearOperator(
                 case linearize::rhome:
                     sphys(ndx::e, offset) +=
                         // Explicit convective/acoustic less implicit portion
-                        - suzerain::rholut::explicit_div_e_plus_p_u(
+                        - rholut::explicit_div_e_plus_p_u(
                                 gamma, Ma, rho, grad_rho,
                                 m, div_m, grad_m, e, grad_e, p,
                                 ref_e_divm, ref_e_gradrho, ref_u)
                         // Explicit portion of energy diffusion terms
                         + inv_Re_Pr_gamma1 * (
                               grad_mu.dot(grad_T)
-                            + suzerain::rholut::explicit_mu_div_grad_T(
+                            + rholut::explicit_mu_div_grad_T(
                                  gamma, Ma, mu, rho, grad_rho, div_grad_rho, m,
                                  grad_m, div_grad_m, e, div_grad_e, p, grad_p,
                                  ref_nu, ref_nuu, ref_e_deltarho)
@@ -778,9 +777,9 @@ std::vector<real_t> applyNonlinearOperator(
                 // three-dimensional criterion should collect any NaNs
                 // occurring within the direction-dependent criteria.  min(...)
                 // is presumably a touch faster and is preferred when possible.
-                using suzerain::math::minnan;
+                using math::minnan;
 
-                // See suzerain::timestepper::convective_stability_criterion
+                // See timestepper::convective_stability_criterion
                 const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
@@ -831,7 +830,7 @@ std::vector<real_t> applyNonlinearOperator(
                 convfluct_z_delta_t   = min   (convfluct_z_delta_t,
                         evmaxmag_imag / fluct_ua_l1_z);
 
-                // See suzerain::timestepper::diffusive_stability_criterion
+                // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
                 const real_t nu = mu / rho;
@@ -935,7 +934,7 @@ std::vector<real_t> applyNonlinearOperator(
             // When density equation is handled fully implicitly AND no
             // manufactured solution is employed, save some communications by
             // using that the density right hand side is identically zero.
-            assert(suzerain::multi_array::is_contiguous(swave[i]));
+            assert(multi_array::is_contiguous(swave[i]));
             std::memset(swave[i].origin(), 0,
                     sizeof(complex_t)*o.dgrid.local_wave_extent.prod());
 

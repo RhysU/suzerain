@@ -73,7 +73,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  */
 void store(const esio_handle h,
            const ScenarioDefinition& scenario,
-           const suzerain::problem::GridDefinition& grid,
+           const problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution> & msoln);
 
 /**
@@ -84,7 +84,7 @@ void store(const esio_handle h,
  */
 void load(const esio_handle h,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
+          const problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
@@ -97,12 +97,12 @@ void load(const esio_handle h,
  */
 void store_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& swave,
+        ContiguousState<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop);
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& bop);
 
 /**
  * Load the current simulation state from an open collocation point value
@@ -110,24 +110,24 @@ void store_collocation_values(
  */
 void load_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& state,
+        ContiguousState<4,complex_t>& state,
         const ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop);
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& bop);
 
 /**
  * Interrogate an open restart file and invoke either load_coefficients()
  * or load_collocation_values() as necessary.
  */
 void load(const esio_handle h,
-          suzerain::ContiguousState<4,complex_t>& state,
+          ContiguousState<4,complex_t>& state,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline& b,
-          const suzerain::bsplineop& bop);
+          const problem::GridDefinition& grid,
+          const pencil_grid& dgrid,
+          bspline& b,
+          const bsplineop& bop);
 
 /**
  * Hold temperature and density constant while changing the Mach number and
@@ -136,17 +136,17 @@ void load(const esio_handle h,
  * total energy fields using <tt>scenario.Ma</tt> and <tt>scenario.gamma</tt>.
  */
 void
-adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
+adjust_scenario(ContiguousState<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
-                const suzerain::problem::GridDefinition& grid,
-                const suzerain::pencil_grid& dgrid,
-                suzerain::bspline &b,
-                const suzerain::bsplineop& bop,
+                const problem::GridDefinition& grid,
+                const pencil_grid& dgrid,
+                bspline &b,
+                const bsplineop& bop,
                 const real_t old_Ma,
                 const real_t old_gamma);
 
 /** Options definitions for adding random noise to momentum fields */
-class NoiseDefinition : public suzerain::problem::IDefinition {
+class NoiseDefinition : public problem::IDefinition {
 
 public:
 
@@ -194,13 +194,13 @@ public:
  * the provided NoiseDefinition.
  */
 void
-add_noise(suzerain::ContiguousState<4,complex_t> &state,
+add_noise(ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline &b,
-          const suzerain::bsplineop& bop);
+          const problem::GridDefinition& grid,
+          const pencil_grid& dgrid,
+          bspline &b,
+          const bsplineop& bop);
 
 /**
  * Accumulate the result of adding \c alpha times the manufactured solution \c
@@ -214,11 +214,11 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
+        ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop,
         const real_t simulation_time);
 
 /**
@@ -437,11 +437,11 @@ public:
  */
 mean sample_mean_quantities(
         const ScenarioDefinition &scenario,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop,
+        ContiguousState<4,complex_t> &swave,
         const real_t t);
 
 /** Store a \ref mean instance in a restart file */

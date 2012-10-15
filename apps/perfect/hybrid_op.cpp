@@ -61,15 +61,15 @@ namespace suzerain { namespace perfect {
 
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_TIMER_SCOPED("applyMassPlusScaledOperator");
 
-    using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_absmin;
+    using inorder::wavenumber;
+    using inorder::wavenumber_absmin;
     namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
@@ -121,7 +121,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
             // Copy pencil into temporary storage
-            suzerain::blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
+            blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
 
             // Accumulate result back into state storage automatically
             // adjusting for when input imaginary part a priori should be zero
@@ -147,17 +147,17 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 
 void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
-        const suzerain::multi_array::ref<complex_t,4> &input,
+        const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
-        suzerain::ContiguousState<4,complex_t> &output,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        ContiguousState<4,complex_t> &output,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_TIMER_SCOPED("accumulateMassPlusScaledOperator");
 
-    using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_absmin;
+    using inorder::wavenumber;
+    using inorder::wavenumber_absmin;
     namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
@@ -349,16 +349,16 @@ public:
 
 void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_TIMER_BEGIN("invertMassPlusScaledOperator");
 
     // Shorthand
-    using suzerain::inorder::wavenumber;
-    using suzerain::inorder::wavenumber_absmin;
+    using inorder::wavenumber;
+    using inorder::wavenumber_absmin;
     namespace field = support::field;
     namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(method);
@@ -409,16 +409,16 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 # define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
 # define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
 #endif
-    SCRATCH_C(suzerain::ArrayXXc, buf,     A.ld,      A.n); // For packc calls
-    SCRATCH_C(suzerain::ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
-    SCRATCH_C(suzerain::ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
-    SCRATCH_I(Eigen   ::ArrayXi,  ipiv,    A.N);            // Linear solve...
-    SCRATCH_R(suzerain::ArrayXr,  r,       A.N);
-    SCRATCH_R(suzerain::ArrayXr,  c,       A.N);
-    SCRATCH_C(suzerain::ArrayXc,  b,       A.N);
-    SCRATCH_C(suzerain::ArrayXc,  x,       A.N);
-    SCRATCH_C(suzerain::ArrayXc,  work,  2*A.N);
-    SCRATCH_R(suzerain::ArrayXr,  rwork,   A.N);
+    SCRATCH_C(       ArrayXXc, buf,     A.ld,      A.n); // For packc calls
+    SCRATCH_C(       ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
+    SCRATCH_C(       ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
+    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);            // Linear solve...
+    SCRATCH_R(       ArrayXr,  r,       A.N);
+    SCRATCH_R(       ArrayXr,  c,       A.N);
+    SCRATCH_C(       ArrayXc,  b,       A.N);
+    SCRATCH_C(       ArrayXc,  x,       A.N);
+    SCRATCH_C(       ArrayXc,  work,  2*A.N);
+    SCRATCH_R(       ArrayXr,  rwork,   A.N);
 #undef SCRATCH_C
 #undef SCRATCH_R
 #undef SCRATCH_I
@@ -717,14 +717,14 @@ engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
 
 std::vector<real_t> HybridNonlinearOperator::applyOperator(
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return perfect::applyNonlinearOperator<true,  perfect::linearize::rhome>
+        return applyNonlinearOperator<true,  linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -733,7 +733,7 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return perfect::applyNonlinearOperator<false, perfect::linearize::rhome>
+        return applyNonlinearOperator<false, linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,

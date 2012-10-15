@@ -46,23 +46,20 @@ namespace suzerain { namespace perfect {
  * @see support::applyNonlinearOperator for the guts of the implementation.
  */
 class NonlinearOperator
-    : public suzerain::OperatorBase,
-      public suzerain::timestepper::INonlinearOperator<
-            suzerain::ContiguousState<4,complex_t>
-      >
+    : public OperatorBase,
+      public timestepper::INonlinearOperator< ContiguousState<4,complex_t> >
 {
 public:
 
     NonlinearOperator(
             const ScenarioDefinition &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
             OperatorCommonBlock &common,
-            const boost::shared_ptr<
-                  const perfect::manufactured_solution>& msoln)
-        : suzerain::OperatorBase(grid, dgrid, b, bop),
+            const boost::shared_ptr<const manufactured_solution>& msoln)
+        : OperatorBase(grid, dgrid, b, bop),
           scenario(scenario),
           common(common),
           msoln(msoln)
@@ -70,7 +67,7 @@ public:
 
     virtual std::vector<real_t> applyOperator(
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const;
@@ -84,7 +81,7 @@ protected:
     OperatorCommonBlock &common;
 
     /** Holds optional manufactured solution forcing details */
-    const boost::shared_ptr<const perfect::manufactured_solution> msoln;
+    const boost::shared_ptr<const manufactured_solution> msoln;
 
 private:
 
@@ -96,47 +93,47 @@ private:
 
 /** An operator which applies or inverts a B-spline mass matrix */
 class BsplineMassOperator
-  : public suzerain::OperatorBase,
-    public suzerain::timestepper::lowstorage::ILinearOperator<
-        suzerain::multi_array::ref<complex_t,4>,
-        suzerain::ContiguousState<4,complex_t>
+  : public OperatorBase,
+    public timestepper::lowstorage::ILinearOperator<
+        multi_array::ref<complex_t,4>,
+        ContiguousState<4,complex_t>
     >
 {
 public:
 
     BsplineMassOperator(
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop);
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop);
 
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
-             suzerain::multi_array::ref<complex_t,4> &state,
-             const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+             multi_array::ref<complex_t,4> &state,
+             const timestepper::lowstorage::IMethod<complex_t> &method,
              const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void accumulateMassPlusScaledOperator(
              const complex_t &phi,
-             const suzerain::multi_array::ref<complex_t,4> &input,
+             const multi_array::ref<complex_t,4> &input,
              const complex_t &beta,
-             suzerain::ContiguousState<4,complex_t> &output,
-             const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+             ContiguousState<4,complex_t> &output,
+             const timestepper::lowstorage::IMethod<complex_t> &method,
              const component delta_t,
              const std::size_t substep_index) const;
 
      virtual void invertMassPlusScaledOperator(
              const complex_t &phi,
-             suzerain::multi_array::ref<complex_t,4> &state,
-             const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+             multi_array::ref<complex_t,4> &state,
+             const timestepper::lowstorage::IMethod<complex_t> &method,
              const component delta_t,
              const std::size_t substep_index) const;
 
 private:
 
      /** Precomputed mass matrix factorization */
-    suzerain::bsplineop_luz massluz;
+    bsplineop_luz massluz;
 
 };
 
@@ -154,10 +151,10 @@ public:
 
     BsplineMassOperatorIsothermal(
             const ScenarioDefinition &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
             OperatorCommonBlock &common)
         : BsplineMassOperator(grid, dgrid, b, bop),
           scenario(scenario),
@@ -181,8 +178,8 @@ public:
      */
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
-            suzerain::multi_array::ref<complex_t,4> &state,
-            const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+            multi_array::ref<complex_t,4> &state,
+            const timestepper::lowstorage::IMethod<complex_t> &method,
             const component delta_t,
             const std::size_t substep_index) const;
 

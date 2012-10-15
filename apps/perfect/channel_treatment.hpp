@@ -41,9 +41,7 @@ namespace suzerain { namespace perfect {
 /**
  * A mixin providing channel problem treatment atop any
  * <tt>
- *    public suzerain::timestepper::INonlinearOperator<
- *          suzerain::ContiguousState<4,complex_t>
- *    >
+ *    public timestepper::INonlinearOperator< ContiguousState<4,complex_t> >
  * </tt>.  During \ref invertMassPlusScaledOperator implicit momentum forcing
  * is applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
@@ -67,10 +65,10 @@ public:
      */
     ChannelTreatment(
             const ScenarioDefinition &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
             OperatorCommonBlock &common);
 
     /**
@@ -92,8 +90,8 @@ public:
      */
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
-            suzerain::multi_array::ref<complex_t,4> &state,
-            const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+            multi_array::ref<complex_t,4> &state,
+            const timestepper::lowstorage::IMethod<complex_t> &method,
             const real_t delta_t,
             const std::size_t substep_index) const;
 
@@ -114,7 +112,7 @@ private:
     }
 
     /** Precomputed, real-valued mass matrix factorization */
-    boost::scoped_ptr<suzerain::bsplineop_lu> masslu;
+    boost::scoped_ptr<bsplineop_lu> masslu;
 
     /** Precomputed integration coefficients */
     VectorXr bulkcoeff;
@@ -129,17 +127,17 @@ private:
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
             const ScenarioDefinition &scenario,
-            const suzerain::problem::GridDefinition &grid,
-            const suzerain::pencil_grid &dgrid,
-            suzerain::bspline &b,
-            const suzerain::bsplineop &bop,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
             OperatorCommonBlock &common)
     : BaseClass(scenario, grid, dgrid, b, bop, common)
 {
     // Precomputed results only necessary on rank with zero-zero modes
     if (!dgrid.has_zero_zero_modes()) return;
 
-    masslu.reset(new suzerain::bsplineop_lu(bop));
+    masslu.reset(new bsplineop_lu(bop));
     masslu->factor_mass(bop);
 
     // channel_treatment step (2) loads ones and local mean streamwise velocity
@@ -168,8 +166,8 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 template< typename BaseClass >
 void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         const complex_t &phi,
-        suzerain::multi_array::ref<complex_t,4> &state,
-        const suzerain::timestepper::lowstorage::IMethod<complex_t> &method,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::IMethod<complex_t> &method,
         const real_t delta_t,
         const std::size_t substep_index) const
 {
@@ -178,12 +176,12 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
     // Shorthand
     typedef Map<ArrayXr,0,Eigen::InnerStride<2> > ModesRealPart;
-    using suzerain::inorder::wavenumber;
+    using inorder::wavenumber;
     namespace field = support::field;
     namespace ndx   = field::ndx;
     OperatorCommonBlock &common = this->common;
     const ScenarioDefinition &scenario = this->scenario;
-    const suzerain::pencil_grid &dgrid = this->dgrid;
+    const pencil_grid &dgrid = this->dgrid;
     const int Ny = dgrid.global_wave_extent.y();
 
     // Sidesteps assertions when local rank contains no wavespace information

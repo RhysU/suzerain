@@ -31,7 +31,7 @@ namespace suzerain { namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class ScenarioDefinition : public suzerain::problem::IDefinition
+class ScenarioDefinition : public problem::IDefinition
 {
 public:
 
@@ -43,7 +43,7 @@ public:
 
     /**
      * Construct an instance with the given parameter values.
-     * Parameter values are evaluated via suzerain::exprparse().
+     * Parameter values are evaluated via exprparse().
      *
      * @param Re        Reynolds number.
      * @param Ma        Mach number.

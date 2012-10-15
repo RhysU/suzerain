@@ -162,7 +162,7 @@ void wisdom_broadcast(const std::string& wisdom_file)
 
     // If available, load wisdom from disk on rank 0 and broadcast it
     // Attempt advisory locking to reduce processes stepping on each other
-    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
 
         // Import any system-wide wisdom available
         fftw_import_system_wisdom();
@@ -200,7 +200,7 @@ void wisdom_gather(const std::string& wisdom_file)
     // If available, gather wisdom and then write to disk on rank 0
     // Attempt advisory locking to reduce processes stepping on each other
     fftw_mpi_gather_wisdom(MPI_COMM_WORLD);
-    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
         FILE *w = fopen(wisdom_file.c_str(), "w+");
         if (w) {
             INFO0("Saving wisdom to file " << wisdom_file);
@@ -224,7 +224,7 @@ void wisdom_gather(const std::string& wisdom_file)
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid)
+           const problem::GridDefinition& grid)
 {
     // Only root writes data
     int procid;
@@ -269,7 +269,7 @@ void store(const esio_handle h,
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
     cbuf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
+    diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
             grid.L.x(), grid.L.z(),
             1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
     esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
@@ -278,7 +278,7 @@ void store(const esio_handle h,
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
     cbuf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
+    diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
             grid.L.x(), grid.L.z(),
             1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
     esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
@@ -316,7 +316,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          suzerain::problem::GridDefinition& grid)
+          problem::GridDefinition& grid)
 {
     DEBUG0("Loading GridDefinition parameters");
 
@@ -394,7 +394,7 @@ void load(const esio_handle h,
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition& timedef)
+           const problem::TimeDefinition& timedef)
 {
     DEBUG0("Storing TimeDefinition parameters");
 
@@ -409,7 +409,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          suzerain::problem::TimeDefinition& timedef)
+          problem::TimeDefinition& timedef)
 {
     DEBUG0("Loading TimeDefinition parameters");
 
@@ -431,8 +431,8 @@ real_t create(const int ndof,
               const double left,
               const double right,
               const double htdelta,
-              boost::shared_ptr<suzerain::bspline>& b,
-              boost::shared_ptr<suzerain::bsplineop>& bop)
+              boost::shared_ptr<bspline>& b,
+              boost::shared_ptr<bsplineop>& bop)
 {
     INFO0("Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
@@ -442,7 +442,7 @@ real_t create(const int ndof,
 /// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
 ////// Compute collocation point locations using ndof and htdelta
 ////Eigen::ArrayXd abscissae(ndof);
-////suzerain::math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
+////math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
 ////for (int i = 0; i < abscissae.size(); ++i) {
 ////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
 ////}
@@ -451,11 +451,11 @@ real_t create(const int ndof,
 ////// Generate the B-spline workspace based on order and abscissae
 ////// Maximum non-trivial derivative operators included
 ////double abserr;
-////b = boost::make_shared<suzerain::bspline>(
-////        k, suzerain::bspline::from_abscissae(),
+////b = boost::make_shared<bspline>(
+////        k, bspline::from_abscissae(),
 ////        abscissae.size(), abscissae.data(), &abserr);
 ////assert(b->n() == ndof);
-////bop.reset(new suzerain::bsplineop(
+////bop.reset(new bsplineop(
 ////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 ////assert(bop->n() == ndof);
 ////
@@ -465,7 +465,7 @@ real_t create(const int ndof,
 
     // Compute breakpoint point locations using ndof and htdelta
     Eigen::ArrayXd breakpoints(ndof - k + 2);
-    suzerain::math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
+    math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
     for (int i = 0; i < breakpoints.size(); ++i) {
         breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
     }
@@ -473,21 +473,19 @@ real_t create(const int ndof,
 
     // Generate the B-spline workspace based on order and breakpoints
     // Maximum non-trivial derivative operators included
-    b = boost::make_shared<suzerain::bspline>(
-            k, suzerain::bspline::from_breakpoints(),
-            breakpoints.size(), breakpoints.data());
+    b = boost::make_shared<bspline>(k, bspline::from_breakpoints(),
+                                    breakpoints.size(), breakpoints.data());
     assert(b->n() == ndof);
-    bop.reset(new suzerain::bsplineop(
-                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+    bop.reset(new bsplineop(*b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
     assert(bop->n() == ndof);
 
     return 0;
 }
 
 void store(const esio_handle h,
-           const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop,
-           const boost::shared_ptr<suzerain::bsplineop>& gop)
+           const boost::shared_ptr<bspline>& b,
+           const boost::shared_ptr<bsplineop>& bop,
+           const boost::shared_ptr<bsplineop>& gop)
 {
     // Ensure we were handed the appropriate discrete operators
     assert(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
@@ -560,8 +558,8 @@ void store(const esio_handle h,
 }
 
 real_t load(const esio_handle h,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop)
+            boost::shared_ptr<bspline>& b,
+            boost::shared_ptr<bsplineop>& bop)
 {
     using std::abs;
     using std::max;
@@ -604,8 +602,8 @@ real_t load(const esio_handle h,
     // Required because repeated basis calculations at restart not idempotent.
     if (breakpoints_found) {
 
-        b = boost::make_shared<suzerain::bspline>(
-                k, suzerain::bspline::from_breakpoints(),
+        b = boost::make_shared<bspline>(
+                k, bspline::from_breakpoints(),
                 breakpoints.size(), breakpoints.data());
 
         if (colpoints_found && b->n() == colpoints.size()) {
@@ -623,8 +621,8 @@ real_t load(const esio_handle h,
 
     if (colpoints_found && abscissae_veto_breakpoints) {
         DEBUG0("Collocation points from restart used to build B-spline basis");
-        b = boost::make_shared<suzerain::bspline>(
-                k, suzerain::bspline::from_abscissae(),
+        b = boost::make_shared<bspline>(
+                k, bspline::from_abscissae(),
                 colpoints.size(), colpoints.data(), &abserr);
         DEBUG0("Computed B-spline basis has Greville abscissae abserr of "
                << abserr);
@@ -637,7 +635,7 @@ real_t load(const esio_handle h,
     }
 
     // Construct B-spline operator workspace from the B-spline workspace
-    bop.reset(new suzerain::bsplineop(
+    bop.reset(new bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 
     return abserr;
@@ -669,16 +667,16 @@ void load_time(const esio_handle h,
 
 // Pooling employed in allocate_padded_state implementations
 typedef boost::ptr_map<
-        size_t, suzerain::coalescing_pool<complex_t>
+        size_t, coalescing_pool<complex_t>
     > padded_state_pools_type;
 static padded_state_pools_type padded_state_pools;
 
 template<>
-suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
+ContiguousState<4,complex_t>* allocate_padded_state(
            const size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid)
+           const pencil_grid& dgrid)
 {
-    typedef suzerain::coalescing_pool<complex_t> pool_type;
+    typedef coalescing_pool<complex_t> pool_type;
 
     // Contiguous number of complex_t values necessary to store one field
     // This is sufficient field-to-field padding to allow P3DFFTification
@@ -695,16 +693,16 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
     // Construct a shared_range for howmany_fields from the pool instance
     // shared_range given boost::bind-based Deleter to invoke release()
     pool_type::blocks blocks = it->second->acquire(howmany_fields);
-    suzerain::shared_range<complex_t> storage(blocks.begin(), blocks.end(),
+    shared_range<complex_t> storage(blocks.begin(), blocks.end(),
             boost::bind(&pool_type::release, boost::ref(*(it->second)), blocks));
 
     // Create instance using provided storage
-    suzerain::ContiguousState<4,complex_t> * const retval =
-        new suzerain::ContiguousState<4,complex_t>(
+    ContiguousState<4,complex_t> * const retval =
+        new ContiguousState<4,complex_t>(
             storage,
-            suzerain::to_yxz(howmany_fields, dgrid.local_wave_extent),
-            suzerain::prepend(dgrid.local_wave_storage(), suzerain::strides_cm(
-                              suzerain::to_yxz(dgrid.local_wave_extent)))
+            to_yxz(howmany_fields, dgrid.local_wave_extent),
+            prepend(dgrid.local_wave_storage(),
+                    strides_cm(to_yxz(dgrid.local_wave_extent)))
         );
 
     return retval;
@@ -712,9 +710,9 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 
 void store_coefficients(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid)
+        const ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid)
 {
     // Ensure swave meets this routine's assumptions
     assert(                  swave.shape()[0]  == field::count);
@@ -724,12 +722,12 @@ void store_coefficients(
 
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(grid.N.x(),
-                                            grid.dN.x(),
-                                            dgrid.local_wave_start.x(),
-                                            dgrid.local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
+    inorder::wavenumber_translate(grid.N.x(),
+                                  grid.dN.x(),
+                                  dgrid.local_wave_start.x(),
+                                  dgrid.local_wave_end.x(),
+                                  fxb[0], fxe[0], fxb[1], fxe[1],
+                                  mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
@@ -737,12 +735,12 @@ void store_coefficients(
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(grid.N.z(),
-                                            grid.dN.z(),
-                                            dgrid.local_wave_start.z(),
-                                            dgrid.local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
+    inorder::wavenumber_translate(grid.N.z(),
+                                  grid.dN.z(),
+                                  dgrid.local_wave_start.z(),
+                                  dgrid.local_wave_end.z(),
+                                  fzb[0], fze[0], fzb[1], fze[1],
+                                  mzb[0], mze[0], mzb[1], mze[1]);
 
     // Save each scalar field in turn...
     for (size_t i = 0; i < field::count; ++i) {
@@ -782,8 +780,8 @@ void store_coefficients(
     }
 }
 
-real_t distance(const suzerain::bspline& a,
-                const suzerain::bspline& b)
+real_t distance(const bspline& a,
+                const bspline& b)
 {
     real_t retval = 0;
     if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
@@ -797,13 +795,13 @@ real_t distance(const suzerain::bspline& a,
 }
 
 void load_coefficients(const esio_handle h,
-                       suzerain::ContiguousState<4,complex_t> &state,
-                       const suzerain::problem::GridDefinition& grid,
-                       const suzerain::pencil_grid& dgrid,
-                       const suzerain::bspline& b,
-                       const suzerain::bsplineop& bop)
+                       ContiguousState<4,complex_t> &state,
+                       const problem::GridDefinition& grid,
+                       const pencil_grid& dgrid,
+                       const bspline& b,
+                       const bsplineop& bop)
 {
-    typedef suzerain::ContiguousState<4,complex_t> load_type;
+    typedef ContiguousState<4,complex_t> load_type;
 
     // Ensure local state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == field::count);
@@ -817,8 +815,8 @@ void load_coefficients(const esio_handle h,
     assert(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
-    boost::shared_ptr<suzerain::bspline> Fb;
-    boost::shared_ptr<suzerain::bsplineop> Fbop;
+    boost::shared_ptr<bspline> Fb;
+    boost::shared_ptr<bsplineop> Fbop;
     load(h, Fb, Fbop);
     assert(Fy == Fb->n());
 
@@ -831,12 +829,12 @@ void load_coefficients(const esio_handle h,
     // real-valued coefficient count.  Further, need to preserve even- or
     // odd-ness of the coefficient count to handle, for example, Fx == 1.
     int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
-                                            grid.dN.x(),
-                                            dgrid.local_wave_start.x(),
-                                            dgrid.local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
+    inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
+                                  grid.dN.x(),
+                                  dgrid.local_wave_start.x(),
+                                  dgrid.local_wave_end.x(),
+                                  fxb[0], fxe[0], fxb[1], fxe[1],
+                                  mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
@@ -844,20 +842,20 @@ void load_coefficients(const esio_handle h,
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(Fz,
-                                            grid.dN.z(),
-                                            dgrid.local_wave_start.z(),
-                                            dgrid.local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
+    inorder::wavenumber_translate(Fz,
+                                  grid.dN.z(),
+                                  dgrid.local_wave_start.z(),
+                                  dgrid.local_wave_end.z(),
+                                  fzb[0], fze[0], fzb[1], fze[1],
+                                  mzb[0], mze[0], mzb[1], mze[1]);
 
     // Possibly prepare a tmp buffer into which to read each scalar field and a
     // factorization of b's mass matrix.  Used only when !bsplines_same.
     typedef boost::multi_array<
-        complex_t, 3, suzerain::blas::allocator<complex_t>::type
+        complex_t, 3, blas::allocator<complex_t>::type
     > tmp_type;
     boost::scoped_ptr<tmp_type> tmp;
-    boost::scoped_ptr<suzerain::bsplineop_luz> mass;
+    boost::scoped_ptr<bsplineop_luz> mass;
     if (!bsplines_same) {
         INFO0("Differences in B-spline basis require restart projection ("
               << bsplines_dist << " >= " << bsplines_distinct_distance << ")");
@@ -867,7 +865,7 @@ void load_coefficients(const esio_handle h,
             state.shape()[3]
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
-        mass.reset(new suzerain::bsplineop_luz(bop));
+        mass.reset(new bsplineop_luz(bop));
         mass->factor_mass(bop);
     }
 
@@ -881,9 +879,9 @@ void load_coefficients(const esio_handle h,
 
         // Clear storage prior to load to zero not-loaded coefficients
         if (bsplines_same) {
-            suzerain::multi_array::fill(field, 0);
+            multi_array::fill(field, 0);
         } else {
-            suzerain::multi_array::fill(*tmp, 0);
+            multi_array::fill(*tmp, 0);
         }
 
         // Two ESIO read operations per field (once per Z range)

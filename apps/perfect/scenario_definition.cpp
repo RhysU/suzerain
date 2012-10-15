@@ -32,15 +32,15 @@ namespace suzerain {
 
 static void parse_positive(const std::string& s, real_t *t, const char *n)
 {
-    const real_t v = suzerain::exprparse<real_t>(s, n);
-    suzerain::validation::ensure_positive(v, n);
+    const real_t v = exprparse<real_t>(s, n);
+    validation::ensure_positive(v, n);
     *t = v;
 }
 
 static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 {
-    const real_t v = suzerain::exprparse<real_t>(s, n);
-    suzerain::validation::ensure_nonnegative(v, n);
+    const real_t v = exprparse<real_t>(s, n);
+    validation::ensure_nonnegative(v, n);
     *t = v;
 }
 

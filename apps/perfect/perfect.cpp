@@ -160,7 +160,7 @@ static void attribute_storer(const esio_handle &h,
 
 void store(const esio_handle h,
            const ScenarioDefinition& scenario,
-           const suzerain::problem::GridDefinition& grid,
+           const problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
@@ -227,7 +227,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
+          const problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
@@ -275,12 +275,12 @@ void load(const esio_handle h,
 
 void store_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& swave,
+        ContiguousState<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop)
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
     assert(                  swave.shape()[0]  == support::field::count);
@@ -290,7 +290,7 @@ void store_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
     for (size_t i = 0; i < support::field::count; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
@@ -317,7 +317,7 @@ void store_collocation_values(
 
         // Compute primitive quantities to be stored
         real_t p, T;
-        suzerain::rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
+        rholut::p_T(alpha, beta, gamma, Ma, rho, m, e, p, T);
         m /= rho;
 
         // Pack primitive quantities back into fields (by position)
@@ -362,12 +362,12 @@ void store_collocation_values(
 
 void load_collocation_values(
         const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& state,
+        ContiguousState<4,complex_t>& state,
         const ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop)
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
     assert(                  state.shape()[0]  == support::field::count);
@@ -397,8 +397,8 @@ void load_collocation_values(
         // Check that restart file specifies the same B-spline basis.
         // TODO Too restrictive!  Identical collocation points would be okay.
         // TODO Too restrictive?  Any floating point differences kill us.
-        boost::shared_ptr<suzerain::bspline> Fb;
-        boost::shared_ptr<suzerain::bsplineop> Fbop;
+        boost::shared_ptr<bspline> Fb;
+        boost::shared_ptr<bsplineop> Fbop;
         support::load(h, Fb, Fbop);
         const double bsplines_dist = support::distance(b, *Fb);
         const bool bsplines_same
@@ -442,8 +442,8 @@ void load_collocation_values(
         // Compute conserved quantities from primitive ones
         const real_t rho = gamma * p / T;   // Assumes EOS
         m               *= rho;             // Now m contains momentum
-        const real_t e   = suzerain::rholut::energy_kinetic(Ma, rho, m)
-                         + suzerain::rholut::energy_internal(gamma, p);
+        const real_t e   = rholut::energy_kinetic(Ma, rho, m)
+                         + rholut::energy_internal(gamma, p);
 
         // Pack conserved quantities into fields (by name)
         sphys(support::field::ndx::rho, o) = rho;
@@ -454,11 +454,11 @@ void load_collocation_values(
     }
 
     // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
 
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
-    suzerain::bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
@@ -471,12 +471,12 @@ void load_collocation_values(
 }
 
 void load(const esio_handle h,
-          suzerain::ContiguousState<4,complex_t>& state,
+          ContiguousState<4,complex_t>& state,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline& b,
-          const suzerain::bsplineop& bop)
+          const problem::GridDefinition& grid,
+          const pencil_grid& dgrid,
+          bspline& b,
+          const bsplineop& bop)
 {
     namespace field = support::field;
 
@@ -503,7 +503,7 @@ void load(const esio_handle h,
     // Dispatch to the appropriate restart loading logic
     DEBUG0("Started loading simulation fields");
     if (trycoeffs) {
-        suzerain::support::load_coefficients(h, state, grid, dgrid, b, bop);
+        support::load_coefficients(h, state, grid, dgrid, b, bop);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
         load_collocation_values(h, state, scenario, grid, dgrid, b, bop);
@@ -512,12 +512,12 @@ void load(const esio_handle h,
 }
 
 void
-adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
+adjust_scenario(ContiguousState<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
-                const suzerain::problem::GridDefinition& grid,
-                const suzerain::pencil_grid& dgrid,
-                suzerain::bspline &b,
-                const suzerain::bsplineop& bop,
+                const problem::GridDefinition& grid,
+                const pencil_grid& dgrid,
+                bspline &b,
+                const bsplineop& bop,
                 const real_t old_Ma,
                 const real_t old_gamma)
 {
@@ -538,7 +538,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     }
 
     // Convert state to physical space collocation points
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
     support::physical_view<support::field::count>::type sphys
             = support::physical_view<support::field::count>::create(dgrid, swave);
     for (size_t k = 0; k < support::field::count; ++k) {
@@ -567,20 +567,19 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
 
             // Compute temperature using old_gamma, old_Ma
             real_t p, T;
-            suzerain::rholut::p_T(scenario.alpha, scenario.beta,
-                                  old_gamma, old_Ma, rho, m, e,
-                                  /*out*/ p, /*out*/ T);
+            rholut::p_T(scenario.alpha, scenario.beta, old_gamma, old_Ma,
+                        rho, m, e, /*out*/ p, /*out*/ T);
             // Compute total energy from new gamma, Ma, rho, T
-            suzerain::rholut::p(scenario.gamma, rho, T, /*out*/ p);
+            rholut::p(scenario.gamma, rho, T, /*out*/ p);
             sphys(support::field::ndx::e, offset)
-                    = suzerain::rholut::energy_internal(scenario.gamma, p)
-                    + suzerain::rholut::energy_kinetic(scenario.Ma, rho, m);
+                    = rholut::energy_internal(scenario.gamma, p)
+                    + rholut::energy_kinetic(scenario.Ma, rho, m);
         }
     }
 
     // Convert state back to wave space coefficients in X, Y, and Z
     // building FFT normalization constant into the mass matrix
-    suzerain::bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
@@ -600,13 +599,13 @@ NoiseDefinition::NoiseDefinition(real_t percent,
       kzfrac_max(1),
       seed(seed)
 {
-    using ::boost::bind;
-    using ::suzerain::validation::ensure_positive;
-    using ::suzerain::validation::ensure_nonnegative;
-    ::std::pointer_to_binary_function<unsigned long,const char*,void>
-        ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
-    ::std::pointer_to_binary_function<real_t,const char*,void>
-        ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
+    using boost::bind;
+    using validation::ensure_positive;
+    using validation::ensure_nonnegative;
+    std::pointer_to_binary_function<unsigned long,const char*,void>
+            ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
+    std::pointer_to_binary_function<real_t,const char*,void>
+            ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
     this->add_options()
         ("fluct_percent",
          boost::program_options::value(&this->percent)
@@ -638,13 +637,13 @@ NoiseDefinition::NoiseDefinition(real_t percent,
 }
 
 void
-add_noise(suzerain::ContiguousState<4,complex_t> &state,
+add_noise(ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline &b,
-          const suzerain::bsplineop& bop)
+          const problem::GridDefinition& grid,
+          const pencil_grid& dgrid,
+          bspline &b,
+          const bsplineop& bop)
 {
     const int Ny = grid.N.y();
 
@@ -655,10 +654,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         return;
     }
 
-    using suzerain::inorder::wavenumber_abs;
-    using suzerain::inorder::wavenumber_max;
-    using suzerain::inorder::wavenumber_translatable;
-    using suzerain::ContiguousState;
+    using inorder::wavenumber_abs;
+    using inorder::wavenumber_max;
+    using inorder::wavenumber_translatable;
     namespace ndx = support::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
 
@@ -689,7 +687,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         maxfluct = noisedef.percent / 100 * (abs(momentum) / abs(density));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
-                suzerain::mpi::datatype_of(maxfluct),
+                mpi::datatype_of(maxfluct),
                 dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     INFO0("Adding velocity perturbations with maximum magnitude " << maxfluct);
 
@@ -719,13 +717,13 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
-    suzerain::bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(bop);
     massluz.factor_mass(bop);
 
     // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
     // processor count, b) easy to code, and c) embarrassingly parallel.
-    suzerain::RngStream rng;
+    RngStream rng;
     {
         boost::array<unsigned long,6> seed;
         std::fill(seed.begin(), seed.end(), noisedef.seed);
@@ -823,7 +821,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
         = support::physical_view<support::field::count+3>::create(dgrid, s);
 
     // Initializing OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
 
     // From Ax in s[0] compute \partial_y Ax
     obase.bop_apply(1, 1.0, s, 0);
@@ -903,7 +901,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 p(support::field::count + 1, offset) = curlA.x();
                 p(support::field::count + 2, offset) = curlA.y();
 
-                maxmagsquared = suzerain::math::maxnan(
+                maxmagsquared = math::maxnan(
                         maxmagsquared, curlA.squaredNorm());
 
             } // end X
@@ -912,7 +910,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     } // end Y
     SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, &maxmagsquared, 1,
-                suzerain::mpi::datatype<real_t>::value,
+                mpi::datatype<real_t>::value,
                 MPI_MAX, MPI_COMM_WORLD));
 
     // Rescale curl A components so max ||curl A|| == maxfluct
@@ -944,8 +942,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
             for (int i = dgrid.local_physical_start.x();
                 i < dgrid.local_physical_end.x();
                 ++i, /* NB */ ++offset) {
-
-                namespace rholut = suzerain::rholut;
 
                 // Retrieve internal energy
                 const real_t rho(p(ndx::rho, offset));
@@ -998,29 +994,28 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
+        ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop,
         const real_t simulation_time)
 {
     // Initialize OperatorBase to access decomposition-ready utilities
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
 
     // Allocate one field of temporary storage for scratch purposes
-    using suzerain::ContiguousState;
     boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
         support::allocate_padded_state<ContiguousState<4,complex_t> >(1,dgrid));
     ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
-    suzerain::multi_array::fill(scratch, 0);                       // Defensive
+    multi_array::fill(scratch, 0);                                 // Defensive
 
     // Prepare physical-space view of the wave-space scratch storage
     support::physical_view<1>::type phys
             = support::physical_view<1>::create(dgrid, scratch);
 
     // Prepare factored mass matrix for repeated use
-    suzerain::bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(bop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
@@ -1096,7 +1091,7 @@ void accumulate_manufactured_solution(
                 kx < ku;
                 ++kx, ++ky) {
 
-                suzerain::blas::axpby(scratch.shape()[1], alpha,
+                blas::axpby(scratch.shape()[1], alpha,
                         &scratch[0][scratch.index_bases()[1]][kx][lx],
                         scratch.strides()[1], beta,
                         &swave[f][swave.index_bases()[1]][ky][ly],
@@ -1114,18 +1109,18 @@ void accumulate_manufactured_solution(
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
         const ScenarioDefinition &scenario,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop,
+        ContiguousState<4,complex_t> &swave,
         const real_t t)
 {
     // Shorthand
     const size_t Ny = swave.shape()[1];
     namespace ndx = support::field::ndx;
     namespace acc = boost::accumulators;
-    typedef suzerain::ContiguousState<4,complex_t> state_type;
+    typedef ContiguousState<4,complex_t> state_type;
     using Eigen::Upper;
 
     // State enters method as coefficients in X, Y, and Z directions
@@ -1175,7 +1170,7 @@ mean sample_mean_quantities(
     }
 
     // Obtain access to helper routines for differentiation
-    suzerain::OperatorBase obase(grid, dgrid, b, bop);
+    OperatorBase obase(grid, dgrid, b, bop);
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
@@ -1315,21 +1310,21 @@ mean sample_mean_quantities(
                                       auxp(aux::e_z, offset));
 
                 // Compute local quantities based upon state.
-                const Vector3r u   = suzerain::rholut::u(
+                const Vector3r u   = rholut::u(
                                         rho, m);
-                const real_t div_u = suzerain::rholut::div_u(
+                const real_t div_u = rholut::div_u(
                                         rho, grad_rho, m, div_m);
-                const Matrix3r grad_u = suzerain::rholut::grad_u(
+                const Matrix3r grad_u = rholut::grad_u(
                                         rho, grad_rho, m, grad_m);
 
                 real_t p, T, mu, lambda;
                 Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-                suzerain::rholut::p_T_mu_lambda(
+                rholut::p_T_mu_lambda(
                     scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
                     rho, grad_rho, m, grad_m, e, grad_e,
                     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-                const Matrix3r tau = suzerain::rholut::tau(
+                const Matrix3r tau = rholut::tau(
                                         mu, lambda, div_u, grad_u);
                 const Vector3r tau_u = tau * u;
 
@@ -1426,12 +1421,12 @@ mean sample_mean_quantities(
     // quantities while other ranks have zeros in those locations.
 
     // Reduce sums onto rank zero and then return garbage from non-zero ranks
-    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
 
         // Reduce operation requires no additional storage on rank-zero
         SUZERAIN_MPICHKR(MPI_Reduce(
                 MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-                suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
+                mpi::datatype<mean::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
     } else {
@@ -1441,7 +1436,7 @@ mean sample_mean_quantities(
         tmp.resizeLike(ret.storage);
         tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
-                suzerain::mpi::datatype<mean::storage_type::Scalar>::value,
+                mpi::datatype<mean::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
         // Force non-zero ranks contain all NaNs to help detect usage errors
@@ -1454,13 +1449,13 @@ mean sample_mean_quantities(
     }
 
     // Only rank zero reaches this logic because of return statement just above
-    assert(suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0);
+    assert(mpi::comm_rank(MPI_COMM_WORLD) == 0);
 
     // Physical space sums, which are at collocation points, need to be
     // divided by the dealiased extents and converted to coefficients.
     const real_t scale_factor = dgrid.global_physical_extent.x()
                               * dgrid.global_physical_extent.z();
-    suzerain::bsplineop_lu scaled_mass(bop);
+    bsplineop_lu scaled_mass(bop);
     scaled_mass.opform(1, &scale_factor, bop);
     scaled_mass.factor();
     scaled_mass.solve(mean::nscalars::physical,

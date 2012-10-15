@@ -299,9 +299,7 @@ enum type {
 /**
  * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
  * implementation is provided as a common building block for
- * <tt>suzerain::timestepper::INonlinearOperator<
- *          suzerain::ContiguousState<4,complex_t>
- *    ></tt>
+ * <tt>timestepper::INonlinearOperator< ContiguousState<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -315,17 +313,17 @@ enum type {
  * spanwise directions and stored into <tt>common.u()</tt>.
  *
  * \param alpha Parameter controlling bulk viscosity
- *        per \f$\alpha\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\alpha\f$ in namespace \ref rholut.
  * \param beta Temperature power law exponent
- *        per \f$\beta\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\beta\f$ in namespace \ref rholut.
  * \param gamma Constant ratio of specific heats
- *        per \f$\gamma\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\gamma\f$ in namespace \ref rholut.
  * \param Ma Mach number
- *        per \f$\textrm{Ma}\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\textrm{Ma}\f$ in namespace \ref rholut.
  * \param Pr Prandtl number
- *        per \f$\textrm{Pr}\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\textrm{Pr}\f$ in namespace \ref rholut.
  * \param Re Reynolds number
- *        per \f$\textrm{Re}\f$ in namespace \ref suzerain::rholut.
+ *        per \f$\textrm{Re}\f$ in namespace \ref rholut.
  * \param o Provides access to discretization and parallel decomposition
  *        operational details.
  * \param common Shared storage for interaction with an ILinearOperator
@@ -353,9 +351,9 @@ enum type {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per suzerain::timestepper::INonlinearOperator::applyOperator.
+ *         per timestepper::INonlinearOperator::applyOperator.
  *
- * @see suzerain::timestepper::INonlinearOperator for the (slighly different)
+ * @see timestepper::INonlinearOperator for the (slighly different)
  *      interface that an actual operator would provide.
  */
 template <bool ZerothSubstep,
@@ -368,11 +366,11 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t Ma,
             const real_t Pr,
             const real_t Re,
-            const suzerain::OperatorBase &o,
+            const OperatorBase &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            ContiguousState<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 

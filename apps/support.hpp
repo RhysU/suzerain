@@ -136,19 +136,19 @@ void wisdom_gather(const std::string& wisdom_file);
 
 /** Store a GridDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid);
+           const problem::GridDefinition& grid);
 
 /** Load a GridDefinition from a restart file */
 void load(const esio_handle h,
-          suzerain::problem::GridDefinition& grid);
+          problem::GridDefinition& grid);
 
 /** Store a TimeDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition& timedef);
+           const problem::TimeDefinition& timedef);
 
 /** Load a TimeDefinition from a restart file */
 void load(const esio_handle h,
-          suzerain::problem::TimeDefinition& timedef);
+          problem::TimeDefinition& timedef);
 
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
@@ -159,8 +159,8 @@ real_t create(const int ndof,
               const double left,
               const double right,
               const double htdelta,
-              boost::shared_ptr<suzerain::bspline>& b,
-              boost::shared_ptr<suzerain::bsplineop>& bop);
+              boost::shared_ptr<bspline>& b,
+              boost::shared_ptr<bsplineop>& bop);
 
 /**
  * Compute the "distance" between two B-spline bases.  Distance is "huge" if
@@ -168,8 +168,8 @@ real_t create(const int ndof,
  * When all those criteria match the distance becomes the maximum absolute
  * difference between the knot vectors.
  */
-real_t distance(const suzerain::bspline& a,
-                const suzerain::bspline& b);
+real_t distance(const bspline& a,
+                const bspline& b);
 
 /**
  * Common constant used to define distinct B-spline bases per
@@ -177,19 +177,19 @@ real_t distance(const suzerain::bspline& a,
  */
 extern const real_t bsplines_distinct_distance;
 
-/** Store a suzerain::bspline workspace in a restart file */
+/** Store a \ref bspline workspace in a restart file */
 void store(const esio_handle h,
-           const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop,
-           const boost::shared_ptr<suzerain::bsplineop>& gop);
+           const boost::shared_ptr<bspline>& b,
+           const boost::shared_ptr<bsplineop>& bop,
+           const boost::shared_ptr<bsplineop>& gop);
 
 /**
- * Load a suzerain::bspline workspace from a restart file.
+ * Load a \ref bspline workspace from a restart file.
  * @return the absolute error in reproducing prescribed abscissae.
  */
 real_t load(const esio_handle h,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop);
+            boost::shared_ptr<bspline>& b,
+            boost::shared_ptr<bsplineop>& bop);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle h,
@@ -208,7 +208,7 @@ void load_time(const esio_handle h,
 template<class StateType>
 StateType* allocate_padded_state(
            const std::size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid);
+           const pencil_grid& dgrid);
 
 /**
  * Specialization of allocate_padded_state for ContiguousState.  Emphatically
@@ -216,9 +216,9 @@ StateType* allocate_padded_state(
  * returned pointer.  No guarantees are made about the memory contents.
  */
 template<>
-suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
+ContiguousState<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid);
+           const pencil_grid& dgrid);
 
 /**
  * Store the current simulation conserved state as expansion coefficients into
@@ -228,9 +228,9 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
  */
 void store_coefficients(
         const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid);
+        const ContiguousState<4,complex_t> &swave,
+        const problem::GridDefinition& grid,
+        const pencil_grid& dgrid);
 
 /**
  * Load the current simulation state from an open coefficient-based restart
@@ -238,11 +238,11 @@ void store_coefficients(
  * provided \c grid, \c dgrid, \c b, and \c bop.
  */
 void load_coefficients(const esio_handle h,
-                       suzerain::ContiguousState<4,complex_t> &state,
-                       const suzerain::problem::GridDefinition& grid,
-                       const suzerain::pencil_grid& dgrid,
-                       const suzerain::bspline& b,
-                       const suzerain::bsplineop& bop);
+                       ContiguousState<4,complex_t> &state,
+                       const problem::GridDefinition& grid,
+                       const pencil_grid& dgrid,
+                       const bspline& b,
+                       const bsplineop& bop);
 
 /**
  * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
@@ -285,13 +285,13 @@ void parse_range(const std::string& s,
             + " not in format \"low:high\", \"[low]:high\", or low:[high].");
     } else if (s_min.length() == 0) {
         *valmin = defaultmin;
-        *valmax = suzerain::exprparse<T>(s_max, name);
+        *valmax = exprparse<T>(s_max, name);
     } else if (s_max.length() == 0) {
-        *valmin = suzerain::exprparse<T>(s_min, name);
+        *valmin = exprparse<T>(s_min, name);
         *valmax = defaultmax;
     } else {
-        *valmin = suzerain::exprparse<T>(s_min, name);
-        *valmax = suzerain::exprparse<T>(s_max, name);
+        *valmin = exprparse<T>(s_min, name);
+        *valmax = exprparse<T>(s_max, name);
     }
 
     // Ensure valmin <= valmax
@@ -424,8 +424,8 @@ struct physical_view {
      * Eigen::Dynamic.
      */
     static inline type create(
-            const suzerain::pencil_grid &dgrid,
-            suzerain::ContiguousState<4,complex_t> &state,
+            const pencil_grid &dgrid,
+            ContiguousState<4,complex_t> &state,
             const int nfields = NFields)
     {
         if (NFields == Eigen::Dynamic || NFields == nfields) {
