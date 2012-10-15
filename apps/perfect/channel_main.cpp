@@ -66,6 +66,7 @@
 
 #include "../logging.hpp"
 #include "../support.hpp"
+#include "perfect.hpp"
 
 #include "channel_treatment.hpp"
 #include "explicit_op.hpp"
@@ -88,6 +89,7 @@ using std::numeric_limits;
 using std::size_t;
 using suzerain::complex_t;
 using suzerain::real_t;
+namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
@@ -98,7 +100,7 @@ typedef suzerain::ContiguousState<4,complex_t>  nonlinear_state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using support::NoiseDefinition;
+using perfect::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
@@ -136,7 +138,7 @@ static shared_ptr<      suzerain::bsplineop>            bop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>            gop;    // Galerkin L2
 static shared_ptr<      suzerain::bsplineop_luz>        bopluz;
 static shared_ptr<const suzerain::pencil_grid>          dgrid;
-static shared_ptr<      support::manufactured_solution> msoln;
+static shared_ptr<      perfect::manufactured_solution> msoln;
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
@@ -152,10 +154,10 @@ static shared_ptr<nonlinear_state_type> state_nonlinear;
 
 // Common storage shared between the linear and nonlinear operators
 // which also includes instantaneous mean quantity statistics
-static support::OperatorCommonBlock common_block;
+static perfect::OperatorCommonBlock common_block;
 
 // The last collection of mean quantity samples obtained
-static support::mean samples;
+static perfect::mean samples;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -355,7 +357,7 @@ static void information_manufactured_solution_absolute_error(
     // Compute L2 of error of state against manufactured solution
     assert(msoln);
     state_nonlinear->assign(*state_linear);
-    support::accumulate_manufactured_solution(
+    perfect::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             grid, *dgrid, *b, *bop, simulation_time);
     const std::vector<suzerain::L2> L2
@@ -439,7 +441,7 @@ static void sample_statistics(real_t t)
 
     // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
-    samples = support::sample_mean_quantities(
+    samples = perfect::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, *state_nonlinear, t);
 
     // Obtain mean samples computed via implicit forcing (when possible)
@@ -485,7 +487,7 @@ static bool save_restart(real_t t, size_t nt)
     if (restart.physical) {
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
-        support::store_collocation_values(
+        perfect::store_collocation_values(
                 esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
@@ -495,7 +497,7 @@ static bool save_restart(real_t t, size_t nt)
 
     // Include statistics in the restart file
     sample_statistics(t);
-    support::store(esioh, samples);
+    perfect::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.destination);
@@ -525,7 +527,7 @@ static bool save_statistics(real_t t, size_t nt)
 
     // Compute statistics and write to file
     sample_statistics(t);
-    support::store(esioh, samples);
+    perfect::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);
@@ -989,7 +991,7 @@ int main(int argc, char **argv)
         const_cast<ScenarioDefinition&>(scenario).Ma
             = const_cast<ScenarioDefinition&>(scenario).gamma
             = numeric_limits<real_t>::quiet_NaN();
-        support::load(esioh, const_cast<ScenarioDefinition&>(scenario));
+        perfect::load(esioh, const_cast<ScenarioDefinition&>(scenario));
         restart_Ma    = scenario.Ma;
         restart_gamma = scenario.gamma;
         const_cast<ScenarioDefinition&>(scenario).Ma
@@ -999,7 +1001,7 @@ int main(int argc, char **argv)
     }
     support::load(esioh, const_cast<GridDefinition&>(grid));
     support::load(esioh, const_cast<TimeDefinition&>(timedef));
-    support::load(esioh, scenario, grid, msoln);
+    perfect::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);
 
     if (msoln) {
@@ -1109,11 +1111,11 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str());
-        support::store(h, scenario);
+        perfect::store(h, scenario);
         support::store(h, grid);
         support::store(h, b, bop, gop);
         support::store(h, timedef);
-        support::store(h, scenario, grid, msoln);
+        perfect::store(h, scenario, grid, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
     }
@@ -1211,18 +1213,18 @@ int main(int argc, char **argv)
     {
         const double begin = MPI_Wtime();
         samples.t = initial_t;         // For idempotent --advance_nt=0...
-        support::load(esioh, samples); // ...when no grid rescaling employed
-        support::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
+        perfect::load(esioh, samples); // ...when no grid rescaling employed
+        perfect::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If necessary, adjust total energy to account for scenario changes
-    support::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
+    perfect::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
                              restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
-    support::add_noise(*state_nonlinear, noisedef,
+    perfect::add_noise(*state_nonlinear, noisedef,
                        scenario, grid, *dgrid, *b, *bop);
 
     // Create state storage for linear operator usage
@@ -1273,18 +1275,18 @@ int main(int argc, char **argv)
             nonlinear_state_type
         > > N;
 
-    using support::ChannelTreatment;
+    using perfect::ChannelTreatment;
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
-        L.reset(new ChannelTreatment<support::BsplineMassOperatorIsothermal>(
+        L.reset(new ChannelTreatment<perfect::BsplineMassOperatorIsothermal>(
                     scenario, grid, *dgrid, *b, *bop, common_block));
-        N.reset(new support::NonlinearOperator(
+        N.reset(new perfect::NonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
-        L.reset(new ChannelTreatment<support::HybridIsothermalLinearOperator>(
+        L.reset(new ChannelTreatment<perfect::HybridIsothermalLinearOperator>(
                     scenario, grid, *dgrid, *b, *bop, common_block));
-        N.reset(new support::HybridNonlinearOperator(
+        N.reset(new perfect::HybridNonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else {
         FATAL0("Sanity error in operator selection");

@@ -44,6 +44,7 @@
 
 #include "../logging.hpp"
 #include "../support.hpp"
+#include "perfect.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
@@ -60,6 +61,7 @@ using boost::shared_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::real_t;
+namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
 // Global parameters initialized in main()
@@ -89,8 +91,8 @@ static GridDefinition grid(
 static TimeDefinition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static shared_ptr<support::manufactured_solution> msoln(
-            new support::manufactured_solution);
+static shared_ptr<perfect::manufactured_solution> msoln(
+            new perfect::manufactured_solution);
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
@@ -123,7 +125,7 @@ class MSDefinition : public suzerain::problem::IDefinition {
 
 public:
 
-    MSDefinition(support::manufactured_solution &ms)
+    MSDefinition(perfect::manufactured_solution &ms)
         : IDefinition("Manufactured solution parameters"
                       " (active only when --mms supplied)")
     {
@@ -291,11 +293,11 @@ int main(int argc, char **argv)
     esio_file_create(esioh, restart_file.c_str(), clobber);
     esio_string_set(esioh, "/", "generated_by",
                     (std::string("channel_init ") + revstr).c_str());
-    support::store(esioh, scenario);
+    perfect::store(esioh, scenario);
     support::store(esioh, grid);
     support::store(esioh, b, bop, gop);
     support::store(esioh, timedef);
-    support::store(esioh, scenario, grid, msoln);
+    perfect::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -316,7 +318,7 @@ int main(int argc, char **argv)
     if (mms >= 0) {
 
         // Use a canned manufactured solution routine for initialization
-        support::accumulate_manufactured_solution(
+        perfect::accumulate_manufactured_solution(
                 1, *msoln, 0, swave, grid, *dgrid, *b, *bop, mms);
 
     } else {
@@ -420,11 +422,11 @@ int main(int argc, char **argv)
     esio_file_flush(esioh);
 
     INFO0("Computing mean quantities from state fields");
-    support::mean samples = support::sample_mean_quantities(
+    perfect::mean samples = perfect::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
-    support::store(esioh, samples);
+    perfect::store(esioh, samples);
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");

@@ -36,10 +36,11 @@
 #include <suzerain/state.hpp>
 
 #include "../support.hpp"
+#include "perfect.hpp"
 
 #pragma warning(disable:280 383 1572)
 
-namespace suzerain { namespace support {
+namespace suzerain { namespace perfect {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
@@ -87,7 +88,8 @@ std::vector<real_t> applyNonlinearOperator(
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     typename boost::scoped_ptr<state_type> _auxw_ptr(
-            allocate_padded_state<state_type>(aux::count, o.dgrid)); // RAII
+            support::allocate_padded_state<state_type>(
+                aux::count, o.dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                   // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
@@ -959,6 +961,6 @@ std::vector<real_t> applyNonlinearOperator(
     // State leaves method as collocation point values in Y direction
 }
 
-} /* namespace support */ } /* namespace suzerain */
+} /* namespace perfect */ } /* namespace suzerain */
 
 #endif  /* NONLINEAR_HPP */

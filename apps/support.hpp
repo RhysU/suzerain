@@ -23,8 +23,8 @@
 // support.hpp: Support logic spanning potentially many applications
 // $Id$
 
-#ifndef SUPPORT_HPP
-#define SUPPORT_HPP
+#ifndef SUZERAIN_SUPPORT_HPP
+#define SUZERAIN_SUPPORT_HPP
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -38,16 +38,14 @@
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
-
-#include "nsctpl_rholut.hpp"
 
 namespace suzerain {
 
@@ -98,9 +96,6 @@ extern const boost::array<const char *, count> description;
 
 } // end namespace field
 
-/** Manufactured solution employed throughout the channel code */
-typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
-
 /** Log-and-abort handler for errors originating in the GSL */
 void mpi_abort_on_error_handler_gsl(const char * reason,
                                     const char * file,
@@ -139,14 +134,6 @@ void wisdom_broadcast(const std::string& wisdom_file);
 /** If wisdom_file is not empty, gather wisdom to rank zero and write it */
 void wisdom_gather(const std::string& wisdom_file);
 
-/** Store a ScenarioDefinition in a restart file */
-void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario);
-
-/** Load a ScenarioDefinition from a restart file */
-void load(const esio_handle h,
-          suzerain::problem::ScenarioDefinition& scenario);
-
 /** Store a GridDefinition in a restart file */
 void store(const esio_handle h,
            const suzerain::problem::GridDefinition& grid);
@@ -162,26 +149,6 @@ void store(const esio_handle h,
 /** Load a TimeDefinition from a restart file */
 void load(const esio_handle h,
           suzerain::problem::TimeDefinition& timedef);
-
-/**
- * Store manufactured solution parameters in a restart file.
- * Parameters are only stored when \c msoln evaluates as true.
- */
-void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario,
-           const suzerain::problem::GridDefinition& grid,
-           const boost::shared_ptr<manufactured_solution> & msoln);
-
-/**
- * Load manufactured solution parameters from a restart file.
- * If the restart file contains active manufactured solution parameters, \c
- * msoln will be modified to contain an appropriate instance.  If it does not,
- * \c msoln will be reset.
- */
-void load(const esio_handle h,
-          const suzerain::problem::ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
@@ -266,23 +233,6 @@ void store_coefficients(
         const suzerain::pencil_grid& dgrid);
 
 /**
- * Store the current simulation primitive state as collocation point values
- * into an open restart file.  Note that <tt>state</tt>'s contents are
- * destroyed.  Collocation point values required only for dealiasing purposes
- * <i>are</i> stored but only those points informed by non-dealiased state.
- * This method is less efficient and the restart data less flexible than that
- * produced by store_coefficients().
- */
-void store_collocation_values(
-        const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& swave,
-        const suzerain::problem::ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop);
-
-/**
  * Load the current simulation state from an open coefficient-based restart
  * file.  Handles the non-trivial task of adjusting the restart to match the
  * provided \c grid, \c dgrid, \c b, and \c bop.
@@ -295,102 +245,66 @@ void load_coefficients(const esio_handle h,
                        const suzerain::bsplineop& bop);
 
 /**
- * Load the current simulation state from an open collocation point value
- * restart file.  Cannot handle interpolating onto a different grid.
+ * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
+ * valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is enforced
+ * with the outer two inequalities being considered a validation failure.
  */
-void load_collocation_values(
-        const esio_handle h,
-        suzerain::ContiguousState<4,complex_t>& state,
-        const suzerain::problem::ScenarioDefinition& scenario,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid,
-        suzerain::bspline& b,
-        const suzerain::bsplineop& bop);
+template<typename T>
+void parse_range(const std::string& s,
+                 T *valmin, T *valmax,
+                 const T defaultmin, const T defaultmax,
+                 const T absmin, const T absmax,
+                 const char *name);
 
-/**
- * Interrogate an open restart file and invoke either load_coefficients()
- * or load_collocation_values() as necessary.
- */
-void load(const esio_handle h,
-          suzerain::ContiguousState<4,complex_t>& state,
-          const suzerain::problem::ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline& b,
-          const suzerain::bsplineop& bop);
+// Prior forward declaration suppresses Intel warnings
+template<typename T>
+void parse_range(const std::string& s,
+                 T *valmin, T *valmax,
+                 const T defaultmin, const T defaultmax,
+                 const T absmin, const T absmax,
+                 const char *name)
+{
+    assert(absmin <= defaultmin);
+    assert(defaultmin <= defaultmax);
+    assert(defaultmax <= absmax);
 
-/**
- * Hold temperature and density constant while changing the Mach number and
- * ratio of specific heats.  On input, \c state should contain total energy
- * fields using \c old_Ma and \c old_gamma.  On output \c state will contain
- * total energy fields using <tt>scenario.Ma</tt> and <tt>scenario.gamma</tt>.
- */
-void
-adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
-                const suzerain::problem::ScenarioDefinition& scenario,
-                const suzerain::problem::GridDefinition& grid,
-                const suzerain::pencil_grid& dgrid,
-                suzerain::bspline &b,
-                const suzerain::bsplineop& bop,
-                const real_t old_Ma,
-                const real_t old_gamma);
+    // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
+    const size_t colonpos = s.find_first_of(':');
+    if (colonpos == std::string::npos) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    }
+    std::string s_min(s, 0, colonpos);
+    std::string s_max(s, colonpos + 1);
+    boost::algorithm::trim(s_min);
+    boost::algorithm::trim(s_max);
 
-/** Options definitions for adding random noise to momentum fields */
-class NoiseDefinition : public suzerain::problem::IDefinition {
+    // Parse recognized formats into valmin and valmax
+    if (s_min.length() == 0 && s_max.length() == 0) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    } else if (s_min.length() == 0) {
+        *valmin = defaultmin;
+        *valmax = suzerain::exprparse<T>(s_max, name);
+    } else if (s_max.length() == 0) {
+        *valmin = suzerain::exprparse<T>(s_min, name);
+        *valmax = defaultmax;
+    } else {
+        *valmin = suzerain::exprparse<T>(s_min, name);
+        *valmax = suzerain::exprparse<T>(s_max, name);
+    }
 
-public:
+    // Ensure valmin <= valmax
+    if (*valmin > *valmax) std::swap(*valmin, *valmax);
 
-    /** Construct an instance with the given default values */
-    explicit NoiseDefinition(real_t fluct_percent = 0,
-                             unsigned long fluct_seed = 12345);
-
-    /**
-     * Maximum fluctuation magnitude to add as a percentage
-     * of centerline streamwise momentum.
-     */
-    real_t percent;
-
-    /**
-     * Fraction of the X direction wavenumbers in [0,1] below
-     * which fluctuations will not be added.
-     */
-    real_t kxfrac_min;
-
-    /**
-     * Fraction of the X direction wavenumbers in [0,1] above
-     * which fluctuations will not be added.
-     */
-    real_t kxfrac_max;
-
-    /**
-     * Fraction of the Z direction wavenumbers in [0,1] below
-     * which fluctuations will not be added.
-     */
-    real_t kzfrac_min;
-
-    /**
-     * Fraction of the Z direction wavenumbers in [0,1] above
-     * which fluctuations will not be added.
-     */
-    real_t kzfrac_max;
-
-    /** RngStream generator seed (see L'Ecuyer et al. 2002) */
-    unsigned long seed;
-
-};
-
-/**
- * Add random momentum field perturbations ("noise") according to
- * the provided NoiseDefinition.
- */
-void
-add_noise(suzerain::ContiguousState<4,complex_t> &state,
-          const NoiseDefinition& noisedef,
-          const suzerain::problem::ScenarioDefinition& scenario,
-          const suzerain::problem::GridDefinition& grid,
-          const suzerain::pencil_grid& dgrid,
-          suzerain::bspline &b,
-          const suzerain::bsplineop& bop);
+    // Validate range is within [absmin, absmax]
+    if (*valmin < absmin || absmax < *valmax) {
+        std::ostringstream oss;
+        oss << name << " value [" << *valmin << ":" << *valmax
+            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
+        throw std::invalid_argument(oss.str());
+    }
+}
 
 /** Read a complex-valued field via ESIO */
 template< typename I >
@@ -435,6 +349,49 @@ void complex_field_write(esio_handle h,
 {
     // When no strides are provided, we must specify the stride type.
     return complex_field_write<int>(h, name, field);
+}
+
+/**
+ * Read an ESIO \c linev of data into line from the first possible named
+ * location.  Argument \c first is mutated to return the successful location
+ * name.  No suitable location may be detected by checking if <tt>first ==
+ * last</tt> on return.
+ */
+template<typename ForwardIterator>
+static void load_linev(const esio_handle h, ArrayXr &line,
+                       ForwardIterator& first, const ForwardIterator& last)
+{
+    for ( ; first != last; ++first ) {
+        int length;
+        int ncomponents;
+        if (0 == esio_line_sizev(h, *first, &length, &ncomponents)) {
+            line.resize(length, ncomponents);
+            esio_line_establish(h, length, 0, length);
+            esio_line_readv(h, *first, line.data(), 0);
+            return;
+        }
+    }
+}
+
+/**
+ * Read an ESIO \c line of data into line from the first possible named
+ * location.  Argument \c first is mutated to return the successful location
+ * name.  No suitable location may be detected by checking if <tt>first ==
+ * last</tt> on return.
+ */
+template<typename ForwardIterator>
+static void load_line(const esio_handle h, ArrayXr &line,
+                      ForwardIterator& first, const ForwardIterator& last)
+{
+    for ( ; first != last; ++first ) {
+        int length;
+        if (0 == esio_line_size(h, *first, &length)) {
+            line.resize(length);
+            esio_line_establish(h, length, 0, length);
+            esio_line_read(h, *first, line.data(), 0);
+            return;
+        }
+    }
 }
 
 /**
@@ -488,260 +445,8 @@ struct physical_view {
 
 };
 
-/**
- * Accumulate the result of adding \c alpha times the manufactured solution \c
- * msoln times \c beta times the given wave-space state \c swave.  Setting
- * <tt>alpha=1</tt> and <tt>beta=0</tt> may be used to initialize a
- * manufactured solution field.  Setting <tt>alpha=-1</tt> and <tt>beta=1</tt>
- * may be used to compute error against the manufactured solution.  The
- * manufactured solution lives on \e only the non-dealiased, non-Nyquist modes.
- */
-void accumulate_manufactured_solution(
-        const real_t alpha,
-        const manufactured_solution &msoln,
-        const real_t beta,
-        suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        const real_t simulation_time);
-
-/**
- * Encapsulate the mean quantities detailed in the "Sampling logistics" section
- * of <tt>writeups/derivation.tex</tt>.
- *
- * Samples of each quantity are made available through a two-dimensional,
- * column-major arrays.  The row index iterates over wall-normal collocation
- * point locations and the column index iterates over tensor indices.  Scalars
- * have only a single tensor index.  Vector quantities have three indices
- * corresponding to the streamwise x, wall-normal y, and spanwise z directions.
- * Symmetric tensors (for example, \f$\overline{\mu{}S}\f$}) have six entries
- * corresponding to the <tt>xx</tt>, <tt>xy</tt>, <tt>xz</tt>, <tt>yy</tt>,
- * <tt>yz</tt>, and <tt>zz</tt> indices.  Rank one triple products (for example
- * \f$\overline{\rho{}u\otimes{}u\otimes{}u}\f$) have ten entries corresponding
- * to the <tt>xxx</tt>, <tt>xxy</tt>, <tt>xxz</tt>, <tt>xyy</tt>, <tt>xyz</tt>,
- * <tt>xzz</tt>, <tt>yyy</tt>, <tt>yyz</tt>, <tt>yzz</tt>, and <tt>zzz</tt>
- * indices.
- *
- * \internal Many memory overhead and implementation consistency issues have
- * been traded for the headache of reading Boost.Preprocessor-based logic.  So
- * it goes.
- */
-class mean
-{
-public:
-
-/**
- * A Boost.Preprocessor sequence of tuples of quantities computed in wave
- * space.
- */
-#define CHANNEL_MEAN_WAVE                                  \
-    ((rho,                      1)) /* scalar           */ \
-    ((rhou,                     3)) /* vector           */ \
-    ((rhoe,                     1)) /* scalar           */
-
-/**
- * A Boost.Preprocessor sequence of tuples of quantities computed in physical
- * space.
- */
-#define CHANNEL_MEAN_PHYSICAL                        \
-    ((mu,                1))  /* scalar           */ \
-    ((nu,                1))  /* scalar           */ \
-    ((u,                 3))  /* vector           */ \
-    ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
-    ((rho_grad_T,        3))  /* vector           */ \
-    ((tau_colon_grad_u,  1))  /* scalar           */ \
-    ((tau,               6))  /* symmetric tensor */ \
-    ((tau_u,             3))  /* vector           */ \
-    ((p_div_u,           1))  /* scalar           */ \
-    ((rho_u_u,           6))  /* symmetric tensor */ \
-    ((rho_u_u_u,        10))  /* symmetric tensor */ \
-    ((rho_T_u,           3))  /* vector           */ \
-    ((rho_mu,            1))  /* scalar           */ \
-    ((mu_S,              6))  /* symmetric tensor */ \
-    ((mu_div_u,          1))  /* scalar           */ \
-    ((mu_grad_T,         3))  /* vector           */
-
-/**
- * A Boost.Preprocessor sequence of tuples of quantities computed
- * through implicit forcing.
- */
-#define CHANNEL_MEAN_IMPLICIT                               \
-    ((f,                        3))  /* vector           */ \
-    ((qb,                       1))  /* scalar           */ \
-    ((f_dot_u,                  1))  /* scalar           */
-
-/** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
-#define CHANNEL_MEAN \
-    CHANNEL_MEAN_WAVE CHANNEL_MEAN_PHYSICAL CHANNEL_MEAN_IMPLICIT
-
-    /* Compile-time totals of the number of scalars sampled at each point */
-    struct nscalars { enum {
-#define EXTRACT(r, data, tuple) BOOST_PP_TUPLE_ELEM(2, 1, tuple)
-#define SUM(s, state, x) BOOST_PP_ADD(state, x)
-
-        wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_WAVE)),
-
-        physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_PHYSICAL)),
-
-        implicit = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_IMPLICIT)),
-
-        total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN))
-
-#undef EXTRACT
-#undef SUM
-    }; };
-
-    /** Simulation time when mean quantities were obtained */
-    real_t t;
-
-    /** Type of the contiguous storage used to house all scalars */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, nscalars::total> storage_type;
-
-    /** Contiguous storage used to house all means */
-    storage_type storage;
-
-    /**
-     * Constructor setting <tt>this->t = NaN</tt>.
-     * Caller will need to resize <tt>this->storage</tt> prior to use.
-     */
-    mean()
-        : t(std::numeric_limits<real_t>::quiet_NaN())
-    {}
-
-    /**
-     * Constructor setting <tt>this->t = t</tt>.
-     * Caller will need to resize <tt>this->storage</tt> prior to use.
-     */
-    explicit mean(real_t t)
-        : t(t)
-    {}
-
-    /**
-     * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
-     * storage containing \c Ny rows.
-     */
-    mean(real_t t, storage_type::Index Ny)
-        : t(t),
-          storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
-    {}
-
-#define OP(r, data, tuple)                                              \
-    BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
-
-    /** Compile-time offsets for each quantity within \c storage */
-    struct start { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SUZERAIN_SHIFTED_SUM(CHANNEL_MEAN)))
-    }; };
-
-    /** Compile-time sizes for each quantity within \c storage */
-    struct size { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,CHANNEL_MEAN))
-    }; };
-
-#undef OP
-
-    // Declare a named, mutable "view" into storage for each quantity
-#define DECLARE(r, data, tuple)                                               \
-    storage_type::NColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
-    BOOST_PP_TUPLE_ELEM(2, 0, tuple)()                                        \
-    {                                                                         \
-        return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(    \
-                start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                     \
-    }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
-#undef DECLARE
-
-    // Declare a named, immutable "view" into storage for each quantity
-#define DECLARE(r, data, tuple)                                                    \
-    storage_type::ConstNColsBlockXpr<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>::Type \
-    BOOST_PP_TUPLE_ELEM(2, 0, tuple)() const                                       \
-    {                                                                              \
-        return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(         \
-                start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                          \
-    }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
-#undef DECLARE
-
-    /**
-     * A foreach operation iterating over all mutable quantities in \c storage.
-     * The functor is invoked as <tt>f(std::string("foo",
-     * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor, especially the \c const_cast
-     * hack details therein.  See <tt>boost::ref</tt> for how to use a stateful
-     * functor.
-     */
-    template <typename BinaryFunction>
-    void foreach(BinaryFunction f) {
-#define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
-    }
-#undef INVOKE
-
-    /**
-     * A foreach operation iterating over all immutable quantities in \c
-     * storage.  The functor is invoked as <tt>f(std::string("foo",
-     * storage_type::NColsBlockXpr<size::foo>::Type))</tt> for a quantity named
-     * "foo".  See Eigen's "Writing Functions Taking Eigen Types as Parameters"
-     * for suggestions on how to write a functor.  See <tt>boost::ref</tt> for
-     * how to use a stateful functor.
-     */
-    template <typename BinaryFunction>
-    void foreach(BinaryFunction f) const {
-#define INVOKE(r, data, tuple) \
-        f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
-          this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
-    }
-#undef INVOKE
-};
-
-/**
- * Using the provided state, sample the mean quantities declared in \ref mean
- * with the notable exceptions of \f$\bar{f}\f$, \f$\overline{\rho{}q_b}\f$,
- * and \f$\overline{f\cdot{}u}\f$.  This is an expensive, collective method
- * producing valid results <em>only on rank zero</em>.
- *
- * @param[in]     scenario Scenario parameters.
- * @param[in]     grid     Grid parameters.
- * @param[in]     dgrid    Pencil decomposition parameters.
- * @param[in,out] b        B-spline basis workspace.
- * @param[in]     bop      B-spline operator workspace.
- * @param[in,out] swave    Destroyed in the computation
- * @param[in]     t        Current simulation time
- *
- * @return Mean quantities as B-spline coefficients.
- */
-mean sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition &scenario,
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop,
-        suzerain::ContiguousState<4,complex_t> &swave,
-        const real_t t);
-
-/** Store a \ref mean instance in a restart file */
-void store(const esio_handle h, const mean& m);
-
-/**
- * Load a \ref mean instance from a restart file.  Statistics not present in
- * the restart file are considered to be all NaNs.  On utter failure,
- * <tt>m.t</tt> will be NaN as well.
- */
-void load(const esio_handle h, mean& m);
-
 } // end namespace support
 
 } // end namespace suzerain
 
-#endif // SUPPORT_HPP
+#endif // SUZERAIN_SUPPORT_HPP

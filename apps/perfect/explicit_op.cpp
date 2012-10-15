@@ -27,7 +27,6 @@
 #include <suzerain/config.h>
 #endif
 
-#include "nonlinear.hpp"
 #include "explicit_op.hpp"
 
 #include <suzerain/common.hpp>
@@ -35,9 +34,11 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/state.hpp>
 
+#include "nonlinear.hpp"
+
 #pragma warning(disable:383 1572)
 
-namespace suzerain { namespace support {
+namespace suzerain { namespace perfect {
 
 BsplineMassOperator::BsplineMassOperator(
         const suzerain::problem::GridDefinition &grid,
@@ -230,7 +231,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return support::applyNonlinearOperator<true,  support::linearize::none>
+        return perfect::applyNonlinearOperator<true,  perfect::linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -239,7 +240,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return support::applyNonlinearOperator<false, support::linearize::none>
+        return perfect::applyNonlinearOperator<false, perfect::linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -250,4 +251,4 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     }
 }
 
-} /* namespace support */ } /* namespace suzerain */
+} /* namespace perfect */ } /* namespace suzerain */

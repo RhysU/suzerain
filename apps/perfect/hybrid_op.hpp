@@ -33,13 +33,11 @@
 #include <suzerain/scenario_definition.hpp>
 #include <suzerain/state_fwd.hpp>
 
-#include "../support.hpp"
-
 #include "nonlinear_fwd.hpp"
 
 #pragma warning(disable:383 1572)
 
-namespace suzerain { namespace support {
+namespace suzerain { namespace perfect {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -135,7 +133,7 @@ private:
 /**
  * A boundary-condition agnostic, hybrid explicit Navier&ndash;Stokes operator.
  *
- * @see support::applyNonlinearOperator for the guts of the implementation.
+ * @see perfect::applyNonlinearOperator for the guts of the implementation.
  */
 class HybridNonlinearOperator
     : public suzerain::OperatorBase,
@@ -157,7 +155,7 @@ public:
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common,
             const boost::shared_ptr<
-                  const support::manufactured_solution>& msoln)
+                  const perfect::manufactured_solution>& msoln)
         : suzerain::OperatorBase(grid, dgrid, b, bop),
           scenario(scenario),
           common(common),
@@ -180,7 +178,7 @@ protected:
     OperatorCommonBlock &common;
 
     /** Holds optional manufactured solution forcing details */
-    const boost::shared_ptr<const support::manufactured_solution> msoln;
+    const boost::shared_ptr<const perfect::manufactured_solution> msoln;
 
 private:
 
@@ -190,6 +188,6 @@ private:
 
 };
 
-} /* namespace support */ } /* namespace suzerain */
+} /* namespace perfect */ } /* namespace suzerain */
 
 #endif  /* HYBRID_OP_HPP */

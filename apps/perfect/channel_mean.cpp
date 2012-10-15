@@ -39,6 +39,7 @@
 
 #include "../logging.hpp"
 #include "../support.hpp"
+#include "perfect.hpp"
 
 // Introduce shorthand for common names
 using boost::make_shared;
@@ -52,6 +53,7 @@ using suzerain::problem::GridDefinition;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::TimeDefinition;
 using suzerain::real_t;
+namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
 // Provided by channel_mean_svnrev.{c,h} to speed recompilation
@@ -595,7 +597,7 @@ int main(int argc, char **argv)
             esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
-            support::store(h.get(), (*scenario));
+            perfect::store(h.get(), *scenario);
             support::store(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
@@ -701,7 +703,7 @@ static quantity::storage_map_type process(
     shared_ptr<suzerain::bspline> b;
     shared_ptr<suzerain::bsplineop> bop;
     support::load_time(h.get(), time);
-    support::load(h.get(), scenario);
+    perfect::load(h.get(), scenario);
     support::load(h.get(), grid);
     support::load(h.get(), timedef);
     support::load(h.get(), b, bop);
@@ -718,8 +720,8 @@ static quantity::storage_map_type process(
     boplu->factor_mass(*bop.get());
 
     // Load samples as coefficients
-    auto_ptr<support::mean> m(new support::mean(time, b->n()));
-    support::load(h.get(), *m.get());
+    auto_ptr<perfect::mean> m(new perfect::mean(time, b->n()));
+    perfect::load(h.get(), *m.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {

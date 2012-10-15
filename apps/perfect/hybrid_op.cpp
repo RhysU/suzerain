@@ -57,7 +57,7 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
-namespace suzerain { namespace support {
+namespace suzerain { namespace perfect {
 
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
@@ -724,7 +724,7 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return support::applyNonlinearOperator<true,  support::linearize::rhome>
+        return perfect::applyNonlinearOperator<true,  perfect::linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -733,7 +733,7 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return support::applyNonlinearOperator<false, support::linearize::rhome>
+        return perfect::applyNonlinearOperator<false, perfect::linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -744,4 +744,4 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
     }
 }
 
-} /* namespace support */ } /* namespace suzerain */
+} /* namespace perfect */ } /* namespace suzerain */

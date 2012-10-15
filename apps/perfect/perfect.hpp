@@ -20,11 +20,11 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// support.hpp: Support logic spanning potentially many applications
+// perfect.hpp: Support logic for the Suzerain perfect gas application
 // $Id$
 
-#ifndef SUPPORT_HPP
-#define SUPPORT_HPP
+#ifndef SUZERAIN_PERFECT_HPP
+#define SUZERAIN_PERFECT_HPP
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -52,92 +52,9 @@
 namespace suzerain {
 
 /**
- * Contains cross-cutting functionality used within various Suzerain
- * applications.
+ * Functionality used throughout the Suzerain perfect gas application.
  */
-namespace support {
-
-/**
- * Default log4cxx configuration to use when none found in environment.
- * Appends output to the console and to a file.
- */
-extern const char log4cxx_config[];
-
-/**
- * A log4cxx configuration similar to channel::log4cxx_config for use by
- * console-only applications where file logging is unnecessary.
- */
-extern const char log4cxx_config_console[];
-
-/** Contains basic details about the scalar state fields employed */
-namespace field {
-
-/** Contains state variable indices within state storage */
-namespace ndx {
-
-// Anonymous enum to declare our state variable storage indices.
-// Update count just below if you modify this enum!
-enum {
-    rho,  /**< Nondimensional density              \f$      \rho   \f$ */
-    mx,   /**< Nondimensional streamwise momentum  \f$m_x = \rho{}u\f$ */
-    my,   /**< Nondimensional wall-normal momentum \f$m_y = \rho{}v\f$ */
-    mz,   /**< Nondimensional spanwise momentum    \f$m_z = \rho{}w\f$ */
-    e     /**< Nondimensional total energy         \f$e   = \rho{}E\f$ */
-};
-
-} // end namespace ndx;
-
-/** Contains the number of distinct state variables we track */
-const std::size_t count = static_cast<std::size_t>(ndx::e) + 1;
-
-/** Field names as stored in restart files */
-extern const boost::array<const char *, count> name;
-
-/** Field descriptions as stored in restart files */
-extern const boost::array<const char *, count> description;
-
-} // end namespace field
-
-/** Manufactured solution employed throughout the channel code */
-typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
-
-/** Log-and-abort handler for errors originating in the GSL */
-void mpi_abort_on_error_handler_gsl(const char * reason,
-                                    const char * file,
-                                    int line,
-                                    int error_code);
-
-/** Log-and-abort handler for errors originating in Suzerain */
-void mpi_abort_on_error_handler_suzerain(const char * reason,
-                                         const char * file,
-                                         int line,
-                                         int error_code);
-
-/** Log-and-abort handler for errors originating in ESIO */
-void mpi_abort_on_error_handler_esio(const char * reason,
-                                     const char * file,
-                                     int line,
-                                     int error_code);
-
-/** Log-and-abort handler for errors originating in underling */
-void mpi_abort_on_error_handler_underling(const char * reason,
-                                          const char * file,
-                                          int line,
-                                          int error_code);
-
-/** Common logic for all error handlers */
-void mpi_abort_on_error_handler(const char * reason,
-                                const char * file,
-                                int line,
-                                int error_code,
-                                const char * origin,
-                                const char * strerror);
-
-/** If wisdom_file is not empty, read wisdom on rank zero and broadcast */
-void wisdom_broadcast(const std::string& wisdom_file);
-
-/** If wisdom_file is not empty, gather wisdom to rank zero and write it */
-void wisdom_gather(const std::string& wisdom_file);
+namespace perfect {
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
@@ -147,21 +64,8 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           suzerain::problem::ScenarioDefinition& scenario);
 
-/** Store a GridDefinition in a restart file */
-void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid);
-
-/** Load a GridDefinition from a restart file */
-void load(const esio_handle h,
-          suzerain::problem::GridDefinition& grid);
-
-/** Store a TimeDefinition in a restart file */
-void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition& timedef);
-
-/** Load a TimeDefinition from a restart file */
-void load(const esio_handle h,
-          suzerain::problem::TimeDefinition& timedef);
+/** Manufactured solution employed throughout the channel code */
+typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
 
 /**
  * Store manufactured solution parameters in a restart file.
@@ -184,88 +88,6 @@ void load(const esio_handle h,
           boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
- * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
- * @return the absolute error in reproducing prescribed abscissae.
- */
-real_t create(const int ndof,
-              const int k,
-              const double left,
-              const double right,
-              const double htdelta,
-              boost::shared_ptr<suzerain::bspline>& b,
-              boost::shared_ptr<suzerain::bsplineop>& bop);
-
-/**
- * Compute the "distance" between two B-spline bases.  Distance is "huge" if
- * any of the order, number of degrees of freedom, or number of knots differ.
- * When all those criteria match the distance becomes the maximum absolute
- * difference between the knot vectors.
- */
-real_t distance(const suzerain::bspline& a,
-                const suzerain::bspline& b);
-
-/**
- * Common constant used to define distinct B-spline bases per
- * bspline_bases_distance() in the presence of floating point error.
- */
-extern const real_t bsplines_distinct_distance;
-
-/** Store a suzerain::bspline workspace in a restart file */
-void store(const esio_handle h,
-           const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop,
-           const boost::shared_ptr<suzerain::bsplineop>& gop);
-
-/**
- * Load a suzerain::bspline workspace from a restart file.
- * @return the absolute error in reproducing prescribed abscissae.
- */
-real_t load(const esio_handle h,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop);
-
-/** Store the current simulation time information */
-void store_time(const esio_handle h,
-                real_t time);
-
-/** Load the current simulation time information */
-void load_time(const esio_handle h,
-               real_t &time);
-
-/**
- * Forward declaration to allocate state padded for transformation to/from
- * physical space.  Accounts for parallel decomposition details.  Emphatically
- * \em NOT thread safe.  The caller is responsible for <tt>delete</tt>-ing the
- * returned pointer.  No guarantees are made about the memory contents.
- */
-template<class StateType>
-StateType* allocate_padded_state(
-           const std::size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid);
-
-/**
- * Specialization of allocate_padded_state for ContiguousState.  Emphatically
- * \em NOT thread safe.  The caller is responsible for <tt>delete</tt>-ing the
- * returned pointer.  No guarantees are made about the memory contents.
- */
-template<>
-suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
-           const std::size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid);
-
-/**
- * Store the current simulation conserved state as expansion coefficients into
- * an open restart file.   Only non-dealiased, conserved state is saved as
- * "wave space" coefficients.  This is the most efficient and flexible way to
- * save state to disk.
- */
-void store_coefficients(
-        const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid);
-
-/**
  * Store the current simulation primitive state as collocation point values
  * into an open restart file.  Note that <tt>state</tt>'s contents are
  * destroyed.  Collocation point values required only for dealiasing purposes
@@ -281,18 +103,6 @@ void store_collocation_values(
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
         const suzerain::bsplineop& bop);
-
-/**
- * Load the current simulation state from an open coefficient-based restart
- * file.  Handles the non-trivial task of adjusting the restart to match the
- * provided \c grid, \c dgrid, \c b, and \c bop.
- */
-void load_coefficients(const esio_handle h,
-                       suzerain::ContiguousState<4,complex_t> &state,
-                       const suzerain::problem::GridDefinition& grid,
-                       const suzerain::pencil_grid& dgrid,
-                       const suzerain::bspline& b,
-                       const suzerain::bsplineop& bop);
 
 /**
  * Load the current simulation state from an open collocation point value
@@ -391,102 +201,6 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline &b,
           const suzerain::bsplineop& bop);
-
-/** Read a complex-valued field via ESIO */
-template< typename I >
-inline
-void complex_field_read(esio_handle h, const char *name, complex_t *field,
-                        I cstride = 0, I bstride = 0, I astride = 0)
-{
-    esio_field_readv(h, name, reinterpret_cast<real_t *>(field),
-                     2*boost::numeric_cast<int>(cstride),
-                     2*boost::numeric_cast<int>(bstride),
-                     2*boost::numeric_cast<int>(astride),
-                     2);
-}
-
-/** Read a complex-valued field via ESIO */
-inline
-void complex_field_read(esio_handle h, const char *name, complex_t *field)
-{
-    // When no strides are provided, we must specify the stride type.
-    return complex_field_read<int>(h, name, field);
-}
-
-/** Write a complex-valued field via ESIO */
-template< typename I >
-inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field,
-                         I cstride = 0, I bstride = 0, I astride = 0,
-                         const char * comment = 0)
-{
-    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
-                      2*boost::numeric_cast<int>(cstride),
-                      2*boost::numeric_cast<int>(bstride),
-                      2*boost::numeric_cast<int>(astride),
-                      2, comment);
-}
-
-/** Write a complex-valued field via ESIO */
-inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field)
-{
-    // When no strides are provided, we must specify the stride type.
-    return complex_field_write<int>(h, name, field);
-}
-
-/**
- * A template typedef for how to view multiple state fields in physical space,
- * Including a convenient method for constructing such an instance.  The
- * optional first template parameter may be specified to provide a number of
- * fields known at compile time.
- */
-template <int NFields = Eigen::Dynamic>
-struct physical_view {
-
-    BOOST_STATIC_ASSERT(NFields == Eigen::Dynamic || NFields >= 0);
-
-    /**
-     * In physical space, we'll employ a view to reshape the 4D row-major (F,
-     * Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where we
-     * know F a priori.  Reducing the dimensionality encourages linear access
-     * and eases indexing overhead.
-     */
-    typedef Eigen::Map<
-                Eigen::Array<real_t, NFields, Eigen::Dynamic, Eigen::RowMajor>,
-                Eigen::Unaligned, // FIXME Defensive but likely unnecessary
-                Eigen::OuterStride<Eigen::Dynamic>
-            > type;
-
-    /**
-     * Create a view instance given state storage and sufficient information
-     * about the parallel decomposition.  The default value of \c nfields may
-     * only be used when the template parameter \c NFields was not
-     * Eigen::Dynamic.
-     */
-    static inline type create(
-            const suzerain::pencil_grid &dgrid,
-            suzerain::ContiguousState<4,complex_t> &state,
-            const int nfields = NFields)
-    {
-        if (NFields == Eigen::Dynamic || NFields == nfields) {
-            using Eigen::OuterStride;
-            type retval(reinterpret_cast<real_t *>(state.origin()),
-                        nfields,                            // F
-                        dgrid.local_physical_extent.prod(), // Y*Z*X
-                        OuterStride<>(  state.strides()[0]
-                                     * sizeof(complex_t)/sizeof(real_t)));
-
-            return retval;
-        }
-
-        throw std::invalid_argument(
-                "NFields, nfields mismatch in physical_view::create");
-    }
-
-};
 
 /**
  * Accumulate the result of adding \c alpha times the manufactured solution \c
@@ -740,8 +454,8 @@ void store(const esio_handle h, const mean& m);
  */
 void load(const esio_handle h, mean& m);
 
-} // end namespace support
+} // end namespace perfect
 
 } // end namespace suzerain
 
-#endif // SUPPORT_HPP
+#endif // SUZERAIN_PERFECT_HPP

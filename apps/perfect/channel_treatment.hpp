@@ -35,7 +35,9 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 
-namespace suzerain { namespace support {
+#include "perfect.hpp"
+
+namespace suzerain { namespace perfect {
 
 /**
  * A mixin providing channel problem treatment atop any
@@ -295,6 +297,6 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-} /* namespace support */ } /* namespace suzerain */
+} /* namespace perfect */ } /* namespace suzerain */
 
 #endif /* CHANNEL_TREATMENT_HPP */

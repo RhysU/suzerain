@@ -20,7 +20,7 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// support.cpp: Support logic spanning potentially many applications
+// perfect.cpp: Support logic for the Suzerain perfect gas application
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -46,8 +46,9 @@
 #include <suzerain/validation.hpp>
 #include <sys/file.h>
 
-#include "logging.hpp"
-#include "support.hpp"
+#include "perfect.hpp"
+#include "../logging.hpp"
+#include "../support.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
@@ -55,176 +56,7 @@ template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
 using boost::numeric_cast;
 using std::size_t;
 
-namespace suzerain {
-
-namespace support {
-
-// Common configuration snippet used in multiple places just below.
-// See "Configuration" at http://logging.apache.org/log4cxx/index.html
-#define COMMON_CONSOLE_CONFIG                                               \
-    "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender\n"             \
-    "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout\n"        \
-    "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
-
-const char log4cxx_config_console[] =
-    "log4j.rootLogger=INFO, CONSOLE\n"
-    COMMON_CONSOLE_CONFIG;
-
-const char log4cxx_config[] =
-    "log4j.rootLogger=INFO, CONSOLE, LOG\n"
-    COMMON_CONSOLE_CONFIG
-    "log4j.appender.LOG=org.apache.log4j.FileAppender\n"
-    "log4j.appender.LOG.append=true\n"
-    "log4j.appender.LOG.filename=log.dat\n"
-    "log4j.appender.LOG.layout=${log4j.appender.CONSOLE.layout}\n"
-    "log4j.appender.LOG.layout.ConversionPattern=${log4j.appender.CONSOLE.layout.ConversionPattern}\n"
-;
-
-#undef COMMON_CONSOLE_CONFIG
-
-const boost::array<const char *,field::count> field::name = {{
-    "rho", "rhou", "rhov", "rhow", "rhoe"
-}};
-
-const boost::array<const char *,field::count> field::description = {{
-    "density",
-    "streamwise momentum", "wall-normal momentum", "spanwise momentum",
-    "total energy",
-}};
-
-const real_t bsplines_distinct_distance
-    = 3*std::numeric_limits<real_t>::epsilon();
-
-void mpi_abort_on_error_handler_gsl(const char * reason,
-                                    const char * file,
-                                    int line,
-                                    int error_code)
-{
-    return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "GSL", gsl_strerror(error_code));
-}
-
-void mpi_abort_on_error_handler_suzerain(const char * reason,
-                                         const char * file,
-                                         int line,
-                                         int error_code)
-{
-    return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "Suzerain", suzerain_strerror(error_code));
-}
-
-void mpi_abort_on_error_handler_esio(const char * reason,
-                                     const char * file,
-                                     int line,
-                                     int error_code)
-{
-    return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "ESIO", esio_strerror(error_code));
-}
-
-#ifdef HAVE_UNDERLING
-void mpi_abort_on_error_handler_underling(const char * reason,
-                                          const char * file,
-                                          int line,
-                                          int error_code)
-{
-    return mpi_abort_on_error_handler(reason, file, line,
-            error_code, "underling", underling_strerror(error_code));
-}
-#endif
-
-void mpi_abort_on_error_handler(const char * reason,
-                                const char * file,
-                                int line,
-                                int error_code,
-                                const char * origin,
-                                const char * strerror)
-{
-    FATAL((origin ? origin : "NULLORIGIN")
-          << " reports '"
-          << (reason ? reason : "NULLREASON")
-          << "' as code #"
-          << error_code
-          << " ('"
-          << (strerror ? strerror : "NULLSTRERROR")
-          << "') from "
-          << (file ? file : "NULLFILE")
-          << ':'
-          << line);
-    MPI_Abort(MPI_COMM_WORLD, errno ? errno : EXIT_FAILURE);
-}
-
-void wisdom_broadcast(const std::string& wisdom_file)
-{
-    if (wisdom_file.empty()) return; // Short circuit if no path provided
-
-    // Only load wisdom from disk if FFTW MPI is available via underling.
-    // Otherwise every rank hits the filesystem which is an O(N) bottleneck
-    // versus a fixed O(1) planning cost on each rank.
-#ifdef HAVE_UNDERLING
-
-    // If available, load wisdom from disk on rank 0 and broadcast it
-    // Attempt advisory locking to reduce processes stepping on each other
-    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-
-        // Import any system-wide wisdom available
-        fftw_import_system_wisdom();
-
-        FILE *w = fopen(wisdom_file.c_str(), "r");
-        if (w) {
-            INFO0("Loading wisdom from file " << wisdom_file);
-            if (flock(fileno(w), LOCK_SH)) {
-                WARN0("LOCK_SH failed on wisdom file "
-                      << wisdom_file << ": " << strerror(errno));
-            }
-            fftw_import_wisdom_from_file(w);
-            if (flock(fileno(w), LOCK_UN)) {
-                WARN0("LOCK_UN failed on wisdom file "
-                      << wisdom_file << ": " << strerror(errno));
-            }
-            fclose(w);
-        } else {
-            WARN0("Unable to open wisdom file "
-                  << wisdom_file << ": " << strerror(errno));
-        }
-    }
-    fftw_mpi_broadcast_wisdom(MPI_COMM_WORLD);
-
-#endif /* HAVE_UNDERLING */
-}
-
-void wisdom_gather(const std::string& wisdom_file)
-{
-    if (wisdom_file.empty()) return; // Short circuit if no path provided
-
-    // Only save wisdom to disk if FFTW MPI is available via underling.
-#ifdef HAVE_UNDERLING
-
-    // If available, gather wisdom and then write to disk on rank 0
-    // Attempt advisory locking to reduce processes stepping on each other
-    fftw_mpi_gather_wisdom(MPI_COMM_WORLD);
-    if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        FILE *w = fopen(wisdom_file.c_str(), "w+");
-        if (w) {
-            INFO0("Saving wisdom to file " << wisdom_file);
-            if (flock(fileno(w), LOCK_EX)) {
-                WARN0("LOCK_EX failed on wisdom file "
-                      << wisdom_file << ": " << strerror(errno));
-            }
-            fftw_export_wisdom_to_file(w);
-            if (flock(fileno(w), LOCK_UN)) {
-                WARN0("LOCK_UN failed on wisdom file "
-                      << wisdom_file << ": " << strerror(errno));
-            }
-            fclose(w);
-        } else {
-            WARN0("Unable to open wisdom file "
-                  << wisdom_file << ": " << strerror(errno));
-        }
-    }
-
-#endif /* HAVE_UNDERLING */
-}
+namespace suzerain { namespace perfect {
 
 void store(const esio_handle h,
            const suzerain::problem::ScenarioDefinition& scenario)
@@ -315,209 +147,6 @@ void load(const esio_handle h,
         INFO0("Overriding scenario using gamma = " << scenario.gamma);
     } else {
         esio_line_read(h, "gamma", &scenario.gamma, 0);
-    }
-}
-
-void store(const esio_handle h,
-           const suzerain::problem::GridDefinition& grid)
-{
-    // Only root writes data
-    int procid;
-    esio_handle_comm_rank(h, &procid);
-
-    DEBUG0("Storing GridDefinition parameters");
-
-    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-
-    esio_line_write(h, "Lx", &grid.L.x(), 0,
-            grid.options().find("Lx",false).description().c_str());
-
-    esio_line_write(h, "Nx", &grid.N.x(), 0,
-            grid.options().find("Nx",false).description().c_str());
-
-    esio_line_write(h, "DAFx", &grid.DAF.x(), 0,
-            grid.options().find("DAFx",false).description().c_str());
-
-    esio_line_write(h, "Ly", &grid.L.y(), 0,
-            grid.options().find("Ly",false).description().c_str());
-
-    esio_line_write(h, "Ny", &grid.N.y(), 0,
-            grid.options().find("Ny",false).description().c_str());
-
-    esio_line_write(h, "k", &grid.k, 0,
-            grid.options().find("k",false).description().c_str());
-
-    esio_line_write(h, "htdelta", &grid.htdelta, 0,
-            grid.options().find("htdelta",false).description().c_str());
-
-    esio_line_write(h, "Lz", &grid.L.z(), 0,
-            grid.options().find("Lz",false).description().c_str());
-
-    esio_line_write(h, "Nz", &grid.N.z(), 0,
-            grid.options().find("Nz",false).description().c_str());
-
-    esio_line_write(h, "DAFz", &grid.DAF.z(), 0,
-            grid.options().find("DAFz",false).description().c_str());
-
-    DEBUG0("Storing wavenumber vectors for Fourier bases");
-    ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
-
-    // Obtain wavenumbers via computing 1*(i*kx)/i
-    cbuf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
-            grid.L.x(), grid.L.z(),
-            1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
-    esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
-    esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
-            2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
-
-    // Obtain wavenumbers via computing 1*(i*kz)/i
-    cbuf.fill(complex_t(1,0));
-    suzerain::diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
-            grid.L.x(), grid.L.z(),
-            1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
-    esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
-    esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
-            2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
-
-    DEBUG0("Storing collocation point vectors for Fourier bases");
-    ArrayXr rbuf;
-
-    // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
-    if (grid.dN.x() > 1) {
-        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
-                                  grid.dN.x(), 0, grid.dN.x() - 1);
-        rbuf *= grid.L.x() / grid.dN.x();
-        rbuf -= grid.L.x() / 2;
-    } else {
-        rbuf = ArrayXr::Constant(grid.dN.x(), 0);
-    }
-    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
-    esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
-            "Collocation points for the dealiased, streamwise X direction");
-
-    // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
-    if (grid.dN.z() > 1) {
-        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
-                                  grid.dN.z(), 0, grid.dN.z() - 1);
-        rbuf *= grid.L.z() / grid.dN.z();
-        rbuf -= grid.L.z() / 2;
-    } else {
-        rbuf = ArrayXr::Constant(grid.dN.z(), 0);
-    }
-    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
-    esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
-            "Collocation points for the dealiased, spanwise Z direction");
-}
-
-void load(const esio_handle h,
-          suzerain::problem::GridDefinition& grid)
-{
-    DEBUG0("Loading GridDefinition parameters");
-
-    esio_line_establish(h, 1, 0, 1); // All ranks load
-
-    if (!(boost::math::isnan)(grid.L.x())) {
-        INFO0("Overriding grid using Lx = " << grid.L.x());
-    } else {
-        esio_line_read(h, "Lx", &grid.L.x(), 0);
-    }
-
-    if (grid.N.x()) {
-        INFO0("Overriding grid using Nx = " << grid.N.x());
-    } else {
-        int value;
-        esio_line_read(h, "Nx", &value, 0);
-        grid.Nx(value);
-    }
-
-    if (!((boost::math::isnan)(grid.DAF.x()))) {
-        INFO0("Overriding grid using DAFx = " << grid.DAF.x());
-    } else {
-        double factor;
-        esio_line_read(h, "DAFx", &factor, 0);
-        grid.DAFx(factor);
-    }
-
-    if (!(boost::math::isnan)(grid.L.y())) {
-        INFO0("Overriding grid using Ly = " << grid.L.y());
-    } else {
-        esio_line_read(h, "Ly", &grid.L.y(), 0);
-    }
-
-    if (grid.N.y()) {
-        INFO0("Overriding grid using Ny = " << grid.N.y());
-    } else {
-        int value;
-        esio_line_read(h, "Ny", &value, 0);
-        grid.Ny(value);
-    }
-
-    if (grid.k) {
-        INFO0("Overriding grid using k = " << grid.k);
-    } else {
-        esio_line_read(h, "k", &grid.k, 0);
-    }
-
-    if (!((boost::math::isnan)(grid.htdelta))) {
-        INFO0("Overriding grid using htdelta = " << grid.htdelta);
-    } else {
-        esio_line_read(h, "htdelta", &grid.htdelta, 0);
-    }
-
-    if (!(boost::math::isnan)(grid.L.z())) {
-        INFO0("Overriding grid using Lz = " << grid.L.z());
-    } else {
-        esio_line_read(h, "Lz", &grid.L.z(), 0);
-    }
-
-    if (grid.N.z()) {
-        INFO0("Overriding grid using Nz = " << grid.N.z());
-    } else {
-        int value;
-        esio_line_read(h, "Nz", &value, 0);
-        grid.Nz(value);
-    }
-
-    if (!((boost::math::isnan)(grid.DAF.z()))) {
-        INFO0("Overriding grid using DAFz = " << grid.DAF.z());
-    } else {
-        double factor;
-        esio_line_read(h, "DAFz", &factor, 0);
-        grid.DAFz(factor);
-    }
-}
-
-void store(const esio_handle h,
-           const suzerain::problem::TimeDefinition& timedef)
-{
-    DEBUG0("Storing TimeDefinition parameters");
-
-    // Only root writes data
-    int procid;
-    esio_handle_comm_rank(h, &procid);
-
-    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-
-    esio_line_write(h, "evmagfactor", &timedef.evmagfactor, 0,
-            timedef.options().find("evmagfactor",false).description().c_str());
-}
-
-void load(const esio_handle h,
-          suzerain::problem::TimeDefinition& timedef)
-{
-    DEBUG0("Loading TimeDefinition parameters");
-
-    esio_line_establish(h, 1, 0, 1); // All ranks load
-
-    // evmagfactor not present in pre-revision 24043 restart files
-    if (!(boost::math::isnan)(timedef.evmagfactor)) {
-        INFO0("Overriding timedef using evmagfactor = " << timedef.evmagfactor);
-    } else if (ESIO_NOTFOUND == esio_line_size(h, "evmagfactor", NULL)) {
-        timedef.evmagfactor = 0.72;
-        INFO0("Employing default evmagfactor = " << timedef.evmagfactor);
-    } else {
-        esio_line_read(h, "evmagfactor", &timedef.evmagfactor, 0);
     }
 }
 
@@ -644,581 +273,6 @@ void load(const esio_handle h,
     msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
 }
 
-real_t create(const int ndof,
-              const int k,
-              const double left,
-              const double right,
-              const double htdelta,
-              boost::shared_ptr<suzerain::bspline>& b,
-              boost::shared_ptr<suzerain::bsplineop>& bop)
-{
-    INFO0("Creating B-spline basis of order " << k
-          << " on [" << left << ", " << right << "] with "
-          << ndof << " DOF stretched per htdelta " << htdelta);
-
-////FIXME: Knot vectors are non-increasing for moderate htdelta
-/// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
-////// Compute collocation point locations using ndof and htdelta
-////Eigen::ArrayXd abscissae(ndof);
-////suzerain::math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
-////for (int i = 0; i < abscissae.size(); ++i) {
-////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
-////}
-////abscissae = (right - left) * abscissae + left;
-////
-////// Generate the B-spline workspace based on order and abscissae
-////// Maximum non-trivial derivative operators included
-////double abserr;
-////b = boost::make_shared<suzerain::bspline>(
-////        k, suzerain::bspline::from_abscissae(),
-////        abscissae.size(), abscissae.data(), &abserr);
-////assert(b->n() == ndof);
-////bop.reset(new suzerain::bsplineop(
-////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-////assert(bop->n() == ndof);
-////
-////INFO0("Created B-spline basis has Greville abscissae abserr of " << abserr);
-////
-////return abserr;
-
-    // Compute breakpoint point locations using ndof and htdelta
-    Eigen::ArrayXd breakpoints(ndof - k + 2);
-    suzerain::math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
-    for (int i = 0; i < breakpoints.size(); ++i) {
-        breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
-    }
-    breakpoints = (right - left) * breakpoints + left;
-
-    // Generate the B-spline workspace based on order and breakpoints
-    // Maximum non-trivial derivative operators included
-    b = boost::make_shared<suzerain::bspline>(
-            k, suzerain::bspline::from_breakpoints(),
-            breakpoints.size(), breakpoints.data());
-    assert(b->n() == ndof);
-    bop.reset(new suzerain::bsplineop(
-                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-    assert(bop->n() == ndof);
-
-    return 0;
-}
-
-void store(const esio_handle h,
-           const boost::shared_ptr<suzerain::bspline>& b,
-           const boost::shared_ptr<suzerain::bsplineop>& bop,
-           const boost::shared_ptr<suzerain::bsplineop>& gop)
-{
-    // Ensure we were handed the appropriate discrete operators
-    assert(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
-    assert(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
-
-    // Only root writes data
-    int procid;
-    esio_handle_comm_rank(h, &procid);
-
-    DEBUG0("Storing B-spline knot details");
-
-    Eigen::ArrayXd buf(b->nknot());
-
-    for (int i = 0; i < b->nknot(); ++i) buf[i] = b->knot(i);
-    esio_line_establish(h, b->nknot(), 0, (procid == 0 ? b->nknot() : 0));
-    esio_line_write(h, "knots", buf.data(), 0,
-            "Knots used to build B-spline basis");
-
-    for (int i = 0; i < b->nbreak(); ++i) buf[i] = b->breakpoint(i);
-    esio_line_establish(h, b->nbreak(), 0, (procid == 0 ? b->nbreak() : 0));
-    esio_line_write(h, "breakpoints_y", buf.data(), 0,
-            "Breakpoint locations used to build wall-normal B-spline basis");
-
-    for (int i = 0; i < b->n(); ++i) buf[i] = b->collocation_point(i);
-    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
-    esio_line_write(h, "collocation_points_y", buf.data(), 0,
-            "Collocation points used to build wall-normal discrete operators");
-
-    b->integration_coefficients(0, buf.data());
-    esio_line_establish(h, b->n(), 0, (procid == 0 ? b->n() : 0));
-    esio_line_write(h, "integration_weights", buf.data(), 0,
-            "Integrate by dotting B-spline coefficients against weights");
-
-    char name[8]      = {};
-    char comment[127] = {};
-
-    for (int k = 0; k <= bop->nderiv(); ++k) {
-        snprintf(name, sizeof(name), "Dy%dT", k);
-        snprintf(comment, sizeof(comment),
-                "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
-                " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = bop->ku(k) + 1 + bop->kl(k);
-        esio_plane_establish(h,
-                bop->n(), 0, (procid == 0 ? bop->n() : 0),
-                lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, bop->D_T(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", bop->kl(k));
-        esio_attribute_write(h, name, "ku", bop->ku(k));
-        esio_attribute_write(h, name, "m",  bop->n());
-        esio_attribute_write(h, name, "n",  bop->n());
-    }
-
-    DEBUG0("Storing B-spline Galerkin L2 derivative operators");
-
-    for (int k = 0; k <= gop->nderiv(); ++k) {
-        snprintf(name, sizeof(name), "Gy%dT", k);
-        snprintf(comment, sizeof(comment),
-                "Wall-normal Galerkin L2 trans(Gy%d(i,j)) = G%dT[j,ku+i-j] for"
-                " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = gop->ku(k) + 1 + gop->kl(k);
-        esio_plane_establish(h,
-                gop->n(), 0, (procid == 0 ? gop->n() : 0),
-                lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, gop->D_T(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", gop->kl(k));
-        esio_attribute_write(h, name, "ku", gop->ku(k));
-        esio_attribute_write(h, name, "m",  gop->n());
-        esio_attribute_write(h, name, "n",  gop->n());
-    }
-}
-
-// Read an ESIO linev of data into line from the first possible named location.
-// Argument "first" is mutated to return the successful location name.
-// No suitable location may be detected by checking if first == last on return.
-template<typename ForwardIterator>
-static void load_linev(const esio_handle h, ArrayXr &line,
-                       ForwardIterator& first, const ForwardIterator& last)
-{
-    for ( ; first != last; ++first ) {
-        int length;
-        int ncomponents;
-        if (ESIO_SUCCESS == esio_line_sizev(h, *first, &length, &ncomponents)) {
-            line.resize(length, ncomponents);
-            esio_line_establish(h, length, 0, length);
-            esio_line_readv(h, *first, line.data(), 0);
-            return;
-        }
-    }
-}
-
-// Read an ESIO line of data into line from the first possible named location.
-// Argument "first" is mutated to return the successful location name.
-// No suitable location may be detected by checking if first == last on return.
-template<typename ForwardIterator>
-static void load_line(const esio_handle h, ArrayXr &line,
-                      ForwardIterator& first, const ForwardIterator& last)
-{
-    for ( ; first != last; ++first ) {
-        int length;
-        if (ESIO_SUCCESS == esio_line_size(h, *first, &length)) {
-            line.resize(length);
-            esio_line_establish(h, length, 0, length);
-            esio_line_read(h, *first, line.data(), 0);
-            return;
-        }
-    }
-}
-
-real_t load(const esio_handle h,
-            boost::shared_ptr<suzerain::bspline>& b,
-            boost::shared_ptr<suzerain::bsplineop>& bop)
-{
-    using std::abs;
-    using std::max;
-
-    real_t abserr = std::numeric_limits<real_t>::quiet_NaN();
-
-    DEBUG0("Loading B-spline workspaces based on restart contents");
-
-    // All ranks load B-spline order
-    int k;
-    esio_line_establish(h, 1, 0, 1);
-    esio_line_read(h, "k", &k, 0);
-
-    // htdelta is ignored
-
-    // knots are ignored
-
-    // All ranks load B-spline breakpoints (as best effort attempt)
-    ArrayXr breakpoints;
-    boost::array<const char *,2> breakpoints_locs = {{
-        "breakpoints_y", "breakpoints"
-    }};
-    const char **breakpoints_loc = breakpoints_locs.begin();
-    load_line(h, breakpoints, breakpoints_loc, breakpoints_locs.end());
-    const bool breakpoints_found = (breakpoints_loc != breakpoints_locs.end());
-
-    // All ranks load B-spline collocation points (as best effort attempt)
-    ArrayXr colpoints;
-    boost::array<const char *,2> colpoints_locs = {{
-        "collocation_points_y", "collocation_points"
-    }};
-    const char **colpoints_loc = colpoints_locs.begin();
-    load_line(h, colpoints, colpoints_loc, colpoints_locs.end());
-    const bool colpoints_found = (colpoints_loc != colpoints_locs.end());
-
-    // Generally, prefer basis to be formed using collocation points...
-    bool abscissae_veto_breakpoints = true;
-
-    // ...unless loaded breakpoints reproduce collocation points very closely.
-    // Required because repeated basis calculations at restart not idempotent.
-    if (breakpoints_found) {
-
-        b = boost::make_shared<suzerain::bspline>(
-                k, suzerain::bspline::from_breakpoints(),
-                breakpoints.size(), breakpoints.data());
-
-        if (colpoints_found && b->n() == colpoints.size()) {
-            double e = 0;
-            for (int i = 0; i < colpoints.size(); ++i)
-                e = max(e, abs(b->collocation_point(i) - colpoints[i]));
-
-            DEBUG0("Max difference between breakpoint-computed and loaded"
-                   " collocation points is " << e);
-
-            if (e < bsplines_distinct_distance)
-                abscissae_veto_breakpoints = false;
-        }
-    }
-
-    if (colpoints_found && abscissae_veto_breakpoints) {
-        DEBUG0("Collocation points from restart used to build B-spline basis");
-        b = boost::make_shared<suzerain::bspline>(
-                k, suzerain::bspline::from_abscissae(),
-                colpoints.size(), colpoints.data(), &abserr);
-        DEBUG0("Computed B-spline basis has Greville abscissae abserr of "
-               << abserr);
-    }
-
-    // Ensure we did get B-spline workspace from the above logic
-    if (!b) {
-        SUZERAIN_ERROR_VAL("Could not load B-spline workspace from restart",
-                SUZERAIN_EFAILED, abserr);
-    }
-
-    // Construct B-spline operator workspace from the B-spline workspace
-    bop.reset(new suzerain::bsplineop(
-                *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-
-    return abserr;
-}
-
-void store_time(const esio_handle h,
-                real_t time)
-{
-    // Root writes details
-    int rank;
-    esio_handle_comm_rank(h, &rank);
-    esio_line_establish(h, 1, 0, (rank == 0) ? 1 : 0);
-
-    esio_line_write(h, "t", &time, 0, "Simulation physical time");
-
-    DEBUG0("Stored simulation time " << time);
-}
-
-void load_time(const esio_handle h,
-               real_t &time)
-{
-    // All ranks read details
-    esio_line_establish(h, 1, 0, 1);
-
-    esio_line_read(h, "t", &time, 0);
-
-    DEBUG0("Loaded simulation time " << time);
-}
-
-// Pooling employed in allocate_padded_state implementations
-typedef boost::ptr_map<
-        size_t, suzerain::coalescing_pool<complex_t>
-    > padded_state_pools_type;
-static padded_state_pools_type padded_state_pools;
-
-template<>
-suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
-           const size_t howmany_fields,
-           const suzerain::pencil_grid& dgrid)
-{
-    typedef suzerain::coalescing_pool<complex_t> pool_type;
-
-    // Contiguous number of complex_t values necessary to store one field
-    // This is sufficient field-to-field padding to allow P3DFFTification
-    const size_t blocksize = dgrid.local_wave_storage();
-
-    // Find or create the coalescing_pool matching blocksize
-    padded_state_pools.find(blocksize);
-    padded_state_pools_type::iterator it = padded_state_pools.find(blocksize);
-    if (it == padded_state_pools.end()) {
-        std::auto_ptr<pool_type> tmp(new pool_type(blocksize));
-        it = padded_state_pools.insert(blocksize, tmp).first;
-    }
-
-    // Construct a shared_range for howmany_fields from the pool instance
-    // shared_range given boost::bind-based Deleter to invoke release()
-    pool_type::blocks blocks = it->second->acquire(howmany_fields);
-    suzerain::shared_range<complex_t> storage(blocks.begin(), blocks.end(),
-            boost::bind(&pool_type::release, boost::ref(*(it->second)), blocks));
-
-    // Create instance using provided storage
-    suzerain::ContiguousState<4,complex_t> * const retval =
-        new suzerain::ContiguousState<4,complex_t>(
-            storage,
-            suzerain::to_yxz(howmany_fields, dgrid.local_wave_extent),
-            suzerain::prepend(dgrid.local_wave_storage(), suzerain::strides_cm(
-                              suzerain::to_yxz(dgrid.local_wave_extent)))
-        );
-
-    return retval;
-}
-
-void store_coefficients(
-        const esio_handle h,
-        const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::GridDefinition& grid,
-        const suzerain::pencil_grid& dgrid)
-{
-    // Ensure swave meets this routine's assumptions
-    assert(                  swave.shape()[0]  == field::count);
-    assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
-
-    // Compute wavenumber translation logistics for X direction
-    int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(grid.N.x(),
-                                            grid.dN.x(),
-                                            dgrid.local_wave_start.x(),
-                                            dgrid.local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
-    // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
-
-    // Compute wavenumber translation logistics for Z direction
-    // One or both ranges may be empty
-    int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(grid.N.z(),
-                                            grid.dN.z(),
-                                            dgrid.local_wave_start.z(),
-                                            dgrid.local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
-
-    // Save each scalar field in turn...
-    for (size_t i = 0; i < field::count; ++i) {
-
-        // ...first generate a metadata comment...
-        std::string comment = "Nondimensional ";
-        comment += field::description[i];
-        comment += " stored row-major ZXY using a Fourier basis in Z stored"
-                   " in-order per /kz; a Fourier basis in X stored using"
-                   " Hermitian symmetry per /kx; and a B-spline basis in Y"
-                   " defined by /k, /breakpoints_y, and /knots";
-
-        // ...followed by two collective writes per field (once per Z range)
-        for (int j = 0; j < 2; ++j) {
-
-            // Collectively establish size of write across all ranks
-            esio_field_establish(h,
-                                 grid.N.z(),     fzb[j], (fze[j] - fzb[j]),
-                                 grid.N.x()/2+1, fxb[0], (fxe[0] - fxb[0]),
-                                 grid.N.y(),     0,      (     grid.N.y()));
-
-            // Source of write is NULL for empty WRITE operations
-            // Required since MultiArray triggers asserts on invalid indices
-            const complex_t * src = NULL;
-            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                src = &swave[i][0][mxb[0] - dgrid.local_wave_start.x()]
-                                  [mzb[j] - dgrid.local_wave_start.z()];
-            }
-
-            // Perform collective write operation
-            complex_field_write(h, field::name[i], src,
-                                swave.strides()[3],
-                                swave.strides()[2],
-                                swave.strides()[1],
-                                comment.c_str());
-        }
-    }
-}
-
-real_t distance(const suzerain::bspline& a,
-                const suzerain::bspline& b)
-{
-    real_t retval = 0;
-    if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
-        retval = std::numeric_limits<real_t>::max();
-    } else {
-        for (int j = 0; j < b.nknot(); ++j) {
-            retval = std::max(retval, std::abs(a.knot(j) - b.knot(j)));
-        }
-    }
-    return retval;
-}
-
-void load_coefficients(const esio_handle h,
-                       suzerain::ContiguousState<4,complex_t> &state,
-                       const suzerain::problem::GridDefinition& grid,
-                       const suzerain::pencil_grid& dgrid,
-                       const suzerain::bspline& b,
-                       const suzerain::bsplineop& bop)
-{
-    typedef suzerain::ContiguousState<4,complex_t> load_type;
-
-    // Ensure local state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.global_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-
-    // Obtain details on the restart field's global sizes
-    int Fz, Fx, Fy, ncomponents;
-    esio_field_sizev(h, field::name[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(ncomponents == 2);
-
-    // Prepare a file-specific B-spline basis
-    boost::shared_ptr<suzerain::bspline> Fb;
-    boost::shared_ptr<suzerain::bsplineop> Fbop;
-    load(h, Fb, Fbop);
-    assert(Fy == Fb->n());
-
-    // Check if the B-spline basis in the file differs from ours.
-    const double bsplines_dist = distance(b, *Fb);
-    const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
-
-    // Compute wavenumber translation logistics for X direction.
-    // Requires turning a C2R FFT complex-valued coefficient count into a
-    // real-valued coefficient count.  Further, need to preserve even- or
-    // odd-ness of the coefficient count to handle, for example, Fx == 1.
-    int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(2 * (Fx - 1) + (Fx & 1),
-                                            grid.dN.x(),
-                                            dgrid.local_wave_start.x(),
-                                            dgrid.local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
-    // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
-
-    // Compute wavenumber translation logistics for Z direction
-    // One or both ranges may be empty
-    int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(Fz,
-                                            grid.dN.z(),
-                                            dgrid.local_wave_start.z(),
-                                            dgrid.local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
-
-    // Possibly prepare a tmp buffer into which to read each scalar field and a
-    // factorization of b's mass matrix.  Used only when !bsplines_same.
-    typedef boost::multi_array<
-        complex_t, 3, suzerain::blas::allocator<complex_t>::type
-    > tmp_type;
-    boost::scoped_ptr<tmp_type> tmp;
-    boost::scoped_ptr<suzerain::bsplineop_luz> mass;
-    if (!bsplines_same) {
-        INFO0("Differences in B-spline basis require restart projection ("
-              << bsplines_dist << " >= " << bsplines_distinct_distance << ")");
-        const boost::array<tmp_type::size_type,3> extent = {{
-            static_cast<tmp_type::size_type>(Fy),
-            state.shape()[2],
-            state.shape()[3]
-        }};
-        tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
-        mass.reset(new suzerain::bsplineop_luz(bop));
-        mass->factor_mass(bop);
-    }
-
-    // Load each scalar field in turn
-    for (size_t i = 0; i < field::count; ++i) {
-
-        // Create a view of the state for just the i-th scalar
-        boost::multi_array_types::index_range all;
-        boost::array_view_gen<load_type, 3>::type field
-                = state[boost::indices[i][all][all][all]];
-
-        // Clear storage prior to load to zero not-loaded coefficients
-        if (bsplines_same) {
-            suzerain::multi_array::fill(field, 0);
-        } else {
-            suzerain::multi_array::fill(*tmp, 0);
-        }
-
-        // Two ESIO read operations per field (once per Z range)
-        for (int j = 0; j < 2; ++j) {
-
-            // Collectively establish size of read across all ranks
-            esio_field_establish(h, Fz, fzb[j], (fze[j] - fzb[j]),
-                                    Fx, fxb[0], (fxe[0] - fxb[0]),
-                                    Fy,      0, (            Fy));
-
-            // Destination of read is NULL for empty READ operations.
-            // Otherwise find starting point for coefficient loading.
-            complex_t * dst = NULL;
-            boost::array<load_type::index,3> dst_strides = {{ 0, 0, 0 }};
-            if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                const boost::array<load_type::index,3> index_list = {{
-                        0,
-                        mxb[0] - dgrid.local_wave_start.x(),
-                        mzb[j] - dgrid.local_wave_start.z()
-                }};
-                if (bsplines_same) {
-                    dst = &field(index_list);
-                    std::copy(field.strides(), field.strides() + 3,
-                              dst_strides.begin());
-                } else {
-                    dst = &(*tmp)(index_list);
-                    std::copy(tmp->strides(), tmp->strides() + 3,
-                              dst_strides.begin());
-                }
-            }
-
-            // Perform collective read operation into dst
-            complex_field_read(h, field::name[i], dst,
-                               dst_strides[2], dst_strides[1], dst_strides[0]);
-        }
-
-
-        // If necessary, interpolate between B-spline bases.
-        // Relies heavily on both bases being collocation-based.
-        // This will change dramatically if we ever go the L_2 route.
-        if (!bsplines_same) {
-
-            // Step 0: Obtain collocation points for new basis
-            Eigen::ArrayXd points(b.n());
-            for (int k = 0; k < b.n(); ++k) points[k] = b.collocation_point(k);
-
-            // Step 1: Affine transformation of points into old basis domain
-            // Allows stretching of old range onto new range.
-            const double newmin = b.collocation_point(0);
-            const double newmax = b.collocation_point(b.n() - 1);
-            const double oldmin = Fb->collocation_point(0);
-            const double oldmax = Fb->collocation_point(Fb->n() - 1);
-            // Only pay for floating point loss if strictly necessary
-#pragma warning(push,disable:1572)
-            if (oldmin != newmin || oldmax != newmax) {
-#pragma warning(pop)
-                points = (points - newmin)
-                    * ((oldmax - oldmin) / (newmax - newmin)) + oldmin;
-            }
-
-            // Step 2: Evaluate old basis + coefficients at points into new
-            const int jmax = numeric_cast<int>(field.shape()[1]);
-            const int kmax = numeric_cast<int>(field.shape()[2]);
-            for (int k = 0; k < kmax; ++k) {
-                for (int j = 0; j < jmax; ++j) {
-                    Fb->linear_combination(0, &(*tmp)[0][j][k], b.n(),
-                                           points.data(), &field[0][j][k], 0);
-                }
-            }
-
-            // Step 3: Invert for new coefficients using factored mass matrix
-            for (int k = 0; k < kmax; ++k) {
-                mass->solve(jmax, &field[0][0][k],
-                            numeric_cast<int>(field.strides()[0]),
-                            numeric_cast<int>(field.strides()[1]));
-            }
-        }
-    }
-}
-
 void store_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& swave,
@@ -1229,7 +283,7 @@ void store_collocation_values(
         const suzerain::bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  swave.shape()[0]  == field::count);
+    assert(                  swave.shape()[0]  == support::field::count);
     assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
@@ -1237,7 +291,7 @@ void store_collocation_values(
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
     suzerain::OperatorBase obase(grid, dgrid, b, bop);
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < support::field::count; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
@@ -1245,8 +299,8 @@ void store_collocation_values(
     }
 
     // Convert conserved rho, rhou, rhov, rhow, rhoE into u, v, w, p, T
-    physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, swave);
+    support::physical_view<support::field::count>::type sphys
+        = support::physical_view<support::field::count>::create(dgrid, swave);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -1255,11 +309,11 @@ void store_collocation_values(
 
     for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
         // Unpack conserved quantities from fields
-        const real_t   rho(sphys(field::ndx::rho, o));
-        Vector3r         m(sphys(field::ndx::mx,  o),
-                           sphys(field::ndx::my,  o),
-                           sphys(field::ndx::mz,  o));
-        const real_t     e(sphys(field::ndx::e,   o));
+        const real_t   rho(sphys(support::field::ndx::rho, o));
+        Vector3r         m(sphys(support::field::ndx::mx,  o),
+                           sphys(support::field::ndx::my,  o),
+                           sphys(support::field::ndx::mz,  o));
+        const real_t     e(sphys(support::field::ndx::e,   o));
 
         // Compute primitive quantities to be stored
         real_t p, T;
@@ -1316,7 +370,7 @@ void load_collocation_values(
         const suzerain::bsplineop& bop)
 {
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
+    assert(                  state.shape()[0]  == support::field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
@@ -1345,9 +399,10 @@ void load_collocation_values(
         // TODO Too restrictive?  Any floating point differences kill us.
         boost::shared_ptr<suzerain::bspline> Fb;
         boost::shared_ptr<suzerain::bsplineop> Fbop;
-        load(h, Fb, Fbop);
-        const double bsplines_dist = distance(b, *Fb);
-        const bool bsplines_same = bsplines_dist < bsplines_distinct_distance;
+        support::load(h, Fb, Fbop);
+        const double bsplines_dist = support::distance(b, *Fb);
+        const bool bsplines_same
+                = bsplines_dist < support::bsplines_distinct_distance;
         if (!bsplines_same) {
             ERROR0("Physical restart has different wall-normal bases ("
                    << bsplines_dist << ")");
@@ -1358,8 +413,8 @@ void load_collocation_values(
     }
 
     // Establish size of collective reads across all ranks and read data
-    physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, state);
+    support::physical_view<support::field::count>::type sphys
+        = support::physical_view<support::field::count>::create(dgrid, state);
     esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
                                          dgrid.local_physical_extent.y(),
                             grid.dN.z(), dgrid.local_physical_start.z(),
@@ -1391,11 +446,11 @@ void load_collocation_values(
                          + suzerain::rholut::energy_internal(gamma, p);
 
         // Pack conserved quantities into fields (by name)
-        sphys(field::ndx::rho, o) = rho;
-        sphys(field::ndx::mx,  o) = m.x();
-        sphys(field::ndx::my,  o) = m.y();
-        sphys(field::ndx::mz,  o) = m.z();
-        sphys(field::ndx::e,   o) = e;
+        sphys(support::field::ndx::rho, o) = rho;
+        sphys(support::field::ndx::mx,  o) = m.x();
+        sphys(support::field::ndx::my,  o) = m.y();
+        sphys(support::field::ndx::mz,  o) = m.z();
+        sphys(support::field::ndx::e,   o) = e;
     }
 
     // Initialize OperatorBase to access decomposition-ready utilities
@@ -1408,7 +463,7 @@ void load_collocation_values(
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
 
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < support::field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
         obase.zero_dealiasing_modes(state, i);
         obase.bop_solve(massluz, state, i);                      // Y
@@ -1423,6 +478,8 @@ void load(const esio_handle h,
           suzerain::bspline& b,
           const suzerain::bsplineop& bop)
 {
+    namespace field = support::field;
+
     // Check whether load_coefficients(...) should work
     bool trycoeffs = true;
     for (size_t i = 0; i < field::count; ++i) {
@@ -1446,66 +503,12 @@ void load(const esio_handle h,
     // Dispatch to the appropriate restart loading logic
     DEBUG0("Started loading simulation fields");
     if (trycoeffs) {
-        load_coefficients(h, state, grid, dgrid, b, bop);
+        suzerain::support::load_coefficients(h, state, grid, dgrid, b, bop);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
         load_collocation_values(h, state, scenario, grid, dgrid, b, bop);
     }
     DEBUG0("Finished loading simulation fields");
-}
-
-/**
- * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
- * valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is enforced
- * with the outer two inequalities being considered a validation failure.
- */
-template<typename T>
-static void parse_range(const std::string& s,
-                        T *valmin, T *valmax,
-                        const T defaultmin, const T defaultmax,
-                        const T absmin, const T absmax,
-                        const char *name)
-{
-    assert(absmin <= defaultmin);
-    assert(defaultmin <= defaultmax);
-    assert(defaultmax <= absmax);
-
-    // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
-    const size_t colonpos = s.find_first_of(':');
-    if (colonpos == std::string::npos) {
-        throw std::invalid_argument(std::string(name)
-            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
-    }
-    std::string s_min(s, 0, colonpos);
-    std::string s_max(s, colonpos + 1);
-    boost::algorithm::trim(s_min);
-    boost::algorithm::trim(s_max);
-
-    // Parse recognized formats into valmin and valmax
-    if (s_min.length() == 0 && s_max.length() == 0) {
-        throw std::invalid_argument(std::string(name)
-            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
-    } else if (s_min.length() == 0) {
-        *valmin = defaultmin;
-        *valmax = suzerain::exprparse<T>(s_max, name);
-    } else if (s_max.length() == 0) {
-        *valmin = suzerain::exprparse<T>(s_min, name);
-        *valmax = defaultmax;
-    } else {
-        *valmin = suzerain::exprparse<T>(s_min, name);
-        *valmax = suzerain::exprparse<T>(s_max, name);
-    }
-
-    // Ensure valmin <= valmax
-    if (*valmin > *valmax) std::swap(*valmin, *valmax);
-
-    // Validate range is within [absmin, absmax]
-    if (*valmin < absmin || absmax < *valmax) {
-        std::ostringstream oss;
-        oss << name << " value [" << *valmin << ":" << *valmax
-            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
-        throw std::invalid_argument(oss.str());
-    }
 }
 
 void
@@ -1536,9 +539,9 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
 
     // Convert state to physical space collocation points
     suzerain::OperatorBase obase(grid, dgrid, b, bop);
-    physical_view<field::count>::type sphys
-            = physical_view<field::count>::create(dgrid, swave);
-    for (size_t k = 0; k < field::count; ++k) {
+    support::physical_view<support::field::count>::type sphys
+            = support::physical_view<support::field::count>::create(dgrid, swave);
+    for (size_t k = 0; k < support::field::count; ++k) {
         obase.bop_apply(0, 1.0, swave, k);
         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
     }
@@ -1556,11 +559,11 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                    * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            const real_t   rho(sphys(field::ndx::rho, offset));
-            const Vector3r m  (sphys(field::ndx::mx,  offset),
-                               sphys(field::ndx::my,  offset),
-                               sphys(field::ndx::mz,  offset));
-            const real_t   e  (sphys(field::ndx::e,   offset));
+            const real_t   rho(sphys(support::field::ndx::rho, offset));
+            const Vector3r m  (sphys(support::field::ndx::mx,  offset),
+                               sphys(support::field::ndx::my,  offset),
+                               sphys(support::field::ndx::mz,  offset));
+            const real_t   e  (sphys(support::field::ndx::e,   offset));
 
             // Compute temperature using old_gamma, old_Ma
             real_t p, T;
@@ -1569,7 +572,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
                                   /*out*/ p, /*out*/ T);
             // Compute total energy from new gamma, Ma, rho, T
             suzerain::rholut::p(scenario.gamma, rho, T, /*out*/ p);
-            sphys(field::ndx::e, offset)
+            sphys(support::field::ndx::e, offset)
                     = suzerain::rholut::energy_internal(scenario.gamma, p)
                     + suzerain::rholut::energy_kinetic(scenario.Ma, rho, m);
         }
@@ -1581,7 +584,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < support::field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
         obase.bop_solve(massluz, swave, i);
     }
@@ -1615,14 +618,14 @@ NoiseDefinition::NoiseDefinition(real_t percent,
         ("fluct_kxfrac",
          boost::program_options::value<std::string>(0)
             ->default_value("0:1")
-            ->notifier(bind(&parse_range<real_t>, _1,
+            ->notifier(bind(&support::parse_range<real_t>, _1,
                             &this->kxfrac_min, &this->kxfrac_max,
                             0, 1, 0, 1, "fluct_kxfrac")),
          "Range of X wavenumbers in which to generate fluctuations")
         ("fluct_kzfrac",
          boost::program_options::value<std::string>(0)
             ->default_value("0:1")
-            ->notifier(bind(&parse_range<real_t>, _1,
+            ->notifier(bind(&support::parse_range<real_t>, _1,
                             &this->kzfrac_min, &this->kzfrac_max,
                             0, 1, 0, 1, "fluct_kzfrac")),
          "Range of Z wavenumbers in which to generate fluctuations")
@@ -1656,11 +659,11 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     using suzerain::inorder::wavenumber_max;
     using suzerain::inorder::wavenumber_translatable;
     using suzerain::ContiguousState;
-    namespace ndx = field::ndx;
+    namespace ndx = support::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
 
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
+    assert(                  state.shape()[0]  == support::field::count);
     assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
@@ -1751,8 +754,8 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     //  0) Allocate storage for state and three additional scalar fields.
     boost::scoped_ptr<ContiguousState<4,complex_t> > _s_ptr( // RAII
-            allocate_padded_state<ContiguousState<4,complex_t> >(
-                field::count + 3, dgrid));
+            support::allocate_padded_state<ContiguousState<4,complex_t> >(
+                support::field::count + 3, dgrid));
     ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
     std::fill(s.range().begin(), s.range().end(), 0);        // Zero memory
 
@@ -1816,8 +819,8 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     for (size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
 
     // Prepare physical-space view of the wave-space storage
-    physical_view<field::count+3>::type p
-        = physical_view<field::count+3>::create(dgrid, s);
+    support::physical_view<support::field::count+3>::type p
+        = support::physical_view<support::field::count+3>::create(dgrid, s);
 
     // Initializing OperatorBase to access decomposition-ready utilities
     suzerain::OperatorBase obase(grid, dgrid, b, bop);
@@ -1896,9 +899,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 // have the slowest timescale so rotate the components from 123
                 // to 312 to reduce the simulation time before stationarity.
                 // This rotation may introduce acoustic noise.
-                p(field::count + 0, offset) = curlA.z();
-                p(field::count + 1, offset) = curlA.x();
-                p(field::count + 2, offset) = curlA.y();
+                p(support::field::count + 0, offset) = curlA.z();
+                p(support::field::count + 1, offset) = curlA.x();
+                p(support::field::count + 2, offset) = curlA.y();
 
                 maxmagsquared = suzerain::math::maxnan(
                         maxmagsquared, curlA.squaredNorm());
@@ -1913,13 +916,13 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 MPI_MAX, MPI_COMM_WORLD));
 
     // Rescale curl A components so max ||curl A|| == maxfluct
-    p.row(field::count + 0) *= (maxfluct / std::sqrt(maxmagsquared));
-    p.row(field::count + 1) *= (maxfluct / std::sqrt(maxmagsquared));
-    p.row(field::count + 2) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(support::field::count + 0) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(support::field::count + 1) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(support::field::count + 2) *= (maxfluct / std::sqrt(maxmagsquared));
 
     //  6) Copy state into auxiliary state storage and bring to
     //     physical space.
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < support::field::count; ++i) {
         s[i] = state[i];
         obase.bop_apply(0, 1.0, s, i);
         dgrid.transform_wave_to_physical(&p.coeffRef(i,0));
@@ -1953,9 +956,9 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
                 const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
-                m.x() += rho * p(field::count + 0, offset);
-                m.y() += rho * p(field::count + 1, offset);
-                m.z() += rho * p(field::count + 2, offset);
+                m.x() += rho * p(support::field::count + 0, offset);
+                m.y() += rho * p(support::field::count + 1, offset);
+                m.z() += rho * p(support::field::count + 2, offset);
                 const real_t e_kin = rholut::energy_kinetic(Ma, rho, m);
                 e = e_int + e_kin;
 
@@ -1976,17 +979,17 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
-    assert(field::ndx::rho == 0);
-    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::mx);
-    for (size_t i = field::ndx::mx; i < field::count; ++i) {
+    assert(ndx::rho == 0);
+    assert(static_cast<int>(ndx::rho) + 1 == ndx::mx);
+    for (size_t i = ndx::mx; i < support::field::count; ++i) {
         dgrid.transform_physical_to_wave(&p.coeffRef(i, 0));  // X, Z
         obase.bop_solve(massluz, s, i);                       // Y
     }
 
     //  9) Overwrite state storage with the new perturbed state.
-    assert(field::ndx::rho == 0);
-    assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::mx);
-    for (size_t i = field::ndx::mx; i < field::count; ++i) {
+    assert(ndx::rho == 0);
+    assert(static_cast<int>(ndx::rho) + 1 == ndx::mx);
+    for (size_t i = ndx::mx; i < support::field::count; ++i) {
         state[i] = s[i];
     }
 }
@@ -2008,12 +1011,13 @@ void accumulate_manufactured_solution(
     // Allocate one field of temporary storage for scratch purposes
     using suzerain::ContiguousState;
     boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
-            allocate_padded_state<ContiguousState<4,complex_t> >(1, dgrid));
+        support::allocate_padded_state<ContiguousState<4,complex_t> >(1,dgrid));
     ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
     suzerain::multi_array::fill(scratch, 0);                       // Defensive
 
     // Prepare physical-space view of the wave-space scratch storage
-    physical_view<1>::type phys = physical_view<1>::create(dgrid, scratch);
+    support::physical_view<1>::type phys
+            = support::physical_view<1>::create(dgrid, scratch);
 
     // Prepare factored mass matrix for repeated use
     suzerain::bsplineop_luz massluz(bop);
@@ -2022,7 +1026,7 @@ void accumulate_manufactured_solution(
     massluz.factor();
 
     // For each scalar field...
-    for (size_t f = 0; f < field::count; ++f) {
+    for (size_t f = 0; f < support::field::count; ++f) {
 
         // ...compute the manufactured solution in physical space...
         size_t offset = 0;
@@ -2046,19 +1050,19 @@ void accumulate_manufactured_solution(
 
                     // Ugly, slow switch but performance irrelevant here
                     switch (f) {
-                    case field::ndx::rho:
+                    case support::field::ndx::rho:
                         phys(0, offset) = msoln.rho (x, y, z, simulation_time);
                         break;
-                    case field::ndx::mx:
+                    case support::field::ndx::mx:
                         phys(0, offset) = msoln.rhou(x, y, z, simulation_time);
                         break;
-                    case field::ndx::my:
+                    case support::field::ndx::my:
                         phys(0, offset) = msoln.rhov(x, y, z, simulation_time);
                         break;
-                    case field::ndx::mz:
+                    case support::field::ndx::mz:
                         phys(0, offset) = msoln.rhow(x, y, z, simulation_time);
                         break;
-                    case field::ndx::e:
+                    case support::field::ndx::e:
                         phys(0, offset) = msoln.rhoe(x, y, z, simulation_time);
                         break;
                     default:
@@ -2119,7 +1123,7 @@ mean sample_mean_quantities(
 {
     // Shorthand
     const size_t Ny = swave.shape()[1];
-    namespace ndx = field::ndx;
+    namespace ndx = support::field::ndx;
     namespace acc = boost::accumulators;
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     using Eigen::Upper;
@@ -2140,11 +1144,12 @@ mean sample_mean_quantities(
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     boost::scoped_ptr<state_type> _auxw_ptr(
-            allocate_padded_state<state_type>(aux::count, dgrid)); // RAII
+            support::allocate_padded_state<state_type>(
+                aux::count, dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    assert(swave.shape()[0] == field::count);
+    assert(swave.shape()[0] == support::field::count);
     assert(swave.shape()[1] == (unsigned) dgrid.local_wave_extent.y());
     assert(swave.shape()[2] == (unsigned) dgrid.local_wave_extent.x());
     assert(swave.shape()[3] == (unsigned) dgrid.local_wave_extent.z());
@@ -2232,11 +1237,11 @@ mean sample_mean_quantities(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    physical_view<aux::count>::type auxp
-        = physical_view<aux::count>::create(dgrid, auxw);
-    physical_view<field::count>::type sphys
-        = physical_view<field::count>::create(dgrid, swave);
-    for (size_t i = 0; i < field::count; ++i) {
+    support::physical_view<aux::count>::type auxp
+        = support::physical_view<aux::count>::create(dgrid, auxw);
+    support::physical_view<support::field::count>::type sphys
+        = support::physical_view<support::field::count>::create(dgrid, swave);
+    for (size_t i = 0; i < support::field::count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
@@ -2575,6 +1580,4 @@ void load(const esio_handle h, mean& m)
     }
 }
 
-} // end namespace suzerain
-
-} // end namespace support
+} /* namespace perfect */ } /* namespace suzerain */
