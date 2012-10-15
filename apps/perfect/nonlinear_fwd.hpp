@@ -31,10 +31,7 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timers.h>
 
-// FIXME Present only for channel::real_t, etc workarounds (#2191)
-#include "../support.hpp"
-
-namespace channel {
+namespace suzerain { namespace support {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -377,6 +374,6 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 
-} // namespace channel
+} /* namespace support */ } /* namespace suzerain */
 
 #endif  /* NONLINEAR_FWD_HPP */

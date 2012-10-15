@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
     logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        channel::log4cxx_config);
+                        suzerain::support::log4cxx_config);
     WARN0_ENABLE();                                 // Disable chattiness
 
     // Process incoming program arguments from command line, input files
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     suzerain::VectorXr  vec(N);
     suzerain::MatrixXXr mat(N,N);
     for (suzerain::real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
-        channel::create(N, k, 0.0, L, htdelta, b, bop);
+        suzerain::support::create(N, k, 0.0, L, htdelta, b, bop);
         b->integration_coefficients(0, vec.data());
         boplu = boost::make_shared<suzerain::bsplineop_lu>(*bop);
         boplu->factor_mass(*bop);

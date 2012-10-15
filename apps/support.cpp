@@ -50,12 +50,14 @@
 #include "support.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
-template class nsctpl_rholut::manufactured_solution<channel::real_t>;
+template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
 
 using boost::numeric_cast;
 using std::size_t;
 
-namespace channel {
+namespace suzerain {
+
+namespace support {
 
 // Common configuration snippet used in multiple places just below.
 // See "Configuration" at http://logging.apache.org/log4cxx/index.html
@@ -1238,7 +1240,7 @@ void store_collocation_values(
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
     suzerain::OperatorBase obase(grid, dgrid, b, bop);
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
@@ -1539,7 +1541,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     suzerain::OperatorBase obase(grid, dgrid, b, bop);
     physical_view<field::count>::type sphys
             = physical_view<field::count>::create(dgrid, swave);
-    for (size_t k = 0; k < channel::field::count; ++k) {
+    for (size_t k = 0; k < field::count; ++k) {
         obase.bop_apply(0, 1.0, swave, k);
         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
     }
@@ -1582,7 +1584,7 @@ adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
         obase.bop_solve(massluz, swave, i);
     }
@@ -1657,7 +1659,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     using suzerain::inorder::wavenumber_max;
     using suzerain::inorder::wavenumber_translatable;
     using suzerain::ContiguousState;
-    namespace ndx = channel::field::ndx;
+    namespace ndx = field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
 
     // Ensure state storage meets this routine's assumptions
@@ -1920,7 +1922,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
 
     //  6) Copy state into auxiliary state storage and bring to
     //     physical space.
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < field::count; ++i) {
         s[i] = state[i];
         obase.bop_apply(0, 1.0, s, i);
         dgrid.transform_wave_to_physical(&p.coeffRef(i,0));
@@ -1987,7 +1989,7 @@ add_noise(suzerain::ContiguousState<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
     assert(field::ndx::rho == 0);
     assert(static_cast<int>(field::ndx::rho) + 1 == field::ndx::mx);
-    for (size_t i = field::ndx::mx; i < channel::field::count; ++i) {
+    for (size_t i = field::ndx::mx; i < field::count; ++i) {
         state[i] = s[i];
     }
 }
@@ -2120,7 +2122,7 @@ mean sample_mean_quantities(
 {
     // Shorthand
     const size_t Ny = swave.shape()[1];
-    namespace ndx = channel::field::ndx;
+    namespace ndx = field::ndx;
     namespace acc = boost::accumulators;
     typedef suzerain::ContiguousState<4,complex_t> state_type;
     using Eigen::Upper;
@@ -2145,7 +2147,7 @@ mean sample_mean_quantities(
     state_type &auxw = *_auxw_ptr;                                 // Shorthand
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    assert(swave.shape()[0] == channel::field::count);
+    assert(swave.shape()[0] == field::count);
     assert(swave.shape()[1] == (unsigned) dgrid.local_wave_extent.y());
     assert(swave.shape()[2] == (unsigned) dgrid.local_wave_extent.x());
     assert(swave.shape()[3] == (unsigned) dgrid.local_wave_extent.z());
@@ -2233,11 +2235,11 @@ mean sample_mean_quantities(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    channel::physical_view<aux::count>::type auxp
-        = channel::physical_view<aux::count>::create(dgrid, auxw);
-    channel::physical_view<channel::field::count>::type sphys
-        = channel::physical_view<channel::field::count>::create(dgrid, swave);
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    physical_view<aux::count>::type auxp
+        = physical_view<aux::count>::create(dgrid, auxw);
+    physical_view<field::count>::type sphys
+        = physical_view<field::count>::create(dgrid, swave);
+    for (size_t i = 0; i < field::count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
@@ -2568,7 +2570,7 @@ void load(const esio_handle h, mean& m)
         m.storage.resize(aglobal, Eigen::NoChange);
         mean_loader f(h, "bar_");
         m.foreach(f);
-        // m.t presumably set externally using channel::load_time
+        // m.t presumably set externally using load_time
     } else {
         WARN0("No mean samples loaded-- unable to anticipate storage needs");
         m.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
@@ -2576,4 +2578,6 @@ void load(const esio_handle h, mean& m)
     }
 }
 
-} // end namespace channel
+} // end namespace suzerain
+
+} // end namespace support

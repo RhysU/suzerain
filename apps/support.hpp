@@ -49,22 +49,13 @@
 
 #include "nsctpl_rholut.hpp"
 
-/**
- * Contains cross-cutting functionality used within the channel binaries.
- */
-namespace channel {
+namespace suzerain {
 
-// FIXME Remove once application-specific namespace refactored (#2191)
-typedef suzerain::real_t    real_t;
-typedef suzerain::complex_t complex_t;
-typedef suzerain::ArrayXc   ArrayXc;
-typedef suzerain::ArrayXr   ArrayXr;
-typedef suzerain::ArrayXXr  ArrayXXr;
-typedef suzerain::Matrix3r  Matrix3r;
-typedef suzerain::Vector3r  Vector3r;
-typedef suzerain::VectorXc  VectorXc;
-typedef suzerain::VectorXr  VectorXr;
-using suzerain::Map;
+/**
+ * Contains cross-cutting functionality used within various Suzerain
+ * applications.
+ */
+namespace support {
 
 /**
  * Default log4cxx configuration to use when none found in environment.
@@ -750,6 +741,8 @@ void store(const esio_handle h, const mean& m);
  */
 void load(const esio_handle h, mean& m);
 
-} // end namespace channel
+} // end namespace support
+
+} // end namespace suzerain
 
 #endif // SUPPORT_HPP

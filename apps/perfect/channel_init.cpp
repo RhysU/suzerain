@@ -60,6 +60,7 @@ using boost::shared_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::real_t;
+namespace support = suzerain::support;
 
 // Global parameters initialized in main()
 using suzerain::problem::ScenarioDefinition;
@@ -88,8 +89,8 @@ static GridDefinition grid(
 static TimeDefinition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static shared_ptr<const suzerain::pencil_grid> dgrid;
-static shared_ptr<channel::manufactured_solution> msoln(
-            new channel::manufactured_solution);
+static shared_ptr<support::manufactured_solution> msoln(
+            new support::manufactured_solution);
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
@@ -122,7 +123,7 @@ class MSDefinition : public suzerain::problem::IDefinition {
 
 public:
 
-    MSDefinition(channel::manufactured_solution &ms)
+    MSDefinition(support::manufactured_solution &ms)
         : IDefinition("Manufactured solution parameters"
                       " (active only when --mms supplied)")
     {
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                         // Initialize MPI...
     atexit((void (*) ()) MPI_Finalize);             // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        channel::log4cxx_config);
+                        support::log4cxx_config);
 #ifdef HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                // Initialize underling...
 #endif
@@ -167,14 +168,14 @@ int main(int argc, char **argv)
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
-            &channel::mpi_abort_on_error_handler_gsl);
+            &support::mpi_abort_on_error_handler_gsl);
     suzerain_set_error_handler(
-            &channel::mpi_abort_on_error_handler_suzerain);
+            &support::mpi_abort_on_error_handler_suzerain);
     esio_set_error_handler(
-            &channel::mpi_abort_on_error_handler_esio);
+            &support::mpi_abort_on_error_handler_esio);
 #ifdef HAVE_UNDERLING
     underling_set_error_handler(
-            &channel::mpi_abort_on_error_handler_underling);
+            &support::mpi_abort_on_error_handler_underling);
 #endif
 
     // Process incoming program arguments from command line, input files
@@ -283,18 +284,18 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    channel::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
+    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
     esio_string_set(esioh, "/", "generated_by",
                     (std::string("channel_init ") + revstr).c_str());
-    channel::store(esioh, scenario);
-    channel::store(esioh, grid);
-    channel::store(esioh, b, bop, gop);
-    channel::store(esioh, timedef);
-    channel::store(esioh, scenario, grid, msoln);
+    support::store(esioh, scenario);
+    support::store(esioh, grid);
+    support::store(esioh, b, bop, gop);
+    support::store(esioh, timedef);
+    support::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -308,14 +309,14 @@ int main(int argc, char **argv)
 
     INFO0("Allocating storage for the distributed state fields");
     state_type swave(suzerain::to_yxz(
-                channel::field::count, dgrid->local_wave_extent));
+                support::field::count, dgrid->local_wave_extent));
     state_type stemp(suzerain::to_yxz(1, dgrid->local_wave_extent));
 
     INFO0("Initializing data on collocation points values in physical space");
     if (mms >= 0) {
 
         // Use a canned manufactured solution routine for initialization
-        channel::accumulate_manufactured_solution(
+        support::accumulate_manufactured_solution(
                 1, *msoln, 0, swave, grid, *dgrid, *b, *bop, mms);
 
     } else {
@@ -326,8 +327,8 @@ int main(int argc, char **argv)
         suzerain::OperatorBase obase(grid, *dgrid, *b, *bop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
-        channel::physical_view<channel::field::count>::type sphys
-            = channel::physical_view<channel::field::count>::create(*dgrid, swave);
+        support::physical_view<support::field::count>::type sphys
+            = support::physical_view<support::field::count>::create(*dgrid, swave);
 
         // Find normalization required to have (y*(L-y))^npower integrate to one
         real_t factor;
@@ -378,11 +379,11 @@ int main(int argc, char **argv)
                     // Compute and store the conserved state from primitives
                     const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
                                    + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
-                    sphys(channel::field::ndx::rho, offset) = rho;
-                    sphys(channel::field::ndx::mx,  offset) = rho * u;
-                    sphys(channel::field::ndx::my,  offset) = rho * v;
-                    sphys(channel::field::ndx::mz,  offset) = rho * w;
-                    sphys(channel::field::ndx::e,   offset) = rho * e;
+                    sphys(support::field::ndx::rho, offset) = rho;
+                    sphys(support::field::ndx::mx,  offset) = rho * u;
+                    sphys(support::field::ndx::my,  offset) = rho * v;
+                    sphys(support::field::ndx::mz,  offset) = rho * w;
+                    sphys(support::field::ndx::e,   offset) = rho * e;
 
                 } // end X
 
@@ -396,7 +397,7 @@ int main(int argc, char **argv)
         massluz.opform(1, &scale_factor, *bop);
         massluz.factor();
 
-        for (std::size_t i = 0; i < channel::field::count; ++i) {
+        for (std::size_t i = 0; i < support::field::count; ++i) {
             dgrid->transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
             obase.bop_solve(massluz, swave, i);                        // Y
         }
@@ -404,7 +405,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    channel::store_coefficients(esioh, swave, scenario, grid, *dgrid);
+    support::store_coefficients(esioh, swave, scenario, grid, *dgrid);
     esio_file_flush(esioh);
 
     real_t t;
@@ -415,15 +416,15 @@ int main(int argc, char **argv)
         INFO0("Storing simulation time to match manufactured solution");
         t = mms;
     }
-    channel::store_time(esioh, t);
+    support::store_time(esioh, t);
     esio_file_flush(esioh);
 
     INFO0("Computing mean quantities from state fields");
-    channel::mean samples = channel::sample_mean_quantities(
+    support::mean samples = support::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
-    channel::store(esioh, samples);
+    support::store(esioh, samples);
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");

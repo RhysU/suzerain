@@ -57,7 +57,7 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
-namespace channel {
+namespace suzerain { namespace support {
 
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
@@ -70,7 +70,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
-    namespace field = channel::field;
+    namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -158,7 +158,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
-    namespace field = channel::field;
+    namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
@@ -264,7 +264,7 @@ public:
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
         // Starting offset to named scalars in InterleavedState pencil
-        namespace ndx = channel::field::ndx;
+        namespace ndx = support::field::ndx;
         const int start_rho = static_cast<int>(ndx::rho) * A.n;
         const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
         const int start_my  = static_cast<int>(ndx::my ) * A.n;
@@ -359,7 +359,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Shorthand
     using suzerain::inorder::wavenumber;
     using suzerain::inorder::wavenumber_absmin;
-    namespace field = channel::field;
+    namespace field = support::field;
     namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
@@ -724,7 +724,7 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return channel::applyNonlinearOperator<true,  channel::linearize::rhome>
+        return support::applyNonlinearOperator<true,  support::linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -733,7 +733,7 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return channel::applyNonlinearOperator<false, channel::linearize::rhome>
+        return support::applyNonlinearOperator<false, support::linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -744,4 +744,4 @@ std::vector<real_t> HybridNonlinearOperator::applyOperator(
     }
 }
 
-} // end namespace channel
+} /* namespace support */ } /* namespace suzerain */

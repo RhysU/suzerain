@@ -35,7 +35,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/scenario_definition.hpp>
 
-namespace channel {
+namespace suzerain { namespace support {
 
 /**
  * A mixin providing channel problem treatment atop any
@@ -178,7 +178,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Shorthand
     typedef Map<ArrayXr,0,Eigen::InnerStride<2> > ModesRealPart;
     using suzerain::inorder::wavenumber;
-    namespace field = channel::field;
+    namespace field = support::field;
     namespace ndx   = field::ndx;
     OperatorCommonBlock &common = this->common;
     const suzerain::problem::ScenarioDefinition &scenario = this->scenario;
@@ -295,6 +295,6 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-} // namespace channel
+} /* namespace support */ } /* namespace suzerain */
 
 #endif /* CHANNEL_TREATMENT_HPP */

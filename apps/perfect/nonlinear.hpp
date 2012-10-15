@@ -39,7 +39,7 @@
 
 #pragma warning(disable:280 383 1572)
 
-namespace channel {
+namespace suzerain { namespace support {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
@@ -63,7 +63,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Shorthand
     typedef suzerain::ContiguousState<4,complex_t> state_type;
-    namespace ndx = channel::field::ndx;
+    namespace ndx = support::field::ndx;
     using std::abs;
     using std::equal;
     using std::max;
@@ -91,7 +91,7 @@ std::vector<real_t> applyNonlinearOperator(
     state_type &auxw = *_auxw_ptr;                                   // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    assert(swave.shape()[0] == channel::field::count);
+    assert(swave.shape()[0] == support::field::count);
     assert(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
     assert(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
     assert(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
@@ -225,11 +225,11 @@ std::vector<real_t> applyNonlinearOperator(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    typename channel::physical_view<aux::count>::type auxp
-        = channel::physical_view<aux::count>::create(o.dgrid, auxw);
-    typename channel::physical_view<channel::field::count>::type sphys
-        = channel::physical_view<channel::field::count>::create(o.dgrid, swave);
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    typename support::physical_view<aux::count>::type auxp
+        = support::physical_view<aux::count>::create(o.dgrid, auxw);
+    typename support::physical_view<support::field::count>::type sphys
+        = support::physical_view<support::field::count>::create(o.dgrid, swave);
+    for (size_t i = 0; i < support::field::count; ++i) {
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
@@ -926,7 +926,7 @@ std::vector<real_t> applyNonlinearOperator(
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
-    for (size_t i = 0; i < channel::field::count; ++i) {
+    for (size_t i = 0; i < support::field::count; ++i) {
 
         if (Linearize == linearize::rhome && i == ndx::rho && !msoln) {
 
@@ -959,6 +959,6 @@ std::vector<real_t> applyNonlinearOperator(
     // State leaves method as collocation point values in Y direction
 }
 
-} // namespace channel
+} /* namespace support */ } /* namespace suzerain */
 
 #endif  /* NONLINEAR_HPP */

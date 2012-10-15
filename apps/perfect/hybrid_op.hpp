@@ -39,7 +39,7 @@
 
 #pragma warning(disable:383 1572)
 
-namespace channel {
+namespace suzerain { namespace support {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -135,7 +135,7 @@ private:
 /**
  * A boundary-condition agnostic, hybrid explicit Navier&ndash;Stokes operator.
  *
- * @see channel::applyNonlinearOperator for the guts of the implementation.
+ * @see support::applyNonlinearOperator for the guts of the implementation.
  */
 class HybridNonlinearOperator
     : public suzerain::OperatorBase,
@@ -157,7 +157,7 @@ public:
             const suzerain::bsplineop &bop,
             OperatorCommonBlock &common,
             const boost::shared_ptr<
-                  const channel::manufactured_solution>& msoln)
+                  const support::manufactured_solution>& msoln)
         : suzerain::OperatorBase(grid, dgrid, b, bop),
           scenario(scenario),
           common(common),
@@ -180,7 +180,7 @@ protected:
     OperatorCommonBlock &common;
 
     /** Holds optional manufactured solution forcing details */
-    const boost::shared_ptr<const channel::manufactured_solution> msoln;
+    const boost::shared_ptr<const support::manufactured_solution> msoln;
 
 private:
 
@@ -190,6 +190,6 @@ private:
 
 };
 
-} // namespace channel
+} /* namespace support */ } /* namespace suzerain */
 
 #endif  /* HYBRID_OP_HPP */

@@ -37,7 +37,7 @@
 
 #pragma warning(disable:383 1572)
 
-namespace channel {
+namespace suzerain { namespace support {
 
 BsplineMassOperator::BsplineMassOperator(
         const suzerain::problem::GridDefinition &grid,
@@ -164,7 +164,7 @@ public:
 
     void operator()(complex_t &rho) const
     {
-        namespace ndx = channel::field::ndx;
+        namespace ndx = support::field::ndx;
         (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
@@ -183,7 +183,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State enters method as collocation point values in Y direction
 
     // Shorthand
-    namespace ndx = channel::field::ndx;
+    namespace ndx = support::field::ndx;
     const std::size_t Ny          = state.shape()[1];
     const std::size_t wall_lower  = 0;
     const std::size_t wall_upper  = Ny - 1;
@@ -230,7 +230,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return channel::applyNonlinearOperator<true,  channel::linearize::none>
+        return support::applyNonlinearOperator<true,  support::linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -239,7 +239,7 @@ std::vector<real_t> NonlinearOperator::applyOperator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return channel::applyNonlinearOperator<false, channel::linearize::none>
+        return support::applyNonlinearOperator<false, support::linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -250,4 +250,4 @@ std::vector<real_t> NonlinearOperator::applyOperator(
     }
 }
 
-} // end namespace channel
+} /* namespace support */ } /* namespace suzerain */

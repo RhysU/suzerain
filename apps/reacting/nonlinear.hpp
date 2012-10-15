@@ -197,10 +197,10 @@ std::vector<real_t> applyNonlinearOperator(
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
 
-    typename channel::physical_view<>::type auxp
-        = channel::physical_view<>::create(o.dgrid, auxw, aux_count);
-    typename channel::physical_view<>::type sphys
-        = channel::physical_view<>::create(o.dgrid, swave, state_count);
+    typename support::physical_view<>::type auxp
+        = support::physical_view<>::create(o.dgrid, auxw, aux_count);
+    typename support::physical_view<>::type sphys
+        = support::physical_view<>::create(o.dgrid, swave, state_count);
     for (size_t i = 0; i < state_count; ++i) {
       o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
@@ -596,7 +596,7 @@ std::vector<real_t> applyNonlinearOperator(
       SUZERAIN_TIMER_BEGIN("manufactured forcing");
 
       // Dereference the msoln smart pointer outside the compute loop
-      const channel::manufactured_solution &ms = *msoln;
+      const support::manufactured_solution &ms = *msoln;
 
       offset = 0;
       for (int j = o.dgrid.local_physical_start.y();

@@ -88,6 +88,7 @@ using std::numeric_limits;
 using std::size_t;
 using suzerain::complex_t;
 using suzerain::real_t;
+namespace support = suzerain::support;
 
 // Explicit timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
@@ -97,7 +98,7 @@ typedef suzerain::ContiguousState<4,complex_t>  nonlinear_state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using channel::NoiseDefinition;
+using support::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
@@ -135,7 +136,7 @@ static shared_ptr<      suzerain::bsplineop>            bop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>            gop;    // Galerkin L2
 static shared_ptr<      suzerain::bsplineop_luz>        bopluz;
 static shared_ptr<const suzerain::pencil_grid>          dgrid;
-static shared_ptr<      channel::manufactured_solution> msoln;
+static shared_ptr<      support::manufactured_solution> msoln;
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
@@ -151,10 +152,10 @@ static shared_ptr<nonlinear_state_type> state_nonlinear;
 
 // Common storage shared between the linear and nonlinear operators
 // which also includes instantaneous mean quantity statistics
-static channel::OperatorCommonBlock common_block;
+static support::OperatorCommonBlock common_block;
 
 // The last collection of mean quantity samples obtained
-static channel::mean samples;
+static support::mean samples;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -222,7 +223,7 @@ static void information_L2(const std::string& prefix,
                            const char * const name_L2  = "L2.mean",
                            const char * const name_rms = "rms.fluct")
 {
-    namespace field = channel::field;
+    namespace field = support::field;
 
     // Avoid computational cost when logging is disabled
     logging::logger_type log_L2  = logging::get_logger(name_L2);
@@ -268,7 +269,7 @@ static void information_L2(const std::string& prefix,
 /** Build a message containing bulk quantities */
 static void information_bulk(const std::string& prefix)
 {
-    namespace field = channel::field;
+    namespace field = support::field;
 
     // Only continue on the rank housing the zero-zero modes...
     if (!dgrid->has_zero_zero_modes()) return;
@@ -310,7 +311,7 @@ static void information_specific_wall_state(const std::string& prefix)
     // Only continue on the rank housing the zero-zero modes.
     if (!dgrid->has_zero_zero_modes()) return;
 
-    namespace ndx = channel::field::ndx;
+    namespace ndx = support::field::ndx;
 
     logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
                                      logging::get_logger("wall.upper")  };
@@ -331,7 +332,7 @@ static void information_specific_wall_state(const std::string& prefix)
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
         append_real(msg << ' ', rho);
         assert(ndx::rho == 0);
-        for (size_t k = 1; k < channel::field::count; ++k) {
+        for (size_t k = 1; k < support::field::count; ++k) {
             append_real(msg << ' ' ,
                         ((*state_linear)[k][wall[l]][0][0]).real() / rho);
         }
@@ -354,7 +355,7 @@ static void information_manufactured_solution_absolute_error(
     // Compute L2 of error of state against manufactured solution
     assert(msoln);
     state_nonlinear->assign(*state_linear);
-    channel::accumulate_manufactured_solution(
+    support::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             grid, *dgrid, *b, *bop, simulation_time);
     const std::vector<suzerain::L2> L2
@@ -438,7 +439,7 @@ static void sample_statistics(real_t t)
 
     // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
-    samples = channel::sample_mean_quantities(
+    samples = support::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *bop, *state_nonlinear, t);
 
     // Obtain mean samples computed via implicit forcing (when possible)
@@ -477,24 +478,24 @@ static bool save_restart(real_t t, size_t nt)
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
     esio_file_clone(esioh, restart.metadata.c_str(),
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
-    channel::store_time(esioh, t);
+    support::store_time(esioh, t);
 
     // Copy state into state_nonlinear for possibly destructive processing
     state_nonlinear->assign(*state_linear);
     if (restart.physical) {
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
-        channel::store_collocation_values(
+        support::store_collocation_values(
                 esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
-        channel::store_coefficients(
+        support::store_coefficients(
                 esioh, *state_nonlinear, scenario, grid, *dgrid);
     }
 
     // Include statistics in the restart file
     sample_statistics(t);
-    channel::store(esioh, samples);
+    support::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.destination);
@@ -520,11 +521,11 @@ static bool save_statistics(real_t t, size_t nt)
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
     esio_file_clone(esioh, restart.metadata.c_str(),
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
-    channel::store_time(esioh, t);
+    support::store_time(esioh, t);
 
     // Compute statistics and write to file
     sample_statistics(t);
-    channel::store(esioh, samples);
+    support::store(esioh, samples);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);
@@ -810,7 +811,7 @@ public:
 } delta_t_allreducer;
 
 /**
- * Default log4cxx configuration (differs from channel::log4cxx_config).
+ * Default log4cxx configuration (differs from support::log4cxx_config).
  * <tt>${FOO}</tt> syntax may be used to pick up environment variables in addition to properties
  * See http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
  * and https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
@@ -877,14 +878,14 @@ int main(int argc, char **argv)
 
     // Hook error handling into logging infrastructure
     gsl_set_error_handler(
-            &channel::mpi_abort_on_error_handler_gsl);
+            &support::mpi_abort_on_error_handler_gsl);
     suzerain_set_error_handler(
-            &channel::mpi_abort_on_error_handler_suzerain);
+            &support::mpi_abort_on_error_handler_suzerain);
     esio_set_error_handler(
-            &channel::mpi_abort_on_error_handler_esio);
+            &support::mpi_abort_on_error_handler_esio);
 #ifdef HAVE_UNDERLING
     underling_set_error_handler(
-            &channel::mpi_abort_on_error_handler_underling);
+            &support::mpi_abort_on_error_handler_underling);
 #endif
 
     DEBUG0("Processing command line arguments and response files");
@@ -988,7 +989,7 @@ int main(int argc, char **argv)
         const_cast<ScenarioDefinition&>(scenario).Ma
             = const_cast<ScenarioDefinition&>(scenario).gamma
             = numeric_limits<real_t>::quiet_NaN();
-        channel::load(esioh, const_cast<ScenarioDefinition&>(scenario));
+        support::load(esioh, const_cast<ScenarioDefinition&>(scenario));
         restart_Ma    = scenario.Ma;
         restart_gamma = scenario.gamma;
         const_cast<ScenarioDefinition&>(scenario).Ma
@@ -996,9 +997,9 @@ int main(int argc, char **argv)
         const_cast<ScenarioDefinition&>(scenario).gamma
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
-    channel::load(esioh, const_cast<GridDefinition&>(grid));
-    channel::load(esioh, const_cast<TimeDefinition&>(timedef));
-    channel::load(esioh, scenario, grid, msoln);
+    support::load(esioh, const_cast<GridDefinition&>(grid));
+    support::load(esioh, const_cast<TimeDefinition&>(timedef));
+    support::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);
 
     if (msoln) {
@@ -1017,7 +1018,7 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    channel::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
+    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
@@ -1108,18 +1109,18 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str());
-        channel::store(h, scenario);
-        channel::store(h, grid);
-        channel::store(h, b, bop, gop);
-        channel::store(h, timedef);
-        channel::store(h, scenario, grid, msoln);
+        support::store(h, scenario);
+        support::store(h, grid);
+        support::store(h, b, bop, gop);
+        support::store(h, timedef);
+        support::store(h, scenario, grid, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
     }
 
     // Display global degree of freedom information
     INFO0("Global number of unknowns:         " << (  grid.N.prod()
-                                                    * channel::field::count));
+                                                    * support::field::count));
     INFO0("Grid degrees of freedom    (GDOF): " << grid.N.prod());
     INFO0("GDOF by direction           (XYZ): " << grid.N);
     INFO0("Dealiased GDOF by direction (XYZ): " << grid.dN);
@@ -1131,7 +1132,7 @@ int main(int argc, char **argv)
     {
         const double begin = MPI_Wtime();
         fftw_set_timelimit(fftwdef.plan_timelimit);
-        channel::wisdom_broadcast(fftwdef.plan_wisdom);
+        support::wisdom_broadcast(fftwdef.plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
         if (use_p3dfft) {
             dgrid = make_shared<suzerain::pencil_grid_p3dfft>(
@@ -1146,7 +1147,7 @@ int main(int argc, char **argv)
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
         }
 #endif
-        channel::wisdom_gather(fftwdef.plan_wisdom);
+        support::wisdom_gather(fftwdef.plan_wisdom);
         wtime_fftw_planning = MPI_Wtime() - begin;
     }
     INFO0("MPI transpose and Fourier transform planning by "
@@ -1194,8 +1195,8 @@ int main(int argc, char **argv)
     DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
 
     // Create the state storage for nonlinear operator with appropriate padding
-    state_nonlinear.reset(channel::allocate_padded_state<nonlinear_state_type>(
-                channel::field::count, *dgrid));
+    state_nonlinear.reset(support::allocate_padded_state<nonlinear_state_type>(
+                support::field::count, *dgrid));
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Nonlinear state shape   (FYXZ): "
@@ -1206,27 +1207,27 @@ int main(int argc, char **argv)
     // Load restart information into state_nonlinear, including simulation time
     esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
     real_t initial_t;
-    channel::load_time(esioh, initial_t);
+    support::load_time(esioh, initial_t);
     {
         const double begin = MPI_Wtime();
         samples.t = initial_t;         // For idempotent --advance_nt=0...
-        channel::load(esioh, samples); // ...when no grid rescaling employed
-        channel::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
+        support::load(esioh, samples); // ...when no grid rescaling employed
+        support::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If necessary, adjust total energy to account for scenario changes
-    channel::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
+    support::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
                              restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
-    channel::add_noise(*state_nonlinear, noisedef,
+    support::add_noise(*state_nonlinear, noisedef,
                        scenario, grid, *dgrid, *b, *bop);
 
     // Create state storage for linear operator usage
     state_linear = make_shared<linear_state_type>(
-            suzerain::to_yxz(channel::field::count, dgrid->local_wave_extent));
+            suzerain::to_yxz(support::field::count, dgrid->local_wave_extent));
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
@@ -1272,18 +1273,18 @@ int main(int argc, char **argv)
             nonlinear_state_type
         > > N;
 
-    using channel::ChannelTreatment;
+    using support::ChannelTreatment;
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
-        L.reset(new ChannelTreatment<channel::BsplineMassOperatorIsothermal>(
+        L.reset(new ChannelTreatment<support::BsplineMassOperatorIsothermal>(
                     scenario, grid, *dgrid, *b, *bop, common_block));
-        N.reset(new channel::NonlinearOperator(
+        N.reset(new support::NonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
-        L.reset(new ChannelTreatment<channel::HybridIsothermalLinearOperator>(
+        L.reset(new ChannelTreatment<support::HybridIsothermalLinearOperator>(
                     scenario, grid, *dgrid, *b, *bop, common_block));
-        N.reset(new channel::HybridNonlinearOperator(
+        N.reset(new support::HybridNonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else {
         FATAL0("Sanity error in operator selection");
@@ -1532,7 +1533,7 @@ int main(int argc, char **argv)
         common_block.setZero(grid.dN.y());  // Zero reference quantities
         L->accumulateMassPlusScaledOperator(
                 1.0, *state_linear, -1.0, *state_nonlinear, *m, 0, /*substep*/0);
-        for (size_t k = 0; k < channel::field::count; ++k) {
+        for (size_t k = 0; k < support::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
@@ -1543,7 +1544,7 @@ int main(int argc, char **argv)
         state_nonlinear->exchange(*state_linear);
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
-        for (size_t k = 0; k < channel::field::count; ++k) {
+        for (size_t k = 0; k < support::field::count; ++k) {
             suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),

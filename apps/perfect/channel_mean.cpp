@@ -52,6 +52,7 @@ using suzerain::problem::GridDefinition;
 using suzerain::problem::ScenarioDefinition;
 using suzerain::problem::TimeDefinition;
 using suzerain::real_t;
+namespace support = suzerain::support;
 
 // Provided by channel_mean_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
@@ -409,7 +410,7 @@ int main(int argc, char **argv)
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
     logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        channel::log4cxx_config_console);
+                        support::log4cxx_config_console);
 
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
@@ -594,13 +595,13 @@ int main(int argc, char **argv)
             esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
-            channel::store(h.get(), (*scenario));
-            channel::store(h.get(), *grid);
+            support::store(h.get(), (*scenario));
+            support::store(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
-            channel::store(h.get(), b, bop, gop);
+            support::store(h.get(), b, bop, gop);
             gop.reset();
-            channel::store(h.get(), *timedef);
+            support::store(h.get(), *timedef);
 
             // Determine how many time indices and collocation points we have.
             // We'll build a vector of time values to write after iteration.
@@ -699,11 +700,11 @@ static quantity::storage_map_type process(
                            /* max_dt     */ 0);
     shared_ptr<suzerain::bspline> b;
     shared_ptr<suzerain::bsplineop> bop;
-    channel::load_time(h.get(), time);
-    channel::load(h.get(), scenario);
-    channel::load(h.get(), grid);
-    channel::load(h.get(), timedef);
-    channel::load(h.get(), b, bop);
+    support::load_time(h.get(), time);
+    support::load(h.get(), scenario);
+    support::load(h.get(), grid);
+    support::load(h.get(), timedef);
+    support::load(h.get(), b, bop);
     assert(b->n() == grid.N.y());
 
     // Return the scenario, grid, and timedef to the caller if not already set
@@ -717,8 +718,8 @@ static quantity::storage_map_type process(
     boplu->factor_mass(*bop.get());
 
     // Load samples as coefficients
-    auto_ptr<channel::mean> m(new channel::mean(time, b->n()));
-    channel::load(h.get(), *m.get());
+    auto_ptr<support::mean> m(new support::mean(time, b->n()));
+    support::load(h.get(), *m.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {
@@ -1128,8 +1129,8 @@ static quantity::storage_map_type process(
         i_boplu = boplu;
     }
 
-    const real_t bsplines_dist = channel::distance(*b, *i_b);
-    if (bsplines_dist <= channel::bsplines_distinct_distance) {
+    const real_t bsplines_dist = support::distance(*b, *i_b);
+    if (bsplines_dist <= support::bsplines_distinct_distance) {
 
         // Compute bulk integration weights
         s->col(quantity::bulk_weights)
