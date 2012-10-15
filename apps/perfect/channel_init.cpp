@@ -405,7 +405,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    support::store_coefficients(esioh, swave, scenario, grid, *dgrid);
+    support::store_coefficients(esioh, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
     real_t t;

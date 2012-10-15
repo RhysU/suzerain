@@ -968,12 +968,9 @@ suzerain::ContiguousState<4,complex_t>* allocate_padded_state(
 void store_coefficients(
         const esio_handle h,
         const suzerain::ContiguousState<4,complex_t> &swave,
-        const suzerain::problem::ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid)
 {
-    SUZERAIN_UNUSED(scenario);
-
     // Ensure swave meets this routine's assumptions
     assert(                  swave.shape()[0]  == field::count);
     assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());

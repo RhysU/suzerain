@@ -490,7 +490,7 @@ static bool save_restart(real_t t, size_t nt)
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         support::store_coefficients(
-                esioh, *state_nonlinear, scenario, grid, *dgrid);
+                esioh, *state_nonlinear, grid, *dgrid);
     }
 
     // Include statistics in the restart file
