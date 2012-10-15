@@ -27,7 +27,7 @@
 
 #include <cstddef>
 
-namespace constitutive {
+namespace suzerain { namespace reacting {
 
 class perfectGasInterface {
 
@@ -145,6 +145,6 @@ void perfectGasInterface::evaluate (const double  e,
 
 }
 
-} // end namespace constitutive
+} /* namespace reacting */ } /* namespace suzerain */
 
 #endif

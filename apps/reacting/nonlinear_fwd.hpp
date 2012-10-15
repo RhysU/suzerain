@@ -31,7 +31,7 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timers.h>
 
-namespace channel {
+namespace suzerain { namespace reacting {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -356,6 +356,6 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 
-} // namespace channel
+} /* namespace reacting */ } /* namespace suzerain */
 
 #endif  /* NONLINEAR_FWD_HPP */

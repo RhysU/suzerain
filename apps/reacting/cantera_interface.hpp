@@ -36,7 +36,7 @@
 #include <cantera/IdealGasMix.h>
 #include <cantera/transport.h>
 
-namespace constitutive {
+namespace suzerain { namespace reacting {
 
 class canteraInterface {
 
@@ -216,6 +216,6 @@ void canteraInterface::sources (double* om)
 
 }
 
-} // end namespace constitutive
+} /* namespace reacting */ } /* namespace suzerain */
 
 #endif
