@@ -50,7 +50,7 @@ using std::auto_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::problem::GridDefinition;
-using suzerain::problem::ScenarioDefinition;
+using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::TimeDefinition;
 using suzerain::real_t;
 namespace perfect = suzerain::perfect;

@@ -105,7 +105,7 @@ using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::RestartDefinition;
 using suzerain::problem::StatisticsDefinition;
-using suzerain::problem::ScenarioDefinition;
+using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition scenario;

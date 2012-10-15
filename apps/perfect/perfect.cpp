@@ -59,7 +59,7 @@ using std::size_t;
 namespace suzerain { namespace perfect {
 
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario)
+           const ScenarioDefinition& scenario)
 {
     DEBUG0("Storing ScenarioDefinition parameters");
 
@@ -95,7 +95,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          suzerain::problem::ScenarioDefinition& scenario)
+          ScenarioDefinition& scenario)
 {
     DEBUG0("Loading ScenarioDefinition parameters");
 
@@ -159,7 +159,7 @@ static void attribute_storer(const esio_handle &h,
 }
 
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario,
+           const ScenarioDefinition& scenario,
            const suzerain::problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
@@ -226,7 +226,7 @@ static void NaNer(const std::string&, real_t& value)
 }
 
 void load(const esio_handle h,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
@@ -276,7 +276,7 @@ void load(const esio_handle h,
 void store_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& swave,
-        const suzerain::problem::ScenarioDefinition& scenario,
+        const ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -363,7 +363,7 @@ void store_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& state,
-        const suzerain::problem::ScenarioDefinition& scenario,
+        const ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -472,7 +472,7 @@ void load_collocation_values(
 
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t>& state,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline& b,
@@ -513,7 +513,7 @@ void load(const esio_handle h,
 
 void
 adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
-                const suzerain::problem::ScenarioDefinition& scenario,
+                const ScenarioDefinition& scenario,
                 const suzerain::problem::GridDefinition& grid,
                 const suzerain::pencil_grid& dgrid,
                 suzerain::bspline &b,
@@ -640,7 +640,7 @@ NoiseDefinition::NoiseDefinition(real_t percent,
 void
 add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline &b,
@@ -1113,7 +1113,7 @@ void accumulate_manufactured_solution(
 // definitely suboptimal but is expected to be invoked very infrequently and
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition &scenario,
+        const ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,

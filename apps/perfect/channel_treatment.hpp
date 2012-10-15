@@ -33,7 +33,6 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
 
 #include "perfect.hpp"
 
@@ -67,7 +66,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     ChannelTreatment(
-            const suzerain::problem::ScenarioDefinition &scenario,
+            const ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -129,7 +128,7 @@ private:
 
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
-            const suzerain::problem::ScenarioDefinition &scenario,
+            const ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -183,7 +182,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     namespace field = support::field;
     namespace ndx   = field::ndx;
     OperatorCommonBlock &common = this->common;
-    const suzerain::problem::ScenarioDefinition &scenario = this->scenario;
+    const ScenarioDefinition &scenario = this->scenario;
     const suzerain::pencil_grid &dgrid = this->dgrid;
     const int Ny = dgrid.global_wave_extent.y();
 

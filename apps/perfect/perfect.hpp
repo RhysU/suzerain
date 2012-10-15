@@ -42,12 +42,12 @@
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
 #include "nsctpl_rholut.hpp"
+#include "scenario_definition.hpp"
 
 namespace suzerain {
 
@@ -58,11 +58,11 @@ namespace perfect {
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario);
+           const ScenarioDefinition& scenario);
 
 /** Load a ScenarioDefinition from a restart file */
 void load(const esio_handle h,
-          suzerain::problem::ScenarioDefinition& scenario);
+          ScenarioDefinition& scenario);
 
 /** Manufactured solution employed throughout the channel code */
 typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
@@ -72,7 +72,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  * Parameters are only stored when \c msoln evaluates as true.
  */
 void store(const esio_handle h,
-           const suzerain::problem::ScenarioDefinition& scenario,
+           const ScenarioDefinition& scenario,
            const suzerain::problem::GridDefinition& grid,
            const boost::shared_ptr<manufactured_solution> & msoln);
 
@@ -83,7 +83,7 @@ void store(const esio_handle h,
  * \c msoln will be reset.
  */
 void load(const esio_handle h,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           boost::shared_ptr<manufactured_solution>& msoln);
 
@@ -98,7 +98,7 @@ void load(const esio_handle h,
 void store_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& swave,
-        const suzerain::problem::ScenarioDefinition& scenario,
+        const ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -111,7 +111,7 @@ void store_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         suzerain::ContiguousState<4,complex_t>& state,
-        const suzerain::problem::ScenarioDefinition& scenario,
+        const ScenarioDefinition& scenario,
         const suzerain::problem::GridDefinition& grid,
         const suzerain::pencil_grid& dgrid,
         suzerain::bspline& b,
@@ -123,7 +123,7 @@ void load_collocation_values(
  */
 void load(const esio_handle h,
           suzerain::ContiguousState<4,complex_t>& state,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline& b,
@@ -137,7 +137,7 @@ void load(const esio_handle h,
  */
 void
 adjust_scenario(suzerain::ContiguousState<4,complex_t> &swave,
-                const suzerain::problem::ScenarioDefinition& scenario,
+                const ScenarioDefinition& scenario,
                 const suzerain::problem::GridDefinition& grid,
                 const suzerain::pencil_grid& dgrid,
                 suzerain::bspline &b,
@@ -196,7 +196,7 @@ public:
 void
 add_noise(suzerain::ContiguousState<4,complex_t> &state,
           const NoiseDefinition& noisedef,
-          const suzerain::problem::ScenarioDefinition& scenario,
+          const ScenarioDefinition& scenario,
           const suzerain::problem::GridDefinition& grid,
           const suzerain::pencil_grid& dgrid,
           suzerain::bspline &b,
@@ -436,7 +436,7 @@ public:
  * @return Mean quantities as B-spline coefficients.
  */
 mean sample_mean_quantities(
-        const suzerain::problem::ScenarioDefinition &scenario,
+        const ScenarioDefinition &scenario,
         const suzerain::problem::GridDefinition &grid,
         const suzerain::pencil_grid &dgrid,
         suzerain::bspline &b,

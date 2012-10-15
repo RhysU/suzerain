@@ -32,7 +32,6 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/state_fwd.hpp>
 
 #include "perfect.hpp"
@@ -55,7 +54,7 @@ class NonlinearOperator
 public:
 
     NonlinearOperator(
-            const suzerain::problem::ScenarioDefinition &scenario,
+            const ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -79,7 +78,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const suzerain::problem::ScenarioDefinition &scenario;
+    const ScenarioDefinition &scenario;
 
     /** Houses data additionally required for some linear operators */
     OperatorCommonBlock &common;
@@ -154,7 +153,7 @@ class BsplineMassOperatorIsothermal
 public:
 
     BsplineMassOperatorIsothermal(
-            const suzerain::problem::ScenarioDefinition &scenario,
+            const ScenarioDefinition &scenario,
             const suzerain::problem::GridDefinition &grid,
             const suzerain::pencil_grid &dgrid,
             suzerain::bspline &b,
@@ -190,7 +189,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const suzerain::problem::ScenarioDefinition &scenario;
+    const ScenarioDefinition &scenario;
 
     /** Houses data required for \ref invertMassPlusScaledOperator */
     OperatorCommonBlock &common;

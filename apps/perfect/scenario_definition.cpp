@@ -15,8 +15,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
+#include "scenario_definition.hpp"
+
 #include <suzerain/common.hpp>
-#include <suzerain/scenario_definition.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/validation.hpp>
 
@@ -42,7 +44,7 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-namespace problem {
+namespace perfect {
 
 ScenarioDefinition::ScenarioDefinition()
     : IDefinition("Nondimensional scenario parameters"),
@@ -150,6 +152,6 @@ void ScenarioDefinition::initialize_options(
     this->add_options()("gamma", p.release(), "Ratio of specific heats");
 }
 
-} // namespace problem
+} // namespace perfect
 
 } // namespace suzerain

@@ -65,7 +65,7 @@ namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
 // Global parameters initialized in main()
-using suzerain::problem::ScenarioDefinition;
+using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::TimeDefinition;
 static ScenarioDefinition scenario(
