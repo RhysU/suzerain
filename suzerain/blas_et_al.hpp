@@ -1222,7 +1222,7 @@ public:
     template <typename U>
     explicit allocator_blas_policy(allocator_blas_policy<U> const&) {}
 
-    /** Memory allocation uses ::suzerain::blas::malloc and std::free */
+    /** Memory allocation uses suzerain::blas::malloc and std::free */
     //@{
     /**
      * Allocate space for \c cnt instances of type \c value_type.
@@ -1234,13 +1234,13 @@ public:
         if (SUZERAIN_UNLIKELY(cnt == 0)) return NULL;
 
         pointer p = reinterpret_cast<pointer>(
-                ::suzerain::blas::malloc(cnt * sizeof(T)));
+                suzerain::blas::malloc(cnt * sizeof(T)));
 
         if (SUZERAIN_UNLIKELY(!p)) throw std::bad_alloc();
 
         return p;
     }
-    void deallocate(pointer p, size_type) { ::suzerain::blas::free(p); }
+    void deallocate(pointer p, size_type) { suzerain::blas::free(p); }
     //@}
 
     /** max_size method following std::allocator contract */
@@ -1279,7 +1279,7 @@ inline bool operator==(allocator_blas_policy<T> const&,
 template<class T>
 struct allocator
 {
-    typedef typename ::suzerain::allocator<T, allocator_blas_policy<T> > type;
+    typedef typename suzerain::allocator<T, allocator_blas_policy<T> > type;
 };
 
 
@@ -1302,7 +1302,7 @@ public:
               typename TY, typename TINCY >
     void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
     {
-        return ::suzerain::blas::swap(n, x, incx, y, incy);
+        return suzerain::blas::swap(n, x, incx, y, incy);
     }
 };
 
@@ -1314,7 +1314,7 @@ public:
               typename TY, typename TINCY >
     void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
     {
-        return ::suzerain::blas::copy(n, x, incx, y, incy);
+        return suzerain::blas::copy(n, x, incx, y, incy);
     }
 };
 
@@ -1332,7 +1332,7 @@ public:
               typename TY, typename TINCY >
     void operator()(TN n, TX x, TINCX incx, TY y, TINCY incy) const
     {
-        return ::suzerain::blas::axpy(n, alpha_, x, incx, y, incy);
+        return suzerain::blas::axpy(n, alpha_, x, incx, y, incy);
     }
 
 private:

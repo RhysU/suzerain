@@ -33,7 +33,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<real_t>(s, name);
+    const T t = exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -75,8 +75,7 @@ static void parse_walltime(const std::string &s,
     // Parse dd, hh, mm, and ss into components[0], [1], [2], and [3]
     vector<real_t> components(4 - tokens.size(), 0);  // Zero missing values
     components.reserve(4);                            // Preallocate storage
-    real_t (*f)(const std::string&, const char *)
-            = &suzerain::exprparse<real_t>;
+    real_t (*f)(const std::string&, const char *) = &exprparse<real_t>;
     transform(tokens.begin(), tokens.end(), back_inserter(components),
               bind(f, _1, name));
 
@@ -87,7 +86,7 @@ static void parse_walltime(const std::string &s,
     t = 60 * t + components[3];  // seconds
 
     // Validate and store result
-    suzerain::validation::ensure_nonnegative(t, name);
+    validation::ensure_nonnegative(t, name);
     *value = t;
 }
 
@@ -114,8 +113,8 @@ void TimeDefinition::initialize_advancement(
     using boost::lexical_cast;
     using boost::program_options::value;
     using std::string;
-    using suzerain::validation::ensure_nonnegative;
-    using suzerain::validation::ensure_positive;
+    using validation::ensure_nonnegative;
+    using validation::ensure_positive;
 
     this->add_options()
         ("advance_dt", value<string>(NULL)
@@ -164,7 +163,7 @@ void TimeDefinition::initialize_scenario(
     // code.  Validation routines used below all silently allow NaNs.
 
     std::auto_ptr<boost::program_options::typed_value<std::string> > p;
-    using suzerain::validation::ensure_positive;
+    using validation::ensure_positive;
 
     // evmagfactor
     evmagfactor = std::numeric_limits<real_t>::quiet_NaN();

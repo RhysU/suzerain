@@ -32,10 +32,10 @@
 namespace suzerain {
 
 OperatorBase::OperatorBase(
-        const suzerain::problem::GridDefinition &grid,
-        const suzerain::pencil_grid &dgrid,
-        suzerain::bspline &b,
-        const suzerain::bsplineop &bop)
+        const problem::GridDefinition &grid,
+        const pencil_grid &dgrid,
+        bspline &b,
+        const bsplineop &bop)
     : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
       lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x),
       lambda2_x(lambda1_x * lambda1_x),

@@ -31,21 +31,21 @@
 namespace suzerain
 {
 
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-ContiguousState<NumDims,Element>::ContiguousState(
+ContiguousState<Dim,Element>::ContiguousState(
         const ExtentList& sizes)
-    : shared_range_type(suzerain::allocate_shared_range(
-                typename suzerain::blas::allocator<Element>::type(),
+    : shared_range_type(allocate_shared_range(
+                typename blas::allocator<Element>::type(),
                 storage_order_type::compute_storage(sizes.begin()))),
       multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
     // NOP
 }
 
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-ContiguousState<NumDims,Element>::ContiguousState(
+ContiguousState<Dim,Element>::ContiguousState(
         const shared_range_type& storage,
         const ExtentList& sizes)
     : shared_range_type(storage),
@@ -62,13 +62,13 @@ ContiguousState<NumDims,Element>::ContiguousState(
     }
 }
 
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 template< typename ExtentList, typename MinStrideList >
-ContiguousState<NumDims,Element>::ContiguousState(
+ContiguousState<Dim,Element>::ContiguousState(
         const ExtentList& sizes,
         const MinStrideList& minstrides)
-    : shared_range_type(suzerain::allocate_shared_range(
-                typename suzerain::blas::allocator<Element>::type(),
+    : shared_range_type(allocate_shared_range(
+                typename blas::allocator<Element>::type(),
                 storage_order_type::compute_storage(
                         sizes.begin(), minstrides.begin()))),
       multi_array_type(shared_range_type::begin(),
@@ -77,9 +77,9 @@ ContiguousState<NumDims,Element>::ContiguousState(
     // NOP
 }
 
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 template< typename ExtentList, typename MinStrideList >
-ContiguousState<NumDims,Element>::ContiguousState(
+ContiguousState<Dim,Element>::ContiguousState(
         const shared_range_type& storage,
         const ExtentList& sizes,
         const MinStrideList& minstrides)
@@ -98,27 +98,27 @@ ContiguousState<NumDims,Element>::ContiguousState(
     }
 }
 
-template< std::size_t NumDims, typename Element >
-ContiguousState<NumDims,Element>::ContiguousState(
+template< std::size_t Dim, typename Element >
+ContiguousState<Dim,Element>::ContiguousState(
         const ContiguousState& other)
-    : shared_range_type(suzerain::clone_shared_range(
-                typename suzerain::blas::allocator<Element>::type(),
+    : shared_range_type(clone_shared_range(
+                typename blas::allocator<Element>::type(),
                 other.range())),
       multi_array_type(shared_range_type::begin(),
-                       suzerain::multi_array::shape_array(other),
-                       suzerain::multi_array::strides_array(other),
+                       multi_array::shape_array(other),
+                       multi_array::strides_array(other),
                        storage_order_type())
 {
-    // Data copied by suzerain::clone_shared_range
+    // Data copied by clone_shared_range
     // Strides copied by chosen multi_array_type constructor
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::scale(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::scale(
         const Element& factor)
 {
-    suzerain::blas::scal(
-            shared_range_type::size(), factor, shared_range_type::begin(), 1);
+    blas::scal(shared_range_type::size(), factor,
+               shared_range_type::begin(), 1);
 }
 
 namespace detail {
@@ -409,8 +409,8 @@ void apply(BLASFunctor functor,
 
 } // namespace detail
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::addScaled(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::addScaled(
             const Element& factor,
             const ContiguousState& other)
 {
@@ -419,20 +419,20 @@ void ContiguousState<NumDims,Element>::addScaled(
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
-                    other.strides() + NumDims, this->strides()))) {
+                    other.strides() + Dim, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::axpy(shared_range_type::size(), factor,
-                             other.shared_range_type::begin(), 1,
-                             shared_range_type::begin(), 1);
+        blas::axpy(shared_range_type::size(), factor,
+                   other.shared_range_type::begin(), 1,
+                   shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
-        detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+        detail::apply(blas::functor::axpy<Element>(factor),
                       const_cast<ContiguousState&>(other), *this);
     }
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::addScaled(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
@@ -440,44 +440,44 @@ void ContiguousState<NumDims,Element>::addScaled(
             "Detected this->addScaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+    detail::apply(blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::assign(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::assign(
             const ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
-                    other.strides() + NumDims, this->strides()))) {
+                    other.strides() + Dim, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::copy(shared_range_type::size(),
+        blas::copy(shared_range_type::size(),
                 other.shared_range_type::begin(), 1,
                 shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
-        detail::apply(::suzerain::blas::functor::copy(),
+        detail::apply(blas::functor::copy(),
                       const_cast<ContiguousState&>(other), *this);
     }
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::assign(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::assign(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::copy(),
+    detail::apply(blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::exchange(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::exchange(
             ContiguousState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -485,68 +485,68 @@ void ContiguousState<NumDims,Element>::exchange(
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
-                    other.strides() + NumDims, this->strides()))) {
+                    other.strides() + Dim, this->strides()))) {
         // Identical strides between elements: use a single BLAS call
-        suzerain::blas::swap(shared_range_type::size(),
+        blas::swap(shared_range_type::size(),
                 other.shared_range_type::begin(), 1,
                 shared_range_type::begin(), 1);
     } else {
         // Different strides between elements: loop over BLAS calls
-        detail::apply(::suzerain::blas::functor::swap(), other, *this);
+        detail::apply(blas::functor::swap(), other, *this);
     }
 }
 
-template< std::size_t NumDims, typename Element >
-void ContiguousState<NumDims,Element>::exchange(
+template< std::size_t Dim, typename Element >
+void ContiguousState<Dim,Element>::exchange(
             multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::swap(), other, *this);
+    detail::apply(blas::functor::swap(), other, *this);
 }
 
 
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-InterleavedState<NumDims,Element>::InterleavedState(
+InterleavedState<Dim,Element>::InterleavedState(
         const ExtentList& sizes,
         size_type min_total_contiguous_count)
-    : shared_range_type(suzerain::allocate_shared_range(
-                typename suzerain::blas::allocator<Element>::type(),
+    : shared_range_type(allocate_shared_range(
+                typename blas::allocator<Element>::type(),
                 std::max<size_type>(
-                    suzerain::functional::product(sizes.begin(), sizes.end()),
+                    functional::product(sizes.begin(), sizes.end()),
                     min_total_contiguous_count))),
       multi_array_type(shared_range_type::begin(), sizes, storage_order_type())
 {
     // NOP
 }
 
-template< std::size_t NumDims, typename Element >
-InterleavedState<NumDims,Element>::InterleavedState(
+template< std::size_t Dim, typename Element >
+InterleavedState<Dim,Element>::InterleavedState(
         const InterleavedState& other)
-    : shared_range_type(suzerain::clone_shared_range(
-                typename suzerain::blas::allocator<Element>::type(),
+    : shared_range_type(clone_shared_range(
+                typename blas::allocator<Element>::type(),
                 other.range())),
       multi_array_type(shared_range_type::begin(),
-                       suzerain::multi_array::shape_array(other),
+                       multi_array::shape_array(other),
                        storage_order_type())
 {
-    // Data copied by suzerain::clone_shared_range
+    // Data copied by clone_shared_range
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::scale(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::scale(
         const Element& factor)
 {
     // Data guaranteed to be contiguous in first num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
-    suzerain::blas::scal(this->num_elements(), factor, this->data(), 1);
+    blas::scal(this->num_elements(), factor, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::addScaled(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::addScaled(
             const Element& factor,
             const InterleavedState& other)
 {
@@ -556,12 +556,12 @@ void InterleavedState<NumDims,Element>::addScaled(
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
-    suzerain::blas::axpy(
+    blas::axpy(
             this->num_elements(), factor, other.data(), 1, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::addScaled(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
@@ -569,12 +569,12 @@ void InterleavedState<NumDims,Element>::addScaled(
             "Detected this->addScaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::axpy<Element>(factor),
+    detail::apply(blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::assign(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::assign(
             const InterleavedState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -583,24 +583,23 @@ void InterleavedState<NumDims,Element>::assign(
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
-    suzerain::blas::copy(
-            this->num_elements(), other.data(), 1, this->data(), 1);
+    blas::copy(this->num_elements(), other.data(), 1, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::assign(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::assign(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::copy(),
+    detail::apply(blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::exchange(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::exchange(
             InterleavedState& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -609,19 +608,18 @@ void InterleavedState<NumDims,Element>::exchange(
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
-    suzerain::blas::swap(
-            this->num_elements(), other.data(), 1, this->data(), 1);
+    blas::swap(this->num_elements(), other.data(), 1, this->data(), 1);
 }
 
-template< std::size_t NumDims, typename Element >
-void InterleavedState<NumDims,Element>::exchange(
+template< std::size_t Dim, typename Element >
+void InterleavedState<Dim,Element>::exchange(
             multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
 
-    detail::apply(::suzerain::blas::functor::swap(), other, *this);
+    detail::apply(blas::functor::swap(), other, *this);
 }
 
 } // namespace suzerain

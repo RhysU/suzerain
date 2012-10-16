@@ -55,10 +55,10 @@ public:
      *                 e.g. integration coefficients.
      * @param bop      B-spline operators to use.
      */
-    OperatorBase(const suzerain::problem::GridDefinition &grid,
-                 const suzerain::pencil_grid &dgrid,
-                 suzerain::bspline &b,
-                 const suzerain::bsplineop &bop);
+    OperatorBase(const problem::GridDefinition &grid,
+                 const pencil_grid &dgrid,
+                 bspline &b,
+                 const bsplineop &bop);
 
     /** Virtual destructor to permit use as a base class */
     virtual ~OperatorBase();
@@ -66,7 +66,7 @@ public:
     /**
      * Perform scaled operator accumulation on two state fields.
      *
-     * @see suzerain::bsplineop::accumulate
+     * @see bsplineop::accumulate
      */
     template<typename AlphaType, typename MultiArrayX,
              typename BetaType,  typename MultiArrayY>
@@ -91,7 +91,7 @@ public:
     /**
      * Perform scaled operator application on one state field.
      *
-     * @see suzerain::bsplineop::apply
+     * @see bsplineop::apply
      */
     template<typename AlphaType, typename MultiArray>
     int bop_apply(
@@ -110,11 +110,11 @@ public:
     /**
      * Perform real-valued B-spline operator inversion on one state field.
      *
-     * @see suzerain::bsplineop_lu::solve
+     * @see bsplineop_lu::solve
      */
     template<typename MultiArray>
     int bop_solve(
-            const suzerain::bsplineop_lu &lu, MultiArray &x, int ndx) const
+            const bsplineop_lu &lu, MultiArray &x, int ndx) const
     {
         SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(real)");
 
@@ -128,11 +128,11 @@ public:
     /**
      * Perform complex-valued B-spline operator inversion on one state field.
      *
-     * @see suzerain::bsplineop_luz::solve
+     * @see bsplineop_luz::solve
      */
     template<typename MultiArray>
     int bop_solve(
-            const suzerain::bsplineop_luz &luz, MultiArray &x, int ndx) const
+            const bsplineop_luz &luz, MultiArray &x, int ndx) const
     {
         SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(cmplx)");
 
@@ -146,7 +146,7 @@ public:
     /**
      * Perform wave space-based differentiation using accumulation.
      *
-     * @see suzerain::diffwave::accumulate
+     * @see diffwave::accumulate
      */
     template<typename MultiArrayX, typename MultiArrayY>
     void diffwave_accumulate(int dxcnt,
@@ -163,7 +163,7 @@ public:
         assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
         assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
 
-        return suzerain::diffwave::accumulate(
+        return diffwave::accumulate(
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
                 beta,  y[ndx_y].origin(),
@@ -183,7 +183,7 @@ public:
     /**
      * Perform wave space-based differentiation using application.
      *
-     * @see suzerain::diffwave::apply
+     * @see diffwave::apply
      */
     template<typename MultiArray>
     void diffwave_apply(int dxcnt,
@@ -194,7 +194,7 @@ public:
     {
         SUZERAIN_TIMER_SCOPED("OperatorBase::diffwave_apply");
 
-        return suzerain::diffwave::apply(
+        return diffwave::apply(
                 dxcnt, dzcnt,
                 alpha, x[ndx_x].origin(),
                 grid.L.x(), grid.L.z(),
@@ -294,13 +294,13 @@ public:
     const real_t lambda2_z;
 
     /** The grid in which the operator is used */
-    const suzerain::problem::GridDefinition &grid;
+    const problem::GridDefinition &grid;
 
     /** The parallel decomposition grid in which the operator is used */
-    const suzerain::pencil_grid &dgrid;
+    const pencil_grid &dgrid;
 
     /** The B-spline operators with which the operator is used */
-    const suzerain::bsplineop &bop;
+    const bsplineop &bop;
 
 private:
 

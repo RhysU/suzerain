@@ -48,7 +48,7 @@ namespace suzerain {
 namespace pencilfft {
 
 /**
- * Implementation details underneath pecos::suzerain::pencilfft
+ * Implementation details underneath suzerain::pencilfft
  * @internal
  */
 namespace detail {
@@ -407,7 +407,7 @@ struct transform_traits<fftwf_complex> {
     typedef fftwf_complex complex_type;
 
     /** Real and imaginary components type */
-    typedef ::suzerain::complex::traits::real<fftwf_complex>::type real_type;
+    typedef suzerain::complex::traits::real<fftwf_complex>::type real_type;
 
     /** Corresponding precision FFTW complex type */
     typedef fftwf_complex fftw_complex_type;
@@ -459,7 +459,7 @@ struct transform_traits<fftw_complex> {
     typedef fftw_complex complex_type;
 
     /** Real and imaginary components type */
-    typedef ::suzerain::complex::traits::real<fftw_complex>::type real_type;
+    typedef suzerain::complex::traits::real<fftw_complex>::type real_type;
 
     /** Corresponding precision FFTW complex type */
     typedef fftw_complex fftw_complex_type;
@@ -511,7 +511,7 @@ struct transform_traits<fftwl_complex> {
     typedef fftwl_complex complex_type;
 
     /** Real and imaginary components type */
-    typedef ::suzerain::complex::traits::real<fftwl_complex>::type real_type;
+    typedef suzerain::complex::traits::real<fftwl_complex>::type real_type;
 
     /** Corresponding precision FFTW complex type */
     typedef fftwl_complex fftw_complex_type;

@@ -30,7 +30,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<real_t>(s, name);
+    const T t = exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -67,9 +67,9 @@ GridDefinition::GridDefinition(const char * Lx,
                                int          Nz,
                                real_t       DAFz)
     : IDefinition("Mixed Fourier/B-spline computational grid definition"),
-      L(suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Lx, ...)"),
-        suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Ly, ...)"),
-        suzerain::exprparse<real_t>(Lx, "GridDefinition(..., Lz, ...)")),
+      L(exprparse<real_t>(Lx, "GridDefinition(..., Lx, ...)"),
+        exprparse<real_t>(Lx, "GridDefinition(..., Ly, ...)"),
+        exprparse<real_t>(Lx, "GridDefinition(..., Lz, ...)")),
       N(Nx, Ny, Nz),
       DAF(DAFx, 1 /* Never dealiased */, DAFz),
       dN(Nx * DAFx, Ny, Nz * DAFz),
@@ -93,8 +93,8 @@ void GridDefinition::initialize_options(const char * default_Lx,
     using std::mem_fun;
     using std::ptr_fun;
     using std::string;
-    using suzerain::validation::ensure_nonnegative;
-    using suzerain::validation::ensure_positive;
+    using validation::ensure_nonnegative;
+    using validation::ensure_positive;
 
     // Used to help resolve pointers-to-members taking strings
     GridDefinition& (GridDefinition::*f)(const std::string&) = NULL;
@@ -207,9 +207,9 @@ void GridDefinition::initialize_options(const char * default_Lx,
 GridDefinition& GridDefinition::Nx(int value)
 {
     if (N.x()) {
-        suzerain::validation::ensure_positive(value,"Nx");
+        validation::ensure_positive(value,"Nx");
     } else {
-        suzerain::validation::ensure_nonnegative(value,"Nx");
+        validation::ensure_nonnegative(value,"Nx");
     }
     const_cast<int&>(N.x())  = value;
 #pragma warning(push,disable:2259)
@@ -221,9 +221,9 @@ GridDefinition& GridDefinition::Nx(int value)
 GridDefinition& GridDefinition::Ny(int value)
 {
     if (N.y()) {
-        suzerain::validation::ensure_positive(value,"Ny");
+        validation::ensure_positive(value,"Ny");
     } else {
-        suzerain::validation::ensure_nonnegative(value,"Ny");
+        validation::ensure_nonnegative(value,"Ny");
     }
     const_cast<int&>(N.y())  = value;
 #pragma warning(push,disable:2259)
@@ -235,9 +235,9 @@ GridDefinition& GridDefinition::Ny(int value)
 GridDefinition& GridDefinition::Nz(int value)
 {
     if (N.z()) {
-        suzerain::validation::ensure_positive(value,"Nz");
+        validation::ensure_positive(value,"Nz");
     } else {
-        suzerain::validation::ensure_nonnegative(value,"Nz");
+        validation::ensure_nonnegative(value,"Nz");
     }
     const_cast<int&>(N.z())  = value;
 #pragma warning(push,disable:2259)
@@ -251,9 +251,9 @@ GridDefinition& GridDefinition::DAFx(real_t factor)
 #pragma warning(push,disable:1572)
     if (DAF.x() != 0) {
 #pragma warning(pop)
-        suzerain::validation::ensure_positive(factor,"DAFx");
+        validation::ensure_positive(factor,"DAFx");
     } else {
-        suzerain::validation::ensure_nonnegative(factor,"DAFx");
+        validation::ensure_nonnegative(factor,"DAFx");
     }
     const_cast<real_t&>(DAF.x()) = factor;
 #pragma warning(push,disable:2259)
@@ -267,9 +267,9 @@ GridDefinition& GridDefinition::DAFz(real_t factor)
 #pragma warning(push,disable:1572)
     if (DAF.z() != 0) {
 #pragma warning(pop)
-        suzerain::validation::ensure_positive(factor,"DAFz");
+        validation::ensure_positive(factor,"DAFz");
     } else {
-        suzerain::validation::ensure_nonnegative(factor,"DAFz");
+        validation::ensure_nonnegative(factor,"DAFz");
     }
     const_cast<real_t&>(DAF.z()) = factor;
 #pragma warning(push,disable:2259)
@@ -281,32 +281,32 @@ GridDefinition& GridDefinition::DAFz(real_t factor)
 GridDefinition& GridDefinition::Nx(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Nx(static_cast<int>(suzerain::exprparse<real_t>(value, "Nx")));
+    return Nx(static_cast<int>(exprparse<real_t>(value, "Nx")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Ny(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Ny(static_cast<int>(suzerain::exprparse<real_t>(value, "Ny")));
+    return Ny(static_cast<int>(exprparse<real_t>(value, "Ny")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::Nz(const std::string& value)
 {
 #pragma warning(push,disable:2259)
-    return Nz(static_cast<int>(suzerain::exprparse<real_t>(value, "Nz")));
+    return Nz(static_cast<int>(exprparse<real_t>(value, "Nz")));
 #pragma warning(pop)
 }
 
 GridDefinition& GridDefinition::DAFx(const std::string& value)
 {
-    return DAFx(suzerain::exprparse<real_t>(value, "DAFx"));
+    return DAFx(exprparse<real_t>(value, "DAFx"));
 }
 
 GridDefinition& GridDefinition::DAFz(const std::string& value)
 {
-    return DAFz(suzerain::exprparse<real_t>(value, "DAFz"));
+    return DAFz(exprparse<real_t>(value, "DAFz"));
 }
 
 } // namespace problem

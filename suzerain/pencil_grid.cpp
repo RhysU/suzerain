@@ -43,7 +43,7 @@ int pencil_grid::compute_rank_zero_zero_modes_() const
     // The first is our return value.  The second is a sanity check.
     const bool this_rank_has_it = has_zero_zero_modes();
     int buf[2] = {
-        this_rank_has_it ? suzerain::mpi::comm_rank(MPI_COMM_WORLD) : 0,
+        this_rank_has_it ? mpi::comm_rank(MPI_COMM_WORLD) : 0,
         this_rank_has_it
     };
     SUZERAIN_MPICHKR(MPI_Allreduce(
@@ -91,11 +91,11 @@ void pencil_grid_p3dfft::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
     }
 
     // Find the global number of processors
-    const int nproc = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    const int nproc = mpi::comm_size(MPI_COMM_WORLD);
 
     // Find a suitable 2D Cartesian decomposition if necessary
     if (processor_grid[0] == 0 || processor_grid[1] == 0) {
-        suzerain::mpi::dims_create(
+        mpi::dims_create(
                 nproc,
                 processor_grid.data(),
                 processor_grid.data() + processor_grid.size());
@@ -263,7 +263,6 @@ pencil_grid_underling::construct_(int Nx, int Ny, int Nz, int Pa, int Pb,
 
     // Allocate zeroed buffers buf and tmp.  Clearing necessary to avoid NaNs.
     // buf is maintained for execution while tmp is used for planning only.
-    namespace blas = suzerain::blas;
     buf.reset(blas::calloc_as<underling::real>(problem->local_memory()),
               blas::free);
     if (!buf) throw bad_alloc();

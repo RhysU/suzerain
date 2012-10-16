@@ -49,10 +49,10 @@ struct L2 {
  * See writeup/L2.tex for full details.
  */
 std::vector<L2>
-field_L2(const suzerain::ContiguousState<4,complex_t> &state,
-         const suzerain::problem::GridDefinition& grid,
-         const suzerain::pencil_grid& dgrid,
-         const suzerain::bsplineop& gop);
+field_L2(const ContiguousState<4,complex_t> &state,
+         const problem::GridDefinition& grid,
+         const pencil_grid& dgrid,
+         const bsplineop& gop);
 
 } // end namespace suzerain
 

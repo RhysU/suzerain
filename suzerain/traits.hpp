@@ -45,13 +45,13 @@ struct component<T, typename boost::enable_if<
 
 /**
  * A specialization to handle all recognized complex types.
- * @see ::suzerain::complex::traits::is_complex for details.
+ * @see suzerain::complex::traits::is_complex for details.
  */
 template<class T>
 struct component<T, typename boost::enable_if<
-    ::suzerain::complex::traits::is_complex<T> >::type
+    suzerain::complex::traits::is_complex<T> >::type
 > {
-    typedef typename ::suzerain::complex::traits::real<T>::type type;
+    typedef typename suzerain::complex::traits::real<T>::type type;
 };
 
 } // namespace traits

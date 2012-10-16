@@ -285,7 +285,7 @@ class bsplineop : public boost::noncopyable {
 public:
 
     /** @see suzerain_bsplineop_alloc */
-    bsplineop(suzerain::bspline &b,
+    bsplineop(bspline &b,
               int nderiv,
               enum suzerain_bsplineop_method method
                     = SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE)
@@ -414,7 +414,7 @@ public:
      */
     int interpolation_rhs(const suzerain_function * function,
                           real_t * rhs,
-                          suzerain::bspline &b) const
+                          bspline &b) const
     {
         return suzerain_bsplineop_interpolation_rhs(function, rhs, b.bw, w_);
     }
@@ -507,7 +507,7 @@ public:
         suzerain::complex::traits::is_complex_t<Complex>, int
     >::type interpolation_rhs(const suzerain_zfunction * zfunction,
                               Complex * rhs,
-                              suzerain::bspline &b) const
+                              bspline &b) const
     {
         return suzerain_bsplineop_interpolation_rhs_complex(
                 zfunction, reinterpret_cast<complex_t *>(rhs),

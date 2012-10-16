@@ -37,10 +37,10 @@
 namespace suzerain {
 
 std::vector<L2>
-field_L2(const suzerain::ContiguousState<4,complex_t> &state,
-         const suzerain::problem::GridDefinition& grid,
-         const suzerain::pencil_grid& dgrid,
-         const suzerain::bsplineop& gop)
+field_L2(const ContiguousState<4,complex_t> &state,
+         const problem::GridDefinition& grid,
+         const pencil_grid& dgrid,
+         const bsplineop& gop)
 {
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value
@@ -55,12 +55,12 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // Only want non-dealiased X-direction modes to contribute to L2
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
-    suzerain::inorder::wavenumber_translate(grid.N.x(),
-                                            grid.dN.x(),
-                                            dgrid.local_wave_start.x(),
-                                            dgrid.local_wave_end.x(),
-                                            fxb[0], fxe[0], fxb[1], fxe[1],
-                                            mxb[0], mxe[0], mxb[1], mxe[1]);
+    inorder::wavenumber_translate(grid.N.x(),
+                                  grid.dN.x(),
+                                  dgrid.local_wave_start.x(),
+                                  dgrid.local_wave_end.x(),
+                                  fxb[0], fxe[0], fxb[1], fxe[1],
+                                  mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
     assert(fxb[1] == fxe[1]);
     assert(mxb[1] == mxe[1]);
@@ -69,12 +69,12 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
     int fzb[2], fze[2], mzb[2], mze[2];
-    suzerain::inorder::wavenumber_translate(grid.N.z(),
-                                            grid.dN.z(),
-                                            dgrid.local_wave_start.z(),
-                                            dgrid.local_wave_end.z(),
-                                            fzb[0], fze[0], fzb[1], fze[1],
-                                            mzb[0], mze[0], mzb[1], mze[1]);
+    inorder::wavenumber_translate(grid.N.z(),
+                                  grid.dN.z(),
+                                  dgrid.local_wave_start.z(),
+                                  dgrid.local_wave_end.z(),
+                                  fzb[0], fze[0], fzb[1], fze[1],
+                                  mzb[0], mze[0], mzb[1], mze[1]);
 
     // Temporary storage for inner product computations
     VectorXc tmp;
@@ -100,8 +100,8 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
                         = &state[k][0][m - dgrid.local_wave_start.x()]
                                       [n - dgrid.local_wave_start.z()];
                     gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-                    complex_t dot = suzerain::blas::dot(
-                            grid.N.y(), u_mn, 1, tmp.data(), 1);
+                    complex_t dot = blas::dot(grid.N.y(), u_mn,       1,
+                                                          tmp.data(), 1);
                     if (m > 0 && m < grid.dN.x()/2) {
                         dot *= 2;
                     }
@@ -119,7 +119,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // mean2 as a scratch buffer to simulate MPI_IN_PLACE
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
             mean2.data(), state.shape()[0]*sizeof(complex_t)/sizeof(real_t),
-            suzerain::mpi::datatype<real_t>(),
+            mpi::datatype<real_t>(),
             MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
@@ -128,7 +128,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
         for (size_t k = 0; k < state.shape()[0]; ++k) {
             const complex_t * u_mn = &state[k][0][0][0];
             gop.accumulate(0, 1.0, u_mn, 1, 0.0, tmp.data(), 1);
-            mean2[k] = suzerain::blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
+            mean2[k] = blas::dot(grid.N.y(), u_mn, 1, tmp.data(), 1);
         }
         mean2 *= grid.L.x() * grid.L.z();
     }
@@ -136,7 +136,7 @@ field_L2(const suzerain::ContiguousState<4,complex_t> &state,
     // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(
             buf.data(), buf.size() * sizeof(complex_t)/sizeof(real_t),
-            suzerain::mpi::datatype<real_t>(),
+            mpi::datatype<real_t>(),
             dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure

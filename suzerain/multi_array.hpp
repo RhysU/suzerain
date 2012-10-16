@@ -359,7 +359,7 @@ UnaryFunction for_each(boost::multi_array_ref<ValueType,NumDims> &x,
 /**
  * Fill MultiArray \c x with the value \c v.  MultiArray <tt>x</tt>'s elements
  * must be assignable from \c v.  The underlying assignment uses
- * ::suzerain::functional::assign to allow specializations of that functor to
+ * suzerain::functional::assign to allow specializations of that functor to
  * be found.
  *
  * @param x MultiArray to fill.
@@ -506,7 +506,7 @@ public:
     explicit ref(
             element* data,
             const ExtentList& sizes,
-            const suzerain::storage::general<StorageOrderSequence>& storage)
+            const storage::general<StorageOrderSequence>& storage)
         : base(data, sizes, storage.storage_order())
     {
         // stride_list_ protected in boost::const_multi_array_ref ancestor
@@ -525,7 +525,7 @@ public:
     explicit ref(
             element* data,
             typename extent_gen::template gen_type<NumDims>::type &ranges,
-            const suzerain::storage::general<StorageOrderSequence>& storage)
+            const storage::general<StorageOrderSequence>& storage)
         : base(data, ranges, storage.storage_order())
     {
         // stride_list_ protected in boost::const_multi_array_ref ancestor
@@ -550,7 +550,7 @@ public:
             element* data,
             const ExtentList& sizes,
             const MinStrideList& minstrides,
-            const suzerain::storage::general<StorageOrderSequence>& storage)
+            const storage::general<StorageOrderSequence>& storage)
         : base(data, sizes, storage.storage_order())
     {
         // stride_list_ protected in boost::const_multi_array_ref ancestor
@@ -576,7 +576,7 @@ public:
             element* data,
             typename extent_gen::template gen_type<NumDims>::type &ranges,
             const MinStrideList& minstrides,
-            const suzerain::storage::general<StorageOrderSequence>& storage)
+            const storage::general<StorageOrderSequence>& storage)
         : base(data, ranges, storage.storage_order())
     {
         // stride_list_ protected in boost::const_multi_array_ref ancestor

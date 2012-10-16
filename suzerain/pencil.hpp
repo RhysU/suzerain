@@ -50,7 +50,7 @@ namespace suzerain
  */
 template<
     typename FPT       = real_t,
-    typename Allocator = typename suzerain::blas::allocator<FPT>::type
+    typename Allocator = typename blas::allocator<FPT>::type
     >
 class pencil
     : public  boost::noncopyable,
@@ -64,16 +64,16 @@ public:
     typedef boost::multi_array_types::difference_type difference_type;
 
     // Types specifying storage ordering
-    typedef typename suzerain::storage::general<
+    typedef typename storage::general<
         boost::mpl::vector_c<std::size_t,0,2,1> > physical_storage_order_type;
-    typedef typename suzerain::storage::general<
+    typedef typename storage::general<
         boost::mpl::vector_c<std::size_t,1,0,2> > wave_storage_order_type;
 
     // Types for contained data
     typedef FPT real_type;
     typedef typename std::complex<FPT> complex_type;
-    typedef typename suzerain::multi_array::ref<real_type,3>    physical_type;
-    typedef typename suzerain::multi_array::ref<complex_type,3> wave_type;
+    typedef typename multi_array::ref<real_type,3>    physical_type;
+    typedef typename multi_array::ref<complex_type,3> wave_type;
 
     /**
      * Construct a scalar pencil with the given characteristics.

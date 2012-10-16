@@ -40,7 +40,7 @@ namespace timestepper
  *
  * @see tparam State A state type which must provide an \c element \c typedef
  *                   containing its real- or complex-valued scalar type.
- * @see suzerain::timestepper::lowstorage for low storage schemes.
+ * @see timestepper::lowstorage for low storage schemes.
  */
 template<typename State>
 class INonlinearOperator
@@ -51,7 +51,7 @@ public:
     typedef typename State::element element;
 
     /** The real-valued scalar corresponding to \c element */
-    typedef typename suzerain::traits::component<element>::type component;
+    typedef typename traits::component<element>::type component;
 
     /**
      * Apply the operator in place on a given state location.  That is, compute
@@ -481,7 +481,7 @@ class IMethod
 public:
 
     /** The real-valued scalar corresponding to \c Element */
-    typedef typename suzerain::traits::component<Element>::type component;
+    typedef typename traits::component<Element>::type component;
 
     /**
      * A human-readable name for the timestepping method.
@@ -632,7 +632,7 @@ public:
             (boost::is_same<element,typename StateB::element>::value));
 
     /** The real-valued scalar corresponding to \c element */
-    typedef typename suzerain::traits::component<element>::type component;
+    typedef typename traits::component<element>::type component;
 
     /**
      * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
@@ -701,8 +701,8 @@ public:
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is the identity matrix.
  *
- * @tparam StateA A type which likely descends from suzerain::StateBase.
- * @tparam StateB A type which likely descends from suzerain::StateBase.
+ * @tparam StateA A type which likely descends from StateBase.
+ * @tparam StateB A type which likely descends from StateBase.
  */
 template< typename StateA, typename StateB = StateA >
 class MultiplicativeOperator
@@ -717,7 +717,7 @@ public:
             (boost::is_same<element, typename StateB::element>::value));
 
     /** The real-valued scalar corresponding to \c element */
-    typedef typename suzerain::traits::component<element>::type component;
+    typedef typename traits::component<element>::type component;
 
     /**
      * Construct an instance which scales by \c factor and reports
@@ -1417,15 +1417,15 @@ template< typename Element,
           typename LinearState,
           typename NonlinearState,
           typename State >
-const typename suzerain::traits::component<Element>::type substep(
+const typename traits::component<Element>::type substep(
     const IMethod<Element>& m,
     const ILinearOperator<LinearState>& L,
-    const typename suzerain::traits::component<Element>::type chi,
+    const typename traits::component<Element>::type chi,
     const INonlinearOperator<NonlinearState>& N,
-    const typename suzerain::traits::component<Element>::type time,
+    const typename traits::component<Element>::type time,
     State& a,
     State& b,
-    const typename suzerain::traits::component<Element>::type delta_t,
+    const typename traits::component<Element>::type delta_t,
     const std::size_t substep_index)
 {
     BOOST_STATIC_ASSERT(
@@ -1484,16 +1484,16 @@ const typename suzerain::traits::component<Element>::type substep(
 template< typename Element, typename Reducer,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
-const typename suzerain::traits::component<Element>::type step(
+const typename traits::component<Element>::type step(
     const IMethod<Element>& m,
     Reducer& reducer,
     const ILinearOperator<LinearA,LinearB>& L,
-    const typename suzerain::traits::component<Element>::type chi,
+    const typename traits::component<Element>::type chi,
     const INonlinearOperator<NonlinearB>& N,
-    const typename suzerain::traits::component<Element>::type time,
+    const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
-    const typename suzerain::traits::component<Element>::type max_delta_t = 0)
+    const typename traits::component<Element>::type max_delta_t = 0)
 {
     SUZERAIN_TIMER_SCOPED("timestepper::lowstorage::step");
 
@@ -1503,7 +1503,7 @@ const typename suzerain::traits::component<Element>::type step(
     BOOST_STATIC_ASSERT((is_same<Element,typename NonlinearB::element>::value));
     BOOST_STATIC_ASSERT((is_same<Element,typename     StateA::element>::value));
     BOOST_STATIC_ASSERT((is_same<Element,typename     StateB::element>::value));
-    typedef typename suzerain::traits::component<Element>::type component_type;
+    typedef typename traits::component<Element>::type component_type;
 
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
@@ -1512,7 +1512,7 @@ const typename suzerain::traits::component<Element>::type step(
     component_type delta_t = reducer(delta_t_candidates);
 
     if (max_delta_t > 0) {
-        delta_t = suzerain::math::minnan(delta_t, max_delta_t);
+        delta_t = math::minnan(delta_t, max_delta_t);
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, m, delta_t, 0);
     a.addScaled(chi * delta_t * m.gamma(0), b);
@@ -1563,15 +1563,15 @@ const typename suzerain::traits::component<Element>::type step(
 template< typename Element,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
-const typename suzerain::traits::component<Element>::type step(
+const typename traits::component<Element>::type step(
     const IMethod<Element>& m,
     const ILinearOperator<LinearA,LinearB>& L,
-    const typename suzerain::traits::component<Element>::type chi,
+    const typename traits::component<Element>::type chi,
     const INonlinearOperator<NonlinearB>& N,
-    const typename suzerain::traits::component<Element>::type time,
+    const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
-    const typename suzerain::traits::component<Element>::type max_delta_t = 0)
+    const typename traits::component<Element>::type max_delta_t = 0)
 {
     DeltaTReducer reducer;
     return step<
@@ -1597,14 +1597,14 @@ template< typename StateA,
           typename LinearB    = StateB,
           typename NonlinearB = StateB >
 class TimeController
-    : public timestepper::TimeController< typename suzerain::traits::component<
+    : public timestepper::TimeController< typename traits::component<
             typename StateA::element
       >::type >
 {
 protected:
 
     /** Shorthand for the superclass */
-    typedef timestepper::TimeController< typename suzerain::traits::component<
+    typedef timestepper::TimeController< typename traits::component<
                 typename StateA::element
             >::type > super;
 
@@ -1661,7 +1661,7 @@ public:
             const IMethod<element>& m,
             Reducer& reducer,
             const ILinearOperator<LinearA,LinearB>& L,
-            const typename suzerain::traits::component<element>::type chi,
+            const typename traits::component<element>::type chi,
             const INonlinearOperator<NonlinearB>& N,
             StateA& a,
             StateB& b,
@@ -1679,14 +1679,14 @@ private:
     const IMethod<element>& m;
     Reducer &reducer;
     const ILinearOperator<LinearA,LinearB>& L;
-    const typename suzerain::traits::component<element>::type chi;
+    const typename traits::component<element>::type chi;
     const INonlinearOperator<NonlinearB>& N;
     StateA& a;
     StateB& b;
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
-        return suzerain::timestepper::lowstorage::step(
+        return timestepper::lowstorage::step(
                 m, reducer, L, chi, N, super::current_t(), a, b, max_dt);
     }
 
@@ -1753,7 +1753,7 @@ public:
     TimeController(
             const IMethod<element>& m,
             const ILinearOperator<LinearA,LinearB>& L,
-            const typename suzerain::traits::component<element>::type chi,
+            const typename traits::component<element>::type chi,
             const INonlinearOperator<NonlinearB>& N,
             StateA& a,
             StateB& b,

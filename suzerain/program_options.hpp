@@ -87,9 +87,9 @@ public:
      *
      * @return <tt>*this</tt> to support chaining.
      *
-     * @see suzerain::problem::IDefinition for the necessary contract.
+     * @see problem::IDefinition for the necessary contract.
      */
-    ProgramOptions& add_definition(suzerain::problem::IDefinition &definition)
+    ProgramOptions& add_definition(problem::IDefinition &definition)
     {
         options_.add(definition.options());
         return *this;

@@ -44,8 +44,8 @@ namespace suzerain
 
 // Mandatory forward declarations
 template<typename Derived> struct StateBase;
-template<std::size_t NumDims, typename Element> class ContiguousState;
-template<std::size_t NumDims, typename Element> class InterleavedState;
+template<std::size_t Dim, typename Element> class ContiguousState;
+template<std::size_t Dim, typename Element> class InterleavedState;
 
 /** Implementation details for StateBase */
 namespace detail
@@ -55,26 +55,26 @@ namespace detail
 template<typename T> struct StateTraits;
 
 /** Traits providing basic type details for ContiguousState */
-template<std::size_t NumDims, typename Element>
-struct StateTraits<ContiguousState<NumDims,Element> >
+template<std::size_t Dim, typename Element>
+struct StateTraits<ContiguousState<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
     typedef boost::multi_array_types::size_type size_type;
-    static const size_type dimensionality = NumDims;
+    static const size_type dimensionality = Dim;
 
 private:
     StateTraits();
 };
 
 /** Traits providing basic type details for InterleavedState */
-template<std::size_t NumDims, typename Element>
-struct StateTraits<InterleavedState<NumDims,Element> >
+template<std::size_t Dim, typename Element>
+struct StateTraits<InterleavedState<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
     typedef boost::multi_array_types::size_type size_type;
-    static const size_type dimensionality = NumDims;
+    static const size_type dimensionality = Dim;
 
 private:
     StateTraits();
@@ -86,7 +86,7 @@ private:
  * Base class for all of Suzerain's state implementations.  Static polymorphism
  * via the Curiously Recurring Template Pattern is used to look up the
  * appropriate type-specific functionality.  Subclasses are usable with
- * functionality found in suzerain::timestepper::lowstorage.
+ * functionality found in timestepper::lowstorage.
  */
 template<class Derived>
 class StateBase
@@ -209,41 +209,41 @@ public:
 /**
  * A state class storing elements with the first index \em slowest followed by
  * the other indices in Fortran order.  The indexing is indented to store some
- * number of non-interleaved scalars in the first index with dimensionality
- * <tt>NumDims</tt> spread across the remaining indices.
+ * number of non-interleaved scalars in the first index with dimensionality \c
+ * Dim spread across the remaining indices.
  *
- * @tparam NumDims    Number of dimensions
- * @tparam Element    Type of elements to store
+ * @tparam Dim     Number of dimensions
+ * @tparam Element Type of elements to store
  *
  * @see #storage_order_type for more details on the storage used.
  */
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 class ContiguousState
-    : public  StateBase<ContiguousState<NumDims,Element> >,
-      private suzerain::shared_range<Element>,
-      public  suzerain::multi_array::ref<Element, NumDims>
+    : public  StateBase<ContiguousState<Dim,Element> >,
+      private shared_range<Element>,
+      public  suzerain::multi_array::ref<Element, Dim>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
-    typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
-    typedef typename multi_array_type::const_iterator       const_iterator;
-    typedef typename multi_array_type::const_reference      const_reference;
-    typedef typename multi_array_type::difference_type      difference_type;
-    typedef typename multi_array_type::element              element;
-    typedef typename multi_array_type::index                index;
-    typedef typename multi_array_type::iterator             iterator;
-    typedef typename multi_array_type::reference            reference;
-    typedef typename multi_array_type::size_type            size_type;
-    typedef typename multi_array_type::value_type           value_type;
-    typedef typename suzerain::shared_range<Element>        shared_range_type;
+    typedef typename suzerain::multi_array::ref<Element,Dim> multi_array_type;
+    typedef typename multi_array_type::const_iterator        const_iterator;
+    typedef typename multi_array_type::const_reference       const_reference;
+    typedef typename multi_array_type::difference_type       difference_type;
+    typedef typename multi_array_type::element               element;
+    typedef typename multi_array_type::index                 index;
+    typedef typename multi_array_type::iterator              iterator;
+    typedef typename multi_array_type::reference             reference;
+    typedef typename multi_array_type::size_type             size_type;
+    typedef typename multi_array_type::value_type            value_type;
+    typedef typename suzerain::shared_range<Element>         shared_range_type;
     static const size_type dimensionality = multi_array_type::dimensionality;
     using multi_array_type::shape;
 /**@}*/
 
     /** The storage ordering in use */
-    typedef typename storage::contiguous<NumDims> storage_order_type;
+    typedef typename storage::contiguous<Dim> storage_order_type;
 
     template<typename ExtentList>
     explicit ContiguousState(const ExtentList& sizes);
@@ -299,38 +299,38 @@ private:
  * A state class storing elements in Fortran order \em except that the
  * first two indices are exchanged.
  *
- * @tparam NumDims    Number of dimensions
- * @tparam Element    Type of elements to store
+ * @tparam Dim     Number of dimensions
+ * @tparam Element Type of elements to store
  *
  * @see #storage_order_type for more details on the storage used.
  */
-template< std::size_t NumDims, typename Element >
+template< std::size_t Dim, typename Element >
 class InterleavedState
-    : public  StateBase<InterleavedState<NumDims,Element> >,
-      private suzerain::shared_range<Element>,
-      public  suzerain::multi_array::ref<Element, NumDims>
+    : public  StateBase<InterleavedState<Dim,Element> >,
+      private shared_range<Element>,
+      public  suzerain::multi_array::ref<Element, Dim>
 {
 public:
 
 /** @name Declarations bringing in information from public base classes */
 /**@{*/
-    typedef typename suzerain::multi_array::ref<Element,NumDims> multi_array_type;
-    typedef typename multi_array_type::const_iterator       const_iterator;
-    typedef typename multi_array_type::const_reference      const_reference;
-    typedef typename multi_array_type::difference_type      difference_type;
-    typedef typename multi_array_type::element              element;
-    typedef typename multi_array_type::index                index;
-    typedef typename multi_array_type::iterator             iterator;
-    typedef typename multi_array_type::reference            reference;
-    typedef typename multi_array_type::size_type            size_type;
-    typedef typename multi_array_type::value_type           value_type;
-    typedef typename suzerain::shared_range<Element>        shared_range_type;
+    typedef typename suzerain::multi_array::ref<Element,Dim> multi_array_type;
+    typedef typename multi_array_type::const_iterator        const_iterator;
+    typedef typename multi_array_type::const_reference       const_reference;
+    typedef typename multi_array_type::difference_type       difference_type;
+    typedef typename multi_array_type::element               element;
+    typedef typename multi_array_type::index                 index;
+    typedef typename multi_array_type::iterator              iterator;
+    typedef typename multi_array_type::reference             reference;
+    typedef typename multi_array_type::size_type             size_type;
+    typedef typename multi_array_type::value_type            value_type;
+    typedef typename suzerain::shared_range<Element>         shared_range_type;
     static const size_type dimensionality = multi_array_type::dimensionality;
     using multi_array_type::shape;
 /**@}*/
 
     /** The storage ordering in use */
-    typedef typename storage::interleaved<NumDims> storage_order_type;
+    typedef typename storage::interleaved<Dim> storage_order_type;
 
     template<typename ExtentList>
     explicit InterleavedState(const ExtentList& sizes,

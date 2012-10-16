@@ -30,10 +30,10 @@ ProfileDefinition::ProfileDefinition()
 {
     namespace po = ::boost::program_options;
 
-    using ::std::bind2nd;
-    using ::std::ptr_fun;
-    using ::suzerain::validation::ensure_nonnegative;
-    using ::suzerain::validation::ensure_positive;
+    using std::bind2nd;
+    using std::ptr_fun;
+    using validation::ensure_nonnegative;
+    using validation::ensure_positive;
 
     options_.add_options()
         ("howmany", po::value<int>(&howmany_)

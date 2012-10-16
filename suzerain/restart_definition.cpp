@@ -30,7 +30,7 @@ static void parse_option(const std::string &s,
                          const char *name)
 {
 #pragma warning(push,disable:2259)
-    const T t = suzerain::exprparse<real_t>(s, name);
+    const T t = exprparse<real_t>(s, name);
 #pragma warning(pop)
     validator(t, name);
     *value = t;
@@ -57,8 +57,8 @@ RestartDefinition::RestartDefinition(
     using boost::program_options::value;
     using boost::program_options::bool_switch;
     using std::string;
-    using suzerain::validation::ensure_nonnegative;
-    using suzerain::validation::ensure_positive;
+    using validation::ensure_nonnegative;
+    using validation::ensure_positive;
 
     this->add_options()
         ("metadata", value(&this->metadata)

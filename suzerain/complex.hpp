@@ -603,8 +603,8 @@ namespace functional {
 /**
  * A specialization of the assign functor to properly handle the case where \c
  * Target is a recognized complex type according to
- * ::suzerain::complex::traits::is_complex.  It uses
- * ::suzerain::complex::assign_complex to perform the assignment, and therefore
+ * suzerain::complex::traits::is_complex.  It uses
+ * suzerain::complex::assign_complex to perform the assignment, and therefore
  * supports all types that \c assign_complex does.
  */
 template<class Target, class Source>
@@ -612,7 +612,7 @@ struct assign<
     Target,
     Source,
     typename boost::enable_if<
-        ::suzerain::complex::traits::is_complex<Target>
+        suzerain::complex::traits::is_complex<Target>
     >::type >
 {
     /**
@@ -629,7 +629,7 @@ struct assign<
      * @param t to be assigned.
      */
     void operator()(Target& t) const {
-        ::suzerain::complex::assign_complex(t, s_);
+        suzerain::complex::assign_complex(t, s_);
     }
 
 private:
