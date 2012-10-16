@@ -330,7 +330,8 @@ int main(int argc, char **argv)
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         support::physical_view<support::field::count>::type sphys
-            = support::physical_view<support::field::count>::create(*dgrid, swave);
+                = support::physical_view<support::field::count>::create(
+                        *dgrid, swave);
 
         // Find normalization required to have (y*(L-y))^npower integrate to one
         real_t factor;
@@ -380,7 +381,8 @@ int main(int argc, char **argv)
 
                     // Compute and store the conserved state from primitives
                     const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
-                                   + (scenario.Ma*scenario.Ma/2)*(u*u + v*v + w*w);
+                                   +  (scenario.Ma*scenario.Ma/2)
+                                     *(u*u + v*v + w*w);
                     sphys(support::field::ndx::rho, offset) = rho;
                     sphys(support::field::ndx::mx,  offset) = rho * u;
                     sphys(support::field::ndx::my,  offset) = rho * v;
