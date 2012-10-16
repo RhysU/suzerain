@@ -1214,13 +1214,15 @@ int main(int argc, char **argv)
         const double begin = MPI_Wtime();
         samples.t = initial_t;         // For idempotent --advance_nt=0...
         perfect::load(esioh, samples); // ...when no grid rescaling employed
-        perfect::load(esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
+        perfect::load(esioh, *state_nonlinear,
+                      scenario, grid, *dgrid, *b, *bop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If necessary, adjust total energy to account for scenario changes
-    perfect::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *b, *bop,
+    perfect::adjust_scenario(*state_nonlinear,
+                             scenario, grid, *dgrid, *b, *bop,
                              restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
@@ -1531,12 +1533,12 @@ int main(int argc, char **argv)
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
         L->accumulateMassPlusScaledOperator(
-                1.0, *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
+                1., *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
         common_block.setZero(grid.dN.y());  // Zero reference quantities
         L->accumulateMassPlusScaledOperator(
-                1.0, *state_linear, -1.0, *state_nonlinear, *m, 0, /*substep*/0);
+                1., *state_linear, -1., *state_nonlinear, *m, 0, /*substep*/0);
         for (size_t k = 0; k < support::field::count; ++k) {
-            suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
+            suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
                 dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
@@ -1547,7 +1549,7 @@ int main(int argc, char **argv)
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
         for (size_t k = 0; k < support::field::count; ++k) {
-            suzerain::diffwave::apply(0, 0, 1.0, (*state_nonlinear)[k].origin(),
+            suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
                 dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
