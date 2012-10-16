@@ -82,6 +82,13 @@ suzerain_blas_malloc(size_t size)
 
     switch (status) {
         case 0:
+#ifndef NDEBUG  /* Debug?  Fill likely double-valued buffers with NaNs. */
+            {
+                const double NaN = nan("NAN");
+                const size_t quo = size / sizeof(double);
+                for (size_t i = 0; i < quo; ++i) ((double *)p)[i] = NaN;
+            }
+#endif
             return p;
         case ENOMEM:
             return NULL;
