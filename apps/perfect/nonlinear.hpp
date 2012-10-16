@@ -77,11 +77,11 @@ std::vector<real_t> applyNonlinearOperator(
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
     struct aux { enum {
-        rho_y, rho_yy, rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
+        e_y, div_grad_e, e_x, e_z,
         mx_y,  mx_yy,  mx_x,  mx_xx,  mx_xz,  mx_z,  mx_zz,  mx_xy,  mx_yz,
         my_y,  my_yy,  my_x,  my_xx,  my_xz,  my_z,  my_zz,  my_xy,  my_yz,
         mz_y,  mz_yy,  mz_x,  mz_xx,  mz_xz,  mz_z,  mz_zz,  mz_xy,  mz_yz,
-        e_y, div_grad_e, e_x, e_z,
+        rho_y, rho_yy, rho_x, rho_xx, rho_xz, rho_z, rho_zz, rho_xy, rho_yz,
         count // Sentry
     }; };
 
@@ -140,26 +140,23 @@ std::vector<real_t> applyNonlinearOperator(
     real_t &convfluct_z_delta_t   = delta_t_candidates[10];
     real_t &diffusive_z_delta_t   = delta_t_candidates[11];
 
-    // Compute Y derivatives of density at collocation points
+    // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::rho);
-    o.bop_accumulate(1,    1, swave, ndx::rho, 0, auxw, aux::rho_y);
-    o.bop_accumulate(2,    1, swave, ndx::rho, 0, auxw, aux::rho_yy);
-    o.bop_apply     (0,    1, swave, ndx::rho);
+    o.zero_dealiasing_modes(  swave, ndx::e);
+    o.bop_accumulate(1,    1, swave, ndx::e, 0, auxw, aux::e_y);
+    o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::div_grad_e);
+    o.bop_apply     (0,    1, swave, ndx::e);
 
-    // Compute X- and Z- derivatives of density at collocation points
+    // Compute X- and Z- derivatives of total energy at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_x );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_xx);
-    o.diffwave_accumulate(1, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_xz);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_z );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::rho,   0, auxw, aux::rho_zz);
-    o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
-    o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::e, 0, auxw, aux::e_x       );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::e, 0, auxw, aux::e_z       );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::mx);
+    o.zero_dealiasing_modes(  swave, ndx::mx);
     o.bop_accumulate(1,    1, swave, ndx::mx, 0, auxw, aux::mx_y);
     o.bop_accumulate(2,    1, swave, ndx::mx, 0, auxw, aux::mx_yy);
     o.bop_apply     (0,    1, swave, ndx::mx);
@@ -176,7 +173,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::my);
+    o.zero_dealiasing_modes(  swave, ndx::my);
     o.bop_accumulate(1,    1, swave, ndx::my, 0, auxw, aux::my_y);
     o.bop_accumulate(2,    1, swave, ndx::my, 0, auxw, aux::my_yy);
     o.bop_apply     (0,    1, swave, ndx::my);
@@ -193,7 +190,7 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::mz);
+    o.zero_dealiasing_modes(  swave, ndx::mz);
     o.bop_accumulate(1,    1, swave, ndx::mz, 0, auxw, aux::mz_y);
     o.bop_accumulate(2,    1, swave, ndx::mz, 0, auxw, aux::mz_yy);
     o.bop_apply     (0,    1, swave, ndx::mz);
@@ -208,19 +205,22 @@ std::vector<real_t> applyNonlinearOperator(
     o.diffwave_accumulate(1, 0, 1, auxw,  aux::mz_y, 0, auxw, aux::mz_xy);
     o.diffwave_accumulate(0, 1, 1, auxw,  aux::mz_y, 0, auxw, aux::mz_yz);
 
-    // Compute Y derivatives of total energy at collocation points
+    // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    o.zero_dealiasing_modes(swave, ndx::e);
-    o.bop_accumulate(1,    1, swave, ndx::e, 0, auxw, aux::e_y);
-    o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::div_grad_e);
-    o.bop_apply     (0,    1, swave, ndx::e);
+    o.zero_dealiasing_modes(  swave, ndx::rho);
+    o.bop_accumulate(1,    1, swave, ndx::rho, 0, auxw, aux::rho_y);
+    o.bop_accumulate(2,    1, swave, ndx::rho, 0, auxw, aux::rho_yy);
+    o.bop_apply     (0,    1, swave, ndx::rho);
 
-    // Compute X- and Z- derivatives of total energy at collocation points
+    // Compute X- and Z- derivatives of density at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    o.diffwave_accumulate(1, 0, 1, swave, ndx::e, 0, auxw, aux::e_x       );
-    o.diffwave_accumulate(2, 0, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
-    o.diffwave_accumulate(0, 1, 1, swave, ndx::e, 0, auxw, aux::e_z       );
-    o.diffwave_accumulate(0, 2, 1, swave, ndx::e, 1, auxw, aux::div_grad_e);
+    o.diffwave_accumulate(1, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_x );
+    o.diffwave_accumulate(2, 0, 1, swave, ndx::rho,   0, auxw, aux::rho_xx);
+    o.diffwave_accumulate(1, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_xz);
+    o.diffwave_accumulate(0, 1, 1, swave, ndx::rho,   0, auxw, aux::rho_z );
+    o.diffwave_accumulate(0, 2, 1, swave, ndx::rho,   0, auxw, aux::rho_zz);
+    o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
+    o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
@@ -325,11 +325,11 @@ std::vector<real_t> applyNonlinearOperator(
             for (; offset < last_zxoffset; ++offset) {
 
                 // Unpack conserved state
-                const real_t   rho(sphys(ndx::rho, offset));
+                const real_t   e  (sphys(ndx::e,   offset));
                 const Vector3r m  (sphys(ndx::mx,  offset),
                                    sphys(ndx::my,  offset),
                                    sphys(ndx::mz,  offset));
-                const real_t   e  (sphys(ndx::e,   offset));
+                const real_t   rho(sphys(ndx::rho, offset));
 
                 // Compute quantities related to the equation of state
                 real_t p, T, mu, lambda;
@@ -550,25 +550,12 @@ std::vector<real_t> applyNonlinearOperator(
                                    * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            // Unpack density-related quantities
-            const real_t   rho         ( sphys(ndx::rho,    offset));
-            const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
-                                          auxp(aux::rho_y,  offset),
-                                          auxp(aux::rho_z,  offset));
-            const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
-                                        + auxp(aux::rho_yy, offset)
-                                        + auxp(aux::rho_zz, offset));
-            const Matrix3r grad_grad_rho;
-            const_cast<Matrix3r&>(grad_grad_rho) <<
-                                          auxp(aux::rho_xx, offset),
-                                          auxp(aux::rho_xy, offset),
-                                          auxp(aux::rho_xz, offset),
-                                          auxp(aux::rho_xy, offset),
-                                          auxp(aux::rho_yy, offset),
-                                          auxp(aux::rho_yz, offset),
-                                          auxp(aux::rho_xz, offset),
-                                          auxp(aux::rho_yz, offset),
-                                          auxp(aux::rho_zz, offset);
+            // Unpack total energy-related quantities
+            const real_t e        (sphys(ndx::e,          offset));
+            const Vector3r grad_e ( auxp(aux::e_x,        offset),
+                                    auxp(aux::e_y,        offset),
+                                    auxp(aux::e_z,        offset));
+            const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
             // Unpack momentum-related quantities
             const Vector3r m    ( sphys(ndx::mx,   offset),
@@ -607,12 +594,25 @@ std::vector<real_t> applyNonlinearOperator(
                                       + auxp(aux::my_yz, offset)
                                       + auxp(aux::mz_zz, offset));
 
-            // Unpack total energy-related quantities
-            const real_t e        (sphys(ndx::e,          offset));
-            const Vector3r grad_e ( auxp(aux::e_x,        offset),
-                                    auxp(aux::e_y,        offset),
-                                    auxp(aux::e_z,        offset));
-            const real_t div_grad_e(auxp(aux::div_grad_e, offset));
+            // Unpack density-related quantities
+            const real_t   rho         ( sphys(ndx::rho,    offset));
+            const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
+                                          auxp(aux::rho_y,  offset),
+                                          auxp(aux::rho_z,  offset));
+            const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
+                                        + auxp(aux::rho_yy, offset)
+                                        + auxp(aux::rho_zz, offset));
+            const Matrix3r grad_grad_rho;
+            const_cast<Matrix3r&>(grad_grad_rho) <<
+                                          auxp(aux::rho_xx, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_xy, offset),
+                                          auxp(aux::rho_yy, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_xz, offset),
+                                          auxp(aux::rho_yz, offset),
+                                          auxp(aux::rho_zz, offset);
 
             // Compute velocity-related quantities
             const Vector3r u          = rholut::u(
@@ -652,62 +652,6 @@ std::vector<real_t> applyNonlinearOperator(
                                         mu, grad_mu, lambda, grad_lambda,
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
-
-            // FORM CONTINUITY EQUATION RIGHT HAND SIDE
-            //
-            // Implicit continuity equation handling requires zeroing RHS in
-            // anticipation of possible manufactured solution forcing.  See
-            // subsequent transform_physical_to_wave if you monkey around here.
-            switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
-                case linearize::none:
-                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
-                    break;
-                case linearize::rhome:
-                    sphys(ndx::rho, offset) = 0;       // Implicit convection
-                    break;
-            }
-
-            // FORM MOMENTUM EQUATION RIGHT HAND SIDE
-            Vector3r momentum_rhs =
-                // Explicit viscous term
-                  inv_Re * div_tau
-                ;
-            switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
-                case linearize::none:
-                    momentum_rhs +=
-                        // Explicit convective term
-                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
-                        // Explicit pressure term
-                        - inv_Ma2 * grad_p
-                        ;
-                    break;
-                case linearize::rhome:
-                    momentum_rhs +=
-                        // Explicit convective term less implicit portion
-                        - rholut::explicit_div_rho_inverse_m_outer_m(
-                                grad_rho, div_m, grad_m, u, ref_u, ref_uu)
-                        // Explicit pressure less implicit pressure terms
-                        - inv_Ma2 * rholut::explicit_grad_p(
-                                gamma, Ma, rho, grad_rho, m, grad_m,
-                                ref_u2, ref_u)
-                        // Subtract implicit portions of viscous terms per
-                        // rholut::explicit_mu_div_grad_u and
-                        // rholut::explicit_mu_plus_lambda_grad_div_u
-                        - inv_Re * (
-                            ref_nu*(div_grad_m + alpha13*grad_div_m)
-                          - ref_nuu*div_grad_rho
-                          - alpha13*grad_grad_rho*ref_nuu
-                        )
-                        ;
-                    break;
-            }
-            sphys(ndx::mx, offset) = momentum_rhs.x();
-            sphys(ndx::my, offset) = momentum_rhs.y();
-            sphys(ndx::mz, offset) = momentum_rhs.z();
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
@@ -762,6 +706,62 @@ std::vector<real_t> applyNonlinearOperator(
                             )
                         )
                         ;
+                    break;
+            }
+
+            // FORM MOMENTUM EQUATION RIGHT HAND SIDE
+            Vector3r momentum_rhs =
+                // Explicit viscous term
+                  inv_Re * div_tau
+                ;
+            switch (Linearize) {
+                default:
+                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                case linearize::none:
+                    momentum_rhs +=
+                        // Explicit convective term
+                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
+                        // Explicit pressure term
+                        - inv_Ma2 * grad_p
+                        ;
+                    break;
+                case linearize::rhome:
+                    momentum_rhs +=
+                        // Explicit convective term less implicit portion
+                        - rholut::explicit_div_rho_inverse_m_outer_m(
+                                grad_rho, div_m, grad_m, u, ref_u, ref_uu)
+                        // Explicit pressure less implicit pressure terms
+                        - inv_Ma2 * rholut::explicit_grad_p(
+                                gamma, Ma, rho, grad_rho, m, grad_m,
+                                ref_u2, ref_u)
+                        // Subtract implicit portions of viscous terms per
+                        // rholut::explicit_mu_div_grad_u and
+                        // rholut::explicit_mu_plus_lambda_grad_div_u
+                        - inv_Re * (
+                            ref_nu*(div_grad_m + alpha13*grad_div_m)
+                          - ref_nuu*div_grad_rho
+                          - alpha13*grad_grad_rho*ref_nuu
+                        )
+                        ;
+                    break;
+            }
+            sphys(ndx::mx, offset) = momentum_rhs.x();
+            sphys(ndx::my, offset) = momentum_rhs.y();
+            sphys(ndx::mz, offset) = momentum_rhs.z();
+
+            // FORM CONTINUITY EQUATION RIGHT HAND SIDE
+            //
+            // Implicit continuity equation handling requires zeroing RHS in
+            // anticipation of possible manufactured solution forcing.  See
+            // subsequent transform_physical_to_wave if you monkey around here.
+            switch (Linearize) {
+                default:
+                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                case linearize::none:
+                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
+                    break;
+                case linearize::rhome:
+                    sphys(ndx::rho, offset) = 0;       // Implicit convection
                     break;
             }
 
@@ -912,11 +912,11 @@ std::vector<real_t> applyNonlinearOperator(
                     ms.Q_conservative(x, y, z, time,
                                       Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
 
-                    sphys(ndx::rho, offset) += Q_rho;
+                    sphys(ndx::e,   offset) += Q_rhoe;
                     sphys(ndx::mx,  offset) += Q_rhou;
                     sphys(ndx::my,  offset) += Q_rhov;
                     sphys(ndx::mz,  offset) += Q_rhow;
-                    sphys(ndx::e,   offset) += Q_rhoe;
+                    sphys(ndx::rho, offset) += Q_rho;
 
                 } // end X
 

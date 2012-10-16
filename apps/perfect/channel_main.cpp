@@ -332,11 +332,13 @@ static void information_specific_wall_state(const std::string& prefix)
         msg << prefix;
 
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
-        append_real(msg << ' ', rho);
-        assert(ndx::rho == 0);
-        for (size_t k = 1; k < support::field::count; ++k) {
-            append_real(msg << ' ' ,
-                        ((*state_linear)[k][wall[l]][0][0]).real() / rho);
+        for (size_t k = 0; k < support::field::count; ++k) {
+            if (k == ndx::rho) {
+                append_real(msg << ' ', rho);
+            } else {
+                append_real(msg << ' ' ,
+                            ((*state_linear)[k][wall[l]][0][0]).real() / rho);
+            }
         }
         DEBUG(nick[l], msg.str());
     }

@@ -80,13 +80,13 @@ const char log4cxx_config[] =
 #undef COMMON_CONSOLE_CONFIG
 
 const boost::array<const char *,field::count> field::name = {{
-    "rho", "rhou", "rhov", "rhow", "rhoe"
+    "rhoe", "rhou", "rhov", "rhow", "rho"
 }};
 
 const boost::array<const char *,field::count> field::description = {{
-    "density",
-    "streamwise momentum", "wall-normal momentum", "spanwise momentum",
     "total energy",
+    "streamwise momentum", "wall-normal momentum", "spanwise momentum",
+    "density",
 }};
 
 const real_t bsplines_distinct_distance

@@ -383,11 +383,11 @@ int main(int argc, char **argv)
                     const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
                                    +  (scenario.Ma*scenario.Ma/2)
                                      *(u*u + v*v + w*w);
-                    sphys(support::field::ndx::rho, offset) = rho;
+                    sphys(support::field::ndx::e,   offset) = rho * e;
                     sphys(support::field::ndx::mx,  offset) = rho * u;
                     sphys(support::field::ndx::my,  offset) = rho * v;
                     sphys(support::field::ndx::mz,  offset) = rho * w;
-                    sphys(support::field::ndx::e,   offset) = rho * e;
+                    sphys(support::field::ndx::rho, offset) = rho;
 
                 } // end X
 

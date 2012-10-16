@@ -265,11 +265,11 @@ public:
     {
         // Starting offset to named scalars in InterleavedState pencil
         namespace ndx = support::field::ndx;
-        const int start_rho = static_cast<int>(ndx::rho) * A.n;
+        const int start_e   = static_cast<int>(ndx::e  ) * A.n;
         const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
         const int start_my  = static_cast<int>(ndx::my ) * A.n;
         const int start_mz  = static_cast<int>(ndx::mz ) * A.n;
-        const int start_e   = static_cast<int>(ndx::e  ) * A.n;
+        const int start_rho = static_cast<int>(ndx::rho) * A.n;
 
         // Relative to start_foo what is the offset to lower, upper walls
         const int wall[nwalls] = { 0, A.n - 1};
@@ -277,11 +277,11 @@ public:
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that A_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
-            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho + wall[i]);
+            e     [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_e   + wall[i]);
             noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_mx  + wall[i]);
             noslip[i][1] = suzerain_bsmbsm_qinv(A.S, A.n, start_my  + wall[i]);
             noslip[i][2] = suzerain_bsmbsm_qinv(A.S, A.n, start_mz  + wall[i]);
-            e     [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_e   + wall[i]);
+            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho + wall[i]);
         }
     }
 
@@ -335,10 +335,10 @@ public:
             if (rhocoeff == complex_t(0)) rhocoeff = 1;
             // Scan row and adjust coefficients for constraint
             for (int i = begin; i < end; ++i) {
-                if (i == rho[wall]) {
-                    // NOP
-                } else if (i == e[wall]) {
+                if (i == e[wall]) {
                     col[i] = rhocoeff*gamma_times_one_minus_gamma;
+                } else if (i == rho[wall]) {
+                    // NOP
                 } else {
                     col[i] = 0;
                 }

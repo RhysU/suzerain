@@ -76,17 +76,17 @@ namespace ndx {
 // Anonymous enum to declare our state variable storage indices.
 // Update count just below if you modify this enum!
 enum {
-    rho,  /**< Nondimensional density              \f$      \rho   \f$ */
+    e,    /**< Nondimensional total energy         \f$e   = \rho{}E\f$ */
     mx,   /**< Nondimensional streamwise momentum  \f$m_x = \rho{}u\f$ */
     my,   /**< Nondimensional wall-normal momentum \f$m_y = \rho{}v\f$ */
     mz,   /**< Nondimensional spanwise momentum    \f$m_z = \rho{}w\f$ */
-    e     /**< Nondimensional total energy         \f$e   = \rho{}E\f$ */
+    rho   /**< Nondimensional density              \f$      \rho   \f$ */
 };
 
 } // end namespace ndx;
 
 /** Contains the number of distinct state variables we track */
-const std::size_t count = static_cast<std::size_t>(ndx::e) + 1;
+const std::size_t count = static_cast<std::size_t>(ndx::rho) + 1;
 
 /** Field names as stored in restart files */
 extern const boost::array<const char *, count> name;
