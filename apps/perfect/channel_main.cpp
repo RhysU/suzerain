@@ -1526,7 +1526,7 @@ int main(int argc, char **argv)
     //   vi) Using suzerain::diffwave::apply zeros wavenumbers
     //       used only for dealiasing purposes-- this data is unimportant
     //       from the perspective of measuring actual linearization error.
-    if (tc->current_nt()) {
+    if (advance_success && tc->current_nt()) {
         const double starttime = MPI_Wtime();
         state_nonlinear->assign(*state_linear);
         common_block.setZero(grid.dN.y());  // Defensive
