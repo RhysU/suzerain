@@ -49,6 +49,7 @@ pkginclude_HEADERS += exprgrammar.hpp
 pkginclude_HEADERS += exprparse.hpp
 pkginclude_HEADERS += fftw.hpp
 pkginclude_HEADERS += filterop.h
+pkginclude_HEADERS += format.hpp
 pkginclude_HEADERS += functional.hpp
 pkginclude_HEADERS += function.h
 pkginclude_HEADERS += gbdddddmv.h

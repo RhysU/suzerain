@@ -39,6 +39,7 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/fftw.hpp>
+#include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
