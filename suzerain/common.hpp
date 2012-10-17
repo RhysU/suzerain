@@ -413,6 +413,7 @@ typedef Eigen::Matrix<       int, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXi;
 /** @} */
 
 // Make <code>suzerain::Map</code> behave like <code>Eigen::Map</code>.
+/** \namespace suzerain */
 using Eigen::Map;
 
 /** @} */
