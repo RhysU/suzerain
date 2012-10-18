@@ -1987,12 +1987,12 @@ suzerain_lapack_zlangb(
  *                      Langou et al. tolerance \f$ \sqrt{n} \eps
  *                      \|A\|_\text{Fro} \|x\|_2 \f$ against which the
  *                      residual is compared as a stopping criterion.
- *                      The recommended from their work is one for
- *                      regaining full accuracy as measured per backward
- *                      stability.  On output, the fraction of the
- *                      tolerance represented by the returned solution.
- *                      Values greater than one indicate the desired
- *                      tolerance could not be met.
+ *                      The recommended value from Langou et al is \c
+ *                      1.0 to regain full accuracy as measured per
+ *                      backward stability.  On output, the fraction
+ *                      of the tolerance represented by the returned
+ *                      solution.  Values greater than one indicate the
+ *                      desired tolerance could not be met.
  * \param[out]    r     Solution residual \f$ b - A x \f$.
  * \param[out]    res   2-norm of the residual.
  *                      That is, \f$\|b - A x\|_2\f$.
