@@ -2126,20 +2126,26 @@ suzerain_lapackext_dsgbsvx(
             suzerain_lapack_sgbtrf(n, n, kl, ku, (float*)afb, ldafb, ipiv);
         }
 
-///     while (siter < smax && residual > tolerance) {
-///         Solve the system using the single precision factorization
-///         if (smax > 0) {
-///             Perform one step of mixed precision iterative refinement
-///             Update computation of |x|_2^2 in normx2
-///         }
-///         lastres2 = res2;
-///         Update residual computation in r and res2
-///         if (!(apprx < siter || lastres2 >= resdecay2 * res2)) {
-///             fact = 'N'; siter = smax; diter = dmax;
-///             return SELF_INVOCATION
-///         }
-///         ++siter;
-///     }
+        while (*siter < smax && *res > normx*tolconst) {
+
+            // TODO Solve the system using the single precision factorization
+            // TODO
+
+            if (smax > 0) {
+                // TODO Perform one step of mixed precision iterative refinement
+            }
+            lastres = *res;
+
+            // TODO Update computation of |x|_2 in normx
+            // TODO Update residual computation in r and *res
+
+            if (!(*apprx < *siter || lastres >= *res * resdecay)) {
+                // TODO fact = 'N'; siter = smax; diter = dmax;
+                // TODO return SELF_INVOCATION
+            }
+
+            ++*siter;
+        }
 
     }
 
@@ -2152,20 +2158,26 @@ suzerain_lapackext_dsgbsvx(
             suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
         }
 
-///     while (diter < dmax && residual > tolerance) {
-///         Solve the system using the double precision factorization
-///         if (dmax > 0) {
-///             Perform one step of double precision iterative refinement
-///             Update computation of |x|_2^2 in normx2
-///         }
-///         lastres2 = res2;
-///         Update residual computation in r and res2
-///         if (!(apprx < diter || lastres2 >= resdecay2 * res2)) {
-///             fact = 'N'; diter = smax; diter = dmax;
-///             return SELF_INVOCATION
-///         }
-///         ++diter;
-///     }
+        while (*diter < dmax && *res > normx*tolconst) {
+
+            // Solve the system using the double precision factorization
+            // TODO
+
+            if (dmax > 0) {
+                // TODO Perform one step of double precision refinement
+            }
+            lastres = *res;
+
+            // TODO Update computation of |x|_2 in normx
+            // TODO Update residual computation in r and *res
+
+            if (!(*apprx < *diter || lastres >= *res * resdecay)) {
+                // TODO fact = 'N'; diter = smax; diter = dmax;
+                // TODO return SELF_INVOCATION
+            }
+
+            ++*diter;
+        }
 
     }
 
