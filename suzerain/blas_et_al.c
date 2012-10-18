@@ -2050,7 +2050,7 @@ suzerain_lapackext_dsgbsvx(
         double * const x,
         int * const siter,
         int * const diter,
-        double tolsc,
+        double * const tolsc,
         double * const r,
         double * const res)
 {
@@ -2070,12 +2070,17 @@ suzerain_lapackext_dsgbsvx(
         info = -5;
     } else if (UNLIKELY(ku < 0)) {
         info = -6;
-    } else if (UNLIKELY(tolsc < 0)) {
+    } else if (UNLIKELY(*tolsc <= 0)) {
         info = -15;
     } else if (UNLIKELY(*siter <= 0 && *diter <= 0)) {
         info = -99;
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // Error handling from here oneward deserves a word.  Internal errors are
+    // marked by calls to suzerain_blas_xerbla using (-__LINE__).  Usage errors
+    // by a user (e.g.  providing a singular matrix) simply return the
+    // appropriate info value.
 
     // Lookup machine-specific floating point information
     const double eps = suzerain_lapack_dlamch('E');
@@ -2093,11 +2098,11 @@ suzerain_lapackext_dsgbsvx(
     // Compute const part of stopping tolerance per Langou et al:
     //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
     //                                          -----------------------
-    const double tolconst = *afrob * eps * sqrt(n) * tolsc;
+    const double tolconst = *afrob * eps * sqrt(n) * (*tolsc);
 
-    // Compute (a usually awful) solution estimate starting from r = b
-    double normx = 0;
+    // Compute (a usually awful) solution estimate starting from x = 0
     memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
+    double normx = 0;                        // ||0||_2 = 0 since x == 0
     suzerain_blas_dcopy(n, b, inc, r, inc);  // r = b - A*x = b - A*0 = b
     *res = suzerain_blas_dnrm2(n, r, inc);   // res = |r|_2
 
@@ -2116,12 +2121,10 @@ suzerain_lapackext_dsgbsvx(
             *apprx = 0;
 
             suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
-
             info = suzerain_blasext_ddemote(n*ldafb, afb);
             if (UNLIKELY(info)) {
                 return suzerain_blas_xerbla(__func__, -__LINE__);
             }
-
             info = suzerain_lapack_sgbtrf(
                     n, n, kl, ku, (float*)afb, ldafb, ipiv);
             if (UNLIKELY(info > 0 && dmax >= 0)) {
@@ -2165,7 +2168,7 @@ suzerain_lapackext_dsgbsvx(
 
             if (!(*apprx < *siter || lastres >= *res * resdecay)) {
                 // Approximate factorization giving slow convergence,
-                // so force a complete, double precision factorization.
+                // so force a non-approximate factorization.
                 *fact  = 'N';
                 *siter = smax;
                 *diter = dmax;
@@ -2188,7 +2191,11 @@ double_precision_attempt:
             *apprx = 0;
             suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
             info = suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
-            if (UNLIKELY(info)) return info;
+            if (UNLIKELY(info < 0)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            } else {
+                return info;
+            }
         }
 
         while (*diter < dmax && *res > normx*tolconst) {
@@ -2215,7 +2222,7 @@ double_precision_attempt:
 
             if (!(*apprx < *diter || lastres >= *res * resdecay)) {
                 // Approximate factorization giving slow convergence,
-                // so force a complete, double precision factorization.
+                // so force a non-approximate factorization.
                 *fact  = 'N';
                 *siter = smax;
                 *diter = dmax;
@@ -2229,7 +2236,8 @@ double_precision_attempt:
 
     }
 
-    // TODO Update tolsc per Doxygen
+    // Make tolsc the fraction of the tolerance represented by the solution
+    *tolsc = (*res == 0) ? 0 : *res / (normx * tolconst);
 
     return info;
 }
