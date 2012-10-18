@@ -2085,8 +2085,6 @@ suzerain_lapackext_dsgbsvx(
     const int ldab  =   kl + 1 + ku;
     const int ldafb = 2*kl + 1 + ku;
 
-    // FIXME Error handling in other LAPACK, BLAS calls
-
     // Compute Frobenius norm of A if it was not supplied
     if (*afrob < 0) {
         *afrob = suzerain_lapack_dlangb('F', n, kl, ku, ab, ldab, NULL);
@@ -2116,9 +2114,23 @@ suzerain_lapackext_dsgbsvx(
         if (*fact != 'S') { // Ensure single precision factorization available
             *fact  = 'S';
             *apprx = 0;
+
             suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
-            suzerain_blasext_ddemote(n*ldafb, afb);
-            suzerain_lapack_sgbtrf(n, n, kl, ku, (float*)afb, ldafb, ipiv);
+
+            info = suzerain_blasext_ddemote(n*ldafb, afb);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+
+            info = suzerain_lapack_sgbtrf(
+                    n, n, kl, ku, (float*)afb, ldafb, ipiv);
+            if (UNLIKELY(info > 0 && dmax >= 0)) {
+                // Single precision factorization failed where
+                // double precision might succeed.  Bail on single.
+                goto double_precision_attempt;
+            } else if (UNLIKELY(info < 0)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
         }
 
         while (*siter < smax && *res > normx*tolconst) {
@@ -2126,17 +2138,29 @@ suzerain_lapackext_dsgbsvx(
             // Perform one step of mixed precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
             lastres = *res;
-            suzerain_blasext_ddemote(n, r);
-            suzerain_lapack_sgbtrs(trans, n, kl, ku, 1,
-                                   (float*)afb, ldafb, ipiv,
-                                   (float*)r, n);
-            suzerain_blasext_dpromote(n, r);
+            info = suzerain_blasext_ddemote(n, r);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            info = suzerain_lapack_sgbtrs(trans, n, kl, ku, 1,
+                                          (float*)afb, ldafb, ipiv,
+                                          (float*)r, n);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            info = suzerain_blasext_dpromote(n, r);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
             suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
             normx = suzerain_blas_dnrm2(n, x, inc);
             suzerain_blas_dcopy(n, b, inc, r, inc);
-            suzerain_blas_dgbmv(trans, n, n, kl, ku,
-                                -1.0, ab, ldab, x, inc,
-                                 1.0, r, inc);
+            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                       -1.0, ab, ldab, x, inc,
+                                        1.0, r, inc);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
             if (!(*apprx < *siter || lastres >= *res * resdecay)) {
@@ -2155,13 +2179,16 @@ suzerain_lapackext_dsgbsvx(
 
     }
 
+double_precision_attempt:
+
     if (dmax >= 0 && *res > normx*tolconst) {
 
         if (*fact != 'D') { // Ensure double precision factorization available
             *fact  = 'D';
             *apprx = 0;
             suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
-            suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
+            info = suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
+            if (UNLIKELY(info)) return info;
         }
 
         while (*diter < dmax && *res > normx*tolconst) {
@@ -2169,15 +2196,21 @@ suzerain_lapackext_dsgbsvx(
             // Perform one step of double precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
             lastres = *res;
-            suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
-                                   afb, ldafb, ipiv,
-                                   r, n);
+            info = suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
+                                          afb, ldafb, ipiv,
+                                          r, n);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
             suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
             normx = suzerain_blas_dnrm2(n, x, inc);
             suzerain_blas_dcopy(n, b, inc, r, inc);
-            suzerain_blas_dgbmv(trans, n, n, kl, ku,
-                                -1.0, ab, ldab, x, inc,
-                                 1.0, r, inc);
+            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                       -1.0, ab, ldab, x, inc,
+                                        1.0, r, inc);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
             if (!(*apprx < *diter || lastres >= *res * resdecay)) {
