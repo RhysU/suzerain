@@ -1992,7 +1992,7 @@ suzerain_lapackext_dsgbsvx(
         int * const diter,
         double tolsc,
         double * const r,
-        double * const res2)
+        double * const res)
 {
     *fact = toupper(*fact);
     trans = toupper(trans);
@@ -2018,6 +2018,7 @@ suzerain_lapackext_dsgbsvx(
     if (info) return suzerain_blas_xerbla(__func__, info);
 
     // Incoming vectors and matrices must be contiguous in memory
+    const double eps = suzerain_lapack_dlamch('E');
     static const int incb = 1;
     static const int incx = 1;
     static const int incr = 1;
@@ -2025,54 +2026,44 @@ suzerain_lapackext_dsgbsvx(
     const int ldafb = 2*kl + 1 + ku;
 
     // FIXME Suppress unused warnings for unimplemented function
-    (void) fact;
     (void) apprx;
     (void) trans;
-    (void) n;
     (void) ab;
     (void) afb;
     (void) ipiv;
-    (void) b;
-    (void) x;
-    (void) siter;
-    (void) diter;
-    (void) tolsc;
-    (void) r;
-    (void) res2;
 
     // Compute Frobenius norm of A if it was not supplied
     if (*afrob < 0) {
         *afrob = suzerain_lapack_dlangb('F', n, kl, ku, ab, ldab, NULL);
     }
 
-    // Compute const part of stopping tolerance per Langou et. al.
-    double tolconst = *afrob * suzerain_lapack_dlamch('E');
-    tolconst       *= tolconst;
-    tolconst       *= n * tolsc;
+    // Compute const part of stopping tolerance per Langou et al:
+    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
+    //                                          -----------------------
+    const double tolconst = *afrob * eps * sqrt(n) * tolsc;
 
     // Compute (a usually awful) solution estimate assuming r = b
-    double normx2 = 0;
-    memset(x, 0, n*sizeof(double));            // x = 0
+    double normx = 0;
+    memset(x, 0, n*sizeof(double));            // x = 0 when incx == 1
     suzerain_blas_dcopy(n, b, incb, r, incr);  // r = b;
-    *res2 = suzerain_blas_dnrm2(n, r, incr);   // res2 = |r|_2^2
-    *res2 *= *res2;
+    *res = suzerain_blas_dnrm2(n, r, incr);    // res = |r|_2
 
     // Fake that this initial solution is better by more than a factor of 2
-    double resdecay2 = 2*2;
-    double lastres2  = resdecay2 * (*res2 + 1);
+    double resdecay = 2;
+    double lastres  = resdecay * (*res + 1);
 
     // Save the maximum iteration count prior to entering compute loops
     const int smax = *siter; *siter = -1;
     const int dmax = *diter; *diter = -1;
 
-/// if (residual > tolerance && smax >= 0 && fact != 'D') {
-///
-///     if (fact != 'S') {
-///         fact = 'S';
-///         apprx = 0;
-///         Factorize operator using single precision
-///     }
-///
+    if (*res > normx*tolconst && smax >= 0 && *fact != 'D') {
+
+        if (*fact != 'S') { // Factorize operator using single precision?
+            *fact  = 'S';
+            *apprx = 0;
+            //TODO Copy. Demote. Factorize.
+        }
+
 ///     while (siter < smax && residual > tolerance) {
 ///         Solve the system using the single precision factorization
 ///         if (smax > 0) {
@@ -2087,11 +2078,11 @@ suzerain_lapackext_dsgbsvx(
 ///         }
 ///         ++siter;
 ///     }
-///
-/// }
-///
-/// if (residual > tolerance && dmax >= 0) {
-///
+
+    }
+
+    if (*res > normx*tolconst && dmax >= 0) {
+
 ///     if (fact != 'D') {
 ///         fact = 'D';
 ///         apprx = 0;
@@ -2112,8 +2103,8 @@ suzerain_lapackext_dsgbsvx(
 ///         }
 ///         ++diter;
 ///     }
-///
-/// }
+
+    }
 
     // FIXME Implement per personal notes dated 27 August 2012
     return suzerain_blas_xerbla(__func__, -999);
@@ -2137,7 +2128,7 @@ suzerain_lapackext_zcgbsvx(
         int * const diter,
         double tolsc,
         complex_double * const r,
-        complex_double * const res2)
+        complex_double * const res)
 {
     *fact = toupper(*fact);
     trans = toupper(trans);
@@ -2177,7 +2168,7 @@ suzerain_lapackext_zcgbsvx(
     (void) diter;
     (void) tolsc;
     (void) r;
-    (void) res2;
+    (void) res;
 
     // FIXME Implement per personal notes dated 27 August 2012
     return suzerain_blas_xerbla(__func__, -999);

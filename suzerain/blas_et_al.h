@@ -1940,8 +1940,8 @@ suzerain_lapack_zlangb(
  *                      Values greater than one indicate the desired
  *                      tolerance could not be met.
  * \param[out]    r     Solution residual \f$ b - A x \f$.
- * \param[out]    res2  Squared 2-norm of the residual.
- *                      That is, \f$\|b - A x\|_2^2\f$.
+ * \param[out]    res   2-norm of the residual.
+ *                      That is, \f$\|b - A x\|_2\f$.
  *
  * One or both of \c siter or \c diter must be nonnegative on entry.
  *
@@ -1967,7 +1967,7 @@ suzerain_lapackext_dsgbsvx(
         int * const diter,
         double tolsc,
         double * const r,
-        double * const res2);
+        double * const res);
 
 /*! \copydoc suzerain_lapackext_dsgbsvx */
 int
@@ -1988,7 +1988,7 @@ suzerain_lapackext_zcgbsvx(
         int * const diter,
         double tolsc,
         complex_double * const r,
-        complex_double * const res2);
+        complex_double * const res);
 
 /*! @} */
 
