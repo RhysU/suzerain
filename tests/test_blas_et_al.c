@@ -2926,13 +2926,23 @@ void test_lapackext_dsgbsvx()
     for (int N = 1; N < MAX_N; ++N) {
 
         // Form Lotkin test matrix N
+        // Also form x = [1; ...; 1] and stably compute b = A*x
         const int kl = N - 1, ku = kl, ldab = kl + 1 + ku;
+        // First row of A
         for (int j = 0; j < N; ++j) {
             ab[j*ldab+(ku+0-j)] = 1;
         }
+        x[0] = 1;
+        b[0] = N;
+        // Subsequent rows of A
+        // Reverse iteration on j sums from smallest to largest
         for (int i = 1; i < N; ++i) {
-            for (int j = 0; j < N; ++j) {
-                ab[j*ldab+(ku+i-j)] = 1. / (i+(j+1));
+            x[i] = 1;
+            b[i] = 0;
+            for (int j = N; j --> 0 ;) {
+                const double aij = 1. / (i+(j+1));
+                b[i] += aij;
+                ab[j*ldab+(ku+i-j)] = aij;
             }
         }
 
