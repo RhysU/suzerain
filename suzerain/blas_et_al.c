@@ -2116,12 +2116,14 @@ suzerain_lapackext_dsgbsvx(
     const int smax = *siter; *siter = -1;
     const int dmax = *diter; *diter = -1;
 
-    if (*res > normx*tolconst && smax >= 0 && *fact != 'D') {
+    if (smax >= 0 && *fact != 'D' && *res > normx*tolconst) {
 
-        if (*fact != 'S') { // Factorize operator using single precision?
+        if (*fact != 'S') { // Ensure single precision factorization available
             *fact  = 'S';
             *apprx = 0;
-            //TODO Copy. Demote. Factorize.
+            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            suzerain_blasext_ddemote(n*ldafb, afb);
+            suzerain_lapack_sgbtrf(n, n, kl, ku, (float*)afb, ldafb, ipiv);
         }
 
 ///     while (siter < smax && residual > tolerance) {
@@ -2141,14 +2143,15 @@ suzerain_lapackext_dsgbsvx(
 
     }
 
-    if (*res > normx*tolconst && dmax >= 0) {
+    if (dmax >= 0 && *res > normx*tolconst) {
 
-///     if (fact != 'D') {
-///         fact = 'D';
-///         apprx = 0;
-///         Factorize operator using double precision
-///     }
-///
+        if (*fact != 'D') { // Ensure double precision factorization available
+            *fact  = 'D';
+            *apprx = 0;
+            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
+        }
+
 ///     while (diter < dmax && residual > tolerance) {
 ///         Solve the system using the double precision factorization
 ///         if (dmax > 0) {
