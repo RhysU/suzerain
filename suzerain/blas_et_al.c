@@ -2017,15 +2017,19 @@ suzerain_lapackext_dsgbsvx(
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
 
+    // Incoming vectors and matrices must be contiguous in memory
+    static const int incb = 1;
+    static const int incx = 1;
+    static const int incr = 1;
+    const int ldab  =   kl + 1 + ku;
+    const int ldafb = 2*kl + 1 + ku;
+
     // FIXME Suppress unused warnings for unimplemented function
     (void) fact;
     (void) apprx;
     (void) trans;
     (void) n;
-    (void) kl;
-    (void) ku;
     (void) ab;
-    (void) afrob;
     (void) afb;
     (void) ipiv;
     (void) b;
@@ -2036,24 +2040,31 @@ suzerain_lapackext_dsgbsvx(
     (void) r;
     (void) res2;
 
-////// IMPLEMENTATION NOTES
-/// if (afrob < 0) {
-///     Compute Frobenius norm of A
-/// }
-/// tolconst = afrob * 0.5 * eps;
-/// tolconst *= tolconst;
-/// tolconst *= n * tolsc;
-///
-/// normx2 = 0;
-/// x = 0
-/// r = b;
-/// res2 = |r|_2^2
-/// resdecay2 = 2*2;
-/// lastres2 = resdecay2 * (res2 + 1);
-///
-/// const int smax = siter; siter = -1;
-/// const int dmax = diter; diter = -1;
-///
+    // Compute Frobenius norm of A if it was not supplied
+    if (*afrob < 0) {
+        *afrob = suzerain_lapack_dlangb('F', n, kl, ku, ab, ldab, NULL);
+    }
+
+    // Compute const part of stopping tolerance per Langou et. al.
+    double tolconst = *afrob * suzerain_lapack_dlamch('E');
+    tolconst       *= tolconst;
+    tolconst       *= n * tolsc;
+
+    // Compute (a usually awful) solution estimate assuming r = b
+    double normx2 = 0;
+    memset(x, 0, n*sizeof(double));            // x = 0
+    suzerain_blas_dcopy(n, b, incb, r, incr);  // r = b;
+    *res2 = suzerain_blas_dnrm2(n, r, incr);   // res2 = |r|_2^2
+    *res2 *= *res2;
+
+    // Fake that this initial solution is better by more than a factor of 2
+    double resdecay2 = 2*2;
+    double lastres2  = resdecay2 * (*res2 + 1);
+
+    // Save the maximum iteration count prior to entering compute loops
+    const int smax = *siter; *siter = -1;
+    const int dmax = *diter; *diter = -1;
+
 /// if (residual > tolerance && smax >= 0 && fact != 'D') {
 ///
 ///     if (fact != 'S') {
