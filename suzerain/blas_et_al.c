@@ -2196,6 +2196,8 @@ suzerain_lapackext_dsgbsvx(
 
     }
 
+    // TODO Update tolsc per Doxygen
+
     return info;
 }
 
