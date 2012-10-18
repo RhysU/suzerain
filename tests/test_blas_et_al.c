@@ -2921,12 +2921,12 @@ void test_lapackext_dsgbsvx()
     double b  [MAX_N];
     double x  [MAX_N];
     double r  [MAX_N];
+    int    piv[MAX_N];
 
     for (int N = 1; N < MAX_N; ++N) {
 
-
         // Form Lotkin test matrix N
-        const int kl = N - 1, ku = kl, ldab = kl + 1 + ku, ldafb = ldab + kl;
+        const int kl = N - 1, ku = kl, ldab = kl + 1 + ku;
         for (int j = 0; j < N; ++j) {
             ab[j*ldab+(ku+0-j)] = 1;
         }
@@ -2936,7 +2936,23 @@ void test_lapackext_dsgbsvx()
             }
         }
 
-        int FIXME = 10;
+        // Form synthetic answer x = [1; ...; 1] and find b = A*x
+        for (int i = 0; i < N; ++i) x[i] = 1;
+        suzerain_blas_dgbmv('N', N, N, kl, ku, 1., ab, ldab, x, 1, 0., b, 1);
+
+        // Solve for x using DSGBSVX
+        char fact = 'N';
+        int apprx = 0;
+        double afrob = -1;
+        int siter    = -1;
+        int diter    = 0;
+        double tolsc = 1;
+        double res   = 1234567890;
+        suzerain_lapackext_dsgbsvx(&fact, &apprx, 'N', N, kl, ku, ab,
+                                   &afrob, afb, piv, b, x, &siter, &diter,
+                                   &tolsc, r, &res);
+
+        // FIXME Assert something
     }
 }
 

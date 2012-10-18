@@ -3992,7 +3992,7 @@ suzerain_lapackext_zcgbsvx(
         complex_double * const x,
         int * const siter,
         int * const diter,
-        double tolsc,
+        double * const tolsc,
         complex_double * const r,
         complex_double * const res);
 
