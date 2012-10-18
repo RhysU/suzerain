@@ -1483,7 +1483,7 @@ suzerain_lapack_zgbsv(
  * \param[in]     nrhs
  * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
  * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
- * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in,out] afb   Dimension (<tt>ldafb</tt>,<tt>n</tt>)
  * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
  * \param[in,out] ipiv  Dimension \c n
  * \param[in,out] equed
@@ -1567,7 +1567,7 @@ suzerain_lapack_dgbsvx(
  * \param[in]     nrhs
  * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
  * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
- * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in,out] afb   Dimension (<tt>ldafb</tt>,<tt>n</tt>)
  * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
  * \param[in,out] ipiv  Dimension \c n
  * \param[in,out] equed
@@ -1649,7 +1649,7 @@ suzerain_lapack_zgbsvx(
  * \param[in]     nrhs
  * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
  * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
- * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in,out] afb   Dimension (<tt>ldafb</tt>,<tt>n</tt>)
  * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
  * \param[in,out] ipiv  Dimension \c n
  * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
@@ -1717,7 +1717,7 @@ suzerain_lapack_dgbrfs(
  * \param[in]     nrhs
  * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
  * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
- * \param[in,out] afb   Dimension (<tt>ldfab</tt>,<tt>n</tt>)
+ * \param[in,out] afb   Dimension (<tt>ldafb</tt>,<tt>n</tt>)
  * \param[in]     ldafb Minimum <tt>2*kl + ku + 1</tt>
  * \param[in,out] ipiv  Dimension \c n
  * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
@@ -1908,7 +1908,7 @@ suzerain_lapack_zlangb(
  *                      If negative on entry, the norm is computed
  *                      and returned to permit caching the result.
  * \param[in,out] afb   Single or double precision LU factorization
- *                      of \f$ A \f$ of dimension (<tt>ldfab == 2*kl + ku
+ *                      of \f$ A \f$ of dimension (<tt>ldafb == 2*kl + ku
  *                      + 1</tt>,<tt>n</tt>).  Whether a single or double
  *                      precision result is returned is communicated by
  *                      \c fact on return.
