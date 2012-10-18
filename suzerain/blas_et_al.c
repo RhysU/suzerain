@@ -2034,278 +2034,6 @@ suzerain_lapack_zlangb(
                                       (int*)&ku, (void*)ab, (int*)&ldab, work);
 }
 
-int
-suzerain_lapackext_dsgbsvx(
-        char * const fact,
-        int * const apprx,
-        char trans,
-        const int n,
-        const int kl,
-        const int ku,
-        double * const ab,
-        double * const afrob,
-        double * const afb,
-        int * const ipiv,
-        double * const b,
-        double * const x,
-        int * const siter,
-        int * const diter,
-        double * const tolsc,
-        double * const r,
-        double * const res)
-{
-    *fact = toupper(*fact);
-    trans = toupper(trans);
-
-    int info = 0;
-    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
-        info = -1;
-    } else if (UNLIKELY(*apprx < 0)) {
-        info = -2;
-    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
-        info = -3;
-    } else if (UNLIKELY(n < 0)) {
-        info = -4;
-    } else if (UNLIKELY(kl < 0)) {
-        info = -5;
-    } else if (UNLIKELY(ku < 0)) {
-        info = -6;
-    } else if (UNLIKELY(*tolsc <= 0)) {
-        info = -15;
-    } else if (UNLIKELY(*siter <= 0 && *diter <= 0)) {
-        info = -99;
-    }
-    if (info) return suzerain_blas_xerbla(__func__, info);
-
-    // Error handling from here oneward deserves a word.  Internal errors are
-    // marked by calls to suzerain_blas_xerbla using (-__LINE__).  Usage errors
-    // by a user (e.g.  providing a singular matrix) simply return the
-    // appropriate info value.
-
-    // Lookup machine-specific floating point information
-    const double eps = suzerain_lapack_dlamch('E');
-
-    // Incoming vectors and matrices must be contiguous in memory
-    static const int inc = 1;
-    const int ldab  =   kl + 1 + ku;
-    const int ldafb = 2*kl + 1 + ku;
-
-    // Compute Frobenius norm of A if it was not supplied
-    if (*afrob < 0) {
-        *afrob = suzerain_lapack_dlangb('F', n, kl, ku, ab, ldab, NULL);
-    }
-
-    // Compute const part of stopping tolerance per Langou et al:
-    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
-    //                                          -----------------------
-    const double tolconst = *afrob * eps * sqrt(n) * (*tolsc);
-
-    // Compute (a usually awful) solution estimate starting from x = 0
-    memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
-    double normx = 0;                        // ||0||_2 = 0 since x == 0
-    suzerain_blas_dcopy(n, b, inc, r, inc);  // r = b - A*x = b - A*0 = b
-    *res = suzerain_blas_dnrm2(n, r, inc);   // res = |r|_2
-
-    // Fake that this initial solution is better by more than a factor of 2
-    const double resdecay = 2;
-    double lastres = (resdecay + 1) * (*res + 1);
-
-    // Save the maximum iteration count prior to entering compute loops
-    const int smax = *siter; *siter = -1;
-    const int dmax = *diter; *diter = -1;
-
-    if (smax >= 0 && *fact != 'D' && *res > normx*tolconst) {
-
-        if (*fact != 'S') { // Ensure single precision factorization available
-            *fact  = 'S';
-            *apprx = 0;
-
-            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
-            info = suzerain_blasext_ddemote(n*ldafb, afb);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            info = suzerain_lapack_sgbtrf(
-                    n, n, kl, ku, (float*)afb, ldafb, ipiv);
-            if (UNLIKELY(info > 0 && dmax >= 0)) {
-                // Single precision factorization failed where
-                // double precision might succeed.  Bail on single.
-                goto double_precision_attempt;
-            } else if (UNLIKELY(info < 0)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-        }
-
-        while (*siter < smax && *res > normx*tolconst) {
-
-            // Perform one step of mixed precision iterative refinement
-            // updating norm computations for x and r = b - op(A) x
-            lastres = *res;
-            info = suzerain_blasext_ddemote(n, r);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            info = suzerain_lapack_sgbtrs(trans, n, kl, ku, 1,
-                                          (float*)afb, ldafb, ipiv,
-                                          (float*)r, n);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            info = suzerain_blasext_dpromote(n, r);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
-            normx = suzerain_blas_dnrm2(n, x, inc);
-            suzerain_blas_dcopy(n, b, inc, r, inc);
-            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
-                                       -1.0, ab, ldab, x, inc,
-                                        1.0, r, inc);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            *res  = suzerain_blas_dnrm2(n, r, inc);
-
-            if (!(*apprx < *siter || lastres >= *res * resdecay)) {
-                // Approximate factorization giving slow convergence,
-                // so force a non-approximate factorization.
-                *fact  = 'N';
-                *siter = smax;
-                *diter = dmax;
-                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
-                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
-                        siter, diter, tolsc, r, res);
-            }
-
-            ++*siter;
-        }
-
-    }
-
-double_precision_attempt:
-
-    if (dmax >= 0 && *res > normx*tolconst) {
-
-        if (*fact != 'D') { // Ensure double precision factorization available
-            *fact  = 'D';
-            *apprx = 0;
-            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
-            info = suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
-            if (UNLIKELY(info < 0)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            } else {
-                return info;
-            }
-        }
-
-        while (*diter < dmax && *res > normx*tolconst) {
-
-            // Perform one step of double precision iterative refinement
-            // updating norm computations for x and r = b - op(A) x
-            lastres = *res;
-            info = suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
-                                          afb, ldafb, ipiv,
-                                          r, n);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
-            normx = suzerain_blas_dnrm2(n, x, inc);
-            suzerain_blas_dcopy(n, b, inc, r, inc);
-            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
-                                       -1.0, ab, ldab, x, inc,
-                                        1.0, r, inc);
-            if (UNLIKELY(info)) {
-                return suzerain_blas_xerbla(__func__, -__LINE__);
-            }
-            *res  = suzerain_blas_dnrm2(n, r, inc);
-
-            if (!(*apprx < *diter || lastres >= *res * resdecay)) {
-                // Approximate factorization giving slow convergence,
-                // so force a non-approximate factorization.
-                *fact  = 'N';
-                *siter = smax;
-                *diter = dmax;
-                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
-                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
-                        siter, diter, tolsc, r, res);
-            }
-
-            ++*diter;
-        }
-
-    }
-
-    // Make tolsc the fraction of the tolerance represented by the solution
-    *tolsc = (*res == 0) ? 0 : *res / (normx * tolconst);
-
-    return info;
-}
-
-int
-suzerain_lapackext_zcgbsvx(
-        char * const fact,
-        int * const apprx,
-        char trans,
-        const int n,
-        const int kl,
-        const int ku,
-        complex_double * const ab,
-        complex_double * const afrob,
-        complex_double * const afb,
-        int * const ipiv,
-        complex_double * const b,
-        complex_double * const x,
-        int * const siter,
-        int * const diter,
-        double tolsc,
-        complex_double * const r,
-        complex_double * const res)
-{
-    *fact = toupper(*fact);
-    trans = toupper(trans);
-
-    int info = 0;
-    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
-        info = -1;
-    } else if (UNLIKELY(*apprx < 0)) {
-        info = -2;
-    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
-        info = -3;
-    } else if (UNLIKELY(n < 0)) {
-        info = -4;
-    } else if (UNLIKELY(kl < 0)) {
-        info = -5;
-    } else if (UNLIKELY(ku < 0)) {
-        info = -6;
-    } else if (UNLIKELY(tolsc < 0)) {
-        info = -15;
-    }
-    if (info) return suzerain_blas_xerbla(__func__, info);
-
-    // FIXME Suppress unused warnings for unimplemented function
-    (void) fact;
-    (void) apprx;
-    (void) trans;
-    (void) n;
-    (void) kl;
-    (void) ku;
-    (void) ab;
-    (void) afrob;
-    (void) afb;
-    (void) ipiv;
-    (void) b;
-    (void) x;
-    (void) siter;
-    (void) diter;
-    (void) tolsc;
-    (void) r;
-    (void) res;
-
-    // FIXME Implement per personal notes dated 27 August 2012
-    return suzerain_blas_xerbla(__func__, -999);
-}
-
 void
 suzerain_blas_csbmv_s_c_external(
         const char uplo,
@@ -5139,7 +4867,7 @@ suzerain_blasext_zgbnorm1(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_ddemote(
         const int n,
         double *x)
@@ -5154,7 +4882,7 @@ suzerain_blasext_ddemote(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_dpromote(
         const int n,
         double *x)
@@ -5169,7 +4897,7 @@ suzerain_blasext_dpromote(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_zdemote(
         const int n,
         complex_double *x)
@@ -5184,7 +4912,7 @@ suzerain_blasext_zdemote(
     return 0;
 }
 
-int
+inline int
 suzerain_blasext_zpromote(
         const int n,
         complex_double *x)
@@ -5197,4 +4925,276 @@ suzerain_blasext_zpromote(
     }
 
     return 0;
+}
+
+int
+suzerain_lapackext_dsgbsvx(
+        char * const fact,
+        int * const apprx,
+        char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        double * const ab,
+        double * const afrob,
+        double * const afb,
+        int * const ipiv,
+        double * const b,
+        double * const x,
+        int * const siter,
+        int * const diter,
+        double * const tolsc,
+        double * const r,
+        double * const res)
+{
+    *fact = toupper(*fact);
+    trans = toupper(trans);
+
+    int info = 0;
+    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
+        info = -1;
+    } else if (UNLIKELY(*apprx < 0)) {
+        info = -2;
+    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
+        info = -3;
+    } else if (UNLIKELY(n < 0)) {
+        info = -4;
+    } else if (UNLIKELY(kl < 0)) {
+        info = -5;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -6;
+    } else if (UNLIKELY(*tolsc <= 0)) {
+        info = -15;
+    } else if (UNLIKELY(*siter <= 0 && *diter <= 0)) {
+        info = -99;
+    }
+    if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // Error handling from here oneward deserves a word.  Internal errors are
+    // marked by calls to suzerain_blas_xerbla using (-__LINE__).  Usage errors
+    // by a user (e.g.  providing a singular matrix) simply return the
+    // appropriate info value.
+
+    // Lookup machine-specific floating point information
+    const double eps = suzerain_lapack_dlamch('E');
+
+    // Incoming vectors and matrices must be contiguous in memory
+    static const int inc = 1;
+    const int ldab  =   kl + 1 + ku;
+    const int ldafb = 2*kl + 1 + ku;
+
+    // Compute Frobenius norm of A if it was not supplied
+    if (*afrob < 0) {
+        *afrob = suzerain_lapack_dlangb('F', n, kl, ku, ab, ldab, NULL);
+    }
+
+    // Compute const part of stopping tolerance per Langou et al:
+    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
+    //                                          -----------------------
+    const double tolconst = *afrob * eps * sqrt(n) * (*tolsc);
+
+    // Compute (a usually awful) solution estimate starting from x = 0
+    memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
+    double normx = 0;                        // ||0||_2 = 0 since x == 0
+    suzerain_blas_dcopy(n, b, inc, r, inc);  // r = b - A*x = b - A*0 = b
+    *res = suzerain_blas_dnrm2(n, r, inc);   // res = |r|_2
+
+    // Fake that this initial solution is better by more than a factor of 2
+    const double resdecay = 2;
+    double lastres = (resdecay + 1) * (*res + 1);
+
+    // Save the maximum iteration count prior to entering compute loops
+    const int smax = *siter; *siter = -1;
+    const int dmax = *diter; *diter = -1;
+
+    if (smax >= 0 && *fact != 'D' && *res > normx*tolconst) {
+
+        if (*fact != 'S') { // Ensure single precision factorization available
+            *fact  = 'S';
+            *apprx = 0;
+
+            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            info = suzerain_blasext_ddemote(n*ldafb, afb);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            info = suzerain_lapack_sgbtrf(
+                    n, n, kl, ku, (float*)afb, ldafb, ipiv);
+            if (UNLIKELY(info > 0 && dmax >= 0)) {
+                // Single precision factorization failed where
+                // double precision might succeed.  Bail on single.
+                goto double_precision_attempt;
+            } else if (UNLIKELY(info < 0)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+        }
+
+        while (*siter < smax && *res > normx*tolconst) {
+
+            // Perform one step of mixed precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
+            lastres = *res;
+            info = suzerain_blasext_ddemote(n, r);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            info = suzerain_lapack_sgbtrs(trans, n, kl, ku, 1,
+                                          (float*)afb, ldafb, ipiv,
+                                          (float*)r, n);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            info = suzerain_blasext_dpromote(n, r);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
+            normx = suzerain_blas_dnrm2(n, x, inc);
+            suzerain_blas_dcopy(n, b, inc, r, inc);
+            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                       -1.0, ab, ldab, x, inc,
+                                        1.0, r, inc);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            *res  = suzerain_blas_dnrm2(n, r, inc);
+
+            if (!(*apprx < *siter || lastres >= *res * resdecay)) {
+                // Approximate factorization giving slow convergence,
+                // so force a non-approximate factorization.
+                *fact  = 'N';
+                *siter = smax;
+                *diter = dmax;
+                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
+                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                        siter, diter, tolsc, r, res);
+            }
+
+            ++*siter;
+        }
+
+    }
+
+double_precision_attempt:
+
+    if (dmax >= 0 && *res > normx*tolconst) {
+
+        if (*fact != 'D') { // Ensure double precision factorization available
+            *fact  = 'D';
+            *apprx = 0;
+            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            info = suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
+            if (UNLIKELY(info < 0)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            } else {
+                return info;
+            }
+        }
+
+        while (*diter < dmax && *res > normx*tolconst) {
+
+            // Perform one step of double precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
+            lastres = *res;
+            info = suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
+                                          afb, ldafb, ipiv,
+                                          r, n);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
+            normx = suzerain_blas_dnrm2(n, x, inc);
+            suzerain_blas_dcopy(n, b, inc, r, inc);
+            info = suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                       -1.0, ab, ldab, x, inc,
+                                        1.0, r, inc);
+            if (UNLIKELY(info)) {
+                return suzerain_blas_xerbla(__func__, -__LINE__);
+            }
+            *res  = suzerain_blas_dnrm2(n, r, inc);
+
+            if (!(*apprx < *diter || lastres >= *res * resdecay)) {
+                // Approximate factorization giving slow convergence,
+                // so force a non-approximate factorization.
+                *fact  = 'N';
+                *siter = smax;
+                *diter = dmax;
+                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
+                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                        siter, diter, tolsc, r, res);
+            }
+
+            ++*diter;
+        }
+
+    }
+
+    // Make tolsc the fraction of the tolerance represented by the solution
+    *tolsc = (*res == 0) ? 0 : *res / (normx * tolconst);
+
+    return info;
+}
+
+int
+suzerain_lapackext_zcgbsvx(
+        char * const fact,
+        int * const apprx,
+        char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        complex_double * const ab,
+        complex_double * const afrob,
+        complex_double * const afb,
+        int * const ipiv,
+        complex_double * const b,
+        complex_double * const x,
+        int * const siter,
+        int * const diter,
+        double tolsc,
+        complex_double * const r,
+        complex_double * const res)
+{
+    *fact = toupper(*fact);
+    trans = toupper(trans);
+
+    int info = 0;
+    if (UNLIKELY(*fact != 'N' || *fact != 'S' || *fact != 'D')) {
+        info = -1;
+    } else if (UNLIKELY(*apprx < 0)) {
+        info = -2;
+    } else if (UNLIKELY(trans != 'N' || trans != 'T' || trans != 'C')) {
+        info = -3;
+    } else if (UNLIKELY(n < 0)) {
+        info = -4;
+    } else if (UNLIKELY(kl < 0)) {
+        info = -5;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -6;
+    } else if (UNLIKELY(tolsc < 0)) {
+        info = -15;
+    }
+    if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // FIXME Suppress unused warnings for unimplemented function
+    (void) fact;
+    (void) apprx;
+    (void) trans;
+    (void) n;
+    (void) kl;
+    (void) ku;
+    (void) ab;
+    (void) afrob;
+    (void) afb;
+    (void) ipiv;
+    (void) b;
+    (void) x;
+    (void) siter;
+    (void) diter;
+    (void) tolsc;
+    (void) r;
+    (void) res;
+
+    // FIXME Implement per personal notes dated 27 August 2012
+    return suzerain_blas_xerbla(__func__, -999);
 }
