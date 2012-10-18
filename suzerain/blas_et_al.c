@@ -2077,20 +2077,15 @@ suzerain_lapackext_dsgbsvx(
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
 
-    // Incoming vectors and matrices must be contiguous in memory
+    // Lookup machine-specific floating point information
     const double eps = suzerain_lapack_dlamch('E');
-    static const int incb = 1;
-    static const int incx = 1;
-    static const int incr = 1;
+
+    // Incoming vectors and matrices must be contiguous in memory
+    static const int inc = 1;
     const int ldab  =   kl + 1 + ku;
     const int ldafb = 2*kl + 1 + ku;
 
-    // FIXME Suppress unused warnings for unimplemented function
-    (void) apprx;
-    (void) trans;
-    (void) ab;
-    (void) afb;
-    (void) ipiv;
+    // FIXME Error handling in other LAPACK, BLAS calls
 
     // Compute Frobenius norm of A if it was not supplied
     if (*afrob < 0) {
@@ -2102,15 +2097,15 @@ suzerain_lapackext_dsgbsvx(
     //                                          -----------------------
     const double tolconst = *afrob * eps * sqrt(n) * tolsc;
 
-    // Compute (a usually awful) solution estimate assuming r = b
+    // Compute (a usually awful) solution estimate starting from r = b
     double normx = 0;
-    memset(x, 0, n*sizeof(double));            // x = 0 when incx == 1
-    suzerain_blas_dcopy(n, b, incb, r, incr);  // r = b;
-    *res = suzerain_blas_dnrm2(n, r, incr);    // res = |r|_2
+    memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
+    suzerain_blas_dcopy(n, b, inc, r, inc);  // r = b - A*x = b - A*0 = b
+    *res = suzerain_blas_dnrm2(n, r, inc);   // res = |r|_2
 
     // Fake that this initial solution is better by more than a factor of 2
-    double resdecay = 2;
-    double lastres  = resdecay * (*res + 1);
+    const double resdecay = 2;
+    double lastres = (resdecay + 1) * (*res + 1);
 
     // Save the maximum iteration count prior to entering compute loops
     const int smax = *siter; *siter = -1;
@@ -2128,20 +2123,31 @@ suzerain_lapackext_dsgbsvx(
 
         while (*siter < smax && *res > normx*tolconst) {
 
-            // TODO Solve the system using the single precision factorization
-            // TODO
-
-            if (smax > 0) {
-                // TODO Perform one step of mixed precision iterative refinement
-            }
+            // Perform one step of mixed precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
             lastres = *res;
-
-            // TODO Update computation of |x|_2 in normx
-            // TODO Update residual computation in r and *res
+            suzerain_blasext_ddemote(n, r);
+            suzerain_lapack_sgbtrs(trans, n, kl, ku, 1,
+                                   (float*)afb, ldafb, ipiv,
+                                   (float*)r, n);
+            suzerain_blasext_dpromote(n, r);
+            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
+            normx = suzerain_blas_dnrm2(n, x, inc);
+            suzerain_blas_dcopy(n, b, inc, r, inc);
+            suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                -1.0, ab, ldab, x, inc,
+                                 1.0, r, inc);
+            *res  = suzerain_blas_dnrm2(n, r, inc);
 
             if (!(*apprx < *siter || lastres >= *res * resdecay)) {
-                // TODO fact = 'N'; siter = smax; diter = dmax;
-                // TODO return SELF_INVOCATION
+                // Approximate factorization giving slow convergence,
+                // so force a complete, double precision factorization.
+                *fact  = 'N';
+                *siter = smax;
+                *diter = dmax;
+                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
+                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                        siter, diter, tolsc, r, res);
             }
 
             ++*siter;
@@ -2160,20 +2166,29 @@ suzerain_lapackext_dsgbsvx(
 
         while (*diter < dmax && *res > normx*tolconst) {
 
-            // Solve the system using the double precision factorization
-            // TODO
-
-            if (dmax > 0) {
-                // TODO Perform one step of double precision refinement
-            }
+            // Perform one step of double precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
             lastres = *res;
-
-            // TODO Update computation of |x|_2 in normx
-            // TODO Update residual computation in r and *res
+            suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
+                                   afb, ldafb, ipiv,
+                                   r, n);
+            suzerain_blas_daxpy(n, 1.0, r, inc, x, inc);
+            normx = suzerain_blas_dnrm2(n, x, inc);
+            suzerain_blas_dcopy(n, b, inc, r, inc);
+            suzerain_blas_dgbmv(trans, n, n, kl, ku,
+                                -1.0, ab, ldab, x, inc,
+                                 1.0, r, inc);
+            *res  = suzerain_blas_dnrm2(n, r, inc);
 
             if (!(*apprx < *diter || lastres >= *res * resdecay)) {
-                // TODO fact = 'N'; diter = smax; diter = dmax;
-                // TODO return SELF_INVOCATION
+                // Approximate factorization giving slow convergence,
+                // so force a complete, double precision factorization.
+                *fact  = 'N';
+                *siter = smax;
+                *diter = dmax;
+                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
+                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                        siter, diter, tolsc, r, res);
             }
 
             ++*diter;
@@ -2181,8 +2196,7 @@ suzerain_lapackext_dsgbsvx(
 
     }
 
-    // FIXME Implement per personal notes dated 27 August 2012
-    return suzerain_blas_xerbla(__func__, -999);
+    return info;
 }
 
 int
