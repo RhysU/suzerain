@@ -1334,6 +1334,66 @@ suzerain_blas_zgb_acc_d(
 #endif
 }
 
+inline
+void suzerain_lapack_slacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const float * a,
+                const int lda,
+                float *b,
+                const int ldb)
+{
+    LAPACK_FUNC(slacpy,SLACPY)((char*)&uplo, (int*)&m, (int*)&n,
+                               (float*)a, (int*)&lda,
+                               (float*)b, (int*)&ldb);
+}
+
+inline
+void suzerain_lapack_dlacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const double * a,
+                const int lda,
+                double *b,
+                const int ldb)
+{
+    LAPACK_FUNC(dlacpy,DLACPY)((char*)&uplo, (int*)&m, (int*)&n,
+                               (double*)a, (int*)&lda,
+                               (double*)b, (int*)&ldb);
+}
+
+inline
+void suzerain_lapack_clacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const complex_float * a,
+                const int lda,
+                complex_float *b,
+                const int ldb)
+{
+    LAPACK_FUNC(clacpy,CLACPY)((char*)&uplo, (int*)&m, (int*)&n,
+                               (void*)a, (int*)&lda,
+                               (void*)b, (int*)&ldb);
+}
+
+inline
+void suzerain_lapack_zlacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const complex_double * a,
+                const int lda,
+                complex_double *b,
+                const int ldb)
+{
+    LAPACK_FUNC(zlacpy,ZLACPY)((char*)&uplo, (int*)&m, (int*)&n,
+                               (void*)a, (int*)&lda,
+                               (void*)b, (int*)&ldb);
+}
+
 inline float
 suzerain_lapack_slamch(char cmach)
 {
