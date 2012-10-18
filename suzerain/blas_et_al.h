@@ -1109,6 +1109,60 @@ suzerain_blas_zgb_acc_d(
  */
 
 /**
+ * Copies all or part of a two-dimensional matrix A to another matrix B using
+ * LAPACK's LACPY.
+ *
+ * @param uplo Specifies the part of the matrix A to be copied to matrix B.
+ *             If 'U' or 'u' the upper triangular part is copied.
+ *             If 'L' or 'l' the lower triangular part is copied.
+ *             Otherwise, the entire matrix is copied.
+ * @param m    Number of rows of the matrix A.
+ * @param n    Number of columns of the matrix A.
+ * @param a    The \c m by \c n matrix A.
+ * @param lda  The leading dimension of \c a.
+ * @param b    The \c m by \c n matrix B.
+ * @param ldb  The leading dimension of \c b.
+ */
+void suzerain_lapack_slacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const float * a,
+                const int lda,
+                float *b,
+                const int ldb);
+
+/*! \copydoc suzerain_lapack_slacpy */
+void suzerain_lapack_dlacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const double * a,
+                const int lda,
+                double *b,
+                const int ldb);
+
+/*! \copydoc suzerain_lapack_slacpy */
+void suzerain_lapack_clacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const complex_float * a,
+                const int lda,
+                complex_float *b,
+                const int ldb);
+
+/*! \copydoc suzerain_lapack_slacpy */
+void suzerain_lapack_zlacpy(
+                char uplo,
+                const int m,
+                const int n,
+                const complex_double * a,
+                const int lda,
+                complex_double *b,
+                const int ldb);
+
+/**
  * Determines machine parameters for floating-point arithmetic.
  *
  * The input parameter \c cmach should specify which of the
