@@ -2904,6 +2904,42 @@ void test_blasext_zpromote()
     gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
 }
 
+void test_lapackext_dsgbsvx()
+{
+    // Nastily conditioned test matrices from Mark Lotkin, A Set of Test
+    // Matrices (1955) available at http://www.jstor.org/stable/2002051.
+    // These are square, but the banded routines don't care if we store
+    // them using an idiotic banded format.
+
+    const int MAX_N     = 10;
+    const int MAX_KL    = MAX_N - 1;
+    const int MAX_KU    = MAX_N - 1;
+    const int MAX_LDAB  = MAX_KL + 1 + MAX_KU;
+    const int MAX_LDAFB = 2*MAX_KL + 1 + MAX_KU;
+    double ab [MAX_N * MAX_LDAB];
+    double afb[MAX_N * MAX_LDAFB];
+    double b  [MAX_N];
+    double x  [MAX_N];
+    double r  [MAX_N];
+
+    for (int N = 1; N < MAX_N; ++N) {
+
+
+        // Form Lotkin test matrix N
+        const int kl = N - 1, ku = kl, ldab = kl + 1 + ku, ldafb = ldab + kl;
+        for (int j = 0; j < N; ++j) {
+            ab[j*ldab+(ku+0-j)] = 1;
+        }
+        for (int i = 1; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                ab[j*ldab+(ku+i-j)] = 1. / (i+(j+1));
+            }
+        }
+
+        int FIXME = 10;
+    }
+}
+
 int
 main(int argc, char **argv)
 {
@@ -3018,6 +3054,8 @@ main(int argc, char **argv)
 
     /* TODO Add test_lapack_{s,c,z}gbcon */
     /* zgbcon already exercised to some extent in test_bsplineop */
+
+    test_lapackext_dsgbsvx();
 
 #ifdef SUZERAIN_HAVE_MKL
     MKL_FreeBuffers();
