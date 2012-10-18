@@ -2945,7 +2945,7 @@ void test_lapackext_dsgbsvx()
         int apprx = 0;
         double afrob = -1;
         int siter    = -1;
-        int diter    = 0;
+        int diter    = 10;
         double tolsc = 1;
         double res   = 1234567890;
         suzerain_lapackext_dsgbsvx(&fact, &apprx, 'N', N, kl, ku, ab,

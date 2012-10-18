@@ -5013,7 +5013,7 @@ suzerain_lapackext_dsgbsvx(
             *fact  = 'S';
             *apprx = 0;
 
-            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            suzerain_lapack_dlacpy('F', ldab, n, ab, ldab, afb + kl, ldafb);
             info = suzerain_blasext_ddemote(n*ldafb, afb);
             if (UNLIKELY(info)) {
                 return suzerain_blas_xerbla(__func__, -__LINE__);
@@ -5082,11 +5082,11 @@ double_precision_attempt:
         if (*fact != 'D') { // Ensure double precision factorization available
             *fact  = 'D';
             *apprx = 0;
-            suzerain_lapack_dlacpy('F', n, n, ab, ldab, afb + kl, ldafb);
+            suzerain_lapack_dlacpy('F', ldab, n, ab, ldab, afb + kl, ldafb);
             info = suzerain_lapack_dgbtrf(n, n, kl, ku, afb, ldafb, ipiv);
             if (UNLIKELY(info < 0)) {
                 return suzerain_blas_xerbla(__func__, -__LINE__);
-            } else {
+            } else if (UNLIKELY(info > 0)) {
                 return info;
             }
         }
