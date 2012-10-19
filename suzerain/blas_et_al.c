@@ -5036,7 +5036,6 @@ suzerain_lapackext_dsgbsvx(
 
             // Perform one step of mixed precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
-            lastres = *res;
             info = suzerain_blasext_ddemote(n, r);
             if (UNLIKELY(info)) {
                 return suzerain_blas_xerbla(__func__, -__LINE__);
@@ -5064,7 +5063,7 @@ suzerain_lapackext_dsgbsvx(
 
             // Are we experiencing slow convergence after aiter-th step?
             if (*siter >= aiter && lastres < *res * resdecay) {
-                if (apprx) { // Blame the approximate factorization
+                if (*apprx) {  // Blame the approximate factorization
                     *fact  = 'N';
                     *siter = smax;
                     *diter = dmax;
@@ -5072,10 +5071,14 @@ suzerain_lapackext_dsgbsvx(
                             trans, n, kl, ku, ab, afrob, afb, ipiv, b, x,
                             siter, diter, tolsc, r, res);
 
-                } else {     // Blame working in single precision
+                } else {       // Blame working in single precision
                     break;
                 }
             }
+
+            // Save residual for next iteration
+            // Notice conservative location when failing to double precision
+            lastres = *res;
 
         }
 
@@ -5085,7 +5088,7 @@ double_precision_attempt:
 
     if (dmax >= 0 && *res > normx*tolconst) {
 
-        if (*fact != 'D') { // Ensure double precision factorization available
+        if (*fact != 'D') {  // Ensure double precision factorization available
             *fact  = 'D';
             *apprx = 0;
             suzerain_lapack_dlacpy('F', ldab, n, ab, ldab, afb + kl, ldafb);
@@ -5101,7 +5104,6 @@ double_precision_attempt:
 
             // Perform one step of double precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
-            lastres = *res;
             info = suzerain_lapack_dgbtrs(trans, n, kl, ku, 1,
                                           afb, ldafb, ipiv,
                                           r, n);
@@ -5121,7 +5123,7 @@ double_precision_attempt:
 
             // Are we experiencing slow convergence after aiter-th step?
             if (*diter >= aiter && lastres < *res * resdecay) {
-                if (apprx) { // Blame the approximate factorization
+                if (*apprx) {  // Blame the approximate factorization
                     *fact  = 'N';
                     *siter = smax;
                     *diter = dmax;
@@ -5129,10 +5131,12 @@ double_precision_attempt:
                             trans, n, kl, ku, ab, afrob, afb, ipiv, b, x,
                             siter, diter, tolsc, r, res);
 
-                } else {     // Blame the problem itself
+                } else {       // Blame the problem itself
                     break;
                 }
             }
+
+            lastres = *res;  // Save residual for next iteration
 
         }
 

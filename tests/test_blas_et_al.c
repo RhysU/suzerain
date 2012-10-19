@@ -2957,7 +2957,7 @@ void test_lapackext_dsgbsvx()
         int apprx = 0;
         double afrob = -1;
         int aiter    =  3;
-        int siter    = -1;
+        int siter    =  5;
         int diter    = 10;
         double tolsc = 1;
         double res   = 1234567890;
