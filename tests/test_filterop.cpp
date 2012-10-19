@@ -42,7 +42,7 @@ struct FilteropFixture {
 
 BOOST_FIXTURE_TEST_SUITE( basic_suite, FilteropFixture )
 
-BOOST_AUTO_TEST_CASE( example )
+BOOST_AUTO_TEST_CASE( filterop_matrices )
 {
     // 'suzerain_filterop_workspace *w' handled by FilteropFixture
     w = suzerain_filterop_alloc(9, SUZERAIN_FILTEROP_COOKCABOT2005,
@@ -128,5 +128,23 @@ BOOST_AUTO_TEST_CASE( example )
 
     // 'suzerain_filterop_free(w)' handled by FilteropFixture
 }
+
+
+
+BOOST_AUTO_TEST_CASE( filterop_nofilter )
+{
+    // 'suzerain_filterop_workspace *w' handled by FilteropFixture
+    w = suzerain_filterop_alloc(16, SUZERAIN_FILTEROP_COOKCABOT2005,
+                                /* default params */ NULL,
+                                SUZERAIN_FILTEROP_BOUNDARY_NOFILTER,
+                                SUZERAIN_FILTEROP_BOUNDARY_IGNORE);
+
+    // FIXME: Apply operator and check result
+
+
+    // 'suzerain_filterop_free(w)' handled by FilteropFixture
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()

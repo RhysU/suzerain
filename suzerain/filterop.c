@@ -217,13 +217,68 @@ static int suzerain_filterop_operator_boundaries(
     suzerain_filterop_workspace *w)
 {
     int retval = SUZERAIN_SUCCESS;
+    static const int inc = 1;   // Column vectors are contiguous in memory
+    const int n = w->n, m = n;  // Filtering matrices are square
 
     // Add new boundary-type routines here, when necessary
     switch (w->b_first) {
         case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
             /* Nothing to be done */
             break;
-        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER: // TODO
+
+        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
+	    // Replace near-boundary schemes on B^T
+	    {
+                // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
+                // Incorporate the ku offset and decrement ld to speed indexing.
+                // Further, increment kl anticipating calls like imin(m, j + kl + 1).
+                int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+                double * bt_j = w->B_T;
+                bt_j += ku*inc;
+                ld -= inc;
+                
+                for (int j = 0; j < w->kubt; bt_j += ld, ++j) {
+                
+                    // Start at j - ku, go down to 1
+                    for (int joff = w->kubt; joff > 0; --joff) {
+                        bt_j[(j-joff)*inc] = 0.;
+                    }
+                    // Diagonal element
+                    bt_j[(j  )*inc] = 1.;
+                    // Start at 1, go to j + kl
+                    for (int joff = 1; joff < w->klbt+1; ++joff) {
+                        bt_j[(j+joff)*inc] = 0.;
+                    }
+                }
+	    }
+
+	    // Replace near-boundary schemes on A^T
+	    {
+                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+                int kl = w->klat, ku = w->kuat, ld = w->ldat;
+                double * at_j = w->A_T + kl; // Accounts for factorization-ready data
+                at_j += ku*inc;
+                ld -= inc;
+                
+                // The number of near-boundary schemes that need to be replaced 
+                // goes by the width of the stencil (widest side), in this case, 
+                // that of B_T
+		for (int j = 0; j < w->kubt; at_j += ld, ++j) {
+
+                    // Start at j - ku, go down to 1
+                    for (int joff = w->kuat; joff > 0; --joff) {
+                        at_j[(j-joff)*inc] = 0.;
+                    }
+                    // Diagonal element
+                    at_j[(j  )*inc] = 1.;
+                    // Start at 1, go to j + kl
+                    for (int joff = 1; joff < w->klat+1; ++joff) {
+                        at_j[(j+joff)*inc] = 0.;
+                    }
+                }
+            }
+	    break;
+
         case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
         case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
         default:
