@@ -793,7 +793,7 @@ suzerain_blas_dgbmv(
         const int incy);
 
 /*! \copydoc suzerain_blas_sgbmv */
-void
+int
 suzerain_blas_cgbmv(
         const char trans,
         const int m,
@@ -810,7 +810,7 @@ suzerain_blas_cgbmv(
         const int incy);
 
 /*! \copydoc suzerain_blas_zgbmv */
-void
+int
 suzerain_blas_zgbmv(
         const char trans,
         const int m,
