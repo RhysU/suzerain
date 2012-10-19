@@ -96,7 +96,7 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     SUZERAIN_UNUSED(alpha);
 
     static const int inc = 1;   // Column vectors are contiguous in memory
-    const int n = w->n, m = n;  // Filtering matrices are square
+    const int n = w->n;         // Filtering matrices are square
 
     // Compute coefficients for CookCabot2005 filter
     const double alpha_0 = 1.0;
@@ -114,30 +114,30 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
         // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
         // Incorporate the ku offset and decrement ld to speed indexing.
         // Further, increment kl anticipating calls like imin(m, j + kl + 1).
-        int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+        int ku = w->kubt, ld = w->ldbt;
         double * bt_j = w->B_T;
         bt_j += ku*inc;
         ld -= inc;
 
-	// With the row elements of B_T coded explicitly
-	// there is no need for kl+1
-	// ++kl;
+        // With the row elements of B_T coded explicitly
+        // there is no need for kl+1
+        // ++kl;
 
-	assert(w->klbt == 4);
-	assert(w->kubt == 4);
+        assert(w->klbt == 4);
+        assert(w->kubt == 4);
 
         for (int j = 0; j < n; bt_j += ld, ++j) {
 
-	    // Start at j - ku, go to j + kl, Bandwidth is 4
-	    bt_j[(j-4)*inc] = a_4;
-	    bt_j[(j-3)*inc] = a_3;
-	    bt_j[(j-2)*inc] = a_2;
-	    bt_j[(j-1)*inc] = a_1;
-	    bt_j[(j  )*inc] = a_0;
-	    bt_j[(j+1)*inc] = a_1;
-	    bt_j[(j+2)*inc] = a_2;
-	    bt_j[(j+3)*inc] = a_3;
-	    bt_j[(j+4)*inc] = a_4;
+            // Start at j - ku, go to j + kl, Bandwidth is 4
+            bt_j[(j-4)*inc] = a_4;
+            bt_j[(j-3)*inc] = a_3;
+            bt_j[(j-2)*inc] = a_2;
+            bt_j[(j-1)*inc] = a_1;
+            bt_j[(j  )*inc] = a_0;
+            bt_j[(j+1)*inc] = a_1;
+            bt_j[(j+2)*inc] = a_2;
+            bt_j[(j+3)*inc] = a_3;
+            bt_j[(j+4)*inc] = a_4;
         }
     }
 
@@ -149,28 +149,28 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
         at_j += ku*inc;
         ld -= inc;
 
-	// With the row elements of A_T coded explicitly
-	// there is no need for kl+1
-	// ++kl;
+        // With the row elements of A_T coded explicitly
+        // there is no need for kl+1
+        // ++kl;
 
-	assert(w->klat == 2);
-	assert(w->kuat == 2);
+        assert(w->klat == 2);
+        assert(w->kuat == 2);
 
         for (int j = 0; j < n; at_j += ld, ++j) {
 
-	    // Start at j - ku, go to j + kl, Bandwidth is 2
-	    at_j[(j-2)*inc] = alpha_2;
-	    at_j[(j-1)*inc] = alpha_1;
-	    at_j[(j  )*inc] = alpha_0;
-	    at_j[(j+1)*inc] = alpha_1;
-	    at_j[(j+2)*inc] = alpha_2;
+            // Start at j - ku, go to j + kl, Bandwidth is 2
+            at_j[(j-2)*inc] = alpha_2;
+            at_j[(j-1)*inc] = alpha_1;
+            at_j[(j  )*inc] = alpha_0;
+            at_j[(j+1)*inc] = alpha_1;
+            at_j[(j+2)*inc] = alpha_2;
         }
     }
 
-    // Note: The matrices A_T and B_T were populated in 
-    // BLAS-General-Band storage mode. The following loop 
-    // would populate elements from a matrix 
-    // with elements A_T[i,j] = 100*i+j: 
+    // Note: The matrices A_T and B_T were populated in
+    // BLAS-General-Band storage mode. The following loop
+    // would populate elements from a matrix
+    // with elements A_T[i,j] = 100*i+j:
     // for (int j = 0; j < n; at_j += ld, ++j) {
     // const int il = imax(0, j - ku), iu = imin(m, j + kl);
     //   for (int i = il; i < iu; ++i) {
@@ -178,7 +178,7 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     //   }
     // }
     // where kl = w->klat + 1
-    // A sample matrix of bandwidth 2 with 7 elements 
+    // A sample matrix of bandwidth 2 with 7 elements
     // generated with the loop above:
     // const double good_A_T[] = {
     //     // ku2      ku1     diag      kl1      kl2
@@ -218,7 +218,7 @@ static int suzerain_filterop_operator_boundaries(
 {
     int retval = SUZERAIN_SUCCESS;
     static const int inc = 1;   // Column vectors are contiguous in memory
-    const int n = w->n, m = n;  // Filtering matrices are square
+    const int n = w->n;         // Filtering matrices are square
 
     // Add new boundary-type routines here, when necessary
     switch (w->b_first) {
@@ -227,18 +227,18 @@ static int suzerain_filterop_operator_boundaries(
             break;
 
         case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
-	    // Replace near-boundary schemes on B^T
-	    {
+            // Replace near-boundary schemes on B^T
+            {
                 // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
                 // Incorporate the ku offset and decrement ld to speed indexing.
-                int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+                int ku = w->kubt, ld = w->ldbt;
                 int nbs = imax(w->kuat, w->kubt); // nbs: near-boundary stencils
                 double * bt_j = w->B_T;
                 bt_j += ku*inc;
                 ld -= inc;
-                
+
                 for (int j = 0; j < nbs; bt_j += ld, ++j) {
-                
+
                     // Start at j - ku, go down to 1
                     for (int joff = w->kubt; joff > 0; --joff) {
                         bt_j[(j-joff)*inc] = 0.;
@@ -250,21 +250,21 @@ static int suzerain_filterop_operator_boundaries(
                         bt_j[(j+joff)*inc] = 0.;
                     }
                 }
-	    }
+            }
 
-	    // Replace near-boundary schemes on A^T
-	    {
+            // Replace near-boundary schemes on A^T
+            {
                 // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
                 int kl = w->klat, ku = w->kuat, ld = w->ldat;
-                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils	
+                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
                 double * at_j = w->A_T + kl; // Accounts for factorization-ready data
                 at_j += ku*inc;
                 ld -= inc;
-                
-                // The number of near-boundary schemes that need to be replaced 
-                // goes by the width of the stencil (widest side), in this case, 
+
+                // The number of near-boundary schemes that need to be replaced
+                // goes by the width of the stencil (widest side), in this case,
                 // that of B_T
-		for (int j = 0; j < nbs; at_j += ld, ++j) {
+                for (int j = 0; j < nbs; at_j += ld, ++j) {
 
                     // Start at j - ku, go down to 1
                     for (int joff = w->kuat; joff > 0; --joff) {
@@ -278,7 +278,7 @@ static int suzerain_filterop_operator_boundaries(
                     }
                 }
             }
-	    break;
+            break;
 
         case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
         case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
@@ -293,11 +293,11 @@ static int suzerain_filterop_operator_boundaries(
             break;
 
         case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
-	    // Replace near-boundary schemes on B^T
-	    {
+            // Replace near-boundary schemes on B^T
+            {
                 // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
                 // Incorporate the ku offset and decrement ld to speed indexing.
-                int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+                int ku = w->kubt, ld = w->ldbt;
                 int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
                 double * bt_j = w->B_T;
 
@@ -308,7 +308,7 @@ static int suzerain_filterop_operator_boundaries(
 
                 // Walk the matrix forwards
                 for (int j = 0; j < nbs; bt_j += ld, ++j) {
-                
+
                     // Start at j - ku, go down to 1
                     for (int joff = w->kubt; joff > 0; --joff) {
                         bt_j[(j-joff)*inc] = 0.;
@@ -324,13 +324,13 @@ static int suzerain_filterop_operator_boundaries(
                 // Note: To walk the upper end backwards instead, the initial bt_j offset
                 // points initially to the last diagonal element, as
                 // bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
-                // and the outer loop changes to 
+                // and the outer loop changes to
                 // for (int j = 0; j > -nbs; bt_j -= ld, --j) { ... }
 
-	    }
+            }
 
-	    // Replace near-boundary schemes on A^T
-	    {
+            // Replace near-boundary schemes on A^T
+            {
                 // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
                 int kl = w->klat, ku = w->kuat, ld = w->ldat;
                 int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
@@ -359,10 +359,10 @@ static int suzerain_filterop_operator_boundaries(
                 // Note: To walk the upper end backwards instead, the initial at_j offset
                 // points initially to the last diagonal element, as
                 // at_j += (ku*inc + (n-1)*(w->ldat)*inc);
-                // and the outer loop changes to 
+                // and the outer loop changes to
                 // for (int j = 0; j > -nbs; at_j -= ld, --j) { ... }
             }
-	    break;
+            break;
 
         case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
         case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
