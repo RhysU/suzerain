@@ -231,13 +231,13 @@ static int suzerain_filterop_operator_boundaries(
 	    {
                 // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
                 // Incorporate the ku offset and decrement ld to speed indexing.
-                // Further, increment kl anticipating calls like imin(m, j + kl + 1).
                 int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+                int nbs = imax(w->kuat, w->kubt); // nbs: near-boundary stencils
                 double * bt_j = w->B_T;
                 bt_j += ku*inc;
                 ld -= inc;
                 
-                for (int j = 0; j < w->kubt; bt_j += ld, ++j) {
+                for (int j = 0; j < nbs; bt_j += ld, ++j) {
                 
                     // Start at j - ku, go down to 1
                     for (int joff = w->kubt; joff > 0; --joff) {
@@ -256,6 +256,7 @@ static int suzerain_filterop_operator_boundaries(
 	    {
                 // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
                 int kl = w->klat, ku = w->kuat, ld = w->ldat;
+                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils	
                 double * at_j = w->A_T + kl; // Accounts for factorization-ready data
                 at_j += ku*inc;
                 ld -= inc;
@@ -263,7 +264,7 @@ static int suzerain_filterop_operator_boundaries(
                 // The number of near-boundary schemes that need to be replaced 
                 // goes by the width of the stencil (widest side), in this case, 
                 // that of B_T
-		for (int j = 0; j < w->kubt; at_j += ld, ++j) {
+		for (int j = 0; j < nbs; at_j += ld, ++j) {
 
                     // Start at j - ku, go down to 1
                     for (int joff = w->kuat; joff > 0; --joff) {
