@@ -2950,36 +2950,58 @@ void test_lapackext_dsgbsvx()
     double b  [MAX_N], x[MAX_N], r[MAX_N];
     int    piv[MAX_N];
 
-    char   fact [MAX_N];
-    int    apprx[MAX_N];
-    int    aiter[MAX_N];
-    double afrob[MAX_N];
-    int    siter[MAX_N];
-    int    diter[MAX_N];
-    double tolsc[MAX_N];
-    double res  [MAX_N];
+    enum fact_type { exact, approx };
+    enum iter_type { sd, s, d };
+
+    // Indexing is like fact[exact_type][iter_type][Lotkin matrix number]
+    char   fact [2][3][MAX_N];
+    int    apprx[2][3][MAX_N];
+    int    aiter[2][3][MAX_N];
+    double afrob[2][3][MAX_N];
+    int    siter[2][3][MAX_N];
+    int    diter[2][3][MAX_N];
+    double tolsc[2][3][MAX_N];
+    double res  [2][3][MAX_N];
+    double ores [2][3][MAX_N];  // Observed residual
 
     // Form Lotkin-based test problems and then solve them using DSGBSVX
     for (int n = 0; n < MAX_N; ++n) {
+        int i, j;  // Used to track fact_type, iter_type
 
-        lotkin1955(n, ab, b, x);
-        fact [n] = 'N';
-        apprx[n] =   0;
-        aiter[n] =   5;
-        afrob[n] = - 1;
-        siter[n] =  25;
-        diter[n] =  10;
-        tolsc[n] =   1;
-        res  [n] = - 1;
+        // Compute solution causing a factorization along the way
+
+        i = exact; j = sd;
+
+        fact [i][j][n] = 'N';
+        apprx[i][j][n] =   0;
+        aiter[i][j][n] =   5;
+        afrob[i][j][n] = - 1;
+        siter[i][j][n] =  25;
+        diter[i][j][n] =  10;
+        tolsc[i][j][n] =   1;
+        res  [i][j][n] = - 1;
         if (!n) continue;
 
+        lotkin1955(n, ab, b, x);
         const int info = suzerain_lapackext_dsgbsvx(
-                fact+n, apprx+n, aiter[n], 'n', n, n-1, n-1, ab, afrob+n, afb,
-                piv, b, x, siter+n, diter+n, tolsc+n, r, res+n);
+                fact[i][j]+n, apprx[i][j]+n, aiter[i][j][n], 'n', n, n-1, n-1,
+                ab, afrob[i][j]+n, afb, piv, b, x, siter[i][j]+n,
+                diter[i][j]+n, tolsc[i][j]+n, r, res[i][j]+n);
         gsl_test(info, "%s reports success on Lotkin matrix %d",
                  __func__, n);
-        gsl_test(tolsc[n] > 1, "%s Lotkin matrix %d gives tolsc <= 1: %g",
-                 __func__, n, tolsc[n]);
+        gsl_test(tolsc[i][j][n] > 1, "%s Lotkin matrix %d gives tolsc <= 1: %g",
+                 __func__, n, tolsc[i][j][n]);
+
+        // Check solution bests 10 times the reported tolerance using
+        //     r + Ax - b = b - Ax + Ax - b = 0
+        // Beware that b was found in higher precision by lotkin1955(...)
+        suzerain_blas_dgbmv('N', n, n, n-1, n-1,
+                            1.0, ab, (n-1)+1+(n-1), x, 1, 1, r, 1);
+        suzerain_blas_daxpy(n, -1.0, b, 1, r, 1);
+        ores[i][j][n] = suzerain_blas_dnrm2(n, r, 1);
+        gsl_test(ores[i][j][n] > /*Empirical*/ 10*res[i][j][n],
+                 "%s Lotkin matrix %d residual satisfied: %g vs reported %g",
+                 __func__, n, ores[i][j][n], res[i][j][n]);
 
     }
 
