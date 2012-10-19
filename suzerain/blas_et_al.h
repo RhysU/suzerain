@@ -4057,7 +4057,7 @@ suzerain_lapackext_zcgbsvx(
         const int kl,
         const int ku,
         complex_double * const ab,
-        complex_double * const afrob,
+        double * const afrob,
         complex_double * const afb,
         int * const ipiv,
         complex_double * const b,
@@ -4066,7 +4066,7 @@ suzerain_lapackext_zcgbsvx(
         int * const diter,
         double * const tolsc,
         complex_double * const r,
-        complex_double * const res);
+        double * const res);
 
 /*! @} */
 
