@@ -4973,7 +4973,7 @@ suzerain_lapackext_dsgbsvx(
     }
     if (info) return suzerain_blas_xerbla(__func__, info);
 
-    // Error handling from here oneward deserves a word.  Internal errors are
+    // Error handling from here onward deserves a word.  Internal errors are
     // marked by calls to suzerain_blas_xerbla using (-__LINE__).  Usage errors
     // by a user (e.g.  providing a singular matrix) simply return the
     // appropriate info value.
