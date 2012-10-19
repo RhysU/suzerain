@@ -70,6 +70,15 @@
 #include "gbmv.def"
 
 #define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_c
+#define TYPE_A   complex_float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL       const int kl,
+#define KU       const int ku,
+#include "gbmv.def"
+
+#define STATIC   static
 #define FUNCTION suzerain_gbmv_internal_d
 #define TYPE_A   double
 #define TYPE_X   double
@@ -90,6 +99,15 @@
 #define STATIC   static
 #define FUNCTION suzerain_gbmv_internal_dzz
 #define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL       const int kl,
+#define KU       const int ku,
+#include "gbmv.def"
+
+#define STATIC   static
+#define FUNCTION suzerain_gbmv_internal_z
+#define TYPE_A   complex_double
 #define TYPE_X   complex_double
 #define TYPE_Y   complex_double
 #define KL       const int kl,
@@ -320,6 +338,15 @@ suzerain_gbmv_dzz(
 #include "gbmv.def"
 
 #define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_c, BOOST_PP_ITERATION())
+#define TYPE_A   complex_float
+#define TYPE_X   complex_float
+#define TYPE_Y   complex_float
+#define KL
+#define KU
+#include "gbmv.def"
+
+#define STATIC   static
 #define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_d, BOOST_PP_ITERATION())
 #define TYPE_A   double
 #define TYPE_X   double
@@ -340,6 +367,15 @@ suzerain_gbmv_dzz(
 #define STATIC   static
 #define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_dzz, BOOST_PP_ITERATION())
 #define TYPE_A   double
+#define TYPE_X   complex_double
+#define TYPE_Y   complex_double
+#define KL
+#define KU
+#include "gbmv.def"
+
+#define STATIC   static
+#define FUNCTION BOOST_PP_CAT(suzerain_gbmv_internal_z, BOOST_PP_ITERATION())
+#define TYPE_A   complex_double
 #define TYPE_X   complex_double
 #define TYPE_Y   complex_double
 #define KL
