@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
     w = suzerain_filterop_alloc(16, SUZERAIN_FILTEROP_COOKCABOT2005,
                                 /* default params */ NULL,
                                 SUZERAIN_FILTEROP_BOUNDARY_NOFILTER,
-                                SUZERAIN_FILTEROP_BOUNDARY_IGNORE);
+                                SUZERAIN_FILTEROP_BOUNDARY_NOFILTER);
 
     // FIXME: Apply operator and check result
 

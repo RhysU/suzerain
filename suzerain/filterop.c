@@ -290,7 +290,79 @@ static int suzerain_filterop_operator_boundaries(
         case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
             /* Nothing to be done */
             break;
-        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER: // TODO
+
+        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
+	    // Replace near-boundary schemes on B^T
+	    {
+                // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
+                // Incorporate the ku offset and decrement ld to speed indexing.
+                int kl = w->klbt, ku = w->kubt, ld = w->ldbt;
+                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
+                double * bt_j = w->B_T;
+
+                // Walk the upper end forwards:
+                // Point initially to element (n-nbs) in the diagonal
+                bt_j += (ku*inc + (n-nbs)*(w->ldbt)*inc);
+                ld -= inc;
+
+                // Walk the matrix forwards
+                for (int j = 0; j < nbs; bt_j += ld, ++j) {
+                
+                    // Start at j - ku, go down to 1
+                    for (int joff = w->kubt; joff > 0; --joff) {
+                        bt_j[(j-joff)*inc] = 0.;
+                    }
+                    // Diagonal element
+                    bt_j[(j  )*inc] = 1.;
+                    // Start at 1, go to j + kl
+                    for (int joff = 1; joff < w->klbt+1; ++joff) {
+                        bt_j[(j+joff)*inc] = 0.;
+                    }
+                }
+
+                // Note: To walk the upper end backwards instead, the initial bt_j offset
+                // points initially to the last diagonal element, as
+                // bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
+                // and the outer loop changes to 
+                // for (int j = 0; j > -nbs; bt_j -= ld, --j) { ... }
+
+	    }
+
+	    // Replace near-boundary schemes on A^T
+	    {
+                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+                int kl = w->klat, ku = w->kuat, ld = w->ldat;
+                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
+                double * at_j = w->A_T + kl; // Accounts for factorization-ready data
+
+                // Walk the upper end forwards:
+                // Point initially to element (n-nbs) in the diagonal
+                at_j += (ku*inc + (n-nbs)*(w->ldat)*inc);
+                ld -= inc;
+
+                // Walk the matrix forwards
+                for (int j = 0; j < nbs; at_j += ld, ++j) {
+
+                    // Start at j - ku, go down to 1
+                    for (int joff = w->kuat; joff > 0; --joff) {
+                        at_j[(j-joff)*inc] = 0.;
+                    }
+                    // Diagonal element
+                    at_j[(j  )*inc] = 1.;
+                    // Start at 1, go to j + kl
+                    for (int joff = 1; joff < w->klat+1; ++joff) {
+                        at_j[(j+joff)*inc] = 0.;
+                    }
+                }
+
+                // Note: To walk the upper end backwards instead, the initial at_j offset
+                // points initially to the last diagonal element, as
+                // at_j += (ku*inc + (n-1)*(w->ldat)*inc);
+                // and the outer loop changes to 
+                // for (int j = 0; j > -nbs; at_j -= ld, --j) { ... }
+            }
+	    break;
+
         case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY: // TODO
         case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
         default:
