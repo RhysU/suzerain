@@ -2960,7 +2960,7 @@ void test_lapackext_dsgbsvx()
     double res  [MAX_N];
 
     // Form Lotkin-based test problems and then solve them using DSGBSVX
-    for (int n = 1; n < MAX_N; ++n) {
+    for (int n = 0; n < MAX_N; ++n) {
 
         lotkin1955(n, ab, b, x);
         fact [n] = 'N';
@@ -2971,6 +2971,8 @@ void test_lapackext_dsgbsvx()
         diter[n] =  10;
         tolsc[n] =   1;
         res  [n] = - 1;
+        if (!n) continue;
+
         suzerain_lapackext_dsgbsvx(fact+n, apprx+n, aiter[n],
                                    'n', n, n-1, n-1, ab,
                                    afrob+n, afb, piv, b, x,
