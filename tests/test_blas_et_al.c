@@ -2910,20 +2910,17 @@ void test_blasext_zpromote()
 // Specifically, form the N-th test matrix as a general banded matrix A in ab,
 // x = [1, ..., 1], and b = A*x computed in long double precision.
 static void lotkin1955(int N,
-                       int *kl,
-                       int *ku,
                        double *ab,
                        double *b,
                        double *x)
 {
     // The Lotkin matrices are square, but the banded routines don't care
     // provided we store them using the correct banded layout
-    *kl = *ku = N - 1;
-    const int ldab = *kl + 1 + *ku;
+    const int kl = N - 1, ku = kl, ldab = kl + 1 + ku;
 
     // First row of A where i == 0 contains only ones
     for (int j = 0; j < N; ++j) {
-        ab[j*ldab+(*ku+0-j)] = 1;
+        ab[j*ldab+(ku+0-j)] = 1;
     }
     x[0] = 1;
     b[0] = N;
@@ -2937,7 +2934,7 @@ static void lotkin1955(int N,
         for (int j = N; j --> 0 ;) {
             const long double a_ij = 1.0L / (i+j+1);
             b_i += a_ij;
-            ab[j*ldab+(*ku+i-j)] = (double) a_ij;
+            ab[j*ldab+(ku+i-j)] = (double) a_ij;
         }
         b[i] = (double) b_i;
     }
@@ -2945,41 +2942,47 @@ static void lotkin1955(int N,
 
 void test_lapackext_dsgbsvx()
 {
+#define MAX_N (20)
 
-    const int MAX_N     = 15;
-    const int MAX_KL    = MAX_N - 1;
-    const int MAX_KU    = MAX_N - 1;
-    const int MAX_LDAB  = MAX_KL + 1 + MAX_KU;
-    const int MAX_LDAFB = 2*MAX_KL + 1 + MAX_KU;
-    double ab [MAX_N * MAX_LDAB];
-    double afb[MAX_N * MAX_LDAFB];
-    double b  [MAX_N];
-    double x  [MAX_N];
-    double r  [MAX_N];
+    // Working storage for solving Lotkin problems
+    double ab [MAX_N * (  (MAX_N - 1) + 1 + (MAX_N - 1))];
+    double afb[MAX_N * (2*(MAX_N - 1) + 1 + (MAX_N - 1))];
+    double b  [MAX_N], x[MAX_N], r[MAX_N];
     int    piv[MAX_N];
 
-    for (int N = 1; N < MAX_N; ++N) {
+    char   fact [MAX_N];
+    int    apprx[MAX_N];
+    int    aiter[MAX_N];
+    double afrob[MAX_N];
+    int    siter[MAX_N];
+    int    diter[MAX_N];
+    double tolsc[MAX_N];
+    double res  [MAX_N];
 
-        // Form Lotkin-based test problem
-        int kl, ku;
-        lotkin1955(N, &kl, &ku, ab, b, x);
+    // Form Lotkin-based test problems and then solve them using DSGBSVX
+    for (int n = 1; n < MAX_N; ++n) {
 
-        // Solve for x using DSGBSVX
-        char fact = 'N';
-        int apprx = 0;
-        double afrob = -1;
-        int aiter    =  3;
-        int siter    =  5;
-        int diter    = 10;
-        double tolsc = 1;
-        double res   = 1234567890;
-        suzerain_lapackext_dsgbsvx(&fact, &apprx, aiter, 'N', N, kl, ku, ab,
-                                   &afrob, afb, piv, b, x, &siter, &diter,
-                                   &tolsc, r, &res);
+        lotkin1955(n, ab, b, x);
+        fact [n] = 'N';
+        apprx[n] =   0;
+        aiter[n] =   5;
+        afrob[n] = - 1;
+        siter[n] =  25;
+        diter[n] =  10;
+        tolsc[n] =   1;
+        res  [n] = - 1;
+        suzerain_lapackext_dsgbsvx(fact+n, apprx+n, aiter[n],
+                                   'n', n, n-1, n-1, ab,
+                                   afrob+n, afb, piv, b, x,
+                                   siter+n, diter+n,
+                                   tolsc+n, r, res+n);
 
-        // FIXME Assert something
-        int FIXME = 5;
     }
+
+    // FIXME Assert something
+    int FIXME = 5;
+
+#undef MAX_N
 }
 
 int
