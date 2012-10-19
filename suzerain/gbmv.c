@@ -213,6 +213,36 @@ suzerain_gbmv_scc(
 }
 
 int
+suzerain_gbmv_c(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const complex_float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+            BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                    FIXEDBW_CASE, suzerain_gbmv_internal_c)
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbmv_internal_c(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
+}
+
+int
 suzerain_gbmv_d(
         const char trans,
         const int m,
@@ -300,6 +330,36 @@ suzerain_gbmv_dzz(
     return suzerain_gbmv_internal_dzz(trans, m, n, kl, ku,
                                       alpha, a, lda, x, incx,
                                       beta,          y, incy);
+}
+
+int
+suzerain_gbmv_z(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const complex_double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+    // Dispatch to fixed bandwidth specialization for small bandwidth...
+    if (kl == ku) {
+        switch (kl) {
+            BOOST_PP_REPEAT_FROM_TO(FIXEDBW_LOWER, BOOST_PP_INC(FIXEDBW_UPPER),
+                                    FIXEDBW_CASE, suzerain_gbmv_internal_z)
+        }
+    }
+
+    // ...otherwise employ a general bandwidth implementation
+    return suzerain_gbmv_internal_z(trans, m, n, kl, ku,
+                                    alpha, a, lda, x, incx,
+                                    beta,          y, incy);
 }
 
 #else
