@@ -806,6 +806,50 @@ suzerain_blas_dgbmv_external(
                                   &beta,           y, &incy);
 }
 
+inline void
+suzerain_blas_cgbmv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const complex_float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy)
+{
+    return BLAS_FUNC(cgbmv,CGBMV)(
+            &trans, &m, &n, &kl, &ku,
+            (void*)&alpha, (void*)a, &lda, (void*)x, &incx,
+            (void*)&beta,                  (void*)y, &incy);
+}
+
+inline void
+suzerain_blas_zgbmv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const complex_double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy)
+{
+    return BLAS_FUNC(zgbmv,ZGBMV)(
+            &trans, &m, &n, &kl, &ku,
+            (void*)&alpha, (void*)a, &lda, (void*)x, &incx,
+            (void*)&beta,                  (void*)y, &incy);
+}
+
 void
 suzerain_blas_cgbmv_s_c_external(
         const char trans,
