@@ -5059,7 +5059,7 @@ suzerain_lapackext_dsgbsvx(
             }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
-            if (!(*apprx < *siter || lastres >= *res * resdecay)) {
+            if (*siter >= *apprx && lastres < *res * resdecay) {
                 // Approximate factorization giving slow convergence,
                 // so force a non-approximate factorization.
                 *fact  = 'N';
@@ -5113,7 +5113,7 @@ double_precision_attempt:
             }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
-            if (!(*apprx < *diter || lastres >= *res * resdecay)) {
+            if (*diter >= *apprx && lastres < *res * resdecay) {
                 // Approximate factorization giving slow convergence,
                 // so force a non-approximate factorization.
                 *fact  = 'N';
