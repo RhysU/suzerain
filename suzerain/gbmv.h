@@ -84,6 +84,40 @@ suzerain_gbmv_d(
         double *y,
         const int incy);
 
+/*! \copydoc suzerain_gbmv_s */
+int
+suzerain_gbmv_c(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const complex_float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_gbmv_z */
+int
+suzerain_gbmv_z(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const complex_double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$ for complex
  * \f$\alpha{}\f$, \f$\beta\f$, and \f$y\f$ but real-valued \f$A\f$ and
