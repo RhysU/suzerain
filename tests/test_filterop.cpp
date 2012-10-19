@@ -76,19 +76,19 @@ BOOST_AUTO_TEST_CASE( example )
 
 
     // Ensure A_T looks as expected prior to factorization
-    // Notice: -55555 marks storage outside of matrix which is ignored
+    // Notice: -5555 marks storage outside of matrix which is ignored
     // Notice: Values look "transposed" because C reads right-to-left
     const double good_A_T[] = {
         //  ku2       ku1      diag       kl1       kl2
-         -55555,   -55555,  alpha_0,  alpha_1,  alpha_2,
-         -55555,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+          -5555,    -5555,  alpha_0,  alpha_1,  alpha_2,
+          -5555,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
         alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
         alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
         alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
         alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
         alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
-        alpha_2,  alpha_1,  alpha_0,  alpha_1,   -55555,
-        alpha_2,  alpha_1,  alpha_0,   -55555,   -55555,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,    -5555,
+        alpha_2,  alpha_1,  alpha_0,    -5555,    -5555,
     };
 
 
@@ -101,7 +101,30 @@ BOOST_AUTO_TEST_CASE( example )
         w->n, w->n, w->klat, w->kuat, w->A_T + w->klat, w->ldat,
         std::numeric_limits<double>::epsilon());
 
-    // FIXME Check B_T against known good coefficients
+
+
+    // Ensure B_T looks as expected prior to factorization
+    // Notice: -5555 marks storage outside of matrix which is ignored
+    // Notice: Values look "transposed" because C reads right-to-left
+    const double good_B_T[] = {
+      //   ku4     ku3     ku2     ku1    diag     kl1     kl2     kl3     kl4  
+         -5555,  -5555,  -5555,  -5555,    a_0,    a_1,    a_2,    a_3,    a_4,
+         -5555,  -5555,  -5555,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
+         -5555,  -5555,    a_2,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
+         -5555,    a_3,    a_2,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
+           a_4,    a_3,    a_2,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
+           a_4,    a_3,    a_2,    a_1,    a_0,    a_1,    a_2,    a_3,  -5555,
+           a_4,    a_3,    a_2,    a_1,    a_0,    a_1,    a_2,  -5555,  -5555,
+           a_4,    a_3,    a_2,    a_1,    a_0,    a_1,  -5555,  -5555,  -5555,
+           a_4,    a_3,    a_2,    a_1,    a_0,  -5555,  -5555,  -5555,  -5555,
+    };
+
+
+    // See test_tools.hpp for the macro signature
+    CHECK_GBMATRIX_CLOSE(
+           9,    9,       4,       4, good_B_T,       9,
+        w->n, w->n, w->klbt, w->kubt,   w->B_T, w->ldbt,
+        std::numeric_limits<double>::epsilon());
 
     // 'suzerain_filterop_free(w)' handled by FilteropFixture
 }
