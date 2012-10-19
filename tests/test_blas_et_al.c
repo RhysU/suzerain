@@ -2904,12 +2904,47 @@ void test_blasext_zpromote()
     gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
 }
 
+// Form nastily conditioned test problems per Mark Lotkin, A Set of Test
+// Matrices (1955) available at http://www.jstor.org/stable/2002051.
+//
+// Specifically, form the N-th test matrix as a general banded matrix A in ab,
+// x = [1, ..., 1], and b = A*x computed in long double precision.
+static void lotkin1955(int N,
+                       int *kl,
+                       int *ku,
+                       double *ab,
+                       double *b,
+                       double *x)
+{
+    // The Lotkin matrices are square, but the banded routines don't care
+    // provided we store them using the correct banded layout
+    *kl = *ku = N - 1;
+    const int ldab = *kl + 1 + *ku;
+
+    // First row of A where i == 0 contains only ones
+    for (int j = 0; j < N; ++j) {
+        ab[j*ldab+(*ku+0-j)] = 1;
+    }
+    x[0] = 1;
+    b[0] = N;
+
+    // Second and subsequent rows of A
+    // Form b_i using long doubles for extra precision
+    // Reverse iteration on j sums from smallest to largest for b_i
+    for (int i = 1; i < N; ++i) {
+        x[i] = 1;
+        long double b_i = 0;
+        for (int j = N; j --> 0 ;) {
+            const long double a_ij = 1.0L / (i+j+1);
+            b_i += a_ij;
+            ab[j*ldab+(*ku+i-j)] = (double) a_ij;
+        }
+        b[i] = (double) b_i;
+    }
+}
+
 void test_lapackext_dsgbsvx()
 {
-    // Nastily conditioned test matrices from Mark Lotkin, A Set of Test
-    // Matrices (1955) available at http://www.jstor.org/stable/2002051.
-    // These are square, but the banded routines don't care provided
-    // we store them using the banded matrix format.
 
     const int MAX_N     = 15;
     const int MAX_KL    = MAX_N - 1;
@@ -2925,32 +2960,9 @@ void test_lapackext_dsgbsvx()
 
     for (int N = 1; N < MAX_N; ++N) {
 
-        // Form Lotkin test matrix N
-        // Also form x = [1; ...; 1] and stably compute b = A*x
-        const int kl = N - 1, ku = kl, ldab = kl + 1 + ku;
-        // First row of A
-        for (int j = 0; j < N; ++j) {
-            ab[j*ldab+(ku+0-j)] = 1;
-        }
-        x[0] = 1;
-        b[0] = N;
-        // Second and subsequent rows of A
-        // Reverse iteration on j sums from smallest to largest
-        // Form b_i using long doubles for extra precision
-        for (int i = 1; i < N; ++i) {
-            x[i] = 1;
-            long double b_i = 0;
-            for (int j = N; j --> 0 ;) {
-                const long double a_ij = 1.0L / (i+j+1);
-                b_i += a_ij;
-                ab[j*ldab+(ku+i-j)] = (double) a_ij;
-            }
-            b[i] = (double) b_i;
-        }
-
-        // Form synthetic answer x = [1; ...; 1] and find b = A*x
-        for (int i = 0; i < N; ++i) x[i] = 1;
-        suzerain_blas_dgbmv('N', N, N, kl, ku, 1., ab, ldab, x, 1, 0., b, 1);
+        // Form Lotkin-based test problem
+        int kl, ku;
+        lotkin1955(N, &kl, &ku, ab, b, x);
 
         // Solve for x using DSGBSVX
         char fact = 'N';
