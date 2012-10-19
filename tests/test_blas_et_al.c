@@ -2973,16 +2973,18 @@ void test_lapackext_dsgbsvx()
         res  [n] = - 1;
         if (!n) continue;
 
-        suzerain_lapackext_dsgbsvx(fact+n, apprx+n, aiter[n],
-                                   'n', n, n-1, n-1, ab,
-                                   afrob+n, afb, piv, b, x,
-                                   siter+n, diter+n,
-                                   tolsc+n, r, res+n);
+        const int info = suzerain_lapackext_dsgbsvx(
+                fact+n, apprx+n, aiter[n], 'n', n, n-1, n-1, ab, afrob+n, afb,
+                piv, b, x, siter+n, diter+n, tolsc+n, r, res+n);
+        gsl_test(info, "%s reports success on Lotkin matrix %d",
+                 __func__, n);
+        gsl_test(tolsc[n] > 1, "%s Lotkin matrix %d gives tolsc <= 1: %g",
+                 __func__, n, tolsc[n]);
 
     }
 
-    // FIXME Assert something
-    int FIXME = 5;
+    const int BREAK_HERE_WITH_A_DEBUGGER_IF_YOU_LIKE = 123;
+    (void) BREAK_HERE_WITH_A_DEBUGGER_IF_YOU_LIKE;
 
 #undef MAX_N
 }
