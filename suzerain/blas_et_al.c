@@ -4931,6 +4931,7 @@ int
 suzerain_lapackext_dsgbsvx(
         char * const fact,
         int * const apprx,
+        const int aiter,
         char trans,
         const int n,
         const int kl,
@@ -4955,16 +4956,18 @@ suzerain_lapackext_dsgbsvx(
         info = -1;
     } else if (UNLIKELY(*apprx < 0)) {
         info = -2;
-    } else if (UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
+    } else if (UNLIKELY(aiter < 0)) {
         info = -3;
-    } else if (UNLIKELY(n < 0)) {
+    } else if (UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
         info = -4;
-    } else if (UNLIKELY(kl < 0)) {
+    } else if (UNLIKELY(n < 0)) {
         info = -5;
-    } else if (UNLIKELY(ku < 0)) {
+    } else if (UNLIKELY(kl < 0)) {
         info = -6;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -7;
     } else if (UNLIKELY(*tolsc <= 0)) {
-        info = -15;
+        info = -16;
     } else if (UNLIKELY(*siter < 0 && *diter < 0)) {
         info = -99;
     }
@@ -5029,7 +5032,7 @@ suzerain_lapackext_dsgbsvx(
             }
         }
 
-        while (*siter < smax && *res > normx*tolconst) {
+        while (++*siter < smax && *res > normx*tolconst) {
 
             // Perform one step of mixed precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
@@ -5059,18 +5062,21 @@ suzerain_lapackext_dsgbsvx(
             }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
-            if (*siter >= *apprx && lastres < *res * resdecay) {
-                // Approximate factorization giving slow convergence,
-                // so force a non-approximate factorization.
-                *fact  = 'N';
-                *siter = smax;
-                *diter = dmax;
-                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
-                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
-                        siter, diter, tolsc, r, res);
+            // Are we experiencing slow convergence after aiter-th step?
+            if (*siter >= aiter && lastres < *res * resdecay) {
+                if (apprx) { // Blame the approximate factorization
+                    *fact  = 'N';
+                    *siter = smax;
+                    *diter = dmax;
+                    return suzerain_lapackext_dsgbsvx(fact, apprx, aiter,
+                            trans, n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                            siter, diter, tolsc, r, res);
+
+                } else {     // Blame working in single precision
+                    break;
+                }
             }
 
-            ++*siter;
         }
 
     }
@@ -5091,7 +5097,7 @@ double_precision_attempt:
             }
         }
 
-        while (*diter < dmax && *res > normx*tolconst) {
+        while (++*diter < dmax && *res > normx*tolconst) {
 
             // Perform one step of double precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
@@ -5113,18 +5119,21 @@ double_precision_attempt:
             }
             *res  = suzerain_blas_dnrm2(n, r, inc);
 
-            if (*diter >= *apprx && lastres < *res * resdecay) {
-                // Approximate factorization giving slow convergence,
-                // so force a non-approximate factorization.
-                *fact  = 'N';
-                *siter = smax;
-                *diter = dmax;
-                return suzerain_lapackext_dsgbsvx(fact, apprx, trans,
-                        n, kl, ku, ab, afrob, afb, ipiv, b, x,
-                        siter, diter, tolsc, r, res);
+            // Are we experiencing slow convergence after aiter-th step?
+            if (*diter >= aiter && lastres < *res * resdecay) {
+                if (apprx) { // Blame the approximate factorization
+                    *fact  = 'N';
+                    *siter = smax;
+                    *diter = dmax;
+                    return suzerain_lapackext_dsgbsvx(fact, apprx, aiter,
+                            trans, n, kl, ku, ab, afrob, afb, ipiv, b, x,
+                            siter, diter, tolsc, r, res);
+
+                } else {     // Blame the problem itself
+                    break;
+                }
             }
 
-            ++*diter;
         }
 
     }
@@ -5139,6 +5148,7 @@ int
 suzerain_lapackext_zcgbsvx(
         char * const fact,
         int * const apprx,
+        const int aiter,
         char trans,
         const int n,
         const int kl,
@@ -5163,16 +5173,18 @@ suzerain_lapackext_zcgbsvx(
         info = -1;
     } else if (UNLIKELY(*apprx < 0)) {
         info = -2;
-    } else if (UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
+    } else if (UNLIKELY(aiter < 0)) {
         info = -3;
-    } else if (UNLIKELY(n < 0)) {
+    } else if (UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
         info = -4;
-    } else if (UNLIKELY(kl < 0)) {
+    } else if (UNLIKELY(n < 0)) {
         info = -5;
-    } else if (UNLIKELY(ku < 0)) {
+    } else if (UNLIKELY(kl < 0)) {
         info = -6;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -7;
     } else if (UNLIKELY(*tolsc <= 0)) {
-        info = -15;
+        info = -16;
     } else if (UNLIKELY(*siter < 0 && *diter < 0)) {
         info = -99;
     }

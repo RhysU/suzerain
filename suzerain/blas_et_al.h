@@ -3890,18 +3890,20 @@ suzerain_blasext_zpromote(
  *                      indicating which factorization precision has
  *                      been returned in \c afb and \c ipiv.
  * \param[in,out] apprx On input, if \c fact is 'S' or 'D' and \c apprx
- *                      is strictly positive, assume the factorization
- *                      provided in \c afb and \c ipiv is \f$ LUP =
- *                      A + \Delta{}A\f$ for some perturbation \f$
- *                      \Delta{}A \f$.  At most \c apprx refinements will
- *                      be attempted before it can be confirmed that the
- *                      residual is decaying by a factor of 2 on each
- *                      iteration.  If this decay is not observed by the
- *                      \c apprx iteration, the perturbed factorization
- *                      is discarded and the routine operates as if \c
- *                      fact was <tt>'N'</tt> and sets \c apprx to be
+ *                      is nonzero, assume the factorization provided in
+ *                      \c afb and \c ipiv is \f$ LUP = A + \Delta{}A\f$
+ *                      for some perturbation \f$ \Delta{}A \f$.
+ *                      If the provided factorization fails to deliver
+ *                      adequate convergence as described under \c aiter,
+ *                      \c ab will be factorized and \c apprx set to
  *                      zero on return.  If \c fact is 'N' on input,
  *                      \c apprx is ignored and set to zero on return.
+ * \param[in]     aiter At most \c aiter refinement steps will be attempted
+ *                      before it can be confirmed that the residual
+ *                      is decaying by a factor of two at each step.
+ *                      Parameter \c aiter is used during mixed-precision
+ *                      refinements and during double-precision refinements
+ *                      when \c apprx is nonzero.
  * \param[in]     trans If 'N' solve \f$A      x = b\f$.
  *                      If 'T' solve \f$A^\top x = b\f$.
  *                      If 'C' solve \f$A^H    x = b\f$.
@@ -3959,6 +3961,7 @@ int
 suzerain_lapackext_dsgbsvx(
         char * const fact,
         int * const apprx,
+        const int aiter,
         char trans,
         const int n,
         const int kl,
@@ -3980,6 +3983,7 @@ int
 suzerain_lapackext_zcgbsvx(
         char * const fact,
         int * const apprx,
+        const int aiter,
         char trans,
         const int n,
         const int kl,

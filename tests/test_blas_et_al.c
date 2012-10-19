@@ -2956,11 +2956,12 @@ void test_lapackext_dsgbsvx()
         char fact = 'N';
         int apprx = 0;
         double afrob = -1;
+        int aiter    =  3;
         int siter    = -1;
         int diter    = 10;
         double tolsc = 1;
         double res   = 1234567890;
-        suzerain_lapackext_dsgbsvx(&fact, &apprx, 'N', N, kl, ku, ab,
+        suzerain_lapackext_dsgbsvx(&fact, &apprx, aiter, 'N', N, kl, ku, ab,
                                    &afrob, afb, piv, b, x, &siter, &diter,
                                    &tolsc, r, &res);
 
