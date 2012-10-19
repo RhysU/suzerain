@@ -2908,10 +2908,10 @@ void test_lapackext_dsgbsvx()
 {
     // Nastily conditioned test matrices from Mark Lotkin, A Set of Test
     // Matrices (1955) available at http://www.jstor.org/stable/2002051.
-    // These are square, but the banded routines don't care if we store
-    // them using an idiotic banded format.
+    // These are square, but the banded routines don't care provided
+    // we store them using the banded matrix format.
 
-    const int MAX_N     = 10;
+    const int MAX_N     = 15;
     const int MAX_KL    = MAX_N - 1;
     const int MAX_KU    = MAX_N - 1;
     const int MAX_LDAB  = MAX_KL + 1 + MAX_KU;
@@ -2934,16 +2934,18 @@ void test_lapackext_dsgbsvx()
         }
         x[0] = 1;
         b[0] = N;
-        // Subsequent rows of A
+        // Second and subsequent rows of A
         // Reverse iteration on j sums from smallest to largest
+        // Form b_i using long doubles for extra precision
         for (int i = 1; i < N; ++i) {
             x[i] = 1;
-            b[i] = 0;
+            long double b_i = 0;
             for (int j = N; j --> 0 ;) {
-                const double aij = 1. / (i+(j+1));
-                b[i] += aij;
-                ab[j*ldab+(ku+i-j)] = aij;
+                const long double a_ij = 1.0L / (i+j+1);
+                b_i += a_ij;
+                ab[j*ldab+(ku+i-j)] = (double) a_ij;
             }
+            b[i] = (double) b_i;
         }
 
         // Form synthetic answer x = [1; ...; 1] and find b = A*x
@@ -2963,6 +2965,7 @@ void test_lapackext_dsgbsvx()
                                    &tolsc, r, &res);
 
         // FIXME Assert something
+        int FIXME = 5;
     }
 }
 
