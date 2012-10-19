@@ -686,6 +686,40 @@ suzerain_blas_dgbmv_external(
 
 /*! \copydoc suzerain_blas_sgbmv_external */
 void
+suzerain_blas_cgbmv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const complex_float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_zgbmv_external */
+void
+suzerain_blas_zgbmv_external(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const complex_double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sgbmv_external */
+void
 suzerain_blas_cgbmv_s_c_external(
         const char trans,
         const int m,
@@ -756,6 +790,40 @@ suzerain_blas_dgbmv(
         const int incx,
         const double beta,
         double *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_sgbmv */
+void
+suzerain_blas_cgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_float alpha,
+        const complex_float *a,
+        const int lda,
+        const complex_float *x,
+        const int incx,
+        const complex_float beta,
+        complex_float *y,
+        const int incy);
+
+/*! \copydoc suzerain_blas_zgbmv */
+void
+suzerain_blas_zgbmv(
+        const char trans,
+        const int m,
+        const int n,
+        const int kl,
+        const int ku,
+        const complex_double alpha,
+        const complex_double *a,
+        const int lda,
+        const complex_double *x,
+        const int incx,
+        const complex_double beta,
+        complex_double *y,
         const int incy);
 
 /*! \copydoc suzerain_blas_sgbmv */
