@@ -2972,7 +2972,9 @@ void test_lapackext_dsgbsvx()
         // Form the Lotkin test problem
         lotkin1955(n, ab, b, x);
 
+        // -----------------------TEST1--------------------------
         // Compute solution forcing a factorization along the way
+        // ------------------------------------------------------
         i = exact; j = sd;
         fact [i][j][n] = 'N';
         apprx[i][j][n] =   0;
@@ -2989,7 +2991,7 @@ void test_lapackext_dsgbsvx()
                 ab, afrob[i][j]+n, afb, piv, b, x, siter[i][j]+n,
                 diter[i][j]+n, tolsc[i][j]+n, r, res[i][j]+n);
         gsl_test(info,
-                "%s:%d reports success on Lotkin matrix %d",
+                "%s:%d returns zero on Lotkin matrix %d",
                  __func__, __LINE__, n);
         gsl_test(tolsc[i][j][n] > 1,
                 "%s:%d Lotkin matrix %d gives tolsc <= 1: %g",
@@ -3006,8 +3008,10 @@ void test_lapackext_dsgbsvx()
                  "%s:%d Lotkin matrix %d residual satisfied: %g vs reported %g",
                  __func__, __LINE__, n, ores[i][j][n], res[i][j][n]);
 
+        // ---------------------------TEST2------------------------------
         // Perturb the factorization by swapping first two pivot entries
         // This turns the factorization into mush regardless of precision
+        // --------------------------------------------------------------
         { int t = piv[0]; piv[0] = piv[1 % n]; piv[1 % n] = t; }
         i = approx; j = sd;
         fact [i][j][n] = fact [exact][sd][n];
@@ -3024,7 +3028,7 @@ void test_lapackext_dsgbsvx()
                 ab, afrob[i][j]+n, afb, piv, b, x, siter[i][j]+n,
                 diter[i][j]+n, tolsc[i][j]+n, r, res[i][j]+n);
         gsl_test(info,
-                "%s:%d reports success on Lotkin matrix %d",
+                "%s:%d returns zero on Lotkin matrix %d",
                  __func__, __LINE__, n);
         gsl_test(tolsc[i][j][n] > 1,
                 "%s:%d Lotkin matrix %d gives tolsc <= 1: %g",
@@ -3046,6 +3050,103 @@ void test_lapackext_dsgbsvx()
                  "%s:%d Lotkin matrix %d residual satisfied: %g vs reported %g",
                  __func__, __LINE__, n, ores[i][j][n], res[i][j][n]);
 
+        // ----------------TEST3------------------
+        // Permit only double precision iterations
+        // ---------------------------------------
+        i = exact; j = d;
+        fact [i][j][n] = 'N';
+        apprx[i][j][n] =   0;
+        aiter[i][j][n] =   5;
+        afrob[i][j][n] = - 1;
+        siter[i][j][n] = - 1;
+        diter[i][j][n] =  10;
+        tolsc[i][j][n] =   1;
+        res  [i][j][n] = - 1;
+
+        info = suzerain_lapackext_dsgbsvx(
+                fact[i][j]+n, apprx[i][j]+n, aiter[i][j][n], 'n', n, n-1, n-1,
+                ab, afrob[i][j]+n, afb, piv, b, x, siter[i][j]+n,
+                diter[i][j]+n, tolsc[i][j]+n, r, res[i][j]+n);
+        gsl_test(info,
+                "%s:%d returns zero on Lotkin matrix %d",
+                 __func__, __LINE__, n);
+        gsl_test(tolsc[i][j][n] > 1,
+                "%s:%d Lotkin matrix %d gives tolsc <= 1: %g",
+                 __func__, __LINE__, n, tolsc[i][j][n]);
+        gsl_test(fact[i][j][n] == 'S',
+                "%s:%d Lotkin matrix %d reports no mixed precision in fact",
+                 __func__, __LINE__, n);
+        gsl_test(siter[i][j][n] >= 0,
+                "%s:%d Lotkin matrix %d reports no mixed precision in siter",
+                 __func__, __LINE__, n);
+
+        // Check solution bests 10 times the reported tolerance using
+        //     r + Ax - b = b - Ax + Ax - b = 0
+        // Beware that b was found in higher precision by lotkin1955(...)
+        suzerain_blas_dgbmv('N', n, n, n-1, n-1,
+                            1.0, ab, (n-1)+1+(n-1), x, 1, 1, r, 1);
+        suzerain_blas_daxpy(n, -1.0, b, 1, r, 1);
+        ores[i][j][n] = suzerain_blas_dnrm2(n, r, 1);
+        gsl_test(ores[i][j][n] > /*Empirical*/ 10*res[i][j][n],
+                 "%s:%d Lotkin matrix %d residual satisfied: %g vs reported %g",
+                 __func__, __LINE__, n, ores[i][j][n], res[i][j][n]);
+
+        // ----------------TEST4-----------------
+        // Permit only mixed precision iterations
+        // --------------------------------------
+        i = exact; j = s;
+        fact [i][j][n] = 'N';
+        apprx[i][j][n] =   0;
+        aiter[i][j][n] =  20;
+        afrob[i][j][n] = - 1;
+        siter[i][j][n] =  30;
+        diter[i][j][n] = - 1;
+        tolsc[i][j][n] =   1;
+        res  [i][j][n] = - 1;
+
+        info = suzerain_lapackext_dsgbsvx(
+                fact[i][j]+n, apprx[i][j]+n, aiter[i][j][n], 'n', n, n-1, n-1,
+                ab, afrob[i][j]+n, afb, piv, b, x, siter[i][j]+n,
+                diter[i][j]+n, tolsc[i][j]+n, r, res[i][j]+n);
+        gsl_test(info,
+                "%s:%d returns zero on Lotkin matrix %d",
+                 __func__, __LINE__, n);
+        // Conditioning is just too nasty beyond n == 7 so don't require tolsc
+        // However, the residual and everything else must still hold though
+        if (n < 8) {
+            gsl_test(tolsc[i][j][n] > 1,
+                    "%s:%d Lotkin matrix %d gives tolsc <= 1: %g",
+                    __func__, __LINE__, n, tolsc[i][j][n]);
+        }
+        gsl_test(fact[i][j][n] == 'D',
+                "%s:%d Lotkin matrix %d reports no double precision in fact",
+                 __func__, __LINE__, n);
+        gsl_test(diter[i][j][n] >= 0,
+                "%s:%d Lotkin matrix %d reports no double precision in diter",
+                 __func__, __LINE__, n);
+
+        // Check solution bests 10 times the reported tolerance using
+        //     r + Ax - b = b - Ax + Ax - b = 0
+        // Beware that b was found in higher precision by lotkin1955(...)
+        suzerain_blas_dgbmv('N', n, n, n-1, n-1,
+                            1.0, ab, (n-1)+1+(n-1), x, 1, 1, r, 1);
+        suzerain_blas_daxpy(n, -1.0, b, 1, r, 1);
+        ores[i][j][n] = suzerain_blas_dnrm2(n, r, 1);
+        gsl_test(ores[i][j][n] > /*Empirical*/ 10*res[i][j][n],
+                 "%s:%d Lotkin matrix %d residual satisfied: %g vs reported %g",
+                 __func__, __LINE__, n, ores[i][j][n], res[i][j][n]);
+
+        // ----------------TEST5-----------------------------------
+        // Permit only double precision iterations with approximate
+        // --------------------------------------------------------
+        // Unnecessary from a coverage perspective
+        i = approx; j = d;
+
+        // ----------------TEST6----------------------------------
+        // Permit only mixed precision iterations with approximate
+        // -------------------------------------------------------
+        // Unnecessary from a coverage perspective
+        i = approx; j = d;
 
     }
 
