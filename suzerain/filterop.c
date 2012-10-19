@@ -48,7 +48,7 @@ static int suzerain_filterop_operator_bandwidths_cookcabot2005(
 {
     SUZERAIN_UNUSED(method_params);
     *klat = *kuat = 2;
-    *klbt = *kubt = 4;  // TODO Confirm 4 not 5
+    *klbt = *kubt = 4;
     return SUZERAIN_SUCCESS;
 }
 
@@ -98,6 +98,17 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     static const int inc = 1;   // Column vectors are contiguous in memory
     const int n = w->n, m = n;  // Filtering matrices are square
 
+    // Compute coefficients for CookCabot2005 filter
+    const double alpha_0 = 1.0;
+    const double alpha_1 = alpha;
+    const double alpha_2 = (  1.-     alpha)/  2.;
+    const double a_0     = ( 58.-105.*alpha)/128.;
+    const double a_1     = ( 14.+ 11.*alpha)/ 32.;
+    const double a_2     = ( 18.- 11.*alpha)/ 64.;
+    const double a_3     = (  2.-  3.*alpha)/ 32.;
+    const double a_4     = (- 2.+  3.*alpha)/256.;
+
+
     // Place nonzero B^T values in w->B_T using w->klbt, w->kubt, and w->ldbt.
     {
         // Banded matrix access has form a[(ku + i)*inc + j*(lda - inc)].
@@ -107,13 +118,26 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
         double * bt_j = w->B_T;
         bt_j += ku*inc;
         ld -= inc;
-        ++kl;
+
+	// With the row elements of B_T coded explicitly
+	// there is no need for kl+1
+	// ++kl;
+
+	assert(w->klbt == 4);
+	assert(w->kubt == 4);
 
         for (int j = 0; j < n; bt_j += ld, ++j) {
-            const int il = imax(0, j - ku), iu = imin(m, j + kl);
-            for (int i = il; i < iu; ++i) {
-                bt_j[i*inc] =  100*i + j; // FIXME Modify B_T(i,j)
-            }
+
+	    // Start at j - ku, go to j + kl, Bandwidth is 4
+	    bt_j[(j-4)*inc] = a_4;
+	    bt_j[(j-3)*inc] = a_3;
+	    bt_j[(j-2)*inc] = a_2;
+	    bt_j[(j-1)*inc] = a_1;
+	    bt_j[(j  )*inc] = a_0;
+	    bt_j[(j+1)*inc] = a_1;
+	    bt_j[(j+2)*inc] = a_2;
+	    bt_j[(j+3)*inc] = a_3;
+	    bt_j[(j+4)*inc] = a_4;
         }
     }
 
@@ -124,15 +148,48 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
         double * at_j = w->A_T + kl; // Accounts for factorization-ready data
         at_j += ku*inc;
         ld -= inc;
-        ++kl;
+
+	// With the row elements of A_T coded explicitly
+	// there is no need for kl+1
+	// ++kl;
+
+	assert(w->klat == 2);
+	assert(w->kuat == 2);
 
         for (int j = 0; j < n; at_j += ld, ++j) {
-            const int il = imax(0, j - ku), iu = imin(m, j + kl);
-            for (int i = il; i < iu; ++i) {
-                at_j[i*inc] =  100*i + j; // FIXME Modify A_T(i,j)
-            }
+
+	    // Start at j - ku, go to j + kl, Bandwidth is 2
+	    at_j[(j-2)*inc] = alpha_2;
+	    at_j[(j-1)*inc] = alpha_1;
+	    at_j[(j  )*inc] = alpha_0;
+	    at_j[(j+1)*inc] = alpha_1;
+	    at_j[(j+2)*inc] = alpha_2;
         }
     }
+
+    // Note: The matrices A_T and B_T were populated in 
+    // BLAS-General-Band storage mode. The following loop 
+    // would populate elements from a matrix 
+    // with elements A_T[i,j] = 100*i+j: 
+    // for (int j = 0; j < n; at_j += ld, ++j) {
+    // const int il = imax(0, j - ku), iu = imin(m, j + kl);
+    //   for (int i = il; i < iu; ++i) {
+    //      at_j[i*inc] =  100*i + j;
+    //   }
+    // }
+    // where kl = w->klat + 1
+    // A sample matrix of bandwidth 2 with 7 elements 
+    // generated with the loop above:
+    // const double good_A_T[] = {
+    //     // ku2      ku1     diag      kl1      kl2
+    //     -55555,  -55555,       0,     100,     200,
+    //     -55555,       1,     101,     201,     301,
+    //          2,     102,     202,     302,     402,
+    //        103,     203,     303,     403,     503,
+    //        204,     304,     404,     504,     604,
+    //        305,     405,     505,     605,  -55555,
+    //        406,     506,     606,  -55555,  -55555
+    // };
 
     return SUZERAIN_SUCCESS;
 }

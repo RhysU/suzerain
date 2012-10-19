@@ -45,14 +45,14 @@ BOOST_FIXTURE_TEST_SUITE( basic_suite, FilteropFixture )
 BOOST_AUTO_TEST_CASE( example )
 {
     // 'suzerain_filterop_workspace *w' handled by FilteropFixture
-    w = suzerain_filterop_alloc(7, SUZERAIN_FILTEROP_COOKCABOT2005,
+    w = suzerain_filterop_alloc(9, SUZERAIN_FILTEROP_COOKCABOT2005,
                                 /* default params */ NULL,
                                 SUZERAIN_FILTEROP_BOUNDARY_IGNORE,
                                 SUZERAIN_FILTEROP_BOUNDARY_IGNORE);
 
     // Ensure workspace looks like the allocation call we requested
     BOOST_REQUIRE( w );
-    BOOST_CHECK_EQUAL( w->n,    7 );
+    BOOST_CHECK_EQUAL( w->n,    9 );
     BOOST_CHECK_EQUAL( w->klat, 2 );
     BOOST_CHECK_EQUAL( w->kuat, 2 );
     BOOST_CHECK_EQUAL( w->ldat, 2*2 + 1 + 2 );
@@ -63,30 +63,44 @@ BOOST_AUTO_TEST_CASE( example )
     BOOST_CHECK( w->ipiva );
     BOOST_CHECK( w->B_T );
 
+    // Coefficients for CookCabot2005 filter 
+    // with default value of alpha_1
+    const double alpha_0 = 1.0;
+    const double alpha_1 = 66624./100000.;
+    const double alpha_2 = (  1.-     alpha_1)/  2.;
+    const double a_0     = ( 58.-105.*alpha_1)/128.;
+    const double a_1     = ( 14.+ 11.*alpha_1)/ 32.;
+    const double a_2     = ( 18.- 11.*alpha_1)/ 64.;
+    const double a_3     = (  2.-  3.*alpha_1)/ 32.;
+    const double a_4     = (- 2.+  3.*alpha_1)/256.;
+
+
     // Ensure A_T looks as expected prior to factorization
     // Notice: -55555 marks storage outside of matrix which is ignored
     // Notice: Values look "transposed" because C reads right-to-left
     const double good_A_T[] = {
-        // ku2      ku1     diag      kl1      kl2
-        -55555,  -55555,       0,     100,     200,
-        -55555,       1,     101,     201,     301,
-             2,     102,     202,     302,     402,
-           103,     203,     303,     403,     503,
-           204,     304,     404,     504,     604,
-           305,     405,     505,     605,  -55555,
-           406,     506,     606,  -55555,  -55555
+        //  ku2       ku1      diag       kl1       kl2
+         -55555,   -55555,  alpha_0,  alpha_1,  alpha_2,
+         -55555,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,  alpha_2,
+        alpha_2,  alpha_1,  alpha_0,  alpha_1,   -55555,
+        alpha_2,  alpha_1,  alpha_0,   -55555,   -55555,
     };
+
 
     // See test_tools.hpp for the macro signature
     // Notice: Though A_T has two additional superdiagonals for factorization
     //         we do not require them for call to CHECK_GBMATRIX_CLOSE
     //         because "w->A_T + w->klat" was used instead of "w->A_T".
     CHECK_GBMATRIX_CLOSE(
-           7,    7,       2,       2,         good_A_T,       5,
+           9,    9,       2,       2,         good_A_T,       5,
         w->n, w->n, w->klat, w->kuat, w->A_T + w->klat, w->ldat,
         std::numeric_limits<double>::epsilon());
 
-    // FIXME Update good_A_T with actual coefficients
     // FIXME Check B_T against known good coefficients
 
     // 'suzerain_filterop_free(w)' handled by FilteropFixture
