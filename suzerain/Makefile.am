@@ -151,6 +151,7 @@ libsuzerain_la_SOURCES       += version.cpp
 EXTRA_libsuzerain_la_SOURCES  = bsmbsm_aPxpby_complex.def
 EXTRA_libsuzerain_la_SOURCES += bsmbsm_aPxpby_real.def
 EXTRA_libsuzerain_la_SOURCES += bsmbsm_pack.def
+EXTRA_libsuzerain_la_SOURCES += dsgbsvx.def
 EXTRA_libsuzerain_la_SOURCES += gbdddddmv.def
 EXTRA_libsuzerain_la_SOURCES += gbddddmv.def
 EXTRA_libsuzerain_la_SOURCES += gbdddmv.def

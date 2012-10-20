@@ -1,0 +1,277 @@
+/*--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2012 Rhys Ulerich
+ * Copyright (C) 2012 The PECOS Development Team
+ * Please see http://pecos.ices.utexas.edu for more information on PECOS.
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *--------------------------------------------------------------------------
+ * dsgbsvx.def: templated functionality for suzerain_lapack_??gbsvx
+ * $Id$
+ */
+
+// Yes, this template is hideous.
+// But, it is better than having to manually sync dsgbsvx and zcgbsvx.
+
+// #include-time parameters available followed by a sample usage.
+// Each of these are #undef-ed at the end of this template file
+//
+// #define SINGLE    float             /* Type of single precision   */
+// #define SCHAR     s                 /* Abbreviation for single    */
+// #define DOUBLE    double            /* Type of double precision   */
+// #define DCHAR     d                 /* Abbreviation for double    */
+// #define NORM      double            /* Type of norm-based results */
+// #define DNRM2     dnrm2             /* BLAS Norm mapping to NORM  */
+//
+// All further macros within this template are also #undef-ed at the end.
+
+// Utility macros for forcing argument expansion during concatenation
+#define CONCAT3(a,b,c)          CONCAT3_HELPER(a,b,c)
+#define CONCAT4(a,b,c,d)        CONCAT4_HELPER(a,b,c,d)
+#define CONCAT3_HELPER(a,b,c)   a ## b ## c
+#define CONCAT4_HELPER(a,b,c,d) a ## b ## c ## d
+
+// Build derived names based on the chosen precisions.
+#define FUNCTION CONCAT4(suzerain_lapackext_, DCHAR, SCHAR, gbsvx  )
+#define DAXPY    CONCAT3(suzerain_blas_     , DCHAR,        axpy   )
+#define DCOPY    CONCAT3(suzerain_blas_     , DCHAR,        copy   )
+#define DDEMOTE  CONCAT3(suzerain_blasext_  , DCHAR,        demote )
+#define DGBMV    CONCAT3(suzerain_blas_     , DCHAR,        gbmv   )
+#define DGBTRF   CONCAT3(suzerain_lapack_   , DCHAR,        gbtrf  )
+#define DGBTRS   CONCAT3(suzerain_lapack_   , DCHAR,        gbtrs  )
+#define DLACPY   CONCAT3(suzerain_lapack_   , DCHAR,        lacpy  )
+#define DLANGB   CONCAT3(suzerain_lapack_   , DCHAR,        langb  )
+#define DPROMOTE CONCAT3(suzerain_blasext_  , DCHAR,        promote)
+#define SGBTRF   CONCAT3(suzerain_lapack_   ,        SCHAR, gbtrf  )
+#define SGBTRS   CONCAT3(suzerain_lapack_   ,        SCHAR, gbtrs  )
+
+// Shorthand for reporting internal sanity mistakes;
+#define MAYBE_XERBLA(info)                                \
+    if (SUZERAIN_UNLIKELY(info)) {                        \
+        return suzerain_blas_xerbla(__func__, -__LINE__); \
+    }
+
+int
+FUNCTION(
+        char * const fact,
+        int * const apprx,
+        const int aiter,
+        char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        DOUBLE * const ab,
+        NORM   * const afrob,
+        DOUBLE * const afb,
+        int * const ipiv,
+        DOUBLE * const b,
+        DOUBLE * const x,
+        int * const siter,
+        int * const diter,
+        NORM   * const tolsc,
+        DOUBLE * const r,
+        NORM   * const res)
+{
+    *fact = toupper(*fact);
+    trans = toupper(trans);
+
+    int info = 0;
+    if (UNLIKELY(*fact != 'N' && *fact != 'S' && *fact != 'D')) {
+        info = -1;
+    } else if (UNLIKELY(*apprx < 0)) {
+        info = -2;
+    } else if (UNLIKELY(aiter < 0)) {
+        info = -3;
+    } else if (UNLIKELY(trans != 'N' && trans != 'T' && trans != 'C')) {
+        info = -4;
+    } else if (UNLIKELY(n < 0)) {
+        info = -5;
+    } else if (UNLIKELY(kl < 0)) {
+        info = -6;
+    } else if (UNLIKELY(ku < 0)) {
+        info = -7;
+    } else if (UNLIKELY(*tolsc <= 0)) {
+        info = -16;
+    } else if (UNLIKELY(*siter < 0 && *diter < 0)) {
+        info = -99;
+    }
+    if (info) return suzerain_blas_xerbla(__func__, info);
+
+    // Error handling from here onward deserves a word.  Internal errors are
+    // marked by calls to suzerain_blas_xerbla using (-__LINE__) via
+    // MAYBE_XERBLA.  Usage errors by a user (e.g.  providing a singular
+    // matrix) simply return the appropriate info value.
+
+    // Lookup machine-specific floating point information
+    const NORM eps = suzerain_lapack_dlamch('E');
+
+    // Incoming vectors and matrices must be contiguous in memory
+    static const int inc = 1;
+    const int ldab  =   kl + 1 + ku;
+    const int ldafb = 2*kl + 1 + ku;
+
+    // Compute Frobenius norm of A if it was not supplied
+    if (*afrob < 0) {
+        *afrob = DLANGB('F', n, kl, ku, ab, ldab, NULL);
+    }
+
+    // Compute const part of stopping tolerance per Langou et al:
+    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
+    //                                          -----------------------
+    const NORM tolconst = *afrob * eps * sqrt(n) * (*tolsc);
+
+    // Compute (a usually awful) solution estimate starting from x = 0
+    memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
+    NORM normx = 0;                          // ||0||_2 = 0 since x == 0
+    DCOPY(n, b, inc, r, inc);                // r = b - A*x = b - A*0 = b
+    *res = DNRM2(n, r, inc);                 // res = |r|_2
+
+    // Fake that this initial solution is better by more than a factor of 2
+    const NORM resdecay = 2;
+    NORM lastres = (resdecay + 1) * (*res + 1);
+
+    // Save the maximum iteration count prior to entering compute loops
+    const int smax = *siter; *siter = -1;
+    const int dmax = *diter; *diter = -1;
+
+    if (smax >= 0 && *fact != 'D' && *res > normx*tolconst) {
+
+        if (*fact != 'S') { // Ensure single precision factorization available
+            *fact  = 'S';
+            *apprx = 0;
+
+            DLACPY('F', ldab, n, ab, ldab, afb + kl, ldafb);
+            info = DDEMOTE(n*ldafb, afb);
+            MAYBE_XERBLA(info)
+            info = SGBTRF(n, n, kl, ku, (SINGLE*)afb, ldafb, ipiv);
+            if (UNLIKELY(info > 0 && dmax >= 0)) {
+                // Single precision factorization failed where
+                // double precision might succeed.  Bail on single.
+                goto double_precision_attempt;
+            } else MAYBE_XERBLA(info < 0)
+        }
+
+        while (++*siter < smax && *res > normx*tolconst) {
+
+            // Perform one step of mixed precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
+            info = DDEMOTE(n, r);
+            MAYBE_XERBLA(info)
+            info = SGBTRS(trans, n, kl, ku, 1,
+                          (SINGLE*)afb, ldafb, ipiv,
+                          (SINGLE*)r, n);
+            MAYBE_XERBLA(info)
+            info = DPROMOTE(n, r);
+            MAYBE_XERBLA(info)
+            DAXPY(n, 1, r, inc, x, inc);
+            normx = DNRM2(n, x, inc);
+            DCOPY(n, b, inc, r, inc);
+            info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
+            MAYBE_XERBLA(info)
+            *res  = DNRM2(n, r, inc);
+
+            // Are we experiencing slow convergence after aiter-th step?
+            if (*siter >= aiter && lastres < *res * resdecay) {
+                if (*apprx) {  // Blame the approximate factorization
+                    *fact  = 'N';
+                    *siter = smax;
+                    *diter = dmax;
+                    return FUNCTION(fact, apprx, aiter, trans, n, kl,
+                                    ku, ab, afrob, afb, ipiv, b, x,
+                                    siter, diter, tolsc, r, res);
+
+                } else {       // Blame working in single precision
+                    break;
+                }
+            }
+
+            // Save residual for next iteration
+            // Notice conservative location when failing to double precision
+            lastres = *res;
+
+        }
+
+    }
+
+double_precision_attempt:
+
+    if (dmax >= 0 && *res > normx*tolconst) {
+
+        if (*fact != 'D') {  // Ensure double precision factorization available
+            *fact  = 'D';
+            *apprx = 0;
+            DLACPY('F', ldab, n, ab, ldab, afb + kl, ldafb);
+            info = DGBTRF(n, n, kl, ku, afb, ldafb, ipiv);
+            MAYBE_XERBLA(info < 0) else if (UNLIKELY(info > 0)) { return info; }
+        }
+
+        while (++*diter < dmax && *res > normx*tolconst) {
+
+            // Perform one step of double precision iterative refinement
+            // updating norm computations for x and r = b - op(A) x
+            info = DGBTRS(trans, n, kl, ku, 1, afb, ldafb, ipiv, r, n);
+            MAYBE_XERBLA(info)
+            DAXPY(n, 1.0, r, inc, x, inc);
+            normx = DNRM2(n, x, inc);
+            DCOPY(n, b, inc, r, inc);
+            info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
+            MAYBE_XERBLA(info)
+            *res = DNRM2(n, r, inc);
+
+            // Are we experiencing slow convergence after aiter-th step?
+            if (*diter >= aiter && lastres < *res * resdecay) {
+                if (*apprx) {  // Blame the approximate factorization
+                    *fact  = 'N';
+                    *siter = smax;
+                    *diter = dmax;
+                    return FUNCTION(fact, apprx, aiter, trans, n, kl, ku, ab,
+                                    afrob, afb, ipiv, b, x,
+                                    siter, diter, tolsc, r, res);
+
+                } else {       // Blame the problem itself
+                    break;
+                }
+            }
+
+            lastres = *res;    // Save residual for next iteration
+
+        }
+
+    }
+
+    // Make tolsc the fraction of the tolerance represented by the solution
+    *tolsc = (*res == 0) ? 0 : *res / (normx * tolconst);
+
+    return info;
+}
+
+
+#undef MAYBE_XERBLA
+
+#undef FUNCTION
+#undef DAXPY
+#undef DCOPY
+#undef DDEMOTE
+#undef DGBMV
+#undef DGBTRF
+#undef DGBTRS
+#undef DLACPY
+#undef DLANGB
+#undef DPROMOTE
+#undef SGBTRF
+#undef SGBTRS
+
+#undef CONCAT3
+#undef CONCAT4
+#undef CONCAT3_HELPER
+#undef CONCAT4_HELPER
+
+#undef SINGLE
+#undef SCHAR
+#undef DOUBLE
+#undef DCHAR
+#undef NORM
+#undef DNRM2
