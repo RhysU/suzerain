@@ -65,7 +65,6 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
             // Grammar Begin
                   ( no_case["zgbsvx" ] [ ref(s.method) = spec_zgbsv::zgbsvx  ])
                 | ( no_case["zgbsv"  ] [ ref(s.method) = spec_zgbsv::zgbsv   ])
-                | ( no_case["zgbrfs" ] [ ref(s.method) = spec_zgbsv::zgbrfs  ])
                 | ( no_case["zcgbsvx"] [ ref(s.method) = spec_zgbsv::zcgbsvx ]
                     >> -(   ( char_(',') >> no_case["reuse"] >> '='
                                          >> bool_  [ref(s.reuse) = _1])
@@ -103,7 +102,6 @@ spec_zgbsv::operator std::string () const
         default:                   return "UNKNOWN"  ;
         case spec_zgbsv::zgbsv:    return "zgbsv"    ;
         case spec_zgbsv::zgbsvx:   return "zgbsvx"   ;
-        case spec_zgbsv::zgbrfs:   return "zgbrfs"   ;
         case spec_zgbsv::zcgbsvx:  /* Fall through */;
     }
 

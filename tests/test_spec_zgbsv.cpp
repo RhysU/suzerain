@@ -51,13 +51,6 @@ BOOST_AUTO_TEST_CASE( construct_zgbsvx )
     BOOST_CHECK_EQUAL("zgbsvx", (std::string) s);
 }
 
-BOOST_AUTO_TEST_CASE( construct_zgbrfs )
-{
-    spec_zgbsv s("zgbrfs");
-    BOOST_CHECK(s.method == spec_zgbsv::zgbrfs);
-    BOOST_CHECK_EQUAL("zgbrfs", (std::string) s);
-}
-
 BOOST_AUTO_TEST_CASE( construct_zcgbsvx )
 {
     {

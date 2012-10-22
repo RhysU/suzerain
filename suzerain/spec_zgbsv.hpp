@@ -24,7 +24,7 @@ class spec_zgbsv
 {
 public:
 
-    enum method_type { zgbsvx = 1, zgbsv, zgbrfs, zcgbsvx } method;
+    enum method_type { zgbsvx = 1, zgbsv, zcgbsvx } method;
     bool   reuse;
     int    aiter;
     int    siter;
