@@ -30,11 +30,11 @@
 
 namespace suzerain {
 
-spec_zgbsv::spec_zgbsv()  // Defaults behave like zgbrfs
-    : method_(zgbsvx),
+spec_zgbsv::spec_zgbsv()  // Defaults behave much like zgbsvx
+    : method_(zcgbsvx),
       equil_(false),
       reuse_(false),
-      aiter_(0),
+      aiter_(1),
       siter_(-1),
       diter_(5),
       tolsc_(0)
