@@ -75,8 +75,10 @@ FUNCTION(
         DOUBLE * const r,
         NORM   * const res)
 {
+#pragma warning(push,disable:2259)
     *fact = toupper(*fact);
     trans = toupper(trans);
+#pragma warning(pop)
 
     int info = 0;
     if (UNLIKELY(*fact != 'N' && *fact != 'S' && *fact != 'D')) {
@@ -113,16 +115,6 @@ FUNCTION(
     const int ldab  =   kl + 1 + ku;
     const int ldafb = 2*kl + 1 + ku;
 
-    // Compute Frobenius norm of A if it was not supplied
-    if (*afrob < 0) {
-        *afrob = DLANGB('F', n, kl, ku, ab, ldab, NULL);
-    }
-
-    // Compute const part of stopping tolerance per Langou et al:
-    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
-    //                                          -----------------------
-    const NORM tolconst = *afrob * eps * sqrt(n) * (*tolsc);
-
     // Compute (a usually awful) solution estimate starting from x = 0
     memset(x, 0, n*sizeof(x[0]));            // x = 0 for inc == 1
     NORM normx = 0;                          // ||0||_2 = 0 since x == 0
@@ -137,7 +129,26 @@ FUNCTION(
     const int smax = *siter; *siter = -1;
     const int dmax = *diter; *diter = -1;
 
-    if (smax >= 0 && *fact != 'D' && *res > normx*tolconst) {
+    // Compute Frobenius norm of A if it was not supplied
+    if (*afrob < 0) {
+        *afrob = DLANGB('F', n, kl, ku, ab, ldab, NULL);
+    }
+
+    // Compute const part of stopping tolerance per Langou et al:
+    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
+    //                                          -----------------------
+    const NORM tolconst = *afrob * eps * sqrt(n) * (*tolsc);
+
+    // When tolsc == 0, use machine epsilon instead of Langou criterion
+    // (Compare against stopping criteria used within LAPACK {D,Z}GBRFS)
+#pragma warning(push,disable:1572)
+    const int use_eps_tol = (*tolsc == 0.0);
+#pragma warning(pop)
+
+    // A macro returning true when convergence has not happened
+#define NOT_CONVERGED (*res > (use_eps_tol ? eps : normx*tolconst))
+
+    if (smax >= 0 && *fact != 'D' && NOT_CONVERGED) {
 
         if (*fact != 'S') { // Ensure single precision factorization available
             *fact  = 'S';
@@ -154,7 +165,7 @@ FUNCTION(
             } else MAYBE_XERBLA(info < 0)
         }
 
-        while (++*siter < smax && *res > normx*tolconst) {
+        while (++*siter < smax && NOT_CONVERGED) {
 
             // Perform one step of mixed precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
@@ -198,7 +209,7 @@ FUNCTION(
 
 double_precision_attempt:
 
-    if (dmax >= 0 && *res > normx*tolconst) {
+    if (dmax >= 0 && NOT_CONVERGED) {
 
         if (*fact != 'D') {  // Ensure double precision factorization available
             *fact  = 'D';
@@ -208,7 +219,7 @@ double_precision_attempt:
             MAYBE_XERBLA(info < 0) else if (UNLIKELY(info > 0)) { return info; }
         }
 
-        while (++*diter < dmax && *res > normx*tolconst) {
+        while (++*diter < dmax && NOT_CONVERGED) {
 
             // Perform one step of double precision iterative refinement
             // updating norm computations for x and r = b - op(A) x
@@ -243,11 +254,20 @@ double_precision_attempt:
     }
 
     // Make tolsc the fraction of the tolerance represented by the solution
-    *tolsc = (*res == 0) ? 0 : *res / (normx * tolconst);
+    if (use_eps_tol) {
+        *tolsc = *res / eps;
+#pragma warning(push,disable:1572)
+    } else if (*res == 0) {
+#pragma warning(pop)
+        *tolsc = 0;
+    } else {
+        *tolsc = *res / (normx * tolconst);
+    }
 
     return info;
 }
 
+#undef NOT_CONVERGED
 
 #undef MAYBE_XERBLA
 

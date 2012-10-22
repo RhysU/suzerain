@@ -4083,14 +4083,19 @@ suzerain_lapackext_zgbsv(
  *                      of such refinements performed.
  * \param[in,out] tolsc On input, a nonnegative multiplicative factor
  *                      used to scale the Langou et al. tolerance \f$
- *                      \sqrt{n} \eps \|A\|_\text{Fro} \|x\|_2 \f$
- *                      against which the residual is compared as a
+ *                      \sqrt{n} \text{eps} \|A\|_\text{Fro} \|x\|_2
+ *                      \f$ against which the residual is compared as a
  *                      stopping criterion.  The recommended value from
  *                      Langou et al is \c 1.0 to regain full accuracy
- *                      as measured per backward stability.  On output,
- *                      the fraction of the tolerance represented by
- *                      the returned solution.  Values greater than one
- *                      indicate the desired tolerance could not be met.
+ *                      as measured per backward stability.  The special
+ *                      value \c 0.0 can be provided to specify that
+ *                      double precision machine epsilon should be used
+ *                      which, in conjunction with <tt>siter < 0</tt>,
+ *                      makes the refinement process act like LAPACK's
+ *                      <tt>?gbrfs</tt>.  On output, the fraction of the
+ *                      tolerance represented by the returned solution.
+ *                      Values greater than one indicate the desired
+ *                      tolerance could not be met.
  * \param[out]    r     Solution residual \f$ b - A x \f$.
  * \param[out]    res   2-norm of the residual.
  *                      That is, \f$\|b - A x\|_2\f$.
