@@ -124,7 +124,7 @@ FUNCTION(
     const NORM tolconst = *afrob * eps * sqrt(n) * (*tolsc);
 
     // Compute (a usually awful) solution estimate starting from x = 0
-    memset(x, 0, n*sizeof(double));          // x = 0 for inc == 1
+    memset(x, 0, n*sizeof(x[0]));            // x = 0 for inc == 1
     NORM normx = 0;                          // ||0||_2 = 0 since x == 0
     DCOPY(n, b, inc, r, inc);                // r = b - A*x = b - A*0 = b
     *res = DNRM2(n, r, inc);                 // res = |r|_2
