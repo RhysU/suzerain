@@ -95,7 +95,7 @@ FUNCTION(
         info = -6;
     } else if (UNLIKELY(ku < 0)) {
         info = -7;
-    } else if (UNLIKELY(*tolsc <= 0)) {
+    } else if (UNLIKELY(*tolsc < 0)) {
         info = -16;
     } else if (UNLIKELY(*siter < 0 && *diter < 0)) {
         info = -99;
