@@ -4102,6 +4102,11 @@ suzerain_lapackext_zgbsv(
  *
  * One or both of \c siter or \c diter must be nonnegative on entry.
  *
+ * If \c tolsc is identically zero, \c siter should be strictly negative.
+ * This requirement is not enforced, but it is madness to think that
+ * mixed-precision iterative refinement will provide residuals better
+ * than those returned by a full-precision procedure.
+ *
  * \return Zero on successful execution.  Nonzero otherwise.
  *         Errors related to the <tt>i</tt>-th argument are indicated
  *         by a return value of <tt>-i</tt>.
