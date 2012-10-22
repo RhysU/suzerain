@@ -60,7 +60,6 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
         using boost::spirit::qi::double_;
         using boost::spirit::qi::int_;
         using boost::spirit::qi::no_case;
-        using boost::spirit::qi::no_case;
 
         const bool r = boost::spirit::qi::phrase_parse(iter, end, (
             // Grammar Begin
