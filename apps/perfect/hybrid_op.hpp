@@ -33,6 +33,7 @@
 #include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/state_fwd.hpp>
 
+#include "../logging.hpp"
 #include "nonlinear_fwd.hpp"
 
 #pragma warning(disable:383 1572)
@@ -68,7 +69,10 @@ public:
           spec(spec),
           scenario(scenario),
           common(common)
-    {}
+    {
+        INFO0("HybridIsothermalLinearOperator solving equations using "
+              << static_cast<std::string>(spec));
+    }
 
     virtual void applyMassPlusScaledOperator(
              const complex_t &phi,
