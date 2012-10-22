@@ -63,6 +63,14 @@ EXTRA_PROGRAMS          += test_blas_et_al
 test_blas_et_al_SOURCES  = test_blas_et_al.c
 test_blas_et_al_LDADD    = ../suzerain/libsuzerain.la
 
+TESTS                   += test_spec_zgbsv
+EXTRA_PROGRAMS          += test_spec_zgbsv
+test_spec_zgbsv_SOURCES  = test_spec_zgbsv.cpp
+test_spec_zgbsv_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_spec_zgbsv_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_spec_zgbsv_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_spec_zgbsv_LDADD   += ../suzerain/libsuzerain.la
+
 TESTS             += test_gbmv
 EXTRA_PROGRAMS    += test_gbmv
 test_gbmv_SOURCES  = test_gbmv.cpp
