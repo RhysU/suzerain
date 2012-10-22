@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE( default_constructor )
 BOOST_AUTO_TEST_CASE( construct_empty )
 {
     spec_zgbsv s(" ");  // Whitespace
-    BOOST_CHECK(s.method);
+    BOOST_CHECK(s.method());
     BOOST_CHECK_NE("",        (std::string) s);
     BOOST_CHECK_NE("UNKNOWN", (std::string) s);
 }
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( construct_empty )
 BOOST_AUTO_TEST_CASE( construct_zgbsv )
 {
     spec_zgbsv s("zgbsv");
-    BOOST_CHECK(s.method == spec_zgbsv::zgbsv);
+    BOOST_CHECK(s.method() == spec_zgbsv::zgbsv);
     BOOST_CHECK_EQUAL("zgbsv", (std::string) s);
 }
 
@@ -48,13 +48,13 @@ BOOST_AUTO_TEST_CASE( construct_zgbsvx )
 {
     {
         spec_zgbsv s("zgbsvx");  // Uppercase
-        BOOST_CHECK(s.method == spec_zgbsv::zgbsvx);
+        BOOST_CHECK(s.method() == spec_zgbsv::zgbsvx);
         BOOST_CHECK_EQUAL("zgbsvx,equil=false", (std::string) s);
     }
 
     {
         spec_zgbsv s("ZGBSVX,EQUIL=TRUE");  // Uppercase
-        BOOST_CHECK(s.method == spec_zgbsv::zgbsvx);
+        BOOST_CHECK(s.method() == spec_zgbsv::zgbsvx);
         BOOST_CHECK_EQUAL("zgbsvx,equil=true", (std::string) s);
     }
 }
@@ -63,19 +63,19 @@ BOOST_AUTO_TEST_CASE( construct_zcgbsvx )
 {
     {
         spec_zgbsv s("zcgbsvx");
-        BOOST_CHECK(s.method == spec_zgbsv::zcgbsvx);
+        BOOST_CHECK(s.method() == spec_zgbsv::zcgbsvx);
         BOOST_CHECK_NE("zcgbsvx", (std::string) s);   // Much more required
     }
 
     {
         std::string str("zcgbsvx,reuse=true,aiter=2,siter=3,diter=4,tolsc=5");
         spec_zgbsv s(str);
-        BOOST_CHECK(s.method == spec_zgbsv::zcgbsvx);  // As constructed...?
-        BOOST_CHECK_EQUAL(s.reuse, true);
-        BOOST_CHECK_EQUAL(s.aiter, 2);
-        BOOST_CHECK_EQUAL(s.siter, 3);
-        BOOST_CHECK_EQUAL(s.diter, 4);
-        BOOST_CHECK_EQUAL(s.tolsc, 5);
+        BOOST_CHECK(s.method() == spec_zgbsv::zcgbsvx);  // As constructed...?
+        BOOST_CHECK_EQUAL(s.reuse(), true);
+        BOOST_CHECK_EQUAL(s.aiter(), 2);
+        BOOST_CHECK_EQUAL(s.siter(), 3);
+        BOOST_CHECK_EQUAL(s.diter(), 4);
+        BOOST_CHECK_EQUAL(s.tolsc(), 5);
         BOOST_CHECK_EQUAL(str, (std::string) s);       // Roundtripped?
     }
 

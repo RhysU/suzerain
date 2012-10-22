@@ -15,6 +15,7 @@
 #ifndef SUZERAIN_SPEC_ZGBSV_HPP
 #define SUZERAIN_SPEC_ZGBSV_HPP
 
+#include <cassert>
 #include <iosfwd>
 #include <string>
 
@@ -24,18 +25,31 @@ class spec_zgbsv
 {
 public:
 
-    enum method_type { zgbsvx = 1, zgbsv, zcgbsvx } method;
-    bool   reuse;
-    bool   equil;
-    int    aiter;
-    int    siter;
-    int    diter;
-    double tolsc;
+    enum method_type { zgbsvx = 1, zgbsv, zcgbsvx };
 
     spec_zgbsv();
     spec_zgbsv(const std::string &spec);
+
+    method_type method() const { return method_; }
+    bool        equil()  const { assert(method_ == zgbsvx);  return equil_;  }
+    bool        reuse()  const { assert(method_ == zcgbsvx); return reuse_;  }
+    int         aiter()  const { assert(method_ == zcgbsvx); return aiter_;  }
+    int         siter()  const { assert(method_ == zcgbsvx); return siter_;  }
+    int         diter()  const { assert(method_ == zcgbsvx); return diter_;  }
+    double      tolsc()  const { assert(method_ == zcgbsvx); return tolsc_;  }
+
     operator std::string () const;
     bool operator==(const spec_zgbsv &that) const;
+
+private:
+
+    method_type method_;
+    bool        equil_;
+    bool        reuse_;
+    int         aiter_;
+    int         siter_;
+    int         diter_;
+    double      tolsc_;
 
 };
 

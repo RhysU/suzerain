@@ -31,13 +31,13 @@
 namespace suzerain {
 
 spec_zgbsv::spec_zgbsv()
-    : method(zgbsvx),
-      reuse(true),
-      equil(false),
-      aiter(10),
-      siter(30),
-      diter(100),
-      tolsc(1)
+    : method_(zgbsvx),
+      equil_(false),
+      reuse_(false),
+      aiter_(10),
+      siter_(30),
+      diter_(100),
+      tolsc_(1)
 {}
 
 spec_zgbsv::spec_zgbsv(const std::string& spec)
@@ -64,23 +64,23 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
 
         const bool r = boost::spirit::qi::phrase_parse(iter, end, (
             // Grammar Begin
-                  ( no_case["zgbsvx" ] [ ref(s.method) = spec_zgbsv::zgbsvx  ]
+                  ( no_case["zgbsvx" ] [ ref(s.method_) = spec_zgbsv::zgbsvx  ]
                     >> -(   ( char_(',') >> no_case["equil"] >> '='
-                                         >> no_case[bool_]  [ref(s.equil) = _1])
+                                         >> no_case[bool_]  [ref(s.equil_) = _1])
                         )
                   )
-                | ( no_case["zgbsv"  ] [ ref(s.method) = spec_zgbsv::zgbsv   ])
-                | ( no_case["zcgbsvx"] [ ref(s.method) = spec_zgbsv::zcgbsvx ]
+                | ( no_case["zgbsv"  ] [ ref(s.method_) = spec_zgbsv::zgbsv   ])
+                | ( no_case["zcgbsvx"] [ ref(s.method_) = spec_zgbsv::zcgbsvx ]
                     >> -(   ( char_(',') >> no_case["reuse"] >> '='
-                                         >> no_case[bool_]  [ref(s.reuse) = _1])
+                                         >> no_case[bool_]  [ref(s.reuse_) = _1])
                           ^ ( char_(',') >> no_case["aiter"] >> '='
-                                         >> int_   [ref(s.aiter) = _1])
+                                         >> int_   [ref(s.aiter_) = _1])
                           ^ ( char_(',') >> no_case["siter"] >> '='
-                                         >> int_   [ref(s.siter) = _1])
+                                         >> int_   [ref(s.siter_) = _1])
                           ^ ( char_(',') >> no_case["diter"] >> '='
-                                         >> int_   [ref(s.diter) = _1])
+                                         >> int_   [ref(s.diter_) = _1])
                           ^ ( char_(',') >> no_case["tolsc"] >> '='
-                                         >> double_[ref(s.tolsc) = _1])
+                                         >> double_[ref(s.tolsc_) = _1])
                         )
                   )
             // Grammar End
@@ -106,18 +106,18 @@ spec_zgbsv::operator std::string () const
     std::ostringstream os;
     os << std::boolalpha;
 
-    if        (this->method == spec_zgbsv::zgbsv  ) {
+    if        (method_ == spec_zgbsv::zgbsv  ) {
         os << "zgbsv";
-    } else if (this->method == spec_zgbsv::zgbsvx ) {
+    } else if (method_ == spec_zgbsv::zgbsvx ) {
         os << "zgbsvx"
-           << ",equil=" << this->equil;
-    } else if (this->method == spec_zgbsv::zcgbsvx) {
+           << ",equil=" << equil();
+    } else if (method_ == spec_zgbsv::zcgbsvx) {
         os << "zcgbsvx"
-           << ",reuse=" << this->reuse
-           << ",aiter=" << this->aiter
-           << ",siter=" << this->siter
-           << ",diter=" << this->diter
-           << ",tolsc=" << this->tolsc;
+           << ",reuse=" << reuse()
+           << ",aiter=" << aiter()
+           << ",siter=" << siter()
+           << ",diter=" << diter()
+           << ",tolsc=" << tolsc();
     } else {
         os << "UNKNOWN";
     }
@@ -127,23 +127,23 @@ spec_zgbsv::operator std::string () const
 
 bool spec_zgbsv::operator==(const spec_zgbsv &that) const
 {
-    if (this->method != that.method)
+    if (method_ != that.method_)
         return false;
 
-    switch (this->method) {  // Additional stipulations per method
+    switch (this->method_) {  // Additional stipulations by method
 
     default:
         return true;
 
     case spec_zgbsv::zgbsvx:
-        return this->equil == that.equil;
+        return equil_ == that.equil_;
 
     case spec_zgbsv::zcgbsvx:
-        return this->reuse  == that.reuse
-            && this->aiter  == that.aiter
-            && this->siter  == that.siter
-            && this->diter  == that.diter
-            && this->tolsc  == that.tolsc;
+        return reuse_  == that.reuse_
+            && aiter_  == that.aiter_
+            && siter_  == that.siter_
+            && diter_  == that.diter_
+            && tolsc_  == that.tolsc_;
 
     }
 }
