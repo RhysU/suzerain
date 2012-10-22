@@ -111,7 +111,7 @@ public:
 protected:
 
     /** Controls the solves performed during invertMassPlusScaledOperator */
-    spec_zgbsv spec;
+    const spec_zgbsv spec;
 
     /** The scenario in which the operator is used */
     const ScenarioDefinition &scenario;
