@@ -33,6 +33,7 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/spec_zgbsv.hpp>
 
 #include "perfect.hpp"
 
@@ -72,6 +73,21 @@ public:
             OperatorCommonBlock &common);
 
     /**
+     * Constructor delegating to BaseClass.
+     *
+     * BaseClass must make its constructor arguments available as member
+     * variables under the same name as those found in this constructor.
+     */
+    ChannelTreatment(
+            const spec_zgbsv& spec,
+            const ScenarioDefinition &scenario,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
+            OperatorCommonBlock &common);
+
+    /**
      * Force the channel problem delegating to BaseClass when appropriate.
      * The BaseClass must perform the following steps.
      * <ul>
@@ -96,6 +112,13 @@ public:
             const std::size_t substep_index) const;
 
 private:
+
+    /** Common initialization code to be called at end of constructor */
+    void finish_construction(
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop);
 
     /** Should bulk streamwise momentum constraint be enforced? */
     bool constrain_bulk_rhou() const
@@ -133,6 +156,30 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             const bsplineop &bop,
             OperatorCommonBlock &common)
     : BaseClass(scenario, grid, dgrid, b, bop, common)
+{
+    this->finish_construction(grid, dgrid, b, bop);
+}
+
+template< typename BaseClass >
+ChannelTreatment<BaseClass>::ChannelTreatment(
+            const spec_zgbsv& spec,
+            const ScenarioDefinition &scenario,
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop,
+            OperatorCommonBlock &common)
+    : BaseClass(spec, scenario, grid, dgrid, b, bop, common)
+{
+    this->finish_construction(grid, dgrid, b, bop);
+}
+
+template< typename BaseClass >
+void ChannelTreatment<BaseClass>::finish_construction(
+            const problem::GridDefinition &grid,
+            const pencil_grid &dgrid,
+            bspline &b,
+            const bsplineop &bop)
 {
     // Precomputed results only necessary on rank with zero-zero modes
     if (!dgrid.has_zero_zero_modes()) return;

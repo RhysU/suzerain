@@ -30,6 +30,7 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/state_fwd.hpp>
 
 #include "nonlinear_fwd.hpp"
@@ -56,6 +57,7 @@ public:
     static const linearize::type linearization = linearize::rhome;
 
     HybridIsothermalLinearOperator(
+            const spec_zgbsv& spec,
             const ScenarioDefinition &scenario,
             const problem::GridDefinition &grid,
             const pencil_grid &dgrid,
@@ -63,6 +65,7 @@ public:
             const bsplineop &bop,
             OperatorCommonBlock &common)
         : OperatorBase(grid, dgrid, b, bop),
+          spec(spec),
           scenario(scenario),
           common(common)
     {}
@@ -106,6 +109,9 @@ public:
             const std::size_t substep_index) const;
 
 protected:
+
+    /** Controls the solves performed during invertMassPlusScaledOperator */
+    spec_zgbsv spec;
 
     /** The scenario in which the operator is used */
     const ScenarioDefinition &scenario;

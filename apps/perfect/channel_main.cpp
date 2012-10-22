@@ -52,6 +52,7 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
+#include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/statistics_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timers.h>
@@ -895,6 +896,7 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
+    std::string solver_spec(static_cast<std::string>(suzerain::spec_zgbsv()));
     bool use_explicit  = false;
     bool use_implicit  = false;
     bool use_yang11    = false;
@@ -921,6 +923,9 @@ int main(int argc, char **argv)
         options.add_options()
             ("explicit", "Use purely explicit operators")
             ("implicit", "Use hybrid implicit/explicit operators")
+            ("solver",   boost::program_options::value<std::string>(&solver_spec)
+                             ->default_value(solver_spec),
+                         "Use the specified algorithm for any implicit solves")
             ("smr91",    "Advance time per Spalart, Moser, and Rogers 1991")
             ("yang11",   "Advance time per Shan Yang's 2011 thesis")
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
@@ -1290,7 +1295,8 @@ int main(int argc, char **argv)
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
         L.reset(new ChannelTreatment<perfect::HybridIsothermalLinearOperator>(
-                    scenario, grid, *dgrid, *b, *bop, common_block));
+                    solver_spec, scenario,
+                    grid, *dgrid, *b, *bop, common_block));
         N.reset(new perfect::HybridNonlinearOperator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else {
