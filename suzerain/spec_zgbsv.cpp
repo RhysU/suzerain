@@ -35,7 +35,7 @@ spec_zgbsv::spec_zgbsv()
       reuse(true),
       aiter(10),
       siter(30),
-      diter(30),
+      diter(100),
       tolsc(1)
 {}
 
