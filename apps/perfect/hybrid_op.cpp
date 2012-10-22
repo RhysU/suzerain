@@ -432,43 +432,20 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
-    // How will we solve the linear system(s) of equations?
-    // TODO Permit selection at runtime via driver flags
-    enum solve_types {
-        gbsv,  ///< Assemble, factorize, back substitute in-place
-        gbsvx, ///< Assemble, factorize out-of-place, iteratively refine
-        gbrfs  ///< As in 'gbsvx' but attempting to reuse stale factorizations
-    };
-    static const solve_types solve_type = gbsvx;
-
     // Solver-related operational details
-    const char *fname;              // Used for error reporting
-    char fact = 'N';                // Should matrices be equilibrated?
-    switch (solve_type) {
-    default:
-        SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
-    case gbsv:
-        fname = "zgbsv";
-        break;
-    case gbsvx:
-        fname = "zgbsvx";
-        break;
-    case gbrfs:
-        fname = "zgbsvx";
-        break;
+    const char *mname = "UNKNOWN";          // Used for error reporting
+    char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
+    switch (spec.method()) {
+    case spec_zgbsv::zgbsv:   mname = "suzerain_lapack_zgbsv";      break;
+    case spec_zgbsv::zgbsvx:  mname = "suzerain_lapack_zgbsvx";     break;
+    case spec_zgbsv::zcgbsvx: mname = "suzerain_lapackext_zcgbsvx"; break;
     }
     static const char trans = 'T';  // Un-transpose transposed operator
-    int info;                       // Common outputs for ?gbsvx
-    char equed;                     // ?gbsvx equilibration type
-    real_t rcond, ferr, berr;       // ?gbsvx outputs for one RHS
-
-    // Tolerances for iterative refinement behavior when solve_type == gbrfs
-    // TODO Should the current empirical tolerance vary with A.N?
-    // TODO Determine a better empirical tolerance (LAWN 165/277?)
-    const double eps                = std::numeric_limits<double>::epsilon();
-    const double tol_ferr           = 1000 * A.N * eps;
-    const double sqrt_tol_ferr      = std::sqrt(tol_ferr);
-    const double sqrt_sqrt_tol_ferr = std::sqrt(sqrt_tol_ferr);
+    int info;                       // Common output for all solvers
+    char equed;                     // zgbsvx equilibration type
+    real_t rcond, ferr, berr;       // zgbsvx outputs for one RHS
+    real_t afrob, tolsc, res;       // zcgbsvx outputs for one RHS...
+    int apprx, aiter, siter, diter; // ...Ditto
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -476,7 +453,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const real_t kn = twopioverLz*wn;
 
         // Factorization reuse will not aid us across large jumps in km
-        fact = (solve_type == gbrfs && dkex - dkbx > 1) ? 'N' : fact;
+        fact = (spec.reuse() && dkex - dkbx > 1) ? 'N' : fact;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
@@ -489,29 +466,23 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
                 memset(p, 0, A.N*sizeof(p[0]));             // so we may zero,
-                fact = (solve_type == gbrfs) ? 'N' : fact;  // flag reuse moot,
+                fact = spec.reuse() ? 'N' : fact;           // mark reuse moot,
                 continue;                                   // and then bail.
             }
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
             SUZERAIN_TIMER_BEGIN("implicit operator assembly");
-            switch (solve_type) {
-            default:
-                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
-            case gbsv:
+            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place LUP
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, lu.data());
-                break;
-            case gbsvx:
-            case gbrfs:
+            } else {                                   // Out-of-place LUP
                 suzerain_rholut_imexop_packc(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, patpt.data());
-                break;
             }
             SUZERAIN_TIMER_END("implicit operator assembly");
 
@@ -523,19 +494,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             //     x := (LU)^-T b      using ?gbsvx which factorizes PA^TP^T
             //                         or ?gbsv which factorizes in place
             //     p := P^T x          using suzerain_bsmbsm_?aPxpby
-            //
-            // "Why gbsvx?" you ask.  "It's expensive!" you rightly observe.
-            //
-            // Well, we might as well get our money's worth out of the
-            // factorization once we've paid for it.  If gbsvx is too
-            // expensive, gbsv is a less intensive option.  I have unfounded
-            // hunches that (a) the incremental cost from gbsv to gbsvx is low
-            // once everything is in L2 cache and (b) always solving the
-            // equations well using iterative refinement will save us from the
-            // woes of modest resolution and possibly less-than-perfectly
-            // conditioned operators stemming from reference values during
-            // transients and high wavenumbers.  So we'll run with gbsvx until
-            // it's demonstrably a bad idea.
 
             SUZERAIN_TIMER_BEGIN("implicit operator solve");
 
@@ -545,137 +503,60 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             SUZERAIN_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
-            switch (solve_type) {
-            default:
-                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
-            case gbsv:
+            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place LUP
                 bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
-                break;
-            case gbsvx:
-            case gbrfs:
+            } else {                                   // Out-of-place LUP
                 bc_enforcer.op(A, patpt.data(), patpt.colStride());
-                break;
             }
             SUZERAIN_TIMER_END("implicit operator BCs");
 
-            switch (solve_type) {
+            switch (spec.method()) {
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
 
-            case gbsv:
+            case spec_zgbsv::zgbsv:                    // In-place LUP, solve
+                SUZERAIN_TIMER_BEGIN(mname);
                 info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
-                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
-                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_END(mname);
                 break;
 
-            case gbsvx:
+            case spec_zgbsv::zgbsvx:                   // Out-of-place
+                SUZERAIN_TIMER_BEGIN(mname);
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
                     &rcond, &ferr, &berr, work.data(), rwork.data());
-                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
+                SUZERAIN_TIMER_END(mname);
+                // TODO Statistics on rcond, equed, ferr, and berr
                 break;
 
-            case gbrfs:
-                // Where sensible, attempt reuse of prior factorization.  If
-                // iterative refinement using the incorrect factorization
-                // (which looks like Newton stepping with an approximate
-                // Jacobian, e.g. see Demmel section 2.5 ISBN 978-0898713893)
-                // works, sweet.  If not, fall back to a factorize-and-solve
-                // operation saving the factorization for an attempt on the
-                // next wavenumber.  The variable 'fact' is 'F' when a prior
-                // factorization should be tried and 'N' otherwise.
-
-                ferr = std::numeric_limits<double>::max();
-                if (fact == 'F') {
-
-                    // Another factorization is available.
-                    // Try it with initially up to five refinement steps.
-                    suzerain_blas_zcopy(A.N, b.data(), 1, x.data(), 1);
-                    info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU, 1,
-                        lu.data(), lu.colStride(), ipiv.data(), x.data(), A.N);
-                    if (info) {fname = "zgbtrs"; goto engulfed_in_flames;}
-                    info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
-                        A.KU, 1, patpt.data(), patpt.colStride(),
-                        lu.data(), lu.colStride(), ipiv.data(), b.data(),
-                        A.N, x.data(), A.N, &ferr, &berr, work.data(),
-                        rwork.data());
-                    if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
-
-                    // If we're getting anywhere but not yet done, try five
-                    // more iterations.  ?gbrfsx uses ten by default so using
-                    // at most five + five feels right in this circumstance.
-                    if (tol_ferr < ferr && ferr < sqrt_sqrt_tol_ferr) {
-                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
-                            A.KU, 1, patpt.data(), patpt.colStride(),
-                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
-                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
-                            rwork.data());
-                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
-                    }
-
-                    // Ditto
-                    if (tol_ferr < ferr && ferr < sqrt_sqrt_tol_ferr) {
-                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
-                            A.KU, 1, patpt.data(), patpt.colStride(),
-                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
-                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
-                            rwork.data());
-                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
-                    }
-
-                    // If we've gotten somewhere but not yet finished, try five
-                    // more iterations.  ?gbrfsx uses suggests one hundred
-                    // for aggressive situations with lousy factorizations.
-                    if (tol_ferr < ferr && ferr < sqrt_tol_ferr) {
-                        info = suzerain_lapack_zgbrfs(trans, A.N, A.KL,
-                            A.KU, 1, patpt.data(), patpt.colStride(),
-                            lu.data(), lu.colStride(), ipiv.data(), b.data(),
-                            A.N, x.data(), A.N, &ferr, &berr, work.data(),
-                            rwork.data());
-                        if (info) {fname = "zgbrfs"; goto engulfed_in_flames;}
-                    }
-
-                }
-
-                // If we had no factorization or refinement was insufficient,
-                // pay to factorize the current operator and solve the problem.
-                // TODO Use copy/gbtrf/gbtrs/gbrfs as it may be cheaper
-                if (ferr > tol_ferr) {
-                    fact = 'N';
-                    info = suzerain_lapack_zgbsvx(fact, trans, A.N,
-                        A.KL, A.KU, 1, patpt.data(), patpt.colStride(),
-                        lu.data(), lu.colStride(), ipiv.data(), &equed,
-                        r.data(), c.data(), b.data(), A.N, x.data(), A.N,
-                        &rcond, &ferr, &berr, work.data(), rwork.data());
-                    fact = 'F';
-                }
-
-                SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-                SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
+            case spec_zgbsv::zcgbsvx:                  // Out-of-place
+                SUZERAIN_TIMER_BEGIN(mname);
+                fact  = spec.reuse() ? fact : 'N';
+                apprx = fact == 'N' ? 0 : 1;
+                aiter = spec.aiter();
+                afrob = -1;
+                siter = spec.siter();
+                diter = spec.diter();
+                tolsc = spec.tolsc();
+                info  = suzerain_lapackext_zcgbsvx(&fact, &apprx, aiter, trans,
+                        A.N, A.KL, A.KU, patpt.data(), &afrob, lu.data(),
+                        ipiv.data(), b.data(), x.data(), &siter, &diter,
+                        &tolsc, work.data(), &res);
+                SUZERAIN_TIMER_END(mname);
+                // TODO Statistics on fact, apprx, siter, diter, tolsc, res
                 break;
             }
 
-            // Maintain running statistics on our linear algebra
-            switch (solve_type) {
-            default:
-                break;
-            case gbsvx:
-                // TODO Track statistics on rcond, equed, ferr, and berr
-                break;
-            case gbrfs:
-                // TODO Track statistics refinement successes vs failures
-                // TODO Track statistics on ferr and berr
-                break;
+            SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
+            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place solve
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
+            } else {                                   // Out-of-place solve
+                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
             }
-
-engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
+            SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
 
             SUZERAIN_TIMER_END("implicit operator solve");
 
@@ -685,26 +566,25 @@ engulfed_in_flames: // Yes, this is a goto label.  Details in fname/info.
                 // Success
             } else if (info < 0) {
                 snprintf(buffer, sizeof(buffer),
-                    "suzerain_lapack_%s reported error in argument %d",
-                    fname, -info);
+                    "%s reported error in argument %d",
+                    mname, -info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (info <= A.N) {
                 snprintf(buffer, sizeof(buffer),
-                    "suzerain_lapack_%s reported singularity in PA^TP^T row %d"
+                    "%s reported singularity in PA^TP^T row %d"
                     " corresponding to A row %d for state scalar %d",
-                    fname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
+                    mname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            } else if (info == A.N+1) {
+            } else if (info == A.N+1 && spec.method() == spec_zgbsv::zgbsvx) {
                 snprintf(buffer, sizeof(buffer),
-                    "suzerain_lapack_%s reported condition number like %g for "
+                    "%s reported condition number like %g for "
                     " m=%d, n=%d with km=%g, kn=%g",
-                    fname, 1/rcond, m, n, km, kn);
+                    mname, 1/rcond, m, n, km, kn);
                 WARN(buffer); // Warn user but continue...
             } else {
                 snprintf(buffer, sizeof(buffer),
-                    "suzerain_lapack_%s reported unknown error %d",
-                    fname, info);
+                    "%s reported unknown error %d", mname, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
         }
