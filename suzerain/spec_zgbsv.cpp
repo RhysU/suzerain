@@ -142,7 +142,9 @@ bool spec_zgbsv::operator==(const spec_zgbsv &that) const
             && aiter_  == that.aiter_
             && siter_  == that.siter_
             && diter_  == that.diter_
+#pragma warning(push,disable:1572)
             && tolsc_  == that.tolsc_;
+#pragma warning(pop)
 
     }
 }
