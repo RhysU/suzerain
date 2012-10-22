@@ -185,7 +185,7 @@ static void atexit_metadata(void) {
 }
 
 // Formatting parameters used within append_real()
-static const int append_real_prec  = numeric_limits<real_t>::digits10 * 0.75;
+static const int append_real_prec  = numeric_limits<real_t>::digits10;
 static const int append_real_width = append_real_prec + 5;
 
 /** Provides nice formatting of real-valued quantities for status lines */
