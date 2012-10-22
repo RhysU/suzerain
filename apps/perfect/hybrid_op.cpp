@@ -470,6 +470,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 continue;                                   // and then bail.
             }
 
+            SUZERAIN_TIMER_BEGIN("implicit operator miscellaneous");
+
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
             SUZERAIN_TIMER_BEGIN("implicit operator assembly");
@@ -494,8 +496,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             //     x := (LU)^-T b      using ?gbsvx which factorizes PA^TP^T
             //                         or ?gbsv which factorizes in place
             //     p := P^T x          using suzerain_bsmbsm_?aPxpby
-
-            SUZERAIN_TIMER_BEGIN("implicit operator solve");
 
             SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
@@ -558,8 +558,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             }
             SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
 
-            SUZERAIN_TIMER_END("implicit operator solve");
-
             // Report any errors that occurred during the solve
             char buffer[128];
             if (info == 0) {
@@ -587,6 +585,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     "%s reported unknown error %d", mname, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
+
+            SUZERAIN_TIMER_END("implicit operator miscellaneous");
         }
     }
 
