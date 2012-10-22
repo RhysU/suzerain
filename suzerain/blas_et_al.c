@@ -5016,6 +5016,90 @@ suzerain_blasext_zpromote(
     return 0;
 }
 
+inline int
+suzerain_lapackext_sgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        int *ipiv,
+        float *b,
+        const int ldb)
+{
+    int info = suzerain_lapack_sgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    if (!info) {
+        info = suzerain_lapack_sgbtrs(
+                trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    }
+    return info;
+}
+
+inline int
+suzerain_lapackext_dgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        int *ipiv,
+        double *b,
+        const int ldb)
+{
+    int info = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    if (!info) {
+        info = suzerain_lapack_dgbtrs(
+                trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    }
+    return info;
+}
+
+inline int
+suzerain_lapackext_cgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_float *ab,
+        const int ldab,
+        int *ipiv,
+        complex_float *b,
+        const int ldb)
+{
+    int info = suzerain_lapack_cgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    if (!info) {
+        info = suzerain_lapack_cgbtrs(
+                trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    }
+    return info;
+}
+
+inline int
+suzerain_lapackext_zgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_double *ab,
+        const int ldab,
+        int *ipiv,
+        complex_double *b,
+        const int ldb)
+{
+    int info = suzerain_lapack_zgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    if (!info) {
+        info = suzerain_lapack_zgbtrs(
+                trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
+    }
+    return info;
+}
+
 // Generate suzerain_lapackext_dsgbsvx(...) from template dsgbsvx.def
 #define SINGLE    float                /* Type of single precision   */
 #define SCHAR     s                    /* Abbreviation for single    */

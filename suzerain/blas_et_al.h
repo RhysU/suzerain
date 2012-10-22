@@ -3905,6 +3905,82 @@ suzerain_blasext_zpromote(
  */
 
 /*!
+ * \brief Compute the solution to a banded system of linear equations \f$ AX=B
+ * \f$ using an in-place LU factorization.  This is implemented as a call to
+ * GBTRF followed by a call to GBTRS.
+ *
+ * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
+ *
+ * \param[in]     trans One of 'N', 'T', or 'C' for no transpose,
+ *                      a transpose, or a conjugate transpose, respectively.
+ * \param[in]     n
+ * \param[in]     kl
+ * \param[in]     ku
+ * \param[in]     nrhs
+ * \param[in,out] ab    Dimension (<tt>ldab</tt>,<tt>n</tt>)
+ * \param[in]     ldab  Minimum <tt>kl + ku + 1</tt>
+ * \param[in,out] ipiv  Dimension \c n
+ * \param[in,out] b     Dimension (<tt>ldb</tt>,<tt>nrhs</tt>)
+ * \param[in]     ldb   Minimum \c n
+ *
+ * \return Zero on successful execution.  Nonzero otherwise.
+ */
+int
+suzerain_lapackext_sgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        float *ab,
+        const int ldab,
+        int *ipiv,
+        float *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapackext_sgbsv */
+int
+suzerain_lapackext_dgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        double *ab,
+        const int ldab,
+        int *ipiv,
+        double *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapackext_sgbsv */
+int
+suzerain_lapackext_cgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_float *ab,
+        const int ldab,
+        int *ipiv,
+        complex_float *b,
+        const int ldb);
+
+/*! \copydoc suzerain_lapackext_sgbsv */
+int
+suzerain_lapackext_zgbsv(
+        const char trans,
+        const int n,
+        const int kl,
+        const int ku,
+        const int nrhs,
+        complex_double *ab,
+        const int ldab,
+        int *ipiv,
+        complex_double *b,
+        const int ldb);
+
+/*!
  * \brief Compute the solution to a banded system of linear equations \f$A x =
  * b \f$ using single precision LU factorization followed by double precision
  * iterative refinement.
