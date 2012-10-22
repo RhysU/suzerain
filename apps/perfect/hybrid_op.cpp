@@ -436,7 +436,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     const char *mname = "UNKNOWN";          // Used for error reporting
     char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
     switch (spec.method()) {
-    case spec_zgbsv::zgbsv:   mname = "suzerain_lapack_zgbsv";      break;
+    case spec_zgbsv::zgbsv:   mname = "suzerain_lapackext_zgbsv";   break;
     case spec_zgbsv::zgbsvx:  mname = "suzerain_lapack_zgbsvx";     break;
     case spec_zgbsv::zcgbsvx: mname = "suzerain_lapackext_zcgbsvx"; break;
     }
@@ -516,7 +516,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
             case spec_zgbsv::zgbsv:                    // In-place LUP, solve
                 SUZERAIN_TIMER_BEGIN(mname);
-                info = suzerain_lapack_zgbsv(A.N, A.KL, A.KU, 1,
+                info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
                 SUZERAIN_TIMER_END(mname);
                 break;
