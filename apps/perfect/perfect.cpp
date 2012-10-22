@@ -522,12 +522,16 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
                 const real_t old_gamma)
 {
     bool quickreturn = true;
+#pragma warning(push,disable:1572)
     if (old_Ma != scenario.Ma) {
+#pragma warning(pop)
         INFO0("Changing state Mach number from "
               << old_Ma << " to " << scenario.Ma);
         quickreturn = false;
     }
+#pragma warning(push,disable:1572)
     if (old_gamma != scenario.gamma) {
+#pragma warning(pop)
         INFO0("Changing state ratio of specific heats from "
               << old_gamma << " to " << scenario.gamma);
         quickreturn = false;
