@@ -4965,7 +4965,9 @@ suzerain_blasext_ddemote(
     if (UNLIKELY(!x))    return -2;
 
     for (int i = 0; i < n; ++i) {
+#pragma warning(push,disable:2259)
         ((float *)x)[i] = x[i];
+#pragma warning(pop)
     }
 
     return 0;
@@ -4995,7 +4997,9 @@ suzerain_blasext_zdemote(
     if (UNLIKELY(!x))    return -2;
 
     for (int i = 0; i < n; ++i) {
+#pragma warning(push,disable:2259)
         ((complex_float *)x)[i] = x[i];
+#pragma warning(pop)
     }
 
     return 0;
