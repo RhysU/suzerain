@@ -110,14 +110,14 @@ spec_zgbsv::operator std::string () const
         os << "zgbsv";
     } else if (method_ == spec_zgbsv::zgbsvx ) {
         os << "zgbsvx"
-           << ",equil=" << equil();
+           << ",equil=" << equil_;
     } else if (method_ == spec_zgbsv::zcgbsvx) {
         os << "zcgbsvx"
-           << ",reuse=" << reuse()
-           << ",aiter=" << aiter()
-           << ",siter=" << siter()
-           << ",diter=" << diter()
-           << ",tolsc=" << tolsc();
+           << ",reuse=" << reuse_
+           << ",aiter=" << aiter_
+           << ",siter=" << siter_
+           << ",diter=" << diter_
+           << ",tolsc=" << tolsc_;
     } else {
         os << "UNKNOWN";
     }

@@ -31,12 +31,12 @@ public:
     spec_zgbsv(const std::string &spec);
 
     method_type method() const { return method_; }
-    bool        equil()  const { assert(method_ == zgbsvx);  return equil_;  }
-    bool        reuse()  const { assert(method_ == zcgbsvx); return reuse_;  }
-    int         aiter()  const { assert(method_ == zcgbsvx); return aiter_;  }
-    int         siter()  const { assert(method_ == zcgbsvx); return siter_;  }
-    int         diter()  const { assert(method_ == zcgbsvx); return diter_;  }
-    double      tolsc()  const { assert(method_ == zcgbsvx); return tolsc_;  }
+    bool        equil()  const { return equil_;  }
+    bool        reuse()  const { return reuse_;  }
+    int         aiter()  const { return aiter_;  }
+    int         siter()  const { return siter_;  }
+    int         diter()  const { return diter_;  }
+    double      tolsc()  const { return tolsc_;  }
 
     operator std::string () const;
     bool operator==(const spec_zgbsv &that) const;
