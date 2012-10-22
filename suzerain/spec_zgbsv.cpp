@@ -33,6 +33,7 @@ namespace suzerain {
 spec_zgbsv::spec_zgbsv()
     : method(zgbsvx),
       reuse(true),
+      equil(false),
       aiter(10),
       siter(30),
       diter(100),
@@ -63,11 +64,15 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
 
         const bool r = boost::spirit::qi::phrase_parse(iter, end, (
             // Grammar Begin
-                  ( no_case["zgbsvx" ] [ ref(s.method) = spec_zgbsv::zgbsvx  ])
+                  ( no_case["zgbsvx" ] [ ref(s.method) = spec_zgbsv::zgbsvx  ]
+                    >> -(   ( char_(',') >> no_case["equil"] >> '='
+                                         >> no_case[bool_]  [ref(s.equil) = _1])
+                        )
+                  )
                 | ( no_case["zgbsv"  ] [ ref(s.method) = spec_zgbsv::zgbsv   ])
                 | ( no_case["zcgbsvx"] [ ref(s.method) = spec_zgbsv::zcgbsvx ]
                     >> -(   ( char_(',') >> no_case["reuse"] >> '='
-                                         >> bool_  [ref(s.reuse) = _1])
+                                         >> no_case[bool_]  [ref(s.reuse) = _1])
                           ^ ( char_(',') >> no_case["aiter"] >> '='
                                          >> int_   [ref(s.aiter) = _1])
                           ^ ( char_(',') >> no_case["siter"] >> '='
@@ -98,37 +103,49 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
 
 spec_zgbsv::operator std::string () const
 {
-    switch (this->method) {
-        default:                   return "UNKNOWN"  ;
-        case spec_zgbsv::zgbsv:    return "zgbsv"    ;
-        case spec_zgbsv::zgbsvx:   return "zgbsvx"   ;
-        case spec_zgbsv::zcgbsvx:  /* Fall through */;
-    }
-
     std::ostringstream os;
-    os << std::boolalpha
-       << "zcgbsvx"
-       << ",reuse=" << this->reuse
-       << ",aiter=" << this->aiter
-       << ",siter=" << this->siter
-       << ",diter=" << this->diter
-       << ",tolsc=" << this->tolsc;
+    os << std::boolalpha;
+
+    if        (this->method == spec_zgbsv::zgbsv  ) {
+        os << "zgbsv";
+    } else if (this->method == spec_zgbsv::zgbsvx ) {
+        os << "zgbsvx"
+           << ",equil=" << this->equil;
+    } else if (this->method == spec_zgbsv::zcgbsvx) {
+        os << "zcgbsvx"
+           << ",reuse=" << this->reuse
+           << ",aiter=" << this->aiter
+           << ",siter=" << this->siter
+           << ",diter=" << this->diter
+           << ",tolsc=" << this->tolsc;
+    } else {
+        os << "UNKNOWN";
+    }
 
     return os.str();
 }
 
 bool spec_zgbsv::operator==(const spec_zgbsv &that) const
 {
-    switch (this->method) {
-        default:                   return this->method == that.method;
-        case spec_zgbsv::zcgbsvx:  /* Fall through */                ;
-    }
+    if (this->method != that.method)
+        return false;
 
-    return this->method == that.method
-        && this->reuse  == that.reuse
-        && this->aiter  == that.aiter
-        && this->diter  == that.diter
-        && this->tolsc  == that.tolsc;
+    switch (this->method) {  // Additional stipulations per method
+
+    default:
+        return true;
+
+    case spec_zgbsv::zgbsvx:
+        return this->equil == that.equil;
+
+    case spec_zgbsv::zcgbsvx:
+        return this->reuse  == that.reuse
+            && this->aiter  == that.aiter
+            && this->siter  == that.siter
+            && this->diter  == that.diter
+            && this->tolsc  == that.tolsc;
+
+    }
 }
 
 } // end namespace suzerain

@@ -46,9 +46,17 @@ BOOST_AUTO_TEST_CASE( construct_zgbsv )
 
 BOOST_AUTO_TEST_CASE( construct_zgbsvx )
 {
-    spec_zgbsv s("ZGBSVX");  // Uppercase
-    BOOST_CHECK(s.method == spec_zgbsv::zgbsvx);
-    BOOST_CHECK_EQUAL("zgbsvx", (std::string) s);
+    {
+        spec_zgbsv s("zgbsvx");  // Uppercase
+        BOOST_CHECK(s.method == spec_zgbsv::zgbsvx);
+        BOOST_CHECK_EQUAL("zgbsvx,equil=false", (std::string) s);
+    }
+
+    {
+        spec_zgbsv s("ZGBSVX,EQUIL=TRUE");  // Uppercase
+        BOOST_CHECK(s.method == spec_zgbsv::zgbsvx);
+        BOOST_CHECK_EQUAL("zgbsvx,equil=true", (std::string) s);
+    }
 }
 
 BOOST_AUTO_TEST_CASE( construct_zcgbsvx )

@@ -26,6 +26,7 @@ public:
 
     enum method_type { zgbsvx = 1, zgbsv, zcgbsvx } method;
     bool   reuse;
+    bool   equil;
     int    aiter;
     int    siter;
     int    diter;
