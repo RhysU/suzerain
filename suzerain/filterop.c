@@ -102,7 +102,7 @@ static int suzerain_filterop_operator_assemble_cookcabot2005(
     const double alpha_0 = 1.0;
     const double alpha_1 = alpha;
     const double alpha_2 = (  1.-     alpha)/  2.;
-    const double a_0     = ( 58.-105.*alpha)/128.;
+    const double a_0     = ( 58.+105.*alpha)/128.;
     const double a_1     = ( 14.+ 11.*alpha)/ 32.;
     const double a_2     = ( 18.- 11.*alpha)/ 64.;
     const double a_3     = (  2.-  3.*alpha)/ 32.;
