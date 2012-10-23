@@ -1643,5 +1643,9 @@ int main(int argc, char **argv)
                               << " seconds of fixed overhead");
     }
 
+    // Avoid destruction order fiasco from support::allocate_padded_state
+    state_nonlinear.reset();
+    state_linear.reset();
+
     return advance_success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
