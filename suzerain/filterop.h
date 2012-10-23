@@ -77,8 +77,9 @@ enum suzerain_filterop_boundary_treatment {
 };
 
 /**
- * Encapsulates filter operator information.  Callers obtain a workspace using
- * suzerain_filterop_alloc() and release it using suzerain_filterop_free().
+ * Encapsulates real-valued filter operator information.  Callers obtain a
+ * workspace using suzerain_filterop_alloc() and release it using
+ * suzerain_filterop_free().
  */
 typedef struct suzerain_filterop_workspace {
 
@@ -205,11 +206,11 @@ suzerain_filterop_free(
  * x storing the result in \c y.
  *
  * @param[in]  alpha Real scaling factor \f$\alpha\f$ to apply.
- * @param[in]  x    Coefficients to be multiplied.
- * @param[in]  incx Stride between elements stored in \c x.
- * @param[out] y    Storage for the result.
- * @param[in]  incy Stride between elements stored in \c x.
- * @param[in]  w Workspace to use.
+ * @param[in]  x     Coefficients to be multiplied.
+ * @param[in]  incx  Stride between elements stored in \c x.
+ * @param[out] y     Storage for the result.
+ * @param[in]  incy  Stride between elements stored in \c x.
+ * @param[in]  w     Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -256,10 +257,10 @@ suzerain_filterop_solve(
  * overwriting vector \c y with the result.
  *
  * @param[in]  alpha Real scaling factor \f$\alpha\f$ to apply.
- * @param[in]  x    Coefficients to be multiplied.
- * @param[in]  incx Stride between elements stored in \c x.
- * @param[out] y    Contiguous storage for the result.  Will be overwritten.
- * @param[in]  w Workspace to use.
+ * @param[in]  x     Coefficients to be multiplied.
+ * @param[in]  incx  Stride between elements stored in \c x.
+ * @param[out] y     Contiguous storage for the result.  Will be overwritten.
+ * @param[in]  w     Workspace to use.
  *
  * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
  *      returns one of #suzerain_error_status.
@@ -273,6 +274,191 @@ suzerain_filterop_filter(
     const int incx,
     double *y,
     const suzerain_filterop_workspace *w);
+
+/**@}*/
+
+/**
+ * Encapsulates complex-valued filter operator information.  Callers obtain a
+ * workspace using suzerain_filteropz_alloc() and release it using
+ * suzerain_filteropz_free().  Many, if not all, of these filters will be
+ * real-valued operator stored so that they may be applied to complex-valued
+ * data in a single pass through memory.
+ */
+typedef struct suzerain_filteropz_workspace {
+
+    /** \copydoc suzerain_filterop_workspace::method */
+    enum suzerain_filterop_method method;
+
+    /** \copydoc suzerain_filterop_workspace::b_first */
+    enum suzerain_filterop_boundary_treatment b_first;
+
+    /** \copydoc suzerain_filterop_workspace::b_last */
+    enum suzerain_filterop_boundary_treatment b_last;
+
+    /** \copydoc suzerain_filterop_workspace::n */
+    int n;
+
+    /** \copydoc suzerain_filterop_workspace::klat */
+    int klat;
+
+    /** \copydoc suzerain_filterop_workspace::kuat */
+    int kuat;
+
+    /** \copydoc suzerain_filterop_workspace::ldat */
+    int ldat;
+
+    /** \copydoc suzerain_filterop_workspace::A_T */
+    complex_double *A_T;
+
+    /** \copydoc suzerain_filterop_workspace::ipiva */
+    int *ipiva;
+
+    /** \copydoc suzerain_filterop_workspace::klbt */
+    int klbt;
+
+    /** \copydoc suzerain_filterop_workspace::kubt */
+    int kubt;
+
+    /** \copydoc suzerain_filterop_workspace::ldbt */
+    int ldbt;
+
+    /** \copydoc suzerain_filterop_workspace::B_T */
+    complex_double *B_T;
+
+} suzerain_filteropz_workspace;
+
+/** @name Allocation and deallocation */
+/**@{*/
+
+/**
+ * Allocate a filtering operator workspace.
+ *
+ * @param[in] n             Length of the state vector to be filtered.
+ * @param[in] method        Filtering method or scheme to perform.
+ * @param[in] method_params Method-specific adjustable parameters.
+ *                          Set \c NULL to use published defaults.  Length of
+ *                          \c method_params required depends upon the method.
+ *                          For example, SUZERAIN_FILTEROP_COOKCABOT2005 takes
+ *                          only <tt>method_params[0]</tt>.
+ * @param[in] b_first       Boundary treatment for the first vector index.
+ * @param[in] b_last        Boundary treatment for the last vector index.
+ *
+ * @return a workspace instance on success.
+ *      On failure calls suzerain_error() and returns NULL.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+suzerain_filteropz_workspace *
+suzerain_filteropz_alloc(
+    const int n,
+    const enum suzerain_filterop_method method,
+    const complex_double *method_params,
+    const enum suzerain_filterop_boundary_treatment b_first,
+    const enum suzerain_filterop_boundary_treatment b_last);
+
+/**
+ * Factorize the \f$A^\mathrm{T}\f$ operator within the workspace.
+ *
+ * @param[in,out] w Workspace to modify
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+int
+suzerain_filteropz_factorize(
+    suzerain_filteropz_workspace *w);
+
+/**
+ * Free a previously allocated workspace.
+ *
+ * @param[in] w Workspace to free.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+void
+suzerain_filteropz_free(
+    suzerain_filteropz_workspace *w);
+
+/**@}*/
+
+/** @name Primitive operations */
+/**@{*/
+
+/**
+ * Apply the scaled \f$\alpha{}B\f$ filtering operator to complex coefficients
+ * \c x storing the result in \c y.
+ *
+ * @param[in]  alpha Complex scaling factor \f$\alpha\f$ to apply.
+ * @param[in]  x     Coefficients to be multiplied.
+ * @param[in]  incx  Stride between elements stored in \c x.
+ * @param[out] y     Storage for the result.
+ * @param[in]  incy  Stride between elements stored in \c x.
+ * @param[in]  w     Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+int
+suzerain_filteropz_apply(
+    const complex_double alpha,
+    const complex_double *x,
+    const int incx,
+    complex_double *y,
+    const int incy,
+    const suzerain_filteropz_workspace *w);
+
+/**
+ * Apply \f$A^{-1}\f$ in place to matrix \c X using the previously factored
+ * operator \f$A^{\mathrm{T}}\f$.
+ *
+ * @param[in]     nrhs Number of right hand sides within \c X.
+ * @param[in,out] X    Right hand sides to solve and the resulting solution.
+ * @param[in]     ldx  Leading dimension between columns in matrix \c X.
+ * @param[in]     w    Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+int
+suzerain_filteropz_solve(
+    const int nrhs,
+    complex_double *X,
+    const int ldx,
+    const suzerain_filteropz_workspace * w);
+
+/**@}*/
+
+/** @name High level operations */
+/**@{*/
+
+/**
+ * Apply the filtering operator \f$F = \alpha{}A^{-1}B\f$ to the vector \c x
+ * overwriting vector \c y with the result.
+ *
+ * @param[in]  alpha Complex scaling factor \f$\alpha\f$ to apply.
+ * @param[in]  x     Coefficients to be multiplied.
+ * @param[in]  incx  Stride between elements stored in \c x.
+ * @param[out] y     Contiguous storage for the result.  Will be overwritten.
+ * @param[in]  w     Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_filteropz_workspace
+ */
+int
+suzerain_filteropz_filter(
+    const complex_double alpha,
+    const complex_double *x,
+    const int incx,
+    complex_double *y,
+    const suzerain_filteropz_workspace *w);
 
 /**@}*/
 
