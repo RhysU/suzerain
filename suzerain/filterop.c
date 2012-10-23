@@ -38,3 +38,9 @@
 #define BLAS(pre,post) pre ## d ## post /* Call BLAS routines */
 #define WORK(pre,post) pre ##      post /* Workspace          */
 #include "filterop.def"
+
+// Complex double as suzerain_filteropz_workspace
+#define SCALAR         complex_double   /* Scalar type        */
+#define BLAS(pre,post) pre ## z ## post /* Call BLAS routines */
+#define WORK(pre,post) pre ## z ## post /* Workspace          */
+#include "filterop.def"
