@@ -321,7 +321,9 @@ suzerain_bspline_htstretch2_evdeltascale(
     const double errh = p[ndx][kdx][9]; // Relative error measured in percent
 
     /* Compute the empirical fit being careful about integer k, N */
+#pragma warning(push,disable:981)
     const double deltahat = tanh(htdelta)*sqrt(1. + htdelta);
+#pragma warning(pop)
     *C  = pow((double)k, d + e * deltahat);
     *C *= 1.0 + pow((f * (double)k) / ((double)N - (double)k + 1.0),
                     g * (double)k + h * deltahat);

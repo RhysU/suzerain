@@ -80,7 +80,9 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
     ldpapt *= S;                      // Walk papt by S columns each iteration
     ++KL;                             // Anticipating imin(N, j + KL + 1)
 
+#pragma warning(push,disable:1572)
     if (alpha != 0) {  // General case accessing B
+#pragma warning(pop)
 
         for (int bj=0, j=jhat; bj<n; ++bj, b+=ldb, j+=S, papt+=ldpapt) {
             const int bil = (imax(0, j-KU) - ihat1S)/S;
