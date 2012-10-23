@@ -27,6 +27,7 @@
 #include <suzerain/common.hpp>
 #pragma hdrstop
 #include <suzerain/filterop.h>
+#include <suzerain/countof.h>
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
@@ -35,9 +36,17 @@
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 struct FilteropFixture {
+
     suzerain_filterop_workspace *w;
-    FilteropFixture()  : w(NULL) {}
-    ~FilteropFixture() { suzerain_filterop_free(w); }
+    suzerain_filteropz_workspace *wz;
+
+    FilteropFixture()  : w(NULL), wz(NULL) {}
+
+    ~FilteropFixture()
+    {
+        suzerain_filterop_free(w);
+        suzerain_filteropz_free(wz);
+    }
 };
 
 BOOST_FIXTURE_TEST_SUITE( basic_suite, FilteropFixture )
@@ -63,7 +72,7 @@ BOOST_AUTO_TEST_CASE( filterop_matrices )
     BOOST_CHECK( w->ipiva );
     BOOST_CHECK( w->B_T );
 
-    // Coefficients for CookCabot2005 filter 
+    // Coefficients for CookCabot2005 filter
     // with default value of alpha_1
     const double alpha_0 = 1.0;
     const double alpha_1 = 66624./100000.;
@@ -107,7 +116,7 @@ BOOST_AUTO_TEST_CASE( filterop_matrices )
     // Notice: -5555 marks storage outside of matrix which is ignored
     // Notice: Values look "transposed" because C reads right-to-left
     const double good_B_T[] = {
-      //   ku4     ku3     ku2     ku1    diag     kl1     kl2     kl3     kl4  
+      //   ku4     ku3     ku2     ku1    diag     kl1     kl2     kl3     kl4
          -5555,  -5555,  -5555,  -5555,    a_0,    a_1,    a_2,    a_3,    a_4,
          -5555,  -5555,  -5555,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
          -5555,  -5555,    a_2,    a_1,    a_0,    a_1,    a_2,    a_3,    a_4,
@@ -129,9 +138,7 @@ BOOST_AUTO_TEST_CASE( filterop_matrices )
     // 'suzerain_filterop_free(w)' handled by FilteropFixture
 }
 
-
-
-BOOST_AUTO_TEST_CASE( filterop_nofilter )
+BOOST_AUTO_TEST_CASE( filterop_nofilter_double )
 {
     // 'suzerain_filterop_workspace *w' handled by FilteropFixture
     w = suzerain_filterop_alloc(16, SUZERAIN_FILTEROP_COOKCABOT2005,
@@ -157,8 +164,8 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
 
     // Test with a 7th order Chebyshev T polynomial
     // Notice: The Cook and Cabot filter produces no effect on this polynomial
-    // Declare test function 
-    const double ChebyshevT7_test_function[] = { 
+    // Declare test function
+    const double ChebyshevT7_test_function[] = {
                -1.           ,  148730387./170859375.,   -85000619./170859375.,
            -76443./78125.    ,  -43434727./170859375.,        1511./     2187.,
             77111./78125.    ,   76924511./170859375.,   -76924511./170859375.,
@@ -166,24 +173,24 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
             76443./78125.    ,   85000619./170859375.,  -148730387./170859375.,
                 1.
     };
-
+    BOOST_REQUIRE_EQUAL(w->n, SUZERAIN_COUNTOF(ChebyshevT7_test_function));
 
     // Reference right-hand side result
     // Notice: In this case it is the same as the test function
-    const double ChebyshevT7_good_rhs[] = { 
+    const double ChebyshevT7_good_rhs[] = {
            -1., 148730387./170859375., -85000619./170859375.,
-           -76443./78125., -38882317124./106787109375., 
+           -76443./78125., -38882317124./106787109375.,
            116501768948./106787109375., 58011238244./35595703125.,
            404959172084./533935546875., -404959172084./533935546875.,
            -58011238244./35595703125., -116501768948./106787109375.,
-           38882317124./106787109375., 76443./78125., 
+           38882317124./106787109375., 76443./78125.,
            85000619./170859375., -148730387./170859375., 1.
     };
-
+    BOOST_REQUIRE_EQUAL(w->n, SUZERAIN_COUNTOF(ChebyshevT7_good_rhs));
 
     // Reference result
     // Notice: In this case it is the same as the test function
-    const double ChebyshevT7_good_filtered[] = { 
+    const double ChebyshevT7_good_filtered[] = {
                -1.           ,  148730387./170859375.,   -85000619./170859375.,
            -76443./78125.    ,  -43434727./170859375.,        1511./     2187.,
             77111./78125.    ,   76924511./170859375.,   -76924511./170859375.,
@@ -191,17 +198,17 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
             76443./78125.    ,   85000619./170859375.,  -148730387./170859375.,
                 1.
     };
-
+    BOOST_REQUIRE_EQUAL(w->n, SUZERAIN_COUNTOF(ChebyshevT7_good_filtered));
 
     // Declare and initialize results vector
-    double ChebyshevT7_result[] = { 
-           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. 
+    double ChebyshevT7_result[] = {
+           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
     };
 
     // Compute right-hand side
     // Apply filter to test function
     suzerain_filterop_apply(
-           1., ChebyshevT7_test_function, /* contiguous */ 1, 
+           1., ChebyshevT7_test_function, /* contiguous */ 1,
            ChebyshevT7_result, 1, w);
 
     // Check result for rhs
@@ -223,43 +230,42 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
             ChebyshevT7_good_filtered, ChebyshevT7_good_filtered + w->n,
             std::numeric_limits<double>::epsilon()*w->n*w->n*100.);
 
-
     // Test with an 8th order Chebyshev T polynomial
     // Notice: The Cook and Cabot filter produces no effect on this polynomial
-    // Declare test function 
+    // Declare test function
     const double ChebyshevT8_test_function[] = {
-        1., -1304175487./2562890625., 2446513793./2562890625., 164833./390625., 
-        -1888197247./2562890625., -5983./6561., -15647./390625., 
-        2206433153./2562890625., 2206433153./2562890625., 
-        -15647./390625., -5983./6561., -1888197247./2562890625., 
+        1., -1304175487./2562890625., 2446513793./2562890625., 164833./390625.,
+        -1888197247./2562890625., -5983./6561., -15647./390625.,
+        2206433153./2562890625., 2206433153./2562890625.,
+        -15647./390625., -5983./6561., -1888197247./2562890625.,
         164833./390625., 2446513793./2562890625., -1304175487./2562890625., 1.
     };
 
     // Reference result
     const double ChebyshevT8_good_filtered[] = {
-        1., -1304175487./2562890625., 
-        2446513793./2562890625., 
-        164833./390625., 
-        -14247886892786344169./19338889058996484375., 
-        -17635186346974875113./19338889058996484375., 
-        -86076619383575777./2148765450999609375., 
-        16649146794802214167./19338889058996484375., 
-        16649146794802214167./19338889058996484375., 
-        -86076619383575777./2148765450999609375., 
-        -17635186346974875113./19338889058996484375., 
-        -14247886892786344169./19338889058996484375., 
+        1., -1304175487./2562890625.,
+        2446513793./2562890625.,
         164833./390625.,
-        2446513793./2562890625., 
+        -14247886892786344169./19338889058996484375.,
+        -17635186346974875113./19338889058996484375.,
+        -86076619383575777./2148765450999609375.,
+        16649146794802214167./19338889058996484375.,
+        16649146794802214167./19338889058996484375.,
+        -86076619383575777./2148765450999609375.,
+        -17635186346974875113./19338889058996484375.,
+        -14247886892786344169./19338889058996484375.,
+        164833./390625.,
+        2446513793./2562890625.,
         -1304175487./2562890625., 1.
     };
 
     // Declare and initialize results vector
-    double ChebyshevT8_result[] = { 
-           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0. 
+    double ChebyshevT8_result[] = {
+           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
     };
 
     // Apply filter to test function
-    suzerain_filterop_filter(1., ChebyshevT8_test_function, /* contiguous */ 1, 
+    suzerain_filterop_filter(1., ChebyshevT8_test_function, /* contiguous */ 1,
                              ChebyshevT8_result, w);
 
     // Check result
@@ -272,6 +278,84 @@ BOOST_AUTO_TEST_CASE( filterop_nofilter )
     // 'suzerain_filterop_free(w)' handled by FilteropFixture
 }
 
+BOOST_AUTO_TEST_CASE( filterop_nofilter_complex_double )
+{
+    // 'suzerain_filterop_workspace *wz' handled by FilteropFixture
+    wz = suzerain_filteropz_alloc(16, SUZERAIN_FILTEROP_COOKCABOT2005,
+                                  /* default params */ NULL,
+                                  SUZERAIN_FILTEROP_BOUNDARY_NOFILTER,
+                                  SUZERAIN_FILTEROP_BOUNDARY_NOFILTER);
 
+    // Ensure workspace looks like the allocation call we requested
+    BOOST_REQUIRE( wz );
+    BOOST_CHECK_EQUAL( wz->n,    16 );
+    BOOST_CHECK_EQUAL( wz->klat,  2 );
+    BOOST_CHECK_EQUAL( wz->kuat,  2 );
+    BOOST_CHECK_EQUAL( wz->ldat,  2*2 + 1 + 2 );
+    BOOST_CHECK_EQUAL( wz->klbt,  4 );
+    BOOST_CHECK_EQUAL( wz->kubt,  4 );
+    BOOST_CHECK_EQUAL( wz->ldbt,  4 + 1 + 4);
+    BOOST_CHECK( wz->A_T );
+    BOOST_CHECK( wz->ipiva );
+    BOOST_CHECK( wz->B_T );
+
+    // Factorize A_T
+    suzerain_filteropz_factorize(wz);
+
+    // Test with a 7th order Chebyshev T polynomial
+    // Notice: The Cook and Cabot filter produces no effect on this polynomial
+    // Declare test function
+    complex_double ChebyshevT7_test_function[] = {
+               -1.           ,  148730387./170859375.,   -85000619./170859375.,
+           -76443./78125.    ,  -43434727./170859375.,        1511./     2187.,
+            77111./78125.    ,   76924511./170859375.,   -76924511./170859375.,
+           -77111./78125.    ,      -1511./     2187.,    43434727./170859375.,
+            76443./78125.    ,   85000619./170859375.,  -148730387./170859375.,
+                1.
+    };
+    BOOST_REQUIRE_EQUAL(wz->n, SUZERAIN_COUNTOF(ChebyshevT7_test_function));
+
+    // Negate real part into imaginary part of test data
+    for (int i = 0; i < 2*wz->n; i += 2) {
+        ((double *) ChebyshevT7_test_function)[i+1] =
+            - ((double *) ChebyshevT7_test_function)[i];
+    }
+
+    // Declare and initialize results vector
+    complex_double ChebyshevT7_result[] = {
+           0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.
+    };
+    BOOST_REQUIRE_EQUAL(wz->n, SUZERAIN_COUNTOF(ChebyshevT7_result));
+
+    // Compute right-hand side
+    // Apply filter to test function
+    suzerain_filteropz_apply(
+           1., ChebyshevT7_test_function, /* contiguous */ 1,
+           ChebyshevT7_result, 1, wz);
+
+    // Compute result using suzerain_filteropz_solve
+    suzerain_filteropz_solve(/* one vector */ 1,
+           ChebyshevT7_result, wz->n, wz);
+
+    // Besure the result actually changed
+    double ressum = 0;
+    for (int i = 0; i < wz->n; ++i) {
+        ressum += std::abs(ChebyshevT7_result[i]);
+    }
+    BOOST_REQUIRE_NE(ressum, 0);
+
+    // Because filter is real-valued, answers should be negatives
+    // of one another.  Taking sum of abs(Re + Im) should give
+    // nearly zero.
+    double abssum = 0;
+    for (int i = 0; i < 2*wz->n; i += 2) {
+        complex_double v = ((double *) ChebyshevT7_result)[i  ]
+                         + ((double *) ChebyshevT7_result)[i+1];
+        abssum += std::abs(v);
+    }
+    BOOST_CHECK_SMALL(abssum, std::numeric_limits<double>::epsilon());
+
+    // 'suzerain_filteropz_free(wz)' handled by FilteropFixture
+}
 
 BOOST_AUTO_TEST_SUITE_END()
