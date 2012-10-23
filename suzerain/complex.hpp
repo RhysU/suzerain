@@ -244,7 +244,7 @@ const FPT& imag(const FPT (&z)[2]) {
  * @return <tt>x</tt>
  */
 template<typename FPT>
-SUZERAIN_FORCEINLINE
+inline
 typename boost::enable_if<
     boost::is_arithmetic<FPT>, const FPT&
 >::type real(const FPT& x) {
@@ -276,7 +276,7 @@ typename boost::enable_if<
  *       the imaginary part of a real number.
  */
 template<typename FPT>
-SUZERAIN_FORCEINLINE
+inline
 typename boost::enable_if<
     boost::is_arithmetic<FPT>, FPT
 >::type imag(const FPT& x) {
@@ -397,7 +397,7 @@ typename traits::real<Complex>::type imag_ipower(const Complex &z)
  * @param src source
  */
 template<class Complex, class Source>
-SUZERAIN_FORCEINLINE
+inline
 void assign_complex(Complex &SUZERAIN_RESTRICT dest,
                     const Source &SUZERAIN_RESTRICT src)
 {
