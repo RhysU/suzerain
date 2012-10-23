@@ -117,7 +117,6 @@ FUNCTION(
 
     // Compute (a usually awful) solution estimate starting from x = 0
     memset(x, 0, n*sizeof(x[0]));            // x = 0 for inc == 1
-    NORM normx = 0;                          // ||0||_2 = 0 since x == 0
     DCOPY(n, b, inc, r, inc);                // r = b - A*x = b - A*0 = b
     *res = DNRM2(n, r, inc);                 // res = |r|_2
 
@@ -125,30 +124,39 @@ FUNCTION(
     const NORM resdecay = 2;
     NORM lastres = (resdecay + 1) * (*res + 1);
 
+    // The stopping residual may be either 'eps' or that from Langou et al
+    // Compare the former against criteria within LAPACK {D,Z}GBRFS
+    // The latter requires ||A||_{fro} and running ||x||_2 information
+#pragma warning(push,disable:1572)
+    const int use_eps_tol = (*tolsc == 0.0);
+#pragma warning(pop)
+    NORM tolconst;
+    NORM tol;
+    if (use_eps_tol) {
+
+        tolconst = 1;
+        tol      = eps;
+
+    } else {
+
+        // Compute Frobenius norm of A if it was not supplied
+        if (*afrob < 0) {
+            *afrob = DLANGB('F', n, kl, ku, ab, ldab, NULL);
+        }
+
+        // Compute const part of stopping tolerance per Langou et al:
+        //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
+        tolconst = *afrob * eps * sqrt(n) * (*tolsc);
+
+        // Compute the complete RHS ||x||_2 * tolconst for x == 0
+        tol      = 0;
+    }
+
     // Save the maximum iteration count prior to entering compute loops
     const int smax = *siter; *siter = -1;
     const int dmax = *diter; *diter = -1;
 
-    // Compute Frobenius norm of A if it was not supplied
-    if (*afrob < 0) {
-        *afrob = DLANGB('F', n, kl, ku, ab, ldab, NULL);
-    }
-
-    // Compute const part of stopping tolerance per Langou et al:
-    //   ||r||_2 = ||b - OP(A) x||_2 <= ||x||_2 ||A||_{fro} eps sqrt(n)
-    //                                          -----------------------
-    const NORM tolconst = *afrob * eps * sqrt(n) * (*tolsc);
-
-    // When tolsc == 0, use machine epsilon instead of Langou criterion
-    // (Compare against stopping criteria used within LAPACK {D,Z}GBRFS)
-#pragma warning(push,disable:1572)
-    const int use_eps_tol = (*tolsc == 0.0);
-#pragma warning(pop)
-
-    // A macro returning true when convergence has not happened
-#define NOT_CONVERGED (*res > (use_eps_tol ? eps : normx*tolconst))
-
-    if (smax >= 0 && *fact != 'D' && NOT_CONVERGED) {
+    if (smax >= 0 && *fact != 'D' && *res > tol) {
 
         if (*fact != 'S') { // Ensure single precision factorization available
             *fact  = 'S';
@@ -165,10 +173,10 @@ FUNCTION(
             } else MAYBE_XERBLA(info < 0)
         }
 
-        while (++*siter < smax && NOT_CONVERGED) {
+        while (++*siter < smax && *res > tol) {
 
             // Perform one step of mixed precision iterative refinement
-            // updating norm computations for x and r = b - op(A) x
+            // updating norm computations r = b - op(A) x and possibly tol
             info = DDEMOTE(n, r);
             MAYBE_XERBLA(info)
             info = SGBTRS(trans, n, kl, ku, 1,
@@ -178,7 +186,7 @@ FUNCTION(
             info = DPROMOTE(n, r);
             MAYBE_XERBLA(info)
             DAXPY(n, 1, r, inc, x, inc);
-            normx = DNRM2(n, x, inc);
+            tol = (use_eps_tol ? eps : DNRM2(n, x, inc)) * tolconst;
             DCOPY(n, b, inc, r, inc);
             info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
             MAYBE_XERBLA(info)
@@ -209,7 +217,7 @@ FUNCTION(
 
 double_precision_attempt:
 
-    if (dmax >= 0 && NOT_CONVERGED) {
+    if (dmax >= 0 && *res > tol) {
 
         if (*fact != 'D') {  // Ensure double precision factorization available
             *fact  = 'D';
@@ -219,14 +227,14 @@ double_precision_attempt:
             MAYBE_XERBLA(info < 0) else if (UNLIKELY(info > 0)) { return info; }
         }
 
-        while (++*diter < dmax && NOT_CONVERGED) {
+        while (++*diter < dmax && *res > tol) {
 
             // Perform one step of double precision iterative refinement
-            // updating norm computations for x and r = b - op(A) x
+            // updating norm computations r = b - op(A) x and possibly tol
             info = DGBTRS(trans, n, kl, ku, 1, afb, ldafb, ipiv, r, n);
             MAYBE_XERBLA(info)
             DAXPY(n, 1.0, r, inc, x, inc);
-            normx = DNRM2(n, x, inc);
+            tol = (use_eps_tol ? eps : DNRM2(n, x, inc)) * tolconst;
             DCOPY(n, b, inc, r, inc);
             info = DGBMV(trans, n, n, kl, ku, -1, ab, ldab, x, inc, 1, r, inc);
             MAYBE_XERBLA(info)
@@ -254,20 +262,16 @@ double_precision_attempt:
     }
 
     // Make tolsc the fraction of the tolerance represented by the solution
-    if (use_eps_tol) {
-        *tolsc = *res / eps;
 #pragma warning(push,disable:1572)
-    } else if (*res == 0) {
+    if (*res == 0) {
 #pragma warning(pop)
         *tolsc = 0;
     } else {
-        *tolsc = *res / (normx * tolconst);
+        *tolsc = *res / tol;
     }
 
     return info;
 }
-
-#undef NOT_CONVERGED
 
 #undef MAYBE_XERBLA
 

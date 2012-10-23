@@ -3994,7 +3994,7 @@ suzerain_lapackext_zgbsv(
  * 64 bit Accuracy (Revisiting Iterative Refinement for Linear Systems)</a> by
  * Langou et al.  Unlike their algorithm, this routine
  * <ol>
- *   <li>permits the user to provide a pre-existing single
+ *   <li>permits the user to provide a preexisting single
  *       or double precision factorization,</li>
  *   <li>returns the single or double precision factorization
  *       for subsequent reuse,<li>
@@ -4057,8 +4057,10 @@ suzerain_lapackext_zgbsv(
  * \param[in]     ab    Double precision matrix in banded storage of
  *                      dimension (<tt>ldab == kl + ku + 1</tt>,<tt>n</tt>)
  * \param[in,out] afrob The Frobenius norm of \f$ A \f$.
- *                      If negative on entry, the norm is computed
- *                      and returned to permit caching the result.
+ *                      If negative on entry and \c tolsc is strictly
+ *                      positive, the norm is computed and returned to
+ *                      permit caching the result.  Otherwise, \c afrob
+ *                      is not modified.
  * \param[in,out] afb   Single or double precision LU factorization
  *                      of \f$ A \f$ of dimension (<tt>ldafb == 2*kl + ku
  *                      + 1</tt>,<tt>n</tt>).  Whether a single or double
