@@ -80,7 +80,7 @@ const char log4cxx_config[] =
 #undef COMMON_CONSOLE_CONFIG
 
 const boost::array<const char *,field::count> field::name = {{
-    "rhoe", "rhou", "rhov", "rhow", "rho"
+    "rho_E", "rho_u", "rho_v", "rho_w", "rho"
 }};
 
 const boost::array<const char *,field::count> field::description = {{

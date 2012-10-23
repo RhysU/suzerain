@@ -81,8 +81,8 @@ void store(const esio_handle h,
     esio_line_write(h, "bulk_rho", &scenario.bulk_rho, 0,
             scenario.options().find("bulk_rho",false).description().c_str());
 
-    esio_line_write(h, "bulk_rhou", &scenario.bulk_rhou, 0,
-            scenario.options().find("bulk_rhou",false).description().c_str());
+    esio_line_write(h, "bulk_rho_u", &scenario.bulk_rho_u, 0,
+            scenario.options().find("bulk_rho_u",false).description().c_str());
 
     esio_line_write(h, "alpha", &scenario.alpha, 0,
             scenario.options().find("alpha",false).description().c_str());
@@ -125,10 +125,10 @@ void load(const esio_handle h,
         esio_line_read(h, "bulk_rho", &scenario.bulk_rho, 0);
     }
 
-    if (!(boost::math::isnan)(scenario.bulk_rhou)) {
-        INFO0("Overriding scenario using bulk_rhou = " << scenario.bulk_rhou);
+    if (!(boost::math::isnan)(scenario.bulk_rho_u)) {
+        INFO0("Overriding scenario using bulk_rho_u = " << scenario.bulk_rho_u);
     } else {
-        esio_line_read(h, "bulk_rhou", &scenario.bulk_rhou, 0);
+        esio_line_read(h, "bulk_rho_u", &scenario.bulk_rho_u, 0);
     }
 
     if (!(boost::math::isnan)(scenario.alpha)) {
@@ -298,7 +298,7 @@ void store_collocation_values(
                 reinterpret_cast<real_t *>(swave[i].origin()));
     }
 
-    // Convert conserved rho, rhou, rhov, rhow, rhoE into u, v, w, p, T
+    // Convert conserved rho{_E,_u,_v,_w,} into u, v, w, p, T
     support::physical_view<support::field::count>::type sphys
         = support::physical_view<support::field::count>::create(dgrid, swave);
 
@@ -427,7 +427,7 @@ void load_collocation_values(
     esio_field_read(h, "p", &sphys(3,0), 0, 0, 0);
     esio_field_read(h, "T", &sphys(4,0), 0, 0, 0);
 
-    // Convert primitive u, v, w, p, and T into rho, rhou, rhov, rhow, rhoE
+    // Convert primitive u, v, w, p, and T into rho{_E,_u,_v,_w,}
     const real_t gamma = scenario.gamma;
     const real_t Ma    = scenario.Ma;
 
@@ -1066,7 +1066,8 @@ void accumulate_manufactured_solution(
                         phys(0, offset) = msoln.rho (x, y, z, simulation_time);
                         break;
                     default:
-                        SUZERAIN_ERROR_REPORT("unknown field", SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT("unknown field",
+                                              SUZERAIN_ESANITY);
                     }
 
                 } // end X
@@ -1081,8 +1082,11 @@ void accumulate_manufactured_solution(
         obase.bop_solve(massluz, scratch, 0);                    // Y
 
         // ...and accumulate into the corresponding scalar field of swave
-        assert(std::equal(scratch.shape() + 1, scratch.shape() + 4, swave.shape() + 1));
-        if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) continue;  // Sidestep assertions
+        assert(std::equal(scratch.shape() + 1, scratch.shape() + 4,
+                          swave.shape() + 1));
+        if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) {
+            continue;  // Sidestep assertions on trivial data
+        }
         typedef ContiguousState<4,complex_t>::index index;
         const index ku = boost::numeric_cast<index>(
                                 scratch.index_bases()[2] + scratch.shape()[2]);
@@ -1092,7 +1096,8 @@ void accumulate_manufactured_solution(
             lx < lu;
             ++lx, ++ly) {
 
-            for (index kx = scratch.index_bases()[2], ky = swave.index_bases()[2];
+            for (index kx = scratch.index_bases()[2],
+                       ky = swave.index_bases()[2];
                 kx < ku;
                 ++kx, ++ky) {
 
@@ -1167,11 +1172,11 @@ mean sample_mean_quantities(
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
     if (dgrid.has_zero_zero_modes()) {
-        ret.rhoe()        = Map<VectorXc>(swave[ndx::e  ].origin(), Ny).real();
-        ret.rhou().col(0) = Map<VectorXc>(swave[ndx::mx ].origin(), Ny).real();
-        ret.rhou().col(1) = Map<VectorXc>(swave[ndx::my ].origin(), Ny).real();
-        ret.rhou().col(2) = Map<VectorXc>(swave[ndx::mz ].origin(), Ny).real();
-        ret.rho()         = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
+        ret.rho_E()        = Map<VectorXc>(swave[ndx::e  ].origin(), Ny).real();
+        ret.rho_u().col(0) = Map<VectorXc>(swave[ndx::mx ].origin(), Ny).real();
+        ret.rho_u().col(1) = Map<VectorXc>(swave[ndx::my ].origin(), Ny).real();
+        ret.rho_u().col(2) = Map<VectorXc>(swave[ndx::mz ].origin(), Ny).real();
+        ret.rho()          = Map<VectorXc>(swave[ndx::rho].origin(), Ny).real();
     }
 
     // Obtain access to helper routines for differentiation

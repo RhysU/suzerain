@@ -121,10 +121,10 @@ private:
             const bsplineop &bop);
 
     /** Should bulk streamwise momentum constraint be enforced? */
-    bool constrain_bulk_rhou() const
+    bool constrain_bulk_rho_u() const
     {
         // Yes when non-inf, non-NaN.
-        return (boost::math::isnormal)(this->scenario.bulk_rhou);
+        return (boost::math::isnormal)(this->scenario.bulk_rho_u);
     }
 
     /** Should bulk density constraint be enforced? */
@@ -207,7 +207,7 @@ void ChannelTreatment<BaseClass>::finish_construction(
     bulkcoeff_dot_interior = bulkcoeff.dot(interior.matrix());
 
     // Release resources if not necessary beyond initialization
-    if (!constrain_bulk_rhou()) masslu.reset();
+    if (!constrain_bulk_rho_u()) masslu.reset();
 }
 
 template< typename BaseClass >
@@ -282,7 +282,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // If necessary, constrain the bulk streamwise momentum.
     const real_t iota_alpha = method.iota_alpha(substep_index);
     const real_t alpha_dt   = method.alpha(substep_index)*delta_t;
-    if (constrain_bulk_rhou()) {
+    if (constrain_bulk_rho_u()) {
 
         // channel_treatment step (3) was already performed for state.
         // Perform mass matrix solve for forcing work contribution.
@@ -293,17 +293,17 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
         // channel_treatment steps (4), (5), and (6) determine and apply
         // the appropriate bulk momentum forcing to achieve a target value.
-        ModesRealPart mean_rhou((real_t *)state[ndx::mx].origin(), Ny);
-        const real_t observed = bulkcoeff.dot((mean_rhou.matrix()));
-        const real_t varphi = (scenario.bulk_rhou - observed)
+        ModesRealPart mean_rho_u((real_t *)state[ndx::mx].origin(), Ny);
+        const real_t observed = bulkcoeff.dot((mean_rho_u.matrix()));
+        const real_t varphi = (scenario.bulk_rho_u - observed)
                             / bulkcoeff_dot_interior;
-        mean_rhou += varphi*interior;
+        mean_rho_u += varphi*interior;
 
         // channel_treatment step (7) accounts for the momentum forcing
         // within the total energy equation including the Mach squared
         // factor arising from the nondimensionalization choices.
-        ModesRealPart mean_rhoe((real_t *)state[ndx::e].origin(), Ny);
-        mean_rhoe += (varphi*scenario.Ma*scenario.Ma)*rhs;
+        ModesRealPart mean_rho_E((real_t *)state[ndx::e].origin(), Ny);
+        mean_rho_E += (varphi*scenario.Ma*scenario.Ma)*rhs;
 
         // Track the forcing magnitude within statistics.
         common.f()       += iota_alpha

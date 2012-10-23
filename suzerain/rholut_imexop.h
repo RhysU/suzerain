@@ -137,17 +137,17 @@ typedef struct {
  * @param[in] imagzero  Treat imaginary part of all input data as if
  *                      it were uniformly zero?  That is, assume
                         <tt>Im(in_rho{,u,v,w,E}) == 0</tt>.
- * @param[in] in_rhoE   Wall-normal input data for \f$\rho{}E\f$.
- * @param[in] in_rhow   Wall-normal input data for \f$\rho{}w\f$.
- * @param[in] in_rhov   Wall-normal input data for \f$\rho{}v\f$.
- * @param[in] in_rhou   Wall-normal input data for \f$\rho{}u\f$.
- * @param[in] in_rho    Wall-normal input data for \f$\rho{}\f$.
- * @param[in] beta      Accumulation scaling factor \f$\beta\f$.
- * @param[out] out_rhoE Wall-normal output data for \f$\rho{}E\f$.
- * @param[out] out_rhow Wall-normal output data for \f$\rho{}w\f$.
- * @param[out] out_rhov Wall-normal output data for \f$\rho{}v\f$.
- * @param[out] out_rhou Wall-normal output data for \f$\rho{}u\f$.
- * @param[out] out_rho  Wall-normal output data for \f$\rho{}\f$.
+ * @param[in]  in_rho_E  Wall-normal input data for \f$\rho{}E\f$.
+ * @param[in]  in_rho_w  Wall-normal input data for \f$\rho{}w\f$.
+ * @param[in]  in_rho_v  Wall-normal input data for \f$\rho{}v\f$.
+ * @param[in]  in_rho_u  Wall-normal input data for \f$\rho{}u\f$.
+ * @param[in]  in_rho    Wall-normal input data for \f$\rho{}\f$.
+ * @param[in]  beta      Accumulation scaling factor \f$\beta\f$.
+ * @param[out] out_rho_E Wall-normal output data for \f$\rho{}E\f$.
+ * @param[out] out_rho_w Wall-normal output data for \f$\rho{}w\f$.
+ * @param[out] out_rho_v Wall-normal output data for \f$\rho{}v\f$.
+ * @param[out] out_rho_u Wall-normal output data for \f$\rho{}u\f$.
+ * @param[out] out_rho   Wall-normal output data for \f$\rho{}\f$.
  *
  * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
  */
@@ -161,16 +161,16 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int imagzero,
-        const complex_double *in_rhoE,
-        const complex_double *in_rhow,
-        const complex_double *in_rhov,
-        const complex_double *in_rhou,
-        const complex_double *in_rho ,
+        const complex_double *in_rho_E,
+        const complex_double *in_rho_w,
+        const complex_double *in_rho_v,
+        const complex_double *in_rho_u,
+        const complex_double *in_rho,
         const complex_double beta,
-        complex_double *out_rhoE,
-        complex_double *out_rhou,
-        complex_double *out_rhov,
-        complex_double *out_rhow,
+        complex_double *out_rho_E,
+        complex_double *out_rho_u,
+        complex_double *out_rho_v,
+        complex_double *out_rho_w,
         complex_double *out_rho );
 
 /**
@@ -182,8 +182,8 @@ suzerain_rholut_imexop_accumulate(
  * quantities.  Notice that the \e transpose of the operator is assembled.
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
- * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoE</tt>) will omit
- * the corresponding rows and columns from the formed matrix.  This may be
+ * <tt>rho_u</tt>, <tt>rho_v</tt>, <tt>rho_w</tt>, and <tt>rho_E</tt>) will
+ * omit the corresponding rows and columns from the formed matrix.  This may be
  * useful for omitting part of the operator (e.g. the density equation).  All
  * nonnegative order parameters must form a unique, contiguous set starting
  * from zero.
@@ -204,13 +204,13 @@ suzerain_rholut_imexop_accumulate(
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
  * @param[in]  w     B-spline workspace providing discrete operators.
- * @param[in]  rhoE  Order of contiguous total energy data within a
+ * @param[in]  rho_E Order of contiguous total energy data within a
  *                   globally contiguous state vector.
- * @param[in]  rhou  Order of contiguous streamwise momentum data within a
+ * @param[in]  rho_u Order of contiguous streamwise momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhov  Order of contiguous wall-normal momentum data within a
+ * @param[in]  rho_v Order of contiguous wall-normal momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhow  Order of contiguous spanwise momentum data within a
+ * @param[in]  rho_w Order of contiguous spanwise momentum data within a
  *                   globally contiguous state vector.
  * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
@@ -234,10 +234,10 @@ suzerain_rholut_imexop_packc(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int rhoE,
-        const int rhow,
-        const int rhov,
-        const int rhou,
+        const int rho_E,
+        const int rho_w,
+        const int rho_v,
+        const int rho_u,
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,
@@ -252,8 +252,8 @@ suzerain_rholut_imexop_packc(
  * quantities.  Notice that the \e transpose of the operator is assembled.
  *
  * Supplying a negative value for state order parameter (i.e. <tt>rho</tt>,
- * <tt>rhou</tt>, <tt>rhov</tt>, <tt>rhow</tt>, and <tt>rhoE</tt>) will omit
- * the corresponding rows and columns from the formed matrix.  This may be
+ * <tt>rho_u</tt>, <tt>rho_v</tt>, <tt>rho_w</tt>, and <tt>rho_E</tt>) will
+ * omit the corresponding rows and columns from the formed matrix.  This may be
  * useful for omitting part of the operator (e.g. the density equation).  All
  * nonnegative order parameters must form a unique, contiguous set starting
  * from zero.
@@ -275,13 +275,13 @@ suzerain_rholut_imexop_packc(
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
  * @param[in]  w     B-spline workspace providing discrete operators.
- * @param[in]  rhoE  Order of contiguous total energy data within a
+ * @param[in]  rho_E Order of contiguous total energy data within a
  *                   globally contiguous state vector.
- * @param[in]  rhou  Order of contiguous streamwise momentum data within a
+ * @param[in]  rho_u Order of contiguous streamwise momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhov  Order of contiguous wall-normal momentum data within a
+ * @param[in]  rho_v Order of contiguous wall-normal momentum data within a
  *                   globally contiguous state vector.
- * @param[in]  rhow  Order of contiguous spanwise momentum data within a
+ * @param[in]  rho_w Order of contiguous spanwise momentum data within a
  *                   globally contiguous state vector.
  * @param[in]  rho   Order of contiguous density data within a
  *                   globally contiguous state vector.
@@ -305,10 +305,10 @@ suzerain_rholut_imexop_packf(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int rhoE,
-        const int rhow,
-        const int rhov,
-        const int rhou,
+        const int rho_E,
+        const int rho_w,
+        const int rho_v,
+        const int rho_u,
         const int rho,
         complex_double * const buf,
         suzerain_bsmbsm * const A_T,

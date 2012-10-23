@@ -45,7 +45,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
     [ "$((Nx%2))" -eq 0 ]                && realmodes+=("0,$((Nx/2)),0")
     [ "$((Nz%2))" -eq 0 ]                && realmodes+=("$((Nz/2)),0,0")
     [ "$((Nx%2))" -eq 0 -a "$((Nz%2))" ] && realmodes+=("$((Nz/2)),$((Nx/2)),0")
-    for field in rho rhou rhov rhow rhoe
+    for field in rho rho_u rho_v rho_w rho_E
     do
         for realmode in "${realmodes[@]}"
         do

@@ -614,15 +614,15 @@ std::vector<real_t> applyNonlinearOperator(
 
             const real_t x = o.x(i);
 
-            real_t Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe;
-            ms.Q_conservative(x, y, z, time,
-                              Q_rho, Q_rhou, Q_rhov, Q_rhow, Q_rhoe);
+            real_t Q_rho, Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E;
+            ms.Q_conservative(x, y, z, time, Q_rho,
+                              Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
 
             sphys(ndx::rho, offset) += Q_rho;
-            sphys(ndx::mx , offset) += Q_rhou;
-            sphys(ndx::my , offset) += Q_rhov;
-            sphys(ndx::mz , offset) += Q_rhow;
-            sphys(ndx::e  , offset) += Q_rhoe;
+            sphys(ndx::mx , offset) += Q_rho_u;
+            sphys(ndx::my , offset) += Q_rho_v;
+            sphys(ndx::mz , offset) += Q_rho_w;
+            sphys(ndx::e  , offset) += Q_rho_E;
 
           } // end X
 

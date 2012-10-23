@@ -252,8 +252,8 @@ public:
  */
 #define CHANNEL_MEAN_WAVE                                  \
     ((rho,                      1)) /* scalar           */ \
-    ((rhou,                     3)) /* vector           */ \
-    ((rhoe,                     1)) /* scalar           */
+    ((rho_u,                    3)) /* vector           */ \
+    ((rho_E,                    1)) /* scalar           */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed in physical

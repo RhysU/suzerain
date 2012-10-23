@@ -45,20 +45,20 @@ public:
      * Construct an instance with the given parameter values.
      * Parameter values are evaluated via exprparse().
      *
-     * @param Re        Reynolds number.
-     * @param Ma        Mach number.
-     * @param Pr        Prandtl number.
-     * @param bulk_rho  Bulk density target.
-     * @param bulk_rhou Bulk streamwise momentum target.
-     * @param alpha     Ratio of bulk to dynamic viscosity.
-     * @param beta      Temperature power law exponent.
-     * @param gamma     Ratio of specific heats.
+     * @param Re         Reynolds number.
+     * @param Ma         Mach number.
+     * @param Pr         Prandtl number.
+     * @param bulk_rho   Bulk density target.
+     * @param bulk_rho_u Bulk streamwise momentum target.
+     * @param alpha      Ratio of bulk to dynamic viscosity.
+     * @param beta       Temperature power law exponent.
+     * @param gamma      Ratio of specific heats.
      */
     ScenarioDefinition(const char * Re,
                        const char * Ma,
                        const char * Pr,
                        const char * bulk_rho,
-                       const char * bulk_rhou,
+                       const char * bulk_rho_u,
                        const char * alpha,
                        const char * beta,
                        const char * gamma);
@@ -88,7 +88,7 @@ public:
     /**
      * The bulk streamwise momentum used as a target for integral constraints.
      */
-    real_t bulk_rhou;
+    real_t bulk_rho_u;
 
     /**
      * The ratio of bulk viscosity to dynamic viscosity according to \f$
@@ -114,7 +114,7 @@ private:
                             const char * default_Ma,
                             const char * default_Pr,
                             const char * default_bulk_rho,
-                            const char * default_bulk_rhou,
+                            const char * default_bulk_rho_u,
                             const char * default_alpha,
                             const char * default_beta,
                             const char * default_gamma);

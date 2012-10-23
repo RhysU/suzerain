@@ -1018,9 +1018,9 @@ int main(int argc, char **argv)
             WARN0("Manufactured solution incompatible with bulk_rho = "
                   << scenario.bulk_rho);
         }
-        if (boost::math::isnormal(scenario.bulk_rhou)) {
-            WARN0("Manufactured solution incompatible with bulk_rhou = "
-                  << scenario.bulk_rhou);
+        if (boost::math::isnormal(scenario.bulk_rho_u)) {
+            WARN0("Manufactured solution incompatible with bulk_rho_u = "
+                  << scenario.bulk_rho_u);
         }
     }
 
@@ -1330,7 +1330,7 @@ int main(int argc, char **argv)
     // If no non-default, non-zero values were provided, be sensible.
     if (default_statistics && !statsdef.dt && !statsdef.nt) {
         const real_t flowthrough_time
-                = grid.L.x()/(scenario.bulk_rhou/scenario.bulk_rho);
+                = grid.L.x()/(scenario.bulk_rho_u/scenario.bulk_rho);
         if (boost::math::isnormal(flowthrough_time)) {
             const_cast<real_t &>(statsdef.dt) = flowthrough_time / 4;
         }
@@ -1629,7 +1629,7 @@ int main(int argc, char **argv)
         // Advance rate measured in flow through based on bulk velocity
         // (where bulk velocity is estimated from bulk momentum and density)
         const real_t flowthrough_time
-                = grid.L.x()/(scenario.bulk_rhou/scenario.bulk_rho);
+                = grid.L.x()/(scenario.bulk_rho_u/scenario.bulk_rho);
         const real_t flowthroughs
                 = (tc->current_t() - initial_t)/flowthrough_time;
         if (boost::math::isnormal(flowthrough_time)) {

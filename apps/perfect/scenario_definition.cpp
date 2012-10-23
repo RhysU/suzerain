@@ -52,7 +52,7 @@ ScenarioDefinition::ScenarioDefinition()
       Ma(std::numeric_limits<real_t>::quiet_NaN()),
       Pr(std::numeric_limits<real_t>::quiet_NaN()),
       bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rhou(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN()),
       alpha(std::numeric_limits<real_t>::quiet_NaN()),
       beta(std::numeric_limits<real_t>::quiet_NaN()),
       gamma(std::numeric_limits<real_t>::quiet_NaN())
@@ -67,7 +67,7 @@ ScenarioDefinition::ScenarioDefinition(
         const char * Ma,
         const char * Pr,
         const char * bulk_rho,
-        const char * bulk_rhou,
+        const char * bulk_rho_u,
         const char * alpha,
         const char * beta,
         const char * gamma)
@@ -76,13 +76,13 @@ ScenarioDefinition::ScenarioDefinition(
       Ma(std::numeric_limits<real_t>::quiet_NaN()),
       Pr(std::numeric_limits<real_t>::quiet_NaN()),
       bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rhou(std::numeric_limits<real_t>::quiet_NaN()),
+      bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN()),
       alpha(std::numeric_limits<real_t>::quiet_NaN()),
       beta(std::numeric_limits<real_t>::quiet_NaN()),
       gamma(std::numeric_limits<real_t>::quiet_NaN())
 {
     this->initialize_options(Re, Ma, Pr,
-                                bulk_rho, bulk_rhou,
+                                bulk_rho, bulk_rho_u,
                                 alpha, beta, gamma);
 }
 
@@ -91,7 +91,7 @@ void ScenarioDefinition::initialize_options(
         const char * default_Ma,
         const char * default_Pr,
         const char * default_bulk_rho,
-        const char * default_bulk_rhou,
+        const char * default_bulk_rho_u,
         const char * default_alpha,
         const char * default_beta,
         const char * default_gamma)
@@ -126,11 +126,11 @@ void ScenarioDefinition::initialize_options(
     if (default_bulk_rho) p->default_value(default_bulk_rho);
     this->add_options()("bulk_rho", p.release(), "Bulk density target");
 
-    // bulk_rhou
+    // bulk_rho_u
     p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rhou, "bulk_rhou"));
-    if (default_bulk_rhou) p->default_value(default_bulk_rhou);
-    this->add_options()("bulk_rhou", p.release(), "Bulk momentum target");
+    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho_u, "bulk_rho_u"));
+    if (default_bulk_rho_u) p->default_value(default_bulk_rho_u);
+    this->add_options()("bulk_rho_u", p.release(), "Bulk momentum target");
 
     // alpha
     p.reset(boost::program_options::value<std::string>(NULL));

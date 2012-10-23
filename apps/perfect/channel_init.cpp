@@ -69,14 +69,14 @@ using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::GridDefinition;
 using suzerain::problem::TimeDefinition;
 static ScenarioDefinition scenario(
-        /* Re        */ "100",
-        /* Ma        */ "1.5",
-        /* Pr        */ "0.7",
-        /* bulk_rho  */ "1",
-        /* bulk_rhou */ "1",
-        /* alpha     */ "0",
-        /* beta      */ "2/3",
-        /* gamma     */ "1.4");
+        /* Re         */ "100",
+        /* Ma         */ "1.5",
+        /* Pr         */ "0.7",
+        /* bulk_rho   */ "1",
+        /* bulk_rho_u */ "1",
+        /* alpha      */ "0",
+        /* beta       */ "2/3",
+        /* gamma      */ "1.4");
 static GridDefinition grid(
         /* Lx      */ "4*pi",
         /* Nx      */ 1,
@@ -252,10 +252,10 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // Initialization done under assumptions bulk_rho == 1 && bulk_rhou == 1
-    if (scenario.bulk_rhou != 1) {
+    // Initialization done under assumptions bulk_rho == 1 && bulk_rho_u == 1
+    if (scenario.bulk_rho_u != 1) {
         WARN0("Forcing bulk streamwise momentum to be one");
-        scenario.bulk_rhou = 1;
+        scenario.bulk_rho_u = 1;
     }
     if (scenario.bulk_rho != 1) {
         WARN0("Forcing bulk density to be one");
@@ -274,10 +274,10 @@ int main(int argc, char **argv)
         msoln->Ly    = grid.L.y();
         msoln->Lz    = grid.L.z();
 
-        INFO0("Disabling bulk_rho and bulk_rhou constraints"
+        INFO0("Disabling bulk_rho and bulk_rho_u constraints"
               " due to manufactured solution use");
-        scenario.bulk_rho  = numeric_limits<real_t>::quiet_NaN();
-        scenario.bulk_rhou = numeric_limits<real_t>::quiet_NaN();
+        scenario.bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        scenario.bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
     } else {
         msoln.reset();
     }

@@ -738,10 +738,10 @@ static quantity::storage_map_type process(
     bop->accumulate(0, 1.0, m->coeff_name().col(coeff_col).data(), 1, \
                     0.0, s->col(quantity::point_name).data(),   1)
     ACCUMULATE(rho,              0, bar_rho               );
-    ACCUMULATE(rhou,             0, bar_rho_u             );
-    ACCUMULATE(rhou,             1, bar_rho_v             );
-    ACCUMULATE(rhou,             2, bar_rho_w             );
-    ACCUMULATE(rhoe,             0, bar_rho_E             );
+    ACCUMULATE(rho_u,            0, bar_rho_u             );
+    ACCUMULATE(rho_u,            1, bar_rho_v             );
+    ACCUMULATE(rho_u,            2, bar_rho_w             );
+    ACCUMULATE(rho_E,            0, bar_rho_E             );
     ACCUMULATE(mu,               0, bar_mu                );
     ACCUMULATE(nu,               0, bar_nu                );
     ACCUMULATE(u,                0, bar_u                 );
