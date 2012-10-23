@@ -50,7 +50,7 @@ struct coalescing_pool_policy
      * @see Boost Intrusive for more details.
      */
     static const ::boost::intrusive::link_mode_type link_mode_type
-            = boost::intrusive::safe_link;
+            = boost::intrusive::normal_link;
 };
 
 /**
