@@ -375,8 +375,8 @@ public:
         /** Swap the contents of this instance with \c o. */
         void swap(scoped_blocks &o) {
             using ::std::swap;
-            swap(this->b_,  o.b_);
-            swap(this->e_,  o.e_);
+            swap(this->b_, o.b_);
+            swap(this->e_, o.e_);
             swap(this->p_, o.p_);
         }
 
