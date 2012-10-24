@@ -12,7 +12,7 @@
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for tool in egrep cut mpiexec h5diff h5dump h5ls
+for tool in awk column cut egrep h5diff h5dump h5ls mktemp mpiexec tail
 do
     if ! which $tool >/dev/null ; then
         echo "ERROR: Unable to find utility $tool" 1>&2
