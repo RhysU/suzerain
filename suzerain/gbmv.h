@@ -101,7 +101,7 @@ suzerain_gbmv_c(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_gbmv_z */
+/*! \copydoc suzerain_gbmv_s */
 int
 suzerain_gbmv_z(
         const char trans,

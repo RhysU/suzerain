@@ -701,7 +701,7 @@ suzerain_blas_cgbmv_external(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blas_zgbmv_external */
+/*! \copydoc suzerain_blas_sgbmv_external */
 void
 suzerain_blas_zgbmv_external(
         const char trans,
@@ -809,7 +809,7 @@ suzerain_blas_cgbmv(
         complex_float *y,
         const int incy);
 
-/*! \copydoc suzerain_blas_zgbmv */
+/*! \copydoc suzerain_blas_sgbmv */
 int
 suzerain_blas_zgbmv(
         const char trans,
