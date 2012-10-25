@@ -430,9 +430,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
-
     // Solver-related operational details
     const char *mname = "UNKNOWN";          // Used for error reporting
     char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
@@ -447,6 +444,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     real_t rcond, ferr, berr;       // zgbsvx outputs for one RHS
     real_t afrob, tolsc, res;       // zcgbsvx outputs for one RHS...
     int apprx, aiter, siter, diter; // ...Ditto
+
+    // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
+    IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
+
+    // FIXME Apply P x followed by BCs to any mean constraint data
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -520,6 +522,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
                 SUZERAIN_TIMER_END(mname);
+                // FIXME Reuse factorization to solve any mean constraints
                 break;
 
             case spec_zgbsv::zgbsvx:                   // Out-of-place
@@ -531,6 +534,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     &rcond, &ferr, &berr, work.data(), rwork.data());
                 SUZERAIN_TIMER_END(mname);
                 // TODO Statistics on rcond, equed, ferr, and berr
+                // FIXME Reuse factorization to solve any mean constraints
                 break;
 
             case spec_zgbsv::zcgbsvx:                  // Out-of-place
@@ -548,6 +552,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                         &tolsc, work.data(), &res);
                 SUZERAIN_TIMER_END(mname);
                 // TODO Statistics on fact, apprx, siter, diter, tolsc, res
+                // FIXME Reuse factorization to solve any mean constraints
                 break;
             }
 
@@ -590,6 +595,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             SUZERAIN_TIMER_END("implicit operator miscellaneous");
         }
     }
+
+    // FIXME Apply P^T x to any additional mean constraint solutions
 
     // State leaves method as coefficients in X, Y, and Z directions
 
