@@ -358,7 +358,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    SUZERAIN_TIMER_BEGIN("invertMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("invertMassPlusScaledOperator");
 
     // Shorthand
     using inorder::wavenumber;
@@ -490,8 +490,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 continue;                                   // and then bail.
             }
 
-            SUZERAIN_TIMER_BEGIN("implicit operator miscellaneous");
-
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
             SUZERAIN_TIMER_BEGIN("implicit operator assembly");
@@ -533,6 +531,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             // Perform the factorization and back substitution
             // Additionally, reuse factorization to solve any mean constraints
             switch (spec.method()) {
+
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
 
@@ -541,6 +540,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
                 SUZERAIN_TIMER_END(mname);
+
                 if (SUZERAIN_UNLIKELY(n == 0 && m == 0 && !info)) {
                     info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU,
                         nconstraints, lu.data(), lu.colStride(), ipiv.data(),
@@ -556,8 +556,20 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     b.data(), A.N, x.data(), A.N,
                     &rcond, &ferr, &berr, work.data(), rwork.data());
                 SUZERAIN_TIMER_END(mname);
+
                 // TODO Statistics on rcond, equed, ferr, and berr
-                // FIXME Reuse factorization to solve any mean constraints
+
+                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
+                    for (std::size_t i = 0; i < nconstraints && !info; ++i) {
+                        blas::copy(A.N, ic0->data() + i*A.N, 1, b.data(), 1);
+                        info = suzerain_lapack_zgbsvx('F', trans, A.N, A.KL,
+                                A.KU, 1, patpt.data(), patpt.colStride(),
+                                lu.data(), lu.colStride(), ipiv.data(), &equed,
+                                r.data(), c.data(), b.data(), A.N,
+                                ic0->data() + i*A.N, A.N, &rcond, &ferr, &berr,
+                                work.data(), rwork.data());
+                    }
+                }
                 break;
 
             case spec_zgbsv::zcgbsvx:                  // Out-of-place
@@ -574,8 +586,23 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                         ipiv.data(), b.data(), x.data(), &siter, &diter,
                         &tolsc, work.data(), &res);
                 SUZERAIN_TIMER_END(mname);
+
                 // TODO Statistics on fact, apprx, siter, diter, tolsc, res
-                // FIXME Reuse factorization to solve any mean constraints
+
+                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
+                    for (std::size_t i = 0; i < nconstraints && !info; ++i) {
+                        aiter = spec.aiter();
+                        siter = spec.siter();
+                        diter = spec.diter();
+                        tolsc = spec.tolsc();
+                        blas::copy(A.N, ic0->data() + i*A.N, 1, b.data(), 1);
+                        info = suzerain_lapackext_zcgbsvx(&fact, &apprx, aiter,
+                                trans, A.N, A.KL, A.KU, patpt.data(), &afrob,
+                                lu.data(), ipiv.data(), b.data(),
+                                ic0->data() + i*A.N, &siter, &diter, &tolsc,
+                                work.data(), &res);
+                    }
+                }
                 break;
             }
 
@@ -614,8 +641,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                     "%s reported unknown error %d", mname, info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
-
-            SUZERAIN_TIMER_END("implicit operator miscellaneous");
         }
     }
 
@@ -627,8 +652,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     }
 
     // State leaves method as coefficients in X, Y, and Z directions
-
-    SUZERAIN_TIMER_END("invertMassPlusScaledOperator");
 }
 
 std::vector<real_t> HybridNonlinearOperator::applyOperator(
