@@ -530,6 +530,8 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
             }
             SUZERAIN_TIMER_END("implicit operator BCs");
 
+            // Perform the factorization and back substitution
+            // Additionally, reuse factorization to solve any mean constraints
             switch (spec.method()) {
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
@@ -539,7 +541,11 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
                 SUZERAIN_TIMER_END(mname);
-                // FIXME Reuse factorization to solve any mean constraints
+                if (SUZERAIN_UNLIKELY(n == 0 && m == 0 && !info)) {
+                    info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU,
+                        nconstraints, lu.data(), lu.colStride(), ipiv.data(),
+                        ic0->data(), A.N);
+                }
                 break;
 
             case spec_zgbsv::zgbsvx:                   // Out-of-place
