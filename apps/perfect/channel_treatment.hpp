@@ -109,7 +109,8 @@ public:
             multi_array::ref<complex_t,4> &state,
             const timestepper::lowstorage::IMethod<complex_t> &method,
             const real_t delta_t,
-            const std::size_t substep_index) const;
+            const std::size_t substep_index,
+            multi_array::ref<complex_t,4> * const ic0 = NULL) const;
 
 private:
 
@@ -216,7 +217,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const real_t delta_t,
-        const std::size_t substep_index) const
+        const std::size_t substep_index,
+        multi_array::ref<complex_t,4> * const ic0) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -274,7 +276,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // channel_treatment step (9) sets isothermal conditions at walls
     // using rho_wall = e_wall * gamma * (gamma - 1).
     BaseClass::invertMassPlusScaledOperator(
-            phi, state, method, delta_t, substep_index);
+            phi, state, method, delta_t, substep_index, ic0);
 
     // Only the rank with zero-zero modes proceeds!
     if (!dgrid.has_zero_zero_modes()) return;

@@ -635,9 +635,8 @@ public:
     typedef typename traits::component<element>::type component;
 
     /**
-     * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
-     * That is,
-     * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)\mbox{state}\f$.
+     * Apply \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.  That is,
+     * \f$\mbox{state}\leftarrow{} \left(M+\phi{}L\right)\mbox{state}\f$.
      *
      * @param phi           Scale factor \f$\phi\f$ to use.
      * @param state         State vector on which to apply the operator.
@@ -655,7 +654,7 @@ public:
     /**
      * Accumulate \f$M+\phi{}L\f$ out-of-place for scalar \f$\phi\f$.
      * That is, \f$\mbox{output}\leftarrow{}
-     * \left(M+\phi{}L\right)\mbox{input}+\beta\mbox{output}\f$.
+     * \left(M+\phi{}L\right) \mbox{input}+\beta\mbox{output}\f$.
      *
      * @param phi           Scale factor \f$\phi\f$ to use.
      * @param input         State vector on which to apply the operator.
@@ -675,24 +674,33 @@ public:
             const std::size_t substep_index) const = 0;
 
     /**
-     * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.
-     * That is,
+     * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.  That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
+     *
+     * Low storage timestepping schemes do not make make use of \ic0.  It is
+     * intended as a problem-specific hook for implementing integral
+     * constraints.  When \c ic0 is non-NULL, some portion of the inverse
+     * operator also must be applied to some portion of the data in \c ic0.
+     * That is, \f$\mbox{ic0} \leftarrow{} \left(M+\phi{}L\right)^{-1}
+     * \mbox{ic0}\f$.  In a mixed Fourier discretiation, a mean integral
+     * constraint is applied via applying the inverse ``zero-zero'' operator
+     * and hence the name.  The exact behavior is subclass dependent.
      *
      * @param phi           Scale factor \f$\phi\f$ to use.
      * @param state         State vector on which to apply the operator.
      * @param method        The low storage scheme being used
      * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
-     *
-     * @see IMethod for details on how to use \c iota.
+     * @param ic0           Additional state, often used for imposing
+     *                      integral constraints, which is ignored when NULL.
      */
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
             const IMethod<element>& method,
             const component delta_t,
-            const std::size_t substep_index) const = 0;
+            const std::size_t substep_index,
+            StateA * const ic0 = NULL) const = 0;
 
     /** Virtual destructor for peace of mind. */
     virtual ~ILinearOperator() {}
@@ -803,6 +811,7 @@ public:
      * @param input on which to apply the operator.
      * @param beta  Scale factor for output vector during accumulation.
      * @param output on which to accumulate the result.
+     * @param method Ignored.
      * @param delta_t Ignored.
      * @param substep_index Ignored.
      */
@@ -827,23 +836,26 @@ public:
      * \left(I+\phi\times\mbox{factor}\right)^{-1} \mbox{state}\f$ where \c
      * factor is the scaling factor set at construction time.
      *
-     * @param phi Additional scaling \f$\phi\f$ to apply.
-     * @param state to modify in place.
-     * @param delta_t Ignored.
+     * @param phi           Additional scaling \f$\phi\f$ to apply.
+     * @param state         State to modify in place.
+     * @param delta_t       Ignored.
      * @param substep_index Ignored.
-     * @param iota Ignored.
+     * @param ic0           When non-null, modified as \c state.
      */
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
             const IMethod<element>& method,
             const component delta_t = 0,
-            const std::size_t substep_index = 0) const
+            const std::size_t substep_index = 0,
+            StateA * const ic0 = NULL) const
     {
         SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         state.scale((element(1))/(phi*factor + element(1)));
+
+        if (ic0) ic0->scale((element(1))/(phi*factor + element(1)));
     }
 
 private:

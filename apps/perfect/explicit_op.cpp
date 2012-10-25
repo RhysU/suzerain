@@ -133,7 +133,8 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
-        const std::size_t substep_index) const
+        const std::size_t substep_index,
+        multi_array::ref<complex_t,4> * const ic0) const
 {
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(method);
@@ -145,9 +146,22 @@ void BsplineMassOperator::invertMassPlusScaledOperator(
     SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
     SUZERAIN_ENSURE(multi_array::is_contiguous(state));
 
-    // Those assumptions holding, invert operator on each wall-normal pencil.
-    const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-    massluz.solve(nrhs, state.data(), 1, state.shape()[1]);
+    // Those assumptions holding, invert operator on each wall-normal pencil
+    massluz.solve(state.shape()[0]*state.shape()[2]*state.shape()[3],
+                  state.data(), 1, state.shape()[1]);
+
+    if (ic0) {
+
+        // Likewise, verify required assumptions
+        SUZERAIN_ENSURE(ic0->strides()[1] == 1);
+        SUZERAIN_ENSURE(ic0->shape()[1]   == static_cast<unsigned>(massluz.n()));
+        SUZERAIN_ENSURE(multi_array::is_contiguous(*ic0));
+
+        // Likewise, invert operator on each wall-normal pencil
+        massluz.solve(ic0->shape()[0]*ic0->shape()[2]*ic0->shape()[3],
+                      ic0->data(), 1, ic0->shape()[1]);
+
+    }
 }
 
 // A helper class for implementing isothermal, no-slip boundary conditions
@@ -178,16 +192,23 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
-        const std::size_t substep_index) const
+        const std::size_t substep_index,
+        multi_array::ref<complex_t,4> * const ic0) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
     // Shorthand
     namespace ndx = support::field::ndx;
-    const std::size_t Ny          = state.shape()[1];
-    const std::size_t wall_lower  = 0;
-    const std::size_t wall_upper  = Ny - 1;
+    using boost::indices;
+    typedef boost::multi_array_types::index_range range;
+    typedef multi_array::ref<complex_t,4>::array_view<3>::type view_type;
+
+    // Indexes only the first and last collocation point
+    const std::size_t Ny         = state.shape()[1];
+    const std::size_t wall_lower = 0;
+    const std::size_t wall_upper = Ny - 1;
+    range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
 
     // channel_treatment step (8) sets no-slip conditions
     // on wall collocation points.
@@ -198,14 +219,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // Possible pre-solve since L = 0.
     {
         // Prepare a state view of density locations at lower and upper walls
-        using boost::multi_array_types::index_range;
-        multi_array::ref<complex_t,4>::array_view<3>::type view
-                = state[boost::indices[ndx::rho]
-                                      [index_range(wall_lower,
-                                                   wall_upper + 1,
-                                                   wall_upper - wall_lower)]
-                                      [index_range()]
-                                      [index_range()]];
+        view_type view = state[indices[ndx::rho][walls][range()][range()]];
 
         // Prepare functor setting pointwise BCs given density locations
         const IsothermalNoSlipFunctor bc_functor(
@@ -213,11 +227,18 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
         // Apply the functor to all wall-only density locations
         multi_array::for_each(view, bc_functor);
+
+        // Apply boundary conditions to any requested constraint problems
+        if (ic0 && ic0->num_elements()) {
+            view = (*ic0)[indices[ndx::rho][walls][range()][range()]];
+            SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
+            multi_array::for_each(view, bc_functor);
+        }
     }
 
     // channel_treatment step (3) performs the usual operator solve
     base::invertMassPlusScaledOperator(
-            phi, state, method, delta_t, substep_index);
+            phi, state, method, delta_t, substep_index, ic0);
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
