@@ -229,7 +229,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
         multi_array::for_each(view, bc_functor);
 
         // Apply boundary conditions to any requested constraint problems
-        if (ic0 && ic0->num_elements()) {
+        if (ic0) {
             view = (*ic0)[indices[ndx::rho][walls][range()][range()]];
             SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
             multi_array::for_each(view, bc_functor);
