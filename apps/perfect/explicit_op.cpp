@@ -202,7 +202,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     namespace ndx = support::field::ndx;
     using boost::indices;
     typedef boost::multi_array_types::index_range range;
-    typedef multi_array::ref<complex_t,4>::array_view<3>::type view_type;
 
     // Indexes only the first and last collocation point
     const std::size_t Ny         = state.shape()[1];
@@ -210,30 +209,23 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     const std::size_t wall_upper = Ny - 1;
     range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
 
-    // channel_treatment step (8) sets no-slip conditions
-    // on wall collocation points.
-    //
-    // channel_treatment step (9) sets isothermal conditions on wall
-    // collocation points using e_wall = rho_wall / (gamma * (gamma - 1)).
-    //
-    // Possible pre-solve since L = 0.
-    {
-        // Prepare a state view of density locations at lower and upper walls
-        view_type view = state[indices[ndx::rho][walls][range()][range()]];
+    // Prepare a state view of density locations at lower and upper walls
+    multi_array::ref<complex_t,4>::array_view<3>::type state_view
+            = state[indices[ndx::rho][walls][range()][range()]];
 
-        // Prepare functor setting pointwise BCs given density locations
-        const IsothermalNoSlipFunctor bc_functor(
-                state.strides()[0], scenario.gamma);
+    // Prepare functor setting pointwise BCs given density locations
+    const IsothermalNoSlipFunctor bc_functor(
+            state.strides()[0], scenario.gamma);
 
-        // Apply the functor to all wall-only density locations
-        multi_array::for_each(view, bc_functor);
+    // Apply the functor to all wall-only density locations
+    multi_array::for_each(state_view, bc_functor);
 
-        // Apply boundary conditions to any requested constraint problems
-        if (ic0) {
-            view = (*ic0)[indices[ndx::rho][walls][range()][range()]];
-            SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
-            multi_array::for_each(view, bc_functor);
-        }
+    // Apply boundary conditions to any requested constraint problems
+    if (ic0) {
+        multi_array::ref<complex_t,4>::array_view<3>::type ic0_view
+                = (*ic0)[indices[ndx::rho][walls][range()][range()]];
+        SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
+        multi_array::for_each(ic0_view, bc_functor);
     }
 
     // channel_treatment step (3) performs the usual operator solve
