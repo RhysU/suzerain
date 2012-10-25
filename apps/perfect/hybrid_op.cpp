@@ -355,6 +355,9 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> * const ic0) const
 {
+    // State enters method as coefficients in X and Z directions
+    // State enters method as collocation point values in Y direction
+
     SUZERAIN_TIMER_BEGIN("invertMassPlusScaledOperator");
 
     // Shorthand
@@ -365,9 +368,6 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
-
-    // State enters method as coefficients in X and Z directions
-    // State enters method as collocation point values in Y direction
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -390,6 +390,17 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
+
+    // Compute how many additional mean constraints we must solve
+    // Ensure conformant, mean constraints are arriving on the correct rank
+    const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
+    if (nconstraints) {
+        SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
+        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned) Ny);
+        SUZERAIN_ENSURE(ic0->strides()[1] ==             1);
+        SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned) Ny);
+        SUZERAIN_ENSURE(ic0->shape()  [0] ==  field::count);
+    }
 
     // channel_treatment step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
@@ -448,7 +459,13 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
     IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
 
-    // FIXME Apply P x followed by BCs to any mean constraint data
+    // Apply P x followed by BCs to any mean constraint data
+    for (std::size_t i = 0; i < nconstraints; ++i) {
+        suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1,
+                                ic0->data() + i*A.N, 1, 0, b.data(), 1);
+        bc_enforcer.rhs(b.data());
+        blas::copy(A.N, b.data(), 1, ic0->data() + i*A.N, 1);
+    }
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -596,7 +613,12 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         }
     }
 
-    // FIXME Apply P^T x to any additional mean constraint solutions
+    // Apply P^T x to any additional mean constraint solutions
+    for (std::size_t i = 0; i < nconstraints; ++i) {
+        suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1,
+                                ic0->data() + i*A.N, 1, 0, b.data(), 1);
+        blas::copy(A.N, b.data(), 1, ic0->data() + i*A.N, 1);
+    }
 
     // State leaves method as coefficients in X, Y, and Z directions
 
