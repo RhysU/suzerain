@@ -639,9 +639,10 @@ public:
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)\mbox{state}\f$.
      *
-     * @param phi Scale factor \f$\phi\f$ to use.
-     * @param state State vector on which to apply the operator.
-     * @param delta_t The size of the currently active time step.
+     * @param phi           Scale factor \f$\phi\f$ to use.
+     * @param state         State vector on which to apply the operator.
+     * @param method        The low storage scheme being used
+     * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
     virtual void applyMassPlusScaledOperator(
@@ -656,11 +657,12 @@ public:
      * That is, \f$\mbox{output}\leftarrow{}
      * \left(M+\phi{}L\right)\mbox{input}+\beta\mbox{output}\f$.
      *
-     * @param phi Scale factor \f$\phi\f$ to use.
-     * @param input State vector on which to apply the operator.
-     * @param beta  Scale factor for output vector during accumulation.
-     * @param output State vector into which to accumulate the result.
-     * @param delta_t The size of the currently active time step.
+     * @param phi           Scale factor \f$\phi\f$ to use.
+     * @param input         State vector on which to apply the operator.
+     * @param beta          Scale factor for output vector during accumulation.
+     * @param output        State vector into which to accumulate the result.
+     * @param method        The low storage scheme being used
+     * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
     virtual void accumulateMassPlusScaledOperator(
@@ -677,11 +679,11 @@ public:
      * That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
      *
-     * @param phi Scale factor \f$\phi\f$ to use.
-     * @param state State vector on which to apply the operator.
-     * @param delta_t The size of the currently active time step.
+     * @param phi           Scale factor \f$\phi\f$ to use.
+     * @param state         State vector on which to apply the operator.
+     * @param method        The low storage scheme being used
+     * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
-     * @param iota The \f$iota_i\f$ value appropriate for \c substep_index.
      *
      * @see IMethod for details on how to use \c iota.
      */
