@@ -206,16 +206,26 @@ streamwise momentum forcing with unknown leading coefficient $\phi$:
   .
 \end{align}
 At each substep $\phi{} f$ can be chosen such that $\bar{m}_x$ obtains a target
-value $\Gamma$.  Note that $\phi$ is implicitly a function of $\Delta{}t$.
-This approach differs from the prior nonevolution one in that $\bar{m}_x$
-cannot drift.  Moreover, the target bulk momentum can be changed easily between
-simulations.
+value $\Gamma$.  This approach differs from the prior nonevolution one in that
+$\bar{m}_x$ cannot drift.  Moreover, the target bulk momentum can be changed
+easily between simulations.  Note that $\phi$ is implicitly a function of
+$\Delta{}t$ and is only active during the ``$\alpha$'' portion of each substep.
+That is,
+\begin{align} % See personal notes dated 27 Sept 2012
+  \phi{} f &= \alpha_i \Delta{}t \left(\frac{\phi{}f}{\alpha_i\Delta{}t}\right)
+\end{align}
+which has an impact on sampling the mean driving force for ensemble
+averaging.
 
 Specifically, the final implicit solve in each low storage substep resembles
 ${m_x}^{i+1} = A^{-1}\left(\vec{n} + \phi\vec{f}\right)$ where $A = \left(M -
 \Delta{}t\beta_{i}L\right)$, $\vec{n}$ is an intermediate result, and $\vec{f}$
-contains the value $1$ for $y\neq{}0,2\delta$.  Then $\Gamma = \bar{m}_x^{i+1}
-= c \cdot m_x^{i+1} = c \cdot{} A^{-1}\vec{n} + c \cdot{} \phi{}A^{-1}\vec{f}$
+contains the value $1$ for $y\neq{}0,2\delta$.  Then
+\begin{align}
+\Gamma &= \bar{m}_x^{i+1}
+        = c \cdot m_x^{i+1}
+        = c \cdot{} A^{-1}\vec{n} + c \cdot{} \phi{}A^{-1}\vec{f}
+\end{align}
 requires selecting
 \begin{align}
   \phi &= \frac{\Gamma - c \cdot{} A^{-1} \vec{n}}{c \cdot{} A^{-1} \vec{f}}
@@ -263,6 +273,83 @@ Following advice from Moser, this approach may be implemented as follows:
         point space.  Again, when $L = 0$ this can be done prior to the
         solve.
 \end{enumerate}
+
+\section{Enforcing a target bulk momentum via the linear operator (Redux)}
+
+The prior approach, which includes directly accounting for no-slip, isothermal
+walls by not forcing collocation point values is incorrect when operator $L
+\neq 0$.  Hiding the solution cost for one integral constraint requires
+applying special boundary condition logic to the ``zero zero'' mode as
+real-valued boundary conditions must be separately applied to the real and
+imaginary part of the vector.  Further, as the B-splines used in the
+wall-normal direction are not discretely conservative it is desirable to add an
+integral constraint on the bulk density $\bar{\rho}$.  Handling two distinct
+constraints prevents hiding the cost entirely using the imaginary part of the
+``zero zero'' collocation points.  Instead, separate constraint-solving logic
+is necessary.
+
+\subsection{Analysis}
+
+The ideas leading up to \eqref{eq:phitarget} continue to hold.  With coupling
+amongst all equations, the time step advance is
+\begin{align}
+  \left(M - \Delta{}t\beta_{i}L\right)
+  \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i+1}
+  &=
+  \left(M + \Delta{}t\alpha_{i}L\right)
+  \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i}
+  + \Delta{}t\gamma_{i}\chi{}N\left(
+  \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i}
+  \right)
+  + \Delta{}t\zeta_{i-1}\chi{}N\left(
+  \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i-1}
+  \right)
+  + \phi_\rho
+  \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+  + \phi_{m_x}
+  \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+  .
+\end{align}
+
+Let $\Gamma_\rho$ and $\Gamma_{m_x}$ be the target values for $\bar{\rho}$ and
+$\overline{\rho{}u}$, respectively.  Denote by $c_\rho$ the coefficient vector
+that, when dotted against the state vector, will compute $\bar{\rho}$.
+Similarly for $c_{m_x}$.  We wish to apply the bulk density target first as it
+will perturb the bulk momentum while the converse is not true.
+
+It follows that
+\begin{align}
+  \phi_\rho &= \frac{
+      \Gamma_\rho - c_\rho \cdot{} A^{-1} \vec{n}
+  }{
+      c_\rho \cdot{} A^{-1}
+      \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+  }
+\end{align}
+and
+\begin{align}
+  \phi_{m_x} &= \frac{
+      \Gamma_{m_x} - c_{m_x} \cdot{} \left(
+          A^{-1} \vec{n}
+        + \phi_\rho A^{-1}
+          \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+      \right)
+  }{
+      c_{m_x} \cdot{} A^{-1}
+      \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+  }
+\end{align}
+
+\subsection{Implementation}
+
+With combined $\bar{\rho}$ and $\overline{\rho{}u}$ constraints and separate
+constraint-solving logic, the implementation follows directly from the
+expressions in the previous section.  Sampling considerations may dictate
+that several intermediate values are combined prior to mean sampling
+computations.
+
+% FIXME May change when wall-transpiration employed as adding
+%       multiple integral constraints could impact no-slip?
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
