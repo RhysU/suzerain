@@ -91,7 +91,8 @@
 \newcommand{\symmetricpart}[1]
   {\ensuremath{\operatorname{sym}\left(#1\right)}}
 \DeclareMathOperator{\trace}{tr}
-\newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term due to slow derivative
+\newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term from slow derivative
+\newcommand{\Cs}{\ensuremath{\mathcal{C}}}  % source term from integral constraints
 
 \begin{document}
 
@@ -4392,12 +4393,14 @@ and~\eqref{eq:dim_energy} may be written as
 &=
   - \nabla\cdot\rho{}u
   + \Ssd_{\rho{}}
+  + \Cs_{\rho{}}
 \\
     \frac{\partial{}}{\partial{}t}\rho{}u
 &=
   - \nabla\cdot(u\otimes{}\rho{}u)
   - \nabla{}p + \nabla\cdot{}\tau + f
   + \Ssd_{\rho{} u}
+  + \Cs_{\rho{}u}
 \\
     \frac{\partial}{\partial{}t} \rho{}E
 &=
@@ -4407,9 +4410,12 @@ and~\eqref{eq:dim_energy} may be written as
   + f\cdot{}u
   + q_b
   + \Ssd_{\rho{} E}
+  + \Cs_{\rho{}E}
 \end{align}
 where using total enthalpy $H$ reduces the number of terms in the energy
-equation.
+equation.  Notice that several arbitrary sources terms $\Cs_{\rho{}}$,
+$\Cs_{\rho{}u}$, $\Cs_{\rho{}E}$ have been added-- these permit tracking the
+impact of numerically-imposed integral constraints on simulation statistics.
 
 A lengthy algebraic procedure \citep[\textsection{}2]{OliverFANSModels2011}
 produces exact equations governing the evolution of mean conserved quantities
@@ -4421,6 +4427,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
  =
  &- \nabla\cdot\bar{\rho}\tilde{u}
   + \overline{\Ssd_{\rho{}}}
+  + \overline{\Cs_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -4432,6 +4439,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
     \right)
   + \bar{f}
   + \overline{\Ssd_{\rho{} u}}
+  + \overline{\Cs_{\rho{} u}}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -4453,6 +4461,7 @@ $\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
   + \overline{f\cdot{}u''}
   + \bar{q}_{b}
   + \overline{\Ssd_{\rho{} E}}
+  + \overline{\Cs_{\rho{} E}}
 \end{align}
 \end{subequations}
 Several correlations impact the evolution of mean quantities: the Reynolds
@@ -4524,6 +4533,7 @@ An exact equation may be derived for the evolution of $k$
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
   + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+  + \overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 where $A:B$ denotes $\trace \left(\trans{A} B\right)$, and the contribution of
 the slow growth terms is being accounted for. The dissipation rate
@@ -4584,6 +4594,7 @@ flux in the exact $k$ equation:
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
   + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+  + \overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 The trade reduces by one the number of correlations appearing in the $k$
 equation which do not appear in the mean continuity, momentum, or energy
@@ -4667,6 +4678,7 @@ The Favre-averaged equations of interest are:
 =
  &- \nabla\cdot\bar{\rho}\tilde{u}
   + \overline{\Ssd_{\rho{}}}
+  + \overline{\Cs_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
  =
@@ -4678,6 +4690,7 @@ The Favre-averaged equations of interest are:
     \right)
   + \bar{f}
   + \overline{\Ssd_{\rho{} u}}
+  + \overline{\Cs_{\rho{} u}}
 \\
     \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
  =
@@ -4699,6 +4712,7 @@ The Favre-averaged equations of interest are:
   + \overline{f\cdot{}u''}
   + \bar{q}_b
   + \overline{\Ssd_{\rho{} E}}
+  + \overline{\Cs_{\rho{} E}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -4715,6 +4729,7 @@ The Favre-averaged equations of interest are:
   + \overline{p' \nabla\cdot{}u''}
   + \overline{f\cdot{}u''}
   + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+  + \overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 The equations are augmented by the following relationships:
 \begin{align}
@@ -4813,12 +4828,20 @@ information:
 &\overline{\Ssd_{\rho{} E}}
 &
 &\overline{\Ssd_{\rho{} u}\cdot{}u''}
+&
+&\overline{\Cs_{\rho{}}}
+&
+&\overline{\Cs_{\rho{} u}}
+&
+&\overline{\Cs_{\rho{} E}}
+&
+&\overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
 and $\tilde{T}$, could have been chosen.  The information above are natural
 choices following section~\ref{state_variable_selection}.  Favre-fluctuating
 correlation densities (e.g.  $\widetilde{h''u''}$ are adopted for notational
-brevity instead of their informationally equivalent Reynolds-averaged
+brevity instead of their informationally-equivalent Reynolds-averaged
 correlations (e.g.  $\overline{\rho{}h''u''}$).
 
 \subsection{The nondimensional Favre-averaged Navier--Stokes equations}
@@ -4840,6 +4863,7 @@ are dimensionless.  The results are:
 =
  &- \nabla\cdot\bar{\rho}\tilde{u}
   + \overline{\Ssd_{\rho{}}}
+  + \overline{\Cs_{\rho{}}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
 =
@@ -4851,6 +4875,7 @@ are dimensionless.  The results are:
     \right)
   + \bar{f}
   + \overline{\Ssd_{\rho{} u}}
+  + \overline{\Cs_{\rho{} u}}
 \\
   \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
 =
@@ -4877,6 +4902,7 @@ are dimensionless.  The results are:
     \right)
   + \bar{q}_b
   + \overline{\Ssd_{\rho{} E}}
+  + \overline{\Cs_{\rho{} E}}
 \\
     \frac{\partial{}}{\partial{}t}\bar{\rho}k
 =
@@ -4895,6 +4921,7 @@ are dimensionless.  The results are:
     \right)
   + \overline{f\cdot{}u''}
   + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+  + \overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 The equations are augmented by the following nondimensional relationships:
 \begin{align}
@@ -4987,6 +5014,14 @@ state evolution given the following statistical quantities:
 &\overline{\Ssd_{\rho{} E}}
 &
 &\overline{\Ssd_{\rho{} u}\cdot{}u''}
+&
+&\overline{\Cs_{\rho{}}}
+&
+&\overline{\Cs_{\rho{} u}}
+&
+&\overline{\Cs_{\rho{} E}}
+&
+&\overline{\Cs_{\rho{} u}\cdot{}u''}
 \end{align}
 
 Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
@@ -4995,7 +5030,7 @@ have been replaced by temperature-based correlations.  Notice also that the
 choice of $p_0$ implies nondimensional $p$ includes a factor of $\gamma$
 relative to the dimensional quantity.  Where possible, nondimensional
 coefficients have been pulled out of the constitutive relationships and pushed
-into the equations (for example, the factor $1/\Reynolds$ arising from the
+into the equations (for example, the $\Reynolds^{-1}$ factor arising from the
 dimensional definition of $\bar{\rho}\epsilon$).
 
 Some locally computed quantities, e.g. the local Mach number, local Reynolds
@@ -5065,6 +5100,14 @@ the statistical quantities listed in section~\ref{sec:nondimfans}:
 &\overline{\Ssd_{\rho{} E}}
 &
 &\overline{\Ssd_{\rho{} u}\cdot{}u}
+&
+&\overline{\Cs_{\rho{}}}
+&
+&\overline{\Cs_{\rho{} u}}
+&
+&\overline{\Cs_{\rho{} E}}
+&
+&\overline{\Cs_{\rho{} u}\cdot{}u}
 \end{align}
 These additional quantities are of interest and their so-far-unlisted
 dependencies are also gathered:
@@ -5128,6 +5171,10 @@ sequence of computations to obtain the desired quantities:
   \overline{\Ssd_{\rho{} u}\cdot{}u''}
   &= \overline{\Ssd_{\rho{} u}\cdot{}u}
    - \overline{\Ssd_{\rho{} u}}\cdot{}\tilde{u}
+\\
+  \overline{\Cs_{\rho{} u}\cdot{}u''}
+  &= \overline{\Cs_{\rho{} u}\cdot{}u}
+   - \overline{\Cs_{\rho{} u}}\cdot{}\tilde{u}
 \end{align}
 }
 
