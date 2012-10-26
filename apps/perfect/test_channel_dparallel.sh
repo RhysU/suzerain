@@ -14,9 +14,13 @@ p_channel="prun ../channel --Nx=1 --Nz=1"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
-exclude_datasets="--exclude-path=/bar_f        \
-                  --exclude-path=/bar_qb       \
-                  --exclude-path=/bar_f_dot_u"
+exclude_datasets="--exclude-path=/bar_f            \
+                  --exclude-path=/bar_qb           \
+                  --exclude-path=/bar_f_dot_u      \
+                  --exclude-path=/bar_Crho         \
+                  --exclude-path=/bar_Crhou        \
+                  --exclude-path=/bar_CrhoE        \
+                  --exclude-path=/bar_Crhou_dot_u"
 exclude_datasets=$(echo $exclude_datasets | tr -d '\n' | tr -s ' ')
 
 # Run each test case in this file under the following circumstances

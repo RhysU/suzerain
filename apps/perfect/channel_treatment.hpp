@@ -51,8 +51,10 @@ namespace suzerain { namespace perfect {
  * construction time.
  *
  * Means of the implicit momentum and energy forcing coefficients are also
- * maintained across each individual time step for sampling the statistics
- * /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock.
+ * maintained across each individual time step for sampling the statistics \c
+ * /bar_f, \c /bar_f_dot_u, \c and /bar_qb using OperatorCommonBlock.  Integral
+ * constraint means are also tracked for sampling \c /bar_Crho, \c /bar_Crhou,
+ * \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c /bar_Crhou_dot_u.
  */
 template< typename BaseClass >
 class ChannelTreatment : public BaseClass
@@ -322,6 +324,14 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         common.f_dot_u() += iota_alpha*(/* zero */ - common.f_dot_u());
 
     }
+
+    // FIXME Appropriately track Crho{,u,v,w,E,_dot_u} (Redmine #2568)
+    common.Crho()        += iota_alpha*(/* zero */ - common.Crho()       );
+    common.Crhou()       += iota_alpha*(/* zero */ - common.Crhou()      );
+    common.Crhov()       += iota_alpha*(/* zero */ - common.Crhov()      );
+    common.Crhow()       += iota_alpha*(/* zero */ - common.Crhow()      );
+    common.CrhoE()       += iota_alpha*(/* zero */ - common.CrhoE()      );
+    common.Crhou_dot_u() += iota_alpha*(/* zero */ - common.Crhou_dot_u());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }

@@ -1410,6 +1410,18 @@ mean sample_mean_quantities(
                 sum_mu_grad_T[1](mu * grad_T.y());
                 sum_mu_grad_T[2](mu * grad_T.z());
 
+                // TODO Sum mean slow growth forcing contributions (Redmine #2496)
+
+                sum_Srho[0](0);
+
+                sum_Srhou[0](0);
+                sum_Srhou[1](0);
+                sum_Srhou[2](0);
+
+                sum_SrhoE[0](0);
+
+                sum_Srhou_dot_u[0](0);
+
             } // end X
 
         } // end Z

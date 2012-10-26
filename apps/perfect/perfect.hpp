@@ -275,16 +275,24 @@ public:
     ((rho_mu,            1))  /* scalar           */ \
     ((mu_S,              6))  /* symmetric tensor */ \
     ((mu_div_u,          1))  /* scalar           */ \
-    ((mu_grad_T,         3))  /* vector           */
+    ((mu_grad_T,         3))  /* vector           */ \
+    ((Srho,              1))  /* scalar           */ \
+    ((Srhou,             3))  /* vector           */ \
+    ((SrhoE,             1))  /* scalar           */ \
+    ((Srhou_dot_u,       1))  /* scalar           */
 
 /**
  * A Boost.Preprocessor sequence of tuples of quantities computed
  * through implicit forcing.
  */
 #define CHANNEL_MEAN_IMPLICIT                               \
-    ((f,                        3))  /* vector           */ \
-    ((qb,                       1))  /* scalar           */ \
-    ((f_dot_u,                  1))  /* scalar           */
+    ((f,                 3))  /* vector           */ \
+    ((qb,                1))  /* scalar           */ \
+    ((f_dot_u,           1))  /* scalar           */ \
+    ((Crho,              1))  /* scalar           */ \
+    ((Crhou,             3))  /* vector           */ \
+    ((CrhoE,             1))  /* scalar           */ \
+    ((Crhou_dot_u,       1))  /* scalar           */
 
 /** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
 #define CHANNEL_MEAN \

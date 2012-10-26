@@ -138,7 +138,19 @@ namespace quantity {
     ((bar_fy,               "Reynolds-averaged y-component of the momentum forcing"))                                     \
     ((bar_fz,               "Reynolds-averaged z-component of the momentum forcing"))                                     \
     ((bar_qb,               "Reynolds-averaged volumetric energy forcing"))                                               \
-    ((bar_f_dot_u,          "Reynolds-averaged energy contribution due to momentum forcing work"))
+    ((bar_f_dot_u,          "Reynolds-averaged energy contribution due to momentum forcing work"))                        \
+    ((bar_Srho,             "Reynolds-averaged mass contributions due to slow growth forcing"))                           \
+    ((bar_Srhou,            "Reynolds-averaged streamwise momentum contributions due to slow growth forcing"))            \
+    ((bar_Srhov,            "Reynolds-averaged wall-normal momentum contributions due to slow growth forcing"))           \
+    ((bar_Srhow,            "Reynolds-averaged spanwise momentum contributions due to slow growth forcing"))              \
+    ((bar_SrhoE,            "Reynolds-averaged total energy contributions due to slow growth forcing"))                   \
+    ((bar_Srhou_dot_u,      "Reynolds-averaged energy contribution due to slow growth forcing work"))                     \
+    ((bar_Crho,             "Reynolds-averaged mass contributions due to various integral constraints"))                  \
+    ((bar_Crhou,            "Reynolds-averaged streamwise momentum contributions due to various integral constraints"))   \
+    ((bar_Crhov,            "Reynolds-averaged wall-normal momentum contributions due to various integral constraints"))  \
+    ((bar_Crhow,            "Reynolds-averaged spanwise momentum contributions due to various integral constraints"))     \
+    ((bar_CrhoE,            "Reynolds-averaged total energy contributions due to various integral constraints"))          \
+    ((bar_Crhou_dot_u,      "Reynolds-averaged energy contribution due to work by various integral constraints"))
 
 /** A Boost.Preprocessor sequence of tuples of indirectly sampled (i.e. derived) quantities.  */
 #define SEQ_DERIVED                                                                                                                                                 \
@@ -171,6 +183,8 @@ namespace quantity {
     ((bar_vpp,                "Reynolds-averaged Favre-fluctuating wall-normal velocity"))                                                                          \
     ((bar_wpp,                "Reynolds-averaged Favre-fluctuating spanwise velocity"))                                                                             \
     ((bar_f_dot_upp,          "Reynolds-averaged momentum forcing dotted with fluctuating velocity"))                                                               \
+    ((bar_Srhou_dot_upp,      "Reynolds-averaged energy contribution due to slow growth forcing work dotted with fluctuating velocity"))                            \
+    ((bar_Crhou_dot_upp,      "Reynolds-averaged energy contribution due to work by various integral constraints dotted with fluctuating velocity"))                \
     ((bar_tauuppx,            "Reynolds-averaged x-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
     ((bar_tauuppy,            "Reynolds-averaged y-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
     ((bar_tauuppz,            "Reynolds-averaged z-component of the viscous stress tensor times the Favre-fluctuating velocity"))                                   \
@@ -802,6 +816,18 @@ static quantity::storage_map_type process(
     ACCUMULATE(f,                2, bar_fz                );
     ACCUMULATE(qb,               0, bar_qb                );
     ACCUMULATE(f_dot_u,          0, bar_f_dot_u           );
+    ACCUMULATE(Srho,             0, bar_Srho              );
+    ACCUMULATE(Srhou,            0, bar_Srhou             );
+    ACCUMULATE(Srhou,            1, bar_Srhov             );
+    ACCUMULATE(Srhou,            2, bar_Srhow             );
+    ACCUMULATE(SrhoE,            0, bar_SrhoE             );
+    ACCUMULATE(Srhou_dot_u,      0, bar_Srhou_dot_u       );
+    ACCUMULATE(Crho,             0, bar_Crho              );
+    ACCUMULATE(Crhou,            0, bar_Crhou             );
+    ACCUMULATE(Crhou,            1, bar_Crhov             );
+    ACCUMULATE(Crhou,            2, bar_Crhow             );
+    ACCUMULATE(CrhoE,            0, bar_CrhoE             );
+    ACCUMULATE(Crhou_dot_u,      0, bar_Crhou_dot_u       );
 #undef ACCUMULATE
 
     // Store time and collocation points into s.
@@ -875,6 +901,14 @@ static quantity::storage_map_type process(
                      - C(bar_fx) * C(tilde_u)
                      - C(bar_fy) * C(tilde_v)
                      - C(bar_fz) * C(tilde_w);
+    C(bar_Srhou_dot_upp) = C(bar_Srhou_dot_u)
+                         - C(bar_Srhou) * C(tilde_u)
+                         - C(bar_Srhov) * C(tilde_v)
+                         - C(bar_Srhow) * C(tilde_w);
+    C(bar_Crhou_dot_upp) = C(bar_Crhou_dot_u)
+                         - C(bar_Crhou) * C(tilde_u)
+                         - C(bar_Crhov) * C(tilde_v)
+                         - C(bar_Crhow) * C(tilde_w);
     C(bar_tauuppx) = C(bar_tauux)
                    - C(bar_tauxx)*C(tilde_u)
                    - C(bar_tauxy)*C(tilde_v)
@@ -1009,6 +1043,10 @@ static quantity::storage_map_type process(
     C(bar_rho__t) =
         // - \nabla\cdot\bar{\rho}\tilde{u}
            - C(bar_rho_v__y)
+        // + \overline{\mathscr{S}_{\rho}}
+           + C(bar_Srho)
+        // + \overline{\mathscr{C}_{\rho}}
+           + C(bar_Crho)
         ;
 
     // Computation of Favre-averaged streamwise momentum residual following writeup
@@ -1023,6 +1061,10 @@ static quantity::storage_map_type process(
            - C(bar_rho)*C(tilde_upp_vpp__y) - C(tilde_upp_vpp)*C(bar_rho__y)
         // + \bar{f}
            + C(bar_fx)
+        // + \overline{\mathscr{S}_{\rho{}u}}
+           + C(bar_Srhou)
+        // + \overline{\mathscr{C}_{\rho{}u}}
+           + C(bar_Crhou)
         ;
 
     // Computation of Favre-averaged wall-normal momentum residual following writeup
@@ -1037,6 +1079,10 @@ static quantity::storage_map_type process(
            - C(bar_rho)*C(tilde_vpp_vpp__y) - C(tilde_vpp_vpp)*C(bar_rho__y)
         // + \bar{f}
            + C(bar_fy)
+        // + \overline{\mathscr{S}_{\rho{}u}}
+           + C(bar_Srhov)
+        // + \overline{\mathscr{C}_{\rho{}u}}
+           + C(bar_Crhov)
         ;
 
     // Computation of Favre-averaged spanwise momentum residual following writeup
@@ -1051,6 +1097,10 @@ static quantity::storage_map_type process(
            - C(bar_rho)*C(tilde_vpp_wpp__y) - C(tilde_vpp_wpp)*C(bar_rho__y)
         // + \bar{f}
            + C(bar_fz)
+        // + \overline{\mathscr{S}_{\rho{}u}}
+           + C(bar_Srhow)
+        // + \overline{\mathscr{C}_{\rho{}u}}
+           + C(bar_Crhow)
         ;
 
     // Computation of Favre-averaged total energy residual following writeup
@@ -1092,6 +1142,10 @@ static quantity::storage_map_type process(
        + Ma*Ma*C(bar_f_dot_upp)
     // + \bar{q}_b
        + C(bar_qb)
+    // + \overline{\mathscr{S}_{\rho{}E}}
+       + C(bar_SrhoE)
+    // + \overline{\mathscr{C}_{\rho{}E}}
+       + C(bar_CrhoE)
         ;
 
     // Computation of Favre-averaged turbulent kinetic energy residual following writeup
@@ -1119,6 +1173,10 @@ static quantity::storage_map_type process(
                    - C(tilde_Tpp_vpp)*C(bar_rho__y)/gamma )
     // + \overline{f\cdot{}u''}
        + C(bar_f_dot_upp)
+    // + \overline{\mathscr{S}_{\rho{}u}\cot{}upp}
+       + C(bar_Srhou_dot_upp)
+    // + \overline{\mathscr{C}_{\rho{}u}\cot{}upp}
+       + C(bar_Crhou_dot_upp)
         ;
 
 #undef C

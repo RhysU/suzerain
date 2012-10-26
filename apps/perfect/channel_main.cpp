@@ -452,13 +452,23 @@ static void sample_statistics(real_t t)
     if (common_block.means.rows() == samples.storage.rows()) {
        samples.f().col(0) = common_block.f();  // Only streamwise momentum...
        samples.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
-       samples.f_dot_u() = common_block.f_dot_u();
-       samples.qb()      = common_block.qb();
+       samples.f_dot_u()      = common_block.f_dot_u();
+       samples.qb()           = common_block.qb();
+       samples.Crho()         = common_block.Crho();
+       samples.Crhou().col(0) = common_block.Crhou();
+       samples.Crhou().col(1) = common_block.Crhov();
+       samples.Crhou().col(2) = common_block.Crhow();
+       samples.CrhoE()        = common_block.CrhoE();
+       samples.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
         WARN0("Could not obtain mean samples computed from implicit forcing");
-        samples.f      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.f_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.qb     ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        samples.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
     }
 
     const double elapsed = MPI_Wtime() - starttime;

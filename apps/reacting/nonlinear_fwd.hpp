@@ -47,7 +47,7 @@ public:
 private:
 
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Eigen::Array<real_t, Eigen::Dynamic,  4, Eigen::ColMajor> means_t;
+    typedef Eigen::Array<real_t, Eigen::Dynamic, 16, Eigen::ColMajor> means_t;
 
     /** Type of the contiguous storage housing all reference quantities */
     typedef Eigen::Array<real_t, 26, Eigen::Dynamic, Eigen::ColMajor> refs_t;
@@ -56,19 +56,60 @@ public:
 
     /**
      * The mean quantities stored in \c means are as follows:
-     * \li \c u  The nonlinear operator computes the instantaneous spatial
-     *     (x, z) mean streamwise velocity profile as collocation point
-     *     values.  The linear operator then uses the information to
-     *     compute the
-     *     implicit \f$f\cdot{}u\f$ term in the total energy equation.
-     * \li \c f The linear operator accumulates the time-step-specific
+     * \li \c u  The \e nonlinear operator computes the instantaneous spatial
+     *     (x, z) mean streamwise velocity profile as collocation point values.
+     *     The \e linear operator then uses the information to compute the
+     *     implicit \f$f\cdot{}u\f$ and $\mathscr{C}_{\rho{}u}\cdot{}u$ terms
+     *     in the total energy equation.
+     * \li \c Srho The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}}\f$ term
+     *     in the density equation stored as collocation point values.
+     * \li \c Srhou The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}u}\f$ term
+     *     in the streamwise (x) momentum equation stored as collocation point
+     *     values.
+     * \li \c Srhov The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}v}\f$ term
+     *     in the wall-normal (y) momentum equation stored as collocation point
+     *     values.
+     * \li \c Srhow The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}w}\f$ term
+     *     in the spanwise momentum equation stored as collocation point
+     *     values.
+     * \li \c SrhoE The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}E}\f$ term
+     *     in the energy equation stored as collocation point values.
+     * \li \c Srhou_dot_u The \e nonlinear operator accumulates the
+     *     time-step-specific temporal mean of the implicit
+     *     \f$\mathscr{S}_{\rho{}u}\cdot{}u\f$ term in the energy equation
+     *     stored as collocation point values.
+     * \li \c f The \e linear operator accumulates the time-step-specific
      *     temporal mean streamwise (x) component of the implicit \f$f\f$
      *     term in the momentum equation stored as coefficients.
-     * \li \c f_dot_u The linear operator accumulates the
-     *     time-step-specific temporal mean the implicit \f$f\cdot{}u\f$
+     * \li \c f_dot_u The \e linear operator accumulates the
+     *     time-step-specific temporal mean of the implicit \f$f\cdot{}u\f$
      *     term in the energy equation stored as coefficients.
-     * \li \c qb The linear operator accumulates the time-step-specific
-     *     temporal mean the implicit \f$q_b\f$ term in the energy equation
+     * \li \c qb The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$q_b\f$ term in the energy equation
+     *     stored as coefficients.
+     * \li \c Crho The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}}\f$ term
+     *     in the density equation stored as coefficients.
+     * \li \c Crhou The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}u}\f$ term
+     *     in the streamwise (x) momentum equation stored as coefficients.
+     * \li \c Crhov The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}v}\f$ term
+     *     in the wall-normal (y) momentum equation stored as coefficients.
+     * \li \c Crhow The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}w}\f$ term
+     *     in the spanwise momentum equation stored as coefficients.
+     * \li \c CrhoE The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}E}\f$ term
+     *     in the energy equation stored as coefficients.
+     * \li \c Crhou_dot_u The \e linear operator accumulates the
+     *     time-step-specific temporal mean of the implicit
+     *     \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ term in the energy equation
      *     stored as coefficients.
      *
      * "Time-step-specific temporal means" are time averages taken across
@@ -88,17 +129,42 @@ public:
     /** Column-major storage housing all mean quantities (one per column). */
     means_t means;
 
-    means_t::ColXpr      u()             { return means.col(0); }
-    means_t::ColXpr      f()             { return means.col(1); }
-    means_t::ColXpr      f_dot_u()       { return means.col(2); }
-    means_t::ColXpr      qb()            { return means.col(3); }
+    means_t::ColXpr      u()                 { return means.col( 0); }
+    means_t::ColXpr      Srho()              { return means.col( 1); }
+    means_t::ColXpr      Srhou()             { return means.col( 2); }
+    means_t::ColXpr      Srhov()             { return means.col( 3); }
+    means_t::ColXpr      Srhow()             { return means.col( 4); }
+    means_t::ColXpr      SrhoE()             { return means.col( 5); }
+    means_t::ColXpr      Srhou_dot_u()       { return means.col( 6); }
+    means_t::ColXpr      f()                 { return means.col( 7); }
+    means_t::ColXpr      f_dot_u()           { return means.col( 8); }
+    means_t::ColXpr      qb()                { return means.col( 9); }
+    means_t::ColXpr      Crho()              { return means.col(10); }
+    means_t::ColXpr      Crhou()             { return means.col(11); }
+    means_t::ColXpr      Crhov()             { return means.col(12); }
+    means_t::ColXpr      Crhow()             { return means.col(13); }
+    means_t::ColXpr      CrhoE()             { return means.col(14); }
+    means_t::ColXpr      Crhou_dot_u()       { return means.col(15); }
 
-    means_t::ConstColXpr u()       const { return means.col(0); }
-    means_t::ConstColXpr f()       const { return means.col(1); }
-    means_t::ConstColXpr f_dot_u() const { return means.col(2); }
-    means_t::ConstColXpr qb()      const { return means.col(3); }
+    means_t::ConstColXpr u()           const { return means.col( 0); }
+    means_t::ConstColXpr Srho()        const { return means.col( 1); }
+    means_t::ConstColXpr Srhou()       const { return means.col( 2); }
+    means_t::ConstColXpr Srhov()       const { return means.col( 3); }
+    means_t::ConstColXpr Srhow()       const { return means.col( 4); }
+    means_t::ConstColXpr SrhoE()       const { return means.col( 5); }
+    means_t::ConstColXpr Srhou_dot_u() const { return means.col( 6); }
+    means_t::ConstColXpr f()           const { return means.col( 7); }
+    means_t::ConstColXpr f_dot_u()     const { return means.col( 8); }
+    means_t::ConstColXpr qb()          const { return means.col( 9); }
+    means_t::ConstColXpr Crho()        const { return means.col(10); }
+    means_t::ConstColXpr Crhou()       const { return means.col(11); }
+    means_t::ConstColXpr Crhov()       const { return means.col(12); }
+    means_t::ConstColXpr Crhow()       const { return means.col(13); }
+    means_t::ConstColXpr CrhoE()       const { return means.col(14); }
+    means_t::ConstColXpr Crhou_dot_u() const { return means.col(15); }
 
     /** @} */
+
 
     /**
      *
