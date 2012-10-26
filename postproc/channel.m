@@ -38,9 +38,10 @@ more off;
 if exist('arsel', 'file') != 3
     error('Did not detect arsel(...).  See https://github.com/rhysu/ar');
 end
-if exist('arcov', 'file') != 3
-    error('Did not detect arcov(...).  See https://github.com/rhysu/ar');
-end
+%%% arcov not currently used and detection is giving problems.
+%% if exist('arcov', 'file') != 3
+%%     error('Did not detect arcov(...).  See https://github.com/rhysu/ar');
+%% end
 
 % Load specified files arguments if invoked from command line
 % TODO Permit batch processing across multiple data sets
