@@ -444,19 +444,19 @@ so further assume
 
 \subsection{Slow growth models}
 \label{sec:slowgrowthmodels}
-A useful approach to perform DNS on some turbulent flow configurations where the
-flow develops in space or time is to perform a homogenization, using the
-assumption of slow variation (or slow growth) of the mean and rms quantities
-as related to the fast variation of turbulent fluctuations. This
-homogenization procedure allows to simulate the turbulent flow at a specific
-stage of the development in space or time. Examples of these procedures are the
-works of Spalart ~\citep{Spalart1988Direct} for incompressible boundary layers,
-and of Venugopal ~\citep{Venugopal2003} for channel flow with wall injection.
-In practice, the slow growth approach introduces source terms in the
-Navier--Stokes equations, were their functional form are specific to the flow
-configuration that was homogenized and on modeling assumption. These slow
-growth sources will be generically designated with $\Ssd$.
-
+A useful approach when performing direct numerical simulation (DNS) on
+turbulent flow configurations where the flow develops in space or time is to
+perform a homogenization, using the assumption of slow variation (or slow
+growth) of the mean and root-mean-squared (RMS) fluctuating quantities as
+related to the fast variation of turbulent fluctuations.  This homogenization
+procedure allows to simulate the turbulent flow at a specific stage of the
+development in space or time.  Examples of these procedures are the works of
+Spalart~\citep{Spalart1988Direct} for incompressible boundary layers, and of
+Venugopal~\citep{Venugopal2003} for channel flow with wall injection.  In
+practice, the slow growth approach introduces source terms in the
+Navier--Stokes equations, where their functional forms are specific to the flow
+configuration that was homogenized and on various modeling assumptions.  These
+slow growth sources will be generically designated with $\Ssd$.
 
 \subsection{Dimensional equations}
 \label{sec:dimensionalmodelequations}
