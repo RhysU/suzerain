@@ -286,12 +286,11 @@ wall-normal direction are not discretely conservative it is desirable to add an
 integral constraint on the bulk density $\bar{\rho}$.  Handling two distinct
 constraints prevents hiding the cost entirely using the imaginary part of the
 ``zero zero'' collocation points.  Instead, separate constraint-solving logic
-is necessary.
+is necessary.  And, because $L$ may couple all equations, we must
+simultaneously solve for all constraint coefficients.
 
-\subsection{Analysis}
-
-The ideas leading up to \eqref{eq:phitarget} continue to hold.  With coupling
-amongst all equations, the time step advance is
+The ideas leading up to \eqref{eq:phitarget} continue to hold.  With possible
+coupling amongst all equations, the time step advance is
 \begin{align}
   \left(M - \Delta{}t\beta_{i}L\right)
   \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i+1}
@@ -314,42 +313,40 @@ amongst all equations, the time step advance is
 Let $\Gamma_\rho$ and $\Gamma_{m_x}$ be the target values for $\bar{\rho}$ and
 $\overline{\rho{}u}$, respectively.  Denote by $c_\rho$ the coefficient vector
 that, when dotted against the state vector, will compute $\bar{\rho}$.
-Similarly for $c_{m_x}$.  We wish to apply the bulk density target first as it
-will perturb the bulk momentum while the converse is not true.
+Similarly for $c_{m_x}$.  Again, $A = M - \Delta{}t \beta_i L$ and $\vec{n}$ is
+the intermediate right hand side.
 
 It follows that
 \begin{align}
-  \phi_\rho &= \frac{
-      \Gamma_\rho - c_\rho \cdot{} A^{-1} \vec{n}
-  }{
-      c_\rho \cdot{} A^{-1}
-      \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
-  }
+  \begin{bmatrix}
+    c_\rho \cdot A^{-1} \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+    &
+    c_\rho \cdot A^{-1} \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+    \\
+    c_{m_x} \cdot A^{-1} \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+    &
+    c_{m_x} \cdot A^{-1} \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+  \end{bmatrix}
+  \begin{bmatrix}
+    \phi_\rho
+    \\
+    \phi_{m_x}
+  \end{bmatrix}
+&=
+  \begin{bmatrix}
+    \Gamma_\rho - c_\rho \cdot{} A^{-1} \vec{n}
+    \\
+    \Gamma_{m_x} - c_{m_x} \cdot{} A^{-1} \vec{n}
+  \end{bmatrix}
+.
 \end{align}
-and
-\begin{align}
-  \phi_{m_x} &= \frac{
-      \Gamma_{m_x} - c_{m_x} \cdot{} \left(
-          A^{-1} \vec{n}
-        + \phi_\rho A^{-1}
-          \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
-      \right)
-  }{
-      c_{m_x} \cdot{} A^{-1}
-      \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
-  }
-\end{align}
-
-\subsection{Implementation}
-
-With combined $\bar{\rho}$ and $\overline{\rho{}u}$ constraints and separate
-constraint-solving logic, the implementation follows directly from the
-expressions in the previous section.  Sampling considerations may dictate
-that several intermediate values are combined prior to mean sampling
-computations.
+This system determines the constraint coefficients $\phi_\rho$ and
+$\phi_{m_x}$.  To be robust in the case where one or the other forcing is not
+desired or where the two forcing constraints otherwise become degenerate in
+some fashion, a least squares solution to these constraints may be used.
 
 % FIXME May change when wall-transpiration employed as adding
-%       multiple integral constraints could impact no-slip?
+%       multiple integral constraints could impact no-slip
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
