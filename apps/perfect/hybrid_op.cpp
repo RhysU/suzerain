@@ -353,7 +353,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index,
-        multi_array::ref<complex_t,4> * const ic0) const
+        multi_array::ref<complex_t,4> *ic0) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction

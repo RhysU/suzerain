@@ -700,7 +700,7 @@ public:
             const IMethod<element>& method,
             const component delta_t,
             const std::size_t substep_index,
-            StateA * const ic0 = NULL) const = 0;
+            StateA *ic0 = NULL) const = 0;
 
     /** Virtual destructor for peace of mind. */
     virtual ~ILinearOperator() {}
@@ -848,7 +848,7 @@ public:
             const IMethod<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0,
-            StateA * const ic0 = NULL) const
+            StateA *ic0 = NULL) const
     {
         SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(delta_t);

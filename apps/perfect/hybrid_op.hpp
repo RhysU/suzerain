@@ -111,7 +111,7 @@ public:
             const timestepper::lowstorage::IMethod<complex_t> &method,
             const component delta_t,
             const std::size_t substep_index,
-            multi_array::ref<complex_t,4> * const ic0 = NULL) const;
+            multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
 protected:
 
