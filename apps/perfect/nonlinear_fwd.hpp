@@ -59,9 +59,8 @@ public:
     /**
      * The mean quantities stored in \c means are as follows:
      * \li \c u  The nonlinear operator computes the instantaneous spatial
-     *     (x, z) mean streamwise velocity profile as collocation point
-     *     values.  The linear operator then uses the information to
-     *     compute the
+     *     (x, z) mean streamwise velocity profile as collocation point values.
+     *     The linear operator then uses the information to compute the
      *     implicit \f$f\cdot{}u\f$ term in the total energy equation.
      * \li \c f The linear operator accumulates the time-step-specific
      *     temporal mean streamwise (x) component of the implicit \f$f\f$
