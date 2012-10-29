@@ -267,6 +267,7 @@ public:
     ((u,                 3))  /* vector           */ \
     ((sym_grad_u,        6))  /* symmetric tensor */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
+    ((grad_T,            3))  /* vector           */ \
     ((rho_grad_T,        3))  /* vector           */ \
     ((tau_colon_grad_u,  1))  /* scalar           */ \
     ((tau,               6))  /* symmetric tensor */ \

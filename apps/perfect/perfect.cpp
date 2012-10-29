@@ -1365,6 +1365,10 @@ mean sample_mean_quantities(
                 sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
                 sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
 
+                sum_grad_T[0](grad_T.x());
+                sum_grad_T[1](grad_T.y());
+                sum_grad_T[2](grad_T.z());
+
                 sum_rho_grad_T[0](rho * grad_T.x());
                 sum_rho_grad_T[1](rho * grad_T.y());
                 sum_rho_grad_T[2](rho * grad_T.z());

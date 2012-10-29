@@ -98,6 +98,9 @@ namespace quantity {
     ((bar_symyy_rho_grad_u, "Symmetric part (y,y)-component of Reynolds-averaged density times velocity gradient"))       \
     ((bar_symyz_rho_grad_u, "Symmetric part (y,z)-component of Reynolds-averaged density times velocity gradient"))       \
     ((bar_symzz_rho_grad_u, "Symmetric part (z,z)-component of Reynolds-averaged density times velocity gradient"))       \
+    ((bar_gradx_T,          "Reynolds-averaged x-component of temperature gradient"))                                     \
+    ((bar_grady_T,          "Reynolds-averaged y-component of temperature gradient"))                                     \
+    ((bar_gradz_T,          "Reynolds-averaged z-component of temperature gradient"))                                     \
     ((bar_rho_gradx_T,      "Reynolds-averaged x-component of density times temperature gradient"))                       \
     ((bar_rho_grady_T,      "Reynolds-averaged y-component of density times temperature gradient"))                       \
     ((bar_rho_gradz_T,      "Reynolds-averaged z-component of density times temperature gradient"))                       \
@@ -783,6 +786,9 @@ static quantity::storage_map_type process(
     ACCUMULATE(sym_rho_grad_u,   3, bar_symyy_rho_grad_u  );
     ACCUMULATE(sym_rho_grad_u,   4, bar_symyz_rho_grad_u  );
     ACCUMULATE(sym_rho_grad_u,   5, bar_symzz_rho_grad_u  );
+    ACCUMULATE(grad_T,           0, bar_gradx_T           );
+    ACCUMULATE(grad_T,           1, bar_grady_T           );
+    ACCUMULATE(grad_T,           2, bar_gradz_T           );
     ACCUMULATE(rho_grad_T,       0, bar_rho_gradx_T       );
     ACCUMULATE(rho_grad_T,       1, bar_rho_grady_T       );
     ACCUMULATE(rho_grad_T,       2, bar_rho_gradz_T       );
