@@ -436,8 +436,10 @@ std::vector<real_t> applyNonlinearOperator(
         common.refs /= (   o.dgrid.global_physical_extent.x()
                          * o.dgrid.global_physical_extent.z());
 
-        // Copy mean streamwise velocity information into common.u()
+        // Copy mean velocity information into common.{u, v, w}()
         common.u() = common.ref_ux();
+        common.v() = common.ref_uy();
+        common.w() = common.ref_uz();
 
     } else {                                 // Mean velocity profile only
 
@@ -448,50 +450,71 @@ std::vector<real_t> applyNonlinearOperator(
             common.refs.setZero();
         }
 
+        // Logic below here absolutely requires common.{u,v,w}() be housed
+        // in the leftmost three columns of common.means.  Be sure.
+        assert(common.means.data() == &common.u()[0]);
+        assert(&common.u()[0] + common.means.rows() == &common.v()[0]);
+        assert(&common.v()[0] + common.means.rows() == &common.w()[0]);
+
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t topNotOnRank = o.dgrid.local_physical_start.y();
-        if (topNotOnRank) common.u().topRows(topNotOnRank).setZero();
+        if (topNotOnRank) {
+            common.means.leftCols<3>().topRows(topNotOnRank).setZero();
+        }
 
-        // Sum streamwise velocities as a function of y(j) into common.u()
+        // Sum velocities as a function of y(j) into common.{u,v,w}()
         size_t offset = 0;
         for (int j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
             summing_accumulator_type ux;
+            summing_accumulator_type uy;
+            summing_accumulator_type uz;
 
             const size_t last_zxoffset = offset
                                        + o.dgrid.local_physical_extent.z()
                                        * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
-                ux(sphys(ndx::mx, offset)/sphys(ndx::rho, offset));
+                const real_t inv_rho = 1 / sphys(ndx::rho, offset);
+                ux(inv_rho * sphys(ndx::mx, offset));
+                uy(inv_rho * sphys(ndx::my, offset));
+                uz(inv_rho * sphys(ndx::mz, offset));
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
             common.u()[j] = boost::accumulators::sum(ux);
+            common.v()[j] = boost::accumulators::sum(uy);
+            common.w()[j] = boost::accumulators::sum(uz);
 
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t bottomNotOnRank = common.u().rows()
+        const size_t bottomNotOnRank = common.means.leftCols<3>().rows()
                                      - o.dgrid.local_physical_end.y();
-        if (bottomNotOnRank) common.u().bottomRows(bottomNotOnRank).setZero();
+        if (bottomNotOnRank) {
+            common.means.leftCols<3>().bottomRows(bottomNotOnRank).setZero();
+        }
 
-        // Reduce and scale common.u() sums to obtain mean on zero-zero rank
+        // Reduce, scale common.{u,v,w}() sums to obtain mean on zero-zero rank
         // Only zero-zero rank needs the information so Reduce is sufficient
         if (o.dgrid.has_zero_zero_modes()) {
-            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE, common.u().data(),
-                    common.u().size(), mpi::datatype<real_t>::value,
-                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-            common.u() /= (   o.dgrid.global_physical_extent.x()
-                            * o.dgrid.global_physical_extent.z());
+            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
+                        common.means.leftCols<3>().data(),
+                        common.means.leftCols<3>().size(),
+                        mpi::datatype<real_t>::value, MPI_SUM,
+                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            common.means.leftCols<3>()
+                    /= (   o.dgrid.global_physical_extent.x()
+                         * o.dgrid.global_physical_extent.z());
         } else {
-            ArrayXr tmp;
-            tmp.resizeLike(common.u());
+            ArrayXXr tmp;
+            tmp.resizeLike(common.means.leftCols<3>());
             tmp.setZero();
-            SUZERAIN_MPICHKR(MPI_Reduce(common.u().data(), tmp.data(),
-                    common.u().size(), mpi::datatype<real_t>::value,
-                    MPI_SUM, o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+            SUZERAIN_MPICHKR(MPI_Reduce(common.means.leftCols<3>().data(),
+                        tmp.data(), common.means.leftCols<3>().size(),
+                        mpi::datatype<real_t>::value, MPI_SUM,
+                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         }
 
     }
