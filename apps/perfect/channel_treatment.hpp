@@ -217,12 +217,9 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     if (this->dgrid.has_zero_zero_modes()) {
 
         // Prepare data for bulk density and bulk momentum constraints
-        // Nondimensionalization requires scaling forcing work by Mach^2
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
         cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
-                                                       * scenario.Ma
-                                                       * common.u();
+        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = common.u();
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
@@ -275,11 +272,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         cphi.setZero();                       // Neither constraint applied
     }
 
-    // Mutate constraint data by scaling and then add to the mean state
-    cdata.col(0) *= cphi(0);
-    mean += cdata.col(0);
-    cdata.col(1) *= cphi(1);
-    mean += cdata.col(1);
+    // Add scaled constraints to the mean state
+    mean += cphi(0)*cdata.col(0) + cphi(1)*cdata.col(1);
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
@@ -291,89 +285,24 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     const real_t iota_alpha   = method.iota_alpha(substep_index);
     const real_t inv_alpha_dt = 1 / (method.alpha(substep_index)*delta_t);
 
-    // Fully-coupled implicit solves can cause either constraint, when coupled
-    // with boundary conditions, to impact every equation and so we must
-    // accommodate that unpleasant possibility.
-    //
-    // Separately tracking the bulk_rho_u constraint as a
-    // pressure-gradient-like forcing f doing work f_dot_u is desirable.
-    // All other impacts are lumped into Crho{,u,v,w,E,u_dot_u}.  That is,
-    //
-    //     -----   --------Constraint--------
-    //      Eqn    bulk_rho  bulk_rho_u  zero
-    //     -----   --------------------------
-    //     rho_E   CrhoE     f_dot_u
-    //     rho_u   Crhou     f
-    //     rho_v   Crhov     Crhov
-    //     rho_w   Crhow     Crhow
-    //     rho     Crho      Crho        qb
-    //     -----   --------------------------
-    //
-    // The logic is a bit convoluted to avoid introducing temporaries.  Sorry.
-
-    // First, track physically-oriented forcing
-    common.f()       += iota_alpha*(
-                            inv_alpha_dt*cdata.col(1).segment(ndx::mx * Ny, Ny)
-                                                     .real().array()
-                          - common.f()
-                        );
-    cdata.col(1).segment(ndx::mx * Ny, Ny).setZero();  // Mark done
-    common.f_dot_u() += iota_alpha*(
-                            inv_alpha_dt*cdata.col(1).segment(ndx::e  * Ny, Ny)
-                                                     .real().array()
-                          - common.f_dot_u()
-                        );
-    cdata.col(1).segment(ndx::e  * Ny, Ny).setZero();  // Mark done
-    common.qb()      += iota_alpha*(
-                            /* inv_alpha_dt * zero */  // No bulk heating
-                          - common.qb()
-                        );
-
-    // Second, merge and track any remaining numerically-oriented quantities
-    cdata.col(0) = cdata.rowwise().sum();
-    common.CrhoE() += iota_alpha*(
-                          inv_alpha_dt*cdata.col(0).segment(ndx::e  * Ny, Ny)
-                                                   .real().array()
-                        - common.CrhoE()
-                      );
-    common.Crhou() += iota_alpha*(
-                          inv_alpha_dt*cdata.col(0).segment(ndx::mx * Ny, Ny)
-                                                   .real().array()
-                        - common.Crhou()
-                      );
-    common.Crhov() += iota_alpha*(
-                          inv_alpha_dt*cdata.col(0).segment(ndx::my * Ny, Ny)
-                                                   .real().array()
-                        - common.Crhov()
-                      );
-    common.Crhow() += iota_alpha*(
-                          inv_alpha_dt*cdata.col(0).segment(ndx::mz * Ny, Ny)
-                                                   .real().array()
-                        - common.Crhow()
-                      );
-    common.Crho()  += iota_alpha*(
-                          inv_alpha_dt*cdata.col(0).segment(ndx::rho* Ny, Ny)
-                                                   .real().array()
-                        - common.Crho()
-                      );
-
-    // Last, track the impact of Crho{u,v,w} on the TKE equation
-    // Nondimensionalization requires scaling constraint work by Mach^2
-    common.Crhou_dot_u() += iota_alpha*(
-                              (inv_alpha_dt*scenario.Ma*scenario.Ma)
-                                *cdata.col(0).segment(ndx::mx*Ny, Ny)
-                                             .real().array()
-                                *common.u()
-                            + (inv_alpha_dt*scenario.Ma*scenario.Ma)
-                                *cdata.col(0).segment(ndx::my*Ny, Ny)
-                                             .real().array()
-                                *common.v()
-                            + (inv_alpha_dt*scenario.Ma*scenario.Ma)
-                                *cdata.col(0).segment(ndx::mz*Ny, Ny)
-                                             .real().array()
-                                *common.w()
-                            - common.Crho()
-                          );
+    common.f()           += iota_alpha * (
+                                ArrayX1r::Constant(Ny, inv_alpha_dt * cphi(1))
+                              - common.f()
+                            );
+    common.f_dot_u()     += iota_alpha * (
+                                (inv_alpha_dt * cphi(1)) * common.u()
+                              - common.f_dot_u()
+                            );
+    common.qb()          += iota_alpha * (/* zero */ - common.qb());
+    common.CrhoE()       += iota_alpha * (/* zero */ - common.CrhoE());
+    common.Crhou()       += iota_alpha * (/* zero */ - common.Crhou());
+    common.Crhov()       += iota_alpha * (/* zero */ - common.Crhov());
+    common.Crhow()       += iota_alpha * (/* zero */ - common.Crhow());
+    common.Crho()        += iota_alpha * (
+                                ArrayX1r::Constant(Ny, inv_alpha_dt * cphi(0))
+                              - common.Crho()
+                            );
+    common.Crhou_dot_u() += iota_alpha * (/* zero */ - common.Crhou_dot_u());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }

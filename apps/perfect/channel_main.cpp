@@ -471,6 +471,15 @@ static void sample_statistics(real_t t)
         samples.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
     }
 
+    // Convert implicit values on collocation points to coefficients
+    suzerain::bsplineop_lu mass(*bop);
+    mass.opform_mass(*bop);
+    mass.factor();
+    mass.solve(perfect::mean::nscalars::implicit,
+            samples.storage.middleCols<perfect::mean::nscalars::implicit>(
+                perfect::mean::nscalars::physical).data(),
+            samples.storage.innerStride(), samples.storage.outerStride());
+
     const double elapsed = MPI_Wtime() - starttime;
     INFO0("Computed statistics at t = " << t
           << " in " << elapsed << " seconds");

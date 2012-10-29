@@ -57,64 +57,60 @@ private:
 public:
 
     /**
-     * The mean quantities stored in \c means are as follows:
+     * The mean quantities, stored as collocation point values in \c means,
+     * are as follows:
+     *
      * \li \c u  The \e nonlinear operator computes the instantaneous spatial
-     *     (x, z) mean streamwise velocity profile as collocation point values.
-     *     The \e linear operator then uses the information to compute the
-     *     implicit \f$f\cdot{}u\f$ and $\mathscr{C}_{\rho{}u}\cdot{}u$ terms
-     *     in the total energy equation.
-     * \li \c v  Treated per \c u.
-     * \li \c w  Treated per \c u.
-     * \li \c Srho The \e nonlinear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}}\f$ term
-     *     in the density equation stored as collocation point values.
+     *     (x, z) mean streamwise velocity profile.  The \e linear operator
+     *     then uses the information to compute the implicit \f$f\cdot{}u\f$
+     *     and $\mathscr{C}_{\rho{}u}\cdot{}u$ terms in the total energy
+     *     equation.
+     * \li \c v  Treated identically to \c u.
+     * \li \c w  Treated identically to \c u.
+     * \li \c SrhoE The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}E}\f$ term in
+     *     the energy equation.
      * \li \c Srhou The \e nonlinear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}u}\f$ term
-     *     in the streamwise (x) momentum equation stored as collocation point
-     *     values.
+     *     in the streamwise (x) momentum equation.
      * \li \c Srhov The \e nonlinear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}v}\f$ term
-     *     in the wall-normal (y) momentum equation stored as collocation point
-     *     values.
+     *     in the wall-normal (y) momentum equation.
      * \li \c Srhow The \e nonlinear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}w}\f$ term
-     *     in the spanwise momentum equation stored as collocation point
-     *     values.
-     * \li \c SrhoE The \e nonlinear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}E}\f$ term
-     *     in the energy equation stored as collocation point values.
+     *     in the spanwise momentum equation.
+     * \li \c Srho The \e nonlinear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}}\f$ term
+     *     in the density equation.
      * \li \c Srhou_dot_u The \e nonlinear operator accumulates the
      *     time-step-specific temporal mean of the implicit
-     *     \f$\mathscr{S}_{\rho{}u}\cdot{}u\f$ term in the energy equation
-     *     stored as collocation point values.
+     *     \f$\mathscr{S}_{\rho{}u}\cdot{}u\f$ term in the energy equation.
      * \li \c f The \e linear operator accumulates the time-step-specific
      *     temporal mean streamwise (x) component of the implicit \f$f\f$
-     *     term in the momentum equation stored as coefficients.
+     *     term in the momentum equation.
      * \li \c f_dot_u The \e linear operator accumulates the
      *     time-step-specific temporal mean of the implicit \f$f\cdot{}u\f$
-     *     term in the energy equation stored as coefficients.
+     *     term in the energy equation.
      * \li \c qb The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$q_b\f$ term in the energy equation
-     *     stored as coefficients.
-     * \li \c Crho The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}}\f$ term
-     *     in the density equation stored as coefficients.
-     * \li \c Crhou The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}u}\f$ term
-     *     in the streamwise (x) momentum equation stored as coefficients.
-     * \li \c Crhov The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}v}\f$ term
-     *     in the wall-normal (y) momentum equation stored as coefficients.
-     * \li \c Crhow The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}w}\f$ term
-     *     in the spanwise momentum equation stored as coefficients.
+     *     temporal mean of the implicit \f$q_b\f$ term in the energy equation.
      * \li \c CrhoE The \e linear operator accumulates the time-step-specific
-     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}E}\f$ term
-     *     in the energy equation stored as coefficients.
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}E}\f$ term in
+     *     the energy equation.
+     * \li \c Crhou The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}u}\f$ term in
+     *     the streamwise (x) momentum equation.
+     * \li \c Crhov The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}v}\f$ term in
+     *     the wall-normal (y) momentum equation.
+     * \li \c Crhow The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}w}\f$ term in
+     *     the spanwise momentum equation.
+     * \li \c Crho The \e linear operator accumulates the time-step-specific
+     *     temporal mean of the implicit \f$\mathscr{C}_{\rho{}}\f$ term in the
+     *     density equation.
      * \li \c Crhou_dot_u The \e linear operator accumulates the
      *     time-step-specific temporal mean of the implicit
-     *     \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ term in the energy equation
-     *     stored as coefficients.
+     *     \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ term in the energy equation.
      *
      * "Time-step-specific temporal means" are time averages taken across
      * a single time step of quantities which vary on each substep.
