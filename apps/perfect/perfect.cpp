@@ -1339,6 +1339,8 @@ mean sample_mean_quantities(
                 const Vector3r tau_u = tau * u;
 
                 // Accumulate quantities into sum_XXX using function syntax.
+                sum_E[0](e / rho);
+
                 sum_mu[0](mu);
 
                 sum_nu[0](mu / rho);

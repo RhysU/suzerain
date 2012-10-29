@@ -79,6 +79,7 @@ namespace quantity {
     ((bar_rho_v,            "Reynolds-averaged wall-normal momentum"))                                                    \
     ((bar_rho_w,            "Reynolds-averaged spanwise momentum"))                                                       \
     ((bar_rho_E,            "Reynolds-averaged total (intrinsic plus kinetic) energy"))                                   \
+    ((bar_E,                "Reynolds-averaged total (intrinsic plus kinetic) energy per unit mass"))                     \
     ((bar_mu,               "Reynolds-averaged dynamic viscosity"))                                                       \
     ((bar_nu,               "Reynolds-averaged kinematic viscosity"))                                                     \
     ((bar_u,                "Reynolds-averaged streamwise velocity"))                                                     \
@@ -756,6 +757,7 @@ static quantity::storage_map_type process(
     ACCUMULATE(rho_u,            1, bar_rho_v             );
     ACCUMULATE(rho_u,            2, bar_rho_w             );
     ACCUMULATE(rho_E,            0, bar_rho_E             );
+    ACCUMULATE(E,                0, bar_E                 );
     ACCUMULATE(mu,               0, bar_mu                );
     ACCUMULATE(nu,               0, bar_nu                );
     ACCUMULATE(u,                0, bar_u                 );

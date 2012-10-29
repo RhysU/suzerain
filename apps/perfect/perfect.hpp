@@ -260,6 +260,7 @@ public:
  * space.
  */
 #define CHANNEL_MEAN_PHYSICAL                        \
+    ((E ,                1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
