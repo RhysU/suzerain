@@ -186,6 +186,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
+    SUZERAIN_TIMER_SCOPED("ChannelTreatment");
+
     // Shorthand
     namespace ndx = support::field::ndx;
     OperatorCommonBlock &common = this->common;
@@ -206,29 +208,28 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Have a tantrum if caller expects us to compute any constraints
     SUZERAIN_ENSURE(ic0 == NULL);
 
-    // Constraint data wrapped is kept within constraints:
-    //   constraints.col(0) is for the bulk density constraint
-    //   constraints.col(1) is for the bulk momentum constraint
+    // Constraint data wrapped is kept within cdata:
+    //   cdata.col(0) is for the bulk density constraint
+    //   cdata.col(1) is for the bulk momentum constraint
     //
     // On zero-zero rank, re-use ic0 to wrap data for BaseClass invocation
-    MatrixX2c constraints;
+    MatrixX2c cdata;
     if (this->dgrid.has_zero_zero_modes()) {
 
         // Prepare data for bulk density and bulk momentum constraints
         // Nondimensionalization requires scaling forcing work by Mach^2
-        constraints.resize(state.shape()[0]*Ny, constraints.cols());
-        constraints.setZero();
-        constraints.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        constraints.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
-                                                             * scenario.Ma
-                                                             * common.u();
-        constraints.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
+        cdata.setZero(state.shape()[0]*Ny, cdata.cols());
+        cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
+        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
+                                                       * scenario.Ma
+                                                       * common.u();
+        cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
         const boost::array<std::size_t,4> sizes
-            = {{ state.shape()[0], Ny, constraints.cols(), 1 }};
+            = {{ state.shape()[0], Ny, cdata.cols(), 1 }};
         ic0 = new multi_array::ref<complex_t,4>(
-                constraints.data(), sizes, storage::interleaved<4>());
+                cdata.data(), sizes, storage::interleaved<4>());
     }
 
     // Delegate to BaseClass for the solution procedure
@@ -241,97 +242,138 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Only the rank with zero-zero modes proceeds!
     if (!this->dgrid.has_zero_zero_modes()) return;
 
-    // Means of the implicit momentum and energy forcing coefficients(!) are
-    // maintained across each individual time step for sampling the statistics
-    // /bar_f, /bar_f_dot_u, and /bar_qb using OperatorCommonBlock via
-    // IMethod::iota_alpha a la mean += iota_alpha*(sample - mean).  Note that
-    // the sample must be divided by alpha*delta_t to account for step sizes.
-    const real_t iota_alpha = method.iota_alpha(substep_index);
-    const real_t alpha_dt   = method.alpha(substep_index)*delta_t;
-
-    // Get an Eigen-friendly map of the zero-zero mode
+    // Get an Eigen-friendly map of the zero-zero mode coefficients
     Map<VectorXc> mean(state.origin(), state.shape()[0]*Ny);
 
-    // First, constrain the bulk density if requested
+    // Assemble the matrix problem for simultaneous integral constraints
+    // Notice Matrix2r::operator<< depicts the matrix in row-major fashion
+    Vector2r crhs;
+    crhs <<    scenario.bulk_rho
+             - bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny).real())
+         ,     scenario.bulk_rho_u
+             - bulkcoeff.dot(mean.segment(ndx::mx  * Ny, Ny).real())
+         ;
+    Matrix2r cmat;
+    cmat << bulkcoeff.dot(cdata.col(0).segment(ndx::rho * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::rho * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(0).segment(ndx::mx  * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::mx  * Ny, Ny).real())
+         ;
+    Vector2r cphi;
+
+    // Solve the requested, possibly simultaneous constraint problem
+    if (this->constrain_bulk_rho() && this->constrain_bulk_rho_u()) {
+        enum {options = Eigen::ComputeFullU | Eigen::ComputeFullV};
+        cphi = cmat.jacobiSvd(options).solve(crhs);
+    } else if (this->constrain_bulk_rho()  ) {
+        cphi(0) = crhs(0) / cmat(0,0);        // Solve 1x1 system
+        cphi(1) = 0;                          // bulk_rho_u not applied
+    } else if (this->constrain_bulk_rho_u()) {
+        cphi(0) = 0;                          // bulk_rho not applied
+        cphi(1) = crhs(1) / cmat(1,1);        // Solve 1x1 system
+    } else {
+        cphi.setZero();                       // Neither constraint applied
+    }
+
+    // Mutate constraint data by scaling and then add to the mean state
+    cdata.col(0) *= cphi(0);
+    mean += cdata.col(0);
+    cdata.col(1) *= cphi(1);
+    mean += cdata.col(1);
+
+    // The implicitly applied integral constraints, as coefficients, must be
+    // averaged across each substep to permit accounting for their impact on
+    // the Reynolds averaged equations using IMethod::iota_alpha similar to
     //
-    // We force only the continuity equation which neglects associated
-    // contributions to the momentum and energy equations.  The mass addition
-    // is of order the discrete conservation error and vanishes when the mean
-    // density field is symmetric in the wall-normal direction.  The numerics
-    // artifacts we're combating here are wholly non-physical.
-    if (constrain_bulk_rho()) {
+    //    mean += iota_alpha*(sample/(alpha*delta_t) - mean).
+    //
+    // The alpha*delta_t factor accounts for time step sizes.
+    const real_t iota_alpha   = method.iota_alpha(substep_index);
+    const real_t inv_alpha_dt = 1 / (method.alpha(substep_index)*delta_t);
 
-        // Compute the scaling required to hold the desired constraint
-        const real_t observed = bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny)
-                                                  .real());
-        const real_t forcing  = bulkcoeff.dot(constraints.col(0)
-                                                  .segment(ndx::rho * Ny, Ny)
-                                                  .real());
-        const real_t varphi   = (scenario.bulk_rho - observed) / forcing;
+    // Fully-coupled implicit solves can cause either constraint, when coupled
+    // with boundary conditions, to impact every equation and so we must
+    // accommodate that unpleasant possibility.
+    //
+    // Separately tracking the bulk_rho_u constraint as a
+    // pressure-gradient-like forcing f doing work f_dot_u is desirable.
+    // All other impacts are lumped into Crho{,u,v,w,E,u_dot_u}.  That is,
+    //
+    //     -----   --------Constraint--------
+    //      Eqn    bulk_rho  bulk_rho_u  zero
+    //     -----   --------------------------
+    //     rho_E   CrhoE     f_dot_u
+    //     rho_u   Crhou     f
+    //     rho_v   Crhov     Crhov
+    //     rho_w   Crhow     Crhow
+    //     rho     Crho      Crho        qb
+    //     -----   --------------------------
+    //
+    // The logic is a bit convoluted to avoid introducing temporaries.  Sorry.
 
-        // Apply the constraint across all scalars within the mean state
-        // This permits arbitrary equation coupling within BaseClass
-        mean += varphi * constraints.col(0);
+    // First, track physically-oriented forcing
+    common.f()       += iota_alpha*(
+                            inv_alpha_dt*cdata.col(1).segment(ndx::mx * Ny, Ny)
+                                                     .real().array()
+                          - common.f()
+                        );
+    cdata.col(1).segment(ndx::mx * Ny, Ny).setZero();  // Mark done
+    common.f_dot_u() += iota_alpha*(
+                            inv_alpha_dt*cdata.col(1).segment(ndx::e  * Ny, Ny)
+                                                     .real().array()
+                          - common.f_dot_u()
+                        );
+    cdata.col(1).segment(ndx::e  * Ny, Ny).setZero();  // Mark done
+    common.qb()      += iota_alpha*(
+                            /* inv_alpha_dt * zero */  // No bulk heating
+                          - common.qb()
+                        );
 
-        // Track volumetric energy changes incurred via equation coupling
-        common.qb()      += iota_alpha
-                          * ( (varphi/alpha_dt)*constraints.col(0)
-                                                    .segment(ndx::rho * Ny, Ny)
-                                                    .real().array()
-                              - common.qb()
-                            );
+    // Second, merge and track any remaining numerically-oriented quantities
+    cdata.col(0) = cdata.rowwise().sum();
+    common.CrhoE() += iota_alpha*(
+                          inv_alpha_dt*cdata.col(0).segment(ndx::e  * Ny, Ny)
+                                                   .real().array()
+                        - common.CrhoE()
+                      );
+    common.Crhou() += iota_alpha*(
+                          inv_alpha_dt*cdata.col(0).segment(ndx::mx * Ny, Ny)
+                                                   .real().array()
+                        - common.Crhou()
+                      );
+    common.Crhov() += iota_alpha*(
+                          inv_alpha_dt*cdata.col(0).segment(ndx::my * Ny, Ny)
+                                                   .real().array()
+                        - common.Crhov()
+                      );
+    common.Crhow() += iota_alpha*(
+                          inv_alpha_dt*cdata.col(0).segment(ndx::mz * Ny, Ny)
+                                                   .real().array()
+                        - common.Crhow()
+                      );
+    common.Crho()  += iota_alpha*(
+                          inv_alpha_dt*cdata.col(0).segment(ndx::rho* Ny, Ny)
+                                                   .real().array()
+                        - common.Crho()
+                      );
 
-    } else {
-
-        // No volumetric energy forcing performed current substep
-        common.qb() += iota_alpha*(/* zero */ - common.qb());
-
-    }
-
-    // Second, constrain the bulk momentum if requested
-    if (constrain_bulk_rho_u()) {
-
-        // Compute the scaling required to hold the desired constraint
-        const real_t observed = bulkcoeff.dot(mean.segment(ndx::mx * Ny, Ny)
-                                                  .real());
-        const real_t forcing  = bulkcoeff.dot(constraints.col(1)
-                                                  .segment(ndx::mx * Ny, Ny)
-                                                  .real());
-        const real_t varphi   = (scenario.bulk_rho_u - observed) / forcing;
-
-        // Apply the constraint to all scalars within the mean state
-        // This permits arbitrary equation coupling within BaseClass
-        mean += varphi * constraints.col(1);
-
-        // Track the forcing magnitude within statistics.
-        common.f()       += iota_alpha
-                          * ( (varphi/alpha_dt)*constraints.col(1)
-                                                    .segment(ndx::mx * Ny, Ny)
-                                                    .real().array()
-                              - common.f()
-                            );
-        common.f_dot_u() += iota_alpha
-                          * ( (varphi/alpha_dt)*constraints.col(1)
-                                                    .segment(ndx::e  * Ny, Ny)
-                                                    .real().array()
-                              - common.f_dot_u()
-                            );
-
-    } else {
-
-        // Track the lack of forcing within statistics.
-        common.f()       += iota_alpha*(/* zero */ - common.f()      );
-        common.f_dot_u() += iota_alpha*(/* zero */ - common.f_dot_u());
-
-    }
-
-    // FIXME Appropriately track Crho{,u,v,w,E,_dot_u} (Redmine #2568)
-    common.Crho()        += iota_alpha*(/* zero */ - common.Crho()       );
-    common.Crhou()       += iota_alpha*(/* zero */ - common.Crhou()      );
-    common.Crhov()       += iota_alpha*(/* zero */ - common.Crhov()      );
-    common.Crhow()       += iota_alpha*(/* zero */ - common.Crhow()      );
-    common.CrhoE()       += iota_alpha*(/* zero */ - common.CrhoE()      );
-    common.Crhou_dot_u() += iota_alpha*(/* zero */ - common.Crhou_dot_u());
+    // Last, track the impact of Crho{u,v,w} on the TKE equation
+    // Nondimensionalization requires scaling constraint work by Mach^2
+    common.Crhou_dot_u() += iota_alpha*(
+                              (inv_alpha_dt*scenario.Ma*scenario.Ma)
+                                *cdata.col(0).segment(ndx::mx*Ny, Ny)
+                                             .real().array()
+                                *common.u()
+                            + (inv_alpha_dt*scenario.Ma*scenario.Ma)
+                                *cdata.col(0).segment(ndx::my*Ny, Ny)
+                                             .real().array()
+                                *common.v()
+                            + (inv_alpha_dt*scenario.Ma*scenario.Ma)
+                                *cdata.col(0).segment(ndx::mz*Ny, Ny)
+                                             .real().array()
+                                *common.w()
+                            - common.Crho()
+                          );
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
