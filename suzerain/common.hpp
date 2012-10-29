@@ -114,6 +114,7 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
 
 #ifdef SUZERAIN_HAVE_EIGEN
 #include <Eigen/Core>
+#include <Eigen/SVD>
 #endif
 
 /**
