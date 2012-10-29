@@ -1159,7 +1159,7 @@ static quantity::storage_map_type process(
             C(bar_rho)*C(tilde_Tpp_vpp__y) + C(tilde_Tpp_vpp)*C(bar_rho__y)
          ) / (gamma-1)
     // + \Mach^{2} \bar{f}\cdot\tilde{u}
-       + Ma*Ma*(C(bar_fx)*C(tilde_u)+ C(bar_fy)*C(tilde_v) + C(bar_fz)*C(tilde_w))
+       + Ma*Ma*(C(bar_fx)*C(tilde_u) + C(bar_fy)*C(tilde_v) + C(bar_fz)*C(tilde_w))
     // + \Mach^{2} \overline{f\cdot{}u''}
        + Ma*Ma*C(bar_f_dot_upp)
     // + \bar{q}_b
