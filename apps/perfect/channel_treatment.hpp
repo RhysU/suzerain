@@ -289,8 +289,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     //
     // The beta*delta_t factor accounts for time step sizes.
     //
-    // Notice bulk_rho_u-related forcing is NOT scaling by Mach^2
-    // because our post-processing routines will account for Mach^2 factor
+    // Notice bulk_rho_u-related forcing is NOT scaled by Mach^2 when tracked
+    // because our post-processing routines will account for Mach^2 factor.
     const real_t iota_beta   = method.iota_beta(substep_index);
     const real_t inv_beta_dt = 1 / (method.beta(substep_index)*delta_t);
 
