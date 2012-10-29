@@ -217,14 +217,20 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     if (this->dgrid.has_zero_zero_modes()) {
 
         // Prepare data for bulk density and bulk momentum constraints
+        //
+        // Notice scaling by Mach^2 to cause bulk_rho_u-related forcing
+        //     work to have nondimensional energy "units" because we will
+        //     directly add the result to the total energy equation.
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
         cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = common.u();
+        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
+                                                       * scenario.Ma
+                                                       * common.u();
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
         const boost::array<std::size_t,4> sizes
-            = {{ state.shape()[0], Ny, cdata.cols(), 1 }};
+                = {{ state.shape()[0], Ny, cdata.cols(), 1 }};
         ic0 = new multi_array::ref<complex_t,4>(
                 cdata.data(), sizes, storage::interleaved<4>());
     }
@@ -277,32 +283,35 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
-    // the Reynolds averaged equations using IMethod::iota_alpha similar to
+    // the Reynolds averaged equations using IMethod::iota_beta similar to
     //
-    //    mean += iota_alpha*(sample/(alpha*delta_t) - mean).
+    //    mean += iota_beta*(sample/(beta*delta_t) - mean).
     //
-    // The alpha*delta_t factor accounts for time step sizes.
-    const real_t iota_alpha   = method.iota_alpha(substep_index);
-    const real_t inv_alpha_dt = 1 / (method.alpha(substep_index)*delta_t);
+    // The beta*delta_t factor accounts for time step sizes.
+    //
+    // Notice bulk_rho_u-related forcing is NOT scaling by Mach^2
+    // because our post-processing routines will account for Mach^2 factor
+    const real_t iota_beta   = method.iota_beta(substep_index);
+    const real_t inv_beta_dt = 1 / (method.beta(substep_index)*delta_t);
 
-    common.f()           += iota_alpha * (
-                                ArrayX1r::Constant(Ny, inv_alpha_dt * cphi(1))
+    common.f()           += iota_beta * (
+                                ArrayX1r::Constant(Ny, inv_beta_dt * cphi(1))
                               - common.f()
                             );
-    common.f_dot_u()     += iota_alpha * (
-                                (inv_alpha_dt * cphi(1)) * common.u()
+    common.f_dot_u()     += iota_beta * (
+                                (inv_beta_dt * cphi(1)) * common.u()
                               - common.f_dot_u()
                             );
-    common.qb()          += iota_alpha * (/* zero */ - common.qb());
-    common.CrhoE()       += iota_alpha * (/* zero */ - common.CrhoE());
-    common.Crhou()       += iota_alpha * (/* zero */ - common.Crhou());
-    common.Crhov()       += iota_alpha * (/* zero */ - common.Crhov());
-    common.Crhow()       += iota_alpha * (/* zero */ - common.Crhow());
-    common.Crho()        += iota_alpha * (
-                                ArrayX1r::Constant(Ny, inv_alpha_dt * cphi(0))
+    common.qb()          += iota_beta * (/* zero */ - common.qb());
+    common.CrhoE()       += iota_beta * (/* zero */ - common.CrhoE());
+    common.Crhou()       += iota_beta * (/* zero */ - common.Crhou());
+    common.Crhov()       += iota_beta * (/* zero */ - common.Crhov());
+    common.Crhow()       += iota_beta * (/* zero */ - common.Crhow());
+    common.Crho()        += iota_beta * (
+                                ArrayX1r::Constant(Ny, inv_beta_dt * cphi(0))
                               - common.Crho()
                             );
-    common.Crhou_dot_u() += iota_alpha * (/* zero */ - common.Crhou_dot_u());
+    common.Crhou_dot_u() += iota_beta * (/* zero */ - common.Crhou_dot_u());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
