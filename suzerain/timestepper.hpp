@@ -456,7 +456,7 @@ namespace lowstorage
  * \f[
  *   \iota_{\alpha,N-1} = \frac{\alpha_i}{\eta_{i+1}}.
  * \f]
- * Analagously,
+ * Analogously,
  * \f[
  *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
  * \f]
