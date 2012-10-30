@@ -63,10 +63,11 @@ boost::array<
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename RandomAccessContainer, typename U >
+template< typename RandomAccessContainer >
 boost::array<
     typename RandomAccessContainer::value_type, 4
-> to_yxz(const U& prepend, const RandomAccessContainer& xyz)
+> to_yxz(const typename RandomAccessContainer::value_type& prepend,
+         const RandomAccessContainer& xyz)
 {
     boost::array<typename RandomAccessContainer::value_type,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
@@ -83,10 +84,11 @@ boost::array<
  * @return A copy of <tt>xyz</tt> with the elements reordered
  *         and <tt>prepend</tt> prepended.
  */
-template< typename EigenDenseType, typename U >
+template< typename EigenDenseType >
 boost::array<
     typename EigenDenseType::Scalar, 4
-> to_yxz(const U& prepend, const EigenDenseType& xyz)
+> to_yxz(const typename EigenDenseType::Scalar& prepend,
+         const EigenDenseType& xyz)
 {
     boost::array<typename EigenDenseType::Scalar,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
