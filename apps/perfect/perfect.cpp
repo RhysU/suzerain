@@ -1426,13 +1426,13 @@ mean sample_mean_quantities(
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
 
-                sum_Srho[0](0);
+                sum_SrhoE[0](0);
 
                 sum_Srhou[0](0);
                 sum_Srhou[1](0);
                 sum_Srhou[2](0);
 
-                sum_SrhoE[0](0);
+                sum_Srho[0](0);
 
                 sum_Srhou_dot_u[0](0);
 
