@@ -60,8 +60,8 @@ prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/nul
 
 differ() {
     outfile=`mktemp --tmpdir="$testdir"`
-    echo h5diff "$@"  2>&1 | tee -a $outfile
-    echo              2>&1 |      >>$outfile
+    echo h5diff -r "$@"  2>&1 | tee -a $outfile
+    echo                 2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
     # embedded awk script used to add a ratio column and pretty up the output
     h5diff -r "$@"    2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
