@@ -296,35 +296,33 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
-    // the Reynolds averaged equations using IMethod::iota_beta similar to
+    // the Reynolds averaged equations using IMethod::iota similarly to
     //
-    //    mean += iota_beta*(sample/(beta*delta_t) - mean).
+    //    mean += iota * ((sample / delta_t) - mean).
     //
-    // The beta*delta_t factor accounts for time step sizes.
+    // The delta_t accounts for step sizes already implicitly included in cphi.
     //
     // Notice bulk_rho_u-related forcing is NOT scaled by Mach^2 when tracked
     // because our post-processing routines will account for Mach^2 factor.
-    const real_t iota_beta   = method.iota_beta(substep_index);
-    const real_t inv_beta_dt = 1 / (method.beta(substep_index)*delta_t);
-
-    common.f()           += iota_beta * (
-                                ArrayX1r::Constant(Ny, inv_beta_dt * cphi(1))
+    const real_t iota     = method.iota(substep_index);
+    common.f()           += iota * (
+                                ArrayX1r::Constant(Ny, cphi(1) / delta_t)
                               - common.f()
                             );
-    common.f_dot_u()     += iota_beta * (
-                                (inv_beta_dt * cphi(1)) * common.u()
+    common.f_dot_u()     += iota * (
+                                (cphi(1) / delta_t) * common.u()
                               - common.f_dot_u()
                             );
-    common.qb()          += iota_beta * (/* zero */ - common.qb());
-    common.CrhoE()       += iota_beta * (/* zero */ - common.CrhoE());
-    common.Crhou()       += iota_beta * (/* zero */ - common.Crhou());
-    common.Crhov()       += iota_beta * (/* zero */ - common.Crhov());
-    common.Crhow()       += iota_beta * (/* zero */ - common.Crhow());
-    common.Crho()        += iota_beta * (
-                                ArrayX1r::Constant(Ny, inv_beta_dt * cphi(0))
+    common.qb()          += iota * (/* zero */ - common.qb());
+    common.CrhoE()       += iota * (/* zero */ - common.CrhoE());
+    common.Crhou()       += iota * (/* zero */ - common.Crhou());
+    common.Crhov()       += iota * (/* zero */ - common.Crhov());
+    common.Crhow()       += iota * (/* zero */ - common.Crhow());
+    common.Crho()        += iota * (
+                                ArrayX1r::Constant(Ny, cphi(0) / delta_t)
                               - common.Crho()
                             );
-    common.Crhou_dot_u() += iota_beta * (/* zero */ - common.Crhou_dot_u());
+    common.Crhou_dot_u() += iota * (/* zero */ - common.Crhou_dot_u());
 
     // State leaves method as coefficients in X, Y, and Z directions
 }
