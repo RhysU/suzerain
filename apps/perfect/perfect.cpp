@@ -1520,8 +1520,8 @@ public:
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
-    void operator()(const std::string& name, const EigenArray& dat) const {
-
+    void operator()(const std::string& name, const EigenArray& dat) const
+    {
         int procid;
         esio_handle_comm_rank(esioh, &procid);
         esio_field_establish(esioh,
