@@ -394,6 +394,8 @@ static bool log_status(real_t t, size_t nt)
         return true;
     }
 
+    SUZERAIN_TIMER_SCOPED("log_status");
+
     // Build time- and timestep-specific status prefix.
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream oss;
@@ -440,6 +442,8 @@ static void sample_statistics(real_t t)
         DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
         return;
     }
+
+    SUZERAIN_TIMER_SCOPED("sample_statistics");
 
     const double starttime = MPI_Wtime();
 
@@ -497,6 +501,8 @@ static bool save_restart(real_t t, size_t nt)
         return true;
     }
 
+    SUZERAIN_TIMER_SCOPED("save_restart");
+
     const double starttime = MPI_Wtime();
     DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
 
@@ -539,6 +545,8 @@ static bool save_restart(real_t t, size_t nt)
 /** Routine to write a statistics file.  Signature for TimeController use. */
 static bool save_statistics(real_t t, size_t nt)
 {
+    SUZERAIN_TIMER_SCOPED("save_statistics");
+
     const double starttime = MPI_Wtime();
     DEBUG0("Started to save statistics at t = " << t << " and nt = " << nt);
 
