@@ -457,21 +457,16 @@ namespace lowstorage
  *   \iota_{\alpha,N-1} = \frac{\alpha_i}{\eta_{i+1}}.
  * \f]
  * Analogously,
- * \f{align*}{
- *   \iota_{\beta,N-1}  &= \frac{\beta_i }{\eta_{i+1}}
- *   \\
- *   \iota_{\gamma,N-1} &= \frac{\gamma_i}{\eta_{i+1}}
- * \f}
- * are defined for quantities in effect only during linear operator
- * "inversion", \f$\left(M - \Delta{}t \beta_i L\right)^{-1}\f$,
- * and only during nonlinear operator application within the current
- * substep, \f$N\left(u^{i},t + \eta_{i}\Delta{}t\right)\f$.  The latter
- * is useful for obtaining averages implicitly-computed forcing terms
- * which are applied for duration \f$\gamma_i \Delta{}t\f$ but computed
- * during the operator inversion stage.  In all three cases, running
- * weighted means are computed in-place as <tt>mean += iota_alpha_i *
- * (sample - mean)</tt>, <tt>mean += iota_beta_i * (sample - mean)</tt>
- * or <tt>mean += iota_gamma_i * (sample - mean)</tt>.
+ * \f[
+ *   \iota_{\beta,N-1} = \frac{\beta_i}{\eta_{i+1}}
+ * \f]
+ * for is defined for quantities in effect only during linear operator
+ * "inversion", \f$\left(M - \Delta{}t \beta_i L\right)^{-1}\f$.  The former is
+ * useful for obtaining averages implicitly-computed forcing terms which are
+ * applied for duration \f$\alpha_i \Delta{}t\f$ but computed during the
+ * operator inversion stage.  In both cases, running weighted means are
+ * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt> or
+ * <tt>mean += iota_beta_i * (sample - mean)</tt>.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
  * @see INonlinearOperator for the interface that \f$N\f$ must implement.
@@ -579,16 +574,6 @@ public:
      * @return The coefficient associated with the requested substep.
      */
     virtual component iota_beta(std::size_t substep) const = 0;
-
-    /**
-     * Compute the scheme's derived \f$\iota_gamma_i\f$ coefficient, which is
-     * used to accumulate a running time-averaged value across substeps.
-     *
-     * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
-     *
-     * @return The coefficient associated with the requested substep.
-     */
-    virtual component iota_gamma(std::size_t substep) const = 0;
 
     /**
      * Obtain the scheme's maximum pure real eigenvalue magnitude.
@@ -933,7 +918,7 @@ make_multiplicator_operator(
  * integer operations wherever possible.  This permits maintaining full
  * precision constants via very simple rational operations.  All computed
  * results may be accessed as if contained in static arrays.  For example,
- * <code>eta[1]</code> or <code>iota_gamma[2]</code>.
+ * <code>eta[1]</code> or <code>iota_beta[2]</code>.
  *
  * @tparam Scheme A class encapsulating the minimum constants
  *         required to describe a low storage scheme.
@@ -1081,18 +1066,6 @@ private:
 
     };
 
-    /** Helper for implementing #iota_gamma */
-    struct iota_gamma_type {
-
-        /** Computes \f$\iota_{\gamma,i}\f$ given \c Scheme */
-        Component operator[](const Integer i) const
-        {
-            assert(0 <= i && i < substeps);
-            return Component(scheme::gamma_numerator[i]) / eta.numerator(i+1);
-        }
-
-    };
-
 public:
 
     /**
@@ -1145,13 +1118,6 @@ public:
      */
     static const iota_beta_type iota_beta;
 
-    /**
-     * Computes \f$\iota_{\gamma,i}\f$ given
-     * \c Scheme as <tt>iota_gamma[i]</tt>.
-     * @see IMethod::iota_gamma
-     */
-    static const iota_gamma_type iota_gamma;
-
 };
 
 // *************************************************************
@@ -1197,11 +1163,6 @@ template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
 const typename Constants<Scheme,Component,Integer>::iota_beta_type
 Constants<Scheme,Component,Integer>::iota_beta = {};
-
-template <template <typename,typename> class Scheme,
-          typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::iota_gamma_type
-Constants<Scheme,Component,Integer>::iota_gamma = {};
 
 // ***********************************************************
 // END hideousness for static constant structs within Contants
@@ -1282,10 +1243,6 @@ public:
     /** @copydoc IMethod::iota_beta */
     virtual component iota_beta(const std::size_t substep) const
     { return constants::iota_beta[substep]; }
-
-    /** @copydoc IMethod::iota_gamma */
-    virtual component iota_gamma(const std::size_t substep) const
-    { return constants::iota_gamma[substep]; }
 
     /** @copydoc IMethod::evmaxmag_real */
     virtual component evmaxmag_real() const
