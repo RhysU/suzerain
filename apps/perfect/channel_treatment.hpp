@@ -127,6 +127,22 @@ private:
 
     /** Precomputed integration coefficients */
     VectorXr bulkcoeff;
+
+    /**
+     * Constraint data passed to BaseClass.
+     *
+     * \li cdata.col(0) is for the bulk density constraint.
+     * \li cdata.col(1) is for the bulk momentum constraint.
+     *
+     * Mutable member avoids repeated allocation/deallocation.
+     */
+    mutable MatrixX2c cdata;
+
+    /**
+     * Least squares constraint solver.
+     * Mutable member avoids repeated allocation/deallocation.
+     */
+    mutable Eigen::JacobiSVD<Matrix2r,Eigen::NoQRPreconditioner> jacobiSvd;
 };
 
 template< typename BaseClass >
@@ -137,7 +153,8 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             bspline &b,
             const bsplineop &bop,
             OperatorCommonBlock &common)
-    : BaseClass(scenario, grid, dgrid, b, bop, common)
+    : BaseClass(scenario, grid, dgrid, b, bop, common),
+      jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, b, bop);
 }
@@ -151,7 +168,8 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             bspline &b,
             const bsplineop &bop,
             OperatorCommonBlock &common)
-    : BaseClass(spec, scenario, grid, dgrid, b, bop, common)
+    : BaseClass(spec, scenario, grid, dgrid, b, bop, common),
+      jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, b, bop);
 }
@@ -208,12 +226,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     // Have a tantrum if caller expects us to compute any constraints
     SUZERAIN_ENSURE(ic0 == NULL);
 
-    // Constraint data wrapped is kept within cdata:
-    //   cdata.col(0) is for the bulk density constraint
-    //   cdata.col(1) is for the bulk momentum constraint
-    //
-    // On zero-zero rank, re-use ic0 to wrap data for BaseClass invocation
-    MatrixX2c cdata;
+    // On zero-zero rank, re-use ic0 to wrap cdata for BaseClass invocation
     if (this->dgrid.has_zero_zero_modes()) {
 
         // Prepare data for bulk density and bulk momentum constraints
@@ -266,8 +279,8 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
     // Solve the requested, possibly simultaneous constraint problem
     if (this->constrain_bulk_rho() && this->constrain_bulk_rho_u()) {
-        enum {options = Eigen::ComputeFullU | Eigen::ComputeFullV};
-        cphi = cmat.jacobiSvd(options).solve(crhs);
+        jacobiSvd.compute(cmat);              // Fancy decomposition for
+        cphi = jacobiSvd.solve(crhs);         // a robust 2x2 constraint solve
     } else if (this->constrain_bulk_rho()  ) {
         cphi(0) = crhs(0) / cmat(0,0);        // Solve 1x1 system
         cphi(1) = 0;                          // bulk_rho_u not applied
