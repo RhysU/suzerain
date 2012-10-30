@@ -1131,7 +1131,6 @@ mean sample_mean_quantities(
     namespace ndx = support::field::ndx;
     namespace acc = boost::accumulators;
     typedef ContiguousState<4,complex_t> state_type;
-    using Eigen::Upper;
 
     // State enters method as coefficients in X, Y, and Z directions
 
