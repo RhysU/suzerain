@@ -65,8 +65,8 @@ mkdir -v $dir
 cd $dir
 
 # Table of incremental cases to run towards getting steady state
-Ny=(  64    96)
-dt=(5000 10000)
+Ny=(   64    96)
+dt=(10000 15000)
 
 # Generate an initial condition
 "$LAMINAR_INITIAL" t0.h5                                                    \
