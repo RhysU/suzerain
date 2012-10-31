@@ -20,7 +20,7 @@
 namespace suzerain {
 
 template <
-    typename FPT           = real_t,
+    typename FPT,
     std::streamsize Digits = std::numeric_limits<FPT>::digits10,
     std::streamsize Width  = Digits + 5
 >
@@ -58,31 +58,32 @@ template <typename FPT, std::streamsize Digits, std::streamsize Width>
 const FPT append_real_traits<FPT,Digits,Width>::fixedmin
         = std::pow(FPT(10), -(FPT(Width) - Digits - 3));
 
-//// template <typename Number, std::streamsize Digits, std::streamsize Width>
-//// template <class CharT, class Traits>
-//// std::basic_ostream<CharT,Traits>& append_real<Number,Digits,Width>::operator()(
-////         std::basic_ostream<CharT,Traits>& os,
-////         Number value)
-//// {
-////     // Format in fixed or scientific form as appropriate in given width
-////     // Care taken to not perturb observable ostream state after function call
-////     std::ios::fmtflags savedflags;
-////     std::streamsize savedprec;
-////     if (value >= fixedmin && value <= fixedmax) {
-////         savedflags = os.setf(std::ios::fixed      | std::ios::right,
-////                              std::ios::floatfield | std::ios::adjustfield);
-////         savedprec = os.precision(append_real_prec);
-////     } else {
-////         savedflags = os.setf(std::ios::scientific | std::ios::right,
-////                              std::ios::floatfield | std::ios::adjustfield);
-////         savedprec = os.precision(append_real_width - 9);
-////     }
-////     os << std::setw(append_real_width) << static_cast<real_t>(value);
-////     os.precision(savedprec);
-////     os.setf(savedflags);
-////
-////     return os;
-//// }
+template <class CharT, class Traits>
+std::basic_ostream<CharT,Traits>& append_real(
+        std::basic_ostream<CharT,Traits>& os,
+        const real_t value)
+{
+    typedef append_real_traits<real_t> traits;
+
+    // Format in fixed or scientific form as appropriate in given width
+    // Care taken to not perturb observable ostream state after function call
+    std::ios::fmtflags savedflags;
+    std::streamsize savedprec;
+    if (value >= traits::fixedmin && value <= traits::fixedmax) {
+        savedflags = os.setf(std::ios::fixed      | std::ios::right,
+                             std::ios::floatfield | std::ios::adjustfield);
+        savedprec = os.precision(traits::digits);
+    } else {
+        savedflags = os.setf(std::ios::scientific | std::ios::right,
+                             std::ios::floatfield | std::ios::adjustfield);
+        savedprec = os.precision(traits::width - 9);
+    }
+    os << std::setw(traits::width) << value;
+    os.precision(savedprec);
+    os.setf(savedflags);
+
+    return os;
+}
 
 } // namespace suzerain
 
