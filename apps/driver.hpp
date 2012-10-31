@@ -26,6 +26,8 @@
 #ifndef SUZERAIN_SUPPORT_DRIVER_HPP
 #define SUZERAIN_SUPPORT_DRIVER_HPP
 
+#include <esio/esio.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/fftw.hpp>
@@ -46,15 +48,15 @@ class Driver
 {
 public:
 
+    typedef InterleavedState<4,complex_t> linear_state_type;
+
+    typedef ContiguousState<4,complex_t> nonlinear_state_type;
+
     Driver();
 
     virtual ~Driver();
 
 protected:
-
-    typedef InterleavedState<4,complex_t> linear_state_type;
-
-    typedef ContiguousState<4,complex_t>  nonlinear_state_type;
 
     const problem::GridDefinition grid;
 
@@ -68,7 +70,22 @@ protected:
 
     const problem::SignalDefinition sigdef;
 
+    boost::shared_ptr<bspline> b;
+
+    boost::shared_ptr<bsplineop> bop; // Collocation operators
+
+    boost::shared_ptr<bsplineop> gop; // Galerkin L2 operators
+
+    boost::shared_ptr<const pencil_grid> dgrid;
+
+    boost::shared_ptr<linear_state_type> state_linear;
+
+    boost::shared_ptr<nonlinear_state_type> state_nonlinear;
+
+    esio_handle esioh;
+
 private:
+
 };
 
 } // end namespace support
