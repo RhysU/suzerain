@@ -19,71 +19,121 @@
 
 namespace suzerain {
 
+/**
+ * A stream insertion wrapper to provide full precision floating point
+ * output.  The wrapper does not perturb observable stream state.
+ * Scientific notation is avoided for small-magnitude quantities.
+ * Padding is added to facilitate table-like output.
+ *
+ * A simple use case with the generated output follows:
+ * \code
+ * cout << fullprec<>(1.23456789012345678e-5) << endl; // "   1.23456789012e-05"
+ * cout << fullprec<>(1.23456789012345678e-4) << endl; // "   1.23456789012e-04"
+ * cout << fullprec<>(1.23456789012345678e-3) << endl; // "   1.23456789012e-03"
+ * cout << fullprec<>(1.23456789012345678e-2) << endl; // "   0.012345678901235"
+ * cout << fullprec<>(1.23456789012345678e-1) << endl; // "   0.123456789012346"
+ * cout << fullprec<>(1.23456789012345678e+0) << endl; // "   1.234567890123457"
+ * cout << fullprec<>(1.23456789012345678e+1) << endl; // "  12.345678901234567"
+ * cout << fullprec<>(1.23456789012345678e+2) << endl; // " 123.456789012345681"
+ * cout << fullprec<>(1.23456789012345678e+3) << endl; // "   1.23456789012e+03"
+ * cout << fullprec<>(1.23456789012345678e+4) << endl; // "   1.23456789012e+04"
+ * cout << fullprec<>(1.23456789012345678e+5) << endl; // "   1.23456789012e+05"
+ * \endcode
+ *
+ * @tparam FPT    Target floating point type.
+ * @tparam Digits Number of digits to consider as "full precision".
+ *                Default uses <code>std::numeric_limits</code>.
+ * @tparam Width  Right-justified output width to use.
+ *                Default permits leading sign and exponential notation.
+ */
 template <
-    typename FPT,
+    typename FPT           = real_t,
     std::streamsize Digits = std::numeric_limits<FPT>::digits10,
     std::streamsize Width  = Digits + 5
 >
-class append_real_traits
+class fullprec
 {
 public:
 
-    typedef FPT type;
-
+    /** Number of digits to output. */
     static const std::streamsize digits = Digits;
 
+    /** Right-justified output width to use. */
     static const std::streamsize width = Width;
 
+    /** Maximum value that will be output in fixed decimal format. */
     static const FPT fixedmax;
 
+    /** Minimum value that will be output in fixed decimal format. */
     static const FPT fixedmin;
+
+    /**
+     * Construct an instant outputting \c val.
+     *
+     * The lifetime of \c val must be longer than the lifetime
+     * of the constructed instance.
+     *
+     * @param val Floating point value to output.
+     */
+    explicit fullprec(const FPT& val) : val(val) {}
+
+    /**
+     * Output the value provided at construction on the given stream.
+     * See \ref fullprec for example usage.
+     *
+     * @tparam CharT  Per <code>std::basic_ostream</code>
+     * @tparam Traits Per <code>std::basic_ostream</code>
+     * @param  os     Stream on which to output the value.
+     * @param  fp     Instance housing the data to be output.
+     *
+     * @return \c os
+     */
+    template <class CharT, class Traits>
+    friend std::basic_ostream<CharT,Traits>& operator<<(
+        std::basic_ostream<CharT,Traits>& os,
+        const fullprec<FPT,Digits,Width>& fp)
+    {
+        // Format in fixed or scientific form as appropriate in given width
+        // Care taken to not perturb observable ostream state on return
+        std::ios::fmtflags savedflags;
+        std::streamsize savedprec;
+        if (fp.val >= fp.fixedmin && fp.val <= fp.fixedmax) {
+            savedflags = os.setf(std::ios::fixed      | std::ios::right,
+                                 std::ios::floatfield | std::ios::adjustfield);
+            savedprec  = os.precision(fp.digits);
+        } else {
+            savedflags = os.setf(std::ios::scientific | std::ios::right,
+                                 std::ios::floatfield | std::ios::adjustfield);
+            savedprec  = os.precision(fp.width - 9);
+        }
+        os << std::setw(fp.width) << fp.val;
+        os.precision(savedprec);
+        os.setf(savedflags);
+
+        return os;
+    }
 
 private:
 
-    append_real_traits();
+    /** A reference to the value provided at construction time. */
+    const FPT& val;
 
-    append_real_traits(const append_real_traits&);
+    /** Private to prevent generated copy constructor. */
+    fullprec(const fullprec&);
 
-    append_real_traits& operator=(const append_real_traits&);
-
+    /** Private to prevents generated assignment operator. */
+    fullprec& operator=(const fullprec&);
 };
 
 // Magic "2" is the width of a sign and a decimal point
 template <typename FPT, std::streamsize Digits, std::streamsize Width>
-const FPT append_real_traits<FPT,Digits,Width>::fixedmax
+const FPT fullprec<FPT,Digits,Width>::fixedmax
         = std::pow(FPT(10), FPT(Width) - Digits - 2);
 
 // Magic 3 is the width of a sign, leading zero, and decimal point
 template <typename FPT, std::streamsize Digits, std::streamsize Width>
-const FPT append_real_traits<FPT,Digits,Width>::fixedmin
+const FPT fullprec<FPT,Digits,Width>::fixedmin
         = std::pow(FPT(10), -(FPT(Width) - Digits - 3));
-
-template <class CharT, class Traits>
-std::basic_ostream<CharT,Traits>& append_real(
-        std::basic_ostream<CharT,Traits>& os,
-        const real_t value)
-{
-    typedef append_real_traits<real_t> traits;
-
-    // Format in fixed or scientific form as appropriate in given width
-    // Care taken to not perturb observable ostream state after function call
-    std::ios::fmtflags savedflags;
-    std::streamsize savedprec;
-    if (value >= traits::fixedmin && value <= traits::fixedmax) {
-        savedflags = os.setf(std::ios::fixed      | std::ios::right,
-                             std::ios::floatfield | std::ios::adjustfield);
-        savedprec = os.precision(traits::digits);
-    } else {
-        savedflags = os.setf(std::ios::scientific | std::ios::right,
-                             std::ios::floatfield | std::ios::adjustfield);
-        savedprec = os.precision(traits::width - 9);
-    }
-    os << std::setw(traits::width) << value;
-    os.precision(savedprec);
-    os.setf(savedflags);
-
-    return os;
-}
 
 } // namespace suzerain
 
