@@ -94,7 +94,7 @@ public:
         const fullprec<FPT,Digits,Width>& fp)
     {
         // Format in fixed or scientific form as appropriate in given width
-        // Care taken to not perturb observable ostream state on return
+        // Care taken to not perturb observable state of os after return
         std::ios::fmtflags savedflags;
         std::streamsize savedprec;
         if (fp.val >= fp.fixedmin && fp.val <= fp.fixedmax) {
@@ -117,9 +117,6 @@ private:
 
     /** A reference to the value provided at construction time. */
     const FPT& val;
-
-    /** Private to prevent generated copy constructor. */
-    fullprec(const fullprec&);
 
     /** Private to prevents generated assignment operator. */
     fullprec& operator=(const fullprec&);
