@@ -139,7 +139,6 @@ static const SignalDefinition sigdef;
 static shared_ptr<      suzerain::bspline>              b;
 static shared_ptr<      suzerain::bsplineop>            bop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>            gop;    // Galerkin L2
-static shared_ptr<      suzerain::bsplineop_luz>        bopluz;
 static shared_ptr<const suzerain::pencil_grid>          dgrid;
 static shared_ptr<      perfect::manufactured_solution> msoln;
 
@@ -1021,8 +1020,6 @@ int main(int argc, char **argv)
     support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
-    bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
-    bopluz->factor_mass(*bop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     // Compute and display a couple of discretization quality metrics.
