@@ -90,6 +90,7 @@ using boost::shared_ptr;
 using std::numeric_limits;
 using std::size_t;
 using suzerain::complex_t;
+using suzerain::fullprec;
 using suzerain::real_t;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
@@ -184,44 +185,6 @@ static void atexit_metadata(void) {
     }
 }
 
-// Formatting parameters used within append_real()
-static const int append_real_prec  = numeric_limits<real_t>::digits10;
-static const int append_real_width = append_real_prec + 5;
-
-/** Provides nice formatting of real-valued quantities for status lines */
-template<class CharT, class Traits, class Number>
-static std::basic_ostream<CharT,Traits>& append_real(
-        std::basic_ostream<CharT,Traits>& os,
-        Number value)
-{
-    // Magic "2" is the width of a sign and a decimal point
-    static const real_t fixedmax
-        = std::pow(real_t(10), append_real_width - append_real_prec - 2);
-
-    // Magic 3 is the width of a sign, leading zero, and decimal point
-    static const real_t fixedmin
-        = std::pow(real_t(10), -(append_real_width - append_real_prec - 3));
-
-    // Format in fixed or scientific form as appropriate in given width
-    // Care taken to not perturb observable ostream state after function call
-    std::ios::fmtflags savedflags;
-    std::streamsize savedprec;
-    if (value >= fixedmin && value <= fixedmax) {
-        savedflags = os.setf(std::ios::fixed      | std::ios::right,
-                             std::ios::floatfield | std::ios::adjustfield);
-        savedprec = os.precision(append_real_prec);
-    } else {
-        savedflags = os.setf(std::ios::scientific | std::ios::right,
-                             std::ios::floatfield | std::ios::adjustfield);
-        savedprec = os.precision(append_real_width - 9);
-    }
-    os << std::setw(append_real_width) << static_cast<real_t>(value);
-    os.precision(savedprec);
-    os.setf(savedflags);
-
-    return os;
-}
-
 /** Log messages containing mean L2 and RMS fluctuation information */
 static void information_L2(const std::string& prefix,
                            const char * const name_L2  = "L2.mean",
@@ -240,7 +203,7 @@ static void information_L2(const std::string& prefix,
     if (show_header) {
         msg << prefix;
         for (size_t k = 0; k < field::count; ++k)
-            msg << ' ' << std::setw(append_real_width) << field::name[k];
+            msg << ' ' << std::setw(fullprec<>::width) << field::name[k];
         INFO0(log_L2, msg.str());
         INFO0(log_rms, msg.str());
         msg.str("");
@@ -255,7 +218,7 @@ static void information_L2(const std::string& prefix,
     // Build and log L2 of mean conserved state
     msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
-        append_real(msg << ' ', L2[k].mean());
+        msg << ' ' << fullprec<>(L2[k].mean());
     }
     INFO0(log_L2, msg.str());
 
@@ -265,7 +228,7 @@ static void information_L2(const std::string& prefix,
     msg.str("");
     msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
-        append_real(msg << ' ', rms_coeff*L2[k].fluctuating());
+        msg << ' ' << fullprec<>(rms_coeff*L2[k].fluctuating());
     }
     INFO0(log_rms, msg.str());
 }
@@ -288,7 +251,7 @@ static void information_bulk(const std::string& prefix)
     if (show_header) {
         msg << prefix;
         for (size_t k = 0; k < field::count; ++k)
-            msg << ' ' << std::setw(append_real_width) << field::name[k];
+            msg << ' ' << std::setw(fullprec<>::width) << field::name[k];
         INFO0(bulk_state, msg.str());
         msg.str("");
         show_header = false;
@@ -304,7 +267,7 @@ static void information_bulk(const std::string& prefix)
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         suzerain::Map<suzerain::VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
-        append_real(msg << ' ', bulkcoeff.dot(mean.real()));
+        msg << ' ' << fullprec<>(bulkcoeff.dot(mean.real()));
     }
     INFO(bulk_state, msg.str());
 }
@@ -335,12 +298,10 @@ static void information_specific_wall_state(const std::string& prefix)
 
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
         for (size_t k = 0; k < support::field::count; ++k) {
-            if (k == ndx::rho) {
-                append_real(msg << ' ', rho);
-            } else {
-                append_real(msg << ' ' ,
-                            ((*state_linear)[k][wall[l]][0][0]).real() / rho);
-            }
+            real_t val = (k == ndx::rho)
+                       ? rho
+                       : ((*state_linear)[k][wall[l]][0][0]).real() / rho;
+            msg << ' ' << fullprec<>(val);
         }
         DEBUG(nick[l], msg.str());
     }
@@ -371,7 +332,7 @@ static void information_manufactured_solution_absolute_error(
     std::ostringstream msg;
     msg << prefix;
     for (size_t k = 0; k < L2.size(); ++k) {
-        append_real(msg << ' ', L2[k].total());
+        msg << ' ' << fullprec<>(L2[k].total());
     }
     INFO0(mms_abserr, msg.str());
 }
@@ -1602,9 +1563,8 @@ int main(int argc, char **argv)
         // Seeing more than floating point error indicates something is amiss.
         std::ostringstream msg;
         msg << "Linearization error";
-        append_real(msg, L2[0].total());
-        for (size_t k = 1; k < L2.size(); ++k) {
-            append_real(msg << ' ', L2[k].total());
+        for (size_t k = 0; k < L2.size(); ++k) {
+            msg << ' ' << fullprec<>(L2[k].total());
         }
         INFO0("lin.abserr", msg.str());
     }
