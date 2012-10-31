@@ -673,7 +673,8 @@ static double wtime_advance_start;
  * stable time step size across all ranks.  The same MPI Allreduce is used to
  * hide the cost of querying atomic_signal_received across all ranks.
  */
-static class DeltaTAllreducer {
+static class DeltaTAllreducer
+{
 
 private:
 
@@ -701,7 +702,8 @@ public:
     // Provides small default capacity for normalized_ratios
     DeltaTAllreducer() : normalized_ratios(2) {}
 
-    real_t operator()(const std::vector<real_t>& delta_t_candidates) {
+    real_t operator()(const std::vector<real_t>& delta_t_candidates)
+    {
 
         // Copy incoming candidates so we may mutate them
         std::vector<real_t> candidates(delta_t_candidates);
