@@ -19,7 +19,40 @@
 
 namespace suzerain {
 
+/**
+ * Symbolic indices, identifiers, and descriptions for 3D Navier--Stokes.
+ *
+ * The last index \e must be \rho!  In the multi-species cases, mixture density
+ * should be in \ref rho and the <tt>i</tt>-th species partial density in
+ * <tt>rho + (i-1)</tt>.  That is, \ref rho is the "diluter" species.  Many
+ * routines will assume the equations are stored in this order when attempting
+ * to walk memory linearly.
+ */
 namespace ndx {
+
+// Anonymous enum to declare our state variable storage indices.
+enum {
+    e,    /**< Index for storing total energy         \f$e   = \rho{}E\f$ */
+    mx,   /**< Index for storing streamwise momentum  \f$m_x = \rho{}u\f$ */
+    my,   /**< Index for storing wall-normal momentum \f$m_y = \rho{}v\f$ */
+    mz,   /**< Index for storing spanwise momentum    \f$m_z = \rho{}w\f$ */
+    rho   /**< Index for storing density              \f$      \rho   \f$ */
+};
+
+/** Contains the number of distinct state variables we track */
+const std::size_t count = static_cast<std::size_t>(ndx::rho) + 1;
+
+/**
+ * Short identifiers that permit distinguishing equations.
+ * E.g. "rho_E".
+ */
+extern const boost::array<const char *, ndx::rho + 1u> identifier;
+
+/**
+ * Descriptions of the physical quantity associated with each index.
+ * E.g. "total energy".
+ */
+extern const boost::array<const char *, ndx::rho + 1u> description;
 
 } // namespace ndx
 
