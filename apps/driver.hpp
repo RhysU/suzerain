@@ -66,7 +66,9 @@ public:
      * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
      * \li \c 4 Compute and write a statistics file
      */
-    typedef boost::array<volatile sig_atomic_t,5> atomic_signal_received_t;
+    typedef boost::array<
+            volatile sig_atomic_t, 5
+        > atomic_signal_received_t;
 
 protected:
 
@@ -79,8 +81,6 @@ protected:
     problem::StatisticsDefinition statsdef;
 
     problem::TimeDefinition timedef;
-
-    problem::SignalDefinition sigdef;
 
     boost::shared_ptr<bspline> b;
 
@@ -96,16 +96,33 @@ protected:
 
     esio_handle esioh;
 
-private:
+    /** Controls which signals trigger which processing. */
+    static const problem::SignalDefinition sigdef;
 
     /** Atomic locations used to track local signal receipt. */
     static atomic_signal_received_t atomic_signal_received;
+
+private:
+
+    /** Signal handler which mutates \c atomic_signal_received. */
+    static void process_signal(int sig);
 
     /** Tracks last time a status line was output */
     std::size_t last_status_nt;
 
     /** Tracks last time a restart file was written successfully */
     std::size_t last_restart_saved_nt;
+
+    /**
+     * Type of non-atomic locations used to track global receipt of the
+     * same actions as \ref atomic_signal_received_t.
+     */
+    typedef boost::array<
+            int, atomic_signal_received_t::static_size
+        > signal_received_t;
+
+    /** Non-atomic locations used to track global signal receipt. */
+    signal_received_t signal_received;
 
 };
 

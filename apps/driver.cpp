@@ -64,7 +64,6 @@ Driver::Driver()
                /* status_nt   */ 0,
                /* min_dt      */ 1e-8,
                /* max_dt      */ 1),
-      sigdef(),
       b(),
       bop(),
       gop(),
@@ -75,6 +74,7 @@ Driver::Driver()
       last_status_nt(std::numeric_limits<std::size_t>::max()),
       last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
 {
+    std::fill(signal_received.begin(), signal_received.end(), 0);
 }
 
 Driver::~Driver()
@@ -100,6 +100,41 @@ Driver::~Driver()
 }
 
 Driver::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
+
+void Driver::process_signal(int sig)
+{
+    // Strictly speaking this handler performs too much work.  The design
+    // choice was to have this extra work done on the (rare) signal receipt
+    // rather than on the (frequent) polling of signal receipt status.
+
+    std::vector<int>::const_iterator end;
+
+    // Determine if we should output status due to the signal
+    end = sigdef.status.end();
+    if (std::find(sigdef.status.begin(), end, sig) != end) {
+        atomic_signal_received[0] = sig;
+    }
+
+    // Determine if we should write a restart due to the signal
+    end = sigdef.restart.end();
+    if (std::find(sigdef.restart.begin(), end, sig) != end) {
+        atomic_signal_received[1] = sig;
+    }
+
+    // Determine if we should tear down the simulation due to the signal
+    end = sigdef.teardown.end();
+    if (std::find(sigdef.teardown.begin(), end, sig) != end) {
+        atomic_signal_received[2] = sig;
+    }
+
+    // atomic_signal_received[3] handled outside this routine
+
+    // Determine if we should compute and write statistics due to the signal
+    end = sigdef.statistics.end();
+    if (std::find(sigdef.statistics.begin(), end, sig) != end) {
+        atomic_signal_received[4] = sig;
+    }
+}
 
 } // end namespace support
 
