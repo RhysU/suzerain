@@ -71,7 +71,9 @@ Driver::Driver()
       dgrid(),
       state_linear(),
       state_nonlinear(),
-      esioh(NULL)
+      esioh(NULL),
+      last_status_nt(std::numeric_limits<std::size_t>::max()),
+      last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
 {
 }
 
@@ -96,6 +98,8 @@ Driver::~Driver()
     underling_cleanup();
 #endif
 }
+
+Driver::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
 
 } // end namespace support
 

@@ -56,19 +56,31 @@ public:
 
     virtual ~Driver();
 
+    /**
+     * Type of atomic locations used to track local receipt of the following
+     * signal-based actions:
+     *
+     * \li \c 0 Output a status message
+     * \li \c 1 Write a restart file
+     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
+     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
+     * \li \c 4 Compute and write a statistics file
+     */
+    typedef boost::array<volatile sig_atomic_t,5> atomic_signal_received_t;
+
 protected:
 
-    const problem::GridDefinition grid;
+    problem::GridDefinition grid;
 
-    const fftw::FFTWDefinition fftwdef;
+    fftw::FFTWDefinition fftwdef;
 
-    const problem::RestartDefinition restart;
+    problem::RestartDefinition restart;
 
-    const problem::StatisticsDefinition statsdef;
+    problem::StatisticsDefinition statsdef;
 
-    const problem::TimeDefinition timedef;
+    problem::TimeDefinition timedef;
 
-    const problem::SignalDefinition sigdef;
+    problem::SignalDefinition sigdef;
 
     boost::shared_ptr<bspline> b;
 
@@ -76,7 +88,7 @@ protected:
 
     boost::shared_ptr<bsplineop> gop; // Galerkin L2 operators
 
-    boost::shared_ptr<const pencil_grid> dgrid;
+    boost::shared_ptr<pencil_grid> dgrid;
 
     boost::shared_ptr<linear_state_type> state_linear;
 
@@ -85,6 +97,15 @@ protected:
     esio_handle esioh;
 
 private:
+
+    /** Atomic locations used to track local signal receipt. */
+    static atomic_signal_received_t atomic_signal_received;
+
+    /** Tracks last time a status line was output */
+    std::size_t last_status_nt;
+
+    /** Tracks last time a restart file was written successfully */
+    std::size_t last_restart_saved_nt;
 
 };
 
