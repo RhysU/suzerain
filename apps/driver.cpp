@@ -71,6 +71,9 @@ Driver::Driver()
       state_linear(),
       state_nonlinear(),
       esioh(NULL),
+      soft_teardown(false),
+      show_header_information_L2(false),
+      show_header_information_bulk(false),
       last_status_nt(std::numeric_limits<std::size_t>::max()),
       last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
 {
@@ -99,6 +102,58 @@ Driver::~Driver()
 #endif
 }
 
+bool Driver::log_status(const real_t t, const std::size_t nt)
+{
+    // Notice collective operations are never inside logging macros!
+
+    using std::max;
+    using std::floor;
+    using std::log10;
+
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_status_nt == nt) {
+        DEBUG0("Cowardly refusing to repeatedly show status at nt = " << nt);
+        return true;
+    }
+
+    SUZERAIN_TIMER_SCOPED("log_status");
+
+    // Build time- and timestep-specific status prefix.
+    // Precision computations ensure multiple status lines minimally distinct
+    std::ostringstream oss;
+    real_t np = 0;
+    if (timedef.status_dt > 0) {
+        np = max(np, -floor(log10(timedef.status_dt)));
+    }
+    if (timedef.status_nt > 0) {
+        np = max(np, -floor(log10(timedef.min_dt * timedef.status_nt)) + 1);
+    }
+    if (np > 0) {
+        oss.setf(std::ios::fixed, std::ios::floatfield);
+        const std::streamsize oldprec = oss.precision(np);
+        oss << t;
+        oss.precision(oldprec);
+        oss.unsetf(std::ios::fixed);
+    } else {
+        oss << t;
+    }
+    oss << ' ' << std::setw(7) << nt;
+    const std::string timeprefix = oss.str();
+
+    // Log information about the various quantities of interest
+    information_bulk(timeprefix);
+    information_L2(timeprefix);
+    information_boundary_state(timeprefix);
+
+    // Permit subclasses to dump arbitrary status information.  E.g. MMS error
+    const bool retval = information_extended(timeprefix, t, nt);
+
+    last_status_nt = nt; // Maintain last status time step
+
+    return retval;
+}
+
+// Initialized to zero indicating no signals have been received
 Driver::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
 
 void Driver::process_signal(int sig)

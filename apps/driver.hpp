@@ -70,6 +70,43 @@ public:
             volatile sig_atomic_t, 5
         > atomic_signal_received_t;
 
+    /** Log messages containing mean L2 and RMS fluctuation information. */
+    virtual void information_L2(
+            const std::string& prefix,
+            const char * const name_L2  = "L2.mean",
+            const char * const name_rms = "rms.fluct")
+        = 0;
+
+    /** Log messages containing bulk quantities. */
+    virtual void information_bulk(
+            const std::string& prefix)
+        = 0;
+
+    /** Log messages containing state quantities at the boundaries. */
+    virtual void information_boundary_state(
+            const std::string& prefix)
+        = 0;
+
+    /**
+     * Hook permitting subclasses to output additional status information.
+     * Returning \c false causes the TimeController to halt.
+     */
+    virtual bool information_extended(
+            const std::string& prefix,
+            const real_t simulation_time,
+            const std::size_t nt)
+        = 0;
+
+    /**
+     * Routine to output status, generally via the TimeController.
+     *
+     * Invokes \ref information_bulk, \ref information_L2, \ref
+     * information_boundary_state, and \ref information_extended.
+     */
+    bool log_status(
+            const real_t t,
+            const std::size_t nt);
+
 protected:
 
     problem::GridDefinition grid;
@@ -101,6 +138,15 @@ protected:
 
     /** Atomic locations used to track local signal receipt. */
     static atomic_signal_received_t atomic_signal_received;
+
+    /** Flag used to indicate early time advancement stopping is legit. */
+    bool soft_teardown;
+
+    /** Flag used to control whether information_L2 shows headers. */
+    bool show_header_information_L2;
+
+    /** Flag used to control whether information_bulk shows headers. */
+    bool show_header_information_bulk;
 
 private:
 
