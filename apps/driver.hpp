@@ -44,6 +44,14 @@ namespace suzerain {
 
 namespace support {
 
+/**
+ * An extensible driver class for managing a Suzerain application.
+ * Intended for time-varying, three-dimensional problems.
+ * Instantiate from within \c main().
+ *
+ * Signal handling capabilities may misbehave if multiple instances
+ * are executing within the same process.
+ */
 class Driver
 {
 public:
