@@ -72,8 +72,8 @@ Driver::Driver()
       state_nonlinear(),
       esioh(NULL),
       soft_teardown(false),
-      show_header_information_L2(false),
-      show_header_information_bulk(false),
+      show_header_log_status_L2(false),
+      show_header_log_status_bulk(false),
       last_status_nt(std::numeric_limits<std::size_t>::max()),
       last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
 {
@@ -141,12 +141,12 @@ bool Driver::log_status(const real_t t, const std::size_t nt)
     const std::string timeprefix = oss.str();
 
     // Log information about the various quantities of interest
-    information_bulk(timeprefix);
-    information_L2(timeprefix);
-    information_boundary_state(timeprefix);
+    log_status_bulk(timeprefix);
+    log_status_L2(timeprefix);
+    log_status_boundary_state(timeprefix);
 
     // Permit subclasses to dump arbitrary status information.  E.g. MMS error
-    const bool retval = information_extended(timeprefix, t, nt);
+    const bool retval = log_status_extended(timeprefix, t, nt);
 
     last_status_nt = nt; // Maintain last status time step
 
