@@ -277,6 +277,18 @@ Driver::log_status_specific_boundary_state(
     }
 }
 
+bool
+Driver::log_status_hook(
+            const std::string& prefix,
+            const real_t simulation_time,
+            const std::size_t nt)
+{
+    SUZERAIN_UNUSED(prefix);
+    SUZERAIN_UNUSED(simulation_time);
+    SUZERAIN_UNUSED(nt);
+    return true;
+}
+
 // Initialized to zero indicating no signals have been received
 Driver::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
 

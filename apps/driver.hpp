@@ -124,7 +124,7 @@ public:
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
      * log_status_boundary_state, and \ref log_status_hook.
      */
-    bool log_status(
+    virtual bool log_status(
             const real_t t,
             const std::size_t nt);
 
@@ -156,8 +156,7 @@ protected:
     virtual bool log_status_hook(
             const std::string& prefix,
             const real_t simulation_time,
-            const std::size_t nt)
-        = 0;
+            const std::size_t nt);
 
 private:
 
