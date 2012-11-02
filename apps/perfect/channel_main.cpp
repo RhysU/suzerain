@@ -32,8 +32,8 @@
 
 #include <suzerain/common.hpp>
 #include <gsl/gsl_errno.h>
-#include <esio/esio.h>
 #include <esio/error.h>
+#include <esio/esio.h>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
@@ -45,6 +45,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
@@ -94,8 +95,13 @@ using suzerain::fullprec;
 using suzerain::real_t;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
+namespace ndx     = suzerain::ndx;
 
-// Explicit timestepping scheme uses only complex_t 4D ContiguousState
+// FIXME Generalize as part of Redmine ticket #2480
+// We are only prepared to deal with 5 equations
+static const std::vector<support::field> fields = perfect::default_fields();
+
+// Timestepping scheme uses only complex_t 4D ContiguousState
 // State indices range over (scalar field, Y, X, Z) in wave space
 typedef suzerain::InterleavedState<4,complex_t> linear_state_type;
 typedef suzerain::ContiguousState<4,complex_t>  nonlinear_state_type;
@@ -189,8 +195,6 @@ static void information_L2(const std::string& prefix,
                            const char * const name_L2  = "L2.mean",
                            const char * const name_rms = "rms.fluct")
 {
-    namespace field = support::field;
-
     // Avoid computational cost when logging is disabled
     logging::logger_type log_L2  = logging::get_logger(name_L2);
     logging::logger_type log_rms = logging::get_logger(name_rms);
@@ -201,8 +205,8 @@ static void information_L2(const std::string& prefix,
     static bool show_header = true;
     if (show_header) {
         msg << prefix;
-        for (size_t k = 0; k < field::count; ++k)
-            msg << ' ' << std::setw(fullprec<>::width) << field::name[k];
+        for (size_t k = 0; k < fields.size(); ++k)
+            msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
         INFO0(log_rms, msg.str());
         msg.str("");
@@ -235,8 +239,6 @@ static void information_L2(const std::string& prefix,
 /** Build a message containing bulk quantities */
 static void information_bulk(const std::string& prefix)
 {
-    namespace field = support::field;
-
     // Only continue on the rank housing the zero-zero modes...
     if (!dgrid->has_zero_zero_modes()) return;
 
@@ -249,8 +251,8 @@ static void information_bulk(const std::string& prefix)
     static bool show_header = true;
     if (show_header) {
         msg << prefix;
-        for (size_t k = 0; k < field::count; ++k)
-            msg << ' ' << std::setw(fullprec<>::width) << field::name[k];
+        for (size_t k = 0; k < fields.size(); ++k)
+            msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(bulk_state, msg.str());
         msg.str("");
         show_header = false;
@@ -277,8 +279,6 @@ static void information_specific_wall_state(const std::string& prefix)
     // Only continue on the rank housing the zero-zero modes.
     if (!dgrid->has_zero_zero_modes()) return;
 
-    namespace ndx = support::field::ndx;
-
     logging::logger_type nick[2] = { logging::get_logger("wall.lower"),
                                      logging::get_logger("wall.upper")  };
 
@@ -296,7 +296,7 @@ static void information_specific_wall_state(const std::string& prefix)
         msg << prefix;
 
         const real_t rho = ((*state_linear)[ndx::rho][wall[l]][0][0]).real();
-        for (size_t k = 0; k < support::field::count; ++k) {
+        for (size_t k = 0; k < fields.size(); ++k) {
             real_t val = (k == ndx::rho)
                        ? rho
                        : ((*state_linear)[k][wall[l]][0][0]).real() / rho;
@@ -481,7 +481,7 @@ static bool save_restart(real_t t, size_t nt)
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         support::store_coefficients(
-                esioh, *state_nonlinear, grid, *dgrid);
+                esioh, fields, *state_nonlinear, grid, *dgrid);
     }
 
     // Include statistics in the restart file
@@ -1117,7 +1117,7 @@ int main(int argc, char **argv)
 
     // Display global degree of freedom information
     INFO0("Global number of unknowns:         " << (  grid.N.prod()
-                                                    * support::field::count));
+                                                    * fields.size()));
     INFO0("Grid degrees of freedom    (GDOF): " << grid.N.prod());
     INFO0("GDOF by direction           (XYZ): " << grid.N);
     INFO0("Dealiased GDOF by direction (XYZ): " << grid.dN);
@@ -1193,7 +1193,7 @@ int main(int argc, char **argv)
 
     // Create the state storage for nonlinear operator with appropriate padding
     state_nonlinear.reset(support::allocate_padded_state<nonlinear_state_type>(
-                support::field::count, *dgrid));
+                fields.size(), *dgrid));
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Nonlinear state shape   (FYXZ): "
@@ -1226,7 +1226,7 @@ int main(int argc, char **argv)
 
     // Create state storage for linear operator usage
     state_linear = make_shared<linear_state_type>(
-            suzerain::to_yxz(support::field::count, dgrid->local_wave_extent));
+            suzerain::to_yxz(fields.size(), dgrid->local_wave_extent));
 
     // Dump some state shape and stride information for debugging purposes
     DEBUG("Linear state shape      (FYXZ): "
@@ -1533,7 +1533,7 @@ int main(int argc, char **argv)
         common_block.setZero(grid.dN.y());  // Zero reference quantities
         L->accumulateMassPlusScaledOperator(
                 1., *state_linear, -1., *state_nonlinear, *m, 0, /*substep*/0);
-        for (size_t k = 0; k < support::field::count; ++k) {
+        for (size_t k = 0; k < fields.size(); ++k) {
             suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),
@@ -1544,7 +1544,7 @@ int main(int argc, char **argv)
         state_nonlinear->exchange(*state_linear);
         N->applyOperator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
-        for (size_t k = 0; k < support::field::count; ++k) {
+        for (size_t k = 0; k < fields.size(); ++k) {
             suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),
                 grid.L.x(), grid.L.z(), dgrid->global_wave_extent.y(),
                 grid.N.x(), grid.dN.x(),

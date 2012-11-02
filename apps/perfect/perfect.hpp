@@ -49,12 +49,19 @@
 #include "nsctpl_rholut.hpp"
 #include "scenario_definition.hpp"
 
+
 namespace suzerain {
+
+// Ugly forward declaration of support::fields
+namespace support { class field; }
 
 /**
  * Functionality used throughout the Suzerain perfect gas application.
  */
 namespace perfect {
+
+/** Return default Nondimensional field information per \ref suzerain::ndx */
+std::vector<support::field> default_fields();
 
 /** Store a ScenarioDefinition in a restart file */
 void store(const esio_handle h,

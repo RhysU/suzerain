@@ -32,6 +32,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
 #include "nonlinear.hpp"
@@ -179,7 +180,6 @@ public:
 
     void operator()(complex_t &rho) const
     {
-        namespace ndx = support::field::ndx;
         (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
@@ -199,7 +199,6 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State enters method as collocation point values in Y direction
 
     // Shorthand
-    namespace ndx = support::field::ndx;
     using boost::indices;
     typedef boost::multi_array_types::index_range range;
 

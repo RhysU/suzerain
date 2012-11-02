@@ -34,6 +34,7 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/timers.h>
 
@@ -68,12 +69,20 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
 {
     SUZERAIN_TIMER_SCOPED("applyMassPlusScaledOperator");
 
+    // Shorthand
     using inorder::wavenumber;
     using inorder::wavenumber_absmin;
-    namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
+
+    // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
+    enum { swave_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < swave_count);
+    assert(static_cast<int>(ndx::mx ) < swave_count);
+    assert(static_cast<int>(ndx::my ) < swave_count);
+    assert(static_cast<int>(ndx::mz ) < swave_count);
+    assert(static_cast<int>(ndx::rho) < swave_count);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -92,13 +101,13 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
+    SUZERAIN_ENSURE(state.shape()  [0] ==   swave_count);
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
 
     // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
-    VectorXc tmp(Ny*field::count);
+    VectorXc tmp(Ny * swave_count);
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
@@ -121,7 +130,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
             // Copy pencil into temporary storage
-            blas::copy(field::count*Ny, p, 1, tmp.data(), 1);
+            blas::copy(swave_count * Ny, p, 1, tmp.data(), 1);
 
             // Accumulate result back into state storage automatically
             // adjusting for when input imaginary part a priori should be zero
@@ -129,17 +138,17 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
-                    tmp.data() + field::ndx::e   * Ny,
-                    tmp.data() + field::ndx::mx  * Ny,
-                    tmp.data() + field::ndx::my  * Ny,
-                    tmp.data() + field::ndx::mz  * Ny,
-                    tmp.data() + field::ndx::rho * Ny,
+                    tmp.data() + ndx::e   * Ny,
+                    tmp.data() + ndx::mx  * Ny,
+                    tmp.data() + ndx::my  * Ny,
+                    tmp.data() + ndx::mz  * Ny,
+                    tmp.data() + ndx::rho * Ny,
                     0.0,
-                    p + field::ndx::e   * Ny,
-                    p + field::ndx::mx  * Ny,
-                    p + field::ndx::my  * Ny,
-                    p + field::ndx::mz  * Ny,
-                    p + field::ndx::rho * Ny);
+                    p + ndx::e   * Ny,
+                    p + ndx::mx  * Ny,
+                    p + ndx::my  * Ny,
+                    p + ndx::mz  * Ny,
+                    p + ndx::rho * Ny);
             SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
@@ -156,12 +165,20 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 {
     SUZERAIN_TIMER_SCOPED("accumulateMassPlusScaledOperator");
 
+    // Shorthand
     using inorder::wavenumber;
     using inorder::wavenumber_absmin;
-    namespace field = support::field;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
+
+    // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
+    enum { swave_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < swave_count);
+    assert(static_cast<int>(ndx::mx ) < swave_count);
+    assert(static_cast<int>(ndx::my ) < swave_count);
+    assert(static_cast<int>(ndx::mz ) < swave_count);
+    assert(static_cast<int>(ndx::rho) < swave_count);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -182,7 +199,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
     // Input and output state storage has contiguous wall-normal scalars?
     // Furthermore, input has contiguous wall-normal pencils of all state?
     SUZERAIN_ENSURE(output.isIsomorphic(input));
-    SUZERAIN_ENSURE(input.shape()   [0] ==  field::count);
+    SUZERAIN_ENSURE(input.shape()   [0] ==   swave_count);
     SUZERAIN_ENSURE(input.strides() [0] == (unsigned) Ny);
     SUZERAIN_ENSURE(input.shape()   [1] == (unsigned) Ny);
     SUZERAIN_ENSURE(input.strides() [1] ==             1);
@@ -213,17 +230,17 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, bop.get(),
                     wn == 0 && wm == 0,
-                    &input [field::ndx::e  ][0][m - dkbx][n - dkbz],
-                    &input [field::ndx::mx ][0][m - dkbx][n - dkbz],
-                    &input [field::ndx::my ][0][m - dkbx][n - dkbz],
-                    &input [field::ndx::mz ][0][m - dkbx][n - dkbz],
-                    &input [field::ndx::rho][0][m - dkbx][n - dkbz],
+                    &input [ndx::e  ][0][m - dkbx][n - dkbz],
+                    &input [ndx::mx ][0][m - dkbx][n - dkbz],
+                    &input [ndx::my ][0][m - dkbx][n - dkbz],
+                    &input [ndx::mz ][0][m - dkbx][n - dkbz],
+                    &input [ndx::rho][0][m - dkbx][n - dkbz],
                     beta,
-                    &output[field::ndx::e   ][0][m - dkbx][n - dkbz],
-                    &output[field::ndx::mx  ][0][m - dkbx][n - dkbz],
-                    &output[field::ndx::my  ][0][m - dkbx][n - dkbz],
-                    &output[field::ndx::mz  ][0][m - dkbx][n - dkbz],
-                    &output[field::ndx::rho ][0][m - dkbx][n - dkbz]);
+                    &output[ndx::e   ][0][m - dkbx][n - dkbz],
+                    &output[ndx::mx  ][0][m - dkbx][n - dkbz],
+                    &output[ndx::my  ][0][m - dkbx][n - dkbz],
+                    &output[ndx::mz  ][0][m - dkbx][n - dkbz],
+                    &output[ndx::rho ][0][m - dkbx][n - dkbz]);
             SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
 
         }
@@ -264,7 +281,6 @@ public:
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
         // Starting offset to named scalars in InterleavedState pencil
-        namespace ndx = support::field::ndx;
         const int start_e   = static_cast<int>(ndx::e  ) * A.n;
         const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
         const int start_my  = static_cast<int>(ndx::my ) * A.n;
@@ -363,11 +379,17 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Shorthand
     using inorder::wavenumber;
     using inorder::wavenumber_absmin;
-    namespace field = support::field;
-    namespace ndx   = field::ndx;
     SUZERAIN_UNUSED(method);
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
+
+    // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
+    enum { swave_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < swave_count);
+    assert(static_cast<int>(ndx::mx ) < swave_count);
+    assert(static_cast<int>(ndx::my ) < swave_count);
+    assert(static_cast<int>(ndx::mz ) < swave_count);
+    assert(static_cast<int>(ndx::rho) < swave_count);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -389,7 +411,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==             1);
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] ==  field::count);
+    SUZERAIN_ENSURE(state.shape()  [0] ==   swave_count);
 
     // Compute how many additional mean constraints we must solve
     // Ensure conformant, mean constraints are arriving on the correct rank
@@ -399,7 +421,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned) Ny);
         SUZERAIN_ENSURE(ic0->strides()[1] ==             1);
         SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned) Ny);
-        SUZERAIN_ENSURE(ic0->shape()  [0] ==  field::count);
+        SUZERAIN_ENSURE(ic0->shape()  [0] ==   swave_count);
     }
 
     // channel_treatment step (3) performs the operator solve which for the
@@ -408,7 +430,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // Details for suzerain_rholut_imexop-based "inversion" using ?GBSVX
     // Macros used to automatically increase paranoia during debug builds
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
-            (int) field::count, Ny, bop.max_kl(), bop.max_ku());
+            (int) swave_count, Ny, bop.max_kl(), bop.max_ku());
 #ifndef NDEBUG
 # define SCRATCH_C(type, name, ...) \
          type name = type::Constant(__VA_ARGS__, suzerain::complex::NaN<type::Scalar>())

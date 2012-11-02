@@ -31,6 +31,7 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/spec_zgbsv.hpp>
@@ -207,7 +208,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     SUZERAIN_TIMER_SCOPED("ChannelTreatment");
 
     // Shorthand
-    namespace ndx = support::field::ndx;
+    using std::size_t;
     OperatorCommonBlock &common = this->common;
     const ScenarioDefinition &scenario = this->scenario;
     const int Ny = this->dgrid.global_wave_extent.y();
@@ -216,10 +217,15 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.strides()[1] ==             1);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] == support::field::count);
+    // Any amount of incoming state is valid so long as there's enough there
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny      );
+    SUZERAIN_ENSURE(state.strides()[1] ==             1      );
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny      );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::e  );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::rho);
 
     // See channel_treatment writeup (redux) for information on the steps below
 
@@ -242,8 +248,9 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
-        const boost::array<std::size_t,4> sizes
-                = {{ state.shape()[0], Ny, cdata.cols(), 1 }};
+        const boost::array<size_t,4> sizes = {{
+                state.shape()[0], (size_t) Ny, (size_t) cdata.cols(), 1
+        }};
         ic0 = new multi_array::ref<complex_t,4>(
                 cdata.data(), sizes, storage::interleaved<4>());
     }

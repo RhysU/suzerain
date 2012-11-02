@@ -31,6 +31,7 @@
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
@@ -64,7 +65,6 @@ std::vector<real_t> applyNonlinearOperator(
 
     // Shorthand
     typedef ContiguousState<4,complex_t> state_type;
-    namespace ndx = support::field::ndx;
     using std::abs;
     using std::equal;
     using std::max;
@@ -73,6 +73,14 @@ std::vector<real_t> applyNonlinearOperator(
     using std::sqrt;
 
     // State enters method as coefficients in X, Y, and Z directions
+
+    // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
+    enum { swave_count = 5 };
+    assert(static_cast<int>(ndx::e  ) < swave_count);
+    assert(static_cast<int>(ndx::mx ) < swave_count);
+    assert(static_cast<int>(ndx::my ) < swave_count);
+    assert(static_cast<int>(ndx::mz ) < swave_count);
+    assert(static_cast<int>(ndx::rho) < swave_count);
 
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
@@ -93,15 +101,15 @@ std::vector<real_t> applyNonlinearOperator(
     state_type &auxw = *_auxw_ptr;                                   // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    assert(swave.shape()[0] == support::field::count);
-    assert(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
-    assert(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
-    assert(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
-    assert((unsigned) swave.strides()[1] == 1u);
-    assert((unsigned) swave.strides()[2] == swave.shape()[1]);
-    assert((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
-    assert(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
-    assert(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
+    SUZERAIN_ENSURE(swave.shape()[0] == swave_count);
+    SUZERAIN_ENSURE(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE((unsigned) swave.strides()[1] == 1u);
+    SUZERAIN_ENSURE((unsigned) swave.strides()[2] == swave.shape()[1]);
+    SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
+    SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
+    SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
@@ -229,9 +237,9 @@ std::vector<real_t> applyNonlinearOperator(
     // access and eases indexing overhead.
     typename support::physical_view<aux::count>::type auxp
         = support::physical_view<aux::count>::create(o.dgrid, auxw);
-    typename support::physical_view<support::field::count>::type sphys
-        = support::physical_view<support::field::count>::create(o.dgrid, swave);
-    for (size_t i = 0; i < support::field::count; ++i) {
+    typename support::physical_view<swave_count>::type sphys
+        = support::physical_view<swave_count>::create(o.dgrid, swave);
+    for (size_t i = 0; i < swave_count; ++i) {
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
@@ -950,7 +958,7 @@ std::vector<real_t> applyNonlinearOperator(
     } // end msoln
 
     // Collectively convert state to wave space using parallel FFTs
-    for (size_t i = 0; i < support::field::count; ++i) {
+    for (size_t i = 0; i < swave_count; ++i) {
 
         if (Linearize == linearize::rhome && i == ndx::rho && !msoln) {
 

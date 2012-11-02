@@ -79,16 +79,6 @@ const char log4cxx_config[] =
 
 #undef COMMON_CONSOLE_CONFIG
 
-const boost::array<const char *,field::count> field::name = {{
-    "rho_E", "rho_u", "rho_v", "rho_w", "rho"
-}};
-
-const boost::array<const char *,field::count> field::description = {{
-    "total energy",
-    "streamwise momentum", "wall-normal momentum", "spanwise momentum",
-    "density",
-}};
-
 const real_t bsplines_distinct_distance
     = 3*std::numeric_limits<real_t>::epsilon();
 
@@ -710,15 +700,16 @@ ContiguousState<4,complex_t>* allocate_padded_state(
 
 void store_coefficients(
         const esio_handle h,
+        const std::vector<field> &fields,
         const ContiguousState<4,complex_t> &swave,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid)
 {
     // Ensure swave meets this routine's assumptions
-    assert(                  swave.shape()[0]  == field::count);
-    assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == fields.size()              );
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Compute wavenumber translation logistics for X direction
     int fxb[2], fxe[2], mxb[2], mxe[2];
@@ -729,8 +720,8 @@ void store_coefficients(
                                   fxb[0], fxe[0], fxb[1], fxe[1],
                                   mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
+    SUZERAIN_ENSURE(fxb[1] == fxe[1]);
+    SUZERAIN_ENSURE(mxb[1] == mxe[1]);
 
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
@@ -743,11 +734,10 @@ void store_coefficients(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Save each scalar field in turn...
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < fields.size(); ++i) {
 
         // ...first generate a metadata comment...
-        std::string comment = "Nondimensional ";
-        comment += field::description[i];
+        std::string comment = fields[i].description;
         comment += " stored row-major ZXY using a Fourier basis in Z stored"
                    " in-order per /kz; a Fourier basis in X stored using"
                    " Hermitian symmetry per /kx; and a B-spline basis in Y"
@@ -771,7 +761,7 @@ void store_coefficients(
             }
 
             // Perform collective write operation
-            complex_field_write(h, field::name[i], src,
+            complex_field_write(h, fields[i].location.c_str(), src,
                                 swave.strides()[3],
                                 swave.strides()[2],
                                 swave.strides()[1],
@@ -795,6 +785,7 @@ real_t distance(const bspline& a,
 }
 
 void load_coefficients(const esio_handle h,
+                       const std::vector<field> &fields,
                        ContiguousState<4,complex_t> &state,
                        const problem::GridDefinition& grid,
                        const pencil_grid& dgrid,
@@ -804,21 +795,21 @@ void load_coefficients(const esio_handle h,
     typedef ContiguousState<4,complex_t> load_type;
 
     // Ensure local state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.global_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(                  state.shape()[0]  == fields.size());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[1]) == dgrid.global_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Obtain details on the restart field's global sizes
     int Fz, Fx, Fy, ncomponents;
-    esio_field_sizev(h, field::name[0], &Fz, &Fx, &Fy, &ncomponents);
-    assert(ncomponents == 2);
+    esio_field_sizev(h, fields[0].location.c_str(), &Fz, &Fx, &Fy, &ncomponents);
+    SUZERAIN_ENSURE(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
     boost::shared_ptr<bspline> Fb;
     boost::shared_ptr<bsplineop> Fbop;
     load(h, Fb, Fbop);
-    assert(Fy == Fb->n());
+    SUZERAIN_ENSURE(Fy == Fb->n());
 
     // Check if the B-spline basis in the file differs from ours.
     const double bsplines_dist = distance(b, *Fb);
@@ -836,8 +827,8 @@ void load_coefficients(const esio_handle h,
                                   fxb[0], fxe[0], fxb[1], fxe[1],
                                   mxb[0], mxe[0], mxb[1], mxe[1]);
     // X contains only positive wavenumbers => second range must be empty
-    assert(fxb[1] == fxe[1]);
-    assert(mxb[1] == mxe[1]);
+    SUZERAIN_ENSURE(fxb[1] == fxe[1]);
+    SUZERAIN_ENSURE(mxb[1] == mxe[1]);
 
     // Compute wavenumber translation logistics for Z direction
     // One or both ranges may be empty
@@ -870,7 +861,7 @@ void load_coefficients(const esio_handle h,
     }
 
     // Load each scalar field in turn
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < fields.size(); ++i) {
 
         // Create a view of the state for just the i-th scalar
         boost::multi_array_types::index_range all;
@@ -914,7 +905,7 @@ void load_coefficients(const esio_handle h,
             }
 
             // Perform collective read operation into dst
-            complex_field_read(h, field::name[i], dst,
+            complex_field_read(h, fields[i].location.c_str(), dst,
                                dst_strides[2], dst_strides[1], dst_strides[0]);
         }
 

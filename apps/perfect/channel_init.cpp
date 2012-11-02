@@ -34,6 +34,7 @@
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/problem.hpp>
@@ -61,8 +62,13 @@ using boost::shared_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::real_t;
+namespace ndx     = suzerain::ndx;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
+
+// FIXME Generalize as part of Redmine ticket #2480
+// We are only prepared to deal with 5 equations
+static const std::vector<support::field> fields = perfect::default_fields();
 
 // Global parameters initialized in main()
 using suzerain::perfect::ScenarioDefinition;
@@ -310,8 +316,7 @@ int main(int argc, char **argv)
 
 
     INFO0("Allocating storage for the distributed state fields");
-    state_type swave(suzerain::to_yxz(
-                support::field::count, dgrid->local_wave_extent));
+    state_type swave(suzerain::to_yxz(fields.size(), dgrid->local_wave_extent));
     state_type stemp(suzerain::to_yxz(1, dgrid->local_wave_extent));
 
     INFO0("Initializing data on collocation points values in physical space");
@@ -329,9 +334,8 @@ int main(int argc, char **argv)
         suzerain::OperatorBase obase(grid, *dgrid, *b, *bop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
-        support::physical_view<support::field::count>::type sphys
-                = support::physical_view<support::field::count>::create(
-                        *dgrid, swave);
+        support::physical_view<>::type sphys
+            = support::physical_view<>::create(*dgrid, swave, swave.shape()[0]);
 
         // Find normalization required to have (y*(L-y))^npower integrate to one
         real_t factor;
@@ -383,11 +387,11 @@ int main(int argc, char **argv)
                     const real_t e = T / (scenario.gamma*(scenario.gamma - 1))
                                    +  (scenario.Ma*scenario.Ma/2)
                                      *(u*u + v*v + w*w);
-                    sphys(support::field::ndx::e,   offset) = rho * e;
-                    sphys(support::field::ndx::mx,  offset) = rho * u;
-                    sphys(support::field::ndx::my,  offset) = rho * v;
-                    sphys(support::field::ndx::mz,  offset) = rho * w;
-                    sphys(support::field::ndx::rho, offset) = rho;
+                    sphys(ndx::e,   offset) = rho * e;
+                    sphys(ndx::mx,  offset) = rho * u;
+                    sphys(ndx::my,  offset) = rho * v;
+                    sphys(ndx::mz,  offset) = rho * w;
+                    sphys(ndx::rho, offset) = rho;
 
                 } // end X
 
@@ -401,7 +405,7 @@ int main(int argc, char **argv)
         massluz.opform(1, &scale_factor, *bop);
         massluz.factor();
 
-        for (std::size_t i = 0; i < support::field::count; ++i) {
+        for (std::size_t i = 0; i < swave.shape()[0]; ++i) {
             dgrid->transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
             obase.bop_solve(massluz, swave, i);                        // Y
         }
@@ -409,7 +413,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    support::store_coefficients(esioh, swave, grid, *dgrid);
+    support::store_coefficients(esioh, fields, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
     real_t t;

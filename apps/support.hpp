@@ -67,34 +67,33 @@ extern const char log4cxx_config[];
  */
 extern const char log4cxx_config_console[];
 
-/** Contains basic details about the scalar state fields employed */
-namespace field {
+/**
+ * Collects details about scalar-valued fields.
+ * For example, spanwise momentum.
+ */
+class field
+{
+public:
 
-/** Contains state variable indices within state storage */
-namespace ndx {
+    /**
+     * A brief string used in status displays.
+     * For example, "rho_w".
+     */
+    std::string identifier;
 
-// Anonymous enum to declare our state variable storage indices.
-// Update count just below if you modify this enum!
-enum {
-    e,    /**< Nondimensional total energy         \f$e   = \rho{}E\f$ */
-    mx,   /**< Nondimensional streamwise momentum  \f$m_x = \rho{}u\f$ */
-    my,   /**< Nondimensional wall-normal momentum \f$m_y = \rho{}v\f$ */
-    mz,   /**< Nondimensional spanwise momentum    \f$m_z = \rho{}w\f$ */
-    rho   /**< Nondimensional density              \f$      \rho   \f$ */
+    /**
+     * Human-readable text used to generate descriptions.
+     * For example, "spanwise momentum".
+     */
+    std::string description;
+
+    /**
+     * The ESIO location (that is, HDF5 dataset) in which the field is stored
+     * in restart files.  Often this will just be \c identifier.
+     */
+    std::string location;
+
 };
-
-} // end namespace ndx;
-
-/** Contains the number of distinct state variables we track */
-const std::size_t count = static_cast<std::size_t>(ndx::rho) + 1;
-
-/** Field names as stored in restart files */
-extern const boost::array<const char *, count> name;
-
-/** Field descriptions as stored in restart files */
-extern const boost::array<const char *, count> description;
-
-} // end namespace field
 
 /** Log-and-abort handler for errors originating in the GSL */
 void mpi_abort_on_error_handler_gsl(const char * reason,
@@ -228,6 +227,7 @@ ContiguousState<4,complex_t>* allocate_padded_state(
  */
 void store_coefficients(
         const esio_handle h,
+        const std::vector<field> &fields,
         const ContiguousState<4,complex_t> &swave,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid);
@@ -238,6 +238,7 @@ void store_coefficients(
  * provided \c grid, \c dgrid, \c b, and \c bop.
  */
 void load_coefficients(const esio_handle h,
+                       const std::vector<field> &fields,
                        ContiguousState<4,complex_t> &state,
                        const problem::GridDefinition& grid,
                        const pencil_grid& dgrid,

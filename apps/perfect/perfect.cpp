@@ -38,6 +38,7 @@
 #include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/mpi_datatype.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/problem.hpp>
 #include <suzerain/rholut.hpp>
@@ -57,6 +58,18 @@ using boost::numeric_cast;
 using std::size_t;
 
 namespace suzerain { namespace perfect {
+
+std::vector<support::field> default_fields()
+{
+    std::vector<support::field> retval(ndx::identifier.static_size);
+    for (size_t i = 0; i < ndx::identifier.static_size; ++i) {
+        retval[i].identifier   = ndx::identifier[i];
+        retval[i].description += "Nondimensional ";
+        retval[i].description += ndx::description[i];
+        retval[i].location     = ndx::identifier[i];
+    }
+    return retval;
+}
 
 void store(const esio_handle h,
            const ScenarioDefinition& scenario)
@@ -282,16 +295,19 @@ void store_collocation_values(
         bspline& b,
         const bsplineop& bop)
 {
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
     // Ensure state storage meets this routine's assumptions
-    assert(                  swave.shape()[0]  == support::field::count);
-    assert(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
     OperatorBase obase(grid, dgrid, b, bop);
-    for (size_t i = 0; i < support::field::count; ++i) {
+    for (size_t i = 0; i < swave.shape()[0]; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
@@ -299,8 +315,8 @@ void store_collocation_values(
     }
 
     // Convert conserved rho{_E,_u,_v,_w,} into u, v, w, p, T
-    support::physical_view<support::field::count>::type sphys
-        = support::physical_view<support::field::count>::create(dgrid, swave);
+    support::physical_view<state_count>::type sphys
+        = support::physical_view<state_count>::create(dgrid, swave);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -309,11 +325,11 @@ void store_collocation_values(
 
     for (int o = 0; o < dgrid.local_physical_extent.prod(); ++o) {
         // Unpack conserved quantities from fields
-        const real_t     e(sphys(support::field::ndx::e,   o));
-        Vector3r         m(sphys(support::field::ndx::mx,  o),
-                           sphys(support::field::ndx::my,  o),
-                           sphys(support::field::ndx::mz,  o));
-        const real_t   rho(sphys(support::field::ndx::rho, o));
+        const real_t     e(sphys(ndx::e,   o));
+        Vector3r         m(sphys(ndx::mx,  o),
+                           sphys(ndx::my,  o),
+                           sphys(ndx::mz,  o));
+        const real_t   rho(sphys(ndx::rho, o));
 
         // Compute primitive quantities to be stored
         real_t p, T;
@@ -329,11 +345,15 @@ void store_collocation_values(
     }
 
     // HDF5 file storage locations and corresponding descriptions
-    const boost::array<const char *,5> prim_names = {{
+    const boost::array<const char *,state_count> prim_names = {{
         "u", "v", "w", "p", "T"
     }};
-    const boost::array<const char *,5> prim_descriptions = {{
-        "X velocity", "Y velocity", "Z velocity", "pressure", "temperature",
+    const boost::array<const char *,state_count> prim_descriptions = {{
+        "streamwise velocity",
+        "wall-normal velocity",
+        "spanwise velocity",
+        "pressure",
+        "temperature",
     }};
     assert(prim_names.static_size == prim_descriptions.static_size);
 
@@ -345,7 +365,7 @@ void store_collocation_values(
                             grid.dN.x(), dgrid.local_physical_start.x(),
                                          dgrid.local_physical_extent.x());
 
-    for (size_t i = 0; i < prim_names.static_size; ++i) {
+    for (size_t i = 0; i < state_count; ++i) {
 
         std::string comment = "Nondimensional ";
         comment += prim_descriptions[i];
@@ -369,11 +389,14 @@ void load_collocation_values(
         bspline& b,
         const bsplineop& bop)
 {
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
     // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == support::field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE(                  state.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
     // This routine does no grid interpolation.  Yell loudly if necessary
     {
@@ -413,8 +436,8 @@ void load_collocation_values(
     }
 
     // Establish size of collective reads across all ranks and read data
-    support::physical_view<support::field::count>::type sphys
-        = support::physical_view<support::field::count>::create(dgrid, state);
+    support::physical_view<state_count>::type sphys
+        = support::physical_view<state_count>::create(dgrid, state);
     esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
                                          dgrid.local_physical_extent.y(),
                             grid.dN.z(), dgrid.local_physical_start.z(),
@@ -446,11 +469,11 @@ void load_collocation_values(
                          + rholut::energy_internal(gamma, p);
 
         // Pack conserved quantities into fields (by name)
-        sphys(support::field::ndx::e,   o) = e;
-        sphys(support::field::ndx::mx,  o) = m.x();
-        sphys(support::field::ndx::my,  o) = m.y();
-        sphys(support::field::ndx::mz,  o) = m.z();
-        sphys(support::field::ndx::rho, o) = rho;
+        sphys(ndx::e,   o) = e;
+        sphys(ndx::mx,  o) = m.x();
+        sphys(ndx::my,  o) = m.y();
+        sphys(ndx::mz,  o) = m.z();
+        sphys(ndx::rho, o) = rho;
     }
 
     // Initialize OperatorBase to access decomposition-ready utilities
@@ -463,7 +486,7 @@ void load_collocation_values(
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
 
-    for (size_t i = 0; i < support::field::count; ++i) {
+    for (size_t i = 0; i < state.shape()[0]; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
         obase.zero_dealiasing_modes(state, i);
         obase.bop_solve(massluz, state, i);                      // Y
@@ -478,24 +501,31 @@ void load(const esio_handle h,
           bspline& b,
           const bsplineop& bop)
 {
-    namespace field = support::field;
+    const std::vector<support::field> fields = default_fields();
+
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(state.shape()[0]  == fields.size());
 
     // Check whether load_coefficients(...) should work
     bool trycoeffs = true;
-    for (size_t i = 0; i < field::count; ++i) {
+    for (size_t i = 0; i < fields.size(); ++i) {
         int ncomponents = 0;
-        switch (esio_field_sizev(h, field::name[i], 0, 0, 0, &ncomponents)) {
+        switch (esio_field_sizev(h, fields[i].location.c_str(),
+                                 0, 0, 0, &ncomponents))
+        {
             case ESIO_SUCCESS:
                 if (ncomponents != 2) {
-                    DEBUG0("Field /" << field::name[i] << " looks fishy...");
+                    DEBUG0("Field /" << fields[i].identifier
+                                     << " looks fishy...");
                 }
                 break;
             case ESIO_NOTFOUND:
-                DEBUG0("Field /" << field::name[i] << " not found in restart");
+                DEBUG0("Field /" << fields[i].identifier
+                                 << " not found in restart");
                 trycoeffs = false;
                 break;
             default:
-                DEBUG0("Field /" << field::name[i] << " looks fishy...");
+                DEBUG0("Field /" << fields[i].identifier << " looks fishy...");
                 break;
         }
     }
@@ -503,7 +533,7 @@ void load(const esio_handle h,
     // Dispatch to the appropriate restart loading logic
     DEBUG0("Started loading simulation fields");
     if (trycoeffs) {
-        support::load_coefficients(h, state, grid, dgrid, b, bop);
+        support::load_coefficients(h, fields, state, grid, dgrid, b, bop);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
         load_collocation_values(h, state, scenario, grid, dgrid, b, bop);
@@ -521,6 +551,15 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
                 const real_t old_Ma,
                 const real_t old_gamma)
 {
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+
     bool quickreturn = true;
 #pragma warning(push,disable:1572)
     if (old_Ma != scenario.Ma) {
@@ -543,9 +582,9 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
 
     // Convert state to physical space collocation points
     OperatorBase obase(grid, dgrid, b, bop);
-    support::physical_view<support::field::count>::type sphys
-            = support::physical_view<support::field::count>::create(dgrid, swave);
-    for (size_t k = 0; k < support::field::count; ++k) {
+    support::physical_view<state_count>::type sphys
+            = support::physical_view<state_count>::create(dgrid, swave);
+    for (size_t k = 0; k < state_count; ++k) {
         obase.bop_apply(0, 1.0, swave, k);
         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
     }
@@ -563,11 +602,11 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
                                    * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            const real_t   e  (sphys(support::field::ndx::e,   offset));
-            const Vector3r m  (sphys(support::field::ndx::mx,  offset),
-                               sphys(support::field::ndx::my,  offset),
-                               sphys(support::field::ndx::mz,  offset));
-            const real_t   rho(sphys(support::field::ndx::rho, offset));
+            const real_t   e  (sphys(ndx::e,   offset));
+            const Vector3r m  (sphys(ndx::mx,  offset),
+                               sphys(ndx::my,  offset),
+                               sphys(ndx::mz,  offset));
+            const real_t   rho(sphys(ndx::rho, offset));
 
             // Compute temperature using old_gamma, old_Ma
             real_t p, T;
@@ -575,9 +614,8 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
                         rho, m, e, /*out*/ p, /*out*/ T);
             // Compute total energy from new gamma, Ma, rho, T
             rholut::p(scenario.gamma, rho, T, /*out*/ p);
-            sphys(support::field::ndx::e, offset)
-                    = rholut::energy_internal(scenario.gamma, p)
-                    + rholut::energy_kinetic(scenario.Ma, rho, m);
+            sphys(ndx::e, offset) = rholut::energy_internal(scenario.gamma, p)
+                                  + rholut::energy_kinetic(scenario.Ma, rho, m);
         }
     }
 
@@ -587,7 +625,7 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, bop);
     massluz.factor();
-    for (size_t i = 0; i < support::field::count; ++i) {
+    for (size_t i = 0; i < state_count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
         obase.bop_solve(massluz, swave, i);
     }
@@ -649,6 +687,20 @@ add_noise(ContiguousState<4,complex_t> &state,
           bspline &b,
           const bsplineop& bop)
 {
+    // FIXME Needs to be made aware of channel vs flat plate
+
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(                  state.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Ensure we were handed collocation-based operator matrices
+    SUZERAIN_ENSURE(bop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+
     const int Ny = grid.N.y();
 
 #pragma warning(push,disable:1572)
@@ -661,17 +713,7 @@ add_noise(ContiguousState<4,complex_t> &state,
     using inorder::wavenumber_abs;
     using inorder::wavenumber_max;
     using inorder::wavenumber_translatable;
-    namespace ndx = support::field::ndx;
     const real_t twopi = 2 * boost::math::constants::pi<real_t>();
-
-    // Ensure state storage meets this routine's assumptions
-    assert(                  state.shape()[0]  == support::field::count);
-    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
-    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-
-    // Ensure we were handed collocation-based operator matrices
-    assert(bop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
 
     // Evaluate maximum fluctuation magnitude based on percentage of
     // centerline mean streamwise velocity and broadcast result.
@@ -757,7 +799,7 @@ add_noise(ContiguousState<4,complex_t> &state,
     //  0) Allocate storage for state and three additional scalar fields.
     boost::scoped_ptr<ContiguousState<4,complex_t> > _s_ptr( // RAII
             support::allocate_padded_state<ContiguousState<4,complex_t> >(
-                support::field::count + 3, dgrid));
+                state_count + 3, dgrid));
     ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
     std::fill(s.range().begin(), s.range().end(), 0);        // Zero memory
 
@@ -821,8 +863,8 @@ add_noise(ContiguousState<4,complex_t> &state,
     for (size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
 
     // Prepare physical-space view of the wave-space storage
-    support::physical_view<support::field::count+3>::type p
-        = support::physical_view<support::field::count+3>::create(dgrid, s);
+    support::physical_view<state_count+3>::type p
+        = support::physical_view<state_count+3>::create(dgrid, s);
 
     // Initializing OperatorBase to access decomposition-ready utilities
     OperatorBase obase(grid, dgrid, b, bop);
@@ -901,9 +943,9 @@ add_noise(ContiguousState<4,complex_t> &state,
                 // have the slowest timescale so rotate the components from 123
                 // to 312 to reduce the simulation time before stationarity.
                 // This rotation may introduce acoustic noise.
-                p(support::field::count + 0, offset) = curlA.z();
-                p(support::field::count + 1, offset) = curlA.x();
-                p(support::field::count + 2, offset) = curlA.y();
+                p(state_count + 0, offset) = curlA.z();
+                p(state_count + 1, offset) = curlA.x();
+                p(state_count + 2, offset) = curlA.y();
 
                 maxmagsquared = math::maxnan(
                         maxmagsquared, curlA.squaredNorm());
@@ -918,13 +960,13 @@ add_noise(ContiguousState<4,complex_t> &state,
                 MPI_MAX, MPI_COMM_WORLD));
 
     // Rescale curl A components so max ||curl A|| == maxfluct
-    p.row(support::field::count + 0) *= (maxfluct / std::sqrt(maxmagsquared));
-    p.row(support::field::count + 1) *= (maxfluct / std::sqrt(maxmagsquared));
-    p.row(support::field::count + 2) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(state_count + 0) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(state_count + 1) *= (maxfluct / std::sqrt(maxmagsquared));
+    p.row(state_count + 2) *= (maxfluct / std::sqrt(maxmagsquared));
 
     //  6) Copy state into auxiliary state storage and bring to
     //     physical space.
-    for (size_t i = 0; i < support::field::count; ++i) {
+    for (size_t i = 0; i < state_count; ++i) {
         s[i] = state[i];
         obase.bop_apply(0, 1.0, s, i);
         dgrid.transform_wave_to_physical(&p.coeffRef(i,0));
@@ -956,9 +998,9 @@ add_noise(ContiguousState<4,complex_t> &state,
                 const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
-                m.x() += rho * p(support::field::count + 0, offset);
-                m.y() += rho * p(support::field::count + 1, offset);
-                m.z() += rho * p(support::field::count + 2, offset);
+                m.x() += rho * p(state_count + 0, offset);
+                m.y() += rho * p(state_count + 1, offset);
+                m.z() += rho * p(state_count + 2, offset);
                 const real_t e_kin = rholut::energy_kinetic(Ma, rho, m);
                 e = e_int + e_kin;
 
@@ -1006,6 +1048,15 @@ void accumulate_manufactured_solution(
         const bsplineop &bop,
         const real_t simulation_time)
 {
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+
     // Initialize OperatorBase to access decomposition-ready utilities
     OperatorBase obase(grid, dgrid, b, bop);
 
@@ -1026,7 +1077,7 @@ void accumulate_manufactured_solution(
     massluz.factor();
 
     // For each scalar field...
-    for (size_t f = 0; f < support::field::count; ++f) {
+    for (size_t f = 0; f < state_count; ++f) {
 
         // ...compute the manufactured solution in physical space...
         size_t offset = 0;
@@ -1050,19 +1101,19 @@ void accumulate_manufactured_solution(
 
                     // Ugly, slow switch but performance irrelevant here
                     switch (f) {
-                    case support::field::ndx::e:
+                    case ndx::e:
                         phys(0, offset) = msoln.rhoe(x, y, z, simulation_time);
                         break;
-                    case support::field::ndx::mx:
+                    case ndx::mx:
                         phys(0, offset) = msoln.rhou(x, y, z, simulation_time);
                         break;
-                    case support::field::ndx::my:
+                    case ndx::my:
                         phys(0, offset) = msoln.rhov(x, y, z, simulation_time);
                         break;
-                    case support::field::ndx::mz:
+                    case ndx::mz:
                         phys(0, offset) = msoln.rhow(x, y, z, simulation_time);
                         break;
-                    case support::field::ndx::rho:
+                    case ndx::rho:
                         phys(0, offset) = msoln.rho (x, y, z, simulation_time);
                         break;
                     default:
@@ -1082,8 +1133,8 @@ void accumulate_manufactured_solution(
         obase.bop_solve(massluz, scratch, 0);                    // Y
 
         // ...and accumulate into the corresponding scalar field of swave
-        assert(std::equal(scratch.shape() + 1, scratch.shape() + 4,
-                          swave.shape() + 1));
+        SUZERAIN_ENSURE(std::equal(scratch.shape() + 1, scratch.shape() + 4,
+                                   swave.shape() + 1));
         if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) {
             continue;  // Sidestep assertions on trivial data
         }
@@ -1126,9 +1177,11 @@ mean sample_mean_quantities(
         ContiguousState<4,complex_t> &swave,
         const real_t t)
 {
+    // We are only prepared to handle a fixed number of fields in this routine
+    enum { state_count = 5 };
+
     // Shorthand
     const size_t Ny = swave.shape()[1];
-    namespace ndx = support::field::ndx;
     namespace acc = boost::accumulators;
     typedef ContiguousState<4,complex_t> state_type;
 
@@ -1152,18 +1205,20 @@ mean sample_mean_quantities(
                 aux::count, dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand
 
+    // Ensure state storage meets this routine's assumptions
+
     // Sanity check incoming swave's and auxw's shape and contiguity
-    assert(swave.shape()[0] == support::field::count);
-    assert(swave.shape()[1] == (unsigned) dgrid.local_wave_extent.y());
-    assert(swave.shape()[2] == (unsigned) dgrid.local_wave_extent.x());
-    assert(swave.shape()[3] == (unsigned) dgrid.local_wave_extent.z());
-    assert((unsigned) swave.strides()[1] == 1u);
-    assert((unsigned) swave.strides()[2] == swave.shape()[1]);
-    assert((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
-    assert(std::equal(swave.shape() + 1, swave.shape() + 4,
-                      auxw.shape() + 1));
-    assert(std::equal(swave.strides() + 1, swave.strides() + 4,
-                      auxw.strides() + 1));
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+    SUZERAIN_ENSURE((unsigned) swave.strides()[1] == 1u);
+    SUZERAIN_ENSURE((unsigned) swave.strides()[2] == swave.shape()[1]);
+    SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
+    SUZERAIN_ENSURE(std::equal(swave.shape() + 1, swave.shape() + 4,
+                               auxw.shape() + 1));
+    SUZERAIN_ENSURE(std::equal(swave.strides() + 1, swave.strides() + 4,
+                               auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
     mean ret(t, Ny);
@@ -1243,9 +1298,9 @@ mean sample_mean_quantities(
     // access and eases indexing overhead.
     support::physical_view<aux::count>::type auxp
         = support::physical_view<aux::count>::create(dgrid, auxw);
-    support::physical_view<support::field::count>::type sphys
-        = support::physical_view<support::field::count>::create(dgrid, swave);
-    for (size_t i = 0; i < support::field::count; ++i) {
+    support::physical_view<state_count>::type sphys
+        = support::physical_view<state_count>::create(dgrid, swave);
+    for (size_t i = 0; i < state_count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
     for (size_t i = 0; i < aux::count; ++i) {
