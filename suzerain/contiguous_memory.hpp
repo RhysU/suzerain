@@ -9,7 +9,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// contiguous_memory.hpp: Provides ContiguousMemory class
+// contiguous_memory.hpp: Provides contiguous_m	emory class
 // $Id$
 
 #ifndef SUZERAIN_CONTIGUOUS_MEMORY_HPP
@@ -18,7 +18,7 @@
 #include <suzerain/common.hpp>
 
 /** @file
- * Provides the ContiguousMemory class.
+ * Provides the contiguous_memory class.
  */
 
 namespace suzerain
@@ -38,7 +38,7 @@ template<
     typename Element,
     typename Allocator = std::allocator<Element>
 >
-class ContiguousMemory
+class contiguous_memory
     : private Allocator // Permits empty base class optimization
 {
 public:
@@ -49,7 +49,7 @@ public:
      * @param dummy Used to disambiguate some overloads.  Ignore it.
      */
     template< typename I >
-    ContiguousMemory(
+    contiguous_memory(
         I count,
         typename boost::enable_if<boost::is_integral<I> >::type* dummy = 0)
         : Allocator(),
@@ -60,7 +60,7 @@ public:
     }
 
     /** Create a block of memory which is a copy of \c other. */
-    ContiguousMemory(const ContiguousMemory &other)
+    contiguous_memory(const contiguous_memory &other)
         : Allocator(other),
           pbegin_(Allocator::allocate(boost::numeric_cast<
                       typename Allocator::size_type>(
@@ -74,7 +74,7 @@ public:
     /**
      * Destruct the instance and free the associated memory
      */
-    ~ContiguousMemory() {
+    ~contiguous_memory() {
         Allocator::deallocate(pbegin_, std::distance(pbegin_,pend_));
     }
 
@@ -94,7 +94,7 @@ public:
      * This does \em not move any elements between the regions.  It does work
      * even when the two instances contain different numbers of elements.
      */
-    void memory_swap(ContiguousMemory& other) throw () {
+    void memory_swap(contiguous_memory& other) throw () {
         std::swap(pbegin_, other.pbegin_);
         std::swap(pend_, other.pend_);
     }
@@ -103,7 +103,7 @@ public:
      * Assign *this from \c other
      * @return \c *this.
      */
-    ContiguousMemory& operator= (ContiguousMemory other)
+    contiguous_memory& operator= (contiguous_memory other)
     {
         // FIXME Not appropriate given that instances are expected to be huge
 

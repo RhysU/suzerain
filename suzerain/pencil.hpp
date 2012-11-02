@@ -54,7 +54,7 @@ template<
     >
 class pencil
     : public  boost::noncopyable,
-      private ContiguousMemory<FPT,Allocator>
+      private contiguous_memory<FPT,Allocator>
 {
 public:
 
@@ -198,7 +198,7 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
                               const RandomAccessContainer2& psize,
                               const RandomAccessContainer3& wstart,
                               const RandomAccessContainer4& wsize)
-    : ContiguousMemory<FPT,Allocator>(std::max<typename Allocator::size_type>(
+    : contiguous_memory<FPT,Allocator>(std::max<typename Allocator::size_type>(
               psize[0]*psize[1]*psize[2],
                 (   sizeof(typename wave_type::element)
                   / sizeof(typename physical_type::element))
@@ -239,7 +239,7 @@ pencil<FPT,Allocator>::pencil(const RandomAccessContainer1& pstart,
 
 template<typename FPT, typename Allocator>
 pencil<FPT,Allocator>::pencil(const pencil_grid& pg)
-    : ContiguousMemory<FPT,Allocator>(std::max<typename Allocator::size_type>(
+    : contiguous_memory<FPT,Allocator>(std::max<typename Allocator::size_type>(
                 pg.local_physical_extent.prod(),
                   (   sizeof(typename wave_type::element)
                     / sizeof(typename physical_type::element))
