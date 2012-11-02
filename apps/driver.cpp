@@ -153,7 +153,7 @@ Driver::log_status(
     log_status_specific_boundary_state(timeprefix);
 
     // Permit subclasses to dump arbitrary status information.  E.g. MMS error
-    const bool retval = log_status_extended(timeprefix, t, nt);
+    const bool retval = log_status_hook(timeprefix, t, nt);
 
     last_status_nt = nt; // Maintain last status time step
 

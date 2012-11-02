@@ -122,7 +122,7 @@ public:
      * Routine to output status, generally called via the TimeController.
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
-     * log_status_boundary_state, and \ref log_status_extended.
+     * log_status_boundary_state, and \ref log_status_hook.
      */
     bool log_status(
             const real_t t,
@@ -146,16 +146,18 @@ public:
     virtual void log_status_specific_boundary_state(
             const std::string& prefix);
 
+protected:
+
     /**
      * Hook permitting subclasses to output additional status information.
-     * Returning \c false causes the TimeController to halt.
+     * Invoked at the end of \ref log_status.  Returning \c false causes the
+     * TimeController to halt.
      */
-    virtual bool log_status_extended(
+    virtual bool log_status_hook(
             const std::string& prefix,
             const real_t simulation_time,
             const std::size_t nt)
         = 0;
-
 
 private:
 
@@ -172,7 +174,7 @@ private:
     bool log_status_bulk_show_header;
 
     /** Signal handler which mutates \c atomic_signal_received. */
-    static void process_signal(int sig);
+    static void process_signal(const int sig);
 
     /** Tracks last time a status line was output */
     std::size_t last_status_nt;
