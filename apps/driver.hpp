@@ -130,13 +130,13 @@ public:
 
     /** Log messages containing mean L2 and RMS fluctuation information. */
     virtual void log_status_L2(
-            const std::string& prefix,
+            const std::string& timeprefix,
             const char * const name_L2  = "L2.mean",
             const char * const name_rms = "rms.fluct");
 
     /** Log messages containing bulk quantities. */
     virtual void log_status_bulk(
-            const std::string& prefix);
+            const std::string& timeprefix);
 
     /**
      * Log messages containing specific state quantities at the upper and lower
@@ -144,7 +144,17 @@ public:
      * by density.
      */
     virtual void log_status_specific_boundary_state(
-            const std::string& prefix);
+            const std::string& timeprefix);
+
+    /**
+     * Routine to save a restart file, generally called via the TimeController.
+     *
+     * The restart saves the data in \ref state_linear.
+     * The data in \ref state_nonlinear is destroyed by this call.
+     */
+    virtual bool save_restart(
+            real_t t,
+            size_t nt);
 
 protected:
 
@@ -154,8 +164,8 @@ protected:
      * TimeController to halt.
      */
     virtual bool log_status_hook(
-            const std::string& prefix,
-            const real_t simulation_time,
+            const std::string& timeprefix,
+            const real_t t,
             const std::size_t nt);
 
 private:
