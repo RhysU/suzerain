@@ -44,6 +44,8 @@ namespace suzerain {
 
 namespace support {
 
+class field;
+
 /**
  * An extensible driver class for managing a Suzerain application.
  * Intended for time-varying, three-dimensional problems.
@@ -64,55 +66,7 @@ public:
 
     virtual ~Driver();
 
-    /**
-     * Type of atomic locations used to track local receipt of the following
-     * signal-based actions:
-     *
-     * \li \c 0 Output a status message
-     * \li \c 1 Write a restart file
-     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
-     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
-     * \li \c 4 Compute and write a statistics file
-     */
-    typedef boost::array<
-            volatile sig_atomic_t, 5
-        > atomic_signal_received_t;
-
-    /**
-     * Routine to output status, generally via the TimeController.
-     *
-     * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
-     * log_status_boundary_state, and \ref log_status_extended.
-     */
-    bool log_status(
-            const real_t t,
-            const std::size_t nt);
-
-    /** Log messages containing mean L2 and RMS fluctuation information. */
-    virtual void log_status_L2(
-            const std::string& prefix,
-            const char * const name_L2  = "L2.mean",
-            const char * const name_rms = "rms.fluct");
-
-    /** Log messages containing bulk quantities. */
-    virtual void log_status_bulk(
-            const std::string& prefix);
-
-    /** Log messages containing state quantities at the boundaries. */
-    virtual void log_status_boundary_state(
-            const std::string& prefix);
-
-    /**
-     * Hook permitting subclasses to output additional status information.
-     * Returning \c false causes the TimeController to halt.
-     */
-    virtual bool log_status_extended(
-            const std::string& prefix,
-            const real_t simulation_time,
-            const std::size_t nt)
-        = 0;
-
-protected:
+    std::vector<support::field> fields;
 
     problem::GridDefinition grid;
 
@@ -141,6 +95,20 @@ protected:
     /** Controls which signals trigger which processing. */
     static const problem::SignalDefinition sigdef;
 
+    /**
+     * Type of atomic locations used to track local receipt of the following
+     * signal-based actions:
+     *
+     * \li \c 0 Output a status message
+     * \li \c 1 Write a restart file
+     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
+     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
+     * \li \c 4 Compute and write a statistics file
+     */
+    typedef boost::array<
+            volatile sig_atomic_t, 5
+        > atomic_signal_received_t;
+
     /** Atomic locations used to track local signal receipt. */
     static atomic_signal_received_t atomic_signal_received;
 
@@ -150,19 +118,58 @@ protected:
      */
     bool soft_teardown;
 
+    /**
+     * Routine to output status, generally called via the TimeController.
+     *
+     * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
+     * log_status_boundary_state, and \ref log_status_extended.
+     */
+    bool log_status(
+            const real_t t,
+            const std::size_t nt);
+
+    /** Log messages containing mean L2 and RMS fluctuation information. */
+    virtual void log_status_L2(
+            const std::string& prefix,
+            const char * const name_L2  = "L2.mean",
+            const char * const name_rms = "rms.fluct");
+
+    /** Log messages containing bulk quantities. */
+    virtual void log_status_bulk(
+            const std::string& prefix);
+
+    /**
+     * Log messages containing specific state quantities at the upper and lower
+     * boundaries.  Density is reported as-is.  All other scalars are divided
+     * by density.
+     */
+    virtual void log_status_specific_boundary_state(
+            const std::string& prefix);
+
+    /**
+     * Hook permitting subclasses to output additional status information.
+     * Returning \c false causes the TimeController to halt.
+     */
+    virtual bool log_status_extended(
+            const std::string& prefix,
+            const real_t simulation_time,
+            const std::size_t nt)
+        = 0;
+
+
 private:
 
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.
      * The default implementation disables headers after the first invocation.
      */
-    bool show_header_log_status_L2;
+    bool log_status_L2_show_header;
 
     /**
      * Flag used to control whether \ref log_status_bulk shows headers.
      * The default implementation disables headers after the first invocation.
      */
-    bool show_header_log_status_bulk;
+    bool log_status_bulk_show_header;
 
     /** Signal handler which mutates \c atomic_signal_received. */
     static void process_signal(int sig);
