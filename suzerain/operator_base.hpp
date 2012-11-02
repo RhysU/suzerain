@@ -56,9 +56,9 @@ public:
      * @param bop      B-spline operators to use.
      */
     operator_base(const problem::GridDefinition &grid,
-                 const pencil_grid &dgrid,
-                 bspline &b,
-                 const bsplineop &bop);
+                  const pencil_grid &dgrid,
+                  bspline &b,
+                  const bsplineop &bop);
 
     /** Virtual destructor to permit use as a base class */
     virtual ~operator_base();
