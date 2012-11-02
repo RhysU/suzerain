@@ -433,7 +433,7 @@ std::vector<real_t> applyNonlinearOperator(
             const real_t Ma,
             const real_t Pr,
             const real_t Re,
-            const OperatorBase &o,
+            const operator_base &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,

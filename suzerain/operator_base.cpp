@@ -31,7 +31,7 @@
 
 namespace suzerain {
 
-OperatorBase::OperatorBase(
+operator_base::operator_base(
         const problem::GridDefinition &grid,
         const pencil_grid &dgrid,
         bspline &b,
@@ -107,7 +107,7 @@ OperatorBase::OperatorBase(
     }
 }
 
-OperatorBase::~OperatorBase()
+operator_base::~operator_base()
 {
     // NOP
 }

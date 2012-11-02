@@ -46,7 +46,7 @@ BsplineMassOperator::BsplineMassOperator(
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop)
-    : OperatorBase(grid, dgrid, b, bop),
+    : operator_base(grid, dgrid, b, bop),
       massluz(bop)
 {
     SUZERAIN_UNUSED(grid);

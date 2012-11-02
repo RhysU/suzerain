@@ -306,7 +306,7 @@ void store_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    OperatorBase obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, bop);
     for (size_t i = 0; i < swave.shape()[0]; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
@@ -476,8 +476,8 @@ void load_collocation_values(
         sphys(ndx::rho, o) = rho;
     }
 
-    // Initialize OperatorBase to access decomposition-ready utilities
-    OperatorBase obase(grid, dgrid, b, bop);
+    // Initialize operator_base to access decomposition-ready utilities
+    operator_base obase(grid, dgrid, b, bop);
 
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
@@ -581,7 +581,7 @@ adjust_scenario(ContiguousState<4,complex_t> &swave,
     }
 
     // Convert state to physical space collocation points
-    OperatorBase obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, bop);
     support::physical_view<state_count>::type sphys
             = support::physical_view<state_count>::create(dgrid, swave);
     for (size_t k = 0; k < state_count; ++k) {
@@ -866,8 +866,8 @@ add_noise(ContiguousState<4,complex_t> &state,
     support::physical_view<state_count+3>::type p
         = support::physical_view<state_count+3>::create(dgrid, s);
 
-    // Initializing OperatorBase to access decomposition-ready utilities
-    OperatorBase obase(grid, dgrid, b, bop);
+    // Initializing operator_base to access decomposition-ready utilities
+    operator_base obase(grid, dgrid, b, bop);
 
     // From Ax in s[0] compute \partial_y Ax
     obase.bop_apply(1, 1.0, s, 0);
@@ -1057,8 +1057,8 @@ void accumulate_manufactured_solution(
     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // Initialize OperatorBase to access decomposition-ready utilities
-    OperatorBase obase(grid, dgrid, b, bop);
+    // Initialize operator_base to access decomposition-ready utilities
+    operator_base obase(grid, dgrid, b, bop);
 
     // Allocate one field of temporary storage for scratch purposes
     boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
@@ -1234,7 +1234,7 @@ mean sample_mean_quantities(
     }
 
     // Obtain access to helper routines for differentiation
-    OperatorBase obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, bop);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way

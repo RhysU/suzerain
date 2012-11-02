@@ -46,7 +46,7 @@ namespace suzerain { namespace perfect {
  * @see support::applyNonlinearOperator for the guts of the implementation.
  */
 class NonlinearOperator
-    : public OperatorBase,
+    : public operator_base,
       public timestepper::INonlinearOperator< ContiguousState<4,complex_t> >
 {
 public:
@@ -59,7 +59,7 @@ public:
             const bsplineop &bop,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const manufactured_solution>& msoln)
-        : OperatorBase(grid, dgrid, b, bop),
+        : operator_base(grid, dgrid, b, bop),
           scenario(scenario),
           common(common),
           msoln(msoln)
@@ -93,7 +93,7 @@ private:
 
 /** An operator which applies or inverts a B-spline mass matrix */
 class BsplineMassOperator
-  : public OperatorBase,
+  : public operator_base,
     public timestepper::lowstorage::ILinearOperator<
         multi_array::ref<complex_t,4>,
         ContiguousState<4,complex_t>

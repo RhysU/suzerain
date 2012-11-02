@@ -84,7 +84,7 @@ template<bool ZerothSubstep,
          class ConstitutiveLaws, // name here doesn't really fit.  Anything better??
          class ManufacturedSolution>
 std::vector<real_t> applyNonlinearOperator(
-            const suzerain::OperatorBase<real_t> &o,
+            const suzerain::operator_base<real_t> &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,

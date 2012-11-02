@@ -330,8 +330,8 @@ int main(int argc, char **argv)
 
         // Use a simple parabolic velocity profile
 
-        // Initializing OperatorBase to access decomposition-ready utilities
-        suzerain::OperatorBase obase(grid, *dgrid, *b, *bop);
+        // Initializing operator_base to access decomposition-ready utilities
+        suzerain::operator_base obase(grid, *dgrid, *b, *bop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         support::physical_view<>::type sphys

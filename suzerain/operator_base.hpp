@@ -39,7 +39,7 @@ namespace suzerain {
  * Provides common B-spline and parallel FFT infrastructure useful across many
  * ILinearOperator and INonlinearOperator implementations.
  */
-class OperatorBase
+class operator_base
 {
 public:
 
@@ -55,13 +55,13 @@ public:
      *                 e.g. integration coefficients.
      * @param bop      B-spline operators to use.
      */
-    OperatorBase(const problem::GridDefinition &grid,
+    operator_base(const problem::GridDefinition &grid,
                  const pencil_grid &dgrid,
                  bspline &b,
                  const bsplineop &bop);
 
     /** Virtual destructor to permit use as a base class */
-    virtual ~OperatorBase();
+    virtual ~operator_base();
 
     /**
      * Perform scaled operator accumulation on two state fields.
@@ -317,8 +317,8 @@ private:
     boost::multi_array<real_t,1> lambda2_y_;
 
     // Noncopyable
-    OperatorBase(const OperatorBase&);
-    OperatorBase& operator=(const OperatorBase&);
+    operator_base(const operator_base&);
+    operator_base& operator=(const operator_base&);
 };
 
 } // namespace suzerain

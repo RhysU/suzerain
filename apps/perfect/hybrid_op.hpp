@@ -46,7 +46,7 @@ namespace suzerain { namespace perfect {
  * OperatorCommonBlock.
  */
 class HybridIsothermalLinearOperator
-  : public OperatorBase,
+  : public operator_base,
     public timestepper::lowstorage::ILinearOperator<
         multi_array::ref<complex_t,4>,
         ContiguousState<4,complex_t>
@@ -65,7 +65,7 @@ public:
             bspline &b,
             const bsplineop &bop,
             OperatorCommonBlock &common)
-        : OperatorBase(grid, dgrid, b, bop),
+        : operator_base(grid, dgrid, b, bop),
           spec(spec),
           scenario(scenario),
           common(common)
@@ -146,7 +146,7 @@ private:
  * @see perfect::applyNonlinearOperator for the guts of the implementation.
  */
 class HybridNonlinearOperator
-    : public OperatorBase,
+    : public operator_base,
       public timestepper::INonlinearOperator<
             ContiguousState<4,complex_t>
       >
@@ -165,7 +165,7 @@ public:
             const bsplineop &bop,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const manufactured_solution>& msoln)
-        : OperatorBase(grid, dgrid, b, bop),
+        : operator_base(grid, dgrid, b, bop),
           scenario(scenario),
           common(common),
           msoln(msoln)
