@@ -813,7 +813,7 @@ public:
  */
 static const char log4cxx_config[] =
     "## Set root logger level (e.g. TRACE, DEBUG, INFO) and one or more root appenders\n"
-    "# Output INFO or higher messages on CONSOLE and in LOG\n"
+    "## Output INFO or higher messages on CONSOLE and in LOG\n"
     "log4j.rootLogger=INFO, CONSOLE, LOG\n"
     "\n"
     "## Configure output to CONSOLE\n"
