@@ -39,9 +39,6 @@ enum {
     rho   /**< Index for storing density              \f$      \rho   \f$ */
 };
 
-/** Contains the number of distinct state variables we track */
-const std::size_t count = static_cast<std::size_t>(ndx::rho) + 1;
-
 /**
  * Short identifiers that permit distinguishing equations.
  * E.g. "rho_E".
