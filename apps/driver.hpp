@@ -33,6 +33,7 @@
 #include <suzerain/fftw.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/state.hpp>
@@ -62,9 +63,38 @@ public:
 
     typedef ContiguousState<4,complex_t> nonlinear_state_type;
 
-    Driver();
+    Driver(const std::string &application_synopsis,
+           const std::string &description = "",
+           const std::string &revstr = "");
+
+    /**
+     * Initialize everything, including MPI, necessary for the application.
+     * Changes to default values, e.g. \ref statsdef, or adding of additional
+     * options to \ref program_options must be completed prior to invoking this
+     * method.
+     *
+     * @param argc Incoming arguments per <code>main(argc, ...)</code>
+     * @param argv Incoming arguments per <code>main(..., argv)</code>
+     */
+    virtual void initialize(int argc, char **argv);
+
+    /**
+    * Default log4cxx configuration, which differs from
+    * support::log4cxx_config.  Files <tt>bulk.dat</tt>, <tt>L2.mean.dat</tt>,
+    * and <tt>rms.fluct.dat</tt> collecting messages with the names
+    * <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have been added.
+    *
+    * <tt>${FOO}</tt> syntax may be used to pick up environment variables in
+    * addition to properties See
+    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
+    * and
+    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
+    */
+    virtual std::string default_log4cxx_config();
 
     virtual ~Driver();
+
+    std::string revstr;
 
     std::vector<support::field> fields;
 
@@ -78,6 +108,8 @@ public:
 
     problem::TimeDefinition timedef;
 
+    ProgramOptions program_options;
+
     boost::shared_ptr<bspline> b;
 
     boost::shared_ptr<bsplineop> bop; // Collocation operators
@@ -90,10 +122,8 @@ public:
 
     boost::shared_ptr<nonlinear_state_type> state_nonlinear;
 
-    esio_handle esioh;
-
     /** Controls which signals trigger which processing. */
-    static const problem::SignalDefinition sigdef;
+    static problem::SignalDefinition sigdef;
 
     /**
      * Type of atomic locations used to track local receipt of the following
@@ -105,9 +135,7 @@ public:
      * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
      * \li \c 4 Compute and write a statistics file
      */
-    typedef boost::array<
-            volatile sig_atomic_t, 5
-        > atomic_signal_received_t;
+    typedef boost::array<volatile sig_atomic_t, 5> atomic_signal_received_t;
 
     /** Atomic locations used to track local signal receipt. */
     static atomic_signal_received_t atomic_signal_received;
@@ -182,6 +210,18 @@ private:
      */
     bool log_status_bulk_show_header;
 
+    /** Wall time at which MPI_Init completed */
+    double wtime_mpi_init;
+
+    /** Wall time elapsed during FFTW planning */
+    double wtime_fftw_planning;
+
+    /** Wall time elapsed during loading of state from the restart file */
+    double wtime_load_state;
+
+    /** Wall time at which we began time stepping */
+    double wtime_advance_start;
+
     /** Signal handler which mutates \c atomic_signal_received. */
     static void process_signal(const int sig);
 
@@ -190,6 +230,14 @@ private:
 
     /** Tracks last time a restart file was written successfully */
     std::size_t last_restart_saved_nt;
+
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    /** Use P3DFFT for parallel FFT operations */
+    bool use_p3dfft;
+
+    /** Use underling for parallel FFT operations */
+    bool use_underling;
+#endif
 
     /**
      * Type of non-atomic locations used to track global receipt of the

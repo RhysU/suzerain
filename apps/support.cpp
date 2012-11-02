@@ -64,10 +64,12 @@ namespace support {
     "log4j.appender.CONSOLE.layout.ConversionPattern=%-5p %8r %-10c %m%n\n"
 
 const char log4cxx_config_console[] =
+    "## Output INFO or higher messages on CONSOLE\n"
     "log4j.rootLogger=INFO, CONSOLE\n"
     COMMON_CONSOLE_CONFIG;
 
 const char log4cxx_config[] =
+    "## Output INFO or higher messages on CONSOLE and in LOG\n"
     "log4j.rootLogger=INFO, CONSOLE, LOG\n"
     COMMON_CONSOLE_CONFIG
     "log4j.appender.LOG=org.apache.log4j.FileAppender\n"

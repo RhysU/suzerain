@@ -36,12 +36,18 @@
 #include <underling/error.h>
 #endif
 
+#include <esio/error.h>
+#include <esio/esio.h>
+
 #include <suzerain/countof.h>
+#include <suzerain/error.h>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/os.h>
+#include <suzerain/version.hpp>
 
 #include "logging.hpp"
 #include "support.hpp"
@@ -50,38 +56,163 @@ namespace suzerain {
 
 namespace support {
 
-Driver::Driver()
-    : grid(),
-      fftwdef( /* rigor_fft   */ fftw::measure,
-               /* rigor_mpi   */ fftw::estimate),
-      restart( /* metadata    */ "metadata.h5.XXXXXX",
+Driver::Driver(const std::string &application_synopsis,
+               const std::string &description,
+               const std::string &revstr)
+    : revstr(revstr)
+    , grid()
+    , fftwdef( /* rigor_fft   */ fftw::measure,
+               /* rigor_mpi   */ fftw::estimate)
+    , restart( /* metadata    */ "metadata.h5.XXXXXX",
                /* uncommitted */ "uncommitted.h5.XXXXXX",
                /* destination */ "restart#.h5",
                /* retain      */ 1,
                /* dt          */ 0,
-               /* nt          */ 0),
-      statsdef(/* destination */ "sample#.h5"),
-      timedef( /* advance_dt  */ 0,
+               /* nt          */ 0)
+    , statsdef(/* destination */ "sample#.h5")
+    , timedef( /* advance_dt  */ 0,
                /* advance_nt  */ 0,
                /* advance_wt  */ 0,
                /* status_dt   */ 0,
                /* status_nt   */ 0,
                /* min_dt      */ 1e-8,
-               /* max_dt      */ 1),
-      b(),
-      bop(),
-      gop(),
-      dgrid(),
-      state_linear(),
-      state_nonlinear(),
-      esioh(NULL),
-      soft_teardown(false),
-      log_status_L2_show_header(false),
-      log_status_bulk_show_header(false),
-      last_status_nt(std::numeric_limits<std::size_t>::max()),
-      last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
+               /* max_dt      */ 1)
+    , program_options(application_synopsis,
+                      "RESTART-FILE",
+                      description,
+                      this->revstr)
+    , b()
+    , bop()
+    , gop()
+    , dgrid()
+    , state_linear()
+    , state_nonlinear()
+    , soft_teardown(false)
+    , log_status_L2_show_header(false)
+    , log_status_bulk_show_header(false)
+    , wtime_mpi_init(std::numeric_limits<double>::quiet_NaN())
+    , wtime_fftw_planning(std::numeric_limits<double>::quiet_NaN())
+    , wtime_load_state(std::numeric_limits<double>::quiet_NaN())
+    , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
+    , last_status_nt(std::numeric_limits<std::size_t>::max())
+    , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    ,  use_p3dfft(false)
+    ,  use_underling(false)
+#endif
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
+}
+
+std::string
+Driver::default_log4cxx_config()
+{
+    std::ostringstream os;
+    os << support::log4cxx_config << // Appending to the default configuration
+        "\n"
+        "## Collect \"bulk\" messages into bulk.dat mimicking LOG file behavior\n"
+        "log4j.logger.bulk=INHERITED, BULK\n"
+        "log4j.appender.BULK=${log4j.appender.LOG}\n"
+        "log4j.appender.BULK.filename=bulk.dat\n"
+        "log4j.appender.BULK.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.BULK.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.BULK.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "\n"
+        "## Collect \"L2.mean\" messages into L2.mean.dat mimicking LOG file behavior\n"
+        "log4j.logger.L2.mean=INHERITED, L2MEAN\n"
+        "log4j.appender.L2MEAN=${log4j.appender.LOG}\n"
+        "log4j.appender.L2MEAN.filename=L2.mean.dat\n"
+        "log4j.appender.L2MEAN.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.L2MEAN.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.L2MEAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "\n"
+        "## Collect \"rms.fluct\" messages into rms.fluct.dat mimicking LOG file behavior\n"
+        "log4j.logger.rms.fluct=INHERITED, RMSFLUCT\n"
+        "log4j.appender.RMSFLUCT=${log4j.appender.LOG}\n"
+        "log4j.appender.RMSFLUCT.filename=rms.fluct.dat\n"
+        "log4j.appender.RMSFLUCT.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.RMSFLUCT.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.RMSFLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+    ;
+
+    return os.str();
+}
+
+void
+Driver::initialize(int argc, char **argv)
+{
+#ifdef SUZERAIN_HAVE_GRVY
+    grvy_timer_init(argv[0] ? argv[0] : "NULL");  // Initialize GRVY Timers
+#endif
+    MPI_Init(&argc, &argv);                          // Initialize MPI...
+    wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
+    atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
+    logging::initialize(MPI_COMM_WORLD,              // Initialize logging
+                        default_log4cxx_config().c_str());
+#ifdef HAVE_UNDERLING
+    underling_init(&argc, &argv, 0);                 // Initialize underling...
+    atexit(&underling_cleanup);                      // ...finalize at exit
+#endif
+
+    // Hook error handling into logging infrastructure
+    gsl_set_error_handler(
+            &support::mpi_abort_on_error_handler_gsl);
+    suzerain_set_error_handler(
+            &support::mpi_abort_on_error_handler_suzerain);
+    esio_set_error_handler(
+            &support::mpi_abort_on_error_handler_esio);
+#ifdef HAVE_UNDERLING
+    underling_set_error_handler(
+            &support::mpi_abort_on_error_handler_underling);
+#endif
+
+    // Add problem definitions to program_options
+    program_options.add_definition(grid    );
+    program_options.add_definition(fftwdef );
+    program_options.add_definition(restart );
+    program_options.add_definition(statsdef);
+    program_options.add_definition(timedef );
+    program_options.add_definition(sigdef  );
+
+    // Add additional standalone options
+    program_options.add_options()
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+        ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
+        ("underling", "Use underling for MPI-parallel FFTs")
+#endif
+        ;
+
+    // Process incoming arguments
+    std::vector<std::string> positional = program_options.process(argc, argv);
+
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    // Select pencil decomposition and FFT library to use (default p3dfft)
+    program_options.conflicting_options("p3dfft", "underling");
+    if (program_options.variables().count("underling")) {
+        use_underling = true;
+    } else {
+        use_p3dfft = true;
+    }
+#endif
+
+    // Record build and invocation for posterity and to aid in debugging
+    std::ostringstream os;
+    std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+    INFO0("Invocation: " << os.str());
+    INFO0("Build:      " << suzerain::version("", revstr));
+
+    switch (program_options.verbose()) {
+        case 0:                   break;
+        case 1:  DEBUG0_ENABLE(); break;
+        default: TRACE0_ENABLE(); break;
+    }
+    switch (program_options.verbose_all()) {
+        case 0:                   break;
+        case 1:  DEBUG_ENABLE();  break;
+        default: TRACE_ENABLE();  break;
+    }
+
+    // FIXME Do something with positional
 }
 
 Driver::~Driver()
@@ -96,10 +227,6 @@ Driver::~Driver()
             WARN("Error cleaning up temporary file " << restart.metadata);
         }
     }
-
-    // Finalize any ESIO handle in use
-    if (esioh)
-        esio_handle_finalize(esioh);
 
 #ifdef HAVE_UNDERLING
     underling_cleanup();
@@ -125,7 +252,7 @@ Driver::log_status(
 
     SUZERAIN_TIMER_SCOPED("log_status");
 
-    // Build time- and timestep-specific status prefix.
+    // Build time- and timestep-specific status timeprefix.
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream oss;
     real_t np = 0;
@@ -162,7 +289,7 @@ Driver::log_status(
 
 void
 Driver::log_status_L2(
-        const std::string& prefix,
+        const std::string& timeprefix,
         const char * const name_L2,
         const char * const name_rms)
 {
@@ -174,7 +301,7 @@ Driver::log_status_L2(
     // Show headers only on first invocation
     std::ostringstream msg;
     if (log_status_L2_show_header) {
-        msg << prefix;
+        msg << timeprefix;
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
@@ -189,7 +316,7 @@ Driver::log_status_L2(
         = field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
-    msg << prefix;
+    msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
         msg << ' ' << fullprec<>(result[k].mean());
     }
@@ -199,7 +326,7 @@ Driver::log_status_L2(
     // RMS fluctuations are a scaling factor away from L2 fluctuations
     const real_t rms_coeff = 1/std::sqrt(grid.L.x()*grid.L.y()*grid.L.z());
     msg.str("");
-    msg << prefix;
+    msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
         msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating());
     }
@@ -208,7 +335,7 @@ Driver::log_status_L2(
 
 void
 Driver::log_status_bulk(
-        const std::string& prefix)
+        const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes...
     if (!dgrid->has_zero_zero_modes()) return;
@@ -220,7 +347,7 @@ Driver::log_status_bulk(
     // Show headers only on first invocation
     std::ostringstream msg;
     if (log_status_bulk_show_header) {
-        msg << prefix;
+        msg << timeprefix;
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(bulk_state, msg.str());
@@ -234,7 +361,7 @@ Driver::log_status_bulk(
     bulkcoeff /= grid.L.y();
 
     // Prepare the status message and log it
-    msg << prefix;
+    msg << timeprefix;
     for (size_t k = 0; k < state_linear->shape()[0]; ++k) {
         Map<VectorXc> mean(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
@@ -245,7 +372,7 @@ Driver::log_status_bulk(
 
 void
 Driver::log_status_specific_boundary_state(
-        const std::string& prefix)
+        const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes.
     if (!dgrid->has_zero_zero_modes()) return;
@@ -264,7 +391,7 @@ Driver::log_status_specific_boundary_state(
         if (!DEBUG_ENABLED(nick[l])) continue;
 
         std::ostringstream msg;
-        msg << prefix;
+        msg << timeprefix;
 
         const real_t rho = ((*state_linear)[ndx::rho][bc[l]][0][0]).real();
         for (size_t k = 0; k < fields.size(); ++k) {
@@ -279,12 +406,12 @@ Driver::log_status_specific_boundary_state(
 
 bool
 Driver::log_status_hook(
-            const std::string& prefix,
-            const real_t simulation_time,
+            const std::string& timeprefix,
+            const real_t t,
             const std::size_t nt)
 {
-    SUZERAIN_UNUSED(prefix);
-    SUZERAIN_UNUSED(simulation_time);
+    SUZERAIN_UNUSED(timeprefix);
+    SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
     return true;
 }
@@ -300,7 +427,7 @@ Driver::process_signal(
     // choice was to have this extra work done on the (rare) signal receipt
     // rather than on the (frequent) polling of signal receipt status.
 
-    std::vector<int>::const_iterator end;
+    std::vector<int>::iterator end;
 
     // Determine if we should output status due to the signal
     end = sigdef.status.end();
