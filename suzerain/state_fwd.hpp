@@ -51,12 +51,12 @@ template<std::size_t Dim, typename Element> class InterleavedState;
 namespace detail
 {
 
-// Forward declaration for StateTraits
-template<typename T> struct StateTraits;
+// Forward declaration for state_traits
+template<typename T> struct state_traits;
 
 /** Traits providing basic type details for ContiguousState */
 template<std::size_t Dim, typename Element>
-struct StateTraits<ContiguousState<Dim,Element> >
+struct state_traits<ContiguousState<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -64,12 +64,12 @@ struct StateTraits<ContiguousState<Dim,Element> >
     static const size_type dimensionality = Dim;
 
 private:
-    StateTraits();
+    state_traits();
 };
 
 /** Traits providing basic type details for InterleavedState */
 template<std::size_t Dim, typename Element>
-struct StateTraits<InterleavedState<Dim,Element> >
+struct state_traits<InterleavedState<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -77,7 +77,7 @@ struct StateTraits<InterleavedState<Dim,Element> >
     static const size_type dimensionality = Dim;
 
 private:
-    StateTraits();
+    state_traits();
 };
 
 } // end namespace detail
@@ -92,11 +92,11 @@ template<class Derived>
 class StateBase
 {
 public:
-    typedef typename detail::StateTraits<Derived>::element   element;
-    typedef typename detail::StateTraits<Derived>::index     index;
-    typedef typename detail::StateTraits<Derived>::size_type size_type;
+    typedef typename detail::state_traits<Derived>::element   element;
+    typedef typename detail::state_traits<Derived>::index     index;
+    typedef typename detail::state_traits<Derived>::size_type size_type;
     static const size_type dimensionality
-        = detail::StateTraits<Derived>::dimensionality;
+        = detail::state_traits<Derived>::dimensionality;
 
 /** @name Static polymorphism helpers to simplify casting */
 /**@{*/
