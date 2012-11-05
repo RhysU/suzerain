@@ -410,12 +410,12 @@ void apply(BLASFunctor functor,
 } // namespace detail
 
 template< std::size_t Dim, typename Element >
-void contiguous_state<Dim,Element>::addScaled(
+void contiguous_state<Dim,Element>::add_scaled(
             const Element& factor,
             const contiguous_state& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
-            "Detected this->addScaled(...,this)", std::invalid_argument);
+            "Detected this->add_scaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
@@ -432,12 +432,12 @@ void contiguous_state<Dim,Element>::addScaled(
 }
 
 template< std::size_t Dim, typename Element >
-void contiguous_state<Dim,Element>::addScaled(
+void contiguous_state<Dim,Element>::add_scaled(
             const Element& factor,
             const multi_array_type& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
-            "Detected this->addScaled(...,this)", std::invalid_argument);
+            "Detected this->add_scaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::axpy<Element>(factor),
@@ -546,12 +546,12 @@ void interleaved_state<Dim,Element>::scale(
 }
 
 template< std::size_t Dim, typename Element >
-void interleaved_state<Dim,Element>::addScaled(
+void interleaved_state<Dim,Element>::add_scaled(
             const Element& factor,
             const interleaved_state& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
-            "Detected this->addScaled(...,this)", std::invalid_argument);
+            "Detected this->add_scaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
@@ -561,12 +561,12 @@ void interleaved_state<Dim,Element>::addScaled(
 }
 
 template< std::size_t Dim, typename Element >
-void interleaved_state<Dim,Element>::addScaled(
+void interleaved_state<Dim,Element>::add_scaled(
             const Element& factor,
             const multi_array_type& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
-            "Detected this->addScaled(...,this)", std::invalid_argument);
+            "Detected this->add_scaled(...,this)", std::invalid_argument);
     SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::axpy<Element>(factor),

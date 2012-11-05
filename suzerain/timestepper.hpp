@@ -828,7 +828,7 @@ public:
         SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         output.scale(beta);
-        output.addScaled(phi*factor + element(1), input);
+        output.add_scaled(phi*factor + element(1), input);
     }
 
     /**
@@ -1458,7 +1458,7 @@ const typename traits::component<Element>::type substep(
             m, delta_t, substep_index);
     N.applyOperator(time + delta_t * m.eta(substep_index), a,
                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
-    b.addScaled(chi * delta_t * m.gamma(substep_index), a);
+    b.add_scaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator(-delta_t * m.beta(substep_index), b,
                                    m, delta_t, substep_index);
 
@@ -1529,7 +1529,7 @@ const typename traits::component<Element>::type step(
         delta_t = math::minnan(delta_t, max_delta_t);
     }
     L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, m, delta_t, 0);
-    a.addScaled(chi * delta_t * m.gamma(0), b);
+    a.add_scaled(chi * delta_t * m.gamma(0), b);
     L.invertMassPlusScaledOperator(-delta_t * m.beta(0), a, m, delta_t, 0);
 
     // Second and subsequent substeps are identical
@@ -1541,7 +1541,7 @@ const typename traits::component<Element>::type step(
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.applyOperator(time + delta_t * m.eta(i), b,
                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
-        a.addScaled(chi * delta_t * m.gamma(i), b);
+        a.add_scaled(chi * delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a, m, delta_t, i);
     }
 

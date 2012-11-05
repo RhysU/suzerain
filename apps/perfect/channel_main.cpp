@@ -1552,7 +1552,7 @@ int main(int argc, char **argv)
                 grid.N.z(), grid.dN.z(),
                 dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
         }
-        state_nonlinear->addScaled(1/chi, *state_linear);
+        state_nonlinear->add_scaled(1/chi, *state_linear);
         const std::vector<suzerain::L2> L2
             = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;

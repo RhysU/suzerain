@@ -529,13 +529,13 @@ template<
     template <std::size_t,typename> class State2,
     typename Element
 >
-static void test_addScaled_helper(
+static void test_add_scaled_helper(
     State1<NumDims,Element> &foo,
     State2<NumDims,Element> &bar)
 {
     load(foo, 1);
     load(bar, 2);
-    foo.addScaled(3, bar);
+    foo.add_scaled(3, bar);
     verify(foo, 7);
 }
 
@@ -686,36 +686,36 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( add_scaled, T, test_types )
 {
     BOOST_TEST_MESSAGE("Instances without padding");
     {
         interleaved_state<4,T> foo(size2234()), bar(size2234());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("First instance with padding");
     {
         interleaved_state<4,T> foo(size2234(), 87), bar(size2234());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Second instance with padding");
     {
         interleaved_state<4,T> foo(size2234()), bar(size2234(), 87);
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         interleaved_state<4,T> foo(size2234(), 87), bar(size2234(), 78);
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
     }
 
     // Operation between two nonconforming states throws
     interleaved_state<4,T> foo(size2234());
     interleaved_state<4,T> baz(size(2,2,2,2));
-    BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
+    BOOST_CHECK_THROW(foo.add_scaled(3, baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
@@ -1227,105 +1227,105 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( scale4, T, test_types )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled3, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( add_scaled3, T, test_types )
 {
     BOOST_TEST_MESSAGE("Both instances without padding");
     {
         contiguous_state<3,T> foo(size223()), bar(size223());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         // Operation between two nonconforming states throws
         contiguous_state<3,T> baz(size(2,2,2));
-        BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
+        BOOST_CHECK_THROW(foo.add_scaled(3, baz), std::logic_error);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         contiguous_state<3,T> foo(size223(),size(7,1,1));
         contiguous_state<3,T> bar(size223(),size(10,1,1));
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<3,T> baz(size223(),size(1,2,1));
-        test_addScaled_helper(foo, baz);
+        test_add_scaled_helper(foo, baz);
 
         contiguous_state<3,T> qux(size223(),size(1,1,7));
-        test_addScaled_helper(foo, qux);
+        test_add_scaled_helper(foo, qux);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         contiguous_state<3,T> foo(size223(),size(7,1,1)), bar(size223());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<3,T> baz(size223(),size(1,2,1));
-        test_addScaled_helper(baz, bar);
+        test_add_scaled_helper(baz, bar);
 
         contiguous_state<3,T> qux(size223(),size(1,1,7));
-        test_addScaled_helper(qux, bar);
+        test_add_scaled_helper(qux, bar);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         contiguous_state<3,T> foo(size223()), bar(size223(),size(10,1,1));
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<3,T> qux(size223(),size(1,9,25));
-        test_addScaled_helper(foo, qux);
+        test_add_scaled_helper(foo, qux);
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled4, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( add_scaled4, T, test_types )
 {
     BOOST_TEST_MESSAGE("Both instances without padding");
     {
         contiguous_state<4,T> foo(size2234()), bar(size2234());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         // Operation between two nonconforming states throws
         contiguous_state<4,T> baz(size(2,2,2,2));
-        BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
+        BOOST_CHECK_THROW(foo.add_scaled(3, baz), std::logic_error);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         contiguous_state<4,T> foo(size2234(),size(35,1,1,1));
         contiguous_state<4,T> bar(size2234(),size(37,1,1,1));
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<4,T> baz(size2234(),size(1,2,1,1));
-        test_addScaled_helper(foo, baz);
+        test_add_scaled_helper(foo, baz);
 
         contiguous_state<4,T> qux(size2234(),size(1,1,7,1));
-        test_addScaled_helper(foo, qux);
+        test_add_scaled_helper(foo, qux);
 
         contiguous_state<4,T> quux(size2234(),size(1,1,1,15));
-        test_addScaled_helper(foo, quux);
+        test_add_scaled_helper(foo, quux);
     }
 
     BOOST_TEST_MESSAGE("Target instance with padding");
     {
         contiguous_state<4,T> foo(size2234(),size(63,1,1,1));
         contiguous_state<4,T> bar(size2234());
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<4,T> baz(size2234(),size(1,2,1,1));
-        test_addScaled_helper(baz, bar);
+        test_add_scaled_helper(baz, bar);
 
         contiguous_state<4,T> qux(size2234(),size(1,1,7,1));
-        test_addScaled_helper(qux, bar);
+        test_add_scaled_helper(qux, bar);
 
         contiguous_state<4,T> quux(size2234(),size(1,1,1,23));
-        test_addScaled_helper(quux, bar);
+        test_add_scaled_helper(quux, bar);
     }
 
     BOOST_TEST_MESSAGE("Source instance with padding");
     {
         contiguous_state<4,T> foo(size2234());
         contiguous_state<4,T> bar(size2234(),size(41,1,1,1));
-        test_addScaled_helper(foo, bar);
+        test_add_scaled_helper(foo, bar);
 
         contiguous_state<4,T> qux(size2234(),size(1,9,25,1));
-        test_addScaled_helper(foo, qux);
+        test_add_scaled_helper(foo, qux);
     }
 }
 
@@ -1521,45 +1521,45 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic, T, test_types )
     BOOST_CHECK_EQUAL(false, c_foo.is_isomorphic(i_quuux));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( add_scaled, T, test_types )
 {
     BOOST_TEST_MESSAGE("Instances without padding");
     {
         contiguous_state<4,T>  foo(size2234());
         interleaved_state<4,T> bar(size2234());
-        test_addScaled_helper(foo, bar);
-        test_addScaled_helper(bar, foo);
+        test_add_scaled_helper(foo, bar);
+        test_add_scaled_helper(bar, foo);
     }
 
     BOOST_TEST_MESSAGE("First instance with padding");
     {
         contiguous_state<4,T>  foo(size2234(), size(27,1,1,1));
         interleaved_state<4,T> bar(size2234());
-        test_addScaled_helper(foo, bar);
-        test_addScaled_helper(bar, foo);
+        test_add_scaled_helper(foo, bar);
+        test_add_scaled_helper(bar, foo);
     }
 
     BOOST_TEST_MESSAGE("Second instance with padding");
     {
         contiguous_state<4,T>  foo(size2234());
         interleaved_state<4,T> bar(size2234(), 87);
-        test_addScaled_helper(foo, bar);
-        test_addScaled_helper(bar, foo);
+        test_add_scaled_helper(foo, bar);
+        test_add_scaled_helper(bar, foo);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
     {
         contiguous_state<4,T>  foo(size2234(), size(27,1,1,1));
         interleaved_state<4,T> bar(size2234(), 87);
-        test_addScaled_helper(foo, bar);
-        test_addScaled_helper(bar, foo);
+        test_add_scaled_helper(foo, bar);
+        test_add_scaled_helper(bar, foo);
     }
 
     // Operation between two nonconforming states throws
     contiguous_state<4,T>  foo(size2234());
     interleaved_state<4,T> baz(size(2,2,2,2));
-    BOOST_CHECK_THROW(foo.addScaled(3, baz), std::logic_error);
-    BOOST_CHECK_THROW(baz.addScaled(3, foo), std::logic_error);
+    BOOST_CHECK_THROW(foo.add_scaled(3, baz), std::logic_error);
+    BOOST_CHECK_THROW(baz.add_scaled(3, foo), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( exchange, T, test_types )
