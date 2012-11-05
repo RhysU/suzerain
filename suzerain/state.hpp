@@ -268,7 +268,7 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,1>& x,
-           InterleavedState<1,Element>& y)
+           interleaved_state<1,Element>& y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -280,16 +280,16 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,2>& x,
-           InterleavedState<2,Element>& y)
+           interleaved_state<2,Element>& y)
 {
-    typedef typename InterleavedState<2,Element>::index index;
+    typedef typename interleaved_state<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
-    // Loops go from slower to faster indices for InterleavedState<2,Element>
+    // Loops go from slower to faster indices for interleaved_state<2,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -303,9 +303,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,3>& x,
-           InterleavedState<3,Element>& y)
+           interleaved_state<3,Element>& y)
 {
-    typedef typename InterleavedState<3,Element>::index index;
+    typedef typename interleaved_state<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -313,7 +313,7 @@ void apply(BLASFunctor functor,
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
-    // Loops go from slower to faster indices for InterleavedState<3,Element>
+    // Loops go from slower to faster indices for interleaved_state<3,Element>
     for (index kx = x.index_bases()[2], ky = y.index_bases()[2];
          kx < ku;
          ++kx, ++ky) {
@@ -332,9 +332,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,4>& x,
-           InterleavedState<4,Element>& y)
+           interleaved_state<4,Element>& y)
 {
-    typedef typename InterleavedState<4,Element>::index index;
+    typedef typename interleaved_state<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -343,7 +343,7 @@ void apply(BLASFunctor functor,
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
-    // Loops go from slower to faster indices for InterleavedState<4,Element>
+    // Loops go from slower to faster indices for interleaved_state<4,Element>
     for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
          lx < lu;
          ++lx, ++ly) {
@@ -367,9 +367,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,5>& x,
-           InterleavedState<5,Element>& y)
+           interleaved_state<5,Element>& y)
 {
-    typedef typename InterleavedState<5,Element>::index index;
+    typedef typename interleaved_state<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -379,7 +379,7 @@ void apply(BLASFunctor functor,
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
     const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
-    // Loops go from slower to faster indices for InterleavedState<5,Element>
+    // Loops go from slower to faster indices for interleaved_state<5,Element>
     for (index mx = x.index_bases()[4], my = y.index_bases()[4];
          mx < mu;
          ++mx, ++my) {
@@ -510,7 +510,7 @@ void contiguous_state<Dim,Element>::exchange(
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-InterleavedState<Dim,Element>::InterleavedState(
+interleaved_state<Dim,Element>::interleaved_state(
         const ExtentList& sizes,
         size_type min_total_contiguous_count)
     : shared_range_type(allocate_shared_range(
@@ -524,8 +524,8 @@ InterleavedState<Dim,Element>::InterleavedState(
 }
 
 template< std::size_t Dim, typename Element >
-InterleavedState<Dim,Element>::InterleavedState(
-        const InterleavedState& other)
+interleaved_state<Dim,Element>::interleaved_state(
+        const interleaved_state& other)
     : shared_range_type(clone_shared_range(
                 typename blas::allocator<Element>::type(),
                 other.range())),
@@ -537,7 +537,7 @@ InterleavedState<Dim,Element>::InterleavedState(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::scale(
+void interleaved_state<Dim,Element>::scale(
         const Element& factor)
 {
     // Data guaranteed to be contiguous in first num_elements.
@@ -546,9 +546,9 @@ void InterleavedState<Dim,Element>::scale(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::addScaled(
+void interleaved_state<Dim,Element>::addScaled(
             const Element& factor,
-            const InterleavedState& other)
+            const interleaved_state& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
@@ -561,7 +561,7 @@ void InterleavedState<Dim,Element>::addScaled(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::addScaled(
+void interleaved_state<Dim,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
@@ -574,8 +574,8 @@ void InterleavedState<Dim,Element>::addScaled(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::assign(
-            const InterleavedState& other)
+void interleaved_state<Dim,Element>::assign(
+            const interleaved_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
@@ -587,7 +587,7 @@ void InterleavedState<Dim,Element>::assign(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::assign(
+void interleaved_state<Dim,Element>::assign(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -599,8 +599,8 @@ void InterleavedState<Dim,Element>::assign(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::exchange(
-            InterleavedState& other)
+void interleaved_state<Dim,Element>::exchange(
+            interleaved_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
@@ -612,7 +612,7 @@ void InterleavedState<Dim,Element>::exchange(
 }
 
 template< std::size_t Dim, typename Element >
-void InterleavedState<Dim,Element>::exchange(
+void interleaved_state<Dim,Element>::exchange(
             multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?

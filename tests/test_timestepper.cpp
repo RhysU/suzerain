@@ -43,7 +43,7 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Shorthand
 namespace mpl = boost::mpl;
-using suzerain::InterleavedState;
+using suzerain::interleaved_state;
 using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
 using suzerain::timestepper::INonlinearOperator;
@@ -55,21 +55,21 @@ using suzerain::timestepper::lowstorage::Method;
 using suzerain::timestepper::lowstorage::timecontroller;
 
 // Explicit template instantiation to hopefully speed compilation
-template class InterleavedState<3,double>;
+template class interleaved_state<3,double>;
 template class contiguous_state<3,double>;
 
 // State types to be tested against themselves
 typedef mpl::list<
         contiguous_state<3,double>,
-        InterleavedState<3,double>
+        interleaved_state<3,double>
     > state_types;
 
 // Pairs of state types to be tested for interoperability
 typedef mpl::list<
         mpl::vector<contiguous_state <3,double>, contiguous_state <3,double> >,
-        mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
-        mpl::vector<contiguous_state <3,double>, InterleavedState<3,double> >,
-        mpl::vector<InterleavedState<3,double>, contiguous_state <3,double> >
+        mpl::vector<interleaved_state<3,double>, interleaved_state<3,double> >,
+        mpl::vector<contiguous_state <3,double>, interleaved_state<3,double> >,
+        mpl::vector<interleaved_state<3,double>, contiguous_state <3,double> >
     > state_type_pairs;
 
 // Helper method for providing 3D size information
@@ -1059,13 +1059,13 @@ BOOST_AUTO_TEST_SUITE_END()
 // Presumably getting timecontroller to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
-// timecontroller for InterleavedState
+// timecontroller for interleaved_state
 template class timecontroller<
-        InterleavedState<3,double>, InterleavedState<3,double>,
+        interleaved_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        InterleavedState<3,double>, InterleavedState<3,double>,
+        interleaved_state<3,double>, interleaved_state<3,double>,
         void // Default Reducer behavior
     >;
 
@@ -1081,21 +1081,21 @@ template class timecontroller<
 
 // timecontroller for {Interleaved,Contiguous}State
 template class timecontroller<
-        InterleavedState<3,double>, contiguous_state<3,double>,
+        interleaved_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        InterleavedState<3,double>, contiguous_state<3,double>,
+        interleaved_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
 // timecontroller for {Contiguous,Interleaved}State
 template class timecontroller<
-        contiguous_state<3,double>, InterleavedState<3,double>,
+        contiguous_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        contiguous_state<3,double>, InterleavedState<3,double>,
+        contiguous_state<3,double>, interleaved_state<3,double>,
         void // Default reducer behavior
     >;
 

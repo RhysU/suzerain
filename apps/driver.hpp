@@ -59,7 +59,7 @@ class Driver
 {
 public:
 
-    typedef InterleavedState<4,complex_t> linear_state_type;
+    typedef interleaved_state<4,complex_t> linear_state_type;
 
     typedef contiguous_state<4,complex_t> nonlinear_state_type;
 

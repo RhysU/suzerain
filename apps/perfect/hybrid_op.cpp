@@ -280,7 +280,7 @@ public:
                                   const suzerain_rholut_imexop_scenario &s)
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
-        // Starting offset to named scalars in InterleavedState pencil
+        // Starting offset to named scalars in interleaved_state pencil
         const int start_e   = static_cast<int>(ndx::e  ) * A.n;
         const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
         const int start_my  = static_cast<int>(ndx::my ) * A.n;

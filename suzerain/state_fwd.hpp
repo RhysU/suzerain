@@ -23,7 +23,7 @@
 #include <suzerain/storage.hpp>
 
 // TODO Document better
-// TODO Allow InterleavedState/contiguous_state to interoperate
+// TODO Allow interleaved_state/contiguous_state to interoperate
 
 /** @file
  * Provide interfaces for describing and manipulating mutable state vectors.
@@ -45,7 +45,7 @@ namespace suzerain
 // Mandatory forward declarations
 template<typename Derived> struct state_base;
 template<std::size_t Dim, typename Element> class contiguous_state;
-template<std::size_t Dim, typename Element> class InterleavedState;
+template<std::size_t Dim, typename Element> class interleaved_state;
 
 /** Implementation details for state_base */
 namespace detail
@@ -67,9 +67,9 @@ private:
     state_traits();
 };
 
-/** Traits providing basic type details for InterleavedState */
+/** Traits providing basic type details for interleaved_state */
 template<std::size_t Dim, typename Element>
-struct state_traits<InterleavedState<Dim,Element> >
+struct state_traits<interleaved_state<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -305,8 +305,8 @@ private:
  * @see #storage_order_type for more details on the storage used.
  */
 template< std::size_t Dim, typename Element >
-class InterleavedState
-    : public  state_base<InterleavedState<Dim,Element> >,
+class interleaved_state
+    : public  state_base<interleaved_state<Dim,Element> >,
       private shared_range<Element>,
       public  suzerain::multi_array::ref<Element, Dim>
 {
@@ -333,29 +333,29 @@ public:
     typedef typename storage::interleaved<Dim> storage_order_type;
 
     template<typename ExtentList>
-    explicit InterleavedState(const ExtentList& sizes,
+    explicit interleaved_state(const ExtentList& sizes,
                               size_type min_total_contiguous_count = 0);
 
     template<typename ExtentList>
-    InterleavedState(shared_range_type storage,
+    interleaved_state(shared_range_type storage,
                      const ExtentList& sizes,
                      size_type min_total_contiguous_count = 0);
 
-    InterleavedState(const InterleavedState& other);
+    interleaved_state(const interleaved_state& other);
 
     void scale(const Element& factor);
 
     void addScaled(const Element& factor,
-                   const InterleavedState& other);
+                   const interleaved_state& other);
 
     void addScaled(const Element& factor,
                    const multi_array_type& other);
 
-    void assign(const InterleavedState& other);
+    void assign(const interleaved_state& other);
 
     void assign(const multi_array_type& other);
 
-    void exchange(InterleavedState& other);
+    void exchange(interleaved_state& other);
 
     void exchange(multi_array_type& other);
 
@@ -372,7 +372,7 @@ public:
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
-    const InterleavedState& operator=( const InterleavedState& );
+    const interleaved_state& operator=( const interleaved_state& );
 };
 
 } // namespace suzerain

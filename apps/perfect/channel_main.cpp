@@ -103,7 +103,7 @@ static const std::vector<support::field> fields = perfect::default_fields();
 
 // Timestepping scheme uses only complex_t 4D contiguous_state
 // State indices range over (scalar field, Y, X, Z) in wave space
-typedef suzerain::InterleavedState<4,complex_t> linear_state_type;
+typedef suzerain::interleaved_state<4,complex_t> linear_state_type;
 typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 
 // Global scenario parameters initialized in main().  These are declared const
@@ -1244,7 +1244,7 @@ int main(int argc, char **argv)
     // facilitate runtime selection of operators.
     //
     // The linear state type chosen for ILinearOperator is a superclass of both
-    // contiguous_state and InterleavedState to allow swapping one for another
+    // contiguous_state and interleaved_state to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
     shared_ptr<suzerain::timestepper::lowstorage::IMethod<
