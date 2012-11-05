@@ -127,12 +127,12 @@ static void atexit_esio(void) {
 }
 
 /** Options definitions for tweaking the manufactured solution */
-class MSDefinition : public suzerain::problem::IDefinition {
+class MSDefinition : public suzerain::problem::definition_base {
 
 public:
 
     MSDefinition(perfect::manufactured_solution &ms)
-        : IDefinition("Manufactured solution parameters"
+        : definition_base("Manufactured solution parameters"
                       " (active only when --mms supplied)")
     {
         ms.rho.foreach_parameter(boost::bind(option_adder,

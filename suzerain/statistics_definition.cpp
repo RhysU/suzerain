@@ -41,7 +41,7 @@ StatisticsDefinition::StatisticsDefinition(
         int retain,
         real_t dt,
         int nt)
-    : IDefinition("Statistics sampling parameters"),
+    : definition_base("Statistics sampling parameters"),
       destination(destination),
       retain(retain),
       dt(dt),

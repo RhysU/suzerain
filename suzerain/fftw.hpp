@@ -126,7 +126,7 @@ template< typename charT, typename traits >
 }
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class FFTWDefinition : public problem::IDefinition
+class FFTWDefinition : public problem::definition_base
 {
 public:
 

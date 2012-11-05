@@ -30,7 +30,7 @@ namespace suzerain {
  * Performs options parsing for an application, including command line and
  * options file processing.  Includes the following functionality:
  *
- *   - Allows automatically adding options given an IDefinition instance
+ *   - Allows automatically adding options given an definition_base instance
  *   - Allows adding options using
  *     <tt>boost::program_options::options_description_easy_init</tt>
  *   - Provides uniform processing of both command line arguments and files
@@ -78,7 +78,7 @@ public:
     {}
 
     /**
-     * Adds all the options stored within the given IDefinition to the
+     * Adds all the options stored within the given definition_base to the
      * program's known command line options.  Any notification callbacks
      * defined therein will be called after options processing completes.
      *
@@ -87,9 +87,9 @@ public:
      *
      * @return <tt>*this</tt> to support chaining.
      *
-     * @see problem::IDefinition for the necessary contract.
+     * @see problem::definition_base for the necessary contract.
      */
-    ProgramOptions& add_definition(problem::IDefinition &definition)
+    ProgramOptions& add_definition(problem::definition_base &definition)
     {
         options_.add(definition.options());
         return *this;
@@ -121,7 +121,7 @@ public:
 
     /**
      * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according to the
-     * previously provided options and IDefinition instances.  This method
+     * previously provided options and definition_base instances.  This method
      * performs all necessary parsing, file handling, and notification
      * callbacks.  It will throw exceptions on errors.  If either
      * <tt>--help</tt> or <tt>--version</tt> is encountered the appropriate

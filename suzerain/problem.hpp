@@ -33,23 +33,23 @@ namespace problem {
 /**
  * An interface describing a problem definition.
  */
-class IDefinition
+class definition_base
 {
 public:
     /**
      * Constructor setting no overall options description.
      */
-    IDefinition() : options_() {};
+    definition_base() : options_() {};
 
     /**
      * Constructor setting an overall options description.
      *
      * @param caption Caption to use when describing options
      **/
-    IDefinition(const std::string &caption) : options_(caption) {};
+    definition_base(const std::string &caption) : options_(caption) {};
 
     /** Virtual destructor */
-    virtual ~IDefinition() {};
+    virtual ~definition_base() {};
 
     /**
      * Obtain a Boost options_description encompassing all information

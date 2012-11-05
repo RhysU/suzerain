@@ -31,7 +31,7 @@ namespace problem {
  * Includes the sampling rate and particulars around writing and archiving
  * statistics files.
  */
-class StatisticsDefinition : public IDefinition
+class StatisticsDefinition : public definition_base
 {
 public:
     /**

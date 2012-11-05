@@ -40,7 +40,7 @@ static const char grid_definition_description[]
         = "Mixed Fourier/B-spline computational grid definition";
 
 GridDefinition::GridDefinition()
-    : IDefinition(grid_definition_description),
+    : definition_base(grid_definition_description),
       L(std::numeric_limits<real_t>::quiet_NaN(),
         std::numeric_limits<real_t>::quiet_NaN(),
         std::numeric_limits<real_t>::quiet_NaN()),
@@ -66,7 +66,7 @@ GridDefinition::GridDefinition(const char * Lx,
                                const char * Lz,
                                int          Nz,
                                real_t       DAFz)
-    : IDefinition("Mixed Fourier/B-spline computational grid definition"),
+    : definition_base("Mixed Fourier/B-spline computational grid definition"),
       L(exprparse<real_t>(Lx, "GridDefinition(..., Lx, ...)"),
         exprparse<real_t>(Lx, "GridDefinition(..., Ly, ...)"),
         exprparse<real_t>(Lx, "GridDefinition(..., Lz, ...)")),

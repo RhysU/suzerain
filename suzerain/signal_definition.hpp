@@ -30,7 +30,7 @@ namespace problem {
  * Parses and contains signal processing details to allow a program to take
  * runtime-configurable responses to POSIX signals per \c signal.h.
  */
-class SignalDefinition : public IDefinition
+class SignalDefinition : public definition_base
 {
 public:
 

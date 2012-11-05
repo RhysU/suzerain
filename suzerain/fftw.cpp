@@ -92,7 +92,7 @@ void FFTWDefinition::normalize_rigor_mpi(std::string input)
 FFTWDefinition::FFTWDefinition(
         const rigor rigor_fft,
         const rigor rigor_mpi)
-    : IDefinition("FFTW planning options:"),
+    : definition_base("FFTW planning options:"),
       rigor_fft(rigor_fft),
       rigor_mpi(rigor_mpi)
 {

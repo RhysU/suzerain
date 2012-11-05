@@ -31,7 +31,7 @@ namespace problem {
  * Encapsulates flags related to restart file behavior for the simulation.
  * Includes the particulars around writing and archiving restart files.
  */
-class RestartDefinition : public IDefinition
+class RestartDefinition : public definition_base
 {
 public:
     /**

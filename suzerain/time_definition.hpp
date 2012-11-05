@@ -31,7 +31,7 @@ namespace problem {
  * far the simulation should be advanced as long as how frequently status
  * updates should occur.
  */
-class TimeDefinition : public IDefinition
+class TimeDefinition : public definition_base
 {
 public:
     /**

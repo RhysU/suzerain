@@ -43,7 +43,7 @@ RestartDefinition::RestartDefinition(
         int retain,
         real_t dt,
         int nt)
-    : IDefinition("Restart-related parameters"),
+    : definition_base("Restart-related parameters"),
       metadata(metadata),
       uncommitted(uncommitted),
       destination(destination),

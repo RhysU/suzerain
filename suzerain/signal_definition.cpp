@@ -38,7 +38,7 @@ SignalDefinition::SignalDefinition(const std::string& specstatus,
                                    const std::string& specrestart,
                                    const std::string& specstatistics,
                                    const std::string& specteardown)
-    : IDefinition("Actions to take on receipt of various signals")
+    : definition_base("Actions to take on receipt of various signals")
 {
     using ::boost::program_options::value;
 

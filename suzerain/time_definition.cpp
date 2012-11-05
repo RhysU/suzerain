@@ -182,7 +182,7 @@ TimeDefinition::TimeDefinition(real_t advance_dt,
                                int    status_nt,
                                real_t min_dt,
                                real_t max_dt)
-    : IDefinition("Time advancement parameters")
+    : definition_base("Time advancement parameters")
 {
     initialize_advancement(advance_dt,
                            advance_nt,
@@ -196,7 +196,7 @@ TimeDefinition::TimeDefinition(real_t advance_dt,
 }
 
 TimeDefinition::TimeDefinition(const char * evmagfactor)
-    : IDefinition("Time advancement parameters")
+    : definition_base("Time advancement parameters")
 {
     advance_dt = std::numeric_limits<real_t>::quiet_NaN();
     advance_nt = 0;

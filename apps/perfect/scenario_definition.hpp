@@ -31,7 +31,7 @@ namespace suzerain { namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class ScenarioDefinition : public problem::IDefinition
+class ScenarioDefinition : public problem::definition_base
 {
 public:
 

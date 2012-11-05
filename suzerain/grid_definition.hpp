@@ -34,7 +34,7 @@ namespace problem {
  * wall-normal Y direction.  Logical grid sizes should be specified in terms
  * of physical space coefficient counts.
  */
-class GridDefinition : public IDefinition
+class GridDefinition : public definition_base
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html

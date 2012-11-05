@@ -25,14 +25,14 @@
 namespace suzerain {
 
 /** Provides miscellaneous parallel transpose profiling flags.  */
-class ProfileDefinition : public problem::IDefinition
+class ProfileDefinition : public problem::definition_base
 {
 public:
 
     /** Default constructor */
     ProfileDefinition();
 
-    /*! @copydoc problem::IDefinition::options */
+    /*! @copydoc problem::definition_base::options */
     const boost::program_options::options_description& options() {
         return options_;
     }

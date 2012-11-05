@@ -153,7 +153,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_gamma);
 
 /** Options definitions for adding random noise to momentum fields */
-class NoiseDefinition : public problem::IDefinition {
+class NoiseDefinition : public problem::definition_base {
 
 public:
 
