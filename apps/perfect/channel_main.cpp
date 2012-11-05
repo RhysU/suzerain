@@ -1252,12 +1252,12 @@ int main(int argc, char **argv)
         > > m;
     if (use_smr91) {
         m.reset(new suzerain::timestepper::lowstorage::method<
-                    suzerain::timestepper::lowstorage::SMR91,
+                    suzerain::timestepper::lowstorage::smr91,
                     complex_t
                 >(timedef.evmagfactor));
     } else if (use_yang11) {
         m.reset(new suzerain::timestepper::lowstorage::method<
-                    suzerain::timestepper::lowstorage::Yang11,
+                    suzerain::timestepper::lowstorage::yang11,
                     complex_t
                 >(timedef.evmagfactor));
     } else {

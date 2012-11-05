@@ -49,8 +49,8 @@ using suzerain::multi_array::ref;
 using suzerain::timestepper::nonlinear_operator;
 using suzerain::timestepper::lowstorage::linear_operator;
 using suzerain::timestepper::lowstorage::multiplicative_operator;
-using suzerain::timestepper::lowstorage::SMR91;
-using suzerain::timestepper::lowstorage::Yang11;
+using suzerain::timestepper::lowstorage::smr91;
+using suzerain::timestepper::lowstorage::yang11;
 using suzerain::timestepper::lowstorage::method;
 using suzerain::timestepper::lowstorage::timecontroller;
 
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_SUITE( SMR91_sanity )
 
 BOOST_AUTO_TEST_CASE( name )
 {
-    const method<SMR91,float> m;
+    const method<smr91,float> m;
     BOOST_CHECK(m.name());
 }
 
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
 {
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
-        const method<SMR91,T> m;
+        const method<smr91,T> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( SMR91_constants, T, constants_test_types )
     { // Complex-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
-        const method<SMR91,complex> m;
+        const method<smr91,complex> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -377,7 +377,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
 {
     { // Real-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
-        const method<Yang11,T> m;
+        const method<yang11,T> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
     { // Complex-valued constants
         const T close_enough = std::numeric_limits<T>::epsilon();
         typedef typename std::complex<T> complex;
-        const method<Yang11,complex> m;
+        const method<yang11,complex> m;
 
         // Step size consistency
         for (std::size_t i = 0; i < m.substeps(); ++i) {
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE( apply_operator )
 
 BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
 {
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
 
 BOOST_AUTO_TEST_CASE( invert_mass_plus_scaled_operator )
 {
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -556,7 +556,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
     const riccati_explicit_operator riccati_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const riccati_nonlinear_operator nonlinear_op(2, 3);
     const riccati_linear_operator<State> linear_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -692,7 +692,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
     const cosine_explicit_operator cosine_op;
     State a(size3(2,1,1)), b(size3(2,1,1));
@@ -782,7 +782,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const mult_op_type trivial_linop(0);
     state_a_type a(size3(1,1,1));
     state_b_type b(size3(1,1,1));
@@ -820,7 +820,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-13); // Tolerance found using Octave
 
-    // SMR91 is third order against the exponential problem
+    // smr91 is third order against the exponential problem
     const double expected_order = 2.95; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
@@ -877,7 +877,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double t_initial = 0.000, t_final = 0.0125; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const mult_op_type trivial_linop(0);
     state_a_type a(size3(1,1,1));
     state_b_type b(size3(1,1,1));
@@ -922,7 +922,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-13);
 
-    // SMR91 is third order against the cosine problem
+    // smr91 is third order against the cosine problem
     const double expected_order = 2.95; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
@@ -977,7 +977,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const double t_initial = 0.140, t_final = 0.145; // Asymptotic regime
 
     // Fix method, operators, and storage space
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const riccati_nonlinear_operator nonlinear_op(soln.a, soln.b);
     const riccati_linear_operator<
                 state_a_type, state_b_type
@@ -1009,7 +1009,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const double finer_error = fabs(finer_final - soln(t_final));
     BOOST_CHECK_SMALL(finer_error, 1.0e-11); // Tolerance found using Octave
 
-    // SMR91 is second order against the Riccati problem
+    // smr91 is second order against the Riccati problem
     const double expected_order = 1.98; // allows for floating point losses
     const double observed_order
         = log(coarse_error/finer_error)/log(finer_nsteps/coarse_nsteps);
@@ -1106,7 +1106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
     typedef typename mpl::at<StatePair,mpl::int_<0> >::type state_a_type;
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
 
-    const method<SMR91,double> m;
+    const method<smr91,double> m;
     const multiplicative_operator<state_a_type, state_b_type> trivial_linop(0);
     const riccati_nonlinear_operator riccati_op(2, 3);
     state_a_type a(size3(2,1,1));

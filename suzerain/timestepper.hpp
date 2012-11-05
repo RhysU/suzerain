@@ -110,8 +110,8 @@ public:
  * imaginary eigenvalue magnitude of the first derivative operator in the $x$
  * direction, etc.  The maximum pure imaginary eigenvalue magnitude,
  * \f$\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}\f$, is a feature of the
- * chosen timestepping method.  For example, it is \f$\sqrt{3}\f$ for the SMR91
- * scheme.  See the Suzerain model document for details on estimating
+ * chosen timestepping method.  For example, it is \f$\sqrt{3}\f$ for the \ref
+ * smr91 scheme.  See the Suzerain model document for details on estimating
  * \f$\lambda^{(1)}_x\f$, \f$\lambda^{(1)}_y\f$, and \f$\lambda^{(1)}_z\f$.
  *
  * For formulations in which an explicit Mach number
@@ -238,7 +238,7 @@ FPT convective_stability_criterion(
  * \f$\lambda^{(2)}_y\f$, and \f$\lambda^{(2)}_z\f$.  The maximum pure real
  * eigenvalue magnitude, \f$\left|\lambda_{R}\Delta{}t\right|_{\mbox{max}}\f$,
  * is a feature of the chosen timestepping method.  For example, it is 2.512
- * for the SMR91 scheme.  The absolute values within the maximum operation
+ * for the \ref smr91 scheme.  The absolute values within the maximum operation
  * account for the possibility that \f$\nu<\nu_{0}\f$.
  *
  * Using a hybrid implicit/explicit %timestepper with viscous terms computed
@@ -469,8 +469,8 @@ namespace lowstorage
  *
  * @see linear_operator for the interface that \f$L\f$ must implement.
  * @see nonlinear_operator for the interface that \f$N\f$ must implement.
- * @see SMR91 and Yang11 for examples of essential information
- *      for a concrete scheme.
+ * @see \ref smr91 and \ref yang11 for examples of essential information for a
+ *      concrete scheme.
  * @see step() or substep() for methods that can advance state variables
  *      according to a timestepping method.
  */
@@ -925,7 +925,7 @@ make_multiplicative_operator(
  * @tparam Integer Signed integer type used for indexing and computation.
  *
  * @see method_interface for a full definition of the constants involved.
- * @see SMR91 for an example implementation.
+ * @see \ref smr91 for an example implementation.
  */
 template <template <typename,typename> class Scheme,
           typename Component,
@@ -1176,7 +1176,7 @@ constants<Scheme,Component,Integer>::iota_beta = {};
  * @tparam A real- or complex-valued scalar type to be used.
  *         constants are returned as the corresponding real type,
  *         called \c component.
- * @see SMR91 or Yang11 for examples of valid Schemes to supply.
+ * @see \ref smr91 or \ref yang11 for examples of valid Schemes to supply.
  */
 template <template <typename,typename> class Scheme, typename Element>
 class method : public method_interface<Element>
@@ -1270,7 +1270,7 @@ private:
  * @see Designed to be used with the constants template.
  */
 template <typename Component, typename Integer>
-struct SMR91
+struct smr91
 {
     /** A human-readable name for the scheme */
     static const char *name;
@@ -1311,24 +1311,24 @@ struct SMR91
 };
 
 template <typename Component, typename Integer>
-const char * SMR91<Component,Integer>::name = "SMR91";
+const char * smr91<Component,Integer>::name = "smr91";
 
 template <typename Component, typename Integer>
-const Integer SMR91<Component,Integer>::alpha_numerator[substeps] = {
+const Integer smr91<Component,Integer>::alpha_numerator[substeps] = {
          29 * (denominator / 96),
         - 3 * (denominator / 40),
           1 * (denominator /  6)
 };
 
 template <typename Component, typename Integer>
-const Integer SMR91<Component,Integer>::beta_numerator[substeps] = {
+const Integer smr91<Component,Integer>::beta_numerator[substeps] = {
          37 * (denominator / 160),
           5 * (denominator /  24),
           1 * (denominator /   6)
 };
 
 template <typename Component, typename Integer>
-const Integer SMR91<Component,Integer>::gamma_numerator[substeps] = {
+const Integer smr91<Component,Integer>::gamma_numerator[substeps] = {
           8 * (denominator /  15),
           5 * (denominator /  12),
           3 * (denominator /   4)
@@ -1342,7 +1342,7 @@ const Integer SMR91<Component,Integer>::gamma_numerator[substeps] = {
  * @see Designed to be used with the constants template.
  */
 template <typename Component, typename Integer>
-struct Yang11
+struct yang11
 {
     /** A human-readable name for the scheme */
     static const char *name;
@@ -1375,24 +1375,24 @@ struct Yang11
 };
 
 template <typename Component, typename Integer>
-const char * Yang11<Component,Integer>::name = "Yang11";
+const char * yang11<Component,Integer>::name = "Yang11";
 
 template <typename Component, typename Integer>
-const Integer Yang11<Component,Integer>::alpha_numerator[substeps] = {
+const Integer yang11<Component,Integer>::alpha_numerator[substeps] = {
          1 * (denominator / 3),
         -1 * (denominator / 2),
          1 * (denominator / 3)
 };
 
 template <typename Component, typename Integer>
-const Integer Yang11<Component,Integer>::beta_numerator[substeps] = {
+const Integer yang11<Component,Integer>::beta_numerator[substeps] = {
          1 * (denominator / 6),
          2 * (denominator / 3),
          0 * (denominator / 1)
 };
 
 template <typename Component, typename Integer>
-const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
+const Integer yang11<Component,Integer>::gamma_numerator[substeps] = {
          1 * (denominator / 2),
          1 * (denominator / 3),
          1 * (denominator / 1)
@@ -1407,7 +1407,7 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
  * type may be supplied to this method.
  *
  * @param m The low storage scheme to use.
- *          For example, method in conjunction with SMR91.
+ *          For example, \ref method in conjunction with \ref smr91.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
@@ -1473,7 +1473,7 @@ const typename traits::component<Element>::type substep(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, method in conjunction with SMR91.
+ *                For example, \ref method in conjunction with \ref smr91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
  *                employ a custom functor compatible with delta_t_reducer to add
@@ -1556,7 +1556,7 @@ const typename traits::component<Element>::type step(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, method in conjunction with SMR91.
+ *                For example, \ref method in conjunction with \ref smr91.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N       The nonlinear operator to be treated explicitly.
@@ -1641,7 +1641,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, method in conjunction with SMR91.
+     *                  For example, \ref method in conjunction with \ref smr91.
      * @param reducer   A stateful functor taking a vector of stable time step
      *                  candidates down to a single stable time step.  Users
      *                  may employ a custom functor compatible with
@@ -1739,7 +1739,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, method in conjunction with SMR91.
+     *                  For example, \ref method in conjunction with \ref smr91.
      * @param L         The linear operator to be treated implicitly.
      * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
      *                  operator.
