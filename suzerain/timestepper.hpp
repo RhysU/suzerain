@@ -282,7 +282,6 @@ FPT diffusive_stability_criterion(
         const FPT nuB,
         const FPT nuB0)
 {
-
     // Find maximum diffusive coefficient amongst all possible criteria
     using std::abs;
     using std::max;
