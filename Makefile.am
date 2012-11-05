@@ -20,7 +20,8 @@ SUBDIRS = lib build-aux suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
 # Distribute these directories:
 DIST_SUBDIRS = lib build-aux suzerain tests fields apps \
                writeups jobscripts postproc
-EXTRA_DIST   = AUTHORS bootstrap COPYING COPYING.gpl3 COPYING.mpl2 $(DX_CONFIG)
+EXTRA_DIST   = AUTHORS astylerc bootstrap COPYING     \
+               COPYING.gpl3 COPYING.mpl2 $(DX_CONFIG)
 
 # Eliminate .svn and/or .git directories in dist tarball
 dist-hook:

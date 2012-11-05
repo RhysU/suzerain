@@ -1,0 +1,11 @@
+# An aspirational Artistic Style (astyle) code formatting specification
+style=allman
+indent=spaces=4
+indent-preprocessor
+min-conditional-indent=0
+pad-oper
+add-brackets
+keep-one-line-statements
+convert-tabs
+align-pointer=type
+align-reference=type
