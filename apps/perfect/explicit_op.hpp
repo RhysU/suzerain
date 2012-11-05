@@ -52,7 +52,7 @@ class NonlinearOperator
 public:
 
     NonlinearOperator(
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -75,7 +75,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const ScenarioDefinition &scenario;
+    const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
     OperatorCommonBlock &common;
@@ -151,7 +151,7 @@ class BsplineMassOperatorIsothermal
 public:
 
     BsplineMassOperatorIsothermal(
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -188,7 +188,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const ScenarioDefinition &scenario;
+    const scenario_definition &scenario;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
     OperatorCommonBlock &common;

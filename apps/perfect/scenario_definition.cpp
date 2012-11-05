@@ -46,7 +46,7 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace perfect {
 
-ScenarioDefinition::ScenarioDefinition()
+scenario_definition::scenario_definition()
     : definition_base("Nondimensional scenario parameters"),
       Re(std::numeric_limits<real_t>::quiet_NaN()),
       Ma(std::numeric_limits<real_t>::quiet_NaN()),
@@ -62,7 +62,7 @@ ScenarioDefinition::ScenarioDefinition()
                              NULL, NULL, NULL);
 }
 
-ScenarioDefinition::ScenarioDefinition(
+scenario_definition::scenario_definition(
         const char * Re,
         const char * Ma,
         const char * Pr,
@@ -86,7 +86,7 @@ ScenarioDefinition::ScenarioDefinition(
                                 alpha, beta, gamma);
 }
 
-void ScenarioDefinition::initialize_options(
+void scenario_definition::initialize_options(
         const char * default_Re,
         const char * default_Ma,
         const char * default_Pr,

@@ -71,10 +71,10 @@ namespace support = suzerain::support;
 static const std::vector<support::field> fields = perfect::default_fields();
 
 // Global parameters initialized in main()
-using suzerain::perfect::ScenarioDefinition;
+using suzerain::perfect::scenario_definition;
 using suzerain::problem::grid_definition;
 using suzerain::problem::time_definition;
-static ScenarioDefinition scenario(
+static scenario_definition scenario(
         /* Re         */ "100",
         /* Ma         */ "1.5",
         /* Pr         */ "0.7",

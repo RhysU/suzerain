@@ -50,7 +50,7 @@ using std::auto_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::problem::grid_definition;
-using suzerain::perfect::ScenarioDefinition;
+using suzerain::perfect::scenario_definition;
 using suzerain::problem::time_definition;
 using suzerain::real_t;
 namespace perfect = suzerain::perfect;
@@ -411,7 +411,7 @@ static suzerain::VectorXr compute_bulk_weights(
  *
  * @param filename   To be loaded.
  * @param i_scenario If <tt>!i_scenario</tt>,
- *                   populated with the ScenarioDefinition from the file.
+ *                   populated with the scenario_definition from the file.
  * @param i_grid     Handled identically to <tt>i_scenario</tt>.
  * @param i_timedef  Handled identically to <tt>i_scenario</tt>.
  * @param i_b        If <tt>!!i_b</tt> on entry, after computation interpolate
@@ -425,7 +425,7 @@ static suzerain::VectorXr compute_bulk_weights(
  */
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<ScenarioDefinition    >& i_scenario,
+        shared_ptr<scenario_definition    >& i_scenario,
         shared_ptr<grid_definition        >& i_grid,
         shared_ptr<time_definition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
@@ -517,7 +517,7 @@ int main(int argc, char **argv)
     }
 
     // Scenario and grid details provided to process(...)
-    shared_ptr<ScenarioDefinition    > scenario;
+    shared_ptr<scenario_definition    > scenario;
     shared_ptr<grid_definition        > grid;
     shared_ptr<time_definition        > timedef;
     shared_ptr<suzerain::bspline     > b;
@@ -693,7 +693,7 @@ int main(int argc, char **argv)
 
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<ScenarioDefinition    >& i_scenario,
+        shared_ptr<scenario_definition    >& i_scenario,
         shared_ptr<grid_definition        >& i_grid,
         shared_ptr<time_definition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
@@ -716,7 +716,7 @@ static quantity::storage_map_type process(
     // The time_definition defaults are ignored but required as that
     // class lacks a default constructor (by design).
     real_t time;
-    ScenarioDefinition scenario;
+    scenario_definition scenario;
     grid_definition grid;
     time_definition timedef(/* advance_dt */ 0,
                            /* advance_nt */ 0,
@@ -735,7 +735,7 @@ static quantity::storage_map_type process(
     assert(b->n() == grid.N.y());
 
     // Return the scenario, grid, and timedef to the caller if not already set
-    if (!i_scenario) i_scenario.reset(new ScenarioDefinition(scenario));
+    if (!i_scenario) i_scenario.reset(new scenario_definition(scenario));
     if (!i_grid)     i_grid    .reset(new grid_definition    (grid    ));
     if (!i_timedef)  i_timedef .reset(new time_definition    (timedef ));
 

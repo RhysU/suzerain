@@ -31,7 +31,7 @@ namespace suzerain { namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class ScenarioDefinition : public problem::definition_base
+class scenario_definition : public problem::definition_base
 {
 public:
 
@@ -39,7 +39,7 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    ScenarioDefinition();
+    scenario_definition();
 
     /**
      * Construct an instance with the given parameter values.
@@ -54,7 +54,7 @@ public:
      * @param beta       Temperature power law exponent.
      * @param gamma      Ratio of specific heats.
      */
-    ScenarioDefinition(const char * Re,
+    scenario_definition(const char * Re,
                        const char * Ma,
                        const char * Pr,
                        const char * bulk_rho,

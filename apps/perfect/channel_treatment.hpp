@@ -69,7 +69,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     ChannelTreatment(
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -84,7 +84,7 @@ public:
      */
     ChannelTreatment(
             const spec_zgbsv& spec,
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -148,7 +148,7 @@ private:
 
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -163,7 +163,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
             const spec_zgbsv& spec,
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -210,7 +210,7 @@ void ChannelTreatment<BaseClass>::invert_mass_plus_scaled_operator(
     // Shorthand
     using std::size_t;
     OperatorCommonBlock &common = this->common;
-    const ScenarioDefinition &scenario = this->scenario;
+    const scenario_definition &scenario = this->scenario;
     const int Ny = this->dgrid.global_wave_extent.y();
 
     // Sidesteps assertions when local rank contains no wavespace information

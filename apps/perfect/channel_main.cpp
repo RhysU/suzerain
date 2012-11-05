@@ -114,10 +114,10 @@ using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::grid_definition;
 using suzerain::problem::restart_definition;
 using suzerain::problem::statistics_definition;
-using suzerain::perfect::ScenarioDefinition;
+using suzerain::perfect::scenario_definition;
 using suzerain::problem::signal_definition;
 using suzerain::problem::time_definition;
-static const ScenarioDefinition scenario;
+static const scenario_definition scenario;
 static const grid_definition grid;
 static const FFTWDefinition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
@@ -900,7 +900,7 @@ int main(int argc, char **argv)
         suzerain::program_options options(
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
-        options.add_definition(const_cast<ScenarioDefinition  &>(scenario));
+        options.add_definition(const_cast<scenario_definition  &>(scenario));
         options.add_definition(const_cast<grid_definition      &>(grid    ));
         options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
         options.add_definition(const_cast<restart_definition   &>(restart ));
@@ -985,15 +985,15 @@ int main(int argc, char **argv)
     real_t restart_Ma, restart_gamma;
     {
         real_t cli_Ma = scenario.Ma, cli_gamma = scenario.gamma;
-        const_cast<ScenarioDefinition&>(scenario).Ma
-            = const_cast<ScenarioDefinition&>(scenario).gamma
+        const_cast<scenario_definition&>(scenario).Ma
+            = const_cast<scenario_definition&>(scenario).gamma
             = numeric_limits<real_t>::quiet_NaN();
-        perfect::load(esioh, const_cast<ScenarioDefinition&>(scenario));
+        perfect::load(esioh, const_cast<scenario_definition&>(scenario));
         restart_Ma    = scenario.Ma;
         restart_gamma = scenario.gamma;
-        const_cast<ScenarioDefinition&>(scenario).Ma
+        const_cast<scenario_definition&>(scenario).Ma
                 = ((boost::math::isnan)(cli_Ma)) ? restart_Ma : cli_Ma;
-        const_cast<ScenarioDefinition&>(scenario).gamma
+        const_cast<scenario_definition&>(scenario).gamma
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
     support::load(esioh, const_cast<grid_definition&>(grid));

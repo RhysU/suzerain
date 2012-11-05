@@ -59,7 +59,7 @@ public:
 
     HybridIsothermalLinearOperator(
             const spec_zgbsv& spec,
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -119,7 +119,7 @@ protected:
     const spec_zgbsv spec;
 
     /** The scenario in which the operator is used */
-    const ScenarioDefinition &scenario;
+    const scenario_definition &scenario;
 
     /** Houses data required for operator application and inversion */
     OperatorCommonBlock &common;
@@ -158,7 +158,7 @@ public:
             = HybridIsothermalLinearOperator::linearization;
 
     HybridNonlinearOperator(
-            const ScenarioDefinition &scenario,
+            const scenario_definition &scenario,
             const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -181,7 +181,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const ScenarioDefinition &scenario;
+    const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
     OperatorCommonBlock &common;

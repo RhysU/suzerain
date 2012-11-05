@@ -72,7 +72,7 @@ std::vector<support::field> default_fields()
 }
 
 void store(const esio_handle h,
-           const ScenarioDefinition& scenario)
+           const scenario_definition& scenario)
 {
     DEBUG0("Storing ScenarioDefinition parameters");
 
@@ -108,7 +108,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          ScenarioDefinition& scenario)
+          scenario_definition& scenario)
 {
     DEBUG0("Loading ScenarioDefinition parameters");
 
@@ -172,7 +172,7 @@ static void attribute_storer(const esio_handle &h,
 }
 
 void store(const esio_handle h,
-           const ScenarioDefinition& scenario,
+           const scenario_definition& scenario,
            const problem::grid_definition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
@@ -191,7 +191,7 @@ void store(const esio_handle h,
 
 #pragma warning(push,disable:1572)
     // Check parameters stored with the scenario not the manufactured solution
-    // because scenario parameters should be loaded from ScenarioDefinition
+    // because scenario parameters should be loaded from scenario_definition
     if (msoln->alpha != scenario.alpha)
         WARN0("Manufactured solution alpha mismatches with scenario!");
     if (msoln->beta  != scenario.beta)
@@ -239,7 +239,7 @@ static void NaNer(const std::string&, real_t& value)
 }
 
 void load(const esio_handle h,
-          const ScenarioDefinition& scenario,
+          const scenario_definition& scenario,
           const problem::grid_definition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
@@ -264,7 +264,7 @@ void load(const esio_handle h,
     msoln.reset(new manufactured_solution());
     msoln->foreach_parameter(&NaNer);
 
-    // Scenario parameters taken from ScenarioDefinition
+    // Scenario parameters taken from scenario_definition
     msoln->alpha = scenario.alpha;
     msoln->beta  = scenario.beta;
     msoln->gamma = scenario.gamma;
@@ -289,7 +289,7 @@ void load(const esio_handle h,
 void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
-        const ScenarioDefinition& scenario,
+        const scenario_definition& scenario,
         const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
@@ -383,7 +383,7 @@ void store_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
-        const ScenarioDefinition& scenario,
+        const scenario_definition& scenario,
         const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
@@ -495,7 +495,7 @@ void load_collocation_values(
 
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
-          const ScenarioDefinition& scenario,
+          const scenario_definition& scenario,
           const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
@@ -543,7 +543,7 @@ void load(const esio_handle h,
 
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
-                const ScenarioDefinition& scenario,
+                const scenario_definition& scenario,
                 const problem::grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
@@ -681,7 +681,7 @@ noise_definition::noise_definition(real_t percent,
 void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_definition& noisedef,
-          const ScenarioDefinition& scenario,
+          const scenario_definition& scenario,
           const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
@@ -1169,7 +1169,7 @@ void accumulate_manufactured_solution(
 // definitely suboptimal but is expected to be invoked very infrequently and
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
-        const ScenarioDefinition &scenario,
+        const scenario_definition &scenario,
         const problem::grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
