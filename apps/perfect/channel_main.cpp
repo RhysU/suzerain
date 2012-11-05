@@ -1243,7 +1243,7 @@ int main(int argc, char **argv)
     // (to avoid depending on specific operator details) and to
     // facilitate runtime selection of operators.
     //
-    // The linear state type chosen for ILinearOperator is a superclass of both
+    // The linear state type chosen for linear_operator is a superclass of both
     // contiguous_state and interleaved_state to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
@@ -1264,7 +1264,7 @@ int main(int argc, char **argv)
         FATAL0("Sanity error in timestepping scheme selection");
         return EXIT_FAILURE;
     }
-    shared_ptr<suzerain::timestepper::lowstorage::ILinearOperator<
+    shared_ptr<suzerain::timestepper::lowstorage::linear_operator<
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type
         > > L;
@@ -1491,7 +1491,7 @@ int main(int argc, char **argv)
     //
     // More specifically, for \partial_t u = \mathscr{L}u + Lu + (N(u)-Lu) did
     // the nonlinear_operator compute a "-Lu" matching with the
-    // ILinearOperator's "+Lu" contribution?  ILinearOperator is assumed to
+    // linear_operator's "+Lu" contribution?  linear_operator is assumed to
     // also compute \mathscr{L}u which is independent of reference values (e.g.
     // the divergence of the momentum within the mass equation).
     //
@@ -1510,9 +1510,9 @@ int main(int argc, char **argv)
     //   ii) The reference quantities are stored in common_block
     //       and may be expressly zeroed.  Zeroing them nukes linearized
     //       contributions from I{Nonlinear,Linear}Operator but not
-    //       linear contributions from ILinearOperator.
+    //       linear contributions from linear_operator.
     //  iii) On non-zero substeps for zero reference values,
-    //       nonlinear_operator computes only N(u) and ILinearOperator
+    //       nonlinear_operator computes only N(u) and linear_operator
     //       computes only \left(M+\varphi\mathscr{L}\right)u.
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.

@@ -467,7 +467,7 @@ namespace lowstorage
  * computed in-place as <tt>mean += iota_alpha_i * (sample - mean)</tt> or
  * <tt>mean += iota_beta_i * (sample - mean)</tt>.
  *
- * @see ILinearOperator for the interface that \f$L\f$ must implement.
+ * @see linear_operator for the interface that \f$L\f$ must implement.
  * @see nonlinear_operator for the interface that \f$N\f$ must implement.
  * @see SMR91 and Yang11 for examples of essential information
  *      for a concrete scheme.
@@ -621,7 +621,7 @@ std::basic_ostream<charT,traits>& operator<<(
  *                    containing its real- or complex-valued scalar type.
  */
 template<typename StateA, typename StateB = StateA>
-class ILinearOperator
+class linear_operator
 {
 public:
 
@@ -702,7 +702,7 @@ public:
             StateA *ic0 = NULL) const = 0;
 
     /** Virtual destructor for peace of mind. */
-    virtual ~ILinearOperator() {}
+    virtual ~linear_operator() {}
 };
 
 /**
@@ -715,7 +715,7 @@ public:
  */
 template< typename StateA, typename StateB = StateA >
 class MultiplicativeOperator
-    : public ILinearOperator<StateA,StateB>,
+    : public linear_operator<StateA,StateB>,
       public nonlinear_operator<StateB>
 {
 public:
@@ -1432,7 +1432,7 @@ template< typename Element,
           typename State >
 const typename traits::component<Element>::type substep(
     const method_interface<Element>& m,
-    const ILinearOperator<LinearState>& L,
+    const linear_operator<LinearState>& L,
     const typename traits::component<Element>::type chi,
     const nonlinear_operator<NonlinearState>& N,
     const typename traits::component<Element>::type time,
@@ -1500,7 +1500,7 @@ template< typename Element, typename Reducer,
 const typename traits::component<Element>::type step(
     const method_interface<Element>& m,
     Reducer& reducer,
-    const ILinearOperator<LinearA,LinearB>& L,
+    const linear_operator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
     const nonlinear_operator<NonlinearB>& N,
     const typename traits::component<Element>::type time,
@@ -1578,7 +1578,7 @@ template< typename Element,
           typename StateA, typename StateB >
 const typename traits::component<Element>::type step(
     const method_interface<Element>& m,
-    const ILinearOperator<LinearA,LinearB>& L,
+    const linear_operator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
     const nonlinear_operator<NonlinearB>& N,
     const typename traits::component<Element>::type time,
@@ -1673,7 +1673,7 @@ public:
     timecontroller(
             const method_interface<element>& m,
             Reducer& reducer,
-            const ILinearOperator<LinearA,LinearB>& L,
+            const linear_operator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
             const nonlinear_operator<NonlinearB>& N,
             StateA& a,
@@ -1691,7 +1691,7 @@ private:
 
     const method_interface<element>& m;
     Reducer &reducer;
-    const ILinearOperator<LinearA,LinearB>& L;
+    const linear_operator<LinearA,LinearB>& L;
     const typename traits::component<element>::type chi;
     const nonlinear_operator<NonlinearB>& N;
     StateA& a;
@@ -1765,7 +1765,7 @@ public:
      */
     timecontroller(
             const method_interface<element>& m,
-            const ILinearOperator<LinearA,LinearB>& L,
+            const linear_operator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
             const nonlinear_operator<NonlinearB>& N,
             StateA& a,
@@ -1799,7 +1799,7 @@ timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
 make_timecontroller(
         const method_interface<typename StateA::element>& m,
         Reducer &reducer,
-        const ILinearOperator<LinearA,LinearB>& L,
+        const linear_operator<LinearA,LinearB>& L,
         const ChiType chi,
         const nonlinear_operator<NonlinearB>& N,
         StateA& a,
@@ -1834,7 +1834,7 @@ template< typename StateA,
 timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
 make_timecontroller(
         const method_interface<typename StateA::element>& m,
-        const ILinearOperator<LinearA,LinearB>& L,
+        const linear_operator<LinearA,LinearB>& L,
         const ChiType chi,
         const nonlinear_operator<NonlinearB>& N,
         StateA& a,

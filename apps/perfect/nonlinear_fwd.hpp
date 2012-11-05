@@ -393,7 +393,7 @@ enum type {
  *        per \f$\textrm{Re}\f$ in namespace \ref rholut.
  * \param o Provides access to discretization and parallel decomposition
  *        operational details.
- * \param common Shared storage for interaction with an ILinearOperator
+ * \param common Shared storage for interaction with an linear_operator
  *        implementation providing forcing and boundary conditions.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
  *        then it will be used to provide manufactured forcing terms.

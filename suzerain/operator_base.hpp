@@ -37,7 +37,7 @@ namespace suzerain {
 
 /**
  * Provides common B-spline and parallel FFT infrastructure useful across many
- * ILinearOperator and nonlinear_operator implementations.
+ * linear_operator and nonlinear_operator implementations.
  */
 class operator_base
 {

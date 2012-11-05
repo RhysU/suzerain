@@ -47,7 +47,7 @@ using suzerain::interleaved_state;
 using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
 using suzerain::timestepper::nonlinear_operator;
-using suzerain::timestepper::lowstorage::ILinearOperator;
+using suzerain::timestepper::lowstorage::linear_operator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91;
 using suzerain::timestepper::lowstorage::Yang11;

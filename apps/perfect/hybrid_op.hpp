@@ -47,7 +47,7 @@ namespace suzerain { namespace perfect {
  */
 class HybridIsothermalLinearOperator
   : public operator_base,
-    public timestepper::lowstorage::ILinearOperator<
+    public timestepper::lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
         contiguous_state<4,complex_t>
     >
@@ -153,7 +153,7 @@ class HybridNonlinearOperator
 {
 public:
 
-    /** Determines the implicit treatment of the paired ILinearOperator. */
+    /** Determines the implicit treatment of the paired linear_operator. */
     static const linearize::type linearization
             = HybridIsothermalLinearOperator::linearization;
 
