@@ -416,7 +416,7 @@ void contiguous_state<Dim,Element>::addScaled(
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + Dim, this->strides()))) {
@@ -438,7 +438,7 @@ void contiguous_state<Dim,Element>::addScaled(
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
@@ -449,7 +449,7 @@ void contiguous_state<Dim,Element>::assign(
             const contiguous_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + Dim, this->strides()))) {
@@ -470,7 +470,7 @@ void contiguous_state<Dim,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
@@ -482,7 +482,7 @@ void contiguous_state<Dim,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     if (SUZERAIN_UNLIKELY(std::equal(other.strides(),
                     other.strides() + Dim, this->strides()))) {
@@ -502,7 +502,7 @@ void contiguous_state<Dim,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::swap(), other, *this);
 }
@@ -552,7 +552,7 @@ void interleaved_state<Dim,Element>::addScaled(
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -567,7 +567,7 @@ void interleaved_state<Dim,Element>::addScaled(
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::axpy<Element>(factor),
                   const_cast<multi_array_type&>(other), *this);
@@ -579,7 +579,7 @@ void interleaved_state<Dim,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -592,7 +592,7 @@ void interleaved_state<Dim,Element>::assign(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::copy(),
                   const_cast<multi_array_type&>(other), *this);
@@ -604,7 +604,7 @@ void interleaved_state<Dim,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     // Data in this and other guaranteed to be contiguous in num_elements.
     // Any padding from min_total_contiguous_count is unmodified.
@@ -617,7 +617,7 @@ void interleaved_state<Dim,Element>::exchange(
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
-    SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
+    SUZERAIN_ENSURE_EXCEPT(this->is_isomorphic(other), std::invalid_argument);
 
     detail::apply(blas::functor::swap(), other, *this);
 }

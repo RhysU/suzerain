@@ -99,7 +99,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
-    SUZERAIN_ENSURE(output.isIsomorphic(input));
+    SUZERAIN_ENSURE(output.is_isomorphic(input));
 
     const multi_array::ref<complex_t,4> &x = input;  // Shorthand
     contiguous_state<4,complex_t>        &y = output; // Shorthand

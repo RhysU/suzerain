@@ -156,7 +156,7 @@ public:
      *         False otherwise.
      */
     template<class OtherType>
-    bool isIsomorphic(const OtherType& other) const
+    bool is_isomorphic(const OtherType& other) const
     {
         if (dimensionality == OtherType::dimensionality) {
             return std::equal(shape(), shape() + dimensionality, other.shape());

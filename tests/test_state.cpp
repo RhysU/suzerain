@@ -654,7 +654,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
     BOOST_CHECK_EQUAL( 2*2*2, foo.strides()[3] );
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic, T, test_types )
 {
     interleaved_state<4,T> foo(  size(2,2,2,2));
     interleaved_state<4,T> bar(  size(2,2,2,2));
@@ -663,12 +663,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
     interleaved_state<4,T> quux( size(2,2,1,2));
     interleaved_state<4,T> quuux(size(2,2,2,1));
 
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(baz));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quuux));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(baz));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quuux));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale, T, test_types )
@@ -1107,7 +1107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order4, T, test_types )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic3, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic3, T, test_types )
 {
     contiguous_state<3,T> foo(  size(2,2,2));
     contiguous_state<3,T> bar(  size(2,2,2), size(7,1,1));
@@ -1116,28 +1116,28 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic3, T, test_types )
     contiguous_state<3,T> quux( size(2,1,2));
     contiguous_state<3,T> quuux(size(2,2,1));
 
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(baz));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(baz));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(baz));
 
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quuux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(quuux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(quuux));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic4, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic4, T, test_types )
 {
     contiguous_state<4,T> foo(  size(2,2,2,2));
     contiguous_state<4,T> bar(  size(2,2,2,2), size(37,1,1,15));
@@ -1146,25 +1146,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic4, T, test_types )
     contiguous_state<4,T> quux( size(2,1,2,2));
     contiguous_state<4,T> quuux(size(2,2,1,2));
 
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  foo.isIsomorphic(baz));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  bar.isIsomorphic(baz));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(foo));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(bar));
-    BOOST_CHECK_EQUAL(true,  baz.isIsomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  foo.is_isomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  bar.is_isomorphic(baz));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(foo));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(bar));
+    BOOST_CHECK_EQUAL(true,  baz.is_isomorphic(baz));
 
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, foo.isIsomorphic(quuux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, bar.isIsomorphic(quuux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(qux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(quux));
-    BOOST_CHECK_EQUAL(false, baz.isIsomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, foo.is_isomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, bar.is_isomorphic(quuux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(qux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(quux));
+    BOOST_CHECK_EQUAL(false, baz.is_isomorphic(quuux));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( scale3, T, test_types )
@@ -1492,7 +1492,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     BOOST_CHECK_THROW(foo.assign(baz), std::logic_error);
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic, T, test_types )
 {
     interleaved_state<4,T> i_foo(  size(2,2,2,2));
     interleaved_state<4,T> i_bar(  size(2,2,2,2));
@@ -1507,18 +1507,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( isIsomorphic, T, test_types )
     contiguous_state<4,T>  c_quux( size(2,2,1,2));
     contiguous_state<4,T>  c_quuux(size(2,2,2,1));
 
-    BOOST_CHECK_EQUAL(true,  i_foo.isIsomorphic(c_foo));
-    BOOST_CHECK_EQUAL(true,  i_foo.isIsomorphic(c_bar));
-    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_baz));
-    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_qux));
-    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_quux));
-    BOOST_CHECK_EQUAL(false, i_foo.isIsomorphic(c_quuux));
-    BOOST_CHECK_EQUAL(true,  c_foo.isIsomorphic(i_foo));
-    BOOST_CHECK_EQUAL(true,  c_foo.isIsomorphic(i_bar));
-    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_baz));
-    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_qux));
-    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_quux));
-    BOOST_CHECK_EQUAL(false, c_foo.isIsomorphic(i_quuux));
+    BOOST_CHECK_EQUAL(true,  i_foo.is_isomorphic(c_foo));
+    BOOST_CHECK_EQUAL(true,  i_foo.is_isomorphic(c_bar));
+    BOOST_CHECK_EQUAL(false, i_foo.is_isomorphic(c_baz));
+    BOOST_CHECK_EQUAL(false, i_foo.is_isomorphic(c_qux));
+    BOOST_CHECK_EQUAL(false, i_foo.is_isomorphic(c_quux));
+    BOOST_CHECK_EQUAL(false, i_foo.is_isomorphic(c_quuux));
+    BOOST_CHECK_EQUAL(true,  c_foo.is_isomorphic(i_foo));
+    BOOST_CHECK_EQUAL(true,  c_foo.is_isomorphic(i_bar));
+    BOOST_CHECK_EQUAL(false, c_foo.is_isomorphic(i_baz));
+    BOOST_CHECK_EQUAL(false, c_foo.is_isomorphic(i_qux));
+    BOOST_CHECK_EQUAL(false, c_foo.is_isomorphic(i_quux));
+    BOOST_CHECK_EQUAL(false, c_foo.is_isomorphic(i_quuux));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( addScaled, T, test_types )

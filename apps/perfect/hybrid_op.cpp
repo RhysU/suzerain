@@ -198,7 +198,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
 
     // Input and output state storage has contiguous wall-normal scalars?
     // Furthermore, input has contiguous wall-normal pencils of all state?
-    SUZERAIN_ENSURE(output.isIsomorphic(input));
+    SUZERAIN_ENSURE(output.is_isomorphic(input));
     SUZERAIN_ENSURE(input.shape()   [0] ==   swave_count);
     SUZERAIN_ENSURE(input.strides() [0] == (unsigned) Ny);
     SUZERAIN_ENSURE(input.shape()   [1] == (unsigned) Ny);
