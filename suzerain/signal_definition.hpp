@@ -22,7 +22,8 @@
  * Provides classes handling signal processing definitions.
  */
 
-namespace suzerain {
+namespace suzerain
+{
 
 /**
  * Parses and contains signal processing details to allow a program to take
@@ -45,10 +46,10 @@ public:
      *                       simulation should be exited.
      */
     explicit signal_definition(
-            const std::string& specstatus      = "HUP",
-            const std::string& specrestart     = "HUP",
-            const std::string& specstatistics  = "",
-            const std::string& specteardown    = "INT,USR1,USR2,TERM");
+        const std::string& specstatus      = "HUP",
+        const std::string& specrestart     = "HUP",
+        const std::string& specstatistics  = "",
+        const std::string& specteardown    = "INT,USR1,USR2,TERM");
 
     /** Signal numbers indicating a status message should be displayed. */
     std::vector<int> status;
@@ -65,16 +66,16 @@ public:
 private:
 
     /** Parse a status specification into this->status */
-    void parse_status(const std::string &spec);
+    void parse_status(const std::string& spec);
 
     /** Parse a status specification into this->restart */
-    void parse_restart(const std::string &spec);
+    void parse_restart(const std::string& spec);
 
     /** Parse a status specification into this->statistics */
-    void parse_statistics(const std::string &spec);
+    void parse_statistics(const std::string& spec);
 
     /** Parse a status specification into this->teardown */
-    void parse_teardown(const std::string &spec);
+    void parse_teardown(const std::string& spec);
 };
 
 } // namespace suzerain

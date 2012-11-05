@@ -34,7 +34,8 @@
  * A \ref definition_base to configure FFTW operation from the CLI.
  */
 
-namespace suzerain {
+namespace suzerain
+{
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
 class fftw_definition : public definition_base

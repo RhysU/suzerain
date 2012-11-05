@@ -22,7 +22,8 @@
  * Provides classes handling arguments used to control statistics file output.
  */
 
-namespace suzerain {
+namespace suzerain
+{
 
 /**
  * Encapsulates flags related to statistics output behavior for the simulation.
@@ -47,10 +48,10 @@ public:
      *      \c desttemplate and \c retain.
      */
     explicit statistics_definition(
-            const std::string& destination,
-            int retain = (1<<15),
-            real_t dt  = 0,
-            int nt     = 0);
+        const std::string& destination,
+        int retain = (1 << 15),
+        real_t dt  = 0,
+        int nt     = 0);
 
     /**
      * The archiving pattern to use when committing statistics output files.

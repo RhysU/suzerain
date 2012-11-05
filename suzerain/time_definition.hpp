@@ -22,7 +22,8 @@
  * Provides classes handling time advancement settings.
  */
 
-namespace suzerain {
+namespace suzerain
+{
 
 /**
  * Encapsulates flags related to time advancement.  Includes details on how
@@ -52,12 +53,12 @@ public:
      * @param max_dt      Maximum allowable physically-driven time step.
      */
     time_definition(real_t advance_dt,
-                   int    advance_nt,
-                   real_t advance_wt,
-                   real_t status_dt,
-                   int    status_nt,
-                   real_t min_dt,
-                   real_t max_dt);
+                    int    advance_nt,
+                    real_t advance_wt,
+                    real_t status_dt,
+                    int    status_nt,
+                    real_t min_dt,
+                    real_t max_dt);
 
     /**
      * Construct an instance with the given default values.  All of these can
@@ -70,7 +71,7 @@ public:
      *                    magnitudes.  Usually in <tt>(0,1]</tt>, this
      *                    increases the conservativeness of the time stepping.
      */
-    time_definition(const char * evmagfactor);
+    time_definition(const char* evmagfactor);
 
     /** Maximum amount of physical time to advance the simulation. */
     real_t advance_dt;
@@ -113,7 +114,7 @@ private:
                                 real_t default_max_dt);
 
     /** Prepare repeatedly-used options similar to scenario parameters */
-    void initialize_scenario(const char * default_evmagfactor);
+    void initialize_scenario(const char* default_evmagfactor);
 };
 
 } // namespace suzerain

@@ -23,7 +23,8 @@
  * arguments used to control simulation restart behavior.
  */
 
-namespace suzerain {
+namespace suzerain
+{
 
 /**
  * Encapsulates flags related to restart file behavior for the simulation.
