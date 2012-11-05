@@ -147,7 +147,7 @@ public:
     bool soft_teardown;
 
     /**
-     * Routine to output status, generally called via the TimeController.
+     * Routine to output status, generally called via the timecontroller.
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
      * log_status_boundary_state, and \ref log_status_hook.
@@ -175,7 +175,7 @@ public:
             const std::string& timeprefix);
 
     /**
-     * Routine to save a restart file, generally called via the TimeController.
+     * Routine to save a restart file, generally called via the timecontroller.
      *
      * The restart saves the data in \ref state_linear.
      * The data in \ref state_nonlinear is destroyed by this call.
@@ -189,7 +189,7 @@ protected:
     /**
      * Hook permitting subclasses to output additional status information.
      * Invoked at the end of \ref log_status.  Returning \c false causes the
-     * TimeController to halt.
+     * timecontroller to halt.
      */
     virtual bool log_status_hook(
             const std::string& timeprefix,

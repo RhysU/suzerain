@@ -52,7 +52,7 @@ using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91;
 using suzerain::timestepper::lowstorage::Yang11;
 using suzerain::timestepper::lowstorage::Method;
-using suzerain::timestepper::lowstorage::TimeController;
+using suzerain::timestepper::lowstorage::timecontroller;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
@@ -1055,46 +1055,46 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
 BOOST_AUTO_TEST_SUITE_END()
 
 
-// Tests for control logic of TimeController in test_timecontroller.
-// Presumably getting TimeController to type check is the big deal.
+// Tests for control logic of timecontroller in test_timecontroller.
+// Presumably getting timecontroller to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
-// TimeController for InterleavedState
-template class TimeController<
+// timecontroller for InterleavedState
+template class timecontroller<
         InterleavedState<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class TimeController<
+template class timecontroller<
         InterleavedState<3,double>, InterleavedState<3,double>,
         void // Default Reducer behavior
     >;
 
-// TimeController for ContiguousState
-template class TimeController<
+// timecontroller for ContiguousState
+template class timecontroller<
         ContiguousState<3,double>, ContiguousState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class TimeController<
+template class timecontroller<
         ContiguousState<3,double>, ContiguousState<3,double>,
         void // Default reducer behavior
     >;
 
-// TimeController for {Interleaved,Contiguous}State
-template class TimeController<
+// timecontroller for {Interleaved,Contiguous}State
+template class timecontroller<
         InterleavedState<3,double>, ContiguousState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class TimeController<
+template class timecontroller<
         InterleavedState<3,double>, ContiguousState<3,double>,
         void // Default reducer behavior
     >;
 
-// TimeController for {Contiguous,Interleaved}State
-template class TimeController<
+// timecontroller for {Contiguous,Interleaved}State
+template class timecontroller<
         ContiguousState<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
-template class TimeController<
+template class timecontroller<
         ContiguousState<3,double>, InterleavedState<3,double>,
         void // Default reducer behavior
     >;
@@ -1113,8 +1113,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
     state_b_type b(size3(2,1,1));
 
     // Compilation and instantiation is half the battle.  Go Joe!
-    boost::scoped_ptr<suzerain::timestepper::TimeController<double> > p(
-        make_TimeController(m, trivial_linop,
+    boost::scoped_ptr<suzerain::timestepper::timecontroller<double> > p(
+        make_timecontroller(m, trivial_linop,
                                       1.0, riccati_op, a, b));
 
     BOOST_REQUIRE(p);

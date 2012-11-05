@@ -1597,11 +1597,11 @@ const typename traits::component<Element>::type step(
 
 /**
  * Provides higher-level control mechanisms built atop low storage time
- * integration schemes.  This class is a thin wrapper combining TimeController
+ * integration schemes.  This class is a thin wrapper combining timecontroller
  * with step().
  *
- * @see TimeController for details on the time controller logic.
- * @see make_TimeController for an easy way to create
+ * @see timecontroller for details on the time controller logic.
+ * @see make_timecontroller for an easy way to create
  *      an instance with the appropriate type signature.
  */
 template< typename StateA,
@@ -1610,15 +1610,15 @@ template< typename StateA,
           typename LinearA    = StateA,
           typename LinearB    = StateB,
           typename NonlinearB = StateB >
-class TimeController
-    : public timestepper::TimeController< typename traits::component<
+class timecontroller
+    : public timestepper::timecontroller< typename traits::component<
             typename StateA::element
       >::type >
 {
 protected:
 
     /** Shorthand for the superclass */
-    typedef timestepper::TimeController< typename traits::component<
+    typedef timestepper::timecontroller< typename traits::component<
                 typename StateA::element
             >::type > super;
 
@@ -1671,7 +1671,7 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    TimeController(
+    timecontroller(
             const IMethod<element>& m,
             Reducer& reducer,
             const ILinearOperator<LinearA,LinearB>& L,
@@ -1682,7 +1682,7 @@ public:
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
-        : super(boost::bind(&TimeController::stepper, this, _1),
+        : super(boost::bind(&timecontroller::stepper, this, _1),
                 initial_t,
                 min_dt,
                 max_dt),
@@ -1707,7 +1707,7 @@ private:
 };
 
 /**
- * A partial specialization of the TimeController template for the
+ * A partial specialization of the timecontroller template for the
  * case when default DeltaTReducer behavior is desired.  Empty base class
  * optimization eliminates the DeltaTReducer instance overhead.
  */
@@ -1716,22 +1716,22 @@ template< typename StateA,
           typename LinearA,
           typename LinearB,
           typename NonlinearB >
-class TimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>
+class timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>
     : private DeltaTReducer,
-      public TimeController<
+      public timecontroller<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >
 {
 
 protected:
 
-    typedef typename TimeController<
+    typedef typename timecontroller<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >::super super;
 
 public:
 
-    typedef typename TimeController<
+    typedef typename timecontroller<
             StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
         >::element element;
 
@@ -1764,7 +1764,7 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    TimeController(
+    timecontroller(
             const IMethod<element>& m,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
@@ -1775,7 +1775,7 @@ public:
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
         : DeltaTReducer(),
-          TimeController<
+          timecontroller<
                 StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
             >(m, *reinterpret_cast<DeltaTReducer*>(this),
               L, chi, N, a, b, initial_t, min_dt, max_dt)
@@ -1785,9 +1785,9 @@ public:
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a TimeController employing a custom Reducer.
+ * types for a timecontroller employing a custom Reducer.
  *
- * \copydoc TimeController
+ * \copydoc timecontroller
  */
 template< typename StateA,
           typename StateB,
@@ -1796,8 +1796,8 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-TimeController<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
-make_TimeController(
+timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
+make_timecontroller(
         const IMethod<typename StateA::element>& m,
         Reducer &reducer,
         const ILinearOperator<LinearA,LinearB>& L,
@@ -1805,26 +1805,26 @@ make_TimeController(
         const INonlinearOperator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new TimeController<
+    return new timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
         >(m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a TimeController employing DeltaTReducer.
+ * types for a timecontroller employing DeltaTReducer.
  *
- * \copydoc TimeController
+ * \copydoc timecontroller
  */
 template< typename StateA,
           typename StateB,
@@ -1832,25 +1832,25 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-TimeController<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
-make_TimeController(
+timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
+make_timecontroller(
         const IMethod<typename StateA::element>& m,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
         const INonlinearOperator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename TimeController<
+        typename timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new TimeController<
+    return new timecontroller<
             StateA,StateB,void,LinearA,LinearB,NonlinearB
         >(m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }

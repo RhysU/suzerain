@@ -22,18 +22,18 @@
 
 // TODO Add tests for taken_{min,max,mean,stddev}
 
-using suzerain::timestepper::TimeController;
+using suzerain::timestepper::timecontroller;
 
-// Subclass TimeController to make the logic a little easier to test
+// Subclass timecontroller to make the logic a little easier to test
 // Mainly done to save use from having to specify the stepper over and over
 template <typename Integer = unsigned int>
-class TestTimeController : public TimeController<double, Integer>
+class TestTimeController : public timecontroller<double, Integer>
 {
 public:
     TestTimeController(double initial_t = 0,
                        double min_dt = 1e-8,
                        double max_dt = std::numeric_limits<double>::max())
-        : TimeController<double,Integer>(
+        : timecontroller<double,Integer>(
                 boost::bind(&TestTimeController::stepTime, this, _1),
                 initial_t, min_dt, max_dt),
           actual_dt(std::numeric_limits<double>::max()) {};

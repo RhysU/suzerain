@@ -339,7 +339,7 @@ static void information_manufactured_solution_absolute_error(
 /** Tracks last time we output a status line */
 static size_t last_status_nt = numeric_limits<size_t>::max();
 
-/** Routine to output status.  Signature for TimeController use. */
+/** Routine to output status.  Signature for timecontroller use. */
 static bool log_status(real_t t, size_t nt)
 {
     // Notice collective operations are never inside logging macros!
@@ -452,7 +452,7 @@ static void sample_statistics(real_t t)
 /** Tracks last time a restart file was written successfully */
 static size_t last_restart_saved_nt = numeric_limits<size_t>::max();
 
-/** Routine to store a restart file.  Signature for TimeController use. */
+/** Routine to store a restart file.  Signature for timecontroller use. */
 static bool save_restart(real_t t, size_t nt)
 {
     // Defensively avoid multiple invocations with no intervening changes
@@ -502,7 +502,7 @@ static bool save_restart(real_t t, size_t nt)
     return true; // Continue time advancement
 }
 
-/** Routine to write a statistics file.  Signature for TimeController use. */
+/** Routine to write a statistics file.  Signature for timecontroller use. */
 static bool save_statistics(real_t t, size_t nt)
 {
     SUZERAIN_TIMER_SCOPED("save_statistics");
@@ -598,7 +598,7 @@ static bool soft_teardown = false;
 
 /**
  * Routine to check for incoming signals on any rank.
- * Signature for TimeController use.
+ * Signature for timecontroller use.
  */
 static bool process_any_signals_received(real_t t, size_t nt)
 {
@@ -1291,12 +1291,12 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // Prepare TimeController for managing the time advance.
+    // Prepare timecontroller for managing the time advance.
     // Nonlinear scaling factor chi = (N_x N_z)^(-1) from write up section 2.1
     // (Spatial discretization) accounts for dealiasing and included here.
-    using suzerain::timestepper::TimeController;
+    using suzerain::timestepper::timecontroller;
     const real_t chi = real_t(1)/(grid.dN.x()*grid.dN.z());
-    scoped_ptr<TimeController<real_t> > tc(make_TimeController(
+    scoped_ptr<timecontroller<real_t> > tc(make_timecontroller(
                 *m, delta_t_allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));

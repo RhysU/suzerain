@@ -55,7 +55,7 @@ template<
     typename StepType = std::size_t,
     typename StopType = bool
 >
-class TimeController
+class timecontroller
 {
 
 public:
@@ -99,10 +99,10 @@ public:
     //@}
 
     /**
-     * Construct a TimeController with the given parameters.
+     * Construct a timecontroller with the given parameters.
      *
      * The \c stepper argument is how one provides the time stepper that will
-     * be driven by the constructed TimeController instance.  It must be a
+     * be driven by the constructed timecontroller instance.  It must be a
      * function or functor compatible with <tt>boost::function<TimeType
      * (TimeType)></tt>.  When the stepper is invoked, the argument will be
      * the maximum possible time step that the stepper can take.  The
@@ -127,7 +127,7 @@ public:
      *      as the \c stepper argument.
      */
     template<typename StepperType>
-    TimeController(StepperType stepper,
+    timecontroller(StepperType stepper,
                    TimeType initial_t = 0,
                    TimeType min_dt = 0,
                    TimeType max_dt = 0);
@@ -135,7 +135,7 @@ public:
     /**
      * Virtual destructor since others may subclass this logic.
      */
-    virtual ~TimeController() {};
+    virtual ~timecontroller() {};
 
     //@{
 
@@ -404,7 +404,7 @@ private:
 
 template< typename TimeType, typename StepType, typename StopType >
 template< typename StepperType >
-TimeController<TimeType,StepType,StopType>::TimeController(
+timecontroller<TimeType,StepType,StopType>::timecontroller(
         StepperType stepper,
         TimeType initial_t,
         TimeType min_dt,
@@ -420,7 +420,7 @@ TimeController<TimeType,StepType,StopType>::TimeController(
 
 template< typename TimeType, typename StepType, typename StopType >
 template< typename CallbackType >
-void TimeController<TimeType,StepType,StopType>::add_callback(
+void timecontroller<TimeType,StepType,StopType>::add_callback(
         TimeType what_t,
         StepType what_nt,
         CallbackType callback)
@@ -448,7 +448,7 @@ void TimeController<TimeType,StepType,StopType>::add_callback(
 
 template< typename TimeType, typename StepType, typename StopType >
 template< typename CallbackType >
-void TimeController<TimeType,StepType,StopType>::add_periodic_callback(
+void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
         TimeType every_dt,
         StepType every_nt,
         CallbackType callback)
@@ -467,12 +467,11 @@ void TimeController<TimeType,StepType,StopType>::add_periodic_callback(
 }
 
 template< typename TimeType, typename StepType, typename StopType >
-StopType TimeController<TimeType,StepType,StopType>::advance(
+StopType timecontroller<TimeType,StepType,StopType>::advance(
         const TimeType final_t,
         const StepType final_nt)
 {
     SUZERAIN_TIMER_SCOPED("TimeController::advance");
-
 
     assert(min_dt_ <= max_dt_);
     using std::min;
