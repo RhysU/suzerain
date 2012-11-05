@@ -61,7 +61,8 @@ public:
      * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
      *      Boost.Program_options</a> for more information.
      */
-    const boost::program_options::options_description& options() const {
+    const boost::program_options::options_description& options() const
+    {
         return options_;
     }
 
@@ -75,7 +76,8 @@ public:
      * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
      *      Boost.Program_options</a> for more information.
      */
-    boost::program_options::options_description& options() {
+    boost::program_options::options_description& options()
+    {
         return options_;
     }
 
@@ -90,7 +92,8 @@ public:
      * @see <a href="http://www.boost.org/doc/libs/release/libs/program_options">
      *      Boost.Program_options</a> for more information.
      */
-    boost::program_options::options_description_easy_init add_options() {
+    boost::program_options::options_description_easy_init add_options()
+    {
         return options_.add_options();
     }
 
