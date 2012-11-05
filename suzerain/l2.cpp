@@ -36,7 +36,7 @@
 
 namespace suzerain {
 
-std::vector<L2>
+std::vector<field_L2>
 compute_field_L2(const contiguous_state<4,complex_t> &state,
          const problem::GridDefinition& grid,
          const pencil_grid& dgrid,
@@ -49,7 +49,7 @@ compute_field_L2(const contiguous_state<4,complex_t> &state,
     assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // Ensure we were handed Galerkin L2 operator matrices
+    // Ensure we were handed Galerkin field_L2 operator matrices
     assert(gop.get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only want non-dealiased X-direction modes to contribute to L2
@@ -140,7 +140,7 @@ compute_field_L2(const contiguous_state<4,complex_t> &state,
             dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
-    std::vector<L2> retval(state.shape()[0]);
+    std::vector<field_L2> retval(state.shape()[0]);
     for (size_t k = 0; k < state.shape()[0]; ++k) {
         retval[k].mean2        = std::abs(mean2[k]);
         retval[k].fluctuating2 = std::abs(total2[k] - mean2[k]);

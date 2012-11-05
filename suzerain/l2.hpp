@@ -35,7 +35,7 @@
 namespace suzerain {
 
 /** Holds information on the \f$L^2\f$ norm of a scalar field */
-struct L2 {
+struct field_L2 {
     real_t mean2;
     real_t fluctuating2;
     real_t total2()      const { return mean2 + fluctuating2;    };
@@ -48,7 +48,7 @@ struct L2 {
  * Compute the \f$L^2\f$ norm of all given scalar fields.
  * See writeup/L2.tex for full details.
  */
-std::vector<L2>
+std::vector<field_L2>
 compute_field_L2(const contiguous_state<4,complex_t> &state,
          const problem::GridDefinition& grid,
          const pencil_grid& dgrid,
