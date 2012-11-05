@@ -363,7 +363,7 @@ enum type {
 /**
  * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
  * implementation is provided as a common building block for
- * <tt>suzerain::timestepper::INonlinearOperator<
+ * <tt>suzerain::timestepper::nonlinear_operator<
  *          suzerain::contiguous_state<4,complex_t>
  *    ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
@@ -405,9 +405,9 @@ enum type {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per suzerain::timestepper::INonlinearOperator::applyOperator.
+ *         per suzerain::timestepper::nonlinear_operator::applyOperator.
  *
- * @see suzerain::timestepper::INonlinearOperator for the (slighly different)
+ * @see suzerain::timestepper::nonlinear_operator for the (slighly different)
  *      interface that an actual operator would provide.
  */
 template<bool ZerothSubstep,

@@ -43,7 +43,7 @@ namespace timestepper
  * @see timestepper::lowstorage for low storage schemes.
  */
 template<typename State>
-class INonlinearOperator
+class nonlinear_operator
 {
 public:
 
@@ -86,7 +86,7 @@ public:
             const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
-    virtual ~INonlinearOperator() {}
+    virtual ~nonlinear_operator() {}
 };
 
 /**
@@ -469,7 +469,7 @@ namespace lowstorage
  * <tt>mean += iota_beta_i * (sample - mean)</tt>.
  *
  * @see ILinearOperator for the interface that \f$L\f$ must implement.
- * @see INonlinearOperator for the interface that \f$N\f$ must implement.
+ * @see nonlinear_operator for the interface that \f$N\f$ must implement.
  * @see SMR91 and Yang11 for examples of essential information
  *      for a concrete scheme.
  * @see step() or substep() for methods that can advance state variables
@@ -717,7 +717,7 @@ public:
 template< typename StateA, typename StateB = StateA >
 class MultiplicativeOperator
     : public ILinearOperator<StateA,StateB>,
-      public INonlinearOperator<StateB>
+      public nonlinear_operator<StateB>
 {
 public:
 
@@ -1435,7 +1435,7 @@ const typename traits::component<Element>::type substep(
     const IMethod<Element>& m,
     const ILinearOperator<LinearState>& L,
     const typename traits::component<Element>::type chi,
-    const INonlinearOperator<NonlinearState>& N,
+    const nonlinear_operator<NonlinearState>& N,
     const typename traits::component<Element>::type time,
     State& a,
     State& b,
@@ -1503,7 +1503,7 @@ const typename traits::component<Element>::type step(
     Reducer& reducer,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
-    const INonlinearOperator<NonlinearB>& N,
+    const nonlinear_operator<NonlinearB>& N,
     const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
@@ -1581,7 +1581,7 @@ const typename traits::component<Element>::type step(
     const IMethod<Element>& m,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
-    const INonlinearOperator<NonlinearB>& N,
+    const nonlinear_operator<NonlinearB>& N,
     const typename traits::component<Element>::type time,
     StateA& a,
     StateB& b,
@@ -1676,7 +1676,7 @@ public:
             Reducer& reducer,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
-            const INonlinearOperator<NonlinearB>& N,
+            const nonlinear_operator<NonlinearB>& N,
             StateA& a,
             StateB& b,
             typename super::time_type initial_t = 0,
@@ -1694,7 +1694,7 @@ private:
     Reducer &reducer;
     const ILinearOperator<LinearA,LinearB>& L;
     const typename traits::component<element>::type chi;
-    const INonlinearOperator<NonlinearB>& N;
+    const nonlinear_operator<NonlinearB>& N;
     StateA& a;
     StateB& b;
 
@@ -1768,7 +1768,7 @@ public:
             const IMethod<element>& m,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
-            const INonlinearOperator<NonlinearB>& N,
+            const nonlinear_operator<NonlinearB>& N,
             StateA& a,
             StateB& b,
             typename super::time_type initial_t = 0,
@@ -1802,7 +1802,7 @@ make_timecontroller(
         Reducer &reducer,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
-        const INonlinearOperator<NonlinearB>& N,
+        const nonlinear_operator<NonlinearB>& N,
         StateA& a,
         StateB& b,
         typename timecontroller<
@@ -1837,7 +1837,7 @@ make_timecontroller(
         const IMethod<typename StateA::element>& m,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
-        const INonlinearOperator<NonlinearB>& N,
+        const nonlinear_operator<NonlinearB>& N,
         StateA& a,
         StateB& b,
         typename timecontroller<

@@ -366,7 +366,7 @@ enum type {
 /**
  * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
  * implementation is provided as a common building block for
- * <tt>timestepper::INonlinearOperator< contiguous_state<4,complex_t> ></tt>
+ * <tt>timestepper::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -418,9 +418,9 @@ enum type {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per timestepper::INonlinearOperator::applyOperator.
+ *         per timestepper::nonlinear_operator::applyOperator.
  *
- * @see timestepper::INonlinearOperator for the (slighly different)
+ * @see timestepper::nonlinear_operator for the (slighly different)
  *      interface that an actual operator would provide.
  */
 template <bool ZerothSubstep,

@@ -46,7 +46,7 @@ namespace mpl = boost::mpl;
 using suzerain::interleaved_state;
 using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
-using suzerain::timestepper::INonlinearOperator;
+using suzerain::timestepper::nonlinear_operator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
 using suzerain::timestepper::lowstorage::MultiplicativeOperator;
 using suzerain::timestepper::lowstorage::SMR91;
@@ -86,7 +86,7 @@ static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
 class RiccatiNonlinearOperator
-    : public INonlinearOperator<ref<double,3> >
+    : public nonlinear_operator<ref<double,3> >
 {
 private:
     const double a;
@@ -168,7 +168,7 @@ struct ExponentialSolution
 
 // Purely explicit, time-dependent operator for (d/dt) y = cos(t);
 class CosineExplicitOperator
-    : public INonlinearOperator<ref<double,3> >
+    : public nonlinear_operator<ref<double,3> >
 {
 private:
     const double delta_t;
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_SUITE( substep_suite )
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
 class RiccatiExplicitOperator
-    : public INonlinearOperator<ref<double,3> >
+    : public nonlinear_operator<ref<double,3> >
 {
 private:
     const double a, b, delta_t;

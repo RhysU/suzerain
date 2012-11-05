@@ -47,7 +47,7 @@ namespace suzerain { namespace perfect {
  */
 class NonlinearOperator
     : public operator_base,
-      public timestepper::INonlinearOperator< contiguous_state<4,complex_t> >
+      public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
 

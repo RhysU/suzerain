@@ -147,7 +147,7 @@ private:
  */
 class HybridNonlinearOperator
     : public operator_base,
-      public timestepper::INonlinearOperator<
+      public timestepper::nonlinear_operator<
             contiguous_state<4,complex_t>
       >
 {

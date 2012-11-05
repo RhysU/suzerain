@@ -1268,7 +1268,7 @@ int main(int argc, char **argv)
             suzerain::multi_array::ref<complex_t,4>,
             nonlinear_state_type
         > > L;
-    shared_ptr<suzerain::timestepper::INonlinearOperator<
+    shared_ptr<suzerain::timestepper::nonlinear_operator<
             nonlinear_state_type
         > > N;
 
@@ -1490,7 +1490,7 @@ int main(int argc, char **argv)
     // error present between the two chosen hybrid operator implementations.
     //
     // More specifically, for \partial_t u = \mathscr{L}u + Lu + (N(u)-Lu) did
-    // the INonlinearOperator compute a "-Lu" matching with the
+    // the nonlinear_operator compute a "-Lu" matching with the
     // ILinearOperator's "+Lu" contribution?  ILinearOperator is assumed to
     // also compute \mathscr{L}u which is independent of reference values (e.g.
     // the divergence of the momentum within the mass equation).
@@ -1505,14 +1505,14 @@ int main(int argc, char **argv)
     // it may be performed within low storage memory requirements.
     //
     // Success requires that the following preconditions all hold:
-    //    i) At substep zero, INonlinearOperator computes N(u) - Lu
+    //    i) At substep zero, nonlinear_operator computes N(u) - Lu
     //       including the necessary reference quantities.
     //   ii) The reference quantities are stored in common_block
     //       and may be expressly zeroed.  Zeroing them nukes linearized
     //       contributions from I{Nonlinear,Linear}Operator but not
     //       linear contributions from ILinearOperator.
     //  iii) On non-zero substeps for zero reference values,
-    //       INonlinearOperator computes only N(u) and ILinearOperator
+    //       nonlinear_operator computes only N(u) and ILinearOperator
     //       computes only \left(M+\varphi\mathscr{L}\right)u.
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.
