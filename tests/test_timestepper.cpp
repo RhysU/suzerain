@@ -48,7 +48,7 @@ using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
 using suzerain::timestepper::nonlinear_operator;
 using suzerain::timestepper::lowstorage::linear_operator;
-using suzerain::timestepper::lowstorage::MultiplicativeOperator;
+using suzerain::timestepper::lowstorage::multiplicative_operator;
 using suzerain::timestepper::lowstorage::SMR91;
 using suzerain::timestepper::lowstorage::Yang11;
 using suzerain::timestepper::lowstorage::method;
@@ -129,7 +129,7 @@ public:
 
 template< typename StateA, typename StateB = StateA >
 class RiccatiLinearOperator
-    : public MultiplicativeOperator<StateA,StateB>
+    : public multiplicative_operator<StateA,StateB>
 {
 public:
     RiccatiLinearOperator(
@@ -450,7 +450,7 @@ BOOST_AUTO_TEST_SUITE( MultiplicativeOperator_sanity )
 
 BOOST_AUTO_TEST_CASE( apply_operator )
 {
-    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
+    typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     contiguous_state<3,double> a(size3(1,1,1));
@@ -471,7 +471,7 @@ BOOST_AUTO_TEST_CASE( apply_operator )
 BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
 {
     const method<SMR91,double> m;
-    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
+    typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     contiguous_state<3,double> a(size3(1,1,1)), b(size3(1,1,1));
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
 BOOST_AUTO_TEST_CASE( invert_mass_plus_scaled_operator )
 {
     const method<SMR91,double> m;
-    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
+    typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
     contiguous_state<3,double> a(size3(1,1,1));
@@ -557,7 +557,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const method<SMR91,double> m;
-    const MultiplicativeOperator<State> trivial_linop(0);
+    const multiplicative_operator<State> trivial_linop(0);
     const RiccatiExplicitOperator riccati_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -693,7 +693,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
     const double pi = boost::math::constants::pi<double>();
     const double time = pi / 3.0;
     const method<SMR91,double> m;
-    const MultiplicativeOperator<State> trivial_linop(0);
+    const multiplicative_operator<State> trivial_linop(0);
     const CosineExplicitOperator cosine_op;
     State a(size3(2,1,1)), b(size3(2,1,1));
 
@@ -775,7 +775,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
 {
     typedef typename mpl::at<StatePair,mpl::int_<0> >::type   state_a_type;
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type   state_b_type;
-    typedef MultiplicativeOperator<state_a_type,state_b_type> mult_op_type;
+    typedef multiplicative_operator<state_a_type,state_b_type> mult_op_type;
 
     // Fix test problem parameters
     const ExponentialSolution soln(2.0, 1.0);
@@ -870,7 +870,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
 {
     typedef typename mpl::at<StatePair,mpl::int_<0> >::type   state_a_type;
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type   state_b_type;
-    typedef MultiplicativeOperator<state_a_type,state_b_type> mult_op_type;
+    typedef multiplicative_operator<state_a_type,state_b_type> mult_op_type;
 
     // Fix test problem parameters
     const CosineSolution soln(0.0);
@@ -1107,7 +1107,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
 
     const method<SMR91,double> m;
-    const MultiplicativeOperator<state_a_type, state_b_type> trivial_linop(0);
+    const multiplicative_operator<state_a_type, state_b_type> trivial_linop(0);
     const RiccatiNonlinearOperator riccati_op(2, 3);
     state_a_type a(size3(2,1,1));
     state_b_type b(size3(2,1,1));

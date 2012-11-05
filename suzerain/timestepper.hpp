@@ -714,7 +714,7 @@ public:
  * @tparam StateB A type which likely descends from state_base.
  */
 template< typename StateA, typename StateB = StateA >
-class MultiplicativeOperator
+class multiplicative_operator
     : public linear_operator<StateA,StateB>,
       public nonlinear_operator<StateB>
 {
@@ -737,7 +737,7 @@ public:
      *        always return from apply_operator().
      */
     template< typename FactorType, typename DeltaTType >
-    MultiplicativeOperator(const FactorType& factor, const DeltaTType& delta_t)
+    multiplicative_operator(const FactorType& factor, const DeltaTType& delta_t)
         : factor(factor), delta_t(delta_t) {}
 
     /**
@@ -748,7 +748,7 @@ public:
      * @param factor uniform scaling factor to apply.
      */
     template< typename FactorType >
-    MultiplicativeOperator(const FactorType& factor)
+    multiplicative_operator(const FactorType& factor)
         : factor(factor),
           delta_t(std::numeric_limits<component>::infinity()) {}
 
@@ -868,7 +868,7 @@ private:
 /**
  * Create a multiplicative operator matching particular state types.
  *
- * @see MultiplicativeOperator<NumDims,Element,Storage,CompatibleStorage> for
+ * @see multiplicative_operator<NumDims,Element,Storage,CompatibleStorage> for
  *      more details.
  */
 template<
@@ -877,14 +877,14 @@ template<
     typename StateA,
     typename StateB
 >
-MultiplicativeOperator<StateA,StateB>
-make_multiplicator_operator(
+multiplicative_operator<StateA,StateB>
+make_multiplicative_operator(
     const FactorType& factor,
     const DeltaTType& delta_t,
     const StateA& input,
     const StateB& output)
 {
-    MultiplicativeOperator<StateA,StateB> retval(factor, delta_t);
+    multiplicative_operator<StateA,StateB> retval(factor, delta_t);
     return retval;
 }
 
