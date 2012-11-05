@@ -27,7 +27,6 @@
 #define SUZERAIN_FFTW_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
 #include <fftw3.h>
 
 /** @file
@@ -124,47 +123,6 @@ template< typename charT, typename traits >
 {
     return os << c_str(r);
 }
-
-/** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class FFTWDefinition : public definition_base
-{
-public:
-
-    /** Default constructor */
-    explicit FFTWDefinition(const rigor rigor_fft = estimate,
-                            const rigor rigor_mpi = estimate);
-
-    /**
-     * The FFTW rigor flag intended for FFT planning.
-     * @see rigor() for more details.
-     */
-    rigor rigor_fft;
-
-    /**
-     * The FFTW rigor flag intended for FFTW MPI communication planning.
-     * @see rigor() for more details.
-     */
-    rigor rigor_mpi;
-
-    /**
-     * The file location used to accumulate FFTW wisdom.
-     */
-    std::string plan_wisdom;
-
-    /**
-     * The planning time limit for use with <tt>fftw_set_timelimit</tt>.
-     * Will be a concrete time limit if one was specified or FFTW_NO_TIMELIMIT.
-     */
-    double plan_timelimit;
-
-private:
-
-    /** Normalizes and stores a value in <tt>this->rigor_fft_</tt>. */
-    void normalize_rigor_fft(std::string input);
-
-    /** Normalizes and stores a value in <tt>this->rigor_mpi_</tt>. */
-    void normalize_rigor_mpi(std::string input);
-};
 
 } // namespace fftw
 

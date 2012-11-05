@@ -30,7 +30,7 @@
 #pragma hdrstop
 #include <fftw3.h>
 #include <p3dfft_d.h>
-#include <suzerain/fftw.hpp>
+#include <suzerain/fftw_definition.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
                                   /* Nz        */ 16,
                                   /* DAFz      */ 1.);
     options.add_definition(grid);
-    suzerain::fftw::FFTWDefinition fftwdef(
+    suzerain::FFTWDefinition fftwdef(
             suzerain::fftw::measure, suzerain::fftw::estimate);
     options.add_definition(fftwdef);
 

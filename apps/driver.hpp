@@ -30,7 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/fftw.hpp>
+#include <suzerain/fftw_definition.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/program_options.hpp>
@@ -100,7 +100,7 @@ public:
 
     grid_definition grid;
 
-    fftw::FFTWDefinition fftwdef;
+    FFTWDefinition fftwdef;
 
     restart_definition restart;
 

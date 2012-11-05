@@ -38,7 +38,7 @@
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
-#include <suzerain/fftw.hpp>
+#include <suzerain/fftw_definition.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/math.hpp>
@@ -109,7 +109,7 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
 using perfect::noise_definition;
-using suzerain::fftw::FFTWDefinition;
+using suzerain::FFTWDefinition;
 using suzerain::grid_definition;
 using suzerain::restart_definition;
 using suzerain::statistics_definition;
