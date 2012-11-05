@@ -13,7 +13,7 @@
 \***********************************************************************/
 
 /** @file
- * Provides <tt>RngStream</tt> by L'Ecuyer <i>et al</i>, 2002.
+ * Provides <tt>rngstream</tt> by L'Ecuyer <i>et al</i>, 2002.
  */
 
 #include <cerrno>
@@ -249,7 +249,7 @@ int CheckSeed (const unsigned long seed[6])
 //-------------------------------------------------------------------------
 // Generate the next random number.
 //
-double RngStream::U01 ()
+double rngstream::U01 ()
 {
     long k;
     double p1, p2, u;
@@ -278,7 +278,7 @@ double RngStream::U01 ()
 //-------------------------------------------------------------------------
 // Generate the next random number with extended (53 bits) precision.
 //
-double RngStream::U01d ()
+double rngstream::U01d ()
 {
     double u;
     u = U01();
@@ -299,9 +299,9 @@ double RngStream::U01d ()
 
 //-------------------------------------------------------------------------
 // The default seed of the package; will be the seed of the first
-// declared RngStream, unless SetPackageSeed is called.
+// declared rngstream, unless SetPackageSeed is called.
 //
-double RngStream::nextSeed[6] =
+double rngstream::nextSeed[6] =
 {
    12345.0, 12345.0, 12345.0, 12345.0, 12345.0, 12345.0
 };
@@ -310,7 +310,7 @@ double RngStream::nextSeed[6] =
 //-------------------------------------------------------------------------
 // constructor
 //
-RngStream::RngStream (const char *s) : name (s)
+rngstream::rngstream (const char *s) : name (s)
 {
    anti = false;
    incPrec = false;
@@ -320,7 +320,7 @@ RngStream::RngStream (const char *s) : name (s)
    starting state of the stream. This stream generates antithetic variates
    if anti = true. It also generates numbers with extended precision (53
    bits if machine follows IEEE 754 standard) if incPrec = true. nextSeed
-   will be the seed of the next declared RngStream. */
+   will be the seed of the next declared rngstream. */
 
    for (int i = 0; i < 6; ++i) {
       Bg[i] = Cg[i] = Ig[i] = nextSeed[i];
@@ -334,7 +334,7 @@ RngStream::RngStream (const char *s) : name (s)
 //-------------------------------------------------------------------------
 // Reset Stream to beginning of Stream.
 //
-void RngStream::ResetStartStream ()
+void rngstream::ResetStartStream ()
 {
    for (int i = 0; i < 6; ++i)
       Cg[i] = Bg[i] = Ig[i];
@@ -344,7 +344,7 @@ void RngStream::ResetStartStream ()
 //-------------------------------------------------------------------------
 // Reset Stream to beginning of SubStream.
 //
-void RngStream::ResetStartSubstream ()
+void rngstream::ResetStartSubstream ()
 {
    for (int i = 0; i < 6; ++i)
       Cg[i] = Bg[i];
@@ -354,7 +354,7 @@ void RngStream::ResetStartSubstream ()
 //-------------------------------------------------------------------------
 // Reset Stream to NextSubStream.
 //
-void RngStream::ResetNextSubstream ()
+void rngstream::ResetNextSubstream ()
 {
    MatVecModM(A1p76, Bg, Bg, m1);
    MatVecModM(A2p76, &Bg[3], &Bg[3], m2);
@@ -364,7 +364,7 @@ void RngStream::ResetNextSubstream ()
 
 
 //-------------------------------------------------------------------------
-bool RngStream::SetPackageSeed (const unsigned long seed[6])
+bool rngstream::SetPackageSeed (const unsigned long seed[6])
 {
    if (CheckSeed (seed))
       return false;                   // FAILURE
@@ -377,7 +377,7 @@ bool RngStream::SetPackageSeed (const unsigned long seed[6])
 
 
 //-------------------------------------------------------------------------
-bool RngStream::SetSeed (const unsigned long seed[6])
+bool rngstream::SetSeed (const unsigned long seed[6])
 {
    if (CheckSeed (seed))
       return false;                   // FAILURE
@@ -395,7 +395,7 @@ bool RngStream::SetSeed (const unsigned long seed[6])
 // if e = 0, let n = c.
 // Jump n steps forward if n > 0, backwards if n < 0.
 //
-void RngStream::AdvanceState (long e, long c)
+void rngstream::AdvanceState (long e, long c)
 {
     double B1[3][3], C1[3][3], B2[3][3], C2[3][3];
 
@@ -426,7 +426,7 @@ void RngStream::AdvanceState (long e, long c)
 
 
 //-------------------------------------------------------------------------
-void RngStream::GetState (unsigned long seed[6]) const
+void rngstream::GetState (unsigned long seed[6]) const
 {
    for (int i = 0; i < 6; ++i)
       seed[i] = static_cast<unsigned long> (Cg[i]);
@@ -434,7 +434,7 @@ void RngStream::GetState (unsigned long seed[6]) const
 
 
 //-------------------------------------------------------------------------
-void RngStream::WriteState (std::ostream &out) const
+void rngstream::WriteState (std::ostream &out) const
 {
     out << "The current state of the Rngstream";
     if (name.size() > 0)
@@ -449,7 +449,7 @@ void RngStream::WriteState (std::ostream &out) const
 
 
 //-------------------------------------------------------------------------
-void RngStream::WriteStateFull (std::ostream &out) const
+void rngstream::WriteStateFull (std::ostream &out) const
 {
     int i;
 
@@ -480,14 +480,14 @@ void RngStream::WriteStateFull (std::ostream &out) const
 
 
 //-------------------------------------------------------------------------
-void RngStream::IncreasedPrecis (bool incp)
+void rngstream::IncreasedPrecis (bool incp)
 {
    incPrec = incp;
 }
 
 
 //-------------------------------------------------------------------------
-void RngStream::SetAntithetic (bool a)
+void rngstream::SetAntithetic (bool a)
 {
    anti = a;
 }
@@ -496,7 +496,7 @@ void RngStream::SetAntithetic (bool a)
 //-------------------------------------------------------------------------
 // Generate the next random number.
 //
-double RngStream::RandU01 ()
+double rngstream::RandU01 ()
 {
    if (incPrec)
       return U01d();
@@ -508,7 +508,7 @@ double RngStream::RandU01 ()
 //-------------------------------------------------------------------------
 // Generate the next random integer.
 //
-int RngStream::RandInt (int low, int high)
+int rngstream::RandInt (int low, int high)
 {
 #pragma warning(push,disable:2259)
     return low + static_cast<int> ((high - low + 1.0) * RandU01 ());
@@ -608,7 +608,7 @@ static double acklam(const double p)
 //-------------------------------------------------------------------------
 // Generate the next random number from the standard normal
 //
-double RngStream::RandN01 ()
+double rngstream::RandN01 ()
 {
    return acklam(RandU01());
 }

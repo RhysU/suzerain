@@ -1,4 +1,4 @@
-//  Program to test the random number streams file:    RngStream.cpp
+//  Program to test the random number streams file:    rngstream.cpp
 //  From http://www.iro.umontreal.ca/~lecuyer/myftp/streams00/c++/testRngStream.cpp
 //  Modified to use Boost Test for error reporting.
 //  Original authors retain their copyright, of course.
@@ -14,15 +14,15 @@
 #include <boost/test/unit_test.hpp>
 
 using namespace std;
-using suzerain::RngStream;
+using suzerain::rngstream;
 
 BOOST_AUTO_TEST_CASE( main_test )
 {
    double sum;
    int  i;
-   RngStream g1 ("g1");
-   RngStream g2 ("g2");
-   RngStream g3 ("g3");
+   rngstream g1 ("g1");
+   rngstream g2 ("g2");
+   rngstream g3 ("g3");
 
    sum = g2.RandU01 () + g3.RandU01 ();
 
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE( main_test )
    sum += sum3 / 10000.0;
 
    unsigned long germe[6] = { 1, 1, 1, 1, 1, 1 };
-   RngStream::SetPackageSeed (germe);
+   rngstream::SetPackageSeed (germe);
 
-   RngStream gar[4] = { "Poisson", "Laplace", "Galois", "Cantor" };
+   rngstream gar[4] = { "Poisson", "Laplace", "Galois", "Cantor" };
    for  (i = 0; i < 4; i++)
       sum += gar[i].RandU01 ();
 
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE( main_test )
 
 static void test_helper_RandN01(bool increasedPrecis)
 {
-   RngStream s;
+   rngstream s;
    s.IncreasedPrecis(increasedPrecis);
 
    // Check Berry--Esseen theorem holds for bound on CLT estimate of mean.

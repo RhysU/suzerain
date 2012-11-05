@@ -766,10 +766,10 @@ add_noise(contiguous_state<4,complex_t> &state,
     bsplineop_luz massluz(bop);
     massluz.factor_mass(bop);
 
-    // Set L'Ecuyer et al.'s RngStream seed.  Use a distinct Substream for each
+    // Set L'Ecuyer et al.'s rngstream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
     // processor count, b) easy to code, and c) embarrassingly parallel.
-    RngStream rng;
+    rngstream rng;
     {
         boost::array<unsigned long,6> seed;
         std::fill(seed.begin(), seed.end(), noisedef.seed);
@@ -814,7 +814,7 @@ add_noise(contiguous_state<4,complex_t> &state,
             for (int i = 0; i < grid.dN.x(); ++i) {
                 if (!wavenumber_translatable(grid.N.x(), grid.dN.x(), i)) continue;
 
-                // ...and advance RngStream to the (i, ., k) substream...
+                // ...and advance rngstream to the (i, ., k) substream...
                 // ...(necessary for processor-topology independence)...
                 rng.ResetNextSubstream();
 

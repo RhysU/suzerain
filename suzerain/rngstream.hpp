@@ -42,7 +42,7 @@ namespace suzerain {
  *
  * The original authors retain all ownership and copyrights, of course.
  */
-class RngStream
+class rngstream
 {
 public:
 
@@ -54,7 +54,7 @@ public:
      * seed of the package if this is the first stream created; otherwise it is
      * Z steps ahead of the seed of the most recently created stream.
      */
-    RngStream (const char *name = "");
+    rngstream (const char *name = "");
 
     /**
      * Sets the initial seed \f$s_0\f$ of the package to the six integers in
@@ -99,7 +99,7 @@ public:
      * random number with more bits of resolution (53 bits if machine
      * follows IEEE 754 standard) instead of 32 bits, and will advance the
      * state of the stream by 2 steps instead of 1. More precisely, if \c s
-     * is a stream of the class \c RngStream, in the non- antithetic case,
+     * is a stream of the class \c rngstream, in the non- antithetic case,
      * the instruction "<code>u = s.RandU01()</code>" will be equivalent
      * to "<code>u = (s.RandU01() + s.RandU01() * fact) % 1.0</code>"
      * where the constant fact is equal to \f$2^{−24}\f$ . This also
@@ -199,11 +199,11 @@ private:
     /** Indicates whether to generate increased precision random numbers. */
     bool incPrec;
 
-    /** String to store the optional name of the current RngStream object. */
+    /** String to store the optional name of the current rngstream object. */
     std::string name;
 
     /**
-     * Static vector to store the beginning state of the next RngStream
+     * Static vector to store the beginning state of the next rngstream
      * to be created (instantiated).
      */
     static double nextSeed[6];

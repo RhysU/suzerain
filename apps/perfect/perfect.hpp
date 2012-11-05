@@ -191,7 +191,7 @@ public:
      */
     real_t kzfrac_max;
 
-    /** RngStream generator seed (see L'Ecuyer et al. 2002) */
+    /** rngstream generator seed (see L'Ecuyer et al. 2002) */
     unsigned long seed;
 
 };
