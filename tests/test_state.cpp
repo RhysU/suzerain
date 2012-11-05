@@ -1443,7 +1443,7 @@ BOOST_AUTO_TEST_SUITE( Contiguous_interoperate_Interleaved )
 using suzerain::ContiguousState;
 using suzerain::InterleavedState;
 
-// Types to be tested with both StateBase subclasses
+// Types to be tested with both state_base subclasses
 typedef boost::mpl::list<
     double
     ,float

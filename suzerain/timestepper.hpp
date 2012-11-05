@@ -711,8 +711,8 @@ public:
  * variables by a uniform factor.  The associated mass matrix \f$M\f$
  * is the identity matrix.
  *
- * @tparam StateA A type which likely descends from StateBase.
- * @tparam StateB A type which likely descends from StateBase.
+ * @tparam StateA A type which likely descends from state_base.
+ * @tparam StateB A type which likely descends from state_base.
  */
 template< typename StateA, typename StateB = StateA >
 class MultiplicativeOperator

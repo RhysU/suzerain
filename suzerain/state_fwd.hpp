@@ -43,11 +43,11 @@ namespace suzerain
 {
 
 // Mandatory forward declarations
-template<typename Derived> struct StateBase;
+template<typename Derived> struct state_base;
 template<std::size_t Dim, typename Element> class ContiguousState;
 template<std::size_t Dim, typename Element> class InterleavedState;
 
-/** Implementation details for StateBase */
+/** Implementation details for state_base */
 namespace detail
 {
 
@@ -89,7 +89,7 @@ private:
  * functionality found in timestepper::lowstorage.
  */
 template<class Derived>
-class StateBase
+class state_base
 {
 public:
     typedef typename detail::state_traits<Derived>::element   element;
@@ -118,7 +118,7 @@ public:
 
     /**
      * @returns each dimension's extents as a list of length
-     * StateBase::dimensionality.
+     * state_base::dimensionality.
      */
     const size_type* shape() const {
         return derived().shape();
@@ -143,7 +143,7 @@ public:
      * Is \c this instance isomorphic with <tt>other</tt>'s?
      * More concretely, do they have the same dimensionality and shape?
      *
-     * Implementation works on all <tt>StateBase<Derived></tt> subclasses
+     * Implementation works on all <tt>state_base<Derived></tt> subclasses
      * and everything adhering to the <tt>Boost.MultiArray</tt> concept.
      *
      * @param other another object instance against which to compare.
@@ -171,7 +171,7 @@ public:
      */
     template<class OtherDerived>
     void addScaled(const element& factor,
-                   const StateBase<OtherDerived>& other) {
+                   const state_base<OtherDerived>& other) {
         return derived().addScaled(factor, other.derived());
     }
 
@@ -183,7 +183,7 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void assign(const StateBase<OtherDerived>& other) {
+    void assign(const state_base<OtherDerived>& other) {
         return derived().assign(other.derived());
     }
 
@@ -197,7 +197,7 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void exchange(StateBase<OtherDerived>& other) {
+    void exchange(state_base<OtherDerived>& other) {
         return derived().exchange(other.derived());
     }
 
@@ -219,7 +219,7 @@ public:
  */
 template< std::size_t Dim, typename Element >
 class ContiguousState
-    : public  StateBase<ContiguousState<Dim,Element> >,
+    : public  state_base<ContiguousState<Dim,Element> >,
       private shared_range<Element>,
       public  suzerain::multi_array::ref<Element, Dim>
 {
@@ -306,7 +306,7 @@ private:
  */
 template< std::size_t Dim, typename Element >
 class InterleavedState
-    : public  StateBase<InterleavedState<Dim,Element> >,
+    : public  state_base<InterleavedState<Dim,Element> >,
       private shared_range<Element>,
       public  suzerain::multi_array::ref<Element, Dim>
 {

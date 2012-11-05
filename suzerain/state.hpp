@@ -25,7 +25,7 @@
 #include <suzerain/storage.hpp>
 
 /** @file
- * Implementations of StateBase subclasses.
+ * Implementations of state_base subclasses.
  */
 
 namespace suzerain
