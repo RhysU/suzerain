@@ -258,26 +258,26 @@ public:
 
     template<typename ExtentList>
     contiguous_state(const shared_range_type& storage,
-                    const ExtentList& sizes);
+                     const ExtentList& sizes);
 
     template<typename ExtentList, typename MinStrideList>
     contiguous_state(const ExtentList& sizes,
-                    const MinStrideList& minstrides);
+                     const MinStrideList& minstrides);
 
     template<typename ExtentList, typename MinStrideList>
     contiguous_state(const shared_range_type& storage,
-                    const ExtentList& sizes,
-                    const MinStrideList& minstrides);
+                     const ExtentList& sizes,
+                     const MinStrideList& minstrides);
 
     contiguous_state(const contiguous_state& other);
 
     void scale(const Element& factor);
 
     void add_scaled(const Element& factor,
-                   const contiguous_state& other);
+                    const contiguous_state& other);
 
     void add_scaled(const Element& factor,
-                   const multi_array_type& other);
+                    const multi_array_type& other);
 
     void assign(const contiguous_state& other);
 
@@ -287,7 +287,8 @@ public:
 
     void exchange(multi_array_type& other);
 
-    const shared_range_type& range() const {
+    const shared_range_type& range() const
+    {
         return reinterpret_cast<const shared_range_type&>(*this);
     }
 
@@ -342,22 +343,22 @@ public:
 
     template<typename ExtentList>
     explicit interleaved_state(const ExtentList& sizes,
-                              size_type min_total_contiguous_count = 0);
+                               size_type min_total_contiguous_count = 0);
 
     template<typename ExtentList>
     interleaved_state(shared_range_type storage,
-                     const ExtentList& sizes,
-                     size_type min_total_contiguous_count = 0);
+                      const ExtentList& sizes,
+                      size_type min_total_contiguous_count = 0);
 
     interleaved_state(const interleaved_state& other);
 
     void scale(const Element& factor);
 
     void add_scaled(const Element& factor,
-                   const interleaved_state& other);
+                    const interleaved_state& other);
 
     void add_scaled(const Element& factor,
-                   const multi_array_type& other);
+                    const multi_array_type& other);
 
     void assign(const interleaved_state& other);
 
