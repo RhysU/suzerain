@@ -1187,8 +1187,8 @@ public:
     /** The real-valued scalar corresponding to \c Element */
     typedef typename method_interface<Element>::component component;
 
-    /** Access to the static constants specifying this scheme. */
-    typedef constants<Scheme,component> constants;
+    /** The concrete scheme type providing method-specific constants  */
+    typedef constants<Scheme,component> scheme;
 
     /**
      * Explicit constructor.
@@ -1199,49 +1199,49 @@ public:
      *                    respectively.
      */
     explicit method(component evmagfactor = 1)
-        : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
-          evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
+        : evmaxmag_real_(evmagfactor * scheme::evmaxmag_real()),
+          evmaxmag_imag_(evmagfactor * scheme::evmaxmag_imag())
         { assert(evmagfactor > 0); }
 
     /** @copydoc method_interface::name */
     virtual const char * name() const
-    { return constants::name; }
+    { return scheme::name; }
 
     /** @copydoc method_interface::substeps */
     virtual std::size_t substeps() const
-    { return constants::substeps; }
+    { return scheme::substeps; }
 
     /** @copydoc method_interface::alpha */
     virtual component alpha(const std::size_t substep) const
-    { return constants::alpha[substep]; }
+    { return scheme::alpha[substep]; }
 
     /** @copydoc method_interface::beta */
     virtual component beta(const std::size_t substep) const
-    { return constants::beta[substep]; }
+    { return scheme::beta[substep]; }
 
     /** @copydoc method_interface::gamma */
     virtual component gamma(const std::size_t substep) const
-    { return constants::gamma[substep]; }
+    { return scheme::gamma[substep]; }
 
     /** @copydoc method_interface::zeta */
     virtual component zeta(const std::size_t substep) const
-    { return constants::zeta[substep]; }
+    { return scheme::zeta[substep]; }
 
     /** @copydoc method_interface::eta */
     virtual component eta(const std::size_t substep) const
-    { return constants::eta[substep]; }
+    { return scheme::eta[substep]; }
 
     /** @copydoc method_interface::iota */
     virtual component iota(const std::size_t substep) const
-    { return constants::iota[substep]; }
+    { return scheme::iota[substep]; }
 
     /** @copydoc method_interface::iota_alpha */
     virtual component iota_alpha(const std::size_t substep) const
-    { return constants::iota_alpha[substep]; }
+    { return scheme::iota_alpha[substep]; }
 
     /** @copydoc method_interface::iota_beta */
     virtual component iota_beta(const std::size_t substep) const
-    { return constants::iota_beta[substep]; }
+    { return scheme::iota_beta[substep]; }
 
     /** @copydoc method_interface::evmaxmag_real */
     virtual component evmaxmag_real() const
