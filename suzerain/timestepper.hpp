@@ -360,7 +360,7 @@ FPT diffusive_stability_criterion(
 namespace { // anonymous
 
 /** A comparator which considers NaNs to be less than all other values */
-struct NanIsMinimumComparator {
+struct NaN_is_minimum_comparator {
     template< typename T >
     bool operator()(const T &x, const T &y) const {
         return SUZERAIN_UNLIKELY((boost::math::isnan)(x)) || x < y;
@@ -379,7 +379,7 @@ struct DeltaTReducer {
     T operator()(const std::vector<T> & candidates) {
         assert(candidates.size() > 0);
         return *std::min_element(candidates.begin(), candidates.end(),
-                                 NanIsMinimumComparator());
+                                 NaN_is_minimum_comparator());
     }
 };
 
