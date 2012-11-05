@@ -16,7 +16,7 @@
 #define SUZERAIN_GRID_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 // TODO Distinguish between two- versus one-sided stretching in grid_definition
 
@@ -25,8 +25,6 @@
  */
 
 namespace suzerain {
-
-namespace problem {
 
 /**
  * Holds basic three dimensional computational grid details for a distributed,
@@ -187,8 +185,6 @@ private:
     /** @copydoc DAFz(real_t) */
     grid_definition& DAFz(const std::string& value);
 };
-
-} // namespace problem
 
 } // namespace suzerain
 

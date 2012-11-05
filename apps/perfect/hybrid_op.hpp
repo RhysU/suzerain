@@ -60,7 +60,7 @@ public:
     HybridIsothermalLinearOperator(
             const spec_zgbsv& spec,
             const scenario_definition &scenario,
-            const problem::grid_definition &grid,
+            const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -159,7 +159,7 @@ public:
 
     HybridNonlinearOperator(
             const scenario_definition &scenario,
-            const problem::grid_definition &grid,
+            const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,

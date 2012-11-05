@@ -98,15 +98,15 @@ public:
 
     std::vector<support::field> fields;
 
-    problem::grid_definition grid;
+    grid_definition grid;
 
     fftw::FFTWDefinition fftwdef;
 
-    problem::restart_definition restart;
+    restart_definition restart;
 
-    problem::statistics_definition statsdef;
+    statistics_definition statsdef;
 
-    problem::time_definition timedef;
+    time_definition timedef;
 
     program_options options;
 
@@ -123,7 +123,7 @@ public:
     boost::shared_ptr<nonlinear_state_type> state_nonlinear;
 
     /** Controls which signals trigger which processing. */
-    static problem::signal_definition sigdef;
+    static signal_definition sigdef;
 
     /**
      * Type of atomic locations used to track local receipt of the following

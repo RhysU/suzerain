@@ -31,13 +31,13 @@
 #include <boost/math/special_functions/gamma.hpp>
 #include <esio/error.h>
 #include <esio/esio.h>
+#include <suzerain/definition_base.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/validation.hpp>
@@ -71,10 +71,7 @@ namespace support = suzerain::support;
 static const std::vector<support::field> fields = perfect::default_fields();
 
 // Global parameters initialized in main()
-using suzerain::perfect::scenario_definition;
-using suzerain::problem::grid_definition;
-using suzerain::problem::time_definition;
-static scenario_definition scenario(
+static suzerain::perfect::scenario_definition scenario(
         /* Re         */ "100",
         /* Ma         */ "1.5",
         /* Pr         */ "0.7",
@@ -83,7 +80,7 @@ static scenario_definition scenario(
         /* alpha      */ "0",
         /* beta       */ "2/3",
         /* gamma      */ "1.4");
-static grid_definition grid(
+static suzerain::grid_definition grid(
         /* Lx      */ "4*pi",
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
@@ -94,7 +91,7 @@ static grid_definition grid(
         /* Lz      */ "4*pi/3",
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
-static time_definition timedef(
+static suzerain::time_definition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static shared_ptr<const suzerain::pencil_grid> dgrid;
 static shared_ptr<perfect::manufactured_solution> msoln(
@@ -127,13 +124,14 @@ static void atexit_esio(void) {
 }
 
 /** Options definitions for tweaking the manufactured solution */
-class MSDefinition : public suzerain::problem::definition_base {
+class MSDefinition : public suzerain::definition_base
+{
 
 public:
 
     MSDefinition(perfect::manufactured_solution &ms)
-        : definition_base("Manufactured solution parameters"
-                      " (active only when --mms supplied)")
+        : suzerain::definition_base("Manufactured solution parameters"
+                                    " (active only when --mms supplied)")
     {
         ms.rho.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects density field",     _1, _2));

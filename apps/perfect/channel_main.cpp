@@ -49,7 +49,6 @@
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
@@ -111,12 +110,12 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // where necessary to load settings.
 using perfect::noise_definition;
 using suzerain::fftw::FFTWDefinition;
-using suzerain::problem::grid_definition;
-using suzerain::problem::restart_definition;
-using suzerain::problem::statistics_definition;
+using suzerain::grid_definition;
+using suzerain::restart_definition;
+using suzerain::statistics_definition;
 using suzerain::perfect::scenario_definition;
-using suzerain::problem::signal_definition;
-using suzerain::problem::time_definition;
+using suzerain::signal_definition;
+using suzerain::time_definition;
 static const scenario_definition scenario;
 static const grid_definition grid;
 static const FFTWDefinition fftwdef(

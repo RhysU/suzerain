@@ -16,15 +16,13 @@
 #define SUZERAIN_SIGNAL_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides classes handling signal processing definitions.
  */
 
 namespace suzerain {
-
-namespace problem {
 
 /**
  * Parses and contains signal processing details to allow a program to take
@@ -78,8 +76,6 @@ private:
     /** Parse a status specification into this->teardown */
     void parse_teardown(const std::string &spec);
 };
-
-} // namespace problem
 
 } // namespace suzerain
 

@@ -53,7 +53,7 @@ public:
 
     NonlinearOperator(
             const scenario_definition &scenario,
-            const problem::grid_definition &grid,
+            const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -102,7 +102,7 @@ class BsplineMassOperator
 public:
 
     BsplineMassOperator(
-            const problem::grid_definition &grid,
+            const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop);
@@ -152,7 +152,7 @@ public:
 
     BsplineMassOperatorIsothermal(
             const scenario_definition &scenario,
-            const problem::grid_definition &grid,
+            const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,

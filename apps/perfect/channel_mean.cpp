@@ -48,11 +48,14 @@ using boost::numeric_cast;
 using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
+using suzerain::bspline;
+using suzerain::bsplineop;
+using suzerain::bsplineop_lu;
 using suzerain::complex_t;
-using suzerain::problem::grid_definition;
+using suzerain::grid_definition;
 using suzerain::perfect::scenario_definition;
-using suzerain::problem::time_definition;
 using suzerain::real_t;
+using suzerain::time_definition;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
@@ -425,12 +428,12 @@ static suzerain::VectorXr compute_bulk_weights(
  */
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<scenario_definition    >& i_scenario,
-        shared_ptr<grid_definition        >& i_grid,
-        shared_ptr<time_definition        >& i_timedef,
-        shared_ptr<suzerain::bspline     >& i_b,
-        shared_ptr<suzerain::bsplineop   >& i_bop,
-        shared_ptr<suzerain::bsplineop_lu>& i_boplu);
+        shared_ptr<scenario_definition>& i_scenario,
+        shared_ptr<grid_definition    >& i_grid,
+        shared_ptr<time_definition    >& i_timedef,
+        shared_ptr<bspline            >& i_b,
+        shared_ptr<bsplineop          >& i_bop,
+        shared_ptr<bsplineop_lu       >& i_boplu);
 
 int main(int argc, char **argv)
 {
@@ -517,12 +520,12 @@ int main(int argc, char **argv)
     }
 
     // Scenario and grid details provided to process(...)
-    shared_ptr<scenario_definition    > scenario;
-    shared_ptr<grid_definition        > grid;
-    shared_ptr<time_definition        > timedef;
-    shared_ptr<suzerain::bspline     > b;
-    shared_ptr<suzerain::bsplineop   > bop;
-    shared_ptr<suzerain::bsplineop_lu> boplu;
+    shared_ptr<scenario_definition> scenario;
+    shared_ptr<grid_definition    > grid;
+    shared_ptr<time_definition    > timedef;
+    shared_ptr<bspline            > b;
+    shared_ptr<bsplineop          > bop;
+    shared_ptr<bsplineop_lu       > boplu;
 
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
@@ -693,12 +696,12 @@ int main(int argc, char **argv)
 
 static quantity::storage_map_type process(
         const std::string& filename,
-        shared_ptr<scenario_definition    >& i_scenario,
-        shared_ptr<grid_definition        >& i_grid,
-        shared_ptr<time_definition        >& i_timedef,
-        shared_ptr<suzerain::bspline     >& i_b,
-        shared_ptr<suzerain::bsplineop   >& i_bop,
-        shared_ptr<suzerain::bsplineop_lu>& i_boplu)
+        shared_ptr<scenario_definition>& i_scenario,
+        shared_ptr<grid_definition    >& i_grid,
+        shared_ptr<time_definition    >& i_timedef,
+        shared_ptr<bspline            >& i_b,
+        shared_ptr<bsplineop          >& i_bop,
+        shared_ptr<bsplineop_lu       >& i_boplu)
 {
     using quantity::storage_type;
     using quantity::storage_map_type;
@@ -719,14 +722,14 @@ static quantity::storage_map_type process(
     scenario_definition scenario;
     grid_definition grid;
     time_definition timedef(/* advance_dt */ 0,
-                           /* advance_nt */ 0,
-                           /* advance_wt */ 0,
-                           /* status_dt  */ 0,
-                           /* status_nt  */ 0,
-                           /* min_dt     */ 0,
-                           /* max_dt     */ 0);
-    shared_ptr<suzerain::bspline> b;
-    shared_ptr<suzerain::bsplineop> bop;
+                 /* advance_nt */ 0,
+                 /* advance_wt */ 0,
+                 /* status_dt  */ 0,
+                 /* status_nt  */ 0,
+                 /* min_dt     */ 0,
+                 /* max_dt     */ 0);
+    shared_ptr<bspline> b;
+    shared_ptr<bsplineop> bop;
     support::load_time(h.get(), time);
     perfect::load(h.get(), scenario);
     support::load(h.get(), grid);

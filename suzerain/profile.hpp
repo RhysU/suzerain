@@ -16,7 +16,7 @@
 #define SUZERAIN_PROFILE_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides miscellaneous utilities for profiling parallel transposes.
@@ -25,7 +25,7 @@
 namespace suzerain {
 
 /** Provides miscellaneous parallel transpose profiling flags.  */
-class ProfileDefinition : public problem::definition_base
+class ProfileDefinition : public definition_base
 {
 public:
 

@@ -55,7 +55,7 @@ public:
      *                 e.g. integration coefficients.
      * @param bop      B-spline operators to use.
      */
-    operator_base(const problem::grid_definition &grid,
+    operator_base(const grid_definition &grid,
                   const pencil_grid &dgrid,
                   bspline &b,
                   const bsplineop &bop);
@@ -294,7 +294,7 @@ public:
     const real_t lambda2_z;
 
     /** The grid in which the operator is used */
-    const problem::grid_definition &grid;
+    const grid_definition &grid;
 
     /** The parallel decomposition grid in which the operator is used */
     const pencil_grid &dgrid;

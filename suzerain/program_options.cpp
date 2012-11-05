@@ -17,7 +17,6 @@
 #endif
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/problem.hpp>
 #include <suzerain/program_options.hpp>
 #include <suzerain/version.hpp>
 #include <libgen.h>

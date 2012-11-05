@@ -90,8 +90,6 @@ static void parse_walltime(const std::string &s,
     *value = t;
 }
 
-namespace problem {
-
 void time_definition::initialize_advancement(
         real_t default_advance_dt,
         int    default_advance_nt,
@@ -208,7 +206,5 @@ time_definition::time_definition(const char * evmagfactor)
 
     initialize_scenario(evmagfactor);
 }
-
-} // namespace problem
 
 } // namespace suzerain

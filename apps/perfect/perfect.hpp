@@ -37,6 +37,7 @@
 #include <esio/esio.h>
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
+#include <suzerain/definition_base.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/inorder.hpp>
@@ -80,7 +81,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  */
 void store(const esio_handle h,
            const scenario_definition& scenario,
-           const problem::grid_definition& grid,
+           const grid_definition& grid,
            const boost::shared_ptr<manufactured_solution> & msoln);
 
 /**
@@ -91,7 +92,7 @@ void store(const esio_handle h,
  */
 void load(const esio_handle h,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
@@ -106,7 +107,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,
-        const problem::grid_definition& grid,
+        const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop);
@@ -119,7 +120,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const scenario_definition& scenario,
-        const problem::grid_definition& grid,
+        const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop);
@@ -131,7 +132,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& bop);
@@ -145,7 +146,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
-                const problem::grid_definition& grid,
+                const grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& bop,
@@ -153,7 +154,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_gamma);
 
 /** Options definitions for adding random noise to momentum fields */
-class noise_definition : public problem::definition_base {
+class noise_definition : public definition_base {
 
 public:
 
@@ -204,7 +205,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_definition& noisedef,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& bop);
@@ -222,7 +223,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const problem::grid_definition &grid,
+        const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
@@ -456,7 +457,7 @@ public:
  */
 mean sample_mean_quantities(
         const scenario_definition &scenario,
-        const problem::grid_definition &grid,
+        const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,

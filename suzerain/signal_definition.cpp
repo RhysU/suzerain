@@ -32,8 +32,6 @@
 
 namespace suzerain {
 
-namespace problem {
-
 signal_definition::signal_definition(const std::string& specstatus,
                                      const std::string& specrestart,
                                      const std::string& specstatistics,
@@ -134,7 +132,5 @@ void signal_definition::parse_teardown(const std::string &spec)
     std::vector<int> tmp = parse_spec("--signal_teardown", spec);
     this->teardown.swap(tmp);
 }
-
-} // namespace problem
 
 } // namespace suzerain

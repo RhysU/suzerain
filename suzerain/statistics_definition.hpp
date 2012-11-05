@@ -16,15 +16,13 @@
 #define SUZERAIN_STATISTICS_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides classes handling arguments used to control statistics file output.
  */
 
 namespace suzerain {
-
-namespace problem {
 
 /**
  * Encapsulates flags related to statistics output behavior for the simulation.
@@ -78,8 +76,6 @@ public:
      */
     int nt;
 };
-
-} // namespace problem
 
 } // namespace suzerain
 

@@ -16,15 +16,13 @@
 #define SUZERAIN_TIME_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides classes handling time advancement settings.
  */
 
 namespace suzerain {
-
-namespace problem {
 
 /**
  * Encapsulates flags related to time advancement.  Includes details on how
@@ -117,8 +115,6 @@ private:
     /** Prepare repeatedly-used options similar to scenario parameters */
     void initialize_scenario(const char * default_evmagfactor);
 };
-
-} // namespace problem
 
 } // namespace suzerain
 

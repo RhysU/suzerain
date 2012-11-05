@@ -22,8 +22,6 @@
 
 namespace suzerain {
 
-namespace problem {
-
 template<typename T>
 static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
@@ -94,7 +92,5 @@ restart_definition::restart_definition(
          "stored at collocation points in physical space")
     ;
 }
-
-} // namespace problem
 
 } // namespace suzerain

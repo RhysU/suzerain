@@ -22,8 +22,6 @@
 
 namespace suzerain {
 
-namespace problem {
-
 template<typename T>
 static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
@@ -78,7 +76,5 @@ statistics_definition::statistics_definition(
          "Maximum number of time steps between sampling statistics")
     ;
 }
-
-} // namespace problem
 
 } // namespace suzerain

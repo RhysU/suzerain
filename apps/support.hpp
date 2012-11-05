@@ -135,19 +135,19 @@ void wisdom_gather(const std::string& wisdom_file);
 
 /** Store a grid_definition in a restart file */
 void store(const esio_handle h,
-           const problem::grid_definition& grid);
+           const grid_definition& grid);
 
 /** Load a grid_definition from a restart file */
 void load(const esio_handle h,
-          problem::grid_definition& grid);
+          grid_definition& grid);
 
 /** Store a time_definition in a restart file */
 void store(const esio_handle h,
-           const problem::time_definition& timedef);
+           const time_definition& timedef);
 
 /** Load a time_definition from a restart file */
 void load(const esio_handle h,
-          problem::time_definition& timedef);
+          time_definition& timedef);
 
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
@@ -229,7 +229,7 @@ void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const problem::grid_definition& grid,
+        const grid_definition& grid,
         const pencil_grid& dgrid);
 
 /**
@@ -240,7 +240,7 @@ void store_coefficients(
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const problem::grid_definition& grid,
+                       const grid_definition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& bop);

@@ -16,7 +16,7 @@
 #define SCENARIO_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides classes handling problem scenario parameters which are either
@@ -24,14 +24,16 @@
  * problem setup.
  */
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /**
  * Holds nondimensional parameters like the Reynolds and Prandtl numbers as
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class scenario_definition : public problem::definition_base
+class scenario_definition : public definition_base
 {
 public:
 
@@ -120,6 +122,8 @@ private:
                             const char * default_gamma);
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 #endif // SCENARIO_DEFINITION_HPP

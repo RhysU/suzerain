@@ -22,8 +22,6 @@
 
 namespace suzerain {
 
-namespace problem {
-
 template<typename T>
 static void parse_option(const std::string &s,
                          T *value, void (*validator)(T, const char *),
@@ -308,7 +306,5 @@ grid_definition& grid_definition::DAFz(const std::string& value)
 {
     return DAFz(exprparse<real_t>(value, "DAFz"));
 }
-
-} // namespace problem
 
 } // namespace suzerain

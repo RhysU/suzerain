@@ -38,7 +38,7 @@ namespace suzerain {
 
 std::vector<field_L2>
 compute_field_L2(const contiguous_state<4,complex_t> &state,
-         const problem::grid_definition& grid,
+         const grid_definition& grid,
          const pencil_grid& dgrid,
          const bsplineop& gop)
 {

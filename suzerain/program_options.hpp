@@ -16,8 +16,8 @@
 #define SUZERAIN_PROGRAM_OPTIONS_HPP
 
 #include <suzerain/common.hpp>
+#include <suzerain/definition_base.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/problem.hpp>
 
 /** @file
  * Provides classes handling program options parsing given a problem
@@ -49,7 +49,12 @@ public:
     /**
      * Default constructor which does not supply a program description.
      */
-    program_options() : variables_(), options_() {}
+    program_options()
+		: variables_(),
+		  options_(),
+		  verbose_(),
+		  verbose_all_()
+    {}
 
     /**
      * Constructor providing a program synopsis, an argument synopsis,
@@ -74,7 +79,9 @@ public:
           application_synopsis_(application_synopsis),
           argument_synopsis_(argument_synopsis),
           application_description_(description),
-          application_version_(version)
+          application_version_(version),
+          verbose_(),
+          verbose_all_()
     {}
 
     /**
@@ -89,7 +96,7 @@ public:
      *
      * @see problem::definition_base for the necessary contract.
      */
-    program_options& add_definition(problem::definition_base &definition)
+    program_options& add_definition(definition_base &definition)
     {
         options_.add(definition.options());
         return *this;
@@ -117,7 +124,10 @@ public:
      *
      * @return the underlying <tt>options_description</tt> instance.
      */
-    boost::program_options::options_description& options() { return options_; }
+    boost::program_options::options_description& options()
+    {
+    	return options_;
+    }
 
     /**
      * Process <tt>main</tt>'s <tt>argc</tt> and <tt>argv</tt> according to the
@@ -181,13 +191,32 @@ public:
      * @return The Boost.Program_options <tt>variables_map</tt> used by
      *         this instance.
      */
-    boost::program_options::variables_map& variables() { return variables_; }
+    boost::program_options::variables_map& variables()
+    {
+    	return variables_;
+    }
+
+    /**
+     * Provides constant access to the variable map used to store options.
+     *
+     * @return The Boost.Program_options <tt>variables_map</tt> used by
+     *         this instance.
+     */
+    const boost::program_options::variables_map& variables() const
+    {
+    	return variables_;
+    }
 
     /** @return the "--verbose" flag count from the command line.  */
-    int verbose() { return verbose_; }
+    int verbose()
+    {
+    	return verbose_;
+    }
 
     /** @return the "--verbose-all" flag count from the command line.  */
-    int verbose_all() { return verbose_all_; }
+    int verbose_all() {
+    	return verbose_all_;
+    }
 
     /**
      * Ensures that \c opt1 and \c opt2 were not both specified.

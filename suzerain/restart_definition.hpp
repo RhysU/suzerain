@@ -16,7 +16,7 @@
 #define SUZERAIN_RESTART_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 
 /** @file
  * Provides classes handling restart definitions, which are runtime
@@ -24,8 +24,6 @@
  */
 
 namespace suzerain {
-
-namespace problem {
 
 /**
  * Encapsulates flags related to restart file behavior for the simulation.
@@ -99,8 +97,6 @@ public:
      */
     bool physical;
 };
-
-} // namespace problem
 
 } // namespace suzerain
 

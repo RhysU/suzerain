@@ -9,29 +9,24 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// problem.hpp: classes handling problem definitions
+// definition_base.hpp: base class for handling problem definitions
 // $Id$
 
-#ifndef SUZERAIN_PROBLEM_HPP
-#define SUZERAIN_PROBLEM_HPP
+#ifndef SUZERAIN_DEFINITION_BASE_HPP
+#define SUZERAIN_DEFINITION_BASE_HPP
 
 #include <suzerain/common.hpp>
 
 /** @file
- * Provides classes handling problem definitions, which are runtime
- * arguments or scenario parameters used to perform calculations.
+ * Provides \ref definition_base
  */
 
 namespace suzerain {
 
 /**
- * Provides classes handling problem definitions, which are runtime
- * arguments or scenario parameters used to perform calculations.
- */
-namespace problem {
-
-/**
- * An interface describing a problem definition.
+ * An abstract base class for problem-related definitions.  These are
+ * collections of runtime arguments or scenario parameters used to perform
+ * calculations.
  */
 class definition_base
 {
@@ -103,8 +98,6 @@ protected:
     boost::program_options::options_description options_;
 };
 
-} // namespace problem
-
 } // namespace suzerain
 
-#endif // SUZERAIN_PROBLEM_HPP
+#endif // SUZERAIN_DEFINITION_BASE_HPP

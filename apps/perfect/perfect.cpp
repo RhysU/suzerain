@@ -33,6 +33,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
+#include <suzerain/definition_base.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
@@ -40,7 +41,6 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
-#include <suzerain/problem.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
@@ -173,7 +173,7 @@ static void attribute_storer(const esio_handle &h,
 
 void store(const esio_handle h,
            const scenario_definition& scenario,
-           const problem::grid_definition& grid,
+           const grid_definition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
@@ -240,7 +240,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
@@ -290,7 +290,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,
-        const problem::grid_definition& grid,
+        const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop)
@@ -384,7 +384,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const scenario_definition& scenario,
-        const problem::grid_definition& grid,
+        const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop)
@@ -496,7 +496,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& bop)
@@ -544,7 +544,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
-                const problem::grid_definition& grid,
+                const grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& bop,
@@ -682,7 +682,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_definition& noisedef,
           const scenario_definition& scenario,
-          const problem::grid_definition& grid,
+          const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& bop)
@@ -1042,7 +1042,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const problem::grid_definition &grid,
+        const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
@@ -1170,7 +1170,7 @@ void accumulate_manufactured_solution(
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
         const scenario_definition &scenario,
-        const problem::grid_definition &grid,
+        const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,

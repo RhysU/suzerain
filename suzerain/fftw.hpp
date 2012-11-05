@@ -27,7 +27,7 @@
 #define SUZERAIN_FFTW_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/problem.hpp>
+#include <suzerain/definition_base.hpp>
 #include <fftw3.h>
 
 /** @file
@@ -126,7 +126,7 @@ template< typename charT, typename traits >
 }
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class FFTWDefinition : public problem::definition_base
+class FFTWDefinition : public definition_base
 {
 public:
 
