@@ -45,7 +45,7 @@ namespace suzerain { namespace perfect {
  * A mixin providing channel problem treatment atop any
  * <tt>
  *    public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
- * </tt>.  During \ref invertMassPlusScaledOperator implicit momentum forcing
+ * </tt>.  During \ref invert_mass_plus_scaled_operator implicit momentum forcing
  * is applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
  * information from OperatorCommonBlock::u() via instance provided at
@@ -95,7 +95,7 @@ public:
      * Force the channel problem delegating to BaseClass when appropriate.
      * The BaseClass is responsible for enforcing all boundary conditions.
      */
-    virtual void invertMassPlusScaledOperator(
+    virtual void invert_mass_plus_scaled_operator(
             const complex_t &phi,
             multi_array::ref<complex_t,4> &state,
             const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -194,7 +194,7 @@ void ChannelTreatment<BaseClass>::finish_construction(
 }
 
 template< typename BaseClass >
-void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
+void ChannelTreatment<BaseClass>::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -256,7 +256,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
     }
 
     // Delegate to BaseClass for the solution procedure
-    BaseClass::invertMassPlusScaledOperator(
+    BaseClass::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
 
     // Clean up any integral constraint data wrapper we may have employed

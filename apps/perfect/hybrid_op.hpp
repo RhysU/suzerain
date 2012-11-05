@@ -74,14 +74,14 @@ public:
               << static_cast<std::string>(spec));
     }
 
-    virtual void applyMassPlusScaledOperator(
+    virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,
              multi_array::ref<complex_t,4> &state,
              const timestepper::lowstorage::method_interface<complex_t> &method,
              const component delta_t,
              const std::size_t substep_index) const;
 
-    virtual void accumulateMassPlusScaledOperator(
+    virtual void accumulate_mass_plus_scaled_operator(
             const complex_t &phi,
             const multi_array::ref<complex_t,4> &input,
             const complex_t &beta,
@@ -105,7 +105,7 @@ public:
      *     using rho_wall = e_wall * gamma * (gamma - 1).
      * </ul>
      */
-    virtual void invertMassPlusScaledOperator(
+    virtual void invert_mass_plus_scaled_operator(
             const complex_t &phi,
             multi_array::ref<complex_t,4> &state,
             const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -115,7 +115,7 @@ public:
 
 protected:
 
-    /** Controls the solves performed during invertMassPlusScaledOperator */
+    /** Controls the solves performed during invert_mass_plus_scaled_operator */
     const spec_zgbsv spec;
 
     /** The scenario in which the operator is used */

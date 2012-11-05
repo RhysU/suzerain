@@ -1528,10 +1528,10 @@ int main(int argc, char **argv)
         common_block.setZero(grid.dN.y());  // Defensive
         N->apply_operator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
-        L->accumulateMassPlusScaledOperator(
+        L->accumulate_mass_plus_scaled_operator(
                 1., *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
         common_block.setZero(grid.dN.y());  // Zero reference quantities
-        L->accumulateMassPlusScaledOperator(
+        L->accumulate_mass_plus_scaled_operator(
                 1., *state_linear, -1., *state_nonlinear, *m, 0, /*substep*/0);
         for (size_t k = 0; k < fields.size(); ++k) {
             suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),

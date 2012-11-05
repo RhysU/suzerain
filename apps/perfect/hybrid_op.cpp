@@ -60,14 +60,14 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 
 namespace suzerain { namespace perfect {
 
-void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
+void HybridIsothermalLinearOperator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
-    SUZERAIN_TIMER_SCOPED("applyMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("apply_mass_plus_scaled_operator");
 
     // Shorthand
     using inorder::wavenumber;
@@ -154,7 +154,7 @@ void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
     }
 }
 
-void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
+void HybridIsothermalLinearOperator::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -163,7 +163,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const component delta_t,
         const std::size_t substep_index) const
 {
-    SUZERAIN_TIMER_SCOPED("accumulateMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("accumulate_mass_plus_scaled_operator");
 
     // Shorthand
     using inorder::wavenumber;
@@ -363,7 +363,7 @@ public:
     }
 };
 
-void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
+void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -374,7 +374,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    SUZERAIN_TIMER_SCOPED("invertMassPlusScaledOperator");
+    SUZERAIN_TIMER_SCOPED("invert_mass_plus_scaled_operator");
 
     // Shorthand
     using inorder::wavenumber;

@@ -56,7 +56,7 @@ BsplineMassOperator::BsplineMassOperator(
     massluz.factor_mass(bop);
 }
 
-void BsplineMassOperator::applyMassPlusScaledOperator(
+void BsplineMassOperator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -64,7 +64,7 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
         const std::size_t substep_index) const
 {
     // TODO Speedup possible by not applying to dealiased modes
-    // a la HybridIsothermalLinearOperator::applyMassPlusScaledOperator
+    // a la HybridIsothermalLinearOperator::apply_mass_plus_scaled_operator
 
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(method);
@@ -82,7 +82,7 @@ void BsplineMassOperator::applyMassPlusScaledOperator(
 }
 
 
-void BsplineMassOperator::accumulateMassPlusScaledOperator(
+void BsplineMassOperator::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -92,7 +92,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const std::size_t substep_index) const
 {
     // TODO Speedup possible by not accumulating dealiased modes
-    // a la HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator
+    // a la HybridIsothermalLinearOperator::accumulate_mass_plus_scaled_operator
 
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(method);
@@ -129,7 +129,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     }
 }
 
-void BsplineMassOperator::invertMassPlusScaledOperator(
+void BsplineMassOperator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -187,7 +187,7 @@ public:
     }
 };
 
-void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
+void BsplineMassOperatorIsothermal::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -228,7 +228,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     }
 
     // channel_treatment step (3) performs the usual operator solve
-    base::invertMassPlusScaledOperator(
+    base::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
 
     // State leaves method as coefficients in X, Y, and Z directions

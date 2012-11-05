@@ -643,7 +643,7 @@ public:
      * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
-    virtual void applyMassPlusScaledOperator(
+    virtual void apply_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
             const method_interface<element>& method,
@@ -663,7 +663,7 @@ public:
      * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
-    virtual void accumulateMassPlusScaledOperator(
+    virtual void accumulate_mass_plus_scaled_operator(
             const element& phi,
             const StateA& input,
             const element& beta,
@@ -693,7 +693,7 @@ public:
      * @param ic0           Additional state, often used for imposing
      *                      integral constraints, which is ignored when NULL.
      */
-    virtual void invertMassPlusScaledOperator(
+    virtual void invert_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
             const method_interface<element>& method,
@@ -788,7 +788,7 @@ public:
      * @param delta_t Ignored.
      * @param substep_index Ignored.
      */
-    virtual void applyMassPlusScaledOperator(
+    virtual void apply_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
             const method_interface<element>& method,
@@ -814,7 +814,7 @@ public:
      * @param delta_t Ignored.
      * @param substep_index Ignored.
      */
-    virtual void accumulateMassPlusScaledOperator(
+    virtual void accumulate_mass_plus_scaled_operator(
             const element& phi,
             const StateA& input,
             const element& beta,
@@ -841,7 +841,7 @@ public:
      * @param substep_index Ignored.
      * @param ic0           When non-null, modified as \c state.
      */
-    virtual void invertMassPlusScaledOperator(
+    virtual void invert_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
             const method_interface<element>& method,
@@ -1451,15 +1451,15 @@ const typename traits::component<Element>::type substep(
     if (SUZERAIN_UNLIKELY(substep_index >= m.substeps()))
         throw std::invalid_argument("Requested substep too large");
 
-    L.accumulateMassPlusScaledOperator(
+    L.accumulate_mass_plus_scaled_operator(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b,
             m, delta_t, substep_index);
     N.apply_operator(time + delta_t * m.eta(substep_index), a,
-                    m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
+                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.add_scaled(chi * delta_t * m.gamma(substep_index), a);
-    L.invertMassPlusScaledOperator(-delta_t * m.beta(substep_index), b,
-                                   m, delta_t, substep_index);
+    L.invert_mass_plus_scaled_operator(-delta_t * m.beta(substep_index), b,
+                                       m, delta_t, substep_index);
 
     return delta_t;
 }
@@ -1527,21 +1527,21 @@ const typename traits::component<Element>::type step(
     if (max_delta_t > 0) {
         delta_t = math::minnan(delta_t, max_delta_t);
     }
-    L.applyMassPlusScaledOperator(delta_t * m.alpha(0), a, m, delta_t, 0);
+    L.apply_mass_plus_scaled_operator(delta_t * m.alpha(0), a, m, delta_t, 0);
     a.add_scaled(chi * delta_t * m.gamma(0), b);
-    L.invertMassPlusScaledOperator(-delta_t * m.beta(0), a, m, delta_t, 0);
+    L.invert_mass_plus_scaled_operator(-delta_t * m.beta(0), a, m, delta_t, 0);
 
     // Second and subsequent substeps are identical
     for (std::size_t i = 1; i < m.substeps(); ++i) {
-        L.accumulateMassPlusScaledOperator(
+        L.accumulate_mass_plus_scaled_operator(
                 delta_t * m.alpha(i),      a,
                 chi * delta_t * m.zeta(i), b,
                 m, delta_t, i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.apply_operator(time + delta_t * m.eta(i), b,
-                        m.evmaxmag_real(), m.evmaxmag_imag(), i);
+                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.add_scaled(chi * delta_t * m.gamma(i), b);
-        L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a, m, delta_t, i);
+        L.invert_mass_plus_scaled_operator(-delta_t * m.beta(i), a, m, delta_t, i);
     }
 
     return delta_t;
@@ -1599,7 +1599,7 @@ const typename traits::component<Element>::type step(
  * integration schemes.  This class is a thin wrapper combining timecontroller
  * with step().
  *
- * @see timecontroller for details on the time controller logic.
+ * @see \ref timecontroller for details on the time controller logic.
  * @see make_timecontroller for an easy way to create
  *      an instance with the appropriate type signature.
  */
