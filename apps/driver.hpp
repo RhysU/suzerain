@@ -98,7 +98,7 @@ public:
 
     std::vector<support::field> fields;
 
-    problem::GridDefinition grid;
+    problem::grid_definition grid;
 
     fftw::FFTWDefinition fftwdef;
 

@@ -133,13 +133,13 @@ void wisdom_broadcast(const std::string& wisdom_file);
 /** If wisdom_file is not empty, gather wisdom to rank zero and write it */
 void wisdom_gather(const std::string& wisdom_file);
 
-/** Store a GridDefinition in a restart file */
+/** Store a grid_definition in a restart file */
 void store(const esio_handle h,
-           const problem::GridDefinition& grid);
+           const problem::grid_definition& grid);
 
-/** Load a GridDefinition from a restart file */
+/** Load a grid_definition from a restart file */
 void load(const esio_handle h,
-          problem::GridDefinition& grid);
+          problem::grid_definition& grid);
 
 /** Store a TimeDefinition in a restart file */
 void store(const esio_handle h,
@@ -229,7 +229,7 @@ void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid);
 
 /**
@@ -240,7 +240,7 @@ void store_coefficients(
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const problem::GridDefinition& grid,
+                       const problem::grid_definition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& bop);

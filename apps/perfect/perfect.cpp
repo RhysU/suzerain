@@ -173,7 +173,7 @@ static void attribute_storer(const esio_handle &h,
 
 void store(const esio_handle h,
            const ScenarioDefinition& scenario,
-           const problem::GridDefinition& grid,
+           const problem::grid_definition& grid,
            const boost::shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
@@ -206,7 +206,7 @@ void store(const esio_handle h,
         WARN0("Manufactured solution Pr mismatches with scenario!");
 
     // Check parameters stored with the grid not the manufactured solution
-    // because grid parameters should be loaded from GridDefinition
+    // because grid parameters should be loaded from grid_definition
     if (msoln->Lx    != grid.L.x())
         WARN0("Manufactured solution Lx mismatches with grid!");
     if (msoln->Ly    != grid.L.y())
@@ -240,7 +240,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           boost::shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
@@ -272,7 +272,7 @@ void load(const esio_handle h,
     msoln->Re    = scenario.Re;
     msoln->Pr    = scenario.Pr;
 
-    // Grid parameters taken from GridDefinition
+    // Grid parameters taken from grid_definition
     msoln->Lx    = grid.L.x();
     msoln->Ly    = grid.L.y();
     msoln->Lz    = grid.L.z();
@@ -290,7 +290,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop)
@@ -384,7 +384,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const ScenarioDefinition& scenario,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop)
@@ -496,7 +496,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& bop)
@@ -544,7 +544,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
-                const problem::GridDefinition& grid,
+                const problem::grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& bop,
@@ -682,7 +682,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& bop)
@@ -1042,7 +1042,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const problem::GridDefinition &grid,
+        const problem::grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
@@ -1170,7 +1170,7 @@ void accumulate_manufactured_solution(
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
         const ScenarioDefinition &scenario,
-        const problem::GridDefinition &grid,
+        const problem::grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,

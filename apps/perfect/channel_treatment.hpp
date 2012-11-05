@@ -70,7 +70,7 @@ public:
      */
     ChannelTreatment(
             const ScenarioDefinition &scenario,
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -85,7 +85,7 @@ public:
     ChannelTreatment(
             const spec_zgbsv& spec,
             const ScenarioDefinition &scenario,
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -107,7 +107,7 @@ private:
 
     /** Common initialization code to be called at end of constructor */
     void finish_construction(
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop);
@@ -149,7 +149,7 @@ private:
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
             const ScenarioDefinition &scenario,
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -164,7 +164,7 @@ template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
             const spec_zgbsv& spec,
             const ScenarioDefinition &scenario,
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -177,7 +177,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 
 template< typename BaseClass >
 void ChannelTreatment<BaseClass>::finish_construction(
-            const problem::GridDefinition &grid,
+            const problem::grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop)

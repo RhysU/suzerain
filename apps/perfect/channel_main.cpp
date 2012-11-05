@@ -111,14 +111,14 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // where necessary to load settings.
 using perfect::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
-using suzerain::problem::GridDefinition;
+using suzerain::problem::grid_definition;
 using suzerain::problem::RestartDefinition;
 using suzerain::problem::StatisticsDefinition;
 using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition scenario;
-static const GridDefinition grid;
+static const grid_definition grid;
 static const FFTWDefinition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
 static const RestartDefinition restart(
@@ -901,7 +901,7 @@ int main(int argc, char **argv)
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(const_cast<ScenarioDefinition  &>(scenario));
-        options.add_definition(const_cast<GridDefinition      &>(grid    ));
+        options.add_definition(const_cast<grid_definition      &>(grid    ));
         options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
         options.add_definition(const_cast<RestartDefinition   &>(restart ));
         options.add_definition(const_cast<StatisticsDefinition&>(statsdef));
@@ -996,7 +996,7 @@ int main(int argc, char **argv)
         const_cast<ScenarioDefinition&>(scenario).gamma
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
-    support::load(esioh, const_cast<GridDefinition&>(grid));
+    support::load(esioh, const_cast<grid_definition&>(grid));
     support::load(esioh, const_cast<TimeDefinition&>(timedef));
     perfect::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);

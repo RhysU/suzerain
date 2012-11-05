@@ -50,7 +50,7 @@ struct field_L2 {
  */
 std::vector<field_L2>
 compute_field_L2(const contiguous_state<4,complex_t> &state,
-         const problem::GridDefinition& grid,
+         const problem::grid_definition& grid,
          const pencil_grid& dgrid,
          const bsplineop& gop);
 

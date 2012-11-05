@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     suzerain::program_options options(
             "suzerain::pencil_grid_p3dfft performance benchmark",
             "", /* TODO description */ "", revstr);
-    suzerain::problem::GridDefinition grid(/* Lx UNUSED */ "NaN",
+    suzerain::problem::grid_definition grid(/* Lx UNUSED */ "NaN",
                                            /* Nx        */ 16,
                                            /* DAFx      */ 1.,
                                            /* Ly UNUSED*/ "NaN",

@@ -80,7 +80,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  */
 void store(const esio_handle h,
            const ScenarioDefinition& scenario,
-           const problem::GridDefinition& grid,
+           const problem::grid_definition& grid,
            const boost::shared_ptr<manufactured_solution> & msoln);
 
 /**
@@ -91,7 +91,7 @@ void store(const esio_handle h,
  */
 void load(const esio_handle h,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           boost::shared_ptr<manufactured_solution>& msoln);
 
 /**
@@ -106,7 +106,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop);
@@ -119,7 +119,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const ScenarioDefinition& scenario,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& bop);
@@ -131,7 +131,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& bop);
@@ -145,7 +145,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
-                const problem::GridDefinition& grid,
+                const problem::grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& bop,
@@ -204,7 +204,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
-          const problem::GridDefinition& grid,
+          const problem::grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& bop);
@@ -222,7 +222,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const problem::GridDefinition &grid,
+        const problem::grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
@@ -456,7 +456,7 @@ public:
  */
 mean sample_mean_quantities(
         const ScenarioDefinition &scenario,
-        const problem::GridDefinition &grid,
+        const problem::grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,

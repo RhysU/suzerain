@@ -18,7 +18,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/problem.hpp>
 
-// TODO Distinguish between two- versus one-sided stretching in GridDefinition
+// TODO Distinguish between two- versus one-sided stretching in grid_definition
 
 /** @file
  * Provides classes handling problem grid definitions.
@@ -34,7 +34,7 @@ namespace problem {
  * wall-normal Y direction.  Logical grid sizes should be specified in terms
  * of physical space coefficient counts.
  */
-class GridDefinition : public definition_base
+class grid_definition : public definition_base
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
@@ -45,7 +45,7 @@ public:
      * overwritten.  Integer values will be zeros and floating point
      * values will be NaNs.
      */
-    GridDefinition();
+    grid_definition();
 
     /**
      * Construct an instance with the given default values.
@@ -70,7 +70,7 @@ public:
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    GridDefinition(const char * Lx,
+    grid_definition(const char * Lx,
                    int          Nx,
                    real_t       DAFx,
                    const char * Ly,
@@ -95,7 +95,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    GridDefinition& Nx(int value);
+    grid_definition& Nx(int value);
 
     /**
      * Set the logical extents in the Y direction.
@@ -103,7 +103,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    GridDefinition& Ny(int value);
+    grid_definition& Ny(int value);
 
     /**
      * Set the logical extents in the Z direction.
@@ -111,7 +111,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    GridDefinition& Nz(int value);
+    grid_definition& Nz(int value);
 
     /**@}*/
 
@@ -129,7 +129,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    GridDefinition& DAFx(real_t factor);
+    grid_definition& DAFx(real_t factor);
 
     /**
      * Set the dealiasing factor in the Z direction.
@@ -137,7 +137,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    GridDefinition& DAFz(real_t factor);
+    grid_definition& DAFz(real_t factor);
 
     /**@}*/
 
@@ -173,19 +173,19 @@ private:
                             const char * default_Lz);
 
     /** @copydoc Nx(int) */
-    GridDefinition& Nx(const std::string& value);
+    grid_definition& Nx(const std::string& value);
 
     /** @copydoc Ny(int) */
-    GridDefinition& Ny(const std::string& value);
+    grid_definition& Ny(const std::string& value);
 
     /** @copydoc Nz(int) */
-    GridDefinition& Nz(const std::string& value);
+    grid_definition& Nz(const std::string& value);
 
     /** @copydoc DAFx(real_t) */
-    GridDefinition& DAFx(const std::string& value);
+    grid_definition& DAFx(const std::string& value);
 
     /** @copydoc DAFz(real_t) */
-    GridDefinition& DAFz(const std::string& value);
+    grid_definition& DAFz(const std::string& value);
 };
 
 } // namespace problem

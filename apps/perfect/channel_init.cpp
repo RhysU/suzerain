@@ -72,7 +72,7 @@ static const std::vector<support::field> fields = perfect::default_fields();
 
 // Global parameters initialized in main()
 using suzerain::perfect::ScenarioDefinition;
-using suzerain::problem::GridDefinition;
+using suzerain::problem::grid_definition;
 using suzerain::problem::TimeDefinition;
 static ScenarioDefinition scenario(
         /* Re         */ "100",
@@ -83,7 +83,7 @@ static ScenarioDefinition scenario(
         /* alpha      */ "0",
         /* beta       */ "2/3",
         /* gamma      */ "1.4");
-static GridDefinition grid(
+static grid_definition grid(
         /* Lx      */ "4*pi",
         /* Nx      */ 1,
         /* DAFx    */ 1.5,

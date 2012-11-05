@@ -39,7 +39,7 @@ static void parse_option(const std::string &s,
 static const char grid_definition_description[]
         = "Mixed Fourier/B-spline computational grid definition";
 
-GridDefinition::GridDefinition()
+grid_definition::grid_definition()
     : definition_base(grid_definition_description),
       L(std::numeric_limits<real_t>::quiet_NaN(),
         std::numeric_limits<real_t>::quiet_NaN(),
@@ -56,7 +56,7 @@ GridDefinition::GridDefinition()
     this->initialize_options("NaN", "NaN", "NaN");  // Must match L!
 }
 
-GridDefinition::GridDefinition(const char * Lx,
+grid_definition::grid_definition(const char * Lx,
                                int          Nx,
                                real_t       DAFx,
                                const char * Ly,
@@ -80,7 +80,7 @@ GridDefinition::GridDefinition(const char * Lx,
     this->initialize_options(Lx, Ly, Lz);
 }
 
-void GridDefinition::initialize_options(const char * default_Lx,
+void grid_definition::initialize_options(const char * default_Lx,
                                         const char * default_Ly,
                                         const char * default_Lz)
 {
@@ -97,7 +97,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
     using validation::ensure_positive;
 
     // Used to help resolve pointers-to-members taking strings
-    GridDefinition& (GridDefinition::*f)(const std::string&) = NULL;
+    grid_definition& (grid_definition::*f)(const std::string&) = NULL;
 
     std::auto_ptr<boost::program_options::typed_value<std::string> > p;
     std::string *nullstr = NULL;
@@ -112,7 +112,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // Nx
     p.reset(boost::program_options::value(nullstr));
-    f = &GridDefinition::Nx;
+    f = &grid_definition::Nx;
     p->notifier(bind(f, this, _1));
     if (N.x()) p->default_value(lexical_cast<string>(N.x()));
     this->add_options()("Nx", p.release(),
@@ -120,7 +120,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // DAFx
     p.reset(boost::program_options::value(nullstr));
-    f = &GridDefinition::DAFx;
+    f = &grid_definition::DAFx;
     p->notifier(bind(f, this, _1));
     if (!(isnan)(DAF.x())) p->default_value(lexical_cast<string>(DAF.x()));
     this->add_options()("DAFx", p.release(),
@@ -136,7 +136,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // Ny
     p.reset(boost::program_options::value(nullstr));
-    f = &GridDefinition::Ny;
+    f = &grid_definition::Ny;
     p->notifier(bind(f, this, _1));
     if (N.y()) p->default_value(lexical_cast<string>(N.y()));
     this->add_options()("Ny", p.release(),
@@ -173,7 +173,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // Nz
     p.reset(boost::program_options::value(nullstr));
-    f = &GridDefinition::Nz;
+    f = &grid_definition::Nz;
     p->notifier(bind(f, this, _1));
     if (N.z()) p->default_value(lexical_cast<string>(N.z()));
     this->add_options()("Nz", p.release(),
@@ -181,7 +181,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
 
     // DAFz
     p.reset(boost::program_options::value(nullstr));
-    f = &GridDefinition::DAFz;
+    f = &grid_definition::DAFz;
     p->notifier(bind(f, this, _1));
     if (!(isnan)(DAF.z())) p->default_value(lexical_cast<string>(DAF.z()));
     this->add_options()("DAFz", p.release(),
@@ -204,7 +204,7 @@ void GridDefinition::initialize_options(const char * default_Lx,
             "Processor count in the Pb decomposition direction");
 }
 
-GridDefinition& GridDefinition::Nx(int value)
+grid_definition& grid_definition::Nx(int value)
 {
     if (N.x()) {
         validation::ensure_positive(value,"Nx");
@@ -218,7 +218,7 @@ GridDefinition& GridDefinition::Nx(int value)
     return *this;
 }
 
-GridDefinition& GridDefinition::Ny(int value)
+grid_definition& grid_definition::Ny(int value)
 {
     if (N.y()) {
         validation::ensure_positive(value,"Ny");
@@ -232,7 +232,7 @@ GridDefinition& GridDefinition::Ny(int value)
     return *this;
 }
 
-GridDefinition& GridDefinition::Nz(int value)
+grid_definition& grid_definition::Nz(int value)
 {
     if (N.z()) {
         validation::ensure_positive(value,"Nz");
@@ -246,7 +246,7 @@ GridDefinition& GridDefinition::Nz(int value)
     return *this;
 }
 
-GridDefinition& GridDefinition::DAFx(real_t factor)
+grid_definition& grid_definition::DAFx(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.x() != 0) {
@@ -262,7 +262,7 @@ GridDefinition& GridDefinition::DAFx(real_t factor)
     return *this;
 }
 
-GridDefinition& GridDefinition::DAFz(real_t factor)
+grid_definition& grid_definition::DAFz(real_t factor)
 {
 #pragma warning(push,disable:1572)
     if (DAF.z() != 0) {
@@ -278,33 +278,33 @@ GridDefinition& GridDefinition::DAFz(real_t factor)
     return *this;
 }
 
-GridDefinition& GridDefinition::Nx(const std::string& value)
+grid_definition& grid_definition::Nx(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Nx(static_cast<int>(exprparse<real_t>(value, "Nx")));
 #pragma warning(pop)
 }
 
-GridDefinition& GridDefinition::Ny(const std::string& value)
+grid_definition& grid_definition::Ny(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Ny(static_cast<int>(exprparse<real_t>(value, "Ny")));
 #pragma warning(pop)
 }
 
-GridDefinition& GridDefinition::Nz(const std::string& value)
+grid_definition& grid_definition::Nz(const std::string& value)
 {
 #pragma warning(push,disable:2259)
     return Nz(static_cast<int>(exprparse<real_t>(value, "Nz")));
 #pragma warning(pop)
 }
 
-GridDefinition& GridDefinition::DAFx(const std::string& value)
+grid_definition& grid_definition::DAFx(const std::string& value)
 {
     return DAFx(exprparse<real_t>(value, "DAFx"));
 }
 
-GridDefinition& GridDefinition::DAFz(const std::string& value)
+grid_definition& grid_definition::DAFz(const std::string& value)
 {
     return DAFz(exprparse<real_t>(value, "DAFz"));
 }

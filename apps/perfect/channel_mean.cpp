@@ -49,7 +49,7 @@ using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
-using suzerain::problem::GridDefinition;
+using suzerain::problem::grid_definition;
 using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::TimeDefinition;
 using suzerain::real_t;
@@ -426,7 +426,7 @@ static suzerain::VectorXr compute_bulk_weights(
 static quantity::storage_map_type process(
         const std::string& filename,
         shared_ptr<ScenarioDefinition    >& i_scenario,
-        shared_ptr<GridDefinition        >& i_grid,
+        shared_ptr<grid_definition        >& i_grid,
         shared_ptr<TimeDefinition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
         shared_ptr<suzerain::bsplineop   >& i_bop,
@@ -518,7 +518,7 @@ int main(int argc, char **argv)
 
     // Scenario and grid details provided to process(...)
     shared_ptr<ScenarioDefinition    > scenario;
-    shared_ptr<GridDefinition        > grid;
+    shared_ptr<grid_definition        > grid;
     shared_ptr<TimeDefinition        > timedef;
     shared_ptr<suzerain::bspline     > b;
     shared_ptr<suzerain::bsplineop   > bop;
@@ -694,7 +694,7 @@ int main(int argc, char **argv)
 static quantity::storage_map_type process(
         const std::string& filename,
         shared_ptr<ScenarioDefinition    >& i_scenario,
-        shared_ptr<GridDefinition        >& i_grid,
+        shared_ptr<grid_definition        >& i_grid,
         shared_ptr<TimeDefinition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
         shared_ptr<suzerain::bsplineop   >& i_bop,
@@ -717,7 +717,7 @@ static quantity::storage_map_type process(
     // class lacks a default constructor (by design).
     real_t time;
     ScenarioDefinition scenario;
-    GridDefinition grid;
+    grid_definition grid;
     TimeDefinition timedef(/* advance_dt */ 0,
                            /* advance_nt */ 0,
                            /* advance_wt */ 0,
@@ -736,7 +736,7 @@ static quantity::storage_map_type process(
 
     // Return the scenario, grid, and timedef to the caller if not already set
     if (!i_scenario) i_scenario.reset(new ScenarioDefinition(scenario));
-    if (!i_grid)     i_grid    .reset(new GridDefinition    (grid    ));
+    if (!i_grid)     i_grid    .reset(new grid_definition    (grid    ));
     if (!i_timedef)  i_timedef .reset(new TimeDefinition    (timedef ));
 
     // Compute factorized mass matrix

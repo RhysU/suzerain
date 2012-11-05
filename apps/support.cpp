@@ -216,7 +216,7 @@ void wisdom_gather(const std::string& wisdom_file)
 }
 
 void store(const esio_handle h,
-           const problem::GridDefinition& grid)
+           const problem::grid_definition& grid)
 {
     // Only root writes data
     int procid;
@@ -308,7 +308,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          problem::GridDefinition& grid)
+          problem::grid_definition& grid)
 {
     DEBUG0("Loading GridDefinition parameters");
 
@@ -704,7 +704,7 @@ void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const problem::GridDefinition& grid,
+        const problem::grid_definition& grid,
         const pencil_grid& dgrid)
 {
     // Ensure swave meets this routine's assumptions
@@ -789,7 +789,7 @@ real_t distance(const bspline& a,
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const problem::GridDefinition& grid,
+                       const problem::grid_definition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& bop)
