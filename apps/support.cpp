@@ -386,7 +386,7 @@ void load(const esio_handle h,
 }
 
 void store(const esio_handle h,
-           const problem::TimeDefinition& timedef)
+           const problem::time_definition& timedef)
 {
     DEBUG0("Storing TimeDefinition parameters");
 
@@ -401,7 +401,7 @@ void store(const esio_handle h,
 }
 
 void load(const esio_handle h,
-          problem::TimeDefinition& timedef)
+          problem::time_definition& timedef)
 {
     DEBUG0("Loading TimeDefinition parameters");
 

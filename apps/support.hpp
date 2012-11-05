@@ -141,13 +141,13 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           problem::grid_definition& grid);
 
-/** Store a TimeDefinition in a restart file */
+/** Store a time_definition in a restart file */
 void store(const esio_handle h,
-           const problem::TimeDefinition& timedef);
+           const problem::time_definition& timedef);
 
-/** Load a TimeDefinition from a restart file */
+/** Load a time_definition from a restart file */
 void load(const esio_handle h,
-          problem::TimeDefinition& timedef);
+          problem::time_definition& timedef);
 
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.

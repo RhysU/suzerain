@@ -51,7 +51,7 @@ using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::problem::grid_definition;
 using suzerain::perfect::ScenarioDefinition;
-using suzerain::problem::TimeDefinition;
+using suzerain::problem::time_definition;
 using suzerain::real_t;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
@@ -427,7 +427,7 @@ static quantity::storage_map_type process(
         const std::string& filename,
         shared_ptr<ScenarioDefinition    >& i_scenario,
         shared_ptr<grid_definition        >& i_grid,
-        shared_ptr<TimeDefinition        >& i_timedef,
+        shared_ptr<time_definition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
         shared_ptr<suzerain::bsplineop   >& i_bop,
         shared_ptr<suzerain::bsplineop_lu>& i_boplu);
@@ -519,7 +519,7 @@ int main(int argc, char **argv)
     // Scenario and grid details provided to process(...)
     shared_ptr<ScenarioDefinition    > scenario;
     shared_ptr<grid_definition        > grid;
-    shared_ptr<TimeDefinition        > timedef;
+    shared_ptr<time_definition        > timedef;
     shared_ptr<suzerain::bspline     > b;
     shared_ptr<suzerain::bsplineop   > bop;
     shared_ptr<suzerain::bsplineop_lu> boplu;
@@ -695,7 +695,7 @@ static quantity::storage_map_type process(
         const std::string& filename,
         shared_ptr<ScenarioDefinition    >& i_scenario,
         shared_ptr<grid_definition        >& i_grid,
-        shared_ptr<TimeDefinition        >& i_timedef,
+        shared_ptr<time_definition        >& i_timedef,
         shared_ptr<suzerain::bspline     >& i_b,
         shared_ptr<suzerain::bsplineop   >& i_bop,
         shared_ptr<suzerain::bsplineop_lu>& i_boplu)
@@ -713,12 +713,12 @@ static quantity::storage_map_type process(
     esio_file_open(h.get(), filename.c_str(), 0 /* read-only */);
 
     // Load time, scenario, grid, timedef, and B-spline details from file.
-    // The TimeDefinition defaults are ignored but required as that
+    // The time_definition defaults are ignored but required as that
     // class lacks a default constructor (by design).
     real_t time;
     ScenarioDefinition scenario;
     grid_definition grid;
-    TimeDefinition timedef(/* advance_dt */ 0,
+    time_definition timedef(/* advance_dt */ 0,
                            /* advance_nt */ 0,
                            /* advance_wt */ 0,
                            /* status_dt  */ 0,
@@ -737,7 +737,7 @@ static quantity::storage_map_type process(
     // Return the scenario, grid, and timedef to the caller if not already set
     if (!i_scenario) i_scenario.reset(new ScenarioDefinition(scenario));
     if (!i_grid)     i_grid    .reset(new grid_definition    (grid    ));
-    if (!i_timedef)  i_timedef .reset(new TimeDefinition    (timedef ));
+    if (!i_timedef)  i_timedef .reset(new time_definition    (timedef ));
 
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu

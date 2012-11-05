@@ -106,7 +106,7 @@ public:
 
     problem::statistics_definition statsdef;
 
-    problem::TimeDefinition timedef;
+    problem::time_definition timedef;
 
     program_options options;
 

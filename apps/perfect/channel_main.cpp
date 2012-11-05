@@ -116,7 +116,7 @@ using suzerain::problem::restart_definition;
 using suzerain::problem::statistics_definition;
 using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::signal_definition;
-using suzerain::problem::TimeDefinition;
+using suzerain::problem::time_definition;
 static const ScenarioDefinition scenario;
 static const grid_definition grid;
 static const FFTWDefinition fftwdef(
@@ -130,7 +130,7 @@ static const restart_definition restart(
         /* nt          */ 0);
 static const statistics_definition statsdef(
         /* destination */ "sample#.h5");
-static const TimeDefinition timedef(
+static const time_definition timedef(
         /* advance_dt                */ 0,
         /* advance_nt                */ 0,
         /* advance_wt                */ 0,
@@ -905,7 +905,7 @@ int main(int argc, char **argv)
         options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
         options.add_definition(const_cast<restart_definition   &>(restart ));
         options.add_definition(const_cast<statistics_definition&>(statsdef));
-        options.add_definition(const_cast<TimeDefinition      &>(timedef ));
+        options.add_definition(const_cast<time_definition      &>(timedef ));
         options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
         options.add_definition(const_cast<signal_definition    &>(sigdef  ));
 
@@ -997,7 +997,7 @@ int main(int argc, char **argv)
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
     support::load(esioh, const_cast<grid_definition&>(grid));
-    support::load(esioh, const_cast<TimeDefinition&>(timedef));
+    support::load(esioh, const_cast<time_definition&>(timedef));
     perfect::load(esioh, scenario, grid, msoln);
     esio_file_close(esioh);
 

@@ -31,7 +31,7 @@ namespace problem {
  * far the simulation should be advanced as long as how frequently status
  * updates should occur.
  */
-class TimeDefinition : public definition_base
+class time_definition : public definition_base
 {
 public:
     /**
@@ -53,7 +53,7 @@ public:
      * @param min_dt      Minimum allowable physically-driven time step.
      * @param max_dt      Maximum allowable physically-driven time step.
      */
-    TimeDefinition(real_t advance_dt,
+    time_definition(real_t advance_dt,
                    int    advance_nt,
                    real_t advance_wt,
                    real_t status_dt,
@@ -72,7 +72,7 @@ public:
      *                    magnitudes.  Usually in <tt>(0,1]</tt>, this
      *                    increases the conservativeness of the time stepping.
      */
-    TimeDefinition(const char * evmagfactor);
+    time_definition(const char * evmagfactor);
 
     /** Maximum amount of physical time to advance the simulation. */
     real_t advance_dt;

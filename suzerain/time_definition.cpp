@@ -92,7 +92,7 @@ static void parse_walltime(const std::string &s,
 
 namespace problem {
 
-void TimeDefinition::initialize_advancement(
+void time_definition::initialize_advancement(
         real_t default_advance_dt,
         int    default_advance_nt,
         real_t default_advance_wt,
@@ -155,7 +155,7 @@ void TimeDefinition::initialize_advancement(
     ;
 }
 
-void TimeDefinition::initialize_scenario(
+void time_definition::initialize_scenario(
         const char * default_evmagfactor)
 {
     // Complicated add_options() calls done to allow changing the default value
@@ -175,7 +175,7 @@ void TimeDefinition::initialize_scenario(
          "Safety factor in (0,1] used to adjust time step aggressiveness");
 }
 
-TimeDefinition::TimeDefinition(real_t advance_dt,
+time_definition::time_definition(real_t advance_dt,
                                int    advance_nt,
                                real_t advance_wt,
                                real_t status_dt,
@@ -195,7 +195,7 @@ TimeDefinition::TimeDefinition(real_t advance_dt,
     initialize_scenario(NULL);
 }
 
-TimeDefinition::TimeDefinition(const char * evmagfactor)
+time_definition::time_definition(const char * evmagfactor)
     : definition_base("Time advancement parameters")
 {
     advance_dt = std::numeric_limits<real_t>::quiet_NaN();
