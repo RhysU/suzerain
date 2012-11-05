@@ -392,7 +392,7 @@ struct delta_t_reducer {
  * respectively.  \f$M\f$ is referred to as the mass matrix.  No operator may
  * depend on time.
  *
- * @see IMethod for details on this class of timestepping schemes.
+ * @see method_interface for details on this class of timestepping schemes.
  */
 namespace lowstorage
 {
@@ -475,7 +475,7 @@ namespace lowstorage
  *      according to a timestepping method.
  */
 template<typename Element>
-class IMethod
+class method_interface
 {
 public:
 
@@ -591,7 +591,7 @@ public:
     virtual component evmaxmag_imag() const = 0;
 
     /** Virtual destructor to support interface-like behavior. */
-    virtual ~IMethod() {}
+    virtual ~method_interface() {}
 };
 
 /**
@@ -606,7 +606,7 @@ public:
 template< typename charT, typename traits, typename Element >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits>& os,
-        const IMethod<Element>& m)
+        const method_interface<Element>& m)
 {
     return os << m.name();
 }
@@ -646,7 +646,7 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -668,7 +668,7 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t,
             const std::size_t substep_index) const = 0;
 
@@ -696,7 +696,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t,
             const std::size_t substep_index,
             StateA *ic0 = NULL) const = 0;
@@ -791,7 +791,7 @@ public:
     virtual void applyMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
@@ -819,7 +819,7 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
@@ -844,7 +844,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const element& phi,
             StateA& state,
-            const IMethod<element>& method,
+            const method_interface<element>& method,
             const component delta_t = 0,
             const std::size_t substep_index = 0,
             StateA *ic0 = NULL) const
@@ -889,7 +889,7 @@ make_multiplicator_operator(
 }
 
 /**
- * Compute redundant information for an IMethod given essential,
+ * Compute redundant information for an method_interface given essential,
  * scheme-specific constants.
  *
  * The \c Scheme parameter must be a templated, static-only struct
@@ -924,7 +924,7 @@ make_multiplicator_operator(
  * @tparam Component Real-valued type for which constants are returned.
  * @tparam Integer Signed integer type used for indexing and computation.
  *
- * @see IMethod for a full definition of the constants involved.
+ * @see method_interface for a full definition of the constants involved.
  * @see SMR91 for an example implementation.
  */
 template <template <typename,typename> class Scheme,
@@ -1069,51 +1069,51 @@ public:
 
     /**
      * Computes \f$\alpha_i\f$ given \c Scheme as <tt>alpha[i]</tt>.
-     * @see IMethod::alpha
+     * @see method_interface::alpha
      */
     static const alpha_type alpha;
 
     /**
      * Computes \f$\beta_i\f$ given \c Scheme as <tt>beta[i]</tt>.
-     * @see IMethod::beta
+     * @see method_interface::beta
      */
     static const beta_type beta;
 
     /**
      * Computes \f$\gamma_i\f$ given \c Scheme as <tt>gamma[i]</tt>.
-     * @see IMethod::gamma
+     * @see method_interface::gamma
      */
     static const gamma_type gamma;
 
     /**
      * Computes \f$\zeta_i\f$ given \c Scheme as <tt>zeta[i]</tt>.
-     * @see IMethod::zeta
+     * @see method_interface::zeta
      */
     static const zeta_type zeta;
 
     /**
      * Computes \f$\eta_i\f$ given \c Scheme as <tt>eta[i]</tt>.
-     * @see IMethod::eta
+     * @see method_interface::eta
      */
     static const eta_type eta;
 
     /**
      * Computes \f$\iota_i\f$ given \c Scheme as <tt>iota[i]</tt>.
-     * @see IMethod::iota
+     * @see method_interface::iota
      */
     static const iota_type iota;
 
     /**
      * Computes \f$\iota_{\alpha,i}\f$ given
      * \c Scheme as <tt>iota_alpha[i]</tt>.
-     * @see IMethod::iota_alpha
+     * @see method_interface::iota_alpha
      */
     static const iota_alpha_type iota_alpha;
 
     /**
      * Computes \f$\iota_{\beta,i}\f$ given
      * \c Scheme as <tt>iota_beta[i]</tt>.
-     * @see IMethod::iota_beta
+     * @see method_interface::iota_beta
      */
     static const iota_beta_type iota_beta;
 
@@ -1169,7 +1169,7 @@ Constants<Scheme,Component,Integer>::iota_beta = {};
 
 /**
  * Given a \c Scheme and \c Element type, encapsulates a low storage
- * method behind the IMethod interface using Constants.
+ * method behind the method_interface interface using Constants.
  *
  * @tparam Scheme An essential set of scheme-specific constants usable
  *         within the Constants class.
@@ -1179,13 +1179,13 @@ Constants<Scheme,Component,Integer>::iota_beta = {};
  * @see SMR91 or Yang11 for examples of valid Schemes to supply.
  */
 template <template <typename,typename> class Scheme, typename Element>
-class Method : public IMethod<Element>
+class Method : public method_interface<Element>
 {
 
 public:
 
     /** The real-valued scalar corresponding to \c Element */
-    typedef typename IMethod<Element>::component component;
+    typedef typename method_interface<Element>::component component;
 
     /** Access to the static constants specifying this scheme. */
     typedef Constants<Scheme,component> constants;
@@ -1203,51 +1203,51 @@ public:
           evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
         { assert(evmagfactor > 0); }
 
-    /** @copydoc IMethod::name */
+    /** @copydoc method_interface::name */
     virtual const char * name() const
     { return constants::name; }
 
-    /** @copydoc IMethod::substeps */
+    /** @copydoc method_interface::substeps */
     virtual std::size_t substeps() const
     { return constants::substeps; }
 
-    /** @copydoc IMethod::alpha */
+    /** @copydoc method_interface::alpha */
     virtual component alpha(const std::size_t substep) const
     { return constants::alpha[substep]; }
 
-    /** @copydoc IMethod::beta */
+    /** @copydoc method_interface::beta */
     virtual component beta(const std::size_t substep) const
     { return constants::beta[substep]; }
 
-    /** @copydoc IMethod::gamma */
+    /** @copydoc method_interface::gamma */
     virtual component gamma(const std::size_t substep) const
     { return constants::gamma[substep]; }
 
-    /** @copydoc IMethod::zeta */
+    /** @copydoc method_interface::zeta */
     virtual component zeta(const std::size_t substep) const
     { return constants::zeta[substep]; }
 
-    /** @copydoc IMethod::eta */
+    /** @copydoc method_interface::eta */
     virtual component eta(const std::size_t substep) const
     { return constants::eta[substep]; }
 
-    /** @copydoc IMethod::iota */
+    /** @copydoc method_interface::iota */
     virtual component iota(const std::size_t substep) const
     { return constants::iota[substep]; }
 
-    /** @copydoc IMethod::iota_alpha */
+    /** @copydoc method_interface::iota_alpha */
     virtual component iota_alpha(const std::size_t substep) const
     { return constants::iota_alpha[substep]; }
 
-    /** @copydoc IMethod::iota_beta */
+    /** @copydoc method_interface::iota_beta */
     virtual component iota_beta(const std::size_t substep) const
     { return constants::iota_beta[substep]; }
 
-    /** @copydoc IMethod::evmaxmag_real */
+    /** @copydoc method_interface::evmaxmag_real */
     virtual component evmaxmag_real() const
     { return evmaxmag_real_; }
 
-    /** @copydoc IMethod::evmaxmag_imag */
+    /** @copydoc method_interface::evmaxmag_imag */
     virtual component evmaxmag_imag() const
     { return evmaxmag_imag_; }
 
@@ -1422,7 +1422,7 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It will always equal \c delta_t.
  *
- * @see IMethod for the equation governing time advancement.
+ * @see method_interface for the equation governing time advancement.
  * @see The method step() provides more convenient ways to perform multiple
  *      substeps, including dynamic step size computation.
  */
@@ -1431,7 +1431,7 @@ template< typename Element,
           typename NonlinearState,
           typename State >
 const typename traits::component<Element>::type substep(
-    const IMethod<Element>& m,
+    const method_interface<Element>& m,
     const ILinearOperator<LinearState>& L,
     const typename traits::component<Element>::type chi,
     const nonlinear_operator<NonlinearState>& N,
@@ -1492,13 +1492,13 @@ const typename traits::component<Element>::type substep(
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It may be less than \c max_delta_t.
  *
- * @see IMethod for the equation governing time advancement.
+ * @see method_interface for the equation governing time advancement.
  */
 template< typename Element, typename Reducer,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
 const typename traits::component<Element>::type step(
-    const IMethod<Element>& m,
+    const method_interface<Element>& m,
     Reducer& reducer,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
@@ -1571,13 +1571,13 @@ const typename traits::component<Element>::type step(
  * @return The time step \f$\Delta{}t\f$ taken.
  *         It may be less than \c max_delta_t.
  *
- * @see IMethod for the equation governing time advancement.
+ * @see method_interface for the equation governing time advancement.
  */
 template< typename Element,
           typename LinearA, typename LinearB, typename NonlinearB,
           typename StateA, typename StateB >
 const typename traits::component<Element>::type step(
-    const IMethod<Element>& m,
+    const method_interface<Element>& m,
     const ILinearOperator<LinearA,LinearB>& L,
     const typename traits::component<Element>::type chi,
     const nonlinear_operator<NonlinearB>& N,
@@ -1671,7 +1671,7 @@ public:
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
     timecontroller(
-            const IMethod<element>& m,
+            const method_interface<element>& m,
             Reducer& reducer,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
@@ -1689,7 +1689,7 @@ public:
 
 private:
 
-    const IMethod<element>& m;
+    const method_interface<element>& m;
     Reducer &reducer;
     const ILinearOperator<LinearA,LinearB>& L;
     const typename traits::component<element>::type chi;
@@ -1764,7 +1764,7 @@ public:
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
     timecontroller(
-            const IMethod<element>& m,
+            const method_interface<element>& m,
             const ILinearOperator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
             const nonlinear_operator<NonlinearB>& N,
@@ -1797,7 +1797,7 @@ template< typename StateA,
           typename ChiType >
 timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
 make_timecontroller(
-        const IMethod<typename StateA::element>& m,
+        const method_interface<typename StateA::element>& m,
         Reducer &reducer,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
@@ -1833,7 +1833,7 @@ template< typename StateA,
           typename ChiType >
 timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
 make_timecontroller(
-        const IMethod<typename StateA::element>& m,
+        const method_interface<typename StateA::element>& m,
         const ILinearOperator<LinearA,LinearB>& L,
         const ChiType chi,
         const nonlinear_operator<NonlinearB>& N,

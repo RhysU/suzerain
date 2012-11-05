@@ -98,7 +98,7 @@ public:
     virtual void invertMassPlusScaledOperator(
             const complex_t &phi,
             multi_array::ref<complex_t,4> &state,
-            const timestepper::lowstorage::IMethod<complex_t> &method,
+            const timestepper::lowstorage::method_interface<complex_t> &method,
             const real_t delta_t,
             const std::size_t substep_index,
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
@@ -197,7 +197,7 @@ template< typename BaseClass >
 void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::IMethod<complex_t> &method,
+        const timestepper::lowstorage::method_interface<complex_t> &method,
         const real_t delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> *ic0) const
@@ -303,7 +303,7 @@ void ChannelTreatment<BaseClass>::invertMassPlusScaledOperator(
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
-    // the Reynolds averaged equations using IMethod::iota similarly to
+    // the Reynolds averaged equations using method_interface::iota similarly to
     //
     //    mean += iota * ((sample / delta_t) - mean).
     //

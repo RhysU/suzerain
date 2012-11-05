@@ -1247,7 +1247,7 @@ int main(int argc, char **argv)
     // contiguous_state and interleaved_state to allow swapping one for another
     // if so desired.  However, this is unlikely to be useful in conjunction
     // with hybrid implicit/explicit operators.
-    shared_ptr<suzerain::timestepper::lowstorage::IMethod<
+    shared_ptr<suzerain::timestepper::lowstorage::method_interface<
             complex_t
         > > m;
     if (use_smr91) {

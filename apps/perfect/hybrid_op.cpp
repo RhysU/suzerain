@@ -63,7 +63,7 @@ namespace suzerain { namespace perfect {
 void HybridIsothermalLinearOperator::applyMassPlusScaledOperator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::IMethod<complex_t> &method,
+        const timestepper::lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -159,7 +159,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
         contiguous_state<4,complex_t> &output,
-        const timestepper::lowstorage::IMethod<complex_t> &method,
+        const timestepper::lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
 {
@@ -366,7 +366,7 @@ public:
 void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::IMethod<complex_t> &method,
+        const timestepper::lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> *ic0) const
