@@ -100,7 +100,7 @@ public:
 
     grid_definition grid;
 
-    FFTWDefinition fftwdef;
+    fftw_definition fftwdef;
 
     restart_definition restart;
 

@@ -109,7 +109,7 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
 using perfect::noise_definition;
-using suzerain::FFTWDefinition;
+using suzerain::fftw_definition;
 using suzerain::grid_definition;
 using suzerain::restart_definition;
 using suzerain::statistics_definition;
@@ -118,7 +118,7 @@ using suzerain::signal_definition;
 using suzerain::time_definition;
 static const scenario_definition scenario;
 static const grid_definition grid;
-static const FFTWDefinition fftwdef(
+static const fftw_definition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
 static const restart_definition restart(
         /* metadata    */ "metadata.h5.XXXXXX",
@@ -901,7 +901,7 @@ int main(int argc, char **argv)
                 "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(const_cast<scenario_definition  &>(scenario));
         options.add_definition(const_cast<grid_definition      &>(grid    ));
-        options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
+        options.add_definition(const_cast<fftw_definition      &>(fftwdef ));
         options.add_definition(const_cast<restart_definition   &>(restart ));
         options.add_definition(const_cast<statistics_definition&>(statsdef));
         options.add_definition(const_cast<time_definition      &>(timedef ));

@@ -81,7 +81,7 @@ int main(int argc, char **argv)
                                   /* Nz        */ 16,
                                   /* DAFz      */ 1.);
     options.add_definition(grid);
-    suzerain::FFTWDefinition fftwdef(
+    suzerain::fftw_definition fftwdef(
             suzerain::fftw::measure, suzerain::fftw::estimate);
     options.add_definition(fftwdef);
 

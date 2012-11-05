@@ -30,17 +30,17 @@
 
 namespace suzerain {
 
-void FFTWDefinition::normalize_rigor_fft(std::string input)
+void fftw_definition::normalize_rigor_fft(std::string input)
 {
     this->rigor_fft = fftw::rigor_from(input.c_str());
 }
 
-void FFTWDefinition::normalize_rigor_mpi(std::string input)
+void fftw_definition::normalize_rigor_mpi(std::string input)
 {
     this->rigor_mpi = fftw::rigor_from(input.c_str());
 }
 
-FFTWDefinition::FFTWDefinition(
+fftw_definition::fftw_definition(
         const fftw::rigor rigor_fft,
         const fftw::rigor rigor_mpi)
     : definition_base("FFTW planning options:"),
@@ -78,13 +78,13 @@ FFTWDefinition::FFTWDefinition(
         ("rigor_fft",
          po::value<std::string>(NULL)
                 ->notifier(bind1st(
-                        mem_fun(&FFTWDefinition::normalize_rigor_fft), this))
+                        mem_fun(&fftw_definition::normalize_rigor_fft), this))
                 ->default_value(fftw::c_str(rigor_fft)),
          rigor_fft_description.c_str())
         ("rigor_mpi",
           po::value<std::string>(NULL)
                 ->notifier(bind1st(
-                        mem_fun(&FFTWDefinition::normalize_rigor_mpi), this))
+                        mem_fun(&fftw_definition::normalize_rigor_mpi), this))
                 ->default_value(fftw::c_str(rigor_mpi)),
          rigor_mpi_description.c_str())
         ("plan_wisdom",

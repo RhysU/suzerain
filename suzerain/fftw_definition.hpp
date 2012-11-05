@@ -37,13 +37,13 @@
 namespace suzerain {
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class FFTWDefinition : public definition_base
+class fftw_definition : public definition_base
 {
 public:
 
     /** Default constructor */
-    explicit FFTWDefinition(const fftw::rigor rigor_fft = fftw::estimate,
-                            const fftw::rigor rigor_mpi = fftw::estimate);
+    explicit fftw_definition(const fftw::rigor rigor_fft = fftw::estimate,
+                             const fftw::rigor rigor_mpi = fftw::estimate);
 
     /**
      * The FFTW rigor flag intended for FFT planning.
