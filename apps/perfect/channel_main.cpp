@@ -112,7 +112,7 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 using perfect::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::grid_definition;
-using suzerain::problem::RestartDefinition;
+using suzerain::problem::restart_definition;
 using suzerain::problem::StatisticsDefinition;
 using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::SignalDefinition;
@@ -121,7 +121,7 @@ static const ScenarioDefinition scenario;
 static const grid_definition grid;
 static const FFTWDefinition fftwdef(
         suzerain::fftw::measure, suzerain::fftw::estimate);
-static const RestartDefinition restart(
+static const restart_definition restart(
         /* metadata    */ "metadata.h5.XXXXXX",
         /* uncommitted */ "uncommitted.h5.XXXXXX",
         /* destination */ "restart#.h5",
@@ -903,7 +903,7 @@ int main(int argc, char **argv)
         options.add_definition(const_cast<ScenarioDefinition  &>(scenario));
         options.add_definition(const_cast<grid_definition      &>(grid    ));
         options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
-        options.add_definition(const_cast<RestartDefinition   &>(restart ));
+        options.add_definition(const_cast<restart_definition   &>(restart ));
         options.add_definition(const_cast<StatisticsDefinition&>(statsdef));
         options.add_definition(const_cast<TimeDefinition      &>(timedef ));
         options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
@@ -1093,9 +1093,9 @@ int main(int argc, char **argv)
         SUZERAIN_MPICHKQ(MPI_Bcast(buf.get(), pos[4],
                          suzerain::mpi::datatype<char>(), 0,
                          MPI_COMM_WORLD));
-        const_cast<RestartDefinition&>(restart).metadata        = &buf[pos[0]];
-        const_cast<RestartDefinition&>(restart).uncommitted     = &buf[pos[1]];
-        const_cast<RestartDefinition&>(restart).destination     = &buf[pos[2]];
+        const_cast<restart_definition&>(restart).metadata        = &buf[pos[0]];
+        const_cast<restart_definition&>(restart).uncommitted     = &buf[pos[1]];
+        const_cast<restart_definition&>(restart).destination     = &buf[pos[2]];
         const_cast<StatisticsDefinition&>(statsdef).destination = &buf[pos[3]];
     }
 

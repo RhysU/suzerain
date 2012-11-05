@@ -31,7 +31,7 @@ namespace problem {
  * Encapsulates flags related to restart file behavior for the simulation.
  * Includes the particulars around writing and archiving restart files.
  */
-class RestartDefinition : public definition_base
+class restart_definition : public definition_base
 {
 public:
     /**
@@ -52,12 +52,12 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c destination and \c retain.
      */
-    RestartDefinition(const std::string& metadata,
-                      const std::string& uncommitted,
-                      const std::string& destination,
-                      int retain = 1,
-                      real_t dt  = 0,
-                      int nt     = 0);
+    restart_definition(const std::string& metadata,
+                       const std::string& uncommitted,
+                       const std::string& destination,
+                       int retain = 1,
+                       real_t dt  = 0,
+                       int nt     = 0);
 
     /**
      * The restart file path to use when saving common restart file

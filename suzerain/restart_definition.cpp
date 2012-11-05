@@ -36,7 +36,7 @@ static void parse_option(const std::string &s,
     *value = t;
 }
 
-RestartDefinition::RestartDefinition(
+restart_definition::restart_definition(
         const std::string& metadata,
         const std::string& uncommitted,
         const std::string& destination,

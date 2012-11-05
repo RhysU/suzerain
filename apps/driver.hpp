@@ -102,7 +102,7 @@ public:
 
     fftw::FFTWDefinition fftwdef;
 
-    problem::RestartDefinition restart;
+    problem::restart_definition restart;
 
     problem::StatisticsDefinition statsdef;
 
