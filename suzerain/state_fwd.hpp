@@ -102,12 +102,14 @@ public:
 /**@{*/
 
     /** @returns a reference to the derived object */
-    Derived& derived() {
+    Derived& derived()
+    {
         return *static_cast<Derived*>(this);
     }
 
     /** @returns a const reference to the derived object */
-    const Derived& derived() const {
+    const Derived& derived() const
+    {
         return *static_cast<const Derived*>(this);
     }
 
@@ -120,7 +122,8 @@ public:
      * @returns each dimension's extents as a list of length
      * state_base::dimensionality.
      */
-    const size_type* shape() const {
+    const size_type* shape() const
+    {
         return derived().shape();
     }
 
@@ -135,7 +138,8 @@ public:
      *
      * @param factor Scale factor to use.
      */
-    void scale(const element& factor) {
+    void scale(const element& factor)
+    {
         return derived().scale(factor);
     }
 
@@ -152,7 +156,8 @@ public:
      *         False otherwise.
      */
     template<class OtherType>
-    bool isIsomorphic(const OtherType& other) const {
+    bool isIsomorphic(const OtherType& other) const
+    {
         if (dimensionality == OtherType::dimensionality) {
             return std::equal(shape(), shape() + dimensionality, other.shape());
         } else {
@@ -171,7 +176,8 @@ public:
      */
     template<class OtherDerived>
     void addScaled(const element& factor,
-                   const state_base<OtherDerived>& other) {
+                   const state_base<OtherDerived>& other)
+    {
         return derived().addScaled(factor, other.derived());
     }
 
@@ -183,7 +189,8 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void assign(const state_base<OtherDerived>& other) {
+    void assign(const state_base<OtherDerived>& other)
+    {
         return derived().assign(other.derived());
     }
 
@@ -197,7 +204,8 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void exchange(state_base<OtherDerived>& other) {
+    void exchange(state_base<OtherDerived>& other)
+    {
         return derived().exchange(other.derived());
     }
 
@@ -359,7 +367,8 @@ public:
 
     void exchange(multi_array_type& other);
 
-    const shared_range_type& range() const {
+    const shared_range_type& range() const
+    {
         return reinterpret_cast<const shared_range_type&>(*this);
     }
 
