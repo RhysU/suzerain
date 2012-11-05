@@ -153,12 +153,12 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_gamma);
 
 /** Options definitions for adding random noise to momentum fields */
-class NoiseDefinition : public problem::definition_base {
+class noise_definition : public problem::definition_base {
 
 public:
 
     /** Construct an instance with the given default values */
-    explicit NoiseDefinition(real_t fluct_percent = 0,
+    explicit noise_definition(real_t fluct_percent = 0,
                              unsigned long fluct_seed = 12345);
 
     /**
@@ -198,11 +198,11 @@ public:
 
 /**
  * Add random momentum field perturbations ("noise") according to
- * the provided NoiseDefinition.
+ * the provided noise_definition.
  */
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const NoiseDefinition& noisedef,
+          const noise_definition& noisedef,
           const ScenarioDefinition& scenario,
           const problem::grid_definition& grid,
           const pencil_grid& dgrid,

@@ -631,7 +631,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     }
 }
 
-NoiseDefinition::NoiseDefinition(real_t percent,
+noise_definition::noise_definition(real_t percent,
                                  unsigned long seed)
     : definition_base("Additive random velocity perturbations on startup"),
       percent(percent),
@@ -680,7 +680,7 @@ NoiseDefinition::NoiseDefinition(real_t percent,
 
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const NoiseDefinition& noisedef,
+          const noise_definition& noisedef,
           const ScenarioDefinition& scenario,
           const problem::grid_definition& grid,
           const pencil_grid& dgrid,

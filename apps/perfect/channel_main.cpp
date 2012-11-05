@@ -109,7 +109,7 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using perfect::NoiseDefinition;
+using perfect::noise_definition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::grid_definition;
 using suzerain::problem::restart_definition;
@@ -138,7 +138,7 @@ static const time_definition timedef(
         /* status_nt                 */ 0,
         /* min_dt                    */ 1e-8,
         /* max_dt                    */ 1);
-static const NoiseDefinition  noisedef;
+static const noise_definition  noisedef;
 static const signal_definition sigdef;
 
 // Global details initialized in main()
@@ -906,7 +906,7 @@ int main(int argc, char **argv)
         options.add_definition(const_cast<restart_definition   &>(restart ));
         options.add_definition(const_cast<statistics_definition&>(statsdef));
         options.add_definition(const_cast<time_definition      &>(timedef ));
-        options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
+        options.add_definition(const_cast<noise_definition     &>(noisedef));
         options.add_definition(const_cast<signal_definition    &>(sigdef  ));
 
         options.add_options()
