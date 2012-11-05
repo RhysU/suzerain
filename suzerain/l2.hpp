@@ -49,7 +49,7 @@ struct L2 {
  * See writeup/L2.tex for full details.
  */
 std::vector<L2>
-field_L2(const contiguous_state<4,complex_t> &state,
+compute_field_L2(const contiguous_state<4,complex_t> &state,
          const problem::GridDefinition& grid,
          const pencil_grid& dgrid,
          const bsplineop& gop);

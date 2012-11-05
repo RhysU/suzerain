@@ -313,7 +313,7 @@ Driver::log_status_L2(
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
     const std::vector<L2> result
-        = field_L2(*state_nonlinear, grid, *dgrid, *gop);
+        = compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << timeprefix;

@@ -216,7 +216,7 @@ static void information_L2(const std::string& prefix,
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
     const std::vector<suzerain::L2> L2
-        = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+        = suzerain::compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << prefix;
@@ -325,7 +325,7 @@ static void information_manufactured_solution_absolute_error(
             1, *msoln, -1, *state_nonlinear,
             grid, *dgrid, *b, *bop, simulation_time);
     const std::vector<suzerain::L2> L2
-        = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+        = suzerain::compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
     std::ostringstream msg;
@@ -1554,7 +1554,7 @@ int main(int argc, char **argv)
         }
         state_nonlinear->add_scaled(1/chi, *state_linear);
         const std::vector<suzerain::L2> L2
-            = suzerain::field_L2(*state_nonlinear, grid, *dgrid, *gop);
+            = suzerain::compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
         const double elapsed = MPI_Wtime() - starttime;
         DEBUG0("Computed linearization error in " << elapsed << " seconds");
 
