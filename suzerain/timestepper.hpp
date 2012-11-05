@@ -1179,7 +1179,7 @@ Constants<Scheme,Component,Integer>::iota_beta = {};
  * @see SMR91 or Yang11 for examples of valid Schemes to supply.
  */
 template <template <typename,typename> class Scheme, typename Element>
-class Method : public method_interface<Element>
+class method : public method_interface<Element>
 {
 
 public:
@@ -1198,7 +1198,7 @@ public:
      *                    magnitudes in evmaxmag_real() and evmaxmag_imag(),
      *                    respectively.
      */
-    explicit Method(component evmagfactor = 1)
+    explicit method(component evmagfactor = 1)
         : evmaxmag_real_(evmagfactor * constants::evmaxmag_real()),
           evmaxmag_imag_(evmagfactor * constants::evmaxmag_imag())
         { assert(evmagfactor > 0); }
@@ -1407,7 +1407,7 @@ const Integer Yang11<Component,Integer>::gamma_numerator[substeps] = {
  * type may be supplied to this method.
  *
  * @param m The low storage scheme to use.
- *          For example, Method in conjunction with SMR91.
+ *          For example, method in conjunction with SMR91.
  * @param L The linear operator to be treated implicitly.
  * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N The nonlinear operator to be treated explicitly.
@@ -1473,7 +1473,7 @@ const typename traits::component<Element>::type substep(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, Method in conjunction with SMR91.
+ *                For example, method in conjunction with SMR91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
  *                employ a custom functor compatible with delta_t_reducer to add
@@ -1556,7 +1556,7 @@ const typename traits::component<Element>::type step(
  * optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
- *                For example, Method in conjunction with SMR91.
+ *                For example, method in conjunction with SMR91.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N       The nonlinear operator to be treated explicitly.
@@ -1641,7 +1641,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, Method in conjunction with SMR91.
+     *                  For example, method in conjunction with SMR91.
      * @param reducer   A stateful functor taking a vector of stable time step
      *                  candidates down to a single stable time step.  Users
      *                  may employ a custom functor compatible with
@@ -1739,7 +1739,7 @@ public:
      * given operators and storage.
      *
      * @param m         The low storage scheme to use.
-     *                  For example, Method in conjunction with SMR91.
+     *                  For example, method in conjunction with SMR91.
      * @param L         The linear operator to be treated implicitly.
      * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
      *                  operator.
