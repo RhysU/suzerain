@@ -20,12 +20,13 @@
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/validation.hpp>
 
-namespace suzerain {
+namespace suzerain
+{
 
 template<typename T>
-static void parse_option(const std::string &s,
-                         T *value, void (*validator)(T, const char *),
-                         const char *name)
+static void parse_option(const std::string& s,
+                         T* value, void (*validator)(T, const char*),
+                         const char* name)
 {
 #pragma warning(push,disable:2259)
     const T t = exprparse<real_t>(s, name);
@@ -35,12 +36,12 @@ static void parse_option(const std::string &s,
 }
 
 restart_definition::restart_definition(
-        const std::string& metadata,
-        const std::string& uncommitted,
-        const std::string& destination,
-        int retain,
-        real_t dt,
-        int nt)
+    const std::string& metadata,
+    const std::string& uncommitted,
+    const std::string& destination,
+    int retain,
+    real_t dt,
+    int nt)
     : definition_base("Restart-related parameters"),
       metadata(metadata),
       uncommitted(uncommitted),
@@ -59,37 +60,37 @@ restart_definition::restart_definition(
     using validation::ensure_positive;
 
     this->add_options()
-        ("metadata", value(&this->metadata)
-            ->default_value(this->metadata),
-         "Path to use when saving common metadata for output files.  "
-         "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-        ("uncommitted", value(&this->uncommitted)
-            ->default_value(this->uncommitted),
-         "Path to use when saving uncommitted output files.  "
-         "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-        ("restart_destination", value(&this->destination)
-            ->default_value(this->destination),
-         "Archiving destination to use when committing restart files.  "
-         "One or more #'s must be present and will be replaced by a sequence number.  "
-         "Any trailing \"XXXXXX\" will be used to generate a unique template.")
-        ("restart_retain", value<string>(NULL)
-            ->notifier(bind(&parse_option<int>, _1, &this->retain,
-                            &ensure_nonnegative<int>, "restart_retain"))
-            ->default_value(lexical_cast<string>(this->retain)),
-         "Maximum number of committed restart files to retain")
-        ("restart_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
-                            &ensure_nonnegative<real_t>, "restart_dt"))
-            ->default_value(lexical_cast<string>(this->dt)),
-         "Maximum amount of simulation time between restart files")
-        ("restart_nt", value<string>(NULL)
-            ->notifier(bind(&parse_option<int>, _1, &this->nt,
-                            &ensure_nonnegative<int>, "restart_nt"))
-            ->default_value(lexical_cast<string>(this->nt)),
-         "Maximum number of time steps between restart files")
-        ("restart_physical", bool_switch(&this->physical),
-         "Specify flag to save restart fields as primitive variables "
-         "stored at collocation points in physical space")
+    ("metadata", value(&this->metadata)
+     ->default_value(this->metadata),
+     "Path to use when saving common metadata for output files.  "
+     "Any trailing \"XXXXXX\" will be used to generate a unique name.")
+    ("uncommitted", value(&this->uncommitted)
+     ->default_value(this->uncommitted),
+     "Path to use when saving uncommitted output files.  "
+     "Any trailing \"XXXXXX\" will be used to generate a unique name.")
+    ("restart_destination", value(&this->destination)
+     ->default_value(this->destination),
+     "Archiving destination to use when committing restart files.  "
+     "One or more #'s must be present and will be replaced by a sequence number.  "
+     "Any trailing \"XXXXXX\" will be used to generate a unique template.")
+    ("restart_retain", value<string>(NULL)
+     ->notifier(bind(&parse_option<int>, _1, &this->retain,
+                     &ensure_nonnegative<int>, "restart_retain"))
+     ->default_value(lexical_cast<string>(this->retain)),
+     "Maximum number of committed restart files to retain")
+    ("restart_dt", value<string>(NULL)
+     ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+                     &ensure_nonnegative<real_t>, "restart_dt"))
+     ->default_value(lexical_cast<string>(this->dt)),
+     "Maximum amount of simulation time between restart files")
+    ("restart_nt", value<string>(NULL)
+     ->notifier(bind(&parse_option<int>, _1, &this->nt,
+                     &ensure_nonnegative<int>, "restart_nt"))
+     ->default_value(lexical_cast<string>(this->nt)),
+     "Maximum number of time steps between restart files")
+    ("restart_physical", bool_switch(&this->physical),
+     "Specify flag to save restart fields as primitive variables "
+     "stored at collocation points in physical space")
     ;
 }
 

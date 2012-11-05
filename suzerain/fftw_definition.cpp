@@ -28,7 +28,8 @@
 #endif
 #include <suzerain/fftw_definition.hpp>
 
-namespace suzerain {
+namespace suzerain
+{
 
 void fftw_definition::normalize_rigor_fft(std::string input)
 {
@@ -41,8 +42,8 @@ void fftw_definition::normalize_rigor_mpi(std::string input)
 }
 
 fftw_definition::fftw_definition(
-        const fftw::rigor rigor_fft,
-        const fftw::rigor rigor_mpi)
+    const fftw::rigor rigor_fft,
+    const fftw::rigor rigor_mpi)
     : definition_base("FFTW planning options:"),
       rigor_fft(rigor_fft),
       rigor_mpi(rigor_mpi)
@@ -75,25 +76,25 @@ fftw_definition::fftw_definition(
     rigor_mpi_description += rigor_options;
 
     this->add_options()
-        ("rigor_fft",
-         po::value<std::string>(NULL)
-                ->notifier(bind1st(
-                        mem_fun(&fftw_definition::normalize_rigor_fft), this))
-                ->default_value(fftw::c_str(rigor_fft)),
-         rigor_fft_description.c_str())
-        ("rigor_mpi",
-          po::value<std::string>(NULL)
-                ->notifier(bind1st(
-                        mem_fun(&fftw_definition::normalize_rigor_mpi), this))
-                ->default_value(fftw::c_str(rigor_mpi)),
-         rigor_mpi_description.c_str())
-        ("plan_wisdom",
-          po::value(&plan_wisdom),
-         "File used for accumulating FFTW planning wisdom")
-        ("plan_timelimit",
-          po::value(&plan_timelimit)
-                ->default_value(FFTW_NO_TIMELIMIT, "unlimited"),
-         "Maximum number of seconds allowed for creating any single FFTW plan")
+    ("rigor_fft",
+     po::value<std::string>(NULL)
+     ->notifier(bind1st(
+                    mem_fun(&fftw_definition::normalize_rigor_fft), this))
+     ->default_value(fftw::c_str(rigor_fft)),
+     rigor_fft_description.c_str())
+    ("rigor_mpi",
+     po::value<std::string>(NULL)
+     ->notifier(bind1st(
+                    mem_fun(&fftw_definition::normalize_rigor_mpi), this))
+     ->default_value(fftw::c_str(rigor_mpi)),
+     rigor_mpi_description.c_str())
+    ("plan_wisdom",
+     po::value(&plan_wisdom),
+     "File used for accumulating FFTW planning wisdom")
+    ("plan_timelimit",
+     po::value(&plan_timelimit)
+     ->default_value(FFTW_NO_TIMELIMIT, "unlimited"),
+     "Maximum number of seconds allowed for creating any single FFTW plan")
     ;
 }
 

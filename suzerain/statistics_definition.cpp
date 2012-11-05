@@ -20,12 +20,13 @@
 #include <suzerain/statistics_definition.hpp>
 #include <suzerain/validation.hpp>
 
-namespace suzerain {
+namespace suzerain
+{
 
 template<typename T>
-static void parse_option(const std::string &s,
-                         T *value, void (*validator)(T, const char *),
-                         const char *name)
+static void parse_option(const std::string& s,
+                         T* value, void (*validator)(T, const char*),
+                         const char* name)
 {
 #pragma warning(push,disable:2259)
     const T t = exprparse<real_t>(s, name);
@@ -35,10 +36,10 @@ static void parse_option(const std::string &s,
 }
 
 statistics_definition::statistics_definition(
-        const std::string& destination,
-        int retain,
-        real_t dt,
-        int nt)
+    const std::string& destination,
+    int retain,
+    real_t dt,
+    int nt)
     : definition_base("Statistics sampling parameters"),
       destination(destination),
       retain(retain),
@@ -54,26 +55,26 @@ statistics_definition::statistics_definition(
     using validation::ensure_positive;
 
     this->add_options()
-        ("statistics_destination", value(&this->destination)
-            ->default_value(this->destination),
-         "Archiving destination to use when committing statistics files.  "
-         "One or more #'s must be present and will be replaced by a sequence number.  "
-         "Any trailing \"XXXXXX\" will be used to generate a unique template.")
-        ("statistics_retain", value<string>(NULL)
-            ->notifier(bind(&parse_option<int>, _1, &this->retain,
-                            &ensure_nonnegative<int>, "statistics_retain"))
-            ->default_value(lexical_cast<string>(this->retain)),
-         "Maximum number of committed statistics files to retain")
-        ("statistics_dt", value<string>(NULL)
-            ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
-                            &ensure_nonnegative<real_t>, "statistics_dt"))
-            ->default_value(lexical_cast<string>(this->dt)),
-         "Maximum amount of simulation time between sampling statistics")
-        ("statistics_nt", value<string>(NULL)
-            ->notifier(bind(&parse_option<int>, _1, &this->nt,
-                            &ensure_nonnegative<int>, "statistics_nt"))
-            ->default_value(lexical_cast<string>(this->nt)),
-         "Maximum number of time steps between sampling statistics")
+    ("statistics_destination", value(&this->destination)
+     ->default_value(this->destination),
+     "Archiving destination to use when committing statistics files.  "
+     "One or more #'s must be present and will be replaced by a sequence number.  "
+     "Any trailing \"XXXXXX\" will be used to generate a unique template.")
+    ("statistics_retain", value<string>(NULL)
+     ->notifier(bind(&parse_option<int>, _1, &this->retain,
+                     &ensure_nonnegative<int>, "statistics_retain"))
+     ->default_value(lexical_cast<string>(this->retain)),
+     "Maximum number of committed statistics files to retain")
+    ("statistics_dt", value<string>(NULL)
+     ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+                     &ensure_nonnegative<real_t>, "statistics_dt"))
+     ->default_value(lexical_cast<string>(this->dt)),
+     "Maximum amount of simulation time between sampling statistics")
+    ("statistics_nt", value<string>(NULL)
+     ->notifier(bind(&parse_option<int>, _1, &this->nt,
+                     &ensure_nonnegative<int>, "statistics_nt"))
+     ->default_value(lexical_cast<string>(this->nt)),
+     "Maximum number of time steps between sampling statistics")
     ;
 }
 
