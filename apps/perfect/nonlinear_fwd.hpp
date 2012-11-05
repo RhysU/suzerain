@@ -364,7 +364,7 @@ enum type {
 } // namespace slowgrowth
 
 /**
- * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
+ * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
  * <tt>timestepper::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
@@ -418,7 +418,7 @@ enum type {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per timestepper::nonlinear_operator::applyOperator.
+ *         per timestepper::nonlinear_operator::apply_operator.
  *
  * @see timestepper::nonlinear_operator for the (slighly different)
  *      interface that an actual operator would provide.

@@ -100,7 +100,7 @@ public:
             const double delta_t = std::numeric_limits<double>::infinity())
         : a(a), b(b), delta_t(delta_t) {};
 
-    virtual std::vector<double> applyOperator(
+    virtual std::vector<double> apply_operator(
             const double time,
             ref<double,3>& state,
             const double evmaxmag_real,
@@ -177,7 +177,7 @@ public:
     CosineExplicitOperator(const double delta_t = double_NaN)
         : delta_t(delta_t) { };
 
-    virtual std::vector<double> applyOperator(
+    virtual std::vector<double> apply_operator(
             const double time,
             ref<double,3> & state,
             const double evmaxmag_real,
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( MultiplicativeOperator_sanity )
 
-BOOST_AUTO_TEST_CASE( applyOperator )
+BOOST_AUTO_TEST_CASE( apply_operator )
 {
     typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
@@ -457,11 +457,11 @@ BOOST_AUTO_TEST_CASE( applyOperator )
     a[0][0][0] = 1.0;
 
     op_type op(2.0);
-    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 2.0, close_enough);
-    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 4.0, close_enough);
-    op.applyOperator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
@@ -523,7 +523,7 @@ public:
                             const double delta_t = double_NaN)
         : a(a), b(b), delta_t(delta_t) { };
 
-    virtual std::vector<double> applyOperator(
+    virtual std::vector<double> apply_operator(
             const double time,
             ref<double,3> & state,
             const double evmaxmag_real,

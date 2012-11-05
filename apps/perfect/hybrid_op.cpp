@@ -676,7 +676,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-std::vector<real_t> HybridNonlinearOperator::applyOperator(
+std::vector<real_t> HybridNonlinearOperator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,

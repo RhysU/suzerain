@@ -234,7 +234,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-std::vector<real_t> NonlinearOperator::applyOperator(
+std::vector<real_t> NonlinearOperator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,

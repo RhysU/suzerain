@@ -78,7 +78,7 @@ public:
      *         Returning results from multiple criteria allows monitoring
      *         the relative restrictness of each criterion.
      */
-    virtual std::vector<component> applyOperator(
+    virtual std::vector<component> apply_operator(
             const component time,
             State& state,
             const component evmaxmag_real,
@@ -735,7 +735,7 @@ public:
      *
      * @param factor uniform scaling factor to apply.
      * @param delta_t uniform, presumably stable time step to
-     *        always return from applyOperator().
+     *        always return from apply_operator().
      */
     template< typename FactorType, typename DeltaTType >
     MultiplicativeOperator(const FactorType& factor, const DeltaTType& delta_t)
@@ -764,7 +764,7 @@ public:
      *
      * @return The \c delta_t provided at construction time.
      */
-    virtual std::vector<component> applyOperator(
+    virtual std::vector<component> apply_operator(
             const component time,
             StateB& state,
             const component evmaxmag_real,
@@ -1456,7 +1456,7 @@ const typename traits::component<Element>::type substep(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b,
             m, delta_t, substep_index);
-    N.applyOperator(time + delta_t * m.eta(substep_index), a,
+    N.apply_operator(time + delta_t * m.eta(substep_index), a,
                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.add_scaled(chi * delta_t * m.gamma(substep_index), a);
     L.invertMassPlusScaledOperator(-delta_t * m.beta(substep_index), b,
@@ -1522,7 +1522,7 @@ const typename traits::component<Element>::type step(
     // First substep handling is special since we need to determine delta_t
     b.assign(a);
     const std::vector<component_type> delta_t_candidates
-        = N.applyOperator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(), 0);
+        = N.apply_operator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(), 0);
     component_type delta_t = reducer(delta_t_candidates);
 
     if (max_delta_t > 0) {
@@ -1539,7 +1539,7 @@ const typename traits::component<Element>::type step(
                 chi * delta_t * m.zeta(i), b,
                 m, delta_t, i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
-        N.applyOperator(time + delta_t * m.eta(i), b,
+        N.apply_operator(time + delta_t * m.eta(i), b,
                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.add_scaled(chi * delta_t * m.gamma(i), b);
         L.invertMassPlusScaledOperator(-delta_t * m.beta(i), a, m, delta_t, i);

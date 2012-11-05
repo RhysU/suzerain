@@ -1164,7 +1164,7 @@ void accumulate_manufactured_solution(
 }
 
 // This looks like logic from explicit_op.cpp but does not belong there.
-// Reading through that file, especially the NonlinearOperator::applyOperator
+// Reading through that file, especially the NonlinearOperator::apply_operator
 // implementation, is recommended before reviewing this logic.  This routine is
 // definitely suboptimal but is expected to be invoked very infrequently and
 // therefore to not be a prime target for optimization.

@@ -1526,7 +1526,7 @@ int main(int argc, char **argv)
         const double starttime = MPI_Wtime();
         state_nonlinear->assign(*state_linear);
         common_block.setZero(grid.dN.y());  // Defensive
-        N->applyOperator(tc->current_t(), *state_nonlinear,
+        N->apply_operator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
         L->accumulateMassPlusScaledOperator(
                 1., *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
@@ -1542,7 +1542,7 @@ int main(int argc, char **argv)
                 dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
         }
         state_nonlinear->exchange(*state_linear);
-        N->applyOperator(tc->current_t(), *state_nonlinear,
+        N->apply_operator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/1);
         for (size_t k = 0; k < fields.size(); ++k) {
             suzerain::diffwave::apply(0, 0, 1., (*state_nonlinear)[k].origin(),
