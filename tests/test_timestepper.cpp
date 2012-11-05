@@ -44,7 +44,7 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 // Shorthand
 namespace mpl = boost::mpl;
 using suzerain::InterleavedState;
-using suzerain::ContiguousState;
+using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
 using suzerain::timestepper::INonlinearOperator;
 using suzerain::timestepper::lowstorage::ILinearOperator;
@@ -56,20 +56,20 @@ using suzerain::timestepper::lowstorage::timecontroller;
 
 // Explicit template instantiation to hopefully speed compilation
 template class InterleavedState<3,double>;
-template class ContiguousState<3,double>;
+template class contiguous_state<3,double>;
 
 // State types to be tested against themselves
 typedef mpl::list<
-        ContiguousState<3,double>,
+        contiguous_state<3,double>,
         InterleavedState<3,double>
     > state_types;
 
 // Pairs of state types to be tested for interoperability
 typedef mpl::list<
-        mpl::vector<ContiguousState <3,double>, ContiguousState <3,double> >,
+        mpl::vector<contiguous_state <3,double>, contiguous_state <3,double> >,
         mpl::vector<InterleavedState<3,double>, InterleavedState<3,double> >,
-        mpl::vector<ContiguousState <3,double>, InterleavedState<3,double> >,
-        mpl::vector<InterleavedState<3,double>, ContiguousState <3,double> >
+        mpl::vector<contiguous_state <3,double>, InterleavedState<3,double> >,
+        mpl::vector<InterleavedState<3,double>, contiguous_state <3,double> >
     > state_type_pairs;
 
 // Helper method for providing 3D size information
@@ -112,7 +112,7 @@ public:
         SUZERAIN_UNUSED(evmaxmag_imag);
         SUZERAIN_UNUSED(substep_index);
 
-        typedef ContiguousState<3,double>::index index;
+        typedef contiguous_state<3,double>::index index;
         for (index i = 0; i < (index) state.shape()[0]; ++i) {
             for (index k = 0; k < (index) state.shape()[2]; ++k) {
                 for (index j = 0; j < (index) state.shape()[1]; ++j) {
@@ -450,10 +450,10 @@ BOOST_AUTO_TEST_SUITE( MultiplicativeOperator_sanity )
 
 BOOST_AUTO_TEST_CASE( applyOperator )
 {
-    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
+    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
-    ContiguousState<3,double> a(size3(1,1,1));
+    contiguous_state<3,double> a(size3(1,1,1));
     a[0][0][0] = 1.0;
 
     op_type op(2.0);
@@ -471,10 +471,10 @@ BOOST_AUTO_TEST_CASE( applyOperator )
 BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 {
     const Method<SMR91,double> m;
-    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
+    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
-    ContiguousState<3,double> a(size3(1,1,1)), b(size3(1,1,1));
+    contiguous_state<3,double> a(size3(1,1,1)), b(size3(1,1,1));
     a[0][0][0] = 2.0;
     b[0][0][0] = 3.0;
 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
     BOOST_CHECK_CLOSE(a[0][0][0], 77.0, close_enough);
 
     // Ensure we catch an operation between two nonconforming states
-    ContiguousState<3,double> c(size3(2,1,1));
+    contiguous_state<3,double> c(size3(2,1,1));
     BOOST_CHECK_THROW(op.accumulateMassPlusScaledOperator(3.0, b, 1.0, c, m),
                       std::logic_error);
 }
@@ -493,10 +493,10 @@ BOOST_AUTO_TEST_CASE( accumulateMassPlusScaledOperator )
 BOOST_AUTO_TEST_CASE( invertMassPlusScaledOperator )
 {
     const Method<SMR91,double> m;
-    typedef MultiplicativeOperator<ContiguousState<3,double> > op_type;
+    typedef MultiplicativeOperator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
-    ContiguousState<3,double> a(size3(1,1,1));
+    contiguous_state<3,double> a(size3(1,1,1));
     a[0][0][0] = 2.0;
 
     op_type op(3.0);
@@ -1069,33 +1069,33 @@ template class timecontroller<
         void // Default Reducer behavior
     >;
 
-// timecontroller for ContiguousState
+// timecontroller for contiguous_state
 template class timecontroller<
-        ContiguousState<3,double>, ContiguousState<3,double>,
+        contiguous_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        ContiguousState<3,double>, ContiguousState<3,double>,
+        contiguous_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
 // timecontroller for {Interleaved,Contiguous}State
 template class timecontroller<
-        InterleavedState<3,double>, ContiguousState<3,double>,
+        InterleavedState<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        InterleavedState<3,double>, ContiguousState<3,double>,
+        InterleavedState<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
 // timecontroller for {Contiguous,Interleaved}State
 template class timecontroller<
-        ContiguousState<3,double>, InterleavedState<3,double>,
+        contiguous_state<3,double>, InterleavedState<3,double>,
         suzerain::timestepper::DeltaTReducer
     >;
 template class timecontroller<
-        ContiguousState<3,double>, InterleavedState<3,double>,
+        contiguous_state<3,double>, InterleavedState<3,double>,
         void // Default reducer behavior
     >;
 

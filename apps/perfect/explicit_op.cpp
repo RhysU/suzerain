@@ -86,7 +86,7 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
-        ContiguousState<4,complex_t> &output,
+        contiguous_state<4,complex_t> &output,
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
@@ -102,14 +102,14 @@ void BsplineMassOperator::accumulateMassPlusScaledOperator(
     SUZERAIN_ENSURE(output.isIsomorphic(input));
 
     const multi_array::ref<complex_t,4> &x = input;  // Shorthand
-    ContiguousState<4,complex_t>        &y = output; // Shorthand
+    contiguous_state<4,complex_t>        &y = output; // Shorthand
     const complex_t c_one = 1;
 
     // Sidesteps assertions triggered by dereferencing trivial input and output
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1] * x.shape()[2])) return;
 
-    // Loops go from slower to faster indices for ContiguousState<4,complex_t>
-    typedef ContiguousState<4,complex_t>::index index;
+    // Loops go from slower to faster indices for contiguous_state<4,complex_t>
+    typedef contiguous_state<4,complex_t>::index index;
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
         ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
         ++ix, ++iy) {
@@ -236,7 +236,7 @@ void BsplineMassOperatorIsothermal::invertMassPlusScaledOperator(
 
 std::vector<real_t> NonlinearOperator::applyOperator(
             const real_t time,
-            ContiguousState<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const

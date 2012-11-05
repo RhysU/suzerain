@@ -49,7 +49,7 @@ class HybridIsothermalLinearOperator
   : public operator_base,
     public timestepper::lowstorage::ILinearOperator<
         multi_array::ref<complex_t,4>,
-        ContiguousState<4,complex_t>
+        contiguous_state<4,complex_t>
     >
 {
 public:
@@ -85,7 +85,7 @@ public:
             const complex_t &phi,
             const multi_array::ref<complex_t,4> &input,
             const complex_t &beta,
-            ContiguousState<4,complex_t> &output,
+            contiguous_state<4,complex_t> &output,
             const timestepper::lowstorage::IMethod<complex_t> &method,
             const component delta_t,
             const std::size_t substep_index) const;
@@ -148,7 +148,7 @@ private:
 class HybridNonlinearOperator
     : public operator_base,
       public timestepper::INonlinearOperator<
-            ContiguousState<4,complex_t>
+            contiguous_state<4,complex_t>
       >
 {
 public:
@@ -173,7 +173,7 @@ public:
 
     virtual std::vector<real_t> applyOperator(
             const real_t time,
-            ContiguousState<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const;

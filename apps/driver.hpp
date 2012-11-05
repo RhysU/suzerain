@@ -61,7 +61,7 @@ public:
 
     typedef InterleavedState<4,complex_t> linear_state_type;
 
-    typedef ContiguousState<4,complex_t> nonlinear_state_type;
+    typedef contiguous_state<4,complex_t> nonlinear_state_type;
 
     Driver(const std::string &application_synopsis,
            const std::string &description = "",

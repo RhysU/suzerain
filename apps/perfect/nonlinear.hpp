@@ -57,14 +57,14 @@ std::vector<real_t> applyNonlinearOperator(
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            ContiguousState<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
 
     // Shorthand
-    typedef ContiguousState<4,complex_t> state_type;
+    typedef contiguous_state<4,complex_t> state_type;
     using std::abs;
     using std::equal;
     using std::max;

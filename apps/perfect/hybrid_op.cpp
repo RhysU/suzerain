@@ -158,7 +158,7 @@ void HybridIsothermalLinearOperator::accumulateMassPlusScaledOperator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
-        ContiguousState<4,complex_t> &output,
+        contiguous_state<4,complex_t> &output,
         const timestepper::lowstorage::IMethod<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index) const
@@ -678,7 +678,7 @@ void HybridIsothermalLinearOperator::invertMassPlusScaledOperator(
 
 std::vector<real_t> HybridNonlinearOperator::applyOperator(
             const real_t time,
-            ContiguousState<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const

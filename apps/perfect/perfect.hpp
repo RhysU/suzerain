@@ -104,7 +104,7 @@ void load(const esio_handle h,
  */
 void store_collocation_values(
         const esio_handle h,
-        ContiguousState<4,complex_t>& swave,
+        contiguous_state<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid,
@@ -117,7 +117,7 @@ void store_collocation_values(
  */
 void load_collocation_values(
         const esio_handle h,
-        ContiguousState<4,complex_t>& state,
+        contiguous_state<4,complex_t>& state,
         const ScenarioDefinition& scenario,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid,
@@ -129,7 +129,7 @@ void load_collocation_values(
  * or load_collocation_values() as necessary.
  */
 void load(const esio_handle h,
-          ContiguousState<4,complex_t>& state,
+          contiguous_state<4,complex_t>& state,
           const ScenarioDefinition& scenario,
           const problem::GridDefinition& grid,
           const pencil_grid& dgrid,
@@ -143,7 +143,7 @@ void load(const esio_handle h,
  * total energy fields using <tt>scenario.Ma</tt> and <tt>scenario.gamma</tt>.
  */
 void
-adjust_scenario(ContiguousState<4,complex_t> &swave,
+adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
                 const problem::GridDefinition& grid,
                 const pencil_grid& dgrid,
@@ -201,7 +201,7 @@ public:
  * the provided NoiseDefinition.
  */
 void
-add_noise(ContiguousState<4,complex_t> &state,
+add_noise(contiguous_state<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
           const problem::GridDefinition& grid,
@@ -221,7 +221,7 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        ContiguousState<4,complex_t> &swave,
+        contiguous_state<4,complex_t> &swave,
         const problem::GridDefinition &grid,
         const pencil_grid &dgrid,
         bspline &b,
@@ -460,7 +460,7 @@ mean sample_mean_quantities(
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
-        ContiguousState<4,complex_t> &swave,
+        contiguous_state<4,complex_t> &swave,
         const real_t t);
 
 /** Store a \ref mean instance in a restart file */

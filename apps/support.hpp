@@ -210,12 +210,12 @@ StateType* allocate_padded_state(
            const pencil_grid& dgrid);
 
 /**
- * Specialization of allocate_padded_state for ContiguousState.  Emphatically
+ * Specialization of allocate_padded_state for contiguous_state.  Emphatically
  * \em NOT thread safe.  The caller is responsible for <tt>delete</tt>-ing the
  * returned pointer.  No guarantees are made about the memory contents.
  */
 template<>
-ContiguousState<4,complex_t>* allocate_padded_state(
+contiguous_state<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
            const pencil_grid& dgrid);
 
@@ -228,7 +228,7 @@ ContiguousState<4,complex_t>* allocate_padded_state(
 void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
-        const ContiguousState<4,complex_t> &swave,
+        const contiguous_state<4,complex_t> &swave,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid);
 
@@ -239,7 +239,7 @@ void store_coefficients(
  */
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
-                       ContiguousState<4,complex_t> &state,
+                       contiguous_state<4,complex_t> &state,
                        const problem::GridDefinition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
@@ -426,7 +426,7 @@ struct physical_view {
      */
     static inline type create(
             const pencil_grid &dgrid,
-            ContiguousState<4,complex_t> &state,
+            contiguous_state<4,complex_t> &state,
             const int nfields = NFields)
     {
         if (NFields == Eigen::Dynamic || NFields == nfields) {

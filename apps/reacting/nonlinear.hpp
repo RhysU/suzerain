@@ -88,7 +88,7 @@ std::vector<real_t> applyNonlinearOperator(
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            suzerain::ContiguousState<4,complex_t> &swave,
+            suzerain::contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
             boost::shared_ptr<ConstitutiveLaws>& claws, // TODO: Decide if claws carries Ns (almost has to, right?)
@@ -99,7 +99,7 @@ std::vector<real_t> applyNonlinearOperator(
     assert(Ns>0);
 
     // Shorthand
-    typedef suzerain::ContiguousState<4,complex_t> state_type;
+    typedef suzerain::contiguous_state<4,complex_t> state_type;
     using Eigen::Vector3r;
     using Eigen::Matrix3r;
     using Eigen::VectorXr;

@@ -664,7 +664,7 @@ typedef boost::ptr_map<
 static padded_state_pools_type padded_state_pools;
 
 template<>
-ContiguousState<4,complex_t>* allocate_padded_state(
+contiguous_state<4,complex_t>* allocate_padded_state(
            const size_t howmany_fields,
            const pencil_grid& dgrid)
 {
@@ -689,8 +689,8 @@ ContiguousState<4,complex_t>* allocate_padded_state(
             boost::bind(&pool_type::release, boost::ref(*(it->second)), blocks));
 
     // Create instance using provided storage
-    ContiguousState<4,complex_t> * const retval =
-        new ContiguousState<4,complex_t>(
+    contiguous_state<4,complex_t> * const retval =
+        new contiguous_state<4,complex_t>(
             storage,
             to_yxz(howmany_fields, dgrid.local_wave_extent),
             prepend(dgrid.local_wave_storage(),
@@ -703,7 +703,7 @@ ContiguousState<4,complex_t>* allocate_padded_state(
 void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
-        const ContiguousState<4,complex_t> &swave,
+        const contiguous_state<4,complex_t> &swave,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid)
 {
@@ -788,13 +788,13 @@ real_t distance(const bspline& a,
 
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
-                       ContiguousState<4,complex_t> &state,
+                       contiguous_state<4,complex_t> &state,
                        const problem::GridDefinition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& bop)
 {
-    typedef ContiguousState<4,complex_t> load_type;
+    typedef contiguous_state<4,complex_t> load_type;
 
     // Ensure local state storage meets this routine's assumptions
     SUZERAIN_ENSURE(                  state.shape()[0]  == fields.size());

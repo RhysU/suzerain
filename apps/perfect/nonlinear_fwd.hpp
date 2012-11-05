@@ -366,7 +366,7 @@ enum type {
 /**
  * A complete Navier&ndash;Stokes \c applyOperator implementation.  The
  * implementation is provided as a common building block for
- * <tt>timestepper::INonlinearOperator< ContiguousState<4,complex_t> ></tt>
+ * <tt>timestepper::INonlinearOperator< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -437,7 +437,7 @@ std::vector<real_t> applyNonlinearOperator(
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            ContiguousState<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 

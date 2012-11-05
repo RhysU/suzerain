@@ -288,7 +288,7 @@ void load(const esio_handle h,
 
 void store_collocation_values(
         const esio_handle h,
-        ContiguousState<4,complex_t>& swave,
+        contiguous_state<4,complex_t>& swave,
         const ScenarioDefinition& scenario,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid,
@@ -382,7 +382,7 @@ void store_collocation_values(
 
 void load_collocation_values(
         const esio_handle h,
-        ContiguousState<4,complex_t>& state,
+        contiguous_state<4,complex_t>& state,
         const ScenarioDefinition& scenario,
         const problem::GridDefinition& grid,
         const pencil_grid& dgrid,
@@ -494,7 +494,7 @@ void load_collocation_values(
 }
 
 void load(const esio_handle h,
-          ContiguousState<4,complex_t>& state,
+          contiguous_state<4,complex_t>& state,
           const ScenarioDefinition& scenario,
           const problem::GridDefinition& grid,
           const pencil_grid& dgrid,
@@ -542,7 +542,7 @@ void load(const esio_handle h,
 }
 
 void
-adjust_scenario(ContiguousState<4,complex_t> &swave,
+adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const ScenarioDefinition& scenario,
                 const problem::GridDefinition& grid,
                 const pencil_grid& dgrid,
@@ -679,7 +679,7 @@ NoiseDefinition::NoiseDefinition(real_t percent,
 }
 
 void
-add_noise(ContiguousState<4,complex_t> &state,
+add_noise(contiguous_state<4,complex_t> &state,
           const NoiseDefinition& noisedef,
           const ScenarioDefinition& scenario,
           const problem::GridDefinition& grid,
@@ -797,10 +797,10 @@ add_noise(ContiguousState<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
 
     //  0) Allocate storage for state and three additional scalar fields.
-    boost::scoped_ptr<ContiguousState<4,complex_t> > _s_ptr( // RAII
-            support::allocate_padded_state<ContiguousState<4,complex_t> >(
+    boost::scoped_ptr<contiguous_state<4,complex_t> > _s_ptr( // RAII
+            support::allocate_padded_state<contiguous_state<4,complex_t> >(
                 state_count + 3, dgrid));
-    ContiguousState<4,complex_t> &s = *_s_ptr;               // Shorthand
+    contiguous_state<4,complex_t> &s = *_s_ptr;               // Shorthand
     std::fill(s.range().begin(), s.range().end(), 0);        // Zero memory
 
     // 1) Generate a random vector-valued field \tilde{A}.
@@ -1041,7 +1041,7 @@ void accumulate_manufactured_solution(
         const real_t alpha,
         const manufactured_solution &msoln,
         const real_t beta,
-        ContiguousState<4,complex_t> &swave,
+        contiguous_state<4,complex_t> &swave,
         const problem::GridDefinition &grid,
         const pencil_grid &dgrid,
         bspline &b,
@@ -1061,9 +1061,9 @@ void accumulate_manufactured_solution(
     operator_base obase(grid, dgrid, b, bop);
 
     // Allocate one field of temporary storage for scratch purposes
-    boost::scoped_ptr<ContiguousState<4,complex_t> > _scratch_ptr( // RAII
-        support::allocate_padded_state<ContiguousState<4,complex_t> >(1,dgrid));
-    ContiguousState<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
+    boost::scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr( // RAII
+        support::allocate_padded_state<contiguous_state<4,complex_t> >(1,dgrid));
+    contiguous_state<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
     multi_array::fill(scratch, 0);                                 // Defensive
 
     // Prepare physical-space view of the wave-space scratch storage
@@ -1138,7 +1138,7 @@ void accumulate_manufactured_solution(
         if (SUZERAIN_UNLIKELY(0U == scratch.shape()[1])) {
             continue;  // Sidestep assertions on trivial data
         }
-        typedef ContiguousState<4,complex_t>::index index;
+        typedef contiguous_state<4,complex_t>::index index;
         const index ku = boost::numeric_cast<index>(
                                 scratch.index_bases()[2] + scratch.shape()[2]);
         const index lu = boost::numeric_cast<index>(
@@ -1174,7 +1174,7 @@ mean sample_mean_quantities(
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &bop,
-        ContiguousState<4,complex_t> &swave,
+        contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
     // We are only prepared to handle a fixed number of fields in this routine
@@ -1183,7 +1183,7 @@ mean sample_mean_quantities(
     // Shorthand
     const size_t Ny = swave.shape()[1];
     namespace acc = boost::accumulators;
-    typedef ContiguousState<4,complex_t> state_type;
+    typedef contiguous_state<4,complex_t> state_type;
 
     // State enters method as coefficients in X, Y, and Z directions
 

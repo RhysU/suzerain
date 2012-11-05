@@ -23,7 +23,7 @@
 #include <suzerain/storage.hpp>
 
 // TODO Document better
-// TODO Allow InterleavedState/ContiguousState to interoperate
+// TODO Allow InterleavedState/contiguous_state to interoperate
 
 /** @file
  * Provide interfaces for describing and manipulating mutable state vectors.
@@ -44,7 +44,7 @@ namespace suzerain
 
 // Mandatory forward declarations
 template<typename Derived> struct state_base;
-template<std::size_t Dim, typename Element> class ContiguousState;
+template<std::size_t Dim, typename Element> class contiguous_state;
 template<std::size_t Dim, typename Element> class InterleavedState;
 
 /** Implementation details for state_base */
@@ -54,9 +54,9 @@ namespace detail
 // Forward declaration for state_traits
 template<typename T> struct state_traits;
 
-/** Traits providing basic type details for ContiguousState */
+/** Traits providing basic type details for contiguous_state */
 template<std::size_t Dim, typename Element>
-struct state_traits<ContiguousState<Dim,Element> >
+struct state_traits<contiguous_state<Dim,Element> >
 {
     typedef Element element;
     typedef boost::multi_array_types::index index;
@@ -218,8 +218,8 @@ public:
  * @see #storage_order_type for more details on the storage used.
  */
 template< std::size_t Dim, typename Element >
-class ContiguousState
-    : public  state_base<ContiguousState<Dim,Element> >,
+class contiguous_state
+    : public  state_base<contiguous_state<Dim,Element> >,
       private shared_range<Element>,
       public  suzerain::multi_array::ref<Element, Dim>
 {
@@ -246,36 +246,36 @@ public:
     typedef typename storage::contiguous<Dim> storage_order_type;
 
     template<typename ExtentList>
-    explicit ContiguousState(const ExtentList& sizes);
+    explicit contiguous_state(const ExtentList& sizes);
 
     template<typename ExtentList>
-    ContiguousState(const shared_range_type& storage,
+    contiguous_state(const shared_range_type& storage,
                     const ExtentList& sizes);
 
     template<typename ExtentList, typename MinStrideList>
-    ContiguousState(const ExtentList& sizes,
+    contiguous_state(const ExtentList& sizes,
                     const MinStrideList& minstrides);
 
     template<typename ExtentList, typename MinStrideList>
-    ContiguousState(const shared_range_type& storage,
+    contiguous_state(const shared_range_type& storage,
                     const ExtentList& sizes,
                     const MinStrideList& minstrides);
 
-    ContiguousState(const ContiguousState& other);
+    contiguous_state(const contiguous_state& other);
 
     void scale(const Element& factor);
 
     void addScaled(const Element& factor,
-                   const ContiguousState& other);
+                   const contiguous_state& other);
 
     void addScaled(const Element& factor,
                    const multi_array_type& other);
 
-    void assign(const ContiguousState& other);
+    void assign(const contiguous_state& other);
 
     void assign(const multi_array_type& other);
 
-    void exchange(ContiguousState& other);
+    void exchange(contiguous_state& other);
 
     void exchange(multi_array_type& other);
 
@@ -292,7 +292,7 @@ public:
 private:
     // Disable assignment operators
     const multi_array_type& operator=( const multi_array_type& );
-    const ContiguousState& operator=( const ContiguousState& );
+    const contiguous_state& operator=( const contiguous_state& );
 };
 
 /**

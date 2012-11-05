@@ -33,7 +33,7 @@ namespace suzerain
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-ContiguousState<Dim,Element>::ContiguousState(
+contiguous_state<Dim,Element>::contiguous_state(
         const ExtentList& sizes)
     : shared_range_type(allocate_shared_range(
                 typename blas::allocator<Element>::type(),
@@ -45,7 +45,7 @@ ContiguousState<Dim,Element>::ContiguousState(
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList >
-ContiguousState<Dim,Element>::ContiguousState(
+contiguous_state<Dim,Element>::contiguous_state(
         const shared_range_type& storage,
         const ExtentList& sizes)
     : shared_range_type(storage),
@@ -64,7 +64,7 @@ ContiguousState<Dim,Element>::ContiguousState(
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList, typename MinStrideList >
-ContiguousState<Dim,Element>::ContiguousState(
+contiguous_state<Dim,Element>::contiguous_state(
         const ExtentList& sizes,
         const MinStrideList& minstrides)
     : shared_range_type(allocate_shared_range(
@@ -79,7 +79,7 @@ ContiguousState<Dim,Element>::ContiguousState(
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList, typename MinStrideList >
-ContiguousState<Dim,Element>::ContiguousState(
+contiguous_state<Dim,Element>::contiguous_state(
         const shared_range_type& storage,
         const ExtentList& sizes,
         const MinStrideList& minstrides)
@@ -99,8 +99,8 @@ ContiguousState<Dim,Element>::ContiguousState(
 }
 
 template< std::size_t Dim, typename Element >
-ContiguousState<Dim,Element>::ContiguousState(
-        const ContiguousState& other)
+contiguous_state<Dim,Element>::contiguous_state(
+        const contiguous_state& other)
     : shared_range_type(clone_shared_range(
                 typename blas::allocator<Element>::type(),
                 other.range())),
@@ -114,7 +114,7 @@ ContiguousState<Dim,Element>::ContiguousState(
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::scale(
+void contiguous_state<Dim,Element>::scale(
         const Element& factor)
 {
     blas::scal(shared_range_type::size(), factor,
@@ -126,7 +126,7 @@ namespace detail {
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,1>& x,
-           ContiguousState<1,Element>&  y)
+           contiguous_state<1,Element>&  y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -138,16 +138,16 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,2>& x,
-           ContiguousState<2,Element>&  y)
+           contiguous_state<2,Element>&  y)
 {
-    typedef typename ContiguousState<2,Element>::index index;
+    typedef typename contiguous_state<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
     using boost::numeric_cast;
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
 
-    // Loops go from slower to faster indices for ContiguousState<2,Element>
+    // Loops go from slower to faster indices for contiguous_state<2,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -161,9 +161,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,3>& x,
-           ContiguousState<3,Element>&  y)
+           contiguous_state<3,Element>&  y)
 {
-    typedef typename ContiguousState<3,Element>::index index;
+    typedef typename contiguous_state<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -171,7 +171,7 @@ void apply(BLASFunctor functor,
     const index iu = numeric_cast<index>(x.index_bases()[0] + x.shape()[0]);
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
 
-    // Loops go from slower to faster indices for ContiguousState<3,Element>
+    // Loops go from slower to faster indices for contiguous_state<3,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -190,9 +190,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,4>& x,
-           ContiguousState<4,Element>&  y)
+           contiguous_state<4,Element>&  y)
 {
-    typedef typename ContiguousState<4,Element>::index index;
+    typedef typename contiguous_state<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -201,7 +201,7 @@ void apply(BLASFunctor functor,
     const index ku = numeric_cast<index>(x.index_bases()[2] + x.shape()[2]);
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
 
-    // Loops go from slower to faster indices for ContiguousState<4,Element>
+    // Loops go from slower to faster indices for contiguous_state<4,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -225,9 +225,9 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,5>& x,
-           ContiguousState<5,Element>&  y)
+           contiguous_state<5,Element>&  y)
 {
-    typedef typename ContiguousState<5,Element>::index index;
+    typedef typename contiguous_state<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
     if (SUZERAIN_UNLIKELY(0U == x.shape()[1])) return;  // Sidesteps assertions
 
@@ -237,7 +237,7 @@ void apply(BLASFunctor functor,
     const index lu = numeric_cast<index>(x.index_bases()[3] + x.shape()[3]);
     const index mu = numeric_cast<index>(x.index_bases()[4] + x.shape()[4]);
 
-    // Loops go from slower to faster indices for ContiguousState<5,Element>
+    // Loops go from slower to faster indices for contiguous_state<5,Element>
     for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
          ix < iu;
          ++ix, ++iy) {
@@ -410,9 +410,9 @@ void apply(BLASFunctor functor,
 } // namespace detail
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::addScaled(
+void contiguous_state<Dim,Element>::addScaled(
             const Element& factor,
-            const ContiguousState& other)
+            const contiguous_state& other)
 {
     SUZERAIN_ENSURE_MSGEXCEPT(this != boost::addressof(other),
             "Detected this->addScaled(...,this)", std::invalid_argument);
@@ -427,12 +427,12 @@ void ContiguousState<Dim,Element>::addScaled(
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(blas::functor::axpy<Element>(factor),
-                      const_cast<ContiguousState&>(other), *this);
+                      const_cast<contiguous_state&>(other), *this);
     }
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::addScaled(
+void contiguous_state<Dim,Element>::addScaled(
             const Element& factor,
             const multi_array_type& other)
 {
@@ -445,8 +445,8 @@ void ContiguousState<Dim,Element>::addScaled(
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::assign(
-            const ContiguousState& other)
+void contiguous_state<Dim,Element>::assign(
+            const contiguous_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
     SUZERAIN_ENSURE_EXCEPT(this->isIsomorphic(other), std::invalid_argument);
@@ -460,12 +460,12 @@ void ContiguousState<Dim,Element>::assign(
     } else {
         // Different strides between elements: loop over BLAS calls
         detail::apply(blas::functor::copy(),
-                      const_cast<ContiguousState&>(other), *this);
+                      const_cast<contiguous_state&>(other), *this);
     }
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::assign(
+void contiguous_state<Dim,Element>::assign(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -477,8 +477,8 @@ void ContiguousState<Dim,Element>::assign(
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::exchange(
-            ContiguousState& other)
+void contiguous_state<Dim,Element>::exchange(
+            contiguous_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
 
@@ -497,7 +497,7 @@ void ContiguousState<Dim,Element>::exchange(
 }
 
 template< std::size_t Dim, typename Element >
-void ContiguousState<Dim,Element>::exchange(
+void contiguous_state<Dim,Element>::exchange(
             multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?

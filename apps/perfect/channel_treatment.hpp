@@ -44,7 +44,7 @@ namespace suzerain { namespace perfect {
 /**
  * A mixin providing channel problem treatment atop any
  * <tt>
- *    public timestepper::INonlinearOperator< ContiguousState<4,complex_t> >
+ *    public timestepper::INonlinearOperator< contiguous_state<4,complex_t> >
  * </tt>.  During \ref invertMassPlusScaledOperator implicit momentum forcing
  * is applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
