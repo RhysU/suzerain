@@ -930,7 +930,7 @@ make_multiplicative_operator(
 template <template <typename,typename> class Scheme,
           typename Component,
           typename Integer = std::ptrdiff_t>
-class Constants : private Scheme<Component,Integer>
+class constants : private Scheme<Component,Integer>
 {
 
 private:
@@ -1125,43 +1125,43 @@ public:
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::alpha_type
-Constants<Scheme,Component,Integer>::alpha = {};
+const typename constants<Scheme,Component,Integer>::alpha_type
+constants<Scheme,Component,Integer>::alpha = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::beta_type
-Constants<Scheme,Component,Integer>::beta = {};
+const typename constants<Scheme,Component,Integer>::beta_type
+constants<Scheme,Component,Integer>::beta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::gamma_type
-Constants<Scheme,Component,Integer>::gamma = {};
+const typename constants<Scheme,Component,Integer>::gamma_type
+constants<Scheme,Component,Integer>::gamma = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::zeta_type
-Constants<Scheme,Component,Integer>::zeta = {};
+const typename constants<Scheme,Component,Integer>::zeta_type
+constants<Scheme,Component,Integer>::zeta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::eta_type
-Constants<Scheme,Component,Integer>::eta = {};
+const typename constants<Scheme,Component,Integer>::eta_type
+constants<Scheme,Component,Integer>::eta = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::iota_type
-Constants<Scheme,Component,Integer>::iota = {};
+const typename constants<Scheme,Component,Integer>::iota_type
+constants<Scheme,Component,Integer>::iota = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::iota_alpha_type
-Constants<Scheme,Component,Integer>::iota_alpha = {};
+const typename constants<Scheme,Component,Integer>::iota_alpha_type
+constants<Scheme,Component,Integer>::iota_alpha = {};
 
 template <template <typename,typename> class Scheme,
           typename Component, typename Integer>
-const typename Constants<Scheme,Component,Integer>::iota_beta_type
-Constants<Scheme,Component,Integer>::iota_beta = {};
+const typename constants<Scheme,Component,Integer>::iota_beta_type
+constants<Scheme,Component,Integer>::iota_beta = {};
 
 // ***********************************************************
 // END hideousness for static constant structs within Contants
@@ -1169,12 +1169,12 @@ Constants<Scheme,Component,Integer>::iota_beta = {};
 
 /**
  * Given a \c Scheme and \c Element type, encapsulates a low storage
- * method behind the method_interface interface using Constants.
+ * method behind the method_interface interface using constants.
  *
  * @tparam Scheme An essential set of scheme-specific constants usable
- *         within the Constants class.
+ *         within the constants class.
  * @tparam A real- or complex-valued scalar type to be used.
- *         Constants are returned as the corresponding real type,
+ *         constants are returned as the corresponding real type,
  *         called \c component.
  * @see SMR91 or Yang11 for examples of valid Schemes to supply.
  */
@@ -1188,7 +1188,7 @@ public:
     typedef typename method_interface<Element>::component component;
 
     /** Access to the static constants specifying this scheme. */
-    typedef Constants<Scheme,component> constants;
+    typedef constants<Scheme,component> constants;
 
     /**
      * Explicit constructor.
@@ -1267,7 +1267,7 @@ private:
  * published in the <em>Journal of Computational Physics</em> volume 96 pages
  * 297-324.
  *
- * @see Designed to be used with the Constants template.
+ * @see Designed to be used with the constants template.
  */
 template <typename Component, typename Integer>
 struct SMR91
@@ -1339,7 +1339,7 @@ const Integer SMR91<Component,Integer>::gamma_numerator[substeps] = {
  * Shan Yang's 2011 thesis ``A shape Hessian based analysis of roughness
  * effects on fluid flows''.
  *
- * @see Designed to be used with the Constants template.
+ * @see Designed to be used with the constants template.
  */
 template <typename Component, typename Integer>
 struct Yang11
