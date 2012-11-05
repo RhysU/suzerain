@@ -85,7 +85,7 @@ static const double double_NaN = std::numeric_limits<double>::quiet_NaN();
 
 // Nonlinear portion of a hybrid implicit/explicit Riccati operator is the
 // right hand side of (d/dt) y = y^2 + b y - a^2 -a b minus the b y portion.
-class RiccatiNonlinearOperator
+class riccati_nonlinear_operator
     : public nonlinear_operator<ref<double,3> >
 {
 private:
@@ -94,7 +94,7 @@ private:
     const double delta_t;
 
 public:
-    RiccatiNonlinearOperator(
+    riccati_nonlinear_operator(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::infinity())
@@ -128,15 +128,15 @@ public:
 };
 
 template< typename StateA, typename StateB = StateA >
-class RiccatiLinearOperator
+class riccati_linear_operator
     : public multiplicative_operator<StateA,StateB>
 {
 public:
-    RiccatiLinearOperator(
+    riccati_linear_operator(
             const double a,
             const double b,
             const double delta_t = std::numeric_limits<double>::infinity())
-        : MultiplicativeOperator<StateA,StateB>(b, delta_t)
+        : multiplicative_operator<StateA,StateB>(b, delta_t)
     {
         SUZERAIN_UNUSED(a);
     }
@@ -167,14 +167,14 @@ struct ExponentialSolution
 };
 
 // Purely explicit, time-dependent operator for (d/dt) y = cos(t);
-class CosineExplicitOperator
+class cosine_explicit_operator
     : public nonlinear_operator<ref<double,3> >
 {
 private:
     const double delta_t;
 
 public:
-    CosineExplicitOperator(const double delta_t = double_NaN)
+    cosine_explicit_operator(const double delta_t = double_NaN)
         : delta_t(delta_t) { };
 
     virtual std::vector<double> apply_operator(
@@ -446,7 +446,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( Yang11_constants, T, constants_test_types )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE( MultiplicativeOperator_sanity )
+BOOST_AUTO_TEST_SUITE( multiplicative_operator_sanity )
 
 BOOST_AUTO_TEST_CASE( apply_operator )
 {
@@ -511,14 +511,14 @@ BOOST_AUTO_TEST_SUITE( substep_suite )
 
 // Purely explicit Riccati equation nonlinear operator
 // is the right hand side of (d/dt) y = y^2 + b y - a^2 -a b
-class RiccatiExplicitOperator
+class riccati_explicit_operator
     : public nonlinear_operator<ref<double,3> >
 {
 private:
     const double a, b, delta_t;
 
 public:
-    RiccatiExplicitOperator(const double a,
+    riccati_explicit_operator(const double a,
                             const double b,
                             const double delta_t = double_NaN)
         : a(a), b(b), delta_t(delta_t) { };
@@ -558,7 +558,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
     const method<SMR91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
-    const RiccatiExplicitOperator riccati_op(2, 3);
+    const riccati_explicit_operator riccati_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -624,8 +624,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
     const method<SMR91,double> m;
-    const RiccatiNonlinearOperator nonlinear_op(2, 3);
-    const RiccatiLinearOperator<State> linear_op(2, 3);
+    const riccati_nonlinear_operator nonlinear_op(2, 3);
+    const riccati_linear_operator<State> linear_op(2, 3);
     State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -694,7 +694,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
     const double time = pi / 3.0;
     const method<SMR91,double> m;
     const multiplicative_operator<State> trivial_linop(0);
-    const CosineExplicitOperator cosine_op;
+    const cosine_explicit_operator cosine_op;
     State a(size3(2,1,1)), b(size3(2,1,1));
 
     {
@@ -887,7 +887,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double delta_t_coarse = (t_final - t_initial)/coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const CosineExplicitOperator nonlinear_op(t_final - t_initial);
+        const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
@@ -907,7 +907,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
     const double delta_t_finer = (t_final - t_initial)/finer_nsteps;
     a[0][0][0] = soln(t_initial);
     {
-        const CosineExplicitOperator nonlinear_op(t_final - t_initial);
+        const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
             const double delta_t_used = suzerain::timestepper::lowstorage::step(
@@ -978,8 +978,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
 
     // Fix method, operators, and storage space
     const method<SMR91,double> m;
-    const RiccatiNonlinearOperator nonlinear_op(soln.a, soln.b);
-    const RiccatiLinearOperator<
+    const riccati_nonlinear_operator nonlinear_op(soln.a, soln.b);
+    const riccati_linear_operator<
                 state_a_type, state_b_type
             > linear_op(soln.a, soln.b);
     state_a_type a(size3(1,1,1));
@@ -1108,7 +1108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
 
     const method<SMR91,double> m;
     const multiplicative_operator<state_a_type, state_b_type> trivial_linop(0);
-    const RiccatiNonlinearOperator riccati_op(2, 3);
+    const riccati_nonlinear_operator riccati_op(2, 3);
     state_a_type a(size3(2,1,1));
     state_b_type b(size3(2,1,1));
 
