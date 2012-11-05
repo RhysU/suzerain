@@ -1062,7 +1062,7 @@ BOOST_AUTO_TEST_SUITE_END()
 // timecontroller for interleaved_state
 template class timecontroller<
         interleaved_state<3,double>, interleaved_state<3,double>,
-        suzerain::timestepper::DeltaTReducer
+        suzerain::timestepper::delta_t_reducer
     >;
 template class timecontroller<
         interleaved_state<3,double>, interleaved_state<3,double>,
@@ -1072,7 +1072,7 @@ template class timecontroller<
 // timecontroller for contiguous_state
 template class timecontroller<
         contiguous_state<3,double>, contiguous_state<3,double>,
-        suzerain::timestepper::DeltaTReducer
+        suzerain::timestepper::delta_t_reducer
     >;
 template class timecontroller<
         contiguous_state<3,double>, contiguous_state<3,double>,
@@ -1082,7 +1082,7 @@ template class timecontroller<
 // timecontroller for {Interleaved,Contiguous}State
 template class timecontroller<
         interleaved_state<3,double>, contiguous_state<3,double>,
-        suzerain::timestepper::DeltaTReducer
+        suzerain::timestepper::delta_t_reducer
     >;
 template class timecontroller<
         interleaved_state<3,double>, contiguous_state<3,double>,
@@ -1092,7 +1092,7 @@ template class timecontroller<
 // timecontroller for {Contiguous,Interleaved}State
 template class timecontroller<
         contiguous_state<3,double>, interleaved_state<3,double>,
-        suzerain::timestepper::DeltaTReducer
+        suzerain::timestepper::delta_t_reducer
     >;
 template class timecontroller<
         contiguous_state<3,double>, interleaved_state<3,double>,

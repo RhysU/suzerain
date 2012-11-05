@@ -602,7 +602,7 @@ static bool soft_teardown = false;
  */
 static bool process_any_signals_received(real_t t, size_t nt)
 {
-    // DeltaTAllreducer performs the Allreduce necessary to get local status
+    // delta_t_allreducer performs the Allreduce necessary to get local status
     // from atomic_signal_received into global status in signal_received.
 
     // Keep advancing time unless keep_advancing is set false
@@ -649,7 +649,7 @@ static bool process_any_signals_received(real_t t, size_t nt)
 
     // Clear signal_received to defensively avoid stale data bugs.
     // These would only be problematic if process_any_signals_received
-    // was run multiple times in between DeltaTAllreducer invocations.
+    // was run multiple times in between delta_t_allreducer invocations.
     signal_received.assign(0);
 
     return keep_advancing;
@@ -672,7 +672,7 @@ static double wtime_advance_start;
  * stable time step size across all ranks.  The same MPI Allreduce is used to
  * hide the cost of querying atomic_signal_received across all ranks.
  */
-static class DeltaTAllreducer
+static class delta_t_allreducer
 {
 
 private:
@@ -699,7 +699,7 @@ public:
         > > normalized_ratios;
 
     // Provides small default capacity for normalized_ratios
-    DeltaTAllreducer() : normalized_ratios(2) {}
+    delta_t_allreducer() : normalized_ratios(2) {}
 
     real_t operator()(const std::vector<real_t>& delta_t_candidates)
     {
@@ -783,10 +783,10 @@ public:
                          candidates.begin() + delta_t_candidates.size()
                                             + signal_received_t::static_size);
 
-        // Delegate finding-the-minimum work on each rank to DeltaTReducer
-        // DeltaTReducer logic enforced requirement that min(NaN,x) == NaN
+        // Delegate finding-the-minimum work on each rank to delta_t_reducer
+        // delta_t_reducer logic enforced requirement that min(NaN,x) == NaN
         const real_t delta_t
-                = suzerain::timestepper::DeltaTReducer()(candidates);
+                = suzerain::timestepper::delta_t_reducer()(candidates);
 
         // Update normalized_ratios using the just chosen delta_t
         // isnan used to avoid a NaN from destroying all accumulator data
@@ -1359,7 +1359,7 @@ int main(int argc, char **argv)
 
         // Iff we registered any handlers, process signal receipt in stepper.
         // Notice signal receipt include --advance_wt calling us a pumpkin.
-        // We can afford this every time step because of DeltaTAllreducer.
+        // We can afford this every time step because of delta_t_allreducer.
         if (s.size() > 0 || timedef.advance_wt > 0) {
             tc->add_periodic_callback(tc->forever_t(), 1,
                                       process_any_signals_received);

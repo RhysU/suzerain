@@ -374,7 +374,7 @@ struct NaN_is_minimum_comparator {
  * candidates.  Any NaN appearing in the candidates causes a NaN to be
  * returned.  The candidates may not be empty.
  */
-struct DeltaTReducer {
+struct delta_t_reducer {
     template< typename T>
     T operator()(const std::vector<T> & candidates) {
         assert(candidates.size() > 0);
@@ -1476,7 +1476,7 @@ const typename traits::component<Element>::type substep(
  *                For example, Method in conjunction with SMR91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
- *                employ a custom functor compatible with DeltaTReducer to add
+ *                employ a custom functor compatible with delta_t_reducer to add
  *                logic for monitoring or manipulating stable step criteria.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
@@ -1586,9 +1586,9 @@ const typename traits::component<Element>::type step(
     StateB& b,
     const typename traits::component<Element>::type max_delta_t = 0)
 {
-    DeltaTReducer reducer;
+    delta_t_reducer reducer;
     return step<
-            Element, DeltaTReducer,
+            Element, delta_t_reducer,
             LinearA, LinearB, NonlinearB,
             StateA, StateB
         >(m, reducer, L, chi, N, time, a, b, max_delta_t);
@@ -1645,7 +1645,7 @@ public:
      * @param reducer   A stateful functor taking a vector of stable time step
      *                  candidates down to a single stable time step.  Users
      *                  may employ a custom functor compatible with
-     *                  DeltaTReducer to add logic for monitoring or
+     *                  delta_t_reducer to add logic for monitoring or
      *                  manipulating stable step criteria.
      * @param L         The linear operator to be treated implicitly.
      * @param chi       The factor \f$\chi\f$ used to scale the nonlinear
@@ -1707,8 +1707,8 @@ private:
 
 /**
  * A partial specialization of the timecontroller template for the
- * case when default DeltaTReducer behavior is desired.  Empty base class
- * optimization eliminates the DeltaTReducer instance overhead.
+ * case when default delta_t_reducer behavior is desired.  Empty base class
+ * optimization eliminates the delta_t_reducer instance overhead.
  */
 template< typename StateA,
           typename StateB,
@@ -1716,22 +1716,22 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB >
 class timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>
-    : private DeltaTReducer,
+    : private delta_t_reducer,
       public timecontroller<
-            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+            StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >
 {
 
 protected:
 
     typedef typename timecontroller<
-            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+            StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >::super super;
 
 public:
 
     typedef typename timecontroller<
-            StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
+            StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >::element element;
 
     /**
@@ -1773,10 +1773,10 @@ public:
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
-        : DeltaTReducer(),
+        : delta_t_reducer(),
           timecontroller<
-                StateA,StateB,DeltaTReducer,LinearA,LinearB,NonlinearB
-            >(m, *reinterpret_cast<DeltaTReducer*>(this),
+                StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
+            >(m, *reinterpret_cast<delta_t_reducer*>(this),
               L, chi, N, a, b, initial_t, min_dt, max_dt)
     {}
 
@@ -1821,7 +1821,7 @@ make_timecontroller(
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a timecontroller employing DeltaTReducer.
+ * types for a timecontroller employing delta_t_reducer.
  *
  * \copydoc timecontroller
  */
