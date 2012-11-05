@@ -123,7 +123,7 @@ public:
     boost::shared_ptr<nonlinear_state_type> state_nonlinear;
 
     /** Controls which signals trigger which processing. */
-    static problem::SignalDefinition sigdef;
+    static problem::signal_definition sigdef;
 
     /**
      * Type of atomic locations used to track local receipt of the following

@@ -115,7 +115,7 @@ using suzerain::problem::grid_definition;
 using suzerain::problem::restart_definition;
 using suzerain::problem::StatisticsDefinition;
 using suzerain::perfect::ScenarioDefinition;
-using suzerain::problem::SignalDefinition;
+using suzerain::problem::signal_definition;
 using suzerain::problem::TimeDefinition;
 static const ScenarioDefinition scenario;
 static const grid_definition grid;
@@ -139,7 +139,7 @@ static const TimeDefinition timedef(
         /* min_dt                    */ 1e-8,
         /* max_dt                    */ 1);
 static const NoiseDefinition  noisedef;
-static const SignalDefinition sigdef;
+static const signal_definition sigdef;
 
 // Global details initialized in main()
 static shared_ptr<      suzerain::bspline>              b;
@@ -907,7 +907,7 @@ int main(int argc, char **argv)
         options.add_definition(const_cast<StatisticsDefinition&>(statsdef));
         options.add_definition(const_cast<TimeDefinition      &>(timedef ));
         options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
-        options.add_definition(const_cast<SignalDefinition    &>(sigdef  ));
+        options.add_definition(const_cast<signal_definition    &>(sigdef  ));
 
         options.add_options()
             ("explicit", "Use purely explicit operators")

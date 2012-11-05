@@ -34,30 +34,30 @@ namespace suzerain {
 
 namespace problem {
 
-SignalDefinition::SignalDefinition(const std::string& specstatus,
-                                   const std::string& specrestart,
-                                   const std::string& specstatistics,
-                                   const std::string& specteardown)
+signal_definition::signal_definition(const std::string& specstatus,
+                                     const std::string& specrestart,
+                                     const std::string& specstatistics,
+                                     const std::string& specteardown)
     : definition_base("Actions to take on receipt of various signals")
 {
     using ::boost::program_options::value;
 
     this->add_options()
         ("signal_status", value<std::string>()->default_value(specstatus)
-        ->notifier(boost::bind(&SignalDefinition::parse_status,this,_1)),
+        ->notifier(boost::bind(&signal_definition::parse_status,this,_1)),
         "Show status information on any signal in this comma-separated list")
 
         ("signal_restart", value<std::string>()->default_value(specrestart)
-        ->notifier(boost::bind(&SignalDefinition::parse_restart,this,_1)),
+        ->notifier(boost::bind(&signal_definition::parse_restart,this,_1)),
         "Write restart file on any signal in this comma-separated list")
 
         ("signal_statistics",
          value<std::string>()->default_value(specstatistics)
-        ->notifier(boost::bind(&SignalDefinition::parse_statistics,this,_1)),
+        ->notifier(boost::bind(&signal_definition::parse_statistics,this,_1)),
         "Write statistics file on any signal in this comma-separated list")
 
         ("signal_teardown", value<std::string>()->default_value(specteardown)
-        ->notifier(boost::bind(&SignalDefinition::parse_teardown,this,_1)),
+        ->notifier(boost::bind(&signal_definition::parse_teardown,this,_1)),
         "Tear down simulation on any signal in this comma-separated list")
     ;
 }
@@ -111,25 +111,25 @@ static std::vector<int> parse_spec(const std::string& name,
     return retval;
 }
 
-void SignalDefinition::parse_status(const std::string &spec)
+void signal_definition::parse_status(const std::string &spec)
 {
     std::vector<int> tmp = parse_spec("--signal_status", spec);
     this->status.swap(tmp);
 }
 
-void SignalDefinition::parse_restart(const std::string &spec)
+void signal_definition::parse_restart(const std::string &spec)
 {
     std::vector<int> tmp = parse_spec("--signal_restart", spec);
     this->restart.swap(tmp);
 }
 
-void SignalDefinition::parse_statistics(const std::string &spec)
+void signal_definition::parse_statistics(const std::string &spec)
 {
     std::vector<int> tmp = parse_spec("--signal_statistics", spec);
     this->statistics.swap(tmp);
 }
 
-void SignalDefinition::parse_teardown(const std::string &spec)
+void signal_definition::parse_teardown(const std::string &spec)
 {
     std::vector<int> tmp = parse_spec("--signal_teardown", spec);
     this->teardown.swap(tmp);

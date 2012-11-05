@@ -30,7 +30,7 @@ namespace problem {
  * Parses and contains signal processing details to allow a program to take
  * runtime-configurable responses to POSIX signals per \c signal.h.
  */
-class SignalDefinition : public definition_base
+class signal_definition : public definition_base
 {
 public:
 
@@ -46,7 +46,7 @@ public:
      * @param specteardown   Comma-separated signal names indicating the
      *                       simulation should be exited.
      */
-    explicit SignalDefinition(
+    explicit signal_definition(
             const std::string& specstatus      = "HUP",
             const std::string& specrestart     = "HUP",
             const std::string& specstatistics  = "",
