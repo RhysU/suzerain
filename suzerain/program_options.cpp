@@ -54,7 +54,7 @@ static std::pair<std::string, std::string> verbosity(const std::string& s)
     return retval;
 }
 
-std::vector<std::string> suzerain::ProgramOptions::process(
+std::vector<std::string> suzerain::program_options::process(
         int argc, char **argv, MPI_Comm comm,
         std::ostream &debug, std::ostream &info,
         std::ostream &warn, std::ostream &error)
@@ -70,7 +70,7 @@ std::vector<std::string> suzerain::ProgramOptions::process(
     }
 }
 
-std::vector<std::string> suzerain::ProgramOptions::process_internal(
+std::vector<std::string> suzerain::program_options::process_internal(
         int argc, char **argv, MPI_Comm comm,
         std::ostream &debug, std::ostream &info,
         std::ostream &warn, std::ostream &error)

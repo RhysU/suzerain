@@ -897,7 +897,7 @@ int main(int argc, char **argv)
     bool default_advance_nt;
     bool default_statistics;
     {
-        suzerain::ProgramOptions options(
+        suzerain::program_options options(
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(const_cast<ScenarioDefinition  &>(scenario));

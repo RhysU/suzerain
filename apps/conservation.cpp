@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     int    N       = 16;
     int    k       = 5;
     {
-        suzerain::ProgramOptions options(
+        suzerain::program_options options(
                 "Check conservative nature of discrete B-spline operators");
         using boost::program_options::value;
         options.add_options()

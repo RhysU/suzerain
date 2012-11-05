@@ -192,7 +192,7 @@ int main(int argc, char **argv)
     real_t mms     = -1;
     real_t npower  = 1;
     {
-        suzerain::ProgramOptions options(
+        suzerain::program_options options(
                 "Suzerain-based compressible channel initialization",
                 "RESTART-FILE", /* TODO description */ "", revstr);
 

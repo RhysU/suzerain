@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
     // Process command line options
-    suzerain::ProgramOptions options(
+    suzerain::program_options options(
             "suzerain::pencil_grid_p3dfft performance benchmark",
             "", /* TODO description */ "", revstr);
     suzerain::problem::GridDefinition grid(/* Lx UNUSED */ "NaN",

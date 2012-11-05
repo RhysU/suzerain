@@ -449,7 +449,7 @@ int main(int argc, char **argv)
     bool use_hdf5   = false;
     bool describe   = false;
     {
-        suzerain::ProgramOptions options(
+        suzerain::program_options options(
                 "Suzerain-based channel mean quantity computations",
                 "RESTART-OR-SAMPLE-HDF5-FILE...",
 "Invocable in three distinct ways:\n"

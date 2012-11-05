@@ -77,10 +77,10 @@ Driver::Driver(const std::string &application_synopsis,
                /* status_nt   */ 0,
                /* min_dt      */ 1e-8,
                /* max_dt      */ 1)
-    , program_options(application_synopsis,
-                      "RESTART-FILE",
-                      description,
-                      this->revstr)
+    , options(application_synopsis,
+              "RESTART-FILE",
+              description,
+              this->revstr)
     , b()
     , bop()
     , gop()
@@ -166,16 +166,16 @@ Driver::initialize(int argc, char **argv)
             &support::mpi_abort_on_error_handler_underling);
 #endif
 
-    // Add problem definitions to program_options
-    program_options.add_definition(grid    );
-    program_options.add_definition(fftwdef );
-    program_options.add_definition(restart );
-    program_options.add_definition(statsdef);
-    program_options.add_definition(timedef );
-    program_options.add_definition(sigdef  );
+    // Add problem definitions to options
+    options.add_definition(grid    );
+    options.add_definition(fftwdef );
+    options.add_definition(restart );
+    options.add_definition(statsdef);
+    options.add_definition(timedef );
+    options.add_definition(sigdef  );
 
     // Add additional standalone options
-    program_options.add_options()
+    options.add_options()
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
         ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
         ("underling", "Use underling for MPI-parallel FFTs")
@@ -183,12 +183,12 @@ Driver::initialize(int argc, char **argv)
         ;
 
     // Process incoming arguments
-    std::vector<std::string> positional = program_options.process(argc, argv);
+    std::vector<std::string> positional = options.process(argc, argv);
 
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     // Select pencil decomposition and FFT library to use (default p3dfft)
-    program_options.conflicting_options("p3dfft", "underling");
-    if (program_options.variables().count("underling")) {
+    options.conflicting_options("p3dfft", "underling");
+    if (options.variables().count("underling")) {
         use_underling = true;
     } else {
         use_p3dfft = true;
@@ -201,12 +201,12 @@ Driver::initialize(int argc, char **argv)
     INFO0("Invocation: " << os.str());
     INFO0("Build:      " << suzerain::version("", revstr));
 
-    switch (program_options.verbose()) {
+    switch (options.verbose()) {
         case 0:                   break;
         case 1:  DEBUG0_ENABLE(); break;
         default: TRACE0_ENABLE(); break;
     }
-    switch (program_options.verbose_all()) {
+    switch (options.verbose_all()) {
         case 0:                   break;
         case 1:  DEBUG_ENABLE();  break;
         default: TRACE_ENABLE();  break;

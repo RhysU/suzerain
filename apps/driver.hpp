@@ -70,7 +70,7 @@ public:
     /**
      * Initialize everything, including MPI, necessary for the application.
      * Changes to default values, e.g. \ref statsdef, or adding of additional
-     * options to \ref program_options must be completed prior to invoking this
+     * options to \ref options must be completed prior to invoking this
      * method.
      *
      * @param argc Incoming arguments per <code>main(argc, ...)</code>
@@ -108,7 +108,7 @@ public:
 
     problem::TimeDefinition timedef;
 
-    ProgramOptions program_options;
+    program_options options;
 
     boost::shared_ptr<bspline> b;
 

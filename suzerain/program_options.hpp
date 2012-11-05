@@ -42,14 +42,14 @@ namespace suzerain {
  *   - Reads any input files in a scalable way by reading them on
  *     the root process and then broadcasting the contents to all ranks.
  */
-class ProgramOptions
+class program_options
 {
 public:
 
     /**
      * Default constructor which does not supply a program description.
      */
-    ProgramOptions() : variables_(), options_() {}
+    program_options() : variables_(), options_() {}
 
     /**
      * Constructor providing a program synopsis, an argument synopsis,
@@ -65,7 +65,7 @@ public:
      * @param version              Version information to be displayed
      *                             when <tt>--version</tt> is used.
      */
-    ProgramOptions(const std::string &application_synopsis,
+    program_options(const std::string &application_synopsis,
                    const std::string &argument_synopsis = "",
                    const std::string &description = "",
                    const std::string &version = "")
@@ -89,7 +89,7 @@ public:
      *
      * @see problem::definition_base for the necessary contract.
      */
-    ProgramOptions& add_definition(problem::definition_base &definition)
+    program_options& add_definition(problem::definition_base &definition)
     {
         options_.add(definition.options());
         return *this;
