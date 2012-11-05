@@ -31,7 +31,7 @@ namespace problem {
  * Includes the sampling rate and particulars around writing and archiving
  * statistics files.
  */
-class StatisticsDefinition : public definition_base
+class statistics_definition : public definition_base
 {
 public:
     /**
@@ -48,7 +48,7 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
      */
-    explicit StatisticsDefinition(
+    explicit statistics_definition(
             const std::string& destination,
             int retain = (1<<15),
             real_t dt  = 0,

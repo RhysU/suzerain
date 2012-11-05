@@ -104,7 +104,7 @@ public:
 
     problem::restart_definition restart;
 
-    problem::StatisticsDefinition statsdef;
+    problem::statistics_definition statsdef;
 
     problem::TimeDefinition timedef;
 

@@ -113,7 +113,7 @@ using perfect::NoiseDefinition;
 using suzerain::fftw::FFTWDefinition;
 using suzerain::problem::grid_definition;
 using suzerain::problem::restart_definition;
-using suzerain::problem::StatisticsDefinition;
+using suzerain::problem::statistics_definition;
 using suzerain::perfect::ScenarioDefinition;
 using suzerain::problem::signal_definition;
 using suzerain::problem::TimeDefinition;
@@ -128,7 +128,7 @@ static const restart_definition restart(
         /* retain      */ 1,
         /* dt          */ 0,
         /* nt          */ 0);
-static const StatisticsDefinition statsdef(
+static const statistics_definition statsdef(
         /* destination */ "sample#.h5");
 static const TimeDefinition timedef(
         /* advance_dt                */ 0,
@@ -904,7 +904,7 @@ int main(int argc, char **argv)
         options.add_definition(const_cast<grid_definition      &>(grid    ));
         options.add_definition(const_cast<FFTWDefinition      &>(fftwdef ));
         options.add_definition(const_cast<restart_definition   &>(restart ));
-        options.add_definition(const_cast<StatisticsDefinition&>(statsdef));
+        options.add_definition(const_cast<statistics_definition&>(statsdef));
         options.add_definition(const_cast<TimeDefinition      &>(timedef ));
         options.add_definition(const_cast<NoiseDefinition     &>(noisedef));
         options.add_definition(const_cast<signal_definition    &>(sigdef  ));
@@ -1096,7 +1096,7 @@ int main(int argc, char **argv)
         const_cast<restart_definition&>(restart).metadata        = &buf[pos[0]];
         const_cast<restart_definition&>(restart).uncommitted     = &buf[pos[1]];
         const_cast<restart_definition&>(restart).destination     = &buf[pos[2]];
-        const_cast<StatisticsDefinition&>(statsdef).destination = &buf[pos[3]];
+        const_cast<statistics_definition&>(statsdef).destination = &buf[pos[3]];
     }
 
     DEBUG0("Saving metadata temporary file: " << restart.metadata);

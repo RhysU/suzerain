@@ -36,7 +36,7 @@ static void parse_option(const std::string &s,
     *value = t;
 }
 
-StatisticsDefinition::StatisticsDefinition(
+statistics_definition::statistics_definition(
         const std::string& destination,
         int retain,
         real_t dt,
