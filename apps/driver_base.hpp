@@ -106,7 +106,7 @@ public:
 
     boost::shared_ptr<bspline> b;
 
-    boost::shared_ptr<bsplineop> bop; // Collocation operators
+    boost::shared_ptr<bsplineop> cop; // Collocation operators
 
     boost::shared_ptr<bsplineop> gop; // Galerkin L2 operators
 

@@ -63,9 +63,9 @@ public:
             const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
-            const bsplineop &bop,
+            const bsplineop &cop,
             operator_common_block &common)
-        : operator_base(grid, dgrid, b, bop),
+        : operator_base(grid, dgrid, b, cop),
           spec(spec),
           scenario(scenario),
           common(common)
@@ -152,10 +152,10 @@ public:
             const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
-            const bsplineop &bop,
+            const bsplineop &cop,
             operator_common_block &common,
             const boost::shared_ptr<const manufactured_solution>& msoln)
-        : operator_base(grid, dgrid, b, bop),
+        : operator_base(grid, dgrid, b, cop),
           scenario(scenario),
           common(common),
           msoln(msoln)

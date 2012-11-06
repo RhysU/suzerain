@@ -142,7 +142,7 @@ static const signal_definition sigdef;
 
 // Global details initialized in main()
 static shared_ptr<      suzerain::bspline>              b;
-static shared_ptr<      suzerain::bsplineop>            bop;    // Collocation
+static shared_ptr<      suzerain::bsplineop>            cop;    // Collocation
 static shared_ptr<      suzerain::bsplineop>            gop;    // Galerkin L2
 static shared_ptr<const suzerain::pencil_grid>          dgrid;
 static shared_ptr<      perfect::manufactured_solution> msoln;
@@ -322,7 +322,7 @@ static void information_manufactured_solution_absolute_error(
     state_nonlinear->assign(*state_linear);
     perfect::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
-            grid, *dgrid, *b, *bop, simulation_time);
+            grid, *dgrid, *b, *cop, simulation_time);
     const std::vector<suzerain::field_L2> L2
         = suzerain::compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
@@ -409,7 +409,7 @@ static void sample_statistics(real_t t)
     // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
     samples = perfect::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *bop, *state_nonlinear, t);
+            scenario, grid, *dgrid, *b, *cop, *state_nonlinear, t);
 
     // Obtain mean samples computed via implicit forcing (when possible)
     if (common_block.means.rows() == samples.storage.rows()) {
@@ -435,8 +435,8 @@ static void sample_statistics(real_t t)
     }
 
     // Convert implicit values on collocation points to coefficients
-    suzerain::bsplineop_lu mass(*bop);
-    mass.opform_mass(*bop);
+    suzerain::bsplineop_lu mass(*cop);
+    mass.opform_mass(*cop);
     mass.factor();
     mass.solve(perfect::mean::nscalars::implicit,
             samples.storage.middleCols<perfect::mean::nscalars::implicit>(
@@ -476,7 +476,7 @@ static bool save_restart(real_t t, size_t nt)
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
         perfect::store_collocation_values(
-                esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *bop);
+                esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *cop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         support::store_coefficients(
@@ -1016,7 +1016,7 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
+    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, cop);
     assert(b->k() == grid.k);
     assert(b->n() == grid.N.y());
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
@@ -1024,8 +1024,8 @@ int main(int argc, char **argv)
     // Compute and display a couple of discretization quality metrics.
     {
         // Temporarily work in real-valued quantities as it is a bit simpler.
-        suzerain::bsplineop_lu boplu(*bop);
-        boplu.opform_mass(*bop);
+        suzerain::bsplineop_lu boplu(*cop);
+        boplu.opform_mass(*cop);
         double norm;
         boplu.opnorm(norm);
         boplu.factor();
@@ -1033,7 +1033,7 @@ int main(int argc, char **argv)
         // Compute and display discrete conservation error magnitude
         suzerain::MatrixXXr mat = suzerain::MatrixXXr::Identity(b->n(),b->n());
         boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1
-        bop->apply(1, b->n(), 1.0, mat.data(), 1, b->n());  // D*M^-1
+        cop->apply(1, b->n(), 1.0, mat.data(), 1, b->n());  // D*M^-1
         boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1*D*M^-1
         suzerain::VectorXr vec(b->n());
         b->integration_coefficients(0, vec.data());
@@ -1107,7 +1107,7 @@ int main(int argc, char **argv)
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
         perfect::store(h, scenario);
         support::store(h, grid);
-        support::store(h, b, bop, gop);
+        support::store(h, b, cop, gop);
         support::store(h, timedef);
         perfect::store(h, scenario, grid, msoln);
         esio_file_close(h);
@@ -1209,19 +1209,19 @@ int main(int argc, char **argv)
         samples.t = initial_t;         // For idempotent --advance_nt=0...
         perfect::load(esioh, samples); // ...when no grid rescaling employed
         perfect::load(esioh, *state_nonlinear,
-                      scenario, grid, *dgrid, *b, *bop);
+                      scenario, grid, *dgrid, *b, *cop);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If necessary, adjust total energy to account for scenario changes
     perfect::adjust_scenario(*state_nonlinear,
-                             scenario, grid, *dgrid, *b, *bop,
+                             scenario, grid, *dgrid, *b, *cop,
                              restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
     perfect::add_noise(*state_nonlinear, noisedef,
-                       scenario, grid, *dgrid, *b, *bop);
+                       scenario, grid, *dgrid, *b, *cop);
 
     // Create state storage for linear operator usage
     state_linear = make_shared<linear_state_type>(
@@ -1275,16 +1275,16 @@ int main(int argc, char **argv)
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
         L.reset(new channel_treatment<perfect::isothermal_bspline_mass_operator>(
-                    scenario, grid, *dgrid, *b, *bop, common_block));
+                    scenario, grid, *dgrid, *b, *cop, common_block));
         N.reset(new perfect::explicit_nonlinear_operator(
-                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
+                scenario, grid, *dgrid, *b, *cop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
         L.reset(new channel_treatment<perfect::isothermal_hybrid_linear_operator>(
                     solver_spec, scenario,
-                    grid, *dgrid, *b, *bop, common_block));
+                    grid, *dgrid, *b, *cop, common_block));
         N.reset(new perfect::hybrid_nonlinear_operator(
-                scenario, grid, *dgrid, *b, *bop, common_block, msoln));
+                scenario, grid, *dgrid, *b, *cop, common_block, msoln));
     } else {
         FATAL0("Sanity error in operator selection");
         return EXIT_FAILURE;

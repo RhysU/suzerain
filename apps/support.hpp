@@ -159,7 +159,7 @@ real_t create(const int ndof,
               const double right,
               const double htdelta,
               boost::shared_ptr<bspline>& b,
-              boost::shared_ptr<bsplineop>& bop);
+              boost::shared_ptr<bsplineop>& cop);
 
 /**
  * Compute the "distance" between two B-spline bases.  Distance is "huge" if
@@ -179,7 +179,7 @@ extern const real_t bsplines_distinct_distance;
 /** Store a \ref bspline workspace in a restart file */
 void store(const esio_handle h,
            const boost::shared_ptr<bspline>& b,
-           const boost::shared_ptr<bsplineop>& bop,
+           const boost::shared_ptr<bsplineop>& cop,
            const boost::shared_ptr<bsplineop>& gop);
 
 /**
@@ -188,7 +188,7 @@ void store(const esio_handle h,
  */
 real_t load(const esio_handle h,
             boost::shared_ptr<bspline>& b,
-            boost::shared_ptr<bsplineop>& bop);
+            boost::shared_ptr<bsplineop>& cop);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle h,
@@ -235,7 +235,7 @@ void store_coefficients(
 /**
  * Load the current simulation state from an open coefficient-based restart
  * file.  Handles the non-trivial task of adjusting the restart to match the
- * provided \c grid, \c dgrid, \c b, and \c bop.
+ * provided \c grid, \c dgrid, \c b, and \c cop.
  */
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
@@ -243,7 +243,7 @@ void load_coefficients(const esio_handle h,
                        const grid_definition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
-                       const bsplineop& bop);
+                       const bsplineop& cop);
 
 /**
  * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c

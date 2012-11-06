@@ -423,7 +423,7 @@ real_t create(const int ndof,
               const double right,
               const double htdelta,
               boost::shared_ptr<bspline>& b,
-              boost::shared_ptr<bsplineop>& bop)
+              boost::shared_ptr<bsplineop>& cop)
 {
     INFO0("Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
@@ -446,9 +446,9 @@ real_t create(const int ndof,
 ////        k, bspline::from_abscissae(),
 ////        abscissae.size(), abscissae.data(), &abserr);
 ////assert(b->n() == ndof);
-////bop.reset(new bsplineop(
+////cop.reset(new bsplineop(
 ////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-////assert(bop->n() == ndof);
+////assert(cop->n() == ndof);
 ////
 ////INFO0("Created B-spline basis has Greville abscissae abserr of " << abserr);
 ////
@@ -467,19 +467,19 @@ real_t create(const int ndof,
     b = boost::make_shared<bspline>(k, bspline::from_breakpoints(),
                                     breakpoints.size(), breakpoints.data());
     assert(b->n() == ndof);
-    bop.reset(new bsplineop(*b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
-    assert(bop->n() == ndof);
+    cop.reset(new bsplineop(*b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
+    assert(cop->n() == ndof);
 
     return 0;
 }
 
 void store(const esio_handle h,
            const boost::shared_ptr<bspline>& b,
-           const boost::shared_ptr<bsplineop>& bop,
+           const boost::shared_ptr<bsplineop>& cop,
            const boost::shared_ptr<bsplineop>& gop)
 {
     // Ensure we were handed the appropriate discrete operators
-    SUZERAIN_ENSURE(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    SUZERAIN_ENSURE(cop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
     SUZERAIN_ENSURE(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only root writes data
@@ -513,20 +513,20 @@ void store(const esio_handle h,
     char name[8]      = {};
     char comment[127] = {};
 
-    for (int k = 0; k <= bop->nderiv(); ++k) {
+    for (int k = 0; k <= cop->nderiv(); ++k) {
         snprintf(name, sizeof(name), "Dy%dT", k);
         snprintf(comment, sizeof(comment),
                 "Wall-normal derivative trans(Dy%d(i,j)) = D%dT[j,ku+i-j] for"
                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)", k, k);
-        const int lda = bop->ku(k) + 1 + bop->kl(k);
+        const int lda = cop->ku(k) + 1 + cop->kl(k);
         esio_plane_establish(h,
-                bop->n(), 0, (procid == 0 ? bop->n() : 0),
+                cop->n(), 0, (procid == 0 ? cop->n() : 0),
                 lda,      0, (procid == 0 ? lda          : 0));
-        esio_plane_write(h, name, bop->D_T(k), 0, 0, comment);
-        esio_attribute_write(h, name, "kl", bop->kl(k));
-        esio_attribute_write(h, name, "ku", bop->ku(k));
-        esio_attribute_write(h, name, "m",  bop->n());
-        esio_attribute_write(h, name, "n",  bop->n());
+        esio_plane_write(h, name, cop->D_T(k), 0, 0, comment);
+        esio_attribute_write(h, name, "kl", cop->kl(k));
+        esio_attribute_write(h, name, "ku", cop->ku(k));
+        esio_attribute_write(h, name, "m",  cop->n());
+        esio_attribute_write(h, name, "n",  cop->n());
     }
 
     DEBUG0("Storing B-spline Galerkin L2 derivative operators");
@@ -550,7 +550,7 @@ void store(const esio_handle h,
 
 real_t load(const esio_handle h,
             boost::shared_ptr<bspline>& b,
-            boost::shared_ptr<bsplineop>& bop)
+            boost::shared_ptr<bsplineop>& cop)
 {
     using std::abs;
     using std::max;
@@ -626,7 +626,7 @@ real_t load(const esio_handle h,
     }
 
     // Construct B-spline operator workspace from the B-spline workspace
-    bop.reset(new bsplineop(
+    cop.reset(new bsplineop(
                 *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
 
     return abserr;
@@ -791,7 +791,7 @@ void load_coefficients(const esio_handle h,
                        const grid_definition& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
-                       const bsplineop& bop)
+                       const bsplineop& cop)
 {
     typedef contiguous_state<4,complex_t> load_type;
 
@@ -857,8 +857,8 @@ void load_coefficients(const esio_handle h,
             state.shape()[3]
         }};
         tmp.reset(new tmp_type(extent, boost::fortran_storage_order()));
-        mass.reset(new bsplineop_luz(bop));
-        mass->factor_mass(bop);
+        mass.reset(new bsplineop_luz(cop));
+        mass->factor_mass(cop);
     }
 
     // Load each scalar field in turn

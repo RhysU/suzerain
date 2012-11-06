@@ -45,15 +45,15 @@ bspline_mass_operator::bspline_mass_operator(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop)
-    : operator_base(grid, dgrid, b, bop),
-      massluz(bop)
+        const bsplineop &cop)
+    : operator_base(grid, dgrid, b, cop),
+      massluz(cop)
 {
     SUZERAIN_UNUSED(grid);
     SUZERAIN_UNUSED(dgrid);
     SUZERAIN_UNUSED(b);
 
-    massluz.factor_mass(bop);
+    massluz.factor_mass(cop);
 }
 
 void bspline_mass_operator::apply_mass_plus_scaled_operator(
@@ -78,7 +78,7 @@ void bspline_mass_operator::apply_mass_plus_scaled_operator(
 
     // Those assumptions holding, apply operator to each wall-normal pencil.
     const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-    bop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
+    cop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
 }
 
 
@@ -118,7 +118,7 @@ void bspline_mass_operator::accumulate_mass_plus_scaled_operator(
             lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
             ++lx, ++ly) {
 
-            bop.accumulate(0, x.shape()[2],
+            cop.accumulate(0, x.shape()[2],
                     c_one,
                     &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
                     x.strides()[1], x.strides()[2],

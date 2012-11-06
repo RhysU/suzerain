@@ -42,7 +42,7 @@
 
 // Global B-spline related-details initialized in main()
 static boost::shared_ptr<suzerain::bspline>      b;
-static boost::shared_ptr<suzerain::bsplineop>    bop;    // Collocation
+static boost::shared_ptr<suzerain::bsplineop>    cop;    // Collocation
 static boost::shared_ptr<suzerain::bsplineop>    gop;    // Galerkin L2
 static boost::shared_ptr<suzerain::bsplineop_lu> boplu;
 
@@ -102,14 +102,14 @@ int main(int argc, char **argv)
     suzerain::VectorXr  vec(N);
     suzerain::MatrixXXr mat(N,N);
     for (suzerain::real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
-        suzerain::support::create(N, k, 0.0, L, htdelta, b, bop);
+        suzerain::support::create(N, k, 0.0, L, htdelta, b, cop);
         b->integration_coefficients(0, vec.data());
-        boplu = boost::make_shared<suzerain::bsplineop_lu>(*bop);
-        boplu->factor_mass(*bop);
+        boplu = boost::make_shared<suzerain::bsplineop_lu>(*cop);
+        boplu->factor_mass(*cop);
 
         mat = suzerain::MatrixXXr::Identity(N,N);
         boplu->solve(N, mat.data(), 1, N);
-        bop->apply(1, N, 1.0, mat.data(), 1, N);
+        cop->apply(1, N, 1.0, mat.data(), 1, N);
         boplu->solve(N, mat.data(), 1, N);
         vec = vec.transpose() * mat;
 

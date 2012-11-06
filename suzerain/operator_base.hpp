@@ -53,12 +53,12 @@ public:
      * @param dgrid    Decomposition providing parallel grid details.
      * @param b        B-spline workspace for obtaining necessary details,
      *                 e.g. integration coefficients.
-     * @param bop      B-spline operators to use.
+     * @param cop      B-spline operators to use.
      */
     operator_base(const grid_definition &grid,
                   const pencil_grid &dgrid,
                   bspline &b,
-                  const bsplineop &bop);
+                  const bsplineop &cop);
 
     /** Virtual destructor to permit use as a base class */
     virtual ~operator_base();
@@ -77,12 +77,12 @@ public:
     {
         SUZERAIN_TIMER_SCOPED("OperatorBase::bop_accumulate");
 
-        assert(x.shape()[1] == (unsigned) bop.n());
+        assert(x.shape()[1] == (unsigned) cop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
         assert((unsigned) y.strides()[3] == y.shape()[2] * y.strides()[2] );
         assert(std::equal(x.shape() + 1, x.shape() + 4, y.shape() + 1));
 
-        return bop.accumulate(
+        return cop.accumulate(
                 nderiv, x.shape()[2] * x.shape()[3],
                 alpha,  x[ndx_x].origin(), x.strides()[1], x.strides()[2],
                 beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
@@ -99,10 +99,10 @@ public:
     {
         SUZERAIN_TIMER_SCOPED("OperatorBase::bop_apply");
 
-        assert(x.shape()[1] == (unsigned) bop.n());
+        assert(x.shape()[1] == (unsigned) cop.n());
         assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
 
-        return bop.apply(
+        return cop.apply(
                 nderiv, x.shape()[2] * x.shape()[3],
                 alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
     }
@@ -300,7 +300,7 @@ public:
     const pencil_grid &dgrid;
 
     /** The B-spline operators with which the operator is used */
-    const bsplineop &bop;
+    const bsplineop &cop;
 
 private:
 

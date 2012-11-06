@@ -524,7 +524,7 @@ int main(int argc, char **argv)
     shared_ptr<grid_definition    > grid;
     shared_ptr<time_definition    > timedef;
     shared_ptr<bspline            > b;
-    shared_ptr<bsplineop          > bop;
+    shared_ptr<bsplineop          > cop;
     shared_ptr<bsplineop_lu       > boplu;
 
     // Processing differs slightly when done file-by-file versus
@@ -535,7 +535,7 @@ int main(int argc, char **argv)
 
             // Load data from filename
             quantity::storage_map_type data = process(
-                    filename, scenario, grid, timedef, b, bop, boplu);
+                    filename, scenario, grid, timedef, b, cop, boplu);
 
             // Save quantities to `basename filename .h5`.mean
             static const char suffix[] = ".h5";
@@ -563,7 +563,7 @@ int main(int argc, char **argv)
             grid.reset();
             timedef.reset();
             b.reset();
-            bop.reset();
+            cop.reset();
             boplu.reset();
         }
 
@@ -586,7 +586,7 @@ int main(int argc, char **argv)
 
             // Load data from filename
             quantity::storage_map_type data = process(
-                    filename, scenario, grid, timedef, b, bop, boplu);
+                    filename, scenario, grid, timedef, b, cop, boplu);
 
             // Output status to the user so they don't thing we're hung.
             BOOST_FOREACH(quantity::storage_map_type::value_type i, data) {
@@ -629,7 +629,7 @@ int main(int argc, char **argv)
             support::store(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
-            support::store(h.get(), b, bop, gop);
+            support::store(h.get(), b, cop, gop);
             gop.reset();
             support::store(h.get(), *timedef);
 
@@ -729,12 +729,12 @@ static quantity::storage_map_type process(
                  /* min_dt     */ 0,
                  /* max_dt     */ 0);
     shared_ptr<bspline> b;
-    shared_ptr<bsplineop> bop;
+    shared_ptr<bsplineop> cop;
     support::load_time(h.get(), time);
     perfect::load(h.get(), scenario);
     support::load(h.get(), grid);
     support::load(h.get(), timedef);
-    support::load(h.get(), b, bop);
+    support::load(h.get(), b, cop);
     assert(b->n() == grid.N.y());
 
     // Return the scenario, grid, and timedef to the caller if not already set
@@ -744,8 +744,8 @@ static quantity::storage_map_type process(
 
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu
-        = make_shared<suzerain::bsplineop_lu>(*bop.get());
-    boplu->factor_mass(*bop.get());
+        = make_shared<suzerain::bsplineop_lu>(*cop.get());
+    boplu->factor_mass(*cop.get());
 
     // Load samples as coefficients
     auto_ptr<perfect::mean> m(new perfect::mean(time, b->n()));
@@ -763,7 +763,7 @@ static quantity::storage_map_type process(
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
 #define ACCUMULATE(coeff_name, coeff_col, point_name)                 \
-    bop->accumulate(0, 1.0, m->coeff_name().col(coeff_col).data(), 1, \
+    cop->accumulate(0, 1.0, m->coeff_name().col(coeff_col).data(), 1, \
                     0.0, s->col(quantity::point_name).data(),   1)
     ACCUMULATE(rho,              0, bar_rho               );
     ACCUMULATE(rho_u,            0, bar_rho_u             );
@@ -879,8 +879,8 @@ static quantity::storage_map_type process(
     C(name##__y) = C(name);                          \
     boplu->solve(1, C(name##__y).data(), 1, b->n()); \
     C(name##__yy) = C(name##__y);                    \
-    bop->apply(1, 1.0, C(name##__y).data(),  1);     \
-    bop->apply(2, 1.0, C(name##__yy).data(), 1)
+    cop->apply(1, 1.0, C(name##__y).data(),  1);     \
+    cop->apply(2, 1.0, C(name##__yy).data(), 1)
 
     // Computations following "Sampling logistics" in writeups
     C(tilde_u) = C(bar_rho_u)/C(bar_rho);
@@ -1019,10 +1019,10 @@ static quantity::storage_map_type process(
             1, b->n());
     s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(quantity::bar_rho__yy)
         = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y);
-    bop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
+    cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y)>(quantity::bar_rho__y).data(),
             1, b->n());
-    bop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
+    cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_SAMPLED_YY)>(quantity::bar_rho__yy).data(),
             1, b->n());
 
@@ -1035,10 +1035,10 @@ static quantity::storage_map_type process(
             1, b->n());
     s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(quantity::tilde_u__yy)
         = s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y);
-    bop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
+    cop->apply(1, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y)>(quantity::tilde_u__y).data(),
             1, b->n());
-    bop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
+    cop->apply(2, BOOST_PP_SEQ_SIZE(SEQ_DERIVED_Y), 1.0,
             s->middleCols<BOOST_PP_SEQ_SIZE(SEQ_DERIVED_YY)>(quantity::tilde_u__yy).data(),
             1, b->n());
 
@@ -1210,7 +1210,7 @@ static quantity::storage_map_type process(
     // This mutates the shared_ptrs provided by the caller
     if (!i_b) {
         i_b     = b;
-        i_bop   = bop;
+        i_bop   = cop;
         i_boplu = boplu;
     }
 

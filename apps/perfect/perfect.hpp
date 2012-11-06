@@ -110,7 +110,7 @@ void store_collocation_values(
         const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
-        const bsplineop& bop);
+        const bsplineop& cop);
 
 /**
  * Load the current simulation state from an open collocation point value
@@ -123,7 +123,7 @@ void load_collocation_values(
         const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
-        const bsplineop& bop);
+        const bsplineop& cop);
 
 /**
  * Interrogate an open restart file and invoke either load_coefficients()
@@ -135,7 +135,7 @@ void load(const esio_handle h,
           const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
-          const bsplineop& bop);
+          const bsplineop& cop);
 
 /**
  * Hold temperature and density constant while changing the Mach number and
@@ -149,7 +149,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
-                const bsplineop& bop,
+                const bsplineop& cop,
                 const real_t old_Ma,
                 const real_t old_gamma);
 
@@ -208,7 +208,7 @@ add_noise(contiguous_state<4,complex_t> &state,
           const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
-          const bsplineop& bop);
+          const bsplineop& cop);
 
 /**
  * Accumulate the result of adding \c alpha times the manufactured solution \c
@@ -226,7 +226,7 @@ void accumulate_manufactured_solution(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop,
+        const bsplineop &cop,
         const real_t simulation_time);
 
 /**
@@ -449,7 +449,7 @@ public:
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
  * @param[in,out] b        B-spline basis workspace.
- * @param[in]     bop      B-spline operator workspace.
+ * @param[in]     cop      B-spline operator workspace.
  * @param[in,out] swave    Destroyed in the computation
  * @param[in]     t        Current simulation time
  *
@@ -460,7 +460,7 @@ mean sample_mean_quantities(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop,
+        const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,
         const real_t t);
 

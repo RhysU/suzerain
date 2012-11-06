@@ -35,7 +35,7 @@ operator_base::operator_base(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop)
+        const bsplineop &cop)
     : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
       lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x),
       lambda2_x(lambda1_x * lambda1_x),
@@ -44,7 +44,7 @@ operator_base::operator_base(
       lambda2_z(lambda1_z * lambda1_z),
       grid(grid),
       dgrid(dgrid),
-      bop(bop),
+      cop(cop),
       y_(boost::extents[boost::multi_array_types::extent_range(
               dgrid.local_physical_start.y(),
               dgrid.local_physical_end.y())]),

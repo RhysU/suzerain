@@ -83,7 +83,7 @@ driver_base::driver_base(
               description,
               this->revstr)
     , b()
-    , bop()
+    , cop()
     , gop()
     , dgrid()
     , state_linear()

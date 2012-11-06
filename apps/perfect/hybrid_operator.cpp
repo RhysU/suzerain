@@ -136,7 +136,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
             // adjusting for when input imaginary part a priori should be zero
             SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    phi, km, kn, &s, &ref, &ld, cop.get(),
                     wn == 0 && wm == 0,
                     tmp.data() + ndx::e   * Ny,
                     tmp.data() + ndx::mx  * Ny,
@@ -228,7 +228,7 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
             // imaginary part a priori should be zero
             SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
-                    phi, km, kn, &s, &ref, &ld, bop.get(),
+                    phi, km, kn, &s, &ref, &ld, cop.get(),
                     wn == 0 && wm == 0,
                     &input [ndx::e  ][0][m - dkbx][n - dkbz],
                     &input [ndx::mx ][0][m - dkbx][n - dkbz],
@@ -430,7 +430,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     // Details for suzerain_rholut_imexop-based "inversion" using ?GBSVX
     // Macros used to automatically increase paranoia during debug builds
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
-            (int) swave_count, Ny, bop.max_kl(), bop.max_ku());
+            (int) swave_count, Ny, cop.max_kl(), cop.max_ku());
 #ifndef NDEBUG
 # define SCRATCH_C(type, name, ...) \
          type name = type::Constant(__VA_ARGS__, suzerain::complex::NaN<type::Scalar>())
@@ -517,12 +517,12 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             SUZERAIN_TIMER_BEGIN("implicit operator assembly");
             if (spec.method() == zgbsv_specification::zgbsv) {  // In-place LUP
                 suzerain_rholut_imexop_packf(
-                        phi, km, kn, &s, &ref, &ld, bop.get(),
+                        phi, km, kn, &s, &ref, &ld, cop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, lu.data());
             } else {                                   // Out-of-place LUP
                 suzerain_rholut_imexop_packc(
-                        phi, km, kn, &s, &ref, &ld, bop.get(),
+                        phi, km, kn, &s, &ref, &ld, cop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                         buf.data(), &A, patpt.data());
             }

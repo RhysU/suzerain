@@ -107,7 +107,7 @@ static void atexit_underling(void) {
 
 // Global B-spline related-details initialized in main()
 static shared_ptr<suzerain::bspline>       b;
-static shared_ptr<suzerain::bsplineop>     bop;    // Collocation
+static shared_ptr<suzerain::bsplineop>     cop;    // Collocation
 static shared_ptr<suzerain::bsplineop>     gop;    // Galerkin L2
 static shared_ptr<suzerain::bsplineop_luz> bopluz;
 
@@ -290,7 +290,7 @@ int main(int argc, char **argv)
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 
-    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, bop);
+    support::create(grid.N.y(), grid.k, 0.0, grid.L.y(), grid.htdelta, b, cop);
     gop.reset(new suzerain::bsplineop(*b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
     INFO0("Creating new restart file " << restart_file);
@@ -299,14 +299,14 @@ int main(int argc, char **argv)
                     (std::string("channel ") + revstr).c_str()); // Ticket #2595
     perfect::store(esioh, scenario);
     support::store(esioh, grid);
-    support::store(esioh, b, bop, gop);
+    support::store(esioh, b, cop, gop);
     support::store(esioh, timedef);
     perfect::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
-    bopluz = make_shared<suzerain::bsplineop_luz>(*bop);
-    bopluz->factor_mass(*bop);
+    bopluz = make_shared<suzerain::bsplineop_luz>(*cop);
+    bopluz->factor_mass(*cop);
 
     INFO0("Initializing pencil_grid to obtain parallel decomposition details");
     dgrid = make_shared<suzerain::pencil_grid_default>(grid.dN, grid.P);
@@ -322,14 +322,14 @@ int main(int argc, char **argv)
 
         // Use a canned manufactured solution routine for initialization
         perfect::accumulate_manufactured_solution(
-                1, *msoln, 0, swave, grid, *dgrid, *b, *bop, mms);
+                1, *msoln, 0, swave, grid, *dgrid, *b, *cop, mms);
 
     } else {
 
         // Use a simple parabolic velocity profile
 
         // Initializing operator_base to access decomposition-ready utilities
-        suzerain::operator_base o(grid, *dgrid, *b, *bop);
+        suzerain::operator_base o(grid, *dgrid, *b, *cop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         support::physical_view<>::type sphys
@@ -398,9 +398,9 @@ int main(int argc, char **argv)
         } // end Y
 
         // Build FFT normalization constant into Y direction's mass matrix
-        suzerain::bsplineop_luz massluz(*bop);
+        suzerain::bsplineop_luz massluz(*cop);
         const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-        massluz.opform(1, &scale_factor, *bop);
+        massluz.opform(1, &scale_factor, *cop);
         massluz.factor();
 
         for (std::size_t i = 0; i < swave.shape()[0]; ++i) {
@@ -427,7 +427,7 @@ int main(int argc, char **argv)
 
     INFO0("Computing mean quantities from state fields");
     perfect::mean samples = perfect::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *bop, swave, t);
+            scenario, grid, *dgrid, *b, *cop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
     perfect::store(esioh, samples);

@@ -664,7 +664,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // separately.
     {
 
-      suzerain::bsplineop_lu boplu(o.bop);
+      suzerain::bsplineop_lu boplu(o.cop);
 
       // FIXME: Need form mass matrix call
       // FIXME: Move these ops outside this function

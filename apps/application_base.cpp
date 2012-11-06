@@ -69,7 +69,7 @@ application_base::application_base(
               description,
               this->revstr)
     , b()
-    , bop()
+    , cop()
     , gop()
     , dgrid()
     , state_linear()

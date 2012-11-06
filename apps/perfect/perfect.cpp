@@ -293,7 +293,7 @@ void store_collocation_values(
         const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
-        const bsplineop& bop)
+        const bsplineop& cop)
 {
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -306,7 +306,7 @@ void store_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
     for (size_t i = 0; i < swave.shape()[0]; ++i) {
         obase.bop_apply(0, 1, swave, i);
         obase.zero_dealiasing_modes(swave, i);
@@ -387,7 +387,7 @@ void load_collocation_values(
         const grid_definition& grid,
         const pencil_grid& dgrid,
         bspline& b,
-        const bsplineop& bop)
+        const bsplineop& cop)
 {
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -477,13 +477,13 @@ void load_collocation_values(
     }
 
     // Initialize operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
 
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
-    bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(cop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.opform(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, cop);
     massluz.factor();
 
     for (size_t i = 0; i < state.shape()[0]; ++i) {
@@ -499,7 +499,7 @@ void load(const esio_handle h,
           const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline& b,
-          const bsplineop& bop)
+          const bsplineop& cop)
 {
     const std::vector<support::field> fields = default_fields();
 
@@ -533,10 +533,10 @@ void load(const esio_handle h,
     // Dispatch to the appropriate restart loading logic
     DEBUG0("Started loading simulation fields");
     if (trycoeffs) {
-        support::load_coefficients(h, fields, state, grid, dgrid, b, bop);
+        support::load_coefficients(h, fields, state, grid, dgrid, b, cop);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
-        load_collocation_values(h, state, scenario, grid, dgrid, b, bop);
+        load_collocation_values(h, state, scenario, grid, dgrid, b, cop);
     }
     DEBUG0("Finished loading simulation fields");
 }
@@ -547,7 +547,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const grid_definition& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
-                const bsplineop& bop,
+                const bsplineop& cop,
                 const real_t old_Ma,
                 const real_t old_gamma)
 {
@@ -581,7 +581,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     }
 
     // Convert state to physical space collocation points
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
     support::physical_view<state_count>::type sphys
             = support::physical_view<state_count>::create(dgrid, swave);
     for (size_t k = 0; k < state_count; ++k) {
@@ -621,9 +621,9 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 
     // Convert state back to wave space coefficients in X, Y, and Z
     // building FFT normalization constant into the mass matrix
-    bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(cop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.opform(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     for (size_t i = 0; i < state_count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
@@ -685,7 +685,7 @@ add_noise(contiguous_state<4,complex_t> &state,
           const grid_definition& grid,
           const pencil_grid& dgrid,
           bspline &b,
-          const bsplineop& bop)
+          const bsplineop& cop)
 {
     // FIXME Needs to be made aware of channel vs flat plate
 
@@ -699,7 +699,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Ensure we were handed collocation-based operator matrices
-    SUZERAIN_ENSURE(bop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    SUZERAIN_ENSURE(cop.get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
 
     const int Ny = grid.N.y();
 
@@ -763,8 +763,8 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     // Form mass matrix to convert (wave, collocation point values, wave)
     // perturbations to (wave, coefficients, wave)
-    bsplineop_luz massluz(bop);
-    massluz.factor_mass(bop);
+    bsplineop_luz massluz(cop);
+    massluz.factor_mass(cop);
 
     // Set L'Ecuyer et al.'s rngstream seed.  Use a distinct Substream for each
     // wall-normal pencil to ensure process is a) repeatable despite changes in
@@ -867,7 +867,7 @@ add_noise(contiguous_state<4,complex_t> &state,
         = support::physical_view<state_count+3>::create(dgrid, s);
 
     // Initializing operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
 
     // From Ax in s[0] compute \partial_y Ax
     obase.bop_apply(1, 1.0, s, 0);
@@ -1019,7 +1019,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     //  8) Bring perturbed state information back to wavespace (no rho!)
     // Build FFT normalization constant into Y direction's mass matrix.
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.opform(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::e , 0));  // X, Z
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::mx, 0));  // X, Z
@@ -1045,7 +1045,7 @@ void accumulate_manufactured_solution(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop,
+        const bsplineop &cop,
         const real_t simulation_time)
 {
     // We are only prepared to handle a fixed number of fields in this routine
@@ -1058,7 +1058,7 @@ void accumulate_manufactured_solution(
     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Initialize operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
 
     // Allocate one field of temporary storage for scratch purposes
     boost::scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr( // RAII
@@ -1071,9 +1071,9 @@ void accumulate_manufactured_solution(
             = support::physical_view<1>::create(dgrid, scratch);
 
     // Prepare factored mass matrix for repeated use
-    bsplineop_luz massluz(bop);
+    bsplineop_luz massluz(cop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.opform(1, &scale_factor, bop);
+    massluz.opform(1, &scale_factor, cop);
     massluz.factor();
 
     // For each scalar field...
@@ -1173,7 +1173,7 @@ mean sample_mean_quantities(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
-        const bsplineop &bop,
+        const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
@@ -1234,7 +1234,7 @@ mean sample_mean_quantities(
     }
 
     // Obtain access to helper routines for differentiation
-    operator_base obase(grid, dgrid, b, bop);
+    operator_base obase(grid, dgrid, b, cop);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
@@ -1546,8 +1546,8 @@ mean sample_mean_quantities(
     // divided by the dealiased extents and converted to coefficients.
     const real_t scale_factor = dgrid.global_physical_extent.x()
                               * dgrid.global_physical_extent.z();
-    bsplineop_lu scaled_mass(bop);
-    scaled_mass.opform(1, &scale_factor, bop);
+    bsplineop_lu scaled_mass(cop);
+    scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
     scaled_mass.solve(mean::nscalars::physical,
             ret.storage.middleCols<mean::nscalars::physical>(
