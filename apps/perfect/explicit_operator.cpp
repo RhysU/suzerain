@@ -20,14 +20,14 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// explicit_op.cpp: Fully explicit Navier--Stokes operators
+// explicit_operator.cpp: Fully explicit Navier--Stokes operators
 // $Id$
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include "explicit_op.hpp"
+#include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -35,7 +35,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
-#include "nonlinear.hpp"
+#include "nonlinear_operator.hpp"
 
 #pragma warning(disable:383 1572)
 

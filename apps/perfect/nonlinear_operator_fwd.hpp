@@ -20,11 +20,11 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear_fwd.hpp: Building blocks for nonlinear Navier--Stokes operators
+// nonlinear_operator_fwd.hpp: Nonlinear Navier--Stokes spatial operators
 // $Id$
 
-#ifndef NONLINEAR_FWD_HPP
-#define NONLINEAR_FWD_HPP
+#ifndef NONLINEAR_OPERATOR_FWD_HPP
+#define NONLINEAR_OPERATOR_FWD_HPP
 
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
@@ -448,4 +448,4 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-#endif  /* NONLINEAR_FWD_HPP */
+#endif  /* NONLINEAR_OPERATOR_FWD_HPP */

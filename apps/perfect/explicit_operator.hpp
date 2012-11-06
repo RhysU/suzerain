@@ -20,13 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// explicit_op.hpp: Fully explicit Navier--Stokes operators
+// explicit_operator.hpp: Fully explicit Navier--Stokes operators
 // $Id$
 
-#ifndef EXPLICIT_OP_HPP
-#define EXPLICIT_OP_HPP
+#ifndef EXPLICIT_OPERATOR_HPP
+#define EXPLICIT_OPERATOR_HPP
 
-#include "nonlinear_fwd.hpp"
+#include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/multi_array.hpp>
@@ -197,4 +197,4 @@ protected:
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-#endif  /* EXPLICIT_OP_HPP */
+#endif  /* EXPLICIT_OPERATOR_HPP */

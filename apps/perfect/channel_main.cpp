@@ -71,8 +71,8 @@
 #include "perfect.hpp"
 
 #include "channel_treatment.hpp"
-#include "explicit_op.hpp"
-#include "hybrid_op.hpp"
+#include "explicit_operator.hpp"
+#include "hybrid_operator.hpp"
 
 // Provided by channel_main_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)

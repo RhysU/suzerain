@@ -26,7 +26,7 @@
 #ifndef CHANNEL_TREATMENT_HPP
 #define CHANNEL_TREATMENT_HPP
 
-#include "nonlinear.hpp"
+#include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_definition.hpp>

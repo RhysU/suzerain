@@ -20,11 +20,11 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// hybrid_op.hpp: Operators for hybrid implicit/explicit time advance
+// hybrid_operator.hpp: Hybrid implicit/explicit Navier--Stokes operators
 // $Id$
 
-#ifndef HYBRID_OP_HPP
-#define HYBRID_OP_HPP
+#ifndef HYBRID_OPERATOR_HPP
+#define HYBRID_OPERATOR_HPP
 
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/multi_array.hpp>
@@ -34,7 +34,7 @@
 #include <suzerain/state_fwd.hpp>
 
 #include "../logging.hpp"
-#include "nonlinear_fwd.hpp"
+#include "nonlinear_operator_fwd.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -189,4 +189,4 @@ private:
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-#endif  /* HYBRID_OP_HPP */
+#endif  /* HYBRID_OPERATOR_HPP */

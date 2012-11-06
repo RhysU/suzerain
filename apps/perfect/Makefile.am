@@ -29,9 +29,9 @@ channel_init_svnrev.h: $(channel_init_SOURCES)                       \
 bin_PROGRAMS    += channel
 channel_SOURCES  = channel_main.cpp
 channel_SOURCES += channel_treatment.hpp
-channel_SOURCES += nonlinear_fwd.hpp nonlinear.hpp
-channel_SOURCES += explicit_op.cpp explicit_op.hpp
-channel_SOURCES += hybrid_op.cpp   hybrid_op.hpp
+channel_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
+channel_SOURCES += explicit_operator.cpp explicit_operator.hpp
+channel_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
 channel_SOURCES += channel_main_svnrev.c
 BUILT_SOURCES   += channel_main_svnrev.h
 channel_LDADD    = ./libperfect.la

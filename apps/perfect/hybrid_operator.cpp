@@ -20,7 +20,7 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// explicit_op.hpp: Operators for channel simulation
+// hybrid_operator.cpp: Hybrid implicit/explicit Navier--Stokes operators
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -39,8 +39,8 @@
 #include <suzerain/timers.h>
 
 #include "../logging.hpp"
-#include "hybrid_op.hpp"
-#include "nonlinear.hpp"
+#include "hybrid_operator.hpp"
+#include "nonlinear_operator.hpp"
 
 #pragma warning(disable:383 1572)
 

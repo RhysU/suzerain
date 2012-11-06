@@ -20,13 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear.hpp: Building blocks for nonlinear Navier--Stokes operators
+// nonlinear_operator.hpp: Nonlinear Navier--Stokes spatial operators
 // $Id$
 
-#ifndef NONLINEAR_HPP
-#define NONLINEAR_HPP
+#ifndef NONLINEAR_OPERATOR_HPP
+#define NONLINEAR_OPERATOR_HPP
 
-#include "nonlinear_fwd.hpp"
+#include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
@@ -993,4 +993,4 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-#endif  /* NONLINEAR_HPP */
+#endif  /* NONLINEAR_OPERATOR_HPP */
