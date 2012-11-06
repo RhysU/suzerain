@@ -20,11 +20,11 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver.hpp: Application driver logic spanning multiple applications
+// driver_base.hpp: Application driver logic spanning multiple applications
 // $Id$
 
-#ifndef SUZERAIN_SUPPORT_DRIVER_HPP
-#define SUZERAIN_SUPPORT_DRIVER_HPP
+#ifndef SUZERAIN_SUPPORT_DRIVER_BASE_HPP
+#define SUZERAIN_SUPPORT_DRIVER_BASE_HPP
 
 #include <esio/esio.h>
 
@@ -48,14 +48,14 @@ namespace support {
 class field;
 
 /**
- * An extensible driver class for managing a Suzerain application.
+ * An abstract driver base class for managing a Suzerain application.
  * Intended for time-varying, three-dimensional problems.
  * Instantiate from within \c main().
  *
  * Signal handling capabilities may misbehave if multiple instances
  * are executing within the same process.
  */
-class Driver
+class driver_base
 {
 public:
 
@@ -63,9 +63,9 @@ public:
 
     typedef contiguous_state<4,complex_t> nonlinear_state_type;
 
-    Driver(const std::string &application_synopsis,
-           const std::string &description = "",
-           const std::string &revstr = "");
+    driver_base(const std::string &application_synopsis,
+                const std::string &description = "",
+                const std::string &revstr = "");
 
     /**
      * Initialize everything, including MPI, necessary for the application.
@@ -92,7 +92,7 @@ public:
     */
     virtual std::string default_log4cxx_config();
 
-    virtual ~Driver();
+    virtual ~driver_base();
 
     std::string revstr;
 
@@ -256,4 +256,4 @@ private:
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_DRIVER_HPP
+#endif // SUZERAIN_SUPPORT_DRIVER_BASE_HPP

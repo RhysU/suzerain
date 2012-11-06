@@ -20,14 +20,14 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver.hpp: Application driver logic spanning multiple applications
+// driver_base.hpp: Application driver logic spanning multiple applications
 // $Id$
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include "driver.hpp"
+#include "driver_base.hpp"
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -56,9 +56,10 @@ namespace suzerain {
 
 namespace support {
 
-Driver::Driver(const std::string &application_synopsis,
-               const std::string &description,
-               const std::string &revstr)
+driver_base::driver_base(
+        const std::string &application_synopsis,
+        const std::string &description,
+        const std::string &revstr)
     : revstr(revstr)
     , grid()
     , fftwdef( /* rigor_fft   */ fftw::measure,
@@ -105,7 +106,7 @@ Driver::Driver(const std::string &application_synopsis,
 }
 
 std::string
-Driver::default_log4cxx_config()
+driver_base::default_log4cxx_config()
 {
     std::ostringstream os;
     os << support::log4cxx_config << // Appending to the default configuration
@@ -139,7 +140,7 @@ Driver::default_log4cxx_config()
 }
 
 void
-Driver::initialize(int argc, char **argv)
+driver_base::initialize(int argc, char **argv)
 {
 #ifdef SUZERAIN_HAVE_GRVY
     grvy_timer_init(argv[0] ? argv[0] : "NULL");  // Initialize GRVY Timers
@@ -215,7 +216,7 @@ Driver::initialize(int argc, char **argv)
     // FIXME Do something with positional
 }
 
-Driver::~Driver()
+driver_base::~driver_base()
 {
 
     // Remove the metadata file.
@@ -234,7 +235,7 @@ Driver::~Driver()
 }
 
 bool
-Driver::log_status(
+driver_base::log_status(
         const real_t t,
         const std::size_t nt)
 {
@@ -288,7 +289,7 @@ Driver::log_status(
 }
 
 void
-Driver::log_status_L2(
+driver_base::log_status_L2(
         const std::string& timeprefix,
         const char * const name_L2,
         const char * const name_rms)
@@ -334,7 +335,7 @@ Driver::log_status_L2(
 }
 
 void
-Driver::log_status_bulk(
+driver_base::log_status_bulk(
         const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes...
@@ -371,7 +372,7 @@ Driver::log_status_bulk(
 }
 
 void
-Driver::log_status_specific_boundary_state(
+driver_base::log_status_specific_boundary_state(
         const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes.
@@ -405,7 +406,7 @@ Driver::log_status_specific_boundary_state(
 }
 
 bool
-Driver::log_status_hook(
+driver_base::log_status_hook(
             const std::string& timeprefix,
             const real_t t,
             const std::size_t nt)
@@ -417,10 +418,10 @@ Driver::log_status_hook(
 }
 
 // Initialized to zero indicating no signals have been received
-Driver::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
+driver_base::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
 
 void
-Driver::process_signal(
+driver_base::process_signal(
         const int sig)
 {
     // Strictly speaking this handler performs too much work.  The design
