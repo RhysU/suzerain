@@ -64,20 +64,6 @@ application_base::application_base(
     , grid()
     , fftwdef( /* rigor_fft   */ fftw::measure,
                /* rigor_mpi   */ fftw::estimate)
-    , restart( /* metadata    */ "metadata.h5.XXXXXX",
-               /* uncommitted */ "uncommitted.h5.XXXXXX",
-               /* destination */ "restart#.h5",
-               /* retain      */ 1,
-               /* dt          */ 0,
-               /* nt          */ 0)
-    , statsdef(/* destination */ "sample#.h5")
-    , timedef( /* advance_dt  */ 0,
-               /* advance_nt  */ 0,
-               /* advance_wt  */ 0,
-               /* status_dt   */ 0,
-               /* status_nt   */ 0,
-               /* min_dt      */ 1e-8,
-               /* max_dt      */ 1)
     , options(application_synopsis,
               "FILE",
               description,
@@ -98,7 +84,7 @@ application_base::application_base(
 }
 
 std::string
-application_base::default_log4cxx_config()
+application_base::log4cxx_config()
 {
     std::ostringstream os;
     os << support::log4cxx_config << // Appending to the default configuration
@@ -141,7 +127,7 @@ application_base::initialize(int argc, char **argv)
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,              // Initialize logging
-                        default_log4cxx_config().c_str());
+                        this->log4cxx_config().c_str());
 #ifdef HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                 // Initialize underling...
     atexit(&underling_cleanup);                      // ...finalize at exit
@@ -162,9 +148,6 @@ application_base::initialize(int argc, char **argv)
     // Add problem definitions to options
     options.add_definition(grid    );
     options.add_definition(fftwdef );
-    options.add_definition(restart );
-    options.add_definition(statsdef);
-    options.add_definition(timedef );
 
     // Add additional standalone options
     options.add_options()
@@ -209,17 +192,6 @@ application_base::initialize(int argc, char **argv)
 
 application_base::~application_base()
 {
-
-    // Remove the metadata file.
-    // Preserve restart.uncommitted as it may help post mortem debugging.
-    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        if (0 == unlink(restart.metadata.c_str())) {
-            DEBUG("Cleaned up temporary file " << restart.metadata);
-        } else {
-            WARN("Error cleaning up temporary file " << restart.metadata);
-        }
-    }
-
 #ifdef HAVE_UNDERLING
     underling_cleanup();
 #endif

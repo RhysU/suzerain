@@ -79,18 +79,12 @@ public:
     virtual std::vector<std::string> initialize(int argc, char **argv);
 
     /**
-    * Default log4cxx configuration, which differs from
-    * support::log4cxx_config.  Files <tt>bulk.dat</tt>, <tt>L2.mean.dat</tt>,
-    * and <tt>rms.fluct.dat</tt> collecting messages with the names
-    * <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have been added.
-    *
-    * <tt>${FOO}</tt> syntax may be used to pick up environment variables in
-    * addition to properties See
-    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
-    * and
-    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
+    * The log4cxx configuration to use.  Files <tt>bulk.dat</tt>,
+    * <tt>L2.mean.dat</tt>, and <tt>rms.fluct.dat</tt> collecting messages with
+    * the names <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have
+    * been added.
     */
-    virtual std::string default_log4cxx_config();
+    virtual std::string log4cxx_config();
 
     virtual ~driver_base();
 

@@ -75,14 +75,14 @@ public:
      *
      * @param argc Incoming arguments per <code>main(argc, ...)</code>
      * @param argv Incoming arguments per <code>main(..., argv)</code>
+     *
+     * @return A vector of the positional arguments.
      */
     virtual std::vector<std::string> initialize(int argc, char **argv);
 
     /**
-    * Default log4cxx configuration, which differs from
-    * support::log4cxx_config.  Files <tt>bulk.dat</tt>, <tt>L2.mean.dat</tt>,
-    * and <tt>rms.fluct.dat</tt> collecting messages with the names
-    * <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have been added.
+    * The log4cxx configuration to use, which is built upon but may differ from
+    * support::log4cxx_config.
     *
     * <tt>${FOO}</tt> syntax may be used to pick up environment variables in
     * addition to properties See
@@ -90,7 +90,7 @@ public:
     * and
     * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
     */
-    virtual std::string default_log4cxx_config();
+    virtual std::string log4cxx_config();
 
     virtual ~application_base();
 
@@ -101,12 +101,6 @@ public:
     grid_definition grid;
 
     fftw_definition fftwdef;
-
-    restart_definition restart;
-
-    statistics_definition statsdef;
-
-    time_definition timedef;
 
     program_options options;
 

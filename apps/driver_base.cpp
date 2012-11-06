@@ -106,7 +106,7 @@ driver_base::driver_base(
 }
 
 std::string
-driver_base::default_log4cxx_config()
+driver_base::log4cxx_config()
 {
     std::ostringstream os;
     os << support::log4cxx_config << // Appending to the default configuration
@@ -149,7 +149,7 @@ driver_base::initialize(int argc, char **argv)
     wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
     atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
     logging::initialize(MPI_COMM_WORLD,              // Initialize logging
-                        default_log4cxx_config().c_str());
+                        log4cxx_config().c_str());
 #ifdef HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                 // Initialize underling...
     atexit(&underling_cleanup);                      // ...finalize at exit
