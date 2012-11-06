@@ -98,8 +98,8 @@ driver_base::driver_base(
     , last_status_nt(std::numeric_limits<std::size_t>::max())
     , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-    ,  use_p3dfft(false)
-    ,  use_underling(false)
+    , use_p3dfft(false)
+    , use_underling(false)
 #endif
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
