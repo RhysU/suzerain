@@ -20,6 +20,9 @@ noinst_HEADERS += test_tools.hpp
 CXX = @MPICXX@
 CC  = @MPICC@
 
+# Permit building EXTRA_PROGRAMS and check_PROGRAMS without running tests
+extra: $(EXTRA_PROGRAMS) $(check_PROGRAMS)
+
 # Specify test environment for 'make check'
 TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
 TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
