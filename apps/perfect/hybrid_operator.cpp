@@ -467,9 +467,9 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
     const char *mname = "UNKNOWN";          // Used for error reporting
     char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
     switch (spec.method()) {
-    case spec_zgbsv::zgbsv:   mname = "suzerain_lapackext_zgbsv";   break;
-    case spec_zgbsv::zgbsvx:  mname = "suzerain_lapack_zgbsvx";     break;
-    case spec_zgbsv::zcgbsvx: mname = "suzerain_lapackext_zcgbsvx"; break;
+    case zgbsv_specification::zgbsv:   mname = "suzerain_lapackext_zgbsv";   break;
+    case zgbsv_specification::zgbsvx:  mname = "suzerain_lapack_zgbsvx";     break;
+    case zgbsv_specification::zcgbsvx: mname = "suzerain_lapackext_zcgbsvx"; break;
     }
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common output for all solvers
@@ -515,7 +515,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
             // This is the transpose of the implicit operator we desire.
             SUZERAIN_TIMER_BEGIN("implicit operator assembly");
-            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place LUP
+            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place LUP
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, bop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
@@ -543,7 +543,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
 
             SUZERAIN_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
-            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place LUP
+            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place LUP
                 bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
             } else {                                   // Out-of-place LUP
                 bc_enforcer.op(A, patpt.data(), patpt.colStride());
@@ -557,7 +557,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
 
-            case spec_zgbsv::zgbsv:                    // In-place LUP, solve
+            case zgbsv_specification::zgbsv:                    // In-place LUP, solve
                 SUZERAIN_TIMER_BEGIN(mname);
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
@@ -570,7 +570,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
                 }
                 break;
 
-            case spec_zgbsv::zgbsvx:                   // Out-of-place
+            case zgbsv_specification::zgbsvx:                   // Out-of-place
                 SUZERAIN_TIMER_BEGIN(mname);
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
@@ -594,7 +594,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
                 }
                 break;
 
-            case spec_zgbsv::zcgbsvx:                  // Out-of-place
+            case zgbsv_specification::zcgbsvx:                  // Out-of-place
                 SUZERAIN_TIMER_BEGIN(mname);
                 fact  = spec.reuse() ? fact : 'N';
                 apprx = fact == 'N' ? 0 : 1;
@@ -629,7 +629,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
             }
 
             SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            if (spec.method() == spec_zgbsv::zgbsv) {  // In-place solve
+            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place solve
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
             } else {                                   // Out-of-place solve
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
@@ -652,7 +652,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
                     mname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            } else if (info == A.N+1 && spec.method() == spec_zgbsv::zgbsvx) {
+            } else if (info == A.N+1 && spec.method() == zgbsv_specification::zgbsvx) {
                 snprintf(buffer, sizeof(buffer),
                     "%s reported condition number like %g for "
                     " m=%d, n=%d with km=%g, kn=%g",

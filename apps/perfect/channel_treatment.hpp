@@ -34,8 +34,8 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/storage.hpp>
+#include <suzerain/zgbsv_specification.hpp>
 
 #include "perfect.hpp"
 
@@ -83,7 +83,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     ChannelTreatment(
-            const spec_zgbsv& spec,
+            const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -162,7 +162,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 
 template< typename BaseClass >
 ChannelTreatment<BaseClass>::ChannelTreatment(
-            const spec_zgbsv& spec,
+            const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,

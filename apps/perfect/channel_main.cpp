@@ -52,12 +52,12 @@
 #include <suzerain/program_options.hpp>
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
-#include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/statistics_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
 #include <suzerain/version.hpp>
+#include <suzerain/zgbsv_specification.hpp>
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -884,7 +884,7 @@ int main(int argc, char **argv)
 
     DEBUG0("Processing command line arguments and response files");
     std::string restart_file;
-    std::string solver_spec(static_cast<std::string>(suzerain::spec_zgbsv()));
+    std::string solver_spec(static_cast<std::string>(suzerain::zgbsv_specification()));
     bool use_explicit  = false;
     bool use_implicit  = false;
     bool use_yang11    = false;

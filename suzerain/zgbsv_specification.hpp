@@ -21,14 +21,14 @@
 
 namespace suzerain {
 
-class spec_zgbsv
+class zgbsv_specification
 {
 public:
 
     enum method_type { zgbsvx = 1, zgbsv, zcgbsvx };
 
-    spec_zgbsv();
-    spec_zgbsv(const std::string &spec);
+    zgbsv_specification();
+    zgbsv_specification(const std::string &spec);
 
     method_type method() const { return method_; }
     bool        equil()  const { return equil_;  }
@@ -39,7 +39,7 @@ public:
     double      tolsc()  const { return tolsc_;  }
 
     operator std::string () const;
-    bool operator==(const spec_zgbsv &that) const;
+    bool operator==(const zgbsv_specification &that) const;
 
 private:
 
@@ -56,7 +56,7 @@ private:
 template< typename CharT, typename Traits >
 std::basic_ostream<CharT,Traits>& operator<<(
         std::basic_ostream<CharT,Traits> &os,
-        const spec_zgbsv& s)
+        const zgbsv_specification& s)
 {
     return os << static_cast<std::string>(s);
 }

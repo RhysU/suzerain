@@ -30,7 +30,7 @@
 
 namespace suzerain {
 
-spec_zgbsv::spec_zgbsv()  // Defaults behave much like zgbsvx
+zgbsv_specification::zgbsv_specification()  // Defaults behave much like zgbsvx
     : method_(zcgbsvx),
       equil_(false),
       reuse_(false),
@@ -40,12 +40,12 @@ spec_zgbsv::spec_zgbsv()  // Defaults behave much like zgbsvx
       tolsc_(0)
 {}
 
-spec_zgbsv::spec_zgbsv(const std::string& spec)
+zgbsv_specification::zgbsv_specification(const std::string& spec)
 {
     using namespace std;
 
     // Default construct instance
-    spec_zgbsv s;
+    zgbsv_specification s;
 
     // Advance past any leading whitespace
     std::string::const_iterator iter = spec.begin(), end = spec.end();
@@ -63,13 +63,13 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
 
         const bool r = boost::spirit::qi::phrase_parse(iter, end, (
             // Grammar Begin
-                  ( no_case["zgbsvx" ] [ ref(s.method_) = spec_zgbsv::zgbsvx  ]
+                  ( no_case["zgbsvx" ] [ ref(s.method_) = zgbsv_specification::zgbsvx  ]
                     >> -(   ( char_(',') >> no_case["equil"] >> '='
                                          >> no_case[bool_]  [ref(s.equil_) = _1])
                         )
                   )
-                | ( no_case["zgbsv"  ] [ ref(s.method_) = spec_zgbsv::zgbsv   ])
-                | ( no_case["zcgbsvx"] [ ref(s.method_) = spec_zgbsv::zcgbsvx ]
+                | ( no_case["zgbsv"  ] [ ref(s.method_) = zgbsv_specification::zgbsv   ])
+                | ( no_case["zcgbsvx"] [ ref(s.method_) = zgbsv_specification::zcgbsvx ]
                     >> -(   ( char_(',') >> no_case["reuse"] >> '='
                                          >> no_case[bool_]  [ref(s.reuse_) = _1])
                           ^ ( char_(',') >> no_case["aiter"] >> '='
@@ -100,17 +100,17 @@ spec_zgbsv::spec_zgbsv(const std::string& spec)
     *this = s;
 }
 
-spec_zgbsv::operator std::string () const
+zgbsv_specification::operator std::string () const
 {
     std::ostringstream os;
     os << std::boolalpha;
 
-    if        (method_ == spec_zgbsv::zgbsv  ) {
+    if        (method_ == zgbsv_specification::zgbsv  ) {
         os << "zgbsv";
-    } else if (method_ == spec_zgbsv::zgbsvx ) {
+    } else if (method_ == zgbsv_specification::zgbsvx ) {
         os << "zgbsvx"
            << ",equil=" << equil_;
-    } else if (method_ == spec_zgbsv::zcgbsvx) {
+    } else if (method_ == zgbsv_specification::zcgbsvx) {
         os << "zcgbsvx"
            << ",reuse=" << reuse_
            << ",aiter=" << aiter_
@@ -124,7 +124,7 @@ spec_zgbsv::operator std::string () const
     return os.str();
 }
 
-bool spec_zgbsv::operator==(const spec_zgbsv &that) const
+bool zgbsv_specification::operator==(const zgbsv_specification &that) const
 {
     if (method_ != that.method_)
         return false;
@@ -134,10 +134,10 @@ bool spec_zgbsv::operator==(const spec_zgbsv &that) const
     default:
         return true;
 
-    case spec_zgbsv::zgbsvx:
+    case zgbsv_specification::zgbsvx:
         return equil_ == that.equil_;
 
-    case spec_zgbsv::zcgbsvx:
+    case zgbsv_specification::zcgbsvx:
         return reuse_  == that.reuse_
             && aiter_  == that.aiter_
             && siter_  == that.siter_

@@ -9,7 +9,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// spec_zgbsv.cpp: Encapsulates complex-valued banded solve options
+// zgbsv_specification.cpp: Encapsulates complex-valued banded solve options
 // $Id$
 
 #ifdef HAVE_CONFIG_H
@@ -17,21 +17,21 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <suzerain/spec_zgbsv.hpp>
+#include <suzerain/zgbsv_specification.hpp>
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-using suzerain::spec_zgbsv;
+using suzerain::zgbsv_specification;
 
 BOOST_AUTO_TEST_CASE( default_constructor )
 {
-    spec_zgbsv s;
+    zgbsv_specification s;
     BOOST_CHECK_NE("UNKNOWN", (std::string) s);
 }
 
 BOOST_AUTO_TEST_CASE( construct_empty )
 {
-    spec_zgbsv s(" ");  // Whitespace
+    zgbsv_specification s(" ");  // Whitespace
     BOOST_CHECK(s.method());
     BOOST_CHECK_NE("",        (std::string) s);
     BOOST_CHECK_NE("UNKNOWN", (std::string) s);
@@ -39,22 +39,22 @@ BOOST_AUTO_TEST_CASE( construct_empty )
 
 BOOST_AUTO_TEST_CASE( construct_zgbsv )
 {
-    spec_zgbsv s("zgbsv");
-    BOOST_CHECK(s.method() == spec_zgbsv::zgbsv);
+    zgbsv_specification s("zgbsv");
+    BOOST_CHECK(s.method() == zgbsv_specification::zgbsv);
     BOOST_CHECK_EQUAL("zgbsv", (std::string) s);
 }
 
 BOOST_AUTO_TEST_CASE( construct_zgbsvx )
 {
     {
-        spec_zgbsv s("zgbsvx");  // Uppercase
-        BOOST_CHECK(s.method() == spec_zgbsv::zgbsvx);
+        zgbsv_specification s("zgbsvx");  // Uppercase
+        BOOST_CHECK(s.method() == zgbsv_specification::zgbsvx);
         BOOST_CHECK_EQUAL("zgbsvx,equil=false", (std::string) s);
     }
 
     {
-        spec_zgbsv s("ZGBSVX,EQUIL=TRUE");  // Uppercase
-        BOOST_CHECK(s.method() == spec_zgbsv::zgbsvx);
+        zgbsv_specification s("ZGBSVX,EQUIL=TRUE");  // Uppercase
+        BOOST_CHECK(s.method() == zgbsv_specification::zgbsvx);
         BOOST_CHECK_EQUAL("zgbsvx,equil=true", (std::string) s);
     }
 }
@@ -62,15 +62,15 @@ BOOST_AUTO_TEST_CASE( construct_zgbsvx )
 BOOST_AUTO_TEST_CASE( construct_zcgbsvx )
 {
     {
-        spec_zgbsv s("zcgbsvx");
-        BOOST_CHECK(s.method() == spec_zgbsv::zcgbsvx);
+        zgbsv_specification s("zcgbsvx");
+        BOOST_CHECK(s.method() == zgbsv_specification::zcgbsvx);
         BOOST_CHECK_NE("zcgbsvx", (std::string) s);   // Much more required
     }
 
     {
         std::string str("zcgbsvx,reuse=true,aiter=2,siter=3,diter=4,tolsc=5");
-        spec_zgbsv s(str);
-        BOOST_CHECK(s.method() == spec_zgbsv::zcgbsvx);  // As constructed...?
+        zgbsv_specification s(str);
+        BOOST_CHECK(s.method() == zgbsv_specification::zcgbsvx);  // As constructed...?
         BOOST_CHECK_EQUAL(s.reuse(), true);
         BOOST_CHECK_EQUAL(s.aiter(), 2);
         BOOST_CHECK_EQUAL(s.siter(), 3);
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE( construct_zcgbsvx )
 
     {
         // Out of order
-        spec_zgbsv a("zcgbsvx , reuse = true\t\n,\t\nAITER=\t \t2");
-        spec_zgbsv b("zcgbsvx,reuse=true,aiter=2");
-        spec_zgbsv c("zcgbsvx,aiter=2,reuse=true");
+        zgbsv_specification a("zcgbsvx , reuse = true\t\n,\t\nAITER=\t \t2");
+        zgbsv_specification b("zcgbsvx,reuse=true,aiter=2");
+        zgbsv_specification c("zcgbsvx,aiter=2,reuse=true");
         BOOST_CHECK(a == b);
         BOOST_CHECK(b == c);
         BOOST_CHECK(a == c);

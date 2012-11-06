@@ -30,8 +30,8 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/spec_zgbsv.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/zgbsv_specification.hpp>
 
 #include "../logging.hpp"
 #include "nonlinear_operator_fwd.hpp"
@@ -58,7 +58,7 @@ public:
     static const linearize::type linearization = linearize::rhome;
 
     HybridIsothermalLinearOperator(
-            const spec_zgbsv& spec,
+            const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -106,7 +106,7 @@ public:
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
-    const spec_zgbsv spec;
+    const zgbsv_specification spec;
 
     /** The scenario in which the operator is used */
     const scenario_definition &scenario;
