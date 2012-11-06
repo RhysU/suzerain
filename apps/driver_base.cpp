@@ -79,7 +79,7 @@ driver_base::driver_base(
                /* min_dt      */ 1e-8,
                /* max_dt      */ 1)
     , options(application_synopsis,
-              "RESTART-FILE",
+              "FILE",
               description,
               this->revstr)
     , b()
@@ -139,7 +139,7 @@ driver_base::default_log4cxx_config()
     return os.str();
 }
 
-void
+std::vector<std::string>
 driver_base::initialize(int argc, char **argv)
 {
 #ifdef SUZERAIN_HAVE_GRVY
@@ -213,7 +213,7 @@ driver_base::initialize(int argc, char **argv)
         default: TRACE_ENABLE();  break;
     }
 
-    // FIXME Do something with positional
+    return positional;
 }
 
 driver_base::~driver_base()

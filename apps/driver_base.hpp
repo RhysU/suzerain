@@ -76,7 +76,7 @@ public:
      * @param argc Incoming arguments per <code>main(argc, ...)</code>
      * @param argv Incoming arguments per <code>main(..., argv)</code>
      */
-    virtual void initialize(int argc, char **argv);
+    virtual std::vector<std::string> initialize(int argc, char **argv);
 
     /**
     * Default log4cxx configuration, which differs from
