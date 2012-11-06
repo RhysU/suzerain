@@ -479,8 +479,8 @@ void store(const esio_handle h,
            const boost::shared_ptr<bsplineop>& gop)
 {
     // Ensure we were handed the appropriate discrete operators
-    assert(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
-    assert(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    SUZERAIN_ENSURE(bop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
+    SUZERAIN_ENSURE(gop->get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only root writes data
     int procid;
