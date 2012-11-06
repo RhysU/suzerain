@@ -18,8 +18,9 @@ liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
 ##
 
 noinst_LTLIBRARIES    += libsupport.la
-libsupport_la_SOURCES  = support.cpp     support.hpp
-libsupport_la_SOURCES += driver_base.cpp driver_base.hpp
+libsupport_la_SOURCES  = support.cpp          support.hpp
+libsupport_la_SOURCES += application_base.cpp application_base.hpp
+libsupport_la_SOURCES += driver_base.cpp      driver_base.hpp
 libsupport_la_LIBADD   = $(ESIO_LIBS)
 libsupport_la_LIBADD  += ./liblogging.la
 libsupport_la_LIBADD  += ../suzerain/libsuzerain.la
