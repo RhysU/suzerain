@@ -502,7 +502,7 @@ test_diffwave_LDADD   += ../suzerain/libsuzerain.la
 # There must be a better way to express this dependency, but this works
 TESTS                        += test_diffwave_p3dfft.sh
 dist_check_SCRIPTS           += test_diffwave_p3dfft.sh
-EXTRA_PROGRAMS               += test_diffwave_p3dfft
+check_PROGRAMS               += test_diffwave_p3dfft
 test_diffwave_p3dfft_SOURCES  = test_diffwave_p3dfft.cpp
 test_diffwave_p3dfft_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
 test_diffwave_p3dfft_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
