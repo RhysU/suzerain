@@ -45,13 +45,13 @@ namespace suzerain { namespace perfect {
  *
  * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
-class NonlinearOperator
+class explicit_nonlinear_operator
     : public operator_base,
       public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
 
-    NonlinearOperator(
+    explicit_nonlinear_operator(
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -86,13 +86,13 @@ protected:
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
-    NonlinearOperator(const NonlinearOperator&);
-    NonlinearOperator& operator=(const NonlinearOperator&);
+    explicit_nonlinear_operator(const explicit_nonlinear_operator&);
+    explicit_nonlinear_operator& operator=(const explicit_nonlinear_operator&);
 
 };
 
 /** An operator which applies or inverts a B-spline mass matrix */
-class BsplineMassOperator
+class bspline_mass_operator
   : public operator_base,
     public timestepper::lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
@@ -101,7 +101,7 @@ class BsplineMassOperator
 {
 public:
 
-    BsplineMassOperator(
+    bspline_mass_operator(
             const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -140,24 +140,24 @@ private:
 
 /**
  * A mass operator that provides no slip, isothermal walls.  It requires
- * interoperation with NonlinearOperator via operator_common_block.
+ * interoperation with explicit_nonlinear_operator via operator_common_block.
  */
-class BsplineMassOperatorIsothermal
-    : public BsplineMassOperator
+class isothermal_bspline_mass_operator
+    : public bspline_mass_operator
 {
 
-    typedef BsplineMassOperator base;
+    typedef bspline_mass_operator base;
 
 public:
 
-    BsplineMassOperatorIsothermal(
+    isothermal_bspline_mass_operator(
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
             operator_common_block &common)
-        : BsplineMassOperator(grid, dgrid, b, bop),
+        : bspline_mass_operator(grid, dgrid, b, bop),
           scenario(scenario),
           common(common)
     {}

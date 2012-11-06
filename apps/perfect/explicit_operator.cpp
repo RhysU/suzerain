@@ -41,7 +41,7 @@
 
 namespace suzerain { namespace perfect {
 
-BsplineMassOperator::BsplineMassOperator(
+bspline_mass_operator::bspline_mass_operator(
         const grid_definition &grid,
         const pencil_grid &dgrid,
         bspline &b,
@@ -56,7 +56,7 @@ BsplineMassOperator::BsplineMassOperator(
     massluz.factor_mass(bop);
 }
 
-void BsplineMassOperator::apply_mass_plus_scaled_operator(
+void bspline_mass_operator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -82,7 +82,7 @@ void BsplineMassOperator::apply_mass_plus_scaled_operator(
 }
 
 
-void BsplineMassOperator::accumulate_mass_plus_scaled_operator(
+void bspline_mass_operator::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -129,7 +129,7 @@ void BsplineMassOperator::accumulate_mass_plus_scaled_operator(
     }
 }
 
-void BsplineMassOperator::invert_mass_plus_scaled_operator(
+void bspline_mass_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -187,7 +187,7 @@ public:
     }
 };
 
-void BsplineMassOperatorIsothermal::invert_mass_plus_scaled_operator(
+void isothermal_bspline_mass_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -234,7 +234,7 @@ void BsplineMassOperatorIsothermal::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-std::vector<real_t> NonlinearOperator::apply_operator(
+std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,

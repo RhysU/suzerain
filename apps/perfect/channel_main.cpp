@@ -1274,9 +1274,9 @@ int main(int argc, char **argv)
     using perfect::ChannelTreatment;
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
-        L.reset(new ChannelTreatment<perfect::BsplineMassOperatorIsothermal>(
+        L.reset(new ChannelTreatment<perfect::isothermal_bspline_mass_operator>(
                     scenario, grid, *dgrid, *b, *bop, common_block));
-        N.reset(new perfect::NonlinearOperator(
+        N.reset(new perfect::explicit_nonlinear_operator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
@@ -1515,7 +1515,7 @@ int main(int argc, char **argv)
     //       computes only \left(M+\varphi\mathscr{L}\right)u.
     //   iv) At the beginning of this process, state_linear contains
     //       valid information and adheres to boundary conditions.
-    //    v) The NonlinearOperator application requires an
+    //    v) The explicit_nonlinear_operator application requires an
     //       auxiliary scaling factor "chi" to account for Fourier
     //       transform normalization needs.
     //   vi) Using suzerain::diffwave::apply zeros wavenumbers
