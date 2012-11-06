@@ -42,10 +42,10 @@ namespace suzerain { namespace perfect {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
- * requires interoperation with HybridNonlinearOperator via
+ * requires interoperation with hybrid_nonlinear_operator via
  * operator_common_block.
  */
-class HybridIsothermalLinearOperator
+class isothermal_hybrid_linear_operator
   : public operator_base,
     public timestepper::lowstorage::linear_operator<
         multi_array::ref<complex_t,4>,
@@ -57,7 +57,7 @@ public:
     /** Determines the extent of the implicit treatment */
     static const linearize::type linearization = linearize::rhome;
 
-    HybridIsothermalLinearOperator(
+    isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
@@ -70,7 +70,7 @@ public:
           scenario(scenario),
           common(common)
     {
-        INFO0("HybridIsothermalLinearOperator solving using "
+        INFO0("isothermal_hybrid_linear_operator solving using "
               << static_cast<std::string>(spec));
     }
 
@@ -135,7 +135,7 @@ private:
  *
  * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
-class HybridNonlinearOperator
+class hybrid_nonlinear_operator
     : public operator_base,
       public timestepper::nonlinear_operator<
             contiguous_state<4,complex_t>
@@ -145,9 +145,9 @@ public:
 
     /** Determines the implicit treatment of the paired linear_operator. */
     static const linearize::type linearization
-            = HybridIsothermalLinearOperator::linearization;
+            = isothermal_hybrid_linear_operator::linearization;
 
-    HybridNonlinearOperator(
+    hybrid_nonlinear_operator(
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -182,8 +182,8 @@ protected:
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
-    HybridNonlinearOperator(const HybridNonlinearOperator&);
-    HybridNonlinearOperator& operator=(const HybridNonlinearOperator&);
+    hybrid_nonlinear_operator(const hybrid_nonlinear_operator&);
+    hybrid_nonlinear_operator& operator=(const hybrid_nonlinear_operator&);
 
 };
 

@@ -64,7 +64,7 @@ void bspline_mass_operator::apply_mass_plus_scaled_operator(
         const std::size_t substep_index) const
 {
     // TODO Speedup possible by not applying to dealiased modes
-    // a la HybridIsothermalLinearOperator::apply_mass_plus_scaled_operator
+    // a la isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator
 
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(method);
@@ -92,7 +92,7 @@ void bspline_mass_operator::accumulate_mass_plus_scaled_operator(
         const std::size_t substep_index) const
 {
     // TODO Speedup possible by not accumulating dealiased modes
-    // a la HybridIsothermalLinearOperator::accumulate_mass_plus_scaled_operator
+    // a la isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator
 
     SUZERAIN_UNUSED(phi);
     SUZERAIN_UNUSED(method);

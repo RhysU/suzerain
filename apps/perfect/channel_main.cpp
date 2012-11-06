@@ -1280,10 +1280,10 @@ int main(int argc, char **argv)
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
-        L.reset(new channel_treatment<perfect::HybridIsothermalLinearOperator>(
+        L.reset(new channel_treatment<perfect::isothermal_hybrid_linear_operator>(
                     solver_spec, scenario,
                     grid, *dgrid, *b, *bop, common_block));
-        N.reset(new perfect::HybridNonlinearOperator(
+        N.reset(new perfect::hybrid_nonlinear_operator(
                 scenario, grid, *dgrid, *b, *bop, common_block, msoln));
     } else {
         FATAL0("Sanity error in operator selection");

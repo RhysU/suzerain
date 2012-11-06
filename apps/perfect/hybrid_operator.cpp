@@ -60,7 +60,7 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 
 namespace suzerain { namespace perfect {
 
-void HybridIsothermalLinearOperator::apply_mass_plus_scaled_operator(
+void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -154,7 +154,7 @@ void HybridIsothermalLinearOperator::apply_mass_plus_scaled_operator(
     }
 }
 
-void HybridIsothermalLinearOperator::accumulate_mass_plus_scaled_operator(
+void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -363,7 +363,7 @@ public:
     }
 };
 
-void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
+void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
@@ -676,7 +676,7 @@ void HybridIsothermalLinearOperator::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-std::vector<real_t> HybridNonlinearOperator::apply_operator(
+std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
