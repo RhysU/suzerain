@@ -1104,7 +1104,7 @@ int main(int argc, char **argv)
         esio_handle h = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
-                        (std::string("channel ") + revstr).c_str());
+                        (std::string("channel ") + revstr).c_str()); // Ticket #2595
         perfect::store(h, scenario);
         support::store(h, grid);
         support::store(h, b, bop, gop);

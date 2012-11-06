@@ -296,7 +296,7 @@ int main(int argc, char **argv)
     INFO0("Creating new restart file " << restart_file);
     esio_file_create(esioh, restart_file.c_str(), clobber);
     esio_string_set(esioh, "/", "generated_by",
-                    (std::string("channel_init ") + revstr).c_str());
+                    (std::string("channel ") + revstr).c_str()); // Ticket #2595
     perfect::store(esioh, scenario);
     support::store(esioh, grid);
     support::store(esioh, b, bop, gop);
