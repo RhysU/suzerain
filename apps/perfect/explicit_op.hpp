@@ -43,7 +43,7 @@ namespace suzerain { namespace perfect {
 /**
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
  *
- * @see support::applyNonlinearOperator for the guts of the implementation.
+ * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
 class NonlinearOperator
     : public operator_base,

@@ -426,7 +426,7 @@ enum type {
 template <bool ZerothSubstep,
           linearize::type Linearize,
           class ManufacturedSolution>
-std::vector<real_t> applyNonlinearOperator(
+std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t alpha,
             const real_t beta,
             const real_t gamma,

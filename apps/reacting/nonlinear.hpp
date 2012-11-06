@@ -83,7 +83,7 @@ template<bool ZerothSubstep,
          linearize::type Linearize,
          class ConstitutiveLaws, // name here doesn't really fit.  Anything better??
          class ManufacturedSolution>
-std::vector<real_t> applyNonlinearOperator(
+std::vector<real_t> apply_navier_stokes_spatial_operator(
             const suzerain::operator_base<real_t> &o,
             OperatorCommonBlock &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
@@ -710,7 +710,7 @@ std::vector<real_t> applyNonlinearOperator(
     // State leaves method as coefficients in X and Z directions
     // State leaves method as collocation point values in Y direction
 
-} // end applyNonlinearOperator
+} // end apply_navier_stokes_spatial_operator
 
 } /* namespace reacting */ } /* namespace suzerain */
 

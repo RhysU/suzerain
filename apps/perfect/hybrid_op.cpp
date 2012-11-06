@@ -685,7 +685,7 @@ std::vector<real_t> HybridNonlinearOperator::apply_operator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return applyNonlinearOperator<true,  linearize::rhome>
+        return apply_navier_stokes_spatial_operator<true,  linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -694,7 +694,7 @@ std::vector<real_t> HybridNonlinearOperator::apply_operator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return applyNonlinearOperator<false, linearize::rhome>
+        return apply_navier_stokes_spatial_operator<false, linearize::rhome>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,

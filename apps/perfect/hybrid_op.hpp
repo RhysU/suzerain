@@ -91,19 +91,9 @@ public:
             const std::size_t substep_index) const;
 
     /**
-     * Performs the following steps:
-     * <ul>
-     * <li>
-     *     channel_treatment step (3) performs the operator solve which for
-     *     the implicit treatment must be combined with boundary conditions
-     * </li><li>
-     *     channel_treatment step (8) sets no-slip conditions
-     *     on wall collocation points.
-     * </li><li>
-     * </li>
-     *     channel_treatment step (9) sets isothermal conditions at walls
-     *     using rho_wall = e_wall * gamma * (gamma - 1).
-     * </ul>
+     * Sets no-slip, isothermal boundary conditions at first and last
+     * wall-normal collocation point using that
+     * rho_wall = e_wall * gamma * (gamma - 1).
      */
     virtual void invert_mass_plus_scaled_operator(
             const complex_t &phi,
@@ -143,7 +133,7 @@ private:
 /**
  * A boundary-condition agnostic, hybrid explicit Navier&ndash;Stokes operator.
  *
- * @see perfect::applyNonlinearOperator for the guts of the implementation.
+ * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
  */
 class HybridNonlinearOperator
     : public operator_base,

@@ -243,7 +243,7 @@ std::vector<real_t> NonlinearOperator::apply_operator(
 {
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return applyNonlinearOperator<true,  linearize::none>
+        return apply_navier_stokes_spatial_operator<true,  linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
@@ -252,7 +252,7 @@ std::vector<real_t> NonlinearOperator::apply_operator(
              this->scenario.Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return applyNonlinearOperator<false, linearize::none>
+        return apply_navier_stokes_spatial_operator<false, linearize::none>
             (this->scenario.alpha,
              this->scenario.beta,
              this->scenario.gamma,
