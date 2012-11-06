@@ -1524,12 +1524,12 @@ int main(int argc, char **argv)
     if (advance_success && tc->current_nt()) {
         const double starttime = MPI_Wtime();
         state_nonlinear->assign(*state_linear);
-        common_block.setZero(grid.dN.y());  // Defensive
+        common_block.set_zero(grid.dN.y());  // Defensive
         N->apply_operator(tc->current_t(), *state_nonlinear,
                 m->evmaxmag_real(), m->evmaxmag_imag(), /*substep*/0);
         L->accumulate_mass_plus_scaled_operator(
                 1., *state_linear, chi,  *state_nonlinear, *m, 0, /*substep*/0);
-        common_block.setZero(grid.dN.y());  // Zero reference quantities
+        common_block.set_zero(grid.dN.y());  // Zero reference quantities
         L->accumulate_mass_plus_scaled_operator(
                 1., *state_linear, -1., *state_nonlinear, *m, 0, /*substep*/0);
         for (size_t k = 0; k < fields.size(); ++k) {

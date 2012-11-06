@@ -114,7 +114,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
     // must survive across nonzero substeps while instant profiles must not.
-    if (ZerothSubstep) common.setZero(/* Ny */ swave.shape()[1]);
+    if (ZerothSubstep) common.set_zero(/* Ny */ swave.shape()[1]);
     common.u().setZero();
 
     // Maintain stable time step values to return to the caller:

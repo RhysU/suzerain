@@ -327,9 +327,14 @@ public:
 
     /** @} */
 
-    /** Helper consistently zeroing both \c means and \c refs */
+    /**
+     * Helper consistently zeroing both \c means and \c refs.
+     *
+     * Case deliberately differs from the analogous Eigen signature so both
+     * consistency with Suzerain naming and so that it is visually distinct.
+     */
     template<typename Index>
-    void setZero(const Index& Ny)
+    void set_zero(const Index& Ny)
     {
         means.setZero(Ny, means_t::ColsAtCompileTime);
         refs.setZero(refs_t::RowsAtCompileTime, Ny);
