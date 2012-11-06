@@ -43,7 +43,7 @@ namespace suzerain { namespace perfect {
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
  * requires interoperation with HybridNonlinearOperator via
- * OperatorCommonBlock.
+ * operator_common_block.
  */
 class HybridIsothermalLinearOperator
   : public operator_base,
@@ -64,7 +64,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common)
+            operator_common_block &common)
         : operator_base(grid, dgrid, b, bop),
           spec(spec),
           scenario(scenario),
@@ -112,7 +112,7 @@ protected:
     const scenario_definition &scenario;
 
     /** Houses data required for operator application and inversion */
-    OperatorCommonBlock &common;
+    operator_common_block &common;
 
 private:
 
@@ -153,7 +153,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common,
+            operator_common_block &common,
             const boost::shared_ptr<const manufactured_solution>& msoln)
         : operator_base(grid, dgrid, b, bop),
           scenario(scenario),
@@ -174,7 +174,7 @@ protected:
     const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
-    OperatorCommonBlock &common;
+    operator_common_block &common;
 
     /** Holds optional manufactured solution forcing details */
     const boost::shared_ptr<const manufactured_solution> msoln;

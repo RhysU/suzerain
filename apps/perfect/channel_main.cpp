@@ -161,7 +161,7 @@ static shared_ptr<nonlinear_state_type> state_nonlinear;
 
 // Common storage shared between the linear and nonlinear operators
 // which also includes instantaneous mean quantity statistics
-static perfect::OperatorCommonBlock common_block;
+static perfect::operator_common_block common_block;
 
 // The last collection of mean quantity samples obtained
 static perfect::mean samples;

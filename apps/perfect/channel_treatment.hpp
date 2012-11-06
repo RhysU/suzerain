@@ -48,12 +48,12 @@ namespace suzerain { namespace perfect {
  * </tt>.  During \ref invert_mass_plus_scaled_operator implicit momentum forcing
  * is applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
- * information from OperatorCommonBlock::u() via instance provided at
+ * information from operator_common_block::u() via instance provided at
  * construction time.
  *
  * Means of the implicit momentum and energy forcing coefficients are also
  * maintained across each individual time step for sampling the statistics \c
- * /bar_f, \c /bar_f_dot_u, \c and /bar_qb using OperatorCommonBlock.  Integral
+ * /bar_f, \c /bar_f_dot_u, \c and /bar_qb using operator_common_block.  Integral
  * constraint means are also tracked for sampling \c /bar_Crho, \c /bar_Crhou,
  * \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c /bar_Crhou_dot_u.
  */
@@ -74,7 +74,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common);
+            operator_common_block &common);
 
     /**
      * Constructor delegating to BaseClass.
@@ -89,7 +89,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common);
+            operator_common_block &common);
 
     /**
      * Force the channel problem delegating to BaseClass when appropriate.
@@ -153,7 +153,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common)
+            operator_common_block &common)
     : BaseClass(scenario, grid, dgrid, b, bop, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
@@ -168,7 +168,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common)
+            operator_common_block &common)
     : BaseClass(spec, scenario, grid, dgrid, b, bop, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
@@ -209,7 +209,7 @@ void ChannelTreatment<BaseClass>::invert_mass_plus_scaled_operator(
 
     // Shorthand
     using std::size_t;
-    OperatorCommonBlock &common = this->common;
+    operator_common_block &common = this->common;
     const scenario_definition &scenario = this->scenario;
     const int Ny = this->dgrid.global_wave_extent.y();
 

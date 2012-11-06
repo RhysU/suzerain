@@ -57,7 +57,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common,
+            operator_common_block &common,
             const boost::shared_ptr<const manufactured_solution>& msoln)
         : operator_base(grid, dgrid, b, bop),
           scenario(scenario),
@@ -78,7 +78,7 @@ protected:
     const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
-    OperatorCommonBlock &common;
+    operator_common_block &common;
 
     /** Holds optional manufactured solution forcing details */
     const boost::shared_ptr<const manufactured_solution> msoln;
@@ -140,7 +140,7 @@ private:
 
 /**
  * A mass operator that provides no slip, isothermal walls.  It requires
- * interoperation with NonlinearOperator via OperatorCommonBlock.
+ * interoperation with NonlinearOperator via operator_common_block.
  */
 class BsplineMassOperatorIsothermal
     : public BsplineMassOperator
@@ -156,7 +156,7 @@ public:
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
-            OperatorCommonBlock &common)
+            operator_common_block &common)
         : BsplineMassOperator(grid, dgrid, b, bop),
           scenario(scenario),
           common(common)
@@ -191,7 +191,7 @@ protected:
     const scenario_definition &scenario;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
-    OperatorCommonBlock &common;
+    operator_common_block &common;
 
 };
 

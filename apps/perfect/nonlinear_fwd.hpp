@@ -40,11 +40,11 @@ namespace suzerain { namespace perfect {
  * application which either are required for linear operator application or for
  * statistics sampling purposes.
  */
-class OperatorCommonBlock
+class operator_common_block
 {
 public:
 
-    OperatorCommonBlock() {}
+    operator_common_block() {}
 
 private:
 
@@ -338,8 +338,8 @@ public:
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
-    OperatorCommonBlock(const OperatorCommonBlock&);
-    OperatorCommonBlock& operator=(const OperatorCommonBlock&);
+    operator_common_block(const operator_common_block&);
+    operator_common_block& operator=(const operator_common_block&);
 };
 
 /** Provides scoping semantics for linearize::type */
@@ -434,7 +434,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t Pr,
             const real_t Re,
             const operator_base &o,
-            OperatorCommonBlock &common,
+            operator_common_block &common,
             const boost::shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
