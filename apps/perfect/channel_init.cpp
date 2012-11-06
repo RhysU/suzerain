@@ -329,7 +329,7 @@ int main(int argc, char **argv)
         // Use a simple parabolic velocity profile
 
         // Initializing operator_base to access decomposition-ready utilities
-        suzerain::operator_base obase(grid, *dgrid, *b, *bop);
+        suzerain::operator_base o(grid, *dgrid, *b, *bop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         support::physical_view<>::type sphys
@@ -363,7 +363,7 @@ int main(int argc, char **argv)
              j < dgrid->local_physical_end.y();
              ++j) {
 
-            const real_t y = obase.y(j);
+            const real_t y = o.y(j);
 
             for (int k = dgrid->local_physical_start.z();
                 k < dgrid->local_physical_end.z();
@@ -405,7 +405,7 @@ int main(int argc, char **argv)
 
         for (std::size_t i = 0; i < swave.shape()[0]; ++i) {
             dgrid->transform_physical_to_wave(&sphys.coeffRef(i, 0));  // X, Z
-            obase.bop_solve(massluz, swave, i);                        // Y
+            o.bop_solve(massluz, swave, i);                            // Y
         }
 
     }
