@@ -9,10 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// spec_zgbsv.cpp: Encapsulates complex-valued banded solve options
+// zgbsv_specification.cpp: Encapsulates complex-valued banded solve options
 // $Id$
 
-#include <suzerain/spec_zgbsv.hpp>
+#include <suzerain/zgbsv_specification.hpp>
 
 #include <algorithm>
 #include <cctype>

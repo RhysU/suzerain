@@ -9,11 +9,11 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// spec_zgbsv.hpp: Encapsulates complex-valued banded solve options
+// zgbsv_specification.hpp: Encapsulates complex-valued banded solve options
 // $Id$
 
-#ifndef SUZERAIN_SPEC_ZGBSV_HPP
-#define SUZERAIN_SPEC_ZGBSV_HPP
+#ifndef SUZERAIN_ZGBSV_SPECIFICATION_HPP
+#define SUZERAIN_ZGBSV_SPECIFICATION_HPP
 
 #include <cassert>
 #include <iosfwd>
@@ -63,4 +63,4 @@ std::basic_ostream<CharT,Traits>& operator<<(
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SPEC_ZGBSV_HPP
+#endif // SUZERAIN_ZGBSV_SPECIFICATION_HPP
