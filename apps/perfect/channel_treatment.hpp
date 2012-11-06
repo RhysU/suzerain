@@ -58,7 +58,7 @@ namespace suzerain { namespace perfect {
  * \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c /bar_Crhou_dot_u.
  */
 template< typename BaseClass >
-class ChannelTreatment : public BaseClass
+class channel_treatment : public BaseClass
 {
 public:
 
@@ -68,7 +68,7 @@ public:
      * BaseClass must make its constructor arguments available as member
      * variables under the same name as those found in this constructor.
      */
-    ChannelTreatment(
+    channel_treatment(
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -82,7 +82,7 @@ public:
      * BaseClass must make its constructor arguments available as member
      * variables under the same name as those found in this constructor.
      */
-    ChannelTreatment(
+    channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
@@ -90,6 +90,9 @@ public:
             bspline &b,
             const bsplineop &bop,
             operator_common_block &common);
+
+    /** Virtual destructor as the class has virtual methods. */
+    virtual ~channel_treatment() {}
 
     /**
      * Force the channel problem delegating to BaseClass when appropriate.
@@ -147,7 +150,7 @@ private:
 };
 
 template< typename BaseClass >
-ChannelTreatment<BaseClass>::ChannelTreatment(
+channel_treatment<BaseClass>::channel_treatment(
             const scenario_definition &scenario,
             const grid_definition &grid,
             const pencil_grid &dgrid,
@@ -161,7 +164,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 }
 
 template< typename BaseClass >
-ChannelTreatment<BaseClass>::ChannelTreatment(
+channel_treatment<BaseClass>::channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
             const grid_definition &grid,
@@ -176,7 +179,7 @@ ChannelTreatment<BaseClass>::ChannelTreatment(
 }
 
 template< typename BaseClass >
-void ChannelTreatment<BaseClass>::finish_construction(
+void channel_treatment<BaseClass>::finish_construction(
             const grid_definition &grid,
             const pencil_grid &dgrid,
             bspline &b,
@@ -194,7 +197,7 @@ void ChannelTreatment<BaseClass>::finish_construction(
 }
 
 template< typename BaseClass >
-void ChannelTreatment<BaseClass>::invert_mass_plus_scaled_operator(
+void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
