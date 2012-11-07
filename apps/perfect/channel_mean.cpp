@@ -42,7 +42,6 @@
 #include "perfect.hpp"
 
 // Introduce shorthand for common names
-using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
 using std::auto_ptr;
@@ -744,7 +743,7 @@ static quantity::storage_map_type process(
 
     // Compute factorized mass matrix
     shared_ptr<suzerain::bsplineop_lu> boplu
-        = make_shared<suzerain::bsplineop_lu>(*cop.get());
+        = suzerain::make_shared<suzerain::bsplineop_lu>(*cop.get());
     boplu->factor_mass(*cop.get());
 
     // Load samples as coefficients

@@ -83,7 +83,6 @@ extern "C" const char revstr[];
 
 // Introduce shorthand for common names
 using boost::array;
-using boost::make_shared;
 using boost::numeric_cast;
 using std::numeric_limits;
 using std::size_t;
@@ -1131,14 +1130,14 @@ int main(int argc, char **argv)
         support::wisdom_broadcast(fftwdef.plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
         if (use_p3dfft) {
-            dgrid = make_shared<suzerain::pencil_grid_p3dfft>(
+            dgrid = suzerain::make_shared<suzerain::pencil_grid_p3dfft>(
                     grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
         } else if (use_underling) {
-            dgrid = make_shared<suzerain::pencil_grid_underling>(
+            dgrid = suzerain::make_shared<suzerain::pencil_grid_underling>(
                     grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
         } else {
 #endif
-            dgrid = make_shared<suzerain::pencil_grid_default>(
+            dgrid = suzerain::make_shared<suzerain::pencil_grid_default>(
                     grid.dN, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
         }
@@ -1224,7 +1223,7 @@ int main(int argc, char **argv)
                        scenario, grid, *dgrid, *b, *cop);
 
     // Create state storage for linear operator usage
-    state_linear = make_shared<linear_state_type>(
+    state_linear = suzerain::make_shared<linear_state_type>(
             suzerain::to_yxz(fields.size(), dgrid->local_wave_extent));
 
     // Dump some state shape and stride information for debugging purposes

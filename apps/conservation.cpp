@@ -104,7 +104,7 @@ int main(int argc, char **argv)
     for (suzerain::real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
         suzerain::support::create(N, k, 0.0, L, htdelta, b, cop);
         b->integration_coefficients(0, vec.data());
-        boplu = boost::make_shared<suzerain::bsplineop_lu>(*cop);
+        boplu = suzerain::make_shared<suzerain::bsplineop_lu>(*cop);
         boplu->factor_mass(*cop);
 
         mat = suzerain::MatrixXXr::Identity(N,N);

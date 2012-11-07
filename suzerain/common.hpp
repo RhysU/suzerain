@@ -216,6 +216,8 @@ typedef std::complex<real_t> complex_t;
 /** @} */
 
 // Bring ubiquitous smart pointer definitions into this namespace
+// Done because these may be part of public APIs, as well as for convenience.
+using boost::make_shared;   /**< \namespace suzerain */
 using boost::scoped_array;  /**< \namespace suzerain */
 using boost::scoped_ptr;    /**< \namespace suzerain */
 using boost::shared_array;  /**< \namespace suzerain */

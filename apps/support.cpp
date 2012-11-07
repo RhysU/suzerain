@@ -440,9 +440,8 @@ real_t create(const int ndof,
 ////// Generate the B-spline workspace based on order and abscissae
 ////// Maximum non-trivial derivative operators included
 ////double abserr;
-////b = boost::make_shared<bspline>(
-////        k, bspline::from_abscissae(),
-////        abscissae.size(), abscissae.data(), &abserr);
+////b = make_shared<bspline>(k, bspline::from_abscissae(),
+////                         abscissae.size(), abscissae.data(), &abserr);
 ////assert(b->n() == ndof);
 ////cop.reset(new bsplineop(
 ////            *b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
@@ -462,8 +461,8 @@ real_t create(const int ndof,
 
     // Generate the B-spline workspace based on order and breakpoints
     // Maximum non-trivial derivative operators included
-    b = boost::make_shared<bspline>(k, bspline::from_breakpoints(),
-                                    breakpoints.size(), breakpoints.data());
+    b = make_shared<bspline>(k, bspline::from_breakpoints(),
+                             breakpoints.size(), breakpoints.data());
     assert(b->n() == ndof);
     cop.reset(new bsplineop(*b, k-2, SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE));
     assert(cop->n() == ndof);
@@ -591,9 +590,8 @@ real_t load(const esio_handle h,
     // Required because repeated basis calculations at restart not idempotent.
     if (breakpoints_found) {
 
-        b = boost::make_shared<bspline>(
-                k, bspline::from_breakpoints(),
-                breakpoints.size(), breakpoints.data());
+        b = make_shared<bspline>(k, bspline::from_breakpoints(),
+                                 breakpoints.size(), breakpoints.data());
 
         if (colpoints_found && b->n() == colpoints.size()) {
             double e = 0;
@@ -610,9 +608,8 @@ real_t load(const esio_handle h,
 
     if (colpoints_found && abscissae_veto_breakpoints) {
         DEBUG0("Collocation points from restart used to build B-spline basis");
-        b = boost::make_shared<bspline>(
-                k, bspline::from_abscissae(),
-                colpoints.size(), colpoints.data(), &abserr);
+        b = make_shared<bspline>(k, bspline::from_abscissae(),
+                                 colpoints.size(), colpoints.data(), &abserr);
         DEBUG0("Computed B-spline basis has Greville abscissae abserr of "
                << abserr);
     }

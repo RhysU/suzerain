@@ -55,11 +55,11 @@ extern "C" const char revstr[];
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
-using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
 using std::numeric_limits;
 using suzerain::complex_t;
+using suzerain::make_shared;
 using suzerain::real_t;
 namespace ndx     = suzerain::ndx;
 namespace perfect = suzerain::perfect;

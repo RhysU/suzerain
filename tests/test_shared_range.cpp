@@ -379,7 +379,7 @@ BOOST_AUTO_TEST_CASE( assignment )
 
 BOOST_AUTO_TEST_CASE( make_helper )
 {
-    using boost::make_shared_range;
+    using suzerain::make_shared_range;
 
     tut r = make_shared_range<int>(5);
     BOOST_CHECK(!!r);
