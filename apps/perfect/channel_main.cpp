@@ -82,10 +82,10 @@ extern "C" const char revstr[];
 #pragma warning(disable:383 1572)
 
 // Introduce shorthand for common names
-using boost::array;
 using boost::numeric_cast;
 using std::numeric_limits;
 using std::size_t;
+using suzerain::array;
 using suzerain::complex_t;
 using suzerain::fullprec;
 using suzerain::real_t;

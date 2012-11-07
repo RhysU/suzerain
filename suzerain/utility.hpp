@@ -27,11 +27,11 @@ namespace suzerain {
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
 template< typename RandomAccessContainer >
-boost::array<
+array<
     typename RandomAccessContainer::value_type, 3
 > to_yxz(const RandomAccessContainer& xyz)
 {
-    boost::array<typename RandomAccessContainer::value_type,3> retval
+    array<typename RandomAccessContainer::value_type,3> retval
             = {{ xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -44,11 +44,11 @@ boost::array<
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
 template< typename EigenDenseType >
-boost::array<
+array<
     typename EigenDenseType::Scalar, 3
 > to_yxz(const EigenDenseType& xyz)
 {
-    boost::array<typename EigenDenseType::Scalar,3> retval
+    array<typename EigenDenseType::Scalar,3> retval
             = {{ xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -64,12 +64,12 @@ boost::array<
  *         and <tt>prepend</tt> prepended.
  */
 template< typename RandomAccessContainer >
-boost::array<
+array<
     typename RandomAccessContainer::value_type, 4
 > to_yxz(const typename RandomAccessContainer::value_type& prepend,
          const RandomAccessContainer& xyz)
 {
-    boost::array<typename RandomAccessContainer::value_type,4> retval
+    array<typename RandomAccessContainer::value_type,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -85,12 +85,12 @@ boost::array<
  *         and <tt>prepend</tt> prepended.
  */
 template< typename EigenDenseType >
-boost::array<
+array<
     typename EigenDenseType::Scalar, 4
 > to_yxz(const typename EigenDenseType::Scalar& prepend,
          const EigenDenseType& xyz)
 {
-    boost::array<typename EigenDenseType::Scalar,4> retval
+    array<typename EigenDenseType::Scalar,4> retval
             = {{ prepend, xyz[1], xyz[0], xyz[2] }};
     return retval;
 }
@@ -103,11 +103,11 @@ boost::array<
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
 template< typename RandomAccessContainer >
-boost::array<
+array<
     typename RandomAccessContainer::value_type, 3
 > to_xzy(const RandomAccessContainer& xyz)
 {
-    boost::array<typename RandomAccessContainer::value_type,3> retval
+    array<typename RandomAccessContainer::value_type,3> retval
             = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -120,11 +120,11 @@ boost::array<
  * @return A copy of <tt>xyz</tt> with the elements reordered.
  */
 template< typename EigenDenseType >
-boost::array<
+array<
     typename EigenDenseType::Scalar, 3
 > to_xzy(const EigenDenseType& xyz)
 {
-    boost::array<typename EigenDenseType::Scalar,3> retval
+    array<typename EigenDenseType::Scalar,3> retval
             = {{ xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -140,11 +140,11 @@ boost::array<
  *         and <tt>prepend</tt> prepended.
  */
 template< typename RandomAccessContainer, typename U >
-boost::array<
-    typename RandomAccessContainer::value_type, 4
-> to_xzy(const U& prepend, const RandomAccessContainer& xyz)
+array<typename RandomAccessContainer::value_type, 4> to_xzy(
+        const U& prepend,
+        const RandomAccessContainer& xyz)
 {
-    boost::array<typename RandomAccessContainer::value_type,4> retval
+    array<typename RandomAccessContainer::value_type,4> retval
         = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
@@ -160,34 +160,36 @@ boost::array<
  *         and <tt>prepend</tt> prepended.
  */
 template< typename EigenDenseType, typename U >
-boost::array<
-    typename EigenDenseType::Scalar, 4
-> to_xzy(const U& prepend, const EigenDenseType& xyz)
+array<typename EigenDenseType::Scalar, 4> to_xzy(
+        const U& prepend,
+        const EigenDenseType& xyz)
 {
-    boost::array<typename EigenDenseType::Scalar,4> retval
+    array<typename EigenDenseType::Scalar,4> retval
         = {{ prepend, xyz[0], xyz[2], xyz[1] }};
     return retval;
 }
 
 /**
- * Return a copy of a boost::array with an element prepended.
+ * Return a copy of an \ref array with an element prepended.
  *
  * @param prepend to prepend.
- * @param array to copy.
+ * @param a to copy.
  *
- * @return A boost::array with one more entry than \c array.
+ * @return A \ref array with one more entry than \c array.
  */
 template<typename T, typename U, std::size_t N>
-boost::array<T, N+1> prepend(const U& prepend, const boost::array<T,N>& array)
+array<T, N+1> prepend(
+        const U& prepend,
+        const array<T,N>& a)
 {
-    boost::array<T,N+1> retval;
+    array<T,N+1> retval;
     retval[0] = prepend;
-    std::copy(array.begin(), array.end(), retval.begin() + 1);
+    std::copy(a.begin(), a.end(), retval.begin() + 1);
     return retval;
 }
 
 /**
- * Compute column-major strides given a boost::array of extents.
+ * Compute column-major strides given an \ref array of extents.
  *
  * @param extents to use.
  *
@@ -195,10 +197,10 @@ boost::array<T, N+1> prepend(const U& prepend, const boost::array<T,N>& array)
  *         stored contiguously in memory.
  */
 template< typename T, std::size_t N >
-boost::array<T,N> strides_cm(const boost::array<T,N>& extents)
+array<T,N> strides_cm(const array<T,N>& extents)
 {
-    boost::array<T,N> retval = {{ 1 }};
-    for (typename boost::array<T,N>::size_type i = 1; i < N; ++i) {
+    array<T,N> retval = {{ 1 }};
+    for (typename array<T,N>::size_type i = 1; i < N; ++i) {
         retval[i] = retval[i-1] * extents[i-1];
     }
     return retval;
@@ -206,14 +208,14 @@ boost::array<T,N> strides_cm(const boost::array<T,N>& extents)
 
 /** A specialization to handle degenerate zero element input. */
 template< typename T >
-boost::array<T,0> strides_cm(const boost::array<T,0>& extents)
+array<T,0> strides_cm(const array<T,0>& extents)
 {
-    boost::array<T,0> retval;
+    array<T,0> retval;
     return retval;
 }
 
 /**
- * Compute row-major strides given a boost::array of extents.
+ * Compute row-major strides given an \ref array of extents.
  *
  * @param extents to use.
  *
@@ -221,11 +223,11 @@ boost::array<T,0> strides_cm(const boost::array<T,0>& extents)
  *         stored contiguously in memory.
  */
 template< typename T, std::size_t N >
-boost::array<T,N> strides_rm(const boost::array<T,N>& extents)
+array<T,N> strides_rm(const array<T,N>& extents)
 {
-    boost::array<T,N> retval;
+    array<T,N> retval;
     retval[N-1] = 1;
-    for (typename boost::array<T,N>::size_type i = N-1; i > 0; --i) {
+    for (typename array<T,N>::size_type i = N-1; i > 0; --i) {
         retval[i-1] = retval[i] * extents[i];
     }
     return retval;
@@ -233,9 +235,9 @@ boost::array<T,N> strides_rm(const boost::array<T,N>& extents)
 
 /** A specialization to handle degenerate zero element input. */
 template< typename T, typename U >
-boost::array<T,0> strides_rm(const boost::array<T,0>& extents)
+array<T,0> strides_rm(const array<T,0>& extents)
 {
-    boost::array<T,0> retval;
+    array<T,0> retval;
     return retval;
 }
 

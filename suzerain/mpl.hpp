@@ -27,26 +27,23 @@ namespace suzerain {
 namespace mpl {
 
 /**
- * A boost::array subclass that contains the contents of Sequence after
+ * An \ref array subclass that contains the contents of Sequence after
  * construction.  The template parameter Sequence must model MPL's <a
  * href="http://www.boost.org/doc/libs/release/libs/mpl/doc/refmanual/forward-sequence.html">
  * Forward Sequence</a>.
  *
  * @tparam Sequence The sequence to use, which determines the
- *                  type and size of the boost::array ancestor as well as
+ *                  type and size of the \ref array ancestor as well as
  *                  an instance's default constructed content.
- *
- * @see <a href="http://www.boost.org/doc/libs/release/libs/array/">boost::array</a>
- *      for more information on the ancestor class.
  */
 template< typename Sequence >
 class sequence_array
-    : public boost::array<
+    : public array<
             typename Sequence::value_type,
             boost::mpl::size<Sequence>::type::value
       >
 {
-    typedef typename boost::array<
+    typedef typename array<
                 typename Sequence::value_type,
                 boost::mpl::size<Sequence>::type::value
             >::iterator iterator;

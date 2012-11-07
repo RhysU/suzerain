@@ -99,22 +99,6 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
 
-// Provide an operator<<(basic_ostream, boost::array) template in ::boost
-namespace boost {
-template< typename charT, typename traits, typename T, ::std::size_t N >
-::std::basic_ostream<charT,traits>& operator<<(
-        ::std::basic_ostream<charT,traits> &os,
-        const ::boost::array<T,N> &array)
-{
-    os << '[' << N << "]{ ";
-    ::std::copy(array.begin(),
-                array.end(),
-                ::std::ostream_iterator<T,charT,traits>(os, " "));
-    os << '}';
-    return os;
-}
-} // namespace boost
-
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
  * evaluates to boolean \c false, then an exception \c except is thrown with
@@ -158,7 +142,6 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
 #define SUZERAIN_ENSURE_EXCEPT(expr, except) \
     SUZERAIN_ENSURE_MSGEXCEPT(expr, BOOST_PP_STRINGIZE(expr) " false", except)
 
-
 // SHIFTED_SUM taken from http://lists.boost.org/boost-users/2009/10/53245.php
 
 /**
@@ -189,6 +172,22 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
             SUZERAIN_SHIFTED_SUM_OP, \
             (BOOST_PP_SEQ_NIL, 0),   \
             seq))
+
+// Provide an operator<<(basic_ostream, boost::array) template in namespace boost
+// http://agentzlerich.blogspot.com/2009/12/small-gotcha-when-combining-boostarray.html
+namespace boost {
+template< typename CharT, typename Traits, typename T, ::std::size_t N >
+::std::basic_ostream<CharT,Traits>& operator<<(
+        ::std::basic_ostream<CharT,Traits> &os,
+        const ::boost::array<T,N> &array)
+{
+    os << '[' << N << "]{ ";
+    ::std::copy(array.begin(), array.end(),
+                ::std::ostream_iterator<T,CharT,Traits>(os, " "));
+    os << '}';
+    return os;
+}
+}
 
 //////////////////////////////////////////////////////////
 // Miscellaneous functionality used throughout Suzerain //
@@ -222,6 +221,9 @@ using boost::scoped_array;  /**< \namespace suzerain */
 using boost::scoped_ptr;    /**< \namespace suzerain */
 using boost::shared_array;  /**< \namespace suzerain */
 using boost::shared_ptr;    /**< \namespace suzerain */
+
+// Likewise, bring boost::array into this namespace
+using boost::array;         /**< \namespace suzerain */
 
 /** \weakgroup EigenTypedefs Typedefs and declarations to simplify Eigen usage.
  *

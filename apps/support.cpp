@@ -567,7 +567,7 @@ real_t load(const esio_handle h,
 
     // All ranks load B-spline breakpoints (as best effort attempt)
     ArrayXr breakpoints;
-    boost::array<const char *,2> breakpoints_locs = {{
+    array<const char *,2> breakpoints_locs = {{
         "breakpoints_y", "breakpoints"
     }};
     const char **breakpoints_loc = breakpoints_locs.begin();
@@ -576,7 +576,7 @@ real_t load(const esio_handle h,
 
     // All ranks load B-spline collocation points (as best effort attempt)
     ArrayXr colpoints;
-    boost::array<const char *,2> colpoints_locs = {{
+    array<const char *,2> colpoints_locs = {{
         "collocation_points_y", "collocation_points"
     }};
     const char **colpoints_loc = colpoints_locs.begin();
@@ -846,7 +846,7 @@ void load_coefficients(const esio_handle h,
     if (!bsplines_same) {
         INFO0("Differences in B-spline basis require restart projection ("
               << bsplines_dist << " >= " << bsplines_distinct_distance << ")");
-        const boost::array<tmp_type::size_type,3> extent = {{
+        const array<tmp_type::size_type,3> extent = {{
             static_cast<tmp_type::size_type>(Fy),
             state.shape()[2],
             state.shape()[3]
@@ -882,9 +882,9 @@ void load_coefficients(const esio_handle h,
             // Destination of read is NULL for empty READ operations.
             // Otherwise find starting point for coefficient loading.
             complex_t * dst = NULL;
-            boost::array<load_type::index,3> dst_strides = {{ 0, 0, 0 }};
+            array<load_type::index,3> dst_strides = {{ 0, 0, 0 }};
             if (mxb[0] != mxe[0] && mzb[j] != mze[j]) {
-                const boost::array<load_type::index,3> index_list = {{
+                const array<load_type::index,3> index_list = {{
                         0,
                         mxb[0] - dgrid.local_wave_start.x(),
                         mzb[j] - dgrid.local_wave_start.z()

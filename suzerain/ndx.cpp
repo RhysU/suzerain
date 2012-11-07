@@ -21,11 +21,11 @@ namespace suzerain {
 
 namespace ndx {
 
-const boost::array<const char *, rho + 1u> identifier = {{
+const array<const char *, rho + 1u> identifier = {{
     "rho_E", "rho_u", "rho_v", "rho_w", "rho"
 }};
 
-const boost::array<const char *, rho + 1u> description = {{
+const array<const char *, rho + 1u> description = {{
     "total energy",
     "streamwise momentum",
     "wall-normal momentum",

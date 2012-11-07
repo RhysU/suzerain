@@ -314,8 +314,8 @@ static void test_accumulateAndApply(const int Ny,
     const int procid = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
     const int np     = suzerain::mpi::comm_size(MPI_COMM_WORLD);
 
-    boost::array<int,3> global_physical_extents = {{ dNx, Ny, dNz }};
-    boost::array<int,2> processor_grid = {{ 0, 0 }};
+    suzerain::array<int,3> global_physical_extents = {{ dNx, Ny, dNz }};
+    suzerain::array<int,2> processor_grid = {{ 0, 0 }};
 
     if (!procid) {
         BOOST_TEST_MESSAGE("Establishing pencil_grid for extents "

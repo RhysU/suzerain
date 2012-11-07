@@ -43,13 +43,13 @@ enum {
  * Short identifiers that permit distinguishing equations.
  * E.g. "rho_E".
  */
-extern const boost::array<const char *, ndx::rho + 1u> identifier;
+extern const array<const char *, ndx::rho + 1u> identifier;
 
 /**
  * Descriptions of the physical quantity associated with each index.
  * E.g. "total energy".
  */
-extern const boost::array<const char *, ndx::rho + 1u> description;
+extern const array<const char *, ndx::rho + 1u> description;
 
 } // namespace ndx
 

@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE( accumulate )
     const int MAX_DXCNT_INCLUSIVE = 4;
     const int MAX_DZCNT_INCLUSIVE = 4;
 
-    boost::array<int,7> c[] = {
+    suzerain::array<int,7> c[] = {
         /* Lx, Lz, Ny, Nx, dNx, Nz, dNz */
         // Beat on the Z direction in quasi-1D cases
         {{   5,  7,  1,  1,   1,  6,   9  }}
@@ -347,7 +347,7 @@ BOOST_AUTO_TEST_CASE( apply )
     const int MAX_DXCNT_INCLUSIVE = 4;
     const int MAX_DZCNT_INCLUSIVE = 4;
 
-    boost::array<int,7> c[] = {
+    suzerain::array<int,7> c[] = {
         /* Lx, Lz, Ny, Nx, dNx, Nz, dNz */
         // Beat on the Z direction in quasi-1D cases
         {{   5,  7,  1,  1,   1,  6,   9  }}

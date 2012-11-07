@@ -25,13 +25,13 @@
 BOOST_AUTO_TEST_SUITE( shape_and_strides_array )
 
 // Shorthand
-using boost::array;
 using boost::extents;
 using boost::indices;
 using boost::multi_array;
 using boost::multi_array_ref;
 using boost::multi_array_types::index;
 using boost::multi_array_types::size_type;
+using suzerain::array;
 using suzerain::multi_array::shape_array;
 using suzerain::multi_array::strides_array;
 
@@ -478,12 +478,13 @@ using boost::fortran_storage_order;
 using boost::general_storage_order;
 using boost::indices;
 typedef boost::multi_array_types::index_range range;
+using suzerain::array;
 using suzerain::multi_array::is_contiguous;
 
 BOOST_AUTO_TEST_CASE( boost_multi_array )
 {
     { // Degenerate zero dimensional case
-        boost::array<int,0> s;
+        array<int,0> s;
         boost::multi_array<char,0> a(s);
         BOOST_CHECK(is_contiguous(a));
     }

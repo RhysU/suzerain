@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE( integer )
     BOOST_CHECK_EQUAL(a[1], 4);
     BOOST_CHECK_EQUAL(a[2], 6);
 
-    boost::array<int, 3> b = {{ 2, 4, 6 }};
+    suzerain::array<int, 3> b = {{ 2, 4, 6 }};
 
     BOOST_CHECK( b == a );
     BOOST_CHECK( a == b );
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( boolean )
     BOOST_CHECK_EQUAL(a[0], true);
     BOOST_CHECK_EQUAL(a[1], false);
 
-    boost::array<bool, 2> b = {{ true, false }};
+    suzerain::array<bool, 2> b = {{ true, false }};
 
     BOOST_CHECK( b == a );
     BOOST_CHECK( a == b );
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE( empty )
     sequence_array< boost::mpl::vector_c<double> > a;
     BOOST_CHECK_EQUAL(a.size(), 0U);
 
-    boost::array<double, 0> b;
+    suzerain::array<double, 0> b;
 
     BOOST_CHECK( b == a );
     BOOST_CHECK( a == b );

@@ -81,10 +81,10 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
     const int           n     = 2;
-    boost::array<int,n> index_array       = {{ 0, 0 }};
-    const boost::array<int,n> shape_array = {{ 3, 1 }};
-    boost::array<int,n>::iterator       index = index_array.begin();
-    boost::array<int,n>::const_iterator shape = shape_array.begin();
+    array<int,n> index_array       = {{ 0, 0 }};
+    const array<int,n> shape_array = {{ 3, 1 }};
+    array<int,n>::iterator       index = index_array.begin();
+    array<int,n>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(1)(0));
@@ -97,11 +97,11 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 {
-    const int                   n     = 2;
-    boost::array<int, n> index_array            = {{ 0, 0 }};
-    boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
-    boost::array<int, n>::iterator index        = index_array.begin();
-    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+    const int                            n     = 2;
+    array<int, n> index_array            = {{ 0, 0 }};
+    array<std::size_t,n> shape_array     = {{ 1, 3 }};
+    array<int, n>::iterator index        = index_array.begin();
+    array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1));
@@ -206,10 +206,10 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
-    const int                                   n           = 3;
-    long                                        index[n]    =  { 0, 0, 0 };
-    const boost::array<std::size_t,n>           shape_array = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::const_iterator shape       = shape_array.begin();
+    const int                            n           = 3;
+    long                                 index[n]    =  { 0, 0, 0 };
+    const array<std::size_t,n>           shape_array = {{ 3, 1, 3 }};
+    array<std::size_t,n>::const_iterator shape       = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -288,13 +288,13 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
 BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
 {
     const int n = 3;
-    boost::array<short,3> index_array = {{ 0, 0, 0 }};
-    boost::array<int,3>   shape_array = {{ 2, 1, 3 }};
-    boost::array<long,3>  order_array = {{ 2, 0, 1 }};
+    array<short,3> index_array = {{ 0, 0, 0 }};
+    array<int,3>   shape_array = {{ 2, 1, 3 }};
+    array<long,3>  order_array = {{ 2, 0, 1 }};
 
-    boost::array<short,3>::iterator index = index_array.begin();
-    boost::array<int,3>::iterator   shape = shape_array.begin();
-    boost::array<long,3>::iterator  order = order_array.begin();
+    array<short,3>::iterator index = index_array.begin();
+    array<int,3>::iterator   shape = shape_array.begin();
+    array<long,3>::iterator  order = order_array.begin();
 
     BOOST_REQUIRE_EQUAL(increment<n>(index,shape,order), true);
     BOOST_CHECK_EQUAL(index[0], 0);
@@ -363,10 +363,10 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 {
     const int n = 2;
-    boost::array<int,n> index_array = {{ 2, 0 }};
-    boost::array<int,n> shape_array = {{ 3, 1 }};
-    boost::array<int,n>::iterator index = index_array.begin();
-    boost::array<int,n>::iterator shape = shape_array.begin();
+    array<int,n> index_array = {{ 2, 0 }};
+    array<int,n> shape_array = {{ 3, 1 }};
+    array<int,n>::iterator index = index_array.begin();
+    array<int,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -380,10 +380,10 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 {
     const int n = 2;
-    boost::array<int, n> index_array            = {{ 0, 2 }};
-    boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
-    boost::array<int, n>::iterator index        = index_array.begin();
-    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+    array<int, n> index_array            = {{ 0, 2 }};
+    array<std::size_t,n> shape_array     = {{ 1, 3 }};
+    array<int, n>::iterator index        = index_array.begin();
+    array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index[0], 0);
@@ -488,10 +488,10 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 {
-    const int                   n               = 3;
-    long                        index[n]        =  { 2, 0, 2 };
-    boost::array<std::size_t,n> shape_array     = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+    const int            n               = 3;
+    long                 index[n]        =  { 2, 0, 2 };
+    array<std::size_t,n> shape_array     = {{ 3, 1, 3 }};
+    array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -570,13 +570,13 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 {
     const int n = 3;
-    boost::array<short,3> index_array = {{ 1, 0, 2 }};
-    boost::array<int,3>   shape_array = {{ 2, 1, 3 }};
-    boost::array<long,3>  order_array = {{ 2, 0, 1 }};
+    array<short,3> index_array = {{ 1, 0, 2 }};
+    array<int,3>   shape_array = {{ 2, 1, 3 }};
+    array<long,3>  order_array = {{ 2, 0, 1 }};
 
-    boost::array<short,3>::iterator index = index_array.begin();
-    boost::array<int,3>::iterator   shape = shape_array.begin();
-    boost::array<long,3>::iterator  order = order_array.begin();
+    array<short,3>::iterator index = index_array.begin();
+    array<int,3>::iterator   shape = shape_array.begin();
+    array<long,3>::iterator  order = order_array.begin();
 
     BOOST_REQUIRE_EQUAL(decrement<n>(index,shape,order), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -604,7 +604,7 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
 {
     const int n = 3;
-    typedef boost::array<int,n> array_type;
+    typedef array<int,n> array_type;
     array_type           index_array = {{ 3, 0, 1 }};
     array_type::iterator index       = index_array.begin();
     array_type           shape_array = {{ 4, 1, 2 }};
@@ -639,7 +639,7 @@ BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_1 )
 BOOST_AUTO_TEST_CASE( decrement_3d_spot_check_behavior_2 )
 {
     const int n = 3;
-    typedef boost::array<int,n> array_type;
+    typedef array<int,n> array_type;
     array_type           index_array = {{ 3, 0, 1 }};
     array_type::iterator index       = index_array.begin();
     array_type           shape_array = {{ 4, 1, 2 }};
@@ -717,13 +717,13 @@ BOOST_AUTO_TEST_CASE( increment_1d_normal_unsigned )
 
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 {
-    const int           n     = 2;
-    boost::array<int,n> index_array                = {{ 0, 0 }};
-    const boost::array<int,n> increasing_array     = {{ 1, 1 }};
-    const boost::array<int,n> shape_array          = {{ 3, 1 }};
-    boost::array<int,n>::iterator index            = index_array.begin();
-    boost::array<int,n>::const_iterator increasing = increasing_array.begin();
-    boost::array<int,n>::const_iterator shape      = shape_array.begin();
+    const int                               n     = 2;
+    array<int,n> index_array                = {{ 0, 0 }};
+    const array<int,n> increasing_array     = {{ 1, 1 }};
+    const array<int,n> shape_array          = {{ 3, 1 }};
+    array<int,n>::iterator index            = index_array.begin();
+    array<int,n>::const_iterator increasing = increasing_array.begin();
+    array<int,n>::const_iterator shape      = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(1)(0));
@@ -737,12 +737,12 @@ BOOST_AUTO_TEST_CASE( increment_2d_degenerate_first )
 BOOST_AUTO_TEST_CASE( increment_2d_degenerate_second )
 {
     const int n = 2;
-    boost::array<int, n> index_array                = {{ 0, 0 }};
-    const boost::array<bool,n> increasing_array     = {{ true, true }};
-    boost::array<std::size_t,n> shape_array         = {{ 1, 3 }};
-    boost::array<int, n>::iterator index            = index_array.begin();
-    boost::array<bool,n>::const_iterator increasing = increasing_array.begin();
-    boost::array<std::size_t,n>::iterator shape     = shape_array.begin();
+    array<int, n> index_array                = {{ 0, 0 }};
+    const array<bool,n> increasing_array     = {{ true, true }};
+    array<std::size_t,n> shape_array         = {{ 1, 3 }};
+    array<int, n>::iterator index            = index_array.begin();
+    array<bool,n>::const_iterator increasing = increasing_array.begin();
+    array<std::size_t,n>::iterator shape     = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index_array, boost::assign::list_of(0)(1));
@@ -854,10 +854,10 @@ BOOST_AUTO_TEST_CASE( increment_3d_degenerate_middle )
 {
     const int n = 3;
     long index[n] = { 0, 0, 0 };
-    boost::array<std::size_t,n> increasing_array = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
-    const boost::array<std::size_t,n> shape_array = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::const_iterator shape = shape_array.begin();
+    array<std::size_t,n> increasing_array = {{ 3, 1, 3 }};
+    array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
+    const array<std::size_t,n> shape_array = {{ 3, 1, 3 }};
+    array<std::size_t,n>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -938,16 +938,15 @@ BOOST_AUTO_TEST_CASE( increment_3d_normal )
 BOOST_AUTO_TEST_CASE( increment_3d_normal_outoforder )
 {
     const int n = 3;
-    boost::array<short,3> index_array            = {{ 0, 0, 0 }};
-    const boost::array<long,3>  increasing_array = {{ -1, -1, -1 }};
-    const boost::array<int,3>   shape_array      = {{ 2, 1, 3 }};
-    const boost::array<long,3>  order_array      = {{ 2, 0, 1 }};
+    array<short,3> index_array            = {{ 0, 0, 0 }};
+    const array<long,3>  increasing_array = {{ -1, -1, -1 }};
+    const array<int,3>   shape_array      = {{ 2, 1, 3 }};
+    const array<long,3>  order_array      = {{ 2, 0, 1 }};
 
-
-    boost::array<short,3>::iterator index = index_array.begin();
-    boost::array<long,3>::const_iterator increasing = increasing_array.begin();
-    boost::array<int,3>::const_iterator  shape = shape_array.begin();
-    boost::array<long,3>::const_iterator order = order_array.begin();
+    array<short,3>::iterator index = index_array.begin();
+    array<long,3>::const_iterator increasing = increasing_array.begin();
+    array<int,3>::const_iterator  shape = shape_array.begin();
+    array<long,3>::const_iterator order = order_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape,order), true);
     BOOST_CHECK_EQUAL(index[0], 0);
@@ -1014,12 +1013,12 @@ BOOST_AUTO_TEST_CASE( decrement_1d_normal_unsigned )
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 {
     const int n = 2;
-    boost::array<int,n> index_array = {{ 2, 0 }};
-    const boost::array<int,n> increasing_array = {{ 0, 0 }};
-    const boost::array<int,n> shape_array = {{ 3, 1 }};
-    boost::array<int,n>::iterator index = index_array.begin();
-    boost::array<int,n>::const_iterator increasing = increasing_array.begin();
-    boost::array<int,n>::const_iterator shape = shape_array.begin();
+    array<int,n> index_array = {{ 2, 0 }};
+    const array<int,n> increasing_array = {{ 0, 0 }};
+    const array<int,n> shape_array = {{ 3, 1 }};
+    array<int,n>::iterator index = index_array.begin();
+    array<int,n>::const_iterator increasing = increasing_array.begin();
+    array<int,n>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -1033,11 +1032,11 @@ BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_first )
 BOOST_AUTO_TEST_CASE( decrement_2d_degenerate_second )
 {
     const int n = 2;
-    boost::array<int, n> index_array            = {{ 0, 2 }};
+    array<int, n> index_array            = {{ 0, 2 }};
     const bool increasing[n]                    = { false, false };
-    boost::array<std::size_t,n> shape_array     = {{ 1, 3 }};
-    boost::array<int, n>::iterator index        = index_array.begin();
-    boost::array<std::size_t,n>::iterator shape = shape_array.begin();
+    array<std::size_t,n> shape_array     = {{ 1, 3 }};
+    array<int, n>::iterator index        = index_array.begin();
+    array<std::size_t,n>::iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index[0], 0);
@@ -1147,12 +1146,12 @@ BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_all )
 
 BOOST_AUTO_TEST_CASE( decrement_3d_degenerate_middle )
 {
-    const int                   n               = 3;
-    long                        index[n]         =  { 2, 0, 2 };
-    boost::array<std::size_t,n> increasing_array = {{ 0, 0, 0 }};
-    boost::array<std::size_t,n> shape_array      = {{ 3, 1, 3 }};
-    boost::array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
-    boost::array<std::size_t,n>::const_iterator shape = shape_array.begin();
+    const int            n                = 3;
+    long                 index[n]         =  { 2, 0, 2 };
+    array<std::size_t,n> increasing_array = {{ 0, 0, 0 }};
+    array<std::size_t,n> shape_array      = {{ 3, 1, 3 }};
+    array<std::size_t,n>::const_iterator increasing = increasing_array.begin();
+    array<std::size_t,n>::const_iterator shape = shape_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -1233,15 +1232,15 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal )
 BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 {
     const int n = 3;
-    boost::array<short,3> index_array = {{ 1, 0, 2 }};
-    boost::array<bool,3> increasing_array = {{ false, false, false }};
-    boost::array<int,3> shape_array = {{ 2, 1, 3 }};
-    boost::array<long,3> order_array = {{ 2, 0, 1 }};
+    array<short,3> index_array = {{ 1, 0, 2 }};
+    array<bool,3> increasing_array = {{ false, false, false }};
+    array<int,3> shape_array = {{ 2, 1, 3 }};
+    array<long,3> order_array = {{ 2, 0, 1 }};
 
-    boost::array<short,3>::iterator index = index_array.begin();
-    boost::array<bool,3>::iterator increasing = increasing_array.begin();
-    boost::array<int,3>::iterator shape = shape_array.begin();
-    boost::array<long,3>::iterator order = order_array.begin();
+    array<short,3>::iterator index = index_array.begin();
+    array<bool,3>::iterator increasing = increasing_array.begin();
+    array<int,3>::iterator shape = shape_array.begin();
+    array<long,3>::iterator order = order_array.begin();
 
     BOOST_REQUIRE_EQUAL(crement<n>(index,increasing,shape,order), true);
     BOOST_CHECK_EQUAL(index[0], 1);
@@ -1269,7 +1268,7 @@ BOOST_AUTO_TEST_CASE( decrement_3d_normal_outoforder )
 BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_1, ASCENDING, int_zero_one_type )
 {
     const int n = 3;
-    typedef boost::array<int,n> array_type;
+    typedef array<int,n> array_type;
 
     // Like shape = { 4, 3, 2 } with the second index frozen at zero
     const array_type           shape_array = {{ 4, 1, 2 }};
@@ -1436,7 +1435,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_1, ASCENDING, int_
 BOOST_AUTO_TEST_CASE_TEMPLATE( crement_3d_spot_check_behavior_2, ASCENDING, int_zero_one_type )
 {
     const int n = 3;
-    typedef boost::array<int,n> array_type;
+    typedef array<int,n> array_type;
 
     // Like shape = { 4, 3, 2 } with the first index frozen at zero
     const array_type           shape_array = {{ 1, 3, 2 }};

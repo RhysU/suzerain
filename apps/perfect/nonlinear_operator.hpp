@@ -132,7 +132,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //   *_z_*       accounts for restrictions in spanwise direction only
     //
     // Results reported by the code are reported in this order.
-    boost::array<real_t, 12> delta_t_candidates;
+    array<real_t, 12> delta_t_candidates;
     std::fill(delta_t_candidates.begin(), delta_t_candidates.end(),
               std::numeric_limits<real_t>::max());
     real_t &convtotal_xyz_delta_t = delta_t_candidates[ 0];

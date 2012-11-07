@@ -29,26 +29,26 @@ template class suzerain::interleaved_state<4,double>;
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 /** Helper for specifying 3D extents information */
-static boost::array<int,3> size(int x, int y, int z)
+static suzerain::array<int,3> size(int x, int y, int z)
 {
-    boost::array<int,3> a = {{ x, y, z }};
+    suzerain::array<int,3> a = {{ x, y, z }};
     return a;
 }
 
 /** Helper for specifying 4D extents information */
-static boost::array<int,4> size(int w, int x, int y, int z)
+static suzerain::array<int,4> size(int w, int x, int y, int z)
 {
-    boost::array<int,4> a = {{ w, x, y, z }};
+    suzerain::array<int,4> a = {{ w, x, y, z }};
     return a;
 }
 
 /** Helper for specifying 3D extents information for load and verify */
-static boost::array<int,3> size223() {
+static suzerain::array<int,3> size223() {
     return size(2,2,3);
 }
 
 /** Helper for specifying 4D extents information for load and verify */
-static boost::array<int,4> size2234() {
+static suzerain::array<int,4> size2234() {
     return size(2,2,3,4);
 }
 

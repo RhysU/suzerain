@@ -33,8 +33,8 @@ namespace multi_array
 {
 
 /**
- * Obtain a <tt>boost::array</tt> containing the shape information from a
- * MultiArray implementation.
+ * Obtain an \ref array containing the shape information from a MultiArray
+ * implementation.
  *
  * @param a MultiArray to interrogate.
  *
@@ -42,11 +42,11 @@ namespace multi_array
  *         equal to the MultiArray's dimensionality.
  */
 template< typename MultiArray >
-boost::array<typename MultiArray::size_type,MultiArray::dimensionality>
+array<typename MultiArray::size_type,MultiArray::dimensionality>
     shape_array(const MultiArray &a)
 {
     typedef typename MultiArray::size_type size_type;
-    boost::array<size_type,MultiArray::dimensionality> retval;
+    array<size_type,MultiArray::dimensionality> retval;
     const size_type *shapeBegin = a.shape();
     std::copy(shapeBegin, shapeBegin + MultiArray::dimensionality,
               retval.begin());
@@ -54,8 +54,8 @@ boost::array<typename MultiArray::size_type,MultiArray::dimensionality>
 }
 
 /**
- * Obtain a <tt>boost::array</tt> containing the stride information from a
- * MultiArray implementation.
+ * Obtain an \ref array containing the stride information from a MultiArray
+ * implementation.
  *
  * @param a MultiArray to interrogate.
  *
@@ -63,11 +63,11 @@ boost::array<typename MultiArray::size_type,MultiArray::dimensionality>
  *         equal to the MultiArray's dimensionality.
  */
 template< typename MultiArray >
-boost::array<typename MultiArray::index,MultiArray::dimensionality>
+array<typename MultiArray::index,MultiArray::dimensionality>
     strides_array(const MultiArray &a)
 {
     typedef typename MultiArray::index index;
-    boost::array<index,MultiArray::dimensionality> retval;
+    array<index,MultiArray::dimensionality> retval;
     const index *stridesBegin = a.strides();
     std::copy(stridesBegin, stridesBegin + MultiArray::dimensionality,
               retval.begin());

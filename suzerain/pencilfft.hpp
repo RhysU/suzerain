@@ -948,10 +948,10 @@ void transform_c2c(
     const size_type1 dimensionality = ComplexMultiArray1::dimensionality;
 
     // Typedefs due to implementation choices
-    typedef boost::array<index1,dimensionality>      index_array1;
-    typedef boost::array<index2,dimensionality>      index_array2;
-    typedef int                                      shape_type; // Per FFTW
-    typedef boost::array<shape_type,dimensionality>  shape_array;
+    typedef array<index1,dimensionality>      index_array1;
+    typedef array<index2,dimensionality>      index_array2;
+    typedef int                               shape_type; // Per FFTW
+    typedef array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
     assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);
@@ -1269,10 +1269,10 @@ void forward_r2c(
     const size_type1 dimensionality = RealMultiArray::dimensionality;
 
     // Typedefs due to implementation choices
-    typedef boost::array<index1,dimensionality>      index_array1;
-    typedef boost::array<index2,dimensionality>      index_array2;
-    typedef int                                      shape_type; // Per FFTW
-    typedef boost::array<shape_type,dimensionality>  shape_array;
+    typedef array<index1,dimensionality>      index_array1;
+    typedef array<index2,dimensionality>      index_array2;
+    typedef int                               shape_type; // Per FFTW
+    typedef array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
     assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);
@@ -1466,10 +1466,10 @@ void backward_c2r(
     const size_type1 dimensionality = ComplexMultiArray::dimensionality;
 
     // Typedefs due to implementation choices
-    typedef boost::array<index1,dimensionality>      index_array1;
-    typedef boost::array<index2,dimensionality>      index_array2;
-    typedef int                                      shape_type; // Per FFTW
-    typedef boost::array<shape_type,dimensionality>  shape_array;
+    typedef array<index1,dimensionality>      index_array1;
+    typedef array<index2,dimensionality>      index_array2;
+    typedef int                               shape_type; // Per FFTW
+    typedef array<shape_type,dimensionality>  shape_array;
 
     // Ensure we transform a dimension that exists in the data
     assert(is_nonnegative(transform_dim) && transform_dim < dimensionality);

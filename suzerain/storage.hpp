@@ -151,7 +151,7 @@ std::size_t general<StorageOrderSequence>::compute_strides(
 {
     typedef typename std::iterator_traits<OutputIterator>::value_type
         output_value_type;
-    boost::array<output_value_type, dimensionality> stride_array;
+    array<output_value_type, dimensionality> stride_array;
 
     // Compute stride details using known storage order
     const sequence_array_type seq;
@@ -175,7 +175,7 @@ std::size_t general<StorageOrderSequence>::compute_strides(
         RandomAccessIterator sizes,
         OutputIterator strides)
 {
-    boost::array<
+    array<
         typename std::iterator_traits<OutputIterator>::value_type,
         dimensionality
     > scratch;
@@ -189,7 +189,7 @@ std::size_t general<StorageOrderSequence>::compute_storage(
         RandomAccessIterator1 sizes,
         RandomAccessIterator2 minstrides)
 {
-    boost::array<std::size_t,dimensionality> scratch;
+    array<std::size_t,dimensionality> scratch;
     return compute_strides(sizes, minstrides, scratch.begin());
 }
 
@@ -198,7 +198,7 @@ template< typename RandomAccessIterator >
 std::size_t general<StorageOrderSequence>::compute_storage(
         RandomAccessIterator sizes)
 {
-    boost::array<std::size_t,dimensionality> scratch;
+    array<std::size_t,dimensionality> scratch;
     return compute_strides(sizes, scratch.begin());
 }
 

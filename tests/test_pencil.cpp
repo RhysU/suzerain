@@ -30,7 +30,7 @@
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
-using boost::array;
+using suzerain::array;
 using suzerain::pencil;
 
 BOOST_AUTO_TEST_CASE( declare_pointer )

@@ -39,7 +39,7 @@ typedef boost::mpl::list<
 
 // Introduce some shorthand
 namespace blas = suzerain::blas;
-using boost::array;
+using suzerain::array;
 using suzerain::complex::assign_complex;
 using suzerain::complex::real;
 using suzerain::complex::imag;

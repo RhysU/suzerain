@@ -251,7 +251,7 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
-        const boost::array<size_t,4> sizes = {{
+        const array<size_t,4> sizes = {{
                 state.shape()[0], (size_t) Ny, (size_t) cdata.cols(), 1
         }};
         ic0 = new multi_array::ref<complex_t,4>(

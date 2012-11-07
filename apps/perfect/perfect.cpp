@@ -345,10 +345,10 @@ void store_collocation_values(
     }
 
     // HDF5 file storage locations and corresponding descriptions
-    const boost::array<const char *,state_count> prim_names = {{
+    const array<const char *,state_count> prim_names = {{
         "u", "v", "w", "p", "T"
     }};
-    const boost::array<const char *,state_count> prim_descriptions = {{
+    const array<const char *,state_count> prim_descriptions = {{
         "streamwise velocity",
         "wall-normal velocity",
         "spanwise velocity",
@@ -771,7 +771,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     // processor count, b) easy to code, and c) embarrassingly parallel.
     rngstream rng;
     {
-        boost::array<unsigned long,6> seed;
+        array<unsigned long,6> seed;
         std::fill(seed.begin(), seed.end(), noisedef.seed);
         rng.SetSeed(seed.data());
     }

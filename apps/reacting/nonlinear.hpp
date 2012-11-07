@@ -144,7 +144,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     common.u().setZero();
 
     // Maintain stable time step values to return to the caller
-    boost::array<real_t, 2> delta_t_candidates = {{
+    array<real_t, 2> delta_t_candidates = {{
             std::numeric_limits<real_t>::max(),
             std::numeric_limits<real_t>::max()
     }};

@@ -129,13 +129,13 @@ BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_out_of_place )
     typedef boost::multi_array<std::complex<double>,2> array_type;
     typedef boost::general_storage_order<2> storage;
 
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},
@@ -170,13 +170,13 @@ BOOST_AUTO_TEST_CASE( c2c_2d_complex_forward_in_place )
     typedef boost::multi_array<std::complex<double>,2> array_type;
     typedef boost::general_storage_order<2> storage;
 
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},
@@ -227,7 +227,7 @@ void r2c_2d_forward_4_by_3(RealArray &in, ComplexArray &out)
     {
         {
             // Deliberately convoluted to track down some valgrind problems
-            boost::array<typename RealArray::index,2> idx;
+            suzerain::array<typename RealArray::index,2> idx;
             for (idx[0] = 0; idx[0] < M; ++idx[0]) {
                 for (idx[1] = 0; idx[1] < N; ++idx[1]) {
                     typename RealArray::element &val = in(idx);
@@ -308,13 +308,13 @@ BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place )
     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
     typedef boost::general_storage_order<2> storage;
 
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},
@@ -345,8 +345,8 @@ BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_out_of_place )
 }
 
 void test_r2c_2d_complex_forward_in_place(
-        const boost::array<std::size_t,2> &ordering,
-        const boost::array<bool,2>        &ascending)
+        const suzerain::array<std::size_t,2> &ordering,
+        const suzerain::array<bool,2>        &ascending)
 {
     typedef std::complex<double> complex;
     const std::size_t size_ratio = sizeof(complex)/sizeof(complex::value_type);
@@ -384,13 +384,13 @@ void test_r2c_2d_complex_forward_in_place(
 
 BOOST_AUTO_TEST_CASE( r2c_2d_complex_forward_in_place )
 {
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},
@@ -494,13 +494,13 @@ BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place )
     typedef boost::multi_array<complex_array::element::value_type,2> real_array;
     typedef boost::general_storage_order<2> storage;
 
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},
@@ -531,8 +531,8 @@ BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_out_of_place )
 }
 
 void test_c2r_2d_complex_backward_in_place(
-        const boost::array<std::size_t,2> &ordering,
-        const boost::array<bool,2>        &ascending)
+        const suzerain::array<std::size_t,2> &ordering,
+        const suzerain::array<bool,2>        &ascending)
 {
     typedef std::complex<double> complex;
     const std::size_t size_ratio = sizeof(complex)/sizeof(complex::value_type);
@@ -570,13 +570,13 @@ void test_c2r_2d_complex_backward_in_place(
 
 BOOST_AUTO_TEST_CASE( c2r_2d_complex_backward_in_place_c_storage )
 {
-    const boost::array<std::size_t,2> ordering[] = {
+    const suzerain::array<std::size_t,2> ordering[] = {
         {{ 0, 1 }}, // Fortran storage
         {{ 1, 0 }}  // C storage
     };
     const std::size_t n_ordering = sizeof(ordering)/sizeof(ordering[0]);
 
-    const boost::array<bool,2> ascending[] = {
+    const suzerain::array<bool,2> ascending[] = {
         {{ true,  true  }}, // All ascending
         {{ false, true  }}, // One descending...
         {{ true,  false }},

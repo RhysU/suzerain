@@ -73,10 +73,10 @@ typedef mpl::list<
     > state_type_pairs;
 
 // Helper method for providing 3D size information
-static boost::array<std::size_t,3> size3(
+static suzerain::array<std::size_t,3> size3(
     std::size_t x, std::size_t y, std::size_t z)
 {
-    boost::array<std::size_t,3> a = {{ x, y, z }};
+    suzerain::array<std::size_t,3> a = {{ x, y, z }};
     return a;
 }
 

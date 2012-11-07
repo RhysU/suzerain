@@ -129,7 +129,7 @@ public:
      * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
      * \li \c 4 Compute and write a statistics file
      */
-    typedef boost::array<volatile sig_atomic_t, 5> atomic_signal_received_t;
+    typedef array<volatile sig_atomic_t, 5> atomic_signal_received_t;
 
     /** Atomic locations used to track local signal receipt. */
     static atomic_signal_received_t atomic_signal_received;
@@ -237,7 +237,7 @@ private:
      * Type of non-atomic locations used to track global receipt of the
      * same actions as \ref atomic_signal_received_t.
      */
-    typedef boost::array<
+    typedef array<
             int, atomic_signal_received_t::static_size
         > signal_received_t;
 

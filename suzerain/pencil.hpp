@@ -177,11 +177,11 @@ private:
 
     template<typename ForwardIterator>
     static
-    boost::array<typename std::iterator_traits<ForwardIterator>::value_type,3>
+    array<typename std::iterator_traits<ForwardIterator>::value_type,3>
     make_collection(ForwardIterator iter)
     {
         typedef typename std::iterator_traits<ForwardIterator>::value_type T;
-        typename boost::array<T,3> retval;
+        array<T,3> retval;
         retval[0] = *iter;
         retval[1] = *++iter;
         retval[2] = *++iter;
