@@ -86,35 +86,7 @@ application_base::application_base(
 std::string
 application_base::log4cxx_config()
 {
-    std::ostringstream os;
-    os << support::log4cxx_config << // Appending to the default configuration
-        "\n"
-        "## Collect \"bulk\" messages into bulk.dat mimicking LOG file behavior\n"
-        "log4j.logger.bulk=INHERITED, BULK\n"
-        "log4j.appender.BULK=${log4j.appender.LOG}\n"
-        "log4j.appender.BULK.filename=bulk.dat\n"
-        "log4j.appender.BULK.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.BULK.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.BULK.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-        "\n"
-        "## Collect \"L2.mean\" messages into L2.mean.dat mimicking LOG file behavior\n"
-        "log4j.logger.L2.mean=INHERITED, L2MEAN\n"
-        "log4j.appender.L2MEAN=${log4j.appender.LOG}\n"
-        "log4j.appender.L2MEAN.filename=L2.mean.dat\n"
-        "log4j.appender.L2MEAN.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.L2MEAN.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.L2MEAN.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-        "\n"
-        "## Collect \"rms.fluct\" messages into rms.fluct.dat mimicking LOG file behavior\n"
-        "log4j.logger.rms.fluct=INHERITED, RMSFLUCT\n"
-        "log4j.appender.RMSFLUCT=${log4j.appender.LOG}\n"
-        "log4j.appender.RMSFLUCT.filename=rms.fluct.dat\n"
-        "log4j.appender.RMSFLUCT.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.RMSFLUCT.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.RMSFLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
-    ;
-
-    return os.str();
+    return support::log4cxx_config;
 }
 
 std::vector<std::string>
