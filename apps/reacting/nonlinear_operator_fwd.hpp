@@ -23,8 +23,8 @@
 // nonlinear_fwd.hpp: Building blocks for nonlinear Navier--Stokes operators
 // $Id$
 
-#ifndef NONLINEAR_FWD_HPP
-#define NONLINEAR_FWD_HPP
+#ifndef NONLINEAR_OPERATOR_FWD_HPP
+#define NONLINEAR_OPERATOR_FWD_HPP
 
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
@@ -38,19 +38,19 @@ namespace suzerain { namespace reacting {
  * application which either are required for linear operator application or for
  * statistics sampling purposes.
  */
-class OperatorCommonBlock
+class operator_common_block
 {
 public:
 
-    OperatorCommonBlock() {}
+    operator_common_block() {}
 
 private:
 
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, 16, Eigen::ColMajor> means_t;
+    typedef Array<real_t, Dynamic, 16, ColMajor> means_t;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Eigen::Array<real_t, 26, Eigen::Dynamic, Eigen::ColMajor> refs_t;
+    typedef Array<real_t, 26, Dynamic, ColMajor> refs_t;
 
 public:
 
@@ -335,8 +335,8 @@ public:
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
-    OperatorCommonBlock(const OperatorCommonBlock&);
-    OperatorCommonBlock& operator=(const OperatorCommonBlock&);
+    operator_common_block(const operator_common_block&);
+    operator_common_block& operator=(const operator_common_block&);
 };
 
 /** Provides scoping semantics for linearize::type */
@@ -415,7 +415,7 @@ template<bool ZerothSubstep,
          class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base<real_t> &o,
-            OperatorCommonBlock &common,
+            operator_common_block &common,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
@@ -424,4 +424,4 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 } /* namespace reacting */ } /* namespace suzerain */
 
-#endif  /* NONLINEAR_FWD_HPP */
+#endif  /* NONLINEAR_OPERATOR_FWD_HPP */
