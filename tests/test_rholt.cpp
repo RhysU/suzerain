@@ -22,6 +22,9 @@
 
 #pragma warning(disable:1599)
 
+using suzerain::Vector3r;
+using suzerain::Matrix3r;
+
 // Provides data for the test field
 //      rho = 2*(x^2)*y*z + 3*x*(y^2)*z + 5*x*y*(z^2)
 //      m   = {
@@ -36,19 +39,19 @@
 // to 200 bits of precision.
 static
 void rholt_test_data(
-        double          &rho,
-        Eigen::Vector3d &grad_rho,
-        double          &div_grad_rho,
-        Eigen::Matrix3d &grad_grad_rho,
-        Eigen::Vector3d &m,
-        double          &div_m,
-        Eigen::Matrix3d &grad_m,
-        Eigen::Vector3d &div_grad_m,
-        Eigen::Vector3d &grad_div_m,
-        Eigen::Vector3d &curl_curl_m,
-        double          &e,
-        Eigen::Vector3d &grad_e,
-        double          &div_grad_e)
+        double   &rho,
+        Vector3r &grad_rho,
+        double   &div_grad_rho,
+        Matrix3r &grad_grad_rho,
+        Vector3r &m,
+        double   &div_m,
+        Matrix3r &grad_m,
+        Vector3r &div_grad_m,
+        Vector3r &grad_div_m,
+        Vector3r &curl_curl_m,
+        double   &e,
+        Vector3r &grad_e,
+        double   &div_grad_e)
 {
     rho = 138.;
 
@@ -107,24 +110,24 @@ void rholt_test_data(
 }
 
 // Helper macro for loading test data via rholt_test_data
-#define ADD_TEST_DATA_TO_ENCLOSING_SCOPE                       \
-    double          rho;                                       \
-    Eigen::Vector3d grad_rho;                                  \
-    double          div_grad_rho;                              \
-    Eigen::Matrix3d grad_grad_rho;                             \
-    Eigen::Vector3d m;                                         \
-    double          div_m;                                     \
-    Eigen::Matrix3d grad_m;                                    \
-    Eigen::Vector3d div_grad_m;                                \
-    Eigen::Vector3d grad_div_m;                                \
-    Eigen::Vector3d curl_curl_m;                               \
-    double          e;                                         \
-    Eigen::Vector3d grad_e;                                    \
-    double          div_grad_e;                                \
-                                                               \
-    rholt_test_data(                                           \
-        rho, grad_rho, div_grad_rho, grad_grad_rho,            \
-        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m, \
+#define ADD_TEST_DATA_TO_ENCLOSING_SCOPE                        \
+    double          rho;                                        \
+    Vector3r grad_rho;                                          \
+    double          div_grad_rho;                               \
+    Matrix3r grad_grad_rho;                                     \
+    Vector3r m;                                                 \
+    double          div_m;                                      \
+    Matrix3r grad_m;                                            \
+    Vector3r div_grad_m;                                        \
+    Vector3r grad_div_m;                                        \
+    Vector3r curl_curl_m;                                       \
+    double          e;                                          \
+    Vector3r grad_e;                                            \
+    double          div_grad_e;                                 \
+                                                                \
+    rholt_test_data(                                            \
+        rho, grad_rho, div_grad_rho, grad_grad_rho,             \
+        m, div_m, grad_m, div_grad_m, grad_div_m, curl_curl_m,  \
         e, grad_e, div_grad_e)
 
 // Checks derived formula and computation against rholt_test_data()
@@ -132,10 +135,10 @@ BOOST_AUTO_TEST_CASE( rholt_u )
 {
     ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
-    const Eigen::Vector3d u = suzerain::rholt::u(rho, m);
+    const Vector3r u = suzerain::rholt::u(rho, m);
 
     /* Expected results found using test_rholt.sage */
-    const Eigen::Vector3d ans(
+    const Vector3r ans(
              0.12341218703282769413064525687781462380236231103335735506961L,
             -0.096759457126720663880658289039861350486647579313251121603828L,
             -0.49153349101893774791320060483746755015882872625676686905257L);
@@ -156,7 +159,7 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     /* Variant that provides derivatives */
     suzerain::rholt::p_T_mu_lambda(
@@ -178,7 +181,7 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
             55.546971079143763941417542929981280936235615998847600029231L,
             close_enough);
 
-    const Eigen::Vector3d grad_p_ans(
+    const Vector3r grad_p_ans(
             5453.5209639604035869584122627487425816813409506343630929293L,
             3086.9691968926047335425739267829758568639555587282859345292L,
             1999.8806276135462562543621611330864774644251338499615213427L);
@@ -186,7 +189,7 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_p(1), grad_p_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_p(2), grad_p_ans(2), close_enough);
 
-    const Eigen::Vector3d grad_T_ans(
+    const Vector3r grad_T_ans(
              5.4406182848896076809319526229317927581792830964012420477440L,
              2.3838039162055298052983060006061443162968025314525571766942L,
             -4.9864006857304358686639947733917588394000520736206805318339L);
@@ -194,7 +197,7 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_T(1), grad_T_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_T(2), grad_T_ans(2), close_enough);
 
-    const Eigen::Vector3d grad_mu_ans(
+    const Vector3r grad_mu_ans(
              1.0130662690381109382304916850142818302534744683039668368759L,
              0.44387442989997855519790991486035061354804176216270679061604L,
             -0.92848901983288259118625731085663474679900828620195051533844L);
@@ -202,7 +205,7 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_mu(1), grad_mu_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_mu(2), grad_mu_ans(2), close_enough);
 
-    const Eigen::Vector3d grad_lambda_ans(
+    const Vector3r grad_lambda_ans(
             4.3899538324984807323321306350618879310983893626505229597954L,
             1.9234558628999070725242762977281859920415143027050627593362L,
             -4.0234524192758245618071150137120839027957025735417855664666L);
@@ -269,7 +272,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
@@ -308,7 +311,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
                 m, grad_m, div_grad_m,
                 e, div_grad_e,
                 p, grad_p,
-                refcoeff_div_grad_e, Eigen::Vector3d::Zero(), 0);
+                refcoeff_div_grad_e, Vector3r::Zero(), 0);
 
         BOOST_CHECK_CLOSE(mu_div_grad_T,
             218731.90109051878978113376152599227382356957602236358637891L,
@@ -318,7 +321,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
     /* With nonzero refcoeffs, explicit operator differs from the full one */
     {
         const double mu = 4184.0;
-        const Eigen::Vector3d refcoeff_div_grad_m(8, 13, 21);
+        const Vector3r refcoeff_div_grad_m(8, 13, 21);
         const double mu_div_grad_T = suzerain::rholt::explicit_mu_div_grad_T(
                 gamma, mu,
                 rho, grad_rho, div_grad_rho,
@@ -342,7 +345,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
                 m, grad_m, div_grad_m,
                 e, div_grad_e,
                 p, grad_p,
-                0, Eigen::Vector3d::Zero(), refcoeff_div_grad_rho);
+                0, Vector3r::Zero(), refcoeff_div_grad_rho);
 
         BOOST_CHECK_CLOSE(mu_div_grad_T,
             264017.42109051872109609388363445174647981957602236358637891L,
@@ -353,7 +356,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_p_and_div_grad_T )
     {
         const double mu     = 4181.0;
         const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const Vector3r m(144.0, 233.0, 377.0);
         const double p      = 55.0;
         const double e      = p/(gamma-1)+m.squaredNorm()/(2*rho);
 
@@ -382,12 +385,10 @@ BOOST_AUTO_TEST_CASE( rholt_grad_u )
 {
     ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
-    const Eigen::Matrix3d grad_u
-        = suzerain::rholt::grad_u(
-                rho, grad_rho, m, grad_m);
+    const Matrix3r grad_u = suzerain::rholt::grad_u(rho, grad_rho, m, grad_m);
 
     /* Expected results found using test_rholt.sage */
-    Eigen::Matrix3d ans;
+    Matrix3r ans;
     ans(0,0) =   0.13354624933259255905305717414904148571263050381552617302315L;
     ans(0,1) = - 0.95458058163483407021971942603699868798014583786167988660320L;
     ans(0,2) =   0.25857485039372819387032260745049292527417870255089489945870L;
@@ -432,11 +433,11 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
 
     /* Expected results found using test_rholt.sage */
     {
-        const Eigen::Vector3d grad_div_u
+        const Vector3r grad_div_u
             = suzerain::rholt::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
             3.5808667611324763961641377901365615487146733886413982972779L,
             - 11.378277959392865631969701464497046416747061061234520455900L,
             237.13623643835318300159939437852909295361695206836632310924L);
@@ -451,12 +452,12 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
         const double mu     = 4181.0;
         const double lambda = 6765.0;
 
-        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+        const Vector3r mu_plus_lambda_grad_div_u
             = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
-                    div_m, grad_m, grad_div_m, 0, Eigen::Vector3d::Zero());
+                    div_m, grad_m, grad_div_m, 0, Vector3r::Zero());
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
             (mu+lambda)
             *3.5808667611324763961641377901365615487146733886413982972779L,
             (mu+lambda)
@@ -475,13 +476,13 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
         const double lambda = 6765.0;
         const double refcoeff_grad_div_m = 89.0;
 
-        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+        const Vector3r mu_plus_lambda_grad_div_u
             = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
                     div_m, grad_m, grad_div_m,
-                    refcoeff_grad_div_m, Eigen::Vector3d::Zero());
+                    refcoeff_grad_div_m, Vector3r::Zero());
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
                 59251.997466444561194961843519913703789109645722525625271084L,
                 56371.864698208669179904529966597802712284277363839600322130L,
               -225340.51082752741696350364123413038584340722233614860633701L);
@@ -495,15 +496,15 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
     {
         const double mu     = 4181.0;
         const double lambda = 6765.0;
-        const Eigen::Vector3d refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
+        const Vector3r refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
 
-        const Eigen::Vector3d mu_plus_lambda_grad_div_u
+        const Vector3r mu_plus_lambda_grad_div_u
             = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
                     mu, lambda, rho, grad_rho, grad_grad_rho, m,
                     div_m, grad_m, grad_div_m,
                     0, refcoeff_grad_grad_rho);
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
              94481.167567356086632412652250834802712230814912068745762004L,
             -90372.630543514307207540352230384670077713330376273060910286L,
                  2.6250052440542139411355069708673794514702911573403377727538e6L);
@@ -518,7 +519,7 @@ BOOST_AUTO_TEST_CASE( rholt_grad_div_u )
         const double mu     = 4181.0;
         const double lambda = 6765.0;
         const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const Vector3r m(144.0, 233.0, 377.0);
 
         BOOST_CHECK_CLOSE(
             suzerain::rholt
@@ -546,10 +547,9 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
 
     /* Expected results found using test_rholt.sage */
     {
-      const Eigen::Vector3d div_grad_u
-          = suzerain::rholt::div_grad_u(
+      const Vector3r div_grad_u = suzerain::rholt::div_grad_u(
                   rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
-      const Eigen::Vector3d ans(
+      const Vector3r ans(
         - 16.318446092843163297609832709693050751558008045050013765743L,
           23.204406985769508424700716673327465318352740571910767421546L,
          672.79795991861399600487930607996269111701083307478613865859L);
@@ -563,15 +563,15 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
     {
         const double mu = 4181.0;
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
             mu * - 16.318446092843163297609832709693050751558008045050013765743L,
             mu *   23.204406985769508424700716673327465318352740571910767421546L,
             mu *  672.79795991861399600487930607996269111701083307478613865859L);
 
-        const Eigen::Vector3d mu_div_grad_u
+        const Vector3r mu_div_grad_u
             = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-                0, Eigen::Vector3d::Zero());
+                0, Vector3r::Zero());
 
         BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
@@ -583,15 +583,15 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
         const double mu = 4181.0;
         const double refcoeff_div_grad_m = 2584.0;
 
-        const Eigen::Vector3d ans(
+        const Vector3r ans(
             5.9551380098350547299406169179153558202535417758727995727551e6L,
             -1.0464153750779144075786479854308628293364388219511766501161e7L,
             -2.3913808232284881074922576572858143105464556248213880447440e8L);
 
-        const Eigen::Vector3d mu_div_grad_u
+        const Vector3r mu_div_grad_u
             = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-                refcoeff_div_grad_m, Eigen::Vector3d::Zero());
+                refcoeff_div_grad_m, Vector3r::Zero());
 
         BOOST_CHECK_CLOSE(mu_div_grad_u(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(mu_div_grad_u(1), ans(1), close_enough);
@@ -601,13 +601,13 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
     /* With nonzero refcoeffs, explicit operator differs from full one */
     {
         const double mu = 4181.0;
-        const Eigen::Vector3d refcoeff_div_grad_rho(610.0, 987.0, 1597.0);
-        const Eigen::Vector3d ans(
+        const Vector3r refcoeff_div_grad_rho(610.0, 987.0, 1597.0);
+        const Vector3r ans(
             - 30407.423114177265747306710559226645192264031636354107554571L,
             158211.62560750231472367369641118213249603280833115891858948L,
                 2.9119822704197251172964003787203240115602222930856808457316e6L);
 
-        const Eigen::Vector3d mu_div_grad_u
+        const Vector3r mu_div_grad_u
             = suzerain::rholt::explicit_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
                 0, refcoeff_div_grad_rho);
@@ -621,7 +621,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_grad_u )
     {
         const double mu  = 4181.0;
         const double rho = 5678.0;
-        const Eigen::Vector3d m(3.0, 5.0, 7.0);
+        const Vector3r m(3.0, 5.0, 7.0);
 
         BOOST_CHECK_CLOSE(suzerain::rholt
             ::explicit_mu_div_grad_u_refcoeff_div_grad_m(
@@ -653,14 +653,14 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
         const double u_dot_mu_div_grad_u
             = suzerain::rholt::explicit_u_dot_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-                Eigen::Vector3d::Zero(), 0);
+                Vector3r::Zero(), 0);
 
         BOOST_CHECK_CLOSE(u_dot_mu_div_grad_u, ans, close_enough);
     }
 
     /* With nonzero refcoeffs, explicit operator differs from full one */
     {
-        const Eigen::Vector3d refcoeff_div_grad_m(3, 5, 7);
+        const Vector3r refcoeff_div_grad_m(3, 5, 7);
         const double ans
             = -673176.50373070234836923498008429608579249020553411631291690L;
 
@@ -682,7 +682,7 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
         const double u_dot_mu_div_grad_u
             = suzerain::rholt::explicit_u_dot_mu_div_grad_u(
                 mu, rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m,
-                Eigen::Vector3d::Zero(), refcoeff_div_grad_rho);
+                Vector3r::Zero(), refcoeff_div_grad_rho);
 
         BOOST_CHECK_CLOSE(u_dot_mu_div_grad_u, ans, close_enough);
     }
@@ -691,7 +691,7 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_div_grad_u )
     {
         const double mu  = 4181.0;
         const double rho = 5678.0;
-        const Eigen::Vector3d m(3.0, 5.0, 7.0);
+        const Vector3r m(3.0, 5.0, 7.0);
 
         for (int i = 0; i < 3; ++i) {
             BOOST_CHECK_CLOSE(suzerain::rholt
@@ -726,14 +726,14 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
             = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
                 mu, lambda, rho, grad_rho, grad_grad_rho,
                 m, div_m, grad_m, grad_div_m,
-                Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero());
+                Vector3r::Zero(), Matrix3r::Zero());
 
         BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
     }
 
     /* With nonzero refcoeffs, explicit operator differs from full one */
     {
-        const Eigen::Vector3d refcoeff_grad_div_m(3, 5, 7);
+        const Vector3r refcoeff_grad_div_m(3, 5, 7);
         const double ans
             = -218902.29059155252474980585723649734813459133691881587116865L;
 
@@ -741,14 +741,14 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
             = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
                 mu, lambda, rho, grad_rho, grad_grad_rho,
                 m, div_m, grad_m, grad_div_m,
-                refcoeff_grad_div_m, Eigen::Matrix3d::Zero());
+                refcoeff_grad_div_m, Matrix3r::Zero());
 
         BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
     }
 
     /* With zero refcoeffs, explicit operator matches the full one */
     {
-        Eigen::Matrix3d refcoeff_grad_grad_rho; // should be symmetric
+        Matrix3r refcoeff_grad_grad_rho; // should be symmetric
         refcoeff_grad_grad_rho << 3,  5,  7,
                                   5, 11, 13,
                                   7, 13, 17;
@@ -759,7 +759,7 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
             = suzerain::rholt::explicit_u_dot_mu_plus_lambda_grad_div_u(
                 mu, lambda, rho, grad_rho, grad_grad_rho,
                 m, div_m, grad_m, grad_div_m,
-                Eigen::Vector3d::Zero(), refcoeff_grad_grad_rho);
+                Vector3r::Zero(), refcoeff_grad_grad_rho);
 
         BOOST_CHECK_CLOSE(u_dot_mu_plus_lambda_grad_div_u, ans, close_enough);
     }
@@ -769,9 +769,9 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
         const double mu     = 4181.0;
         const double lambda = 1234.5;
         const double rho    = 5678.0;
-        const Eigen::Vector3d m(3.0, 5.0, 7.0);
+        const Vector3r m(3.0, 5.0, 7.0);
 
-        const Eigen::Vector3d refcoeff_grad_div_m = suzerain::rholt
+        const Vector3r refcoeff_grad_div_m = suzerain::rholt
                 ::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_div_m
                 (mu, lambda, rho, m);
 
@@ -780,9 +780,9 @@ BOOST_AUTO_TEST_CASE( rholt_u_dot_explicit_mu_plus_lambda_grad_div_u )
                     (mu+lambda)/(rho*rho)*m[i], close_enough);
         }
 
-        const Eigen::Matrix3d refcoeff_grad_grad_rho = suzerain::rholt
+        const Matrix3r refcoeff_grad_grad_rho = suzerain::rholt
                 ::explicit_u_dot_mu_plus_lambda_grad_div_u_refcoeff_grad_grad_rho<
-                double, Eigen::Vector3d, Eigen::Matrix3d>(mu, lambda, rho, m);
+                double, Vector3r, Matrix3r>(mu, lambda, rho, m);
 
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
@@ -802,17 +802,17 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 
     /* Expected results found using curl_curl_u = grad_div_u - div_grad_u */
     {
-        const Eigen::Vector3d curl_curl_u
+        const Vector3r curl_curl_u
             = suzerain::rholt::curl_curl_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, curl_curl_m);
 
-        const Eigen::Vector3d grad_div_u
+        const Vector3r grad_div_u
             = suzerain::rholt::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
-        const Eigen::Vector3d div_grad_u
+        const Vector3r div_grad_u
             = suzerain::rholt::div_grad_u(
                     rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
-        const Eigen::Vector3d ans = grad_div_u - div_grad_u;
+        const Vector3r ans = grad_div_u - div_grad_u;
 
         BOOST_CHECK_CLOSE(curl_curl_u(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(curl_curl_u(1), ans(1), close_enough);
@@ -825,12 +825,12 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 //      const double mu     = 4181.0;
 //      const double lambda = 6765.0;
 //
-//      const Eigen::Vector3d mu_plus_lambda_grad_div_u
+//      const Vector3r mu_plus_lambda_grad_div_u
 //          = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
 //                  mu, lambda, rho, grad_rho, grad_grad_rho, m,
-//                  div_m, grad_m, grad_div_m, 0, Eigen::Vector3d::Zero());
+//                  div_m, grad_m, grad_div_m, 0, Vector3r::Zero());
 //
-//      const Eigen::Vector3d ans(
+//      const Vector3r ans(
 //          (mu+lambda)
 //          *3.5808667611324763961641377901365615487146733886413982972779L,
 //          (mu+lambda)
@@ -849,13 +849,13 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 //      const double lambda = 6765.0;
 //      const double refcoeff_grad_div_m = 89.0;
 //
-//      const Eigen::Vector3d mu_plus_lambda_grad_div_u
+//      const Vector3r mu_plus_lambda_grad_div_u
 //          = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
 //                  mu, lambda, rho, grad_rho, grad_grad_rho, m,
 //                  div_m, grad_m, grad_div_m,
-//                  refcoeff_grad_div_m, Eigen::Vector3d::Zero());
+//                  refcoeff_grad_div_m, Vector3r::Zero());
 //
-//      const Eigen::Vector3d ans(
+//      const Vector3r ans(
 //              59251.997466444561194961843519913703789109645722525625271084L,
 //              56371.864698208669179904529966597802712284277363839600322130L,
 //            -225340.51082752741696350364123413038584340722233614860633701L);
@@ -869,15 +869,15 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 //  {
 //      const double mu     = 4181.0;
 //      const double lambda = 6765.0;
-//      const Eigen::Vector3d refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
+//      const Vector3r refcoeff_grad_grad_rho(144.0, 233.0, 377.0);
 //
-//      const Eigen::Vector3d mu_plus_lambda_grad_div_u
+//      const Vector3r mu_plus_lambda_grad_div_u
 //          = suzerain::rholt::explicit_mu_plus_lambda_grad_div_u(
 //                  mu, lambda, rho, grad_rho, grad_grad_rho, m,
 //                  div_m, grad_m, grad_div_m,
 //                  0, refcoeff_grad_grad_rho);
 //
-//      const Eigen::Vector3d ans(
+//      const Vector3r ans(
 //           94481.167567356086632412652250834802712230814912068745762004L,
 //          -90372.630543514307207540352230384670077713330376273060910286L,
 //               2.6250052440542139411355069708673794514702911573403377727538e6L);
@@ -892,7 +892,7 @@ BOOST_AUTO_TEST_CASE( rholt_curl_curl_u )
 //      const double mu     = 4181.0;
 //      const double lambda = 6765.0;
 //      const double rho    = 67.0;
-//      const Eigen::Vector3d m(144.0, 233.0, 377.0);
+//      const Vector3r m(144.0, 233.0, 377.0);
 //
 //      BOOST_CHECK_CLOSE(
 //          suzerain::rholt
@@ -921,25 +921,25 @@ BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
     const double          div_u  = suzerain::rholt::div_u(rho, grad_rho, m, div_m);
-    const Eigen::Matrix3d grad_u = suzerain::rholt::grad_u(rho, grad_rho, m, grad_m);
-    const Eigen::Vector3d grad_div_u = suzerain::rholt::grad_div_u(
+    const Matrix3r grad_u = suzerain::rholt::grad_u(rho, grad_rho, m, grad_m);
+    const Vector3r grad_div_u = suzerain::rholt::grad_div_u(
                 rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
-    const Eigen::Vector3d div_grad_u = suzerain::rholt::div_grad_u(
+    const Vector3r div_grad_u = suzerain::rholt::div_grad_u(
                 rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
 
     const double close_enough = std::numeric_limits<double>::epsilon() * 1.02e4;
     {
         using namespace suzerain;
-        const Eigen::Matrix3d tau = rholt::tau(mu, lambda, div_u, grad_u);
+        const Matrix3r tau = rholt::tau(mu, lambda, div_u, grad_u);
 
         /* Expected results found using test_rholt.sage */
-        Eigen::Matrix3d ans;
+        Matrix3r ans;
         ans(0,0) = -432.77702868587701572931303205296522463376744126783255181324L;
         ans(0,1) = -18.274805458259731295309074758455374124262335886995620262487L;
         ans(0,2) = 91.817913251736077743933865033061417711733974379411774042718L;
@@ -969,12 +969,12 @@ BOOST_AUTO_TEST_CASE( rholt_tau_and_div_tau )
 
     {
         using namespace suzerain;
-        const Eigen::Vector3d div_tau = rholt::div_tau(
+        const Vector3r div_tau = rholt::div_tau(
                 mu, grad_mu, lambda, grad_lambda,
                 div_u, grad_u, div_grad_u, grad_div_u);
 
         /* Expected results found using test_rholt.sage */
-        Eigen::Vector3d ans;
+        Vector3r ans;
         ans(0) = -5.8572189782846240727678259765123413043664342815994539555325L;
         ans(1) = -500.16654308872810027481518191178470854090357788902597100115L;
         ans(2) = 24897.262970203388363153941644146159218248689630111325247307L;
@@ -991,7 +991,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_u )
     ADD_TEST_DATA_TO_ENCLOSING_SCOPE;
 
     using namespace suzerain;
-    const Eigen::Vector3d u = rholt::u(rho, m);
+    const Vector3r u = rholt::u(rho, m);
     const double div_u = rholt::div_u(
             rho, grad_rho, m, div_m);
     const double div_e_u = rholt::div_e_u(e, grad_e, u, div_u);
@@ -1016,7 +1016,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     using namespace suzerain;
     rholt::p_T_mu_lambda(
@@ -1025,7 +1025,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
 
     /* Expected results found using test_rholt.sage */
     {
-        const Eigen::Vector3d u = rholt::u(rho, m);
+        const Vector3r u = rholt::u(rho, m);
         const double div_u = rholt::div_u(
                 rho, grad_rho, m, div_m);
         const double div_p_u = rholt::div_p_u(p, grad_p, u, div_u);
@@ -1039,7 +1039,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
     {
         const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
-                0, Eigen::Vector3d::Zero());
+                0, Vector3r::Zero());
         const double ans
             = -36133.705926299567425548649114294679973238338337791365684538L;
         BOOST_CHECK_CLOSE(explicit_div_p_u, ans, close_enough);
@@ -1050,7 +1050,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
         const double refcoeff_div_m = 77.0;
         const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
-                refcoeff_div_m, Eigen::Vector3d::Zero());
+                refcoeff_div_m, Vector3r::Zero());
         const double ans
             = 49409.670159954180179078803321626238490759844350764069895944L;
         BOOST_CHECK_CLOSE(explicit_div_p_u, ans, close_enough);
@@ -1058,7 +1058,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
 
     /* Explicit operator differs for nonzero refcoeff */
     {
-        const Eigen::Vector3d refcoeff_grad_rho(77.0, 88.0, 99.0);
+        const Vector3r refcoeff_grad_rho(77.0, 88.0, 99.0);
         const double explicit_div_p_u = rholt::explicit_div_p_u(
                 rho, grad_rho, m, div_m, p, grad_p,
                 0, refcoeff_grad_rho);
@@ -1070,7 +1070,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_p_u )
     /* Ensure the coefficient calculations are correct */
     {
         const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const Vector3r m(144.0, 233.0, 377.0);
         const double p      = 55.0;
 
         BOOST_CHECK_CLOSE(rholt::explicit_div_p_u_refcoeff_div_m(
@@ -1096,11 +1096,11 @@ BOOST_AUTO_TEST_CASE( rholt_grad_p )
     /* Should recover the full operator when no refcoeffs are used */
     /* and the result is appropriately augmented by a grad_e term. */
     {
-        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+        const Vector3r ans = (gamma - 1)*grad_e
             + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
-                                     0, Eigen::Vector3d::Zero());
+                                     0, Vector3r::Zero());
 
-        const Eigen::Vector3d grad_p_ans(
+        const Vector3r grad_p_ans(
                 5453.5209639604035869584122627487425816813409506343630929293L,
                 3086.9691968926047335425739267829758568639555587282859345292L,
                 1999.8806276135462562543621611330864774644251338499615213427L);
@@ -1112,13 +1112,13 @@ BOOST_AUTO_TEST_CASE( rholt_grad_p )
     /* Explicit operator differs when refcoeffs in use */
     {
         const double refcoeff_grad_rho = 7;
-        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+        const Vector3r ans = (gamma - 1)*grad_e
             + (gamma - 1)/2 * refcoeff_grad_rho * grad_rho
             + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
                                      refcoeff_grad_rho,
-                                     Eigen::Vector3d::Zero());
+                                     Vector3r::Zero());
 
-        const Eigen::Vector3d grad_p_ans(
+        const Vector3r grad_p_ans(
                 5453.5209639604035869584122627487425816813409506343630929293L,
                 3086.9691968926047335425739267829758568639555587282859345292L,
                 1999.8806276135462562543621611330864774644251338499615213427L);
@@ -1129,13 +1129,13 @@ BOOST_AUTO_TEST_CASE( rholt_grad_p )
 
     /* Explicit operator differs when refcoeffs in use */
     {
-        const Eigen::Vector3d refcoeff_grad_m(2, 3, 5);
-        const Eigen::Vector3d ans = (gamma - 1)*grad_e
+        const Vector3r refcoeff_grad_m(2, 3, 5);
+        const Vector3r ans = (gamma - 1)*grad_e
             - (gamma - 1)*grad_m.transpose()*refcoeff_grad_m
             + rholt::explicit_grad_p(gamma, rho, grad_rho, m, grad_m,
                                      0, refcoeff_grad_m);
 
-        const Eigen::Vector3d grad_p_ans(
+        const Vector3r grad_p_ans(
                 5453.5209639604035869584122627487425816813409506343630929293L,
                 3086.9691968926047335425739267829758568639555587282859345292L,
                 1999.8806276135462562543621611330864774644251338499615213427L);
@@ -1147,7 +1147,7 @@ BOOST_AUTO_TEST_CASE( rholt_grad_p )
     /* Ensure the coefficient calculations are correct */
     {
         const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const Vector3r m(144.0, 233.0, 377.0);
 
         BOOST_CHECK_CLOSE(rholt::explicit_grad_p_refcoeff_grad_rho(rho, m),
             217154.0L/4489.0L,
@@ -1176,7 +1176,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     using namespace suzerain;
     rholt::p_T_mu_lambda(
@@ -1190,7 +1190,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 
         const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
-                0, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+                0, Vector3r::Zero(), Vector3r::Zero());
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
     }
 
@@ -1199,7 +1199,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
         const double refcoeff_div_m = 55.0;
         const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
-                refcoeff_div_m, Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero());
+                refcoeff_div_m, Vector3r::Zero(), Vector3r::Zero());
         const double ans
             = -65880.506938325895048508512305320892009689307094210417904597L;
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
@@ -1207,10 +1207,10 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
 
     /* Explicit operator differs when refcoeffs in use */
     {
-        const Eigen::Vector3d refcoeff_grad_rho(55.0, 66.0, 77.0);
+        const Vector3r refcoeff_grad_rho(55.0, 66.0, 77.0);
         const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
-                0, refcoeff_grad_rho, Eigen::Vector3d::Zero());
+                0, refcoeff_grad_rho, Vector3r::Zero());
         const double ans
             = -146826.91842850714333752812118812154805540229472889287189066L;
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
@@ -1219,10 +1219,10 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
     /* Explicit operator differs when refcoeffs in use */
     /* Odd looking 1/gamma factors due to removing gamma from refcoeff */
     {
-        const Eigen::Vector3d refcoeff_grad_e(55/gamma, 66/gamma, 77/gamma);
+        const Vector3r refcoeff_grad_e(55/gamma, 66/gamma, 77/gamma);
         const double div_e_plus_p_u = rholt::explicit_div_e_plus_p_u(
                 gamma, rho, grad_rho, m, div_m, grad_m, e, grad_e, p,
-                0, Eigen::Vector3d::Zero(), refcoeff_grad_e);
+                0, Vector3r::Zero(), refcoeff_grad_e);
         const double ans
             = -1.7876309184285071433375281211881215480554022947288928718907e6L;
         BOOST_CHECK_CLOSE(div_e_plus_p_u, ans, close_enough);
@@ -1232,7 +1232,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_e_plus_p_u )
     /* Odd looking 1/gamma factors due to removing gamma from refcoeff */
     {
         const double rho    = 67.0;
-        const Eigen::Vector3d m(144.0, 233.0, 377.0);
+        const Vector3r m(144.0, 233.0, 377.0);
         const double e      = 55.0;
         const double p      = (gamma-1)*(e - m.squaredNorm()/(2*rho));
 
@@ -1280,23 +1280,23 @@ BOOST_AUTO_TEST_CASE( rholt_div_tau_u )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
             p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 
-    const Eigen::Vector3d u = rholt::u(rho, m);
+    const Vector3r u = rholt::u(rho, m);
     const double div_u = rholt::div_u(
             rho, grad_rho, m, div_m);
-    const Eigen::Matrix3d grad_u = rholt::grad_u(
+    const Matrix3r grad_u = rholt::grad_u(
             rho, grad_rho, m, grad_m);
-    const Eigen::Vector3d div_grad_u = rholt::div_grad_u(
+    const Vector3r div_grad_u = rholt::div_grad_u(
             rho, grad_rho, div_grad_rho, m, grad_m, div_grad_m);
-    const Eigen::Vector3d grad_div_u = rholt::grad_div_u(
+    const Vector3r grad_div_u = rholt::grad_div_u(
             rho, grad_rho, grad_grad_rho, m, div_m, grad_m, grad_div_m);
-    const Eigen::Matrix3d tau = rholt::tau(mu, lambda, div_u, grad_u);
-    const Eigen::Vector3d div_tau = rholt::div_tau(
+    const Matrix3r tau = rholt::tau(mu, lambda, div_u, grad_u);
+    const Vector3r div_tau = rholt::div_tau(
             mu, grad_mu, lambda, grad_lambda,
             div_u, grad_u, div_grad_u, grad_div_u);
 
@@ -1321,7 +1321,7 @@ BOOST_AUTO_TEST_CASE( rholt_div_mu_grad_T )
     const double gamma = 1.4;
 
     double p, T, mu, lambda;
-    Eigen::Vector3d grad_p, grad_T, grad_mu, grad_lambda;
+    Vector3r grad_p, grad_T, grad_mu, grad_lambda;
 
     suzerain::rholt::p_T_mu_lambda(
             alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
@@ -1354,14 +1354,14 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 
     /* Expected results found using test_rholt.sage */
     const double close_enough = std::numeric_limits<double>::epsilon()*1.0e3;
-    const Eigen::Vector3d ans(
+    const Vector3r ans(
             - 139.62394416218589511382305374934119093270491143228219517924L,
             - 196.62019324654648600809920433959614291380888927326388185922L,
              1352.1114315042037165058005031972730396574030986356606221464L );
 
     /* Compute using div_rho_inverse_m_outer_m */
     {
-        const Eigen::Vector3d div_rho_inverse_m_outer_m
+        const Vector3r div_rho_inverse_m_outer_m
             = suzerain::rholt::div_rho_inverse_m_outer_m(
                     rho, grad_rho, m, div_m, grad_m);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0), ans(0), close_enough);
@@ -1371,12 +1371,12 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 
     /* Compute using div_u_outer_m */
     {
-        const Eigen::Vector3d u = suzerain::rholt::u(
+        const Vector3r u = suzerain::rholt::u(
                 rho, m);
         const double div_u = suzerain::rholt::div_u(
                 rho, grad_rho, m, div_m);
 
-        const Eigen::Vector3d div_u_outer_m
+        const Vector3r div_u_outer_m
             = suzerain::rholt::div_u_outer_m(
                     m, grad_m, u, div_u);
 
@@ -1387,12 +1387,12 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 
     /* Compute using explicit_div_rho_inverse_m_outer_m without refs */
     {
-        const Eigen::Vector3d u = suzerain::rholt::u(
+        const Vector3r u = suzerain::rholt::u(
                 rho, m);
-        const Eigen::Vector3d div_rho_inverse_m_outer_m
+        const Vector3r div_rho_inverse_m_outer_m
             = suzerain::rholt::explicit_div_rho_inverse_m_outer_m(
                     grad_rho, div_m, grad_m, u,
-                    Eigen::Vector3d::Zero(), Eigen::Matrix3d::Zero());
+                    Vector3r::Zero(), Matrix3r::Zero());
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0), ans(0), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1), ans(1), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(2), ans(2), close_enough);
@@ -1400,14 +1400,14 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 
     /* Compute using explicit_div_rho_inverse_m_outer_m with vector ref */
     {
-        const Eigen::Vector3d u = suzerain::rholt::u(
+        const Vector3r u = suzerain::rholt::u(
                 rho, m);
-        const Eigen::Vector3d uref(7, 11, 13);
-        const Eigen::Vector3d div_rho_inverse_m_outer_m
+        const Vector3r uref(7, 11, 13);
+        const Vector3r div_rho_inverse_m_outer_m
             = suzerain::rholt::explicit_div_rho_inverse_m_outer_m(
                     grad_rho, div_m, grad_m, u,
-                    uref, Eigen::Matrix3d::Zero());
-        const Eigen::Vector3d refadjust = grad_m*uref + div_m*uref;
+                    uref, Matrix3r::Zero());
+        const Vector3r refadjust = grad_m*uref + div_m*uref;
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0),
                           ans(0) - refadjust(0), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1),
@@ -1418,14 +1418,14 @@ BOOST_AUTO_TEST_CASE( rholt_div_rho_inverse_m_outer_m )
 
     /* Compute using explicit_div_rho_inverse_m_outer_m with tensor ref */
     {
-        const Eigen::Vector3d u = suzerain::rholt::u(
+        const Vector3r u = suzerain::rholt::u(
                 rho, m);
-        const Eigen::Vector3d uref(7, 11, 13);
-        const Eigen::Vector3d div_rho_inverse_m_outer_m
+        const Vector3r uref(7, 11, 13);
+        const Vector3r div_rho_inverse_m_outer_m
             = suzerain::rholt::explicit_div_rho_inverse_m_outer_m(
                     grad_rho, div_m, grad_m, u,
-                    Eigen::Vector3d::Zero(), uref*uref.transpose());
-        const Eigen::Vector3d refadjust = -uref*uref.transpose()*grad_rho;
+                    Vector3r::Zero(), uref*uref.transpose());
+        const Vector3r refadjust = -uref*uref.transpose()*grad_rho;
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(0),
                           ans(0) - refadjust(0), close_enough);
         BOOST_CHECK_CLOSE(div_rho_inverse_m_outer_m(1),

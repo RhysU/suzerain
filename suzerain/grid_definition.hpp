@@ -148,7 +148,7 @@ public:
      * \f$ P[0] \f$ is the grid extent in the X direction and \f$ P[1] \f$  is
      * the grid extent in the Z direction.
      */
-    Eigen::Vector2i P;
+    Vector2i P;
 
     /**
      * The B-spline basis order plus one.  For example, piecewise cubics have

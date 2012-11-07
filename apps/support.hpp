@@ -401,10 +401,10 @@ static void load_line(const esio_handle h, ArrayXr &line,
  * optional first template parameter may be specified to provide a number of
  * fields known at compile time.
  */
-template <int NFields = Eigen::Dynamic>
+template <int NFields = Dynamic>
 struct physical_view {
 
-    BOOST_STATIC_ASSERT(NFields == Eigen::Dynamic || NFields >= 0);
+    BOOST_STATIC_ASSERT(NFields == Dynamic || NFields >= 0);
 
     /**
      * In physical space, we'll employ a view to reshape the 4D row-major (F,
@@ -412,25 +412,23 @@ struct physical_view {
      * know F a priori.  Reducing the dimensionality encourages linear access
      * and eases indexing overhead.
      */
-    typedef Eigen::Map<
-                Eigen::Array<real_t, NFields, Eigen::Dynamic, Eigen::RowMajor>,
-                Eigen::Unaligned, // FIXME Defensive but likely unnecessary
-                Eigen::OuterStride<Eigen::Dynamic>
+    typedef Map<
+                Array<real_t, NFields, Dynamic, RowMajor>,
+                Unaligned, // FIXME Defensive but likely unnecessary
+                OuterStride<Dynamic>
             > type;
 
     /**
      * Create a view instance given state storage and sufficient information
      * about the parallel decomposition.  The default value of \c nfields may
-     * only be used when the template parameter \c NFields was not
-     * Eigen::Dynamic.
+     * only be used when the template parameter \c NFields was not Dynamic.
      */
     static inline type create(
             const pencil_grid &dgrid,
             contiguous_state<4,complex_t> &state,
             const int nfields = NFields)
     {
-        if (NFields == Eigen::Dynamic || NFields == nfields) {
-            using Eigen::OuterStride;
+        if (NFields == Dynamic || NFields == nfields) {
             type retval(reinterpret_cast<real_t *>(state.origin()),
                         nfields,                            // F
                         dgrid.local_physical_extent.prod(), // Y*Z*X

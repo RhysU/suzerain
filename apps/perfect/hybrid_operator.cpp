@@ -443,16 +443,16 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 # define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
 # define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
 #endif
-    SCRATCH_C(       ArrayXXc, buf,     A.ld,      A.n); // For packc calls
-    SCRATCH_C(       ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
-    SCRATCH_C(       ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
-    SCRATCH_I(Eigen::ArrayXi,  ipiv,    A.N);            // Linear solve...
-    SCRATCH_R(       ArrayXr,  r,       A.N);
-    SCRATCH_R(       ArrayXr,  c,       A.N);
-    SCRATCH_C(       ArrayXc,  b,       A.N);
-    SCRATCH_C(       ArrayXc,  x,       A.N);
-    SCRATCH_C(       ArrayXc,  work,  2*A.N);
-    SCRATCH_R(       ArrayXr,  rwork,   A.N);
+    SCRATCH_C(ArrayXXc, buf,     A.ld,      A.n); // For packc calls
+    SCRATCH_C(ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
+    SCRATCH_C(ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
+    SCRATCH_I(ArrayXi,  ipiv,    A.N);            // Linear solve...
+    SCRATCH_R(ArrayXr,  r,       A.N);
+    SCRATCH_R(ArrayXr,  c,       A.N);
+    SCRATCH_C(ArrayXc,  b,       A.N);
+    SCRATCH_C(ArrayXc,  x,       A.N);
+    SCRATCH_C(ArrayXc,  work,  2*A.N);
+    SCRATCH_R(ArrayXr,  rwork,   A.N);
 #undef SCRATCH_C
 #undef SCRATCH_R
 #undef SCRATCH_I

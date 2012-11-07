@@ -216,18 +216,10 @@ typedef std::complex<real_t> complex_t;
 /** @} */
 
 // Bring ubiquitous smart pointer definitions into this namespace
-
-/** \namespace suzerain */
-using boost::shared_ptr;
-
-/** \namespace suzerain */
-using boost::scoped_ptr;
-
-/** \namespace suzerain */
-using boost::shared_array;
-
-/** \namespace suzerain */
-using boost::scoped_array;
+using boost::scoped_array;  /**< \namespace suzerain */
+using boost::scoped_ptr;    /**< \namespace suzerain */
+using boost::shared_array;  /**< \namespace suzerain */
+using boost::shared_ptr;    /**< \namespace suzerain */
 
 /** \weakgroup EigenTypedefs Typedefs and declarations to simplify Eigen usage.
  *
@@ -241,27 +233,40 @@ using boost::scoped_array;
  * @{
  */
 
+// Bring common Eigen names into this namespace
+using Eigen::Array;        /**< \namespace suzerain */
+using Eigen::ColMajor;     /**< \namespace suzerain */
+using Eigen::Dynamic;      /**< \namespace suzerain */
+using Eigen::InnerStride;  /**< \namespace suzerain */
+using Eigen::Map;          /**< \namespace suzerain */
+using Eigen::Matrix;       /**< \namespace suzerain */
+using Eigen::NoChange;     /**< \namespace suzerain */
+using Eigen::OuterStride;  /**< \namespace suzerain */
+using Eigen::RowMajor;     /**< \namespace suzerain */
+using Eigen::Sequential;   /**< \namespace suzerain */
+using Eigen::Unaligned;    /**< \namespace suzerain */
+
 /**
  * Typedefs for \ref real_t, column-major <a
  * href="http://eigen.tuxfamily.org/">Eigen</a> matrices.
  * @{
  */
-typedef Eigen::Matrix<    real_t,              1,              1, Eigen::ColMajor> Matrix1r ;
-typedef Eigen::Matrix<    real_t,              2,              2, Eigen::ColMajor> Matrix2r ;
-typedef Eigen::Matrix<    real_t,              3,              3, Eigen::ColMajor> Matrix3r ;
-typedef Eigen::Matrix<    real_t,              4,              4, Eigen::ColMajor> Matrix4r ;
-typedef Eigen::Matrix<    real_t,              5,              5, Eigen::ColMajor> Matrix5r ;
-typedef Eigen::Matrix<    real_t,              1, Eigen::Dynamic, Eigen::ColMajor> Matrix1Xr;
-typedef Eigen::Matrix<    real_t,              2, Eigen::Dynamic, Eigen::ColMajor> Matrix2Xr;
-typedef Eigen::Matrix<    real_t,              3, Eigen::Dynamic, Eigen::ColMajor> Matrix3Xr;
-typedef Eigen::Matrix<    real_t,              4, Eigen::Dynamic, Eigen::ColMajor> Matrix4Xr;
-typedef Eigen::Matrix<    real_t,              5, Eigen::Dynamic, Eigen::ColMajor> Matrix5Xr;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic,              1, Eigen::ColMajor> MatrixX1r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic,              2, Eigen::ColMajor> MatrixX2r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic,              3, Eigen::ColMajor> MatrixX3r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic,              4, Eigen::ColMajor> MatrixX4r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic,              5, Eigen::ColMajor> MatrixX5r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixXXr;
+typedef Matrix<    real_t,       1,       1, ColMajor> Matrix1r ;
+typedef Matrix<    real_t,       2,       2, ColMajor> Matrix2r ;
+typedef Matrix<    real_t,       3,       3, ColMajor> Matrix3r ;
+typedef Matrix<    real_t,       4,       4, ColMajor> Matrix4r ;
+typedef Matrix<    real_t,       5,       5, ColMajor> Matrix5r ;
+typedef Matrix<    real_t,       1, Dynamic, ColMajor> Matrix1Xr;
+typedef Matrix<    real_t,       2, Dynamic, ColMajor> Matrix2Xr;
+typedef Matrix<    real_t,       3, Dynamic, ColMajor> Matrix3Xr;
+typedef Matrix<    real_t,       4, Dynamic, ColMajor> Matrix4Xr;
+typedef Matrix<    real_t,       5, Dynamic, ColMajor> Matrix5Xr;
+typedef Matrix<    real_t, Dynamic,       1, ColMajor> MatrixX1r;
+typedef Matrix<    real_t, Dynamic,       2, ColMajor> MatrixX2r;
+typedef Matrix<    real_t, Dynamic,       3, ColMajor> MatrixX3r;
+typedef Matrix<    real_t, Dynamic,       4, ColMajor> MatrixX4r;
+typedef Matrix<    real_t, Dynamic,       5, ColMajor> MatrixX5r;
+typedef Matrix<    real_t, Dynamic, Dynamic, ColMajor> MatrixXXr;
 /** @} */
 
 /**
@@ -269,22 +274,22 @@ typedef Eigen::Matrix<    real_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * href="http://eigen.tuxfamily.org/">Eigen</a> matrices.
  * @{
  */
-typedef Eigen::Matrix< complex_t,              1,              1, Eigen::ColMajor> Matrix1c ;
-typedef Eigen::Matrix< complex_t,              2,              2, Eigen::ColMajor> Matrix2c ;
-typedef Eigen::Matrix< complex_t,              3,              3, Eigen::ColMajor> Matrix3c ;
-typedef Eigen::Matrix< complex_t,              4,              4, Eigen::ColMajor> Matrix4c ;
-typedef Eigen::Matrix< complex_t,              5,              5, Eigen::ColMajor> Matrix5c ;
-typedef Eigen::Matrix< complex_t,              1, Eigen::Dynamic, Eigen::ColMajor> Matrix1Xc;
-typedef Eigen::Matrix< complex_t,              2, Eigen::Dynamic, Eigen::ColMajor> Matrix2Xc;
-typedef Eigen::Matrix< complex_t,              3, Eigen::Dynamic, Eigen::ColMajor> Matrix3Xc;
-typedef Eigen::Matrix< complex_t,              4, Eigen::Dynamic, Eigen::ColMajor> Matrix4Xc;
-typedef Eigen::Matrix< complex_t,              5, Eigen::Dynamic, Eigen::ColMajor> Matrix5Xc;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic,              1, Eigen::ColMajor> MatrixX1c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic,              2, Eigen::ColMajor> MatrixX2c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic,              3, Eigen::ColMajor> MatrixX3c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic,              4, Eigen::ColMajor> MatrixX4c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic,              5, Eigen::ColMajor> MatrixX5c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixXXc;
+typedef Matrix< complex_t,       1,       1, ColMajor> Matrix1c ;
+typedef Matrix< complex_t,       2,       2, ColMajor> Matrix2c ;
+typedef Matrix< complex_t,       3,       3, ColMajor> Matrix3c ;
+typedef Matrix< complex_t,       4,       4, ColMajor> Matrix4c ;
+typedef Matrix< complex_t,       5,       5, ColMajor> Matrix5c ;
+typedef Matrix< complex_t,       1, Dynamic, ColMajor> Matrix1Xc;
+typedef Matrix< complex_t,       2, Dynamic, ColMajor> Matrix2Xc;
+typedef Matrix< complex_t,       3, Dynamic, ColMajor> Matrix3Xc;
+typedef Matrix< complex_t,       4, Dynamic, ColMajor> Matrix4Xc;
+typedef Matrix< complex_t,       5, Dynamic, ColMajor> Matrix5Xc;
+typedef Matrix< complex_t, Dynamic,       1, ColMajor> MatrixX1c;
+typedef Matrix< complex_t, Dynamic,       2, ColMajor> MatrixX2c;
+typedef Matrix< complex_t, Dynamic,       3, ColMajor> MatrixX3c;
+typedef Matrix< complex_t, Dynamic,       4, ColMajor> MatrixX4c;
+typedef Matrix< complex_t, Dynamic,       5, ColMajor> MatrixX5c;
+typedef Matrix< complex_t, Dynamic, Dynamic, ColMajor> MatrixXXc;
 /** @} */
 
 /**
@@ -292,22 +297,22 @@ typedef Eigen::Matrix< complex_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * href="http://eigen.tuxfamily.org/">Eigen</a> matrices.
  * @{
  */
-typedef Eigen::Matrix<       int,              1,              1, Eigen::ColMajor> Matrix1i ;
-typedef Eigen::Matrix<       int,              2,              2, Eigen::ColMajor> Matrix2i ;
-typedef Eigen::Matrix<       int,              3,              3, Eigen::ColMajor> Matrix3i ;
-typedef Eigen::Matrix<       int,              4,              4, Eigen::ColMajor> Matrix4i ;
-typedef Eigen::Matrix<       int,              5,              5, Eigen::ColMajor> Matrix5i ;
-typedef Eigen::Matrix<       int,              1, Eigen::Dynamic, Eigen::ColMajor> Matrix1Xi;
-typedef Eigen::Matrix<       int,              2, Eigen::Dynamic, Eigen::ColMajor> Matrix2Xi;
-typedef Eigen::Matrix<       int,              3, Eigen::Dynamic, Eigen::ColMajor> Matrix3Xi;
-typedef Eigen::Matrix<       int,              4, Eigen::Dynamic, Eigen::ColMajor> Matrix4Xi;
-typedef Eigen::Matrix<       int,              5, Eigen::Dynamic, Eigen::ColMajor> Matrix5Xi;
-typedef Eigen::Matrix<       int, Eigen::Dynamic,              1, Eigen::ColMajor> MatrixX1i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic,              2, Eigen::ColMajor> MatrixX2i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic,              3, Eigen::ColMajor> MatrixX3i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic,              4, Eigen::ColMajor> MatrixX4i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic,              5, Eigen::ColMajor> MatrixX5i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixXXi;
+typedef Matrix<       int,       1,       1, ColMajor> Matrix1i ;
+typedef Matrix<       int,       2,       2, ColMajor> Matrix2i ;
+typedef Matrix<       int,       3,       3, ColMajor> Matrix3i ;
+typedef Matrix<       int,       4,       4, ColMajor> Matrix4i ;
+typedef Matrix<       int,       5,       5, ColMajor> Matrix5i ;
+typedef Matrix<       int,       1, Dynamic, ColMajor> Matrix1Xi;
+typedef Matrix<       int,       2, Dynamic, ColMajor> Matrix2Xi;
+typedef Matrix<       int,       3, Dynamic, ColMajor> Matrix3Xi;
+typedef Matrix<       int,       4, Dynamic, ColMajor> Matrix4Xi;
+typedef Matrix<       int,       5, Dynamic, ColMajor> Matrix5Xi;
+typedef Matrix<       int, Dynamic,       1, ColMajor> MatrixX1i;
+typedef Matrix<       int, Dynamic,       2, ColMajor> MatrixX2i;
+typedef Matrix<       int, Dynamic,       3, ColMajor> MatrixX3i;
+typedef Matrix<       int, Dynamic,       4, ColMajor> MatrixX4i;
+typedef Matrix<       int, Dynamic,       5, ColMajor> MatrixX5i;
+typedef Matrix<       int, Dynamic, Dynamic, ColMajor> MatrixXXi;
 /** @} */
 
 /**
@@ -315,23 +320,23 @@ typedef Eigen::Matrix<       int, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * href="http://eigen.tuxfamily.org/">Eigen</a> arrays.
  * @{
  */
-typedef Eigen::Array<     real_t,              1,              1, Eigen::ColMajor> Array1r ;
-typedef Eigen::Array<     real_t,              2,              1, Eigen::ColMajor> Array2r ;
-typedef Eigen::Array<     real_t,              3,              1, Eigen::ColMajor> Array3r ;
-typedef Eigen::Array<     real_t,              4,              1, Eigen::ColMajor> Array4r ;
-typedef Eigen::Array<     real_t,              5,              1, Eigen::ColMajor> Array5r ;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayXr ;
-typedef Eigen::Array<     real_t,              1, Eigen::Dynamic, Eigen::ColMajor> Array1Xr;
-typedef Eigen::Array<     real_t,              2, Eigen::Dynamic, Eigen::ColMajor> Array2Xr;
-typedef Eigen::Array<     real_t,              3, Eigen::Dynamic, Eigen::ColMajor> Array3Xr;
-typedef Eigen::Array<     real_t,              4, Eigen::Dynamic, Eigen::ColMajor> Array4Xr;
-typedef Eigen::Array<     real_t,              5, Eigen::Dynamic, Eigen::ColMajor> Array5Xr;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayX1r;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              2, Eigen::ColMajor> ArrayX2r;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              3, Eigen::ColMajor> ArrayX3r;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              4, Eigen::ColMajor> ArrayX4r;
-typedef Eigen::Array<     real_t, Eigen::Dynamic,              5, Eigen::ColMajor> ArrayX5r;
-typedef Eigen::Array<     real_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> ArrayXXr;
+typedef Array<     real_t,       1,       1, ColMajor> Array1r ;
+typedef Array<     real_t,       2,       1, ColMajor> Array2r ;
+typedef Array<     real_t,       3,       1, ColMajor> Array3r ;
+typedef Array<     real_t,       4,       1, ColMajor> Array4r ;
+typedef Array<     real_t,       5,       1, ColMajor> Array5r ;
+typedef Array<     real_t, Dynamic,       1, ColMajor> ArrayXr ;
+typedef Array<     real_t,       1, Dynamic, ColMajor> Array1Xr;
+typedef Array<     real_t,       2, Dynamic, ColMajor> Array2Xr;
+typedef Array<     real_t,       3, Dynamic, ColMajor> Array3Xr;
+typedef Array<     real_t,       4, Dynamic, ColMajor> Array4Xr;
+typedef Array<     real_t,       5, Dynamic, ColMajor> Array5Xr;
+typedef Array<     real_t, Dynamic,       1, ColMajor> ArrayX1r;
+typedef Array<     real_t, Dynamic,       2, ColMajor> ArrayX2r;
+typedef Array<     real_t, Dynamic,       3, ColMajor> ArrayX3r;
+typedef Array<     real_t, Dynamic,       4, ColMajor> ArrayX4r;
+typedef Array<     real_t, Dynamic,       5, ColMajor> ArrayX5r;
+typedef Array<     real_t, Dynamic, Dynamic, ColMajor> ArrayXXr;
 /** @} */
 
 /**
@@ -339,23 +344,23 @@ typedef Eigen::Array<     real_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * href="http://eigen.tuxfamily.org/">Eigen</a> arrays.
  * @{
  */
-typedef Eigen::Array<  complex_t,              1,              1, Eigen::ColMajor> Array1c ;
-typedef Eigen::Array<  complex_t,              2,              2, Eigen::ColMajor> Array2c ;
-typedef Eigen::Array<  complex_t,              3,              3, Eigen::ColMajor> Array3c ;
-typedef Eigen::Array<  complex_t,              4,              4, Eigen::ColMajor> Array4c ;
-typedef Eigen::Array<  complex_t,              5,              5, Eigen::ColMajor> Array5c ;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayXc ;
-typedef Eigen::Array<  complex_t,              1, Eigen::Dynamic, Eigen::ColMajor> Array1Xc;
-typedef Eigen::Array<  complex_t,              2, Eigen::Dynamic, Eigen::ColMajor> Array2Xc;
-typedef Eigen::Array<  complex_t,              3, Eigen::Dynamic, Eigen::ColMajor> Array3Xc;
-typedef Eigen::Array<  complex_t,              4, Eigen::Dynamic, Eigen::ColMajor> Array4Xc;
-typedef Eigen::Array<  complex_t,              5, Eigen::Dynamic, Eigen::ColMajor> Array5Xc;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayX1c;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              2, Eigen::ColMajor> ArrayX2c;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              3, Eigen::ColMajor> ArrayX3c;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              4, Eigen::ColMajor> ArrayX4c;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic,              5, Eigen::ColMajor> ArrayX5c;
-typedef Eigen::Array<  complex_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> ArrayXXc;
+typedef Array<  complex_t,       1,       1, ColMajor> Array1c ;
+typedef Array<  complex_t,       2,       2, ColMajor> Array2c ;
+typedef Array<  complex_t,       3,       3, ColMajor> Array3c ;
+typedef Array<  complex_t,       4,       4, ColMajor> Array4c ;
+typedef Array<  complex_t,       5,       5, ColMajor> Array5c ;
+typedef Array<  complex_t, Dynamic,       1, ColMajor> ArrayXc ;
+typedef Array<  complex_t,       1, Dynamic, ColMajor> Array1Xc;
+typedef Array<  complex_t,       2, Dynamic, ColMajor> Array2Xc;
+typedef Array<  complex_t,       3, Dynamic, ColMajor> Array3Xc;
+typedef Array<  complex_t,       4, Dynamic, ColMajor> Array4Xc;
+typedef Array<  complex_t,       5, Dynamic, ColMajor> Array5Xc;
+typedef Array<  complex_t, Dynamic,       1, ColMajor> ArrayX1c;
+typedef Array<  complex_t, Dynamic,       2, ColMajor> ArrayX2c;
+typedef Array<  complex_t, Dynamic,       3, ColMajor> ArrayX3c;
+typedef Array<  complex_t, Dynamic,       4, ColMajor> ArrayX4c;
+typedef Array<  complex_t, Dynamic,       5, ColMajor> ArrayX5c;
+typedef Array<  complex_t, Dynamic, Dynamic, ColMajor> ArrayXXc;
 /** @} */
 
 /**
@@ -363,23 +368,23 @@ typedef Eigen::Array<  complex_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * href="http://eigen.tuxfamily.org/">Eigen</a> arrays.
  * @{
  */
-typedef Eigen::Array<        int,              1,              1, Eigen::ColMajor> Array1i ;
-typedef Eigen::Array<        int,              2,              1, Eigen::ColMajor> Array2i ;
-typedef Eigen::Array<        int,              3,              1, Eigen::ColMajor> Array3i ;
-typedef Eigen::Array<        int,              4,              1, Eigen::ColMajor> Array4i ;
-typedef Eigen::Array<        int,              5,              1, Eigen::ColMajor> Array5i ;
-typedef Eigen::Array<        int, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayXi ;
-typedef Eigen::Array<        int,              1, Eigen::Dynamic, Eigen::ColMajor> Array1Xi;
-typedef Eigen::Array<        int,              2, Eigen::Dynamic, Eigen::ColMajor> Array2Xi;
-typedef Eigen::Array<        int,              3, Eigen::Dynamic, Eigen::ColMajor> Array3Xi;
-typedef Eigen::Array<        int,              4, Eigen::Dynamic, Eigen::ColMajor> Array4Xi;
-typedef Eigen::Array<        int,              5, Eigen::Dynamic, Eigen::ColMajor> Array5Xi;
-typedef Eigen::Array<        int, Eigen::Dynamic,              1, Eigen::ColMajor> ArrayX1i;
-typedef Eigen::Array<        int, Eigen::Dynamic,              2, Eigen::ColMajor> ArrayX2i;
-typedef Eigen::Array<        int, Eigen::Dynamic,              3, Eigen::ColMajor> ArrayX3i;
-typedef Eigen::Array<        int, Eigen::Dynamic,              4, Eigen::ColMajor> ArrayX4i;
-typedef Eigen::Array<        int, Eigen::Dynamic,              5, Eigen::ColMajor> ArrayX5i;
-typedef Eigen::Array<        int, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> ArrayXXi;
+typedef Array<        int,       1,       1, ColMajor> Array1i ;
+typedef Array<        int,       2,       1, ColMajor> Array2i ;
+typedef Array<        int,       3,       1, ColMajor> Array3i ;
+typedef Array<        int,       4,       1, ColMajor> Array4i ;
+typedef Array<        int,       5,       1, ColMajor> Array5i ;
+typedef Array<        int, Dynamic,       1, ColMajor> ArrayXi ;
+typedef Array<        int,       1, Dynamic, ColMajor> Array1Xi;
+typedef Array<        int,       2, Dynamic, ColMajor> Array2Xi;
+typedef Array<        int,       3, Dynamic, ColMajor> Array3Xi;
+typedef Array<        int,       4, Dynamic, ColMajor> Array4Xi;
+typedef Array<        int,       5, Dynamic, ColMajor> Array5Xi;
+typedef Array<        int, Dynamic,       1, ColMajor> ArrayX1i;
+typedef Array<        int, Dynamic,       2, ColMajor> ArrayX2i;
+typedef Array<        int, Dynamic,       3, ColMajor> ArrayX3i;
+typedef Array<        int, Dynamic,       4, ColMajor> ArrayX4i;
+typedef Array<        int, Dynamic,       5, ColMajor> ArrayX5i;
+typedef Array<        int, Dynamic, Dynamic, ColMajor> ArrayXXi;
 /** @} */
 
 /**
@@ -387,12 +392,12 @@ typedef Eigen::Array<        int, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajo
  * column vectors.
  * @{
  */
-typedef Eigen::Matrix<    real_t,              1, 1, Eigen::ColMajor> Vector1r;
-typedef Eigen::Matrix<    real_t,              2, 1, Eigen::ColMajor> Vector2r;
-typedef Eigen::Matrix<    real_t,              3, 1, Eigen::ColMajor> Vector3r;
-typedef Eigen::Matrix<    real_t,              4, 1, Eigen::ColMajor> Vector4r;
-typedef Eigen::Matrix<    real_t,              5, 1, Eigen::ColMajor> Vector5r;
-typedef Eigen::Matrix<    real_t, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXr;
+typedef Matrix<    real_t,       1, 1, ColMajor> Vector1r;
+typedef Matrix<    real_t,       2, 1, ColMajor> Vector2r;
+typedef Matrix<    real_t,       3, 1, ColMajor> Vector3r;
+typedef Matrix<    real_t,       4, 1, ColMajor> Vector4r;
+typedef Matrix<    real_t,       5, 1, ColMajor> Vector5r;
+typedef Matrix<    real_t, Dynamic, 1, ColMajor> VectorXr;
 /** @} */
 
 /**
@@ -400,12 +405,12 @@ typedef Eigen::Matrix<    real_t, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXr;
  * column vectors.
  * @{
  */
-typedef Eigen::Matrix< complex_t,              1, 1, Eigen::ColMajor> Vector1c;
-typedef Eigen::Matrix< complex_t,              2, 1, Eigen::ColMajor> Vector2c;
-typedef Eigen::Matrix< complex_t,              3, 1, Eigen::ColMajor> Vector3c;
-typedef Eigen::Matrix< complex_t,              4, 1, Eigen::ColMajor> Vector4c;
-typedef Eigen::Matrix< complex_t,              5, 1, Eigen::ColMajor> Vector5c;
-typedef Eigen::Matrix< complex_t, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXc;
+typedef Matrix< complex_t,       1, 1, ColMajor> Vector1c;
+typedef Matrix< complex_t,       2, 1, ColMajor> Vector2c;
+typedef Matrix< complex_t,       3, 1, ColMajor> Vector3c;
+typedef Matrix< complex_t,       4, 1, ColMajor> Vector4c;
+typedef Matrix< complex_t,       5, 1, ColMajor> Vector5c;
+typedef Matrix< complex_t, Dynamic, 1, ColMajor> VectorXc;
 /** @} */
 
 /**
@@ -413,17 +418,13 @@ typedef Eigen::Matrix< complex_t, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXc;
  * column vectors.
  * @{
  */
-typedef Eigen::Matrix<       int,              1, 1, Eigen::ColMajor> Vector1i;
-typedef Eigen::Matrix<       int,              2, 1, Eigen::ColMajor> Vector2i;
-typedef Eigen::Matrix<       int,              3, 1, Eigen::ColMajor> Vector3i;
-typedef Eigen::Matrix<       int,              4, 1, Eigen::ColMajor> Vector4i;
-typedef Eigen::Matrix<       int,              5, 1, Eigen::ColMajor> Vector5i;
-typedef Eigen::Matrix<       int, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXi;
+typedef Matrix<       int,       1, 1, ColMajor> Vector1i;
+typedef Matrix<       int,       2, 1, ColMajor> Vector2i;
+typedef Matrix<       int,       3, 1, ColMajor> Vector3i;
+typedef Matrix<       int,       4, 1, ColMajor> Vector4i;
+typedef Matrix<       int,       5, 1, ColMajor> Vector5i;
+typedef Matrix<       int, Dynamic, 1, ColMajor> VectorXi;
 /** @} */
-
-// Make <code>suzerain::Map</code> behave like <code>Eigen::Map</code>.
-/** \namespace suzerain */
-using Eigen::Map;
 
 /** @} */
 

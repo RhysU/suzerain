@@ -281,8 +281,7 @@ void store(const esio_handle h,
 
     // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
     if (grid.dN.x() > 1) {
-        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
-                                  grid.dN.x(), 0, grid.dN.x() - 1);
+        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
         rbuf *= grid.L.x() / grid.dN.x();
         rbuf -= grid.L.x() / 2;
     } else {
@@ -294,8 +293,7 @@ void store(const esio_handle h,
 
     // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
     if (grid.dN.z() > 1) {
-        rbuf = ArrayXr::LinSpaced(Eigen::Sequential,
-                                  grid.dN.z(), 0, grid.dN.z() - 1);
+        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
         rbuf *= grid.L.z() / grid.dN.z();
         rbuf -= grid.L.z() / 2;
     } else {
@@ -432,7 +430,7 @@ real_t create(const int ndof,
 ////FIXME: Knot vectors are non-increasing for moderate htdelta
 /// FIXME: See https://savannah.gnu.org/bugs/index.php?34361
 ////// Compute collocation point locations using ndof and htdelta
-////Eigen::ArrayXd abscissae(ndof);
+////ArrayXr abscissae(ndof);
 ////math::linspace(0.0, 1.0, abscissae.size(), abscissae.data());
 ////for (int i = 0; i < abscissae.size(); ++i) {
 ////    abscissae[i] = suzerain_htstretch2(htdelta, 1.0, abscissae[i]);
@@ -455,7 +453,7 @@ real_t create(const int ndof,
 ////return abserr;
 
     // Compute breakpoint point locations using ndof and htdelta
-    Eigen::ArrayXd breakpoints(ndof - k + 2);
+    ArrayXr breakpoints(ndof - k + 2);
     math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
     for (int i = 0; i < breakpoints.size(); ++i) {
         breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
@@ -488,7 +486,7 @@ void store(const esio_handle h,
 
     DEBUG0("Storing B-spline knot details");
 
-    Eigen::ArrayXd buf(b->nknot());
+    ArrayXr buf(b->nknot());
 
     for (int i = 0; i < b->nknot(); ++i) buf[i] = b->knot(i);
     esio_line_establish(h, b->nknot(), 0, (procid == 0 ? b->nknot() : 0));
@@ -917,7 +915,7 @@ void load_coefficients(const esio_handle h,
         if (!bsplines_same) {
 
             // Step 0: Obtain collocation points for new basis
-            Eigen::ArrayXd points(b.n());
+            ArrayXr points(b.n());
             for (int k = 0; k < b.n(); ++k) points[k] = b.collocation_point(k);
 
             // Step 1: Affine transformation of points into old basis domain

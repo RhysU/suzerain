@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE( to_yxz )
                           boost::assign::list_of('y')('x')('z'));
     }
     {
-        Eigen::Vector3i xyz(1,2,3);
+        suzerain::Vector3i xyz(1,2,3);
         BOOST_CHECK_EQUAL(to_yxz(xyz),
                           boost::assign::list_of(2)(1)(3));
     }
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE( to_yxz )
                           boost::assign::list_of('w')('y')('x')('z'));
     }
     {
-        Eigen::Vector3i xyz(1,2,3);
+        suzerain::Vector3i xyz(1,2,3);
         BOOST_CHECK_EQUAL(to_yxz(4,xyz),
                           boost::assign::list_of(4)(2)(1)(3));
     }
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE( to_xzy )
                           boost::assign::list_of('x')('z')('y'));
     }
     {
-        Eigen::Vector3i xyz(1,2,3);
+        suzerain::Vector3i xyz(1,2,3);
         BOOST_CHECK_EQUAL(to_xzy(xyz),
                           boost::assign::list_of(1)(3)(2));
     }
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( to_xzy )
                           boost::assign::list_of('w')('x')('z')('y'));
     }
     {
-        Eigen::Vector3i xyz(1,2,3);
+        suzerain::Vector3i xyz(1,2,3);
         BOOST_CHECK_EQUAL(to_xzy(4, xyz),
                           boost::assign::list_of(4)(1)(3)(2));
     }

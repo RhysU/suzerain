@@ -1626,9 +1626,9 @@ public:
         key.append(name);
 
         int cglobal, bglobal, aglobal;
-        if (ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
-                                            &cglobal, &bglobal, &aglobal)
-            && (   EigenArray::ColsAtCompileTime == Eigen::Dynamic
+        if (   ESIO_SUCCESS == esio_field_size(esioh, key.c_str(),
+                                               &cglobal, &bglobal, &aglobal)
+            && (   EigenArray::ColsAtCompileTime == Dynamic
                 || dat.cols() == bglobal)) {
             dat.resize(aglobal, bglobal);
             esio_field_establish(esioh,
@@ -1655,7 +1655,7 @@ void load(const esio_handle h, mean& m)
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
                                         &cglobal, &bglobal, &aglobal)) {
-        m.storage.resize(aglobal, Eigen::NoChange);
+        m.storage.resize(aglobal, NoChange);
         mean_loader f(h, "bar_");
         m.foreach(f);
         // m.t presumably set externally using load_time

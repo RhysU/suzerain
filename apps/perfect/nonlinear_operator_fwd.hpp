@@ -49,10 +49,10 @@ public:
 private:
 
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, 18, Eigen::ColMajor> means_t;
+    typedef Array<real_t, Dynamic, 18, ColMajor> means_t;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Eigen::Array<real_t, 26, Eigen::Dynamic, Eigen::ColMajor> refs_t;
+    typedef Array<real_t, 26, Dynamic, ColMajor> refs_t;
 
 public:
 
