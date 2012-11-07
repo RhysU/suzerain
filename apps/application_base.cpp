@@ -65,7 +65,7 @@ application_base::application_base(
               "FILE",
               description,
               this->revstr)
-    , grid()
+    , grid(make_shared<grid_definition>())
     , fftwdef(make_shared<fftw_definition>(/* rigor_fft */ fftw::measure,
                                            /* rigor_mpi */ fftw::estimate))
     , b()
@@ -83,10 +83,11 @@ application_base::application_base(
 {
 }
 
-std::string
-application_base::log4cxx_config()
+application_base::~application_base()
 {
-    return support::log4cxx_config;
+#ifdef HAVE_UNDERLING
+    underling_cleanup();
+#endif
 }
 
 std::vector<std::string>
@@ -162,11 +163,46 @@ application_base::initialize(int argc, char **argv)
     return positional;
 }
 
-application_base::~application_base()
+std::string
+application_base::log4cxx_config()
 {
-#ifdef HAVE_UNDERLING
-    underling_cleanup();
-#endif
+    return support::log4cxx_config;
+}
+
+void
+application_base::load_grid_details(esio_handle esioh, real_t& t)
+{
+    SUZERAIN_ENSURE(grid);
+
+    // Load the grid parameters from the restart file
+    support::load(esioh, *grid);
+
+    // Create the discrete B-spline operators
+    support::create(grid->N.y(), grid->k, 0.0,
+                    grid->L.y(), grid->htdelta, b, cop);
+    gop.reset(new bsplineop(*b, grid->k, SUZERAIN_BSPLINEOP_GALERKIN_L2));
+
+    // Load the simulation time
+    support::load_time(esioh, t);
+}
+
+void
+application_base::store_grid_details(esio_handle esioh, const real_t t)
+{
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(b);
+    SUZERAIN_ENSURE(cop);
+    SUZERAIN_ENSURE(gop);
+
+    support::store(esioh, *grid);
+    support::store(esioh, b, cop, gop);
+    support::store_time(esioh, t);
+}
+
+void
+application_base::establish_decomposition()
+{
+    // FIXME Implement
 }
 
 } // end namespace support

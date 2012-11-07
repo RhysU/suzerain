@@ -63,6 +63,8 @@ public:
                      const std::string &description = "",
                      const std::string &revstr = "");
 
+    virtual ~application_base();
+
     /**
      * Initialize everything, including MPI, necessary for the application.
      * Changes to default values, e.g. \ref fftwdef, or adding of additional
@@ -86,8 +88,6 @@ public:
     * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
     */
     virtual std::string log4cxx_config();
-
-    virtual ~application_base();
 
     std::string revstr;
 
@@ -121,21 +121,45 @@ public:
     shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
 
     /**
-     * Routine to load state from a restart file, establishing
-     * the appropriate grid and parallel decomposition along the way.
-     *
-     * In particular, the following are all modified:
+     * Load a grid and discrete operators from a restart file.
+     * The following are modified:
      * \li #grid
      * \li #b
      * \li #cop
      * \li #gop
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     * @param[out] t     The simulation time stored in the restart file.
+     */
+    virtual void load_grid_details(
+            esio_handle esioh,
+            real_t &t);
+
+    /**
+     * Store a grid and discrete operators to a restart file.
+     * The following are modified:
+     * \li #grid
+     * \li #b
+     * \li #cop
+     * \li #gop
+     *
+     * @param[in] esioh An ESIO handle pointing to an open restart file.
+     * @param[in] t     The simulation time to be stored in the restart file.
+     */
+    virtual void store_grid_details(
+            esio_handle esioh,
+            const real_t t);
+
+    /**
+     * Establish the parallel decomposition per #grid.  The following are modified:
      * \li #dgrid
      * \li #state_linear
      * \li #state_nonlinear
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     * @param[out] t     The simulation time stored in the restart file.
      */
-    virtual void load_restart(
-            esio_handle esioh,
-            real_t &t);
+    virtual void establish_decomposition();
 
     /**
      * Routine to save a restart file, generally called via a timecontroller.
