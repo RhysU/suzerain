@@ -108,7 +108,7 @@ static void operator_consistency(const parameters& p)
     // Initialize nonzero reference quantities for p.refndx
     // Abuses what we know about the structure of ...imexop_ref{,ld}.
     suzerain_rholut_imexop_ref r;
-    boost::scoped_array<real_t> refs(new real_t[n*NREFS]);
+    suzerain::scoped_array<real_t> refs(new real_t[n*NREFS]);
     for (int i = 0; i < (int) NREFS; ++i) {
         if (i == p.refndx) {
             for (int j = 0; j < n; ++j) {
@@ -128,8 +128,8 @@ static void operator_consistency(const parameters& p)
 
     // Allocate state storage and initialize B1 to eye(N)
     // along with a poison NaN entry whenever p.imagzero is true.
-    boost::scoped_array<complex_t> B1(new complex_t[N*N]);
-    boost::scoped_array<complex_t> B2(new complex_t[N*N]);
+    suzerain::scoped_array<complex_t> B1(new complex_t[N*N]);
+    suzerain::scoped_array<complex_t> B2(new complex_t[N*N]);
     fill(B1.get(), B1.get() + N*N, 0);
     fill(B2.get(), B2.get() + N*N, 0);
     for (int i = 0; i < N; ++i) {
@@ -161,8 +161,8 @@ static void operator_consistency(const parameters& p)
     BOOST_REQUIRE_EQUAL(bufsize,  A.ld * A.n);
     BOOST_REQUIRE_EQUAL(paptsize, A.LD * A.N);
     BOOST_REQUIRE_EQUAL(lusize,   (A.LD + A.KL) * A.N);
-    boost::scoped_array<complex_t> buf(new complex_t[bufsize]);
-    boost::scoped_array<complex_t> papt(new complex_t[paptsize]);
+    suzerain::scoped_array<complex_t> buf(new complex_t[bufsize]);
+    suzerain::scoped_array<complex_t> papt(new complex_t[paptsize]);
 
     // Fill all working storage with NaNs, invoke suzerain_rholut_imexop_packc,
     // and be sure we get a matrix lacking NaNs on the band as a result.
@@ -186,17 +186,17 @@ static void operator_consistency(const parameters& p)
     }
 
     // Factor LU = PAP^T and solve (LU)^{-1} B2 = B1
-    boost::scoped_array<complex_t> lu(new complex_t[(A.LD + A.KL)*A.N]);
+    suzerain::scoped_array<complex_t> lu(new complex_t[(A.LD + A.KL)*A.N]);
     fill(lu.get(), lu.get() + lusize, NaN<real_t>());
-    boost::scoped_array<int>       ipiv(new int[A.N]);
+    suzerain::scoped_array<int>       ipiv(new int[A.N]);
     char equed;
-    boost::scoped_array<real_t>    scale_r(new real_t[A.N]);
-    boost::scoped_array<real_t>    scale_c(new real_t[A.N]);
+    suzerain::scoped_array<real_t>    scale_r(new real_t[A.N]);
+    suzerain::scoped_array<real_t>    scale_c(new real_t[A.N]);
     real_t rcond;
-    boost::scoped_array<real_t>    ferr(new real_t[N]);
-    boost::scoped_array<real_t>    berr(new real_t[N]);
-    boost::scoped_array<complex_t> work(new complex_t[2*A.N]);
-    boost::scoped_array<real_t>    rwork(new real_t[A.N]);
+    suzerain::scoped_array<real_t>    ferr(new real_t[N]);
+    suzerain::scoped_array<real_t>    berr(new real_t[N]);
+    suzerain::scoped_array<complex_t> work(new complex_t[2*A.N]);
+    suzerain::scoped_array<real_t>    rwork(new real_t[A.N]);
 
     BOOST_REQUIRE_EQUAL(0, suzerain_lapack_zgbsvx(/* fact  */ 'E',
                                                   /* trans */ 'T',

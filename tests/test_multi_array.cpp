@@ -95,7 +95,7 @@ using boost::multi_array;
 using boost::multi_array_ref;
 using boost::multi_array_types::index;
 using boost::multi_array_types::index_range;
-using boost::scoped_array;
+using suzerain::scoped_array;
 using suzerain::multi_array::fill;
 
 const std::size_t NX = 3, NY = 4, NZ = 5, NZZ = 6, NZZZ = 7;

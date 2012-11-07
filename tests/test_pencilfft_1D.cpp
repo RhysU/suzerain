@@ -200,14 +200,14 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
     const periodic_function<real_type,int> pf2(NR, (NR+1)/2, 5.0/M_PI);
 
     // Plan before loading in the data since planning overwrites in
-    boost::shared_array<fftw_complex> buffer(
+    suzerain::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NR)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
             in.index_bases(), in.index_bases()+1, in.strides(), 0);
-    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+    suzerain::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NR,
                                1,
@@ -380,14 +380,14 @@ void compare_1D_complex_backward(ComplexMultiArray1 &in,
         = std::numeric_limits<double>::epsilon()*1e2*NC*NC;
 
     // Plan before loading in the data since planning overwrites in
-    boost::shared_array<fftw_complex> buffer(
+    suzerain::shared_array<fftw_complex> buffer(
         static_cast<fftw_complex *>(fftw_malloc(sizeof(fftw_complex)*NC)),
         std::ptr_fun(fftw_free));
     BOOST_REQUIRE(buffer.get() != NULL);
     typename ComplexMultiArray1::element * const in_data
         = in.origin() + std::inner_product(
             in.index_bases(), in.index_bases()+1, in.strides(), 0);
-    boost::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
+    suzerain::shared_ptr<boost::remove_pointer<fftw_plan>::type> plan(
             fftw_plan_many_dft(1,
                                &NC,
                                1,
@@ -659,8 +659,8 @@ void test_1d_out_of_place(const int N)
 
     // C2C: Test multi_array_ref using fftw_complex
     {
-        boost::scoped_array<fftw_complex> in_data(new fftw_complex[N]);
-        boost::scoped_array<fftw_complex> out_data(new fftw_complex[N]);
+        suzerain::scoped_array<fftw_complex> in_data(new fftw_complex[N]);
+        suzerain::scoped_array<fftw_complex> out_data(new fftw_complex[N]);
         typedef boost::multi_array_ref<fftw_complex, 1> array_ref_type;
         array_ref_type in(in_data.get(), boost::extents[N]);
         array_ref_type out(out_data.get(), boost::extents[N]);
@@ -686,7 +686,7 @@ void test_1d_out_of_place(const int N)
     // R2C: Test multi_array using fftw_complex
     {
         boost::multi_array<double,1>      in(boost::extents[N]);
-        boost::scoped_array<fftw_complex> out_data(new fftw_complex[N/2+1]);
+        suzerain::scoped_array<fftw_complex> out_data(new fftw_complex[N/2+1]);
         boost::multi_array_ref<fftw_complex, 1> out(
                 out_data.get(), boost::extents[N/2+1]);
 
@@ -705,7 +705,7 @@ void test_1d_out_of_place(const int N)
 
     // C2R: Test multi_array using fftw_complex
     {
-        boost::scoped_array<fftw_complex> in_data(new fftw_complex[N/2+1]);
+        suzerain::scoped_array<fftw_complex> in_data(new fftw_complex[N/2+1]);
         boost::multi_array_ref<fftw_complex, 1> in(
                 in_data.get(), boost::extents[N/2+1]);
         boost::multi_array<double,1>      out(boost::extents[N]);
@@ -905,7 +905,7 @@ void test_1d_in_place(const int N)
     // Test performed in place; API requires both real and complex views
     {
         typedef std::complex<double> complex;
-        boost::scoped_array<complex> raw(new complex[N/2+1]);
+        suzerain::scoped_array<complex> raw(new complex[N/2+1]);
 
         typedef boost::multi_array_ref<complex::value_type,1> real_array_type;
         real_array_type in(reinterpret_cast<complex::value_type *>(raw.get()),
@@ -922,7 +922,7 @@ void test_1d_in_place(const int N)
     // Test performed in place; API requires both real and complex views
     {
         typedef std::complex<double> complex;
-        boost::scoped_array<complex> raw(new complex[N/2+1]);
+        suzerain::scoped_array<complex> raw(new complex[N/2+1]);
 
         typedef boost::multi_array_ref<complex,1> complex_array_type;
         complex_array_type in(raw.get(), boost::extents[N/2+1]);

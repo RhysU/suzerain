@@ -41,10 +41,10 @@
 #pragma warning(disable:383 1572)
 
 // Global B-spline related-details initialized in main()
-static boost::shared_ptr<suzerain::bspline>      b;
-static boost::shared_ptr<suzerain::bsplineop>    cop;    // Collocation
-static boost::shared_ptr<suzerain::bsplineop>    gop;    // Galerkin L2
-static boost::shared_ptr<suzerain::bsplineop_lu> boplu;
+static suzerain::shared_ptr<suzerain::bspline>      b;
+static suzerain::shared_ptr<suzerain::bsplineop>    cop;    // Collocation
+static suzerain::shared_ptr<suzerain::bsplineop>    gop;    // Galerkin L2
+static suzerain::shared_ptr<suzerain::bsplineop_lu> boplu;
 
 int main(int argc, char **argv)
 {

@@ -146,8 +146,8 @@ BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
     const int S = 5, n = 9, N = S*n;
     int data[N];
 
-    boost::shared_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n),
-                                         &gsl_permutation_free);
+    suzerain::shared_ptr<gsl_permutation> p(suzerain_bsmbsm_permutation(S,n),
+                                            &gsl_permutation_free);
     BOOST_REQUIRE(p);
 
     for (int i = 0; i < N; ++i) data[i] = i;
@@ -161,8 +161,8 @@ BOOST_AUTO_TEST_CASE( gsl_permutation_equivalence )
         BOOST_CHECK_EQUAL(data[i], i);
     }
 
-    boost::shared_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N),
-                                            &gsl_permutation_free);
+    suzerain::shared_ptr<gsl_permutation> pinv(gsl_permutation_alloc(N),
+                                               &gsl_permutation_free);
     BOOST_REQUIRE(pinv);
     gsl_permutation_inverse(pinv.get(), p.get());
 
@@ -345,7 +345,6 @@ bool test(const Problem<Scalar> &p)
 
     typedef typename suzerain::traits::component<Scalar>::type component_type;
     using suzerain::complex::traits::is_complex;
-    using boost::scoped_array;
     using std::abs;
     using std::copy;
     using std::fill;
@@ -355,9 +354,9 @@ bool test(const Problem<Scalar> &p)
     const int N = p.S*p.n;
 
     // Allocate working storage
-    scoped_array<Scalar> x(new Scalar[N*abs(p.incx)]);
-    scoped_array<Scalar> y(new Scalar[N*abs(p.incy)]);
-    scoped_array<Scalar> r(new Scalar[N*abs(p.incy)]);
+    suzerain::scoped_array<Scalar> x(new Scalar[N*abs(p.incx)]);
+    suzerain::scoped_array<Scalar> y(new Scalar[N*abs(p.incy)]);
+    suzerain::scoped_array<Scalar> r(new Scalar[N*abs(p.incy)]);
 
     // Synthesize test data
     fill(x.get(), x.get() + N*abs(p.incx), p.alpha+p.alpha+Scalar(1));
@@ -376,8 +375,8 @@ bool test(const Problem<Scalar> &p)
     aPxpby(p, x.get(), r.get());
 
     // Compute same result by permuting followed by axpby
-    boost::shared_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n),
-                                         &gsl_permutation_free);
+    suzerain::shared_ptr<gsl_permutation> g(suzerain_bsmbsm_permutation(p.S,p.n),
+                                            &gsl_permutation_free);
     permute(p, g.get(), x.get());
     suzerain::blas::axpby(N, p.alpha, x.get(), p.incx,
                              p.beta,  y.get(), p.incy);
@@ -519,8 +518,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( degenerate, Scalar, test_types )
     const suzerain_bsmbsm A = suzerain_bsmbsm_construct(1, 10, 2, 3);
 
     // Allocate source and target storage
-    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
-    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+    suzerain::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    suzerain::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
 
     // Generate well-defined source data
     if (suzerain::complex::traits::is_complex<Scalar>::value) {
@@ -580,8 +579,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( minimal_two_by_two, Scalar, test_types )
 
     // Prepare a 2x2 problem with 5x5 submatrices
     const suzerain_bsmbsm A = suzerain_bsmbsm_construct(2, 2, 0, 0);
-    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
-    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+    suzerain::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    suzerain::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
 
     // Generate well-defined source data
     if (suzerain::complex::traits::is_complex<Scalar>::value) {
@@ -627,8 +626,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( three_by_three, Scalar, test_types )
 
     // Prepare a 3x3 problem with 17x17 submatrices
     const suzerain_bsmbsm A = suzerain_bsmbsm_construct(3, 17, 4, 3);
-    boost::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
-    boost::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
+    suzerain::scoped_array<Scalar> b(new Scalar[A.n*A.ld]);
+    suzerain::scoped_array<Scalar> papt(new Scalar[A.N*A.LD]);
 
     // Generate well-defined source data
     if (suzerain::complex::traits::is_complex<Scalar>::value) {
@@ -807,8 +806,8 @@ BOOST_AUTO_TEST_CASE( solve_real )
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR), (unsigned) A.N);
 
     // Allocate working buffers for accumulating submatrices
-    boost::scoped_array<double> b   (new double[A.n*A.ld]);
-    boost::scoped_array<double> papt(new double[A.N*(A.LD+A.KL)]);
+    suzerain::scoped_array<double> b   (new double[A.n*A.ld]);
+    suzerain::scoped_array<double> papt(new double[A.N*(A.LD+A.KL)]);
     std::fill(papt.get(), papt.get() + A.N*(A.LD+A.KL),
               std::numeric_limits<double>::quiet_NaN());
 
@@ -848,7 +847,7 @@ BOOST_AUTO_TEST_CASE( solve_real )
             'N', A.S, A.n, 1.0, BR, 1, 0, b.get(), 1);
 
     // Solve in place
-    boost::scoped_array<int> ipiv(new int[A.N]);
+    suzerain::scoped_array<int> ipiv(new int[A.N]);
     BOOST_REQUIRE_EQUAL(0, suzerain::lapack::gbsv(
         A.N, A.KL, A.KU, 1, papt.get(), A.LD + A.KL, ipiv.get(),
         b.get(), A.N));
@@ -885,8 +884,8 @@ BOOST_AUTO_TEST_CASE( solve_complex )
     BOOST_REQUIRE_EQUAL(SUZERAIN_COUNTOF(XR), (unsigned) A.N);
 
     // Allocate working buffers for accumulating submatrices
-    boost::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
-    boost::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
+    suzerain::scoped_array<real_t> b   (new real_t[2*A.n*A.ld]);
+    suzerain::scoped_array<real_t> papt(new real_t[2*A.N*(A.LD+A.KL)]);
     std::fill(b.get(),    b.get()    + 2*A.n*A.ld,        0);
     std::fill(papt.get(), papt.get() + 2*A.N*(A.LD+A.KL),
               std::numeric_limits<real_t>::quiet_NaN());
@@ -938,7 +937,7 @@ BOOST_AUTO_TEST_CASE( solve_complex )
             'N', A.S, A.n,  1.0, BR, 1, 0, b.get()+1, 2); // Im( BR)
 
     // Solve in place
-    boost::scoped_array<int> ipiv(new int[A.N]);
+    suzerain::scoped_array<int> ipiv(new int[A.N]);
     BOOST_REQUIRE_EQUAL(0, suzerain::lapack::gbsv(
         A.N, A.KL, A.KU, 1, (complex_t *) papt.get(), A.LD + A.KL, ipiv.get(),
         (complex_t *) b.get(), A.N));

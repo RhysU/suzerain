@@ -55,7 +55,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t Re,
             const operator_base &o,
             operator_common_block &common,
-            const boost::shared_ptr<const ManufacturedSolution>& msoln,
+            const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
@@ -95,7 +95,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
-    typename boost::scoped_ptr<state_type> _auxw_ptr(
+    scoped_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux::count, o.dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                   // Brevity

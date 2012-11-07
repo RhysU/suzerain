@@ -114,9 +114,9 @@ static void test_gbmv_s(const gbmv_tc_type& t)
     const int leny = abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<float> a(new float[lena]);
-    boost::scoped_array<float> x(new float[lenx]);
-    boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
+    suzerain::scoped_array<float> a(new float[lena]);
+    suzerain::scoped_array<float> x(new float[lenx]);
+    suzerain::scoped_array<float> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);
@@ -149,9 +149,9 @@ static void test_gbmv_d(const gbmv_tc_type& t)
     const int leny = abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<double> a(new double[lena]);
-    boost::scoped_array<double> x(new double[lenx]);
-    boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
+    suzerain::scoped_array<double> a(new double[lena]);
+    suzerain::scoped_array<double> x(new double[lenx]);
+    suzerain::scoped_array<double> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);
@@ -180,9 +180,9 @@ static void test_gbmv_scc(const gbmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<float> a(new float[lena]);
-    boost::scoped_array<float> x(new float[lenx]);
-    boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
+    suzerain::scoped_array<float> a(new float[lena]);
+    suzerain::scoped_array<float> x(new float[lenx]);
+    suzerain::scoped_array<float> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);
@@ -216,9 +216,9 @@ static void test_gbmv_dzz(const gbmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<double> a(new double[lena]);
-    boost::scoped_array<double> x(new double[lenx]);
-    boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
+    suzerain::scoped_array<double> a(new double[lena]);
+    suzerain::scoped_array<double> x(new double[lenx]);
+    suzerain::scoped_array<double> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);
@@ -252,9 +252,9 @@ static void test_gbmv_ssc(const gbmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<float> a(new float[lena]);
-    boost::scoped_array<float> x(new float[lenx]);
-    boost::scoped_array<float> y(new float[leny]), e(new float[leny]);
+    suzerain::scoped_array<float> a(new float[lena]);
+    suzerain::scoped_array<float> x(new float[lenx]);
+    suzerain::scoped_array<float> y(new float[leny]), e(new float[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);
@@ -294,9 +294,9 @@ static void test_gbmv_ddz(const gbmzv_tc_type& t)
     const int leny = 2 * abs(t.incy) * (toupper(t.trans) == 'N' ? t.m : t.n);
 
     // Allocate random data for testing purposes
-    boost::scoped_array<double> a(new double[lena]);
-    boost::scoped_array<double> x(new double[lenx]);
-    boost::scoped_array<double> y(new double[leny]), e(new double[leny]);
+    suzerain::scoped_array<double> a(new double[lena]);
+    suzerain::scoped_array<double> x(new double[lenx]);
+    suzerain::scoped_array<double> y(new double[leny]), e(new double[leny]);
     for (int i = 0; i < lena; ++i) a[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < lenx; ++i) x[i] = gsl_rng_uniform_pos(rng);
     for (int i = 0; i < leny; ++i) e[i] = y[i] = gsl_rng_uniform_pos(rng);

@@ -979,13 +979,13 @@ void transform_c2c(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename TransformTraits::fftw_complex_type fftw_complex_type;
-    boost::shared_array<fftw_complex_type> buffer(
+    shared_array<fftw_complex_type> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*transform_n)),
         std::ptr_fun(fftw_free));
     assert(buffer);
     typedef typename TransformTraits::fftw_plan_type fftw_plan_type;
-    boost::shared_ptr<
+    shared_ptr<
             typename boost::remove_pointer<fftw_plan_type>::type
         > plan(TransformTraits::plan_c2c_1d(transform_n,
                                             buffer.get(),
@@ -1297,13 +1297,13 @@ void forward_r2c(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename transform_traits::fftw_complex_type fftw_complex_type;
-    boost::shared_array<fftw_complex_type> buffer(
+    shared_array<fftw_complex_type> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
         std::ptr_fun(fftw_free));
     assert(buffer);
     typedef typename transform_traits::fftw_plan_type fftw_plan_type;
-    boost::shared_ptr<
+    shared_ptr<
             typename boost::remove_pointer<fftw_plan_type>::type
         > plan(transform_traits::plan_r2c_1d(
                     transform_n,
@@ -1494,13 +1494,13 @@ void backward_c2r(
 
     // Prepare the in-place transform buffer and construct the FFTW plan
     typedef typename transform_traits::fftw_complex_type fftw_complex_type;
-    boost::shared_array<fftw_complex_type> buffer(
+    shared_array<fftw_complex_type> buffer(
         static_cast<fftw_complex_type *>(
             fftw_malloc(sizeof(fftw_complex_type)*(transform_n/2+1))),
         std::ptr_fun(fftw_free));
     assert(buffer);
     typedef typename transform_traits::fftw_plan_type fftw_plan_type;
-    boost::shared_ptr<
+    shared_ptr<
             typename boost::remove_pointer<fftw_plan_type>::type
         > plan(transform_traits::plan_c2r_1d(
                     transform_n,

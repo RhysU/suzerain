@@ -158,8 +158,8 @@ real_t create(const int ndof,
               const double left,
               const double right,
               const double htdelta,
-              boost::shared_ptr<bspline>& b,
-              boost::shared_ptr<bsplineop>& cop);
+              shared_ptr<bspline>& b,
+              shared_ptr<bsplineop>& cop);
 
 /**
  * Compute the "distance" between two B-spline bases.  Distance is "huge" if
@@ -178,17 +178,17 @@ extern const real_t bsplines_distinct_distance;
 
 /** Store a \ref bspline workspace in a restart file */
 void store(const esio_handle h,
-           const boost::shared_ptr<bspline>& b,
-           const boost::shared_ptr<bsplineop>& cop,
-           const boost::shared_ptr<bsplineop>& gop);
+           const shared_ptr<bspline>& b,
+           const shared_ptr<bsplineop>& cop,
+           const shared_ptr<bsplineop>& gop);
 
 /**
  * Load a \ref bspline workspace from a restart file.
  * @return the absolute error in reproducing prescribed abscissae.
  */
 real_t load(const esio_handle h,
-            boost::shared_ptr<bspline>& b,
-            boost::shared_ptr<bsplineop>& cop);
+            shared_ptr<bspline>& b,
+            shared_ptr<bsplineop>& cop);
 
 /** Store the current simulation time information */
 void store_time(const esio_handle h,

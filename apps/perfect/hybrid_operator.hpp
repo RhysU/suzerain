@@ -154,7 +154,7 @@ public:
             bspline &b,
             const bsplineop &cop,
             operator_common_block &common,
-            const boost::shared_ptr<const manufactured_solution>& msoln)
+            const shared_ptr<const manufactured_solution>& msoln)
         : operator_base(grid, dgrid, b, cop),
           scenario(scenario),
           common(common),
@@ -177,7 +177,7 @@ protected:
     operator_common_block &common;
 
     /** Holds optional manufactured solution forcing details */
-    const boost::shared_ptr<const manufactured_solution> msoln;
+    const shared_ptr<const manufactured_solution> msoln;
 
 private:
 

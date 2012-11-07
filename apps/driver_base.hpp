@@ -104,17 +104,17 @@ public:
 
     program_options options;
 
-    boost::shared_ptr<bspline> b;
+    shared_ptr<bspline> b;
 
-    boost::shared_ptr<bsplineop> cop; // Collocation operators
+    shared_ptr<bsplineop> cop; // Collocation operators
 
-    boost::shared_ptr<bsplineop> gop; // Galerkin L2 operators
+    shared_ptr<bsplineop> gop; // Galerkin L2 operators
 
-    boost::shared_ptr<pencil_grid> dgrid;
+    shared_ptr<pencil_grid> dgrid;
 
-    boost::shared_ptr<linear_state_type> state_linear;
+    shared_ptr<linear_state_type> state_linear;
 
-    boost::shared_ptr<nonlinear_state_type> state_nonlinear;
+    shared_ptr<nonlinear_state_type> state_nonlinear;
 
     /** Controls which signals trigger which processing. */
     static signal_definition sigdef;

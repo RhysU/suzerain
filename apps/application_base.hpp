@@ -99,26 +99,26 @@ public:
 
     program_options options;
 
-    boost::shared_ptr<bspline> b;
+    shared_ptr<bspline> b;
 
-    boost::shared_ptr<bsplineop> cop; // Collocation operators
+    shared_ptr<bsplineop> cop; // Collocation operators
 
-    boost::shared_ptr<bsplineop> gop; // Galerkin L2 operators
+    shared_ptr<bsplineop> gop; // Galerkin L2 operators
 
-    boost::shared_ptr<pencil_grid> dgrid;
+    shared_ptr<pencil_grid> dgrid;
 
     /**
      * State storage always kept in Fourier wave space.  Name arises because
      * the state is most closely associated with linear operator application.
      */
-    boost::shared_ptr<interleaved_state<4,complex_t> > state_linear;
+    shared_ptr<interleaved_state<4,complex_t> > state_linear;
 
     /**
      * State storage transformable to/from Fourier physical space.  Name arises
      * because the state is most closely associated with nonlinear operator
      * application.
      */
-    boost::shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
+    shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
 
     /**
      * Routine to save a restart file, generally called via a timecontroller.

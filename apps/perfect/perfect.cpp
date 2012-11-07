@@ -174,7 +174,7 @@ static void attribute_storer(const esio_handle &h,
 void store(const esio_handle h,
            const scenario_definition& scenario,
            const grid_definition& grid,
-           const boost::shared_ptr<manufactured_solution>& msoln)
+           const shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
     if (!msoln) return;
@@ -241,7 +241,7 @@ static void NaNer(const std::string&, real_t& value)
 void load(const esio_handle h,
           const scenario_definition& scenario,
           const grid_definition& grid,
-          boost::shared_ptr<manufactured_solution>& msoln)
+          shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
 
@@ -420,8 +420,8 @@ void load_collocation_values(
         // Check that restart file specifies the same B-spline basis.
         // TODO Too restrictive!  Identical collocation points would be okay.
         // TODO Too restrictive?  Any floating point differences kill us.
-        boost::shared_ptr<bspline> Fb;
-        boost::shared_ptr<bsplineop> Fbop;
+        shared_ptr<bspline> Fb;
+        shared_ptr<bsplineop> Fbop;
         support::load(h, Fb, Fbop);
         const double bsplines_dist = support::distance(b, *Fb);
         const bool bsplines_same
@@ -797,7 +797,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     //  9) Overwrite state storage with the new perturbed state.
 
     //  0) Allocate storage for state and three additional scalar fields.
-    boost::scoped_ptr<contiguous_state<4,complex_t> > _s_ptr( // RAII
+    scoped_ptr<contiguous_state<4,complex_t> > _s_ptr( // RAII
             support::allocate_padded_state<contiguous_state<4,complex_t> >(
                 state_count + 3, dgrid));
     contiguous_state<4,complex_t> &s = *_s_ptr;               // Shorthand
@@ -1061,10 +1061,10 @@ void accumulate_manufactured_solution(
     operator_base obase(grid, dgrid, b, cop);
 
     // Allocate one field of temporary storage for scratch purposes
-    boost::scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr( // RAII
+    scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr(        // RAII
         support::allocate_padded_state<contiguous_state<4,complex_t> >(1,dgrid));
     contiguous_state<4,complex_t> &scratch = *_scratch_ptr;         // Shorthand
-    multi_array::fill(scratch, 0);                                 // Defensive
+    multi_array::fill(scratch, 0);                                  // Defensive
 
     // Prepare physical-space view of the wave-space scratch storage
     support::physical_view<1>::type phys
@@ -1200,7 +1200,7 @@ mean sample_mean_quantities(
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
-    boost::scoped_ptr<state_type> _auxw_ptr(
+    scoped_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux::count, dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand

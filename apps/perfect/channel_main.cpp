@@ -85,13 +85,13 @@ extern "C" const char revstr[];
 using boost::array;
 using boost::make_shared;
 using boost::numeric_cast;
-using boost::scoped_ptr;
-using boost::shared_ptr;
 using std::numeric_limits;
 using std::size_t;
 using suzerain::complex_t;
 using suzerain::fullprec;
 using suzerain::real_t;
+using suzerain::scoped_ptr;
+using suzerain::shared_ptr;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 namespace ndx     = suzerain::ndx;
@@ -1060,7 +1060,7 @@ int main(int argc, char **argv)
                                  restart.destination.length()  + 1,
                                  statsdef.destination.length() + 1 }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
-        boost::scoped_array<char> buf(new char[pos[4]]);
+        suzerain::scoped_array<char> buf(new char[pos[4]]);
         strcpy(&buf[pos[0]], restart.metadata.c_str());
         strcpy(&buf[pos[1]], restart.uncommitted.c_str());
         strcpy(&buf[pos[2]], restart.destination.c_str());

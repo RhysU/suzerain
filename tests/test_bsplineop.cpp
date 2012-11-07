@@ -1469,7 +1469,7 @@ void real_polynomial_interpolation(const int k,
     const int ndof = b.n();
 
     // Initialize polynomial test function which we should recapture exactly
-    boost::shared_ptr<poly_params> p(
+    suzerain::shared_ptr<poly_params> p(
         (poly_params *) malloc(sizeof(poly_params) + b.k()*sizeof(double)),
         free);
     p->n = b.k();
@@ -1482,7 +1482,7 @@ void real_polynomial_interpolation(const int k,
     // Compute expected coefficients for derivatives [0...nderiv] inclusive
     // by directly differentiating the polynomial test function.
     const std::size_t nstorage = (nderiv + 1) * ndof;
-    boost::scoped_array<double> expected(new double[nstorage]);
+    suzerain::scoped_array<double> expected(new double[nstorage]);
     for (int i = 0; i <= nderiv; ++i) {
         op.interpolation_rhs(&f, &expected[i*ndof], b);
         poly_params_differentiate(p.get());
@@ -1491,7 +1491,7 @@ void real_polynomial_interpolation(const int k,
 
     // Test in-place application and solution
     {
-        boost::scoped_array<double> result(new double[nstorage]);
+        suzerain::scoped_array<double> result(new double[nstorage]);
 
         // Make multiple copies of the zeroth derivative coefficients
         for (int i = 0; i <= nderiv; ++i) {
@@ -1517,7 +1517,7 @@ void real_polynomial_interpolation(const int k,
 
     // Test out-of-place application and solution
     {
-        boost::scoped_array<double> result(new double[nstorage]);
+        suzerain::scoped_array<double> result(new double[nstorage]);
 
         // Solve M*x' = D*x ...
         // ...starting by accumulating the derivative operators

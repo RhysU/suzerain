@@ -45,7 +45,6 @@
 using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
-using boost::shared_ptr;
 using std::auto_ptr;
 using std::numeric_limits;
 using suzerain::bspline;
@@ -55,6 +54,7 @@ using suzerain::complex_t;
 using suzerain::grid_definition;
 using suzerain::perfect::scenario_definition;
 using suzerain::real_t;
+using suzerain::shared_ptr;
 using suzerain::time_definition;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;

@@ -414,11 +414,11 @@ template<bool ZerothSubstep,
          linearize::type Linearize,
          class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
-            const suzerain::operator_base<real_t> &o,
+            const operator_base<real_t> &o,
             OperatorCommonBlock &common,
-            const boost::shared_ptr<const ManufacturedSolution>& msoln,
+            const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            suzerain::contiguous_state<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 

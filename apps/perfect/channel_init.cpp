@@ -58,7 +58,6 @@ extern "C" const char revstr[];
 using boost::make_shared;
 using boost::math::constants::pi;
 using boost::numeric_cast;
-using boost::shared_ptr;
 using std::numeric_limits;
 using suzerain::complex_t;
 using suzerain::real_t;
@@ -93,8 +92,8 @@ static suzerain::grid_definition grid(
         /* DAFz    */ 1.5);
 static suzerain::time_definition timedef(
         /* evmagfactor per Venugopal */ "0.72");
-static shared_ptr<const suzerain::pencil_grid> dgrid;
-static shared_ptr<perfect::manufactured_solution> msoln(
+static suzerain::shared_ptr<const suzerain::pencil_grid> dgrid;
+static suzerain::shared_ptr<perfect::manufactured_solution> msoln(
             new perfect::manufactured_solution);
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
@@ -106,10 +105,10 @@ static void atexit_underling(void) {
 }
 
 // Global B-spline related-details initialized in main()
-static shared_ptr<suzerain::bspline>       b;
-static shared_ptr<suzerain::bsplineop>     cop;    // Collocation
-static shared_ptr<suzerain::bsplineop>     gop;    // Galerkin L2
-static shared_ptr<suzerain::bsplineop_luz> bopluz;
+static suzerain::shared_ptr<suzerain::bspline>       b;
+static suzerain::shared_ptr<suzerain::bsplineop>     cop;    // Collocation
+static suzerain::shared_ptr<suzerain::bsplineop>     gop;    // Galerkin L2
+static suzerain::shared_ptr<suzerain::bsplineop_luz> bopluz;
 
 // Explicit timestepping scheme uses only complex_t 4D contiguous_state
 // State indices range over (scalar field, Y, X, Z) in wave space

@@ -82,7 +82,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
 void store(const esio_handle h,
            const scenario_definition& scenario,
            const grid_definition& grid,
-           const boost::shared_ptr<manufactured_solution> & msoln);
+           const shared_ptr<manufactured_solution> & msoln);
 
 /**
  * Load manufactured solution parameters from a restart file.
@@ -93,7 +93,7 @@ void store(const esio_handle h,
 void load(const esio_handle h,
           const scenario_definition& scenario,
           const grid_definition& grid,
-          boost::shared_ptr<manufactured_solution>& msoln);
+          shared_ptr<manufactured_solution>& msoln);
 
 /**
  * Store the current simulation primitive state as collocation point values

@@ -420,8 +420,8 @@ real_t create(const int ndof,
               const double left,
               const double right,
               const double htdelta,
-              boost::shared_ptr<bspline>& b,
-              boost::shared_ptr<bsplineop>& cop)
+              shared_ptr<bspline>& b,
+              shared_ptr<bsplineop>& cop)
 {
     INFO0("Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
@@ -472,9 +472,9 @@ real_t create(const int ndof,
 }
 
 void store(const esio_handle h,
-           const boost::shared_ptr<bspline>& b,
-           const boost::shared_ptr<bsplineop>& cop,
-           const boost::shared_ptr<bsplineop>& gop)
+           const shared_ptr<bspline>& b,
+           const shared_ptr<bsplineop>& cop,
+           const shared_ptr<bsplineop>& gop)
 {
     // Ensure we were handed the appropriate discrete operators
     SUZERAIN_ENSURE(cop->get()->method == SUZERAIN_BSPLINEOP_COLLOCATION_GREVILLE);
@@ -547,8 +547,8 @@ void store(const esio_handle h,
 }
 
 real_t load(const esio_handle h,
-            boost::shared_ptr<bspline>& b,
-            boost::shared_ptr<bsplineop>& cop)
+            shared_ptr<bspline>& b,
+            shared_ptr<bsplineop>& cop)
 {
     using std::abs;
     using std::max;
@@ -805,8 +805,8 @@ void load_coefficients(const esio_handle h,
     SUZERAIN_ENSURE(ncomponents == 2);
 
     // Prepare a file-specific B-spline basis
-    boost::shared_ptr<bspline> Fb;
-    boost::shared_ptr<bsplineop> Fbop;
+    shared_ptr<bspline> Fb;
+    shared_ptr<bsplineop> Fbop;
     load(h, Fb, Fbop);
     SUZERAIN_ENSURE(Fy == Fb->n());
 
@@ -844,8 +844,8 @@ void load_coefficients(const esio_handle h,
     typedef boost::multi_array<
         complex_t, 3, blas::allocator<complex_t>::type
     > tmp_type;
-    boost::scoped_ptr<tmp_type> tmp;
-    boost::scoped_ptr<bsplineop_luz> mass;
+    scoped_ptr<tmp_type> tmp;
+    scoped_ptr<bsplineop_luz> mass;
     if (!bsplines_same) {
         INFO0("Differences in B-spline basis require restart projection ("
               << bsplines_dist << " >= " << bsplines_distinct_distance << ")");

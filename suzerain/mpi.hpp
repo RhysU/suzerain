@@ -107,7 +107,7 @@ void dims_create(const Integer nnodes,
     using boost::numeric_cast;
     const int int_nnodes = numeric_cast<int>(nnodes);
     const int int_ndims  = numeric_cast<int>(std::distance(dimsBegin,dimsEnd));
-    boost::scoped_array<int> int_dims(new int[int_ndims]);
+    scoped_array<int> int_dims(new int[int_ndims]);
     std::transform(dimsBegin, dimsEnd, int_dims.get(),
             boost::numeric::converter<int,value_type>());
 

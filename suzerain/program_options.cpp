@@ -89,7 +89,7 @@ std::vector<std::string> suzerain::program_options::process_internal(
     // Obtain the program name using basename(argv[0])
     std::string program_name;
     {
-        boost::shared_ptr<char> name_copy(strdup(argv[0]), &free);
+        shared_ptr<char> name_copy(strdup(argv[0]), &free);
         program_name = basename(name_copy.get());
     }
 
@@ -204,7 +204,7 @@ std::vector<std::string> suzerain::program_options::process_internal(
             };
 
             long len;
-            boost::scoped_array<char> buf;
+            scoped_array<char> buf;
 
             // Rank zero slurps the file into appropriately-sized buf
             if (rank == 0) {

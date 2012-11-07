@@ -84,14 +84,14 @@ template<bool ZerothSubstep,
          class ConstitutiveLaws, // name here doesn't really fit.  Anything better??
          class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
-            const suzerain::operator_base<real_t> &o,
-            OperatorCommonBlock &common,
-            const boost::shared_ptr<const ManufacturedSolution>& msoln,
+            const operator_base<real_t> &o,
+            operator_common_block &common,
+            const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
-            suzerain::contiguous_state<4,complex_t> &swave,
+            contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag,
-            boost::shared_ptr<ConstitutiveLaws>& claws, // TODO: Decide if claws carries Ns (almost has to, right?)
+            shared_ptr<ConstitutiveLaws>& claws, // TODO: Decide if claws carries Ns (almost has to, right?)
             const unsigned int Ns )
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
@@ -118,7 +118,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
-    typename boost::scoped_ptr<state_type> _auxw_ptr(
+    typename scoped_ptr<state_type> _auxw_ptr(
             allocate_padded_state<state_type>(aux_count, o.dgrid)); // RAII
     state_type &auxw = *_auxw_ptr;                                  // Brevity
 
