@@ -97,13 +97,13 @@ public:
 
     shared_ptr<grid_definition> grid;
 
+    shared_ptr<fftw_definition> fftwdef;
+
     shared_ptr<bspline> b;
 
     shared_ptr<bsplineop> cop; // Collocation operators
 
     shared_ptr<bsplineop> gop; // Galerkin L2 operators
-
-    shared_ptr<fftw_definition> fftwdef;
 
     shared_ptr<pencil_grid> dgrid;
 
@@ -120,13 +120,22 @@ public:
      */
     shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
 
-/////**
-//// * Routine to load state from a restart file, establishing
-//// * the appropriate grid and parallel decomposition along the way.
-//// */
-////virtual void load_restart(
-////        esio_handle esioh,
-////        real_t &t);
+    /**
+     * Routine to load state from a restart file, establishing
+     * the appropriate grid and parallel decomposition along the way.
+     *
+     * In particular, the following are all modified:
+     * \li #grid
+     * \li #b
+     * \li #cop
+     * \li #gop
+     * \li #dgrid
+     * \li #state_linear
+     * \li #state_nonlinear
+     */
+    virtual void load_restart(
+            esio_handle esioh,
+            real_t &t);
 
     /**
      * Routine to save a restart file, generally called via a timecontroller.

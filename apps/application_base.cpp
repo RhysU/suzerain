@@ -66,11 +66,11 @@ application_base::application_base(
               description,
               this->revstr)
     , grid()
+    , fftwdef(make_shared<fftw_definition>(/* rigor_fft */ fftw::measure,
+                                           /* rigor_mpi */ fftw::estimate))
     , b()
     , cop()
     , gop()
-    , fftwdef(make_shared<fftw_definition>(/* rigor_fft */ fftw::measure,
-                                           /* rigor_mpi */ fftw::estimate))
     , dgrid()
     , state_linear()
     , state_nonlinear()
@@ -118,8 +118,8 @@ application_base::initialize(int argc, char **argv)
 #endif
 
     // Add problem definitions to options
-    options.add_definition(*fftwdef);
     options.add_definition(*grid   );
+    options.add_definition(*fftwdef);
 
     // Add additional standalone options
     options.add_options()
