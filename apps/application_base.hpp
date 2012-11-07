@@ -59,19 +59,14 @@ class application_base
 {
 public:
 
-    typedef interleaved_state<4,complex_t> linear_state_type;
-
-    typedef contiguous_state<4,complex_t> nonlinear_state_type;
-
     application_base(const std::string &application_synopsis,
                      const std::string &description = "",
                      const std::string &revstr = "");
 
     /**
      * Initialize everything, including MPI, necessary for the application.
-     * Changes to default values, e.g. \ref statsdef, or adding of additional
-     * options to \ref options must be completed prior to invoking this
-     * method.
+     * Changes to default values, e.g. \ref fftwdef, or adding of additional
+     * options to \ref options must be completed prior to invoking this method.
      *
      * @param argc Incoming arguments per <code>main(argc, ...)</code>
      * @param argv Incoming arguments per <code>main(..., argv)</code>
@@ -112,9 +107,18 @@ public:
 
     boost::shared_ptr<pencil_grid> dgrid;
 
-    boost::shared_ptr<linear_state_type> state_linear;
+    /**
+     * State storage always kept in Fourier wave space.  Name arises because
+     * the state is most closely associated with linear operator application.
+     */
+    boost::shared_ptr<interleaved_state<4,complex_t> > state_linear;
 
-    boost::shared_ptr<nonlinear_state_type> state_nonlinear;
+    /**
+     * State storage transformable to/from Fourier physical space.  Name arises
+     * because the state is most closely associated with nonlinear operator
+     * application.
+     */
+    boost::shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
 
     /**
      * Routine to save a restart file, generally called via a timecontroller.
