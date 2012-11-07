@@ -156,10 +156,9 @@ public:
      * \li #state_linear
      * \li #state_nonlinear
      *
-     * @param[in]  esioh An ESIO handle pointing to an open restart file.
-     * @param[out] t     The simulation time stored in the restart file.
+     * @return the time parallel decomposition planning took in seconds.
      */
-    virtual void establish_decomposition();
+    virtual real_t establish_decomposition();
 
     /**
      * Routine to save a restart file, generally called via a timecontroller.

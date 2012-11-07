@@ -199,10 +199,39 @@ application_base::store_grid_details(esio_handle esioh, const real_t t)
     support::store_time(esioh, t);
 }
 
-void
+real_t
 application_base::establish_decomposition()
 {
-    // FIXME Implement
+    // Establish the parallel decomposition
+    const double begin = MPI_Wtime();
+    fftw_set_timelimit(fftwdef->plan_timelimit);
+    support::wisdom_broadcast(fftwdef->plan_wisdom);
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    if (use_p3dfft) {
+        dgrid = make_shared<pencil_grid_p3dfft>(
+                grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
+    } else if (use_underling) {
+        dgrid = make_shared<pencil_grid_underling>(
+                grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
+    } else {
+#endif
+        dgrid = make_shared<pencil_grid_default>(
+                grid->dN, grid->P, fftwdef->rigor_fft, fftwdef->rigor_mpi);
+#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
+    }
+#endif
+    support::wisdom_gather(fftwdef->plan_wisdom);
+    const double elapsed = MPI_Wtime() - begin;
+
+    // Allocate the linear and nonlinear state to match decomposition
+    state_linear = make_shared<
+                interleaved_state<4,complex_t>
+            >(to_yxz(fields.size(), dgrid->local_wave_extent));
+    state_nonlinear.reset(support::allocate_padded_state<
+                contiguous_state<4,complex_t>
+            >(fields.size(), *dgrid));
+
+    return elapsed;
 }
 
 } // end namespace support
