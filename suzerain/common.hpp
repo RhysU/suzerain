@@ -43,9 +43,12 @@
 #include <valarray>
 #include <vector>
 
+// Include Eigen functionality used through Suzerain
+#include <Eigen/Core>
+#include <Eigen/SVD>
+
 // Include Boost functionality used throughout Suzerain
 // Boost.Preprocessor was included in common.h
-#ifdef SUZERAIN_HAVE_BOOST
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/algorithm/string.hpp>
@@ -111,11 +114,6 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
     return os;
 }
 } // namespace boost
-
-#ifdef SUZERAIN_HAVE_EIGEN
-#include <Eigen/Core>
-#include <Eigen/SVD>
-#endif
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
@@ -192,8 +190,6 @@ template< typename charT, typename traits, typename T, ::std::size_t N >
             (BOOST_PP_SEQ_NIL, 0),   \
             seq))
 
-#endif // SUZERAIN_HAVE_BOOST
-
 //////////////////////////////////////////////////////////
 // Miscellaneous functionality used throughout Suzerain //
 //////////////////////////////////////////////////////////
@@ -219,7 +215,19 @@ typedef std::complex<real_t> complex_t;
 
 /** @} */
 
-#ifdef SUZERAIN_HAVE_EIGEN
+// Bring ubiquitous smart pointer definitions into this namespace
+
+/** \namespace suzerain */
+using boost::shared_ptr;
+
+/** \namespace suzerain */
+using boost::scoped_ptr;
+
+/** \namespace suzerain */
+using boost::shared_array;
+
+/** \namespace suzerain */
+using boost::scoped_array;
 
 /** \weakgroup EigenTypedefs Typedefs and declarations to simplify Eigen usage.
  *
@@ -418,8 +426,6 @@ typedef Eigen::Matrix<       int, Eigen::Dynamic, 1, Eigen::ColMajor> VectorXi;
 using Eigen::Map;
 
 /** @} */
-
-#endif // SUZERAIN_HAVE_EIGEN
 
 } // end namespace suzerain
 
