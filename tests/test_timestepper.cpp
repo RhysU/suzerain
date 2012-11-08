@@ -52,7 +52,7 @@ using suzerain::timestepper::lowstorage::multiplicative_operator;
 using suzerain::timestepper::lowstorage::smr91;
 using suzerain::timestepper::lowstorage::yang11;
 using suzerain::timestepper::lowstorage::method;
-using suzerain::timestepper::lowstorage::timecontroller;
+using suzerain::timestepper::lowstorage::lowstorage_timecontroller;
 
 // Explicit template instantiation to hopefully speed compilation
 template class interleaved_state<3,double>;
@@ -1056,45 +1056,45 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 // Tests for control logic of timecontroller in test_timecontroller.
-// Presumably getting timecontroller to type check is the big deal.
+// Presumably getting lowstorage_timecontroller to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
-// timecontroller for interleaved_state
-template class timecontroller<
+// lowstorage_timecontroller for interleaved_state
+template class lowstorage_timecontroller<
         interleaved_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class timecontroller<
+template class lowstorage_timecontroller<
         interleaved_state<3,double>, interleaved_state<3,double>,
         void // Default Reducer behavior
     >;
 
-// timecontroller for contiguous_state
-template class timecontroller<
+// lowstorage_timecontroller for contiguous_state
+template class lowstorage_timecontroller<
         contiguous_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class timecontroller<
+template class lowstorage_timecontroller<
         contiguous_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
-// timecontroller for {Interleaved,Contiguous}State
-template class timecontroller<
+// lowstorage_timecontroller for {Interleaved,Contiguous}State
+template class lowstorage_timecontroller<
         interleaved_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class timecontroller<
+template class lowstorage_timecontroller<
         interleaved_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
-// timecontroller for {Contiguous,Interleaved}State
-template class timecontroller<
+// lowstorage_timecontroller for {Contiguous,Interleaved}State
+template class lowstorage_timecontroller<
         contiguous_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class timecontroller<
+template class lowstorage_timecontroller<
         contiguous_state<3,double>, interleaved_state<3,double>,
         void // Default reducer behavior
     >;

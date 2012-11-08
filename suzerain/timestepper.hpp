@@ -1609,7 +1609,7 @@ template< typename StateA,
           typename LinearA    = StateA,
           typename LinearB    = StateB,
           typename NonlinearB = StateB >
-class timecontroller
+class lowstorage_timecontroller
     : public timestepper::timecontroller< typename traits::component<
             typename StateA::element
       >::type >
@@ -1670,7 +1670,7 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    timecontroller(
+    lowstorage_timecontroller(
             const method_interface<element>& m,
             Reducer& reducer,
             const linear_operator<LinearA,LinearB>& L,
@@ -1681,7 +1681,7 @@ public:
             typename super::time_type initial_t = 0,
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
-        : super(boost::bind(&timecontroller::stepper, this, _1),
+        : super(boost::bind(&lowstorage_timecontroller::stepper, this, _1),
                 initial_t,
                 min_dt,
                 max_dt),
@@ -1706,7 +1706,7 @@ private:
 };
 
 /**
- * A partial specialization of the timecontroller template for the
+ * A partial specialization of the lowstorage_timecontroller template for the
  * case when default delta_t_reducer behavior is desired.  Empty base class
  * optimization eliminates the delta_t_reducer instance overhead.
  */
@@ -1715,22 +1715,22 @@ template< typename StateA,
           typename LinearA,
           typename LinearB,
           typename NonlinearB >
-class timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>
+class lowstorage_timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>
     : private delta_t_reducer,
-      public timecontroller<
+      public lowstorage_timecontroller<
             StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >
 {
 
 protected:
 
-    typedef typename timecontroller<
+    typedef typename lowstorage_timecontroller<
             StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >::super super;
 
 public:
 
-    typedef typename timecontroller<
+    typedef typename lowstorage_timecontroller<
             StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
         >::element element;
 
@@ -1763,7 +1763,7 @@ public:
      * @see The method step() for more details on
      *      \c m, \c reducer, \c L, \c N, \c a, and \c b.
      */
-    timecontroller(
+    lowstorage_timecontroller(
             const method_interface<element>& m,
             const linear_operator<LinearA,LinearB>& L,
             const typename traits::component<element>::type chi,
@@ -1774,7 +1774,7 @@ public:
             typename super::time_type min_dt = 0,
             typename super::time_type max_dt = 0)
         : delta_t_reducer(),
-          timecontroller<
+          lowstorage_timecontroller<
                 StateA,StateB,delta_t_reducer,LinearA,LinearB,NonlinearB
             >(m, *reinterpret_cast<delta_t_reducer*>(this),
               L, chi, N, a, b, initial_t, min_dt, max_dt)
@@ -1784,9 +1784,9 @@ public:
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a timecontroller employing a custom Reducer.
+ * types for a lowstorage_timecontroller employing a custom Reducer.
  *
- * \copydoc timecontroller
+ * \copydoc lowstorage_timecontroller
  */
 template< typename StateA,
           typename StateB,
@@ -1795,7 +1795,7 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
+lowstorage_timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
 make_lowstorage_timecontroller(
         const method_interface<typename StateA::element>& m,
         Reducer &reducer,
@@ -1804,26 +1804,26 @@ make_lowstorage_timecontroller(
         const nonlinear_operator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new timecontroller<
+    return new lowstorage_timecontroller<
                 StateA,StateB,Reducer,LinearA,LinearB,NonlinearB
         >(m, reducer, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
 /**
  * A helper method so the compiler can deduce the appropriate template
- * types for a timecontroller employing delta_t_reducer.
+ * types for a lowstorage_timecontroller employing delta_t_reducer.
  *
- * \copydoc timecontroller
+ * \copydoc lowstorage_timecontroller
  */
 template< typename StateA,
           typename StateB,
@@ -1831,7 +1831,7 @@ template< typename StateA,
           typename LinearB,
           typename NonlinearB,
           typename ChiType >
-timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
+lowstorage_timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
 make_lowstorage_timecontroller(
         const method_interface<typename StateA::element>& m,
         const linear_operator<LinearA,LinearB>& L,
@@ -1839,17 +1839,17 @@ make_lowstorage_timecontroller(
         const nonlinear_operator<NonlinearB>& N,
         StateA& a,
         StateB& b,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type initial_t = 0,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type min_dt = 0,
-        typename timecontroller<
+        typename lowstorage_timecontroller<
                 StateA,StateB,void,LinearA,LinearB,NonlinearB
             >::time_type max_dt = 0)
 {
-    return new timecontroller<
+    return new lowstorage_timecontroller<
             StateA,StateB,void,LinearA,LinearB,NonlinearB
         >(m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
