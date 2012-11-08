@@ -76,9 +76,9 @@ driver_base::driver_base(
     , log_status_bulk_show_header(false)
     , wtime_load_state(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
-    , last_status_nt(std::numeric_limits<std::size_t>::max())
-    , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
-    , last_statistics_saved_nt(std::numeric_limits<std::size_t>::max())
+    , last_status_nt(std::numeric_limits<step_type>::max())
+    , last_restart_saved_nt(std::numeric_limits<step_type>::max())
+    , last_statistics_saved_nt(std::numeric_limits<step_type>::max())
     , metadata_created(false)
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
@@ -197,8 +197,8 @@ driver_base::~driver_base()
 
 bool
 driver_base::log_status(
-        const real_t t,
-        const std::size_t nt)
+        const driver_base::time_type t,
+        const driver_base::step_type nt)
 {
     // Notice collective operations are never inside logging macros!
 
@@ -214,6 +214,7 @@ driver_base::log_status(
 
     SUZERAIN_TIMER_SCOPED("log_status");
 
+    // FIXME Extract
     // Build time- and timestep-specific status timeprefix.
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream oss;
@@ -411,8 +412,8 @@ driver_base::save_restart_metadata()
 
 bool
 driver_base::save_restart(
-        const real_t t,
-        const std::size_t nt)
+        const driver_base::time_type t,
+        const driver_base::step_type nt)
 {
     SUZERAIN_ENSURE(metadata_created);
 
@@ -448,14 +449,14 @@ driver_base::save_restart(
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
-    return continue_advancing;  // May cause time advancement to halt
+    return continue_advancing;
 }
 
 
 bool
 driver_base::save_statistics(
-        const real_t t,
-        const std::size_t nt)
+        const driver_base::time_type t,
+        const driver_base::step_type nt)
 {
     SUZERAIN_ENSURE(metadata_created);
 
@@ -492,7 +493,7 @@ driver_base::save_statistics(
 
     last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
-    return continue_advancing;  // May cause time advancement to halt
+    return continue_advancing;
 }
 
 void

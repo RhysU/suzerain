@@ -32,6 +32,7 @@
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/statistics_definition.hpp>
+#include <suzerain/timecontroller.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
@@ -57,6 +58,12 @@ class driver_base : public application_base
     typedef application_base super;
 
 public:
+
+    /** Type used to express simulation time quantities. */
+    typedef timestepper::timecontroller<real_t>::time_type time_type;
+
+    /** Type used to express discrete simulation step quantities. */
+    typedef timestepper::timecontroller<real_t>::step_type step_type;
 
     /** @copydoc application_base::application_base */
     driver_base(const std::string &application_synopsis,
@@ -87,29 +94,15 @@ public:
     /** Controls the OS signals triggering various types of processing. */
     static signal_definition sigdef;
 
-    /**
-     * Type of atomic locations used to track local receipt of the following
-     * signal-based actions:
-     *
-     * \li \c 0 Output a status message
-     * \li \c 1 Write a restart file
-     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
-     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
-     * \li \c 4 Compute and write a statistics file
-     */
-    typedef array<volatile sig_atomic_t, 5> atomic_signal_received_t;
-
-    /** Atomic locations used to track local signal receipt. */
-    static atomic_signal_received_t atomic_signal_received;
+    shared_ptr<timestepper::timecontroller<real_t> > tc; // FIXME
 
     /**
-     * When \c true, any time advance should be stopped as soon
-     * as reasonably possible.
+     * Did the previous time advance end in a predicted, controlled manner?
      */
     bool soft_teardown;
 
     /**
-     * Routine to output status, generally called via the timecontroller.
+     * Routine to output status, generally called via the timecontroller. FIXME
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
      * log_status_boundary_state, and \ref log_status_hook.
@@ -118,8 +111,8 @@ public:
      *          False otherwise.
      */
     virtual bool log_status(
-            const real_t t,
-            const std::size_t nt);
+            const time_type t,
+            const step_type nt);
 
     /** Log messages containing mean L2 and RMS fluctuation information. */
     virtual void log_status_L2(
@@ -179,8 +172,8 @@ public:
      * @see Member #restart to control restart writing options.
      */
     virtual bool save_restart(
-            const real_t t,
-            const std::size_t nt);
+            const time_type t,
+            const step_type nt);
 
     /**
      * Save statistics into a sample file.  The method \ref save_restart_metadata()
@@ -199,8 +192,23 @@ public:
      * @see Member #statsdef to control statistical sample writing options.
      */
     virtual bool save_statistics(
-            const real_t t,
-            const std::size_t nt);
+            const time_type t,
+            const step_type nt);
+
+    /**
+     * Type of atomic locations used to track local receipt of the following
+     * signal-based actions:
+     *
+     * \li \c 0 Output a status message
+     * \li \c 1 Write a restart file
+     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
+     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
+     * \li \c 4 Compute and write a statistics file
+     */
+    typedef array<volatile sig_atomic_t, 5> atomic_signal_received_t;
+
+    /** Atomic locations used to track local signal receipt. */
+    static atomic_signal_received_t atomic_signal_received;
 
 protected:
 
@@ -257,8 +265,8 @@ protected:
      */
     virtual bool log_status_hook(
             const std::string& timeprefix,
-            const real_t t,
-            const std::size_t nt);
+            const time_type t,
+            const step_type nt);
 
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.
@@ -282,13 +290,13 @@ protected:
     static void process_signal(const int sig);
 
     /** Tracks last time a status line was output */
-    std::size_t last_status_nt;
+    step_type last_status_nt;
 
     /** Tracks last time a restart file was written successfully */
-    std::size_t last_restart_saved_nt;
+    step_type last_restart_saved_nt;
 
     /** Tracks last time a statistics sample file was written successfully */
-    std::size_t last_statistics_saved_nt;
+    step_type last_statistics_saved_nt;
 
     /**
      * Type of non-atomic locations used to track global receipt of the
