@@ -205,7 +205,8 @@ public:
 protected:
 
     /**
-     * Extension point to permit adding arbitrary metadata to all restart files.
+     * Extension point to permit adding arbitrary metadata to all restart and
+     * statistics files during \ref save_restart_metadata.
      *
      * Subclasses should override this method adding or changing any desired
      * functionality either before or after invoking the superclass
@@ -217,35 +218,42 @@ protected:
             esio_handle esioh);
 
     /**
-     * Extension point to permit adding arbitrary information into restart files.
+     * Extension point to permit adding arbitrary information into restart
+     * files during \ref save_restart.  Subclasses should override this method
+     * with the desired functionality.  Invoking the superclass method in the
+     * override is optional.
      *
      * The default implementation saves the contents of #state_linear into a
      * restart file destroying #state_nonlinear in the process.
      *
-     * Subclasses should override this method with the desired functionality.
-     * Invoking the superclass method in the override is optional.
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
-    virtual void save_restart_hook(
+    virtual bool save_restart_hook(
             esio_handle esioh);
 
     /**
      * Extension point to permit adding arbitrary information into statistical
-     * sample files.
+     * sample files during \ref save_statistics.  Subclasses should override
+     * this method with the desired functionality.  Invoking the superclass
+     * method in the override is optional.
      *
-     * Subclasses should override this method with the desired functionality.
-     * Invoking the superclass method in the override is optional.
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
-    virtual void save_statistics_hook(
+    virtual bool save_statistics_hook(
             esio_handle esioh);
 
     /**
      * Hook permitting subclasses to output additional status information.
-     * Invoked at the end of \ref log_status.  Returning \c false causes the
-     * timecontroller to halt.
+     * Invoked at the end of \ref log_status.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
      */
     virtual bool log_status_hook(
             const std::string& timeprefix,

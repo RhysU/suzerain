@@ -433,7 +433,8 @@ driver_base::save_restart(
                     restart->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
 
-    save_restart_hook(esioh);  // Invoke subclass extension point
+    // Invoke subclass extension point
+    const bool continue_advancing = save_restart_hook(esioh);
 
     DEBUG0("Committing " << restart->uncommitted
            << " as a restart file using template " << restart->destination);
@@ -447,7 +448,7 @@ driver_base::save_restart(
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
-    return true; // Continue time advancement
+    return continue_advancing;  // May cause time advancement to halt
 }
 
 
@@ -476,7 +477,8 @@ driver_base::save_statistics(
                     restart->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
 
-    save_statistics_hook(esioh);  // Invoke subclass extension point
+    // Invoke subclass extension point
+    const bool continue_advancing = save_statistics_hook(esioh);
 
     DEBUG0("Committing " << restart->uncommitted
            << " as a statistics file using template " << statsdef->destination);
@@ -490,7 +492,7 @@ driver_base::save_statistics(
 
     last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
-    return true; // Continue time advancement
+    return continue_advancing;  // May cause time advancement to halt
 }
 
 void
@@ -504,19 +506,21 @@ driver_base::save_restart_metadata_hook(
     //     perfect::store(h, scenario, grid, msoln);
 }
 
-void
+bool
 driver_base::save_restart_hook(
         esio_handle esioh)
 {
     state_nonlinear->assign(*state_linear);
     support::store_coefficients(esioh, fields, *state_nonlinear, *grid, *dgrid);
+    return true;
 }
 
-void
+bool
 driver_base::save_statistics_hook(
         esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
+    return true;
 }
 
 bool
