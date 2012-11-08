@@ -71,9 +71,9 @@ public:
      *                             when <tt>--version</tt> is used.
      */
     program_options(const std::string &application_synopsis,
-                   const std::string &argument_synopsis = "",
-                   const std::string &description = "",
-                   const std::string &version = "")
+                    const std::string &argument_synopsis = "",
+                    const std::string &description = "",
+                    const std::string &version = "")
         : variables_(),
           options_(),
           application_synopsis_(application_synopsis),
