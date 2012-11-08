@@ -157,21 +157,48 @@ public:
      * Save time-independent metadata that should appear in all restart files.
      * Subclasses should not generally override this method but should instead
      * use \ref save_restart_metadata_hook.
+     *
+     * @see Member #restart to control the metadata file location.
      */
     virtual void save_restart_metadata();
 
     /**
-     * Save state into a restart file.  Subclasses should not generally
-     * override this method but should instead use \ref save_restart_hook.
+     * Save state into a restart file.  The method \ref save_restart_metadata()
+     * must have been called first as restart files contained cloned metadata.
+     * Subclasses should not generally override this method but should instead
+     * use \ref save_restart_hook.
      *
      * @param t  The simulation time to be stored in the restart file.
      * @param nt The time step number which is not stored in the restart file.
-     *           Present to permit invocation by \ref timecontroller.
+     *           No restart file is written when multiple invocations are
+     *           performed in succession on the same \c nt.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
+     *
+     * @see Member #restart to control restart writing options.
      */
     virtual bool save_restart(
+            const real_t t,
+            const std::size_t nt);
+
+    /**
+     * Save statistics into a sample file.  The method \ref save_restart_metadata()
+     * must have been called first as sample files contain cloned metadata.
+     * Subclasses should not generally override this method but should instead
+     * use \ref save_statistics_hook.
+     *
+     * @param t  The simulation time to be stored in the statistics file.
+     * @param nt The time step number which is not stored in the file.
+     *           No file is written when multiple invocations are
+     *           performed in succession on the same \c nt.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     *
+     * @see Member #statsdef to control statistical sample writing options.
+     */
+    virtual bool save_statistics(
             const real_t t,
             const std::size_t nt);
 
@@ -201,6 +228,18 @@ protected:
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual void save_restart_hook(
+            esio_handle esioh);
+
+    /**
+     * Extension point to permit adding arbitrary information into statistical
+     * sample files.
+     *
+     * Subclasses should override this method with the desired functionality.
+     * Invoking the superclass method in the override is optional.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual void save_statistics_hook(
             esio_handle esioh);
 
     /**
@@ -239,6 +278,9 @@ protected:
 
     /** Tracks last time a restart file was written successfully */
     std::size_t last_restart_saved_nt;
+
+    /** Tracks last time a statistics sample file was written successfully */
+    std::size_t last_statistics_saved_nt;
 
     /**
      * Type of non-atomic locations used to track global receipt of the

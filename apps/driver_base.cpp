@@ -78,6 +78,7 @@ driver_base::driver_base(
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<std::size_t>::max())
     , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
+    , last_statistics_saved_nt(std::numeric_limits<std::size_t>::max())
     , metadata_created(false)
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
@@ -446,6 +447,48 @@ driver_base::save_restart(
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
+    return true; // Continue time advancement
+}
+
+
+bool
+driver_base::save_statistics(
+        const real_t t,
+        const std::size_t nt)
+{
+    SUZERAIN_ENSURE(metadata_created);
+
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_statistics_saved_nt == nt) {
+        DEBUG0("Cowardly refusing to save multiple samples at nt = " << nt);
+        return true;
+    }
+
+    SUZERAIN_TIMER_SCOPED("save_statistics");
+
+    const double starttime = MPI_Wtime();
+    DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
+    esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
+
+    // We use restart.{metadata,uncommitted} for statistics too.
+    DEBUG0("Cloning " << restart->metadata << " to " << restart->uncommitted);
+    esio_file_clone(esioh, restart->metadata.c_str(),
+                    restart->uncommitted.c_str(), 1 /*overwrite*/);
+    support::store_time(esioh, t);
+
+    save_statistics_hook(esioh);  // Invoke subclass extension point
+
+    DEBUG0("Committing " << restart->uncommitted
+           << " as a statistics file using template " << statsdef->destination);
+    esio_file_close_restart(esioh, statsdef->destination.c_str(),
+                            statsdef->retain);
+    esio_handle_finalize(esioh);
+
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Successfully wrote statistics at t = " << t << " for nt = " << nt
+          << " in " << elapsed << " seconds");
+
+    last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
     return true; // Continue time advancement
 }
@@ -467,6 +510,13 @@ driver_base::save_restart_hook(
 {
     state_nonlinear->assign(*state_linear);
     support::store_coefficients(esioh, fields, *state_nonlinear, *grid, *dgrid);
+}
+
+void
+driver_base::save_statistics_hook(
+        esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
 }
 
 bool
