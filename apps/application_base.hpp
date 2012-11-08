@@ -27,6 +27,7 @@
 #define SUZERAIN_SUPPORT_APPLICATION_BASE_HPP
 
 #include <esio/esio.h>
+#include <esio/error.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
@@ -34,6 +35,7 @@
 #include <suzerain/grid_definition.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/program_options.hpp>
+
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/state.hpp>
@@ -44,8 +46,6 @@
 namespace suzerain {
 
 namespace support {
-
-class field;
 
 /**
  * An abstract driver base class for managing a Suzerain application.
@@ -59,7 +59,21 @@ class application_base
 {
 public:
 
+    /**
+     * Constructor providing details necessary for <tt>--help</tt> output.
+     *
+     * @param application_synopsis Application synopsis for <tt>--help</tt>.
+     * @param argument_synopsis    Argument synopsis to display for
+     *                             <tt>--help</tt> option.  For example,
+     *                             "[FILE]..." or "SOURCE... DIRECTORY".
+     * @param description          Extent description of the application to
+     *                             be displayed at the bottom of
+     *                             <tt>--help</tt>.
+     * @param revstr               Version information to be displayed
+     *                             when <tt>--version</tt> is used.
+     */
     application_base(const std::string &application_synopsis,
+                     const std::string &argument_synopsis = "",
                      const std::string &description = "",
                      const std::string &revstr = "");
 
@@ -78,20 +92,18 @@ public:
     virtual std::vector<std::string> initialize(int argc, char **argv);
 
     /**
-    * The log4cxx configuration to use, which is built upon but may differ from
-    * support::log4cxx_config.
-    *
-    * <tt>${FOO}</tt> syntax may be used to pick up environment variables in
-    * addition to properties See
-    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
-    * and
-    * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
-    */
+     * The log4cxx configuration to use, which is built upon but may differ
+     * from support::log4cxx_config.
+     *
+     * <tt>${FOO}</tt> syntax may be used to pick up environment variables in
+     * addition to properties See
+     * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PatternLayout.html
+     * and
+     * http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/PropertyConfigurator.html
+     */
     virtual std::string log4cxx_config();
 
     std::string revstr;
-
-    std::vector<support::field> fields;
 
     program_options options;
 
@@ -109,19 +121,21 @@ public:
 
     /**
      * State storage always kept in Fourier wave space.  Name arises because
-     * the state is most closely associated with linear operator application.
+     * the state is most closely associated with linear operator application
+     * within driver subclasses.
      */
     shared_ptr<interleaved_state<4,complex_t> > state_linear;
 
     /**
      * State storage transformable to/from Fourier physical space.  Name arises
      * because the state is most closely associated with nonlinear operator
-     * application.
+     * application within driver subclasses.
      */
     shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
 
     /**
      * Load a grid and discrete operators from a restart file.
+     * Also permits creating discrete operators without a restart file.
      * The following are modified:
      * \li #grid
      * \li #b
@@ -129,7 +143,11 @@ public:
      * \li #gop
      *
      * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     *                   If \c NULL, no details are loaded from disk
+     *                   and the discrete operators are formed using
+     *                   the contents of #grid.
      * @param[out] t     The simulation time stored in the restart file.
+     *                   When \c esioh is \c NULL, zero is returned.
      */
     virtual void load_grid_details(
             esio_handle esioh,
@@ -151,34 +169,40 @@ public:
             const real_t t);
 
     /**
-     * Establish the parallel decomposition per #grid.  The following are modified:
+     * Establish the parallel decomposition per #grid.  The following are
+     * modified:
      * \li #dgrid
+     */
+    virtual void establish_decomposition();
+
+    /**
+     * Establish the state storage per #dgrid and a supplied number of scalar
+     * fields.  The following may be modified:
      * \li #state_linear
      * \li #state_nonlinear
      *
-     * @return the time parallel decomposition planning took in seconds.
+     * @param linear_nfields    Number of scalar fields of wave-only
+     *                          storage to be allocated.  May be zero
+     *                          to indicate #state_linear should not be
+     *                          modified.
+     * @param nonlinear_nfields Number of scalar fields of transformable
+     *                          storage to be allocated.  May be zero.
+     *                          to indicate #state_nonlinear should not
+     *                          be modified.
      */
-    virtual real_t establish_decomposition();
-
-    /**
-     * Routine to save a restart file, generally called via a timecontroller.
-     *
-     * The restart saves the data in \ref state_linear.
-     * The data in \ref state_nonlinear is destroyed by this call.
-     */
-    virtual bool save_restart(
-            real_t t,
-            size_t nt);
+    virtual void establish_state_storage(
+            const std::size_t linear_nfields,
+            const std::size_t nonlinear_nfields);
 
 protected:
-
-private:
 
     /** Wall time at which MPI_Init completed */
     double wtime_mpi_init;
 
     /** Wall time elapsed during FFTW planning */
     double wtime_fftw_planning;
+
+private:
 
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     /** Use P3DFFT for parallel FFT operations */

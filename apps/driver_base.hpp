@@ -26,20 +26,16 @@
 #ifndef SUZERAIN_SUPPORT_DRIVER_BASE_HPP
 #define SUZERAIN_SUPPORT_DRIVER_BASE_HPP
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/fftw_definition.hpp>
-#include <suzerain/grid_definition.hpp>
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/program_options.hpp>
+
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/statistics_definition.hpp>
 #include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
+
+#include "application_base.hpp"
 
 namespace suzerain {
 
@@ -55,68 +51,40 @@ class field;
  * Signal handling capabilities may misbehave if multiple instances
  * are executing within the same process.
  */
-class driver_base
+class driver_base : public application_base
 {
+    /** Provides simple access to the superclass type */
+    typedef application_base super;
+
 public:
 
-    typedef interleaved_state<4,complex_t> linear_state_type;
-
-    typedef contiguous_state<4,complex_t> nonlinear_state_type;
-
+    /** @copydoc application_base::application_base */
     driver_base(const std::string &application_synopsis,
                 const std::string &description = "",
                 const std::string &revstr = "");
 
-    /**
-     * Initialize everything, including MPI, necessary for the application.
-     * Changes to default values, e.g. \ref statsdef, or adding of additional
-     * options to \ref options must be completed prior to invoking this
-     * method.
-     *
-     * @param argc Incoming arguments per <code>main(argc, ...)</code>
-     * @param argv Incoming arguments per <code>main(..., argv)</code>
-     */
+    virtual ~driver_base();
+
+    /** @copydoc application_base::initialize */
     virtual std::vector<std::string> initialize(int argc, char **argv);
 
     /**
-    * The log4cxx configuration to use.  Files <tt>bulk.dat</tt>,
-    * <tt>L2.mean.dat</tt>, and <tt>rms.fluct.dat</tt> collecting messages with
-    * the names <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have
-    * been added.
-    */
+     * The log4cxx configuration to use.  Files <tt>bulk.dat</tt>,
+     * <tt>L2.mean.dat</tt>, and <tt>rms.fluct.dat</tt> collecting messages with
+     * the names <tt>bulk</tt>, <tt>L2.mean</tt>, and <tt>rms.fluct</tt> have
+     * been added.
+     */
     virtual std::string log4cxx_config();
-
-    virtual ~driver_base();
-
-    std::string revstr;
 
     std::vector<support::field> fields;
 
-    grid_definition grid;
+    shared_ptr<restart_definition> restart;
 
-    fftw_definition fftwdef;
+    shared_ptr<statistics_definition> statsdef;
 
-    restart_definition restart;
+    shared_ptr<time_definition> timedef;
 
-    statistics_definition statsdef;
-
-    time_definition timedef;
-
-    program_options options;
-
-    shared_ptr<bspline> b;
-
-    shared_ptr<bsplineop> cop; // Collocation operators
-
-    shared_ptr<bsplineop> gop; // Galerkin L2 operators
-
-    shared_ptr<pencil_grid> dgrid;
-
-    shared_ptr<linear_state_type> state_linear;
-
-    shared_ptr<nonlinear_state_type> state_nonlinear;
-
-    /** Controls which signals trigger which processing. */
+    /** Controls the OS signals triggering various types of processing. */
     static signal_definition sigdef;
 
     /**
@@ -190,8 +158,6 @@ protected:
             const real_t t,
             const std::size_t nt);
 
-private:
-
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.
      * The default implementation disables headers after the first invocation.
@@ -203,12 +169,6 @@ private:
      * The default implementation disables headers after the first invocation.
      */
     bool log_status_bulk_show_header;
-
-    /** Wall time at which MPI_Init completed */
-    double wtime_mpi_init;
-
-    /** Wall time elapsed during FFTW planning */
-    double wtime_fftw_planning;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_state;
@@ -224,14 +184,6 @@ private:
 
     /** Tracks last time a restart file was written successfully */
     std::size_t last_restart_saved_nt;
-
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-    /** Use P3DFFT for parallel FFT operations */
-    bool use_p3dfft;
-
-    /** Use underling for parallel FFT operations */
-    bool use_underling;
-#endif
 
     /**
      * Type of non-atomic locations used to track global receipt of the

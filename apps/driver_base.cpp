@@ -29,16 +29,6 @@
 
 #include "driver_base.hpp"
 
-#ifdef HAVE_UNDERLING
-#include <fftw3.h>
-#include <fftw3-mpi.h>
-#include <underling/underling.h>
-#include <underling/error.h>
-#endif
-
-#include <esio/error.h>
-#include <esio/esio.h>
-
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>
@@ -60,47 +50,34 @@ driver_base::driver_base(
         const std::string &application_synopsis,
         const std::string &description,
         const std::string &revstr)
-    : revstr(revstr)
-    , grid()
-    , fftwdef( /* rigor_fft   */ fftw::measure,
-               /* rigor_mpi   */ fftw::estimate)
-    , restart( /* metadata    */ "metadata.h5.XXXXXX",
-               /* uncommitted */ "uncommitted.h5.XXXXXX",
-               /* destination */ "restart#.h5",
-               /* retain      */ 1,
-               /* dt          */ 0,
-               /* nt          */ 0)
-    , statsdef(/* destination */ "sample#.h5")
-    , timedef( /* advance_dt  */ 0,
-               /* advance_nt  */ 0,
-               /* advance_wt  */ 0,
-               /* status_dt   */ 0,
-               /* status_nt   */ 0,
-               /* min_dt      */ 1e-8,
-               /* max_dt      */ 1)
-    , options(application_synopsis,
-              "FILE",
-              description,
-              this->revstr)
-    , b()
-    , cop()
-    , gop()
-    , dgrid()
-    , state_linear()
-    , state_nonlinear()
+    : application_base(application_synopsis,
+                       "[RESTART-FILE]",
+                       description,
+                       revstr)
+    , restart(make_shared<restart_definition>(
+                /* metadata    */ "metadata.h5.XXXXXX",
+                /* uncommitted */ "uncommitted.h5.XXXXXX",
+                /* destination */ "restart#.h5",
+                /* retain      */ 1,
+                /* dt          */ 0,
+                /* nt          */ 0))
+    , statsdef(make_shared<statistics_definition>(
+                /* destination */ "sample#.h5"))
+    , timedef(make_shared<time_definition>(
+                /* advance_dt  */ 0,
+                /* advance_nt  */ 0,
+                /* advance_wt  */ 0,
+                /* status_dt   */ 0,
+                /* status_nt   */ 0,
+                /* min_dt      */ 1e-8,
+                /* max_dt      */ 1))
     , soft_teardown(false)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)
-    , wtime_mpi_init(std::numeric_limits<double>::quiet_NaN())
-    , wtime_fftw_planning(std::numeric_limits<double>::quiet_NaN())
     , wtime_load_state(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<std::size_t>::max())
     , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-    , use_p3dfft(false)
-    , use_underling(false)
-#endif
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
 }
@@ -108,8 +85,7 @@ driver_base::driver_base(
 std::string
 driver_base::log4cxx_config()
 {
-    std::ostringstream os;
-    os << support::log4cxx_config << // Appending to the default configuration
+    return super::log4cxx_config() + // Append to the default configuration
         "\n"
         "## Collect \"bulk\" messages into bulk.dat mimicking LOG file behavior\n"
         "log4j.logger.bulk=INHERITED, BULK\n"
@@ -135,83 +111,22 @@ driver_base::log4cxx_config()
         "log4j.appender.RMSFLUCT.layout=${log4j.appender.LOG.layout}\n"
         "log4j.appender.RMSFLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
     ;
-
-    return os.str();
 }
 
 std::vector<std::string>
 driver_base::initialize(int argc, char **argv)
 {
-#ifdef SUZERAIN_HAVE_GRVY
-    grvy_timer_init(argv[0] ? argv[0] : "NULL");  // Initialize GRVY Timers
-#endif
-    MPI_Init(&argc, &argv);                          // Initialize MPI...
-    wtime_mpi_init = MPI_Wtime();                    // Record MPI_Init time
-    atexit((void (*) ()) MPI_Finalize);              // ...finalize at exit
-    logging::initialize(MPI_COMM_WORLD,              // Initialize logging
-                        log4cxx_config().c_str());
-#ifdef HAVE_UNDERLING
-    underling_init(&argc, &argv, 0);                 // Initialize underling...
-    atexit(&underling_cleanup);                      // ...finalize at exit
-#endif
-
-    // Hook error handling into logging infrastructure
-    gsl_set_error_handler(
-            &support::mpi_abort_on_error_handler_gsl);
-    suzerain_set_error_handler(
-            &support::mpi_abort_on_error_handler_suzerain);
-    esio_set_error_handler(
-            &support::mpi_abort_on_error_handler_esio);
-#ifdef HAVE_UNDERLING
-    underling_set_error_handler(
-            &support::mpi_abort_on_error_handler_underling);
-#endif
-
     // Add problem definitions to options
-    options.add_definition(grid    );
-    options.add_definition(fftwdef );
-    options.add_definition(restart );
-    options.add_definition(statsdef);
-    options.add_definition(timedef );
-    options.add_definition(sigdef  );
+    options.add_definition(*restart );
+    options.add_definition(*statsdef);
+    options.add_definition(*timedef );
+    options.add_definition( sigdef  );
 
     // Add additional standalone options
-    options.add_options()
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-        ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
-        ("underling", "Use underling for MPI-parallel FFTs")
-#endif
-        ;
+    // TODO
 
     // Process incoming arguments
-    std::vector<std::string> positional = options.process(argc, argv);
-
-#if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-    // Select pencil decomposition and FFT library to use (default p3dfft)
-    options.conflicting_options("p3dfft", "underling");
-    if (options.variables().count("underling")) {
-        use_underling = true;
-    } else {
-        use_p3dfft = true;
-    }
-#endif
-
-    // Record build and invocation for posterity and to aid in debugging
-    std::ostringstream os;
-    std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
-    INFO0("Invocation: " << os.str());
-    INFO0("Build:      " << suzerain::version("", revstr));
-
-    switch (options.verbose()) {
-        case 0:                   break;
-        case 1:  DEBUG0_ENABLE(); break;
-        default: TRACE0_ENABLE(); break;
-    }
-    switch (options.verbose_all()) {
-        case 0:                   break;
-        case 1:  DEBUG_ENABLE();  break;
-        default: TRACE_ENABLE();  break;
-    }
+    std::vector<std::string> positional = super::initialize(argc, argv);
 
     return positional;
 }
@@ -220,18 +135,14 @@ driver_base::~driver_base()
 {
 
     // Remove the metadata file.
-    // Preserve restart.uncommitted as it may help post mortem debugging.
+    // Preserve restart->uncommitted as it may help post mortem debugging.
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        if (0 == unlink(restart.metadata.c_str())) {
-            DEBUG("Cleaned up temporary file " << restart.metadata);
+        if (0 == unlink(restart->metadata.c_str())) {
+            DEBUG("Cleaned up temporary file " << restart->metadata);
         } else {
-            WARN("Error cleaning up temporary file " << restart.metadata);
+            WARN("Error cleaning up temporary file " << restart->metadata);
         }
     }
-
-#ifdef HAVE_UNDERLING
-    underling_cleanup();
-#endif
 }
 
 bool
@@ -257,11 +168,11 @@ driver_base::log_status(
     // Precision computations ensure multiple status lines minimally distinct
     std::ostringstream oss;
     real_t np = 0;
-    if (timedef.status_dt > 0) {
-        np = max(np, -floor(log10(timedef.status_dt)));
+    if (timedef->status_dt > 0) {
+        np = max(np, -floor(log10(timedef->status_dt)));
     }
-    if (timedef.status_nt > 0) {
-        np = max(np, -floor(log10(timedef.min_dt * timedef.status_nt)) + 1);
+    if (timedef->status_nt > 0) {
+        np = max(np, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
     }
     if (np > 0) {
         oss.setf(std::ios::fixed, std::ios::floatfield);
@@ -314,7 +225,7 @@ driver_base::log_status_L2(
     // Collective computation of the L_2 norms
     state_nonlinear->assign(*state_linear);
     const std::vector<field_L2> result
-        = compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
+        = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << timeprefix;
@@ -325,7 +236,7 @@ driver_base::log_status_L2(
 
     // Build and log root-mean-squared-fluctuations of conserved state
     // RMS fluctuations are a scaling factor away from L2 fluctuations
-    const real_t rms_coeff = 1/std::sqrt(grid.L.x()*grid.L.y()*grid.L.z());
+    const real_t rms_coeff = 1/std::sqrt(grid->L.x()*grid->L.y()*grid->L.z());
     msg.str("");
     msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
@@ -359,7 +270,7 @@ driver_base::log_status_bulk(
     // Compute operator for finding bulk quantities from coefficients
     VectorXr bulkcoeff(b->n());
     b->integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= grid.L.y();
+    bulkcoeff /= grid->L.y();
 
     // Prepare the status message and log it
     msg << timeprefix;

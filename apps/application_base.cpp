@@ -36,9 +36,6 @@
 #include <underling/error.h>
 #endif
 
-#include <esio/error.h>
-#include <esio/esio.h>
-
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>
@@ -58,11 +55,12 @@ namespace support {
 
 application_base::application_base(
         const std::string &application_synopsis,
+        const std::string &argument_synopsis,
         const std::string &description,
         const std::string &revstr)
     : revstr(revstr)
     , options(application_synopsis,
-              "FILE",
+              argument_synopsis,
               description,
               this->revstr)
     , grid(make_shared<grid_definition>())
@@ -133,6 +131,12 @@ application_base::initialize(int argc, char **argv)
     // Process incoming arguments
     std::vector<std::string> positional = options.process(argc, argv);
 
+    // Record build and invocation for posterity and to aid in debugging
+    std::ostringstream os;
+    std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+    INFO0("Invocation: " << os.str());
+    INFO0("Build:      " << suzerain::version("", revstr));
+
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     // Select pencil decomposition and FFT library to use (default p3dfft)
     options.conflicting_options("p3dfft", "underling");
@@ -142,12 +146,6 @@ application_base::initialize(int argc, char **argv)
         use_p3dfft = true;
     }
 #endif
-
-    // Record build and invocation for posterity and to aid in debugging
-    std::ostringstream os;
-    std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
-    INFO0("Invocation: " << os.str());
-    INFO0("Build:      " << suzerain::version("", revstr));
 
     switch (options.verbose()) {
         case 0:                   break;
@@ -174,16 +172,22 @@ application_base::load_grid_details(esio_handle esioh, real_t& t)
 {
     SUZERAIN_ENSURE(grid);
 
-    // Load the grid parameters from the restart file
-    support::load(esioh, *grid);
+    // Possibly load the grid parameters from the restart file
+    if (esioh) {
+        support::load(esioh, *grid);
+    }
 
     // Create the discrete B-spline operators
     support::create(grid->N.y(), grid->k, 0.0,
                     grid->L.y(), grid->htdelta, b, cop);
     gop.reset(new bsplineop(*b, grid->k, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 
-    // Load the simulation time
-    support::load_time(esioh, t);
+    // Load or prepare the simulation time
+    if (esioh) {
+        support::load_time(esioh, t);
+    } else {
+        t = 0;
+    }
 }
 
 void
@@ -199,11 +203,12 @@ application_base::store_grid_details(esio_handle esioh, const real_t t)
     support::store_time(esioh, t);
 }
 
-real_t
+void
 application_base::establish_decomposition()
 {
+    SUZERAIN_ENSURE(grid);
+
     // Establish the parallel decomposition
-    const double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
     support::wisdom_broadcast(fftwdef->plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
@@ -221,17 +226,28 @@ application_base::establish_decomposition()
     }
 #endif
     support::wisdom_gather(fftwdef->plan_wisdom);
-    const double elapsed = MPI_Wtime() - begin;
+}
 
-    // Allocate the linear and nonlinear state to match decomposition
-    state_linear = make_shared<
-                interleaved_state<4,complex_t>
-            >(to_yxz(fields.size(), dgrid->local_wave_extent));
-    state_nonlinear.reset(support::allocate_padded_state<
-                contiguous_state<4,complex_t>
-            >(fields.size(), *dgrid));
+void
+application_base::establish_state_storage(
+        const std::size_t linear_nfields,
+        const std::size_t nonlinear_nfields)
+{
+    SUZERAIN_ENSURE(dgrid);
 
-    return elapsed;
+    // Allocate the unpadded linear state to match decomposition
+    if (linear_nfields) {
+        state_linear = make_shared<
+                    interleaved_state<4,complex_t>
+                >(to_yxz(linear_nfields, dgrid->local_wave_extent));
+    }
+
+    // Allocate the transformable nonlinear state to match decomposition
+    if (nonlinear_nfields) {
+        state_nonlinear.reset(support::allocate_padded_state<
+                    contiguous_state<4,complex_t>
+                >(nonlinear_nfields, *dgrid));
+    }
 }
 
 } // end namespace support
