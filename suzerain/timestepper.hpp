@@ -1596,8 +1596,8 @@ const typename traits::component<Element>::type step(
 
 /**
  * Provides higher-level control mechanisms built atop low storage time
- * integration schemes.  This class is a thin wrapper combining timecontroller
- * with step().
+ * integration schemes.  This class is a thin wrapper combining
+ * \ref timecontroller with step().
  *
  * @see \ref timecontroller for details on the time controller logic.
  * @see make_timecontroller for an easy way to create
