@@ -1600,7 +1600,7 @@ const typename traits::component<Element>::type step(
  * \ref timecontroller with step().
  *
  * @see \ref timecontroller for details on the time controller logic.
- * @see make_timecontroller for an easy way to create
+ * @see make_lowstorage_timecontroller for an easy way to create
  *      an instance with the appropriate type signature.
  */
 template< typename StateA,
@@ -1796,7 +1796,7 @@ template< typename StateA,
           typename NonlinearB,
           typename ChiType >
 timecontroller<StateA,StateB,Reducer,LinearA,LinearB,NonlinearB>*
-make_timecontroller(
+make_lowstorage_timecontroller(
         const method_interface<typename StateA::element>& m,
         Reducer &reducer,
         const linear_operator<LinearA,LinearB>& L,
@@ -1832,7 +1832,7 @@ template< typename StateA,
           typename NonlinearB,
           typename ChiType >
 timecontroller<StateA,StateB,void,LinearA,LinearB,NonlinearB>*
-make_timecontroller(
+make_lowstorage_timecontroller(
         const method_interface<typename StateA::element>& m,
         const linear_operator<LinearA,LinearB>& L,
         const ChiType chi,

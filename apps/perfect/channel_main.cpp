@@ -1294,7 +1294,7 @@ int main(int argc, char **argv)
     // (Spatial discretization) accounts for dealiasing and included here.
     using suzerain::timestepper::timecontroller;
     const real_t chi = real_t(1)/(grid.dN.x()*grid.dN.z());
-    scoped_ptr<timecontroller<real_t> > tc(make_timecontroller(
+    scoped_ptr<timecontroller<real_t> > tc(make_lowstorage_timecontroller(
                 *m, delta_t_allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef.min_dt, timedef.max_dt));

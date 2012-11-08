@@ -1114,7 +1114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
 
     // Compilation and instantiation is half the battle.  Go Joe!
     suzerain::scoped_ptr<suzerain::timestepper::timecontroller<double> > p(
-        make_timecontroller(m, trivial_linop, 1.0, riccati_op, a, b));
+        make_lowstorage_timecontroller(m, trivial_linop, 1., riccati_op, a, b));
 
     BOOST_REQUIRE(p);
 }
