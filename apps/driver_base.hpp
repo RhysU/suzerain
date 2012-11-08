@@ -70,6 +70,7 @@ public:
                 const std::string &description = "",
                 const std::string &revstr = "");
 
+    /** Virtual destructor as appropriate for abstract base class */
     virtual ~driver_base();
 
     /** @copydoc application_base::initialize */
@@ -83,17 +84,25 @@ public:
      */
     virtual std::string log4cxx_config();
 
+    /**
+     * Information about the state fields.  Should be populated by subclasses
+     * prior to \ref save_restart or \ref load_restart.
+     */
     std::vector<support::field> fields;
 
+    /** Operational details on saving restart files. */
     shared_ptr<restart_definition> restart;
 
+    /** Operational details on saving statistics files. */
     shared_ptr<statistics_definition> statsdef;
 
+    /** Operational details on advancing simulation time. */
     shared_ptr<time_definition> timedef;
 
     /** Controls the OS signals triggering various types of processing. */
     static signal_definition sigdef;
 
+    /** Controls time advance, including callback processing. */
     shared_ptr<timecontroller<real_t> > tc; // FIXME
 
     /**

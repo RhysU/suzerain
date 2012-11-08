@@ -20,7 +20,7 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver_base.hpp: Application driver logic spanning multiple applications
+// driver_base.cpp: Application driver logic spanning multiple applications
 // $Id$
 
 #ifdef HAVE_CONFIG_H
