@@ -54,7 +54,7 @@ driver_base::driver_base(
                        "[RESTART-FILE]",
                        description,
                        revstr)
-    , restart(make_shared<restart_definition>(
+    , restartdef(make_shared<restart_definition>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",
                 /* destination */ "restart#.h5",
@@ -71,7 +71,7 @@ driver_base::driver_base(
                 /* status_nt   */ 0,
                 /* min_dt      */ 1e-8,
                 /* max_dt      */ 1))
-    , soft_teardown(false)
+    , soft_teardown(true)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)
     , wtime_load_state(std::numeric_limits<double>::quiet_NaN())
@@ -119,10 +119,10 @@ std::vector<std::string>
 driver_base::initialize(int argc, char **argv)
 {
     // Add problem definitions to options
-    options.add_definition(*restart );
-    options.add_definition(*statsdef);
-    options.add_definition(*timedef );
-    options.add_definition( sigdef  );
+    options.add_definition(*restartdef);
+    options.add_definition(*statsdef  );
+    options.add_definition(*timedef   );
+    options.add_definition( signaldef );
 
     // Add additional standalone options
     // TODO
@@ -135,30 +135,30 @@ driver_base::initialize(int argc, char **argv)
     {
         // Pack a temporary buffer with the three file name templates
         array<size_t,5> pos = {{ 0,
-                                 restart ->metadata.length()    + 1,
-                                 restart ->uncommitted.length() + 1,
-                                 restart ->destination.length() + 1,
-                                 statsdef->destination.length() + 1 }};
+                                 restartdef->metadata.length()    + 1,
+                                 restartdef->uncommitted.length() + 1,
+                                 restartdef->destination.length() + 1,
+                                 statsdef  ->destination.length() + 1 }};
         std::partial_sum(pos.begin(), pos.end(), pos.begin());
         scoped_array<char> buf(new char[pos[4]]);
-        strcpy(&buf[pos[0]], restart ->metadata.c_str());
-        strcpy(&buf[pos[1]], restart ->uncommitted.c_str());
-        strcpy(&buf[pos[2]], restart ->destination.c_str());
-        strcpy(&buf[pos[3]], statsdef->destination.c_str());
+        strcpy(&buf[pos[0]], restartdef->metadata.c_str());
+        strcpy(&buf[pos[1]], restartdef->uncommitted.c_str());
+        strcpy(&buf[pos[2]], restartdef->destination.c_str());
+        strcpy(&buf[pos[3]], statsdef  ->destination.c_str());
 
         // Generate unique files to be overwritten and/or just file names.
         // File generation relies on template semantics of mkstemp(3).
         // Error checking kept minimal as failures here should not be fatal.
         // This is not particularly robust but it should serve our needs.
         if (suzerain::mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-            if (boost::ends_with(restart->metadata, "XXXXXX")) {
+            if (boost::ends_with(restartdef->metadata, "XXXXXX")) {
                 close(mkstemp(&buf[pos[0]]));  // Clobbered later...
             }
-            if (boost::ends_with(restart->uncommitted, "XXXXXX")) {
+            if (boost::ends_with(restartdef->uncommitted, "XXXXXX")) {
                 close(mkstemp(&buf[pos[1]]));  // Possibly clobbered later...
                 unlink(&buf[pos[1]]);          // ...so remove any evidence
             }
-            if (boost::ends_with(restart->destination, "XXXXXX")) {
+            if (boost::ends_with(restartdef->destination, "XXXXXX")) {
                 close(mkstemp(&buf[pos[2]]));  // Not clobbered later...
                 unlink(&buf[pos[2]]);          // ...so remove any evidence
             }
@@ -171,10 +171,10 @@ driver_base::initialize(int argc, char **argv)
         // Broadcast any generated names to all ranks and unpack values
         SUZERAIN_MPICHKR(MPI_Bcast(buf.get(), pos[4],
                          mpi::datatype<char>(), 0, MPI_COMM_WORLD));
-        restart ->metadata    = &buf[pos[0]];
-        restart ->uncommitted = &buf[pos[1]];
-        restart ->destination = &buf[pos[2]];
-        statsdef->destination = &buf[pos[3]];
+        restartdef->metadata    = &buf[pos[0]];
+        restartdef->uncommitted = &buf[pos[1]];
+        restartdef->destination = &buf[pos[2]];
+        statsdef  ->destination = &buf[pos[3]];
     }
 
     return positional;
@@ -184,15 +184,17 @@ driver_base::~driver_base()
 {
     if (metadata_created) {  // Attempt to remove any lingering metadata file
         if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-            if (0 == unlink(restart->metadata.c_str())) {
-                DEBUG("Cleaned up temporary file " << restart->metadata);
+            if (0 == unlink(restartdef->metadata.c_str())) {
+                DEBUG("Cleaned up temporary file "
+                      << restartdef->metadata);
             } else {
-                WARN("Error cleaning up temporary file " << restart->metadata);
+                WARN("Error cleaning up temporary file "
+                     << restartdef->metadata);
             }
         }
     }
 
-    // Preserve restart->uncommitted as it may help post mortem debugging.
+    // Preserve restartdef->uncommitted as it may help post mortem debugging.
 }
 
 bool
@@ -384,10 +386,10 @@ driver_base::save_restart_metadata()
 {
     SUZERAIN_TIMER_SCOPED("save_restart_metadata");
 
-    DEBUG0("Saving metadata temporary file: " << restart->metadata);
+    DEBUG0("Saving metadata temporary file: " << restartdef->metadata);
 
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
-    esio_file_create(esioh, restart->metadata.c_str(), 1 /* overwrite */);
+    esio_file_create(esioh, restartdef->metadata.c_str(), 1 /* overwrite */);
     esio_string_set(esioh, "/", "generated_by", revstr.c_str()); // Ticket #2595
 
     SUZERAIN_ENSURE(grid);
@@ -429,25 +431,26 @@ driver_base::save_restart(
     DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
-    DEBUG0("Cloning " << restart->metadata << " to " << restart->uncommitted);
-    esio_file_clone(esioh, restart->metadata.c_str(),
-                    restart->uncommitted.c_str(), 1 /*overwrite*/);
+    DEBUG0("Cloning " << restartdef->metadata
+           << " to " << restartdef->uncommitted);
+    esio_file_clone(esioh, restartdef->metadata.c_str(),
+                    restartdef->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
 
     // Invoke subclass extension point
     const bool continue_advancing = save_restart_hook(esioh);
 
-    DEBUG0("Committing " << restart->uncommitted
-           << " as a restart file using template " << restart->destination);
-    esio_file_close_restart(esioh, restart->destination.c_str(),
-                            restart->retain);
+    DEBUG0("Committing " << restartdef->uncommitted
+           << " as a restart file using template " << restartdef->destination);
+    esio_file_close_restart(esioh, restartdef->destination.c_str(),
+                            restartdef->retain);
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
     INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt
           << " in " << elapsed << " seconds");
 
-    last_restart_saved_nt = nt; // Maintain last successful restart time step
+    last_restart_saved_nt = nt; // Maintain last successful restartdef time step
 
     return continue_advancing;
 }
@@ -472,16 +475,17 @@ driver_base::save_statistics(
     DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
-    // We use restart.{metadata,uncommitted} for statistics too.
-    DEBUG0("Cloning " << restart->metadata << " to " << restart->uncommitted);
-    esio_file_clone(esioh, restart->metadata.c_str(),
-                    restart->uncommitted.c_str(), 1 /*overwrite*/);
+    // We use restartdef.{metadata,uncommitted} for statistics too.
+    DEBUG0("Cloning " << restartdef->metadata
+           << " to " << restartdef->uncommitted);
+    esio_file_clone(esioh, restartdef->metadata.c_str(),
+                    restartdef->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
 
     // Invoke subclass extension point
     const bool continue_advancing = save_statistics_hook(esioh);
 
-    DEBUG0("Committing " << restart->uncommitted
+    DEBUG0("Committing " << restartdef->uncommitted
            << " as a statistics file using template " << statsdef->destination);
     esio_file_close_restart(esioh, statsdef->destination.c_str(),
                             statsdef->retain);
@@ -550,28 +554,28 @@ driver_base::process_signal(
     std::vector<int>::iterator end;
 
     // Determine if we should output status due to the signal
-    end = sigdef.status.end();
-    if (std::find(sigdef.status.begin(), end, sig) != end) {
+    end = signaldef.status.end();
+    if (std::find(signaldef.status.begin(), end, sig) != end) {
         atomic_signal_received[0] = sig;
     }
 
     // Determine if we should write a restart due to the signal
-    end = sigdef.restart.end();
-    if (std::find(sigdef.restart.begin(), end, sig) != end) {
+    end = signaldef.restart.end();
+    if (std::find(signaldef.restart.begin(), end, sig) != end) {
         atomic_signal_received[1] = sig;
     }
 
     // Determine if we should tear down the simulation due to the signal
-    end = sigdef.teardown.end();
-    if (std::find(sigdef.teardown.begin(), end, sig) != end) {
+    end = signaldef.teardown.end();
+    if (std::find(signaldef.teardown.begin(), end, sig) != end) {
         atomic_signal_received[2] = sig;
     }
 
     // atomic_signal_received[3] handled outside this routine
 
     // Determine if we should compute and write statistics due to the signal
-    end = sigdef.statistics.end();
-    if (std::find(sigdef.statistics.begin(), end, sig) != end) {
+    end = signaldef.statistics.end();
+    if (std::find(signaldef.statistics.begin(), end, sig) != end) {
         atomic_signal_received[4] = sig;
     }
 }

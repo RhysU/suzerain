@@ -91,7 +91,7 @@ public:
     std::vector<support::field> fields;
 
     /** Operational details on saving restart files. */
-    shared_ptr<restart_definition> restart;
+    shared_ptr<restart_definition> restartdef;
 
     /** Operational details on saving statistics files. */
     shared_ptr<statistics_definition> statsdef;
@@ -100,7 +100,7 @@ public:
     shared_ptr<time_definition> timedef;
 
     /** Controls the OS signals triggering various types of processing. */
-    static signal_definition sigdef;
+    static signal_definition signaldef;
 
     /** Controls time advance, including callback processing. */
     shared_ptr<timecontroller<real_t> > tc; // FIXME
@@ -160,7 +160,7 @@ public:
      * Subclasses should not generally override this method but should instead
      * use \ref save_restart_metadata_hook.
      *
-     * @see Member #restart to control the metadata file location.
+     * @see Member #restartdef to control the metadata file location.
      */
     virtual void save_restart_metadata();
 
@@ -178,7 +178,7 @@ public:
      * @returns True if any active time advance should continue.
      *          False otherwise.
      *
-     * @see Member #restart to control restart writing options.
+     * @see Member #restartdef to control restart writing options.
      */
     virtual bool save_restart(
             const time_type t,
