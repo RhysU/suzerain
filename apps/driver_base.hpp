@@ -30,7 +30,6 @@
 
 #include <suzerain/restart_definition.hpp>
 #include <suzerain/signal_definition.hpp>
-#include <suzerain/state.hpp>
 #include <suzerain/statistics_definition.hpp>
 #include <suzerain/timecontroller.hpp>
 #include <suzerain/time_definition.hpp>
@@ -101,6 +100,29 @@ public:
 
     /** Controls the OS signals triggering various types of processing. */
     static signal_definition signaldef;
+
+    /** Controls low storage method to be used for time advance. */
+    shared_ptr<timestepper::lowstorage::method_interface<
+            complex_t
+        > > method; // FIXME Default in advance routine
+
+    /**
+     * Refers to a linear operator instance able to interoperate between
+     * #state_linear and #state_nonlinear.  This is the interface to which
+     * linear operators should be coded.
+     */
+    shared_ptr<timestepper::lowstorage::linear_operator<
+                state_common_type, state_nonlinear_type
+            > > L;
+
+    /**
+     * Refers to a nonlinear operator instance able to operate on
+     * #state_nonlinear.  This is the interface to which nonlinear operators
+     * should be coded.
+     */
+    shared_ptr<timestepper::nonlinear_operator<
+                state_nonlinear_type
+            > > N;
 
     /** Controls time advance, including callback processing. */
     shared_ptr<timecontroller<real_t> > tc; // FIXME

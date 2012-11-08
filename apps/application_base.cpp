@@ -44,6 +44,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
+#include <suzerain/state.hpp>
 #include <suzerain/version.hpp>
 
 #include "logging.hpp"

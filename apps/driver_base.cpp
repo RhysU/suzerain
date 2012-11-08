@@ -37,6 +37,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
+#include <suzerain/state.hpp>
 #include <suzerain/version.hpp>
 
 #include "logging.hpp"
@@ -71,6 +72,9 @@ driver_base::driver_base(
                 /* status_nt   */ 0,
                 /* min_dt      */ 1e-8,
                 /* max_dt      */ 1))
+    , method()
+    , L()
+    , N()
     , soft_teardown(true)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)

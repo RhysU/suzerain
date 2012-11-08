@@ -33,15 +33,10 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/fftw_definition.hpp>
 #include <suzerain/grid_definition.hpp>
+#include <suzerain/multi_array.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/program_options.hpp>
-
-#include <suzerain/restart_definition.hpp>
-#include <suzerain/signal_definition.hpp>
-#include <suzerain/state.hpp>
-#include <suzerain/statistics_definition.hpp>
-#include <suzerain/time_definition.hpp>
-#include <suzerain/timestepper.hpp>
+#include <suzerain/state_fwd.hpp>
 
 namespace suzerain {
 
@@ -120,18 +115,31 @@ public:
     shared_ptr<pencil_grid> dgrid;
 
     /**
-     * State storage always kept in Fourier wave space.  Name arises because
-     * the state is most closely associated with linear operator application
-     * within driver subclasses.
+     * Storage type always kept in Fourier wave space.  Name arises because
+     * the state is most closely associated with linear operator #L used by
+     * subclasses.
      */
-    shared_ptr<interleaved_state<4,complex_t> > state_linear;
+    typedef interleaved_state<4, complex_t> state_linear_type;
 
     /**
-     * State storage transformable to/from Fourier physical space.  Name arises
-     * because the state is most closely associated with nonlinear operator
-     * application within driver subclasses.
+     * Storage type transformable to/from Fourier physical space.  Name arises
+     * because the state is most closely associated with nonlinear operator #N
+     * within driver subclasses.
      */
-    shared_ptr<contiguous_state<4,complex_t> > state_nonlinear;
+    typedef contiguous_state<4, complex_t> state_nonlinear_type;
+
+    /**
+     * An ancestor common to \ref state_linear_type and \ref
+     * state_nonlinear_type.  A common ancestor is necessary for
+     * interoperability of #L and #N.
+     */
+    typedef multi_array::ref<complex_t, 4> state_common_type;
+
+    /** Linear state storage.  See \ref #state_linear_type for details. */
+    shared_ptr<state_linear_type> state_linear;
+
+    /** Nonlinear state storage.  See \ref #state_nonlinear_type for details. */
+    shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**
      * Load a grid and discrete operators from a restart file.
