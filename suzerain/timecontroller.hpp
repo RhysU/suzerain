@@ -471,7 +471,7 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
         const TimeType final_t,
         const StepType final_nt)
 {
-    SUZERAIN_TIMER_SCOPED("TimeController::advance");
+    SUZERAIN_TIMER_SCOPED("timecontroller::advance");
 
     assert(min_dt_ <= max_dt_);
     using std::min;

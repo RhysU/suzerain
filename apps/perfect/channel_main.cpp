@@ -1413,13 +1413,13 @@ int main(int argc, char **argv)
     grvy_log_setlevel(GRVY_INFO);   // Re-enable GRVY warnings
 #endif
     if (soft_teardown) {
-        INFO0("TimeController stopped advancing due to teardown signal");
+        INFO0("timecontroller stopped advancing due to teardown signal");
         advance_success = true; // ...treat like successful advance
     } else if (!advance_success && tc->current_dt() < tc->min_dt()) {
-        WARN0("TimeController halted because step " << tc->current_dt()
+        WARN0("timecontroller halted because step " << tc->current_dt()
               << " was smaller than min_dt " << tc->min_dt() );
     } else if (!advance_success) {
-        WARN0("TimeController halted unexpectedly");
+        WARN0("timecontroller halted unexpectedly");
     }
 
     // Output status if it was not just output during time advancement
