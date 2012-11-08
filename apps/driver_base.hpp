@@ -137,12 +137,38 @@ public:
             const std::string& timeprefix);
 
     /**
+     * Load the contents of a restart file into #state_nonlinear using the
+     * current decomposition.  Subclasses should override this method
+     * adding any desired functionality either before or after invoking
+     * the superclass version.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     * @param[out] t     The simulation time stored in the restart file.
+     */
+    virtual void load_restart(
+            esio_handle esioh,
+            real_t &t);
+
+    /**
+     * Save the contents of #state_linear into a restart file destroying
+     * #state_nonlinear in the process.  Subclasses should override this method
+     * adding any desired functionality either before or after invoking the
+     * superclass version.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable restart file.
+     * @param t     The simulation time to be stored in the restart file.
+     */
+    virtual void save_restart(
+            esio_handle esioh,
+            const real_t t);
+
+    /**
      * Routine to save a restart file, generally called via the timecontroller.
      *
      * The restart saves the data in \ref state_linear.
      * The data in \ref state_nonlinear is destroyed by this call.
      */
-    virtual bool save_restart(
+    bool save_restart(
             real_t t,
             size_t nt);
 

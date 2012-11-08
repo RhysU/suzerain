@@ -142,16 +142,13 @@ public:
      * \li #cop
      * \li #gop
      *
-     * @param[in]  esioh An ESIO handle pointing to an open restart file.
-     *                   If \c NULL, no details are loaded from disk
-     *                   and the discrete operators are formed using
-     *                   the contents of #grid.
-     * @param[out] t     The simulation time stored in the restart file.
-     *                   When \c esioh is \c NULL, zero is returned.
+     * @param esioh An ESIO handle pointing to an open restart file.
+     *              If \c NULL, no details are loaded from disk
+     *              and the discrete operators are formed using
+     *              the contents of #grid.
      */
     virtual void load_grid_details(
-            esio_handle esioh,
-            real_t &t);
+            esio_handle esioh);
 
     /**
      * Store a grid and discrete operators to a restart file.
@@ -161,12 +158,10 @@ public:
      * \li #cop
      * \li #gop
      *
-     * @param[in] esioh An ESIO handle pointing to an open restart file.
-     * @param[in] t     The simulation time to be stored in the restart file.
+     * @param esioh An ESIO handle pointing to an open restart file.
      */
     virtual void store_grid_details(
-            esio_handle esioh,
-            const real_t t);
+            esio_handle esioh);
 
     /**
      * Establish the parallel decomposition per #grid.  The following are

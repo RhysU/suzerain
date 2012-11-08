@@ -316,6 +316,28 @@ driver_base::log_status_specific_boundary_state(
     }
 }
 
+void
+driver_base::load_restart(esio_handle esioh, real_t& t)
+{
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(dgrid);
+
+    // TODO Load everything
+    // TODO Permit loading decomposition data too?
+
+    support::load_time(esioh, t);
+}
+
+void
+driver_base::save_restart(esio_handle esioh, const real_t t)
+{
+    SUZERAIN_ENSURE(grid);
+
+    // TODO Implement copy of metadata file
+
+    support::store_time(esioh, t);
+}
+
 bool
 driver_base::log_status_hook(
             const std::string& timeprefix,

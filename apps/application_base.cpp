@@ -168,7 +168,7 @@ application_base::log4cxx_config()
 }
 
 void
-application_base::load_grid_details(esio_handle esioh, real_t& t)
+application_base::load_grid_details(esio_handle esioh)
 {
     SUZERAIN_ENSURE(grid);
 
@@ -181,17 +181,10 @@ application_base::load_grid_details(esio_handle esioh, real_t& t)
     support::create(grid->N.y(), grid->k, 0.0,
                     grid->L.y(), grid->htdelta, b, cop);
     gop.reset(new bsplineop(*b, grid->k, SUZERAIN_BSPLINEOP_GALERKIN_L2));
-
-    // Load or prepare the simulation time
-    if (esioh) {
-        support::load_time(esioh, t);
-    } else {
-        t = 0;
-    }
 }
 
 void
-application_base::store_grid_details(esio_handle esioh, const real_t t)
+application_base::store_grid_details(esio_handle esioh)
 {
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(b);
@@ -200,7 +193,6 @@ application_base::store_grid_details(esio_handle esioh, const real_t t)
 
     support::store(esioh, *grid);
     support::store(esioh, b, cop, gop);
-    support::store_time(esioh, t);
 }
 
 void
