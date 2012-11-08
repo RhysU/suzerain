@@ -113,6 +113,9 @@ public:
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
      * log_status_boundary_state, and \ref log_status_hook.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
      */
     virtual bool log_status(
             const real_t t,
@@ -154,32 +157,23 @@ public:
      * Save time-independent metadata that should appear in all restart files.
      * Subclasses should not generally override this method but should instead
      * use \ref save_restart_metadata_hook.
-     *
-     * @param esioh An ESIO handle pointing to an open, writable file.
      */
-    virtual void save_restart_metadata(
-            esio_handle esioh);
+    virtual void save_restart_metadata();
 
     /**
      * Save state into a restart file.  Subclasses should not generally
      * override this method but should instead use \ref save_restart_hook.
      *
-     * @param esioh An ESIO handle pointing to an open, writable restart file.
-     * @param t     The simulation time to be stored in the restart file.
-     */
-    virtual void save_restart(
-            esio_handle esioh,
-            const real_t t);
-
-    /**
-     * Routine to save a restart file, generally called via the timecontroller.
+     * @param t  The simulation time to be stored in the restart file.
+     * @param nt The time step number which is not stored in the restart file.
+     *           Present to permit invocation by \ref timecontroller.
      *
-     * The restart saves the data in \ref state_linear.
-     * The data in \ref state_nonlinear is destroyed by this call.
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
      */
-    bool save_restart(
-            real_t t,
-            size_t nt);
+    virtual bool save_restart(
+            const real_t t,
+            const std::size_t nt);
 
 protected:
 
@@ -256,6 +250,11 @@ protected:
 
     /** Non-atomic locations used to track global signal receipt. */
     signal_received_t signal_received;
+
+private:
+
+    /** Was a metadata file ever saved to disk? */
+    bool metadata_created;
 
 };
 

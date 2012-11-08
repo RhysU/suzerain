@@ -78,6 +78,7 @@ driver_base::driver_base(
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<std::size_t>::max())
     , last_restart_saved_nt(std::numeric_limits<std::size_t>::max())
+    , metadata_created(false)
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
 }
@@ -180,16 +181,17 @@ driver_base::initialize(int argc, char **argv)
 
 driver_base::~driver_base()
 {
-
-    // Remove the metadata file.
-    // Preserve restart->uncommitted as it may help post mortem debugging.
-    if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
-        if (0 == unlink(restart->metadata.c_str())) {
-            DEBUG("Cleaned up temporary file " << restart->metadata);
-        } else {
-            WARN("Error cleaning up temporary file " << restart->metadata);
+    if (metadata_created) {  // Attempt to remove any lingering metadata file
+        if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
+            if (0 == unlink(restart->metadata.c_str())) {
+                DEBUG("Cleaned up temporary file " << restart->metadata);
+            } else {
+                WARN("Error cleaning up temporary file " << restart->metadata);
+            }
         }
     }
+
+    // Preserve restart->uncommitted as it may help post mortem debugging.
 }
 
 bool
@@ -376,25 +378,76 @@ driver_base::load_restart(esio_handle esioh, real_t& t)
 }
 
 void
-driver_base::save_restart_metadata(esio_handle esioh)
+driver_base::save_restart_metadata()
 {
-    SUZERAIN_UNUSED(esioh);
+    SUZERAIN_TIMER_SCOPED("save_restart_metadata");
+
+    DEBUG0("Saving metadata temporary file: " << restart->metadata);
+
+    esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
+    esio_file_create(esioh, restart->metadata.c_str(), 1 /* overwrite */);
+    esio_string_set(esioh, "/", "generated_by", revstr.c_str()); // Ticket #2595
 
     SUZERAIN_ENSURE(grid);
-    SUZERAIN_ENSURE(dgrid);
+    support::store(esioh, *grid);
 
-    // FIXME Implement
+    SUZERAIN_ENSURE(b);
+    SUZERAIN_ENSURE(cop);
+    SUZERAIN_ENSURE(gop);
+    support::store(esioh, b, cop, gop);
 
+    SUZERAIN_ENSURE(timedef);
+    support::store(esioh, *timedef);
+
+    // Invoke subclass extension point
+    save_restart_metadata_hook(esioh);
+
+    esio_file_close(esioh);
+    esio_handle_finalize(esioh);
+
+    metadata_created = true;
 }
 
-void
-driver_base::save_restart(esio_handle esioh, const real_t t)
+bool
+driver_base::save_restart(
+        const real_t t,
+        const std::size_t nt)
 {
-    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(metadata_created);
 
-    // TODO Implement copy of metadata file
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_restart_saved_nt == nt) {
+        DEBUG0("Cowardly refusing to save multiple restarts at nt = " << nt);
+        return true;
+    }
 
+    SUZERAIN_TIMER_SCOPED("save_restart");
+
+    const double starttime = MPI_Wtime();
+    DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
+    esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
+
+    DEBUG0("Cloning " << restart->metadata << " to " << restart->uncommitted);
+    esio_file_clone(esioh, restart->metadata.c_str(),
+                    restart->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
+
+    save_restart_hook(esioh);  // Invoke subclass extension point
+
+    DEBUG0("Committing " << restart->uncommitted
+           << " as a restart file using template " << restart->destination);
+    esio_file_close_restart(esioh, restart->destination.c_str(),
+                            restart->retain);
+    esio_handle_finalize(esioh);
+
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt
+          << " in " << elapsed << " seconds");
+
+    last_restart_saved_nt = nt; // Maintain last successful restart time step
+
+
+    return true; // Continue time advancement
 }
 
 void
@@ -402,13 +455,18 @@ driver_base::save_restart_metadata_hook(
         esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
+
+    // For example:
+    //     perfect::store(h, scenario);
+    //     perfect::store(h, scenario, grid, msoln);
 }
 
 void
 driver_base::save_restart_hook(
         esio_handle esioh)
 {
-    SUZERAIN_UNUSED(esioh);
+    state_nonlinear->assign(*state_linear);
+    support::store_coefficients(esioh, fields, *state_nonlinear, *grid, *dgrid);
 }
 
 bool
