@@ -1610,14 +1610,14 @@ template< typename StateA,
           typename LinearB    = StateB,
           typename NonlinearB = StateB >
 class lowstorage_timecontroller
-    : public timestepper::timecontroller< typename traits::component<
+    : public timecontroller< typename traits::component<
             typename StateA::element
       >::type >
 {
 protected:
 
     /** Shorthand for the superclass */
-    typedef timestepper::timecontroller< typename traits::component<
+    typedef timecontroller< typename traits::component<
                 typename StateA::element
             >::type > super;
 

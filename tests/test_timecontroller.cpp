@@ -22,7 +22,7 @@
 
 // TODO Add tests for taken_{min,max,mean,stddev}
 
-using suzerain::timestepper::timecontroller;
+using suzerain::timecontroller;
 
 // Subclass timecontroller to make the logic a little easier to test
 // Mainly done to save use from having to specify the stepper over and over

@@ -32,9 +32,6 @@
 namespace suzerain
 {
 
-namespace timestepper
-{
-
 /**
  * Provides high-level time advancement control, including periodic callbacks,
  * built atop a simple time stepping interface.  Such callbacks could be
@@ -558,8 +555,6 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
     // Successfully advanced up to provided criteria
     return StopType(1);
 }
-
-} // namespace timestepper
 
 } // namespace suzerain
 

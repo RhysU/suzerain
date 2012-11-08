@@ -60,10 +60,10 @@ class driver_base : public application_base
 public:
 
     /** Type used to express simulation time quantities. */
-    typedef timestepper::timecontroller<real_t>::time_type time_type;
+    typedef timecontroller<real_t>::time_type time_type;
 
     /** Type used to express discrete simulation step quantities. */
-    typedef timestepper::timecontroller<real_t>::step_type step_type;
+    typedef timecontroller<real_t>::step_type step_type;
 
     /** @copydoc application_base::application_base */
     driver_base(const std::string &application_synopsis,
@@ -94,7 +94,7 @@ public:
     /** Controls the OS signals triggering various types of processing. */
     static signal_definition sigdef;
 
-    shared_ptr<timestepper::timecontroller<real_t> > tc; // FIXME
+    shared_ptr<timecontroller<real_t> > tc; // FIXME
 
     /**
      * Did the previous time advance end in a predicted, controlled manner?
