@@ -231,14 +231,14 @@ application_base::establish_state_storage(
     // Allocate the unpadded linear state to match decomposition
     if (linear_nfields) {
         state_linear = make_shared<
-                    interleaved_state<4,complex_t>
+                    state_linear_type
                 >(to_yxz(linear_nfields, dgrid->local_wave_extent));
     }
 
     // Allocate the transformable nonlinear state to match decomposition
     if (nonlinear_nfields) {
         state_nonlinear.reset(support::allocate_padded_state<
-                    contiguous_state<4,complex_t>
+                    state_nonlinear_type
                 >(nonlinear_nfields, *dgrid));
     }
 }
