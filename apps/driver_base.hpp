@@ -136,6 +136,7 @@ public:
     virtual void log_status_specific_boundary_state(
             const std::string& timeprefix);
 
+    // FIXME
     /**
      * Load the contents of a restart file into #state_nonlinear using the
      * current decomposition.  Subclasses should override this method
@@ -150,10 +151,18 @@ public:
             real_t &t);
 
     /**
-     * Save the contents of #state_linear into a restart file destroying
-     * #state_nonlinear in the process.  Subclasses should override this method
-     * adding any desired functionality either before or after invoking the
-     * superclass version.
+     * Save time-independent metadata that should appear in all restart files.
+     * Subclasses should not generally override this method but should instead
+     * use \ref save_restart_metadata_hook.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual void save_restart_metadata(
+            esio_handle esioh);
+
+    /**
+     * Save state into a restart file.  Subclasses should not generally
+     * override this method but should instead use \ref save_restart_hook.
      *
      * @param esioh An ESIO handle pointing to an open, writable restart file.
      * @param t     The simulation time to be stored in the restart file.
@@ -173,6 +182,32 @@ public:
             size_t nt);
 
 protected:
+
+    /**
+     * Extension point to permit adding arbitrary metadata to all restart files.
+     *
+     * Subclasses should override this method adding or changing any desired
+     * functionality either before or after invoking the superclass
+     * implementation.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual void save_restart_metadata_hook(
+            esio_handle esioh);
+
+    /**
+     * Extension point to permit adding arbitrary information into restart files.
+     *
+     * The default implementation saves the contents of #state_linear into a
+     * restart file destroying #state_nonlinear in the process.
+     *
+     * Subclasses should override this method with the desired functionality.
+     * Invoking the superclass method in the override is optional.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual void save_restart_hook(
+            esio_handle esioh);
 
     /**
      * Hook permitting subclasses to output additional status information.

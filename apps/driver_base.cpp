@@ -376,6 +376,18 @@ driver_base::load_restart(esio_handle esioh, real_t& t)
 }
 
 void
+driver_base::save_restart_metadata(esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(dgrid);
+
+    // FIXME Implement
+
+}
+
+void
 driver_base::save_restart(esio_handle esioh, const real_t t)
 {
     SUZERAIN_ENSURE(grid);
@@ -383,6 +395,20 @@ driver_base::save_restart(esio_handle esioh, const real_t t)
     // TODO Implement copy of metadata file
 
     support::store_time(esioh, t);
+}
+
+void
+driver_base::save_restart_metadata_hook(
+        esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+}
+
+void
+driver_base::save_restart_hook(
+        esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
 }
 
 bool
