@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Usage: rename_hdf5.py [-n] PATTERN REPL HDF5FILE...
-Rename datasets matching using Python's re.sub(PATTERN, REPL) within HDF5FILE.
+Rename datasets using Python's re.sub(PATTERN, REPL) within HDF5FILE.
 
 Options:
     -n Don't actually change anything, just print what actions would be taken.
