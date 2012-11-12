@@ -22,7 +22,8 @@ def remove_hdf5(pattern, hdf5file, dryrun=False):
     else:
         f = h5py.File(hdf5file, 'r+')
 
-    for name in f.iterkeys():
+    # listnames() not iterkeys() as we mutate during iteration
+    for name in f.listnames():
         if re.search(pattern, name):
             print "Removing", name
             if not dryrun:
