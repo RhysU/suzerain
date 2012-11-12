@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""Usage: rename_hdf5.py [-n] PATTERN REPL HDF5FILE...
-Rename datasets matching using Python's re.sub(PATTERN, REPL) within HDF5FILE.
+"""Usage: remove_hdf5.py [-n] PATTERN HDF5FILE...
+Remove datasets matching per Python's re.search(PATTERN, ...) within HDF5FILE.
 
 Options:
     -n Don't actually change anything, just print what actions would be taken.
@@ -14,7 +14,7 @@ class Usage(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-def rename_hdf5(pattern, repl, hdf5file, dryrun=False):
+def remove_hdf5(pattern, hdf5file, dryrun=False):
     print "Processing", hdf5file
 
     if dryrun:
@@ -22,15 +22,11 @@ def rename_hdf5(pattern, repl, hdf5file, dryrun=False):
     else:
         f = h5py.File(hdf5file, 'r+')
 
-    for oldname in f.iterkeys():
-        newname = re.sub(pattern, repl, oldname)
-        if newname == oldname:
-            continue
-
-        print "Renaming", oldname, "to", newname
-        if not dryrun:
-            f[newname] = f[oldname]
-            del f[oldname]
+    for name in f.iterkeys():
+        if re.search(pattern, name):
+            print "Removing", oldname
+            if not dryrun:
+                del f[name]
 
     f.close()
 
@@ -46,23 +42,23 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "hn", ["help"])
         except getopt.error, msg:
-             raise Usage(msg)
+            raise Usage(msg)
         for o, a in opts:
             if o == "-n":
                 dryrun = True
             elif o in ("-h", "--help"):
                 print __doc__
                 return 0
-        if len(args) < 3:
+        if len(args) < 2:
             print >>sys.stderr, "Too few arguments.  See --help."
     except Usage, err:
         print >>sys.stderr, err.msg
         return 2
 
     # Process each file in turn
-    (pattern, repl), hdf5files = args[:2], args[2:]
+    (pattern), hdf5files = args[:1], args[1:]
     for hdf5file in hdf5files:
-        rename_hdf5(pattern, repl, hdf5file, dryrun)
+        remove_hdf5(pattern, hdf5file, dryrun)
 
 if __name__ == "__main__":
     sys.exit(main())

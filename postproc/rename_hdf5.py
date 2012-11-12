@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Usage: rename_hdf5.py [-n] PATTERN REPL HDF5FILE...
-Rename datasets using Python's re.sub(PATTERN, REPL) within HDF5FILE.
+Rename datasets using Python's re.sub(PATTERN, REPL, ...) within HDF5FILE.
 
 Options:
     -n Don't actually change anything, just print what actions would be taken.
@@ -46,7 +46,7 @@ def main(argv=None):
         try:
             opts, args = getopt.getopt(argv[1:], "hn", ["help"])
         except getopt.error, msg:
-             raise Usage(msg)
+            raise Usage(msg)
         for o, a in opts:
             if o == "-n":
                 dryrun = True
