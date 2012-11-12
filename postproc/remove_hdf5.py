@@ -24,7 +24,7 @@ def remove_hdf5(pattern, hdf5file, dryrun=False):
 
     for name in f.iterkeys():
         if re.search(pattern, name):
-            print "Removing", oldname
+            print "Removing", name
             if not dryrun:
                 del f[name]
 
@@ -56,7 +56,7 @@ def main(argv=None):
         return 2
 
     # Process each file in turn
-    (pattern), hdf5files = args[:1], args[1:]
+    pattern, hdf5files = args[0], args[1:]
     for hdf5file in hdf5files:
         remove_hdf5(pattern, hdf5file, dryrun)
 
