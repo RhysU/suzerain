@@ -385,10 +385,6 @@ protected:
     /** Wall time at which we began time stepping */
     double wtime_advance_start;
 
-    // FIXME
-    /** Signal handler which mutates \c atomic_signal_received. */
-    static void process_signal(const int sig);
-
     /** Tracks last time a status line was output */
     step_type last_status_nt;
 

@@ -54,6 +54,47 @@ volatile_received_type global_received = {{/*0*/}};
 
 } // end namespace signal
 
+extern "C" { // So we may pass the address of process_signal(...) to signal(2)
+
+static void driver_base_process_signal(const int sig)
+{
+    // Strictly speaking this handler performs too much work.  The design
+    // choice was to have this extra work done on the (rare) signal receipt
+    // rather than on the (frequent) polling of signal receipt status.
+
+    using std::find;
+    std::vector<int>::iterator end;
+
+    // Determine if we should log status due to the signal
+    end = driver_base::signaldef.status.end();
+    if (find(driver_base::signaldef.status.begin(), end, sig) != end) {
+        signal::global_received[signal::log_status] = sig;
+    }
+
+    // Determine if we should write a restart due to the signal
+    end = driver_base::signaldef.restart.end();
+    if (find(driver_base::signaldef.restart.begin(), end, sig) != end) {
+        signal::global_received[signal::write_restart] = sig;
+    }
+
+    // Determine if we should tear down the simulation due to the signal
+    end = driver_base::signaldef.teardown.end();
+    if (find(driver_base::signaldef.teardown.begin(), end, sig) != end) {
+        signal::global_received[signal::teardown_reactive] = sig;
+    }
+
+    // signal::global_received[signal::teardown_proactive] "detected"
+    // within delta_t_allreducer::operator()(...).
+
+    // Determine if we should compute and write statistics due to the signal
+    end = driver_base::signaldef.statistics.end();
+    if (find(driver_base::signaldef.statistics.begin(), end, sig) != end) {
+        signal::global_received[signal::write_statistics] = sig;
+    }
+}
+
+} // end extern "C"
+
 driver_base::driver_base(
         const std::string &application_synopsis,
         const std::string &description,
@@ -568,43 +609,6 @@ driver_base::log_status_hook(
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
     return true;
-}
-
-void
-driver_base::process_signal(
-        const int sig)
-{
-    // Strictly speaking this handler performs too much work.  The design
-    // choice was to have this extra work done on the (rare) signal receipt
-    // rather than on the (frequent) polling of signal receipt status.
-
-    std::vector<int>::iterator end;
-
-    // Determine if we should log status due to the signal
-    end = signaldef.status.end();
-    if (std::find(signaldef.status.begin(), end, sig) != end) {
-        signal::global_received[signal::log_status] = sig;
-    }
-
-    // Determine if we should write a restart due to the signal
-    end = signaldef.restart.end();
-    if (std::find(signaldef.restart.begin(), end, sig) != end) {
-        signal::global_received[signal::write_restart] = sig;
-    }
-
-    // Determine if we should tear down the simulation due to the signal
-    end = signaldef.teardown.end();
-    if (std::find(signaldef.teardown.begin(), end, sig) != end) {
-        signal::global_received[signal::teardown_reactive] = sig;
-    }
-
-    // signal::global_received[signal::teardown_proactive] handled elsewhere
-
-    // Determine if we should compute and write statistics due to the signal
-    end = signaldef.statistics.end();
-    if (std::find(signaldef.statistics.begin(), end, sig) != end) {
-        signal::global_received[signal::write_statistics] = sig;
-    }
 }
 
 delta_t_allreducer::delta_t_allreducer(
