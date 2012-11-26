@@ -133,6 +133,20 @@ public:
     bool soft_teardown;
 
     /**
+     * Build a fixed-width, human-friendly way to output the given simulation
+     * time and time step number.  Care is taken to ensure sequential outputs
+     * are minimally distinct.
+     *
+     * @param t  Simulation time to output
+     * @param nt Simulation time step to output
+     *
+     * @return a string suitable for use in output status messages.
+     */
+    virtual std::string build_timeprefix(
+            const time_type t,
+            const step_type nt);
+
+    /**
      * Routine to output status, generally called via the timecontroller. FIXME
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref

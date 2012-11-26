@@ -201,29 +201,16 @@ driver_base::~driver_base()
     // Preserve restartdef->uncommitted as it may help post mortem debugging.
 }
 
-bool
-driver_base::log_status(
+std::string
+driver_base::build_timeprefix(
         const driver_base::time_type t,
         const driver_base::step_type nt)
 {
-    // Notice collective operations are never inside logging macros!
-
     using std::max;
     using std::floor;
     using std::log10;
 
-    // Defensively avoid multiple invocations with no intervening changes
-    if (last_status_nt == nt) {
-        DEBUG0("Cowardly refusing to repeatedly show status at nt = " << nt);
-        return true;
-    }
-
-    SUZERAIN_TIMER_SCOPED("log_status");
-
-    // FIXME Extract
-    // Build time- and timestep-specific status timeprefix.
     // Precision computations ensure multiple status lines minimally distinct
-    std::ostringstream oss;
     real_t np = 0;
     if (timedef->status_dt > 0) {
         np = max(np, -floor(log10(timedef->status_dt)));
@@ -231,6 +218,9 @@ driver_base::log_status(
     if (timedef->status_nt > 0) {
         np = max(np, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
     }
+
+    // Build string using the computed precision information
+    std::ostringstream oss;
     if (np > 0) {
         oss.setf(std::ios::fixed, std::ios::floatfield);
         const std::streamsize oldprec = oss.precision(np);
@@ -241,7 +231,26 @@ driver_base::log_status(
         oss << t;
     }
     oss << ' ' << std::setw(7) << nt;
-    const std::string timeprefix = oss.str();
+    return oss.str();
+}
+
+bool
+driver_base::log_status(
+        const driver_base::time_type t,
+        const driver_base::step_type nt)
+{
+    // Notice collective operations are never inside logging macros!
+
+    // Defensively avoid multiple invocations with no intervening changes
+    if (last_status_nt == nt) {
+        DEBUG0("Cowardly refusing to repeatedly show status at nt = " << nt);
+        return true;
+    }
+
+    SUZERAIN_TIMER_SCOPED("log_status");
+
+    // Common message prefix used across all status-related routines
+    const std::string timeprefix(build_timeprefix(t, nt));
 
     // Log information about the various quantities of interest
     log_status_bulk(timeprefix);
