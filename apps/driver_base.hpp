@@ -432,7 +432,10 @@ class delta_t_allreducer : public timestepper::delta_t_reducer
 
 public:
 
-    /** Construct an instance referring to external state. */
+    /**
+     * Construct an instance querying and mutating external state.
+     * Intended to be used in conjunction with a \ref driver_base instance.
+     */
     delta_t_allreducer(
             const double& wtime_mpi_init,
             const double& wtime_fftw_planning,
@@ -442,17 +445,7 @@ public:
             const driver_base::step_type& last_status_nt,
             const driver_base::step_type& last_restart_saved_nt,
             driver_base::delta_t_ratios_type& delta_t_ratios,
-            signal::received_type& signal_received)
-        : wtime_mpi_init(wtime_mpi_init)
-        , wtime_fftw_planning(wtime_fftw_planning)
-        , timedef(timedef)
-        , wtime_load_state(wtime_load_state)
-        , wtime_advance_start(wtime_advance_start)
-        , last_status_nt(last_status_nt)
-        , last_restart_saved_nt(last_restart_saved_nt)
-        , delta_t_ratios(delta_t_ratios)
-        , signal_received(signal_received)
-    {}
+            signal::received_type& signal_received);
 
     /**
      * Returns the smallest entry in \c delta_t_candidates from any rank.  Must
