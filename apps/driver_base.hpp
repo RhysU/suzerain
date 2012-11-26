@@ -43,6 +43,101 @@ namespace support {
 
 class field;
 
+/** Provides well-scoped names related to driver signal handling */
+namespace signal {
+
+/** Potentially coincident actions to take due to POSIX signal receipt. */
+enum action_type
+{
+    /** Output a status message. */
+    log_status,
+
+    /** Write a restart file */
+    write_restart,
+
+    /** Tear down the simulation (proactively due to --advance_wt limit). */
+    teardown_reactive,
+
+    /** Tear down the simulation (reactively due to an incoming signal). */
+    teardown_proactive,
+
+    /** Compute and write a statistics file. */
+    write_statistics,
+
+    /** A sentry giving the number of distinct actions possible. */
+    count  // MUST BE LAST
+};
+
+/**
+ * Type of global, atomic locations used to track incoming signal actions.
+ * To be indexed using \ref actions_type.
+ */
+typedef array<
+        volatile sig_atomic_t, static_cast<std::size_t>(count)
+    > volatile_received_type;
+
+/**
+ * Global, atomic locations used to track local POSIX signal receipt.  Beware
+ * that usage by multiple clients, e.g. multiple \ref delta_t_allreducer
+ * instances, may cause race conditions.
+ */
+extern volatile_received_type global_received;
+
+/**
+ * Type of possibly local, non-volatile locations used to track global receipt
+ * of the same actions as \ref volatile_received_type.  To be indexed using
+ * \ref actions_type.
+ */
+typedef array<
+        sig_atomic_t, static_cast<std::size_t>(count)
+    > received_type;
+
+} // end namespace signal
+
+/**
+ * A stateful functor that performs an MPI Allreduce to determine the minimum
+ * stable time step size across all ranks.  The same MPI Allreduce is used to
+ * hide the cost of querying \ref signal::global_received across all ranks.
+ */
+class delta_t_allreducer
+{
+public:
+
+    /** Provides small default capacity for normalized_ratios. */
+    delta_t_allreducer() : normalized_ratios(2) {}
+
+    /**
+     * Returns the smallest entry in \c delta_t_candidates from any rank.
+     * Must be called collectively by all ranks i n\c MPI_COMM_WORLD.
+     */
+    virtual real_t operator()(const std::vector<real_t>& delta_t_candidates);
+
+    /**
+     * Maintains the mean ratio of each delta_t_candidate to the minimum
+     * delta_t_candidate selected on each operator() invocation.  Useful
+     * for determining the relative restrictiveness of each criterion.
+     */
+    std::vector<boost::accumulators::accumulator_set<
+                real_t,
+                boost::accumulators::stats<boost::accumulators::tag::mean>
+        > > normalized_ratios;
+
+private:
+
+    /**
+     * Maintains coarse statistics on the wall time duration between calls.
+     * This provides a rank-specific measure of the variability per time step
+     * which includes all registered periodic callbacks (e.g. status and
+     * restart processing).
+     */
+    boost::accumulators::accumulator_set<
+            real_t,
+            boost::accumulators::stats<boost::accumulators::tag::max,
+                                       boost::accumulators::tag::mean,
+                                       boost::accumulators::tag::variance>
+        > period;
+};
+
 /**
  * An abstract driver base class for managing a Suzerain application.
  * Intended for time-varying, three-dimensional problems.
@@ -240,21 +335,6 @@ public:
             const time_type t,
             const step_type nt);
 
-    /**
-     * Type of atomic locations used to track local receipt of the following
-     * signal-based actions:
-     *
-     * \li \c 0 Output a status message
-     * \li \c 1 Write a restart file
-     * \li \c 2 Tear down the simulation (reactively  due to an incoming signal)
-     * \li \c 3 Tear down the simulation (proactively due to --advance_wt limit)
-     * \li \c 4 Compute and write a statistics file
-     */
-    typedef array<volatile sig_atomic_t, 5> atomic_signal_received_t;
-
-    /** Atomic locations used to track local signal receipt. */
-    static atomic_signal_received_t atomic_signal_received;
-
 protected:
 
     /**
@@ -331,6 +411,7 @@ protected:
     /** Wall time at which we began time stepping */
     double wtime_advance_start;
 
+    // FIXME
     /** Signal handler which mutates \c atomic_signal_received. */
     static void process_signal(const int sig);
 
@@ -343,16 +424,8 @@ protected:
     /** Tracks last time a statistics sample file was written successfully */
     step_type last_statistics_saved_nt;
 
-    /**
-     * Type of non-atomic locations used to track global receipt of the
-     * same actions as \ref atomic_signal_received_t.
-     */
-    typedef array<
-            int, atomic_signal_received_t::static_size
-        > signal_received_t;
-
     /** Non-atomic locations used to track global signal receipt. */
-    signal_received_t signal_received;
+    signal::received_type signal_received;
 
 private:
 

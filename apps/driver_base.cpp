@@ -47,6 +47,13 @@ namespace suzerain {
 
 namespace support {
 
+namespace signal {
+
+// Initialized to zero indicating no signals have been received
+volatile_received_type global_received = {{/*0*/}};
+
+} // end namespace signal
+
 driver_base::driver_base(
         const std::string &application_synopsis,
         const std::string &description,
@@ -553,9 +560,6 @@ driver_base::log_status_hook(
     return true;
 }
 
-// Initialized to zero indicating no signals have been received
-driver_base::atomic_signal_received_t atomic_signal_received = {{/*0*/}};
-
 void
 driver_base::process_signal(
         const int sig)
@@ -566,30 +570,30 @@ driver_base::process_signal(
 
     std::vector<int>::iterator end;
 
-    // Determine if we should output status due to the signal
+    // Determine if we should log status due to the signal
     end = signaldef.status.end();
     if (std::find(signaldef.status.begin(), end, sig) != end) {
-        atomic_signal_received[0] = sig;
+        signal::global_received[signal::log_status] = sig;
     }
 
     // Determine if we should write a restart due to the signal
     end = signaldef.restart.end();
     if (std::find(signaldef.restart.begin(), end, sig) != end) {
-        atomic_signal_received[1] = sig;
+        signal::global_received[signal::write_restart] = sig;
     }
 
     // Determine if we should tear down the simulation due to the signal
     end = signaldef.teardown.end();
     if (std::find(signaldef.teardown.begin(), end, sig) != end) {
-        atomic_signal_received[2] = sig;
+        signal::global_received[signal::teardown_reactive] = sig;
     }
 
-    // atomic_signal_received[3] handled outside this routine
+    // signal::global_received[signal::teardown_proactive] handled elsewhere
 
     // Determine if we should compute and write statistics due to the signal
     end = signaldef.statistics.end();
     if (std::find(signaldef.statistics.begin(), end, sig) != end) {
-        atomic_signal_received[4] = sig;
+        signal::global_received[signal::write_statistics] = sig;
     }
 }
 
