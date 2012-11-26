@@ -404,6 +404,14 @@ protected:
      */
     signal::received_type signal_received;
 
+    /**
+     * Routine to process incoming signal actions after each time step.
+     * Signature for timecontroller use.
+     */
+    bool process_any_signals_received(
+            time_type t,
+            step_type nt);
+
 private:
 
     /** Was a metadata file ever saved to disk? */

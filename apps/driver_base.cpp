@@ -43,6 +43,10 @@
 #include "logging.hpp"
 #include "support.hpp"
 
+// We want plain ol' signal(2) below but suzerain::support::signal interferes
+// Prepare an alias for the name via a function pointer so may invoke it below
+static sighandler_t (* const signal2)(int, sighandler_t) = &signal;
+
 namespace suzerain {
 
 namespace support {
@@ -601,14 +605,74 @@ driver_base::save_statistics_hook(
 
 bool
 driver_base::log_status_hook(
-            const std::string& timeprefix,
-            const real_t t,
-            const std::size_t nt)
+        const std::string& timeprefix,
+        const real_t t,
+        const std::size_t nt)
 {
     SUZERAIN_UNUSED(timeprefix);
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
     return true;
+}
+
+bool
+driver_base::process_any_signals_received(
+        time_type t,
+        step_type nt)
+{
+    // this->allreducer performs the Allreduce necessary to get local status
+    // from signal::global_received into actions within this->signal_received.
+
+    // Keep advancing time unless keep_advancing is set false
+    bool keep_advancing = true;
+
+    if (signal_received[signal::log_status]) {
+        INFO0("Outputting simulation status due to receipt of "
+              << suzerain_signal_name(signal_received[signal::log_status]));
+        keep_advancing = keep_advancing && log_status(t, nt);
+    }
+
+    if (signal_received[signal::write_restart]) {
+        INFO0("Writing restart file due to receipt of "
+              << suzerain_signal_name(signal_received[signal::write_restart]));
+        keep_advancing = keep_advancing && save_restart(t, nt);
+    }
+
+    if (signal_received[signal::teardown_reactive]) {
+        const char * const name = suzerain_signal_name(
+                signal_received[signal::teardown_reactive]);
+        INFO0("Initiating teardown due to receipt of " << name);
+        soft_teardown  = true;
+        keep_advancing = false;
+        switch (signal_received[signal::teardown_reactive]) {
+            case SIGINT:
+            case SIGTERM:
+                INFO0("Receipt of another " << name <<
+                      " will forcibly terminate program");
+                signal2(signal_received[signal::teardown_reactive], SIG_DFL);
+                break;
+        }
+    }
+
+    if (signal_received[signal::teardown_proactive]) {
+        INFO0("Initiating proactive teardown because of wall time constraint");
+        soft_teardown  = true;
+        keep_advancing = false;
+    }
+
+    if (signal_received[signal::write_statistics]) {
+        const char * const name = suzerain_signal_name(
+                signal_received[signal::write_statistics]);
+        INFO0("Computing and writing statistics due to receipt of " << name);
+        keep_advancing = keep_advancing && save_statistics(t, nt);
+    }
+
+    // Clear signal_received to defensively avoid stale data bugs.
+    // These would only be problematic if process_any_signals_received
+    // was run multiple times in between delta_t_allreducer invocations.
+    signal_received.assign(0);
+
+    return keep_advancing;
 }
 
 delta_t_allreducer::delta_t_allreducer(
