@@ -54,6 +54,108 @@ volatile_received_type global_received = {{/*0*/}};
 
 } // end namespace signal
 
+real_t delta_t_allreducer::operator()(
+        const std::vector<real_t>& delta_t_candidates)
+{
+    // Copy incoming candidates so we may mutate them
+    std::vector<real_t> candidates(delta_t_candidates);
+
+    // Take atomic snapshot of and then clear signal::global_received
+    signal_received = signal::global_received;
+    static const signal::volatile_received_type::value_type zero = 0;
+    signal::global_received.assign(zero);
+
+    if (DEBUG_ENABLED()) {
+        const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+        for (std::size_t i = 0; i < signal::received_type::static_size; ++i) {
+            if (signal_received[i]) {
+                DEBUG("Received signal number " << signal_received[i]
+                      << " on rank " << rank);
+            }
+        }
+    }
+
+    // When possible, obtain time step period statistics and a projected
+    // wall time for when we could complete the next time step and dump a
+    // restart file.  If the projection is after --advance_wt, register
+    // teardown.  Logic here is key to proactive soft_teardown success.
+    static double wtime_last = std::numeric_limits<double>::quiet_NaN();
+    if (timedef->advance_wt > 0 && (boost::math::isfinite)(wtime_last)) {
+
+        // Accumulate time step period statistics
+        const double wtime = MPI_Wtime();
+        period(wtime - wtime_last);
+
+        // Find a pessimistic time for the next time step completion...
+        // (that is, finish current step *and* finish another one)
+        namespace acc = boost::accumulators;
+        double wtime_projected = wtime
+            + 2*(acc::mean(period) + 3*std::sqrt(acc::variance(period)));
+        // ...to which we add a pessimistic estimate for dumping a restart
+        if (last_restart_saved_nt == std::numeric_limits<size_t>::max()) {
+            wtime_projected += 2*wtime_load_state;  // Load as surrogate
+        } else {
+            wtime_projected += (acc::max)(period);  // Includes dumps
+        }
+        // ...to which we add an estimate of other finalization costs
+        wtime_projected += 2*(wtime_advance_start - wtime_mpi_init
+                                                  - wtime_fftw_planning);
+
+        // Raise a "signal" if we suspect we cannot teardown quickly enough
+        signal_received[signal::teardown_proactive]
+            = (wtime_projected >= wtime_mpi_init + timedef->advance_wt);
+        if (DEBUG_ENABLED() && signal_received[signal::teardown_proactive]) {
+            const int rank = suzerain::mpi::comm_rank(MPI_COMM_WORLD);
+            DEBUG("Rank " << rank << " projects delaying teardown until "
+                  << wtime_projected - wtime_mpi_init
+                  << " elapsed seconds is dangerous.");
+        }
+    }
+    wtime_last = MPI_Wtime();
+
+    // Push a negated version of signal_received onto end of candidates
+    candidates.reserve(candidates.size() + signal::received_type::static_size);
+    std::transform(signal_received.begin(), signal_received.end(),
+                   std::back_inserter(candidates),
+                   std::negate<signal::received_type::value_type>());
+
+    // Allreduce so each rank knows the minimum of all candidates
+    assert(candidates.size() > 0);
+    SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
+                                   &candidates.front(), candidates.size(),
+                                   suzerain::mpi::datatype<real_t>::value,
+                                   MPI_MIN, MPI_COMM_WORLD));
+
+    // Negate the signal_received details once again to get a logical MAX
+    // stored within signal_received.  Erase temporaries from candidates.
+    std::transform(candidates.begin() + delta_t_candidates.size(),
+                   candidates.begin() + delta_t_candidates.size()
+                                      + signal::received_type::static_size,
+                   signal_received.begin(),
+                   std::negate<signal::received_type::value_type>());
+    candidates.erase(candidates.begin() + delta_t_candidates.size(),
+                     candidates.begin() + delta_t_candidates.size()
+                                        + signal::received_type::static_size);
+
+    // Delegate finding-the-minimum work on each rank to superclass
+    // whose logic should enforce requirement that min(NaN,x) == NaN
+    const real_t delta_t = super::operator()(candidates);
+
+    // Update delta_t_ratios using the just chosen delta_t
+    // isnan used to avoid a NaN from destroying all accumulator data
+    if (!(boost::math::isnan)(delta_t)) {
+        const size_t n = candidates.size();
+        if (SUZERAIN_UNLIKELY(delta_t_ratios.size() < n)) {
+            delta_t_ratios.resize(n);
+        }
+        for (size_t i = 0; i < n; ++i) {
+            delta_t_ratios[i](candidates[i] / delta_t);
+        }
+    }
+
+    return delta_t;
+}
+
 driver_base::driver_base(
         const std::string &application_synopsis,
         const std::string &description,
@@ -82,6 +184,7 @@ driver_base::driver_base(
     , method()
     , L()
     , N()
+    , tc()
     , soft_teardown(true)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)
@@ -91,6 +194,15 @@ driver_base::driver_base(
     , last_restart_saved_nt(std::numeric_limits<step_type>::max())
     , last_statistics_saved_nt(std::numeric_limits<step_type>::max())
     , metadata_created(false)
+    , allreducer(new delta_t_allreducer(this->wtime_mpi_init,
+                                        this->wtime_fftw_planning,
+                                        this->timedef,
+                                        this->wtime_load_state,
+                                        this->wtime_advance_start,
+                                        this->last_status_nt,
+                                        this->last_restart_saved_nt,
+                                        this->delta_t_ratios,
+                                        this->signal_received))
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
 }

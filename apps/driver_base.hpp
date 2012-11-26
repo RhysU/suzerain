@@ -41,8 +41,6 @@ namespace suzerain {
 
 namespace support {
 
-class field;
-
 /** Provides well-scoped names related to driver signal handling */
 namespace signal {
 
@@ -70,7 +68,7 @@ enum action_type
 
 /**
  * Type of global, atomic locations used to track incoming signal actions.
- * To be indexed using \ref actions_type.
+ * To be indexed using \ref action_type.
  */
 typedef array<
         volatile sig_atomic_t, static_cast<std::size_t>(count)
@@ -86,7 +84,7 @@ extern volatile_received_type global_received;
 /**
  * Type of possibly local, non-volatile locations used to track global receipt
  * of the same actions as \ref volatile_received_type.  To be indexed using
- * \ref actions_type.
+ * \ref action_type.
  */
 typedef array<
         sig_atomic_t, static_cast<std::size_t>(count)
@@ -94,49 +92,9 @@ typedef array<
 
 } // end namespace signal
 
-/**
- * A stateful functor that performs an MPI Allreduce to determine the minimum
- * stable time step size across all ranks.  The same MPI Allreduce is used to
- * hide the cost of querying \ref signal::global_received across all ranks.
- */
-class delta_t_allreducer
-{
-public:
+class delta_t_allreducer;
 
-    /** Provides small default capacity for normalized_ratios. */
-    delta_t_allreducer() : normalized_ratios(2) {}
-
-    /**
-     * Returns the smallest entry in \c delta_t_candidates from any rank.
-     * Must be called collectively by all ranks i n\c MPI_COMM_WORLD.
-     */
-    virtual real_t operator()(const std::vector<real_t>& delta_t_candidates);
-
-    /**
-     * Maintains the mean ratio of each delta_t_candidate to the minimum
-     * delta_t_candidate selected on each operator() invocation.  Useful
-     * for determining the relative restrictiveness of each criterion.
-     */
-    std::vector<boost::accumulators::accumulator_set<
-                real_t,
-                boost::accumulators::stats<boost::accumulators::tag::mean>
-        > > normalized_ratios;
-
-private:
-
-    /**
-     * Maintains coarse statistics on the wall time duration between calls.
-     * This provides a rank-specific measure of the variability per time step
-     * which includes all registered periodic callbacks (e.g. status and
-     * restart processing).
-     */
-    boost::accumulators::accumulator_set<
-            real_t,
-            boost::accumulators::stats<boost::accumulators::tag::max,
-                                       boost::accumulators::tag::mean,
-                                       boost::accumulators::tag::variance>
-        > period;
-};
+class field;
 
 /**
  * An abstract driver base class for managing a Suzerain application.
@@ -335,6 +293,22 @@ public:
             const time_type t,
             const step_type nt);
 
+    /**
+     * Type maintaining the mean ratio of each delta_t_candidate to the minimum
+     * delta_t_candidate selected during each time step.  Useful for
+     * determining the relative restrictiveness of each stability criterion.
+     */
+    typedef std::vector<boost::accumulators::accumulator_set<
+                real_t,
+                boost::accumulators::stats<boost::accumulators::tag::mean>
+        > > delta_t_ratios_type;
+
+    /**
+     * Maintains the mean ratio of each delta_t_candidate to the minimum
+     * delta_t_candidate selected during each time step.
+     */
+    delta_t_ratios_type delta_t_ratios;
+
 protected:
 
     /**
@@ -424,7 +398,11 @@ protected:
     /** Tracks last time a statistics sample file was written successfully */
     step_type last_statistics_saved_nt;
 
-    /** Non-atomic locations used to track global signal receipt. */
+    /**
+     * Maintains if any signals were observed in \ref signal::global_received
+     * during the last time step during a time advance.  To be indexed using
+     * \ref signal::action_type.
+     */
     signal::received_type signal_received;
 
 private:
@@ -432,6 +410,98 @@ private:
     /** Was a metadata file ever saved to disk? */
     bool metadata_created;
 
+public:
+
+    /**
+     * Handles \c MPI_Allreduce calls necessary to obtain stable time steps on
+     * all ranks as well as aggregating POSIX signals received on any rank.
+     */
+    const scoped_ptr<delta_t_allreducer> allreducer;
+
+};
+
+/**
+ * A stateful functor that performs a MPI_Allreduce to determine the minimum
+ * stable time step size across all ranks.  The same MPI Allreduce is used to
+ * hide the cost of querying \ref signal::global_received across all ranks.
+ */
+class delta_t_allreducer : public timestepper::delta_t_reducer
+{
+    /** Provides simple access to the superclass type */
+    typedef timestepper::delta_t_reducer super;
+
+public:
+
+    /** Construct an instance referring to external state. */
+    delta_t_allreducer(
+            const double& wtime_mpi_init,
+            const double& wtime_fftw_planning,
+            const shared_ptr<time_definition>& timedef,
+            const double& wtime_load_state,
+            const double& wtime_advance_start,
+            const driver_base::step_type& last_status_nt,
+            const driver_base::step_type& last_restart_saved_nt,
+            driver_base::delta_t_ratios_type& delta_t_ratios,
+            signal::received_type& signal_received)
+        : wtime_mpi_init(wtime_mpi_init)
+        , wtime_fftw_planning(wtime_fftw_planning)
+        , timedef(timedef)
+        , wtime_load_state(wtime_load_state)
+        , wtime_advance_start(wtime_advance_start)
+        , last_status_nt(last_status_nt)
+        , last_restart_saved_nt(last_restart_saved_nt)
+        , delta_t_ratios(delta_t_ratios)
+        , signal_received(signal_received)
+    {}
+
+    /**
+     * Returns the smallest entry in \c delta_t_candidates from any rank.  Must
+     * be called collectively by all ranks in \c MPI_COMM_WORLD.  Mutates \ref
+     * signal::global_received.
+     */
+    real_t operator()(const std::vector<real_t>& delta_t_candidates);
+
+private:
+
+    /** Reference to content maintained by a \ref application_base instance. */
+    const double& wtime_mpi_init;
+
+    /** Reference to content maintained by a \ref application_base instance. */
+    const double& wtime_fftw_planning;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    const shared_ptr<time_definition>& timedef;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    const double& wtime_load_state;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    const double& wtime_advance_start;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    const driver_base::step_type& last_status_nt;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    const driver_base::step_type& last_restart_saved_nt;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    driver_base::delta_t_ratios_type& delta_t_ratios;
+
+    /** Reference to content maintained by a \ref driver_base instance. */
+    signal::received_type& signal_received;
+
+    /**
+     * Maintains coarse statistics on the wall time duration between calls.
+     * This provides a rank-specific measure of the variability per time step
+     * which includes all registered periodic callbacks (e.g. status and
+     * restart processing).
+     */
+    boost::accumulators::accumulator_set<
+            real_t,
+            boost::accumulators::stats<boost::accumulators::tag::max,
+                                       boost::accumulators::tag::mean,
+                                       boost::accumulators::tag::variance>
+        > period;
 };
 
 } // end namespace support
