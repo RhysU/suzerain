@@ -98,20 +98,28 @@ public:
      */
     virtual std::string log4cxx_config();
 
+    /** The application's revision string which is reported by \c --version. */
     std::string revstr;
 
+    /** Command line options received by \c initialize. */
     program_options options;
 
+    /** A global grid extent definition. */
     shared_ptr<grid_definition> grid;
 
+    /** Details of how FFTs are performed within the application. */
     shared_ptr<fftw_definition> fftwdef;
 
+    /** A thread-unsafe, mutable B-spline workspace for building operators. */
     shared_ptr<bspline> b;
 
-    shared_ptr<bsplineop> cop; // Collocation operators
+    /** Collocation-based B-spline operators used by the application. */
+    shared_ptr<bsplineop> cop;
 
-    shared_ptr<bsplineop> gop; // Galerkin L2 operators
+    /** Galerkin-based B-spline operators used by the application. */
+    shared_ptr<bsplineop> gop;
 
+    /** Decomposition details used for MPI-readiness and parallel FFTs. */
     shared_ptr<pencil_grid> dgrid;
 
     /**
@@ -135,10 +143,10 @@ public:
      */
     typedef multi_array::ref<complex_t, 4> state_common_type;
 
-    /** Linear state storage.  See \ref #state_linear_type for details. */
+    /** Linear state storage.  See \ref #state_linear_type. */
     shared_ptr<state_linear_type> state_linear;
 
-    /** Nonlinear state storage.  See \ref #state_nonlinear_type for details. */
+    /** Nonlinear state storage.  See \ref #state_nonlinear_type. */
     shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**

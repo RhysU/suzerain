@@ -77,7 +77,7 @@ typedef array<
 /**
  * Global, atomic locations used to track local POSIX signal receipt.  Beware
  * that usage by multiple clients, e.g. multiple \ref delta_t_allreducer
- * instances, may cause race conditions.
+ * instances by multiple \ref driver_base instances, may cause race conditions.
  */
 extern volatile_received_type global_received;
 
@@ -151,7 +151,10 @@ public:
     /** Operational details on advancing simulation time. */
     shared_ptr<time_definition> timedef;
 
-    /** Controls the OS signals triggering various types of processing. */
+    /**
+     * Controls the OS signals triggering various types of processing.
+     * Must be static so that it can be queries within signal handler.
+     */
     static signal_definition signaldef;
 
     /** Controls low storage method to be used for time advance. */
