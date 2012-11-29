@@ -300,45 +300,44 @@ driver_base::prepare_tc(
                 *state_linear, *state_nonlinear,
                 initial_t, timedef->min_dt, timedef->max_dt));
 
-////FIXME
-////// Register status callbacks status_{dt,nt} as requested.
-////// If no non-default, non-zero values were provided, permit override.
-////if (    options.variables()["status_dt"].defaulted()
-////     && options.variables()["status_nt"].defaulted()
-////     && !timedef->status_dt
-////     && !timedef->status_nt) {
-////    default_status_interval(timedef->status_dt, timedef->status_nt);
-////}
-////tc->add_periodic_callback(
-////        (timedef->status_dt ? timedef->status_dt : tc->forever_t()),
-////        (timedef->status_nt ? timedef->status_nt : tc->forever_nt()),
-////        &log_status);
+    // Register status callbacks status_{dt,nt} as requested.
+    // If no non-default, non-zero values were provided, permit override.
+    if (    options.variables()["status_dt"].defaulted()
+         && options.variables()["status_nt"].defaulted()
+         && !timedef->status_dt
+         && !timedef->status_nt) {
+        default_status_interval(timedef->status_dt, timedef->status_nt);
+    }
+    tc->add_periodic_callback(
+            (timedef->status_dt ? timedef->status_dt : tc->forever_t()),
+            (timedef->status_nt ? timedef->status_nt : tc->forever_nt()),
+            boost::bind(&driver_base::log_status, this, _1, _2));
 
-////// Register restart-writing callbacks restart_{dt,nt} as requested.
-////// If no non-default, non-zero values were provided, permit override.
-////if (    options.variables()["restart_dt"].defaulted()
-////     && options.variables()["restart_nt"].defaulted()
-////     && !restartdef->dt
-////     && !restartdef->nt) {
-////    default_restart_interval(restartdef->dt, restartdef->nt);
-////}
-////tc->add_periodic_callback(
-////        (restartdef->dt ? restartdef->dt : tc->forever_t()),
-////        (restartdef->nt ? restartdef->nt : tc->forever_nt()),
-////        &save_restart);
+    // Register restart-writing callbacks restart_{dt,nt} as requested.
+    // If no non-default, non-zero values were provided, permit override.
+    if (    options.variables()["restart_dt"].defaulted()
+         && options.variables()["restart_nt"].defaulted()
+         && !restartdef->dt
+         && !restartdef->nt) {
+        default_restart_interval(restartdef->dt, restartdef->nt);
+    }
+    tc->add_periodic_callback(
+            (restartdef->dt ? restartdef->dt : tc->forever_t()),
+            (restartdef->nt ? restartdef->nt : tc->forever_nt()),
+            boost::bind(&driver_base::save_restart, this, _1, _2));
 
-////// Register statistics-related callbacks per statistics_{dt,nt}.
-////// If no non-default, non-zero values were provided, be sensible.
-////if (   options.variables()["stats_dt"].defaulted()
-////    && options.variables()["stats_nt"].defaulted()
-////    && !statsdef->dt
-////    && !statsdef->.nt) {
-////    default_statistics_interval(statsdef->dt, statsdef->nt);
-////}
-////tc->add_periodic_callback(
-////        (statsdef->dt ? statsdef->dt : tc->forever_t()),
-////        (statsdef->nt ? statsdef->nt : tc->forever_nt()),
-////        &save_statistics);
+    // Register statistics-related callbacks per statistics_{dt,nt}.
+    // If no non-default, non-zero values were provided, be sensible.
+    if (   options.variables()["stats_dt"].defaulted()
+        && options.variables()["stats_nt"].defaulted()
+        && !statsdef->dt
+        && !statsdef->nt) {
+        default_statistics_interval(statsdef->dt, statsdef->nt);
+    }
+    tc->add_periodic_callback(
+            (statsdef->dt ? statsdef->dt : tc->forever_t()),
+            (statsdef->nt ? statsdef->nt : tc->forever_nt()),
+            boost::bind(&driver_base::save_statistics, this, _1, _2));
 }
 
 void

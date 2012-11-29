@@ -453,12 +453,7 @@ protected:
     /** Tracks last time a statistics sample file was written successfully */
     step_type last_statistics_saved_nt;
 
-    /**
-     * Maintains if any signals were observed in \ref signal::global_received
-     * during the last time step during a time advance.  To be indexed using
-     * \ref signal::action_type.
-     */
-    signal::received_type signal_received;
+private:
 
     /**
      * Routine to process incoming signal actions after each time step.
@@ -468,12 +463,15 @@ protected:
             time_type t,
             step_type nt);
 
-private:
+    /**
+     * Maintains if any signals were observed in \ref signal::global_received
+     * during the last time step during a time advance.  To be indexed using
+     * \ref signal::action_type.
+     */
+    signal::received_type signal_received;
 
     /** Was a metadata file ever saved to disk? */
     bool metadata_created;
-
-public:
 
     /**
      * Handles \c MPI_Allreduce calls necessary to obtain stable time steps on
