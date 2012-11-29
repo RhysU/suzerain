@@ -197,6 +197,9 @@ public:
      *                the current time step.
      * @param callback The callback to invoke.
      *
+     * Specifying both <tt>what_t == forever_t()</tt> and <tt>what_nt ==
+     * forever_nt()</tt> causes the callback to be discarded.
+     *
      * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
      *      if you need to provide a stateful or noncopyable functor
      *      as the \c callback argument.
@@ -220,6 +223,9 @@ public:
      *                 the current time step.
      * @param callback The callback to invoke.  See add_callback() for
      *                 a discussion of this argument's semantics.
+     *
+     * Specifying both <tt>every_dt == forever_t()</tt> and <tt>every_nt ==
+     * forever_nt()</tt> causes the callback to be discarded.
      *
      * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
      *      if you need to provide a stateful or noncopyable functor
@@ -433,6 +439,12 @@ void timecontroller<TimeType,StepType,StopType>::add_callback(
         throw std::invalid_argument("what_nt <= current_nt()");
     }
 
+    // Avoid runtime costs for callbacks that should never occur.
+    if (    what_t  == std::numeric_limits<TimeType>::max()
+         && what_nt == std::numeric_limits<StepType>::max()) {
+        return;
+    }
+
     Entry *e    = new Entry;      // Allocate Entry on heap
     e->periodic = false;
     e->every_dt = 0;
@@ -452,6 +464,13 @@ void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
 {
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
+
+    // Avoid runtime costs for callbacks that should never occur.
+    // Notice check occurs before add_and_coerce_overflow_to_max.
+    if (    every_dt == std::numeric_limits<TimeType>::max()
+         && every_nt == std::numeric_limits<StepType>::max()) {
+        return;
+    }
 
     Entry *e    = new Entry;      // Allocate Entry on heap
     e->periodic = true;

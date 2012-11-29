@@ -613,6 +613,10 @@ BOOST_AUTO_TEST_CASE( what_t_value_too_large )
     Callback<> cb;
     tc.add_callback(tc.forever_t(), /*never hit*/1000, boost::ref(cb));
 
+    // Add a "callback" that is a NOP and should be ignored
+    Callback<> ig;
+    tc.add_callback(tc.forever_t(), tc.forever_nt(), boost::ref(ig));
+
     // Advance to the end of days in a single step
     BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(tc.forever_t(),  tc.current_t());
@@ -622,6 +626,9 @@ BOOST_AUTO_TEST_CASE( what_t_value_too_large )
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t,  tc.forever_t());
     BOOST_CHECK_EQUAL(cb.last_nt, 2u);
+
+    // Check that the NOP callback was never invoked
+    BOOST_CHECK_EQUAL(ig.count, 0u);
 }
 
 // Sane behavior when every_dt should cause floating point overflow?
@@ -637,6 +644,10 @@ BOOST_AUTO_TEST_CASE( every_dt_value_too_large )
     Callback<> cb;
     tc.add_periodic_callback(tc.forever_t(), /*never hit*/1000, boost::ref(cb));
 
+    // Add a "callback" that is a NOP and should be ignored
+    Callback<> ig;
+    tc.add_periodic_callback(tc.forever_t(), tc.forever_nt(), boost::ref(ig));
+
     // Advance to the end of days in a single step
     BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(tc.forever_t(),  tc.current_t());
@@ -646,6 +657,9 @@ BOOST_AUTO_TEST_CASE( every_dt_value_too_large )
     BOOST_CHECK_EQUAL(cb.count, 1u);
     BOOST_CHECK_EQUAL(cb.last_t,  tc.forever_t());
     BOOST_CHECK_EQUAL(cb.last_nt, 2u);
+
+    // Check that the NOP callback was never invoked
+    BOOST_CHECK_EQUAL(ig.count, 0u);
 }
 
 // Sane behavior when we hit the maximum number of time steps?
