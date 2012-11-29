@@ -276,6 +276,82 @@ driver_base::prepare_method()
     }
 }
 
+void
+driver_base::prepare_tc(
+        const driver_base::time_type initial_t,
+        const real_t chi)
+{
+    INFO0("Preparing controller at initial_t " << initial_t
+          << " for step size in [" << timedef->min_dt
+          << ", " << timedef->max_dt << "]");
+
+    // Instantiate the low-storage timecontroller
+    if (!method) prepare_method();    // Only call if necessary
+    SUZERAIN_ENSURE(method);          // Defend against segfaults...
+    SUZERAIN_ENSURE(L);               // ...if everything not initialized
+    SUZERAIN_ENSURE(N);
+    SUZERAIN_ENSURE(state_linear);
+    SUZERAIN_ENSURE(state_nonlinear);
+    SUZERAIN_ENSURE(restartdef);
+    SUZERAIN_ENSURE(statsdef);
+    SUZERAIN_ENSURE(timedef);
+    tc.reset(make_lowstorage_timecontroller(
+                *method, *allreducer, *L, chi, *N,
+                *state_linear, *state_nonlinear,
+                initial_t, timedef->min_dt, timedef->max_dt));
+
+////FIXME
+////// Register status callbacks status_{dt,nt} as requested.
+////// If no non-default, non-zero values were provided, permit override.
+////if (    options.variables()["status_dt"].defaulted()
+////     && options.variables()["status_nt"].defaulted()
+////     && !timedef->status_dt
+////     && !timedef->status_nt) {
+////    default_status_interval(timedef->status_dt, timedef->status_nt);
+////}
+////tc->add_periodic_callback(
+////        (timedef->status_dt ? timedef->status_dt : tc->forever_t()),
+////        (timedef->status_nt ? timedef->status_nt : tc->forever_nt()),
+////        &log_status);
+
+////// Register restart-writing callbacks restart_{dt,nt} as requested.
+////// If no non-default, non-zero values were provided, permit override.
+////if (    options.variables()["restart_dt"].defaulted()
+////     && options.variables()["restart_nt"].defaulted()
+////     && !restartdef->dt
+////     && !restartdef->nt) {
+////    default_restart_interval(restartdef->dt, restartdef->nt);
+////}
+////tc->add_periodic_callback(
+////        (restartdef->dt ? restartdef->dt : tc->forever_t()),
+////        (restartdef->nt ? restartdef->nt : tc->forever_nt()),
+////        &save_restart);
+
+////// Register statistics-related callbacks per statistics_{dt,nt}.
+////// If no non-default, non-zero values were provided, be sensible.
+////if (   options.variables()["stats_dt"].defaulted()
+////    && options.variables()["stats_nt"].defaulted()
+////    && !statsdef->dt
+////    && !statsdef->.nt) {
+////    default_statistics_interval(statsdef->dt, statsdef->nt);
+////}
+////tc->add_periodic_callback(
+////        (statsdef->dt ? statsdef->dt : tc->forever_t()),
+////        (statsdef->nt ? statsdef->nt : tc->forever_nt()),
+////        &save_statistics);
+}
+
+void
+driver_base::prepare_tc(
+        const driver_base::time_type initial_t)
+{
+    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(grid->dN.x());
+    SUZERAIN_ENSURE(grid->dN.z());
+    return prepare_tc(initial_t, real_t(1)/(grid->dN.x()*grid->dN.z()));
+}
+
 std::string
 driver_base::build_timeprefix(
         const driver_base::time_type t,

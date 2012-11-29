@@ -191,6 +191,30 @@ public:
     virtual void prepare_method();
 
     /**
+     * Use member data to prepare a low-storage timecontroller instance in #tc.
+     * Any existing instance in #tc will be released.  All operational members,
+     * e.g. #L, #N, #timedef, #statsdef, should have been initialized as
+     * desired prior to invocation.  The controller and all appropriate
+     * periodic callbacks will be prepared.
+     *
+     * @param initial_t Initial simulation time to use.
+     * @param chi       Time-independent scaling factor for #N on each substep.
+     *                  Often used to hide FFT normalization costs.
+     */
+    virtual void prepare_tc(
+            const time_type initial_t,
+            const real_t chi);
+
+    /**
+     * Wrapper invoking prepare_tc(time_type,real_t) with
+     * \c chi set for dealiased FFT normalization per #grid.
+     *
+     * @param initial_t Initial simulation time defaulting to zero.
+     */
+    void prepare_tc(
+            const time_type initial_t = 0);
+
+    /**
      * Build a fixed-width, human-friendly way to output the given simulation
      * time and time step number.  Care is taken to ensure sequential outputs
      * are minimally distinct.
@@ -371,6 +395,31 @@ protected:
             const std::string& timeprefix,
             const time_type t,
             const step_type nt);
+
+    /**
+     * Compute default status output intervals.
+     * Useful if the desired intervals depend on other scenario parameters.
+     * Called by \ref prepare_tc(time_type,real_t).
+     */
+    virtual void default_status_interval(time_type&, step_type&) {}
+
+    /**
+     * Compute default restart writing intervals.
+     * \copydoc default_status_interval(time_type&,step_type&)
+     */
+    virtual void default_restart_interval(time_type&, step_type&) {}
+
+    /**
+     * Compute default statistics writing intervals.
+     * \copydoc default_status_interval(time_type&,step_type&)
+     */
+    virtual void default_statistics_interval(time_type&, step_type&) {}
+
+    /** Permits a subclass-specific default restart writing interval. */
+    virtual time_type default_restart_interval()    { return tc->forever_t(); }
+
+    /** Permits a subclass-specific default statistics writing interval. */
+    virtual time_type default_statistics_interval() { return tc->forever_t(); }
 
     /**
      * Did the previous time advance end in a predicted, controlled manner?
