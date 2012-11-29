@@ -52,13 +52,13 @@ public:
      * @param min_dt      Minimum allowable physically-driven time step.
      * @param max_dt      Maximum allowable physically-driven time step.
      */
-    time_definition(real_t advance_dt,
-                    int    advance_nt,
-                    real_t advance_wt,
-                    real_t status_dt,
-                    int    status_nt,
-                    real_t min_dt,
-                    real_t max_dt);
+    time_definition(real_t      advance_dt,
+                    std::size_t advance_nt,
+                    real_t      advance_wt,
+                    real_t      status_dt,
+                    std::size_t status_nt,
+                    real_t      min_dt,
+                    real_t      max_dt);
 
     /**
      * Construct an instance with the given default values.  All of these can
@@ -77,7 +77,7 @@ public:
     real_t advance_dt;
 
     /** Maximum number of discrete time steps to advance the simulation. */
-    int advance_nt;
+    std::size_t advance_nt;
 
     /** Maximum amount of wall time to advance the simulation. */
     real_t advance_wt;
@@ -86,7 +86,7 @@ public:
     real_t status_dt;
 
     /** Maximum number of discrete time steps between status updates. */
-    int status_nt;
+    std::size_t status_nt;
 
     /** Minimum allowable physically-driven time step */
     real_t min_dt;
@@ -105,13 +105,13 @@ public:
 private:
 
     /** Prepare one-time options for time advancement */
-    void initialize_advancement(real_t default_advance_dt,
-                                int    default_advance_nt,
-                                real_t default_advance_wt,
-                                real_t default_status_dt,
-                                int    default_status_nt,
-                                real_t default_min_dt,
-                                real_t default_max_dt);
+    void initialize_advancement(real_t      default_advance_dt,
+                                std::size_t default_advance_nt,
+                                real_t      default_advance_wt,
+                                real_t      default_status_dt,
+                                std::size_t default_status_nt,
+                                real_t      default_min_dt,
+                                real_t      default_max_dt);
 
     /** Prepare repeatedly-used options similar to scenario parameters */
     void initialize_scenario(const char* default_evmagfactor);

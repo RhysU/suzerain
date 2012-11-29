@@ -23,9 +23,24 @@
 namespace suzerain
 {
 
+/** Helper used to parse size_t-based options */
+static void parse_size_t(const std::string& s,
+                         std::size_t* value,
+                         const char* name)
+{
+    using std::floor;
+#pragma warning(push,disable:2259)
+    const real_t t = floor(exprparse<real_t>(s, name) + real_t(1)/2);
+#pragma warning(pop)
+    validation::ensure_nonnegative(t, name);
+    *value = t;
+}
+
+/** Helper used to parse string-based options */
 template<typename T>
 static void parse_option(const std::string& s,
-                         T* value, void (*validator)(T, const char*),
+                         T* value,
+                         void (*validator)(T, const char*),
                          const char* name)
 {
 #pragma warning(push,disable:2259)
@@ -37,9 +52,9 @@ static void parse_option(const std::string& s,
 
 statistics_definition::statistics_definition(
     const std::string& destination,
-    int retain,
+    std::size_t retain,
     real_t dt,
-    int nt)
+    std::size_t nt)
     : definition_base("Statistics sampling parameters"),
       destination(destination),
       retain(retain),
@@ -52,7 +67,6 @@ statistics_definition::statistics_definition(
     using boost::program_options::bool_switch;
     using std::string;
     using validation::ensure_nonnegative;
-    using validation::ensure_positive;
 
     this->add_options()
     ("statistics_destination", value(&this->destination)
@@ -61,8 +75,7 @@ statistics_definition::statistics_definition(
      "One or more #'s must be present and will be replaced by a sequence number.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique template.")
     ("statistics_retain", value<string>(NULL)
-     ->notifier(bind(&parse_option<int>, _1, &this->retain,
-                     &ensure_nonnegative<int>, "statistics_retain"))
+     ->notifier(bind(&parse_size_t, _1, &this->retain, "statistics_retain"))
      ->default_value(lexical_cast<string>(this->retain)),
      "Maximum number of committed statistics files to retain")
     ("statistics_dt", value<string>(NULL)
@@ -71,8 +84,7 @@ statistics_definition::statistics_definition(
      ->default_value(lexical_cast<string>(this->dt)),
      "Maximum amount of simulation time between sampling statistics")
     ("statistics_nt", value<string>(NULL)
-     ->notifier(bind(&parse_option<int>, _1, &this->nt,
-                     &ensure_nonnegative<int>, "statistics_nt"))
+     ->notifier(bind(&parse_size_t, _1, &this->nt, "statistics_nt"))
      ->default_value(lexical_cast<string>(this->nt)),
      "Maximum number of time steps between sampling statistics")
     ;

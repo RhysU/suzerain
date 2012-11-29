@@ -54,9 +54,9 @@ public:
     restart_definition(const std::string& metadata,
                        const std::string& uncommitted,
                        const std::string& destination,
-                       int retain = 1,
-                       real_t dt  = 0,
-                       int nt     = 0);
+                       std::size_t retain = 1,
+                       real_t dt          = 0,
+                       std::size_t nt     = 0);
 
     /**
      * The restart file path to use when saving common restart file
@@ -80,7 +80,7 @@ public:
     /**
      * The maximum number of committed restart files to retain.
      */
-    int retain;
+    std::size_t retain;
 
     /**
      * The maximum amount of simulation time between writing restart files.
@@ -91,7 +91,7 @@ public:
      * The maximum number of simulation steps to take between writing restart
      * files.
      */
-    int nt;
+    std::size_t nt;
 
     /**
      * Save restart fields as collocation point values in physical space?

@@ -27,10 +27,24 @@
 namespace suzerain
 {
 
+/** Helper used to parse size_t-based options */
+static void parse_size_t(const std::string& s,
+                         std::size_t* value,
+                         const char* name)
+{
+    using std::floor;
+#pragma warning(push,disable:2259)
+    const real_t t = floor(exprparse<real_t>(s, name) + real_t(1)/2);
+#pragma warning(pop)
+    validation::ensure_nonnegative(t, name);
+    *value = t;
+}
+
 /** Helper used to parse string-based options */
 template<typename T>
 static void parse_option(const std::string& s,
-                         T* value, void (*validator)(T, const char*),
+                         T* value,
+                         void (*validator)(T, const char*),
                          const char* name)
 {
 #pragma warning(push,disable:2259)
@@ -92,13 +106,13 @@ static void parse_walltime(const std::string& s,
 }
 
 void time_definition::initialize_advancement(
-    real_t default_advance_dt,
-    int    default_advance_nt,
-    real_t default_advance_wt,
-    real_t default_status_dt,
-    int    default_status_nt,
-    real_t default_min_dt,
-    real_t default_max_dt)
+    real_t      default_advance_dt,
+    std::size_t default_advance_nt,
+    real_t      default_advance_wt,
+    real_t      default_status_dt,
+    std::size_t default_status_nt,
+    real_t      default_min_dt,
+    real_t      default_max_dt)
 {
     advance_dt = default_advance_dt;
     advance_nt = default_advance_nt;
@@ -113,7 +127,6 @@ void time_definition::initialize_advancement(
     using boost::program_options::value;
     using std::string;
     using validation::ensure_nonnegative;
-    using validation::ensure_positive;
 
     this->add_options()
     ("advance_dt", value<string>(NULL)
@@ -122,8 +135,7 @@ void time_definition::initialize_advancement(
      ->default_value(lexical_cast<string>(advance_dt)),
      "Maximum amount of physical time to advance the simulation")
     ("advance_nt", value<string>(NULL)
-     ->notifier(bind(&parse_option<int>, _1, &advance_nt,
-                     &ensure_nonnegative<int>, "advance_nt"))
+     ->notifier(bind(&parse_size_t, _1, &advance_nt, "advance_nt"))
      ->default_value(lexical_cast<string>(advance_nt)),
      "Maximum number of discrete time steps to advance the simulation")
     ("advance_wt", value<string>(NULL)
@@ -137,8 +149,7 @@ void time_definition::initialize_advancement(
      ->default_value(lexical_cast<string>(status_dt)),
      "Maximum physical time between status updates")
     ("status_nt", value<string>(NULL)
-     ->notifier(bind(&parse_option<int>, _1, &status_nt,
-                     &ensure_nonnegative<int>, "status_nt"))
+     ->notifier(bind(&parse_size_t, _1, &status_nt, "status_nt"))
      ->default_value(lexical_cast<string>(status_nt)),
      "Maximum number of discrete time steps between status updates")
     ("min_dt", value<string>(NULL)
@@ -177,13 +188,13 @@ void time_definition::initialize_scenario(
                         "Safety factor in (0,1] used to adjust time step aggressiveness");
 }
 
-time_definition::time_definition(real_t advance_dt,
-                                 int    advance_nt,
-                                 real_t advance_wt,
-                                 real_t status_dt,
-                                 int    status_nt,
-                                 real_t min_dt,
-                                 real_t max_dt)
+time_definition::time_definition(real_t      advance_dt,
+                                 std::size_t advance_nt,
+                                 real_t      advance_wt,
+                                 real_t      status_dt,
+                                 std::size_t status_nt,
+                                 real_t      min_dt,
+                                 real_t      max_dt)
     : definition_base("Time advancement parameters")
 {
     initialize_advancement(advance_dt,

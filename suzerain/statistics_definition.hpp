@@ -49,9 +49,9 @@ public:
      */
     explicit statistics_definition(
         const std::string& destination,
-        int retain = (1 << 15),
-        real_t dt  = 0,
-        int nt     = 0);
+        std::size_t retain = (1 << 15),
+        real_t dt          = 0,
+        std::size_t nt     = 0);
 
     /**
      * The archiving pattern to use when committing statistics output files.
@@ -64,7 +64,7 @@ public:
     /**
      * The maximum number of committed statistics files to retain.
      */
-    int retain;
+    std::size_t retain;
 
     /**
      * The maximum amount of simulation time between sampling statistics.
@@ -75,7 +75,7 @@ public:
      * The maximum number of simulation steps to take between sampling
      * statistics.
      */
-    int nt;
+    std::size_t nt;
 };
 
 } // namespace suzerain
