@@ -600,18 +600,18 @@ BOOST_AUTO_TEST_CASE( inf_actual_dt_abort )
     BOOST_REQUIRE((boost::math::isinf)(tc.current_t()));
 }
 
-// Sane behavior when what_values should cause floating point overflow?
-BOOST_AUTO_TEST_CASE( what_values_too_large )
+// Sane behavior when what_t should cause floating point overflow?
+BOOST_AUTO_TEST_CASE( what_t_value_too_large )
 {
     TestTimeController<> tc(0.0, 1e-8, std::numeric_limits<double>::max());
     BOOST_REQUIRE(tc.advance(1.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(1u,  tc.current_nt());
 
-    // Now what_XX = forever should cause a numeric overflow
-    // Code should silently coerce these to maximum representable value
+    // Now what_t == forever should cause a numeric overflow
+    // Code should silently coerce this to maximum representable value
     Callback<> cb;
-    tc.add_callback(tc.forever_t(), tc.forever_nt(), boost::ref(cb));
+    tc.add_callback(tc.forever_t(), /*never hit*/1000, boost::ref(cb));
 
     // Advance to the end of days in a single step
     BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
@@ -624,18 +624,18 @@ BOOST_AUTO_TEST_CASE( what_values_too_large )
     BOOST_CHECK_EQUAL(cb.last_nt, 2u);
 }
 
-// Sane behavior when every_values should cause floating point overflow?
-BOOST_AUTO_TEST_CASE( every_values_too_large )
+// Sane behavior when every_dt should cause floating point overflow?
+BOOST_AUTO_TEST_CASE( every_dt_value_too_large )
 {
     TestTimeController<> tc(0.0, 1e-8, std::numeric_limits<double>::max());
     BOOST_REQUIRE(tc.advance(1.0, tc.forever_nt()));
     BOOST_REQUIRE_EQUAL(1.0, tc.current_t());
     BOOST_REQUIRE_EQUAL(1u,  tc.current_nt());
 
-    // Now every_XX = forever should cause a numeric overflow
+    // Now every_dt = forever should cause a numeric overflow
     // Code should silently coerce these to maximum representable value
     Callback<> cb;
-    tc.add_periodic_callback(tc.forever_t(), tc.forever_nt(), boost::ref(cb));
+    tc.add_periodic_callback(tc.forever_t(), /*never hit*/1000, boost::ref(cb));
 
     // Advance to the end of days in a single step
     BOOST_REQUIRE(tc.advance(tc.forever_t(), tc.forever_nt()));
