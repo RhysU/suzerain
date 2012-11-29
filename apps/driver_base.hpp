@@ -181,37 +181,37 @@ public:
             > > N;
 
     /** Controls time advance, including callback processing. */
-    shared_ptr<timecontroller<real_t> > tc;
+    shared_ptr<timecontroller<real_t> > controller;
 
     /**
-     * Ensure #method is valid for use by #tc.  That is, if <tt>!method</tt>
-     * then \ref timestepper::lowstorage::smr91 is used per #timedef.
-     * Otherwise, #method is not modified.
+     * Ensure #method is valid for use by #controller.  That is, if
+     * <tt>!method</tt> then \ref timestepper::lowstorage::smr91 is used per
+     * #timedef.  Otherwise, #method is not modified.
      */
     virtual void prepare_method();
 
     /**
-     * Use member data to prepare a low-storage timecontroller instance in #tc.
-     * Any existing instance in #tc will be released.  All operational members,
-     * e.g. #L, #N, #timedef, #statsdef, should have been initialized as
-     * desired prior to invocation.  The controller and all appropriate
-     * periodic callbacks will be prepared.
+     * Use instance members to prepare a low-storage timecontroller instance in
+     * #controller.  Any existing instance in #controller will be released.
+     * All operational members, e.g. #L, #N, #timedef, #statsdef, should have
+     * been initialized as desired prior to invocation.  The controller and all
+     * appropriate periodic callbacks will be prepared.
      *
      * @param initial_t Initial simulation time to use.
      * @param chi       Time-independent scaling factor for #N on each substep.
      *                  Often used to hide FFT normalization costs.
      */
-    virtual void prepare_tc(
+    virtual void prepare_controller(
             const time_type initial_t,
             const real_t chi);
 
     /**
-     * Wrapper invoking prepare_tc(time_type,real_t) with
+     * Wrapper invoking prepare_controller(time_type,real_t) with
      * \c chi set for dealiased FFT normalization per #grid.
      *
      * @param initial_t Initial simulation time defaulting to zero.
      */
-    void prepare_tc(
+    void prepare_controller(
             const time_type initial_t = 0);
 
     /**
@@ -399,27 +399,32 @@ protected:
     /**
      * Compute default status output intervals.
      * Useful if the desired intervals depend on other scenario parameters.
-     * Called by \ref prepare_tc(time_type,real_t).
+     * Called by \ref prepare_controller(time_type,real_t).
      */
-    virtual void default_status_interval(time_type&, step_type&) {}
+    virtual void default_status_interval(time_type&, step_type&)
+    { /* NOP */ }
 
     /**
      * Compute default restart writing intervals.
      * \copydoc default_status_interval(time_type&,step_type&)
      */
-    virtual void default_restart_interval(time_type&, step_type&) {}
+    virtual void default_restart_interval(time_type&, step_type&)
+    { /* NOP */ }
 
     /**
      * Compute default statistics writing intervals.
      * \copydoc default_status_interval(time_type&,step_type&)
      */
-    virtual void default_statistics_interval(time_type&, step_type&) {}
+    virtual void default_statistics_interval(time_type&, step_type&)
+    { /* NOP */ }
 
     /** Permits a subclass-specific default restart writing interval. */
-    virtual time_type default_restart_interval()    { return tc->forever_t(); }
+    virtual time_type default_restart_interval()
+    { return controller->forever_t(); }
 
     /** Permits a subclass-specific default statistics writing interval. */
-    virtual time_type default_statistics_interval() { return tc->forever_t(); }
+    virtual time_type default_statistics_interval()
+    { return controller->forever_t(); }
 
     /**
      * Did the previous time advance end in a predicted, controlled manner?
@@ -455,13 +460,10 @@ protected:
 
 private:
 
-    /**
-     * Routine to process incoming signal actions after each time step.
-     * Signature for timecontroller use.
-     */
+    /** Processes incoming signal actions via #controller callbacks. */
     bool process_any_signals_received(
-            time_type t,
-            step_type nt);
+            const time_type t,
+            const step_type nt);
 
     /**
      * Maintains if any signals were observed in \ref signal::global_received

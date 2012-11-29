@@ -127,7 +127,7 @@ driver_base::driver_base(
     , method()
     , L()
     , N()
-    , tc()
+    , controller()
     , soft_teardown(true)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)
@@ -277,7 +277,7 @@ driver_base::prepare_method()
 }
 
 void
-driver_base::prepare_tc(
+driver_base::prepare_controller(
         const driver_base::time_type initial_t,
         const real_t chi)
 {
@@ -295,7 +295,7 @@ driver_base::prepare_tc(
     SUZERAIN_ENSURE(restartdef);
     SUZERAIN_ENSURE(statsdef);
     SUZERAIN_ENSURE(timedef);
-    tc.reset(make_lowstorage_timecontroller(
+    controller.reset(make_lowstorage_timecontroller(
                 *method, *allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef->min_dt, timedef->max_dt));
@@ -308,9 +308,11 @@ driver_base::prepare_tc(
          && !timedef->status_nt) {
         default_status_interval(timedef->status_dt, timedef->status_nt);
     }
-    tc->add_periodic_callback(
-            (timedef->status_dt ? timedef->status_dt : tc->forever_t()),
-            (timedef->status_nt ? timedef->status_nt : tc->forever_nt()),
+    controller->add_periodic_callback(
+            (timedef->status_dt ? timedef->status_dt
+                                : controller->forever_t()),
+            (timedef->status_nt ? timedef->status_nt
+                                : controller->forever_nt()),
             boost::bind(&driver_base::log_status, this, _1, _2));
 
     // Register restart-writing callbacks restart_{dt,nt} as requested.
@@ -321,9 +323,9 @@ driver_base::prepare_tc(
          && !restartdef->nt) {
         default_restart_interval(restartdef->dt, restartdef->nt);
     }
-    tc->add_periodic_callback(
-            (restartdef->dt ? restartdef->dt : tc->forever_t()),
-            (restartdef->nt ? restartdef->nt : tc->forever_nt()),
+    controller->add_periodic_callback(
+            (restartdef->dt ? restartdef->dt : controller->forever_t()),
+            (restartdef->nt ? restartdef->nt : controller->forever_nt()),
             boost::bind(&driver_base::save_restart, this, _1, _2));
 
     // Register statistics-related callbacks per statistics_{dt,nt}.
@@ -334,9 +336,9 @@ driver_base::prepare_tc(
         && !statsdef->nt) {
         default_statistics_interval(statsdef->dt, statsdef->nt);
     }
-    tc->add_periodic_callback(
-            (statsdef->dt ? statsdef->dt : tc->forever_t()),
-            (statsdef->nt ? statsdef->nt : tc->forever_nt()),
+    controller->add_periodic_callback(
+            (statsdef->dt ? statsdef->dt : controller->forever_t()),
+            (statsdef->nt ? statsdef->nt : controller->forever_nt()),
             boost::bind(&driver_base::save_statistics, this, _1, _2));
 
     // Register any necessary signal handling logic once per unique signal
@@ -377,21 +379,24 @@ driver_base::prepare_tc(
         // Notice signal receipt include --advance_wt calling us a pumpkin.
         // We can afford this every time step because of delta_t_allreducer.
         if (s.size() > 0 || timedef->advance_wt > 0) {
-            tc->add_periodic_callback(tc->forever_t(), 1, boost::bind(
-                    &driver_base::process_any_signals_received, this, _1, _2));
+            controller->add_periodic_callback(
+                    controller->forever_t(), 1,
+                    boost::bind(&driver_base::process_any_signals_received,
+                                this, _1, _2));
         }
     }
 }
 
 void
-driver_base::prepare_tc(
+driver_base::prepare_controller(
         const driver_base::time_type initial_t)
 {
     // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(grid->dN.x());
     SUZERAIN_ENSURE(grid->dN.z());
-    return prepare_tc(initial_t, real_t(1)/(grid->dN.x()*grid->dN.z()));
+    return prepare_controller(initial_t,
+                              real_t(1) / (grid->dN.x() * grid->dN.z()));
 }
 
 std::string
@@ -748,8 +753,8 @@ driver_base::log_status_hook(
 
 bool
 driver_base::process_any_signals_received(
-        time_type t,
-        step_type nt)
+        const time_type t,
+        const step_type nt)
 {
     // this->allreducer performs the Allreduce necessary to get local status
     // from signal::global_received into actions within this->signal_received.
