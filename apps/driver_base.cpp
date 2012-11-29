@@ -263,6 +263,19 @@ driver_base::~driver_base()
     // Preserve restartdef->uncommitted as it may help post mortem debugging.
 }
 
+void
+driver_base::prepare_method()
+{
+    if (!method) {
+        INFO0("Preparing SMR91 timestepping scheme using evmagfactor "
+              << timedef->evmagfactor);
+        this->method.reset(new timestepper::lowstorage::method<
+                    timestepper::lowstorage::smr91,
+                    state_common_type::element
+                >(timedef->evmagfactor));
+    }
+}
+
 std::string
 driver_base::build_timeprefix(
         const driver_base::time_type t,

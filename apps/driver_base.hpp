@@ -184,9 +184,11 @@ public:
     shared_ptr<timecontroller<real_t> > tc; // FIXME
 
     /**
-     * Did the previous time advance end in a predicted, controlled manner?
+     * Ensure #method is valid for use by #tc.  That is, if <tt>!method</tt>
+     * then \ref timestepper::lowstorage::smr91 is used per #timedef.
+     * Otherwise, #method is not modified.
      */
-    bool soft_teardown;
+    virtual void prepare_method();
 
     /**
      * Build a fixed-width, human-friendly way to output the given simulation
@@ -369,6 +371,11 @@ protected:
             const std::string& timeprefix,
             const time_type t,
             const step_type nt);
+
+    /**
+     * Did the previous time advance end in a predicted, controlled manner?
+     */
+    bool soft_teardown;
 
     /**
      * Flag used to control whether \ref log_status_L2 shows headers.
