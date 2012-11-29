@@ -338,6 +338,49 @@ driver_base::prepare_tc(
             (statsdef->dt ? statsdef->dt : tc->forever_t()),
             (statsdef->nt ? statsdef->nt : tc->forever_nt()),
             boost::bind(&driver_base::save_statistics, this, _1, _2));
+
+    // Register any necessary signal handling logic once per unique signal
+    {
+        // Obtain a set of signal numbers which we need to register
+        std::vector<int> s;
+        s.insert(s.end(), signaldef.status.begin(),
+                          signaldef.status.end());
+        s.insert(s.end(), signaldef.restart.begin(),
+                          signaldef.restart.end());
+        s.insert(s.end(), signaldef.statistics.begin(),
+                          signaldef.statistics.end());
+        s.insert(s.end(), signaldef.teardown.begin(),
+                          signaldef.teardown.end());
+        sort(s.begin(), s.end());
+        s.erase(unique(s.begin(), s.end()), s.end());
+
+        // Register the signal handler for each of these signals
+        typedef std::vector<int>::const_iterator const_iterator;
+        for (const_iterator i = s.begin(); i != s.end(); ++i) {
+            const char * name = suzerain_signal_name(*i);
+            if (SIG_ERR != signal2(*i, &driver_base_process_signal)) {
+                if (name) {
+                    DEBUG0("Registered signal handler for " << name);
+                } else {
+                    DEBUG0("Registered signal handler for " << *i);
+                }
+            } else {
+                if (name) {
+                    WARN0("Unable to register signal handler for " << name);
+                } else {
+                    WARN0("Unable to register signal handler for " << *i);
+                }
+            }
+        }
+
+        // Iff we registered any handlers, process signal receipt in stepper.
+        // Notice signal receipt include --advance_wt calling us a pumpkin.
+        // We can afford this every time step because of delta_t_allreducer.
+        if (s.size() > 0 || timedef->advance_wt > 0) {
+            tc->add_periodic_callback(tc->forever_t(), 1, boost::bind(
+                    &driver_base::process_any_signals_received, this, _1, _2));
+        }
+    }
 }
 
 void
