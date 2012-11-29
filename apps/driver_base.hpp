@@ -160,7 +160,7 @@ public:
     /** Controls low storage method to be used for time advance. */
     shared_ptr<timestepper::lowstorage::method_interface<
             complex_t
-        > > method; // FIXME Default in advance routine
+        > > method;
 
     /**
      * Refers to a linear operator instance able to interoperate between
@@ -181,7 +181,7 @@ public:
             > > N;
 
     /** Controls time advance, including callback processing. */
-    shared_ptr<timecontroller<real_t> > tc; // FIXME
+    shared_ptr<timecontroller<real_t> > tc;
 
     /**
      * Ensure #method is valid for use by #tc.  That is, if <tt>!method</tt>
