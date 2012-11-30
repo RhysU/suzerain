@@ -1121,7 +1121,6 @@ real_t delta_t_allreducer::operator()(
     return delta_t;
 }
 
-
 } // end namespace support
 
 } // end namespace suzerain
