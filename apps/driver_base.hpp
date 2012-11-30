@@ -225,9 +225,10 @@ public:
      * @param output_timers   Output performance details from rank zero?
      * @param output_stepping Output time step size metrics after advance?
      *
-     * @return True if the advance completed successfully.  False otherwise.
+     * @return The wall time spent advancing simulation time on success.
+     *         The negated wall time spend advancing the simulation on failure.
      */
-    virtual bool advance_controller(
+    virtual double advance_controller(
             const bool final_status    = true,
             const bool final_restart   = true,
             const bool output_timers   = true,

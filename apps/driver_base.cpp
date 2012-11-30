@@ -399,7 +399,7 @@ driver_base::prepare_controller(
                               real_t(1) / (grid->dN.x() * grid->dN.z()));
 }
 
-bool
+double
 driver_base::advance_controller(
             const bool final_status,
             const bool final_restart,
@@ -415,7 +415,7 @@ driver_base::advance_controller(
         grvy_timer_reset();
 #endif
     }
-    bool retval = true;
+    bool success = true;
     const time_type t_initial  = controller->current_t();
     const step_type nt_initial = controller->current_nt();
     wtime_advance_start = MPI_Wtime();
@@ -425,23 +425,23 @@ driver_base::advance_controller(
                    << " units of physical time");
             INFO0("Advancing simulation by at most " << timedef->advance_nt
                    << " discrete time steps");
-            retval = controller->advance(t_initial + timedef->advance_dt,
-                                         timedef->advance_nt);
+            success = controller->advance(t_initial + timedef->advance_dt,
+                                          timedef->advance_nt);
             break;
         case 2:
             INFO0("Advancing simulation by at most " << timedef->advance_dt
                    << " units of physical time");
-            retval = controller->advance(t_initial + timedef->advance_dt);
+            success = controller->advance(t_initial + timedef->advance_dt);
             break;
         case 1:
             INFO0("Advancing simulation by at most " << timedef->advance_nt
                    << " discrete time steps");
-            retval = controller->step(timedef->advance_nt);
+            success = controller->step(timedef->advance_nt);
             break;
         case 0:
             if (options.variables()["advance_nt"].defaulted()) {
                 INFO0("Advancing simulation until terminated by a signal");
-                retval = controller->advance();
+                success = controller->advance();
             } else {
                 INFO0("Simulation will not be advanced");
             }
@@ -460,11 +460,11 @@ driver_base::advance_controller(
     }
     if (soft_teardown) {
         INFO0("controller stopped advancing due to teardown signal");
-        retval = true; // ...treat like successful advance
-    } else if (!retval && controller->current_dt() < controller->min_dt()) {
+        success = true; // ...treat like successful advance
+    } else if (!success && controller->current_dt() < controller->min_dt()) {
         WARN0("controller halted because step " << controller->current_dt()
               << " was smaller than min_dt " << controller->min_dt() );
-    } else if (!retval) {
+    } else if (!success) {
         WARN0("timecontroller halted unexpectedly");
     }
 
@@ -476,7 +476,7 @@ driver_base::advance_controller(
 
     // Save a final restart if one was not just saved during time advancement
     if (   final_restart
-        && retval
+        && success
         && last_restart_saved_nt != controller->current_nt()) {
         INFO0("Saving final restart file");
         save_restart(controller->current_t(), controller->current_nt());
@@ -582,7 +582,7 @@ driver_base::advance_controller(
         INFO0(msg.str());
     }
 
-    return retval;
+    return success ? wtime_advance : -wtime_advance;
 }
 
 std::string
