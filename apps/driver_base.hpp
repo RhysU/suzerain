@@ -215,6 +215,25 @@ public:
             const time_type initial_t = 0);
 
     /**
+     * Use #controller to advance the simulation per #timedef.
+     *
+     * Notice <tt>controller</tt> advance routines could be invoked directly,
+     * but they provide none of this additional postprocessing functionality.
+     *
+     * @param final_status    Invoke \ref log_status after advance completes?
+     * @param final_restart   Invoke \ref save_restart after successful advance?
+     * @param output_timers   Output performance details from rank zero?
+     * @param output_stepping Output time step size metrics after advance?
+     *
+     * @return True if the advance completed successfully.  False otherwise.
+     */
+    virtual bool advance_controller(
+            const bool final_status    = true,
+            const bool final_restart   = true,
+            const bool output_timers   = true,
+            const bool output_stepping = true);
+
+    /**
      * Build a fixed-width, human-friendly way to output the given simulation
      * time and time step number.  Care is taken to ensure sequential outputs
      * are minimally distinct.

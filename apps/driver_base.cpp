@@ -399,6 +399,192 @@ driver_base::prepare_controller(
                               real_t(1) / (grid->dN.x() * grid->dN.z()));
 }
 
+bool
+driver_base::advance_controller(
+            const bool final_status,
+            const bool final_restart,
+            const bool output_timers,
+            const bool output_stepping)
+{
+    SUZERAIN_ENSURE(controller);
+
+    // Advance time according to timedef->advance_dt, advance_nt criteria
+    if (output_timers) {
+#ifdef SUZERAIN_HAVE_GRVY
+        grvy_log_setlevel(GRVY_ERROR);  // Suppress GRVY resolution warnings
+        grvy_timer_reset();
+#endif
+    }
+    bool retval = true;
+    const time_type t_initial  = controller->current_t();
+    const step_type nt_initial = controller->current_nt();
+    wtime_advance_start = MPI_Wtime();
+    switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
+        case 3:
+            INFO0("Advancing simulation by at most " << timedef->advance_dt
+                   << " units of physical time");
+            INFO0("Advancing simulation by at most " << timedef->advance_nt
+                   << " discrete time steps");
+            retval = controller->advance(t_initial + timedef->advance_dt,
+                                         timedef->advance_nt);
+            break;
+        case 2:
+            INFO0("Advancing simulation by at most " << timedef->advance_dt
+                   << " units of physical time");
+            retval = controller->advance(t_initial + timedef->advance_dt);
+            break;
+        case 1:
+            INFO0("Advancing simulation by at most " << timedef->advance_nt
+                   << " discrete time steps");
+            retval = controller->step(timedef->advance_nt);
+            break;
+        case 0:
+            if (options.variables()["advance_nt"].defaulted()) {
+                INFO0("Advancing simulation until terminated by a signal");
+                retval = controller->advance();
+            } else {
+                INFO0("Simulation will not be advanced");
+            }
+            break;
+        default:
+            FATAL0("Sanity error in advance_controller");
+            return EXIT_FAILURE;
+    }
+    const double wtime_advance_end = MPI_Wtime();
+    const real_t nsteps = controller->current_nt() - nt_initial;
+    if (output_timers) {
+#ifdef SUZERAIN_HAVE_GRVY
+        grvy_timer_finalize();
+        grvy_log_setlevel(GRVY_INFO);   // Re-enable GRVY warnings
+#endif
+    }
+    if (soft_teardown) {
+        INFO0("controller stopped advancing due to teardown signal");
+        retval = true; // ...treat like successful advance
+    } else if (!retval && controller->current_dt() < controller->min_dt()) {
+        WARN0("controller halted because step " << controller->current_dt()
+              << " was smaller than min_dt " << controller->min_dt() );
+    } else if (!retval) {
+        WARN0("timecontroller halted unexpectedly");
+    }
+
+    // Output status if it was not just output during time advancement
+    if (   final_status
+        && last_status_nt != controller->current_nt()) {
+        log_status(controller->current_t(), controller->current_nt());
+    }
+
+    // Save a final restart if one was not just saved during time advancement
+    if (   final_restart
+        && retval
+        && last_restart_saved_nt != controller->current_nt()) {
+        INFO0("Saving final restart file");
+        save_restart(controller->current_t(), controller->current_nt());
+    }
+
+    // Postprocess GRVY timer information on time advance now that restart is
+    // safely on disk.  Reduces likelihood that GRVY hiccups cause data loss.
+    // Only summarize when time advance took long enough to be interesting
+    const real_t wtime_advance = wtime_advance_end - wtime_advance_start;
+    if (   output_timers
+        && nsteps > 0
+        && dgrid->has_zero_zero_modes()
+        && wtime_advance > 5 /*seconds*/) {
+
+#ifdef SUZERAIN_HAVE_GRVY
+        static const char header[]
+            = "GRVY timings from MPI rank with zero-zero modes:";
+
+        // GRVY uses printf so futzing required to employ logging subsystem
+        // Error handling is unsophisticated and ugly.  Quel dommage, but
+        // some attempt is made to fail back to printf if tmpfile fails.
+
+        int saved_stdout = -1;
+        FILE * const tmp = tmpfile();
+        if (!tmp) {
+            WARN("Could not open temporary file to read "
+                    << header << " " << strerror(errno));
+            INFO(header);
+        } else {
+            fflush(stdout);
+            saved_stdout = dup(STDOUT_FILENO);
+            dup2(fileno(tmp), STDOUT_FILENO);
+            puts(header);
+        }
+
+        grvy_timer_summarize();
+
+        if (tmp) {
+            fflush(stdout);
+            fflush(tmp);
+            const long len = ftell(tmp);
+            char * const buf = (char *) calloc(len + 1, 1);
+            rewind(tmp);
+            if (!buf) {
+                WARN("Could not allocate buffer to read "
+                        << header << " " << strerror(errno));
+            } else {
+                fread(buf, sizeof(buf[0]), len, tmp);
+            }
+            dup2(saved_stdout, STDOUT_FILENO);
+            close(saved_stdout);
+            if (buf) INFO(buf);
+            free(buf);
+            fclose(tmp);
+        }
+#endif
+
+        // Admit what overhead we're neglecting in the following calculations
+        INFO0("Advancement rate calculations ignore "
+                              << MPI_Wtime() - wtime_mpi_init - wtime_advance
+                              << " seconds of fixed overhead");
+
+        // Advance rate measured in a (mostly) problem-size-agnostic metric
+        INFO0("Advancing at " << wtime_advance / nsteps / grid->N.prod()
+                              << " wall seconds per time step per grid point");
+
+        // Advance rate measured in a problem-size-dependent metric
+        INFO0("Advancing at " << wtime_advance / nsteps
+                              << " wall seconds per time step");
+
+        // Advance rate measured in nondimensional simulation time units
+        INFO0("Advancing at " <<   wtime_advance
+                                 / (controller->current_t() - t_initial)
+                              << " wall seconds per simulation time unit");
+
+    }
+
+    // Output details on time advancement (whenever advancement occurred)
+    if (output_stepping && nsteps > 0) {
+        using std::numeric_limits;
+        std::ostringstream msg;
+        msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.75));
+        msg << "Advanced simulation from t_initial = " << t_initial
+            << " to t_final = " << controller->current_t()
+            << " in " << nsteps << " steps";
+        INFO0(msg.str());
+        msg.str("");
+        msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.50));
+        msg << "Min/mean/max/stddev of delta_t: "
+            << controller->taken_min()  << ", "
+            << controller->taken_mean() << ", "
+            << controller->taken_max()  << ", "
+            << controller->taken_stddev();
+        INFO0(msg.str());
+        msg.str("");
+        msg << "Mean delta_t criteria versus minimum criterion: ";
+        const size_t n = delta_t_ratios.size();
+        for (size_t i = 0; i < n; ++i) {
+            namespace acc = boost::accumulators;
+            msg << acc::mean(delta_t_ratios[i]);
+            if (i < n-1) msg << ", ";
+        }
+        INFO0(msg.str());
+    }
+
+    return retval;
+}
+
 std::string
 driver_base::build_timeprefix(
         const driver_base::time_type t,
