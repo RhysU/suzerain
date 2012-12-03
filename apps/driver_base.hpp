@@ -495,7 +495,7 @@ protected:
     bool log_status_bulk_show_header;
 
     /** Wall time elapsed during loading of state from the restart file */
-    double wtime_load_state;
+    double wtime_load_restart;
 
     /** Wall time at which we began time stepping */
     double wtime_advance_start;
@@ -554,7 +554,7 @@ public:
             const double& wtime_mpi_init,
             const double& wtime_fftw_planning,
             const shared_ptr<time_definition>& timedef,
-            const double& wtime_load_state,
+            const double& wtime_load_restart,
             const double& wtime_advance_start,
             const driver_base::step_type& last_status_nt,
             const driver_base::step_type& last_restart_saved_nt,
@@ -580,7 +580,7 @@ private:
     const shared_ptr<time_definition>& timedef;
 
     /** Reference to content maintained by a \ref driver_base instance. */
-    const double& wtime_load_state;
+    const double& wtime_load_restart;
 
     /** Reference to content maintained by a \ref driver_base instance. */
     const double& wtime_advance_start;

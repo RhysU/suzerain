@@ -131,7 +131,7 @@ driver_base::driver_base(
     , soft_teardown(true)
     , log_status_L2_show_header(false)
     , log_status_bulk_show_header(false)
-    , wtime_load_state(std::numeric_limits<double>::quiet_NaN())
+    , wtime_load_restart(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<step_type>::max())
     , last_restart_saved_nt(std::numeric_limits<step_type>::max())
@@ -140,7 +140,7 @@ driver_base::driver_base(
     , allreducer(new delta_t_allreducer(this->wtime_mpi_init,
                                         this->wtime_fftw_planning,
                                         this->timedef,
-                                        this->wtime_load_state,
+                                        this->wtime_load_restart,
                                         this->wtime_advance_start,
                                         this->last_status_nt,
                                         this->last_restart_saved_nt,
@@ -854,10 +854,14 @@ driver_base::load_restart(
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(dgrid);
 
+    const double begin = MPI_Wtime();
+
     // TODO Load everything
     // TODO Permit loading decomposition data too?
 
     support::load_time(esioh, t);
+
+    wtime_load_restart = MPI_Wtime() - begin;
 }
 
 bool
@@ -1033,7 +1037,7 @@ delta_t_allreducer::delta_t_allreducer(
         const double& wtime_mpi_init,
         const double& wtime_fftw_planning,
         const shared_ptr<time_definition>& timedef,
-        const double& wtime_load_state,
+        const double& wtime_load_restart,
         const double& wtime_advance_start,
         const driver_base::step_type& last_status_nt,
         const driver_base::step_type& last_restart_saved_nt,
@@ -1042,7 +1046,7 @@ delta_t_allreducer::delta_t_allreducer(
     : wtime_mpi_init(wtime_mpi_init)
     , wtime_fftw_planning(wtime_fftw_planning)
     , timedef(timedef)
-    , wtime_load_state(wtime_load_state)
+    , wtime_load_restart(wtime_load_restart)
     , wtime_advance_start(wtime_advance_start)
     , last_status_nt(last_status_nt)
     , last_restart_saved_nt(last_restart_saved_nt)
@@ -1090,7 +1094,7 @@ real_t delta_t_allreducer::operator()(
             + 2*(acc::mean(period) + 3*std::sqrt(acc::variance(period)));
         // ...to which we add a pessimistic estimate for dumping a restart
         if (last_restart_saved_nt == std::numeric_limits<size_t>::max()) {
-            wtime_projected += 2*wtime_load_state;  // Load as surrogate
+            wtime_projected += 2*wtime_load_restart;  // Load as surrogate
         } else {
             wtime_projected += (acc::max)(period);  // Includes dumps
         }
