@@ -814,7 +814,7 @@ driver_base::save_restart(
     support::store_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
-    const bool continue_advancing =    save_restart_hook(esioh)
+    const bool continue_advancing =    save_state_hook(esioh)
                                     || save_statistics_hook(esioh);
 
     DEBUG0("Committing " << restartdef->uncommitted
@@ -932,7 +932,7 @@ driver_base::save_metadata_hook(
 }
 
 bool
-driver_base::save_restart_hook(
+driver_base::save_state_hook(
         esio_handle esioh)
 {
     SUZERAIN_ENSURE(restartdef);

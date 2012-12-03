@@ -293,7 +293,7 @@ public:
 
     /**
      * Save state \e and statistics into a restart file.  Subclasses should not
-     * override this method but should instead use \ref save_restart_hook and
+     * override this method but should instead use \ref save_state_hook and
      * \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the restart file.
@@ -416,7 +416,7 @@ protected:
      * @returns True if any active time advance should continue.
      *          False otherwise.
      */
-    virtual bool save_restart_hook(
+    virtual bool save_state_hook(
             esio_handle esioh);
 
     /**
@@ -445,6 +445,24 @@ protected:
      * @param esioh An ESIO handle pointing to an open, readable file.
      */
     virtual void load_metadata_hook(
+            esio_handle esioh);
+
+    /**
+     * Hook permitting loading information from restart files during \ref
+     * load_restart.  Subclasses should override this method with the desired
+     * functionality.  Invoking the superclass method in the override is
+     * optional.
+     *
+     * The default implementation loads state into #state_linear from the
+     * provided ESIO handle file per #fields destroying #state_nonlinear in the
+     * process.
+     *
+     * @param esioh An ESIO handle pointing to an open, readable file.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     */
+    virtual void load_state_hook(
             esio_handle esioh);
 
     /**
