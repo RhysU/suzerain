@@ -301,7 +301,8 @@ public:
      * @returns True if any active time advance should continue.
      *          False otherwise.
      *
-     * @see Member #restartdef to control restart writing options.
+     * @see Member #restartdef to control restart writing options,
+     *      including the name of the file on disk.
      */
     virtual bool save_restart(
             const time_type t,
@@ -319,7 +320,8 @@ public:
      * @returns True if any active time advance should continue.
      *          False otherwise.
      *
-     * @see Member #statsdef to control statistical sample writing options.
+     * @see Member #statsdef to control statistical sample writing options,
+     *      including the name of the file on disk.
      */
     virtual bool save_statistics(
             const time_type t,
@@ -370,6 +372,9 @@ protected:
      * Hook permitting subclasses to output additional status information.
      * Invoked at the end of \ref log_status.
      *
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
+     *
      * @returns True if any active time advance should continue.
      *          False otherwise.
      */
@@ -379,12 +384,11 @@ protected:
             const step_type nt);
 
     /**
-     * Extension point to permit adding arbitrary metadata to all restart and
-     * statistics files during \ref save_metadata.
+     * Hook permitting saving arbitrary metadata to all restart and statistics
+     * files during \ref save_metadata.
      *
-     * Subclasses should override this method adding or changing any desired
-     * functionality either before or after invoking the superclass
-     * implementation.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
@@ -392,10 +396,10 @@ protected:
             esio_handle esioh);
 
     /**
-     * Extension point to permit adding arbitrary information into restart
-     * files during \ref save_restart.  Subclasses should override this method
-     * with the desired functionality.  Invoking the superclass method in the
-     * override is optional.
+     * Hook permitting saving arbitrary information into restart files during
+     * \ref save_restart.  Subclasses should override this method with the
+     * desired functionality.  Invoking the superclass method in the override
+     * is optional.
      *
      * The default implementation saves the contents of #state_linear into the
      * provided ESIO handle file destroying #state_nonlinear in the process.
@@ -413,10 +417,11 @@ protected:
             esio_handle esioh);
 
     /**
-     * Extension point to permit adding arbitrary information into statistical
-     * sample files during \ref save_statistics.  Subclasses should override
-     * this method with the desired functionality.  Invoking the superclass
-     * method in the override is optional.
+     * Hook permitting saving arbitrary information into statistical sample
+     * files during \ref save_statistics.
+     *
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
@@ -427,12 +432,11 @@ protected:
             esio_handle esioh);
 
     /**
-     * Extension point to permit loading arbitrary metadata from all restart
-     * and statistics files during \ref load_metadata.
+     * Hook permitting loading arbitrary metadata from all restart and
+     * statistics files during \ref load_metadata.
      *
-     * Subclasses should override this method adding or changing any desired
-     * functionality either before or after invoking the superclass
-     * implementation.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
      *
      * @param esioh An ESIO handle pointing to an open, readable file.
      */

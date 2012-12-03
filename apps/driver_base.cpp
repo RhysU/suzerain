@@ -831,6 +831,21 @@ driver_base::save_restart(
 }
 
 void
+driver_base::load_metadata(
+        esio_handle esioh)
+{
+    SUZERAIN_TIMER_SCOPED("load_metadata");
+
+    load_grid_and_operators(esioh);
+
+    SUZERAIN_ENSURE(timedef);
+    support::load(esioh, *timedef);
+
+    // Invoke subclass extension point
+    load_metadata_hook(esioh);
+}
+
+void
 driver_base::load_restart(esio_handle esioh, real_t& t)
 {
     SUZERAIN_ENSURE(grid);
