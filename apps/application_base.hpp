@@ -164,7 +164,7 @@ public:
      *              the contents of #grid.
      */
     virtual void load_grid_and_operators(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Store a grid and discrete operators to a restart file.
@@ -177,7 +177,7 @@ public:
      * @param esioh An ESIO handle pointing to an open restart file.
      */
     virtual void store_grid_and_operators(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Establish the parallel decomposition per #grid.  The following are

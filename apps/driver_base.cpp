@@ -832,7 +832,7 @@ driver_base::save_restart(
 
 void
 driver_base::load_metadata(
-        esio_handle esioh)
+        const esio_handle esioh)
 {
     SUZERAIN_TIMER_SCOPED("load_metadata");
 
@@ -846,7 +846,9 @@ driver_base::load_metadata(
 }
 
 void
-driver_base::load_restart(esio_handle esioh, real_t& t)
+driver_base::load_restart(
+        const esio_handle esioh,
+        real_t& t)
 {
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(dgrid);

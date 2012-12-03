@@ -335,7 +335,7 @@ public:
      * @param[in]  esioh An ESIO handle pointing to an open, readable file.
      */
     virtual void load_metadata(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Load the contents of a restart file into #state_nonlinear using the
@@ -347,7 +347,7 @@ public:
      * @param[out] t     The simulation time stored in the restart file.
      */
     virtual void load_restart(
-            esio_handle esioh,
+            const esio_handle esioh,
             real_t &t);
 
     /**
