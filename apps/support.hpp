@@ -246,6 +246,36 @@ void load_coefficients(const esio_handle h,
                        const bsplineop& cop);
 
 /**
+ * Store the current simulation state as collocation point values into an open
+ * restart file.  Note that <tt>state</tt>'s contents are destroyed.
+ * Collocation point values required only for dealiasing purposes <i>are</i>
+ * stored but only those points informed by non-dealiased state.  This method
+ * is less efficient and the restart data less flexible than that produced by
+ * store_coefficients().
+ */
+void store_collocation_values(
+        const esio_handle h,
+        const std::vector<field> &fields,
+        contiguous_state<4,complex_t>& swave,
+        const grid_definition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& cop);
+
+/**
+ * Load the current simulation state from an open collocation point value
+ * restart file.  Cannot handle interpolating onto a different grid.
+ */
+void load_collocation_values(
+        const esio_handle h,
+        const std::vector<field> &fields,
+        contiguous_state<4,complex_t>& state,
+        const grid_definition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& cop);
+
+/**
  * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
  * valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is enforced
  * with the outer two inequalities being considered a validation failure.

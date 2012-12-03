@@ -949,6 +949,137 @@ void load_coefficients(const esio_handle h,
     }
 }
 
+void store_collocation_values(
+        const esio_handle h,
+        const std::vector<field> &fields,
+        contiguous_state<4,complex_t>& swave,
+        const grid_definition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& cop)
+{
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(                  swave.shape()[0]  == fields.size());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Convert coefficients into collocation point values
+    // Transforms state from full-wave coefficients to full-physical points
+    operator_base obase(grid, dgrid, b, cop);
+    for (size_t i = 0; i < swave.shape()[0]; ++i) {
+        obase.bop_apply(0, 1, swave, i);
+        obase.zero_dealiasing_modes(swave, i);
+        dgrid.transform_wave_to_physical(
+                reinterpret_cast<real_t *>(swave[i].origin()));
+    }
+
+    // Establish size of collective writes across all ranks
+    esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
+                                         dgrid.local_physical_extent.y(),
+                            grid.dN.z(), dgrid.local_physical_start.z(),
+                                         dgrid.local_physical_extent.z(),
+                            grid.dN.x(), dgrid.local_physical_start.x(),
+                                         dgrid.local_physical_extent.x());
+
+    // Write each field in turn
+    for (size_t i = 0; i < fields.size(); ++i) {
+        std::string comment = fields[i].description;
+        comment += " stored row-major YZX on the 3D rectilinear grid defined"
+                   " by taking the outer product of arrays"
+                   " /collocation_points_y, /collocation_points_z, and"
+                   " /collocation_points_z";
+
+        esio_field_write(h, fields[i].location.c_str(),
+                reinterpret_cast<real_t *>(swave[i].origin()),
+                0, 0, 0, comment.c_str());
+    }
+}
+
+void load_collocation_values(
+        const esio_handle h,
+        const std::vector<field> &fields,
+        contiguous_state<4,complex_t>& state,
+        const grid_definition& grid,
+        const pencil_grid& dgrid,
+        bspline& b,
+        const bsplineop& cop)
+{
+    // Ensure state storage meets this routine's assumptions
+    SUZERAIN_ENSURE(                  state.shape()[0]  == fields.size());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    SUZERAIN_ENSURE(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // This routine does no grid interpolation.  Yell loudly if necessary
+    {
+        // Check that restart file size matches runtime dealiased extents
+        int cg, bg, ag;
+        if (    ESIO_SUCCESS
+            != esio_field_size(h, fields[0].location.c_str(), &cg, &bg, &ag)) {
+            SUZERAIN_ERROR_VOID("Unable to find fields[0] size from restart",
+                                SUZERAIN_EFAILED);
+        }
+        if (cg != grid.dN.y() || bg != grid.dN.z() || ag != grid.dN.x()) {
+            ERROR0("Physical space restart fields have row-major YZX extents "
+                   << "(" << cg << "," << bg << "," << ag << ")" << " but "
+                   << "(" << grid.dN.y() << "," << grid.dN.z() << ","
+                   << grid.dN.x() << ") are required");
+            SUZERAIN_ERROR_VOID(
+                    "Cannot interpolate during physical space restart",
+                    SUZERAIN_EFAILED);
+        }
+
+        // Check that restart file specifies the same B-spline basis.
+        // TODO Too restrictive?  Any floating point differences kill us.
+        shared_ptr<bspline> Fb;
+        shared_ptr<bsplineop> Fbop;
+        support::load(h, Fb, Fbop);
+        const double bsplines_dist = support::distance(b, *Fb);
+        const bool bsplines_same
+                = bsplines_dist < support::bsplines_distinct_distance;
+        if (!bsplines_same) {
+            ERROR0("Physical restart has different wall-normal bases ("
+                   << bsplines_dist << ")");
+            SUZERAIN_ERROR_VOID(
+                    "Cannot interpolate during physical space restart",
+                    SUZERAIN_EFAILED);
+        }
+    }
+
+    // Prepare physical space views of the state storage
+    support::physical_view<>::type sphys
+        = support::physical_view<>::create(dgrid, state, fields.size());
+
+    // Establish size of collective reads across all ranks
+    esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
+                                         dgrid.local_physical_extent.y(),
+                            grid.dN.z(), dgrid.local_physical_start.z(),
+                                         dgrid.local_physical_extent.z(),
+                            grid.dN.x(), dgrid.local_physical_start.x(),
+                                         dgrid.local_physical_extent.x());
+
+    // Read each field from collocation values on disk into the same in memory
+    for (size_t i = 0; i < fields.size(); ++i) {
+        esio_field_read(h, fields[i].location.c_str(), &sphys(i,0), 0, 0, 0);
+    }
+
+    // Initialize operator_base to access decomposition-ready utilities
+    operator_base obase(grid, dgrid, b, cop);
+
+    // Collectively convert physical state to wave space coefficients
+    // Build FFT normalization constant into Y direction's mass matrix
+    bsplineop_luz massluz(cop);
+    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    massluz.opform(1, &scale_factor, cop);
+    massluz.factor();
+    for (size_t i = 0; i < state.shape()[0]; ++i) {
+        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
+        obase.zero_dealiasing_modes(state, i);
+        obase.bop_solve(massluz, state, i);                      // Y
+    }
+}
+
 } // end namespace suzerain
 
 } // end namespace support
