@@ -311,6 +311,10 @@ application_base::establish_state_storage(
         state_linear = make_shared<
                     state_linear_type
                 >(to_yxz(linear_nfields, dgrid->local_wave_extent));
+        DEBUG("Linear state shape      (FYXZ): "
+              << shape_array(*state_linear));
+        DEBUG("Linear state strides    (FYXZ): "
+              << strides_array(*state_linear));
     }
 
     // Deallocate existing transformable nonlinear state not matching request
@@ -323,6 +327,11 @@ application_base::establish_state_storage(
         state_nonlinear.reset(support::allocate_padded_state<
                     state_nonlinear_type
                 >(nonlinear_nfields, *dgrid));
+
+        DEBUG("Nonlinear state shape   (FYXZ): "
+              << shape_array(*state_nonlinear));
+        DEBUG("Nonlinear state strides (FYXZ): "
+              << strides_array(*state_nonlinear));
     }
 }
 

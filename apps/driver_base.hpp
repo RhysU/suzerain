@@ -312,8 +312,8 @@ public:
             const step_type nt);
 
     /**
-     * Save statistics into a sample file.  Subclasses should not override this
-     * method but should instead use \ref save_statistics_hook.
+     * Save statistics into a statistical sampling file.  Subclasses should not
+     * override this method but should instead use \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the statistics file.
      * @param nt The time step number which is not stored in the file.
