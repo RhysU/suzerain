@@ -272,11 +272,9 @@ public:
             const std::string& timeprefix);
 
     /**
-     * Log messages containing specific state quantities at the upper and lower
-     * boundaries.  Density is reported as-is.  All other scalars are divided
-     * by density.
+     * Log messages containing state at the upper and lower boundaries.
      */
-    virtual void log_status_specific_boundary_state(
+    virtual void log_status_boundary_state(
             const std::string& timeprefix);
 
     /**

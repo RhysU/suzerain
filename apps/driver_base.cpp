@@ -639,7 +639,7 @@ driver_base::log_status(
     // Log information about the various quantities of interest
     log_status_bulk(timeprefix);
     log_status_L2(timeprefix);
-    log_status_specific_boundary_state(timeprefix);
+    log_status_boundary_state(timeprefix);
 
     // Permit subclasses to dump arbitrary status information.  E.g. MMS error
     const bool retval = log_status_hook(timeprefix, t, nt);
@@ -733,7 +733,7 @@ driver_base::log_status_bulk(
 }
 
 void
-driver_base::log_status_specific_boundary_state(
+driver_base::log_status_boundary_state(
         const std::string& timeprefix)
 {
     // Only continue on the rank housing the zero-zero modes.
@@ -746,7 +746,6 @@ driver_base::log_status_specific_boundary_state(
     // values are nothing but the first and last B-spline coefficient values.
     size_t bc[2] = { 0, state_linear->shape()[1] - 1 };
 
-    // Message lists rho, u, v, w, and total energy at walls
     for (size_t l = 0; l < SUZERAIN_COUNTOF(bc); ++l) {
 
         // Avoid computational cost when logging is disabled
@@ -755,11 +754,8 @@ driver_base::log_status_specific_boundary_state(
         std::ostringstream msg;
         msg << timeprefix;
 
-        const real_t rho = ((*state_linear)[ndx::rho][bc[l]][0][0]).real();
         for (size_t k = 0; k < fields.size(); ++k) {
-            real_t val = (k == ndx::rho)
-                       ? rho
-                       : ((*state_linear)[k][bc[l]][0][0]).real() / rho;
+            real_t val = ((*state_linear)[k][bc[l]][0][0]).real();
             msg << ' ' << fullprec<>(val);
         }
         DEBUG(nick[l], msg.str());
