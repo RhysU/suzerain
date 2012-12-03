@@ -851,15 +851,20 @@ driver_base::load_restart(
         const esio_handle esioh,
         real_t& t)
 {
+    SUZERAIN_TIMER_SCOPED("load_restart");
+
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(dgrid);
 
     const double begin = MPI_Wtime();
 
-    // TODO Load everything
-    // TODO Permit loading decomposition data too?
-
+    // FIXME Log some messages
+    load_metadata(esioh);
     support::load_time(esioh, t);
+    establish_decomposition();
+    establish_state_storage(fields.size(), fields.size());
+    load_state_hook(esioh);        // Invoke subclass extension point
+    load_statistics_hook(esioh);   // Invoke subclass extension point
 
     wtime_load_restart = MPI_Wtime() - begin;
 }
@@ -954,14 +959,6 @@ driver_base::save_state_hook(
     return true;
 }
 
-bool
-driver_base::save_statistics_hook(
-        esio_handle esioh)
-{
-    SUZERAIN_UNUSED(esioh);
-    return true;
-}
-
 void
 driver_base::load_metadata_hook(
         esio_handle esioh)
@@ -971,6 +968,16 @@ driver_base::load_metadata_hook(
     // For example:
     //     perfect::load(h, scenario);
     //     perfect::load(h, scenario, grid, msoln);
+}
+
+void
+driver_base::load_statistics_hook(
+        const esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+
+    // For example:
+    //     perfect::load(esioh, samples);
 }
 
 bool

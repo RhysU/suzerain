@@ -437,7 +437,9 @@ protected:
 
     /**
      * Hook permitting loading arbitrary metadata from all restart and
-     * statistics files during \ref load_metadata.
+     * statistics files during \ref load_metadata.  In particular, changing the
+     * number of scalar state fields in #fields should be done here when
+     * necessary.
      *
      * Subclasses should override this method adding any desired functionality
      * either before or after invoking the superclass implementation.
@@ -463,7 +465,23 @@ protected:
      *          False otherwise.
      */
     virtual void load_state_hook(
-            esio_handle esioh);
+            const esio_handle esioh);
+
+    /**
+     * Hook permitting loading arbitrary information from statistical sample
+     * files during \ref load_statistics as well as from restart files during
+     * \ref load_restart.
+     *
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual void load_statistics_hook(
+            const esio_handle esioh);
 
     /**
      * Compute default status output intervals.
