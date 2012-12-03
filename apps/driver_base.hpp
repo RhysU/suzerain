@@ -341,10 +341,10 @@ public:
             const esio_handle esioh);
 
     /**
-     * Load the contents of a restart file into #state_nonlinear using the
-     * current decomposition.  Subclasses should override this method
-     * adding any desired functionality either before or after invoking
-     * the superclass version.
+     * Load the contents of a restart file into #state_linear using the current
+     * decomposition.  Subclasses should override this method adding any
+     * desired functionality either before or after invoking the superclass
+     * version.
      *
      * @param[in]  esioh An ESIO handle pointing to an open restart file.
      * @param[out] t     The simulation time stored in the restart file.
@@ -399,17 +399,17 @@ protected:
             esio_handle esioh);
 
     /**
-     * Hook permitting saving arbitrary information into restart files during
-     * \ref save_restart.  Subclasses should override this method with the
-     * desired functionality.  Invoking the superclass method in the override
-     * is optional.
+     * Hook permitting saving arbitrary information from \ref #state_nonlinear
+     * into restart files during \ref save_restart.  Subclasses should override
+     * this method with the desired functionality.  Invoking the superclass
+     * method in the override is optional.
      *
-     * The default implementation saves the contents of #state_linear into the
-     * provided ESIO handle file destroying #state_nonlinear in the process.
-     * When \c restartdef->physical is \c false, expansion coefficients are
-     * written in all three directions using \ref support::store_coefficients.
-     * When it is \c true, values at collocation points are written using
-     * support::store_collocation_Values.
+     * The default implementation saves the contents of #state_nonlinear into
+     * the provided ESIO handle file destroying #state_nonlinear in the
+     * process.  When \c restartdef->physical is \c false, expansion
+     * coefficients are written in all three directions using \ref
+     * support::store_coefficients.  When it is \c true, values at collocation
+     * points are written using support::store_collocation_Values.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      *
@@ -450,14 +450,14 @@ protected:
             esio_handle esioh);
 
     /**
-     * Hook permitting loading information from restart files during \ref
-     * load_restart.  Subclasses should override this method with the desired
-     * functionality.  Invoking the superclass method in the override is
-     * optional.
+     * Hook permitting loading information from restart files into
+     * #state_nonlinear during \ref load_restart.  Subclasses should override
+     * this method with the desired functionality.  Invoking the superclass
+     * method in the override is optional.
      *
-     * The default implementation loads state into #state_linear from the
-     * provided ESIO handle file per #fields destroying #state_nonlinear in the
-     * process.
+     * The default implementation into #state_nonlinear from the provided ESIO
+     * handle file per #fields.  It can recover data stored using the \ref
+     * save_state_hook implementation.
      *
      * @param esioh An ESIO handle pointing to an open, readable file.
      *

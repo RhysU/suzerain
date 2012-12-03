@@ -631,7 +631,7 @@ driver_base::log_status(
         return true;
     }
 
-    SUZERAIN_TIMER_SCOPED("log_status");
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     // Common message prefix used across all status-related routines
     const std::string timeprefix(build_timeprefix(t, nt));
@@ -765,7 +765,7 @@ driver_base::log_status_boundary_state(
 void
 driver_base::save_metadata()
 {
-    SUZERAIN_TIMER_SCOPED("save_metadata");
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     DEBUG0("Saving metadata temporary file: " << restartdef->metadata);
 
@@ -800,7 +800,9 @@ driver_base::save_restart(
 
     if (!metadata_saved) save_metadata();
 
-    SUZERAIN_TIMER_SCOPED("save_restart");
+    // Time only after prerequisites are satisfied
+    SUZERAIN_TIMER_SCOPED(__func__);
+
     const std::string timeprefix(build_timeprefix(t, nt));
 
     const double starttime = MPI_Wtime();
@@ -814,6 +816,7 @@ driver_base::save_restart(
     support::store_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
+    state_nonlinear->assign(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
                                     || save_statistics_hook(esioh);
 
@@ -835,7 +838,7 @@ void
 driver_base::load_metadata(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED("load_metadata");
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     load_grid_and_operators(esioh);
 
@@ -851,20 +854,17 @@ driver_base::load_restart(
         const esio_handle esioh,
         real_t& t)
 {
-    SUZERAIN_TIMER_SCOPED("load_restart");
-
-    SUZERAIN_ENSURE(grid);
-    SUZERAIN_ENSURE(dgrid);
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     const double begin = MPI_Wtime();
 
-    // FIXME Log some messages
     load_metadata(esioh);
     support::load_time(esioh, t);
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
-    load_state_hook(esioh);        // Invoke subclass extension point
-    load_statistics_hook(esioh);   // Invoke subclass extension point
+    load_state_hook(esioh);                  // Invoke subclass extension point
+    state_linear->assign(*state_nonlinear);  // Copy into state_linear
+    load_statistics_hook(esioh);             // Invoke subclass extension point
 
     wtime_load_restart = MPI_Wtime() - begin;
 }
@@ -882,7 +882,8 @@ driver_base::save_statistics(
 
     if (!metadata_saved) save_metadata();
 
-    SUZERAIN_TIMER_SCOPED("save_statistics");
+    // Time only after prerequisites are satisfied
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     const double starttime = MPI_Wtime();
     DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
@@ -922,6 +923,9 @@ driver_base::log_status_hook(
     SUZERAIN_UNUSED(timeprefix);
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
+
+    SUZERAIN_TIMER_SCOPED(__func__);
+
     return true;
 }
 
@@ -930,6 +934,8 @@ driver_base::save_metadata_hook(
         esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
+
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     // For example:
     //     perfect::store(h, scenario);
@@ -940,14 +946,14 @@ bool
 driver_base::save_state_hook(
         esio_handle esioh)
 {
+    SUZERAIN_TIMER_SCOPED(__func__);
+
     SUZERAIN_ENSURE(restartdef);
     SUZERAIN_ENSURE(state_linear);
     SUZERAIN_ENSURE(state_nonlinear);
 
-    // Copy state into state_nonlinear for possibly destructive processing
-    state_nonlinear->assign(*state_linear);
-
     // Save either coefficients or collocation values, as requested
+    // The former is a destructive operation clobbering *state_nonlinear
     if (restartdef->physical) {
         support::store_collocation_values(
                 esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
@@ -971,9 +977,54 @@ driver_base::load_metadata_hook(
 }
 
 void
+driver_base::load_state_hook(
+        esio_handle esioh)
+{
+    SUZERAIN_TIMER_SCOPED(__func__);
+
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(dgrid);
+
+    // Check if load_coefficients(), load_collocation_values() should work
+    bool allreal = true, allcplx = true;
+    for (size_t i = 0; i < fields.size(); ++i) {
+        int ncomponents = 0;
+        const int status = esio_field_sizev(esioh, fields[i].location.c_str(),
+                                            0, 0, 0, &ncomponents);
+        if (status == ESIO_SUCCESS) {
+            allreal = allreal && (ncomponents == 1);
+            allcplx = allcplx && (ncomponents == 2);
+            if (ncomponents == 0 || ncomponents > 2) {
+                WARN0("Field /" << fields[i].location
+                      << " looks fishy; ncomponents = " << ncomponents);
+            }
+        } else {
+            WARN0("Field /" << fields[i].location << " not found in restart");
+        }
+    }
+
+    // Ensure our state storage is up to the task at hand
+    establish_state_storage(fields.size(), fields.size());
+
+    // Dispatch to the appropriate state-loading logic
+    if (allcplx) {
+        support::load_coefficients(
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+    } else if (allreal) {
+        support::load_collocation_values(
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+    } else {
+        SUZERAIN_ERROR_VOID(
+                "Unable to load state from file", SUZERAIN_EFAILED);
+    }
+}
+
+void
 driver_base::load_statistics_hook(
         const esio_handle esioh)
 {
+    SUZERAIN_TIMER_SCOPED(__func__);
+
     SUZERAIN_UNUSED(esioh);
 
     // For example:
