@@ -199,11 +199,28 @@ application_base::store_grid_and_operators(
 }
 
 void
-application_base::establish_decomposition()
+application_base::establish_decomposition(
+        const bool output_size,
+        const bool output_plan,
+        const bool output_load)
 {
     SUZERAIN_ENSURE(grid);
 
-    // Establish the parallel decomposition
+    const std::size_t nranks = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+
+    // Display information on the global degrees of freedom
+    if (output_size) {
+        INFO0("Number of MPI ranks:               " << nranks);
+        INFO0("Grid degrees of freedom    (GDOF): " << grid->N.prod());
+        INFO0("GDOF by direction           (XYZ): " << grid->N);
+        INFO0("Dealiased GDOF by direction (XYZ): " << grid->dN);
+    }
+
+    // Establish the parallel decomposition and output some timing
+    if (output_plan) {
+        INFO0("Preparing MPI transpose and Fourier transform plans...");
+    }
+    double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
     support::wisdom_broadcast(fftwdef->plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
@@ -220,7 +237,61 @@ application_base::establish_decomposition()
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     }
 #endif
+    wtime_fftw_planning = MPI_Wtime() - begin;
+    if (output_plan) {
+        INFO0("MPI transpose and Fourier transform planning by "
+              << dgrid->implementation() << " took "
+              << wtime_fftw_planning << " seconds");
+        assert((grid->dN == dgrid->global_physical_extent).all());
+        INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
+        INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
+              << dgrid->rank_zero_zero_modes);
+    }
+    begin = MPI_Wtime();
     support::wisdom_gather(fftwdef->plan_wisdom);
+    if (output_plan) {
+        INFO0("FFTW wisdom gathered and saved in additional "
+              << (MPI_Wtime() - begin) << " seconds");
+    }
+
+    // Log rank-by-rank decomposition results in debug mode
+    DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);
+    DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end);
+    DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent);
+    DEBUG("Local physical start  (XYZ): " << dgrid->local_physical_start);
+    DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end);
+    DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
+
+    // Display normalized workloads metrics relative to zero-zero workload
+    if (output_load) {
+        real_t sendbuf[4];
+        if (dgrid->has_zero_zero_modes()) {
+            sendbuf[0] = (real_t) dgrid->local_wave_extent.prod();
+            sendbuf[1] = (real_t) dgrid->local_physical_extent.prod();
+        }
+        SUZERAIN_MPICHKR(MPI_Bcast(sendbuf, 2,
+                         suzerain::mpi::datatype<real_t>(), 0,
+                         MPI_COMM_WORLD));
+        sendbuf[0] = dgrid->local_wave_extent.prod()     / sendbuf[0];
+        sendbuf[1] = dgrid->local_physical_extent.prod() / sendbuf[1];
+        sendbuf[2] = -sendbuf[0];
+        sendbuf[3] = -sendbuf[1];
+
+        real_t recvbuf[4];
+        SUZERAIN_MPICHKR(MPI_Reduce(sendbuf, recvbuf, 2,
+                         suzerain::mpi::datatype<real_t>(),
+                         MPI_SUM, 0, MPI_COMM_WORLD));
+
+        const real_t mean_w = recvbuf[0] / nranks;
+        const real_t mean_p = recvbuf[1] / nranks;
+        SUZERAIN_MPICHKR(MPI_Reduce(sendbuf, recvbuf, 4,
+                         suzerain::mpi::datatype<real_t>(),
+                         MPI_MIN, 0, MPI_COMM_WORLD));
+        INFO0("Wave space zero-zero normalized workloads     (min/mean/max): "
+              << recvbuf[0] << ", " << mean_w << ", " << -recvbuf[2]);
+        INFO0("Physical space zero-zero normalized workloads (min/mean/max): "
+              << recvbuf[1] << ", " << mean_p << ", " << -recvbuf[3]);
+    }
 }
 
 void

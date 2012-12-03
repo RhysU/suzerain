@@ -183,8 +183,15 @@ public:
      * Establish the parallel decomposition per #grid.  The following are
      * modified:
      * \li #dgrid
+     *
+     * @param output_size Display metrics on the global degrees of freedom?
+     * @param output_plan Display metrics on the FFTW planning process?
+     * @param output_load Display metrics on the load balancing?
      */
-    virtual void establish_decomposition();
+    virtual void establish_decomposition(
+            const bool output_size = true,
+            const bool output_plan = true,
+            const bool output_load = true);
 
     /**
      * Establish the state storage per #dgrid and a supplied number of scalar

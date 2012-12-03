@@ -229,10 +229,10 @@ public:
      *         The negated wall time spend advancing the simulation on failure.
      */
     virtual double advance_controller(
-            const bool final_status,
-            const bool final_restart,
-            const bool output_timers,
-            const bool output_stepping);
+            const bool final_status    = true,
+            const bool final_restart   = true,
+            const bool output_timers   = true,
+            const bool output_stepping = true);
 
     /**
      * Build a fixed-width, human-friendly way to output the given simulation
