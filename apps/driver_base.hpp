@@ -290,11 +290,8 @@ public:
     virtual void save_metadata();
 
     /**
-     * Save state into a restart file.  
-     * The method \ref save_metadata() must
-     * have been called first as restart files contained cloned metadata.
-     * Subclasses should not generally override this method but should instead
-     * use \ref save_restart_hook.
+     * Save state into a restart file.  Subclasses should not generally
+     * override this method but should instead use \ref save_restart_hook.
      *
      * @param t  The simulation time to be stored in the restart file.
      * @param nt The time step number which is not stored in the restart file.
