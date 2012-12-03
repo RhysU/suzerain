@@ -169,7 +169,7 @@ application_base::log4cxx_config()
 }
 
 void
-application_base::load_grid_details(esio_handle esioh)
+application_base::load_grid_and_operators(esio_handle esioh)
 {
     SUZERAIN_ENSURE(grid);
 
@@ -185,7 +185,7 @@ application_base::load_grid_details(esio_handle esioh)
 }
 
 void
-application_base::store_grid_details(esio_handle esioh)
+application_base::store_grid_and_operators(esio_handle esioh)
 {
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(b);

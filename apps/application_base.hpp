@@ -163,7 +163,7 @@ public:
      *              and the discrete operators are formed using
      *              the contents of #grid.
      */
-    virtual void load_grid_details(
+    virtual void load_grid_and_operators(
             esio_handle esioh);
 
     /**
@@ -176,7 +176,7 @@ public:
      *
      * @param esioh An ESIO handle pointing to an open restart file.
      */
-    virtual void store_grid_details(
+    virtual void store_grid_and_operators(
             esio_handle esioh);
 
     /**
