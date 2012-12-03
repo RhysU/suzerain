@@ -222,17 +222,17 @@ public:
      *
      * @param final_status    Invoke \ref log_status after advance completes?
      * @param final_restart   Invoke \ref save_restart after successful advance?
-     * @param output_timers   Output performance details from rank zero?
-     * @param output_stepping Output time step size metrics after advance?
+     * @param output_timers   Output performance details after advance completes?
+     * @param output_stepping Output time step size metrics after advance completes?
      *
      * @return The wall time spent advancing simulation time on success.
      *         The negated wall time spend advancing the simulation on failure.
      */
     virtual double advance_controller(
-            const bool final_status    = true,
-            const bool final_restart   = true,
-            const bool output_timers   = true,
-            const bool output_stepping = true);
+            const bool final_status,
+            const bool final_restart,
+            const bool output_timers,
+            const bool output_stepping);
 
     /**
      * Build a fixed-width, human-friendly way to output the given simulation
