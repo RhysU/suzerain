@@ -861,7 +861,7 @@ driver_base::save_statistics(
     DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
-    // We use restartdef.{metadata,uncommitted} for statistics too.
+    // We use restartdef->{metadata,uncommitted} for statistics too.
     DEBUG0("Cloning " << restartdef->metadata
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
@@ -884,6 +884,18 @@ driver_base::save_statistics(
     last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
     return continue_advancing;
+}
+
+bool
+driver_base::log_status_hook(
+        const std::string& timeprefix,
+        const real_t t,
+        const std::size_t nt)
+{
+    SUZERAIN_UNUSED(timeprefix);
+    SUZERAIN_UNUSED(t);
+    SUZERAIN_UNUSED(nt);
+    return true;
 }
 
 void
@@ -928,16 +940,15 @@ driver_base::save_statistics_hook(
     return true;
 }
 
-bool
-driver_base::log_status_hook(
-        const std::string& timeprefix,
-        const real_t t,
-        const std::size_t nt)
+void
+driver_base::load_metadata_hook(
+        esio_handle esioh)
 {
-    SUZERAIN_UNUSED(timeprefix);
-    SUZERAIN_UNUSED(t);
-    SUZERAIN_UNUSED(nt);
-    return true;
+    SUZERAIN_UNUSED(esioh);
+
+    // For example:
+    //     perfect::load(h, scenario);
+    //     perfect::load(h, scenario, grid, msoln);
 }
 
 bool

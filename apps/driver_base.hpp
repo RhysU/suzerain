@@ -278,7 +278,7 @@ public:
             const std::string& timeprefix);
 
     /**
-     * Save time-independent metadata that should appear in all restart and
+     * Save time-independent metadata that must appear in all restart and
      * statistics files.  Though this logic will be invoked automatically the
      * first time \ref save_restart() or \ref save_statistics() is used, users
      * may wish to invoke the method explicitly during general initialization
@@ -326,6 +326,16 @@ public:
             const step_type nt);
 
     /**
+     * Load time-independent metadata appearing in all restart and statistics
+     * files.  Subclasses should not generally override this method but should
+     * instead use \ref load_metadata_hook.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open, readable file.
+     */
+    virtual void load_metadata(
+            esio_handle esioh);
+
+    /**
      * Load the contents of a restart file into #state_nonlinear using the
      * current decomposition.  Subclasses should override this method
      * adding any desired functionality either before or after invoking
@@ -355,6 +365,18 @@ public:
     delta_t_ratios_type delta_t_ratios;
 
 protected:
+
+    /**
+     * Hook permitting subclasses to output additional status information.
+     * Invoked at the end of \ref log_status.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     */
+    virtual bool log_status_hook(
+            const std::string& timeprefix,
+            const time_type t,
+            const step_type nt);
 
     /**
      * Extension point to permit adding arbitrary metadata to all restart and
@@ -405,16 +427,17 @@ protected:
             esio_handle esioh);
 
     /**
-     * Hook permitting subclasses to output additional status information.
-     * Invoked at the end of \ref log_status.
+     * Extension point to permit loading arbitrary metadata from all restart
+     * and statistics files during \ref load_metadata.
      *
-     * @returns True if any active time advance should continue.
-     *          False otherwise.
+     * Subclasses should override this method adding or changing any desired
+     * functionality either before or after invoking the superclass
+     * implementation.
+     *
+     * @param esioh An ESIO handle pointing to an open, readable file.
      */
-    virtual bool log_status_hook(
-            const std::string& timeprefix,
-            const time_type t,
-            const step_type nt);
+    virtual void load_metadata_hook(
+            esio_handle esioh);
 
     /**
      * Compute default status output intervals.
