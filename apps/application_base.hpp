@@ -213,6 +213,15 @@ public:
             const std::size_t linear_nfields,
             const std::size_t nonlinear_nfields);
 
+    /**
+     * Modify IEEE floating point environment per <a
+     * href="http://www.gnu.org/software/gsl/manual/html_node/Setting-up-your-IEEE-environment.html">GSL_IEEE_MODE</a>.
+     *
+     * Should usually be called after "startup" completes as startup processing
+     * relies on NaNs.
+     */
+    virtual void establish_ieee_mode();
+
 protected:
 
     /** Wall time at which MPI_Init completed */

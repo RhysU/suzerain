@@ -44,6 +44,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
+#include <suzerain/pre_gsl.h>
 #include <suzerain/state.hpp>
 #include <suzerain/version.hpp>
 
@@ -333,6 +334,13 @@ application_base::establish_state_storage(
         DEBUG("Nonlinear state strides (FYXZ): "
               << strides_array(*state_nonlinear));
     }
+}
+
+void
+application_base::establish_ieee_mode()
+{
+    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 }
 
 } // end namespace support
