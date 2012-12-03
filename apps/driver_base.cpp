@@ -767,9 +767,9 @@ driver_base::log_status_specific_boundary_state(
 }
 
 void
-driver_base::save_restart_metadata()
+driver_base::save_metadata()
 {
-    SUZERAIN_TIMER_SCOPED("save_restart_metadata");
+    SUZERAIN_TIMER_SCOPED("save_metadata");
 
     DEBUG0("Saving metadata temporary file: " << restartdef->metadata);
 
@@ -789,7 +789,7 @@ driver_base::save_restart_metadata()
     support::store(esioh, *timedef);
 
     // Invoke subclass extension point
-    save_restart_metadata_hook(esioh);
+    save_metadata_hook(esioh);
 
     esio_file_close(esioh);
     esio_handle_finalize(esioh);
@@ -897,7 +897,7 @@ driver_base::save_statistics(
 }
 
 void
-driver_base::save_restart_metadata_hook(
+driver_base::save_metadata_hook(
         esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
@@ -915,8 +915,18 @@ driver_base::save_restart_hook(
     SUZERAIN_ENSURE(state_linear);
     SUZERAIN_ENSURE(state_nonlinear);
 
+    // Copy state into state_nonlinear for possibly destructive processing
     state_nonlinear->assign(*state_linear);
-    support::store_coefficients(esioh, fields, *state_nonlinear, *grid, *dgrid);
+
+    // Save either coefficients or collocation values, as requested
+    if (restartdef->physical) {
+        support::store_collocation_values(
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+    } else {
+        support::store_coefficients(
+                esioh, fields, *state_nonlinear, *grid, *dgrid);
+    }
+
     return true;
 }
 

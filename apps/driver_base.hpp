@@ -282,15 +282,15 @@ public:
     /**
      * Save time-independent metadata that should appear in all restart files.
      * Subclasses should not generally override this method but should instead
-     * use \ref save_restart_metadata_hook.
+     * use \ref save_metadata_hook.
      *
      * @see Member #restartdef to control the metadata file location.
      */
-    virtual void save_restart_metadata();
+    virtual void save_metadata();
 
     /**
-     * Save state into a restart file.  The method \ref save_restart_metadata()
-     * must have been called first as restart files contained cloned metadata.
+     * Save state into a restart file.  The method \ref save_metadata() must
+     * have been called first as restart files contained cloned metadata.
      * Subclasses should not generally override this method but should instead
      * use \ref save_restart_hook.
      *
@@ -309,10 +309,10 @@ public:
             const step_type nt);
 
     /**
-     * Save statistics into a sample file.  The method \ref
-     * save_restart_metadata() must have been called first as sample files
-     * contain cloned metadata.  Subclasses should not generally override this
-     * method but should instead use \ref save_statistics_hook.
+     * Save statistics into a sample file.  The method \ref save_metadata()
+     * must have been called first as sample files contain cloned metadata.
+     * Subclasses should not generally override this method but should instead
+     * use \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the statistics file.
      * @param nt The time step number which is not stored in the file.
@@ -361,7 +361,7 @@ protected:
 
     /**
      * Extension point to permit adding arbitrary metadata to all restart and
-     * statistics files during \ref save_restart_metadata.
+     * statistics files during \ref save_metadata.
      *
      * Subclasses should override this method adding or changing any desired
      * functionality either before or after invoking the superclass
@@ -369,7 +369,7 @@ protected:
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
-    virtual void save_restart_metadata_hook(
+    virtual void save_metadata_hook(
             esio_handle esioh);
 
     /**
