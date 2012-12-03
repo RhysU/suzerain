@@ -136,7 +136,7 @@ driver_base::driver_base(
     , last_status_nt(std::numeric_limits<step_type>::max())
     , last_restart_saved_nt(std::numeric_limits<step_type>::max())
     , last_statistics_saved_nt(std::numeric_limits<step_type>::max())
-    , metadata_created(false)
+    , metadata_saved(false)
     , allreducer(new delta_t_allreducer(this->wtime_mpi_init,
                                         this->wtime_fftw_planning,
                                         this->timedef,
@@ -248,7 +248,7 @@ driver_base::initialize(int argc, char **argv)
 
 driver_base::~driver_base()
 {
-    if (metadata_created) {  // Attempt to remove any lingering metadata file
+    if (metadata_saved) {  // Attempt to remove any lingering metadata file
         if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
             if (0 == unlink(restartdef->metadata.c_str())) {
                 DEBUG("Cleaned up temporary file "
@@ -794,7 +794,7 @@ driver_base::save_metadata()
     esio_file_close(esioh);
     esio_handle_finalize(esioh);
 
-    metadata_created = true;
+    metadata_saved = true;
 }
 
 bool
@@ -802,13 +802,13 @@ driver_base::save_restart(
         const driver_base::time_type t,
         const driver_base::step_type nt)
 {
-    SUZERAIN_ENSURE(metadata_created);
-
     // Defensively avoid multiple invocations with no intervening changes
     if (last_restart_saved_nt == nt) {
         DEBUG0("Cowardly refusing to save multiple restarts at nt = " << nt);
         return true;
     }
+
+    if (!metadata_saved) save_metadata();
 
     SUZERAIN_TIMER_SCOPED("save_restart");
     const std::string timeprefix(build_timeprefix(t, nt));
@@ -857,13 +857,13 @@ driver_base::save_statistics(
         const driver_base::time_type t,
         const driver_base::step_type nt)
 {
-    SUZERAIN_ENSURE(metadata_created);
-
     // Defensively avoid multiple invocations with no intervening changes
     if (last_statistics_saved_nt == nt) {
         DEBUG0("Cowardly refusing to save multiple samples at nt = " << nt);
         return true;
     }
+
+    if (!metadata_saved) save_metadata();
 
     SUZERAIN_TIMER_SCOPED("save_statistics");
 

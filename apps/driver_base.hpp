@@ -249,7 +249,7 @@ public:
             const step_type nt);
 
     /**
-     * Routine to output status, generally called via the timecontroller. FIXME
+     * Routine to output status, generally called via the timecontroller.
      *
      * Invokes \ref log_status_bulk, \ref log_status_L2, \ref
      * log_status_boundary_state, and \ref log_status_hook.
@@ -280,16 +280,20 @@ public:
             const std::string& timeprefix);
 
     /**
-     * Save time-independent metadata that should appear in all restart files.
-     * Subclasses should not generally override this method but should instead
-     * use \ref save_metadata_hook.
+     * Save time-independent metadata that should appear in all restart and
+     * statistics files.  Though this logic will be invoked automatically the
+     * first time \ref save_restart() or \ref save_statistics() is used, users
+     * may wish to invoke the method explicitly during general initialization
+     * prior to \ref advance_controller().  Subclasses should not generally
+     * override this method but should instead use \ref save_metadata_hook.
      *
      * @see Member #restartdef to control the metadata file location.
      */
     virtual void save_metadata();
 
     /**
-     * Save state into a restart file.  The method \ref save_metadata() must
+     * Save state into a restart file.  
+     * The method \ref save_metadata() must
      * have been called first as restart files contained cloned metadata.
      * Subclasses should not generally override this method but should instead
      * use \ref save_restart_hook.
@@ -309,10 +313,8 @@ public:
             const step_type nt);
 
     /**
-     * Save statistics into a sample file.  The method \ref save_metadata()
-     * must have been called first as sample files contain cloned metadata.
-     * Subclasses should not generally override this method but should instead
-     * use \ref save_statistics_hook.
+     * Save statistics into a sample file.  Subclasses should not generally
+     * override this method but should instead use \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the statistics file.
      * @param nt The time step number which is not stored in the file.
@@ -496,7 +498,7 @@ private:
     signal::received_type signal_received;
 
     /** Was a metadata file ever saved to disk? */
-    bool metadata_created;
+    bool metadata_saved;
 
     /**
      * Handles \c MPI_Allreduce calls necessary to obtain stable time steps on
