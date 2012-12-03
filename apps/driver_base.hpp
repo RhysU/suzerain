@@ -153,7 +153,7 @@ public:
 
     /**
      * Controls the OS signals triggering various types of processing.
-     * Must be static so that it can be queries within signal handler.
+     * Must be static so that it can be queried within signal handler.
      */
     static signal_definition signaldef;
 
@@ -279,20 +279,6 @@ public:
     virtual void log_status_specific_boundary_state(
             const std::string& timeprefix);
 
-    // FIXME
-    /**
-     * Load the contents of a restart file into #state_nonlinear using the
-     * current decomposition.  Subclasses should override this method
-     * adding any desired functionality either before or after invoking
-     * the superclass version.
-     *
-     * @param[in]  esioh An ESIO handle pointing to an open restart file.
-     * @param[out] t     The simulation time stored in the restart file.
-     */
-    virtual void load_restart(
-            esio_handle esioh,
-            real_t &t);
-
     /**
      * Save time-independent metadata that should appear in all restart files.
      * Subclasses should not generally override this method but should instead
@@ -343,6 +329,19 @@ public:
             const step_type nt);
 
     /**
+     * Load the contents of a restart file into #state_nonlinear using the
+     * current decomposition.  Subclasses should override this method
+     * adding any desired functionality either before or after invoking
+     * the superclass version.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     * @param[out] t     The simulation time stored in the restart file.
+     */
+    virtual void load_restart(
+            esio_handle esioh,
+            real_t &t);
+
+    /**
      * Type maintaining the mean ratio of each delta_t_candidate to the minimum
      * delta_t_candidate selected during each time step.  Useful for
      * determining the relative restrictiveness of each stability criterion.
@@ -379,13 +378,17 @@ protected:
      * with the desired functionality.  Invoking the superclass method in the
      * override is optional.
      *
-     * The default implementation saves the contents of #state_linear into a
-     * restart file destroying #state_nonlinear in the process.
+     * The default implementation saves the contents of #state_linear into the
+     * provided ESIO handle file destroying #state_nonlinear in the process.
+     * When \c restartdef->physical is \c false, expansion coefficients are
+     * written in all three directions using \ref support::store_coefficients.
+     * When it is \c true, values at collocation points are written using
+     * support::store_collocation_Values.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
      *
      * @returns True if any active time advance should continue.
      *          False otherwise.
-     *
-     * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual bool save_restart_hook(
             esio_handle esioh);

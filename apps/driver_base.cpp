@@ -767,18 +767,6 @@ driver_base::log_status_specific_boundary_state(
 }
 
 void
-driver_base::load_restart(esio_handle esioh, real_t& t)
-{
-    SUZERAIN_ENSURE(grid);
-    SUZERAIN_ENSURE(dgrid);
-
-    // TODO Load everything
-    // TODO Permit loading decomposition data too?
-
-    support::load_time(esioh, t);
-}
-
-void
 driver_base::save_restart_metadata()
 {
     SUZERAIN_TIMER_SCOPED("save_restart_metadata");
@@ -823,9 +811,10 @@ driver_base::save_restart(
     }
 
     SUZERAIN_TIMER_SCOPED("save_restart");
+    const std::string timeprefix(build_timeprefix(t, nt));
 
     const double starttime = MPI_Wtime();
-    DEBUG0("Started to store restart at t = " << t << " and nt = " << nt);
+    INFO0(timeprefix << " Starting to save restart");
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
     DEBUG0("Cloning " << restartdef->metadata
@@ -844,14 +833,24 @@ driver_base::save_restart(
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
-    INFO0("Successfully wrote restart at t = " << t << " for nt = " << nt
-          << " in " << elapsed << " seconds");
+    INFO0(timeprefix << " Committed restart in " << elapsed << " seconds");
 
-    last_restart_saved_nt = nt; // Maintain last successful restartdef time step
+    last_restart_saved_nt = nt; // Maintain last successful restart time step
 
     return continue_advancing;
 }
 
+void
+driver_base::load_restart(esio_handle esioh, real_t& t)
+{
+    SUZERAIN_ENSURE(grid);
+    SUZERAIN_ENSURE(dgrid);
+
+    // TODO Load everything
+    // TODO Permit loading decomposition data too?
+
+    support::load_time(esioh, t);
+}
 
 bool
 driver_base::save_statistics(
@@ -912,6 +911,10 @@ bool
 driver_base::save_restart_hook(
         esio_handle esioh)
 {
+    SUZERAIN_ENSURE(restartdef);
+    SUZERAIN_ENSURE(state_linear);
+    SUZERAIN_ENSURE(state_nonlinear);
+
     state_nonlinear->assign(*state_linear);
     support::store_coefficients(esioh, fields, *state_nonlinear, *grid, *dgrid);
     return true;
