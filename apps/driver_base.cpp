@@ -813,8 +813,9 @@ driver_base::save_restart(
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
     support::store_time(esioh, t);
 
-    // Invoke subclass extension point
-    const bool continue_advancing = save_restart_hook(esioh);
+    // Invoke subclass extension points for both restart AND statistics
+    const bool continue_advancing =    save_restart_hook(esioh)
+                                    || save_statistics_hook(esioh);
 
     DEBUG0("Committing " << restartdef->uncommitted
            << " as a restart file using template " << restartdef->destination);

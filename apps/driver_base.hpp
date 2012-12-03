@@ -282,16 +282,19 @@ public:
      * statistics files.  Though this logic will be invoked automatically the
      * first time \ref save_restart() or \ref save_statistics() is used, users
      * may wish to invoke the method explicitly during general initialization
-     * prior to \ref advance_controller().  Subclasses should not generally
-     * override this method but should instead use \ref save_metadata_hook.
+     * prior to \ref advance_controller().
+     *
+     * Subclasses should not override this method but should instead use \ref
+     * save_metadata_hook.
      *
      * @see Member #restartdef to control the metadata file location.
      */
     virtual void save_metadata();
 
     /**
-     * Save state into a restart file.  Subclasses should not generally
-     * override this method but should instead use \ref save_restart_hook.
+     * Save state \e and statistics into a restart file.  Subclasses should not
+     * override this method but should instead use \ref save_restart_hook and
+     * \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the restart file.
      * @param nt The time step number which is not stored in the restart file.
@@ -309,8 +312,8 @@ public:
             const step_type nt);
 
     /**
-     * Save statistics into a sample file.  Subclasses should not generally
-     * override this method but should instead use \ref save_statistics_hook.
+     * Save statistics into a sample file.  Subclasses should not override this
+     * method but should instead use \ref save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the statistics file.
      * @param nt The time step number which is not stored in the file.
@@ -329,8 +332,8 @@ public:
 
     /**
      * Load time-independent metadata appearing in all restart and statistics
-     * files.  Subclasses should not generally override this method but should
-     * instead use \ref load_metadata_hook.
+     * files.  Subclasses should not override this method but should instead
+     * use \ref load_metadata_hook.
      *
      * @param[in]  esioh An ESIO handle pointing to an open, readable file.
      */
@@ -418,7 +421,8 @@ protected:
 
     /**
      * Hook permitting saving arbitrary information into statistical sample
-     * files during \ref save_statistics.
+     * files during \ref save_statistics as well as into restart files during
+     * \ref save_restart.
      *
      * Subclasses should override this method adding any desired functionality
      * either before or after invoking the superclass implementation.
