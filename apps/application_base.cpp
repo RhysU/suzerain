@@ -230,11 +230,21 @@ application_base::establish_state_storage(
 {
     SUZERAIN_ENSURE(dgrid);
 
+    // Deallocate any existing unpadded linear state not matching the request
+    if (state_linear && state_linear->shape()[0] != linear_nfields) {
+        state_linear.reset();
+    }
+
     // Allocate the unpadded linear state to match decomposition
     if (linear_nfields) {
         state_linear = make_shared<
                     state_linear_type
                 >(to_yxz(linear_nfields, dgrid->local_wave_extent));
+    }
+
+    // Deallocate existing transformable nonlinear state not matching request
+    if (state_nonlinear && state_nonlinear->shape()[0] != nonlinear_nfields) {
+        state_nonlinear.reset();
     }
 
     // Allocate the transformable nonlinear state to match decomposition

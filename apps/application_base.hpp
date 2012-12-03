@@ -188,18 +188,19 @@ public:
 
     /**
      * Establish the state storage per #dgrid and a supplied number of scalar
-     * fields.  The following may be modified:
+     * fields.  If storage with the supplied number of fields is already
+     * present, invocation is a NOP.  If storage with a different number of
+     * fields is present, it is released and new storage allocated.  Requesting
+     * zero scalar fields releases any associated storage.
+     *
+     * The following may be modified:
      * \li #state_linear
      * \li #state_nonlinear
      *
      * @param linear_nfields    Number of scalar fields of wave-only
-     *                          storage to be allocated.  May be zero
-     *                          to indicate #state_linear should not be
-     *                          modified.
+     *                          storage to be allocated.
      * @param nonlinear_nfields Number of scalar fields of transformable
-     *                          storage to be allocated.  May be zero.
-     *                          to indicate #state_nonlinear should not
-     *                          be modified.
+     *                          storage to be allocated.
      */
     virtual void establish_state_storage(
             const std::size_t linear_nfields,
