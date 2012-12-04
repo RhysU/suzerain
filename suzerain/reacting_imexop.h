@@ -20,7 +20,7 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.h: hybrid implicit/explicit operator apply and solve
+ * reacting_imexop.h: hybrid implicit/explicit operator apply and solve
  * $Id$
  */
 
@@ -34,9 +34,8 @@
 /** @file
  * Provides implicit operator apply and solve routines for a single wall-normal
  * pencil of state information.  The operator is described in "Hybrid
- * implicit/explicit" treatment within the model document.  These routines are
- * meant to be used in conjunction with compute kernels found in rholut.hpp.
- * The logic is coded in C99 to facilitate profiling.
+ * implicit/explicit" treatment within the model document.  The logic is coded
+ * in C99 to facilitate profiling.
  */
 
 #ifdef __cplusplus
@@ -50,7 +49,7 @@ typedef struct {
     double Ma;    /**< \f$\mbox{Ma} = \frac{u_0}{a_0}\f$ */
     double alpha; /**< \f$\alpha\f$ such that \f$\mu_B = \alpha\mu\f$ */
     double gamma; /**< \f$\gamma\f$ such that \f$\rho T = p \gamma \f$ */
-} suzerain_rholut_imexop_scenario;
+} suzerain_reacting_imexop_scenario;
 
 /** Wall-normal diagonal reference matrices used for operator formation. */
 typedef struct {
@@ -80,37 +79,37 @@ typedef struct {
     double *ez_gradrho; /**< \f$ C^{e_z}_{\nabla\rho}   \f$ */
     double *e_divm;     /**< \f$ C^{e}_{\nabla\cdot{}m} \f$ */
     double *e_deltarho; /**< \f$ C^{e}_{\Delta\rho}     \f$ */
-} suzerain_rholut_imexop_ref;
+} suzerain_reacting_imexop_ref;
 
-/** Strides between elements in a \ref suzerain_rholut_imexop_ref. */
+/** Strides between elements in a \ref suzerain_reacting_imexop_ref. */
 typedef struct {
-    int ux;             /**< \copydoc suzerain_rholut_imexop_ref::ux         */
-    int uy;             /**< \copydoc suzerain_rholut_imexop_ref::uy         */
-    int uz;             /**< \copydoc suzerain_rholut_imexop_ref::uz         */
-    int u2;             /**< \copydoc suzerain_rholut_imexop_ref::u2         */
-    int uxux;           /**< \copydoc suzerain_rholut_imexop_ref::uxux       */
-    int uxuy;           /**< \copydoc suzerain_rholut_imexop_ref::uxuy       */
-    int uxuz;           /**< \copydoc suzerain_rholut_imexop_ref::uxuz       */
-    int uyuy;           /**< \copydoc suzerain_rholut_imexop_ref::uyuy       */
-    int uyuz;           /**< \copydoc suzerain_rholut_imexop_ref::uyuz       */
-    int uzuz;           /**< \copydoc suzerain_rholut_imexop_ref::uzuz       */
-    int nu;             /**< \copydoc suzerain_rholut_imexop_ref::nu         */
-    int nuux;           /**< \copydoc suzerain_rholut_imexop_ref::nuux       */
-    int nuuy;           /**< \copydoc suzerain_rholut_imexop_ref::nuuy       */
-    int nuuz;           /**< \copydoc suzerain_rholut_imexop_ref::nuuz       */
-    int nuu2;           /**< \copydoc suzerain_rholut_imexop_ref::nuu2       */
-    int nuuxux;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxux     */
-    int nuuxuy;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxuy     */
-    int nuuxuz;         /**< \copydoc suzerain_rholut_imexop_ref::nuuxuz     */
-    int nuuyuy;         /**< \copydoc suzerain_rholut_imexop_ref::nuuyuy     */
-    int nuuyuz;         /**< \copydoc suzerain_rholut_imexop_ref::nuuyuz     */
-    int nuuzuz;         /**< \copydoc suzerain_rholut_imexop_ref::nuuzuz     */
-    int ex_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ex_gradrho */
-    int ey_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ey_gradrho */
-    int ez_gradrho;     /**< \copydoc suzerain_rholut_imexop_ref::ez_gradrho */
-    int e_divm;         /**< \copydoc suzerain_rholut_imexop_ref::e_divm     */
-    int e_deltarho;     /**< \copydoc suzerain_rholut_imexop_ref::e_deltarho */
-} suzerain_rholut_imexop_refld;
+    int ux;             /**< \copydoc suzerain_reacting_imexop_ref::ux         */
+    int uy;             /**< \copydoc suzerain_reacting_imexop_ref::uy         */
+    int uz;             /**< \copydoc suzerain_reacting_imexop_ref::uz         */
+    int u2;             /**< \copydoc suzerain_reacting_imexop_ref::u2         */
+    int uxux;           /**< \copydoc suzerain_reacting_imexop_ref::uxux       */
+    int uxuy;           /**< \copydoc suzerain_reacting_imexop_ref::uxuy       */
+    int uxuz;           /**< \copydoc suzerain_reacting_imexop_ref::uxuz       */
+    int uyuy;           /**< \copydoc suzerain_reacting_imexop_ref::uyuy       */
+    int uyuz;           /**< \copydoc suzerain_reacting_imexop_ref::uyuz       */
+    int uzuz;           /**< \copydoc suzerain_reacting_imexop_ref::uzuz       */
+    int nu;             /**< \copydoc suzerain_reacting_imexop_ref::nu         */
+    int nuux;           /**< \copydoc suzerain_reacting_imexop_ref::nuux       */
+    int nuuy;           /**< \copydoc suzerain_reacting_imexop_ref::nuuy       */
+    int nuuz;           /**< \copydoc suzerain_reacting_imexop_ref::nuuz       */
+    int nuu2;           /**< \copydoc suzerain_reacting_imexop_ref::nuu2       */
+    int nuuxux;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxux     */
+    int nuuxuy;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxuy     */
+    int nuuxuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxuz     */
+    int nuuyuy;         /**< \copydoc suzerain_reacting_imexop_ref::nuuyuy     */
+    int nuuyuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuyuz     */
+    int nuuzuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuzuz     */
+    int ex_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ex_gradrho */
+    int ey_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ey_gradrho */
+    int ez_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ez_gradrho */
+    int e_divm;         /**< \copydoc suzerain_reacting_imexop_ref::e_divm     */
+    int e_deltarho;     /**< \copydoc suzerain_reacting_imexop_ref::e_deltarho */
+} suzerain_reacting_imexop_refld;
 
 /**
  * Accumulate the linear implicit operator application \f$y \leftarrow{}
@@ -152,13 +151,13 @@ typedef struct {
  * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
  */
 void
-suzerain_rholut_imexop_accumulate(
+suzerain_reacting_imexop_accumulate(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int imagzero,
         const complex_double *in_rho_E,
@@ -226,13 +225,13 @@ suzerain_rholut_imexop_accumulate(
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */
 void
-suzerain_rholut_imexop_packc(
+suzerain_reacting_imexop_packc(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int rho_E,
         const int rho_w,
@@ -297,13 +296,13 @@ suzerain_rholut_imexop_packc(
  * @see suzerain_bsmbsm_zaPxpby() for how to permute state to match \c patpt.
  */
 void
-suzerain_rholut_imexop_packf(
+suzerain_reacting_imexop_packf(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int rho_E,
         const int rho_w,

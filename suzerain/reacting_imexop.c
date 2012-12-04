@@ -20,25 +20,25 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.c: hybrid implicit/explicit operator apply and solve
+ * reacting_imexop.c: hybrid implicit/explicit operator apply and solve
  * $Id$
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/rholut_imexop.h>
+#include <suzerain/reacting_imexop.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
 
 void
-suzerain_rholut_imexop_accumulate(
+suzerain_reacting_imexop_accumulate(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int imagzero,
         const complex_double *in_rho_E,
@@ -53,9 +53,9 @@ suzerain_rholut_imexop_accumulate(
         complex_double *out_rho_w,
         complex_double *out_rho )
 {
-    // When you modify this routine, you must also modify rholut_imexop.def so
+    // When you modify this routine, you must also modify reacting_imexop.def so
     // that operator accumulation-without-assembly and assembly match.  The
-    // test cases in tests/test_rholut_imexop.cpp are invaluable in checking
+    // test cases in tests/test_reacting_imexop.cpp are invaluable in checking
     // the coherence of these two pieces of logic.
 
     // Sanity checks
@@ -511,15 +511,15 @@ suzerain_rholut_imexop_accumulate(
 
 }
 
-// suzerain_rholut_imexop_pack{c,f} differ trivially
+// suzerain_reacting_imexop_pack{c,f} differ trivially
 // use preprocessor to generate both from the same source template
 
-// suzerain_rholut_imexop_packc
-#define FUNCNAME()  suzerain_rholut_imexop_packc
+// suzerain_reacting_imexop_packc
+#define FUNCNAME()  suzerain_reacting_imexop_packc
 #define PACK(x)     suzerain_bsmbsm_ ## x ## packc
-#include "rholut_imexop.def"
+#include "reacting_imexop.def"
 
-// suzerain_rholut_imexop_packf
-#define FUNCNAME()  suzerain_rholut_imexop_packf
+// suzerain_reacting_imexop_packf
+#define FUNCNAME()  suzerain_reacting_imexop_packf
 #define PACK(x)     suzerain_bsmbsm_ ## x ## packf
-#include "rholut_imexop.def"
+#include "reacting_imexop.def"

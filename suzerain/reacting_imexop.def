@@ -20,24 +20,24 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.def: templated functionality for rholut_imexop.c
+ * reacting_imexop.def: templated functionality for reacting_imexop.c
  * $Id$
  */
 
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define FUNCNAME() /* Function name, e.g. suzerain_rholut_imexop_packc */
-// #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}               */
+// #define FUNCNAME() /* Function name, e.g. suzerain_reacting_imexop_packc */
+// #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
 
 void
 FUNCNAME()(
         const complex_double phi,
         const double km,
         const double kn,
-        const suzerain_rholut_imexop_scenario * const s,
-        const suzerain_rholut_imexop_ref      * const r,
-        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
         const int rho_E,
         const int rho_u,
@@ -49,9 +49,9 @@ FUNCNAME()(
         complex_double * const patpt)
 {
     // When you modify this routine, you must also modify
-    // suzerain_rholut_imexop_accumulate so that operator
+    // suzerain_reacting_imexop_accumulate so that operator
     // accumulation-without-assembly and assembly match.  The test cases in
-    // tests/test_rholut_imexop.cpp are invaluable in checking the coherence of
+    // tests/test_reacting_imexop.cpp are invaluable in checking the coherence of
     // these two pieces of logic.
 
     // How many rows and columns of banded submatrices will we build?
