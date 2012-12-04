@@ -1,5 +1,22 @@
 ## Process this file with automake to produce Makefile.in
 
+# The directory layout is as follows:
+#
+#     - suzerain/*          Logic that is tested by tests/ and which could be
+#                           conceivably picked up for use outside of Suzerain
+#                           because it has minimal third-party dependencies.
+#
+#                           This logic is installed as libsuzerain.la.
+#
+#     - suzerain/support/*  Logic that builds atop suzerain/* and which is used
+#                           and tested by primarily by apps/.  It would be
+#                           difficult to use outside of Suzerain because of its
+#                           third-party dependencies.
+#
+#                           This logic is installed as libsuzerain-support.la.
+
+SUBDIRS = . support
+
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
 AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)

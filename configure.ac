@@ -315,6 +315,7 @@ AC_CONFIG_FILES([
     postproc/Makefile
     lib/Makefile
     suzerain/Makefile
+    suzerain/support/Makefile
     tests/Makefile
     writeups/Makefile
 ])
