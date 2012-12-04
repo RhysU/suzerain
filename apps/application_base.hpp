@@ -222,6 +222,13 @@ public:
      */
     virtual void establish_ieee_mode();
 
+    /**
+     * Compute and display some discretization quality metrics.  These include
+     * the B-spline discrete conservation error and the B-spline mass matrix
+     * condition number.
+     */
+    virtual void log_discretization_quality();
+
 protected:
 
     /** Wall time at which MPI_Init completed */

@@ -343,6 +343,36 @@ application_base::establish_ieee_mode()
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 }
 
+void
+application_base::log_discretization_quality()
+{
+    // Work in real-valued quantities as it is a bit simpler
+    bsplineop_lu boplu(*cop);
+    boplu.opform_mass(*cop);
+    double norm;
+    boplu.opnorm(norm);
+    boplu.factor();
+
+    // Compute and display discrete conservation error magnitude
+    MatrixXXr mat = MatrixXXr::Identity(b->n(), b->n());
+    boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1
+    cop->apply(1, b->n(), 1.0, mat.data(), 1, b->n());  // D*M^-1
+    boplu.solve(b->n(), mat.data(), 1, b->n());         // M^-1*D*M^-1
+    VectorXr vec(b->n());
+    b->integration_coefficients(0, vec.data());
+    vec = vec.transpose() * mat;                        // w^{T}*M^-1*D*M^-1
+    vec.head<1>()[0] -= -1;                             // Exact head
+    vec.tail<1>()[0] -=  1;                             // Exact tail
+    double relerr = vec.norm() / std::sqrt(real_t(2));  // Exact 2-norm
+    INFO0("B-spline discrete conservation relative error near "
+          << relerr * 100 << "%");
+
+    // Compute and display condition number
+    double rcond;
+    boplu.rcond(norm, rcond);
+    INFO0("B-spline mass matrix has condition number near " << (1 / rcond));
+}
+
 } // end namespace support
 
 } // end namespace suzerain
