@@ -20,7 +20,7 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.h: hybrid implicit/explicit operator apply and solve
+ * reacting_imexop.h: hybrid implicit/explicit operator apply and solve
  * $Id$
  */
 
@@ -29,7 +29,7 @@
 #endif
 #include <suzerain/common.hpp>
 #pragma hdrstop
-#include <suzerain/rholut_imexop.h>
+#include <suzerain/reacting_imexop.h>
 #include <boost/test/parameterized_test.hpp>
 #include <boost/test/unit_test.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -48,9 +48,9 @@ typedef std::complex<real_t> complex_t;
 // Machine precision constant
 static const real_t macheps = std::numeric_limits<real_t>::epsilon();
 
-// Abuse what we know about suzerain_rholut_imexop_ref{,ld}.
-static const size_t NREFS = sizeof(suzerain_rholut_imexop_ref)/sizeof(real_t*);
-BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_rholut_imexop_refld)/sizeof(int));
+// Abuse what we know about suzerain_reacting_imexop_ref{,ld}.
+static const size_t NREFS = sizeof(suzerain_reacting_imexop_ref)/sizeof(real_t*);
+BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_reacting_imexop_refld)/sizeof(int));
 
 struct parameters
 {
@@ -98,7 +98,7 @@ static void operator_consistency(const parameters& p)
     const real_t&   km = p.km;
     const real_t&   kn = p.kn;
 
-    suzerain_rholut_imexop_scenario s;
+    suzerain_reacting_imexop_scenario s;
     s.Re    = 3000;
     s.Pr    = 0.7;
     s.Ma    = 1.5;
@@ -107,7 +107,7 @@ static void operator_consistency(const parameters& p)
 
     // Initialize nonzero reference quantities for p.refndx
     // Abuses what we know about the structure of ...imexop_ref{,ld}.
-    suzerain_rholut_imexop_ref r;
+    suzerain_reacting_imexop_ref r;
     suzerain::scoped_array<real_t> refs(new real_t[n*NREFS]);
     for (int i = 0; i < (int) NREFS; ++i) {
         if (i == p.refndx) {
@@ -123,7 +123,7 @@ static void operator_consistency(const parameters& p)
     for (size_t i = 0; i < NREFS; ++i) {        // Establish refs
         ((real_t **)&r)[i] = &refs[i*n];
     }
-    suzerain_rholut_imexop_refld ld;
+    suzerain_reacting_imexop_refld ld;
     fill((int *)&ld, (int *)(&ld + 1), 1); // Establish lds
 
     // Allocate state storage and initialize B1 to eye(N)
@@ -141,7 +141,7 @@ static void operator_consistency(const parameters& p)
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
-        suzerain_rholut_imexop_accumulate(
+        suzerain_reacting_imexop_accumulate(
             phi, km, kn, &s, &r, &ld, op.get(), p.imagzero,
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
@@ -164,13 +164,13 @@ static void operator_consistency(const parameters& p)
     suzerain::scoped_array<complex_t> buf(new complex_t[bufsize]);
     suzerain::scoped_array<complex_t> papt(new complex_t[paptsize]);
 
-    // Fill all working storage with NaNs, invoke suzerain_rholut_imexop_packc,
+    // Fill all working storage with NaNs, invoke suzerain_reacting_imexop_packc,
     // and be sure we get a matrix lacking NaNs on the band as a result.
     using suzerain::complex::NaN;
     fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
-    suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
-                                 0, 1, 2, 3, 4, buf.get(), &A, papt.get());
+    suzerain_reacting_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
+                                   0, 1, 2, 3, 4, buf.get(), &A, papt.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {

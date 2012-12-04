@@ -409,6 +409,14 @@ test_rholut_imexop_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_rholut_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_rholut_imexop_LDADD   += ../suzerain/libsuzerain.la
 
+TESTS                        += test_reacting_imexop
+EXTRA_PROGRAMS               += test_reacting_imexop
+test_reacting_imexop_SOURCES  = test_reacting_imexop.cpp
+test_reacting_imexop_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_reacting_imexop_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_reacting_imexop_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+test_reacting_imexop_LDADD   += ../suzerain/libsuzerain.la
+
 TESTS                  += test_richardson
 EXTRA_PROGRAMS         += test_richardson
 test_richardson_SOURCES = test_richardson.c
