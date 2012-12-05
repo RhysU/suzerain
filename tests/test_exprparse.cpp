@@ -13,11 +13,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/exprparse.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 #pragma warning(disable:1572)
 

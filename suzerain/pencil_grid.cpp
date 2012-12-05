@@ -26,13 +26,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
+#include <suzerain/pencil_grid.hpp>
+
 #include <suzerain/common.hpp>
-#pragma hdrstop
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/functional.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/pencil_grid.hpp>
 
 namespace suzerain {
 

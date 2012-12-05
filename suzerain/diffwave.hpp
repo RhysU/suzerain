@@ -26,8 +26,8 @@
 #ifndef SUZERAIN_DIFFWAVE_HPP
 #define SUZERAIN_DIFFWAVE_HPP
 
-#include <suzerain/diffwave.h>
 #include <suzerain/complex.hpp>
+#include <suzerain/diffwave.h>
 
 /** @file
  * Provides C++ wrappers for the C-based API in diffwave.h.

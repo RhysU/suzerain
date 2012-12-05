@@ -13,14 +13,16 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
 #include <suzerain/sbmv.h>
+
 #include <boost/test/parameterized_test.hpp>
 #include <boost/test/unit_test.hpp>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_rng.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.h>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

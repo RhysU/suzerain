@@ -521,9 +521,8 @@ test_diffwave_p3dfft_LDADD    = $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_diffwave_p3dfft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 test_diffwave_p3dfft_LDADD   += ../suzerain/libsuzerain.la
 
-# Clean up from Intel Compiler's -prof-gen output and precomiled headers
+# Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-CLEANFILES += *.pchi
 
 # Clean up EXTRA_PROGRAMS per hints in "Simple Tests using ‘parallel-tests’"
 CLEANFILES += $(EXTRA_PROGRAMS)

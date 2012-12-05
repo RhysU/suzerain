@@ -29,7 +29,7 @@
 #include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -70,7 +70,7 @@ public:
      */
     channel_treatment(
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -85,7 +85,7 @@ public:
     channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -110,7 +110,7 @@ private:
 
     /** Common initialization code to be called at end of constructor */
     void finish_construction(
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop);
@@ -152,7 +152,7 @@ private:
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -167,7 +167,7 @@ template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop,
@@ -180,7 +180,7 @@ channel_treatment<BaseClass>::channel_treatment(
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::finish_construction(
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &bop)

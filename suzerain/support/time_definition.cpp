@@ -15,17 +15,19 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#include <suzerain/time_definition.hpp>
-#include <suzerain/validation.hpp>
+
+#include <suzerain/support/time_definition.hpp>
+
 #include <suzerain/exprparse.hpp>
+#include <suzerain/validation.hpp>
 
 /** @file
  * Provides classes handling time advancement settings.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /** Helper used to parse size_t-based options */
 static void parse_size_t(const std::string& s,
@@ -221,5 +223,7 @@ time_definition::time_definition(const char* evmagfactor)
 
     initialize_scenario(evmagfactor);
 }
+
+} // namespace support
 
 } // namespace suzerain

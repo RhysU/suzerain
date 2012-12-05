@@ -29,7 +29,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/timers.h>
 
@@ -55,7 +55,7 @@ public:
      *                 e.g. integration coefficients.
      * @param cop      B-spline operators to use.
      */
-    operator_base(const grid_definition &grid,
+    operator_base(const grid_specification &grid,
                   const pencil_grid &dgrid,
                   bspline &b,
                   const bsplineop &cop);
@@ -294,7 +294,7 @@ public:
     const real_t lambda2_z;
 
     /** The grid in which the operator is used */
-    const grid_definition &grid;
+    const grid_specification &grid;
 
     /** The parallel decomposition grid in which the operator is used */
     const pencil_grid &dgrid;

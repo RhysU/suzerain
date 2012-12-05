@@ -26,8 +26,9 @@
 #ifndef SUZERAIN_FFTW_HPP
 #define SUZERAIN_FFTW_HPP
 
-#include <suzerain/common.hpp>
 #include <fftw3.h>
+
+#include <suzerain/common.hpp>
 
 /** @file
  * Provides miscellaneous utilities for working with FFTW's C interface.

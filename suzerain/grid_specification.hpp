@@ -9,31 +9,29 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// grid_definition.hpp: classes handling grid definitions
+// grid_specification.hpp: classes handling 3D, dealiased grid specifications
 // $Id$
 
-#ifndef SUZERAIN_GRID_DEFINITION_HPP
-#define SUZERAIN_GRID_DEFINITION_HPP
+#ifndef SUZERAIN_GRID_SPECIFICATION_HPP
+#define SUZERAIN_GRID_SPECIFICATION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
 
-// TODO Distinguish between two- versus one-sided stretching in grid_definition
+// TODO Distinguish between two- versus one-sided stretching in grid_specification
 
 /** @file
- * Provides classes handling problem grid definitions.
+ * Provides classes handling 3D, dealiased grid specifications.
  */
 
-namespace suzerain
-{
+namespace suzerain {
 
 /**
  * Holds basic three dimensional computational grid details for a distributed,
  * mixed Fourier/B-spline method.  The B-spline representation is used in the
- * wall-normal Y direction.  Logical grid sizes should be specified in terms
- * of physical space coefficient counts.
+ * wall-normal Y direction.  Logical grid sizes should be specified in terms of
+ * physical space coefficient counts.
  */
-class grid_definition : public definition_base
+class grid_specification
 {
 public:
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
@@ -44,17 +42,15 @@ public:
      * overwritten.  Integer values will be zeros and floating point
      * values will be NaNs.
      */
-    grid_definition();
+    grid_specification();
 
     /**
      * Construct an instance with the given default values.
      *
-     * @param Lx      Physical domain extent in the X direction
-     *                which is evaluated using exprparse().
+     * @param Lx      Physical domain extent in the X direction.
      * @param Nx      Logical grid size in the X direction.
      * @param DAFx    Dealiasing factor in the X direction.
-     * @param Ly      Physical domain extent in the Y direction
-     *                which is evaluated using exprparse().
+     * @param Ly      Physical domain extent in the Y direction.
      * @param Ny      Logical grid size in the Y direction.
      *                This is the number of B-spline basis functions
      *                (equivalently, wall-normal degrees of freedom)
@@ -64,29 +60,31 @@ public:
      *                <tt>default_k == 4</tt>.
      * @param htdelta Hyperbolic tangent stretching parameter
      *                to use when computing breakpoint locations.
-     * @param Lz      Physical domain extent in the Z direction
-     *                which is evaluated using exprparse().
+     * @param Lz      Physical domain extent in the Z direction.
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    grid_definition(const char* Lx,
-                    int          Nx,
-                    real_t       DAFx,
-                    const char* Ly,
-                    int          Ny,
-                    int          k,
-                    real_t       htdelta,
-                    const char* Lz,
-                    int          Nz,
-                    real_t       DAFz);
+    grid_specification(real_t Lx,
+                       int    Nx,
+                       real_t DAFx,
+                       real_t Ly,
+                       int    Ny,
+                       int    k,
+                       real_t htdelta,
+                       real_t Lz,
+                       int    Nz,
+                       real_t DAFz);
 
     /**@{*/
 
     /** Physical domain extents in the X, Y, and Z directions. */
     Array3r L;
 
-    /** Global logical extents in the X, Y, and Z directions. */
-    Array3i N;
+    /**
+     * Global logical extents in the X, Y, and Z directions.
+     * Mutate via \ref Nx(), \ref Ny(), and \ref Nz() members.
+     */
+    const Array3i N;
 
     /**
      * Set the logical extents in the X direction.
@@ -94,7 +92,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_definition& Nx(int value);
+    grid_specification& Nx(int value);
 
     /**
      * Set the logical extents in the Y direction.
@@ -102,7 +100,7 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_definition& Ny(int value);
+    grid_specification& Ny(int value);
 
     /**
      * Set the logical extents in the Z direction.
@@ -110,17 +108,20 @@ public:
      * @param value New, nonnegative value to set
      * @return <tt>*this</tt>
      */
-    grid_definition& Nz(int value);
+    grid_specification& Nz(int value);
 
     /**@}*/
 
     /**@{*/
 
-    /** Dealiasing factors in the X, Y, and Z directions */
-    Array3r DAF;
+    /**
+     * Dealiasing factors in the X, Y, and Z directions
+     * Mutate via \ref DAFx(), \ref DAFy(), and \ref DAFz() members.
+     */
+    const Array3r DAF;
 
     /** Global dealiased logical extents in the X, Y, and Z directions. */
-    Array3i dN;
+    const Array3i dN;
 
     /**
      * Set the dealiasing factor in the X direction.
@@ -128,7 +129,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    grid_definition& DAFx(real_t factor);
+    grid_specification& DAFx(real_t factor);
 
     /**
      * Set the dealiasing factor in the Z direction.
@@ -136,7 +137,7 @@ public:
      * @param factor New, nonnegative factor to set.
      * @return <tt>*this</tt>
      */
-    grid_definition& DAFz(real_t factor);
+    grid_specification& DAFz(real_t factor);
 
     /**@}*/
 
@@ -165,28 +166,22 @@ public:
      */
     real_t htdelta;
 
-private:
-    /** Options initialization common to all constructors */
-    void initialize_options(const char* default_Lx,
-                            const char* default_Ly,
-                            const char* default_Lz);
-
     /** @copydoc Nx(int) */
-    grid_definition& Nx(const std::string& value);
+    grid_specification& Nx(const std::string& value);
 
     /** @copydoc Ny(int) */
-    grid_definition& Ny(const std::string& value);
+    grid_specification& Ny(const std::string& value);
 
     /** @copydoc Nz(int) */
-    grid_definition& Nz(const std::string& value);
+    grid_specification& Nz(const std::string& value);
 
     /** @copydoc DAFx(real_t) */
-    grid_definition& DAFx(const std::string& value);
+    grid_specification& DAFx(const std::string& value);
 
     /** @copydoc DAFz(real_t) */
-    grid_definition& DAFz(const std::string& value);
+    grid_specification& DAFz(const std::string& value);
 };
 
 } // namespace suzerain
 
-#endif // SUZERAIN_GRID_DEFINITION_HPP
+#endif // SUZERAIN_GRID_SPECIFICATION_HPP

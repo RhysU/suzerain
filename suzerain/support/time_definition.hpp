@@ -12,18 +12,19 @@
 // time_definition.hpp: classes handling advance definitions
 // $Id$
 
-#ifndef SUZERAIN_TIME_DEFINITION_HPP
-#define SUZERAIN_TIME_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling time advancement settings.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /**
  * Encapsulates flags related to time advancement.  Includes details on how
@@ -117,6 +118,8 @@ private:
     void initialize_scenario(const char* default_evmagfactor);
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_TIME_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_TIME_DEFINITION_HPP

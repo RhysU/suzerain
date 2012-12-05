@@ -16,6 +16,8 @@
 #ifndef SUZERAIN_INORDER_H
 #define SUZERAIN_INORDER_H
 
+#include <assert.h>
+
 /** @file
  * Provides utilities for manipulating one dimensional discrete Fourier
  * transform coefficients stored "in-order".  From

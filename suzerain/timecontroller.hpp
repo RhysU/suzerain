@@ -15,14 +15,15 @@
 #ifndef SUZERAIN_TIMECONTROLLER_HPP
 #define SUZERAIN_TIMECONTROLLER_HPP
 
-#include <suzerain/common.hpp>
-#include <suzerain/timers.h>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/count.hpp>
 #include <boost/accumulators/statistics/max.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/min.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
+
+#include <suzerain/common.hpp>
+#include <suzerain/timers.h>
 
 /** @file
  * Provides higher-level control mechanisms based atop abstract

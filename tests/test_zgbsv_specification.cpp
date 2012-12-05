@@ -15,11 +15,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/zgbsv_specification.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 using suzerain::zgbsv_specification;
 

@@ -26,6 +26,7 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
 #include <suzerain/fftw.hpp>
 
 namespace suzerain {

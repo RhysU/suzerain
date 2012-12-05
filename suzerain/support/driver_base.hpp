@@ -27,15 +27,13 @@
 #define SUZERAIN_SUPPORT_DRIVER_BASE_HPP
 
 #include <suzerain/common.hpp>
-
-#include <suzerain/restart_definition.hpp>
-#include <suzerain/signal_definition.hpp>
-#include <suzerain/statistics_definition.hpp>
+#include <suzerain/support/application_base.hpp>
+#include <suzerain/support/restart_definition.hpp>
+#include <suzerain/support/signal_definition.hpp>
+#include <suzerain/support/statistics_definition.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timecontroller.hpp>
-#include <suzerain/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
-
-#include "application_base.hpp"
 
 namespace suzerain {
 
@@ -396,7 +394,7 @@ protected:
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual void save_metadata_hook(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Hook permitting saving arbitrary information from \ref #state_nonlinear
@@ -417,7 +415,7 @@ protected:
      *          False otherwise.
      */
     virtual bool save_state_hook(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Hook permitting saving arbitrary information into statistical sample
@@ -433,7 +431,7 @@ protected:
      * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual bool save_statistics_hook(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Hook permitting loading arbitrary metadata from all restart and
@@ -447,7 +445,7 @@ protected:
      * @param esioh An ESIO handle pointing to an open, readable file.
      */
     virtual void load_metadata_hook(
-            esio_handle esioh);
+            const esio_handle esioh);
 
     /**
      * Hook permitting loading information from restart files into

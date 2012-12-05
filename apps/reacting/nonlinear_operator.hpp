@@ -26,17 +26,16 @@
 #ifndef NONLINEAR_OPERATOR_HPP
 #define NONLINEAR_OPERATOR_HPP
 
-#include "nonlinear_operator_fwd.hpp"
-
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
 
-#include "../support.hpp"
+#include "nonlinear_operator_fwd.hpp"
 
 #pragma warning(disable:280 383 1572)
 

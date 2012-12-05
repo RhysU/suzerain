@@ -16,6 +16,8 @@
 #ifndef SUZERAIN_GBDDDMV_H
 #define SUZERAIN_GBDDDMV_H
 
+#include <suzerain/complex.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,8 +27,6 @@ extern "C" {
  * operations.  Includes mixed real/complex operations and fixed bandwidth
  * kernels.
  */
-
-#include <suzerain/complex.h>
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1

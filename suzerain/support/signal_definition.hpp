@@ -12,18 +12,19 @@
 // signal_definition.hpp: classes handling signal processing definitions
 // $Id$
 
-#ifndef SUZERAIN_SIGNAL_DEFINITION_HPP
-#define SUZERAIN_SIGNAL_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling signal processing definitions.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /**
  * Parses and contains signal processing details to allow a program to take
@@ -46,10 +47,10 @@ public:
      *                       simulation should be exited.
      */
     explicit signal_definition(
-        const std::string& specstatus      = "HUP",
-        const std::string& specrestart     = "HUP",
-        const std::string& specstatistics  = "",
-        const std::string& specteardown    = "INT,USR1,USR2,TERM");
+            const std::string& specstatus      = "HUP",
+            const std::string& specrestart     = "HUP",
+            const std::string& specstatistics  = "",
+            const std::string& specteardown    = "INT,USR1,USR2,TERM");
 
     /** Signal numbers indicating a status message should be displayed. */
     std::vector<int> status;
@@ -78,6 +79,8 @@ private:
     void parse_teardown(const std::string& spec);
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_SIGNAL_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP

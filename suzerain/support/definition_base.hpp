@@ -12,8 +12,10 @@
 // definition_base.hpp: base class for handling problem definitions
 // $Id$
 
-#ifndef SUZERAIN_DEFINITION_BASE_HPP
-#define SUZERAIN_DEFINITION_BASE_HPP
+#ifndef SUZERAIN_SUPPORT_DEFINITION_BASE_HPP
+#define SUZERAIN_SUPPORT_DEFINITION_BASE_HPP
+
+#include <boost/program_options.hpp>
 
 #include <suzerain/common.hpp>
 
@@ -22,6 +24,8 @@
  */
 
 namespace suzerain {
+
+namespace support {
 
 /**
  * An abstract base class for problem-related definitions.  These are
@@ -98,6 +102,8 @@ protected:
     boost::program_options::options_description options_;
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_DEFINITION_BASE_HPP
+#endif // SUZERAIN_SUPPORT_DEFINITION_BASE_HPP

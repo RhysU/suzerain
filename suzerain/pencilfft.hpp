@@ -26,11 +26,12 @@
 #ifndef SUZERAIN_PENCILFFT_HPP
 #define SUZERAIN_PENCILFFT_HPP
 
+#include <fftw3.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/utility.hpp>
-#include <fftw3.h>
 
 // TODO Much of transform_c2c, forward_r2c, and backward_c2r is boilerplate
 // TODO Bomb when encountering in-place transform with mismatched strides

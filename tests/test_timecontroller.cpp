@@ -13,11 +13,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/timecontroller.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
+
 #include "test_tools.hpp"
 
 // TODO Add tests for taken_{min,max,mean,stddev}

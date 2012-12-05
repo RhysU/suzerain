@@ -13,12 +13,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/mpi.hpp>
+
 #include "test_tools.hpp"
 
 // Files performs no strictly useful test work.

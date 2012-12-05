@@ -26,32 +26,35 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <esio/esio.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/program_options.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/program_options.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/utility.hpp>
-
-#include "logging.hpp"
-#include "support.hpp"
 
 #pragma warning(disable:383 1572)
 
+using namespace suzerain;
+
 // Global B-spline related-details initialized in main()
-static suzerain::shared_ptr<suzerain::bspline>      b;
-static suzerain::shared_ptr<suzerain::bsplineop>    cop;    // Collocation
-static suzerain::shared_ptr<suzerain::bsplineop>    gop;    // Galerkin L2
-static suzerain::shared_ptr<suzerain::bsplineop_lu> boplu;
+static shared_ptr<bspline>      b;
+static shared_ptr<bsplineop>    cop;    // Collocation
+static shared_ptr<bsplineop>    gop;    // Galerkin L2
+static shared_ptr<bsplineop_lu> boplu;
 
 int main(int argc, char **argv)
 {
+
     MPI_Init(&argc, &argv);                         // Initialize MPI
     atexit((void (*) ()) MPI_Finalize);             // Finalize MPI at exit
-    logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        suzerain::support::log4cxx_config);
+    support::logging::initialize(MPI_COMM_WORLD,    // Initialize logging
+                               support::log4cxx_config);
     WARN0_ENABLE();                                 // Disable chattiness
 
     // Process incoming program arguments from command line, input files
@@ -59,7 +62,7 @@ int main(int argc, char **argv)
     int    N       = 16;
     int    k       = 5;
     {
-        suzerain::program_options options(
+        support::program_options options(
                 "Check conservative nature of discrete B-spline operators");
         using boost::program_options::value;
         options.add_options()
@@ -92,22 +95,22 @@ int main(int argc, char **argv)
 
     // Modify IEEE settings after startup complete as startup relies on NaNs
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
-    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
+    mpi_gsl_ieee_env_setup(mpi::comm_rank(MPI_COMM_WORLD));
 
-    suzerain::VectorXr  exp(N);
+    VectorXr exp(N);
     exp.setZero(N, 1);
-    exp[0] = -1;
+    exp[0]   = -1;
     exp[N-1] = 1;
 
-    suzerain::VectorXr  vec(N);
-    suzerain::MatrixXXr mat(N,N);
-    for (suzerain::real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
-        suzerain::support::create(N, k, 0.0, L, htdelta, b, cop);
+    VectorXr  vec(N);
+    MatrixXXr mat(N,N);
+    for (real_t htdelta = 0; htdelta < 7; htdelta += 0.1) {
+        support::create(N, k, 0.0, L, htdelta, b, cop);
         b->integration_coefficients(0, vec.data());
-        boplu = suzerain::make_shared<suzerain::bsplineop_lu>(*cop);
+        boplu = make_shared<bsplineop_lu>(*cop);
         boplu->factor_mass(*cop);
 
-        mat = suzerain::MatrixXXr::Identity(N,N);
+        mat = MatrixXXr::Identity(N,N);
         boplu->solve(N, mat.data(), 1, N);
         cop->apply(1, N, 1.0, mat.data(), 1, N);
         boplu->solve(N, mat.data(), 1, N);

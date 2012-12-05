@@ -29,16 +29,17 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <esio/esio.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/program_options.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/program_options.hpp>
+#include <suzerain/support/support.hpp>
 
-#include "../logging.hpp"
-#include "../support.hpp"
 #include "perfect.hpp"
 
 // Introduce shorthand for common names
@@ -50,11 +51,12 @@ using suzerain::bspline;
 using suzerain::bsplineop;
 using suzerain::bsplineop_lu;
 using suzerain::complex_t;
-using suzerain::grid_definition;
 using suzerain::perfect::scenario_definition;
 using suzerain::real_t;
 using suzerain::shared_ptr;
-using suzerain::time_definition;
+using suzerain::support::grid_definition;
+using suzerain::support::time_definition;
+namespace logging = suzerain::support::logging;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
@@ -451,7 +453,7 @@ int main(int argc, char **argv)
     bool use_hdf5   = false;
     bool describe   = false;
     {
-        suzerain::program_options options(
+        suzerain::support::program_options options(
                 "Suzerain-based channel mean quantity computations",
                 "RESTART-OR-SAMPLE-HDF5-FILE...",
 "Invocable in three distinct ways:\n"

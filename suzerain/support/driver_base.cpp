@@ -27,7 +27,7 @@
 #include <suzerain/config.h>
 #endif
 
-#include "driver_base.hpp"
+#include <suzerain/support/driver_base.hpp>
 
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
@@ -38,10 +38,9 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
 #include <suzerain/state.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/version.hpp>
-
-#include "logging.hpp"
-#include "support.hpp"
 
 // We want plain ol' signal(2) below but suzerain::support::signal interferes
 // Prepare an alias for the name via a function pointer so may invoke it below
@@ -98,6 +97,9 @@ static void driver_base_process_signal(const int sig)
 }
 
 } // end extern "C"
+
+// Static member initialization
+signal_definition driver_base::signaldef;
 
 driver_base::driver_base(
         const std::string &application_synopsis,
@@ -419,7 +421,9 @@ driver_base::advance_controller(
     const time_type t_initial  = controller->current_t();
     const step_type nt_initial = controller->current_nt();
     wtime_advance_start = MPI_Wtime();
+#pragma warning(push,disable:1572)
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
+#pragma warning(pop)
         case 3:
             INFO0("Advancing simulation by at most " << timedef->advance_dt
                    << " units of physical time");
@@ -451,7 +455,7 @@ driver_base::advance_controller(
             return EXIT_FAILURE;
     }
     const double wtime_advance_end = MPI_Wtime();
-    const real_t nsteps = controller->current_nt() - nt_initial;
+    const step_type nsteps = controller->current_nt() - nt_initial;
     if (output_timers) {
 #ifdef SUZERAIN_HAVE_GRVY
         grvy_timer_finalize();
@@ -931,7 +935,7 @@ driver_base::log_status_hook(
 
 void
 driver_base::save_metadata_hook(
-        esio_handle esioh)
+        const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
 
@@ -944,7 +948,7 @@ driver_base::save_metadata_hook(
 
 bool
 driver_base::save_state_hook(
-        esio_handle esioh)
+        const esio_handle esioh)
 {
     SUZERAIN_TIMER_SCOPED(__func__);
 
@@ -965,9 +969,22 @@ driver_base::save_state_hook(
     return true;
 }
 
+bool
+driver_base::save_statistics_hook(
+        const esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+
+    SUZERAIN_TIMER_SCOPED(__func__);
+
+    // For example: TODO
+
+    return true;
+}
+
 void
 driver_base::load_metadata_hook(
-        esio_handle esioh)
+        const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
 
@@ -978,7 +995,7 @@ driver_base::load_metadata_hook(
 
 void
 driver_base::load_state_hook(
-        esio_handle esioh)
+        const esio_handle esioh)
 {
     SUZERAIN_TIMER_SCOPED(__func__);
 

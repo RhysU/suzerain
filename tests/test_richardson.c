@@ -25,13 +25,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/richardson.h>
+
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_sys.h>
 #include <gsl/gsl_test.h>
+
+#include <suzerain/common.h>
 
 static
 void

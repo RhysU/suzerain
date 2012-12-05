@@ -15,13 +15,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
+
+#include <suzerain/support/restart_definition.hpp>
+
 #include <suzerain/exprparse.hpp>
-#include <suzerain/restart_definition.hpp>
 #include <suzerain/validation.hpp>
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /** Helper used to parse size_t-based options */
 static void parse_size_t(const std::string& s,
@@ -51,20 +53,20 @@ static void parse_option(const std::string& s,
 }
 
 restart_definition::restart_definition(
-    const std::string& metadata,
-    const std::string& uncommitted,
-    const std::string& destination,
-    std::size_t retain,
-    real_t dt,
-    std::size_t nt)
-    : definition_base("Restart-related parameters"),
-      metadata(metadata),
-      uncommitted(uncommitted),
-      destination(destination),
-      retain(retain),
-      dt(dt),
-      nt(nt),
-      physical(false)
+        const std::string& metadata,
+        const std::string& uncommitted,
+        const std::string& destination,
+        std::size_t retain,
+        real_t dt,
+        std::size_t nt)
+    : definition_base("Restart-related parameters")
+    , metadata(metadata)
+    , uncommitted(uncommitted)
+    , destination(destination)
+    , retain(retain)
+    , dt(dt)
+    , nt(nt)
+    , physical(false)
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -106,4 +108,6 @@ restart_definition::restart_definition(
     ;
 }
 
-} // namespace suzerain
+} // end namespace support
+
+} // end namespace suzerain

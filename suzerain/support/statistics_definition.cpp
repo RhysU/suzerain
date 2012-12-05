@@ -15,13 +15,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
+
+#include <suzerain/support/statistics_definition.hpp>
+
 #include <suzerain/exprparse.hpp>
-#include <suzerain/statistics_definition.hpp>
 #include <suzerain/validation.hpp>
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /** Helper used to parse size_t-based options */
 static void parse_size_t(const std::string& s,
@@ -51,15 +53,15 @@ static void parse_option(const std::string& s,
 }
 
 statistics_definition::statistics_definition(
-    const std::string& destination,
-    std::size_t retain,
-    real_t dt,
-    std::size_t nt)
-    : definition_base("Statistics sampling parameters"),
-      destination(destination),
-      retain(retain),
-      dt(dt),
-      nt(nt)
+        const std::string& destination,
+        std::size_t retain,
+        real_t dt,
+        std::size_t nt)
+    : definition_base("Statistics sampling parameters")
+    , destination(destination)
+    , retain(retain)
+    , dt(dt)
+    , nt(nt)
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -89,5 +91,7 @@ statistics_definition::statistics_definition(
      "Maximum number of time steps between sampling statistics")
     ;
 }
+
+} // namespace support
 
 } // namespace suzerain

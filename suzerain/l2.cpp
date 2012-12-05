@@ -26,9 +26,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/l2.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -37,10 +38,11 @@
 namespace suzerain {
 
 std::vector<field_L2>
-compute_field_L2(const contiguous_state<4,complex_t> &state,
-         const grid_definition& grid,
-         const pencil_grid& dgrid,
-         const bsplineop& gop)
+compute_field_L2(
+        const contiguous_state<4,complex_t> &state,
+        const grid_specification& grid,
+        const pencil_grid& dgrid,
+        const bsplineop& gop)
 {
     // Ensure state storage meets this routine's assumptions
     // Notice state.shape()[0] may be any value

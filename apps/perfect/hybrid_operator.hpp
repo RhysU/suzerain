@@ -26,14 +26,14 @@
 #ifndef HYBRID_OPERATOR_HPP
 #define HYBRID_OPERATOR_HPP
 
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "../logging.hpp"
 #include "nonlinear_operator_fwd.hpp"
 
 #pragma warning(disable:383 1572)
@@ -60,7 +60,7 @@ public:
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &cop,
@@ -149,7 +149,7 @@ public:
 
     hybrid_nonlinear_operator(
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &cop,

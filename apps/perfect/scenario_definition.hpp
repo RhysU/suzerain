@@ -16,7 +16,7 @@
 #define SCENARIO_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling problem scenario parameters which are either
@@ -33,7 +33,7 @@ namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class scenario_definition : public definition_base
+class scenario_definition : public support::definition_base
 {
 public:
 

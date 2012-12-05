@@ -21,6 +21,7 @@
 #ifndef SUZERAIN_ALLOCATOR_HPP
 #define SUZERAIN_ALLOCATOR_HPP
 
+#include <limits>
 #include <boost/utility.hpp>
 
 // FIXME Policy-based framework lacks allocator<void> specializations

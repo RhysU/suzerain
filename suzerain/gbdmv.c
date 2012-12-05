@@ -23,9 +23,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/gbdmv.h>
+
+#include <suzerain/common.h>
 
 #pragma warning(disable:1418 1572 2259)
 

@@ -13,16 +13,17 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/blas_et_al.h>
+
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>
-#include <suzerain/blas_et_al.h>
-
 #ifdef SUZERAIN_HAVE_MKL
 #include <mkl_service.h>
 #endif
+
+#include <suzerain/common.h>
 
 static
 void

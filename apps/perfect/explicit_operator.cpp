@@ -42,7 +42,7 @@
 namespace suzerain { namespace perfect {
 
 bspline_mass_operator::bspline_mass_operator(
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop)

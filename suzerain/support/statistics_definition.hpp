@@ -12,18 +12,19 @@
 // statistics_definition.hpp: classes handling statistics output definitions
 // $Id$
 
-#ifndef SUZERAIN_STATISTICS_DEFINITION_HPP
-#define SUZERAIN_STATISTICS_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling arguments used to control statistics file output.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /**
  * Encapsulates flags related to statistics output behavior for the simulation.
@@ -48,10 +49,10 @@ public:
      *      \c desttemplate and \c retain.
      */
     explicit statistics_definition(
-        const std::string& destination,
-        std::size_t retain = (1 << 15),
-        real_t dt          = 0,
-        std::size_t nt     = 0);
+            const std::string& destination,
+            std::size_t retain = (1 << 15),
+            real_t dt          = 0,
+            std::size_t nt     = 0);
 
     /**
      * The archiving pattern to use when committing statistics output files.
@@ -78,6 +79,8 @@ public:
     std::size_t nt;
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_STATISTICS_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP

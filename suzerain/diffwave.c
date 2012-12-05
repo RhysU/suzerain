@@ -27,12 +27,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/diffwave.h>
+
 #include <gsl/gsl_sf_pow_int.h>
+
+#include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/inorder.h>
-#include <suzerain/diffwave.h>
 
 static inline
 void scale_by_imaginary_power(const complex_double in,
@@ -54,7 +56,9 @@ void scale_by_imaginary_power(const complex_double in,
 static inline
 double twopiover(const double L)
 {
-    return 2*M_PI/L;
+    return 2
+         * 3.1415926535897932384626433832795028841971693993751058209
+         / L;
 }
 #pragma float_control(except, off)
 #pragma fenv_access(off)

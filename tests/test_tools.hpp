@@ -18,9 +18,10 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/test_tools.hpp>
-#include <suzerain/error.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>
+#include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/multi_array.hpp>
 

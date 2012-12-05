@@ -26,13 +26,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
+
 #include <suzerain/operator_base.hpp>
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 
 operator_base::operator_base(
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop)

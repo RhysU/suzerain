@@ -26,25 +26,25 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <boost/math/special_functions/gamma.hpp>
 #include <esio/error.h>
 #include <esio/esio.h>
-#include <suzerain/definition_base.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/program_options.hpp>
+#include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/program_options.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>
 
-#include "../logging.hpp"
-#include "../support.hpp"
 #include "perfect.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
@@ -79,7 +79,7 @@ static suzerain::perfect::scenario_definition scenario(
         /* alpha      */ "0",
         /* beta       */ "2/3",
         /* gamma      */ "1.4");
-static suzerain::grid_definition grid(
+static suzerain::support::grid_definition grid(
         /* Lx      */ "4*pi",
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
@@ -90,7 +90,7 @@ static suzerain::grid_definition grid(
         /* Lz      */ "4*pi/3",
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
-static suzerain::time_definition timedef(
+static suzerain::support::time_definition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static suzerain::shared_ptr<const suzerain::pencil_grid> dgrid;
 static suzerain::shared_ptr<perfect::manufactured_solution> msoln(
@@ -123,14 +123,15 @@ static void atexit_esio(void) {
 }
 
 /** Options definitions for tweaking the manufactured solution */
-class MSDefinition : public suzerain::definition_base
+class MSDefinition : public suzerain::support::definition_base
 {
 
 public:
 
     MSDefinition(perfect::manufactured_solution &ms)
-        : suzerain::definition_base("Manufactured solution parameters"
-                                    " (active only when --mms supplied)")
+        : suzerain::support::definition_base(
+                "Manufactured solution parameters"
+                " (active only when --mms supplied)")
     {
         ms.rho.foreach_parameter(boost::bind(option_adder,
                     this->add_options(), "Affects density field",     _1, _2));
@@ -162,8 +163,8 @@ int main(int argc, char **argv)
 {
     MPI_Init(&argc, &argv);                         // Initialize MPI...
     atexit((void (*) ()) MPI_Finalize);             // ...finalize at exit
-    logging::initialize(MPI_COMM_WORLD,             // Initialize logging
-                        support::log4cxx_config);
+    suzerain::support::logging::initialize(         // Initialize logging
+            MPI_COMM_WORLD, support::log4cxx_config);
 #ifdef HAVE_UNDERLING
     underling_init(&argc, &argv, 0);                // Initialize underling...
 #endif
@@ -189,14 +190,14 @@ int main(int argc, char **argv)
     real_t mms     = -1;
     real_t npower  = 1;
     {
-        suzerain::program_options options(
+        suzerain::support::program_options options(
                 "Suzerain-based compressible channel initialization",
                 "RESTART-FILE", /* TODO description */ "", revstr);
 
-        namespace po = ::boost::program_options;
-        using ::suzerain::validation::ensure_nonnegative;
-        ::std::pointer_to_binary_function<real_t,const char*,void>
-            ptr_fun_ensure_nonnegative(ensure_nonnegative<real_t>);
+        namespace po = boost::program_options;
+        std::pointer_to_binary_function<real_t,const char*,void>
+            ptr_fun_ensure_nonnegative(
+                    suzerain::validation::ensure_nonnegative<real_t>);
 
         isothermal_channel(*msoln);
         MSDefinition msdef(*msoln);

@@ -25,14 +25,16 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/bspline.h>
+
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>
-#include <suzerain/bspline.h>
+
+#include <suzerain/common.h>
 
 static void alloc_workspaces(
         size_t k, size_t nbreak, const double * breakpoints,

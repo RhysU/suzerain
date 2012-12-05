@@ -116,6 +116,9 @@ static struct Log4cxxWorkaroundsType {
     }
 } workarounds;
 
+namespace suzerain {
+
+namespace support {
 
 namespace logging {
 
@@ -329,3 +332,7 @@ void initialize(MPI_Comm, const char * const default_conf)
 }
 
 } // end namespace logger
+
+} // end namespace support
+
+} // end namespace suzerain

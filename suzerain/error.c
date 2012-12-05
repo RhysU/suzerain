@@ -30,9 +30,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/error.h>
+
+#include <suzerain/common.h>
 
 suzerain_error_handler_t * suzerain_error_handler = NULL;
 

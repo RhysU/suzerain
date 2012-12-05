@@ -26,12 +26,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
+#include <suzerain/support/signal_definition.hpp>
+
 #include <suzerain/error.h>
 #include <suzerain/os.h>
-#include <suzerain/signal_definition.hpp>
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 signal_definition::signal_definition(const std::string& specstatus,
                                      const std::string& specrestart,
@@ -137,4 +140,6 @@ void signal_definition::parse_teardown(const std::string& spec)
     this->teardown.swap(tmp);
 }
 
-} // namespace suzerain
+} // end namespace support
+
+} // end namespace suzerain

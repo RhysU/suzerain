@@ -24,12 +24,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/pencilfft.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 #include <fftw3.h>
+
+#include <suzerain/common.hpp>
+
 #include "test_tools.hpp"
 
 #pragma warning(disable:1418)

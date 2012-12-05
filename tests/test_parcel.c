@@ -14,10 +14,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
 #include <suzerain/parcel.h>
-#include <suzerain/common.h>
+
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_test.h>
+
+#include <suzerain/common.h>
 
 // Random number generation for all methods managed in main()
 static gsl_rng * rng = NULL;

@@ -26,10 +26,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+#include <suzerain/support/support.hpp>
+
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
+#include <sys/file.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
@@ -42,11 +45,8 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
-#include <sys/file.h>
-
-#include "logging.hpp"
-#include "support.hpp"
 
 using boost::numeric_cast;
 using std::size_t;
@@ -698,7 +698,7 @@ void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid)
 {
     // Ensure swave meets this routine's assumptions
@@ -783,7 +783,7 @@ real_t distance(const bspline& a,
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const grid_definition& grid,
+                       const grid_specification& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& cop)
@@ -953,7 +953,7 @@ void store_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& swave,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop)
@@ -1000,7 +1000,7 @@ void load_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& state,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop)

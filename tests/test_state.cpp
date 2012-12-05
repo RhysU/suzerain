@@ -13,13 +13,16 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/state.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/concept_check.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
+
 #include "test_tools.hpp"
 
 // Explicit template instantiation to flush out compilation errors

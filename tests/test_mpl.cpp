@@ -13,12 +13,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/mpl.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/mpl/vector_c.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 BOOST_AUTO_TEST_SUITE( sequence_array )
 

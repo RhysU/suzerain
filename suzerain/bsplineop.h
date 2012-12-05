@@ -28,6 +28,7 @@
 #define SUZERAIN_BSPLINEOP_H
 
 #include <gsl/gsl_bspline.h>
+
 #include <suzerain/common.h>
 #include <suzerain/complex.h>
 #include <suzerain/function.h>

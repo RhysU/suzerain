@@ -17,8 +17,10 @@
 #define SUZERAIN_BSMBSM_H
 
 #include <assert.h>
+
 #include <gsl/gsl_permutation.h>
 #include <gsl/gsl_permute.h>
+
 #include <suzerain/complex.h>
 
 /** @file

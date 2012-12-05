@@ -20,11 +20,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/error.h>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 #define CHECK(x) errors[n].number = x ; errors[n].name = #x ; n++ ;
 #define MAX_ERRS 64

@@ -28,6 +28,7 @@
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+
 #include <suzerain/bspline.h>
 #include <suzerain/bsplineop.h>
 #include <suzerain/complex.hpp>

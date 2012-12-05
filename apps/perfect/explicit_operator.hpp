@@ -28,7 +28,7 @@
 
 #include "nonlinear_operator_fwd.hpp"
 
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -53,7 +53,7 @@ public:
 
     explicit_nonlinear_operator(
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &cop,
@@ -102,7 +102,7 @@ class bspline_mass_operator
 public:
 
     bspline_mass_operator(
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &cop);
@@ -152,7 +152,7 @@ public:
 
     isothermal_bspline_mass_operator(
             const scenario_definition &scenario,
-            const grid_definition &grid,
+            const grid_specification &grid,
             const pencil_grid &dgrid,
             bspline &b,
             const bsplineop &cop,

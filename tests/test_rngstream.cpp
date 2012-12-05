@@ -6,12 +6,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/rngstream.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 using namespace std;
 using suzerain::rngstream;

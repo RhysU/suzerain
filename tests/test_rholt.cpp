@@ -13,12 +13,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/rholt.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 #pragma warning(disable:1599)
 

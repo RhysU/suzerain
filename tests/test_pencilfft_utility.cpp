@@ -24,15 +24,18 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/pencilfft.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/assign.hpp>
 #include <boost/mpl/list_c.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
 #include <fftw3.h>
+
+#include <suzerain/common.hpp>
+
 #include "test_tools.hpp"
 
 typedef boost::mpl::list_c<int,0,1> int_zero_one_type;

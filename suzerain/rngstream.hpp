@@ -19,7 +19,7 @@
 #ifndef SUZERAIN_RNGSTREAM_HPP
 #define SUZERAIN_RNGSTREAM_HPP
 
-#include <iosfwd>
+#include <iostream>
 #include <string>
 
 namespace suzerain {

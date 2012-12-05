@@ -28,7 +28,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
@@ -49,10 +49,11 @@ struct field_L2 {
  * See writeup/L2.tex for full details.
  */
 std::vector<field_L2>
-compute_field_L2(const contiguous_state<4,complex_t> &state,
-         const grid_definition& grid,
-         const pencil_grid& dgrid,
-         const bsplineop& gop);
+compute_field_L2(
+        const contiguous_state<4,complex_t> &state,
+        const grid_specification& grid,
+        const pencil_grid& dgrid,
+        const bsplineop& gop);
 
 } // end namespace suzerain
 

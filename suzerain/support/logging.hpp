@@ -12,8 +12,8 @@
 // logging.hpp: MPI-aware logging tools built atop log4cxx
 // $Id$
 
-#ifndef LOGGING_HPP
-#define LOGGING_HPP
+#ifndef SUZERAIN_SUPPORT_LOGGING_HPP
+#define SUZERAIN_SUPPORT_LOGGING_HPP
 
 #include <streambuf>
 #include <ostream>
@@ -278,7 +278,9 @@
 
 /* @} */
 
+namespace suzerain {
 
+namespace support {
 
 /**
  * Namespace to house MPI-aware logging abstraction built atop log4cxx.
@@ -375,6 +377,10 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
 }
 
 } // end namespace logging
+
+} // end namespace support
+
+} // end namespace suzerain
 
 // Implementation details supporting variadic macro dispatching
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -479,109 +485,109 @@ inline logger_type& get_logger(logger_type&, logger_type& child)
         LOGGING_DISPATCH(FATAL_ENABLE,LOGGING_PP_NARG("dummy",##__VA_ARGS__),##__VA_ARGS__)
 
 // Logging macros emitting messages as "root" only from rank zero.
-#define TRACE0_ARITY1(m) do{LOG4CXX_TRACE(::logging::rankzero,m)}while(0)
-#define DEBUG0_ARITY1(m) do{LOG4CXX_DEBUG(::logging::rankzero,m)}while(0)
-#define INFO0_ARITY1(m)  do{LOG4CXX_INFO( ::logging::rankzero,m)}while(0)
-#define WARN0_ARITY1(m)  do{LOG4CXX_WARN( ::logging::rankzero,m)}while(0)
-#define ERROR0_ARITY1(m) do{LOG4CXX_ERROR(::logging::rankzero,m)}while(0)
-#define FATAL0_ARITY1(m) do{LOG4CXX_FATAL(::logging::rankzero,m)}while(0)
+#define TRACE0_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::rankzero,m)}while(0)
+#define DEBUG0_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::rankzero,m)}while(0)
+#define INFO0_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::rankzero,m)}while(0)
+#define WARN0_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::rankzero,m)}while(0)
+#define ERROR0_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::rankzero,m)}while(0)
+#define FATAL0_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::rankzero,m)}while(0)
 
 // Logging macros emitting messages from named loggers on rank zero.
-#define TRACE0_ARITY2(l,m) do{LOG4CXX_TRACE(::logging::get_logger(l),m)}while(0)
-#define DEBUG0_ARITY2(l,m) do{LOG4CXX_DEBUG(::logging::get_logger(l),m)}while(0)
-#define INFO0_ARITY2(l,m)  do{LOG4CXX_INFO( ::logging::get_logger(l),m)}while(0)
-#define WARN0_ARITY2(l,m)  do{LOG4CXX_WARN( ::logging::get_logger(l),m)}while(0)
-#define ERROR0_ARITY2(l,m) do{LOG4CXX_ERROR(::logging::get_logger(l),m)}while(0)
-#define FATAL0_ARITY2(l,m) do{LOG4CXX_FATAL(::logging::get_logger(l),m)}while(0)
+#define TRACE0_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(l),m)}while(0)
+#define DEBUG0_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(l),m)}while(0)
+#define INFO0_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(l),m)}while(0)
+#define WARN0_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(l),m)}while(0)
+#define ERROR0_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(l),m)}while(0)
+#define FATAL0_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(l),m)}while(0)
 
 // Logging macros to check if particular logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE0_ENABLED_ARITY1() (::logging::rankzero->isTraceEnabled())
-#define DEBUG0_ENABLED_ARITY1() (::logging::rankzero->isDebugEnabled())
-#define INFO0_ENABLED_ARITY1()  (::logging::rankzero->isInfoEnabled())
-#define WARN0_ENABLED_ARITY1()  (::logging::rankzero->isWarnEnabled())
-#define ERROR0_ENABLED_ARITY1() (::logging::rankzero->isErrorEnabled())
-#define FATAL0_ENABLED_ARITY1() (::logging::rankzero->isFatalEnabled())
+#define TRACE0_ENABLED_ARITY1() (::suzerain::support::logging::rankzero->isTraceEnabled())
+#define DEBUG0_ENABLED_ARITY1() (::suzerain::support::logging::rankzero->isDebugEnabled())
+#define INFO0_ENABLED_ARITY1()  (::suzerain::support::logging::rankzero->isInfoEnabled())
+#define WARN0_ENABLED_ARITY1()  (::suzerain::support::logging::rankzero->isWarnEnabled())
+#define ERROR0_ENABLED_ARITY1() (::suzerain::support::logging::rankzero->isErrorEnabled())
+#define FATAL0_ENABLED_ARITY1() (::suzerain::support::logging::rankzero->isFatalEnabled())
 
 // Logging macros to check if named logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isTraceEnabled())
-#define DEBUG0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isDebugEnabled())
-#define INFO0_ENABLED_ARITY2(l)  (::logging::get_logger(l)->isInfoEnabled())
-#define WARN0_ENABLED_ARITY2(l)  (::logging::get_logger(l)->isWarnEnabled())
-#define ERROR0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isErrorEnabled())
-#define FATAL0_ENABLED_ARITY2(l) (::logging::get_logger(l)->isFatalEnabled())
+#define TRACE0_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(l)->isTraceEnabled())
+#define DEBUG0_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(l)->isDebugEnabled())
+#define INFO0_ENABLED_ARITY2(l)  (::suzerain::support::logging::get_logger(l)->isInfoEnabled())
+#define WARN0_ENABLED_ARITY2(l)  (::suzerain::support::logging::get_logger(l)->isWarnEnabled())
+#define ERROR0_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(l)->isErrorEnabled())
+#define FATAL0_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(l)->isFatalEnabled())
 
 // Logging macros to enable logging at and above at particular log levels.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getTrace());}while(0)
-#define DEBUG0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getDebug());}while(0)
-#define INFO0_ENABLE_ARITY1()  do{::logging::rankzero->setLevel(::log4cxx::Level::getInfo());}while(0)
-#define WARN0_ENABLE_ARITY1()  do{::logging::rankzero->setLevel(::log4cxx::Level::getWarn());}while(0)
-#define ERROR0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getError());}while(0)
-#define FATAL0_ENABLE_ARITY1() do{::logging::rankzero->setLevel(::log4cxx::Level::getFatal());}while(0)
+#define TRACE0_ENABLE_ARITY1() do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG0_ENABLE_ARITY1() do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO0_ENABLE_ARITY1()  do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN0_ENABLE_ARITY1()  do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR0_ENABLE_ARITY1() do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL0_ENABLE_ARITY1() do{::suzerain::support::logging::rankzero->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros to enable logging at and above particular log levels.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getTrace());}while(0)
-#define DEBUG0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getDebug());}while(0)
-#define INFO0_ENABLE_ARITY2(l)  do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getInfo());}while(0)
-#define WARN0_ENABLE_ARITY2(l)  do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getWarn());}while(0)
-#define ERROR0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getError());}while(0)
-#define FATAL0_ENABLE_ARITY2(l) do{::logging::get_logger(l)->setLevel(::log4cxx::Level::getFatal());}while(0)
+#define TRACE0_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG0_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO0_ENABLE_ARITY2(l)  do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN0_ENABLE_ARITY2(l)  do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR0_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL0_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(l)->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros to enable logging at and above at particular log levels.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getTrace());}while(0)
-#define DEBUG_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getDebug());}while(0)
-#define INFO_ENABLE_ARITY1()  do{::logging::allranks->setLevel(::log4cxx::Level::getInfo());}while(0)
-#define WARN_ENABLE_ARITY1()  do{::logging::allranks->setLevel(::log4cxx::Level::getWarn());}while(0)
-#define ERROR_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getError());}while(0)
-#define FATAL_ENABLE_ARITY1() do{::logging::allranks->setLevel(::log4cxx::Level::getFatal());}while(0)
+#define TRACE_ENABLE_ARITY1() do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG_ENABLE_ARITY1() do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO_ENABLE_ARITY1()  do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN_ENABLE_ARITY1()  do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR_ENABLE_ARITY1() do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL_ENABLE_ARITY1() do{::suzerain::support::logging::allranks->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros to enable logging at and above particular log levels.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getTrace());}while(0)
-#define DEBUG_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getDebug());}while(0)
-#define INFO_ENABLE_ARITY2(l)  do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getInfo());}while(0)
-#define WARN_ENABLE_ARITY2(l)  do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getWarn());}while(0)
-#define ERROR_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getError());}while(0)
-#define FATAL_ENABLE_ARITY2(l) do{::logging::get_logger(::logging::allranks,l)->setLevel(::log4cxx::Level::getFatal());}while(0)
+#define TRACE_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getTrace());}while(0)
+#define DEBUG_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getDebug());}while(0)
+#define INFO_ENABLE_ARITY2(l)  do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getInfo());}while(0)
+#define WARN_ENABLE_ARITY2(l)  do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getWarn());}while(0)
+#define ERROR_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getError());}while(0)
+#define FATAL_ENABLE_ARITY2(l) do{::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->setLevel(::log4cxx::Level::getFatal());}while(0)
 
 // Logging macros emitting messages from all ranks with rank-specific names.
-#define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::logging::allranks,m)}while(0)
-#define DEBUG_ARITY1(m) do{LOG4CXX_DEBUG(::logging::allranks,m)}while(0)
-#define INFO_ARITY1(m)  do{LOG4CXX_INFO( ::logging::allranks,m)}while(0)
-#define WARN_ARITY1(m)  do{LOG4CXX_WARN( ::logging::allranks,m)}while(0)
-#define ERROR_ARITY1(m) do{LOG4CXX_ERROR(::logging::allranks,m)}while(0)
-#define FATAL_ARITY1(m) do{LOG4CXX_FATAL(::logging::allranks,m)}while(0)
+#define TRACE_ARITY1(m) do{LOG4CXX_TRACE(::suzerain::support::logging::allranks,m)}while(0)
+#define DEBUG_ARITY1(m) do{LOG4CXX_DEBUG(::suzerain::support::logging::allranks,m)}while(0)
+#define INFO_ARITY1(m)  do{LOG4CXX_INFO( ::suzerain::support::logging::allranks,m)}while(0)
+#define WARN_ARITY1(m)  do{LOG4CXX_WARN( ::suzerain::support::logging::allranks,m)}while(0)
+#define ERROR_ARITY1(m) do{LOG4CXX_ERROR(::suzerain::support::logging::allranks,m)}while(0)
+#define FATAL_ARITY1(m) do{LOG4CXX_FATAL(::suzerain::support::logging::allranks,m)}while(0)
 
 // Logging macros emitting messages from named loggers on all ranks
-#define TRACE_ARITY2(l,m) do{LOG4CXX_TRACE(::logging::get_logger(::logging::allranks,l),m)}while(0)
-#define DEBUG_ARITY2(l,m) do{LOG4CXX_DEBUG(::logging::get_logger(::logging::allranks,l),m)}while(0)
-#define INFO_ARITY2(l,m)  do{LOG4CXX_INFO( ::logging::get_logger(::logging::allranks,l),m)}while(0)
-#define WARN_ARITY2(l,m)  do{LOG4CXX_WARN( ::logging::get_logger(::logging::allranks,l),m)}while(0)
-#define ERROR_ARITY2(l,m) do{LOG4CXX_ERROR(::logging::get_logger(::logging::allranks,l),m)}while(0)
-#define FATAL_ARITY2(l,m) do{LOG4CXX_FATAL(::logging::get_logger(::logging::allranks,l),m)}while(0)
+#define TRACE_ARITY2(l,m) do{LOG4CXX_TRACE(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+#define DEBUG_ARITY2(l,m) do{LOG4CXX_DEBUG(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+#define INFO_ARITY2(l,m)  do{LOG4CXX_INFO( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+#define WARN_ARITY2(l,m)  do{LOG4CXX_WARN( ::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+#define ERROR_ARITY2(l,m) do{LOG4CXX_ERROR(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
+#define FATAL_ARITY2(l,m) do{LOG4CXX_FATAL(::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l),m)}while(0)
 
 // Logging macros to check if particular logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE_ENABLED_ARITY1() (::logging::allranks->isTraceEnabled())
-#define DEBUG_ENABLED_ARITY1() (::logging::allranks->isDebugEnabled())
-#define INFO_ENABLED_ARITY1()  (::logging::allranks->isInfoEnabled())
-#define WARN_ENABLED_ARITY1()  (::logging::allranks->isWarnEnabled())
-#define ERROR_ENABLED_ARITY1() (::logging::allranks->isErrorEnabled())
-#define FATAL_ENABLED_ARITY1() (::logging::allranks->isFatalEnabled())
+#define TRACE_ENABLED_ARITY1() (::suzerain::support::logging::allranks->isTraceEnabled())
+#define DEBUG_ENABLED_ARITY1() (::suzerain::support::logging::allranks->isDebugEnabled())
+#define INFO_ENABLED_ARITY1()  (::suzerain::support::logging::allranks->isInfoEnabled())
+#define WARN_ENABLED_ARITY1()  (::suzerain::support::logging::allranks->isWarnEnabled())
+#define ERROR_ENABLED_ARITY1() (::suzerain::support::logging::allranks->isErrorEnabled())
+#define FATAL_ENABLED_ARITY1() (::suzerain::support::logging::allranks->isFatalEnabled())
 
 // Logging macros to check if named logging levels are enabled.
 // Arity is off-by-one to handle limitation of LOGGING_PP_NARG
-#define TRACE_ENABLED_ARITY2(l) (::logging::get_logger(::logging::allranks,l)->isTraceEnabled())
-#define DEBUG_ENABLED_ARITY2(l) (::logging::get_logger(::logging::allranks,l)->isDebugEnabled())
-#define INFO_ENABLED_ARITY2(l)  (::logging::get_logger(::logging::allranks,l)->isInfoEnabled())
-#define WARN_ENABLED_ARITY2(l)  (::logging::get_logger(::logging::allranks,l)->isWarnEnabled())
-#define ERROR_ENABLED_ARITY2(l) (::logging::get_logger(::logging::allranks,l)->isErrorEnabled())
-#define FATAL_ENABLED_ARITY2(l) (::logging::get_logger(::logging::allranks,l)->isFatalEnabled())
+#define TRACE_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isTraceEnabled())
+#define DEBUG_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isDebugEnabled())
+#define INFO_ENABLED_ARITY2(l)  (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isInfoEnabled())
+#define WARN_ENABLED_ARITY2(l)  (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isWarnEnabled())
+#define ERROR_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isErrorEnabled())
+#define FATAL_ENABLED_ARITY2(l) (::suzerain::support::logging::get_logger(::suzerain::support::logging::allranks,l)->isFatalEnabled())
 
 #endif /* DOXYGEN_SHOULD_SKIP_THIS */
 
-#endif // LOGGING_HPP
+#endif // SUZERAIN_SUPPORT_LOGGING_HPP

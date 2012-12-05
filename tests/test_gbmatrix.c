@@ -13,10 +13,12 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/gbmatrix.h>
+
 #include <gsl/gsl_test.h>
+
+#include <suzerain/common.h>
 
 // Test Matrix A
 //     [11,  12,  13,  14,   0,   0,   0,   0;

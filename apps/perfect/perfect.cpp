@@ -26,14 +26,17 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
+#include "perfect.hpp"
+
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
+#include <sys/file.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
 #include <suzerain/countof.h>
-#include <suzerain/definition_base.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
@@ -44,12 +47,9 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
-#include <sys/file.h>
-
-#include "perfect.hpp"
-#include "../logging.hpp"
-#include "../support.hpp"
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
@@ -57,7 +57,9 @@ template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
 using boost::numeric_cast;
 using std::size_t;
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 std::vector<support::field> default_fields()
 {
@@ -173,7 +175,7 @@ static void attribute_storer(const esio_handle &h,
 
 void store(const esio_handle h,
            const scenario_definition& scenario,
-           const grid_definition& grid,
+           const grid_specification& grid,
            const shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
@@ -206,7 +208,7 @@ void store(const esio_handle h,
         WARN0("Manufactured solution Pr mismatches with scenario!");
 
     // Check parameters stored with the grid not the manufactured solution
-    // because grid parameters should be loaded from grid_definition
+    // because grid parameters should be loaded from grid_specification
     if (msoln->Lx    != grid.L.x())
         WARN0("Manufactured solution Lx mismatches with grid!");
     if (msoln->Ly    != grid.L.y())
@@ -240,7 +242,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           shared_ptr<manufactured_solution>& msoln)
 {
     static const char location[] = "channel::manufactured_solution";
@@ -272,7 +274,7 @@ void load(const esio_handle h,
     msoln->Re    = scenario.Re;
     msoln->Pr    = scenario.Pr;
 
-    // Grid parameters taken from grid_definition
+    // Grid parameters taken from grid_specification
     msoln->Lx    = grid.L.x();
     msoln->Ly    = grid.L.y();
     msoln->Lz    = grid.L.z();
@@ -290,7 +292,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop)
@@ -384,7 +386,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const scenario_definition& scenario,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop)
@@ -496,7 +498,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& cop)
@@ -544,7 +546,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
-                const grid_definition& grid,
+                const grid_specification& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& cop,
@@ -682,7 +684,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_definition& noisedef,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& cop)
@@ -1042,7 +1044,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop,
@@ -1170,7 +1172,7 @@ void accumulate_manufactured_solution(
 // therefore to not be a prime target for optimization.
 mean sample_mean_quantities(
         const scenario_definition &scenario,
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop,
@@ -1666,4 +1668,6 @@ void load(const esio_handle h, mean& m)
     }
 }
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain

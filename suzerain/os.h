@@ -27,8 +27,9 @@
 #ifndef SUZERAIN_OS_H
 #define SUZERAIN_OS_H
 
-#include <suzerain/common.h>
 #include <fcntl.h>
+
+#include <suzerain/common.h>
 
 /** @file
  * Provides utilities atop POSIX methods.

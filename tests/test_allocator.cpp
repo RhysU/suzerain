@@ -36,12 +36,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/allocator.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

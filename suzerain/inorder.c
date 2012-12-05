@@ -16,9 +16,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/inorder.h>
+
+#include <suzerain/common.h>
 
 // C99 extern declarations for inline functions from inorder.h
 // See "C99 model" in http://www.greenend.org.uk/rjk/2003/03/inline.html

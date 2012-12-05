@@ -108,17 +108,6 @@ if test x$enable_unittests = xno ; then
 fi
 AM_CONDITIONAL(BUILD_TESTS, test x$enable_unittests = xyes)
 
-dnl ----------------------------------------------
-dnl Enable rudimentary precompiled header support
-dnl Currently very, very Intel-specific
-dnl ----------------------------------------------
-dnl AC_LANG_PUSH([C])
-dnl AX_APPEND_COMPILE_FLAGS([-pch],[CFLAGS])
-dnl AC_LANG_POP([C])
-dnl AC_LANG_PUSH([C++])
-dnl AX_APPEND_COMPILE_FLAGS([-pch],[CXXFLAGS])
-dnl AC_LANG_POP([C++])
-
 dnl ------------------------------------------------
 dnl Enable GNU libtool for all of configure/build
 dnl Current version checks also in Makefile.am
@@ -315,7 +304,6 @@ AC_CONFIG_FILES([
     postproc/Makefile
     lib/Makefile
     suzerain/Makefile
-    suzerain/support/Makefile
     tests/Makefile
     writeups/Makefile
 ])

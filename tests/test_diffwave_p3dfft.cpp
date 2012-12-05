@@ -25,16 +25,18 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
-#include <suzerain/pencil_grid.hpp>
+#include <suzerain/diffwave.h>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
-#include <suzerain/diffwave.h>
 #include <suzerain/fftw.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/utility.hpp>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);       // Tear down BLAS

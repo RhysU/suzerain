@@ -12,19 +12,20 @@
 // restart_definition.hpp: classes handling restart definitions
 // $Id$
 
-#ifndef SUZERAIN_RESTART_DEFINITION_HPP
-#define SUZERAIN_RESTART_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling restart definitions, which are runtime
  * arguments used to control simulation restart behavior.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /**
  * Encapsulates flags related to restart file behavior for the simulation.
@@ -99,6 +100,8 @@ public:
     bool physical;
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_RESTART_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP

@@ -23,9 +23,10 @@
 // support.hpp: Support logic spanning potentially many applications
 // $Id$
 
-#ifndef SUZERAIN_SUPPORT_HPP
-#define SUZERAIN_SUPPORT_HPP
+#ifndef SUZERAIN_SUPPORT_SUPPORT_HPP
+#define SUZERAIN_SUPPORT_SUPPORT_HPP
 
+#include <esio/esio.h>
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -34,17 +35,17 @@
 #include <underling/underling_fftw.hpp>
 #endif
 
-#include <esio/esio.h>
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/time_definition.hpp>
+#include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
 namespace suzerain {
@@ -229,7 +230,7 @@ void store_coefficients(
         const esio_handle h,
         const std::vector<field> &fields,
         const contiguous_state<4,complex_t> &swave,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid);
 
 /**
@@ -240,7 +241,7 @@ void store_coefficients(
 void load_coefficients(const esio_handle h,
                        const std::vector<field> &fields,
                        contiguous_state<4,complex_t> &state,
-                       const grid_definition& grid,
+                       const grid_specification& grid,
                        const pencil_grid& dgrid,
                        const bspline& b,
                        const bsplineop& cop);
@@ -257,7 +258,7 @@ void store_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& swave,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop);
@@ -270,7 +271,7 @@ void load_collocation_values(
         const esio_handle h,
         const std::vector<field> &fields,
         contiguous_state<4,complex_t>& state,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop);
@@ -478,4 +479,4 @@ struct physical_view {
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_HPP
+#endif // SUZERAIN_SUPPORT_SUPPORT_HPP

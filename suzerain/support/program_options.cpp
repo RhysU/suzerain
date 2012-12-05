@@ -15,11 +15,12 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#include <suzerain/mpi.hpp>
-#include <suzerain/program_options.hpp>
-#include <suzerain/version.hpp>
+#include <suzerain/support/program_options.hpp>
+
+#include <boost/test/utils/nullstream.hpp>
 #include <libgen.h>
+
+#include <suzerain/version.hpp>
 
 // Parse Unix-like verbosity flags (http://stackoverflow.com/questions/5486753)
 static std::pair<std::string, std::string> verbosity(const std::string& s)
@@ -53,12 +54,43 @@ static std::pair<std::string, std::string> verbosity(const std::string& s)
     return retval;
 }
 
-std::vector<std::string> suzerain::program_options::process(
-        int argc, char **argv, MPI_Comm comm,
-        std::ostream &debug, std::ostream &info,
-        std::ostream &warn, std::ostream &error)
+namespace suzerain {
+
+namespace support {
+
+program_options::program_options(
+        const std::string &application_synopsis,
+        const std::string &argument_synopsis,
+        const std::string &description,
+        const std::string &version)
+    : variables_()
+    , options_()
+    , application_synopsis_(application_synopsis)
+    , argument_synopsis_(argument_synopsis)
+    , application_description_(description)
+    , application_version_(version)
+    , verbose_()
+    , verbose_all_()
 {
-    const int rank = suzerain::mpi::comm_rank(comm);
+}
+
+program_options& program_options::add_definition(
+        definition_base &definition)
+{
+    options_.add(definition.options());
+    return *this;
+}
+
+std::vector<std::string> program_options::process(
+        int argc,
+        char **argv,
+        MPI_Comm comm,
+        std::ostream &debug,
+        std::ostream &info,
+        std::ostream &warn,
+        std::ostream &error)
+{
+    const int rank = mpi::comm_rank(comm);
     if (rank == 0) {
         return process_internal(argc, argv, comm,
                                 debug, info, warn, error);
@@ -69,7 +101,22 @@ std::vector<std::string> suzerain::program_options::process(
     }
 }
 
-std::vector<std::string> suzerain::program_options::process_internal(
+std::vector<std::string> program_options::process(
+        int argc,
+        char **argv,
+        MPI_Comm comm)
+{
+    boost::onullstream nullstream;
+    return process(argc,
+                   argv,
+                   comm,
+                   nullstream, // Debug messages
+                   std::cout,  // Info messages
+                   std::cerr,  // Warn messages
+                   std::cerr); // Error messages
+}
+
+std::vector<std::string> program_options::process_internal(
         int argc, char **argv, MPI_Comm comm,
         std::ostream &debug, std::ostream &info,
         std::ostream &warn, std::ostream &error)
@@ -84,7 +131,7 @@ std::vector<std::string> suzerain::program_options::process_internal(
     using std::string;
     using std::vector;
     namespace po = boost::program_options;
-    const int rank = suzerain::mpi::comm_rank(comm);
+    const int rank = mpi::comm_rank(comm);
 
     // Obtain the program name using basename(argv[0])
     std::string program_name;
@@ -310,3 +357,7 @@ std::vector<std::string> suzerain::program_options::process_internal(
         return vector<string>();
     }
 }
+
+} // end namespace support
+
+} // end namespace suzerain

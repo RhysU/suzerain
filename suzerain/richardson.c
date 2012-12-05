@@ -27,13 +27,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/richardson.h>
+
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_nan.h>
+
+#include <suzerain/common.h>
 #include <suzerain/error.h>
-#include <suzerain/richardson.h>
 
 int
 suzerain_richardson_extrapolation_step(

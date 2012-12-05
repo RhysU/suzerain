@@ -6,44 +6,23 @@ include Common.am
 SUBDIRS = . perfect reacting
 
 ##
-## MPI-aware logging built atop log4cxx
-##
-
-noinst_LTLIBRARIES    += liblogging.la
-liblogging_la_SOURCES  = logging.cpp logging.hpp
-liblogging_la_LIBADD   = $(LOG4CXX_LIBS)
-
-##
-## Support logic common to many applications kept in subdirectories
-##
-
-noinst_LTLIBRARIES    += libsupport.la
-libsupport_la_SOURCES  = support.cpp          support.hpp
-libsupport_la_SOURCES += application_base.cpp application_base.hpp
-libsupport_la_SOURCES += driver_base.cpp      driver_base.hpp
-libsupport_la_LIBADD   = $(ESIO_LIBS)
-libsupport_la_LIBADD  += ./liblogging.la
-libsupport_la_LIBADD  += ../suzerain/libsuzerain.la
-
-##
 ## Miscellaneous programs and/or performance drivers
 ##
 
 noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
-conservation_LDADD    = ./libsupport.la
+conservation_LDADD    = ../suzerain/libsuzerain.la
 
 if HAVE_P3DFFT
 bin_PROGRAMS                    += driver_suzerain_p3dfft
 driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
-driver_suzerain_p3dfft_LDADD    += ./liblogging.la
 driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
 driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
 driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
 driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
 driver_suzerain_p3dfft_SOURCES  += driver_suzerain_p3dfft_svnrev.c
 BUILT_SOURCES                   += driver_suzerain_p3dfft_svnrev.h
-driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES) $(liblogging_la_SOURCES)
+driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 endif
 

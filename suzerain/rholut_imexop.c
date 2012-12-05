@@ -27,7 +27,9 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
 #include <suzerain/rholut_imexop.h>
+
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
 

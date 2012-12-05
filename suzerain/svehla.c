@@ -27,11 +27,13 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/svehla.h>
+
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_const_mksa.h>
-#include <suzerain/svehla.h>
+
+#include <suzerain/common.h>
 
 // Temperature in degrees Kelvin from NASA TR R-132 page 117
 static const double TableIV_T[] = {

@@ -27,12 +27,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/htstretch.h>
+
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_roots.h>
+
+#include <suzerain/common.h>
 #include <suzerain/error.h>
-#include <suzerain/htstretch.h>
 
 #pragma warning(disable:981)
 

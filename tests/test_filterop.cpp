@@ -24,13 +24,16 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/filterop.h>
-#include <suzerain/countof.h>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
+#include <suzerain/countof.h>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

@@ -25,9 +25,9 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/timestepper.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
@@ -35,8 +35,11 @@
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/richardson.h>
 #include <suzerain/state.hpp>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

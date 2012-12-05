@@ -16,9 +16,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/bsmbsm.h>
+
+#include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 
 // Shorthand

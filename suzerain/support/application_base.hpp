@@ -31,12 +31,12 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/fftw_definition.hpp>
-#include <suzerain/grid_definition.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/program_options.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/fftw_definition.hpp>
+#include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/program_options.hpp>
 
 namespace suzerain {
 

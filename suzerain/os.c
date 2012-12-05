@@ -27,11 +27,12 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
+#include <suzerain/os.h>
+
 #include <suzerain/common.h>
-#pragma hdrstop
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
-#include <suzerain/os.h>
 
 int suzerain_fpipe(int *rfd, int rflags, FILE **w, int wflags)
 {

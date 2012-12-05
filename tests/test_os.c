@@ -25,9 +25,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/os.h>
+
+#include <suzerain/common.h>
 
 static
 int

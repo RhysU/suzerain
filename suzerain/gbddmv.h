@@ -16,11 +16,11 @@
 #ifndef SUZERAIN_GBDDMV_H
 #define SUZERAIN_GBDDMV_H
 
+#include <suzerain/complex.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <suzerain/complex.h>
 
 /** \file
  * Provides custom, BLAS-like diagonal matrix times general band matrix-vector

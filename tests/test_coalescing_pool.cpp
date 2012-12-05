@@ -13,14 +13,16 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/coalescing_pool.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_io.hpp>
+
+#include <suzerain/common.hpp>
 
 // Shorthand
 using suzerain::coalescing_pool;

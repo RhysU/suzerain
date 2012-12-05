@@ -13,9 +13,9 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/bsmbsm.h>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 #include <gsl/gsl_permute_vector_complex_double.h>
@@ -23,10 +23,13 @@
 #include <gsl/gsl_permute_vector_float.h>
 #include <gsl/gsl_permute_vector.h>
 #include <gsl/gsl_vector.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/gbmatrix.h>
 #include <suzerain/traits.hpp>
+
 #include "test_tools.hpp"
 
 #pragma warning(disable:1418 1572)

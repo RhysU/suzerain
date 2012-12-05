@@ -13,13 +13,15 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/utility.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/assign.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <suzerain/common.hpp>
 
 BOOST_AUTO_TEST_CASE( to_yxz )
 {

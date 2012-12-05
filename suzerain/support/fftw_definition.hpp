@@ -23,19 +23,20 @@
 // fftw_definition.hpp: A definition_base to configure FFTW from the CLI
 // $Id$
 
-#ifndef SUZERAIN_FFTW_DEFINITION_HPP
-#define SUZERAIN_FFTW_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
 #include <suzerain/fftw.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * A \ref definition_base to configure FFTW operation from the CLI.
  */
 
-namespace suzerain
-{
+namespace suzerain {
+
+namespace support {
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
 class fftw_definition : public definition_base
@@ -78,6 +79,8 @@ private:
     void normalize_rigor_mpi(std::string input);
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_FFTW_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP

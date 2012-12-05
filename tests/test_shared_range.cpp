@@ -16,8 +16,8 @@
 #include <boost/range.hpp>
 
 #define BOOST_TEST_MAIN
-#include <boost/test/unit_test.hpp>
 #include <boost/test/output_test_stream.hpp>
+#include <boost/test/unit_test.hpp>
 
 // Explicit instantiation to flush out compilation errors
 template class suzerain::shared_range<int>;

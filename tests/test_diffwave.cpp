@@ -25,17 +25,20 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/diffwave.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_sf_pow_int.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/inorder.h>
+
 #include "test_tools.hpp"
 
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);

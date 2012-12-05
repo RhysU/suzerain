@@ -15,8 +15,10 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
+
 #include <string>
 #include <sstream>
+
 #include <suzerain/suzerain-revision.h>
 #include <suzerain/version.hpp>
 

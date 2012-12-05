@@ -27,16 +27,19 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <suzerain/bspline.hpp>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 #include <gsl/gsl_poly.h>
+
+#include <suzerain/common.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/function.h>
 #include <suzerain/math.hpp>
+
 #include "test_tools.hpp"
 
 using suzerain::bspline;

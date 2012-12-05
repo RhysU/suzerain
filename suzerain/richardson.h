@@ -27,9 +27,10 @@
 #ifndef SUZERAIN_RICHARDSON_H
 #define SUZERAIN_RICHARDSON_H
 
-#include <suzerain/common.h>
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_vector_double.h>
+
+#include <suzerain/common.h>
 
 /** @file
  * Provides generalized Richardson extrapolation built atop the <a

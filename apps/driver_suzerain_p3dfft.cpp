@@ -26,18 +26,19 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.hpp>
-#pragma hdrstop
+
 #include <fftw3.h>
 #include <p3dfft_d.h>
-#include <suzerain/fftw_definition.hpp>
-#include <suzerain/grid_definition.hpp>
+
+#include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/program_options.hpp>
-#include "logging.hpp"
+#include <suzerain/support/fftw_definition.hpp>
+#include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/program_options.hpp>
 
 // Provided by driver_suzerain_p3dfft_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
@@ -59,30 +60,31 @@ static double real_data(const double x, const double y, const double z)
 
 int main(int argc, char **argv)
 {
-    MPI_Init(&argc, &argv);                   // Initialize MPI on startup
-    atexit((void (*) ()) MPI_Finalize);       // Finalize down MPI at exit
-    logging::initialize(MPI_COMM_WORLD);      // Initialize logging
+    using namespace suzerain;
+
+    MPI_Init(&argc, &argv);                       // Initialize MPI on startup
+    atexit((void (*) ()) MPI_Finalize);           // Finalize down MPI at exit
+    support::logging::initialize(MPI_COMM_WORLD); // Initialize logging
 
     DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
-    mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
+    mpi_gsl_ieee_env_setup(mpi::comm_rank(MPI_COMM_WORLD));
 
     // Process command line options
-    suzerain::program_options options(
+    support::program_options options(
             "suzerain::pencil_grid_p3dfft performance benchmark",
             "", /* TODO description */ "", revstr);
-    suzerain::grid_definition grid(/* Lx UNUSED */ "NaN",
-                                   /* Nx        */ 16,
-                                   /* DAFx      */ 1.,
-                                   /* Ly UNUSED*/ "NaN",
-                                   /* Ny        */ 16,
-                                   /* k         */ 6,
-                                   /* htdelta   */ 0,
-                                   /* Lz UNUSED*/ "NaN",
-                                   /* Nz        */ 16,
-                                   /* DAFz      */ 1.);
+    support::grid_definition grid(/* Lx UNUSED */ "NaN",
+                                  /* Nx        */ 16,
+                                  /* DAFx      */ 1.,
+                                  /* Ly UNUSED*/ "NaN",
+                                  /* Ny        */ 16,
+                                  /* k         */ 6,
+                                  /* htdelta   */ 0,
+                                  /* Lz UNUSED*/ "NaN",
+                                  /* Nz        */ 16,
+                                  /* DAFz      */ 1.);
     options.add_definition(grid);
-    suzerain::fftw_definition fftwdef(
-            suzerain::fftw::measure, suzerain::fftw::estimate);
+    support::fftw_definition fftwdef(fftw::measure, fftw::estimate);
     options.add_definition(fftwdef);
 
     int  repeat  = 1;
@@ -121,14 +123,13 @@ int main(int argc, char **argv)
     INFO0("Preparing MPI transpose and Fourier transform execution plans...");
     const double wtime_fftw_planning_start = MPI_Wtime();
     fftw_set_timelimit(fftwdef.plan_timelimit);
-    suzerain::pencil_grid_p3dfft pg(
-        grid.N, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
+    pencil_grid_p3dfft pg(grid.N, grid.P, fftwdef.rigor_fft, fftwdef.rigor_mpi);
     const double wtime_fftw_planning = MPI_Wtime() - wtime_fftw_planning_start;
     INFO0("MPI transpose and Fourier transform planning took "
           << wtime_fftw_planning << " seconds");
 
 #pragma warning(push,disable:383)
-    const int nproc  = suzerain::mpi::comm_size(MPI_COMM_WORLD);
+    const int nproc  = mpi::comm_size(MPI_COMM_WORLD);
 
     INFO0("Global physical extents:   " << pg.global_physical_extent.transpose());
     INFO0("Global wave extents:       " << pg.global_wave_extent.transpose());
@@ -139,7 +140,6 @@ int main(int argc, char **argv)
 #pragma warning(pop)
 
     // Allocate necessary storage
-    using suzerain::pencil;
     const int ploff = inplace ? 0 : 1;
     boost::ptr_vector<pencil<> > pencils(nfields + ploff);
     for (int l = 0; l < nfields + ploff; ++l) {

@@ -27,7 +27,7 @@
 #include <suzerain/config.h>
 #endif
 
-#include "application_base.hpp"
+#include <suzerain/support/application_base.hpp>
 
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
@@ -46,10 +46,9 @@
 #include <suzerain/os.h>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/state.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 #include <suzerain/version.hpp>
-
-#include "logging.hpp"
-#include "support.hpp"
 
 namespace suzerain {
 

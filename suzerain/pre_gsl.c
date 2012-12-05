@@ -11,12 +11,14 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
 #include <suzerain/pre_gsl.h>
+
+#include <gsl/gsl_ieee_utils.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <gsl/gsl_ieee_utils.h>
+
+#include <suzerain/common.h>
 
 /*
  * License identical to gsl_ieee_env_setup() from GSL.

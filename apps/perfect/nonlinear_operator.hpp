@@ -31,12 +31,12 @@
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
-#include <suzerain/ndx.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/support.hpp>
 
-#include "../support.hpp"
 #include "perfect.hpp"
 
 #pragma warning(disable:280 383 1572)

@@ -30,15 +30,21 @@
 #define EIGEN_DEFAULT_IO_FORMAT \
         Eigen::IOFormat(Eigen::StreamPrecision, 0, ", ", ";", "", "", "[", "]")
 
-#include <suzerain/common.hpp>
-#include <gsl/gsl_errno.h>
 #include <esio/error.h>
 #include <esio/esio.h>
+#include <gsl/gsl_errno.h>
+#ifdef HAVE_UNDERLING
+#include <fftw3.h>
+#include <fftw3-mpi.h>
+#include <underling/underling.h>
+#include <underling/error.h>
+#endif
+
+#include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
-#include <suzerain/fftw_definition.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/math.hpp>
@@ -49,25 +55,19 @@
 #include <suzerain/os.h>
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
-#include <suzerain/program_options.hpp>
-#include <suzerain/restart_definition.hpp>
-#include <suzerain/signal_definition.hpp>
-#include <suzerain/statistics_definition.hpp>
-#include <suzerain/time_definition.hpp>
+#include <suzerain/support/fftw_definition.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/support/program_options.hpp>
+#include <suzerain/support/restart_definition.hpp>
+#include <suzerain/support/signal_definition.hpp>
+#include <suzerain/support/statistics_definition.hpp>
+#include <suzerain/support/support.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
 #include <suzerain/version.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#ifdef HAVE_UNDERLING
-#include <fftw3.h>
-#include <fftw3-mpi.h>
-#include <underling/underling.h>
-#include <underling/error.h>
-#endif
-
-#include "../logging.hpp"
-#include "../support.hpp"
 #include "perfect.hpp"
 
 #include "channel_treatment.hpp"
@@ -91,9 +91,10 @@ using suzerain::fullprec;
 using suzerain::real_t;
 using suzerain::scoped_ptr;
 using suzerain::shared_ptr;
+namespace logging = suzerain::support::logging;
+namespace ndx     = suzerain::ndx;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
-namespace ndx     = suzerain::ndx;
 
 // FIXME Generalize as part of Redmine ticket #2480
 // We are only prepared to deal with 5 equations
@@ -107,14 +108,15 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using perfect::noise_definition;
-using suzerain::fftw_definition;
-using suzerain::grid_definition;
-using suzerain::restart_definition;
-using suzerain::statistics_definition;
+using suzerain::perfect::noise_definition;
 using suzerain::perfect::scenario_definition;
-using suzerain::signal_definition;
-using suzerain::time_definition;
+using suzerain::support::fftw_definition;
+using suzerain::support::grid_definition;
+using suzerain::support::restart_definition;
+using suzerain::support::signal_definition;
+using suzerain::support::statistics_definition;
+using suzerain::support::time_definition;
+
 static const scenario_definition scenario;
 static const grid_definition grid;
 static const fftw_definition fftwdef(
@@ -895,7 +897,7 @@ int main(int argc, char **argv)
     bool default_advance_nt;
     bool default_statistics;
     {
-        suzerain::program_options options(
+        suzerain::support::program_options options(
                 "Suzerain-based explicit compressible channel simulation",
                 "RESTART-FILE", /* TODO description */ "", revstr);
         options.add_definition(const_cast<scenario_definition  &>(scenario));

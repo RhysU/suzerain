@@ -27,15 +27,17 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/common.h>
-#pragma hdrstop
+
+#include <suzerain/bspline.h>
+
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
+
+#include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
-#include <suzerain/bspline.h>
 #include <suzerain/error.h>
 #include <suzerain/pre_gsl.h>
 

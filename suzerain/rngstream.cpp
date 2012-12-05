@@ -16,12 +16,14 @@
  * Provides <tt>rngstream</tt> by L'Ecuyer <i>et al</i>, 2002.
  */
 
+#include <suzerain/rngstream.hpp>
+
 #include <cerrno>
 #include <climits>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <suzerain/rngstream.hpp>
+
 using namespace std;
 
 namespace suzerain {

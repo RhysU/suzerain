@@ -10,7 +10,6 @@ noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = perfect.cpp perfect.hpp
 libperfect_la_SOURCES += scenario_definition.hpp scenario_definition.cpp
 libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
-libperfect_la_LIBADD   = ../libsupport.la
 
 ##
 ## Channel-based applications
@@ -20,10 +19,8 @@ bin_PROGRAMS         += channel_init
 channel_init_SOURCES  = channel_init.cpp
 channel_init_SOURCES += channel_init_svnrev.c
 BUILT_SOURCES        += channel_init_svnrev.h
-channel_init_LDADD    = ./libperfect.la
-channel_init_svnrev.h: $(channel_init_SOURCES)                       \
-                       $(libperfect_la_SOURCES)                      \
-                       $(__top_builddir__apps_libsupport_la_SOURCES)
+channel_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+channel_init_svnrev.h: $(channel_init_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS    += channel
@@ -34,20 +31,16 @@ channel_SOURCES += explicit_operator.cpp explicit_operator.hpp
 channel_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
 channel_SOURCES += channel_main_svnrev.c
 BUILT_SOURCES   += channel_main_svnrev.h
-channel_LDADD    = ./libperfect.la
-channel_main_svnrev.h: $(channel_SOURCES)                            \
-                       $(libperfect_la_SOURCES)                      \
-                       $(__top_builddir__apps_libsupport_la_SOURCES)
+channel_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+channel_main_svnrev.h: $(channel_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS         += channel_mean
 channel_mean_SOURCES  = channel_mean.cpp
 channel_mean_SOURCES += channel_mean_svnrev.c
 BUILT_SOURCES        += channel_mean_svnrev.h
-channel_mean_LDADD    = ./libperfect.la
-channel_mean_svnrev.h: $(channel_mean_SOURCES)                       \
-                       $(libperfect_la_SOURCES)                      \
-                       $(__top_builddir__apps_libsupport_la_SOURCES)
+channel_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##

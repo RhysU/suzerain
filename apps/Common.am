@@ -20,9 +20,8 @@ BUILT_SOURCES       = # Append elsewhere
 CXX = @MPICXX@
 CC  = @MPICC@
 
-# Clean up from Intel Compiler's -prof-gen output and precomiled headers
+# Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-CLEANFILES += *.pchi
 
 # Clean up from buildaux/svnrev-generated headers
 CLEANFILES += *_svnrev.h

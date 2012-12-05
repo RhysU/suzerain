@@ -15,12 +15,13 @@
 #ifndef SUZERAIN_BLAS_ET_AL_HPP
 #define SUZERAIN_BLAS_ET_AL_HPP
 
-#include <suzerain/blas_et_al.h>
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_integral.hpp>
 #include <boost/utility/enable_if.hpp>
+
 #include <suzerain/allocator.hpp>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/complex.hpp>
 
 /** @file

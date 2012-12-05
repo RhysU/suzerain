@@ -26,6 +26,7 @@
 #ifndef SUZERAIN_PERFECT_HPP
 #define SUZERAIN_PERFECT_HPP
 
+#include <esio/esio.h>
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -34,34 +35,30 @@
 #include <underling/underling_fftw.hpp>
 #endif
 
-#include <esio/esio.h>
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/definition_base.hpp>
 #include <suzerain/diffwave.hpp>
-#include <suzerain/grid_definition.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/time_definition.hpp>
+#include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/support.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
 #include "nsctpl_rholut.hpp"
 #include "scenario_definition.hpp"
 
-
 namespace suzerain {
-
-// Ugly forward declaration of support::fields
-namespace support { class field; }
 
 /**
  * Functionality used throughout the Suzerain perfect gas application.
  */
 namespace perfect {
 
-/** Return default Nondimensional field information per \ref suzerain::ndx */
+/** Return default nondimensional field information per \ref suzerain::ndx */
 std::vector<support::field> default_fields();
 
 /** Store a scenario_definition in a restart file */
@@ -81,7 +78,7 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  */
 void store(const esio_handle h,
            const scenario_definition& scenario,
-           const grid_definition& grid,
+           const grid_specification& grid,
            const shared_ptr<manufactured_solution> & msoln);
 
 /**
@@ -92,7 +89,7 @@ void store(const esio_handle h,
  */
 void load(const esio_handle h,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           shared_ptr<manufactured_solution>& msoln);
 
 /**
@@ -107,7 +104,7 @@ void store_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop);
@@ -120,7 +117,7 @@ void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
         const scenario_definition& scenario,
-        const grid_definition& grid,
+        const grid_specification& grid,
         const pencil_grid& dgrid,
         bspline& b,
         const bsplineop& cop);
@@ -132,7 +129,7 @@ void load_collocation_values(
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           const pencil_grid& dgrid,
           bspline& b,
           const bsplineop& cop);
@@ -146,7 +143,7 @@ void load(const esio_handle h,
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
-                const grid_definition& grid,
+                const grid_specification& grid,
                 const pencil_grid& dgrid,
                 bspline &b,
                 const bsplineop& cop,
@@ -154,13 +151,13 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_gamma);
 
 /** Options definitions for adding random noise to momentum fields */
-class noise_definition : public definition_base {
+class noise_definition : public support::definition_base {
 
 public:
 
     /** Construct an instance with the given default values */
     explicit noise_definition(real_t fluct_percent = 0,
-                             unsigned long fluct_seed = 12345);
+                              unsigned long fluct_seed = 12345);
 
     /**
      * Maximum fluctuation magnitude to add as a percentage
@@ -205,7 +202,7 @@ void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_definition& noisedef,
           const scenario_definition& scenario,
-          const grid_definition& grid,
+          const grid_specification& grid,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& cop);
@@ -223,7 +220,7 @@ void accumulate_manufactured_solution(
         const manufactured_solution &msoln,
         const real_t beta,
         contiguous_state<4,complex_t> &swave,
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop,
@@ -457,7 +454,7 @@ public:
  */
 mean sample_mean_quantities(
         const scenario_definition &scenario,
-        const grid_definition &grid,
+        const grid_specification &grid,
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop,

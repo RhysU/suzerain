@@ -12,12 +12,14 @@
 // program_options.hpp: handles parsing program options from CLI, files
 // $Id$
 
-#ifndef SUZERAIN_PROGRAM_OPTIONS_HPP
-#define SUZERAIN_PROGRAM_OPTIONS_HPP
+#ifndef SUZERAIN_SUPPORT_PROGRAM_OPTIONS_HPP
+#define SUZERAIN_SUPPORT_PROGRAM_OPTIONS_HPP
+
+#include <boost/program_options.hpp>
 
 #include <suzerain/common.hpp>
-#include <suzerain/definition_base.hpp>
 #include <suzerain/mpi.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling program options parsing given a problem
@@ -25,6 +27,8 @@
  */
 
 namespace suzerain {
+
+namespace support {
 
 /**
  * Performs options parsing for an application, including command line and
@@ -50,10 +54,10 @@ public:
      * Default constructor which does not supply a program description.
      */
     program_options()
-		: variables_(),
-		  options_(),
-		  verbose_(),
-		  verbose_all_()
+        : variables_(),
+          options_(),
+          verbose_(),
+          verbose_all_()
     {}
 
     /**
@@ -73,16 +77,7 @@ public:
     program_options(const std::string &application_synopsis,
                     const std::string &argument_synopsis = "",
                     const std::string &description = "",
-                    const std::string &version = "")
-        : variables_(),
-          options_(),
-          application_synopsis_(application_synopsis),
-          argument_synopsis_(argument_synopsis),
-          application_description_(description),
-          application_version_(version),
-          verbose_(),
-          verbose_all_()
-    {}
+                    const std::string &version = "");
 
     /**
      * Adds all the options stored within the given definition_base to the
@@ -96,11 +91,7 @@ public:
      *
      * @see problem::definition_base for the necessary contract.
      */
-    program_options& add_definition(definition_base &definition)
-    {
-        options_.add(definition.options());
-        return *this;
-    }
+    program_options& add_definition(definition_base &definition);
 
     /**
      * Allows callers to add new options using the Boost.Program_options
@@ -126,7 +117,7 @@ public:
      */
     boost::program_options::options_description& options()
     {
-    	return options_;
+        return options_;
     }
 
     /**
@@ -170,17 +161,7 @@ public:
      */
     std::vector<std::string> process(int argc,
                                      char **argv,
-                                     MPI_Comm comm = MPI_COMM_WORLD)
-    {
-        boost::onullstream nullstream;
-        return process(argc,
-                       argv,
-                       comm,
-                       nullstream, // Debug messages
-                       std::cout,  // Info messages
-                       std::cerr,  // Warn messages
-                       std::cerr); // Error messages
-    }
+                                     MPI_Comm comm = MPI_COMM_WORLD);
 
     /**
      * Provides access to the variable map used to store options.  Useful if
@@ -193,7 +174,7 @@ public:
      */
     boost::program_options::variables_map& variables()
     {
-    	return variables_;
+        return variables_;
     }
 
     /**
@@ -204,18 +185,18 @@ public:
      */
     const boost::program_options::variables_map& variables() const
     {
-    	return variables_;
+        return variables_;
     }
 
     /** @return the "--verbose" flag count from the command line.  */
     int verbose()
     {
-    	return verbose_;
+        return verbose_;
     }
 
     /** @return the "--verbose-all" flag count from the command line.  */
     int verbose_all() {
-    	return verbose_all_;
+        return verbose_all_;
     }
 
     /**
@@ -315,6 +296,8 @@ protected:
     int verbose_all_;
 };
 
+} // namespace support
+
 } // namespace suzerain
 
-#endif // SUZERAIN_PROGRAM_OPTIONS_HPP
+#endif // SUZERAIN_SUPPORT_PROGRAM_OPTIONS_HPP

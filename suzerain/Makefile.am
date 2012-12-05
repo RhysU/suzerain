@@ -1,212 +1,249 @@
 ## Process this file with automake to produce Makefile.in
 
-# The directory layout is as follows:
+# The source directory layout is as follows:
 #
 #     - suzerain/*          Logic that is tested by tests/ and which could be
 #                           conceivably picked up for use outside of Suzerain
 #                           because it has minimal third-party dependencies.
-#
-#                           This logic is installed as libsuzerain.la.
 #
 #     - suzerain/support/*  Logic that builds atop suzerain/* and which is used
 #                           and tested by primarily by apps/.  It would be
 #                           difficult to use outside of Suzerain because of its
 #                           third-party dependencies.
 #
-#                           This logic is installed as libsuzerain-support.la.
-
-SUBDIRS = . support
+# All logic is installed as libsuzerain.la using non-recursive Automake.
+# This final target is built from objects and multiple convenience libraries.
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
-AM_CPPFLAGS   += $(MKL_CFLAGS) $(GSL_CFLAGS) $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
-AM_CPPFLAGS   += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS) $(FFTW3_CFLAGS)
-AM_CPPFLAGS   += $(EIGEN_CFLAGS) $(GRVY_CFLAGS)
 AM_LDFLAGS     =
-bin_PROGRAMS       = # Append below
-check_PROGRAMS     = # Append below
-noinst_HEADERS     = # Append below
-noinst_LTLIBRARIES = # Append below
-lib_LTLIBRARIES    = # Append below
-pkginclude_HEADERS = # Append below
-CLEANFILES         = # Append below
+
+BUILT_SOURCES             = # Append below
+CLEANFILES                = # Append below
+lib_LTLIBRARIES           = # Append below
+nobase_pkginclude_HEADERS = # Append below
+noinst_LTLIBRARIES        = # Append below
 
 # MPI-based compilation and linking
 CXX = @MPICXX@
 CC  = @MPICC@
 
-BUILT_SOURCES  = suzerain-config.h
+BUILT_SOURCES += suzerain-config.h
 BUILT_SOURCES += suzerain-revision.h
 
-suzerain-revision.h: $(srcdir)/*
+suzerain-revision.h: $(srcdir)/*.h                            \
+                     $(srcdir)/*.c                            \
+                     $(srcdir)/*.hpp  $(srcdir)/support/*.hpp \
+                     $(srcdir)/*.cpp  $(srcdir)/support/*.cpp \
+                     $(srcdir)/*.def                          \
+                     $(srcdir)/Makefile*
 	$(top_builddir)/build-aux/svnrev -n -o$@ -mSUZERAIN_REVISION_ "-f$(PACKAGE_VERSION).#" -i $?
 
-# Implementation-only headers
-noinst_HEADERS += exprparse_impl.hpp
-
 # Public API headers
-pkginclude_HEADERS += allocator.hpp
-pkginclude_HEADERS += blas_et_al.h
-pkginclude_HEADERS += blas_et_al.hpp
-pkginclude_HEADERS += bsmbsm.h
-pkginclude_HEADERS += bspline.h
-pkginclude_HEADERS += bspline.hpp
-pkginclude_HEADERS += bsplineop.h
-pkginclude_HEADERS += coalescing_pool.hpp
-pkginclude_HEADERS += common.h
-pkginclude_HEADERS += common.hpp
-pkginclude_HEADERS += complex.h
-pkginclude_HEADERS += complex.hpp
-pkginclude_HEADERS += contiguous_memory.hpp
-pkginclude_HEADERS += countof.h
-pkginclude_HEADERS += definition_base.hpp
-pkginclude_HEADERS += diffwave.h
-pkginclude_HEADERS += diffwave.hpp
-pkginclude_HEADERS += error.h
-pkginclude_HEADERS += exprgrammar.hpp
-pkginclude_HEADERS += exprparse.hpp
-pkginclude_HEADERS += fftw.hpp
-pkginclude_HEADERS += fftw_definition.hpp
-pkginclude_HEADERS += filterop.h
-pkginclude_HEADERS += format.hpp
-pkginclude_HEADERS += functional.hpp
-pkginclude_HEADERS += function.h
-pkginclude_HEADERS += gbdddddmv.h
-pkginclude_HEADERS += gbddddmv.h
-pkginclude_HEADERS += gbdddmv.h
-pkginclude_HEADERS += gbddmv.h
-pkginclude_HEADERS += gbdmv.h
-pkginclude_HEADERS += gbmatrix.h
-pkginclude_HEADERS += gbmv.h
-pkginclude_HEADERS += grid_definition.hpp
-pkginclude_HEADERS += htstretch.h
-pkginclude_HEADERS += inorder.h
-pkginclude_HEADERS += inorder.hpp
-pkginclude_HEADERS += iterator.hpp
-pkginclude_HEADERS += kahan.h
-pkginclude_HEADERS += l2.hpp
-pkginclude_HEADERS += math.hpp
-pkginclude_HEADERS += mpi_datatype.hpp
-pkginclude_HEADERS += mpi.h
-pkginclude_HEADERS += mpi.hpp
-pkginclude_HEADERS += mpl.hpp
-pkginclude_HEADERS += multi_array.hpp
-pkginclude_HEADERS += ndx.hpp
-pkginclude_HEADERS += operator_base.hpp
-pkginclude_HEADERS += os.h
-pkginclude_HEADERS += parcel.h
-pkginclude_HEADERS += pencilfft.hpp
-pkginclude_HEADERS += pencil_grid.hpp
-pkginclude_HEADERS += pencil.hpp
-pkginclude_HEADERS += pre_gsl.h
-pkginclude_HEADERS += program_options.hpp
-pkginclude_HEADERS += restart_definition.hpp
-pkginclude_HEADERS += reacting_imexop.h
-pkginclude_HEADERS += rholt.hpp
-pkginclude_HEADERS += rholut.hpp
-pkginclude_HEADERS += rholut_imexop.h
-pkginclude_HEADERS += richardson.h
-pkginclude_HEADERS += rngstream.hpp
-pkginclude_HEADERS += sbmv.h
-pkginclude_HEADERS += shared_range.hpp
-pkginclude_HEADERS += signal_definition.hpp
-pkginclude_HEADERS += state_fwd.hpp
-pkginclude_HEADERS += state.hpp
-pkginclude_HEADERS += statistics_definition.hpp
-pkginclude_HEADERS += storage.hpp
-pkginclude_HEADERS += suzerain-config.h
-pkginclude_HEADERS += suzerain-revision.h
-pkginclude_HEADERS += svehla.h
-pkginclude_HEADERS += timecontroller.hpp
-pkginclude_HEADERS += time_definition.hpp
-pkginclude_HEADERS += timestepper.hpp
-pkginclude_HEADERS += timers.h
-pkginclude_HEADERS += traits.hpp
-pkginclude_HEADERS += utility.hpp
-pkginclude_HEADERS += validation.hpp
-pkginclude_HEADERS += version.hpp
-pkginclude_HEADERS += zgbsv_specification.hpp
+nobase_pkginclude_HEADERS += allocator.hpp
+nobase_pkginclude_HEADERS += blas_et_al.h
+nobase_pkginclude_HEADERS += blas_et_al.hpp
+nobase_pkginclude_HEADERS += bsmbsm.h
+nobase_pkginclude_HEADERS += bspline.h
+nobase_pkginclude_HEADERS += bspline.hpp
+nobase_pkginclude_HEADERS += bsplineop.h
+nobase_pkginclude_HEADERS += coalescing_pool.hpp
+nobase_pkginclude_HEADERS += common.h
+nobase_pkginclude_HEADERS += common.hpp
+nobase_pkginclude_HEADERS += complex.h
+nobase_pkginclude_HEADERS += complex.hpp
+nobase_pkginclude_HEADERS += contiguous_memory.hpp
+nobase_pkginclude_HEADERS += countof.h
+nobase_pkginclude_HEADERS += diffwave.h
+nobase_pkginclude_HEADERS += diffwave.hpp
+nobase_pkginclude_HEADERS += error.h
+nobase_pkginclude_HEADERS += exprgrammar.hpp
+nobase_pkginclude_HEADERS += exprparse.hpp
+nobase_pkginclude_HEADERS += fftw.hpp
+nobase_pkginclude_HEADERS += filterop.h
+nobase_pkginclude_HEADERS += format.hpp
+nobase_pkginclude_HEADERS += functional.hpp
+nobase_pkginclude_HEADERS += function.h
+nobase_pkginclude_HEADERS += gbdddddmv.h
+nobase_pkginclude_HEADERS += gbddddmv.h
+nobase_pkginclude_HEADERS += gbdddmv.h
+nobase_pkginclude_HEADERS += gbddmv.h
+nobase_pkginclude_HEADERS += gbdmv.h
+nobase_pkginclude_HEADERS += gbmatrix.h
+nobase_pkginclude_HEADERS += gbmv.h
+nobase_pkginclude_HEADERS += grid_specification.hpp
+nobase_pkginclude_HEADERS += htstretch.h
+nobase_pkginclude_HEADERS += inorder.h
+nobase_pkginclude_HEADERS += inorder.hpp
+nobase_pkginclude_HEADERS += iterator.hpp
+nobase_pkginclude_HEADERS += kahan.h
+nobase_pkginclude_HEADERS += l2.hpp
+nobase_pkginclude_HEADERS += math.hpp
+nobase_pkginclude_HEADERS += mpi_datatype.hpp
+nobase_pkginclude_HEADERS += mpi.h
+nobase_pkginclude_HEADERS += mpi.hpp
+nobase_pkginclude_HEADERS += mpl.hpp
+nobase_pkginclude_HEADERS += multi_array.hpp
+nobase_pkginclude_HEADERS += ndx.hpp
+nobase_pkginclude_HEADERS += operator_base.hpp
+nobase_pkginclude_HEADERS += os.h
+nobase_pkginclude_HEADERS += parcel.h
+nobase_pkginclude_HEADERS += pencilfft.hpp
+nobase_pkginclude_HEADERS += pencil_grid.hpp
+nobase_pkginclude_HEADERS += pencil.hpp
+nobase_pkginclude_HEADERS += pre_gsl.h
+nobase_pkginclude_HEADERS += reacting_imexop.h
+nobase_pkginclude_HEADERS += rholt.hpp
+nobase_pkginclude_HEADERS += rholut.hpp
+nobase_pkginclude_HEADERS += rholut_imexop.h
+nobase_pkginclude_HEADERS += richardson.h
+nobase_pkginclude_HEADERS += rngstream.hpp
+nobase_pkginclude_HEADERS += sbmv.h
+nobase_pkginclude_HEADERS += shared_range.hpp
+nobase_pkginclude_HEADERS += state_fwd.hpp
+nobase_pkginclude_HEADERS += state.hpp
+nobase_pkginclude_HEADERS += storage.hpp
+nobase_pkginclude_HEADERS += support/application_base.hpp
+nobase_pkginclude_HEADERS += support/definition_base.hpp
+nobase_pkginclude_HEADERS += support/driver_base.hpp
+nobase_pkginclude_HEADERS += support/fftw_definition.hpp
+nobase_pkginclude_HEADERS += support/grid_definition.hpp
+nobase_pkginclude_HEADERS += support/logging.hpp
+nobase_pkginclude_HEADERS += support/program_options.hpp
+nobase_pkginclude_HEADERS += support/restart_definition.hpp
+nobase_pkginclude_HEADERS += support/signal_definition.hpp
+nobase_pkginclude_HEADERS += support/statistics_definition.hpp
+nobase_pkginclude_HEADERS += support/support.hpp
+nobase_pkginclude_HEADERS += support/time_definition.hpp
+nobase_pkginclude_HEADERS += suzerain-config.h
+nobase_pkginclude_HEADERS += suzerain-revision.h
+nobase_pkginclude_HEADERS += svehla.h
+nobase_pkginclude_HEADERS += timecontroller.hpp
+nobase_pkginclude_HEADERS += timers.h
+nobase_pkginclude_HEADERS += timestepper.hpp
+nobase_pkginclude_HEADERS += traits.hpp
+nobase_pkginclude_HEADERS += utility.hpp
+nobase_pkginclude_HEADERS += validation.hpp
+nobase_pkginclude_HEADERS += version.hpp
+nobase_pkginclude_HEADERS += zgbsv_specification.hpp
 
-lib_LTLIBRARIES              += libsuzerain.la
-libsuzerain_la_SOURCES        = blas_et_al.c
-libsuzerain_la_SOURCES       += bsmbsm.c
-libsuzerain_la_SOURCES       += bspline.c
-libsuzerain_la_SOURCES       += bsplineop.c
-libsuzerain_la_SOURCES       += diffwave.c
-libsuzerain_la_SOURCES       += error.c
-libsuzerain_la_SOURCES       += exprparse_dchar.cpp
-libsuzerain_la_SOURCES       += exprparse_dstr.cpp
-libsuzerain_la_SOURCES       += exprparse_fchar.cpp
-libsuzerain_la_SOURCES       += exprparse_fstr.cpp
-libsuzerain_la_SOURCES       += filterop.c
-libsuzerain_la_SOURCES       += fftw.cpp
-libsuzerain_la_SOURCES       += fftw_definition.cpp
-libsuzerain_la_SOURCES       += gbdddddmv.c
-libsuzerain_la_SOURCES       += gbddddmv.c
-libsuzerain_la_SOURCES       += gbdddmv.c
-libsuzerain_la_SOURCES       += gbddmv.c
-libsuzerain_la_SOURCES       += gbdmv.c
-libsuzerain_la_SOURCES       += gbmatrix.c
-libsuzerain_la_SOURCES       += gbmv.c
-libsuzerain_la_SOURCES       += grid_definition.cpp
-libsuzerain_la_SOURCES       += htstretch.c
-libsuzerain_la_SOURCES       += inorder.c
-libsuzerain_la_SOURCES       += l2.cpp
-libsuzerain_la_SOURCES       += mpi.cpp
-libsuzerain_la_SOURCES       += ndx.cpp
-libsuzerain_la_SOURCES       += operator_base.cpp
-libsuzerain_la_SOURCES       += os.c
-libsuzerain_la_SOURCES       += pencil_grid.cpp
-libsuzerain_la_SOURCES       += pre_gsl.c
-libsuzerain_la_SOURCES       += program_options.cpp
-libsuzerain_la_SOURCES       += reacting_imexop.c
-libsuzerain_la_SOURCES       += restart_definition.cpp
-libsuzerain_la_SOURCES       += rholut_imexop.c
-libsuzerain_la_SOURCES       += richardson.c
-libsuzerain_la_SOURCES       += rngstream.cpp
-libsuzerain_la_SOURCES       += sbmv.c
-libsuzerain_la_SOURCES       += signal_definition.cpp
-libsuzerain_la_SOURCES       += statistics_definition.cpp
-libsuzerain_la_SOURCES       += svehla.c
-libsuzerain_la_SOURCES       += time_definition.cpp
-libsuzerain_la_SOURCES       += version.cpp
-libsuzerain_la_SOURCES       += zgbsv_specification.cpp
-EXTRA_libsuzerain_la_SOURCES  = bsmbsm_aPxpby_complex.def
-EXTRA_libsuzerain_la_SOURCES += bsmbsm_aPxpby_real.def
-EXTRA_libsuzerain_la_SOURCES += bsmbsm_pack.def
-EXTRA_libsuzerain_la_SOURCES += dsgbsvx.def
-EXTRA_libsuzerain_la_SOURCES += filterop.def
-EXTRA_libsuzerain_la_SOURCES += gbdddddmv.def
-EXTRA_libsuzerain_la_SOURCES += gbddddmv.def
-EXTRA_libsuzerain_la_SOURCES += gbdddmv.def
-EXTRA_libsuzerain_la_SOURCES += gbddmv.def
-EXTRA_libsuzerain_la_SOURCES += gbdmv.def
-EXTRA_libsuzerain_la_SOURCES += gbmv.def
-EXTRA_libsuzerain_la_SOURCES += reacting_imexop.def
-EXTRA_libsuzerain_la_SOURCES += rholut_imexop.def
-EXTRA_libsuzerain_la_SOURCES += sbmv.def
-libsuzerain_la_LDFLAGS        = -release $(PACKAGE_VERSION)
-libsuzerain_la_LIBADD         = libsuzerain-precise.la
-libsuzerain_la_LIBADD        += $(GRVY_LIBS)
-libsuzerain_la_LIBADD        += $(UNDERLING_LIBS)
-libsuzerain_la_LIBADD        += $(P3DFFT_LIBS) $(FFTW3_THREADS_LIBS)
-libsuzerain_la_LIBADD        += $(GSL_LIBS)
-libsuzerain_la_LIBADD        += $(BOOST_IOSTREAMS_LDFLAGS)
-libsuzerain_la_LIBADD        += $(BOOST_IOSTREAMS_LIBS)
-libsuzerain_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
-libsuzerain_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LIBS)
+# Public library assembled from convenience libraries
+# libsupport must come first so ESIO/parallel-HDF5 trumps GRVY/serial-HDF5
+lib_LTLIBRARIES          += libsuzerain.la
+libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
+libsuzerain_la_SOURCES    = version.cpp
+libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
+libsuzerain_la_LIBADD     = libsupport.la
+libsuzerain_la_LIBADD    += libprecise.la
+libsuzerain_la_LIBADD    += libbase.la
+
+# Logic without extensive external dependencies
+noinst_LTLIBRARIES       += libbase.la
+libbase_la_LDFLAGS        = # Convenience-only
+libbase_la_SOURCES        = blas_et_al.c
+libbase_la_SOURCES       += bsmbsm.c
+libbase_la_SOURCES       += bspline.c
+libbase_la_SOURCES       += bsplineop.c
+libbase_la_SOURCES       += diffwave.c
+libbase_la_SOURCES       += error.c
+libbase_la_SOURCES       += exprparse_dchar.cpp
+libbase_la_SOURCES       += exprparse_dstr.cpp
+libbase_la_SOURCES       += exprparse_fchar.cpp
+libbase_la_SOURCES       += exprparse_fstr.cpp
+libbase_la_SOURCES       += filterop.c
+libbase_la_SOURCES       += fftw.cpp
+libbase_la_SOURCES       += gbdddddmv.c
+libbase_la_SOURCES       += gbddddmv.c
+libbase_la_SOURCES       += gbdddmv.c
+libbase_la_SOURCES       += gbddmv.c
+libbase_la_SOURCES       += gbdmv.c
+libbase_la_SOURCES       += gbmatrix.c
+libbase_la_SOURCES       += gbmv.c
+libbase_la_SOURCES       += grid_specification.cpp
+libbase_la_SOURCES       += htstretch.c
+libbase_la_SOURCES       += inorder.c
+libbase_la_SOURCES       += l2.cpp
+libbase_la_SOURCES       += mpi.cpp
+libbase_la_SOURCES       += ndx.cpp
+libbase_la_SOURCES       += operator_base.cpp
+libbase_la_SOURCES       += os.c
+libbase_la_SOURCES       += pencil_grid.cpp
+libbase_la_SOURCES       += pre_gsl.c
+libbase_la_SOURCES       += reacting_imexop.c
+libbase_la_SOURCES       += rholut_imexop.c
+libbase_la_SOURCES       += richardson.c
+libbase_la_SOURCES       += rngstream.cpp
+libbase_la_SOURCES       += sbmv.c
+libbase_la_SOURCES       += svehla.c
+libbase_la_SOURCES       += zgbsv_specification.cpp
+EXTRA_libbase_la_SOURCES  = bsmbsm_aPxpby_complex.def
+EXTRA_libbase_la_SOURCES += bsmbsm_aPxpby_real.def
+EXTRA_libbase_la_SOURCES += bsmbsm_pack.def
+EXTRA_libbase_la_SOURCES += dsgbsvx.def
+EXTRA_libbase_la_SOURCES += exprparse_impl.hpp
+EXTRA_libbase_la_SOURCES += filterop.def
+EXTRA_libbase_la_SOURCES += gbdddddmv.def
+EXTRA_libbase_la_SOURCES += gbddddmv.def
+EXTRA_libbase_la_SOURCES += gbdddmv.def
+EXTRA_libbase_la_SOURCES += gbddmv.def
+EXTRA_libbase_la_SOURCES += gbdmv.def
+EXTRA_libbase_la_SOURCES += gbmv.def
+EXTRA_libbase_la_SOURCES += reacting_imexop.def
+EXTRA_libbase_la_SOURCES += rholut_imexop.def
+EXTRA_libbase_la_SOURCES += sbmv.def
+libbase_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
+libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
+libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
+libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
+libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
+libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
+libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
+libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
+libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
+libbase_la_LIBADD         = $(GRVY_LIBS)
+libbase_la_LIBADD        += $(UNDERLING_LIBS)
+libbase_la_LIBADD        += $(P3DFFT_LIBS)
+libbase_la_LIBADD        += $(FFTW3_MPI_THREADS_LIBS)
+libbase_la_LIBADD        += $(GSL_LIBS) # Includes MKL via BLAS hooks
 
 # Sources requiring IEEE-faithful floating point behavior
-# Built separately to allow different optimization settings
-noinst_LTLIBRARIES                   += libsuzerain-precise.la
-libsuzerain_precise_la_SOURCES        = kahan.c
-EXTRA_libsuzerain_precise_la_SOURCES  = kahan.def
-libsuzerain_precise_la_CFLAGS         = $(AM_CFLAGS)   $(CFLAGS_PRECISE)
-libsuzerain_precise_la_CXXFLAGS       = $(AM_CXXFLAGS) $(CXXFLAGS_PRECISE)
+# Built separately to utilize separate optimization settings
+noinst_LTLIBRARIES          += libprecise.la
+libprecise_la_LDFLAGS        = # Convenience-only
+libprecise_la_SOURCES        = kahan.c
+EXTRA_libprecise_la_SOURCES  = kahan.def
+libprecise_la_CFLAGS         = $(AM_CFLAGS)   $(CFLAGS_PRECISE)
+libprecise_la_CXXFLAGS       = $(AM_CXXFLAGS) $(CXXFLAGS_PRECISE)
+libprecise_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
 
-# Clean up from Intel Compiler's -prof-gen output and precompiled headers
+# Sources requiring additional external dependencies
+# Built separately to encourage decoupling versus other targets
+noinst_LTLIBRARIES          += libsupport.la
+libsupport_la_LDFLAGS        = # Convenience-only
+libsupport_la_SOURCES        = support/application_base.cpp
+libsupport_la_SOURCES       += support/driver_base.cpp
+libsupport_la_SOURCES       += support/fftw_definition.cpp
+libsupport_la_SOURCES       += support/grid_definition.cpp
+libsupport_la_SOURCES       += support/logging.cpp
+libsupport_la_SOURCES       += support/program_options.cpp
+libsupport_la_SOURCES       += support/restart_definition.cpp
+libsupport_la_SOURCES       += support/signal_definition.cpp
+libsupport_la_SOURCES       += support/statistics_definition.cpp
+libsupport_la_SOURCES       += support/support.cpp
+libsupport_la_SOURCES       += support/time_definition.cpp
+EXTRA_libsupport_la_SOURCES  =
+libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
+libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
+libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
+libsupport_la_LIBADD         = $(LOG4CXX_LIBS)
+libsupport_la_LIBADD        += $(BOOST_IOSTREAMS_LDFLAGS)
+libsupport_la_LIBADD        += $(BOOST_IOSTREAMS_LIBS)
+libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LIBS)
+libsupport_la_LIBADD        += $(ESIO_LIBS)
+
+# Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
-CLEANFILES += *.pchi
 
 # Clean up from buildaux/svnrev-generated headers
 CLEANFILES += *_svnrev.h

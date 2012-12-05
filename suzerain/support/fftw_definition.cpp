@@ -26,10 +26,12 @@
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
-#include <suzerain/fftw_definition.hpp>
 
-namespace suzerain
-{
+#include <suzerain/support/fftw_definition.hpp>
+
+namespace suzerain {
+
+namespace support {
 
 void fftw_definition::normalize_rigor_fft(std::string input)
 {
@@ -98,4 +100,6 @@ fftw_definition::fftw_definition(
     ;
 }
 
-} // namespace suzerain
+} // end namespace support
+
+} // end namespace suzerain

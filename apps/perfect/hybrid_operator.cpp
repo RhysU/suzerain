@@ -36,9 +36,9 @@
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
-#include "../logging.hpp"
 #include "hybrid_operator.hpp"
 #include "nonlinear_operator.hpp"
 

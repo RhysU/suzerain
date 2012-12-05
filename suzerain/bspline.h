@@ -28,8 +28,9 @@
 #define SUZERAIN_BSPLINE_H
 
 #include <gsl/gsl_bspline.h>
-#include <suzerain/pre_gsl.h>
+
 #include <suzerain/complex.h>
+#include <suzerain/pre_gsl.h>
 
 /** @file
  * Provides higher-level logic built atop the <a
