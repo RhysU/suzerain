@@ -29,7 +29,7 @@
 #ifndef SUZERAIN_ERROR_H
 #define SUZERAIN_ERROR_H
 
-#include <suzerain/common.h>
+#include <stdio.h>
 
 /** @file
  * Provides standardized error numbers and error handling routines.  Error

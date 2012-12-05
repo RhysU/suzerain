@@ -30,8 +30,6 @@
 #include <gsl/gsl_matrix_double.h>
 #include <gsl/gsl_vector_double.h>
 
-#include <suzerain/common.h>
-
 /** @file
  * Provides generalized Richardson extrapolation built atop the <a
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL).

@@ -30,6 +30,7 @@
 
 #include <suzerain/reacting_imexop.h>
 
+#include <suzerain/common.h>
 #include <suzerain/blas_et_al.h>
 #include <suzerain/bsmbsm.h>
 

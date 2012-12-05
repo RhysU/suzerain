@@ -30,7 +30,6 @@
 #ifndef SUZERAIN_FUNCTION_H
 #define SUZERAIN_FUNCTION_H
 
-#include <suzerain/common.h>
 #include <suzerain/complex.h>
 
 /** @file

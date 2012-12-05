@@ -16,7 +16,8 @@
 #ifndef SUZERAIN_BLAS_ET_AL_H
 #define SUZERAIN_BLAS_ET_AL_H
 
-#include <suzerain/common.h>
+#include <stddef.h>
+#include <stdio.h>
 #include <suzerain/complex.h>
 
 /** \file
@@ -58,7 +59,7 @@ suzerain_blas_xerbla(const char *srname, const int info);
  *
  * Align at 16-byte boundaries per MKL user guide section 8.
  */
-#define SUZERAIN_BLAS_ALIGNMENT 16
+#define SUZERAIN_BLAS_ALIGNMENT (16)
 
 /*!
  * \brief Allocates memory aligned according to SUZERAIN_BLAS_ALIGNMENT.

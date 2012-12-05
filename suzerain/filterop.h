@@ -26,9 +26,7 @@
 #ifndef SUZERAIN_FILTEROP_H
 #define SUZERAIN_FILTEROP_H
 
-#include <suzerain/common.h>
 #include <suzerain/complex.h>
-#include <suzerain/function.h>
 
 /** @file
  * Provides discrete, banded filtering operators.

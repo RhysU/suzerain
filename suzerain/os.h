@@ -28,8 +28,7 @@
 #define SUZERAIN_OS_H
 
 #include <fcntl.h>
-
-#include <suzerain/common.h>
+#include <stdio.h>
 
 /** @file
  * Provides utilities atop POSIX methods.
@@ -44,10 +43,10 @@ extern "C" {
  * portions, and create a <tt>FILE*</tt> handle to the write end
  * suitable for use with \c fprintf and friends.
  *
- * @param[out] rfd File descriptor attached to the pipe's read side.
- * @param[in] rflags Flags to set for the new pipe's read side.
- * @param[out] w Handle return for the new pipe's write side.
- * @param[in] wflags Flags to set for the new pipe's write side.
+ * @param[out] rfd    File descriptor attached to the pipe's read side.
+ * @param[in]  rflags Flags to set for the new pipe's read side.
+ * @param[out] w      Handle return for the new pipe's write side.
+ * @param[in]  wflags Flags to set for the new pipe's write side.
  *
  * @see The manual pages for <tt>fcntl(2)</tt>, <tt>pipe(2)</tt>,
  *      and <tt>pipe(7)</tt> for more information on creating pipes
