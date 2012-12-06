@@ -60,16 +60,16 @@ int main(int argc, char **argv)
     support::application_base app(
             "Benchmark parallel FFTs implemented using suzerain::pencil_grid",
             /* No arguments */ "", /* No further description*/ "", revstr);
-    app.grid.reset(new support::grid_definition(/* Lx UNUSED */ "NaN",
-                                                /* Nx        */  16,
-                                                /* DAFx      */  1.0,
-                                                /* Ly UNUSED */ "NaN",
-                                                /* Ny        */  16,
-                                                /* k         */  4,
-                                                /* htdelta   */  0.0,
-                                                /* Lz UNUSED */  "NaN",
-                                                /* Nz        */  16,
-                                                /* DAFz      */  1.0));
+    app.grid.reset(new support::grid_definition(/* Lx      */ "8*pi",
+                                                /* Nx      */  16,
+                                                /* DAFx    */  1.0,
+                                                /* Ly      */ "2",
+                                                /* Ny      */  16,
+                                                /* k       */  4,
+                                                /* htdelta */  0.0,
+                                                /* Lz      */  "4*pi",
+                                                /* Nz      */  16,
+                                                /* DAFz    */  1.0));
 
     // Add additional command line options
     std::size_t repeat  = 1;

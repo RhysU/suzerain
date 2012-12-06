@@ -212,8 +212,12 @@ application_base::establish_decomposition(
     if (output_size) {
         INFO0("Number of MPI ranks:               " << nranks);
         INFO0("Grid degrees of freedom    (GDOF): " << grid->N.prod());
-        INFO0("GDOF by direction           (XYZ): " << grid->N);
-        INFO0("Dealiased GDOF by direction (XYZ): " << grid->dN);
+        INFO0("GDOF by direction           (XYZ): " << grid->N.x() << " "
+                                                    << grid->N.y() << " "
+                                                    << grid->N.z());
+        INFO0("Dealiased GDOF by direction (XYZ): " << grid->dN.x() << " "
+                                                    << grid->dN.y() << " "
+                                                    << grid->dN.z());
     }
 
     // Establish the parallel decomposition and output some timing
@@ -242,10 +246,12 @@ application_base::establish_decomposition(
         INFO0("MPI transpose and Fourier transform planning by "
               << dgrid->implementation() << " took "
               << wtime_fftw_planning << " seconds");
-        assert((grid->dN == dgrid->global_physical_extent).all());
-        INFO0("Rank grid used for decomposition: " << dgrid->processor_grid);
+        INFO0("Rank grid used for decomposition: "
+               << dgrid->processor_grid[0] << " "
+               << dgrid->processor_grid[1]);
         INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
               << dgrid->rank_zero_zero_modes);
+        SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
     support::wisdom_gather(fftwdef->plan_wisdom);
