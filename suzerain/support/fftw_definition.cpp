@@ -92,11 +92,11 @@ fftw_definition::fftw_definition(
      rigor_mpi_description.c_str())
     ("plan_wisdom",
      po::value(&plan_wisdom),
-     "File used for accumulating FFTW planning wisdom")
+     "File for accumulating FFTW planning wisdom")
     ("plan_timelimit",
      po::value(&plan_timelimit)
      ->default_value(FFTW_NO_TIMELIMIT, "unlimited"),
-     "Maximum number of seconds allowed for creating any single FFTW plan")
+     "Maximum seconds for creating any FFTW plan")
     ;
 }
 

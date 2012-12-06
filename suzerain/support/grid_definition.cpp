@@ -164,7 +164,7 @@ void grid_definition::initialize_options(
                          &ensure_nonnegative<int>, "k"));
     }
     this->add_options()("k", p.release(),
-                        "Wall-normal B-spline order (4 indicates piecewise cubics)");
+                        "Wall-normal B-spline order (4 is piecewise cubic)");
 
     // htdelta
     p.reset(boost::program_options::value(nullstr));
