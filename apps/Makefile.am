@@ -13,18 +13,15 @@ noinst_PROGRAMS      += conservation
 conservation_SOURCES  = conservation.cpp
 conservation_LDADD    = ../suzerain/libsuzerain.la
 
-if HAVE_P3DFFT
-bin_PROGRAMS                    += driver_suzerain_p3dfft
-driver_suzerain_p3dfft_LDADD     = ../suzerain/libsuzerain.la
-driver_suzerain_p3dfft_LDADD    += $(MPIP_LIBS)
-driver_suzerain_p3dfft_CPPFLAGS  = $(AM_CPPFLAGS)
-driver_suzerain_p3dfft_LDFLAGS   = $(MPIP_LDFLAGS)
-driver_suzerain_p3dfft_SOURCES   = driver_suzerain_p3dfft.cpp
-driver_suzerain_p3dfft_SOURCES  += driver_suzerain_p3dfft_svnrev.c
-BUILT_SOURCES                   += driver_suzerain_p3dfft_svnrev.h
-driver_suzerain_p3dfft_svnrev.h: $(driver_suzerain_p3dfft_SOURCES)
+bin_PROGRAMS              += pencil_grid_bench
+pencil_grid_bench_LDADD    = ../suzerain/libsuzerain.la
+pencil_grid_bench_SOURCES  = pencil_grid_bench.cpp
+pencil_grid_bench_SOURCES += pencil_grid_bench_svnrev.c
+pencil_grid_bench_SOURCES += pencil_grid_bench_svnrev.h
+
+BUILT_SOURCES += pencil_grid_bench_svnrev.h
+pencil_grid_bench_svnrev.h: $(pencil_grid_bench_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
-endif
 
 ##
 ## Common test infrastructure and tests

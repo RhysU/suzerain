@@ -76,7 +76,6 @@ public:
                     int         Nz,
                     real_t      DAFz);
 
-
 private:
 
     /** Options initialization common to all constructors */

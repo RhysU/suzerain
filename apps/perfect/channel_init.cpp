@@ -37,6 +37,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/logging.hpp>
@@ -332,8 +333,8 @@ int main(int argc, char **argv)
         suzerain::operator_base o(grid, *dgrid, *b, *cop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
-        support::physical_view<>::type sphys
-            = support::physical_view<>::create(*dgrid, swave, swave.shape()[0]);
+        suzerain::physical_view<>::type sphys
+            = suzerain::physical_view<>::create(*dgrid, swave, swave.shape()[0]);
 
         // Find normalization required to have (y*(L-y))^npower integrate to one
         real_t factor;

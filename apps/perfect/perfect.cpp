@@ -44,6 +44,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
@@ -317,8 +318,8 @@ void store_collocation_values(
     }
 
     // Convert conserved rho{_E,_u,_v,_w,} into u, v, w, p, T
-    support::physical_view<state_count>::type sphys
-        = support::physical_view<state_count>::create(dgrid, swave);
+    physical_view<state_count>::type sphys
+        = physical_view<state_count>::create(dgrid, swave);
 
     const real_t alpha = scenario.alpha;
     const real_t beta  = scenario.beta;
@@ -438,8 +439,8 @@ void load_collocation_values(
     }
 
     // Establish size of collective reads across all ranks and read data
-    support::physical_view<state_count>::type sphys
-        = support::physical_view<state_count>::create(dgrid, state);
+    physical_view<state_count>::type sphys
+        = physical_view<state_count>::create(dgrid, state);
     esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),
                                          dgrid.local_physical_extent.y(),
                             grid.dN.z(), dgrid.local_physical_start.z(),
@@ -584,8 +585,8 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 
     // Convert state to physical space collocation points
     operator_base obase(grid, dgrid, b, cop);
-    support::physical_view<state_count>::type sphys
-            = support::physical_view<state_count>::create(dgrid, swave);
+    physical_view<state_count>::type sphys
+            = physical_view<state_count>::create(dgrid, swave);
     for (size_t k = 0; k < state_count; ++k) {
         obase.bop_apply(0, 1.0, swave, k);
         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
@@ -865,8 +866,8 @@ add_noise(contiguous_state<4,complex_t> &state,
     for (size_t l = 0; l < 3; ++l) s[2*l+1] = s[2*l];
 
     // Prepare physical-space view of the wave-space storage
-    support::physical_view<state_count+3>::type p
-        = support::physical_view<state_count+3>::create(dgrid, s);
+    physical_view<state_count+3>::type p
+        = physical_view<state_count+3>::create(dgrid, s);
 
     // Initializing operator_base to access decomposition-ready utilities
     operator_base obase(grid, dgrid, b, cop);
@@ -1069,8 +1070,7 @@ void accumulate_manufactured_solution(
     multi_array::fill(scratch, 0);                                  // Defensive
 
     // Prepare physical-space view of the wave-space scratch storage
-    support::physical_view<1>::type phys
-            = support::physical_view<1>::create(dgrid, scratch);
+    physical_view<1>::type phys = physical_view<1>::create(dgrid, scratch);
 
     // Prepare factored mass matrix for repeated use
     bsplineop_luz massluz(cop);
@@ -1298,10 +1298,10 @@ mean sample_mean_quantities(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    support::physical_view<aux::count>::type auxp
-        = support::physical_view<aux::count>::create(dgrid, auxw);
-    support::physical_view<state_count>::type sphys
-        = support::physical_view<state_count>::create(dgrid, swave);
+    physical_view<aux::count>::type auxp
+        = physical_view<aux::count>::create(dgrid, auxw);
+    physical_view<state_count>::type sphys
+        = physical_view<state_count>::create(dgrid, swave);
     for (size_t i = 0; i < state_count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

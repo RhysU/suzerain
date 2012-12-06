@@ -278,19 +278,19 @@ public:
     /** Uniform grid spacing in x */
     const real_t one_over_delta_x;
 
-    /** Maximum pure imaginary eigenvalue magnitude for first derivative in x */
+    /** Maximum pure imaginary eigenvalue magnitude for first x derivative */
     const real_t lambda1_x;
 
-    /** Maximum pure real eigenvalue magnitude for second derivatives in x */
+    /** Maximum pure real eigenvalue magnitude for second x derivative */
     const real_t lambda2_x;
 
     /** Uniform grid spacing in z */
     const real_t one_over_delta_z;
 
-    /** Maximum pure imaginary eigenvalue magnitude for first derivative in z */
+    /** Maximum pure imaginary eigenvalue magnitude for first z derivative */
     const real_t lambda1_z;
 
-    /** Maximum pure real eigenvalue magnitude for second derivatives in z */
+    /** Maximum pure real eigenvalue magnitude for second z derivative */
     const real_t lambda2_z;
 
     /** The grid in which the operator is used */
@@ -304,16 +304,16 @@ public:
 
 private:
 
-    /** Stores y grid points on this rank in wave space */
+    /** Stores y grid points on this rank in physical space */
     boost::multi_array<real_t,1> y_;
 
-    /** Stores y grid spacing on this rank in wave space */
+    /** Stores y grid spacing on this rank in physical space */
     boost::multi_array<real_t,1> one_over_delta_y_;
 
-    /** Stores pure imaginary eigenvalue magnitudes for y first derivatives */
+    /** Stores pure imaginary eigenvalue magnitudes for first y derivative */
     boost::multi_array<real_t,1> lambda1_y_;
 
-    /** Stores pure real eigenvalue magnitudes for y second derivatives */
+    /** Stores pure real eigenvalue magnitudes for second y derivative */
     boost::multi_array<real_t,1> lambda2_y_;
 
     // Noncopyable

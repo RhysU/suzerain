@@ -30,6 +30,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/multi_array.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
@@ -193,10 +194,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
 
-    typename support::physical_view<>::type auxp
-        = support::physical_view<>::create(o.dgrid, auxw, aux_count);
-    typename support::physical_view<>::type sphys
-        = support::physical_view<>::create(o.dgrid, swave, state_count);
+    typename physical_view<>::type auxp
+        = physical_view<>::create(o.dgrid, auxw, aux_count);
+    typename physical_view<>::type sphys
+        = physical_view<>::create(o.dgrid, swave, state_count);
     for (size_t i = 0; i < state_count; ++i) {
       o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

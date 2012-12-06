@@ -150,7 +150,7 @@ std::vector<std::string> program_options::process_internal(
         ("verbose,v", po::value<std::vector<std::string> >(),
          "Increase verbosity of messages from rank zero")
         ("verbose-all,V", po::value<std::vector<std::string> >(),
-         "Increase verbosity of rank-specific messages from all ranks")
+         "Increase verbosity of all rank-specific messages")
     ;
 
     // Prepare a response-file option iff non-trivial options available

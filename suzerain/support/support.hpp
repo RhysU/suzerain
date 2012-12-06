@@ -43,6 +43,7 @@
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/physical_view.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/time_definition.hpp>
@@ -425,55 +426,6 @@ static void load_line(const esio_handle h, ArrayXr &line,
         }
     }
 }
-
-/**
- * A template typedef for how to view multiple state fields in physical space,
- * Including a convenient method for constructing such an instance.  The
- * optional first template parameter may be specified to provide a number of
- * fields known at compile time.
- */
-template <int NFields = Dynamic>
-struct physical_view {
-
-    BOOST_STATIC_ASSERT(NFields == Dynamic || NFields >= 0);
-
-    /**
-     * In physical space, we'll employ a view to reshape the 4D row-major (F,
-     * Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where we
-     * know F a priori.  Reducing the dimensionality encourages linear access
-     * and eases indexing overhead.
-     */
-    typedef Map<
-                Array<real_t, NFields, Dynamic, RowMajor>,
-                Unaligned, // FIXME Defensive but likely unnecessary
-                OuterStride<Dynamic>
-            > type;
-
-    /**
-     * Create a view instance given state storage and sufficient information
-     * about the parallel decomposition.  The default value of \c nfields may
-     * only be used when the template parameter \c NFields was not Dynamic.
-     */
-    static inline type create(
-            const pencil_grid &dgrid,
-            contiguous_state<4,complex_t> &state,
-            const int nfields = NFields)
-    {
-        if (NFields == Dynamic || NFields == nfields) {
-            type retval(reinterpret_cast<real_t *>(state.origin()),
-                        nfields,                            // F
-                        dgrid.local_physical_extent.prod(), // Y*Z*X
-                        OuterStride<>(  state.strides()[0]
-                                     * sizeof(complex_t)/sizeof(real_t)));
-
-            return retval;
-        }
-
-        throw std::invalid_argument(
-                "NFields, nfields mismatch in physical_view::create");
-    }
-
-};
 
 } // end namespace support
 

@@ -91,6 +91,7 @@ nobase_pkginclude_HEADERS += parcel.h
 nobase_pkginclude_HEADERS += pencilfft.hpp
 nobase_pkginclude_HEADERS += pencil_grid.hpp
 nobase_pkginclude_HEADERS += pencil.hpp
+nobase_pkginclude_HEADERS += physical_view.hpp
 nobase_pkginclude_HEADERS += pre_gsl.h
 nobase_pkginclude_HEADERS += reacting_imexop.h
 nobase_pkginclude_HEADERS += rholt.hpp
