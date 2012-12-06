@@ -195,9 +195,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // access and eases indexing overhead.
 
     typename physical_view<>::type auxp
-        = physical_view<>::create(o.dgrid, auxw, aux_count);
+        = physical_view<>::create(o.dgrid, auxw);
     typename physical_view<>::type sphys
-        = physical_view<>::create(o.dgrid, swave, state_count);
+        = physical_view<>::create(o.dgrid, swave);
     for (size_t i = 0; i < state_count; ++i) {
       o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

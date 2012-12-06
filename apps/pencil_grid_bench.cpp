@@ -96,8 +96,8 @@ int main(int argc, char **argv)
     // Allocate necessary storage and prepare physical space view
     app.establish_state_storage(/* linear state is wave-only        */ 0,
                                 /* nonlinear state is transformable */ nfields);
-    physical_view<>::type p
-            = physical_view<>::create(*app.dgrid, *app.state_nonlinear);
+    physical_view<>::type p = physical_view<>::create(
+            *app.dgrid, *app.state_nonlinear);
 
     // Initialize manufactured field using operator_base utilities
     // p is a 2D, real-valued view of (NFIELDS, X*Z*Y) leftmost fastest
