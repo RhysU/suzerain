@@ -501,14 +501,6 @@ protected:
     virtual void default_statistics_interval(time_type&, step_type&)
     { /* NOP */ }
 
-    /** Permits a subclass-specific default restart writing interval. */
-    virtual time_type default_restart_interval()
-    { return controller->forever_t(); }
-
-    /** Permits a subclass-specific default statistics writing interval. */
-    virtual time_type default_statistics_interval()
-    { return controller->forever_t(); }
-
     /**
      * Did the previous time advance end in a predicted, controlled manner?
      */
