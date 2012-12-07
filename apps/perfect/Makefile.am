@@ -10,6 +10,7 @@ noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = perfect.cpp perfect.hpp
 libperfect_la_SOURCES += scenario_definition.hpp scenario_definition.cpp
 libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp nsctpl_rholut.hpp
+libperfect_la_SOURCES += driver.hpp # TODO driver.cpp
 
 ##
 ## Channel-based applications
