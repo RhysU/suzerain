@@ -228,7 +228,7 @@ void accumulate_manufactured_solution(
 
 /**
  * Encapsulate the mean quantities detailed in the "Sampling logistics" section
- * of <tt>writeups/derivation.tex</tt>.
+ * of <tt>writeups/perfectgas.tex</tt>.
  *
  * Samples of each quantity are made available through a two-dimensional,
  * column-major arrays.  The row index iterates over wall-normal collocation
