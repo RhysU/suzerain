@@ -194,10 +194,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
 
-    typename physical_view<>::type auxp
-        = physical_view<>::create(o.dgrid, auxw);
-    typename physical_view<>::type sphys
-        = physical_view<>::create(o.dgrid, swave);
+    typename physical_view<> auxp(o.dgrid, auxw);
+    typename physical_view<> sphys(o.dgrid, swave);
     for (size_t i = 0; i < state_count; ++i) {
       o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

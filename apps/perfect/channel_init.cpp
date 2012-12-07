@@ -333,8 +333,7 @@ int main(int argc, char **argv)
         suzerain::operator_base o(grid, *dgrid, *b, *cop);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
-        suzerain::physical_view<>::type sphys
-            = suzerain::physical_view<>::create(*dgrid, swave);
+        suzerain::physical_view<> sphys(*dgrid, swave);
 
         // Find normalization required to have (y*(L-y))^npower integrate to one
         real_t factor;

@@ -1048,7 +1048,7 @@ void load_collocation_values(
     }
 
     // Prepare physical space view of the state storage
-    physical_view<>::type sphys = physical_view<>::create(dgrid, state);
+    physical_view<> sphys(dgrid, state);
 
     // Establish size of collective reads across all ranks
     esio_field_establish(h, grid.dN.y(), dgrid.local_physical_start.y(),

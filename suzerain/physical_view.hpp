@@ -32,87 +32,94 @@
 
 namespace suzerain {
 
-// FIXME Unaligned is defensive but inefficient and likely unnecessary
-namespace { enum {
-    physical_view_map_options = Unaligned
-}; }
+/**
+ * Constant providing Eigen \c MapOptions for \ref physical_view templates.
+ * FIXME Unaligned is defensive but inefficient and likely unnecessary
+ */
+enum { physical_view_map_options = Unaligned };
 
 /**
- * A template typedef for how to view multiple \ref contiguous_state fields in
- * physical space, including a convenient method for constructing such an
- * instance.  The optional first template parameter may be specified to provide
- * a number of fields known at compile time.
+ * An \ref ArrayXXr-like class providing a physical space view of wave space
+ * \ref contiguous_state given pencil decomposition information.  In physical
+ * space, the view reshapes the 4D row-major (NFields, Y, Z, X) with contiguous
+ * (Y, Z, X) into a 2D (NFields, Y*Z*X) layout.  Reducing the dimensionality
+ * encourages linear access and eases indexing overhead.
  *
- * In physical space, the view reshapes the 4D row-major (F, Y, Z, X) with
- * contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where we know F a priori.
- * Reducing the dimensionality encourages linear access and eases indexing
- * overhead.
+ * When NFields is known <em>a priori</em>, it may be supplied as the first
+ * template parameter.  Doing so should provide a slight performance gain.
  */
 template <int NFields = Dynamic>
 struct physical_view;
 
 /**
- * Specialization for the case when <tt>NFields == Dynamic</tt>.
- * This specialization returns a view with a dynamic number of fields.
+ * Logic for the general case when <tt>NFields == Dynamic</tt>.
+ * The \ref Map superclass has a dynamic number of rows.
  */
 template <>
-struct physical_view<Dynamic> {
-
-    /** Type of the view returned by \ref create. */
-    typedef Map<
-                Array<real_t, Dynamic, Dynamic, RowMajor>,
-                physical_view_map_options,
-                OuterStride<Dynamic>
-            > type;
-
-    /** Create a view given state and the parallel decomposition. */
-    static inline type create(
-            const pencil_grid &dgrid,
-            contiguous_state<4,complex_t> &state)
+struct physical_view<Dynamic> : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
+                                    physical_view_map_options,
+                                    OuterStride<Dynamic> >
+{
+    /**
+     * Create a view given state and the parallel decomposition.
+     *
+     * @param dgrid Parallel pencil composition to use for determining local
+     *              portion of the global state field.
+     * @param state Padded state storage used to house data when
+     *              viewed from wave space perspective.
+     */
+    physical_view(const pencil_grid &dgrid,
+                  contiguous_state<4,complex_t> &state)
+        : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
+              physical_view_map_options,
+              OuterStride<Dynamic> >
+          (reinterpret_cast<real_t *>(state.origin()),
+           state.shape()[0],                   // NFields
+           dgrid.local_physical_extent.prod(), // Y*Z*X
+           OuterStride<>(  sizeof(complex_t)/sizeof(real_t)
+                         * state.strides()[0]))
     {
         SUZERAIN_ENSURE(static_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
         SUZERAIN_ENSURE(static_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
         SUZERAIN_ENSURE(static_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-
-        type retval(reinterpret_cast<real_t *>(state.origin()),
-                    state.shape()[0],                   // F
-                    dgrid.local_physical_extent.prod(), // Y*Z*X
-                    OuterStride<>(  state.strides()[0]
-                                  * sizeof(complex_t)/sizeof(real_t)));
-
-        return retval;
     }
 };
 
 /**
- * General case for when NFields is known at compile time.  This case returns a
- * view with compile-time-fixed number of fields.  It is more efficient and
- * should be preferred when possible.
+ * Logic for the case when \c NFields is strictly positive.
+ * The \ref Map superclass has a constant number of rows.
  */
 template <int NFields>
-struct physical_view {
-
+struct physical_view : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
+                           physical_view_map_options,
+                           OuterStride<Dynamic> >
+{
 #ifdef DOXYGEN_SHOULD_SKIP_THIS
     BOOST_STATIC_ASSERT(NFields >= 0);
 #endif
 
-    /** Type of the view returned by \ref create. */
-    typedef Map<
-                Array<real_t, NFields, Dynamic, RowMajor>,
-                physical_view_map_options,
-                OuterStride<Dynamic>
-            > type;
-
-    /** Create a view given state and the parallel decomposition. */
-    static inline type create(
-            const pencil_grid &dgrid,
-            contiguous_state<4,complex_t> &state)
+    /**
+     * Create a view given state and the parallel decomposition.
+     *
+     * @param dgrid Parallel pencil composition to use for determining local
+     *              portion of the global state field.
+     * @param state Padded state storage used to house data when
+     *              viewed from wave space perspective.
+     *
+     * @throw std::logic_error if <tt>state.shape()[0] != NFields</tt>.
+     */
+    physical_view(const pencil_grid &dgrid,
+                  contiguous_state<4,complex_t> &state)
+        : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
+              physical_view_map_options,
+              OuterStride<Dynamic> >
+          (reinterpret_cast<real_t *>(state.origin()),
+           NFields,                            // NFields
+           dgrid.local_physical_extent.prod(), // Y*Z*X
+           OuterStride<>(  sizeof(complex_t)/sizeof(real_t)
+                         * state.strides()[0]))
     {
-        SUZERAIN_ENSURE(static_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
-        SUZERAIN_ENSURE(static_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
-        SUZERAIN_ENSURE(static_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
-
-        if (static_cast<int>(state.shape()[0]) != NFields) {
+        if (SUZERAIN_UNLIKELY(static_cast<int>(state.shape()[0]) != NFields)) {
             std::ostringstream oss;
             oss << "state.shape()[0] = " << state.shape()[0]
                 << " mismatch with NFields = " << NFields
@@ -120,13 +127,9 @@ struct physical_view {
             throw std::logic_error(oss.str());
         }
 
-        type retval(reinterpret_cast<real_t *>(state.origin()),
-                    NFields,                            // F
-                    dgrid.local_physical_extent.prod(), // Y*Z*X
-                    OuterStride<>(  state.strides()[0]
-                                  * sizeof(complex_t)/sizeof(real_t)));
-
-        return retval;
+        SUZERAIN_ENSURE(static_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+        SUZERAIN_ENSURE(static_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+        SUZERAIN_ENSURE(static_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
     }
 };
 

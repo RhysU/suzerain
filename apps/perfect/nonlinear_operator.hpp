@@ -236,10 +236,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    typename physical_view<aux::count>::type auxp
-        = physical_view<aux::count>::create(o.dgrid, auxw);
-    typename physical_view<swave_count>::type sphys
-        = physical_view<swave_count>::create(o.dgrid, swave);
+    physical_view<aux::count>  auxp(o.dgrid, auxw);
+    physical_view<swave_count> sphys(o.dgrid, swave);
     for (size_t i = 0; i < swave_count; ++i) {
         o.dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
