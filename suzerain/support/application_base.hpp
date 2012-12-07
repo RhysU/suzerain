@@ -149,9 +149,8 @@ public:
     shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**
-     * Load a grid and discrete operators from a restart file.
-     * Also permits creating discrete operators without a restart file.
-     * The following are modified:
+     * Load a grid and discrete operators from a restart file or initialized
+     * them per #grid.  The following are modified:
      * \li #grid
      * \li #b
      * \li #cop
