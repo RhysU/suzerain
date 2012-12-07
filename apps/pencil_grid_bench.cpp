@@ -161,8 +161,8 @@ int main(int argc, char **argv)
     // Report the worst time observed on any rank
     const int rank = mpi::comm_rank(MPI_COMM_WORLD);
     struct { double time; int rank; } worst = { time, rank };
-    SUZERAIN_MPICHKQ(MPI_Reduce(MPI_IN_PLACE, &worst, 1, MPI_DOUBLE_INT,
-                                MPI_MAXLOC, 0, MPI_COMM_WORLD));
+    SUZERAIN_MPICHKQ(MPI_Allreduce(MPI_IN_PLACE, &worst, 1, MPI_DOUBLE_INT,
+                                   MPI_MAXLOC, MPI_COMM_WORLD));
     if (worst.rank == rank) {
         INFO("Seconds per iteration " << time / (double) repeat);
     }
@@ -203,16 +203,16 @@ int main(int argc, char **argv)
 
     // Report the minimum discrepancy observed on any rank
     struct { double discrepancy; int rank; } min = { acc::min(track), rank };
-    SUZERAIN_MPICHKQ(MPI_Reduce(MPI_IN_PLACE, &min, 1, MPI_DOUBLE_INT,
-                                MPI_MINLOC, 0, MPI_COMM_WORLD));
+    SUZERAIN_MPICHKQ(MPI_Allreduce(MPI_IN_PLACE, &min, 1, MPI_DOUBLE_INT,
+                                   MPI_MINLOC, MPI_COMM_WORLD));
     if (min.rank == rank) {
         INFO("Minimum discrepancy " << std::scientific << min.discrepancy);
     }
 
     // Report the maximum discrepancy observed on any rank
     struct { double discrepancy; int rank; } max = { acc::max(track), rank };
-    SUZERAIN_MPICHKQ(MPI_Reduce(MPI_IN_PLACE, &max, 1, MPI_DOUBLE_INT,
-                                MPI_MAXLOC, 0, MPI_COMM_WORLD));
+    SUZERAIN_MPICHKQ(MPI_Allreduce(MPI_IN_PLACE, &max, 1, MPI_DOUBLE_INT,
+                                   MPI_MAXLOC, MPI_COMM_WORLD));
     if (max.rank == rank) {
         INFO("Maximum discrepancy " << std::scientific << max.discrepancy);
     }
