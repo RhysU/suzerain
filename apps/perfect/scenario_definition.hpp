@@ -57,13 +57,13 @@ public:
      * @param gamma      Ratio of specific heats.
      */
     scenario_definition(const char * Re,
-                       const char * Ma,
-                       const char * Pr,
-                       const char * bulk_rho,
-                       const char * bulk_rho_u,
-                       const char * alpha,
-                       const char * beta,
-                       const char * gamma);
+                        const char * Ma,
+                        const char * Pr,
+                        const char * bulk_rho,
+                        const char * bulk_rho_u,
+                        const char * alpha,
+                        const char * beta,
+                        const char * gamma);
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}

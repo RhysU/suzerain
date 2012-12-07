@@ -43,12 +43,11 @@ namespace suzerain {
 namespace support {
 
 /**
- * An abstract driver base class for managing a Suzerain application.
- * Intended for time-varying, three-dimensional problems.
+ * An concrete base class for managing a Suzerain application.
  * Instantiate from within \c main().
  *
  * Signal handling capabilities may misbehave if multiple instances
- * are executing within the same process.
+ * are executing within the same operating system process.
  */
 class application_base
 {

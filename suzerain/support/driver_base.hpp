@@ -95,12 +95,10 @@ class delta_t_allreducer;
 class field;
 
 /**
- * An abstract driver base class for managing a Suzerain application.
- * Intended for time-varying, three-dimensional problems.
+ * An driver base class for managing a Suzerain application.  Intended for
+ * time-varying, three-dimensional problems.  Provides many hooks to permit
+ * lifecycle-related behavior for long-running, parallel applications.
  * Instantiate from within \c main().
- *
- * Signal handling capabilities may misbehave if multiple instances
- * are executing within the same process.
  */
 class driver_base : public application_base
 {
