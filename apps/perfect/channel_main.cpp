@@ -164,8 +164,8 @@ static shared_ptr<nonlinear_state_type> state_nonlinear;
 // which also includes instantaneous mean quantity statistics
 static perfect::operator_common_block common_block;
 
-// The last collection of mean quantity samples obtained
-static perfect::mean samples;
+// The last collection of mean quantities sample obtained
+static perfect::mean_quantities sample;
 
 /** Global handle for ESIO operations across MPI_COMM_WORLD. */
 static esio_handle esioh = NULL;
@@ -395,9 +395,11 @@ static bool log_status(real_t t, size_t nt)
 
 static void sample_statistics(real_t t)
 {
+    using perfect::mean_quantities;
+
     // Defensively avoid multiple invocations with no intervening changes
 #pragma warning(push,disable:1572)
-    if (samples.t == t) {
+    if (sample.t == t) {
 #pragma warning(pop)
         DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
         return;
@@ -409,40 +411,40 @@ static void sample_statistics(real_t t)
 
     // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
-    samples = perfect::sample_mean_quantities(
+    sample = perfect::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *cop, *state_nonlinear, t);
 
-    // Obtain mean samples computed via implicit forcing (when possible)
-    if (common_block.means.rows() == samples.storage.rows()) {
-       samples.f().col(0) = common_block.f();  // Only streamwise momentum...
-       samples.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
-       samples.f_dot_u()      = common_block.f_dot_u();
-       samples.qb()           = common_block.qb();
-       samples.CrhoE()        = common_block.CrhoE();
-       samples.Crhou().col(0) = common_block.Crhou();
-       samples.Crhou().col(1) = common_block.Crhov();
-       samples.Crhou().col(2) = common_block.Crhow();
-       samples.Crho()         = common_block.Crho();
-       samples.Crhou_dot_u()  = common_block.Crhou_dot_u();
+    // Obtain mean quantities computed via implicit forcing (when possible)
+    if (common_block.means.rows() == sample.storage.rows()) {
+       sample.f().col(0) = common_block.f();  // Only streamwise momentum...
+       sample.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
+       sample.f_dot_u()      = common_block.f_dot_u();
+       sample.qb()           = common_block.qb();
+       sample.CrhoE()        = common_block.CrhoE();
+       sample.Crhou().col(0) = common_block.Crhou();
+       sample.Crhou().col(1) = common_block.Crhov();
+       sample.Crhou().col(2) = common_block.Crhow();
+       sample.Crho()         = common_block.Crho();
+       sample.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
-        WARN0("Could not obtain mean samples computed from implicit forcing");
-        samples.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
-        samples.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
+        WARN0("Could not obtain mean quantities set by implicit forcing");
+        sample.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        sample.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
     }
 
     // Convert implicit values on collocation points to coefficients
     suzerain::bsplineop_lu mass(*cop);
     mass.opform_mass(*cop);
     mass.factor();
-    mass.solve(perfect::mean::nscalars::implicit,
-            samples.storage.middleCols<perfect::mean::nscalars::implicit>(
-                perfect::mean::nscalars::physical).data(),
-            samples.storage.innerStride(), samples.storage.outerStride());
+    mass.solve(mean_quantities::nscalars::implicit,
+               sample.storage.middleCols<mean_quantities::nscalars::implicit>(
+                   mean_quantities::nscalars::physical).data(),
+               sample.storage.innerStride(), sample.storage.outerStride());
 
     const double elapsed = MPI_Wtime() - starttime;
     INFO0("Computed statistics at t = " << t
@@ -486,7 +488,7 @@ static bool save_restart(real_t t, size_t nt)
 
     // Include statistics in the restart file
     sample_statistics(t);
-    perfect::store(esioh, samples);
+    perfect::store(esioh, sample);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.destination);
@@ -518,7 +520,7 @@ static bool save_statistics(real_t t, size_t nt)
 
     // Compute statistics and write to file
     sample_statistics(t);
-    perfect::store(esioh, samples);
+    perfect::store(esioh, sample);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);
@@ -1207,8 +1209,8 @@ int main(int argc, char **argv)
     support::load_time(esioh, initial_t);
     {
         const double begin = MPI_Wtime();
-        samples.t = initial_t;         // For idempotent --advance_nt=0...
-        perfect::load(esioh, samples); // ...when no grid rescaling employed
+        sample.t = initial_t;         // For idempotent --advance_nt=0...
+        perfect::load(esioh, sample); // ...when no grid rescaling employed
         perfect::load(esioh, *state_nonlinear,
                       scenario, grid, *dgrid, *b, *cop);
         wtime_load_state = MPI_Wtime() - begin;

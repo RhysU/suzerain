@@ -426,11 +426,11 @@ int main(int argc, char **argv)
     esio_file_flush(esioh);
 
     INFO0("Computing mean quantities from state fields");
-    perfect::mean samples = perfect::sample_mean_quantities(
+    perfect::mean_quantities sample = perfect::sample_mean_quantities(
             scenario, grid, *dgrid, *b, *cop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
-    perfect::store(esioh, samples);
+    perfect::store(esioh, sample);
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");

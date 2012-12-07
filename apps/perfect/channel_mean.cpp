@@ -749,7 +749,8 @@ static quantity::storage_map_type process(
     boplu->factor_mass(*cop.get());
 
     // Load samples as coefficients
-    auto_ptr<perfect::mean> m(new perfect::mean(time, b->n()));
+    auto_ptr<perfect::mean_quantities> m(
+            new perfect::mean_quantities(time, b->n()));
     perfect::load(h.get(), *m.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);

@@ -1161,12 +1161,11 @@ void accumulate_manufactured_solution(
     }
 }
 
-// This looks like logic from explicit_op.cpp but does not belong there.
-// Reading through that file, especially the explicit_nonlinear_operator::apply_operator
-// implementation, is recommended before reviewing this logic.  This routine is
-// definitely suboptimal but is expected to be invoked very infrequently and
-// therefore to not be a prime target for optimization.
-mean sample_mean_quantities(
+// This looks like logic from nonlinear_operator.hpp but does not belong there.
+// Reading through that file, especially the apply_operator implementation, is
+// recommended before reviewing this logic.  This routine is definitely
+// suboptimal but is expected to be invoked relatively infrequently.
+mean_quantities sample_mean_quantities(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -1219,7 +1218,7 @@ mean sample_mean_quantities(
                                auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
-    mean ret(t, Ny);
+    mean_quantities ret(t, Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
@@ -1513,7 +1512,7 @@ mean sample_mean_quantities(
         // Reduce operation requires no additional storage on rank-zero
         SUZERAIN_MPICHKR(MPI_Reduce(
                 MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-                mpi::datatype<mean::storage_type::Scalar>::value,
+                mpi::datatype<mean_quantities::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
     } else {
@@ -1523,12 +1522,12 @@ mean sample_mean_quantities(
         tmp.resizeLike(ret.storage);
         tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
-                mpi::datatype<mean::storage_type::Scalar>::value,
+                mpi::datatype<mean_quantities::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
         // Force non-zero ranks contain all NaNs to help detect usage errors
-        ret.storage.fill(
-                std::numeric_limits<mean::storage_type::Scalar>::quiet_NaN());
+        ret.storage.fill(std::numeric_limits<
+                mean_quantities::storage_type::Scalar>::quiet_NaN());
 
         // Return from all non-zero ranks
         return ret;
@@ -1545,15 +1544,15 @@ mean sample_mean_quantities(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
-    scaled_mass.solve(mean::nscalars::physical,
-            ret.storage.middleCols<mean::nscalars::physical>(
-                mean::nscalars::wave).data(),
+    scaled_mass.solve(mean_quantities::nscalars::physical,
+            ret.storage.middleCols<mean_quantities::nscalars::physical>(
+                mean_quantities::nscalars::wave).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     // Fill with NaNs those samples which were not computed by this method
-#define FILL(r, data, tuple)                                               \
-    ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(                           \
-            std::numeric_limits<mean::storage_type::Scalar>::quiet_NaN());
+#define FILL(r, data, tuple)                                         \
+    ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
+            mean_quantities::storage_type::Scalar>::quiet_NaN());
     BOOST_PP_SEQ_FOR_EACH(FILL,,CHANNEL_MEAN_IMPLICIT)
 #undef FILL
 
@@ -1594,7 +1593,7 @@ private:
 
 };
 
-void store(const esio_handle h, const mean& m)
+void store(const esio_handle h, const mean_quantities& m)
 {
     mean_storer f(h, "bar_");
     m.foreach(f);
@@ -1646,7 +1645,7 @@ private:
 
 };
 
-void load(const esio_handle h, mean& m)
+void load(const esio_handle h, mean_quantities& m)
 {
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
@@ -1656,7 +1655,8 @@ void load(const esio_handle h, mean& m)
         m.foreach(f);
         // m.t presumably set externally using load_time
     } else {
-        WARN0("No mean samples loaded-- unable to anticipate storage needs");
+        WARN0("No mean quantity samples loaded--"
+              " unable to anticipate storage needs");
         m.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
         m.t = std::numeric_limits<real_t>::quiet_NaN();
     }

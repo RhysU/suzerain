@@ -247,7 +247,7 @@ void accumulate_manufactured_solution(
  * been traded for the headache of reading Boost.Preprocessor-based logic.  So
  * it goes.
  */
-class mean
+class mean_quantities
 {
 public:
 
@@ -341,7 +341,7 @@ public:
      * Constructor setting <tt>this->t = NaN</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    mean()
+    mean_quantities()
         : t(std::numeric_limits<real_t>::quiet_NaN())
     {}
 
@@ -349,7 +349,7 @@ public:
      * Constructor setting <tt>this->t = t</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    explicit mean(real_t t)
+    explicit mean_quantities(real_t t)
         : t(t)
     {}
 
@@ -357,7 +357,7 @@ public:
      * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
      * storage containing \c Ny rows.
      */
-    mean(real_t t, storage_type::Index Ny)
+    mean_quantities(real_t t, storage_type::Index Ny)
         : t(t),
           storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     {}
@@ -437,10 +437,11 @@ public:
 };
 
 /**
- * Using the provided state, sample the mean quantities declared in \ref mean
- * with the notable exceptions of \f$\bar{f}\f$, \f$\overline{\rho{}q_b}\f$,
- * and \f$\overline{f\cdot{}u}\f$.  This is an expensive, collective method
- * producing valid results <em>only on rank zero</em>.
+ * Using the provided state, sample the mean quantities declared in \ref
+ * mean_quantities with the notable exceptions of \f$\bar{f}\f$,
+ * \f$\overline{\rho{}q_b}\f$, and \f$\overline{f\cdot{}u}\f$.  This is an
+ * expensive, collective method producing valid results <em>only on rank
+ * zero</em>.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
@@ -452,7 +453,7 @@ public:
  *
  * @return Mean quantities as B-spline coefficients.
  */
-mean sample_mean_quantities(
+mean_quantities sample_mean_quantities(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -461,15 +462,15 @@ mean sample_mean_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t);
 
-/** Store a \ref mean instance in a restart file */
-void store(const esio_handle h, const mean& m);
+/** Store a \ref mean_quantities instance in a restart file */
+void store(const esio_handle h, const mean_quantities& m);
 
 /**
- * Load a \ref mean instance from a restart file.  Statistics not present in
- * the restart file are considered to be all NaNs.  On utter failure,
- * <tt>m.t</tt> will be NaN as well.
+ * Load a \ref mean_quantities instance from a restart file.  Statistics not
+ * present in the restart file are considered to be all NaNs.  On utter
+ * failure, <tt>m.t</tt> will be NaN as well.
  */
-void load(const esio_handle h, mean& m);
+void load(const esio_handle h, mean_quantities& m);
 
 } // end namespace perfect
 
