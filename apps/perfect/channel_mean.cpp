@@ -41,6 +41,7 @@
 #include <suzerain/support/support.hpp>
 
 #include "perfect.hpp"
+#include "mean_quantities.hpp"
 
 // Introduce shorthand for common names
 using boost::math::constants::pi;

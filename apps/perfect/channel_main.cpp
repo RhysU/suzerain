@@ -69,6 +69,7 @@
 #include <suzerain/zgbsv_specification.hpp>
 
 #include "perfect.hpp"
+#include "mean_quantities.hpp"
 
 #include "channel_treatment.hpp"
 #include "explicit_operator.hpp"

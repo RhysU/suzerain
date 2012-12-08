@@ -47,6 +47,7 @@
 #include <suzerain/version.hpp>
 
 #include "perfect.hpp"
+#include "mean_quantities.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
