@@ -791,6 +791,21 @@ driver_base::save_metadata()
     metadata_saved = true;
 }
 
+void
+driver_base::load_metadata(
+        const esio_handle esioh)
+{
+    SUZERAIN_TIMER_SCOPED(__func__);
+
+    load_grid_and_operators(esioh);
+
+    SUZERAIN_ENSURE(timedef);
+    support::load(esioh, *timedef);
+
+    // Invoke subclass extension point
+    load_metadata_hook(esioh);
+}
+
 bool
 driver_base::save_restart(
         const driver_base::time_type t,
@@ -836,21 +851,6 @@ driver_base::save_restart(
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
     return continue_advancing;
-}
-
-void
-driver_base::load_metadata(
-        const esio_handle esioh)
-{
-    SUZERAIN_TIMER_SCOPED(__func__);
-
-    load_grid_and_operators(esioh);
-
-    SUZERAIN_ENSURE(timedef);
-    support::load(esioh, *timedef);
-
-    // Invoke subclass extension point
-    load_metadata_hook(esioh);
 }
 
 void

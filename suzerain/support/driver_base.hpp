@@ -288,6 +288,16 @@ public:
     virtual void save_metadata();
 
     /**
+     * Load time-independent metadata appearing in all restart and statistics
+     * files.  Subclasses should not override this method but should instead
+     * use \ref load_metadata_hook.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open, readable file.
+     */
+    virtual void load_metadata(
+            const esio_handle esioh);
+
+    /**
      * Save state \e and statistics into a restart file.  Subclasses should not
      * override this method but should instead use \ref save_state_hook and
      * \ref save_statistics_hook.
@@ -308,6 +318,19 @@ public:
             const step_type nt);
 
     /**
+     * Load the contents of a restart file into #state_linear using the current
+     * decomposition.  Subclasses should override this method adding any
+     * desired functionality either before or after invoking the superclass
+     * version.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open restart file.
+     * @param[out] t     The simulation time stored in the restart file.
+     */
+    virtual void load_restart(
+            const esio_handle esioh,
+            real_t &t);
+
+    /**
      * Save statistics into a statistical sampling file.  Subclasses should not
      * override this method but should instead use \ref save_statistics_hook.
      *
@@ -325,29 +348,6 @@ public:
     virtual bool save_statistics(
             const time_type t,
             const step_type nt);
-
-    /**
-     * Load time-independent metadata appearing in all restart and statistics
-     * files.  Subclasses should not override this method but should instead
-     * use \ref load_metadata_hook.
-     *
-     * @param[in]  esioh An ESIO handle pointing to an open, readable file.
-     */
-    virtual void load_metadata(
-            const esio_handle esioh);
-
-    /**
-     * Load the contents of a restart file into #state_linear using the current
-     * decomposition.  Subclasses should override this method adding any
-     * desired functionality either before or after invoking the superclass
-     * version.
-     *
-     * @param[in]  esioh An ESIO handle pointing to an open restart file.
-     * @param[out] t     The simulation time stored in the restart file.
-     */
-    virtual void load_restart(
-            const esio_handle esioh,
-            real_t &t);
 
     /**
      * Type maintaining the mean ratio of each delta_t_candidate to the minimum
