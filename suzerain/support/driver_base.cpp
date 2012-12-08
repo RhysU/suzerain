@@ -635,10 +635,10 @@ driver_base::log_status(
         return true;
     }
 
-    SUZERAIN_TIMER_SCOPED(__func__);
-
     // Common message prefix used across all status-related routines
     const std::string timeprefix(build_timeprefix(t, nt));
+
+    SUZERAIN_TIMER_SCOPED(__func__);
 
     // Log information about the various quantities of interest
     log_status_bulk(timeprefix);
@@ -818,11 +818,10 @@ driver_base::save_restart(
     }
 
     if (!metadata_saved) save_metadata();
+    const std::string timeprefix(build_timeprefix(t, nt));
 
     // Time only after prerequisites are satisfied
     SUZERAIN_TIMER_SCOPED(__func__);
-
-    const std::string timeprefix(build_timeprefix(t, nt));
 
     const double starttime = MPI_Wtime();
     INFO0(timeprefix << " Starting to save restart");
@@ -885,6 +884,7 @@ driver_base::save_statistics(
     }
 
     if (!metadata_saved) save_metadata();
+    const std::string timeprefix(build_timeprefix(t, nt));
 
     // Time only after prerequisites are satisfied
     SUZERAIN_TIMER_SCOPED(__func__);
@@ -910,8 +910,7 @@ driver_base::save_statistics(
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
-    INFO0("Successfully wrote statistics at t = " << t << " for nt = " << nt
-          << " in " << elapsed << " seconds");
+    INFO0(timeprefix << " Committed statistics in " << elapsed << " seconds");
 
     last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
@@ -1031,7 +1030,8 @@ driver_base::save_statistics_hook(
 
     SUZERAIN_TIMER_SCOPED(__func__);
 
-    // For example: TODO
+    // For example:
+    //     perfect::store(esioh, samples);
 
     return true;
 }
