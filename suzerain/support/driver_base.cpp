@@ -946,6 +946,17 @@ driver_base::save_metadata_hook(
     //     perfect::store(h, scenario, grid, msoln);
 }
 
+void
+driver_base::load_metadata_hook(
+        const esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+
+    // For example:
+    //     perfect::load(h, scenario);
+    //     perfect::load(h, scenario, grid, msoln);
+}
+
 bool
 driver_base::save_state_hook(
         const esio_handle esioh)
@@ -967,30 +978,6 @@ driver_base::save_state_hook(
     }
 
     return true;
-}
-
-bool
-driver_base::save_statistics_hook(
-        const esio_handle esioh)
-{
-    SUZERAIN_UNUSED(esioh);
-
-    SUZERAIN_TIMER_SCOPED(__func__);
-
-    // For example: TODO
-
-    return true;
-}
-
-void
-driver_base::load_metadata_hook(
-        const esio_handle esioh)
-{
-    SUZERAIN_UNUSED(esioh);
-
-    // For example:
-    //     perfect::load(h, scenario);
-    //     perfect::load(h, scenario, grid, msoln);
 }
 
 void
@@ -1034,6 +1021,19 @@ driver_base::load_state_hook(
         SUZERAIN_ERROR_VOID(
                 "Unable to load state from file", SUZERAIN_EFAILED);
     }
+}
+
+bool
+driver_base::save_statistics_hook(
+        const esio_handle esioh)
+{
+    SUZERAIN_UNUSED(esioh);
+
+    SUZERAIN_TIMER_SCOPED(__func__);
+
+    // For example: TODO
+
+    return true;
 }
 
 void

@@ -395,6 +395,20 @@ protected:
             const esio_handle esioh);
 
     /**
+     * Hook permitting loading arbitrary metadata from all restart and
+     * statistics files during \ref load_metadata.  In particular, changing the
+     * number of scalar state fields in #fields should be done here when
+     * necessary.
+     *
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
+     *
+     * @param esioh An ESIO handle pointing to an open, readable file.
+     */
+    virtual void load_metadata_hook(
+            const esio_handle esioh);
+
+    /**
      * Hook permitting saving arbitrary information from \ref #state_nonlinear
      * into restart files during \ref save_restart.  Subclasses should override
      * this method with the desired functionality.  Invoking the superclass
@@ -416,36 +430,6 @@ protected:
             const esio_handle esioh);
 
     /**
-     * Hook permitting saving arbitrary information into statistical sample
-     * files during \ref save_statistics as well as into restart files during
-     * \ref save_restart.
-     *
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass implementation.
-     *
-     * @returns True if any active time advance should continue.
-     *          False otherwise.
-     *
-     * @param esioh An ESIO handle pointing to an open, writable file.
-     */
-    virtual bool save_statistics_hook(
-            const esio_handle esioh);
-
-    /**
-     * Hook permitting loading arbitrary metadata from all restart and
-     * statistics files during \ref load_metadata.  In particular, changing the
-     * number of scalar state fields in #fields should be done here when
-     * necessary.
-     *
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass implementation.
-     *
-     * @param esioh An ESIO handle pointing to an open, readable file.
-     */
-    virtual void load_metadata_hook(
-            const esio_handle esioh);
-
-    /**
      * Hook permitting loading information from restart files into
      * #state_nonlinear during \ref load_restart.  Subclasses should override
      * this method with the desired functionality.  Invoking the superclass
@@ -461,6 +445,22 @@ protected:
      *          False otherwise.
      */
     virtual void load_state_hook(
+            const esio_handle esioh);
+
+    /**
+     * Hook permitting saving arbitrary information into statistical sample
+     * files during \ref save_statistics as well as into restart files during
+     * \ref save_restart.
+     *
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass implementation.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     */
+    virtual bool save_statistics_hook(
             const esio_handle esioh);
 
     /**

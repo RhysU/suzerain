@@ -62,8 +62,8 @@ public:
 
     /**
      * Maintains instantaneously sampled wall-normal mean quantities.  Member
-     * \c mean.t is used to track the last time statistics were computed and is
-     * used as a flag to avoid expensive recomputation.
+     * \c mean.t tracks the last time statistics were computed and is used as a
+     * mechanism to avoid expensive recomputations.
      */
     mean_quantities mean;
 
@@ -92,18 +92,18 @@ protected:
             const esio_handle esioh);
 
     /**
+     * Beyond the inherited behavior, this method loads #scenario.
+     * @copydetails driver_base::save_metadata_hook
+     */
+    virtual void load_metadata_hook(
+            const esio_handle esioh);
+
+    /**
      * Beyond the inherited behavior, this method invokes \ref
      * compute_statistics and saves #mean.
      * @copydetails driver_base::save_statistics_hook
      */
     virtual bool save_statistics_hook(
-            const esio_handle esioh);
-
-    /**
-     * Beyond the inherited behavior, this method loads #scenario.
-     * @copydetails driver_base::save_metadata_hook
-     */
-    virtual void load_metadata_hook(
             const esio_handle esioh);
 
     /**
@@ -114,8 +114,8 @@ protected:
             const esio_handle esioh);
 
     /**
-     * The default interval is a fractional flow through time per #grid
-     * and #bulk_rho_u.
+     * The default interval is a fractional flow through time per #grid,
+     * #bulk_rho_u, and #bulk_rho.
      */
     virtual void default_status_interval(time_type& t, step_type&);
 
