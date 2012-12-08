@@ -75,8 +75,8 @@ public:
 
     /**
      * Initialize everything, including MPI, necessary for the application.
-     * Changes to default values, e.g. \ref fftwdef, or adding of additional
-     * options to \ref options must be completed prior to invoking this method.
+     * Changing default values, e.g. \ref fftwdef, or adding additional options
+     * to \ref options must be completed \e prior to invoking this method.
      *
      * @param argc Incoming arguments per <code>main(argc, ...)</code>
      * @param argv Incoming arguments per <code>main(..., argv)</code>

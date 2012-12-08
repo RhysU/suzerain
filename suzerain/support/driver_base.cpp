@@ -43,7 +43,7 @@
 #include <suzerain/version.hpp>
 
 // We want plain ol' signal(2) below but suzerain::support::signal interferes
-// Prepare an alias for the name via a function pointer so may invoke it below
+// Prepare alias for the name via a function pointer so we may invoke it below
 static sighandler_t (* const signal2)(int, sighandler_t) = &signal;
 
 namespace suzerain {
@@ -192,9 +192,6 @@ driver_base::initialize(int argc, char **argv)
     options.add_definition(*timedef   );
     options.add_definition( signaldef );
 
-    // Add additional standalone options
-    // TODO
-
     // Process incoming arguments by invoking superclass method
     std::vector<std::string> positional = super::initialize(argc, argv);
 
@@ -250,7 +247,8 @@ driver_base::initialize(int argc, char **argv)
 
 driver_base::~driver_base()
 {
-    if (metadata_saved) {  // Attempt to remove any lingering metadata file
+    // Attempt to remove any lingering metadata file
+    if (metadata_saved) {
         if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
             if (0 == unlink(restartdef->metadata.c_str())) {
                 DEBUG("Cleaned up temporary file "
@@ -262,7 +260,8 @@ driver_base::~driver_base()
         }
     }
 
-    // Preserve restartdef->uncommitted as it may help post mortem debugging.
+    // Preserve restartdef->uncommitted as it may help post mortem debugging as
+    // during operation committing a file removes the uncommitted temporary
 }
 
 void
@@ -555,7 +554,6 @@ driver_base::advance_controller(
         INFO0("Advancing at " <<   wtime_advance
                                  / (controller->current_t() - t_initial)
                               << " wall seconds per simulation time unit");
-
     }
 
     // Output details on time advancement (whenever advancement occurred)
@@ -638,7 +636,7 @@ driver_base::log_status(
     // Common message prefix used across all status-related routines
     const std::string timeprefix(build_timeprefix(t, nt));
 
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::log_status");
 
     // Log information about the various quantities of interest
     log_status_bulk(timeprefix);
@@ -769,7 +767,7 @@ driver_base::log_status_boundary_state(
 void
 driver_base::save_metadata()
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_metadata");
 
     DEBUG0("Saving metadata temporary file: " << restartdef->metadata);
 
@@ -795,7 +793,7 @@ void
 driver_base::load_metadata(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::load_metadata");
 
     load_grid_and_operators(esioh);
 
@@ -821,7 +819,7 @@ driver_base::save_restart(
     const std::string timeprefix(build_timeprefix(t, nt));
 
     // Time only after prerequisites are satisfied
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_restart");
 
     const double starttime = MPI_Wtime();
     INFO0(timeprefix << " Starting to save restart");
@@ -857,7 +855,7 @@ driver_base::load_restart(
         const esio_handle esioh,
         real_t& t)
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::load_restart");
 
     const double begin = MPI_Wtime();
 
@@ -887,7 +885,7 @@ driver_base::save_statistics(
     const std::string timeprefix(build_timeprefix(t, nt));
 
     // Time only after prerequisites are satisfied
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_statistics");
 
     const double starttime = MPI_Wtime();
     DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
@@ -927,7 +925,7 @@ driver_base::log_status_hook(
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
 
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::log_status_hook");
 
     return true;
 }
@@ -937,8 +935,7 @@ driver_base::save_metadata_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_metadata_hook");
 
     // For example:
     //     perfect::store(h, scenario);
@@ -950,6 +947,7 @@ driver_base::load_metadata_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
+    SUZERAIN_TIMER_SCOPED("driver_base::load_metadata_hook");
 
     // For example:
     //     perfect::load(h, scenario);
@@ -960,8 +958,7 @@ bool
 driver_base::save_state_hook(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
-
+    SUZERAIN_TIMER_SCOPED("driver_base::save_state_hook");
     SUZERAIN_ENSURE(restartdef);
     SUZERAIN_ENSURE(state_linear);
     SUZERAIN_ENSURE(state_nonlinear);
@@ -983,8 +980,7 @@ void
 driver_base::load_state_hook(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
-
+    SUZERAIN_TIMER_SCOPED("driver_base::load_state_hook");
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(dgrid);
 
@@ -1027,8 +1023,7 @@ driver_base::save_statistics_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-
-    SUZERAIN_TIMER_SCOPED(__func__);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_statistics_hook");
 
     // For example:
     //     perfect::store(esioh, samples);
@@ -1040,9 +1035,8 @@ void
 driver_base::load_statistics_hook(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED(__func__);
-
     SUZERAIN_UNUSED(esioh);
+    SUZERAIN_TIMER_SCOPED("driver_base::load_statistics_hook");
 
     // For example:
     //     perfect::load(esioh, samples);
