@@ -99,6 +99,16 @@ class field;
  * time-varying, three-dimensional problems.  Provides many hooks to permit
  * lifecycle-related behavior for long-running, parallel applications.
  * Instantiate from within \c main().
+ *
+ * Two separate types of file input/output are accommodated:
+ * <ol>
+ * <li>Restart files which contain metadata, state, and statistics.</li>
+ * <li>Statistical sample files which contain metadata and statistics.</li>
+ * </ol>
+ * Though computing statistics and writing them via \ref save_statistics may
+ * require an active parallel decomposition (i.e. \ref establish_decomposition
+ * to have been invoked), loading statistics via \ref load_statistics should
+ * not require a viable parallel pencil grid.
  */
 class driver_base : public application_base
 {
@@ -348,6 +358,21 @@ public:
     virtual bool save_statistics(
             const time_type t,
             const step_type nt);
+
+    /**
+     * Load statistics from a statistical sampling file.  Subclasses should not
+     * override this method but should instead use \ref load_statistics_hook.
+     *
+     * Notice that because \ref save_restart invokes \ref save_statistics_hook
+     * and because both restart and statistics files share common metadata,
+     * this method should also be invokable on an open restart file.
+     *
+     * @param[in]  esioh An ESIO handle pointing to an open statistics file.
+     * @param[out] t     The simulation time stored in the statistics file.
+     */
+    virtual void load_statistics(
+            const esio_handle esioh,
+            real_t &t);
 
     /**
      * Type maintaining the mean ratio of each delta_t_candidate to the minimum

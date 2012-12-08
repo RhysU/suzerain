@@ -915,6 +915,19 @@ driver_base::save_statistics(
     return continue_advancing;
 }
 
+void
+driver_base::load_statistics(
+        const esio_handle esioh,
+        real_t& t)
+{
+    SUZERAIN_TIMER_SCOPED("driver_base::load_statistics");
+
+    load_metadata(esioh);
+    // Per documentation, establish_decomposition() not invoked!
+    support::load_time(esioh, t);
+    load_statistics_hook(esioh);  // Invoke subclass extension point
+}
+
 bool
 driver_base::log_status_hook(
         const std::string& timeprefix,
