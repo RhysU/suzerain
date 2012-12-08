@@ -938,8 +938,6 @@ driver_base::log_status_hook(
     SUZERAIN_UNUSED(t);
     SUZERAIN_UNUSED(nt);
 
-    SUZERAIN_TIMER_SCOPED("driver_base::log_status_hook");
-
     return true;
 }
 
@@ -948,7 +946,6 @@ driver_base::save_metadata_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-    SUZERAIN_TIMER_SCOPED("driver_base::save_metadata_hook");
 
     // For example:
     //     perfect::store(h, scenario);
@@ -960,7 +957,6 @@ driver_base::load_metadata_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-    SUZERAIN_TIMER_SCOPED("driver_base::load_metadata_hook");
 
     // For example:
     //     perfect::load(h, scenario);
@@ -971,7 +967,6 @@ bool
 driver_base::save_state_hook(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED("driver_base::save_state_hook");
     SUZERAIN_ENSURE(restartdef);
     SUZERAIN_ENSURE(state_linear);
     SUZERAIN_ENSURE(state_nonlinear);
@@ -993,7 +988,6 @@ void
 driver_base::load_state_hook(
         const esio_handle esioh)
 {
-    SUZERAIN_TIMER_SCOPED("driver_base::load_state_hook");
     SUZERAIN_ENSURE(grid);
     SUZERAIN_ENSURE(dgrid);
 
@@ -1036,7 +1030,6 @@ driver_base::save_statistics_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-    SUZERAIN_TIMER_SCOPED("driver_base::save_statistics_hook");
 
     // For example:
     //     perfect::store(esioh, samples);
@@ -1049,7 +1042,6 @@ driver_base::load_statistics_hook(
         const esio_handle esioh)
 {
     SUZERAIN_UNUSED(esioh);
-    SUZERAIN_TIMER_SCOPED("driver_base::load_statistics_hook");
 
     // For example:
     //     perfect::load(esioh, samples);
