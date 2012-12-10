@@ -106,15 +106,11 @@ application_base::initialize(int argc, char **argv)
 #endif
 
     // Hook error handling into logging infrastructure
-    gsl_set_error_handler(
-            &support::mpi_abort_on_error_handler_gsl);
-    suzerain_set_error_handler(
-            &support::mpi_abort_on_error_handler_suzerain);
-    esio_set_error_handler(
-            &support::mpi_abort_on_error_handler_esio);
+    gsl_set_error_handler      (&mpi_abort_on_error_handler_gsl      );
+    suzerain_set_error_handler (&mpi_abort_on_error_handler_suzerain );
+    esio_set_error_handler     (&mpi_abort_on_error_handler_esio     );
 #ifdef HAVE_UNDERLING
-    underling_set_error_handler(
-            &support::mpi_abort_on_error_handler_underling);
+    underling_set_error_handler(&mpi_abort_on_error_handler_underling);
 #endif
 
     // Add problem definitions to options
@@ -176,12 +172,11 @@ application_base::load_grid_and_operators(
 
     // Possibly load the grid parameters from the restart file
     if (esioh) {
-        support::load(esioh, *grid);
+        load(esioh, *grid);
     }
 
     // Create the discrete B-spline operators
-    support::create(grid->N.y(), grid->k, 0.0,
-                    grid->L.y(), grid->htdelta, b, cop);
+    create(grid->N.y(), grid->k, 0.0, grid->L.y(), grid->htdelta, b, cop);
     gop.reset(new bsplineop(*b, grid->k, SUZERAIN_BSPLINEOP_GALERKIN_L2));
 }
 
@@ -194,8 +189,8 @@ application_base::save_grid_and_operators(
     SUZERAIN_ENSURE(cop);
     SUZERAIN_ENSURE(gop);
 
-    support::save(esioh, *grid);
-    support::save(esioh, b, cop, gop);
+    save(esioh, *grid);
+    save(esioh, b, cop, gop);
 }
 
 void
@@ -226,7 +221,7 @@ application_base::establish_decomposition(
     }
     double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
-    support::wisdom_broadcast(fftwdef->plan_wisdom);
+    wisdom_broadcast(fftwdef->plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     if (use_p3dfft) {
         dgrid = make_shared<pencil_grid_p3dfft>(
@@ -254,7 +249,7 @@ application_base::establish_decomposition(
         SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
-    support::wisdom_gather(fftwdef->plan_wisdom);
+    wisdom_gather(fftwdef->plan_wisdom);
     if (output_plan) {
         INFO0("FFTW wisdom gathered and saved in additional "
               << (MPI_Wtime() - begin) << " seconds");
@@ -330,7 +325,7 @@ application_base::establish_state_storage(
 
     // Allocate the transformable nonlinear state to match decomposition
     if (nonlinear_nfields) {
-        state_nonlinear.reset(support::allocate_padded_state<
+        state_nonlinear.reset(allocate_padded_state<
                     state_nonlinear_type
                 >(nonlinear_nfields, *dgrid));
 

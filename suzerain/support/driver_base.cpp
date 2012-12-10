@@ -779,7 +779,7 @@ driver_base::save_metadata()
     save_grid_and_operators(esioh);
 
     SUZERAIN_ENSURE(timedef);
-    support::save(esioh, *timedef);
+    save(esioh, *timedef);
 
     // Invoke subclass extension point
     save_metadata_hook(esioh);
@@ -799,7 +799,7 @@ driver_base::load_metadata(
     load_grid_and_operators(esioh);
 
     SUZERAIN_ENSURE(timedef);
-    support::load(esioh, *timedef);
+    load(esioh, *timedef);
 
     // Invoke subclass extension point
     load_metadata_hook(esioh);
@@ -830,7 +830,7 @@ driver_base::save_restart(
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
-    support::store_time(esioh, t);
+    store_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
@@ -861,7 +861,7 @@ driver_base::load_restart(
     const double begin = MPI_Wtime();
 
     load_metadata(esioh);
-    support::load_time(esioh, t);
+    load_time(esioh, t);
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
     load_state_hook(esioh);                  // Invoke subclass extension point
@@ -897,7 +897,7 @@ driver_base::save_statistics(
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
-    support::store_time(esioh, t);
+    store_time(esioh, t);
 
     // Invoke subclass extension point
     const bool continue_advancing = save_statistics_hook(esioh);
@@ -925,7 +925,7 @@ driver_base::load_statistics(
 
     load_metadata(esioh);
     // Per documentation, establish_decomposition() not invoked!
-    support::load_time(esioh, t);
+    load_time(esioh, t);
     load_statistics_hook(esioh);  // Invoke subclass extension point
 }
 
@@ -975,10 +975,10 @@ driver_base::save_state_hook(
     // Save either coefficients or collocation values, as requested
     // The former is a destructive operation clobbering *state_nonlinear
     if (restartdef->physical) {
-        support::save_collocation_values(
+        save_collocation_values(
                 esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
     } else {
-        support::save_coefficients(
+        save_coefficients(
                 esioh, fields, *state_nonlinear, *grid, *dgrid);
     }
 
@@ -1015,10 +1015,10 @@ driver_base::load_state_hook(
 
     // Dispatch to the appropriate state-loading logic
     if (allcplx) {
-        support::load_coefficients(
+        load_coefficients(
                 esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
     } else if (allreal) {
-        support::load_collocation_values(
+        load_collocation_values(
                 esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
     } else {
         SUZERAIN_ERROR_VOID(
