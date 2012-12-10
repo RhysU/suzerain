@@ -1109,7 +1109,7 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
-        perfect::store(h, scenario);
+        perfect::save(h, scenario);
         support::save(h, grid);
         support::store(h, b, cop, gop);
         support::save(h, timedef);

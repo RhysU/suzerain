@@ -627,7 +627,7 @@ int main(int argc, char **argv)
             esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
-            perfect::store(h.get(), *scenario);
+            perfect::save(h.get(), *scenario);
             support::save(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));

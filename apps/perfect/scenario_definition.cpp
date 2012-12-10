@@ -20,6 +20,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 /** @file
@@ -150,6 +151,98 @@ void scenario_definition::initialize_options(
     p->notifier(boost::bind(&parse_positive, _1, &gamma, "gamma"));
     if (default_gamma) p->default_value(default_gamma);
     this->add_options()("gamma", p.release(), "Ratio of specific heats");
+}
+
+void save(const esio_handle h,
+          const scenario_definition& scenario)
+{
+    DEBUG0("Storing scenario_definition parameters");
+
+    // Only root writes data
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+
+    esio_line_write(h, "Re", &scenario.Re, 0,
+            scenario.options().find("Re",false).description().c_str());
+
+    esio_line_write(h, "Ma", &scenario.Ma, 0,
+            scenario.options().find("Ma",false).description().c_str());
+
+    esio_line_write(h, "Pr", &scenario.Pr, 0,
+            scenario.options().find("Pr",false).description().c_str());
+
+    esio_line_write(h, "bulk_rho", &scenario.bulk_rho, 0,
+            scenario.options().find("bulk_rho",false).description().c_str());
+
+    esio_line_write(h, "bulk_rho_u", &scenario.bulk_rho_u, 0,
+            scenario.options().find("bulk_rho_u",false).description().c_str());
+
+    esio_line_write(h, "alpha", &scenario.alpha, 0,
+            scenario.options().find("alpha",false).description().c_str());
+
+    esio_line_write(h, "beta", &scenario.beta, 0,
+            scenario.options().find("beta",false).description().c_str());
+
+    esio_line_write(h, "gamma", &scenario.gamma, 0,
+            scenario.options().find("gamma",false).description().c_str());
+}
+
+void load(const esio_handle h,
+          scenario_definition& scenario)
+{
+    DEBUG0("Loading scenario_definition parameters");
+
+    esio_line_establish(h, 1, 0, 1); // All ranks load
+
+    if (!(boost::math::isnan)(scenario.Re)) {
+        INFO0("Overriding scenario using Re = " << scenario.Re);
+    } else {
+        esio_line_read(h, "Re", &scenario.Re, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.Ma)) {
+        INFO0("Overriding scenario using Ma = " << scenario.Ma);
+    } else {
+        esio_line_read(h, "Ma", &scenario.Ma, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.Pr)) {
+        INFO0("Overriding scenario using Pr = " << scenario.Pr);
+    } else {
+        esio_line_read(h, "Pr", &scenario.Pr, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.bulk_rho)) {
+        INFO0("Overriding scenario using bulk_rho = " << scenario.bulk_rho);
+    } else {
+        esio_line_read(h, "bulk_rho", &scenario.bulk_rho, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.bulk_rho_u)) {
+        INFO0("Overriding scenario using bulk_rho_u = " << scenario.bulk_rho_u);
+    } else {
+        esio_line_read(h, "bulk_rho_u", &scenario.bulk_rho_u, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.alpha)) {
+        INFO0("Overriding scenario using alpha = " << scenario.alpha);
+    } else {
+        esio_line_read(h, "alpha", &scenario.alpha, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.beta)) {
+        INFO0("Overriding scenario using beta = " << scenario.beta);
+    } else {
+        esio_line_read(h, "beta", &scenario.beta, 0);
+    }
+
+    if (!(boost::math::isnan)(scenario.gamma)) {
+        INFO0("Overriding scenario using gamma = " << scenario.gamma);
+    } else {
+        esio_line_read(h, "gamma", &scenario.gamma, 0);
+    }
 }
 
 } // namespace perfect

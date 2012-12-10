@@ -61,14 +61,6 @@ namespace perfect {
 /** Return default nondimensional field information per \ref suzerain::ndx */
 std::vector<support::field> default_fields();
 
-/** Store a scenario_definition in a restart file */
-void store(const esio_handle h,
-           const scenario_definition& scenario);
-
-/** Load a scenario_definition from a restart file */
-void load(const esio_handle h,
-          scenario_definition& scenario);
-
 /** Manufactured solution employed throughout the channel code */
 typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
 

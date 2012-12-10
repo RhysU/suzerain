@@ -12,8 +12,10 @@
 // scenario_definition.hpp: classes handling problem scenario parameters
 // $Id$
 
-#ifndef SCENARIO_DEFINITION_HPP
-#define SCENARIO_DEFINITION_HPP
+#ifndef SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+#define SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+
+#include <esio/esio.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
@@ -122,8 +124,26 @@ private:
                             const char * default_gamma);
 };
 
+/**
+ * Save a scenario_definition in an ESIO-based file.
+ *
+ * @param h        Open, writable handle in which details will be saved.
+ * @param scenario Scenario to be saved.
+ */
+void save(const esio_handle h,
+          const scenario_definition& scenario);
+
+/**
+ * Load a scenario_definition from an ESIO-based file.
+ *
+ * @param h        Open, readable handle from which details will be loaded.
+ * @param scenario Scenario to be saved.
+ */
+void load(const esio_handle h,
+          scenario_definition& scenario);
+
 } // namespace perfect
 
 } // namespace suzerain
 
-#endif // SCENARIO_DEFINITION_HPP
+#endif // SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
