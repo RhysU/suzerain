@@ -135,14 +135,6 @@ void wisdom_broadcast(const std::string& wisdom_file);
 /** If wisdom_file is not empty, gather wisdom to rank zero and write it */
 void wisdom_gather(const std::string& wisdom_file);
 
-/** Store a time_definition in a restart file */
-void store(const esio_handle h,
-           const time_definition& timedef);
-
-/** Load a time_definition from a restart file */
-void load(const esio_handle h,
-          time_definition& timedef);
-
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
  * @return the absolute error in reproducing prescribed abscissae.

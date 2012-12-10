@@ -1112,7 +1112,7 @@ int main(int argc, char **argv)
         perfect::store(h, scenario);
         support::save(h, grid);
         support::store(h, b, cop, gop);
-        support::store(h, timedef);
+        support::save(h, timedef);
         perfect::store(h, scenario, grid, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);

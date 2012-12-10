@@ -302,7 +302,7 @@ int main(int argc, char **argv)
     perfect::store(esioh, scenario);
     support::save(esioh, grid);
     support::store(esioh, b, cop, gop);
-    support::store(esioh, timedef);
+    support::save(esioh, timedef);
     perfect::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 

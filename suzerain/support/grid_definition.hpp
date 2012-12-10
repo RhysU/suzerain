@@ -99,7 +99,7 @@ void save(const esio_handle h,
 /**
  * Load a grid_definition from an ESIO-based file.
  *
- * @param h    Open, writable handle in which details will be saved.
+ * @param h    Open, readable handle from which details will be loaded.
  * @param grid Grid to be saved.
  */
 void load(const esio_handle h,

@@ -15,6 +15,8 @@
 #ifndef SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_TIME_DEFINITION_HPP
 
+#include <esio/esio.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
@@ -117,6 +119,24 @@ private:
     /** Prepare repeatedly-used options similar to scenario parameters */
     void initialize_scenario(const char* default_evmagfactor);
 };
+
+/**
+ * Save a time_definition in an ESIO-based file.
+ *
+ * @param h       Open, writable handle in which details will be saved.
+ * @param timedef Definition to be saved.
+ */
+void save(const esio_handle h,
+          const time_definition& timedef);
+
+/**
+ * Load a time_definition from an ESIO-based file.
+ *
+ * @param h       Open, readable handle from which details will be loaded.
+ * @param timedef Definition to be saved.
+ */
+void load(const esio_handle h,
+          time_definition& timedef);
 
 } // namespace support
 

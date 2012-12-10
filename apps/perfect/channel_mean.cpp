@@ -633,7 +633,7 @@ int main(int argc, char **argv)
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
             support::store(h.get(), b, cop, gop);
             gop.reset();
-            support::store(h.get(), *timedef);
+            support::save(h.get(), *timedef);
 
             // Determine how many time indices and collocation points we have.
             // We'll build a vector of time values to write after iteration.

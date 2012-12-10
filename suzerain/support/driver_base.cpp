@@ -778,7 +778,7 @@ driver_base::save_metadata()
     save_grid_and_operators(esioh);
 
     SUZERAIN_ENSURE(timedef);
-    support::store(esioh, *timedef);
+    support::save(esioh, *timedef);
 
     // Invoke subclass extension point
     save_metadata_hook(esioh);
