@@ -40,6 +40,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
+#include <suzerain/support/time_definition.hpp>
 
 #include "perfect.hpp"
 #include "mean_quantities.hpp"

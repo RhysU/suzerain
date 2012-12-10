@@ -37,15 +37,10 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/diffwave.hpp>
 #include <suzerain/grid_specification.hpp>
-#include <suzerain/inorder.hpp>
-#include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
-#include <suzerain/state.hpp>
+#include <suzerain/state_fwd.hpp>
 #include <suzerain/support/definition_base.hpp>
-#include <suzerain/support/support.hpp>
-#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
 
 #include "nsctpl_rholut.hpp"

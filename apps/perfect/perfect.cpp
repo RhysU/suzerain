@@ -41,7 +41,9 @@
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
+#include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
+#include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>

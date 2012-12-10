@@ -65,6 +65,7 @@
 #include <suzerain/support/statistics_definition.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/time_definition.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/timers.h>
 #include <suzerain/utility.hpp>
 #include <suzerain/version.hpp>

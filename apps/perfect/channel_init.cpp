@@ -44,6 +44,8 @@
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
+#include <suzerain/support/support.hpp>
+#include <suzerain/support/time_definition.hpp>
 #include <suzerain/utility.hpp>
 #include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>
