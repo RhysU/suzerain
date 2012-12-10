@@ -1110,7 +1110,7 @@ int main(int argc, char **argv)
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
         perfect::store(h, scenario);
-        support::store(h, grid);
+        support::save(h, grid);
         support::store(h, b, cop, gop);
         support::store(h, timedef);
         perfect::store(h, scenario, grid, msoln);

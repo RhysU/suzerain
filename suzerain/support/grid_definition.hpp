@@ -15,6 +15,8 @@
 #ifndef SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
 
+#include <esio/esio.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
@@ -84,6 +86,24 @@ private:
                             const char* default_Lz);
 
 };
+
+/**
+ * Save a grid_definition in an ESIO-based file.
+ *
+ * @param h    Open, writable handle in which details will be saved.
+ * @param grid Grid to be saved.
+ */
+void save(const esio_handle h,
+          const grid_definition& grid);
+
+/**
+ * Load a grid_definition from an ESIO-based file.
+ *
+ * @param h    Open, writable handle in which details will be saved.
+ * @param grid Grid to be saved.
+ */
+void load(const esio_handle h,
+          grid_definition& grid);
 
 } // namespace support
 

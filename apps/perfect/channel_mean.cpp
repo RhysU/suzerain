@@ -628,7 +628,7 @@ int main(int argc, char **argv)
 
             // Store the scenario and numerics metadata
             perfect::store(h.get(), *scenario);
-            support::store(h.get(), *grid);
+            support::save(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
             support::store(h.get(), b, cop, gop);

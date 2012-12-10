@@ -18,7 +18,9 @@
 
 #include <suzerain/support/grid_definition.hpp>
 
+#include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 namespace suzerain {
@@ -231,6 +233,174 @@ void grid_definition::initialize_options(
     }
     this->add_options()("Pb", p.release(),
                         "Processor count in the Pb decomposition direction");
+}
+
+void save(const esio_handle h,
+          const grid_definition& grid)
+{
+    // Only root writes data
+    int procid;
+    esio_handle_comm_rank(h, &procid);
+
+    DEBUG0("Saving grid_definition parameters");
+
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+
+    esio_line_write(h, "Lx", &grid.L.x(), 0,
+            grid.options().find("Lx",false).description().c_str());
+
+    esio_line_write(h, "Nx", &grid.N.x(), 0,
+            grid.options().find("Nx",false).description().c_str());
+
+    esio_line_write(h, "DAFx", &grid.DAF.x(), 0,
+            grid.options().find("DAFx",false).description().c_str());
+
+    esio_line_write(h, "Ly", &grid.L.y(), 0,
+            grid.options().find("Ly",false).description().c_str());
+
+    esio_line_write(h, "Ny", &grid.N.y(), 0,
+            grid.options().find("Ny",false).description().c_str());
+
+    esio_line_write(h, "k", &grid.k, 0,
+            grid.options().find("k",false).description().c_str());
+
+    esio_line_write(h, "htdelta", &grid.htdelta, 0,
+            grid.options().find("htdelta",false).description().c_str());
+
+    esio_line_write(h, "Lz", &grid.L.z(), 0,
+            grid.options().find("Lz",false).description().c_str());
+
+    esio_line_write(h, "Nz", &grid.N.z(), 0,
+            grid.options().find("Nz",false).description().c_str());
+
+    esio_line_write(h, "DAFz", &grid.DAF.z(), 0,
+            grid.options().find("DAFz",false).description().c_str());
+
+    DEBUG0("Storing wavenumber vectors for Fourier bases");
+    ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
+
+    // Obtain wavenumbers via computing 1*(i*kx)/i
+    cbuf.fill(complex_t(1,0));
+    diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
+            grid.L.x(), grid.L.z(),
+            1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
+    esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
+    esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
+            2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
+
+    // Obtain wavenumbers via computing 1*(i*kz)/i
+    cbuf.fill(complex_t(1,0));
+    diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
+            grid.L.x(), grid.L.z(),
+            1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
+    esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
+    esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
+            2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
+
+    DEBUG0("Storing collocation point vectors for Fourier bases");
+    ArrayXr rbuf;
+
+    // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
+    if (grid.dN.x() > 1) {
+        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
+        rbuf *= grid.L.x() / grid.dN.x();
+        rbuf -= grid.L.x() / 2;
+    } else {
+        rbuf = ArrayXr::Constant(grid.dN.x(), 0);
+    }
+    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
+            "Collocation points for the dealiased, streamwise X direction");
+
+    // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
+    if (grid.dN.z() > 1) {
+        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
+        rbuf *= grid.L.z() / grid.dN.z();
+        rbuf -= grid.L.z() / 2;
+    } else {
+        rbuf = ArrayXr::Constant(grid.dN.z(), 0);
+    }
+    esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
+    esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
+            "Collocation points for the dealiased, spanwise Z direction");
+}
+
+void load(const esio_handle h,
+          grid_definition& grid)
+{
+    DEBUG0("Loading grid_definition parameters");
+
+    esio_line_establish(h, 1, 0, 1); // All ranks load
+
+    if (!(boost::math::isnan)(grid.L.x())) {
+        INFO0("Overriding grid using Lx = " << grid.L.x());
+    } else {
+        esio_line_read(h, "Lx", &grid.L.x(), 0);
+    }
+
+    if (grid.N.x()) {
+        INFO0("Overriding grid using Nx = " << grid.N.x());
+    } else {
+        int value;
+        esio_line_read(h, "Nx", &value, 0);
+        grid.Nx(value);
+    }
+
+    if (!((boost::math::isnan)(grid.DAF.x()))) {
+        INFO0("Overriding grid using DAFx = " << grid.DAF.x());
+    } else {
+        double factor;
+        esio_line_read(h, "DAFx", &factor, 0);
+        grid.DAFx(factor);
+    }
+
+    if (!(boost::math::isnan)(grid.L.y())) {
+        INFO0("Overriding grid using Ly = " << grid.L.y());
+    } else {
+        esio_line_read(h, "Ly", &grid.L.y(), 0);
+    }
+
+    if (grid.N.y()) {
+        INFO0("Overriding grid using Ny = " << grid.N.y());
+    } else {
+        int value;
+        esio_line_read(h, "Ny", &value, 0);
+        grid.Ny(value);
+    }
+
+    if (grid.k) {
+        INFO0("Overriding grid using k = " << grid.k);
+    } else {
+        esio_line_read(h, "k", &grid.k, 0);
+    }
+
+    if (!((boost::math::isnan)(grid.htdelta))) {
+        INFO0("Overriding grid using htdelta = " << grid.htdelta);
+    } else {
+        esio_line_read(h, "htdelta", &grid.htdelta, 0);
+    }
+
+    if (!(boost::math::isnan)(grid.L.z())) {
+        INFO0("Overriding grid using Lz = " << grid.L.z());
+    } else {
+        esio_line_read(h, "Lz", &grid.L.z(), 0);
+    }
+
+    if (grid.N.z()) {
+        INFO0("Overriding grid using Nz = " << grid.N.z());
+    } else {
+        int value;
+        esio_line_read(h, "Nz", &value, 0);
+        grid.Nz(value);
+    }
+
+    if (!((boost::math::isnan)(grid.DAF.z()))) {
+        INFO0("Overriding grid using DAFz = " << grid.DAF.z());
+    } else {
+        double factor;
+        esio_line_read(h, "DAFz", &factor, 0);
+        grid.DAFz(factor);
+    }
 }
 
 } // end namespace support

@@ -135,14 +135,6 @@ void wisdom_broadcast(const std::string& wisdom_file);
 /** If wisdom_file is not empty, gather wisdom to rank zero and write it */
 void wisdom_gather(const std::string& wisdom_file);
 
-/** Store a grid_definition in a restart file */
-void store(const esio_handle h,
-           const grid_definition& grid);
-
-/** Load a grid_definition from a restart file */
-void load(const esio_handle h,
-          grid_definition& grid);
-
 /** Store a time_definition in a restart file */
 void store(const esio_handle h,
            const time_definition& timedef);
