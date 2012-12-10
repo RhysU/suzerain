@@ -21,6 +21,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.61])
 AX_AM_MACROS
 AX_ADD_AM_CTAGSFLAGS
+AM_PROG_AR
 
 dnl ------------------------------------------------
 dnl LaTeX capabilities (not required but suggested)
