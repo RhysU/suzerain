@@ -492,7 +492,7 @@ static bool save_restart(real_t t, size_t nt)
 
     // Include statistics in the restart file
     sample_statistics(t);
-    perfect::store(esioh, sample);
+    perfect::save(esioh, sample);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a restart file using template " << restart.destination);
@@ -524,7 +524,7 @@ static bool save_statistics(real_t t, size_t nt)
 
     // Compute statistics and write to file
     sample_statistics(t);
-    perfect::store(esioh, sample);
+    perfect::save(esioh, sample);
 
     DEBUG0("Committing " << restart.uncommitted
            << " as a statistics file using template " << statsdef.destination);
@@ -1116,7 +1116,7 @@ int main(int argc, char **argv)
         support::save(h, grid);
         support::save(h, b, cop, gop);
         support::save(h, timedef);
-        perfect::store(h, scenario, grid, msoln);
+        perfect::save(h, scenario, grid, msoln);
         esio_file_close(h);
         esio_handle_finalize(h);
     }

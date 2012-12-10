@@ -307,7 +307,7 @@ int main(int argc, char **argv)
     support::save(esioh, grid);
     support::save(esioh, b, cop, gop);
     support::save(esioh, timedef);
-    perfect::store(esioh, scenario, grid, msoln);
+    perfect::save(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");
@@ -435,7 +435,7 @@ int main(int argc, char **argv)
             scenario, grid, *dgrid, *b, *cop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
-    perfect::store(esioh, sample);
+    perfect::save(esioh, sample);
     esio_file_flush(esioh);
 
     INFO0("Closing newly initialized restart file");

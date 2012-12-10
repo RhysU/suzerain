@@ -85,10 +85,10 @@ static void attribute_storer(const esio_handle &h,
     esio_attribute_write(h, location, name.c_str(), &value);
 }
 
-void store(const esio_handle h,
-           const scenario_definition& scenario,
-           const grid_specification& grid,
-           const shared_ptr<manufactured_solution>& msoln)
+void save(const esio_handle h,
+          const scenario_definition& scenario,
+          const grid_specification& grid,
+          const shared_ptr<manufactured_solution>& msoln)
 {
     // Only proceed if a manufactured solution is being provided
     if (!msoln) return;

@@ -279,8 +279,8 @@ mean_quantities sample_mean_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t);
 
-/** Store a \ref mean_quantities instance in a restart file */
-void store(const esio_handle h, const mean_quantities& m);
+/** Save a \ref mean_quantities instance in a restart file */
+void save(const esio_handle h, const mean_quantities& m);
 
 /**
  * Load a \ref mean_quantities instance from a restart file.  Statistics not

@@ -66,10 +66,10 @@ typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
  * Store manufactured solution parameters in a restart file.
  * Parameters are only stored when \c msoln evaluates as true.
  */
-void store(const esio_handle h,
-           const scenario_definition& scenario,
-           const grid_specification& grid,
-           const shared_ptr<manufactured_solution> & msoln);
+void save(const esio_handle h,
+          const scenario_definition& scenario,
+          const grid_specification& grid,
+          const shared_ptr<manufactured_solution> & msoln);
 
 /**
  * Load manufactured solution parameters from a restart file.

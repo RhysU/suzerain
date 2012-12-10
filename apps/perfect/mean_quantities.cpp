@@ -451,13 +451,13 @@ mean_quantities sample_mean_quantities(
     return ret;
 }
 
-// Helper for the store(...) implementation just below
-class mean_storer
+// Helper for the save(...) implementation just below
+class mean_saver
 {
 
 public:
 
-    mean_storer(const esio_handle esioh, const std::string& prefix)
+    mean_saver(const esio_handle esioh, const std::string& prefix)
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
@@ -485,9 +485,9 @@ private:
 
 };
 
-void store(const esio_handle h, const mean_quantities& m)
+void save(const esio_handle h, const mean_quantities& m)
 {
-    mean_storer f(h, "bar_");
+    mean_saver f(h, "bar_");
     m.foreach(f);
 }
 
