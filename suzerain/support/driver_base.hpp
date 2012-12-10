@@ -132,7 +132,9 @@ public:
     virtual ~driver_base();
 
     /** @copydoc application_base::initialize */
-    virtual std::vector<std::string> initialize(int argc, char **argv);
+    virtual std::vector<std::string> initialize(
+            int argc,
+            char **argv);
 
     /**
      * The log4cxx configuration to use.  Files <tt>bulk.dat</tt>,

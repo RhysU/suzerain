@@ -83,7 +83,9 @@ public:
      *
      * @return A vector of the positional arguments.
      */
-    virtual std::vector<std::string> initialize(int argc, char **argv);
+    virtual std::vector<std::string> initialize(
+            int argc,
+            char **argv);
 
     /**
      * The log4cxx configuration to use, which is built upon but may differ
