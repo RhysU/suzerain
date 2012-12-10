@@ -29,14 +29,13 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>
 
+#include "mean_quantities.hpp"
+#include "nsctpl_rholut_fwd.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {
 
 namespace perfect {
-
-// Forward
-class mean_quantities;
 
 /**
  * An driver class for managing a nondimensional perfect gas application using
@@ -44,10 +43,13 @@ class mean_quantities;
  */
 class driver : public support::driver_base
 {
-    /** Provides simple access to the superclass type */
+    /** Provides simple access to the superclass type. */
     typedef support::driver_base super;
 
 public:
+
+    /** Type of the associated manufactured solution. */
+    typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
 
     /** @copydoc driver_base::driver_base */
     driver(const std::string &application_synopsis,
@@ -59,6 +61,9 @@ public:
 
     /** Nondimensional scenario parameters used by physics routines. */
     shared_ptr<scenario_definition> scenario;
+
+    /** Nondimensional manufactured solution optionally used by applications. */
+    shared_ptr<manufactured_solution> msoln;
 
     /**
      * Maintains instantaneously sampled wall-normal mean quantities.  Member
@@ -78,14 +83,14 @@ public:
 protected:
 
     /**
-     * Beyond the inherited behavior, this method saves #scenario.
+     * Beyond the inherited behavior, this method saves #scenario and #msoln.
      * @copydetails driver_base::save_metadata_hook
      */
     virtual void save_metadata_hook(
             const esio_handle esioh);
 
     /**
-     * Beyond the inherited behavior, this method loads #scenario.
+     * Beyond the inherited behavior, this method loads #scenario and #msoln.
      * @copydetails driver_base::save_metadata_hook
      */
     virtual void load_metadata_hook(
