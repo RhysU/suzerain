@@ -68,13 +68,6 @@ public:
     mean_quantities mean;
 
     /**
-     * Beyond the inherited behavior, this method initializes #mean.
-     * @copydetails application_base::load_grid_and_operators
-     */
-    virtual void load_grid_and_operators(
-            const esio_handle esioh);
-
-    /**
      * Collectively compute statistics from #state_linear saving them into
      * #mean and destroying #state_nonlinear in the process.  Any currently
      * cached results in #mean will be reused <em>without recomputation</em>
