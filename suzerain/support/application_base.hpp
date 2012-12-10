@@ -149,7 +149,7 @@ public:
     shared_ptr<state_nonlinear_type> state_nonlinear;
 
     /**
-     * Load a grid and discrete operators from a restart file or initialized
+     * Load a grid and discrete operators from a file or initialize
      * them per #grid.  The following are modified:
      * \li #grid
      * \li #b
@@ -165,7 +165,7 @@ public:
             const esio_handle esioh);
 
     /**
-     * Store a grid and discrete operators to a restart file.
+     * Save a grid and discrete operators to a file.
      * The following are modified:
      * \li #grid
      * \li #b
@@ -174,7 +174,7 @@ public:
      *
      * @param esioh An ESIO handle pointing to an open restart file.
      */
-    virtual void store_grid_and_operators(
+    virtual void save_grid_and_operators(
             const esio_handle esioh);
 
     /**

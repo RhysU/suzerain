@@ -775,7 +775,7 @@ driver_base::save_metadata()
     esio_file_create(esioh, restartdef->metadata.c_str(), 1 /* overwrite */);
     esio_string_set(esioh, "/", "generated_by", revstr.c_str()); // Ticket #2595
 
-    store_grid_and_operators(esioh);
+    save_grid_and_operators(esioh);
 
     SUZERAIN_ENSURE(timedef);
     support::store(esioh, *timedef);

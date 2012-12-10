@@ -186,7 +186,7 @@ application_base::load_grid_and_operators(
 }
 
 void
-application_base::store_grid_and_operators(
+application_base::save_grid_and_operators(
         const esio_handle esioh)
 {
     SUZERAIN_ENSURE(grid);
