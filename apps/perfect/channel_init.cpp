@@ -424,7 +424,7 @@ int main(int argc, char **argv)
         INFO0("Storing simulation time to match manufactured solution");
         t = mms;
     }
-    support::store_time(esioh, t);
+    support::save_time(esioh, t);
     esio_file_flush(esioh);
 
     INFO0("Computing mean quantities from state fields");

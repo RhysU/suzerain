@@ -830,7 +830,7 @@ driver_base::save_restart(
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
-    store_time(esioh, t);
+    save_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
@@ -897,7 +897,7 @@ driver_base::save_statistics(
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
-    store_time(esioh, t);
+    save_time(esioh, t);
 
     // Invoke subclass extension point
     const bool continue_advancing = save_statistics_hook(esioh);

@@ -473,7 +473,7 @@ static bool save_restart(real_t t, size_t nt)
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
     esio_file_clone(esioh, restart.metadata.c_str(),
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
-    support::store_time(esioh, t);
+    support::save_time(esioh, t);
 
     // Copy state into state_nonlinear for possibly destructive processing
     state_nonlinear->assign(*state_linear);
@@ -518,7 +518,7 @@ static bool save_statistics(real_t t, size_t nt)
     DEBUG0("Cloning " << restart.metadata << " to " << restart.uncommitted);
     esio_file_clone(esioh, restart.metadata.c_str(),
                     restart.uncommitted.c_str(), 1 /*overwrite*/);
-    support::store_time(esioh, t);
+    support::save_time(esioh, t);
 
     // Compute statistics and write to file
     sample_statistics(t);

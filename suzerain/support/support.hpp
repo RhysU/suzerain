@@ -136,9 +136,9 @@ real_t load(const esio_handle h,
             shared_ptr<bspline>& b,
             shared_ptr<bsplineop>& cop);
 
-/** Store the current simulation time information */
-void store_time(const esio_handle h,
-                real_t time);
+/** Save the current simulation time information */
+void save_time(const esio_handle h,
+               real_t time);
 
 /** Load the current simulation time information */
 void load_time(const esio_handle h,

@@ -477,8 +477,8 @@ real_t load(const esio_handle h,
     return abserr;
 }
 
-void store_time(const esio_handle h,
-                real_t time)
+void save_time(const esio_handle h,
+               real_t time)
 {
     // Root writes details
     int rank;
@@ -487,7 +487,7 @@ void store_time(const esio_handle h,
 
     esio_line_write(h, "t", &time, 0, "Simulation physical time");
 
-    DEBUG0("Stored simulation time " << time);
+    DEBUG0("Saved simulation time " << time);
 }
 
 void load_time(const esio_handle h,
