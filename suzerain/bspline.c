@@ -32,6 +32,7 @@
 
 #include <gsl/gsl_bspline.h>
 #include <gsl/gsl_integration.h>
+#include <gsl/gsl_machine.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>
@@ -176,6 +177,27 @@ suzerain_bspline_integration_coefficients(
 
     return SUZERAIN_SUCCESS;
 }
+
+double
+suzerain_bspline_distance(
+    const gsl_bspline_workspace *a,
+    const gsl_bspline_workspace *b)
+{
+    double retval = GSL_DBL_MAX;
+    const size_t a_nknot = a->knots->size;
+    const size_t b_nknot = b->knots->size;
+    if (a->k == b->k && a->n == b->n && a_nknot == b_nknot) {
+        retval = 0;
+        for (size_t i = 0; i < a_nknot; ++i) {
+            const double dist_i = fabs(  gsl_vector_get(a->knots, i)
+                                       - gsl_vector_get(b->knots, i));
+            retval = GSL_MAX(retval, dist_i);
+        }
+    }
+    return retval;
+}
+
+const double suzerain_bspline_distance_distinct = 3 * GSL_DBL_EPSILON;
 
 double
 suzerain_bspline_spacing_greville_abscissae(

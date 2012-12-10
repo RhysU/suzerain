@@ -185,6 +185,28 @@ suzerain_bspline_integration_coefficients(
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace *dw);
 
+/**
+ * Compute the "distance" between two B-spline workspaces.  Distance is "huge"
+ * if any of the order, number of degrees of freedom, or number of knots
+ * differ.  When all those criteria match the distance becomes the maximum
+ * absolute difference between the knot vectors.
+ *
+ * @param a First B-spline workspace
+ * @param b Second B-spline workspace
+ *
+ * @return A measure of the distance between the two workspaces
+ */
+double
+suzerain_bspline_distance(
+    const gsl_bspline_workspace *a,
+    const gsl_bspline_workspace *b);
+
+/**
+ * Constant used to define distinct B-spline workspaces per
+ * \ref suzerain_bspline_distance in the presence of floating point error.
+ */
+extern const double suzerain_bspline_distance_distinct;
+
 // FIXME Implement per Redmine ticket #1591
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /**

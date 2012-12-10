@@ -272,6 +272,15 @@ public:
                 sizeof(complex_t)/sizeof(real_t), db_, bw, dbw);
     }
 
+    /**
+     * @copybrief suzerain_bspline_distance
+     * @see       suzerain_bspline_distance
+     */
+    real_t distance_to(const bspline& other) const
+    {
+        return suzerain_bspline_distance(this->bw, other.bw);
+    }
+
 /**@}*/
 
 private:
