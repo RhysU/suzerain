@@ -28,6 +28,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/application_base.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/restart_definition.hpp>
 #include <suzerain/support/signal_definition.hpp>
 #include <suzerain/support/statistics_definition.hpp>
@@ -91,8 +92,6 @@ typedef array<
 } // end namespace signal
 
 class delta_t_allreducer;
-
-class field;
 
 /**
  * An driver base class for managing a Suzerain application.  Intended for
