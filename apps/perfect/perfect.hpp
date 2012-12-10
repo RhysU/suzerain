@@ -53,6 +53,9 @@
 
 namespace suzerain {
 
+// Forward declaration
+namespace support { class field; }
+
 /**
  * Functionality used throughout the Suzerain perfect gas application.
  */
@@ -90,9 +93,9 @@ void load(const esio_handle h,
  * destroyed.  Collocation point values required only for dealiasing purposes
  * <i>are</i> stored but only those points informed by non-dealiased state.
  * This method is less efficient and the restart data less flexible than that
- * produced by store_coefficients().
+ * produced by save_coefficients().
  */
-void store_collocation_values(
+void save_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,

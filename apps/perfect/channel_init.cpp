@@ -40,6 +40,7 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/utility.hpp>
@@ -301,7 +302,7 @@ int main(int argc, char **argv)
                     (std::string("channel ") + revstr).c_str()); // Ticket #2595
     perfect::save(esioh, scenario);
     support::save(esioh, grid);
-    support::store(esioh, b, cop, gop);
+    support::save(esioh, b, cop, gop);
     support::save(esioh, timedef);
     perfect::store(esioh, scenario, grid, msoln);
     esio_file_flush(esioh);
@@ -412,7 +413,7 @@ int main(int argc, char **argv)
     }
 
     INFO0("Writing state fields to restart file");
-    support::store_coefficients(esioh, fields, swave, grid, *dgrid);
+    support::save_coefficients(esioh, fields, swave, grid, *dgrid);
     esio_file_flush(esioh);
 
     real_t t;

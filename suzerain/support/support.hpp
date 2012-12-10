@@ -44,7 +44,7 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
-#include <suzerain/state.hpp>
+#include <suzerain/state_fwd.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/time_definition.hpp>
 #include <suzerain/timestepper.hpp>
@@ -68,34 +68,6 @@ extern const char log4cxx_config[];
  * console-only applications where file logging is unnecessary.
  */
 extern const char log4cxx_config_console[];
-
-/**
- * Collects details about scalar-valued fields.
- * For example, spanwise momentum.
- */
-class field
-{
-public:
-
-    /**
-     * A brief string used in status displays.
-     * For example, "rho_w".
-     */
-    std::string identifier;
-
-    /**
-     * Human-readable text used to generate descriptions.
-     * For example, "spanwise momentum".
-     */
-    std::string description;
-
-    /**
-     * The ESIO location (that is, HDF5 dataset) in which the field is stored
-     * in restart files.  Often this will just be \c identifier.
-     */
-    std::string location;
-
-};
 
 /** Log-and-abort handler for errors originating in the GSL */
 void mpi_abort_on_error_handler_gsl(const char * reason,
@@ -135,6 +107,7 @@ void wisdom_broadcast(const std::string& wisdom_file);
 /** If wisdom_file is not empty, gather wisdom to rank zero and write it */
 void wisdom_gather(const std::string& wisdom_file);
 
+// FIXME Remove and place logic into application_base
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
  * @return the absolute error in reproducing prescribed abscissae.
@@ -147,29 +120,16 @@ real_t create(const int ndof,
               shared_ptr<bspline>& b,
               shared_ptr<bsplineop>& cop);
 
-/**
- * Compute the "distance" between two B-spline bases.  Distance is "huge" if
- * any of the order, number of degrees of freedom, or number of knots differ.
- * When all those criteria match the distance becomes the maximum absolute
- * difference between the knot vectors.
- */
-real_t distance(const bspline& a,
-                const bspline& b);
+// FIXME Remove and place logic into application_base
+/** Save a \ref bspline workspace in a file. */
+void save(const esio_handle h,
+          const shared_ptr<bspline>& b,
+          const shared_ptr<bsplineop>& cop,
+          const shared_ptr<bsplineop>& gop);
 
+// FIXME Remove and place logic into application_base
 /**
- * Common constant used to define distinct B-spline bases per
- * bspline_bases_distance() in the presence of floating point error.
- */
-extern const real_t bsplines_distinct_distance;
-
-/** Store a \ref bspline workspace in a restart file */
-void store(const esio_handle h,
-           const shared_ptr<bspline>& b,
-           const shared_ptr<bsplineop>& cop,
-           const shared_ptr<bsplineop>& gop);
-
-/**
- * Load a \ref bspline workspace from a restart file.
+ * Load a \ref bspline workspace from a file.
  * @return the absolute error in reproducing prescribed abscissae.
  */
 real_t load(const esio_handle h,
@@ -204,62 +164,6 @@ template<>
 contiguous_state<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
            const pencil_grid& dgrid);
-
-/**
- * Store the current simulation conserved state as expansion coefficients into
- * an open restart file.   Only non-dealiased, conserved state is saved as
- * "wave space" coefficients.  This is the most efficient and flexible way to
- * save state to disk.
- */
-void store_coefficients(
-        const esio_handle h,
-        const std::vector<field> &fields,
-        const contiguous_state<4,complex_t> &swave,
-        const grid_specification& grid,
-        const pencil_grid& dgrid);
-
-/**
- * Load the current simulation state from an open coefficient-based restart
- * file.  Handles the non-trivial task of adjusting the restart to match the
- * provided \c grid, \c dgrid, \c b, and \c cop.
- */
-void load_coefficients(const esio_handle h,
-                       const std::vector<field> &fields,
-                       contiguous_state<4,complex_t> &state,
-                       const grid_specification& grid,
-                       const pencil_grid& dgrid,
-                       const bspline& b,
-                       const bsplineop& cop);
-
-/**
- * Store the current simulation state as collocation point values into an open
- * restart file.  Note that <tt>state</tt>'s contents are destroyed.
- * Collocation point values required only for dealiasing purposes <i>are</i>
- * stored but only those points informed by non-dealiased state.  This method
- * is less efficient and the restart data less flexible than that produced by
- * store_coefficients().
- */
-void store_collocation_values(
-        const esio_handle h,
-        const std::vector<field> &fields,
-        contiguous_state<4,complex_t>& swave,
-        const grid_specification& grid,
-        const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop);
-
-/**
- * Load the current simulation state from an open collocation point value
- * restart file.  Cannot handle interpolating onto a different grid.
- */
-void load_collocation_values(
-        const esio_handle h,
-        const std::vector<field> &fields,
-        contiguous_state<4,complex_t>& state,
-        const grid_specification& grid,
-        const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop);
 
 /**
  * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
@@ -320,94 +224,6 @@ void parse_range(const std::string& s,
         oss << name << " value [" << *valmin << ":" << *valmax
             << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
         throw std::invalid_argument(oss.str());
-    }
-}
-
-/** Read a complex-valued field via ESIO */
-template< typename I >
-inline
-void complex_field_read(esio_handle h, const char *name, complex_t *field,
-                        I cstride = 0, I bstride = 0, I astride = 0)
-{
-    esio_field_readv(h, name, reinterpret_cast<real_t *>(field),
-                     2*boost::numeric_cast<int>(cstride),
-                     2*boost::numeric_cast<int>(bstride),
-                     2*boost::numeric_cast<int>(astride),
-                     2);
-}
-
-/** Read a complex-valued field via ESIO */
-inline
-void complex_field_read(esio_handle h, const char *name, complex_t *field)
-{
-    // When no strides are provided, we must specify the stride type.
-    return complex_field_read<int>(h, name, field);
-}
-
-/** Write a complex-valued field via ESIO */
-template< typename I >
-inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field,
-                         I cstride = 0, I bstride = 0, I astride = 0,
-                         const char * comment = 0)
-{
-    esio_field_writev(h, name, reinterpret_cast<const real_t *>(field),
-                      2*boost::numeric_cast<int>(cstride),
-                      2*boost::numeric_cast<int>(bstride),
-                      2*boost::numeric_cast<int>(astride),
-                      2, comment);
-}
-
-/** Write a complex-valued field via ESIO */
-inline
-void complex_field_write(esio_handle h,
-                         const char *name, const complex_t *field)
-{
-    // When no strides are provided, we must specify the stride type.
-    return complex_field_write<int>(h, name, field);
-}
-
-/**
- * Read an ESIO \c linev of data into line from the first possible named
- * location.  Argument \c first is mutated to return the successful location
- * name.  No suitable location may be detected by checking if <tt>first ==
- * last</tt> on return.
- */
-template<typename ForwardIterator>
-static void load_linev(const esio_handle h, ArrayXr &line,
-                       ForwardIterator& first, const ForwardIterator& last)
-{
-    for ( ; first != last; ++first ) {
-        int length;
-        int ncomponents;
-        if (0 == esio_line_sizev(h, *first, &length, &ncomponents)) {
-            line.resize(length, ncomponents);
-            esio_line_establish(h, length, 0, length);
-            esio_line_readv(h, *first, line.data(), 0);
-            return;
-        }
-    }
-}
-
-/**
- * Read an ESIO \c line of data into line from the first possible named
- * location.  Argument \c first is mutated to return the successful location
- * name.  No suitable location may be detected by checking if <tt>first ==
- * last</tt> on return.
- */
-template<typename ForwardIterator>
-static void load_line(const esio_handle h, ArrayXr &line,
-                      ForwardIterator& first, const ForwardIterator& last)
-{
-    for ( ; first != last; ++first ) {
-        int length;
-        if (0 == esio_line_size(h, *first, &length)) {
-            line.resize(length);
-            esio_line_establish(h, length, 0, length);
-            esio_line_read(h, *first, line.data(), 0);
-            return;
-        }
     }
 }
 

@@ -18,6 +18,7 @@
 
 #include <suzerain/support/grid_definition.hpp>
 
+#include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>

@@ -48,6 +48,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/validation.hpp>
@@ -197,7 +198,7 @@ void load(const esio_handle h,
     msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
 }
 
-void store_collocation_values(
+void save_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
         const scenario_definition& scenario,
@@ -333,12 +334,11 @@ void load_collocation_values(
         shared_ptr<bspline> Fb;
         shared_ptr<bsplineop> Fbop;
         support::load(h, Fb, Fbop);
-        const double bsplines_dist = support::distance(b, *Fb);
-        const bool bsplines_same
-                = bsplines_dist < support::bsplines_distinct_distance;
-        if (!bsplines_same) {
+        const double bsp_dist = b.distance_to(*Fb);
+        const bool   bsp_same = bsp_dist < suzerain_bspline_distance_distinct;
+        if (!bsp_same) {
             ERROR0("Physical restart has different wall-normal bases ("
-                   << bsplines_dist << ")");
+                   << bsp_dist << ")");
             SUZERAIN_ERROR_VOID(
                     "Cannot interpolate during physical space restart",
                     SUZERAIN_EFAILED);

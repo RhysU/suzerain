@@ -631,7 +631,7 @@ int main(int argc, char **argv)
             support::save(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
-            support::store(h.get(), b, cop, gop);
+            support::save(h.get(), b, cop, gop);
             gop.reset();
             support::save(h.get(), *timedef);
 
@@ -1217,8 +1217,8 @@ static quantity::storage_map_type process(
         i_boplu = boplu;
     }
 
-    const real_t bsplines_dist = support::distance(*b, *i_b);
-    if (bsplines_dist <= support::bsplines_distinct_distance) {
+    const real_t bsplines_dist = b->distance_to(*i_b);
+    if (bsplines_dist <= suzerain_bspline_distance_distinct) {
 
         // Compute bulk integration weights
         s->col(quantity::bulk_weights)

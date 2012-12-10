@@ -18,6 +18,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 

@@ -38,6 +38,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/os.h>
 #include <suzerain/state.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/version.hpp>
@@ -974,10 +975,10 @@ driver_base::save_state_hook(
     // Save either coefficients or collocation values, as requested
     // The former is a destructive operation clobbering *state_nonlinear
     if (restartdef->physical) {
-        support::store_collocation_values(
+        support::save_collocation_values(
                 esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
     } else {
-        support::store_coefficients(
+        support::save_coefficients(
                 esioh, fields, *state_nonlinear, *grid, *dgrid);
     }
 

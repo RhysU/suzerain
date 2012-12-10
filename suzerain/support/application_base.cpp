@@ -195,7 +195,7 @@ application_base::save_grid_and_operators(
     SUZERAIN_ENSURE(gop);
 
     support::save(esioh, *grid);
-    support::store(esioh, b, cop, gop);
+    support::save(esioh, b, cop, gop);
 }
 
 void

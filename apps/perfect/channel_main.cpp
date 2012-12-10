@@ -56,6 +56,7 @@
 #include <suzerain/pencil.hpp>
 #include <suzerain/pre_gsl.h>
 #include <suzerain/support/fftw_definition.hpp>
+#include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/restart_definition.hpp>
@@ -479,11 +480,11 @@ static bool save_restart(real_t t, size_t nt)
     if (restart.physical) {
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
-        perfect::store_collocation_values(
+        perfect::save_collocation_values(
                 esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *cop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
-        support::store_coefficients(
+        support::save_coefficients(
                 esioh, fields, *state_nonlinear, grid, *dgrid);
     }
 
@@ -1111,7 +1112,7 @@ int main(int argc, char **argv)
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
         perfect::save(h, scenario);
         support::save(h, grid);
-        support::store(h, b, cop, gop);
+        support::save(h, b, cop, gop);
         support::save(h, timedef);
         perfect::store(h, scenario, grid, msoln);
         esio_file_close(h);
