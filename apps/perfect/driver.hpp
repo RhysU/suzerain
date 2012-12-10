@@ -30,6 +30,7 @@
 #include <suzerain/support/driver_base.hpp>
 
 #include "mean_quantities.hpp"
+#include "nonlinear_operator_fwd.hpp"
 #include "nsctpl_rholut_fwd.hpp"
 #include "scenario_definition.hpp"
 
@@ -56,8 +57,15 @@ public:
            const std::string &description = "",
            const std::string &revstr = "");
 
-    /** @copydoc driver_base::initialize */
-    virtual std::vector<std::string> initialize(int argc, char **argv);
+    /**
+     * @copydoc driver_base::initialize
+     *
+     * While #scenario is registered in #options during this method, #msoln is
+     * not as not all perfect gas binaries will expose related options.
+     */
+    virtual std::vector<std::string> initialize(
+            int argc,
+            char **argv);
 
     /** Nondimensional scenario parameters used by physics routines. */
     shared_ptr<scenario_definition> scenario;
@@ -66,9 +74,17 @@ public:
     shared_ptr<manufactured_solution> msoln;
 
     /**
+     * Data sharable between #L and #N to permit computing implicit forcing.
+     * The user is responsible for wiring #common_block into #L and #N at
+     * their construction time.
+     */
+    operator_common_block common_block;
+
+    /**
      * Maintains instantaneously sampled wall-normal mean quantities.  Member
      * \c mean.t tracks the last time statistics were computed and is used as a
-     * mechanism to avoid expensive recomputations.
+     * mechanism to avoid expensive recomputations.  Implicitly computed mean
+     * quantities are tracked via \ref common_block.
      */
     mean_quantities mean;
 
