@@ -216,7 +216,8 @@ mean_quantities sample_mean_quantities(
 #define DECLARE(r, data, tuple)                                              \
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
                 [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
-        BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN_PHYSICAL)
+        BOOST_PP_SEQ_FOR_EACH(DECLARE,,
+                SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL)
 #undef DECLARE
 
         for (int k = dgrid.local_physical_start.z();
@@ -387,7 +388,8 @@ mean_quantities sample_mean_quantities(
         ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                  \
             BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
-        BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,CHANNEL_MEAN_PHYSICAL)
+        BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,
+                SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL)
 #undef EXTRACT_SUM
 #undef MOVE_SUM_INTO_TMP
 
@@ -443,7 +445,7 @@ mean_quantities sample_mean_quantities(
 #define FILL(r, data, tuple)                                         \
     ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
             mean_quantities::storage_type::Scalar>::quiet_NaN());
-    BOOST_PP_SEQ_FOR_EACH(FILL,,CHANNEL_MEAN_IMPLICIT)
+    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT)
 #undef FILL
 
     return ret;

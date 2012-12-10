@@ -69,7 +69,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in wave
  * space.
  */
-#define CHANNEL_MEAN_WAVE                                  \
+#define SUZERAIN_PERFECT_MEAN_QUANTITIES_WAVE              \
     ((rho,                      1)) /* scalar           */ \
     ((rho_u,                    3)) /* vector           */ \
     ((rho_E,                    1)) /* scalar           */
@@ -78,7 +78,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed in physical
  * space.
  */
-#define CHANNEL_MEAN_PHYSICAL                        \
+#define SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL    \
     ((E,                 1))  /* scalar           */ \
     ((T,                 1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
@@ -108,7 +108,7 @@ public:
  * A Boost.Preprocessor sequence of tuples of quantities computed
  * through implicit forcing.
  */
-#define CHANNEL_MEAN_IMPLICIT                        \
+#define SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT    \
     ((f,                 3))  /* vector           */ \
     ((f_dot_u,           1))  /* scalar           */ \
     ((qb,                1))  /* scalar           */ \
@@ -118,25 +118,27 @@ public:
     ((Crhou_dot_u,       1))  /* scalar           */
 
 /** A Boost.Preprocessor sequence of tuples of all sampled quantities. */
-#define CHANNEL_MEAN \
-    CHANNEL_MEAN_WAVE CHANNEL_MEAN_PHYSICAL CHANNEL_MEAN_IMPLICIT
+#define SUZERAIN_PERFECT_MEAN_QUANTITIES      \
+    SUZERAIN_PERFECT_MEAN_QUANTITIES_WAVE     \
+    SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL \
+    SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT
 
     /* Compile-time totals of the number of scalars sampled at each point */
     struct nscalars { enum {
 #define EXTRACT(r, data, tuple) BOOST_PP_TUPLE_ELEM(2, 1, tuple)
 #define SUM(s, state, x) BOOST_PP_ADD(state, x)
 
-        wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_WAVE)),
+        wave = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
+                    EXTRACT,,SUZERAIN_PERFECT_MEAN_QUANTITIES_WAVE)),
 
-        physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_PHYSICAL)),
+        physical = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
+                    EXTRACT,,SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL)),
 
-        implicit = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN_IMPLICIT)),
+        implicit = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
+                    EXTRACT,,SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT)),
 
-        total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0,
-                BOOST_PP_SEQ_TRANSFORM(EXTRACT,,CHANNEL_MEAN))
+        total = BOOST_PP_SEQ_FOLD_LEFT(SUM, 0, BOOST_PP_SEQ_TRANSFORM(
+                    EXTRACT,,SUZERAIN_PERFECT_MEAN_QUANTITIES))
 
 #undef EXTRACT
 #undef SUM
@@ -182,12 +184,13 @@ public:
     /** Compile-time offsets for each quantity within \c storage */
     struct start { enum {
         BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(
-                OP,,SUZERAIN_SHIFTED_SUM(CHANNEL_MEAN)))
+                OP,,SUZERAIN_SHIFTED_SUM(SUZERAIN_PERFECT_MEAN_QUANTITIES)))
     }; };
 
     /** Compile-time sizes for each quantity within \c storage */
     struct size { enum {
-        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,CHANNEL_MEAN))
+        BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_TRANSFORM(OP,,
+                    SUZERAIN_PERFECT_MEAN_QUANTITIES))
     }; };
 
 #undef OP
@@ -200,7 +203,7 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(    \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                     \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_MEAN_QUANTITIES)
 #undef DECLARE
 
     // Declare a named, immutable "view" into storage for each quantity
@@ -211,7 +214,7 @@ public:
         return storage.middleCols<size::BOOST_PP_TUPLE_ELEM(2, 0, tuple)>(         \
                 start::BOOST_PP_TUPLE_ELEM(2, 0, tuple));                          \
     }
-    BOOST_PP_SEQ_FOR_EACH(DECLARE,,CHANNEL_MEAN)
+    BOOST_PP_SEQ_FOR_EACH(DECLARE,,SUZERAIN_PERFECT_MEAN_QUANTITIES)
 #undef DECLARE
 
     /**
@@ -228,7 +231,7 @@ public:
 #define INVOKE(r, data, tuple) \
         f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
           this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_PERFECT_MEAN_QUANTITIES)
     }
 #undef INVOKE
 
@@ -245,7 +248,7 @@ public:
 #define INVOKE(r, data, tuple) \
         f(::std::string(BOOST_PP_STRINGIZE(BOOST_PP_TUPLE_ELEM(2, 0, tuple))), \
           this->BOOST_PP_TUPLE_ELEM(2, 0, tuple)());
-        BOOST_PP_SEQ_FOR_EACH(INVOKE,,CHANNEL_MEAN)
+        BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_PERFECT_MEAN_QUANTITIES)
     }
 #undef INVOKE
 };
