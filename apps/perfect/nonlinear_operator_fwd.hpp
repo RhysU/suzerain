@@ -33,7 +33,9 @@
 
 #include "perfect.hpp"
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -42,19 +44,16 @@ namespace suzerain { namespace perfect {
  */
 class operator_common_block
 {
-public:
-
-    operator_common_block() {}
-
-private:
-
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 18, ColMajor> means_t;
+    typedef Array<real_t, Dynamic, 18, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 26, Dynamic, ColMajor> refs_t;
+    typedef Array<real_t, 26, Dynamic, ColMajor> refs_type;
 
 public:
+
+    /** Default constructor.  Use \ref set_zero to resize prior to use. */
+    operator_common_block() {}
 
     /**
      * The mean quantities, stored as collocation point values in \c means,
@@ -127,45 +126,45 @@ public:
      */
 
     /** Column-major storage housing all mean quantities (one per column). */
-    means_t means;
+    means_type means;
 
-    means_t::ColXpr      u()                 { return means.col( 0); }
-    means_t::ColXpr      v()                 { return means.col( 1); }
-    means_t::ColXpr      w()                 { return means.col( 2); }
-    means_t::ColXpr      SrhoE()             { return means.col( 3); }
-    means_t::ColXpr      Srhou()             { return means.col( 4); }
-    means_t::ColXpr      Srhov()             { return means.col( 5); }
-    means_t::ColXpr      Srhow()             { return means.col( 6); }
-    means_t::ColXpr      Srho()              { return means.col( 7); }
-    means_t::ColXpr      Srhou_dot_u()       { return means.col( 8); }
-    means_t::ColXpr      f()                 { return means.col( 9); }
-    means_t::ColXpr      f_dot_u()           { return means.col(10); }
-    means_t::ColXpr      qb()                { return means.col(11); }
-    means_t::ColXpr      CrhoE()             { return means.col(12); }
-    means_t::ColXpr      Crhou()             { return means.col(13); }
-    means_t::ColXpr      Crhov()             { return means.col(14); }
-    means_t::ColXpr      Crhow()             { return means.col(15); }
-    means_t::ColXpr      Crho()              { return means.col(16); }
-    means_t::ColXpr      Crhou_dot_u()       { return means.col(17); }
+    means_type::ColXpr      u()                 { return means.col( 0); }
+    means_type::ColXpr      v()                 { return means.col( 1); }
+    means_type::ColXpr      w()                 { return means.col( 2); }
+    means_type::ColXpr      SrhoE()             { return means.col( 3); }
+    means_type::ColXpr      Srhou()             { return means.col( 4); }
+    means_type::ColXpr      Srhov()             { return means.col( 5); }
+    means_type::ColXpr      Srhow()             { return means.col( 6); }
+    means_type::ColXpr      Srho()              { return means.col( 7); }
+    means_type::ColXpr      Srhou_dot_u()       { return means.col( 8); }
+    means_type::ColXpr      f()                 { return means.col( 9); }
+    means_type::ColXpr      f_dot_u()           { return means.col(10); }
+    means_type::ColXpr      qb()                { return means.col(11); }
+    means_type::ColXpr      CrhoE()             { return means.col(12); }
+    means_type::ColXpr      Crhou()             { return means.col(13); }
+    means_type::ColXpr      Crhov()             { return means.col(14); }
+    means_type::ColXpr      Crhow()             { return means.col(15); }
+    means_type::ColXpr      Crho()              { return means.col(16); }
+    means_type::ColXpr      Crhou_dot_u()       { return means.col(17); }
 
-    means_t::ConstColXpr u()           const { return means.col( 0); }
-    means_t::ConstColXpr v()           const { return means.col( 1); }
-    means_t::ConstColXpr w()           const { return means.col( 2); }
-    means_t::ConstColXpr SrhoE()       const { return means.col( 3); }
-    means_t::ConstColXpr Srhou()       const { return means.col( 4); }
-    means_t::ConstColXpr Srhov()       const { return means.col( 5); }
-    means_t::ConstColXpr Srhow()       const { return means.col( 6); }
-    means_t::ConstColXpr Srho()        const { return means.col( 7); }
-    means_t::ConstColXpr Srhou_dot_u() const { return means.col( 8); }
-    means_t::ConstColXpr f()           const { return means.col( 9); }
-    means_t::ConstColXpr f_dot_u()     const { return means.col(10); }
-    means_t::ConstColXpr qb()          const { return means.col(11); }
-    means_t::ConstColXpr CrhoE()       const { return means.col(12); }
-    means_t::ConstColXpr Crhou()       const { return means.col(13); }
-    means_t::ConstColXpr Crhov()       const { return means.col(14); }
-    means_t::ConstColXpr Crhow()       const { return means.col(15); }
-    means_t::ConstColXpr Crho()        const { return means.col(16); }
-    means_t::ConstColXpr Crhou_dot_u() const { return means.col(17); }
+    means_type::ConstColXpr u()           const { return means.col( 0); }
+    means_type::ConstColXpr v()           const { return means.col( 1); }
+    means_type::ConstColXpr w()           const { return means.col( 2); }
+    means_type::ConstColXpr SrhoE()       const { return means.col( 3); }
+    means_type::ConstColXpr Srhou()       const { return means.col( 4); }
+    means_type::ConstColXpr Srhov()       const { return means.col( 5); }
+    means_type::ConstColXpr Srhow()       const { return means.col( 6); }
+    means_type::ConstColXpr Srho()        const { return means.col( 7); }
+    means_type::ConstColXpr Srhou_dot_u() const { return means.col( 8); }
+    means_type::ConstColXpr f()           const { return means.col( 9); }
+    means_type::ConstColXpr f_dot_u()     const { return means.col(10); }
+    means_type::ConstColXpr qb()          const { return means.col(11); }
+    means_type::ConstColXpr CrhoE()       const { return means.col(12); }
+    means_type::ConstColXpr Crhou()       const { return means.col(13); }
+    means_type::ConstColXpr Crhov()       const { return means.col(14); }
+    means_type::ConstColXpr Crhow()       const { return means.col(15); }
+    means_type::ConstColXpr Crho()        const { return means.col(16); }
+    means_type::ConstColXpr Crhou_dot_u() const { return means.col(17); }
 
     /** @} */
 
@@ -209,61 +208,61 @@ public:
      */
 
     /** Column-major storage housing all mean quantities (one per row). */
-    refs_t refs;
+    refs_type refs;
 
-    refs_t::RowXpr      ref_ux()               { return refs.row( 0); }
-    refs_t::RowXpr      ref_uy()               { return refs.row( 1); }
-    refs_t::RowXpr      ref_uz()               { return refs.row( 2); }
-    refs_t::RowXpr      ref_u2()               { return refs.row( 3); }
-    refs_t::RowXpr      ref_uxux()             { return refs.row( 4); }
-    refs_t::RowXpr      ref_uxuy()             { return refs.row( 5); }
-    refs_t::RowXpr      ref_uxuz()             { return refs.row( 6); }
-    refs_t::RowXpr      ref_uyuy()             { return refs.row( 7); }
-    refs_t::RowXpr      ref_uyuz()             { return refs.row( 8); }
-    refs_t::RowXpr      ref_uzuz()             { return refs.row( 9); }
-    refs_t::RowXpr      ref_nu()               { return refs.row(10); }
-    refs_t::RowXpr      ref_nuux()             { return refs.row(11); }
-    refs_t::RowXpr      ref_nuuy()             { return refs.row(12); }
-    refs_t::RowXpr      ref_nuuz()             { return refs.row(13); }
-    refs_t::RowXpr      ref_nuu2()             { return refs.row(14); }
-    refs_t::RowXpr      ref_nuuxux()           { return refs.row(15); }
-    refs_t::RowXpr      ref_nuuxuy()           { return refs.row(16); }
-    refs_t::RowXpr      ref_nuuxuz()           { return refs.row(17); }
-    refs_t::RowXpr      ref_nuuyuy()           { return refs.row(18); }
-    refs_t::RowXpr      ref_nuuyuz()           { return refs.row(19); }
-    refs_t::RowXpr      ref_nuuzuz()           { return refs.row(20); }
-    refs_t::RowXpr      ref_ex_gradrho()       { return refs.row(21); }
-    refs_t::RowXpr      ref_ey_gradrho()       { return refs.row(22); }
-    refs_t::RowXpr      ref_ez_gradrho()       { return refs.row(23); }
-    refs_t::RowXpr      ref_e_divm()           { return refs.row(24); }
-    refs_t::RowXpr      ref_e_deltarho()       { return refs.row(25); }
+    refs_type::RowXpr      ref_ux()               { return refs.row( 0); }
+    refs_type::RowXpr      ref_uy()               { return refs.row( 1); }
+    refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
+    refs_type::RowXpr      ref_u2()               { return refs.row( 3); }
+    refs_type::RowXpr      ref_uxux()             { return refs.row( 4); }
+    refs_type::RowXpr      ref_uxuy()             { return refs.row( 5); }
+    refs_type::RowXpr      ref_uxuz()             { return refs.row( 6); }
+    refs_type::RowXpr      ref_uyuy()             { return refs.row( 7); }
+    refs_type::RowXpr      ref_uyuz()             { return refs.row( 8); }
+    refs_type::RowXpr      ref_uzuz()             { return refs.row( 9); }
+    refs_type::RowXpr      ref_nu()               { return refs.row(10); }
+    refs_type::RowXpr      ref_nuux()             { return refs.row(11); }
+    refs_type::RowXpr      ref_nuuy()             { return refs.row(12); }
+    refs_type::RowXpr      ref_nuuz()             { return refs.row(13); }
+    refs_type::RowXpr      ref_nuu2()             { return refs.row(14); }
+    refs_type::RowXpr      ref_nuuxux()           { return refs.row(15); }
+    refs_type::RowXpr      ref_nuuxuy()           { return refs.row(16); }
+    refs_type::RowXpr      ref_nuuxuz()           { return refs.row(17); }
+    refs_type::RowXpr      ref_nuuyuy()           { return refs.row(18); }
+    refs_type::RowXpr      ref_nuuyuz()           { return refs.row(19); }
+    refs_type::RowXpr      ref_nuuzuz()           { return refs.row(20); }
+    refs_type::RowXpr      ref_ex_gradrho()       { return refs.row(21); }
+    refs_type::RowXpr      ref_ey_gradrho()       { return refs.row(22); }
+    refs_type::RowXpr      ref_ez_gradrho()       { return refs.row(23); }
+    refs_type::RowXpr      ref_e_divm()           { return refs.row(24); }
+    refs_type::RowXpr      ref_e_deltarho()       { return refs.row(25); }
 
-    refs_t::ConstRowXpr ref_ux()         const { return refs.row( 0); }
-    refs_t::ConstRowXpr ref_uy()         const { return refs.row( 1); }
-    refs_t::ConstRowXpr ref_uz()         const { return refs.row( 2); }
-    refs_t::ConstRowXpr ref_u2()         const { return refs.row( 3); }
-    refs_t::ConstRowXpr ref_uxux()       const { return refs.row( 4); }
-    refs_t::ConstRowXpr ref_uxuy()       const { return refs.row( 5); }
-    refs_t::ConstRowXpr ref_uxuz()       const { return refs.row( 6); }
-    refs_t::ConstRowXpr ref_uyuy()       const { return refs.row( 7); }
-    refs_t::ConstRowXpr ref_uyuz()       const { return refs.row( 8); }
-    refs_t::ConstRowXpr ref_uzuz()       const { return refs.row( 9); }
-    refs_t::ConstRowXpr ref_nu()         const { return refs.row(10); }
-    refs_t::ConstRowXpr ref_nuux()       const { return refs.row(11); }
-    refs_t::ConstRowXpr ref_nuuy()       const { return refs.row(12); }
-    refs_t::ConstRowXpr ref_nuuz()       const { return refs.row(13); }
-    refs_t::ConstRowXpr ref_nuu2()       const { return refs.row(14); }
-    refs_t::ConstRowXpr ref_nuuxux()     const { return refs.row(15); }
-    refs_t::ConstRowXpr ref_nuuxuy()     const { return refs.row(16); }
-    refs_t::ConstRowXpr ref_nuuxuz()     const { return refs.row(17); }
-    refs_t::ConstRowXpr ref_nuuyuy()     const { return refs.row(18); }
-    refs_t::ConstRowXpr ref_nuuyuz()     const { return refs.row(19); }
-    refs_t::ConstRowXpr ref_nuuzuz()     const { return refs.row(20); }
-    refs_t::ConstRowXpr ref_ex_gradrho() const { return refs.row(21); }
-    refs_t::ConstRowXpr ref_ey_gradrho() const { return refs.row(22); }
-    refs_t::ConstRowXpr ref_ez_gradrho() const { return refs.row(23); }
-    refs_t::ConstRowXpr ref_e_divm()     const { return refs.row(24); }
-    refs_t::ConstRowXpr ref_e_deltarho() const { return refs.row(25); }
+    refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
+    refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
+    refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
+    refs_type::ConstRowXpr ref_u2()         const { return refs.row( 3); }
+    refs_type::ConstRowXpr ref_uxux()       const { return refs.row( 4); }
+    refs_type::ConstRowXpr ref_uxuy()       const { return refs.row( 5); }
+    refs_type::ConstRowXpr ref_uxuz()       const { return refs.row( 6); }
+    refs_type::ConstRowXpr ref_uyuy()       const { return refs.row( 7); }
+    refs_type::ConstRowXpr ref_uyuz()       const { return refs.row( 8); }
+    refs_type::ConstRowXpr ref_uzuz()       const { return refs.row( 9); }
+    refs_type::ConstRowXpr ref_nu()         const { return refs.row(10); }
+    refs_type::ConstRowXpr ref_nuux()       const { return refs.row(11); }
+    refs_type::ConstRowXpr ref_nuuy()       const { return refs.row(12); }
+    refs_type::ConstRowXpr ref_nuuz()       const { return refs.row(13); }
+    refs_type::ConstRowXpr ref_nuu2()       const { return refs.row(14); }
+    refs_type::ConstRowXpr ref_nuuxux()     const { return refs.row(15); }
+    refs_type::ConstRowXpr ref_nuuxuy()     const { return refs.row(16); }
+    refs_type::ConstRowXpr ref_nuuxuz()     const { return refs.row(17); }
+    refs_type::ConstRowXpr ref_nuuyuy()     const { return refs.row(18); }
+    refs_type::ConstRowXpr ref_nuuyuz()     const { return refs.row(19); }
+    refs_type::ConstRowXpr ref_nuuzuz()     const { return refs.row(20); }
+    refs_type::ConstRowXpr ref_ex_gradrho() const { return refs.row(21); }
+    refs_type::ConstRowXpr ref_ey_gradrho() const { return refs.row(22); }
+    refs_type::ConstRowXpr ref_ez_gradrho() const { return refs.row(23); }
+    refs_type::ConstRowXpr ref_e_divm()     const { return refs.row(24); }
+    refs_type::ConstRowXpr ref_e_deltarho() const { return refs.row(25); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
@@ -336,8 +335,8 @@ public:
     template<typename Index>
     void set_zero(const Index& Ny)
     {
-        means.setZero(Ny, means_t::ColsAtCompileTime);
-        refs.setZero(refs_t::RowsAtCompileTime, Ny);
+        means.setZero(Ny, means_type::ColsAtCompileTime);
+        refs.setZero(refs_type::RowsAtCompileTime, Ny);
     }
 
 private:
@@ -446,6 +445,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 #endif  /* NONLINEAR_OPERATOR_FWD_HPP */
