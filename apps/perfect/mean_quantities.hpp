@@ -255,10 +255,9 @@ public:
 
 /**
  * Using the provided state, sample the mean quantities declared in \ref
- * mean_quantities with the notable exceptions of \f$\bar{f}\f$,
- * \f$\overline{\rho{}q_b}\f$, and \f$\overline{f\cdot{}u}\f$.  This is an
- * expensive, collective method producing valid results <em>only on rank
- * zero</em>.
+ * mean_quantities with the notable exceptions of those listed in \ref
+ * SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT.  This is an expensive, collective
+ * method producing valid results <em>only on rank zero</em>.
  *
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
