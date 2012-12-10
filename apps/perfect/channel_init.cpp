@@ -41,6 +41,7 @@
 #include <suzerain/pre_gsl.h>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/field.hpp>
+#include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/utility.hpp>

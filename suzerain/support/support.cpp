@@ -40,7 +40,9 @@
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
+#include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
+#include <suzerain/mpi.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>

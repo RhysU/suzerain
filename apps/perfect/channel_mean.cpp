@@ -36,6 +36,7 @@
 #include <suzerain/math.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/pre_gsl.h>
+#include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/support.hpp>
