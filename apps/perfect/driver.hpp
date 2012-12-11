@@ -90,11 +90,12 @@ public:
 
     /**
      * Collectively compute statistics from #state_linear saving them into
-     * #mean and destroying #state_nonlinear in the process.  Any currently
-     * cached results in #mean will be reused <em>without recomputation</em>
-     * whenever <tt>this->controller && means.t = controller->current_t()</tt>.
+     * #mean and destroying #state_nonlinear in the process.
+     *
+     * @param t Time to be saved in the statistics recorded in #mean.
      */
-    virtual void compute_statistics();
+    virtual void compute_statistics(
+            time_type t);
 
 protected:
 
@@ -114,7 +115,9 @@ protected:
 
     /**
      * Beyond the inherited behavior, this method invokes \ref
-     * compute_statistics and saves #mean.
+     * compute_statistics and saves #mean.  Any currently cached results in
+     * #mean will be reused <em>without recomputation</em> whenever <tt>mean.t
+     * = controller->current_t()</tt>.
      * @copydetails driver_base::save_statistics_hook
      */
     virtual bool save_statistics_hook(
