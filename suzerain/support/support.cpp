@@ -546,20 +546,6 @@ contiguous_state<4,complex_t>* allocate_padded_state(
     return retval;
 }
 
-real_t distance(const bspline& a,
-                const bspline& b)
-{
-    real_t retval = 0;
-    if (a.k() != b.k() || a.n() != b.n() || a.nknot() != b.nknot()) {
-        retval = std::numeric_limits<real_t>::max();
-    } else {
-        for (int j = 0; j < b.nknot(); ++j) {
-            retval = std::max(retval, std::abs(a.knot(j) - b.knot(j)));
-        }
-    }
-    return retval;
-}
-
 } // end namespace suzerain
 
 } // end namespace support
