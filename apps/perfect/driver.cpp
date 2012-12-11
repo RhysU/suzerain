@@ -26,6 +26,7 @@
 #include "driver.hpp"
 
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 
 #include "nsctpl_rholut.hpp"
 #include "perfect.hpp"
@@ -57,23 +58,12 @@ driver::initialize(
 }
 
 void
-driver::compute_statistics()
+driver::compute_statistics(
+        driver::time_type t)
 {
-    const real_t NaN = std::numeric_limits<real_t>::quiet_NaN();
-    const real_t t   = controller ? controller->current_t() : NaN;
-
-    // Defensively avoid multiple invocations with no intervening changes
-#pragma warning(push,disable:1572)
-    if (controller && t == mean.t) {
-#pragma warning(pop)
-        DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
-        return;
-    }
-
     SUZERAIN_TIMER_SCOPED("driver::compute_statistics");
 
     // Obtain mean samples from instantaneous fields stored in state_linear
-    const double starttime = MPI_Wtime();
     state_nonlinear->assign(*state_linear);
     mean = perfect::sample_mean_quantities(
             *scenario, *grid, *dgrid, *b, *cop, *state_nonlinear, t);
@@ -92,13 +82,14 @@ driver::compute_statistics()
         mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
         WARN0("Could not obtain mean quantities set by implicit forcing");
-        mean.f          ().setConstant(NaN);
-        mean.f_dot_u    ().setConstant(NaN);
-        mean.qb         ().setConstant(NaN);
-        mean.CrhoE      ().setConstant(NaN);
-        mean.Crhou      ().setConstant(NaN);
-        mean.Crho       ().setConstant(NaN);
-        mean.Crhou_dot_u().setConstant(NaN);
+        using std::numeric_limits;
+        mean.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.qb         ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.CrhoE      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.Crhou      ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.Crho       ().setConstant(numeric_limits<real_t>::quiet_NaN());
+        mean.Crhou_dot_u().setConstant(numeric_limits<real_t>::quiet_NaN());
     }
 
     // Convert implicit values at collocation points to expansion coefficients
@@ -109,15 +100,60 @@ driver::compute_statistics()
                mean.storage.middleCols<mean_quantities::nscalars::implicit>(
                    mean_quantities::nscalars::physical).data(),
                mean.storage.innerStride(), mean.storage.outerStride());
-
-    const double elapsed = MPI_Wtime() - starttime;
-    if (controller) {
-        std::string timeprefix(build_timeprefix(t, controller->current_nt()));
-        INFO0(timeprefix << " Computed statistics in " << elapsed << " seconds");
-    }
 }
 
-// FIXME Implement
+void
+driver::save_metadata_hook(
+        const esio_handle esioh)
+{
+    super::save_metadata_hook(esioh);
+    save(esioh, *scenario);
+    save(esioh, *scenario, *grid, msoln);
+    return;
+}
+
+void
+driver::load_metadata_hook(
+        const esio_handle esioh)
+{
+    super::load_metadata_hook(esioh);
+    load(esioh, *scenario);
+    load(esioh, *scenario, *grid, msoln);
+    return;
+}
+
+bool
+driver::save_statistics_hook(
+        const esio_handle esioh)
+{
+    // Either compute mean quantities or re-use existing data in this->mean
+    const time_type t  = controller->current_t();
+#pragma warning(push,disable:1572)
+    if (t == mean.t) {
+#pragma warning(pop)
+        DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
+    } else {
+        const double starttime = MPI_Wtime();
+        compute_statistics(t);
+        const double elapsed = MPI_Wtime() - starttime;
+        const step_type nt = controller->current_nt();
+        const std::string timeprefix(build_timeprefix(t, nt));
+        INFO0(timeprefix << " Computed statistics in "
+              << elapsed << " seconds");
+    }
+
+    save(esioh, mean);
+    return super::save_statistics_hook(esioh);
+}
+
+void
+driver::load_statistics_hook(
+        const esio_handle esioh)
+{
+    load(esioh, mean);
+    support::load_time(esioh, mean.t);
+    return super::load_statistics_hook(esioh);
+}
 
 } // end namespace perfect
 
