@@ -94,7 +94,7 @@ typedef array<
 class delta_t_allreducer;
 
 /**
- * An driver base class for managing a Suzerain application.  Intended for
+ * A driver base class for managing a Suzerain application.  Intended for
  * time-varying, three-dimensional problems.  Provides many hooks to permit
  * lifecycle-related behavior for long-running, parallel applications.
  * Instantiate from within \c main().

@@ -39,7 +39,7 @@ namespace suzerain {
 namespace perfect {
 
 /**
- * An driver class for managing a nondimensional perfect gas application using
+ * A driver class for managing a nondimensional perfect gas application using
  * details from \ref suzerain::rholut.  Instantiate from within \c main().
  */
 class driver : public support::driver_base
