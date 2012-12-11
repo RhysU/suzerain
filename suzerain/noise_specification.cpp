@@ -22,13 +22,17 @@ namespace suzerain {
 
 noise_specification::noise_specification(
         real_t fluct_percent,
-        unsigned long fluct_seed)
+        unsigned long fluct_seed,
+        real_t kxfrac_min,
+        real_t kxfrac_max,
+        real_t kzfrac_min,
+        real_t kzfrac_max)
     : percent(percent)
-    , kxfrac_min(0)
-    , kxfrac_max(1)
-    , kzfrac_min(0)
-    , kzfrac_max(1)
     , seed(seed)
+    , kxfrac_min(kxfrac_min)
+    , kxfrac_max(kxfrac_max)
+    , kzfrac_min(kzfrac_min)
+    , kzfrac_max(kzfrac_max)
 {
 }
 

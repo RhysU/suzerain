@@ -17,8 +17,6 @@
 
 #include <suzerain/common.hpp>
 
-// TODO Distinguish between two- versus one-sided stretching in grid_specification
-
 /** @file
  * Provides classes handling specifying additive noise
  */
@@ -34,14 +32,22 @@ class noise_specification
 public:
 
     /** Construct an instance with the given default values */
-    explicit noise_specification(real_t fluct_percent = 0,
-                                 unsigned long fluct_seed = 12345);
+    explicit noise_specification(
+            real_t fluct_percent     = 0,
+            unsigned long fluct_seed = 12345,
+            real_t kxfrac_min        = 0,
+            real_t kxfrac_max        = 1,
+            real_t kzfrac_min        = 0,
+            real_t kzfrac_max        = 1);
 
     /**
      * Maximum fluctuation magnitude to add as a percentage
      * of centerline streamwise momentum.
      */
     real_t percent;
+
+    /** \ref rngstream generator seed (see L'Ecuyer et al. 2002) */
+    unsigned long seed;
 
     /**
      * Fraction of the X direction wavenumbers in [0,1] below
@@ -66,9 +72,6 @@ public:
      * which fluctuations will not be added.
      */
     real_t kzfrac_max;
-
-    /** \ref rngstream generator seed (see L'Ecuyer et al. 2002) */
-    unsigned long seed;
 
 };
 

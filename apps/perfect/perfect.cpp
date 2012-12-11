@@ -542,7 +542,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 }
 
 noise_definition::noise_definition(real_t percent,
-                                 unsigned long seed)
+                                   unsigned long seed)
     : definition_base("Additive random velocity perturbations on startup"),
       percent(percent),
       kxfrac_min(0),
