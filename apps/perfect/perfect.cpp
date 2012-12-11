@@ -569,14 +569,14 @@ noise_definition::noise_definition(real_t percent,
         ("fluct_kxfrac",
          boost::program_options::value<std::string>(0)
             ->default_value("0:1")
-            ->notifier(bind(&support::parse_range<real_t>, _1,
+            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
                             &this->kxfrac_min, &this->kxfrac_max,
                             0, 1, 0, 1, "fluct_kxfrac")),
          "Range of X wavenumbers in which to generate fluctuations")
         ("fluct_kzfrac",
          boost::program_options::value<std::string>(0)
             ->default_value("0:1")
-            ->notifier(bind(&support::parse_range<real_t>, _1,
+            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
                             &this->kzfrac_min, &this->kzfrac_max,
                             0, 1, 0, 1, "fluct_kzfrac")),
          "Range of Z wavenumbers in which to generate fluctuations")

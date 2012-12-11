@@ -126,6 +126,75 @@ FPT exprparse(const char *s)
     return t;
 }
 
+/**
+ * Parse a range with default minimum and maximum values.
+ *
+ * That is, parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into
+ * valmin, \c valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is
+ * enforced with the outer two inequalities being considered a validation
+ * failure.
+ *
+ * @throws std::invalid_argument if the given input cannot be \em completely
+ *         consumed by the underlying parser.
+ */
+void exprparse_range(const char *s,
+                     float *valmin,
+                     float *valmax,
+                     const float defaultmin,
+                     const float defaultmax,
+                     const float absmin,
+                     const float absmax,
+                     const char *name = NULL);
+
+/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+void exprparse_range(const char *s,
+                     double *valmin,
+                     double *valmax,
+                     const double defaultmin,
+                     const double defaultmax,
+                     const double absmin,
+                     const double absmax,
+                     const char *name = NULL);
+
+/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+void exprparse_range(const std::string& s,
+                     float *valmin,
+                     float *valmax,
+                     const float defaultmin,
+                     const float defaultmax,
+                     const float absmin,
+                     const float absmax,
+                     const char *name = NULL);
+
+/** @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *) */
+void exprparse_range(const std::string& s,
+                     double *valmin,
+                     double *valmax,
+                     const double defaultmin,
+                     const double defaultmax,
+                     const double absmin,
+                     const double absmax,
+                     const char *name = NULL);
+
+/**
+ * @copydoc exprparse(const char *, float*, float*, const float, const float, const float, const float, const char *)
+ *
+ * A templated overload easing selecting one of the concrete implementations.
+ */
+template <typename S, typename T>
+void exprparse_range(S s,
+                     T *valmin,
+                     T *valmax,
+                     const T defaultmin,
+                     const T defaultmax,
+                     const T absmin,
+                     const T absmax,
+                     const char *name = NULL)
+{
+    return exprparse_range(
+            s, valmin, valmax, defaultmin, defaultmax, absmin, absmax, name);
+}
+
 } // end namespace suzerain
 
 #endif // SUZERAIN_EXPRPARSE_HPP

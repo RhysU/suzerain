@@ -15,13 +15,7 @@
 #ifndef SUZERAIN_EXPRPARSE_IMPL_HPP
 #define SUZERAIN_EXPRPARSE_IMPL_HPP
 
-#include <algorithm>
-#include <cstring>
-#include <iterator>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-
+#include <suzerain/common.hpp>
 #include <suzerain/exprgrammar.hpp>
 
 namespace suzerain {
@@ -101,6 +95,65 @@ FPT exprparse_impl(const std::string &s, const char *name)
     }
 
     return result;
+}
+
+// Prior forward declaration suppresses Intel warnings
+template<typename T>
+void exprparse_range_impl(const std::string& s,
+                          T *valmin, T *valmax,
+                          const T defaultmin, const T defaultmax,
+                          const T absmin, const T absmax,
+                          const char *name = NULL);
+
+// Prior forward declaration suppresses Intel warnings
+template<typename T>
+void exprparse_range_impl(const std::string& s,
+                          T *valmin, T *valmax,
+                          const T defaultmin, const T defaultmax,
+                          const T absmin, const T absmax,
+                          const char *name = NULL)
+{
+    if (!name) name = "exprparse_range input";
+    assert(absmin <= defaultmin);
+    assert(defaultmin <= defaultmax);
+    assert(defaultmax <= absmax);
+
+    // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
+    const size_t colonpos = s.find_first_of(':');
+    if (colonpos == std::string::npos) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    }
+    std::string s_min(s, 0, colonpos);
+    std::string s_max(s, colonpos + 1);
+    boost::algorithm::trim(s_min);
+    boost::algorithm::trim(s_max);
+
+    // Parse recognized formats into valmin and valmax
+    if (s_min.length() == 0 && s_max.length() == 0) {
+        throw std::invalid_argument(std::string(name)
+            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
+    } else if (s_min.length() == 0) {
+        *valmin = defaultmin;
+        *valmax = exprparse_impl<T>(s_max, name);
+    } else if (s_max.length() == 0) {
+        *valmin = exprparse_impl<T>(s_min, name);
+        *valmax = defaultmax;
+    } else {
+        *valmin = exprparse_impl<T>(s_min, name);
+        *valmax = exprparse_impl<T>(s_max, name);
+    }
+
+    // Ensure valmin <= valmax
+    if (*valmin > *valmax) std::swap(*valmin, *valmax);
+
+    // Validate range is within [absmin, absmax]
+    if (*valmin < absmin || absmax < *valmax) {
+        std::ostringstream oss;
+        oss << name << " value [" << *valmin << ":" << *valmax
+            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
+        throw std::invalid_argument(oss.str());
+    }
 }
 
 } // end namespace detail

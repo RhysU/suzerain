@@ -23,7 +23,22 @@
 // To mitigate long compilation times associated with Boost Spirit.Qi parsers,
 // exprparse is broken into many separate compilation modules.
 
-void suzerain::exprparse(const char *s, float& v, const char *name)
+namespace suzerain {
+
+void exprparse(const char *s, float& v, const char *name)
 {
-    v = suzerain::detail::exprparse_impl<float>(s, name);
+    v = detail::exprparse_impl<float>(s, name);
 }
+
+void exprparse_range(const char *s,
+                     float *valmin, float *valmax,
+                     const float defaultmin, const float defaultmax,
+                     const float absmin, const float absmax,
+                     const char *name)
+{
+    return detail::exprparse_range_impl(
+            std::string(s), valmin, valmax,
+            defaultmin, defaultmax, absmin, absmax, name);
+}
+
+} // namespace suzerain

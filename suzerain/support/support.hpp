@@ -157,68 +157,6 @@ contiguous_state<4,complex_t>* allocate_padded_state(
            const std::size_t howmany_fields,
            const pencil_grid& dgrid);
 
-/**
- * Parses "min:max", "min:[defaultmax]", or "[defaultmin]:max" into valmin, \c
- * valmax where \c absmin <= \c valmin <= \c valmax <= \c absmax is enforced
- * with the outer two inequalities being considered a validation failure.
- */
-template<typename T>
-void parse_range(const std::string& s,
-                 T *valmin, T *valmax,
-                 const T defaultmin, const T defaultmax,
-                 const T absmin, const T absmax,
-                 const char *name);
-
-// Prior forward declaration suppresses Intel warnings
-template<typename T>
-void parse_range(const std::string& s,
-                 T *valmin, T *valmax,
-                 const T defaultmin, const T defaultmax,
-                 const T absmin, const T absmax,
-                 const char *name)
-{
-    assert(absmin <= defaultmin);
-    assert(defaultmin <= defaultmax);
-    assert(defaultmax <= absmax);
-
-    // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
-    const size_t colonpos = s.find_first_of(':');
-    if (colonpos == std::string::npos) {
-        throw std::invalid_argument(std::string(name)
-            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
-    }
-    std::string s_min(s, 0, colonpos);
-    std::string s_max(s, colonpos + 1);
-    boost::algorithm::trim(s_min);
-    boost::algorithm::trim(s_max);
-
-    // Parse recognized formats into valmin and valmax
-    if (s_min.length() == 0 && s_max.length() == 0) {
-        throw std::invalid_argument(std::string(name)
-            + " not in format \"low:high\", \"[low]:high\", or low:[high].");
-    } else if (s_min.length() == 0) {
-        *valmin = defaultmin;
-        *valmax = exprparse<T>(s_max, name);
-    } else if (s_max.length() == 0) {
-        *valmin = exprparse<T>(s_min, name);
-        *valmax = defaultmax;
-    } else {
-        *valmin = exprparse<T>(s_min, name);
-        *valmax = exprparse<T>(s_max, name);
-    }
-
-    // Ensure valmin <= valmax
-    if (*valmin > *valmax) std::swap(*valmin, *valmax);
-
-    // Validate range is within [absmin, absmax]
-    if (*valmin < absmin || absmax < *valmax) {
-        std::ostringstream oss;
-        oss << name << " value [" << *valmin << ":" << *valmax
-            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
-        throw std::invalid_argument(oss.str());
-    }
-}
-
 } // end namespace support
 
 } // end namespace suzerain
