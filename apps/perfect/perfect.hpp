@@ -38,6 +38,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/noise_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/definition_base.hpp>
@@ -140,57 +141,13 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const real_t old_Ma,
                 const real_t old_gamma);
 
-/** Options definitions for adding random noise to momentum fields */
-class noise_definition : public support::definition_base {
-
-public:
-
-    /** Construct an instance with the given default values */
-    explicit noise_definition(real_t fluct_percent = 0,
-                              unsigned long fluct_seed = 12345);
-
-    /**
-     * Maximum fluctuation magnitude to add as a percentage
-     * of centerline streamwise momentum.
-     */
-    real_t percent;
-
-    /**
-     * Fraction of the X direction wavenumbers in [0,1] below
-     * which fluctuations will not be added.
-     */
-    real_t kxfrac_min;
-
-    /**
-     * Fraction of the X direction wavenumbers in [0,1] above
-     * which fluctuations will not be added.
-     */
-    real_t kxfrac_max;
-
-    /**
-     * Fraction of the Z direction wavenumbers in [0,1] below
-     * which fluctuations will not be added.
-     */
-    real_t kzfrac_min;
-
-    /**
-     * Fraction of the Z direction wavenumbers in [0,1] above
-     * which fluctuations will not be added.
-     */
-    real_t kzfrac_max;
-
-    /** rngstream generator seed (see L'Ecuyer et al. 2002) */
-    unsigned long seed;
-
-};
-
 /**
  * Add random momentum field perturbations ("noise") according to
  * the provided noise_definition.
  */
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const noise_definition& noisedef,
+          const noise_specification& noise,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,

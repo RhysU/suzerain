@@ -39,7 +39,6 @@
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
-#include <suzerain/exprparse.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
@@ -53,7 +52,6 @@
 #include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
-#include <suzerain/validation.hpp>
 
 // Manufactured solution classes explicitly instantiated for debugging
 template class nsctpl_rholut::manufactured_solution<suzerain::real_t>;
@@ -541,56 +539,9 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     }
 }
 
-noise_definition::noise_definition(real_t percent,
-                                   unsigned long seed)
-    : definition_base("Additive random velocity perturbations on startup"),
-      percent(percent),
-      kxfrac_min(0),
-      kxfrac_max(1),
-      kzfrac_min(0),
-      kzfrac_max(1),
-      seed(seed)
-{
-    using boost::bind;
-    using validation::ensure_positive;
-    using validation::ensure_nonnegative;
-    std::pointer_to_binary_function<unsigned long,const char*,void>
-            ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
-    std::pointer_to_binary_function<real_t,const char*,void>
-            ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
-    this->add_options()
-        ("fluct_percent",
-         boost::program_options::value(&this->percent)
-            ->default_value(this->percent)
-            ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
-                                   "fluct_percent")),
-         "Maximum fluctuation magnitude to add as a percentage of"
-         " centerline mean streamwise velocity")
-        ("fluct_kxfrac",
-         boost::program_options::value<std::string>(0)
-            ->default_value("0:1")
-            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
-                            &this->kxfrac_min, &this->kxfrac_max,
-                            0, 1, 0, 1, "fluct_kxfrac")),
-         "Range of X wavenumbers in which to generate fluctuations")
-        ("fluct_kzfrac",
-         boost::program_options::value<std::string>(0)
-            ->default_value("0:1")
-            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
-                            &this->kzfrac_min, &this->kzfrac_max,
-                            0, 1, 0, 1, "fluct_kzfrac")),
-         "Range of Z wavenumbers in which to generate fluctuations")
-        ("fluct_seed",
-         boost::program_options::value(&this->seed)
-            ->default_value(this->seed)
-            ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
-                                    "fluct_seed")),
-         "RngStream generator seed (L'Ecuyer et al. 2002)");
-}
-
 void
 add_noise(contiguous_state<4,complex_t> &state,
-          const noise_definition& noisedef,
+          const noise_specification& noise,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
@@ -614,7 +565,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     const int Ny = grid.N.y();
 
 #pragma warning(push,disable:1572)
-    if (noisedef.percent == 0) {
+    if (noise.percent == 0) {
 #pragma warning(pop)
         DEBUG0("Zero noise added to velocity fields");
         return;
@@ -640,7 +591,7 @@ add_noise(contiguous_state<4,complex_t> &state,
                 0, &state[ndx::rho][0][0][0], 1, &centerline, &density);
         INFO0("Centerline mean density at y = "
               << centerline << " is " << density);
-        maxfluct = noisedef.percent / 100 * (abs(momentum) / abs(density));
+        maxfluct = noise.percent / 100 * (abs(momentum) / abs(density));
     }
     SUZERAIN_MPICHKR(MPI_Bcast(&maxfluct, 1,
                 mpi::datatype_of(maxfluct),
@@ -649,11 +600,11 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     // Compute and display kxfrac_min, kxfrac_max constraints
 #pragma warning(push,disable:2259)
-    const int dkx_max = noisedef.kxfrac_max * wavenumber_max(grid.N.x());
-    const int dkx_min = noisedef.kxfrac_min * wavenumber_max(grid.N.x());
+    const int dkx_max = noise.kxfrac_max * wavenumber_max(grid.N.x());
+    const int dkx_min = noise.kxfrac_min * wavenumber_max(grid.N.x());
 #pragma warning(pop)
 #pragma warning(push,disable:1572)
-    if (noisedef.kxfrac_max != 1 || noisedef.kxfrac_min != 0) {
+    if (noise.kxfrac_max != 1 || noise.kxfrac_min != 0) {
 #pragma warning(pop)
         INFO0("Perturbations added only to absolute X wavenumbers in range ["
                 << dkx_min << ":" << dkx_max << "]");
@@ -661,11 +612,11 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     // Compute and display kzfrac_min, kzfrac_max constraints
 #pragma warning(push,disable:2259)
-    const int dkz_max = noisedef.kzfrac_max * wavenumber_max(grid.N.z());
-    const int dkz_min = noisedef.kzfrac_min * wavenumber_max(grid.N.z());
+    const int dkz_max = noise.kzfrac_max * wavenumber_max(grid.N.z());
+    const int dkz_min = noise.kzfrac_min * wavenumber_max(grid.N.z());
 #pragma warning(pop)
 #pragma warning(push,disable:1572)
-    if (noisedef.kzfrac_max != 1 || noisedef.kzfrac_min != 0) {
+    if (noise.kzfrac_max != 1 || noise.kzfrac_min != 0) {
 #pragma warning(pop)
     INFO0("Perturbations added only to absolute Z wavenumbers in range ["
             << dkz_min << ":" << dkz_max << "]");
@@ -682,7 +633,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     rngstream rng;
     {
         array<unsigned long,6> seed;
-        std::fill(seed.begin(), seed.end(), noisedef.seed);
+        std::fill(seed.begin(), seed.end(), noise.seed);
         rng.SetSeed(seed.data());
     }
     rng.IncreasedPrecis(true);  // Use more bits of resolution

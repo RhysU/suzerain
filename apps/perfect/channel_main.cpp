@@ -59,6 +59,7 @@
 #include <suzerain/support/field.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/noise_definition.hpp>
 #include <suzerain/support/program_options.hpp>
 #include <suzerain/support/restart_definition.hpp>
 #include <suzerain/support/signal_definition.hpp>
@@ -112,10 +113,10 @@ typedef suzerain::contiguous_state<4,complex_t>  nonlinear_state_type;
 // Global scenario parameters initialized in main().  These are declared const
 // to avoid accidental modification but have their const-ness const_cast away
 // where necessary to load settings.
-using suzerain::perfect::noise_definition;
 using suzerain::perfect::scenario_definition;
 using suzerain::support::fftw_definition;
 using suzerain::support::grid_definition;
+using suzerain::support::noise_definition;
 using suzerain::support::restart_definition;
 using suzerain::support::signal_definition;
 using suzerain::support::statistics_definition;
