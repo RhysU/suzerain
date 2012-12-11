@@ -26,12 +26,12 @@ namespace suzerain {
 namespace support {
 
 noise_definition::noise_definition(
-            real_t fluct_percent,
+            real_t        fluct_percent,
             unsigned long fluct_seed,
-            real_t kxfrac_min,
-            real_t kxfrac_max,
-            real_t kzfrac_min,
-            real_t kzfrac_max)
+            real_t        kxfrac_min,
+            real_t        kxfrac_max,
+            real_t        kzfrac_min,
+            real_t        kzfrac_max)
     : noise_specification(fluct_percent,
                           fluct_seed,
                           kxfrac_min,

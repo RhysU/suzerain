@@ -33,12 +33,12 @@ public:
 
     /** Construct an instance with the given default values */
     explicit noise_specification(
-            real_t fluct_percent     = 0,
-            unsigned long fluct_seed = 12345,
-            real_t kxfrac_min        = 0,
-            real_t kxfrac_max        = 1,
-            real_t kzfrac_min        = 0,
-            real_t kzfrac_max        = 1);
+            real_t        fluct_percent = 0,
+            unsigned long fluct_seed    = 12345,
+            real_t        kxfrac_min    = 0,
+            real_t        kxfrac_max    = 1,
+            real_t        kzfrac_min    = 0,
+            real_t        kzfrac_max    = 1);
 
     /**
      * Maximum fluctuation magnitude to add as a percentage
