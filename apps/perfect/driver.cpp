@@ -28,7 +28,6 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "nsctpl_rholut.hpp"
 #include "perfect.hpp"
 
 namespace suzerain {
@@ -108,7 +107,7 @@ driver::save_metadata_hook(
 {
     super::save_metadata_hook(esioh);
     save(esioh, *scenario);
-    save(esioh, *scenario, *grid, msoln);
+    save(esioh, msoln, *scenario, *grid);
     return;
 }
 
@@ -118,7 +117,7 @@ driver::load_metadata_hook(
 {
     super::load_metadata_hook(esioh);
     load(esioh, *scenario);
-    load(esioh, *scenario, *grid, msoln);
+    load(esioh, msoln, *scenario, *grid);
     return;
 }
 

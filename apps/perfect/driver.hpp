@@ -29,9 +29,9 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>
 
+#include "manufactured_solution.hpp"
 #include "mean_quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
-#include "nsctpl_rholut_fwd.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {
@@ -48,9 +48,6 @@ class driver : public support::driver_base
     typedef support::driver_base super;
 
 public:
-
-    /** Type of the associated manufactured solution. */
-    typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
 
     /** @copydoc driver_base::driver_base */
     driver(const std::string &application_synopsis,

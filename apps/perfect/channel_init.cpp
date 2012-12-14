@@ -50,8 +50,9 @@
 #include <suzerain/validation.hpp>
 #include <suzerain/version.hpp>
 
-#include "perfect.hpp"
+#include "manufactured_solution.hpp"
 #include "mean_quantities.hpp"
+#include "perfect.hpp"
 
 // Provided by channel_init_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
@@ -100,7 +101,9 @@ static suzerain::support::time_definition timedef(
         /* evmagfactor per Venugopal */ "0.72");
 static suzerain::shared_ptr<const suzerain::pencil_grid> dgrid;
 static suzerain::shared_ptr<perfect::manufactured_solution> msoln(
-            new perfect::manufactured_solution);
+            new perfect::manufactured_solution(
+                  perfect::manufactured_solution::default_caption
+                + " (active only when --mms supplied)"));
 
 /** <tt>atexit</tt> callback to ensure we finalize underling. */
 static void atexit_underling(void) {
@@ -127,43 +130,6 @@ static esio_handle esioh = NULL;
 static void atexit_esio(void) {
     if (esioh) esio_handle_finalize(esioh);
 }
-
-/** Options definitions for tweaking the manufactured solution */
-class MSDefinition : public suzerain::support::definition_base
-{
-
-public:
-
-    MSDefinition(perfect::manufactured_solution &ms)
-        : suzerain::support::definition_base(
-                "Manufactured solution parameters"
-                " (active only when --mms supplied)")
-    {
-        ms.rho.foreach_parameter(boost::bind(option_adder,
-                    this->add_options(), "Affects density field",     _1, _2));
-        ms.u.foreach_parameter(boost::bind(option_adder,
-                    this->add_options(), "Affects X velocity field",  _1, _2));
-        ms.v.foreach_parameter(boost::bind(option_adder,
-                    this->add_options(), "Affects Y velocity field",  _1, _2));
-        ms.w.foreach_parameter(boost::bind(option_adder,
-                    this->add_options(), "Affects Z velocity field",  _1, _2));
-        ms.T.foreach_parameter(boost::bind(option_adder,
-                    this->add_options(), "Affects temperature field", _1, _2));
-    }
-
-private:
-
-    static void option_adder(
-            boost::program_options::options_description_easy_init ei,
-            const char *desc,
-            const std::string &name,
-            real_t &v)
-    {
-        ei(name.c_str(),
-           boost::program_options::value(&v)->default_value(v),
-           desc);
-    }
-};
 
 int main(int argc, char **argv)
 {
@@ -205,13 +171,10 @@ int main(int argc, char **argv)
             ptr_fun_ensure_nonnegative(
                     suzerain::validation::ensure_nonnegative<real_t>);
 
-        isothermal_channel(*msoln);
-        MSDefinition msdef(*msoln);
-
         options.add_definition(scenario);
         options.add_definition(grid);
         options.add_definition(timedef);
-        options.add_definition(msdef);
+        options.add_definition(msoln->isothermal_channel());
         options.add_options()
             ("clobber", "Overwrite an existing restart file?")
             ("npower",
@@ -225,6 +188,8 @@ int main(int argc, char **argv)
         ;
 
         std::vector<std::string> positional = options.process(argc, argv);
+        msoln->match(scenario);
+        msoln->match(grid);
 
         // Record build and invocation for posterity and to aid in debugging
         std::ostringstream os;
@@ -274,16 +239,6 @@ int main(int argc, char **argv)
 
     if (mms >= 0) {
         INFO0("Manufactured solution will be initialized at t = " << mms);
-        msoln->alpha = scenario.alpha;
-        msoln->beta  = scenario.beta;
-        msoln->gamma = scenario.gamma;
-        msoln->Ma    = scenario.Ma;
-        msoln->Re    = scenario.Re;
-        msoln->Pr    = scenario.Pr;
-        msoln->Lx    = grid.L.x();
-        msoln->Ly    = grid.L.y();
-        msoln->Lz    = grid.L.z();
-
         INFO0("Disabling bulk_rho and bulk_rho_u constraints"
               " due to manufactured solution use");
         scenario.bulk_rho   = numeric_limits<real_t>::quiet_NaN();
@@ -307,7 +262,7 @@ int main(int argc, char **argv)
     support::save(esioh, grid);
     support::save(esioh, b, cop, gop);
     support::save(esioh, timedef);
-    perfect::save(esioh, scenario, grid, msoln);
+    perfect::save(esioh, msoln, scenario, grid);
     esio_file_flush(esioh);
 
     INFO0("Initializing B-spline workspaces");

@@ -35,6 +35,7 @@
 #include <suzerain/state_fwd.hpp>
 
 #include "perfect.hpp"
+#include "manufactured_solution.hpp"
 
 #pragma warning(disable:383 1572)
 

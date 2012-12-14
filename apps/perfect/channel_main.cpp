@@ -72,8 +72,9 @@
 #include <suzerain/version.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "perfect.hpp"
+#include "manufactured_solution.hpp"
 #include "mean_quantities.hpp"
+#include "perfect.hpp"
 
 #include "channel_treatment.hpp"
 #include "explicit_operator.hpp"
@@ -1005,7 +1006,7 @@ int main(int argc, char **argv)
     }
     support::load(esioh, const_cast<grid_definition&>(grid));
     support::load(esioh, const_cast<time_definition&>(timedef));
-    perfect::load(esioh, scenario, grid, msoln);
+    perfect::load(esioh, msoln, scenario, grid);
     esio_file_close(esioh);
 
     if (msoln) {
@@ -1117,7 +1118,7 @@ int main(int argc, char **argv)
         support::save(h, grid);
         support::save(h, b, cop, gop);
         support::save(h, timedef);
-        perfect::save(h, scenario, grid, msoln);
+        perfect::save(h, msoln, scenario, grid);
         esio_file_close(h);
         esio_handle_finalize(h);
     }

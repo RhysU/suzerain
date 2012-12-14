@@ -26,6 +26,8 @@
 #ifndef HYBRID_OPERATOR_HPP
 #define HYBRID_OPERATOR_HPP
 
+#include "nonlinear_operator_fwd.hpp"
+
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
@@ -34,7 +36,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "nonlinear_operator_fwd.hpp"
+#include "manufactured_solution.hpp"
 
 #pragma warning(disable:383 1572)
 

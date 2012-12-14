@@ -44,7 +44,6 @@
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/timestepper.hpp>
 
-#include "nsctpl_rholut.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {
@@ -57,31 +56,8 @@ namespace support { class field; }
  */
 namespace perfect {
 
-/** Return default nondimensional field information per \ref suzerain::ndx */
+/** Return default nondimensional field information per \ref suzerain::ndx. */
 std::vector<support::field> default_fields();
-
-/** Manufactured solution employed throughout the channel code */
-typedef nsctpl_rholut::manufactured_solution<real_t> manufactured_solution;
-
-/**
- * Store manufactured solution parameters in a restart file.
- * Parameters are only stored when \c msoln evaluates as true.
- */
-void save(const esio_handle h,
-          const scenario_definition& scenario,
-          const grid_specification& grid,
-          const shared_ptr<manufactured_solution> & msoln);
-
-/**
- * Load manufactured solution parameters from a restart file.
- * If the restart file contains active manufactured solution parameters, \c
- * msoln will be modified to contain an appropriate instance.  If it does not,
- * \c msoln will be reset.
- */
-void load(const esio_handle h,
-          const scenario_definition& scenario,
-          const grid_specification& grid,
-          shared_ptr<manufactured_solution>& msoln);
 
 /**
  * Store the current simulation primitive state as collocation point values
@@ -153,25 +129,6 @@ add_noise(contiguous_state<4,complex_t> &state,
           const pencil_grid& dgrid,
           bspline &b,
           const bsplineop& cop);
-
-/**
- * Accumulate the result of adding \c alpha times the manufactured solution \c
- * msoln times \c beta times the given wave-space state \c swave.  Setting
- * <tt>alpha=1</tt> and <tt>beta=0</tt> may be used to initialize a
- * manufactured solution field.  Setting <tt>alpha=-1</tt> and <tt>beta=1</tt>
- * may be used to compute error against the manufactured solution.  The
- * manufactured solution lives on \e only the non-dealiased, non-Nyquist modes.
- */
-void accumulate_manufactured_solution(
-        const real_t alpha,
-        const manufactured_solution &msoln,
-        const real_t beta,
-        contiguous_state<4,complex_t> &swave,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        bspline &b,
-        const bsplineop &cop,
-        const real_t simulation_time);
 
 } // end namespace perfect
 
