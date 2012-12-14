@@ -41,7 +41,6 @@
 #include <suzerain/noise_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/support/definition_base.hpp>
 #include <suzerain/timestepper.hpp>
 
 #include "scenario_definition.hpp"

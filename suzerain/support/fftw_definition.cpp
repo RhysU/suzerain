@@ -44,50 +44,50 @@ void fftw_definition::normalize_rigor_mpi(std::string input)
 }
 
 fftw_definition::fftw_definition(
-    const fftw::rigor rigor_fft,
-    const fftw::rigor rigor_mpi)
-    : definition_base("FFTW planning options:"),
-      rigor_fft(rigor_fft),
-      rigor_mpi(rigor_mpi)
+        const fftw::rigor rigor_fft,
+        const fftw::rigor rigor_mpi)
+    : rigor_fft(rigor_fft)
+    , rigor_mpi(rigor_mpi)
 {
-    namespace po = ::boost::program_options;
-    using ::std::bind1st;
-    using ::std::bind2nd;
-    using ::std::mem_fun;
-    using ::std::ptr_fun;
+}
 
-    std::string rigor_options;
-    rigor_options += " {";
-    rigor_options += fftw::c_str(fftw::estimate);
-    rigor_options += ", ";
-    rigor_options += fftw::c_str(fftw::measure);
-    rigor_options += ", ";
-    rigor_options += fftw::c_str(fftw::patient);
-    rigor_options += ", ";
-    rigor_options += fftw::c_str(fftw::exhaustive);
-    rigor_options += ", or ";
-    rigor_options += fftw::c_str(fftw::wisdom_only);
-    rigor_options += "}";
+boost::program_options::options_description
+fftw_definition::options_description()
+{
+    namespace po = boost::program_options;
+    using std::bind1st;
+    using std::bind2nd;
+    using std::mem_fun;
+    using std::ptr_fun;
+    using std::string;
+    using std::ostringstream;
 
-    std::string rigor_fft_description;
-    rigor_fft_description += "FFTW FFT planning rigor ";
+    ostringstream oss;
+    oss << " {"    << fftw::c_str(fftw::estimate)
+        << ", "    << fftw::c_str(fftw::measure)
+        << ", "    << fftw::c_str(fftw::patient)
+        << ", "    << fftw::c_str(fftw::exhaustive)
+        << ", or " << fftw::c_str(fftw::wisdom_only)
+        << "}";
+    const string rigor_options = oss.str();
+
+    string rigor_fft_description = "FFTW FFT planning rigor ";
     rigor_fft_description += rigor_options;
 
-    std::string rigor_mpi_description;
-    rigor_mpi_description += "FFTW MPI planning rigor ";
+    string rigor_mpi_description = "FFTW MPI planning rigor ";
     rigor_mpi_description += rigor_options;
 
-    this->add_options()
+    po::options_description retval("FFTW planning options:");
+
+    retval.add_options()
     ("rigor_fft",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(
-                    mem_fun(&fftw_definition::normalize_rigor_fft), this))
+     ->notifier(bind1st(mem_fun(&fftw_definition::normalize_rigor_fft), this))
      ->default_value(fftw::c_str(rigor_fft)),
      rigor_fft_description.c_str())
     ("rigor_mpi",
      po::value<std::string>(NULL)
-     ->notifier(bind1st(
-                    mem_fun(&fftw_definition::normalize_rigor_mpi), this))
+     ->notifier(bind1st(mem_fun(&fftw_definition::normalize_rigor_mpi), this))
      ->default_value(fftw::c_str(rigor_mpi)),
      rigor_mpi_description.c_str())
     ("plan_wisdom",
@@ -98,6 +98,8 @@ fftw_definition::fftw_definition(
      ->default_value(FFTW_NO_TIMELIMIT, "unlimited"),
      "Maximum seconds for creating any FFTW plan")
     ;
+
+    return retval;
 }
 
 } // end namespace support

@@ -48,16 +48,21 @@ public:
      *                     to retain.
      * @param nt           Number of simulation steps between restart writes.
      * @param dt           Amount of simulation time between restart writes.
+     * @param physical     Should files save state in physical space?
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c destination and \c retain.
      */
-    restart_definition(const std::string& metadata,
-                       const std::string& uncommitted,
-                       const std::string& destination,
-                       std::size_t retain = 1,
-                       real_t dt          = 0,
-                       std::size_t nt     = 0);
+    restart_definition(const std::string& metadata            ,
+                       const std::string& uncommitted         ,
+                       const std::string& destination         ,
+                       const std::size_t  retain       = 1    ,
+                       const real_t       dt           = 0    ,
+                       const std::size_t  nt           = 0    ,
+                       const bool         physical     = false);
+
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
     /**
      * The restart file path to use when saving common restart file

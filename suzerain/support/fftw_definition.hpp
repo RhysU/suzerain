@@ -44,8 +44,12 @@ class fftw_definition : public definition_base
 public:
 
     /** Default constructor */
-    explicit fftw_definition(const fftw::rigor rigor_fft = fftw::estimate,
-                             const fftw::rigor rigor_mpi = fftw::estimate);
+    explicit fftw_definition(
+            const fftw::rigor rigor_fft = fftw::estimate,
+            const fftw::rigor rigor_mpi = fftw::estimate);
+
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
     /**
      * The FFTW rigor flag intended for FFT planning.

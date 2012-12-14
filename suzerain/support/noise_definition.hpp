@@ -44,6 +44,9 @@ public:
             real_t kzfrac_min        = 0,
             real_t kzfrac_max        = 1);
 
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
+
 };
 
 } // namespace support

@@ -94,10 +94,12 @@ public:
      */
     manufactured_solution& isothermal_flat_plate();
 
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
+
 private:
 
-    /** Completes tasks common to all constructors. */
-    void finish_construction();
+    std::string caption;
 
 };
 

@@ -36,34 +36,6 @@ namespace suzerain {
 
 namespace support {
 
-signal_definition::signal_definition(const std::string& specstatus,
-                                     const std::string& specrestart,
-                                     const std::string& specstatistics,
-                                     const std::string& specteardown)
-    : definition_base("Actions to take on receipt of various signals")
-{
-    using ::boost::program_options::value;
-
-    this->add_options()
-    ("signal_status", value<std::string>()->default_value(specstatus)
-     ->notifier(boost::bind(&signal_definition::parse_status, this, _1)),
-     "Show status information on any signal in this comma-separated list")
-
-    ("signal_restart", value<std::string>()->default_value(specrestart)
-     ->notifier(boost::bind(&signal_definition::parse_restart, this, _1)),
-     "Write restart file on any signal in this comma-separated list")
-
-    ("signal_statistics",
-     value<std::string>()->default_value(specstatistics)
-     ->notifier(boost::bind(&signal_definition::parse_statistics, this, _1)),
-     "Write statistics file on any signal in this comma-separated list")
-
-    ("signal_teardown", value<std::string>()->default_value(specteardown)
-     ->notifier(boost::bind(&signal_definition::parse_teardown, this, _1)),
-     "Tear down simulation on any signal in this comma-separated list")
-    ;
-}
-
 // Helper method to turn, e.g., "USR1, sigusr2, 3 , Term "
 // into signal numbers, e.g. {SIGUSR1, SIGUSR2, 3, SIGTERM}.
 static std::vector<int> parse_spec(const std::string& name,
@@ -104,14 +76,94 @@ static std::vector<int> parse_spec(const std::string& name,
             const long l = strtol(token.c_str(), &end, 0);
             if (errno != 0 || *end != '\0' || l <= 0 || l > INT_MAX)
             {
-                throw std::invalid_argument("Signal specification '" + token
-                                            + "' provided for " + name + " is neither a known"
-                                            " signal nor a strictly positive integer");
+                std::ostringstream oss;
+                oss << "Signal specification '"
+                    << token
+                    << "' provided for "
+                    << name
+                    << " is neither a known signal"
+                       " nor a strictly positive integer";
+                throw std::invalid_argument(oss.str());
             }
             signum = l;
         }
         retval.push_back(signum);
     }
+
+    return retval;
+}
+
+signal_definition::signal_definition(const std::string& specstatus,
+                                     const std::string& specrestart,
+                                     const std::string& specstatistics,
+                                     const std::string& specteardown)
+    : status    (parse_spec("signal_definition(specstatus,...)",
+                            specstatus))
+    , restart   (parse_spec("signal_definition(...,specrestart,...)",
+                            specrestart))
+    , statistics(parse_spec("signal_definition(...,specstatistics,...)",
+                            specstatistics))
+    , teardown  (parse_spec("signal_definition(...,specteardown)",
+                            specteardown))
+{
+}
+
+boost::program_options::options_description
+signal_definition::options_description()
+{
+    using boost::algorithm::join;
+    using boost::program_options::options_description;
+    using boost::program_options::value;
+    using std::back_insert_iterator;
+    using std::string;
+    using std::transform;
+    using std::vector;
+
+    options_description retval("Actions to take on receipt of various signals");
+
+    // Build human-readable default strings based on the current values
+    vector<string> names_status;
+    transform(status.begin(), status.end(),
+              back_insert_iterator<vector<string> >(names_status),
+              &suzerain_signal_name);
+
+    vector<string> names_restart;
+    transform(restart.begin(), restart.end(),
+              back_insert_iterator<vector<string> >(names_restart),
+              &suzerain_signal_name);
+
+    vector<string> names_statistics;
+    transform(statistics.begin(), statistics.end(),
+              back_insert_iterator<vector<string> >(names_statistics),
+              &suzerain_signal_name);
+
+    vector<string> names_teardown;
+    transform(teardown.begin(), teardown.end(),
+              back_insert_iterator<vector<string> >(names_teardown),
+              &suzerain_signal_name);
+
+    // Construct the collection of options to be returned
+    retval.add_options()
+    ("signal_status", value<std::string>()
+     ->default_value(join(names_status, ","))
+     ->notifier(boost::bind(&signal_definition::parse_status, this, _1)),
+     "Show status information on any signal in this comma-separated list")
+
+    ("signal_restart", value<std::string>()
+     ->default_value(join(names_restart, ","))
+     ->notifier(boost::bind(&signal_definition::parse_restart, this, _1)),
+     "Write restart file on any signal in this comma-separated list")
+
+    ("signal_statistics", value<std::string>()
+     ->default_value(join(names_statistics, ","))
+     ->notifier(boost::bind(&signal_definition::parse_statistics, this, _1)),
+     "Write statistics file on any signal in this comma-separated list")
+
+    ("signal_teardown", value<std::string>()
+     ->default_value(join(names_teardown, ","))
+     ->notifier(boost::bind(&signal_definition::parse_teardown, this, _1)),
+     "Tear down simulation on any signal in this comma-separated list")
+    ;
 
     return retval;
 }

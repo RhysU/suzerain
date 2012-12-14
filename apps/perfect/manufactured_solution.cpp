@@ -48,16 +48,14 @@ const std::string manufactured_solution::default_caption(
         "Manufactured solution parameters");
 
 manufactured_solution::manufactured_solution()
-    : support::definition_base(default_caption)
+    : caption(default_caption)
 {
-    this->finish_construction();
 }
 
 manufactured_solution::manufactured_solution(
         const std::string& caption)
-    : support::definition_base(caption)
+    : caption(caption)
 {
-    this->finish_construction();
 }
 
 /** Helper for manufactured_solution::finish_construction(). */
@@ -72,20 +70,25 @@ static void option_adder(
               description);
 }
 
-void
-manufactured_solution::finish_construction()
+boost::program_options::options_description
+manufactured_solution::options_description()
 {
     using boost::bind;
-    rho.foreach_parameter(bind(option_adder, add_options(),
+
+    boost::program_options::options_description retval(caption);
+
+    rho.foreach_parameter(bind(option_adder, retval.add_options(),
                                "Affects density field",     _1, _2));
-    u.foreach_parameter  (bind(option_adder, add_options(),
+    u.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects streamwise velocity field",  _1, _2));
-    v.foreach_parameter  (bind(option_adder, add_options(),
+    v.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects wall-normal velocity field",  _1, _2));
-    w.foreach_parameter  (bind(option_adder, add_options(),
+    w.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects spanwise velocity field",  _1, _2));
-    T.foreach_parameter  (bind(option_adder, add_options(),
+    T.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects temperature field", _1, _2));
+
+    return retval;
 }
 
 manufactured_solution&

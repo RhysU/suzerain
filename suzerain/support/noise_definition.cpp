@@ -38,43 +38,53 @@ noise_definition::noise_definition(
                           kxfrac_max,
                           kzfrac_min,
                           kzfrac_max)
-    , definition_base("Additive random velocity perturbations on startup")
+{
+}
+
+boost::program_options::options_description
+noise_definition::options_description()
 {
     using boost::bind;
-    using validation::ensure_positive;
+    using boost::program_options::options_description;
+    using boost::program_options::value;
+    using std::bind2nd;
+    using std::pointer_to_binary_function;
+    using std::string;
     using validation::ensure_nonnegative;
-    std::pointer_to_binary_function<unsigned long,const char*,void>
+    using validation::ensure_positive;
+
+    // For brevity below
+    pointer_to_binary_function<unsigned long,const char*,void>
             ptr_fun_ensure_positive_ulint(ensure_positive<unsigned long>);
-    std::pointer_to_binary_function<real_t,const char*,void>
+    pointer_to_binary_function<real_t,const char*,void>
             ptr_fun_ensure_nonnegative_real(ensure_nonnegative<real_t>);
-    this->add_options()
-        ("fluct_percent",
-         boost::program_options::value(&this->percent)
-            ->default_value(this->percent)
-            ->notifier(std::bind2nd(ptr_fun_ensure_nonnegative_real,
-                                   "fluct_percent")),
-         "Maximum fluctuation magnitude to add as a percentage of"
-         " centerline mean streamwise velocity")
-        ("fluct_kxfrac",
-         boost::program_options::value<std::string>(0)
-            ->default_value("0:1")
-            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
-                            &this->kxfrac_min, &this->kxfrac_max,
-                            0, 1, 0, 1, "fluct_kxfrac")),
-         "Range of X wavenumbers in which to generate fluctuations")
-        ("fluct_kzfrac",
-         boost::program_options::value<std::string>(0)
-            ->default_value("0:1")
-            ->notifier(bind(&exprparse_range<const std::string&,real_t>, _1,
-                            &this->kzfrac_min, &this->kzfrac_max,
-                            0, 1, 0, 1, "fluct_kzfrac")),
-         "Range of Z wavenumbers in which to generate fluctuations")
-        ("fluct_seed",
-         boost::program_options::value(&this->seed)
-            ->default_value(this->seed)
-            ->notifier(std::bind2nd(ptr_fun_ensure_positive_ulint,
-                                    "fluct_seed")),
-         "rngstream generator seed (L'Ecuyer et al. 2002)");
+
+    options_description retval(
+            "Additive random velocity perturbations on startup");
+
+    retval.add_options()
+    ("fluct_percent", value(&percent)->default_value(percent)
+        ->notifier(bind2nd(ptr_fun_ensure_nonnegative_real,
+                            "fluct_percent")),
+        "Maximum fluctuation magnitude to add as a percentage of"
+        " centerline mean streamwise velocity")
+    ("fluct_kxfrac", value<string>()->default_value("0:1")
+        ->notifier(bind(&exprparse_range<const string&,real_t>, _1,
+                        &kxfrac_min, &kxfrac_max,
+                        0, 1, 0, 1, "fluct_kxfrac")),
+        "Range of X wavenumbers in which to generate fluctuations")
+    ("fluct_kzfrac", value<string>()->default_value("0:1")
+        ->notifier(bind(&exprparse_range<const string&,real_t>, _1,
+                        &kzfrac_min, &kzfrac_max,
+                        0, 1, 0, 1, "fluct_kzfrac")),
+        "Range of Z wavenumbers in which to generate fluctuations")
+    ("fluct_seed", value(&seed)->default_value(seed)
+        ->notifier(bind2nd(ptr_fun_ensure_positive_ulint,
+                            "fluct_seed")),
+        "rngstream generator seed (L'Ecuyer et al. 2002)")
+    ;
+
+    return retval;
 }
 
 } // end namespace support

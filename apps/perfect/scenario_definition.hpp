@@ -47,7 +47,6 @@ public:
 
     /**
      * Construct an instance with the given parameter values.
-     * Parameter values are evaluated via exprparse().
      *
      * @param Re         Reynolds number.
      * @param Ma         Mach number.
@@ -58,14 +57,17 @@ public:
      * @param beta       Temperature power law exponent.
      * @param gamma      Ratio of specific heats.
      */
-    scenario_definition(const char * Re,
-                        const char * Ma,
-                        const char * Pr,
-                        const char * bulk_rho,
-                        const char * bulk_rho_u,
-                        const char * alpha,
-                        const char * beta,
-                        const char * gamma);
+    scenario_definition(const real_t Re,
+                        const real_t Ma,
+                        const real_t Pr,
+                        const real_t bulk_rho,
+                        const real_t bulk_rho_u,
+                        const real_t alpha,
+                        const real_t beta,
+                        const real_t gamma);
+
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
@@ -112,16 +114,6 @@ public:
      */
     real_t gamma;
 
-private:
-    /** Options initialization common to all constructors */
-    void initialize_options(const char * default_Re,
-                            const char * default_Ma,
-                            const char * default_Pr,
-                            const char * default_bulk_rho,
-                            const char * default_bulk_rho_u,
-                            const char * default_alpha,
-                            const char * default_beta,
-                            const char * default_gamma);
 };
 
 /**

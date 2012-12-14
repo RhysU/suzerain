@@ -77,7 +77,7 @@ program_options::program_options(
 program_options& program_options::add_definition(
         definition_base &definition)
 {
-    options_.add(definition.options());
+    options_.add(definition.options_description());
     return *this;
 }
 

@@ -56,56 +56,66 @@ restart_definition::restart_definition(
         const std::string& metadata,
         const std::string& uncommitted,
         const std::string& destination,
-        std::size_t retain,
-        real_t dt,
-        std::size_t nt)
-    : definition_base("Restart-related parameters")
-    , metadata(metadata)
+        const std::size_t  retain,
+        const real_t       dt,
+        const std::size_t  nt,
+        const bool         physical)
+    : metadata(metadata)
     , uncommitted(uncommitted)
     , destination(destination)
     , retain(retain)
     , dt(dt)
     , nt(nt)
-    , physical(false)
+    , physical(physical)
 {
+}
+
+boost::program_options::options_description
+restart_definition::options_description()
+{
+    boost::program_options::options_description retval(
+            "Restart-writing parameters");
+
     using boost::bind;
     using boost::lexical_cast;
-    using boost::program_options::value;
     using boost::program_options::bool_switch;
+    using boost::program_options::value;
     using std::string;
     using validation::ensure_nonnegative;
 
-    this->add_options()
-    ("metadata", value(&this->metadata)
-     ->default_value(this->metadata),
+    retval.add_options()
+    ("metadata", value(&metadata)
+     ->default_value(metadata),
      "Path to use when saving common metadata for output files.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-    ("uncommitted", value(&this->uncommitted)
-     ->default_value(this->uncommitted),
+    ("uncommitted", value(&uncommitted)
+     ->default_value(uncommitted),
      "Path to use when saving uncommitted output files.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique name.")
-    ("restart_destination", value(&this->destination)
-     ->default_value(this->destination),
+    ("restart_destination", value(&destination)
+     ->default_value(destination),
      "Archiving destination to use when committing restart files.  "
      "One or more #'s must be present and will be replaced by a sequence number.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique template.")
     ("restart_retain", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &this->retain, "restart_retain"))
-     ->default_value(lexical_cast<string>(this->retain)),
+     ->notifier(bind(&parse_size_t, _1, &retain, "restart_retain"))
+     ->default_value(lexical_cast<string>(retain)),
      "Maximum number of committed restart files to retain")
     ("restart_dt", value<string>(NULL)
-     ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+     ->notifier(bind(&parse_option<real_t>, _1, &dt,
                      &ensure_nonnegative<real_t>, "restart_dt"))
-     ->default_value(lexical_cast<string>(this->dt)),
+     ->default_value(lexical_cast<string>(dt)),
      "Maximum amount of simulation time between restart files")
     ("restart_nt", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &this->nt, "restart_nt"))
-     ->default_value(lexical_cast<string>(this->nt)),
+     ->notifier(bind(&parse_size_t, _1, &nt, "restart_nt"))
+     ->default_value(lexical_cast<string>(nt)),
      "Maximum number of time steps between restart files")
-    ("restart_physical", bool_switch(&this->physical),
+    ("restart_physical", bool_switch(&physical),
      "Specify flag to save restart fields as primitive variables "
      "stored at collocation points in physical space")
     ;
+
+    return retval;
 }
 
 } // end namespace support

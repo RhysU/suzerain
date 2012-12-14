@@ -54,42 +54,51 @@ static void parse_option(const std::string& s,
 
 statistics_definition::statistics_definition(
         const std::string& destination,
-        std::size_t retain,
-        real_t dt,
-        std::size_t nt)
-    : definition_base("Statistics sampling parameters")
-    , destination(destination)
+        const std::size_t  retain,
+        const real_t       dt,
+        const std::size_t  nt)
+    : destination(destination)
     , retain(retain)
     , dt(dt)
     , nt(nt)
 {
+}
+
+boost::program_options::options_description
+statistics_definition::options_description()
+{
     using boost::bind;
     using boost::lexical_cast;
-    using boost::program_options::value;
     using boost::program_options::bool_switch;
+    using boost::program_options::options_description;
+    using boost::program_options::value;
     using std::string;
     using validation::ensure_nonnegative;
 
-    this->add_options()
-    ("statistics_destination", value(&this->destination)
-     ->default_value(this->destination),
+    options_description retval("Statistics sampling parameters");
+
+    retval.add_options()
+    ("statistics_destination", value(&destination)
+     ->default_value(destination),
      "Archiving destination to use when committing statistics files.  "
      "One or more #'s must be present and will be replaced by a sequence number.  "
      "Any trailing \"XXXXXX\" will be used to generate a unique template.")
     ("statistics_retain", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &this->retain, "statistics_retain"))
-     ->default_value(lexical_cast<string>(this->retain)),
+     ->notifier(bind(&parse_size_t, _1, &retain, "statistics_retain"))
+     ->default_value(lexical_cast<string>(retain)),
      "Maximum number of committed statistics files to retain")
     ("statistics_dt", value<string>(NULL)
-     ->notifier(bind(&parse_option<real_t>, _1, &this->dt,
+     ->notifier(bind(&parse_option<real_t>, _1, &dt,
                      &ensure_nonnegative<real_t>, "statistics_dt"))
-     ->default_value(lexical_cast<string>(this->dt)),
+     ->default_value(lexical_cast<string>(dt)),
      "Maximum amount of simulation time between sampling statistics")
     ("statistics_nt", value<string>(NULL)
-     ->notifier(bind(&parse_size_t, _1, &this->nt, "statistics_nt"))
-     ->default_value(lexical_cast<string>(this->nt)),
+     ->notifier(bind(&parse_size_t, _1, &nt, "statistics_nt"))
+     ->default_value(lexical_cast<string>(nt)),
      "Maximum number of time steps between sampling statistics")
     ;
+
+    return retval;
 }
 
 } // namespace support

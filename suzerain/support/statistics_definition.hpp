@@ -49,10 +49,13 @@ public:
      *      \c desttemplate and \c retain.
      */
     explicit statistics_definition(
-            const std::string& destination,
-            std::size_t retain = (1 << 15),
-            real_t dt          = 0,
-            std::size_t nt     = 0);
+            const std::string& destination            ,
+            const std::size_t  retain      = (1 << 15),
+            const real_t       dt          = 0        ,
+            const std::size_t  nt          = 0        );
+
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
     /**
      * The archiving pattern to use when committing statistics output files.

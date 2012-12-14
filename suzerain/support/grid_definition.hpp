@@ -68,23 +68,19 @@ public:
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
      */
-    grid_definition(const char* Lx,
-                    int         Nx,
-                    real_t      DAFx,
-                    const char* Ly,
-                    int         Ny,
-                    int         k,
-                    real_t      htdelta,
-                    const char* Lz,
-                    int         Nz,
-                    real_t      DAFz);
+    grid_definition(const real_t Lx,
+                    const int    Nx,
+                    const real_t DAFx,
+                    const real_t Ly,
+                    const int    Ny,
+                    const int    k,
+                    const real_t htdelta,
+                    const real_t Lz,
+                    const int    Nz,
+                    const real_t DAFz);
 
-private:
-
-    /** Options initialization common to all constructors */
-    void initialize_options(const char* default_Lx,
-                            const char* default_Ly,
-                            const char* default_Lz);
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
 };
 

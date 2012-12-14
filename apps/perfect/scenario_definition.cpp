@@ -48,109 +48,147 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 namespace perfect {
 
 scenario_definition::scenario_definition()
-    : definition_base("Nondimensional scenario parameters"),
-      Re(std::numeric_limits<real_t>::quiet_NaN()),
-      Ma(std::numeric_limits<real_t>::quiet_NaN()),
-      Pr(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN()),
-      alpha(std::numeric_limits<real_t>::quiet_NaN()),
-      beta(std::numeric_limits<real_t>::quiet_NaN()),
-      gamma(std::numeric_limits<real_t>::quiet_NaN())
+    : Re        (std::numeric_limits<real_t>::quiet_NaN())
+    , Ma        (std::numeric_limits<real_t>::quiet_NaN())
+    , Pr        (std::numeric_limits<real_t>::quiet_NaN())
+    , bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
+    , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
+    , alpha     (std::numeric_limits<real_t>::quiet_NaN())
+    , beta      (std::numeric_limits<real_t>::quiet_NaN())
+    , gamma     (std::numeric_limits<real_t>::quiet_NaN())
 {
-    this->initialize_options(NULL, NULL, NULL,
-                             NULL, NULL,
-                             NULL, NULL, NULL);
 }
 
 scenario_definition::scenario_definition(
-        const char * Re,
-        const char * Ma,
-        const char * Pr,
-        const char * bulk_rho,
-        const char * bulk_rho_u,
-        const char * alpha,
-        const char * beta,
-        const char * gamma)
-    : definition_base("Nondimensional scenario parameters"),
-      Re(std::numeric_limits<real_t>::quiet_NaN()),
-      Ma(std::numeric_limits<real_t>::quiet_NaN()),
-      Pr(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rho(std::numeric_limits<real_t>::quiet_NaN()),
-      bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN()),
-      alpha(std::numeric_limits<real_t>::quiet_NaN()),
-      beta(std::numeric_limits<real_t>::quiet_NaN()),
-      gamma(std::numeric_limits<real_t>::quiet_NaN())
+        const real_t Re,
+        const real_t Ma,
+        const real_t Pr,
+        const real_t bulk_rho,
+        const real_t bulk_rho_u,
+        const real_t alpha,
+        const real_t beta,
+        const real_t gamma)
+    : Re        (Re        )
+    , Ma        (Ma        )
+    , Pr        (Pr        )
+    , bulk_rho  (bulk_rho  )
+    , bulk_rho_u(bulk_rho_u)
+    , alpha     (alpha     )
+    , beta      (beta      )
+    , gamma     (gamma     )
 {
-    this->initialize_options(Re, Ma, Pr,
-                                bulk_rho, bulk_rho_u,
-                                alpha, beta, gamma);
 }
 
-void scenario_definition::initialize_options(
-        const char * default_Re,
-        const char * default_Ma,
-        const char * default_Pr,
-        const char * default_bulk_rho,
-        const char * default_bulk_rho_u,
-        const char * default_alpha,
-        const char * default_beta,
-        const char * default_gamma)
+// Descriptions used in options_description and possibly save/load.
+static const char description_Re[]
+        = "Reynolds number";
+
+static const char description_Ma[]
+        = "Mach number";
+
+static const char description_Pr[]
+        = "Prandtl number";
+
+static const char description_bulk_rho[]
+        = "Bulk density target";
+
+static const char description_bulk_rho_u[]
+        = "Bulk momentum target";
+
+static const char description_alpha[]
+        = "Ratio of bulk to dynamic viscosity";
+
+static const char description_beta[]
+        = "Temperature power law exponent";
+
+static const char description_gamma[]
+        = "Ratio of specific heats";
+
+
+boost::program_options::options_description
+scenario_definition::options_description()
 {
+    using boost::bind;
+    using boost::lexical_cast;
+    using boost::program_options::options_description;
+    using boost::program_options::typed_value;
+    using boost::program_options::value;
+    using std::auto_ptr;
+    using std::string;
+
+    options_description retval("Nondimensional scenario parameters");
+
     // Complicated add_options() calls done to allow changing the default value
     // displayed when the default is NaN.  NaN is used as a NOP value by client
     // code.  Validation routines used below all silently allow NaNs.
 
-    std::auto_ptr<boost::program_options::typed_value<std::string> > p;
+    auto_ptr<typed_value<string> > p;
 
     // Re
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_positive, _1, &Re, "Re"));
-    if (default_Re) p->default_value(default_Re);
-    this->add_options()("Re", p.release(), "Reynolds number");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Re, "Re"));
+    if (!(boost::math::isnan)(Re)) {
+        p->default_value(lexical_cast<string>(Re));
+    }
+    retval.add_options()("Re", p.release(), description_Re);
 
     // Ma
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_positive, _1, &Ma, "Ma"));
-    if (default_Ma) p->default_value(default_Ma);
-    this->add_options()("Ma", p.release(), "Mach number");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Ma, "Ma"));
+    if (!(boost::math::isnan)(Ma)) {
+        p->default_value(lexical_cast<string>(Ma));
+    }
+    retval.add_options()("Ma", p.release(), description_Ma);
 
     // Pr
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_positive, _1, &Pr, "Pr"));
-    if (default_Pr) p->default_value(default_Pr);
-    this->add_options()("Pr", p.release(), "Prandtl number");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &Pr, "Pr"));
+    if (!(boost::math::isnan)(Pr)) {
+        p->default_value(lexical_cast<string>(Pr));
+    }
+    retval.add_options()("Pr", p.release(), description_Pr);
 
     // bulk_rho
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
-    if (default_bulk_rho) p->default_value(default_bulk_rho);
-    this->add_options()("bulk_rho", p.release(), "Bulk density target");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
+    if (!(boost::math::isnan)(bulk_rho)) {
+        p->default_value(lexical_cast<string>(bulk_rho));
+    }
+    retval.add_options()("bulk_rho", p.release(), description_bulk_rho);
 
     // bulk_rho_u
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_nonnegative, _1, &bulk_rho_u, "bulk_rho_u"));
-    if (default_bulk_rho_u) p->default_value(default_bulk_rho_u);
-    this->add_options()("bulk_rho_u", p.release(), "Bulk momentum target");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_u, "bulk_rho_u"));
+    if (!(boost::math::isnan)(bulk_rho_u)) {
+        p->default_value(lexical_cast<string>(bulk_rho_u));
+    }
+    retval.add_options()("bulk_rho_u", p.release(), description_bulk_rho_u);
 
     // alpha
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_nonnegative, _1, &alpha, "alpha"));
-    if (default_alpha) p->default_value(default_alpha);
-    this->add_options()("alpha", p.release(),
-                        "Ratio of bulk to dynamic viscosity");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &alpha, "alpha"));
+    if (!(boost::math::isnan)(alpha)) {
+        p->default_value(lexical_cast<string>(alpha));
+    }
+    retval.add_options()("alpha", p.release(), description_alpha);
 
     // beta
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_nonnegative, _1, &beta, "beta"));
-    if (default_beta) p->default_value(default_beta);
-    this->add_options()("beta", p.release(), "Temperature power law exponent");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &beta, "beta"));
+    if (!(boost::math::isnan)(beta)) {
+        p->default_value(lexical_cast<string>(beta));
+    }
+    retval.add_options()("beta", p.release(), description_beta);
 
     // gamma
-    p.reset(boost::program_options::value<std::string>(NULL));
-    p->notifier(boost::bind(&parse_positive, _1, &gamma, "gamma"));
-    if (default_gamma) p->default_value(default_gamma);
-    this->add_options()("gamma", p.release(), "Ratio of specific heats");
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &gamma, "gamma"));
+    if (!(boost::math::isnan)(gamma)) {
+        p->default_value(lexical_cast<string>(gamma));
+    }
+    retval.add_options()("gamma", p.release(), description_gamma);
+
+    return retval;
 }
 
 void save(const esio_handle h,
@@ -164,29 +202,16 @@ void save(const esio_handle h,
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, "Re", &scenario.Re, 0,
-            scenario.options().find("Re",false).description().c_str());
-
-    esio_line_write(h, "Ma", &scenario.Ma, 0,
-            scenario.options().find("Ma",false).description().c_str());
-
-    esio_line_write(h, "Pr", &scenario.Pr, 0,
-            scenario.options().find("Pr",false).description().c_str());
-
-    esio_line_write(h, "bulk_rho", &scenario.bulk_rho, 0,
-            scenario.options().find("bulk_rho",false).description().c_str());
-
-    esio_line_write(h, "bulk_rho_u", &scenario.bulk_rho_u, 0,
-            scenario.options().find("bulk_rho_u",false).description().c_str());
-
-    esio_line_write(h, "alpha", &scenario.alpha, 0,
-            scenario.options().find("alpha",false).description().c_str());
-
-    esio_line_write(h, "beta", &scenario.beta, 0,
-            scenario.options().find("beta",false).description().c_str());
-
-    esio_line_write(h, "gamma", &scenario.gamma, 0,
-            scenario.options().find("gamma",false).description().c_str());
+    esio_line_write(h, "Re", &scenario.Re, 0, description_Re);
+    esio_line_write(h, "Ma", &scenario.Ma, 0, description_Ma);
+    esio_line_write(h, "Pr", &scenario.Pr, 0, description_Pr);
+    esio_line_write(h, "bulk_rho",   &scenario.bulk_rho,
+                    0, description_bulk_rho);
+    esio_line_write(h, "bulk_rho_u", &scenario.bulk_rho_u,
+                    0, description_bulk_rho_u);
+    esio_line_write(h, "alpha", &scenario.alpha, 0, description_alpha);
+    esio_line_write(h, "beta", &scenario.beta,   0, description_beta);
+    esio_line_write(h, "gamma", &scenario.gamma, 0, description_gamma);
 }
 
 void load(const esio_handle h,

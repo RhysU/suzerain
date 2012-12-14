@@ -55,13 +55,13 @@ public:
      * @param min_dt      Minimum allowable physically-driven time step.
      * @param max_dt      Maximum allowable physically-driven time step.
      */
-    time_definition(real_t      advance_dt,
-                    std::size_t advance_nt,
-                    real_t      advance_wt,
-                    real_t      status_dt,
-                    std::size_t status_nt,
-                    real_t      min_dt,
-                    real_t      max_dt);
+    time_definition(const real_t      advance_dt,
+                    const std::size_t advance_nt,
+                    const real_t      advance_wt,
+                    const real_t      status_dt,
+                    const std::size_t status_nt,
+                    const real_t      min_dt,
+                    const real_t      max_dt);
 
     /**
      * Construct an instance with the given default values.  All of these can
@@ -74,7 +74,10 @@ public:
      *                    magnitudes.  Usually in <tt>(0,1]</tt>, this
      *                    increases the conservativeness of the time stepping.
      */
-    time_definition(const char* evmagfactor);
+    explicit time_definition(const real_t evmagfactor);
+
+    /** @copydoc support::definition_base::options_description() */
+    boost::program_options::options_description options_description();
 
     /** Maximum amount of physical time to advance the simulation. */
     real_t advance_dt;
@@ -107,17 +110,17 @@ public:
 
 private:
 
-    /** Prepare one-time options for time advancement */
-    void initialize_advancement(real_t      default_advance_dt,
-                                std::size_t default_advance_nt,
-                                real_t      default_advance_wt,
-                                real_t      default_status_dt,
-                                std::size_t default_status_nt,
-                                real_t      default_min_dt,
-                                real_t      default_max_dt);
+    /**
+     * Enumerated type tracking which constructor was invoked.
+     * Important as it changes the semantics of options().
+     */
+    enum constructor_type { constructor1, constructor2 };
 
-    /** Prepare repeatedly-used options similar to scenario parameters */
-    void initialize_scenario(const char* default_evmagfactor);
+    /**
+     * Records which constructor was invoked.
+     * Important as it changes the semantics of options().
+     */
+    constructor_type constructor;
 };
 
 /**

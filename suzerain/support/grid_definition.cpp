@@ -18,7 +18,6 @@
 
 #include <suzerain/support/grid_definition.hpp>
 
-#include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
@@ -40,49 +39,88 @@ static void parse_option(const std::string& s,
     *value = t;
 }
 
-static const char grid_definition_description[]
-    = "Mixed Fourier/B-spline computational grid definition";
-
 grid_definition::grid_definition()
-    : grid_specification()
-    , definition_base(grid_definition_description)
+    : grid_specification(std::numeric_limits<real_t>::quiet_NaN(),
+                         0,
+                         std::numeric_limits<real_t>::quiet_NaN(),
+                         std::numeric_limits<real_t>::quiet_NaN(),
+                         0,
+                         0,
+                         std::numeric_limits<real_t>::quiet_NaN(),
+                         std::numeric_limits<real_t>::quiet_NaN(),
+                         0,
+                         std::numeric_limits<real_t>::quiet_NaN())
 {
-    this->initialize_options("NaN", "NaN", "NaN");  // Must match L!
 }
 
-grid_definition::grid_definition(const char* Lx,
-                                 int         Nx,
-                                 real_t      DAFx,
-                                 const char* Ly,
-                                 int         Ny,
-                                 int         k,
-                                 real_t      htdelta,
-                                 const char* Lz,
-                                 int         Nz,
-                                 real_t      DAFz)
-    : grid_specification(exprparse<real_t>(Lx, "grid_definition(..., Lx, ...)"),
+grid_definition::grid_definition(const real_t Lx,
+                                 const int    Nx,
+                                 const real_t DAFx,
+                                 const real_t Ly,
+                                 const int    Ny,
+                                 const int    k,
+                                 const real_t htdelta,
+                                 const real_t Lz,
+                                 const int    Nz,
+                                 const real_t DAFz)
+    : grid_specification(Lx,
                          Nx,
                          DAFx,
-                         exprparse<real_t>(Ly, "grid_definition(..., Ly, ...)"),
+                         Ly,
                          Ny,
                          k,
                          htdelta,
-                         exprparse<real_t>(Lz, "grid_definition(..., Lz, ...)"),
+                         Lz,
                          Nz,
                          DAFz)
-    , definition_base("Mixed Fourier/B-spline computational grid definition")
 {
-    this->initialize_options(Lx, Ly, Lz);
 }
 
-void grid_definition::initialize_options(
-        const char* default_Lx,
-        const char* default_Ly,
-        const char* default_Lz)
+// Descriptions used in options_description and possibly save/load.
+static const char description_Lx[]
+        = "Domain length in streamwise X direction";
+
+static const char description_Nx[]
+        = "Global logical extents in streamwise X direction";
+
+static const char description_DAFx[]
+        = "Dealiasing factor in streamwise X direction";
+
+static const char description_Ly[]
+        = "Domain length in wall-normal Y direction";
+
+static const char description_Ny[]
+        = "Global logical extents in wall-normal Y direction";
+
+static const char description_k[]
+        = "Wall-normal B-spline order (4 is piecewise cubic)";
+
+static const char description_htdelta[]
+        = "Wall-normal breakpoint hyperbolic tangent stretching";
+
+static const char description_Lz[]
+        = "Domain length in spanwise Z direction";
+
+static const char description_Nz[]
+        = "Global logical extents in spanwise Z direction";
+
+static const char description_DAFz[]
+        = "Dealiasing factor in spanwise Z direction";
+
+static const char description_Pa[]
+        = "Processor count in the Pa decomposition direction";
+
+static const char description_Pb[]
+        = "Processor count in the Pb decomposition direction";
+
+boost::program_options::options_description
+grid_definition::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
-    using boost::math::isnan;
+    using boost::program_options::options_description;
+    using boost::program_options::typed_value;
+    using boost::program_options::value;
     using std::auto_ptr;
     using std::bind1st;
     using std::bind2nd;
@@ -92,148 +130,126 @@ void grid_definition::initialize_options(
     using validation::ensure_nonnegative;
     using validation::ensure_positive;
 
-    // Used to help resolve pointers-to-members taking strings
-    grid_specification& (grid_specification::*f)(const std::string&) = NULL;
+    options_description retval(
+            "Mixed Fourier/B-spline computational grid definition");
 
-    std::auto_ptr<boost::program_options::typed_value<std::string> > p;
-    std::string* nullstr = NULL;
+    // Used to help resolve pointers-to-members taking strings
+    grid_specification& (grid_specification::*f)(const string&) = NULL;
+
+    auto_ptr<typed_value<string> > p;
 
     // Lx
-    p.reset(boost::program_options::value<std::string>(NULL));
+    p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &L.x(),
                      &ensure_positive<real_t>, "Lx"));
-    if (default_Lx)
-    {
-        p->default_value(default_Lx);
+    if (!(boost::math::isnan)(L.x())) {
+        p->default_value(lexical_cast<string>(L.x()));
     }
-    this->add_options()("Lx", p.release(),
-                        "Nondimensional domain length in streamwise X direction");
+    retval.add_options()("Lx", p.release(), description_Lx);
 
     // Nx
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     f = &grid_specification::Nx;
     p->notifier(bind(f, this, _1));
-    if (N.x())
-    {
+    if (N.x()) {
         p->default_value(lexical_cast<string>(N.x()));
     }
-    this->add_options()("Nx", p.release(),
-                        "Global logical extents in streamwise X direction");
+    retval.add_options()("Nx", p.release(), description_Nx);
 
     // DAFx
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     f = &grid_specification::DAFx;
     p->notifier(bind(f, this, _1));
-    if (!(isnan)(DAF.x()))
-    {
+    if (!(boost::math::isnan)(DAF.x())) {
         p->default_value(lexical_cast<string>(DAF.x()));
     }
-    this->add_options()("DAFx", p.release(),
-                        "Dealiasing factor in streamwise X direction");
+    retval.add_options()("DAFx", p.release(), description_DAFx);
 
     // Ly
-    p.reset(boost::program_options::value<std::string>(NULL));
+    p.reset(value<string>(NULL));
     p->notifier(bind(&parse_option<real_t>, _1, &L.y(),
                      &ensure_positive<real_t>, "Ly"));
-    if (default_Ly)
-    {
-        p->default_value(default_Ly);
+    if (!(boost::math::isnan)(L.y())) {
+        p->default_value(lexical_cast<string>(L.y()));
     }
-    this->add_options()("Ly", p.release(),
-                        "Nondimensional domain length in wall normal Y direction");
+    retval.add_options()("Ly", p.release(), description_Ly);
 
     // Ny
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     f = &grid_specification::Ny;
     p->notifier(bind(f, this, _1));
-    if (N.y())
-    {
+    if (N.y()) {
         p->default_value(lexical_cast<string>(N.y()));
     }
-    this->add_options()("Ny", p.release(),
-                        "Global logical extents in wall-normal Y direction");
+    retval.add_options()("Ny", p.release(), description_Ny);
 
     // k
-    p.reset(boost::program_options::value(nullstr));
-    if (k)
-    {
+    p.reset(value<string>());
+    if (k) {
         p->notifier(bind(&parse_option<int>, _1, &k,
                          &ensure_positive<int>, "k"));
         p->default_value(lexical_cast<string>(k));
-    }
-    else
-    {
+    } else {
         p->notifier(bind(&parse_option<int>, _1, &k,
                          &ensure_nonnegative<int>, "k"));
     }
-    this->add_options()("k", p.release(),
-                        "Wall-normal B-spline order (4 is piecewise cubic)");
+    retval.add_options()("k", p.release(), description_k);
 
     // htdelta
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &htdelta,
                      &ensure_nonnegative<real_t>, "htdelta"));
-    if (!(isnan)(htdelta))
-    {
+    if (!(boost::math::isnan)(htdelta)) {
         p->default_value(lexical_cast<string>(htdelta));
     }
-    this->add_options()("htdelta", p.release(),
-                        "Wall-normal breakpoint hyperbolic tangent stretching");
+    retval.add_options()("htdelta", p.release(), description_htdelta);
 
     // Lz
-    p.reset(boost::program_options::value<std::string>(NULL));
+    p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &L.z(),
                      &ensure_positive<real_t>, "Lz"));
-    if (default_Lz)
-    {
-        p->default_value(default_Lz);
+    if (!(boost::math::isnan)(L.z())) {
+        p->default_value(lexical_cast<string>(L.z()));
     }
-    this->add_options()("Lz", p.release(),
-                        "Nondimensional domain length in spanwise Z direction");
+    retval.add_options()("Lz", p.release(), description_Lz);
 
     // Nz
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     f = &grid_specification::Nz;
     p->notifier(bind(f, this, _1));
-    if (N.z())
-    {
+    if (N.z()) {
         p->default_value(lexical_cast<string>(N.z()));
     }
-    this->add_options()("Nz", p.release(),
-                        "Global logical extents in spanwise Z direction");
+    retval.add_options()("Nz", p.release(), description_Nz);
 
     // DAFz
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     f = &grid_specification::DAFz;
     p->notifier(bind(f, this, _1));
-    if (!(isnan)(DAF.z()))
-    {
+    if (!(boost::math::isnan)(DAF.z())) {
         p->default_value(lexical_cast<string>(DAF.z()));
     }
-    this->add_options()("DAFz", p.release(),
-                        "Dealiasing factor in spanwise Z direction");
+    retval.add_options()("DAFz", p.release(), description_DAFz);
 
     // Pa
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     p->notifier(bind(&parse_option<int>, _1, &P[0],
                      &ensure_nonnegative<int>, "Pa"));
-    if (P[0])
-    {
+    if (P[0]) {
         p->default_value(lexical_cast<string>(P[0]));
     }
-    this->add_options()("Pa", p.release(),
-                        "Processor count in the Pa decomposition direction");
+    retval.add_options()("Pa", p.release(), description_Pa);
 
     // Pb
-    p.reset(boost::program_options::value(nullstr));
+    p.reset(value<string>());
     p->notifier(bind(&parse_option<int>, _1, &P[1],
                      &ensure_nonnegative<int>, "Pb"));
-    if (P[1])
-    {
+    if (P[1]) {
         p->default_value(lexical_cast<string>(P[1]));
     }
-    this->add_options()("Pb", p.release(),
-                        "Processor count in the Pb decomposition direction");
+    retval.add_options()("Pb", p.release(), description_Pb);
+
+    return retval;
 }
 
 void save(const esio_handle h,
@@ -247,35 +263,16 @@ void save(const esio_handle h,
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, "Lx", &grid.L.x(), 0,
-            grid.options().find("Lx",false).description().c_str());
-
-    esio_line_write(h, "Nx", &grid.N.x(), 0,
-            grid.options().find("Nx",false).description().c_str());
-
-    esio_line_write(h, "DAFx", &grid.DAF.x(), 0,
-            grid.options().find("DAFx",false).description().c_str());
-
-    esio_line_write(h, "Ly", &grid.L.y(), 0,
-            grid.options().find("Ly",false).description().c_str());
-
-    esio_line_write(h, "Ny", &grid.N.y(), 0,
-            grid.options().find("Ny",false).description().c_str());
-
-    esio_line_write(h, "k", &grid.k, 0,
-            grid.options().find("k",false).description().c_str());
-
-    esio_line_write(h, "htdelta", &grid.htdelta, 0,
-            grid.options().find("htdelta",false).description().c_str());
-
-    esio_line_write(h, "Lz", &grid.L.z(), 0,
-            grid.options().find("Lz",false).description().c_str());
-
-    esio_line_write(h, "Nz", &grid.N.z(), 0,
-            grid.options().find("Nz",false).description().c_str());
-
-    esio_line_write(h, "DAFz", &grid.DAF.z(), 0,
-            grid.options().find("DAFz",false).description().c_str());
+    esio_line_write(h, "Lx",      &grid.L.x(),   0, description_Lx     );
+    esio_line_write(h, "Nx",      &grid.N.x(),   0, description_Nx     );
+    esio_line_write(h, "DAFx",    &grid.DAF.x(), 0, description_DAFx   );
+    esio_line_write(h, "Ly",      &grid.L.y(),   0, description_Ly     );
+    esio_line_write(h, "Ny",      &grid.N.y(),   0, description_Ny     );
+    esio_line_write(h, "k",       &grid.k,       0, description_k      );
+    esio_line_write(h, "htdelta", &grid.htdelta, 0, description_htdelta);
+    esio_line_write(h, "Lz",      &grid.L.z(),   0, description_Lz     );
+    esio_line_write(h, "Nz",      &grid.N.z(),   0, description_Nz     );
+    esio_line_write(h, "DAFz",    &grid.DAF.z(), 0, description_DAFz   );
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
     ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));

@@ -78,27 +78,27 @@ static const std::vector<support::field> fields = perfect::default_fields();
 
 // Global parameters initialized in main()
 static suzerain::perfect::scenario_definition scenario(
-        /* Re         */ "100",
-        /* Ma         */ "1.5",
-        /* Pr         */ "0.7",
-        /* bulk_rho   */ "1",
-        /* bulk_rho_u */ "1",
-        /* alpha      */ "0",
-        /* beta       */ "2/3",
-        /* gamma      */ "1.4");
+        /* Re         */ 100,
+        /* Ma         */ 1.5,
+        /* Pr         */ 0.7,
+        /* bulk_rho   */ 1,
+        /* bulk_rho_u */ 1,
+        /* alpha      */ 0,
+        /* beta       */ 2.0 /3.0,
+        /* gamma      */ 1.4);
 static suzerain::support::grid_definition grid(
-        /* Lx      */ "4*pi",
+        /* Lx      */ 4 * pi<real_t>(),
         /* Nx      */ 1,
         /* DAFx    */ 1.5,
-        /* Ly      */ "2",
+        /* Ly      */ 2,
         /* Ny      */ 32,
         /* k       */ 8,
         /* htdelta */ 3,
-        /* Lz      */ "4*pi/3",
+        /* Lz      */ 4.0 * pi<real_t>() / 3.0,
         /* Nz      */ 1,
         /* DAFz    */ 1.5);
 static suzerain::support::time_definition timedef(
-        /* evmagfactor per Venugopal */ "0.72");
+        /* evmagfactor per Venugopal */ 0.72);
 static suzerain::shared_ptr<const suzerain::pencil_grid> dgrid;
 static suzerain::shared_ptr<perfect::manufactured_solution> msoln(
             new perfect::manufactured_solution(
