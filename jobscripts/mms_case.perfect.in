@@ -13,13 +13,16 @@ if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
 
 # Process incoming parameters versus defaults
+#
+# Defaults chosen to permit --explicit or --implicit version of suggested
+# command to complete in a single time step at all resolutions.
 k=6
 Nx=1
 Ny=32
 Nz=1
 htdelta=0
 np=
-tfinal=0.0125
+tfinal=0.0005
 alpha=1
 beta=
 gamma=
@@ -61,7 +64,7 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 36 48 72"
+                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 12 24 36 48 72 96"
                     echo "runs a sequence of MPI-parallel cases one after another passing"
                     echo "option --explicit to the solver to force explicit time stepping."
                     echo
