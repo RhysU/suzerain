@@ -58,6 +58,18 @@ namespace suzerain {
 
 namespace support {
 
+program_options::program_options()
+    : variables_()
+    , options_()
+    , application_synopsis_()
+    , argument_synopsis_()
+    , application_description_()
+    , application_version_()
+    , verbose_()
+    , verbose_all_()
+{
+}
+
 program_options::program_options(
         const std::string &application_synopsis,
         const std::string &argument_synopsis,

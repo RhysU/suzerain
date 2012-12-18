@@ -53,12 +53,7 @@ public:
     /**
      * Default constructor which does not supply a program description.
      */
-    program_options()
-        : variables_(),
-          options_(),
-          verbose_(),
-          verbose_all_()
-    {}
+    program_options();
 
     /**
      * Constructor providing a program synopsis, an argument synopsis,
