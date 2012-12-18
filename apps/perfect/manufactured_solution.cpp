@@ -285,8 +285,7 @@ void accumulate_manufactured_solution(
     for (size_t f = 0; f < state_count; ++f) {
 
         // ...compute the manufactured solution in physical space...
-        size_t offset = 0;
-        for (int j = dgrid.local_physical_start.y();
+        for (int offset = 0, j = dgrid.local_physical_start.y();
             j < dgrid.local_physical_end.y();
             ++j) {
 

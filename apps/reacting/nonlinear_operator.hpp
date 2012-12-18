@@ -283,8 +283,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Traversal:
     // (2) Compute most of sources and fluxes (everything but the heat flux)
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
-    size_t offset = 0;
-    for (int j = o.dgrid.local_physical_start.y();
+    for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
@@ -293,9 +292,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 
       // Iterate across the j-th ZX plane
-      const size_t last_zxoffset = offset
-        + o.dgrid.local_physical_extent.z()
-        * o.dgrid.local_physical_extent.x();
+      const int last_zxoffset = offset
+                              + o.dgrid.local_physical_extent.z()
+                              * o.dgrid.local_physical_extent.x();
       for (; offset < last_zxoffset; ++offset) {
 
         // Unpack density-related quantities
@@ -553,15 +552,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // (3) (After going back to wave space with T and back down the
     //      grad(T)), Compute heat flux contribution.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
-    size_t offset = 0;
-    for (int j = o.dgrid.local_physical_start.y();
+    for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
       // Iterate across the j-th ZX plane
-      const size_t last_zxoffset = offset
-        + o.dgrid.local_physical_extent.z()
-        * o.dgrid.local_physical_extent.x();
+      const int last_zxoffset = offset
+                              + o.dgrid.local_physical_extent.z()
+                              * o.dgrid.local_physical_extent.x();
       for (; offset < last_zxoffset; ++offset) {
 
         // Thermal conductivity
@@ -593,8 +591,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       // Dereference the msoln smart pointer outside the compute loop
       const support::manufactured_solution &ms = *msoln;
 
-      offset = 0;
-      for (int j = o.dgrid.local_physical_start.y();
+      for (int offset = 0, j = o.dgrid.local_physical_start.y();
            j < o.dgrid.local_physical_end.y();
            ++j) {
 

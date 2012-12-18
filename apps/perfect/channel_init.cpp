@@ -318,8 +318,7 @@ int main(int argc, char **argv)
         // Physical space is traversed linearly using a single offset 'offset'.
         // The three loop structure is present to provide the global absolute
         // positions x(i), y(j), and z(k) where necessary.
-        size_t offset = 0;
-        for (int j = dgrid->local_physical_start.y();
+        for (int offset = 0, j = dgrid->local_physical_start.y();
              j < dgrid->local_physical_end.y();
              ++j) {
 

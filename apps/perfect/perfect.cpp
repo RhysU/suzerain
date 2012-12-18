@@ -375,13 +375,12 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     // This procedure is not the cheapest or least numerically noisy,
     // but it does re-use existing compute kernels in a readable way.
     INFO0("Holding density and temperature constant during changes");
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
+    for (int offset = 0, j = dgrid.local_physical_start.y();
         j < dgrid.local_physical_end.y();
         ++j) {
-        const size_t last_zxoffset = offset
-                                   + dgrid.local_physical_extent.z()
-                                   * dgrid.local_physical_extent.x();
+        const int last_zxoffset = offset
+                                + dgrid.local_physical_extent.z()
+                                * dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
             const real_t   e  (sphys(ndx::e,   offset));
@@ -633,8 +632,7 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     // Store curl A in s[{5,6,7}] and find global maximum magnitude of curl A
     real_t maxmagsquared = 0;
-    size_t offset = 0;
-    for (int j = dgrid.local_physical_start.y();
+    for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
 
@@ -710,8 +708,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     //     velocity and compute new total energy using perturbed
     //     velocities.
     const real_t Ma = scenario.Ma;
-    offset = 0;
-    for (int j = dgrid.local_physical_start.y();
+    for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
 

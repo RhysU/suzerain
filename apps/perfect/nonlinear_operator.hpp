@@ -307,8 +307,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Sum reference quantities as a function of y(j) into common.ref_*
         // See writeups/derivation.tex or rholut_imexop.h for definitions
-        size_t offset = 0;
-        for (int j = o.dgrid.local_physical_start.y();
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
@@ -326,9 +325,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // This gives nicer construction and allows looping over results.
             summing_accumulator_type acc[ref::count];
 
-            const size_t last_zxoffset = offset
-                                       + o.dgrid.local_physical_extent.z()
-                                       * o.dgrid.local_physical_extent.x();
+            const int last_zxoffset = offset
+                                    + o.dgrid.local_physical_extent.z()
+                                    * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
 
                 // Unpack conserved state
@@ -470,8 +469,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
 
         // Sum velocities as a function of y(j) into common.{u,v,w}()
-        size_t offset = 0;
-        for (int j = o.dgrid.local_physical_start.y();
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
@@ -479,9 +477,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             summing_accumulator_type uy;
             summing_accumulator_type uz;
 
-            const size_t last_zxoffset = offset
-                                       + o.dgrid.local_physical_extent.z()
-                                       * o.dgrid.local_physical_extent.x();
+            const int last_zxoffset = offset
+                                    + o.dgrid.local_physical_extent.z()
+                                    * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
                 const real_t inv_rho = 1 / sphys(ndx::rho, offset);
                 ux(inv_rho * sphys(ndx::mx, offset));
@@ -529,8 +527,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
-    size_t offset = 0;
-    for (int j = o.dgrid.local_physical_start.y();
+    for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
@@ -575,9 +572,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
 
         // Iterate across the j-th ZX plane
-        const size_t last_zxoffset = offset
-                                   + o.dgrid.local_physical_extent.z()
-                                   * o.dgrid.local_physical_extent.x();
+        const int last_zxoffset = offset
+                                + o.dgrid.local_physical_extent.z()
+                                * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
             // Unpack total energy-related quantities
@@ -919,8 +916,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Dereference the msoln smart pointer outside the compute loop
         const ManufacturedSolution &ms = *msoln;
 
-        offset = 0;
-        for (int j = o.dgrid.local_physical_start.y();
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
              j < o.dgrid.local_physical_end.y();
              ++j) {
 
