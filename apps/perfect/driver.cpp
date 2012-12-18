@@ -25,6 +25,8 @@
 
 #include "driver.hpp"
 
+#include <suzerain/format.hpp>
+#include <suzerain/l2.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
@@ -54,6 +56,39 @@ driver::initialize(
     options.add_definition(*scenario);
 
     return super::initialize(argc, argv);
+}
+
+void
+driver::log_manufactured_solution_absolute_error(
+        const std::string& timeprefix,
+        const time_type t,
+        const step_type nt)
+{
+    SUZERAIN_UNUSED(nt);
+
+    // NOP whenever a manufactured_solution is not in use
+    if (!msoln) return;
+
+    // Avoid computational cost when logging is disabled
+    support::logging::logger_type mms_abserr
+            = support::logging::get_logger("mms.abserr");
+    if (!INFO0_ENABLED(mms_abserr)) return;
+
+    // Compute L2 of error of state against manufactured solution
+    state_nonlinear->assign(*state_linear);
+    accumulate_manufactured_solution(
+            1, *msoln, -1, *state_nonlinear,
+            *grid, *dgrid, *b, *cop, t);
+    const std::vector<field_L2> L2
+        = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
+
+    // Output absolute global errors for each field
+    std::ostringstream msg;
+    msg << timeprefix;
+    for (size_t k = 0; k < L2.size(); ++k) {
+        msg << ' ' << fullprec<>(L2[k].total());
+    }
+    INFO0(mms_abserr, msg.str());
 }
 
 void
@@ -99,6 +134,17 @@ driver::compute_statistics(
                mean.storage.middleCols<mean_quantities::nscalars::implicit>(
                    mean_quantities::nscalars::physical).data(),
                mean.storage.innerStride(), mean.storage.outerStride());
+}
+
+bool
+driver::log_status_hook(
+        const std::string& timeprefix,
+        const real_t t,
+        const std::size_t nt)
+{
+    const bool retval = super::log_status_hook(timeprefix, t, nt);
+    log_manufactured_solution_absolute_error(timeprefix, t, nt);
+    return retval;
 }
 
 void

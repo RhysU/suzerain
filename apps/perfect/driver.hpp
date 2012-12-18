@@ -86,6 +86,16 @@ public:
     mean_quantities mean;
 
     /**
+     * When \c msoln is true, log messages containing the absolute
+     * error in \c state_linear relative to the manufactured solution.
+     * Destroys the contents of \c state_nonlinear during execution.
+     */
+    virtual void log_manufactured_solution_absolute_error(
+            const std::string& timeprefix,
+            const real_t t,
+            const std::size_t nt);
+
+    /**
      * Collectively compute statistics from #state_linear saving them into
      * #mean and destroying #state_nonlinear in the process.
      *
@@ -95,6 +105,17 @@ public:
             time_type t);
 
 protected:
+
+    /**
+     * Beyond the inherited behavior, this method invokes
+     * \ref log_manufactured_solution_absolute_error.
+     *
+     * @returns True or false per the superclass behavior.
+     */
+    virtual bool log_status_hook(
+            const std::string& timeprefix,
+            const time_type t,
+            const step_type nt);
 
     /**
      * Beyond the inherited behavior, this method saves #scenario and #msoln.
