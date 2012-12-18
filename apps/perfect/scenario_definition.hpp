@@ -20,6 +20,8 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
+// FIXME Break bulk_rho and bulk_rho_u into channel_definition class
+
 /** @file
  * Provides classes handling problem scenario parameters which are either
  * reference quantities or nondimensional parameters describing a particular
