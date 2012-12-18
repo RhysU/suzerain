@@ -96,6 +96,31 @@ public:
             const std::size_t nt);
 
     /**
+     * Log the linearization error present between \ref L and \ref N.
+     *
+     * More specifically, for \f$\partial_t u = \mathscr{L}u + Lu +
+     * \left(N(u)-Lu\right)\f$ how well did \ref N compute a \f$-Lu\f$ term
+     * matching with \ref L \f$+Lu\f$ contribution?  \ref L is assumed to also
+     * compute a nontrivial \f$\mathscr{L}u\f$ which is independent of
+     * reference values (e.g.  the divergence of the momentum within the mass
+     * equation).
+     *
+     * If \ref L and \ref N "match" perfectly, the logged messages would be
+     * identically zero.  Seeing more than acceptable (e.g. <tt>1e-10</tt>)
+     * floating point error indicates something is amiss.
+     *
+     * The computation costs a significant fraction of a Runge--Kutta time step
+     * but \e is low-storage-friendly.  It destroys the contents of all of \ref
+     * common_block, \ref state_linear, and \ref state_nonlinear.  The
+     * resultant message should be uniformly small regardless of \ref
+     * state_linear but its particular value does depend on \ref state_linear.
+     */
+    virtual void log_linearization_error(
+            const std::string& timeprefix,
+            const real_t t,
+            const std::size_t nt);
+
+    /**
      * Collectively compute statistics from #state_linear saving them into
      * #mean and destroying #state_nonlinear in the process.
      *

@@ -25,6 +25,7 @@
 
 #include "driver.hpp"
 
+#include <suzerain/diffwave.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/l2.hpp>
 #include <suzerain/support/logging.hpp>
@@ -89,6 +90,88 @@ driver::log_manufactured_solution_absolute_error(
         msg << ' ' << fullprec<>(L2[k].total());
     }
     INFO0(mms_abserr, msg.str());
+}
+
+
+void
+driver::log_linearization_error(
+        const std::string& timeprefix,
+        const real_t t,
+        const std::size_t nt)
+{
+    SUZERAIN_UNUSED(nt);
+
+    // Avoid computational cost when logging is disabled
+    support::logging::logger_type lin_abserr
+            = support::logging::get_logger("lin.abserr");
+    if (!INFO0_ENABLED(lin_abserr)) return;
+
+    SUZERAIN_TIMER_SCOPED("driver::log_linearization_error");
+
+    // Algorithm proceeds directly from necessary interface guarantees.
+    // Rewriting it symbolically from the code and grokking it is a good
+    // exercise towards understanding the low storage time interfaces.
+    //
+    // Success requires that the following preconditions all hold:
+    //    i) At substep zero, this->N computes N(u) - Lu including
+    //       the necessary reference quantities.
+    //   ii) The reference quantities are stored in common_block and may be
+    //       expressly zeroed.  Zeroing them nukes linearized contributions
+    //       from I{Nonlinear,Linear}Operator but not linear contributions
+    //       from this->L.
+    //  iii) On non-zero substeps for zero reference values, this->N computes
+    //       only N(u) and this->L computes only
+    //       \left(M+\varphi\mathscr{L}\right)u.
+    //   iv) At the beginning of this process, state_linear contains
+    //       valid information and adheres to boundary conditions.
+    //    v) The explicit_nonlinear_operator application requires an auxiliary
+    //       scaling factor "chi" to account for Fourier transform
+    //       normalization needs.
+    //   vi) Using diffwave::apply zeros wavenumbers used only for dealiasing
+    //       purposes-- this data is unimportant from the perspective of
+    //       measuring actual linearization error.
+    const real_t chi = real_t(1) / (grid->dN.x() * grid->dN.z());
+    state_nonlinear->assign(*state_linear);
+    common_block.set_zero(grid->dN.y());  // Defensive
+    N->apply_operator(t, *state_nonlinear,
+            method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/0);
+    L->accumulate_mass_plus_scaled_operator(
+            1, *state_linear, chi,  *state_nonlinear, *method, 0, /*substep*/0);
+    common_block.set_zero(grid->dN.y());  // Zero reference quantities
+    L->accumulate_mass_plus_scaled_operator(
+            1, *state_linear, -1, *state_nonlinear, *method, 0, /*substep*/0);
+    for (size_t k = 0; k < fields.size(); ++k) {
+        diffwave::apply(0, 0, 1, (*state_nonlinear)[k].origin(),
+            grid->L.x(), grid->L.z(), dgrid->global_wave_extent.y(),
+            grid->N.x(), grid->dN.x(),
+            dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
+            grid->N.z(), grid->dN.z(),
+            dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
+    }
+    state_nonlinear->exchange(*state_linear);
+    N->apply_operator(t, *state_nonlinear,
+            method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/1);
+    for (size_t k = 0; k < fields.size(); ++k) {
+        diffwave::apply(0, 0, 1, (*state_nonlinear)[k].origin(),
+            grid->L.x(), grid->L.z(), dgrid->global_wave_extent.y(),
+            grid->N.x(), grid->dN.x(),
+            dgrid->local_wave_start.x(), dgrid->local_wave_end.x(),
+            grid->N.z(), grid->dN.z(),
+            dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
+    }
+    state_nonlinear->add_scaled(1/chi, *state_linear);
+
+    // When this->L and this->N match perfectly, state_nonlinear should be
+    // identically zero.  Seeing more than acceptable (e.g. 1e-10) floating
+    // point error indicates something is amiss.
+    const std::vector<field_L2> L2
+        = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
+    std::ostringstream msg;
+    msg << timeprefix;
+    for (size_t k = 0; k < L2.size(); ++k) {
+        msg << ' ' << fullprec<>(L2[k].total());
+    }
+    INFO0(lin_abserr, msg.str());
 }
 
 void
