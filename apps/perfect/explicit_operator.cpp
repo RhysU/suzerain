@@ -39,7 +39,9 @@
 
 #pragma warning(disable:383 1572)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 bspline_mass_operator::bspline_mass_operator(
         const grid_specification &grid,
@@ -263,4 +265,6 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
     }
 }
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain

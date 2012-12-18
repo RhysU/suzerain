@@ -39,7 +39,9 @@
 
 #pragma warning(disable:383 1572)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /**
  * A boundary-condition agnostic, fully explicit Navier&ndash;Stokes operator.
@@ -196,6 +198,8 @@ protected:
 
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 #endif  /* EXPLICIT_OPERATOR_HPP */
