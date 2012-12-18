@@ -30,8 +30,6 @@
 #include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.hpp>
-#include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
@@ -42,130 +40,6 @@
 namespace suzerain {
 
 namespace perfect {
-
-bspline_mass_operator::bspline_mass_operator(
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
-        bspline &b)
-    : operator_base(grid, dgrid, cop, b),
-      massluz(cop)
-{
-    SUZERAIN_UNUSED(grid);
-    SUZERAIN_UNUSED(dgrid);
-    SUZERAIN_UNUSED(b);
-
-    massluz.factor_mass(cop);
-}
-
-void bspline_mass_operator::apply_mass_plus_scaled_operator(
-        const complex_t &phi,
-        multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
-        const std::size_t substep_index) const
-{
-    // TODO Speedup possible by not applying to dealiased modes
-    // a la isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator
-
-    SUZERAIN_UNUSED(phi);
-    SUZERAIN_UNUSED(method);
-    SUZERAIN_UNUSED(delta_t);
-    SUZERAIN_UNUSED(substep_index);
-
-    // Verify required assumptions
-    SUZERAIN_ENSURE(state.strides()[1] == 1);
-    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
-    SUZERAIN_ENSURE(multi_array::is_contiguous(state));
-
-    // Those assumptions holding, apply operator to each wall-normal pencil.
-    const int nrhs = state.shape()[0]*state.shape()[2]*state.shape()[3];
-    cop.apply(0, nrhs, 1, state.data(), 1, state.shape()[1]);
-}
-
-
-void bspline_mass_operator::accumulate_mass_plus_scaled_operator(
-        const complex_t &phi,
-        const multi_array::ref<complex_t,4> &input,
-        const complex_t &beta,
-        contiguous_state<4,complex_t> &output,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
-        const std::size_t substep_index) const
-{
-    // TODO Speedup possible by not accumulating dealiased modes
-    // a la isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator
-
-    SUZERAIN_UNUSED(phi);
-    SUZERAIN_UNUSED(method);
-    SUZERAIN_UNUSED(delta_t);
-    SUZERAIN_UNUSED(substep_index);
-
-    SUZERAIN_ENSURE(output.is_isomorphic(input));
-
-    const multi_array::ref<complex_t,4> &x = input;  // Shorthand
-    contiguous_state<4,complex_t>        &y = output; // Shorthand
-    const complex_t c_one = 1;
-
-    // Sidesteps assertions triggered by dereferencing trivial input and output
-    if (SUZERAIN_UNLIKELY(0U == x.shape()[1] * x.shape()[2])) return;
-
-    // Loops go from slower to faster indices for contiguous_state<4,complex_t>
-    typedef contiguous_state<4,complex_t>::index index;
-    for (index ix = x.index_bases()[0], iy = y.index_bases()[0];
-        ix < static_cast<index>(x.index_bases()[0] + x.shape()[0]);
-        ++ix, ++iy) {
-
-        for (index lx = x.index_bases()[3], ly = y.index_bases()[3];
-            lx < static_cast<index>(x.index_bases()[3] + x.shape()[3]);
-            ++lx, ++ly) {
-
-            cop.accumulate(0, x.shape()[2],
-                    c_one,
-                    &x[ix][x.index_bases()[1]][x.index_bases()[2]][lx],
-                    x.strides()[1], x.strides()[2],
-                    beta,
-                    &y[iy][y.index_bases()[1]][y.index_bases()[2]][ly],
-                    y.strides()[1], y.strides()[2]);
-        }
-    }
-}
-
-void bspline_mass_operator::invert_mass_plus_scaled_operator(
-        const complex_t &phi,
-        multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
-        const std::size_t substep_index,
-        multi_array::ref<complex_t,4> *ic0) const
-{
-    SUZERAIN_UNUSED(phi);
-    SUZERAIN_UNUSED(method);
-    SUZERAIN_UNUSED(delta_t);
-    SUZERAIN_UNUSED(substep_index);
-
-    // Verify required assumptions
-    SUZERAIN_ENSURE(state.strides()[1] == 1);
-    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
-    SUZERAIN_ENSURE(multi_array::is_contiguous(state));
-
-    // Those assumptions holding, invert operator on each wall-normal pencil
-    massluz.solve(state.shape()[0]*state.shape()[2]*state.shape()[3],
-                  state.data(), 1, state.shape()[1]);
-
-    if (ic0) {
-
-        // Likewise, verify required assumptions
-        SUZERAIN_ENSURE(ic0->strides()[1] == 1);
-        SUZERAIN_ENSURE(ic0->shape()[1]   == static_cast<unsigned>(massluz.n()));
-        SUZERAIN_ENSURE(multi_array::is_contiguous(*ic0));
-
-        // Likewise, invert operator on each wall-normal pencil
-        massluz.solve(ic0->shape()[0]*ic0->shape()[2]*ic0->shape()[3],
-                      ic0->data(), 1, ic0->shape()[1]);
-
-    }
-}
 
 // A helper class for implementing isothermal, no-slip boundary conditions
 class IsothermalNoSlipFunctor
@@ -189,7 +63,7 @@ public:
     }
 };
 
-void isothermal_bspline_mass_operator::invert_mass_plus_scaled_operator(
+void isothermal_mass_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,

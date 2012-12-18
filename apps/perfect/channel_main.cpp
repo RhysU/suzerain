@@ -1282,7 +1282,7 @@ int main(int argc, char **argv)
     using perfect::channel_treatment;
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
-        L.reset(new channel_treatment<perfect::isothermal_bspline_mass_operator>(
+        L.reset(new channel_treatment<perfect::isothermal_mass_operator>(
                     scenario, grid, *dgrid, *cop, *b, common_block));
         N.reset(new perfect::explicit_nonlinear_operator(
                 scenario, grid, *dgrid, *cop, *b, common_block, msoln));

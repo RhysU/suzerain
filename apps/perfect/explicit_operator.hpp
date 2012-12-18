@@ -29,6 +29,7 @@
 #include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -94,73 +95,25 @@ private:
 
 };
 
-/** An operator which applies or inverts a B-spline mass matrix */
-class bspline_mass_operator
-  : public operator_base,
-    public timestepper::lowstorage::linear_operator<
-        multi_array::ref<complex_t,4>,
-        contiguous_state<4,complex_t>
-    >
-{
-public:
-
-    bspline_mass_operator(
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b);
-
-    virtual void apply_mass_plus_scaled_operator(
-             const complex_t &phi,
-             multi_array::ref<complex_t,4> &state,
-             const timestepper::lowstorage::method_interface<complex_t> &method,
-             const component delta_t,
-             const std::size_t substep_index) const;
-
-     virtual void accumulate_mass_plus_scaled_operator(
-             const complex_t &phi,
-             const multi_array::ref<complex_t,4> &input,
-             const complex_t &beta,
-             contiguous_state<4,complex_t> &output,
-             const timestepper::lowstorage::method_interface<complex_t> &method,
-             const component delta_t,
-             const std::size_t substep_index) const;
-
-     virtual void invert_mass_plus_scaled_operator(
-             const complex_t &phi,
-             multi_array::ref<complex_t,4> &state,
-             const timestepper::lowstorage::method_interface<complex_t> &method,
-             const component delta_t,
-             const std::size_t substep_index,
-             multi_array::ref<complex_t,4> *ic0 = NULL) const;
-
-private:
-
-     /** Precomputed mass matrix factorization */
-    bsplineop_luz massluz;
-
-};
-
 /**
  * A mass operator that provides no slip, isothermal walls.  It requires
  * interoperation with explicit_nonlinear_operator via operator_common_block.
  */
-class isothermal_bspline_mass_operator
-    : public bspline_mass_operator
+class isothermal_mass_operator : public mass_operator
 {
 
-    typedef bspline_mass_operator base;
+    typedef mass_operator base;
 
 public:
 
-    isothermal_bspline_mass_operator(
+    isothermal_mass_operator(
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-        : bspline_mass_operator(grid, dgrid, cop, b),
+        : mass_operator(grid, dgrid, cop, b),
           scenario(scenario),
           common(common)
     {}
