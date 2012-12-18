@@ -87,6 +87,7 @@ nobase_pkginclude_HEADERS += multi_array.hpp
 nobase_pkginclude_HEADERS += ndx.hpp
 nobase_pkginclude_HEADERS += noise_specification.hpp
 nobase_pkginclude_HEADERS += operator_base.hpp
+nobase_pkginclude_HEADERS += operator_tools.hpp
 nobase_pkginclude_HEADERS += os.h
 nobase_pkginclude_HEADERS += parcel.h
 nobase_pkginclude_HEADERS += pencilfft.hpp

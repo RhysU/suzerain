@@ -29,8 +29,6 @@
 
 #include <suzerain/operator_base.hpp>
 
-#include <suzerain/common.hpp>
-
 namespace suzerain {
 
 operator_base::operator_base(
@@ -38,27 +36,25 @@ operator_base::operator_base(
         const pencil_grid &dgrid,
         bspline &b,
         const bsplineop &cop)
-    : one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x()),
-      lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x),
-      lambda2_x(lambda1_x * lambda1_x),
-      one_over_delta_z(grid.N.z() /* !dN.z() */ / grid.L.z()),
-      lambda1_z(boost::math::constants::pi<real_t>() * one_over_delta_z),
-      lambda2_z(lambda1_z * lambda1_z),
-      grid(grid),
-      dgrid(dgrid),
-      cop(cop),
-      y_(boost::extents[boost::multi_array_types::extent_range(
+    : operator_tools(grid, dgrid, cop)
+    , one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x())
+    , lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x)
+    , lambda2_x(lambda1_x * lambda1_x)
+    , one_over_delta_z(grid.N.z() /* !dN.z() */ / grid.L.z())
+    , lambda1_z(boost::math::constants::pi<real_t>() * one_over_delta_z)
+    , lambda2_z(lambda1_z * lambda1_z)
+    , y_(boost::extents[boost::multi_array_types::extent_range(
               dgrid.local_physical_start.y(),
-              dgrid.local_physical_end.y())]),
-      one_over_delta_y_(
+              dgrid.local_physical_end.y())])
+    , one_over_delta_y_(
               boost::extents[boost::multi_array_types::extent_range(
                     dgrid.local_physical_start.y(),
-                    dgrid.local_physical_end.y())]),
-      lambda1_y_(
+                    dgrid.local_physical_end.y())])
+    , lambda1_y_(
               boost::extents[boost::multi_array_types::extent_range(
                     dgrid.local_physical_start.y(),
-                    dgrid.local_physical_end.y())]),
-      lambda2_y_(
+                    dgrid.local_physical_end.y())])
+    , lambda2_y_(
               boost::extents[boost::multi_array_types::extent_range(
                     dgrid.local_physical_start.y(),
                     dgrid.local_physical_end.y())])

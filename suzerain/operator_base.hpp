@@ -27,33 +27,24 @@
 #define SUZERAIN_OPERATOR_BASE_HPP
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
-#include <suzerain/diffwave.hpp>
-#include <suzerain/grid_specification.hpp>
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/timers.h>
+#include <suzerain/operator_tools.hpp>
 
 namespace suzerain {
 
 /**
- * Provides common B-spline and parallel FFT infrastructure useful across many
- * linear_operator and nonlinear_operator implementations.
+ * Provides potentially heavyweight B-spline and parallel FFT infrastructure.
+ * Intended as a base class for nonlinear_operator implementations and other
+ * logic requiring physical space coordinate information.
  */
-class operator_base
+class operator_base : public operator_tools
 {
 public:
 
     /**
-     * Construct an instance based upon the provided numeric utilities.  The
-     * instance makes the constant arguments available by reference throughout
-     * its lifetime.  Accordingly, the constant reference arguments should have
-     * a lifetime longer than that of this instance.
+     * @copydoc operator_tools::operator_tools
      *
-     * @param grid     Grid definition to store.
-     * @param dgrid    Decomposition providing parallel grid details.
-     * @param b        B-spline workspace for obtaining necessary details,
-     *                 e.g. integration coefficients.
-     * @param cop      B-spline operators to use.
+     * @param b B-spline workspace for obtaining necessary details,
+     *          e.g. integration coefficients.
      */
     operator_base(const grid_specification &grid,
                   const pencil_grid &dgrid,
@@ -62,164 +53,6 @@ public:
 
     /** Virtual destructor to permit use as a base class */
     virtual ~operator_base();
-
-    /**
-     * Perform scaled operator accumulation on two state fields.
-     *
-     * @see bsplineop::accumulate
-     */
-    template<typename AlphaType, typename MultiArrayX,
-             typename BetaType,  typename MultiArrayY>
-    int bop_accumulate(
-            int nderiv,
-            const AlphaType& alpha, const MultiArrayX &x, int ndx_x,
-            const BetaType& beta,         MultiArrayY &y, int ndx_y) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_accumulate");
-
-        assert(x.shape()[1] == (unsigned) cop.n());
-        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2] );
-        assert((unsigned) y.strides()[3] == y.shape()[2] * y.strides()[2] );
-        assert(std::equal(x.shape() + 1, x.shape() + 4, y.shape() + 1));
-
-        return cop.accumulate(
-                nderiv, x.shape()[2] * x.shape()[3],
-                alpha,  x[ndx_x].origin(), x.strides()[1], x.strides()[2],
-                beta,   y[ndx_y].origin(), y.strides()[1], y.strides()[2]);
-    }
-
-    /**
-     * Perform scaled operator application on one state field.
-     *
-     * @see bsplineop::apply
-     */
-    template<typename AlphaType, typename MultiArray>
-    int bop_apply(
-            int nderiv, const AlphaType& alpha, MultiArray &x, int ndx) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_apply");
-
-        assert(x.shape()[1] == (unsigned) cop.n());
-        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
-
-        return cop.apply(
-                nderiv, x.shape()[2] * x.shape()[3],
-                alpha,  x[ndx].origin(), x.strides()[1], x.strides()[2]);
-    }
-
-    /**
-     * Perform real-valued B-spline operator inversion on one state field.
-     *
-     * @see bsplineop_lu::solve
-     */
-    template<typename MultiArray>
-    int bop_solve(
-            const bsplineop_lu &lu, MultiArray &x, int ndx) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(real)");
-
-        assert(x.shape()[1] == (unsigned) lu.n());
-        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
-
-        return lu.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
-                        x.strides()[1], x.strides()[2]);
-    }
-
-    /**
-     * Perform complex-valued B-spline operator inversion on one state field.
-     *
-     * @see bsplineop_luz::solve
-     */
-    template<typename MultiArray>
-    int bop_solve(
-            const bsplineop_luz &luz, MultiArray &x, int ndx) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::bop_solve(cmplx)");
-
-        assert(x.shape()[1] == (unsigned) luz.n());
-        assert((unsigned) x.strides()[3] == x.shape()[2] * x.strides()[2]);
-
-        return luz.solve(x.shape()[2]*x.shape()[3], x[ndx].origin(),
-                         x.strides()[1], x.strides()[2]);
-    }
-
-    /**
-     * Perform wave space-based differentiation using accumulation.
-     *
-     * @see diffwave::accumulate
-     */
-    template<typename MultiArrayX, typename MultiArrayY>
-    void diffwave_accumulate(int dxcnt,
-                             int dzcnt,
-                             const typename MultiArrayX::element& alpha,
-                             const MultiArrayX &x,
-                             int ndx_x,
-                             const typename MultiArrayY::element& beta,
-                             MultiArrayY &y,
-                             int ndx_y) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::diffwave_accumulate");
-
-        assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
-        assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
-
-        return diffwave::accumulate(
-                dxcnt, dzcnt,
-                alpha, x[ndx_x].origin(),
-                beta,  y[ndx_y].origin(),
-                grid.L.x(), grid.L.z(),
-                dgrid.global_wave_extent.y(),
-                grid.N.x(),
-                grid.dN.x(),
-                dgrid.local_wave_start.x(),
-                dgrid.local_wave_end.x(),
-                grid.N.z(),
-                grid.dN.z(),
-                dgrid.local_wave_start.z(),
-                dgrid.local_wave_end.z());
-
-    }
-
-    /**
-     * Perform wave space-based differentiation using application.
-     *
-     * @see diffwave::apply
-     */
-    template<typename MultiArray>
-    void diffwave_apply(int dxcnt,
-                        int dzcnt,
-                        const typename MultiArray::element& alpha,
-                        MultiArray &x,
-                        int ndx_x) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::diffwave_apply");
-
-        return diffwave::apply(
-                dxcnt, dzcnt,
-                alpha, x[ndx_x].origin(),
-                grid.L.x(), grid.L.z(),
-                dgrid.global_wave_extent.y(),
-                grid.N.x(),
-                grid.dN.x(),
-                dgrid.local_wave_start.x(),
-                dgrid.local_wave_end.x(),
-                grid.N.z(),
-                grid.dN.z(),
-                dgrid.local_wave_start.z(),
-                dgrid.local_wave_end.z());
-    }
-
-    /** Zero wave-space modes present only for dealiasing purposes */
-    template<typename MultiArray>
-    void zero_dealiasing_modes(MultiArray &x,
-                               int ndx_x) const
-    {
-        SUZERAIN_TIMER_SCOPED("OperatorBase::zero_dealiasing_modes");
-
-        // Applying the dx^0 dz^0 operator with a scale factor of 1
-        // zeros the dealiasing-only wavenumbers within the field
-        return this->diffwave_apply(0, 0, 1.0, x, ndx_x);
-    }
 
     /**
      * Return the <tt>i</tt>th \c globally-indexed x grid point.
@@ -293,15 +126,6 @@ public:
     /** Maximum pure real eigenvalue magnitude for second z derivative */
     const real_t lambda2_z;
 
-    /** The grid in which the operator is used */
-    const grid_specification &grid;
-
-    /** The parallel decomposition grid in which the operator is used */
-    const pencil_grid &dgrid;
-
-    /** The B-spline operators with which the operator is used */
-    const bsplineop &cop;
-
 private:
 
     /** Stores y grid points on this rank in physical space */
@@ -315,10 +139,6 @@ private:
 
     /** Stores pure real eigenvalue magnitudes for second y derivative */
     boost::multi_array<real_t,1> lambda2_y_;
-
-    // Noncopyable
-    operator_base(const operator_base&);
-    operator_base& operator=(const operator_base&);
 };
 
 } // namespace suzerain
