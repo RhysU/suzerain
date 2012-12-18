@@ -64,10 +64,10 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
             const bsplineop &cop,
+            bspline &b,
             operator_common_block &common)
-        : operator_base(grid, dgrid, b, cop),
+        : operator_base(grid, dgrid, cop, b),
           spec(spec),
           scenario(scenario),
           common(common)
@@ -153,11 +153,11 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
             const bsplineop &cop,
+            bspline &b,
             operator_common_block &common,
             const shared_ptr<const manufactured_solution>& msoln)
-        : operator_base(grid, dgrid, b, cop),
+        : operator_base(grid, dgrid, cop, b),
           scenario(scenario),
           common(common),
           msoln(msoln)

@@ -72,8 +72,8 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
+            const bsplineop &cop,
             bspline &b,
-            const bsplineop &bop,
             operator_common_block &common);
 
     /**
@@ -87,8 +87,8 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
+            const bsplineop &cop,
             bspline &b,
-            const bsplineop &bop,
             operator_common_block &common);
 
     /** Virtual destructor as the class has virtual methods. */
@@ -112,8 +112,8 @@ private:
     void finish_construction(
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
-            const bsplineop &bop);
+            const bsplineop &cop,
+            bspline &b);
 
     /** Should bulk streamwise momentum constraint be enforced? */
     bool constrain_bulk_rho_u() const
@@ -154,13 +154,13 @@ channel_treatment<BaseClass>::channel_treatment(
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
+            const bsplineop &cop,
             bspline &b,
-            const bsplineop &bop,
             operator_common_block &common)
-    : BaseClass(scenario, grid, dgrid, b, bop, common),
+    : BaseClass(scenario, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
-    this->finish_construction(grid, dgrid, b, bop);
+    this->finish_construction(grid, dgrid, cop, b);
 }
 
 template< typename BaseClass >
@@ -169,23 +169,23 @@ channel_treatment<BaseClass>::channel_treatment(
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
+            const bsplineop &cop,
             bspline &b,
-            const bsplineop &bop,
             operator_common_block &common)
-    : BaseClass(spec, scenario, grid, dgrid, b, bop, common),
+    : BaseClass(spec, scenario, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
-    this->finish_construction(grid, dgrid, b, bop);
+    this->finish_construction(grid, dgrid, cop, b);
 }
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::finish_construction(
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
-            const bsplineop &bop)
+            const bsplineop &cop,
+            bspline &b)
 {
-    SUZERAIN_UNUSED(bop);
+    SUZERAIN_UNUSED(cop);
 
     // Precomputed results only necessary on rank with zero-zero modes
     if (!dgrid.has_zero_zero_modes()) return;

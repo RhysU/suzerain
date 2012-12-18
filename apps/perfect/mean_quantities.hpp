@@ -273,7 +273,6 @@ mean_quantities sample_mean_quantities(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
-        bspline &b,
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,
         const real_t t);

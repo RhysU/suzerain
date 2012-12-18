@@ -44,9 +44,9 @@ namespace suzerain { namespace perfect {
 bspline_mass_operator::bspline_mass_operator(
         const grid_specification &grid,
         const pencil_grid &dgrid,
-        bspline &b,
-        const bsplineop &cop)
-    : operator_base(grid, dgrid, b, cop),
+        const bsplineop &cop,
+        bspline &b)
+    : operator_base(grid, dgrid, cop, b),
       massluz(cop)
 {
     SUZERAIN_UNUSED(grid);

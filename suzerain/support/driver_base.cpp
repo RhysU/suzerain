@@ -976,7 +976,7 @@ driver_base::save_state_hook(
     // The former is a destructive operation clobbering *state_nonlinear
     if (restartdef->physical) {
         save_collocation_values(
-                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *cop);
     } else {
         save_coefficients(
                 esioh, fields, *state_nonlinear, *grid, *dgrid);
@@ -1016,10 +1016,10 @@ driver_base::load_state_hook(
     // Dispatch to the appropriate state-loading logic
     if (allcplx) {
         load_coefficients(
-                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *cop, *b);
     } else if (allreal) {
         load_collocation_values(
-                esioh, fields, *state_nonlinear, *grid, *dgrid, *b, *cop);
+                esioh, fields, *state_nonlinear, *grid, *dgrid, *cop, *b);
     } else {
         SUZERAIN_ERROR_VOID(
                 "Unable to load state from file", SUZERAIN_EFAILED);

@@ -91,8 +91,8 @@ void load_coefficients(
         contiguous_state<4,complex_t> &state,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        const bspline& b,
-        const bsplineop& cop);
+        const bsplineop& cop,
+        const bspline& b);
 
 /**
  * Save the current simulation state as collocation point values into an open
@@ -108,7 +108,6 @@ void save_collocation_values(
         contiguous_state<4,complex_t>& swave,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
         const bsplineop& cop);
 
 /**
@@ -121,8 +120,8 @@ void load_collocation_values(
         contiguous_state<4,complex_t>& state,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop);
+        const bsplineop& cop,
+        const bspline& b);
 
 } // end namespace support
 

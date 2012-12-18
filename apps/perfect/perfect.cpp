@@ -44,7 +44,7 @@
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
-#include <suzerain/operator_base.hpp>
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
@@ -78,7 +78,6 @@ void save_collocation_values(
         const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
         const bsplineop& cop)
 {
     // We are only prepared to handle a fixed number of fields in this routine
@@ -92,10 +91,10 @@ void save_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    operator_base obase(grid, dgrid, b, cop);
+    operator_tools otool(grid, dgrid, cop);
     for (size_t i = 0; i < swave.shape()[0]; ++i) {
-        obase.bop_apply(0, 1, swave, i);
-        obase.zero_dealiasing_modes(swave, i);
+        otool.bop_apply(0, 1, swave, i);
+        otool.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
                 reinterpret_cast<real_t *>(swave[i].origin()));
     }
@@ -171,8 +170,8 @@ void load_collocation_values(
         const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop)
+        const bsplineop& cop,
+        const bspline& b)
 {
     // We are only prepared to handle a fixed number of fields in this routine
     enum { state_count = 5 };
@@ -259,20 +258,17 @@ void load_collocation_values(
         sphys(ndx::rho, o) = rho;
     }
 
-    // Initialize operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, cop);
-
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
     bsplineop_luz massluz(cop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
-
+    operator_tools otool(grid, dgrid, cop);
     for (size_t i = 0; i < state.shape()[0]; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
-        obase.zero_dealiasing_modes(state, i);
-        obase.bop_solve(massluz, state, i);                      // Y
+        otool.zero_dealiasing_modes(state, i);
+        otool.bop_solve(massluz, state, i);                      // Y
     }
 }
 
@@ -281,8 +277,8 @@ void load(const esio_handle h,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
-          bspline& b,
-          const bsplineop& cop)
+          const bsplineop& cop,
+          const bspline& b)
 {
     const std::vector<support::field> fields = default_fields();
 
@@ -316,10 +312,10 @@ void load(const esio_handle h,
     // Dispatch to the appropriate restart loading logic
     DEBUG0("Started loading simulation fields");
     if (trycoeffs) {
-        support::load_coefficients(h, fields, state, grid, dgrid, b, cop);
+        support::load_coefficients(h, fields, state, grid, dgrid, cop, b);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
-        load_collocation_values(h, state, scenario, grid, dgrid, b, cop);
+        load_collocation_values(h, state, scenario, grid, dgrid, cop, b);
     }
     DEBUG0("Finished loading simulation fields");
 }
@@ -329,7 +325,6 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
                 const grid_specification& grid,
                 const pencil_grid& dgrid,
-                bspline &b,
                 const bsplineop& cop,
                 const real_t old_Ma,
                 const real_t old_gamma)
@@ -364,10 +359,10 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     }
 
     // Convert state to physical space collocation points
-    operator_base obase(grid, dgrid, b, cop);
+    operator_tools otool(grid, dgrid, cop);
     physical_view<state_count> sphys(dgrid, swave);
     for (size_t k = 0; k < state_count; ++k) {
-        obase.bop_apply(0, 1.0, swave, k);
+        otool.bop_apply(0, 1.0, swave, k);
         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
     }
 
@@ -408,7 +403,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     massluz.factor();
     for (size_t i = 0; i < state_count; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
-        obase.bop_solve(massluz, swave, i);
+        otool.bop_solve(massluz, swave, i);
     }
 }
 
@@ -418,8 +413,8 @@ add_noise(contiguous_state<4,complex_t> &state,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
-          bspline &b,
-          const bsplineop& cop)
+          const bsplineop& cop,
+          bspline &b)
 {
     // FIXME Needs to be made aware of channel vs flat plate
 
@@ -600,34 +595,34 @@ add_noise(contiguous_state<4,complex_t> &state,
     physical_view<state_count+3> p(dgrid, s);
 
     // Initializing operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, cop);
+    operator_tools otool(grid, dgrid, cop);
 
     // From Ax in s[0] compute \partial_y Ax
-    obase.bop_apply(1, 1.0, s, 0);
+    otool.bop_apply(1, 1.0, s, 0);
     dgrid.transform_wave_to_physical(&p.coeffRef(0,0));
 
     // From Ax in s[1]  compute \partial_z Ax
-    obase.bop_apply(0, 1.0, s, 1);
-    obase.diffwave_apply(0, 1, 1.0, s, 1);
+    otool.bop_apply(0, 1.0, s, 1);
+    otool.diffwave_apply(0, 1, 1.0, s, 1);
     dgrid.transform_wave_to_physical(&p.coeffRef(1,0));
 
     // From Ay in s[2] compute \partial_x Ay
-    obase.bop_apply(0, 1.0, s, 2);
-    obase.diffwave_apply(1, 0, 1.0, s, 2);
+    otool.bop_apply(0, 1.0, s, 2);
+    otool.diffwave_apply(1, 0, 1.0, s, 2);
     dgrid.transform_wave_to_physical(&p.coeffRef(2,0));
 
     // From Ay in s[3] compute \partial_z Ay
-    obase.bop_apply(0, 1.0, s, 3);
-    obase.diffwave_apply(0, 1, 1.0, s, 3);
+    otool.bop_apply(0, 1.0, s, 3);
+    otool.diffwave_apply(0, 1, 1.0, s, 3);
     dgrid.transform_wave_to_physical(&p.coeffRef(3,0));
 
     // From Az in s[4] compute \partial_x Az
-    obase.bop_apply(0, 1.0, s, 4);
-    obase.diffwave_apply(1, 0, 1.0, s, 4);
+    otool.bop_apply(0, 1.0, s, 4);
+    otool.diffwave_apply(1, 0, 1.0, s, 4);
     dgrid.transform_wave_to_physical(&p.coeffRef(4,0));
 
     // From Az in s[5] compute \partial_y Az
-    obase.bop_apply(1, 1.0, s, 5);
+    otool.bop_apply(1, 1.0, s, 5);
     dgrid.transform_wave_to_physical(&p.coeffRef(5,0));
 
     // Store curl A in s[{5,6,7}] and find global maximum magnitude of curl A
@@ -700,7 +695,7 @@ add_noise(contiguous_state<4,complex_t> &state,
     //     physical space.
     for (size_t i = 0; i < state_count; ++i) {
         s[i] = state[i];
-        obase.bop_apply(0, 1.0, s, i);
+        otool.bop_apply(0, 1.0, s, i);
         dgrid.transform_wave_to_physical(&p.coeffRef(i,0));
     }
 
@@ -756,10 +751,10 @@ add_noise(contiguous_state<4,complex_t> &state,
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::mx, 0));  // X, Z
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::my, 0));  // X, Z
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::mz, 0));  // X, Z
-    obase.bop_solve(massluz, s, ndx::e );                       // Y
-    obase.bop_solve(massluz, s, ndx::mx);                       // Y
-    obase.bop_solve(massluz, s, ndx::my);                       // Y
-    obase.bop_solve(massluz, s, ndx::mz);                       // Y
+    otool.bop_solve(massluz, s, ndx::e );                       // Y
+    otool.bop_solve(massluz, s, ndx::mx);                       // Y
+    otool.bop_solve(massluz, s, ndx::my);                       // Y
+    otool.bop_solve(massluz, s, ndx::mz);                       // Y
 
     //  9) Overwrite state storage with the new perturbed state (not rho!)
     state[ndx::e ] = s[ndx::e ];

@@ -290,7 +290,7 @@ int main(int argc, char **argv)
         // Use a simple parabolic velocity profile
 
         // Initializing operator_base to access decomposition-ready utilities
-        suzerain::operator_base o(grid, *dgrid, *b, *cop);
+        suzerain::operator_base o(grid, *dgrid, *cop, *b);
 
         // State viewed as a 2D Eigen::Map ordered (F, Y*Z*X).
         suzerain::physical_view<> sphys(*dgrid, swave);
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 
     INFO0("Computing mean quantities from state fields");
     perfect::mean_quantities sample = perfect::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *cop, swave, t);
+            scenario, grid, *dgrid, *cop, swave, t);
 
     INFO0("Writing mean quantities to restart file");
     perfect::save(esioh, sample);

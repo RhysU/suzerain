@@ -38,7 +38,7 @@
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
-#include <suzerain/operator_base.hpp>
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/shared_range.hpp>
@@ -59,7 +59,6 @@ mean_quantities sample_mean_quantities(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
-        bspline &b,
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,
         const real_t t)
@@ -121,62 +120,62 @@ mean_quantities sample_mean_quantities(
     }
 
     // Obtain access to helper routines for differentiation
-    operator_base obase(grid, dgrid, b, cop);
+    operator_tools otool(grid, dgrid, cop);
 
     // Compute Y derivatives of total energy at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(   swave, ndx::e);
-    obase.bop_accumulate(1,    1., swave, ndx::e, 0., auxw, aux::e_y);
-    obase.bop_apply     (0,    1., swave, ndx::e);
+    otool.zero_dealiasing_modes(   swave, ndx::e);
+    otool.bop_accumulate(1,    1., swave, ndx::e, 0., auxw, aux::e_y);
+    otool.bop_apply     (0,    1., swave, ndx::e);
 
     // Compute X- and Z- derivatives of total energy at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::e, 0., auxw, aux::e_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::e, 0., auxw, aux::e_z);
+    otool.diffwave_accumulate(1, 0, 1., swave, ndx::e, 0., auxw, aux::e_x);
+    otool.diffwave_accumulate(0, 1, 1., swave, ndx::e, 0., auxw, aux::e_z);
 
     // Compute Y derivatives of X momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(   swave, ndx::mx);
-    obase.bop_accumulate(1,    1., swave, ndx::mx, 0., auxw, aux::mx_y);
-    obase.bop_apply     (0,    1., swave, ndx::mx);
+    otool.zero_dealiasing_modes(   swave, ndx::mx);
+    otool.bop_accumulate(1,    1., swave, ndx::mx, 0., auxw, aux::mx_y);
+    otool.bop_apply     (0,    1., swave, ndx::mx);
 
     // Compute X- and Z- derivatives of X momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::mx, 0., auxw, aux::mx_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::mx, 0., auxw, aux::mx_z);
+    otool.diffwave_accumulate(1, 0, 1., swave, ndx::mx, 0., auxw, aux::mx_x);
+    otool.diffwave_accumulate(0, 1, 1., swave, ndx::mx, 0., auxw, aux::mx_z);
 
     // Compute Y derivatives of Y momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(   swave, ndx::my);
-    obase.bop_accumulate(1,    1., swave, ndx::my, 0., auxw, aux::my_y);
-    obase.bop_apply     (0,    1., swave, ndx::my);
+    otool.zero_dealiasing_modes(   swave, ndx::my);
+    otool.bop_accumulate(1,    1., swave, ndx::my, 0., auxw, aux::my_y);
+    otool.bop_apply     (0,    1., swave, ndx::my);
 
     // Compute X- and Z- derivatives of Y momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::my, 0., auxw, aux::my_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::my, 0., auxw, aux::my_z);
+    otool.diffwave_accumulate(1, 0, 1., swave, ndx::my, 0., auxw, aux::my_x);
+    otool.diffwave_accumulate(0, 1, 1., swave, ndx::my, 0., auxw, aux::my_z);
 
     // Compute Y derivatives of Z momentum at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(   swave, ndx::mz);
-    obase.bop_accumulate(1,    1., swave, ndx::mz, 0., auxw, aux::mz_y);
-    obase.bop_apply     (0,    1., swave, ndx::mz);
+    otool.zero_dealiasing_modes(   swave, ndx::mz);
+    otool.bop_accumulate(1,    1., swave, ndx::mz, 0., auxw, aux::mz_y);
+    otool.bop_apply     (0,    1., swave, ndx::mz);
 
     // Compute X- and Z- derivatives of Z momentum at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::mz, 0., auxw, aux::mz_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::mz, 0., auxw, aux::mz_z);
+    otool.diffwave_accumulate(1, 0, 1., swave, ndx::mz, 0., auxw, aux::mz_x);
+    otool.diffwave_accumulate(0, 1, 1., swave, ndx::mz, 0., auxw, aux::mz_z);
 
     // Compute Y derivatives of density at collocation points
     // Zero wavenumbers present only for dealiasing along the way
-    obase.zero_dealiasing_modes(   swave, ndx::rho);
-    obase.bop_accumulate(1,    1., swave, ndx::rho, 0., auxw, aux::rho_y);
-    obase.bop_apply     (0,    1., swave, ndx::rho);
+    otool.zero_dealiasing_modes(   swave, ndx::rho);
+    otool.bop_accumulate(1,    1., swave, ndx::rho, 0., auxw, aux::rho_y);
+    otool.bop_apply     (0,    1., swave, ndx::rho);
 
     // Compute X- and Z- derivatives of density at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
-    obase.diffwave_accumulate(1, 0, 1., swave, ndx::rho,  0., auxw, aux::rho_x);
-    obase.diffwave_accumulate(0, 1, 1., swave, ndx::rho,  0., auxw, aux::rho_z);
+    otool.diffwave_accumulate(1, 0, 1., swave, ndx::rho,  0., auxw, aux::rho_x);
+    otool.diffwave_accumulate(0, 1, 1., swave, ndx::rho,  0., auxw, aux::rho_z);
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major

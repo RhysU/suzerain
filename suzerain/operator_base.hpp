@@ -48,8 +48,8 @@ public:
      */
     operator_base(const grid_specification &grid,
                   const pencil_grid &dgrid,
-                  bspline &b,
-                  const bsplineop &cop);
+                  const bsplineop &cop,
+                  bspline &b);
 
     /** Virtual destructor to permit use as a base class */
     virtual ~operator_base();

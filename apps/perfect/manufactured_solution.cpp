@@ -264,7 +264,7 @@ void accumulate_manufactured_solution(
     SUZERAIN_ENSURE(boost::numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Initialize operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, cop);
+    operator_base obase(grid, dgrid, cop, b);
 
     // Allocate one field of temporary storage for scratch purposes
     scoped_ptr<contiguous_state<4,complex_t> > _scratch_ptr(        // RAII

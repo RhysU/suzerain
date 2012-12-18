@@ -72,7 +72,6 @@ void save_collocation_values(
         const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
         const bsplineop& cop);
 
 /**
@@ -85,8 +84,8 @@ void load_collocation_values(
         const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop);
+        const bsplineop& cop,
+        const bspline& b);
 
 /**
  * Interrogate an open restart file and invoke either load_coefficients()
@@ -97,8 +96,8 @@ void load(const esio_handle h,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
-          bspline& b,
-          const bsplineop& cop);
+          const bsplineop& cop,
+          const bspline& b);
 
 /**
  * Hold temperature and density constant while changing the Mach number and
@@ -111,7 +110,6 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
                 const scenario_definition& scenario,
                 const grid_specification& grid,
                 const pencil_grid& dgrid,
-                bspline &b,
                 const bsplineop& cop,
                 const real_t old_Ma,
                 const real_t old_gamma);
@@ -126,8 +124,8 @@ add_noise(contiguous_state<4,complex_t> &state,
           const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
-          bspline &b,
-          const bsplineop& cop);
+          const bsplineop& cop,
+          bspline &b);
 
 } // end namespace perfect
 

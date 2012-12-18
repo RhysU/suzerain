@@ -35,7 +35,7 @@
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>
 #include <suzerain/inorder.hpp>
-#include <suzerain/operator_base.hpp>
+#include <suzerain/operator_tools.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -151,8 +151,8 @@ void load_coefficients(const esio_handle h,
                        contiguous_state<4,complex_t> &state,
                        const grid_specification& grid,
                        const pencil_grid& dgrid,
-                       const bspline& b,
-                       const bsplineop& cop)
+                       const bsplineop& cop,
+                       const bspline& b)
 {
     typedef contiguous_state<4,complex_t> load_type;
 
@@ -322,7 +322,6 @@ void save_collocation_values(
         contiguous_state<4,complex_t>& swave,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
         const bsplineop& cop)
 {
     // Ensure state storage meets this routine's assumptions
@@ -333,10 +332,10 @@ void save_collocation_values(
 
     // Convert coefficients into collocation point values
     // Transforms state from full-wave coefficients to full-physical points
-    operator_base obase(grid, dgrid, b, cop);
+    operator_tools otool(grid, dgrid, cop);
     for (size_t i = 0; i < swave.shape()[0]; ++i) {
-        obase.bop_apply(0, 1, swave, i);
-        obase.zero_dealiasing_modes(swave, i);
+        otool.bop_apply(0, 1, swave, i);
+        otool.zero_dealiasing_modes(swave, i);
         dgrid.transform_wave_to_physical(
                 reinterpret_cast<real_t *>(swave[i].origin()));
     }
@@ -369,8 +368,8 @@ void load_collocation_values(
         contiguous_state<4,complex_t>& state,
         const grid_specification& grid,
         const pencil_grid& dgrid,
-        bspline& b,
-        const bsplineop& cop)
+        const bsplineop& cop,
+        const bspline& b)
 {
     // Ensure state storage meets this routine's assumptions
     SUZERAIN_ENSURE(                  state.shape()[0]  == fields.size());
@@ -429,19 +428,17 @@ void load_collocation_values(
         esio_field_read(h, fields[i].location.c_str(), &sphys(i,0), 0, 0, 0);
     }
 
-    // Initialize operator_base to access decomposition-ready utilities
-    operator_base obase(grid, dgrid, b, cop);
-
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
     bsplineop_luz massluz(cop);
     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
+    operator_tools otool(grid, dgrid, cop);
     for (size_t i = 0; i < state.shape()[0]; ++i) {
         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0)); // X, Z
-        obase.zero_dealiasing_modes(state, i);
-        obase.bop_solve(massluz, state, i);                      // Y
+        otool.zero_dealiasing_modes(state, i);
+        otool.bop_solve(massluz, state, i);                      // Y
     }
 }
 

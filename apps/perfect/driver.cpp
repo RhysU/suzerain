@@ -183,7 +183,7 @@ driver::compute_statistics(
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign(*state_linear);
     mean = perfect::sample_mean_quantities(
-            *scenario, *grid, *dgrid, *b, *cop, *state_nonlinear, t);
+            *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.means.rows() == mean.storage.rows()) {

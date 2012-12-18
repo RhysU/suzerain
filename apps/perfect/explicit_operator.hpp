@@ -56,11 +56,11 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
             const bsplineop &cop,
+            bspline &b,
             operator_common_block &common,
             const shared_ptr<const manufactured_solution>& msoln)
-        : operator_base(grid, dgrid, b, cop),
+        : operator_base(grid, dgrid, cop, b),
           scenario(scenario),
           common(common),
           msoln(msoln)
@@ -105,8 +105,8 @@ public:
     bspline_mass_operator(
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
-            const bsplineop &cop);
+            const bsplineop &cop,
+            bspline &b);
 
     virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,
@@ -155,10 +155,10 @@ public:
             const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
-            bspline &b,
             const bsplineop &cop,
+            bspline &b,
             operator_common_block &common)
-        : bspline_mass_operator(grid, dgrid, b, cop),
+        : bspline_mass_operator(grid, dgrid, cop, b),
           scenario(scenario),
           common(common)
     {}

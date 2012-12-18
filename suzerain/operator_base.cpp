@@ -34,8 +34,8 @@ namespace suzerain {
 operator_base::operator_base(
         const grid_specification &grid,
         const pencil_grid &dgrid,
-        bspline &b,
-        const bsplineop &cop)
+        const bsplineop &cop,
+        bspline &b)
     : operator_tools(grid, dgrid, cop)
     , one_over_delta_x(grid.N.x() /* !dN.x() */ / grid.L.x())
     , lambda1_x(boost::math::constants::pi<real_t>() * one_over_delta_x)

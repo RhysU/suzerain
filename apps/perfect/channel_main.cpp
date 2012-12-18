@@ -418,7 +418,7 @@ static void sample_statistics(real_t t)
     // Obtain mean samples from instantaneous fields
     state_nonlinear->assign(*state_linear);
     sample = perfect::sample_mean_quantities(
-            scenario, grid, *dgrid, *b, *cop, *state_nonlinear, t);
+            scenario, grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.means.rows() == sample.storage.rows()) {
@@ -485,7 +485,7 @@ static bool save_restart(real_t t, size_t nt)
         DEBUG0("Storing primitive collocation point values into "
                << restart.uncommitted);
         perfect::save_collocation_values(
-                esioh, *state_nonlinear, scenario, grid, *dgrid, *b, *cop);
+                esioh, *state_nonlinear, scenario, grid, *dgrid, *cop);
     } else {
         DEBUG0("Storing conserved coefficients into " << restart.uncommitted);
         support::save_coefficients(
@@ -1218,19 +1218,18 @@ int main(int argc, char **argv)
         sample.t = initial_t;         // For idempotent --advance_nt=0...
         perfect::load(esioh, sample); // ...when no grid rescaling employed
         perfect::load(esioh, *state_nonlinear,
-                      scenario, grid, *dgrid, *b, *cop);
+                      scenario, grid, *dgrid, *cop, *b);
         wtime_load_state = MPI_Wtime() - begin;
     }
     esio_file_close(esioh);
 
     // If necessary, adjust total energy to account for scenario changes
-    perfect::adjust_scenario(*state_nonlinear,
-                             scenario, grid, *dgrid, *b, *cop,
+    perfect::adjust_scenario(*state_nonlinear, scenario, grid, *dgrid, *cop,
                              restart_Ma, restart_gamma);
 
     // If requested, add noise to the momentum fields at startup (expensive).
     perfect::add_noise(*state_nonlinear, noisedef,
-                       scenario, grid, *dgrid, *b, *cop);
+                       scenario, grid, *dgrid, *cop, *b);
 
     // Create state storage for linear operator usage
     state_linear = suzerain::make_shared<linear_state_type>(
@@ -1284,16 +1283,16 @@ int main(int argc, char **argv)
     if (use_explicit) {
         INFO0("Initializing explicit timestepping operators");
         L.reset(new channel_treatment<perfect::isothermal_bspline_mass_operator>(
-                    scenario, grid, *dgrid, *b, *cop, common_block));
+                    scenario, grid, *dgrid, *cop, *b, common_block));
         N.reset(new perfect::explicit_nonlinear_operator(
-                scenario, grid, *dgrid, *b, *cop, common_block, msoln));
+                scenario, grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0("Initializing hybrid implicit/explicit timestepping operators");
         L.reset(new channel_treatment<perfect::isothermal_hybrid_linear_operator>(
                     solver_spec, scenario,
-                    grid, *dgrid, *b, *cop, common_block));
+                    grid, *dgrid, *cop, *b, common_block));
         N.reset(new perfect::hybrid_nonlinear_operator(
-                scenario, grid, *dgrid, *b, *cop, common_block, msoln));
+                scenario, grid, *dgrid, *cop, *b, common_block, msoln));
     } else {
         FATAL0("Sanity error in operator selection");
         return EXIT_FAILURE;

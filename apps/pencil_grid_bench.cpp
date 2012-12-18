@@ -102,7 +102,7 @@ int main(int argc, char **argv)
     // Initialize manufactured field using operator_base utilities
     // p is a 2D, real-valued view of (NFIELDS, X*Z*Y) leftmost fastest
     // We need x_i, y_j, z_k positions making structure below more complicated
-    suzerain::operator_base o(*app.grid, *app.dgrid, *app.b, *app.cop);
+    suzerain::operator_base o(*app.grid, *app.dgrid, *app.cop, *app.b);
     for (int offset = 0, j = app.dgrid->local_physical_start.y();  // Y
          j < app.dgrid->local_physical_end.y();
          ++j) {
