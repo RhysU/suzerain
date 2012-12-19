@@ -16,7 +16,7 @@
 #define SUZERAIN_SUPPORT_DEFINITION_BASE_HPP
 
 /** @file
- * Provides \ref definition_base
+ * Provides an abstract base class for handling problem definitions.
  */
 
 #include <boost/program_options.hpp>

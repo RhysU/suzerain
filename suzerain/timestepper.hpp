@@ -676,7 +676,7 @@ public:
      * Invert \f$M+\phi{}L\f$ in-place for scalar \f$\phi\f$.  That is,
      * \f$\mbox{state}\leftarrow{}\left(M+\phi{}L\right)^{-1}\mbox{state}\f$.
      *
-     * Low storage timestepping schemes do not make make use of \ic0.  It is
+     * Low storage timestepping schemes do not make make use of \c ic0.  It is
      * intended as a problem-specific hook for implementing integral
      * constraints.  When \c ic0 is non-NULL, some portion of the inverse
      * operator also must be applied to some portion of the data in \c ic0.

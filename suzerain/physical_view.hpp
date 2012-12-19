@@ -33,7 +33,7 @@
 namespace suzerain {
 
 /**
- * Constant providing Eigen \c MapOptions for \ref physical_view templates.
+ * Constant providing Eigen \c MapOptions for physical_view templates.
  * FIXME Unaligned is defensive but inefficient and likely unnecessary
  */
 enum { physical_view_map_options = Unaligned };
@@ -53,7 +53,7 @@ struct physical_view;
 
 /**
  * Logic for the general case when <tt>NFields == Dynamic</tt>.
- * The \ref Map superclass has a dynamic number of rows.
+ * The Map superclass has a dynamic number of rows.
  */
 template <>
 struct physical_view<Dynamic> : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
@@ -87,7 +87,7 @@ struct physical_view<Dynamic> : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
 
 /**
  * Logic for the case when \c NFields is strictly positive.
- * The \ref Map superclass has a constant number of rows.
+ * The Map superclass has a constant number of rows.
  */
 template <int NFields>
 struct physical_view : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,

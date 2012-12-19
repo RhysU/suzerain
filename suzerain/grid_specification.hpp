@@ -116,7 +116,7 @@ public:
 
     /**
      * Dealiasing factors in the X, Y, and Z directions
-     * Mutate via \ref DAFx(), \ref DAFy(), and \ref DAFz() members.
+     * Mutate via DAFx(), DAFy(), and DAFz() members.
      */
     const Array3r DAF;
 

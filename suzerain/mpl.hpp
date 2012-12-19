@@ -27,8 +27,8 @@ namespace suzerain {
 namespace mpl {
 
 /**
- * An \ref array subclass that contains the contents of Sequence after
- * construction.  The template parameter Sequence must model MPL's <a
+ * An array subclass that contains the contents of Sequence after construction.
+ * The template parameter Sequence must model MPL's <a
  * href="http://www.boost.org/doc/libs/release/libs/mpl/doc/refmanual/forward-sequence.html">
  * Forward Sequence</a>.
  *

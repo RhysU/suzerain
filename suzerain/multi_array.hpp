@@ -33,7 +33,7 @@ namespace multi_array
 {
 
 /**
- * Obtain an \ref array containing the shape information from a MultiArray
+ * Obtain an array containing the shape information from a MultiArray
  * implementation.
  *
  * @param a MultiArray to interrogate.
@@ -54,7 +54,7 @@ array<typename MultiArray::size_type,MultiArray::dimensionality>
 }
 
 /**
- * Obtain an \ref array containing the stride information from a MultiArray
+ * Obtain an array containing the stride information from a MultiArray
  * implementation.
  *
  * @param a MultiArray to interrogate.

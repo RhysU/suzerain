@@ -170,12 +170,12 @@ array<typename EigenDenseType::Scalar, 4> to_xzy(
 }
 
 /**
- * Return a copy of an \ref array with an element prepended.
+ * Return a copy of an array with an element prepended.
  *
  * @param prepend to prepend.
  * @param a to copy.
  *
- * @return A \ref array with one more entry than \c array.
+ * @return An array with one more entry than \c array.
  */
 template<typename T, typename U, std::size_t N>
 array<T, N+1> prepend(
@@ -189,7 +189,7 @@ array<T, N+1> prepend(
 }
 
 /**
- * Compute column-major strides given an \ref array of extents.
+ * Compute column-major strides given an array of extents.
  *
  * @param extents to use.
  *
@@ -215,7 +215,7 @@ array<T,0> strides_cm(const array<T,0>& extents)
 }
 
 /**
- * Compute row-major strides given an \ref array of extents.
+ * Compute row-major strides given an array of extents.
  *
  * @param extents to use.
  *

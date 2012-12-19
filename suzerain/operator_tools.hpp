@@ -51,8 +51,6 @@ public:
      *
      * @param grid     Grid definition to store.
      * @param dgrid    Decomposition providing parallel grid details.
-     * @param b        B-spline workspace for obtaining necessary details,
-     *                 e.g. integration coefficients.
      * @param cop      B-spline operators to use.
      */
     operator_tools(const grid_specification &grid,

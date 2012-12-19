@@ -20,7 +20,7 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// fftw_definition.hpp: A definition_base to configure FFTW from the CLI
+// fftw_definition.hpp: Declarations to configure FFTW from the CLI
 // $Id$
 
 #ifndef SUZERAIN_SUPPORT_FFTW_DEFINITION_HPP
@@ -31,7 +31,7 @@
 #include <suzerain/support/definition_base.hpp>
 
 /** @file
- * A \ref definition_base to configure FFTW operation from the CLI.
+ * Declarations to configure FFTW operation from the CLI.
  */
 
 namespace suzerain {

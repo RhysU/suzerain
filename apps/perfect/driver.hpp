@@ -174,8 +174,8 @@ protected:
             const esio_handle esioh);
 
     /**
-     * The default interval is a fractional flow through time per #grid,
-     * #bulk_rho_u, and #bulk_rho.
+     * The default interval is a fractional flow through time per #grid
+     * and #scenario.
      */
     virtual void default_status_interval(time_type& t, step_type&);
 

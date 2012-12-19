@@ -103,7 +103,7 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
  * message \c msg.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
- * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
  */
 #define SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, except) \
     if (SUZERAIN_UNLIKELY(!(expr)))                  \
@@ -115,7 +115,7 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
  * with message \c msg.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
- * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
  */
 #define SUZERAIN_ENSURE_MSG(expr, msg) \
     SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, ::std::logic_error)
@@ -125,7 +125,7 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
  * evaluates to boolean \c false, then a <tt>std::logic_error</tt> is thrown.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
- * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
  */
 #define SUZERAIN_ENSURE(expr) \
     SUZERAIN_ENSURE_MSG(expr, BOOST_PP_STRINGIZE(expr) " false")
@@ -135,7 +135,7 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
  * evaluates to boolean \c false, then an exception \c except is thrown.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
- * be performed regardless of whether or not \c NDEBUG is <tt>#define</tt>d.
+ * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
  */
 #define SUZERAIN_ENSURE_EXCEPT(expr, except) \
     SUZERAIN_ENSURE_MSGEXCEPT(expr, BOOST_PP_STRINGIZE(expr) " false", except)
@@ -226,11 +226,11 @@ using boost::array;         /**< \namespace suzerain */
 /** \weakgroup EigenTypedefs Typedefs and declarations to simplify Eigen usage.
  *
  * Defines typedefs for <a href="http://eigen.tuxfamily.org/">Eigen</a>-related
- * classes within the \ref suzerain namespace.  Typedefs like \ref Matrix3r and
- * \ref Vector3c permit simplifying using \ref suzerain::real_t and \ref
- * suzerain::complex_t with Eigen's #Matrix and #Array templates.  They also
- * permit codifying Suzerain's expectations regarding column- versus row-major
- * storage regardless of the value of \c EIGEN_DEFAULT_TO_ROW_MAJOR.
+ * classes within the \ref suzerain namespace.  Typedefs like Matrix3r and
+ * Vector3c permit simplifying using \ref suzerain::real_t and \ref
+ * suzerain::complex_t with Eigen's \ref Matrix and \ref Array templates.  They
+ * also permit codifying Suzerain's expectations regarding column- versus
+ * row-major storage regardless of the value of \c EIGEN_DEFAULT_TO_ROW_MAJOR.
  *
  * @{
  */
