@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef HYBRID_OPERATOR_HPP
-#define HYBRID_OPERATOR_HPP
+#ifndef SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
+#define SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
 
 /** @file
  * Hybrid implicit/explicit Navier--Stokes operators.
@@ -193,4 +193,4 @@ private:
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-#endif  /* HYBRID_OPERATOR_HPP */
+#endif  /* SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP */

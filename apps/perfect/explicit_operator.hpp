@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef EXPLICIT_OPERATOR_HPP
-#define EXPLICIT_OPERATOR_HPP
+#ifndef SUZERAIN_PERFECT_EXPLICIT_OPERATOR_HPP
+#define SUZERAIN_PERFECT_EXPLICIT_OPERATOR_HPP
 
 /** @file
  * Fully explicit, linearization-ready Navier--Stokes operators.
@@ -157,4 +157,4 @@ protected:
 
 } // namespace suzerain
 
-#endif  /* EXPLICIT_OPERATOR_HPP */
+#endif  /* SUZERAIN_PERFECT_EXPLICIT_OPERATOR_HPP */

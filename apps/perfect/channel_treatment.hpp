@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef CHANNEL_TREATMENT_HPP
-#define CHANNEL_TREATMENT_HPP
+#ifndef SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
+#define SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
 
 /** @file
  * A mixin providing implicit channel forcing.
@@ -345,4 +345,4 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
 
 } // namespace suzerain
 
-#endif /* CHANNEL_TREATMENT_HPP */
+#endif /* SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP */
