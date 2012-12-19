@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// pencil_grid_bench.cpp: Test driver based on Dmitry Pekurovsky's work
-// $Id$
+
+/** @file
+ * A suzerain::pencil_grid test based on Dmitry Pekurovsky's P3DFFT work.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

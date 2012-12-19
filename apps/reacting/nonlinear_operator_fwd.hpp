@@ -20,18 +20,23 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear_fwd.hpp: Building blocks for nonlinear Navier--Stokes operators
-// $Id$
 
 #ifndef NONLINEAR_OPERATOR_FWD_HPP
 #define NONLINEAR_OPERATOR_FWD_HPP
+
+/** @file
+ * Declarations of Nonlinear Navier--Stokes spatial operators
+ * implemented within nonlinear_operator.hpp.
+ */
 
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timers.h>
 
-namespace suzerain { namespace reacting {
+namespace suzerain {
+
+namespace reacting {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -59,7 +64,7 @@ public:
      * \li \c u  The \e nonlinear operator computes the instantaneous spatial
      *     (x, z) mean streamwise velocity profile as collocation point values.
      *     The \e linear operator then uses the information to compute the
-     *     implicit \f$f\cdot{}u\f$ and $\mathscr{C}_{\rho{}u}\cdot{}u$ terms
+     *     implicit \f$f\cdot{}u\f$ and \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ terms
      *     in the total energy equation.
      * \li \c Srho The \e nonlinear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}}\f$ term
@@ -422,6 +427,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 
-} /* namespace reacting */ } /* namespace suzerain */
+} // namespace reacting
+
+} // namespace suzerain
 
 #endif  /* NONLINEAR_OPERATOR_FWD_HPP */

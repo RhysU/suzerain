@@ -9,18 +9,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * common.h: C common definitions, utility macros, and inline functions
- * $Id$
  */
 
 #ifndef SUZERAIN_COMMON_H
 #define SUZERAIN_COMMON_H
 
+/** @file
+ * Common includes, definitions, utility macros, and inline functions for C.
+ */
+
 #include <suzerain/suzerain-config.h>
 
-// Release-mode specific #defines whenever NDEBUG in effect.  We do not use
-// SUZERAIN_NDEBUG to determine this behavior as it would impact all source
-// code that needs to include our header due to <suzerain/suzerain-config.h>
+/*
+ * Release-mode specific #defines whenever NDEBUG in effect.  We do not use
+ * SUZERAIN_NDEBUG to determine this behavior as it would impact all source
+ * code that needs to include our header due to <suzerain/suzerain-config.h>
+ */
 #ifdef NDEBUG
 /** Disable GNU Scientific Library range checking */
 #define GSL_RANGE_CHECK_OFF
@@ -121,9 +125,11 @@
  */
 #define SUZERAIN_UNUSED(variable) do {(void)(variable);} while (0)
 
-// Required standard C functionality appearing through Suzerain
-// Care taken to include C++ header versions for C++ compilation
-// C++-specific functionality is included in common.hpp
+/*
+ * Required standard C functionality appearing through Suzerain
+ * Care taken to include C++ header versions for C++ compilation
+ * C++-specific functionality is included in common.hpp
+ */
 #ifndef __cplusplus
 #include <assert.h>
 #include <ctype.h>
@@ -142,11 +148,11 @@
 #include <cassert>
 #include <cctype>
 #include <cerrno>
-// cinttypes not commonly available pre-C++0x
+/* cinttypes not commonly available pre-C++0x */
 #include <climits>
 #include <cmath>
 #include <cstddef>
-// cstdint not commonly available pre-C++0x
+/* cstdint not commonly available pre-C++0x */
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -156,7 +162,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-// Boost.Preprocessor is useful in either C or C++ mode
+/* Boost.Preprocessor is useful in either C or C++ mode */
 #ifdef SUZERAIN_HAVE_BOOST
 #include <boost/preprocessor.hpp>
 #endif /* SUZERAIN_HAVE_BOOST */

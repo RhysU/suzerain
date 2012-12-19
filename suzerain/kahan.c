@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * kahan.c: Kahan summation routines
- * $Id$
+ */
+
+/** @file
+ * @copydoc kahan.h
  */
 
 #include <suzerain/kahan.h>

@@ -20,20 +20,18 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * svehla.h: Provides information from NASA TR R-132 by Svehla Roger (1962)
- * $Id$
  */
 
 #ifndef SUZERAIN_SVEHLA_H
 #define SUZERAIN_SVEHLA_H
 
-#include <gsl/gsl_spline.h>
-
 /** @file
- * Provides information from
+ * Curve fits from
  * <a href="http://ntrs.nasa.gov/details.jsp?R=1020958">
  * NASA TR R-132</a> by Svehla Roger (1962).
  */
+
+#include <gsl/gsl_spline.h>
 
 #ifdef __cplusplus
 extern "C" {

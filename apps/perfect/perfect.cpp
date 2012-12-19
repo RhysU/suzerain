@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// perfect.cpp: Support logic for the Suzerain perfect gas application
-// $Id$
+
+/** @file
+ * @copydoc perfect.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

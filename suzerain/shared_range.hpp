@@ -6,6 +6,10 @@
 #ifndef SUZERAIN_SHARED_RANGE_HPP
 #define SUZERAIN_SHARED_RANGE_HPP
 
+/*! \file
+ *  \brief Defines \c shared_range and related functions.
+ */
+
 #include <algorithm>
 #include <memory>
 #include <boost/range/distance.hpp>
@@ -52,10 +56,6 @@ namespace suzerain {
 // No enclosing namespace is assumed in the implementation.  Hence ::std:: and
 // ::boost:: appears where one might expect std:: and boost::.  The
 // implementation therefore can be #included into any namespace.
-
-/*! \file
- *  \brief Defines \c shared_range and related functions.
- */
 
 /*!
  * \brief A \c shared_range extends the functionality of \c iterator_range by

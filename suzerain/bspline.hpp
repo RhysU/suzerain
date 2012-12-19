@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// bspline.hpp: C++ wrappers for the C-based GSL and Suzerain B-spline APIs
-// $Id$
 
 #ifndef SUZERAIN_BSPLINE_HPP
 #define SUZERAIN_BSPLINE_HPP
+
+/** @file
+ * C++ wrappers for the C-based GSL and Suzerain B-spline APIs
+ */
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_vector.h>

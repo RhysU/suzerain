@@ -9,8 +9,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbmv.h: provides BLAS-like general band matrix-vector operations
- * $Id$
  */
 
 #ifndef SUZERAIN_GBMV_H
@@ -22,7 +20,7 @@
 extern "C" {
 #endif
 
-/** \file
+/** @file
  * Provides custom, BLAS-like general band matrix-vector operations.
  * Includes mixed real/complex operations and fixed bandwidth kernels.
  */

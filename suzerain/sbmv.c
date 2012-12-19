@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * sbmv.c: provides custom, BLAS-like general band matrix-vector operations
- * $Id$
+ */
+
+/** @file
+ * @copydoc sbmv.h
  */
 
 // File iteration is used to generate bandwidth-specific routines.  See

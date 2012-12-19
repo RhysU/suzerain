@@ -9,11 +9,14 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// timecontroller.hpp: higher-level time advance management
-// $Id$
 
 #ifndef SUZERAIN_TIMECONTROLLER_HPP
 #define SUZERAIN_TIMECONTROLLER_HPP
+
+/** @file
+ * Provides high-level control mechanisms based atop step-based
+ * time integration schemes.
+ */
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/count.hpp>
@@ -24,11 +27,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/timers.h>
-
-/** @file
- * Provides higher-level control mechanisms based atop abstract
- * time integration schemes.
- */
 
 namespace suzerain
 {

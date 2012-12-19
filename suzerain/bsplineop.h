@@ -20,12 +20,14 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * bsplineop.h: B-spline operator routines
- * $Id$
  */
 
 #ifndef SUZERAIN_BSPLINEOP_H
 #define SUZERAIN_BSPLINEOP_H
+
+/** @file
+ * Logic for working with B-spline operators.
+ */
 
 #include <gsl/gsl_bspline.h>
 

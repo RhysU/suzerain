@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// exprparse_fstr.cpp: arithmetic expression evaluation for float, string
-// $Id$
+
+/** @file
+ * Arithmetic expression evaluation for \c float, \c std::string
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

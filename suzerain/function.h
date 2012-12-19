@@ -23,14 +23,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * function.h: General function evaluation interfaces for ANSI C
- * $Id$
  */
 
 #ifndef SUZERAIN_FUNCTION_H
 #define SUZERAIN_FUNCTION_H
-
-#include <suzerain/complex.h>
 
 /** @file
  * Provides a function evaluation interface compatible with the <a
@@ -64,6 +60,8 @@
  * const double result = SUZERAIN_FN_EVAL(&f,1.0) // equals 6.6
  * \endcode
  */
+
+#include <suzerain/complex.h>
 
 #ifdef __cplusplus
 extern "C" {

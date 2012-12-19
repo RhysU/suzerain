@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// channel_init.cpp: Initialize restart files for use with Suzerain
-// $Id$
+
+/** @file
+ * Initialize perfect gas, channel restart files.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

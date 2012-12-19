@@ -20,16 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * reacting_imexop.h: hybrid implicit/explicit operator apply and solve
- * $Id$
  */
 
 #ifndef SUZERAIN_RHOLUT_IMEXOP_H
 #define SUZERAIN_RHOLUT_IMEXOP_H
-
-#include <suzerain/bsmbsm.h>
-#include <suzerain/bsplineop.h>
-#include <suzerain/complex.h>
 
 /** @file
  * Provides implicit operator apply and solve routines for a single wall-normal
@@ -37,6 +31,10 @@
  * implicit/explicit" treatment within the model document.  The logic is coded
  * in C99 to facilitate profiling.
  */
+
+#include <suzerain/bsmbsm.h>
+#include <suzerain/bsplineop.h>
+#include <suzerain/complex.h>
 
 #ifdef __cplusplus
 extern "C" {

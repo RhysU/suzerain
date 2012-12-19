@@ -20,9 +20,11 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// manufactured_solution.cpp: MMS details for the perfect gas application
-// $Id$
-//
+
+/** @file
+ * @copydoc manufactured_solution.hpp
+ */
+
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif

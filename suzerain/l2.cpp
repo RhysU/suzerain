@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// l2.cpp: Compute L2 norms and related quantities on parallel fields
-// $Id$
+
+/** @file
+ * @copydoc l2.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

@@ -9,8 +9,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// definition_base.hpp: abstract base class for handling problem definitions
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_DEFINITION_BASE_HPP
 #define SUZERAIN_SUPPORT_DEFINITION_BASE_HPP
@@ -49,6 +47,9 @@ public:
      */
     virtual boost::program_options::options_description options_description()
         = 0;
+
+    /** Virtual destructor as appropriate for a base class. */
+    virtual ~definition_base() {}
 
 };
 

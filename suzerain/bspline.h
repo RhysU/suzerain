@@ -20,12 +20,14 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * bspline.h: higher-level logic build atop the GSL B-spline routines
- * $Id$
  */
 
 #ifndef SUZERAIN_BSPLINE_H
 #define SUZERAIN_BSPLINE_H
+
+/** @file
+ * Higher-level logic build atop the GSL B-spline routines
+ */
 
 #include <gsl/gsl_bspline.h>
 

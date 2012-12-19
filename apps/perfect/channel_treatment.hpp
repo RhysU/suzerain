@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// channel_treatment.hpp: mixin providing channel problem forcing
-// $Id$
 
 #ifndef CHANNEL_TREATMENT_HPP
 #define CHANNEL_TREATMENT_HPP
+
+/** @file
+ * A mixin providing implicit channel forcing.
+ */
 
 #include "nonlinear_operator_fwd.hpp"
 
@@ -39,7 +41,9 @@
 
 #include "perfect.hpp"
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /**
  * A mixin providing channel problem treatment atop any
@@ -337,6 +341,8 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 #endif /* CHANNEL_TREATMENT_HPP */

@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * bsmbsm_pack.def: templated functionality for bsmbsm.c
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within bsmbsm.c
  */
 
 // #include-time parameters available followed by a sample usage.

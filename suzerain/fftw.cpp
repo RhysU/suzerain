@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// fftw.cpp: miscellaneous utilities for working with FFTW's C interface
-// $Id$
+
+/** @file
+ * @copydoc fftw.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

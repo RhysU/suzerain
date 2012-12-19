@@ -9,19 +9,17 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// grid_specification.hpp: classes handling 3D, dealiased grid specifications
-// $Id$
 
 #ifndef SUZERAIN_GRID_SPECIFICATION_HPP
 #define SUZERAIN_GRID_SPECIFICATION_HPP
 
-#include <suzerain/common.hpp>
-
 // TODO Distinguish between two- versus one-sided stretching in grid_specification
 
 /** @file
- * Provides classes handling 3D, dealiased grid specifications.
+ * Provides classes handling three-dimensional, dealiased grid specifications.
  */
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 
@@ -176,10 +174,10 @@ public:
     grid_specification& Nz(const std::string& value);
 
     /** @copydoc DAFx(real_t) */
-    grid_specification& DAFx(const std::string& value);
+    grid_specification& DAFx(const std::string& factor);
 
     /** @copydoc DAFz(real_t) */
-    grid_specification& DAFz(const std::string& value);
+    grid_specification& DAFz(const std::string& factor);
 };
 
 } // namespace suzerain

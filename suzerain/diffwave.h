@@ -20,14 +20,14 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * diffwave.h: Computational kernels for differentiating in wave space
- * $Id$
  */
 
 #ifndef SUZERAIN_DIFFWAVE_H
 #define SUZERAIN_DIFFWAVE_H
 
 /** @file
+ * Computational kernels for differentiating in wave space.
+ *
  * Provides computational kernels for differentiating a three dimensional
  * wavespace field stored (Y, X, Z) in column-major order.  Only
  * differentiation of the X and Z directions is supported.  Additional padding

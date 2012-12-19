@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// exprgrammar.hpp: constant arithmetic expression evaluation via Boost Spirit
-// $Id$
 
 #ifndef SUZERAIN_EXPRGRAMMAR_HPP
 #define SUZERAIN_EXPRGRAMMAR_HPP
+
+/** @file
+ * A grammar for constant arithmetic expression evaluation via Boost Spirit
+ */
 
 #include <algorithm>
 #include <cmath>

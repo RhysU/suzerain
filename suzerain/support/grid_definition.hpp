@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// grid_definition.hpp: classes handling grid definitions
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_GRID_DEFINITION_HPP
+
+/** @file
+ * Provides classes handling problem grid definitions.
+ */
 
 #include <esio/esio.h>
 
@@ -21,10 +23,6 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
-
-/** @file
- * Provides classes handling problem grid definitions.
- */
 
 namespace suzerain {
 

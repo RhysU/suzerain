@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// ndx.cpp: Symbolic indices, names, and descriptions for Navier--Stokes
-// $Id$
+
+/** @file
+ * @copydoc ndx.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

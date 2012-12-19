@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * dsgbsvx.def: templated functionality for suzerain_lapack_??gbsvx
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within suzerain_lapack_??gbsvx
  */
 
 // Yes, this template is hideous.

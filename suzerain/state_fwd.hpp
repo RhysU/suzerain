@@ -9,21 +9,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// state_fwd.hpp: Interfaces for manipulating mutable state vectors
-// $Id$
 
 #ifndef SUZERAIN_STATE_FWD_HPP
 #define SUZERAIN_STATE_FWD_HPP
-
-#include <suzerain/common.hpp>
-#include <suzerain/blas_et_al.hpp>
-#include <suzerain/mpl.hpp>
-#include <suzerain/multi_array.hpp>
-#include <suzerain/shared_range.hpp>
-#include <suzerain/storage.hpp>
-
-// TODO Document better
-// TODO Allow interleaved_state/contiguous_state to interoperate
 
 /** @file
  * Provide interfaces for describing and manipulating mutable state vectors.
@@ -39,8 +27,17 @@
  * Pattern.
  */
 
-namespace suzerain
-{
+// TODO Document better
+// TODO Allow interleaved_state/contiguous_state to interoperate
+
+#include <suzerain/common.hpp>
+#include <suzerain/blas_et_al.hpp>
+#include <suzerain/mpl.hpp>
+#include <suzerain/multi_array.hpp>
+#include <suzerain/shared_range.hpp>
+#include <suzerain/storage.hpp>
+
+namespace suzerain {
 
 // Mandatory forward declarations
 template<typename Derived> struct state_base;
@@ -48,8 +45,7 @@ template<std::size_t Dim, typename Element> class contiguous_state;
 template<std::size_t Dim, typename Element> class interleaved_state;
 
 /** Implementation details for state_base */
-namespace detail
-{
+namespace detail {
 
 // Forward declaration for state_traits
 template<typename T> struct state_traits;

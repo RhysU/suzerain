@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// application_base.hpp: building blocks for basic application logic
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_APPLICATION_BASE_HPP
 #define SUZERAIN_SUPPORT_APPLICATION_BASE_HPP
+
+/** @file
+ * Building blocks for basic Suzerain-based applications.
+ */
 
 #include <esio/esio.h>
 #include <esio/error.h>

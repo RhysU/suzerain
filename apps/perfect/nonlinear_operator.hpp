@@ -20,11 +20,14 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear_operator.hpp: Nonlinear Navier--Stokes spatial operators
-// $Id$
 
 #ifndef NONLINEAR_OPERATOR_HPP
 #define NONLINEAR_OPERATOR_HPP
+
+/** @file
+ * Implementation of Nonlinear Navier--Stokes spatial operators
+ * declared within nonlinear_operator_fwd.hpp.
+ */
 
 #include "nonlinear_operator_fwd.hpp"
 

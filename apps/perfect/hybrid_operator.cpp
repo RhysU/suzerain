@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// hybrid_operator.cpp: Hybrid implicit/explicit Navier--Stokes operators
-// $Id$
+
+/** @file
+ * @copydoc hybrid_operator.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

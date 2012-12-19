@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// logging.cpp: MPI-aware logging tools built atop log4cxx
-// $Id$
+
+/** @file
+ * @copydoc logging.hpp
+ */
 
 // HAVE_CONFIG_H, suzerain/config.h, and suzerain/common.hpp not present
 // as this code should be useful in a broader, non-Suzerain context.

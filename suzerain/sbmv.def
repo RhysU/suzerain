@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * sbmv.def: templated functionality for sbmv.c
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within sbmv.c
  */
 
 // #include-time parameters available followed by a sample usage.

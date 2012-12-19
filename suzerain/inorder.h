@@ -9,8 +9,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * inorder.h: Utilities for manipulating "in-order" FFT storage
- * $Id$
  */
 
 #ifndef SUZERAIN_INORDER_H

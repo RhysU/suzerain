@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// channel_main.cpp: A channel simulation driver using Suzerain
-// $Id$
+
+/** @file
+ * A perfect gas channel simulation driver.
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

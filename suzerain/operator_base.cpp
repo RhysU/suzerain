@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// operator_base.cpp: useful base class for operator implementation work
-// $Id$
+
+/** @file
+ * @copydoc operator_base.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

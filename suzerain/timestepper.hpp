@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// timestepper.hpp: low storage Runge-Kutta timestepper interface
-// $Id$
 
 #ifndef SUZERAIN_TIMESTEPPER_HPP
 #define SUZERAIN_TIMESTEPPER_HPP
+
+/** @file
+ * Provides time integration-related operator details and advancement schemes.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/math.hpp>
@@ -21,19 +23,13 @@
 #include <suzerain/timers.h>
 #include <suzerain/traits.hpp>
 
-/** @file
- * Provides time integration-related operator details and advancement schemes.
- */
-
-namespace suzerain
-{
+namespace suzerain {
 
 /**
  * Provides time integration schemes and the associated interfaces that the
  * underlying operators must obey.
  */
-namespace timestepper
-{
+namespace timestepper {
 
 /**
  * Defines the nonlinear operator interface required for timestepping.
@@ -106,7 +102,7 @@ public:
  *     }
  * \f]
  * where \f$a\f$ is the local acoustic velocity, \f$u_{x}\f$ denotes the
- * velocity in the X direction, $\lambda^{(1)}_x$ represents the maximum
+ * velocity in the X direction, \f$\lambda^{(1)}_x\f$ represents the maximum
  * imaginary eigenvalue magnitude of the first derivative operator in the $x$
  * direction, etc.  The maximum pure imaginary eigenvalue magnitude,
  * \f$\left|\lambda_{I}\Delta{}t\right|_{\mbox{max}}\f$, is a feature of the

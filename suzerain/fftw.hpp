@@ -20,19 +20,17 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// fftw.hpp: miscellaneous utilities for working with FFTW's C interface
-// $Id$
 
 #ifndef SUZERAIN_FFTW_HPP
 #define SUZERAIN_FFTW_HPP
 
+/** @file
+ * C++ utilities for working with FFTW's C-based API.
+ */
+
 #include <fftw3.h>
 
 #include <suzerain/common.hpp>
-
-/** @file
- * Provides miscellaneous utilities for working with FFTW's C interface.
- */
 
 namespace suzerain {
 

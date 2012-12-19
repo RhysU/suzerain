@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * htstretch.c: Routines providing hyperbolic tangent grid stretching
- * $Id$
+ */
+
+/** @file
+ * @copydoc htstretch.h
  */
 
 #ifdef HAVE_CONFIG_H

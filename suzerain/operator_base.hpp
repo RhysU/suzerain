@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// operator_base.hpp: useful base class for operator implementation work
-// $Id$
 
 #ifndef SUZERAIN_OPERATOR_BASE_HPP
 #define SUZERAIN_OPERATOR_BASE_HPP
+
+/** @file
+ * Useful base classes for operator implementations.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/operator_tools.hpp>

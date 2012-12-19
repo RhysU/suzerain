@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbdmv.def: templated functionality for gbdmv.c
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within gbdmv.c
  */
 
 // #include-time parameters available followed by a sample usage.

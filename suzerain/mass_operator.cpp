@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// mass_operator.cpp: A physics-agnostic, low-storage B-spline mass operator
-// $Id$
+
+/** @file
+ * @copydoc mass_operator.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

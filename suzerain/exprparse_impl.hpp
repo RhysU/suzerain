@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// exprparse_impl.hpp: constant arithmetic expression evaluation (private)
-// $Id$
 
 #ifndef SUZERAIN_EXPRPARSE_IMPL_HPP
 #define SUZERAIN_EXPRPARSE_IMPL_HPP
+
+/** @file
+ * Implementation logic built using the grammar in exprgrammar.hpp.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprgrammar.hpp>

@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver_base.hpp: Application driver logic spanning multiple applications
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_DRIVER_BASE_HPP
 #define SUZERAIN_SUPPORT_DRIVER_BASE_HPP
+
+/** @file
+ * Suzerain-based driver logic reusable across multiple applications.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/application_base.hpp>
@@ -444,8 +446,8 @@ protected:
      * the provided ESIO handle file destroying #state_nonlinear in the
      * process.  When \c restartdef->physical is \c false, expansion
      * coefficients are written in all three directions using \ref
-     * support::store_coefficients.  When it is \c true, values at collocation
-     * points are written using support::store_collocation_Values.
+     * store_coefficients.  When it is \c true, values at collocation
+     * points are written using store_collocation_Values.
      *
      * @param esioh An ESIO handle pointing to an open, writable file.
      *

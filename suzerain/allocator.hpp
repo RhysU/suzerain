@@ -15,11 +15,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// allocator.hpp: Allocator implementations, including aligned allocators
-// $Id$
 
 #ifndef SUZERAIN_ALLOCATOR_HPP
 #define SUZERAIN_ALLOCATOR_HPP
+
+/** @file
+ * Allocator implementations, including aligned allocators
+ */
 
 #include <limits>
 #include <boost/utility.hpp>

@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * richardson.c: generalized Richardson extrapolation routines
- * $Id$
+ */
+
+/** @file
+ * @copydoc richardson.h
  */
 
 #ifdef HAVE_CONFIG_H

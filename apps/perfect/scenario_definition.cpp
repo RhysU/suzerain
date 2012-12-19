@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// scenario_definition.cpp: classes handling problem scenario parameters
-// $Id$
+
+/** @file
+ * @copydoc scenario_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

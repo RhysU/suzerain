@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// l2.hpp: Compute L2 norms and related quantities on parallel fields
-// $Id$
 
 #ifndef SUZERAIN_L2_HPP
 #define SUZERAIN_L2_HPP
+
+/** @file
+ * Compute \f$L^2\f$ norms and related quantities on distributed data.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>

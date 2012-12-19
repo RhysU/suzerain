@@ -9,8 +9,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * complex.h: compatibility layer for C99 and C++ complex types
- * $Id$
  */
 
 #ifndef SUZERAIN_COMPLEX_H

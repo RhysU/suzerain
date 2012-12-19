@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// grid_specification.cpp: classes handling 3D, dealiased grid specifications
-// $Id$
+
+/** @file
+ * @copydoc grid_specification.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
@@ -168,14 +170,14 @@ grid_specification& grid_specification::Nz(const std::string& value)
 #pragma warning(pop)
 }
 
-grid_specification& grid_specification::DAFx(const std::string& value)
+grid_specification& grid_specification::DAFx(const std::string& factor)
 {
-    return DAFx(exprparse<real_t>(value, "DAFx"));
+    return DAFx(exprparse<real_t>(factor, "DAFx"));
 }
 
-grid_specification& grid_specification::DAFz(const std::string& value)
+grid_specification& grid_specification::DAFz(const std::string& factor)
 {
-    return DAFz(exprparse<real_t>(value, "DAFz"));
+    return DAFz(exprparse<real_t>(factor, "DAFz"));
 }
 
 } // end namespace suzerain

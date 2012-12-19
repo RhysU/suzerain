@@ -20,20 +20,18 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * richardson.h: generalized Richardson extrapolation routines
- * $Id$
  */
 
 #ifndef SUZERAIN_RICHARDSON_H
 #define SUZERAIN_RICHARDSON_H
 
-#include <gsl/gsl_matrix_double.h>
-#include <gsl/gsl_vector_double.h>
-
 /** @file
- * Provides generalized Richardson extrapolation built atop the <a
+ * Generalized Richardson extrapolation built atop the <a
  * href="http://www.gnu.org/software/gsl/">GNU Scientific Library</a> (GSL).
  */
+
+#include <gsl/gsl_matrix_double.h>
+#include <gsl/gsl_vector_double.h>
 
 #ifdef __cplusplus
 extern "C" {

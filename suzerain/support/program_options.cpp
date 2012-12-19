@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// program_options.cpp: handles parsing program options from CLI, files
-// $Id$
+
+/** @file
+ * @copydoc program_options.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

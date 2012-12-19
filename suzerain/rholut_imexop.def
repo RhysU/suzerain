@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.def: templated functionality for rholut_imexop.c
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within rholut_imexop.c
  */
 
 // #include-time parameters available followed by a sample usage.

@@ -20,8 +20,6 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * rholut_imexop.h: hybrid implicit/explicit operator apply and solve
- * $Id$
  */
 
 #ifdef HAVE_CONFIG_H

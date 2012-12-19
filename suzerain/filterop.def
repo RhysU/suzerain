@@ -19,8 +19,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * filterop.def: Templating for discrete filtering operator routines
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within filterop.c
  */
 
 // TODO Account for non-banded nature of periodicity (Toeplitz)

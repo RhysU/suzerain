@@ -9,21 +9,18 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// rholt.hpp: Kernels using reference density, length, and temperature
-// $Id$
 
 #ifndef SUZERAIN_RHOLT_HPP
 #define SUZERAIN_RHOLT_HPP
-
-#include <suzerain/common.hpp>
 
 /** @file
  * Provides compute kernels for formulations using a reference density
  * \f$\rho_0\f$, length \f$l_0\f$, and temperature \f$T_0\f$.
  */
 
-namespace suzerain
-{
+#include <suzerain/common.hpp>
+
+namespace suzerain {
 
 /**
  * Provides compute kernels for formulations using a reference density
@@ -66,8 +63,7 @@ namespace suzerain
  * and \c Tensor may be <tt>Eigen::Matrix<Scalar,3,1></tt> and
  * <tt>Eigen::Matrix<Scalar,3,3></tt>, respectively.
  */
-namespace rholt
-{
+namespace rholt {
 
 /**
  * Compute \f$\tau =

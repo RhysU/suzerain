@@ -9,12 +9,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * blas_et_al.h: wraps external implementations of BLAS, LAPACK, et al.
- * $Id$
  */
 
 #ifndef SUZERAIN_BLAS_ET_AL_H
 #define SUZERAIN_BLAS_ET_AL_H
+
+/** @file
+ * Wraps and extends external implementations of BLAS, LAPACK, et al.
+ */
 
 #include <stddef.h>
 #include <stdio.h>

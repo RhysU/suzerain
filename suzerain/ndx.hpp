@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// ndx.hpp: Symbolic indices, names, and descriptions for Navier--Stokes
-// $Id$
 
 #ifndef SUZERAIN_NDX_HPP
 #define SUZERAIN_NDX_HPP
+
+/** @file
+ * Symbolic indices, names, and descriptions for 3D Navier--Stokes.
+ */
 
 #include <suzerain/common.hpp>
 
@@ -22,9 +24,9 @@ namespace suzerain {
 /**
  * Symbolic indices, identifiers, and descriptions for 3D Navier--Stokes.
  *
- * The last index \e must be \rho!  In the multi-species cases, mixture density
- * should be in \ref rho and the <tt>i</tt>-th species partial density in
- * <tt>rho + (i-1)</tt>.  That is, \ref rho is the "diluter" species.  Many
+ * The last index \e must be <tt>rho</tt>!  In the multi-species cases, mixture
+ * density should be in \ref rho and the <tt>i</tt>-th species partial density
+ * in <tt>rho + (i-1)</tt>.  That is, \ref rho is the "diluter" species.  Many
  * routines will assume the equations are stored in this order when attempting
  * to walk memory linearly.
  */

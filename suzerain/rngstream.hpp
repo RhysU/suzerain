@@ -12,12 +12,12 @@
  *
 \***********************************************************************/
 
-/** @file
- * Declares <tt>RngStream</tt> by L'Ecuyer <i>et al</i>, 2002.
- */
-
 #ifndef SUZERAIN_RNGSTREAM_HPP
 #define SUZERAIN_RNGSTREAM_HPP
+
+/** @file
+ * <tt>RngStream</tt> by L'Ecuyer <i>et al</i>, 2002.
+ */
 
 #include <iostream>
 #include <string>

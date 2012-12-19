@@ -19,15 +19,19 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// perfect_gas_interface.hpp: Interface to perfect gas transport and thermo
-// $Id$
 
 #ifndef PERFECT_GAS_INTERFACE_HPP
 #define PERFECT_GAS_INTERFACE_HPP
 
+/** @file
+ * Interface to perfect gas transport and thermodynamics.
+ */
+
 #include <cstddef>
 
-namespace suzerain { namespace reacting {
+namespace suzerain {
+
+namespace reacting {
 
 class perfectGasInterface {
 
@@ -145,6 +149,8 @@ void perfectGasInterface::evaluate (const double  e,
 
 }
 
-} /* namespace reacting */ } /* namespace suzerain */
+} // namespace reacting
+
+} // namespace suzerain
 
 #endif

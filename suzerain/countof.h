@@ -9,8 +9,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * countof.h: Macros to count the number of array elements at compile time
- * $Id$
  */
 
 #ifndef SUZERAIN_COUNTOF_H

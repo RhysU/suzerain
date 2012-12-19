@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// pencil_grid.cpp: Class to manage data layout concerns for P3DFFT usage
-// $Id$
+
+/** @file
+ * @copydoc pencil_grid.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

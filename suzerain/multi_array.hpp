@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// multi_array.hpp: Utilities for Boost.MultiArray
-// $Id$
 
 #ifndef SUZERAIN_MULTIARRAY_HPP
 #define SUZERAIN_MULTIARRAY_HPP
+
+/** @file
+ * Utilities for Boost.MultiArray.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>

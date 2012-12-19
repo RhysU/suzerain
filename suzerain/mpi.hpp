@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// mpi.hpp: miscellaneous utilities for working with MPI's C interface
-// $Id$
 
 #ifndef SUZERAIN_MPI_HPP
 #define SUZERAIN_MPI_HPP
+
+/** @file
+ * C++ utilities for working with MPI's C-based interface.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.h>
@@ -21,7 +23,7 @@
 namespace suzerain {
 
 /**
- * Provides miscellaneous utilities for working with MPI's C interface.
+ * C++ utilities for working with MPI's C-based interface.
  */
 namespace mpi {
 

@@ -9,12 +9,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbmatrix.h: General band storage matrix helpers
- * $Id$
  */
 
 #ifndef SUZERAIN_GBMATRIX_H
 #define SUZERAIN_GBMATRIX_H
+
+/** @file
+ * General band storage matrix helpers
+ */
 
 #include <assert.h>
 #include <stddef.h>

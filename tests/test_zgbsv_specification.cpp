@@ -9,8 +9,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// zgbsv_specification.cpp: Encapsulates complex-valued banded solve options
-// $Id$
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

@@ -9,17 +9,15 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// inorder.hpp: C++ wrappers for the C-based suzerain_inorder_* API
-// $Id$
 
 #ifndef SUZERAIN_INORDER_HPP
 #define SUZERAIN_INORDER_HPP
 
-#include <suzerain/inorder.h>
-
 /** @file
  * Provides C++ wrappers for the C-based API in inorder.h.
  */
+
+#include <suzerain/inorder.h>
 
 namespace suzerain {
 

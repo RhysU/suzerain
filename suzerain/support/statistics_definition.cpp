@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// statistics_definition.hpp: classes handling statistics output definitions
-// $Id$
+
+/** @file
+ * @copydoc statistics_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

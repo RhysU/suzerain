@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// common.hpp: C++ common definitions, utility macros, and inline functions
-// $Id$
 
 #ifndef SUZERAIN_COMMON_HPP
 #define SUZERAIN_COMMON_HPP
+
+/** @file
+ * Common includes, definitions, utility macros, and inline functions for C++.
+ */
 
 // Include all of the C common material
 #include <suzerain/common.h>
@@ -228,7 +230,7 @@ using boost::array;         /**< \namespace suzerain */
  * Defines typedefs for <a href="http://eigen.tuxfamily.org/">Eigen</a>-related
  * classes within the \ref suzerain namespace.  Typedefs like Matrix3r and
  * Vector3c permit simplifying using \ref suzerain::real_t and \ref
- * suzerain::complex_t with Eigen's \ref Matrix and \ref Array templates.  They
+ * suzerain::complex_t with Eigen's Matrix and Array templates.  They
  * also permit codifying Suzerain's expectations regarding column- versus
  * row-major storage regardless of the value of \c EIGEN_DEFAULT_TO_ROW_MAJOR.
  *

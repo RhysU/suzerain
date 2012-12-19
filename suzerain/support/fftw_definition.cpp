@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// fftw_definition.cpp: A definition_base to configure FFTW from the CLI
-// $Id$
+
+/** @file
+ * @copydoc fftw_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

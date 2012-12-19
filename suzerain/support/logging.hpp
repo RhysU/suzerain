@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// logging.hpp: MPI-aware logging tools built atop log4cxx
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_LOGGING_HPP
 #define SUZERAIN_SUPPORT_LOGGING_HPP
+
+/** @file
+ * MPI-aware logging built atop log4cxx
+ */
 
 #include <streambuf>
 #include <ostream>

@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// exprparse_dchar.cpp: arithmetic expression evaluation for double, char*
-// $Id$
+
+/** @file
+ * Arithmetic expression evaluation for \c double, <tt>const char *</tt>
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

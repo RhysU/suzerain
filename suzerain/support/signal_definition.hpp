@@ -9,18 +9,16 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// signal_definition.hpp: classes handling signal processing definitions
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_SIGNAL_DEFINITION_HPP
 
+/** @file
+ * Classes handling signal processing definitions.
+ */
+
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
-
-/** @file
- * Provides classes handling signal processing definitions.
- */
 
 namespace suzerain {
 

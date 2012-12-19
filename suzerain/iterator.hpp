@@ -9,18 +9,20 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// iterator.hpp: iterator tools
-// $Id$
 
 #ifndef SUZERAIN_ITERATOR_HPP
 #define SUZERAIN_ITERATOR_HPP
+
+/** @file
+ * Iterator-related utilities.
+ */
 
 #include <suzerain/common.hpp>
 
 namespace suzerain {
 
 /**
- * Provides iterator-related utilities.
+ * Iterator-related utilities.
  */
 namespace iterator {
 

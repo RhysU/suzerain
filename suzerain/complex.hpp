@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// complex.hpp: utilities for manipulating various complex number formats
-// $Id$
 
 #ifndef SUZERAIN_COMPLEX_HPP
 #define SUZERAIN_COMPLEX_HPP
+
+/** @file
+// Utilities for manipulating various complex number formats
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/functional.hpp>

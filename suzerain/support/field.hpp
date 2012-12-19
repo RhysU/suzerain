@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// field.hpp: Logic for saving and loading scalar state fields
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_FIELD_HPP
 #define SUZERAIN_SUPPORT_FIELD_HPP
+
+/** @file
+ * Logic for saving and loading distributed state fields.
+ */
 
 #include <esio/esio.h>
 

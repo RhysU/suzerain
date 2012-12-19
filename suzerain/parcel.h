@@ -9,12 +9,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * parcel.h: utilities for parcelling out monolithically malloc-ed memory
- * $Id$
  */
 
 #ifndef SUZERAIN_PARCEL_H
 #define SUZERAIN_PARCEL_H
+
+/** @file
+ * Parcels out pieces of monolithically <tt>malloc</tt>-ed memory
+ */
 
 #include <inttypes.h>
 #include <stddef.h>

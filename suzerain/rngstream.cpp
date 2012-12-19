@@ -13,7 +13,7 @@
 \***********************************************************************/
 
 /** @file
- * Provides <tt>rngstream</tt> by L'Ecuyer <i>et al</i>, 2002.
+ * @copydoc rngstream.hpp
  */
 
 #include <suzerain/rngstream.hpp>

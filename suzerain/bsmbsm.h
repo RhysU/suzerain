@@ -9,12 +9,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * bsmbsm.h: routines for blocked square matrices with banded submatrices
- * $Id$
  */
 
 #ifndef SUZERAIN_BSMBSM_H
 #define SUZERAIN_BSMBSM_H
+
+/** @file
+ * Routines for blocked square matrices with banded submatrices.
+ */
 
 #include <assert.h>
 

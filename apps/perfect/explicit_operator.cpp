@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// explicit_operator.cpp: Fully explicit Navier--Stokes operators
-// $Id$
+
+/** @file
+ * @copydoc explicit_operator.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

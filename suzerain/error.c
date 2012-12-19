@@ -23,8 +23,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * error.c: error handling implementation adapted from the GSL
- * $Id$
+ */
+
+/** @file
+ * @copydoc error.h
  */
 
 #ifdef HAVE_CONFIG_H

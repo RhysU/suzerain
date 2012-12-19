@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// mpi.cpp: miscellaneous utilities for working with MPI's C interface
-// $Id$
+
+/** @file
+ * @copydoc mpi.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

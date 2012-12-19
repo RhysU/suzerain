@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// application_base.cpp: building blocks for basic application logic
-// $Id$
+
+/** @file
+ * @copydoc application_base.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

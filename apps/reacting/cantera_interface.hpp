@@ -19,11 +19,14 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// cantera_interface.hpp: Interface to cantera library for chemistry, etc
-// $Id$
 
 #ifndef CANTERA_INTERFACE_HPP
 #define CANTERA_INTERFACE_HPP
+
+/** @file
+ * Interface to the <a href="http://code.google.com/p/cantera/">Cantera
+ * library</a> for chemistry, etc.
+ */
 
 // No HAVE_CANTERA #ifdef as any HAVE_CANTERA checks occur
 // well before anyone tries to compile this file.

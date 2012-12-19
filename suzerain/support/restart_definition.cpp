@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// restart_definition.cpp: implementations handling restart definitions
-// $Id$
+
+/** @file
+ * @copydoc restart_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

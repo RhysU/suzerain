@@ -9,28 +9,24 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// storage.hpp: Marker classes indicating storage ordering
-// $Id$
 
 #ifndef SUZERAIN_STORAGE_HPP
 #define SUZERAIN_STORAGE_HPP
-
-#include <suzerain/common.hpp>
-#include <suzerain/iterator.hpp>
-#include <suzerain/mpl.hpp>
 
 /** @file
  * Provides marker types indicating element storage configurations.
  **/
 
-namespace suzerain
-{
+#include <suzerain/common.hpp>
+#include <suzerain/iterator.hpp>
+#include <suzerain/mpl.hpp>
+
+namespace suzerain {
 
 /**
  * Provides marker types indicating element storage configurations.
  **/
-namespace storage
-{
+namespace storage {
 
 /**
  * Provides storage and stride computations given a storage ordering.

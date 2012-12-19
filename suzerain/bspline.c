@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * bspline.c: higher-level logic build atop the GSL B-spline routines
- * $Id$
+ */
+
+/** @file
+ * @copydoc bspline.h
  */
 
 #ifdef HAVE_CONFIG_H

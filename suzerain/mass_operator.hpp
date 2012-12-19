@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// mass_operator.hpp: A physics-agnostic, low-storage B-spline mass operator
-// $Id$
 
 #ifndef SUZERAIN_MASS_OPERATOR_HPP
 #define SUZERAIN_MASS_OPERATOR_HPP
+
+/** @file
+ * A physics-agnostic, low-storage B-spline mass operator
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>

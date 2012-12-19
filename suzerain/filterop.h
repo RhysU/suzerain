@@ -19,12 +19,14 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * filterop.h: Discrete filtering operator routines
- * $Id$
  */
 
 #ifndef SUZERAIN_FILTEROP_H
 #define SUZERAIN_FILTEROP_H
+
+/** @file
+ * Discrete filtering operators
+ */
 
 #include <suzerain/complex.h>
 

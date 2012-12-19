@@ -9,11 +9,17 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// exprparse.hpp: constant arithmetic expression evaluation
-// $Id$
 
 #ifndef SUZERAIN_EXPRPARSE_HPP
 #define SUZERAIN_EXPRPARSE_HPP
+
+/** @file
+ * Constant arithmetic expression evaluation via Boost Spirit.
+ *
+ * To reduce compilation times, only a \c float and \c double instantiation of
+ * the parsing methods is exposed for \c std::string and <tt>const char *</tt>
+ * data.
+ */
 
 #include <string>
 

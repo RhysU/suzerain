@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * reacting_imexop.c: hybrid implicit/explicit operator apply and solve
- * $Id$
+ */
+
+/** @file
+ * @copydoc reacting_imexop.h
  */
 
 #ifdef HAVE_CONFIG_H

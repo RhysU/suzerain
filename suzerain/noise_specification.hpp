@@ -9,17 +9,15 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// noise_specification.hpp: classes handling specifying additive noise
-// $Id$
 
 #ifndef SUZERAIN_NOISE_SPECIFICATION_HPP
 #define SUZERAIN_NOISE_SPECIFICATION_HPP
 
-#include <suzerain/common.hpp>
-
 /** @file
  * Provides classes handling specifying additive noise
  */
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 

@@ -9,18 +9,16 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// statistics_definition.hpp: classes handling statistics output definitions
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_STATISTICS_DEFINITION_HPP
 
+/** @file
+ * Classes handling control of statistics file output.
+ */
+
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
-
-/** @file
- * Provides classes handling arguments used to control statistics file output.
- */
 
 namespace suzerain {
 

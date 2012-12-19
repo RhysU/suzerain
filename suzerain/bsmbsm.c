@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * bsmbsm.c: routines for blocked square matrices with banded submatrices
- * $Id$
+ */
+
+/** @file
+ * @copydoc bsmbsm.h
  */
 
 #ifdef HAVE_CONFIG_H

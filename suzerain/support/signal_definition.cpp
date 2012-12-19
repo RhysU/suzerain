@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// signal_definition.cpp: classes handling signal processing definitions
-// $Id$
+
+/** @file
+ * @copydoc signal_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

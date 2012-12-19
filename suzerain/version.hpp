@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// version.hpp: generate a nice program version message
-// $Id$
 
 #ifndef SUZERAIN_VERSION_HPP
 #define SUZERAIN_VERSION_HPP
+
+/** @file
+ * Generate nice program version messages.
+ */
 
 #include <iosfwd>
 #include <string>

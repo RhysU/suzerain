@@ -9,21 +9,19 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// validation.hpp: helpers that ensure values meet some validation criteria
-// $Id$
 
 #ifndef SUZERAIN_VALIDATION_HPP
 #define SUZERAIN_VALIDATION_HPP
 
-#include <suzerain/common.hpp>
-
 /** @file
- * Provides helpers to ensure values meet simple validation criteria.
+ * Helpers to ensure values meet simple validation criteria.
  */
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 
-/** Provides helpers to ensure values meet simple validation criteria. */
+/** Helpers to ensure values meet simple validation criteria. */
 namespace validation {
 
 /**

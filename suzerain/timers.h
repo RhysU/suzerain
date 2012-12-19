@@ -20,18 +20,16 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// timers.hpp: Conditional wrappers for performance timer routines
-// $Id$
 
 #ifndef SUZERAIN_TIMERS_H
 #define SUZERAIN_TIMERS_H
 
-#include <suzerain/suzerain-config.h>
-
 /** @file
- * Wraps GRVY-based performance timing logic in a way permitting its consistent
- * use without the need to worry if GRVY is installed.
+ * Wraps GRVY-based performance timers to permit their consistent
+ * use without the need to worry if GRVY is available.
  */
+
+#include <suzerain/suzerain-config.h>
 
 #ifdef SUZERAIN_HAVE_GRVY
 #include <grvy.h>

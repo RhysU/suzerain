@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// time_definition.cpp: classes handling advance definitions
-// $Id$
+
+/** @file
+ * @copydoc time_definition.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
@@ -23,10 +25,6 @@
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
-
-/** @file
- * Provides classes handling time advancement settings.
- */
 
 namespace suzerain {
 

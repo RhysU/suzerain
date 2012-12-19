@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbmatrix.c: General band storage matrix helpers
- * $Id$
+ */
+
+/** @file
+ * @copydoc gbmatrix.h
  */
 
 #include <suzerain/gbmatrix.h>

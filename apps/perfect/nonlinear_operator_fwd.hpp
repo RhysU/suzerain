@@ -20,11 +20,14 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear_operator_fwd.hpp: Nonlinear Navier--Stokes spatial operators
-// $Id$
 
 #ifndef NONLINEAR_OPERATOR_FWD_HPP
 #define NONLINEAR_OPERATOR_FWD_HPP
+
+/** @file
+ * Declarations of Nonlinear Navier--Stokes spatial operators
+ * implemented within nonlinear_operator.hpp.
+ */
 
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
@@ -62,7 +65,7 @@ public:
      * \li \c u  The \e nonlinear operator computes the instantaneous spatial
      *     (x, z) mean streamwise velocity profile.  The \e linear operator
      *     then uses the information to compute the implicit \f$f\cdot{}u\f$
-     *     and $\mathscr{C}_{\rho{}u}\cdot{}u$ terms in the total energy
+     *     and \f$\mathscr{C}_{\rho{}u}\cdot{}u\f$ terms in the total energy
      *     equation.
      * \li \c v  Treated identically to \c u.
      * \li \c w  Treated identically to \c u.

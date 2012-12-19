@@ -20,18 +20,16 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// diffwave.hpp: C++ wrappers for the C-based suzerain_diffwave_* API
-// $Id$
 
 #ifndef SUZERAIN_DIFFWAVE_HPP
 #define SUZERAIN_DIFFWAVE_HPP
 
-#include <suzerain/complex.hpp>
-#include <suzerain/diffwave.h>
-
 /** @file
  * Provides C++ wrappers for the C-based API in diffwave.h.
  */
+
+#include <suzerain/complex.hpp>
+#include <suzerain/diffwave.h>
 
 namespace suzerain {
 

@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver_base.cpp: Application driver logic spanning multiple applications
-// $Id$
+
+/** @file
+ * @copydoc driver_base.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// operator_tools.hpp: syntactic sugar for B-spline/FFTW operations
-// $Id$
 
 #ifndef SUZERAIN_OPERATOR_TOOLS_HPP
 #define SUZERAIN_OPERATOR_TOOLS_HPP
+
+/** @file
+ * Provides combined, timed B-spline and parallel FFT infrastructure routines.
+ */
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>

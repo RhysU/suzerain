@@ -9,23 +9,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * sbmv.h: provides custom, BLAS-like general band matrix-vector operations
- * $Id$
  */
 
 #ifndef SUZERAIN_SBMV_H
 #define SUZERAIN_SBMV_H
+
+/** @file
+ * Provides custom, BLAS-like symmetric band matrix-vector operations.
+ * Includes mixed real/complex operations and fixed bandwidth kernels.
+ */
 
 #include <suzerain/complex.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/** \file
- * Provides custom, BLAS-like general band matrix-vector operations.
- * Includes mixed real/complex operations and fixed bandwidth kernels.
- */
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \alpha{} A x + \beta{} y \f$

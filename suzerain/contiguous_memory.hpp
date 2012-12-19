@@ -9,8 +9,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// contiguous_memory.hpp: Provides contiguous_m	emory class
-// $Id$
 
 #ifndef SUZERAIN_CONTIGUOUS_MEMORY_HPP
 #define SUZERAIN_CONTIGUOUS_MEMORY_HPP

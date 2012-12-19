@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * svehla.c: provides fits from R. Svehla's 1962 NASA TR-132
- * $Id$
+ */
+
+/** @file
+ * @copydoc svehla.h
  */
 
 #ifdef HAVE_CONFIG_H

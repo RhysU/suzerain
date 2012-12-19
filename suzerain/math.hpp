@@ -9,18 +9,20 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// math.hpp: provides general mathematics routines
-// $Id$
 
 #ifndef SUZERAIN_MATH_HPP
 #define SUZERAIN_MATH_HPP
+
+/** @file
+ * Provides general mathematical routines.
+ */
 
 #include <suzerain/common.hpp>
 
 namespace suzerain {
 
 /**
- * Provides general mathematics routines.
+ * Provides general mathematical routines.
  */
 namespace math {
 

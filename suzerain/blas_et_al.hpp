@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// blas_et_al.hpp: C++ wrappers around blas_et_al.h's functionality
-// $Id$
 
 #ifndef SUZERAIN_BLAS_ET_AL_HPP
 #define SUZERAIN_BLAS_ET_AL_HPP
+
+/** @file
+ * C++ wrappers around functionality within blas_et_al.h
+ */
 
 #include <boost/numeric/conversion/cast.hpp>
 #include <boost/static_assert.hpp>

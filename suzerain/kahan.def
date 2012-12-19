@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * kahan.def: templated functionality for kahan.c
- * $Id$
+ */
+
+/** @file
+ * Templated functionality used within kahan.c
  */
 
 // -no-unsafe-math-optimizations or similar should be enable for compilation!

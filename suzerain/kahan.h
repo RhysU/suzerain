@@ -9,20 +9,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * kahan.h: Kahan summation routines
- * $Id$
  */
 
 #ifndef SUZERAIN_KAHAN_H
 #define SUZERAIN_KAHAN_H
-
-#include <suzerain/complex.h>
 
 /** @file
  * Provides routines performing <a
  * href="http://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan
  * summation</a>.
  */
+
+#include <suzerain/complex.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// nonlinear.hpp: Building blocks for nonlinear Navier--Stokes operators
-// $Id$
 
 #ifndef NONLINEAR_OPERATOR_HPP
 #define NONLINEAR_OPERATOR_HPP
+
+/** @file
+ * Building blocks for nonlinear Navier--Stokes operators
+ */
 
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>

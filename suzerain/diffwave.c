@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * diffwave.c: Computational kernels for differentiating in wave space
- * $Id$
+ */
+
+/** @file
+ * @copydoc diffwave.h
  */
 
 #ifdef HAVE_CONFIG_H

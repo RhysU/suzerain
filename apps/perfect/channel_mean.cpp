@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// channel_mean.cpp: Dump mean statistics for one or more restart files
-// $Id$
+
+/** @file
+ * Dump mean statistics for one or more channel restart files.
+ */
 
 // FIXME Support loading multiple sample collections per file
 // FIXME Allow excluding particular time ranges in the output

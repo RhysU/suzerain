@@ -1,11 +1,12 @@
 /*--------------------------------------------------------------------------
  *
  * Code copyright and licensing details follow on routine-specific basis.
- * This routines have been extracted from the GNU Scientific Library.
  *
  *--------------------------------------------------------------------------
- * pre_gsl.h: functionality not always present in older GSL releases
- * $Id$
+ */
+
+/** @file
+ * @copydoc pre_gsl.h
  */
 
 #ifdef HAVE_CONFIG_H

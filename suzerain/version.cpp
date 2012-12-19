@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// version.cpp: dump a program version message to stdout
-// $Id$
+
+/** @file
+ * @copydoc version.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

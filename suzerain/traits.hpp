@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// traits.hpp: utilities for manipulating various types
-// $Id$
 
 #ifndef SUZERAIN_TRAITS_HPP
 #define SUZERAIN_TRAITS_HPP
+
+/** @file
+ * Traits classes for manipulating various types
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/complex.hpp>

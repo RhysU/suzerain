@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// support.cpp: Support logic spanning potentially many applications
-// $Id$
+
+/** @file
+ * @copydoc support.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

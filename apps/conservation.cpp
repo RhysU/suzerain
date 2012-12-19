@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// conservation.cpp: compute discrete conservation error for given basis
-// $Id$
+
+/** @file
+ * Compute discrete conservation error for given basis
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

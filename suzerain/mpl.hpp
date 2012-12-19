@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// mpl.hpp: tools related to Boost.MPL
-// $Id$
 
 #ifndef SUZERAIN_MPL_HPP
 #define SUZERAIN_MPL_HPP
+
+/** @file
+ * Tools related to Boost.MPL.
+ */
 
 #include <suzerain/common.hpp>
 

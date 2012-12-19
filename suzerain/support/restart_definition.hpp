@@ -9,19 +9,17 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// restart_definition.hpp: classes handling restart definitions
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
 #define SUZERAIN_SUPPORT_RESTART_DEFINITION_HPP
-
-#include <suzerain/common.hpp>
-#include <suzerain/support/definition_base.hpp>
 
 /** @file
  * Provides classes handling restart definitions, which are runtime
  * arguments used to control simulation restart behavior.
  */
+
+#include <suzerain/common.hpp>
+#include <suzerain/support/definition_base.hpp>
 
 namespace suzerain {
 

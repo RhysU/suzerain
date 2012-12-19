@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// pencil_grid.hpp: Class to manage data layout concerns for P3DFFT usage
-// $Id$
 
 #ifndef SUZERAIN_PENCIL_GRID_HPP
 #define SUZERAIN_PENCIL_GRID_HPP
+
+/** @file
+ * Class to manage distributed data concerns for P3DFFT or underling usage.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
@@ -39,8 +41,7 @@
 #include <underling/underling_fftw.hpp>
 #endif
 
-namespace suzerain
-{
+namespace suzerain {
 
 // Forward declarations for different implementations
 class pencil_grid_p3dfft;

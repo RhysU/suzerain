@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// manufactured_solution.hpp: MMS details for the perfect gas application
-// $Id$
 
 #ifndef SUZERAIN_PERFECT_MANUFACTURED_SOLUTION_HPP
 #define SUZERAIN_PERFECT_MANUFACTURED_SOLUTION_HPP
+
+/** @file
+ * Method of manufactured solution details for the perfect gas application.
+ */
 
 #include <esio/esio.h>
 

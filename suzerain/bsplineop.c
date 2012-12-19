@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * bsplineop.c: B-spline operator routines
- * $Id$
+ */
+
+/** @file
+ * @copydoc bsplineop.h
  */
 
 #ifdef HAVE_CONFIG_H

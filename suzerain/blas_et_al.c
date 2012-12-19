@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * blas_et_al.c: wraps external implementations of BLAS, LAPACK, et al.
- * $Id$
+ */
+
+/** @file
+ * @copydoc blas_et_al.h
  */
 
 #ifdef HAVE_CONFIG_H

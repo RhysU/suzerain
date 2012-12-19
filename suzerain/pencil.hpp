@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// pencil.hpp: Class to support P3DFFT's physical and wave space data layout
-// $Id$
 
 #ifndef SUZERAIN_PENCIL_HPP
 #define SUZERAIN_PENCIL_HPP
+
+/** @file
+ * Addressing support for pencil_grid's physical and wave space data.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -33,15 +35,14 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/storage.hpp>
 
-namespace suzerain
-{
+namespace suzerain {
 
 /**
  * Encapsulates a pencil-storage-based scalar field to be in-place transformed
- * between physical and from wave space by P3DFFT.  Handles details like
- * maintaining size information, indexing, appropriate storage order.  Here \e
- * physical indicates real-valued storage of pointwise values and \e wave
- * indicates complex-valued storage of Fourier coefficients.
+ * between physical and from wave space by \ref pencil_grid.  Handles details
+ * like maintaining size information, indexing, appropriate storage order.
+ * Here \e physical indicates real-valued storage of pointwise values and \e
+ * wave indicates complex-valued storage of Fourier coefficients.
  *
  * The \f$ x \f$, \f$ y \f$, and \f$ z \f$ directions are designed to be the
  * streamwise, wall-normal, and spanwise directions respectively.  The storage

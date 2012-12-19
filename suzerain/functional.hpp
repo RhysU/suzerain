@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// functional.hpp: functional tools
-// $Id$
 
 #ifndef SUZERAIN_FUNCTIONAL_HPP
 #define SUZERAIN_FUNCTIONAL_HPP
+
+/** @file
+ * Functional programming tools.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/utility.hpp>

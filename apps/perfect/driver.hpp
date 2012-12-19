@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver.hpp: A driver for nondimensional perfect gas simulations
-// $Id$
 
 #ifndef SUZERAIN_PERFECT_DRIVER_HPP
 #define SUZERAIN_PERFECT_DRIVER_HPP
+
+/** @file
+ * A driver for nondimensional perfect gas simulations.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>

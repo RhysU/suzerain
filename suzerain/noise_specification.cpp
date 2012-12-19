@@ -9,8 +9,10 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// noise_specification.cpp: classes handling specifying additive noise
-// $Id$
+
+/** @file
+ * @copydoc noise_specification.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

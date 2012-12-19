@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// mean_quantities.cpp: sampling logistics for mean quantity profiles
-// $Id$
+
+/** @file
+ * @copydoc mean_quantities.hpp
+ */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>

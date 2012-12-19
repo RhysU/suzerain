@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// mean_quantities.hpp: sampling logistics for mean quantity profiles
-// $Id$
 
 #ifndef SUZERAIN_PERFECT_MEAN_QUANTITIES_HPP
 #define SUZERAIN_PERFECT_MEAN_QUANTITIES_HPP
+
+/** @file
+ * Sampling logistics for mean quantity profiles.
+ */
 
 #include <esio/esio.h>
 
@@ -262,7 +264,6 @@ public:
  * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
- * @param[in,out] b        B-spline basis workspace.
  * @param[in]     cop      B-spline operator workspace.
  * @param[in,out] swave    Destroyed in the computation
  * @param[in]     t        Current simulation time

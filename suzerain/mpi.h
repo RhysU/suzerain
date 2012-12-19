@@ -9,23 +9,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * mpi.h: Provides an incompatibility-hiding wrapper over the usual <mpi.h>
- * $Id$
  */
 
 #ifndef SUZERAIN_MPI_H
 #define SUZERAIN_MPI_H
+
+/** @file
+ * Provides a small wrapper over the MPI vendor's mpi.h that hides
+ * incompatibilities as much as possible.
+ */
 
 #ifdef __GNUC__
 /* Some older implementations trigger many warnings.  Suppress them. */
 #pragma GCC system_header
 #endif
 #include <mpi.h>
-
-/** @file
- * Provides a small wrapper over the MPI vendor's mpi.h that hides
- * incompatibilities as much as possible.
- */
 
 #ifdef __cplusplus
 extern "C" {

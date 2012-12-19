@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// support.hpp: Support logic spanning potentially many applications
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_SUPPORT_HPP
 #define SUZERAIN_SUPPORT_SUPPORT_HPP
+
+/** @file
+ * Support logic with complex prerequisites spanning multiple applications
+ */
 
 #include <esio/esio.h>
 #ifdef HAVE_UNDERLING

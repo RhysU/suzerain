@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// format.hpp: Provides std::ostream-related formatting-related utilities
-// $Id$
 
 #ifndef SUZERAIN_FORMAT_HPP
 #define SUZERAIN_FORMAT_HPP
+
+/** @file
+ * Provides std::ostream-related formatting utilities
+ */
 
 #include <suzerain/common.hpp>
 

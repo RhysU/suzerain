@@ -9,22 +9,19 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// program_options.hpp: handles parsing program options from CLI, files
-// $Id$
 
 #ifndef SUZERAIN_SUPPORT_PROGRAM_OPTIONS_HPP
 #define SUZERAIN_SUPPORT_PROGRAM_OPTIONS_HPP
+
+/** @file
+ * Classes handling program options parsing.
+ */
 
 #include <boost/program_options.hpp>
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/support/definition_base.hpp>
-
-/** @file
- * Provides classes handling program options parsing given a problem
- * definition.
- */
 
 namespace suzerain {
 

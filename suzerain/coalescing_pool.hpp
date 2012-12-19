@@ -7,10 +7,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// coalescing_pool.hpp: a memory pool for contiguous state storage
 
-#ifndef COALESCING_POOL_HPP
-#define COALESCING_POOL_HPP
+#ifndef SUZERAIN_COALESCING_POOL_HPP
+#define SUZERAIN_COALESCING_POOL_HPP
+
+/** @file
+ * Memory pools for contiguous state storage.
+ */
 
 #include <algorithm>
 #include <cstring>
@@ -747,4 +750,4 @@ void swap(
 
 } // namespace suzerain
 
-#endif /* COALESCING_POOL_HPP */
+#endif /* SUZERAIN_COALESCING_POOL_HPP */

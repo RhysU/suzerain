@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// state.hpp: Implementations of State classes
-// $Id$
 
 #ifndef SUZERAIN_STATE_HPP
 #define SUZERAIN_STATE_HPP
+
+/** @file
+ * Implementations of state_base subclasses.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
@@ -24,12 +26,7 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/storage.hpp>
 
-/** @file
- * Implementations of state_base subclasses.
- */
-
-namespace suzerain
-{
+namespace suzerain {
 
 template< std::size_t Dim, typename Element >
 template< typename ExtentList >

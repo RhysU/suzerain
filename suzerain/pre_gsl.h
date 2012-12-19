@@ -18,12 +18,15 @@
  * along with this file.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * pre_gsl.h: functionality not present in public GSL releases
- * $Id$
  */
 
 #ifndef SUZERAIN_PRE_GSL_H
 #define SUZERAIN_PRE_GSL_H
+
+/** @file
+ * Functionality not present in recent, public GSL releases.
+ * Routines have been extracted or extended from the GNU Scientific Library.
+ */
 
 #ifdef __cplusplus
 extern "C" {

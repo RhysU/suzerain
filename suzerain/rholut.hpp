@@ -15,17 +15,16 @@
 #ifndef SUZERAIN_RHOLUT_HPP
 #define SUZERAIN_RHOLUT_HPP
 
-#include <suzerain/common.hpp>
-#include <suzerain/rholt.hpp>
-
 /** @file
  * Provides compute kernels for formulations using a reference density
  * \f$\rho_0\f$, length \f$l_0\f$, velocity \f$u_0\f$, and temperature
  * \f$T_0\f$.
  */
 
-namespace suzerain
-{
+#include <suzerain/common.hpp>
+#include <suzerain/rholt.hpp>
+
+namespace suzerain {
 
 /**
  * Provides compute kernels for formulations using a reference density
@@ -73,8 +72,7 @@ namespace suzerain
  * used in suzerain::rholt.  Those kernels have been brought into this
  * namespace with using declarations.
  */
-namespace rholut
-{
+namespace rholut {
 
 
 /**

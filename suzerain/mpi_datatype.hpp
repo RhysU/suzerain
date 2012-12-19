@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// mpi_datatype.hpp: lookup functionality for MPI_Datatype constants
-// $Id$
 
 #ifndef SUZERAIN_MPI_DATATYPE_HPP
 #define SUZERAIN_MPI_DATATYPE_HPP
+
+/** @file
+ * Automatic lookup of type-specific \c MPI_Datatype constants.
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.h>

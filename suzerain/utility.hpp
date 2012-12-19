@@ -9,11 +9,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 //--------------------------------------------------------------------------
-// utility.hpp: miscellaneous utilities that seemingly fit nowhere else
-// $Id$
 
 #ifndef SUZERAIN_UTILITY_HPP
 #define SUZERAIN_UTILITY_HPP
+
+/** @file
+ * Miscellaneous utilities that seemingly fit nowhere else.
+ */
 
 #include <suzerain/common.hpp>
 

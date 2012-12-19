@@ -20,8 +20,10 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// driver.cpp: A driver for nondimensional perfect gas simulations
-// $Id$
+
+/** @file
+ * @copydoc driver.hpp
+ */
 
 #include "driver.hpp"
 

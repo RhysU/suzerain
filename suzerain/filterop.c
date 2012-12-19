@@ -19,8 +19,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * filterop.c: Discrete filtering operator routines
- * $Id$
+ */
+
+/** @file
+ * @copydoc filterop.h
  */
 
 #ifdef HAVE_CONFIG_H

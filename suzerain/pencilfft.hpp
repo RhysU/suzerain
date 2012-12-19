@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// pencilfft.hpp: perform FFTs atop boost::multi_array using FFTW
-// $Id$
 
 #ifndef SUZERAIN_PENCILFFT_HPP
 #define SUZERAIN_PENCILFFT_HPP
+
+/** @file
+ * Perform FFTs atop boost::multi_array using FFTW
+ */
 
 #include <fftw3.h>
 

@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// hybrid_operator.hpp: Hybrid implicit/explicit Navier--Stokes operators
-// $Id$
 
 #ifndef HYBRID_OPERATOR_HPP
 #define HYBRID_OPERATOR_HPP
+
+/** @file
+ * Hybrid implicit/explicit Navier--Stokes operators.
+ */
 
 #include "nonlinear_operator_fwd.hpp"
 

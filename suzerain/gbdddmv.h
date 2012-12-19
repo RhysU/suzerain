@@ -9,24 +9,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbdddmv.h: provides BLAS-like general band matrix-vector operations
- * $Id$
  */
 
 #ifndef SUZERAIN_GBDDDMV_H
 #define SUZERAIN_GBDDDMV_H
+
+/** @file
+ * Provides custom, BLAS-like diagonal matrix times general band matrix-vector
+ * operations.  Includes mixed real/complex operations and fixed bandwidth
+ * kernels.
+ */
 
 #include <suzerain/complex.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/** \file
- * Provides custom, BLAS-like diagonal matrix times general band matrix-vector
- * operations.  Includes mixed real/complex operations and fixed bandwidth
- * kernels.
- */
 
 /*!
  * \brief Compute \f$ y \leftarrow{} \left(\alpha_{0} D_0 + \alpha_{1} D_1

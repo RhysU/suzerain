@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// explicit_operator.hpp: Fully explicit Navier--Stokes operators
-// $Id$
 
 #ifndef EXPLICIT_OPERATOR_HPP
 #define EXPLICIT_OPERATOR_HPP
+
+/** @file
+ * Fully explicit, linearization-ready Navier--Stokes operators.
+ */
 
 #include "nonlinear_operator_fwd.hpp"
 

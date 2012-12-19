@@ -20,11 +20,13 @@
 // along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
 //
 //--------------------------------------------------------------------------
-// physical_view.hpp: simplifies viewing contiguous_state in physical space
-// $Id$
 
 #ifndef SUZERAIN_PHYSICAL_VIEW_HPP
 #define SUZERAIN_PHYSICAL_VIEW_HPP
+
+/** @file
+ * Simplifies efficiently accessing contiguous_state in physical space
+ */
 
 #include <suzerain/common.hpp>
 #include <suzerain/pencil_grid.hpp>

@@ -22,14 +22,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * error.h: error handling declarations adapted from the GSL
- * $Id$
  */
 
 #ifndef SUZERAIN_ERROR_H
 #define SUZERAIN_ERROR_H
-
-#include <stdio.h>
 
 /** @file
  * Provides standardized error numbers and error handling routines.  Error
@@ -41,6 +37,8 @@
  * macros which are an improved copy of ideas found in <a
  * href="http://www.mcs.anl.gov/petsc/">PETSc</a>.
  */
+
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {

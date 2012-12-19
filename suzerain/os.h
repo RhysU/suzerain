@@ -20,19 +20,17 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * os.h: POSIX-based operating system utilities
- * $Id$
  */
 
 #ifndef SUZERAIN_OS_H
 #define SUZERAIN_OS_H
 
+/** @file
+ * Provides utilities atop POSIX operating system APIs.
+ */
+
 #include <fcntl.h>
 #include <stdio.h>
-
-/** @file
- * Provides utilities atop POSIX methods.
- */
 
 #ifdef __cplusplus
 extern "C" {

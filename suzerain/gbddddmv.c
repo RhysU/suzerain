@@ -9,8 +9,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *--------------------------------------------------------------------------
- * gbddddmv.c: provides BLAS-like general band matrix-vector operations
- * $Id$
+ */
+
+/** @file
+ * @copydoc gbddddmv.h
  */
 
 // File iteration is used to generate bandwidth-specific routines.  See

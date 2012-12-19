@@ -20,8 +20,10 @@
  * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
  *
  *--------------------------------------------------------------------------
- * os.c: POSIX-based operating system utilities
- * $Id$
+ */
+
+/** @file
+ * @copydoc os.h
  */
 
 #ifdef HAVE_CONFIG_H
