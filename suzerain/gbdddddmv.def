@@ -27,11 +27,11 @@
 // #define KL        const int kl,     /* Matrix lower bandwidth     */
 // #define KU        const int ku,     /* Matrix upper bandwidth     */
 
-#ifndef __GBDDDDDMV_INTERNAL_ONCE
-#define __GBDDDDDMV_INTERNAL_ONCE
+#ifndef GBDDDDDMV_INTERNAL_ONCE
+#define GBDDDDDMV_INTERNAL_ONCE
 static inline int ndxmin(int a, int b) { return a < b ? a : b; }
 static inline int ndxmax(int a, int b) { return a > b ? a : b; }
-#endif /* __GBDDDDDMV_INTERNAL_ONCE */
+#endif /* GBDDDDDMV_INTERNAL_ONCE */
 
 STATIC int FUNCTION(
     char trans, const int n, KL KU

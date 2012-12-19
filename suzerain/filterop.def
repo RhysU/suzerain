@@ -35,11 +35,11 @@
 // #define WORK(pre,post) pre ## z ## post /* e.g. Workspace     */
 
 // Indexing utilities for banded matrices
-#ifndef __FILTEROP_INTERNAL_ONCE
-#define __FILTEROP_INTERNAL_ONCE
+#ifndef FILTEROP_INTERNAL_ONCE
+#define FILTEROP_INTERNAL_ONCE
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
-#endif /* __FILTEROP_INTERNAL_ONCE */
+#endif /* FILTEROP_INTERNAL_ONCE */
 
 #define STRINGIFY_HELPER(x) #x
 #define STRINGIFY(x)        STRINGIFY_HELPER(x)
