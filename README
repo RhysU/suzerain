@@ -17,6 +17,8 @@ The code depends upon the following libraries:
     2) Boost from http://www.boost.org/
     3) Eigen from http://eigen.tuxfamily.org/
     4) Log4cxx from http://logging.apache.org/log4cxx/
+    5) ESIO from https://red.ices.utexas.edu/projects/esio
+    6) underling from https://red.ices.utexas.edu/projects/underling
 
 
 2. Configuration
