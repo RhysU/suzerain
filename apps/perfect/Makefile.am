@@ -15,7 +15,19 @@ libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
 libperfect_la_SOURCES += driver.hpp                driver.cpp
 
 ##
-## Channel-based applications
+## Applications
+##
+
+bin_PROGRAMS         += perfect_init
+perfect_init_SOURCES  = main_init.cpp
+perfect_init_SOURCES += main_init_svnrev.c
+BUILT_SOURCES        += main_init_svnrev.h
+perfect_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
+	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+
+##
+## Old, non-suzerain::support::application_base channel applications
 ##
 
 bin_PROGRAMS         += channel_init
