@@ -53,6 +53,7 @@ public:
 
     /** @copydoc driver_base::driver_base */
     driver(const std::string &application_synopsis,
+           const std::string &argument_synopsis = "",
            const std::string &description = "",
            const std::string &revstr = "");
 

@@ -126,6 +126,7 @@ public:
 
     /** @copydoc application_base::application_base */
     driver_base(const std::string &application_synopsis,
+                const std::string &argument_synopsis = "",
                 const std::string &description = "",
                 const std::string &revstr = "");
 

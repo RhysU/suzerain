@@ -41,9 +41,11 @@ namespace perfect {
 
 driver::driver(
         const std::string &application_synopsis,
+        const std::string &argument_synopsis,
         const std::string &description,
         const std::string &revstr)
     : driver_base(application_synopsis,
+                  argument_synopsis,
                   description,
                   revstr)
 {

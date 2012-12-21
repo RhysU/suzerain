@@ -106,10 +106,11 @@ signal_definition driver_base::signaldef;
 
 driver_base::driver_base(
         const std::string &application_synopsis,
+        const std::string &argument_synopsis,
         const std::string &description,
         const std::string &revstr)
     : application_base(application_synopsis,
-                       "[RESTART-FILE]",
+                       argument_synopsis,
                        description,
                        revstr)
     , restartdef(make_shared<restart_definition>(
