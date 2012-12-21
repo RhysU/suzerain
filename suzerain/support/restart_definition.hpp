@@ -51,13 +51,13 @@ public:
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c destination and \c retain.
      */
-    restart_definition(const std::string& metadata            ,
-                       const std::string& uncommitted         ,
-                       const std::string& destination         ,
-                       const std::size_t  retain       = 1    ,
-                       const real_t       dt           = 0    ,
-                       const std::size_t  nt           = 0    ,
-                       const bool         physical     = false);
+    restart_definition(const std::string& metadata                ,
+                       const std::string& uncommitted             ,
+                       const std::string& destination             ,
+                       const std::size_t  retain       = (1 << 15),
+                       const real_t       dt           = 0        ,
+                       const std::size_t  nt           = 0        ,
+                       const bool         physical     = false    );
 
     /** @copydoc support::definition_base::options_description() */
     boost::program_options::options_description options_description();
