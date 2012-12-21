@@ -145,8 +145,8 @@ void accumulate_manufactured_solution(
         contiguous_state<4,complex_t> &swave,
         const grid_specification &grid,
         const pencil_grid &dgrid,
-        bspline &b,
         const bsplineop &cop,
+        bspline &b,
         const real_t simulation_time);
 
 } // end namespace perfect

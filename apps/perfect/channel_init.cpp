@@ -285,7 +285,7 @@ int main(int argc, char **argv)
 
         // Use a canned manufactured solution routine for initialization
         perfect::accumulate_manufactured_solution(
-                1, *msoln, 0, swave, grid, *dgrid, *b, *cop, mms);
+                1, *msoln, 0, swave, grid, *dgrid, *cop,*b, mms);
 
     } else {
 

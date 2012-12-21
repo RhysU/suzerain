@@ -331,7 +331,7 @@ static void information_manufactured_solution_absolute_error(
     state_nonlinear->assign(*state_linear);
     perfect::accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
-            grid, *dgrid, *b, *cop, simulation_time);
+            grid, *dgrid, *cop, *b, simulation_time);
     const std::vector<suzerain::field_L2> L2
         = suzerain::compute_field_L2(*state_nonlinear, grid, *dgrid, *gop);
 
