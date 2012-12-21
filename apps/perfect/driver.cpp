@@ -297,6 +297,21 @@ driver::load_statistics_hook(
     return super::load_statistics_hook(esioh);
 }
 
+void
+driver::default_restart_interval(
+        time_type& t,
+        step_type&)
+{
+    real_t flowthrough_time = std::numeric_limits<real_t>::quiet_NaN();
+    if (grid && scenario) {
+        flowthrough_time =  grid->L.x()
+                         / (scenario->bulk_rho_u / scenario->bulk_rho);
+    }
+    if (boost::math::isnormal(flowthrough_time)) {
+        t = flowthrough_time;
+    }
+}
+
 } // end namespace perfect
 
 } // end namespace suzerain

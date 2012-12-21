@@ -180,13 +180,7 @@ protected:
      * The default interval is a fractional flow through time per #grid
      * and #scenario.
      */
-    virtual void default_status_interval(time_type& t, step_type&);
-
-    /** @copydoc default_status_interval */
     virtual void default_restart_interval(time_type& t, step_type&);
-
-    /** @copydoc default_status_interval */
-    virtual void default_statistics_interval(time_type& t, step_type&);
 
 };
 
