@@ -48,6 +48,7 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
+    , scenario(make_shared<scenario_definition>())
 {
     this->fields = default_fields();
 }
@@ -60,7 +61,16 @@ driver::initialize(
     // msoln is not used by all binaries and is therefore not added below
     options.add_definition(*scenario);
 
-    return super::initialize(argc, argv);
+    // Delegate to superclass initialization
+    std::vector<std::string> positional = super::initialize(argc, argv);
+
+    // However, if msoln was provided, match its contents to other members
+    if (msoln) {
+        if (scenario) msoln->match(*scenario);
+        if (grid)     msoln->match(*grid);
+    }
+
+    return positional;
 }
 
 void
@@ -83,7 +93,7 @@ driver::log_manufactured_solution_absolute_error(
     state_nonlinear->assign(*state_linear);
     accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
-            *grid, *dgrid, *b, *cop, t);
+            *grid, *dgrid, *cop, *b, t);
     const std::vector<field_L2> L2
         = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
 
