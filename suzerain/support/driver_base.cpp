@@ -808,6 +808,7 @@ driver_base::load_metadata(
     load_metadata_hook(esioh);
 }
 
+// The file created below must match that made by other save_restart overloads!
 bool
 driver_base::save_restart(
         const driver_base::time_type t,
@@ -850,6 +851,43 @@ driver_base::save_restart(
     INFO0(timeprefix << " Committed restart in " << elapsed << " seconds");
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
+
+    return continue_advancing;
+}
+
+// The file created below must match that made by other save_restart overloads!
+bool
+driver_base::save_restart(
+        const driver_base::time_type t,
+        const std::string dstfile,
+        const bool overwrite)
+{
+    const double starttime = MPI_Wtime();
+    INFO0("Starting to save restart file " << dstfile);
+    SUZERAIN_TIMER_SCOPED("driver_base::save_restart (one-off)");
+
+    // Save metadata ensuring previously set values are not reused
+    metadata_saved = false;
+    save_metadata();
+    metadata_saved = false;
+
+    esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
+    DEBUG0("Cloning " << restartdef->metadata << " to " << dstfile);
+    esio_file_clone(esioh, restartdef->metadata.c_str(),
+                    dstfile.c_str(), overwrite);
+    save_time(esioh, t);
+
+    // Invoke subclass extension points for both restart AND statistics
+    state_nonlinear->assign(*state_linear);
+    const bool continue_advancing =    save_state_hook(esioh)
+                                    || save_statistics_hook(esioh);
+
+    esio_file_close(esioh);
+    esio_handle_finalize(esioh);
+
+    const double elapsed = MPI_Wtime() - starttime;
+    INFO0("Committed restart file " << dstfile
+          << " in "<< elapsed << " seconds");
 
     return continue_advancing;
 }

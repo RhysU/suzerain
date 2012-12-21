@@ -312,9 +312,10 @@ public:
             const esio_handle esioh);
 
     /**
-     * Save state \e and statistics into a restart file.  Subclasses should not
-     * override this method but should instead use \ref save_state_hook and
-     * \ref save_statistics_hook.
+     * Save state \e and statistics into an automatically managed sequence of
+     * restart files sharing common metadata.  Subclasses should not override
+     * this method but should instead use \ref save_state_hook and \ref
+     * save_statistics_hook.
      *
      * @param t  The simulation time to be stored in the restart file.
      * @param nt The time step number which is not stored in the restart file.
@@ -325,11 +326,32 @@ public:
      *          False otherwise.
      *
      * @see Member #restartdef to control restart writing options,
-     *      including the name of the file on disk.
+     *      including the name of the file on disk and how many files
+     *      in the sequence should be maintained.
      */
     virtual bool save_restart(
             const time_type t,
             const step_type nt);
+
+    /**
+     * Save state \e and statistics into a one-off restart file with one-off
+     * metadata.  Subclasses should not override this method but should instead
+     * use \ref save_state_hook and \ref save_statistics_hook.
+     *
+     * @param t         The simulation time to be stored in the restart file.
+     * @param dstfile   The path to which the restart file will be written.
+     * @param overwrite If \c true, clobber any existing file.
+     *                  If \c false, handled per ESIO's \c esio_file_clone.
+     *
+     * @returns True if any active time advance should continue.
+     *          False otherwise.
+     *
+     * @see Member #restartdef to set the location of temporary metadata files.
+     */
+    virtual bool save_restart(
+            const time_type t,
+            const std::string dstfile,
+            const bool overwrite);
 
     /**
      * Load the contents of a restart file into #state_linear using the current
