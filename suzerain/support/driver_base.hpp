@@ -531,26 +531,39 @@ protected:
             const esio_handle esioh);
 
     /**
-     * Compute default status output intervals.
+     * Compute default restart writing intervals.
      * Useful if the desired intervals depend on other scenario parameters.
      * Called by \ref prepare_controller(time_type,real_t).
+     *
+     * @param[out] dt Time between restarts measured in simulation time.
+     * @param[out] nt Time between restarts measured in time steps.
      */
-    virtual void default_status_interval(time_type&, step_type&)
-    { /* NOP */ }
-
-    /**
-     * Compute default restart writing intervals.
-     * \copydoc default_status_interval(time_type&,step_type&)
-     */
-    virtual void default_restart_interval(time_type&, step_type&)
-    { /* NOP */ }
+    virtual void default_restart_interval(time_type& dt, step_type& nt)
+    {
+        // No default behavior because neither dt nor nt is modified
+        (void) dt;
+        (void) nt;
+    }
 
     /**
      * Compute default statistics writing intervals.
-     * \copydoc default_status_interval(time_type&,step_type&)
+     *
+     * By default, this is one-fourth the frequency of any non-zero, non-NaN
+     * value returned by \ref default_restart_interval.
+     *
+     * \copydetails default_restart_interval(time_type&,step_type&)
      */
-    virtual void default_statistics_interval(time_type&, step_type&)
-    { /* NOP */ }
+    virtual void default_statistics_interval(time_type& dt, step_type& nt);
+
+    /**
+     * Compute default status output intervals.
+     *
+     * By default, this is one-fourth the frequency of any non-zero, non-NaN
+     * value returned by \ref default_statistics_interval.
+     *
+     * \copydetails default_restart_interval(time_type&,step_type&)
+     */
+    virtual void default_status_interval(time_type& dt, step_type& nt);
 
     /**
      * Did the previous time advance end in a predicted, controlled manner?
