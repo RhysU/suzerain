@@ -65,7 +65,7 @@ application_base::application_base(
     , options(application_synopsis,
               argument_synopsis,
               description,
-              this->revstr)
+              revstr)
     , grid(make_shared<grid_definition>())
     , fftwdef(make_shared<fftw_definition>(/* rigor_fft */ fftw::measure,
                                            /* rigor_mpi */ fftw::estimate))
