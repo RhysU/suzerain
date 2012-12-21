@@ -42,30 +42,31 @@
 
 #pragma warning(disable:1419)
 
-// Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
-extern "C" const char revstr[];
-
 namespace suzerain { namespace perfect {
 
 /** Application for initializing new restart files. */
 struct driver_init : public driver
 {
-    driver_init()
+    driver_init(const std::string& revstr)
         : driver("Perfect gas compressible channel initialization",
                  "[RESTART-FILE]",
                  "",
                  revstr)
     {}
 
+    /** Implementation below in this file */
     int run(int argc, char **argv);
 };
 
 } /* namespace perfect */ } /* namespace suzerain */
 
-int
-main(int argc, char **argv)
+// Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
+extern "C" const char revstr[];
+
+/** Instantiate and invoke the application */
+int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_init app;
+    suzerain::perfect::driver_init app(revstr);
     return app.run(argc, argv);
 }
 
