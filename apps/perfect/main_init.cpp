@@ -48,8 +48,8 @@ namespace suzerain { namespace perfect {
 struct driver_init : public driver
 {
     driver_init(const std::string& revstr)
-        : driver("Perfect gas compressible channel initialization",
-                 "[RESTART-FILE]",
+        : driver("Compressible, perfect gas simulation initialization",
+                 "RESTART-FILE",
                  "",
                  revstr)
     {}
