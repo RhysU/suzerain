@@ -27,7 +27,7 @@
 #
 # LAST MODIFICATION
 #
-#   2012-08-16
+#   2013-01-06
 #
 # COPYLEFT
 #
@@ -170,7 +170,7 @@ if test "${with_mkl}" != no ; then
     MKL_LIBS="${MKL_LIBS} -lm"
 
     if test -d "${acx_mkl_libdir}" ; then
-        MKL_LDFLAGS="-R${acx_mkl_libdir} -L${acx_mkl_libdir}"
+        MKL_LDFLAGS="-Wl,-R${acx_mkl_libdir} -L${acx_mkl_libdir}"
     else
         MKL_LDFLAGS=""
     fi
