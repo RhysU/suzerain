@@ -13,10 +13,6 @@
 #
 # All logic is installed as libsuzerain.la using non-recursive Automake.
 # This final target is built from objects and multiple convenience libraries.
-#
-# The ordering of the libraries on which libsuzerain.la depends places
-# the most-uncommon prerequisities first in the hope that introduction of
-# system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
@@ -137,19 +133,46 @@ nobase_pkginclude_HEADERS += validation.hpp
 nobase_pkginclude_HEADERS += version.hpp
 nobase_pkginclude_HEADERS += zgbsv_specification.hpp
 
-# Public library assembled from convenience libraries
-# libsupport must come first so ESIO/parallel-HDF5 trumps GRVY/serial-HDF5
+# Public library is assembled from multiple convenience libraries
+# combined with carefully-ordered external dependencies.
+#
+# The ordering of the external libraries on which libsuzerain.la depends places
+# the most-uncommon prerequisities first in the hope that introduction of
+# any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
-libsuzerain_la_LIBADD     = libsupport.la
+libsuzerain_la_LIBADD     = libbase.la
 libsuzerain_la_LIBADD    += libprecise.la
-libsuzerain_la_LIBADD    += libbase.la
+libsuzerain_la_LIBADD    += libsupport.la
+libsuzerain_la_LIBADD    += $(ESIO_LIBS)
+libsuzerain_la_LIBADD    += $(UNDERLING_LIBS)
+libsuzerain_la_LIBADD    += $(P3DFFT_LIBS)
+libsuzerain_la_LIBADD    += $(FFTW3_MPI_THREADS_LIBS)
+libsuzerain_la_LIBADD    += $(GRVY_LIBS)
+libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LDFLAGS)
+libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LIBS)
+libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
+libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
+libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
+libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
 
-# Logic without extensive external dependencies
+# Logic without (relatively) extensive external dependencies
+#
+# When in doubt, check libbase_la_CPPFLAGS to see if something belongs.  If it
+# won't compile without libsupport_la_CPPFLAGS, it belongs in libsupport.la.
 noinst_LTLIBRARIES       += libbase.la
 libbase_la_LDFLAGS        = # Convenience-only
+libbase_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
+libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
+libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
+libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
+libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
+libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
+libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
+libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
+libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
 libbase_la_SOURCES        = blas_et_al.c
 libbase_la_SOURCES       += bsmbsm.c
 libbase_la_SOURCES       += bspline.c
@@ -204,22 +227,6 @@ EXTRA_libbase_la_SOURCES += reacting_imexop.def
 EXTRA_libbase_la_SOURCES += rholut_imexop.def
 EXTRA_libbase_la_SOURCES += sbmv.def
 
-libbase_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
-libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
-libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
-libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
-libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
-libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
-libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
-libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
-
-libbase_la_LIBADD         = $(UNDERLING_LIBS)
-libbase_la_LIBADD        += $(P3DFFT_LIBS)
-libbase_la_LIBADD        += $(FFTW3_MPI_THREADS_LIBS)
-libbase_la_LIBADD        += $(GRVY_LIBS)
-libbase_la_LIBADD        += $(GSL_LIBS) # Includes MKL via BLAS hooks
-
 # Sources requiring IEEE-faithful floating point behavior
 # Built separately to utilize separate optimization settings
 noinst_LTLIBRARIES          += libprecise.la
@@ -234,6 +241,9 @@ libprecise_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
 # Built separately to encourage decoupling versus other targets
 noinst_LTLIBRARIES          += libsupport.la
 libsupport_la_LDFLAGS        = # Convenience-only
+libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
+libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
+libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
 libsupport_la_SOURCES        = support/application_base.cpp
 libsupport_la_SOURCES       += support/driver_base.cpp
 libsupport_la_SOURCES       += support/fftw_definition.cpp
@@ -248,15 +258,6 @@ libsupport_la_SOURCES       += support/statistics_definition.cpp
 libsupport_la_SOURCES       += support/support.cpp
 libsupport_la_SOURCES       += support/time_definition.cpp
 EXTRA_libsupport_la_SOURCES  =
-libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
-libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
-libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
-libsupport_la_LIBADD         = $(BOOST_IOSTREAMS_LDFLAGS)
-libsupport_la_LIBADD        += $(BOOST_IOSTREAMS_LIBS)
-libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
-libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LIBS)
-libsupport_la_LIBADD        += $(ESIO_LIBS)
-libsupport_la_LIBADD        += $(LOG4CXX_LIBS)
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
