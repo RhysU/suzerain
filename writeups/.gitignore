@@ -1,9 +1,13 @@
 /*.aux
+/*.bak
 /*.bbl
 /*.blg
 /*.dvi
+/*.fdb_latexmk
 /*.log
 /Makefile
 /Makefile.in
+/*.out
 /*.pdf
 /*.ps
+/*.toc

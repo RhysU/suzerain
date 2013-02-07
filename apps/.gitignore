@@ -1,7 +1,10 @@
+/channel_explicit
+/channel_init
+/channel_mean
 /conservation
 /*.dat
-/*.log
 /.deps
 /driver_suzerain_p3dfft
 /Makefile
 /Makefile.in
+/driver_suzerain_p3dfft_svnrev.h

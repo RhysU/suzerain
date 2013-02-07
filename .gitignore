@@ -12,3 +12,6 @@
 /Makefile
 /Makefile.in
 /x86_64-unknown-linux-gnu
+/.cproject
+/.autotools
+/.project

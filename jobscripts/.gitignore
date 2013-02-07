@@ -1,5 +1,6 @@
 /Makefile
 /Makefile.in
-/mms_case.perfect
 /qsub.lonestar
 /qsub.ranger
+/laminar.perfect
+/mms_case.perfect

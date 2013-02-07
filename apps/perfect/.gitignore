@@ -1,8 +1,11 @@
-/channel_explicit
+/channel
 /channel_init
+/channel_init_svnrev.h
+/channel_main_svnrev.h
 /channel_mean
-/*.dat
-/*.log
+/channel_mean_svnrev.h
 /.deps
+/*.log
+/log.dat
 /Makefile
 /Makefile.in

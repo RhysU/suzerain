@@ -1,4 +1,3 @@
-/*.log
 /.deps
 /Makefile
 /Makefile.in
@@ -51,3 +50,20 @@
 /test_timestepper.py
 /test_traits
 /test_utility
+/test_gbdddddmv
+/test_empty
+/test_gbdmv
+/test_spec_zgbsv
+/test_gbddmv
+/test_bsmbsm
+/test_gbddddmv
+/test_rholut_imexop
+/test_gbmatrix
+/test_parcel
+/test_filterop
+/test_gbdddmv
+/test_sbmv
+/test_kahan
+/test_gbmv
+/test_rngstream
+/test_zgbsv_specification
