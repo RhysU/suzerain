@@ -2733,7 +2733,7 @@ test_blasext_sgbnorm1()
 
     float norm1;
     const int status = suzerain_blasext_sgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_int(status, 0, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, 32.0, GSL_FLT_EPSILON, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
 }
@@ -2751,7 +2751,7 @@ test_blasext_dgbnorm1()
 
     double norm1;
     const int status = suzerain_blasext_dgbnorm1(m, n, kl, ku, a, lda, &norm1);
-    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_int(status, 0, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, 32.0, GSL_DBL_EPSILON, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
 }
@@ -2773,7 +2773,7 @@ test_blasext_cgbnorm1()
     float norm1;
     const int status = suzerain_blasext_cgbnorm1(
             m, n, kl, ku, (complex_float *) a, lda, &norm1);
-    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_int(status, 0, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, expected, GSL_FLT_EPSILON, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
 }
@@ -2795,7 +2795,7 @@ test_blasext_zgbnorm1()
     double norm1;
     const int status = suzerain_blasext_zgbnorm1(
             m, n, kl, ku, (complex_double *) a, lda, &norm1);
-    gsl_test_int(0, status, "%s:%d call success", __func__, __LINE__);
+    gsl_test_int(status, 0, "%s:%d call success", __func__, __LINE__);
     gsl_test_abs(norm1, expected, GSL_DBL_EPSILON*100, "%s:%d norm result %d",
                  __func__, __LINE__, norm1);
 }
@@ -2827,7 +2827,7 @@ test_lapack_dgbcon()
 
     // Prepare factorization
     const int f = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, 2*kl + ku + 1, ipiv);
-    gsl_test_int(0, f, "%s:%d factorization success", __func__, __LINE__);
+    gsl_test_int(f, 0, "%s:%d factorization success", __func__, __LINE__);
 
     // Compute reciprocal of condition number
     double rcond = -555;
@@ -2835,7 +2835,7 @@ test_lapack_dgbcon()
     int    iwork[n];
     const int g = suzerain_lapack_dgbcon('1', n, kl, ku, ab, 2*kl + ku + 1,
                                          ipiv, norm1, &rcond, work, iwork);
-    gsl_test_int(0, g, "%s:%d condition number estimation success",
+    gsl_test_int(g, 0, "%s:%d condition number estimation success",
                  __func__, __LINE__);
 
     // Check result against expected
@@ -2852,10 +2852,10 @@ void test_blasext_ddemote()
     const int n = sizeof(x)/sizeof(x[0]);
 
     info = suzerain_blasext_ddemote(n, x);
-    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d report success", __func__, __LINE__);
 
     info = memcmp(x, e, sizeof(e));
-    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
 void test_blasext_dpromote()
@@ -2868,10 +2868,10 @@ void test_blasext_dpromote()
             "%s.%d consistency", __func__, __LINE__);
 
     info = suzerain_blasext_dpromote(n, (void *) x);
-    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d report success", __func__, __LINE__);
 
     info = memcmp(x, e, sizeof(e));
-    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
 void test_blasext_zdemote()
@@ -2882,10 +2882,10 @@ void test_blasext_zdemote()
     const int n = sizeof(x)/sizeof(x[0]);
 
     info = suzerain_blasext_zdemote(n, (void *) x);
-    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d report success", __func__, __LINE__);
 
     info = memcmp(x, e, sizeof(e));
-    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
 void test_blasext_zpromote()
@@ -2899,10 +2899,10 @@ void test_blasext_zpromote()
             "%s.%d consistency", __func__, __LINE__);
 
     info = suzerain_blasext_zpromote(n, (void *) x);
-    gsl_test_int(0, info, "%s.%d report success", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d report success", __func__, __LINE__);
 
     info = memcmp(x, e, sizeof(e));
-    gsl_test_int(0, info, "%s.%d matches expected", __func__, __LINE__);
+    gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
 // Form nastily conditioned test problems per Mark Lotkin, A Set of Test
