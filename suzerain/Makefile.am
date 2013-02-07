@@ -13,6 +13,10 @@
 #
 # All logic is installed as libsuzerain.la using non-recursive Automake.
 # This final target is built from objects and multiple convenience libraries.
+#
+# The ordering of the libraries on which libsuzerain.la depends places
+# the most-uncommon prerequisities first in the hope that introduction of
+# system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 
 AM_CPPFLAGS    = -I$(top_srcdir) -I$(top_builddir)
 AM_CPPFLAGS   += -I$(top_builddir)/lib -I$(top_srcdir)/lib
@@ -199,19 +203,21 @@ EXTRA_libbase_la_SOURCES += gbmv.def
 EXTRA_libbase_la_SOURCES += reacting_imexop.def
 EXTRA_libbase_la_SOURCES += rholut_imexop.def
 EXTRA_libbase_la_SOURCES += sbmv.def
+
 libbase_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
-libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
-libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
-libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
 libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
-libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_LIBADD         = $(GRVY_LIBS)
-libbase_la_LIBADD        += $(UNDERLING_LIBS)
+libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
+libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
+libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
+libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
+
+libbase_la_LIBADD         = $(UNDERLING_LIBS)
 libbase_la_LIBADD        += $(P3DFFT_LIBS)
 libbase_la_LIBADD        += $(FFTW3_MPI_THREADS_LIBS)
+libbase_la_LIBADD        += $(GRVY_LIBS)
 libbase_la_LIBADD        += $(GSL_LIBS) # Includes MKL via BLAS hooks
 
 # Sources requiring IEEE-faithful floating point behavior
@@ -243,14 +249,14 @@ libsupport_la_SOURCES       += support/support.cpp
 libsupport_la_SOURCES       += support/time_definition.cpp
 EXTRA_libsupport_la_SOURCES  =
 libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
-libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
 libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
-libsupport_la_LIBADD         = $(LOG4CXX_LIBS)
-libsupport_la_LIBADD        += $(BOOST_IOSTREAMS_LDFLAGS)
+libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
+libsupport_la_LIBADD         = $(BOOST_IOSTREAMS_LDFLAGS)
 libsupport_la_LIBADD        += $(BOOST_IOSTREAMS_LIBS)
 libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsupport_la_LIBADD        += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsupport_la_LIBADD        += $(ESIO_LIBS)
+libsupport_la_LIBADD        += $(LOG4CXX_LIBS)
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
