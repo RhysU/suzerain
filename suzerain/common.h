@@ -88,6 +88,17 @@
 #define SUZERAIN_FORCEINLINE inline
 #endif
 
+#ifdef __INTEL_COMPILER
+/** Prevent inlining a given function */
+#define SUZERAIN_DONTINLINE __attribute__((noinline))
+#elif __GNUC__ >= 3
+/** Prevent inlining a given function */
+#define SUZERAIN_DONTINLINE __attribute__((noinline))
+#else
+/** Prevent inlining a given function */
+#define SUZERAIN_DONTINLINE
+#endif
+
 #ifndef __cplusplus
 /** Define synonym for C99 restrict keyword */
 #define SUZERAIN_RESTRICT restrict
