@@ -19,6 +19,7 @@ AX_ENABLE_BUILDDIR
 AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.61])
+AX_CHECK_ENABLE_DEBUG([info])
 AX_AM_MACROS
 AX_ADD_AM_CTAGSFLAGS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -46,7 +47,6 @@ dnl ------------------------------------------------------
 dnl Check for compiler toolchain and optimization level
 dnl Ordering very specific: AX_CC_MAXOPT usage is fragile
 dnl ------------------------------------------------------
-AX_CHECK_ENABLE_DEBUG([info])
 AC_LANG_PUSH([C])
 AC_PROG_CC
 AX_PROG_CC_C99_CFLAGS(,AC_MSG_ERROR([Compiler cannot support ISO C99]))
