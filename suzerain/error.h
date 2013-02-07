@@ -66,7 +66,7 @@ enum suzerain_error_status {
     SUZERAIN_EROUND   = 18, /**< failed because of roundoff error */
     SUZERAIN_EBADLEN  = 19, /**< matrix or vector lengths are not conformant */
     SUZERAIN_ESING    = 21, /**< apparent singularity detected */
-    SUZERAIN_EDIVERGE = 22, /**< integral or series is divergent */
+    SUZERAIN_EDIVERGE = 22  /**< integral or series is divergent */
 };
 
 /**

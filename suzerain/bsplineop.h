@@ -114,7 +114,7 @@ enum suzerain_bsplineop_method {
      * Form derivative operators using Galerkin's method with the \f$L^2\f$
      * inner product.
      */
-    SUZERAIN_BSPLINEOP_GALERKIN_L2,
+    SUZERAIN_BSPLINEOP_GALERKIN_L2 
 };
 
 /**
