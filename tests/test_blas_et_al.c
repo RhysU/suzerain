@@ -2844,7 +2844,9 @@ test_lapack_dgbcon()
             __func__, __LINE__, rcond);
 }
 
-void test_blasext_ddemote()
+static
+void
+test_blasext_ddemote()
 {
     int info;
     double x[]   = {1, 2, 3, 4, 5, 6, 7};
@@ -2858,7 +2860,9 @@ void test_blasext_ddemote()
     gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
-void test_blasext_dpromote()
+static
+void
+test_blasext_dpromote()
 {
     int info;
     double  e[]   = {1, 2, 3, 4, 5, 6, 7};
@@ -2874,7 +2878,9 @@ void test_blasext_dpromote()
     gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
-void test_blasext_zdemote()
+static
+void
+test_blasext_zdemote()
 {
     int info;
     double x[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7}};
@@ -2888,7 +2894,9 @@ void test_blasext_zdemote()
     gsl_test_int(info, 0, "%s.%d matches expected", __func__, __LINE__);
 }
 
-void test_blasext_zpromote()
+static
+void
+test_blasext_zpromote()
 {
     int info;
     float  x[][2]   = {{1,-1}, {2,-2}, {3,-3}, {4,-4}, {5,-5}, {6,-6}, {7,-7},
