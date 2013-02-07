@@ -2845,6 +2845,7 @@ test_lapack_dgbcon()
 }
 
 static
+SUZERAIN_DONTINLINE
 void
 test_blasext_ddemote()
 {
@@ -2861,6 +2862,7 @@ test_blasext_ddemote()
 }
 
 static
+SUZERAIN_DONTINLINE
 void
 test_blasext_dpromote()
 {
@@ -2879,6 +2881,7 @@ test_blasext_dpromote()
 }
 
 static
+SUZERAIN_DONTINLINE
 void
 test_blasext_zdemote()
 {
@@ -2895,6 +2898,7 @@ test_blasext_zdemote()
 }
 
 static
+SUZERAIN_DONTINLINE
 void
 test_blasext_zpromote()
 {
