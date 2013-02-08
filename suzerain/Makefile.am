@@ -143,7 +143,8 @@ lib_LTLIBRARIES          += libsuzerain.la
 libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
-libsuzerain_la_LIBADD     = libbase.la
+libsuzerain_la_LIBADD     = libblasetal.la
+libsuzerain_la_LIBADD    += libbase.la
 libsuzerain_la_LIBADD    += libprecise.la
 libsuzerain_la_LIBADD    += libsupport.la
 libsuzerain_la_LIBADD    += $(ESIO_LIBS)
@@ -158,23 +159,47 @@ libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
 
+# BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
+# These routines ("BLAS et. al.") may be simply used elsewhere.
+#
+# When in doubt, check libblasetal_la_CPPFLAGS to see if something belongs.  If
+# it won't compile without libbase_la_CPPFLAGS, it belongs in libbase.la.
+noinst_LTLIBRARIES           += libblasetal.la
+libblasetal_la_LDFLAGS        = # Convenience-only
+libblasetal_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
+libblasetal_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
+libblasetal_la_CPPFLAGS      += $(MKL_CFLAGS)
+libblasetal_la_SOURCES        = blas_et_al.c
+libblasetal_la_SOURCES       += gbdddddmv.c
+libblasetal_la_SOURCES       += gbddddmv.c
+libblasetal_la_SOURCES       += gbdddmv.c
+libblasetal_la_SOURCES       += gbddmv.c
+libblasetal_la_SOURCES       += gbdmv.c
+libblasetal_la_SOURCES       += gbmv.c
+libblasetal_la_SOURCES       += sbmv.c
+EXTRA_libblasetal_la_SOURCES  = dsgbsvx.def
+EXTRA_libblasetal_la_SOURCES += gbdddddmv.def
+EXTRA_libblasetal_la_SOURCES += gbddddmv.def
+EXTRA_libblasetal_la_SOURCES += gbdddmv.def
+EXTRA_libblasetal_la_SOURCES += gbddmv.def
+EXTRA_libblasetal_la_SOURCES += gbdmv.def
+EXTRA_libblasetal_la_SOURCES += gbmv.def
+EXTRA_libblasetal_la_SOURCES += sbmv.def
+
 # Logic without (relatively) extensive external dependencies
 #
 # When in doubt, check libbase_la_CPPFLAGS to see if something belongs.  If it
 # won't compile without libsupport_la_CPPFLAGS, it belongs in libsupport.la.
 noinst_LTLIBRARIES       += libbase.la
 libbase_la_LDFLAGS        = # Convenience-only
-libbase_la_CPPFLAGS       = $(libsuzerain_la_CPPFLAGS) # Append!
+libbase_la_CPPFLAGS       = $(libblasetal_la_CPPFLAGS) # Append!
 libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
 libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_CPPFLAGS      += $(BOOST_CPPFLAGS)
 libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
-libbase_la_CPPFLAGS      += $(MKL_CFLAGS)
-libbase_la_SOURCES        = blas_et_al.c
-libbase_la_SOURCES       += bsmbsm.c
+libbase_la_SOURCES        = bsmbsm.c
 libbase_la_SOURCES       += bspline.c
 libbase_la_SOURCES       += bsplineop.c
 libbase_la_SOURCES       += diffwave.c
@@ -185,13 +210,7 @@ libbase_la_SOURCES       += exprparse_fchar.cpp
 libbase_la_SOURCES       += exprparse_fstr.cpp
 libbase_la_SOURCES       += filterop.c
 libbase_la_SOURCES       += fftw.cpp
-libbase_la_SOURCES       += gbdddddmv.c
-libbase_la_SOURCES       += gbddddmv.c
-libbase_la_SOURCES       += gbdddmv.c
-libbase_la_SOURCES       += gbddmv.c
-libbase_la_SOURCES       += gbdmv.c
 libbase_la_SOURCES       += gbmatrix.c
-libbase_la_SOURCES       += gbmv.c
 libbase_la_SOURCES       += grid_specification.cpp
 libbase_la_SOURCES       += htstretch.c
 libbase_la_SOURCES       += inorder.c
@@ -208,24 +227,15 @@ libbase_la_SOURCES       += reacting_imexop.c
 libbase_la_SOURCES       += rholut_imexop.c
 libbase_la_SOURCES       += richardson.c
 libbase_la_SOURCES       += rngstream.cpp
-libbase_la_SOURCES       += sbmv.c
 libbase_la_SOURCES       += svehla.c
 libbase_la_SOURCES       += zgbsv_specification.cpp
 EXTRA_libbase_la_SOURCES  = bsmbsm_aPxpby_complex.def
 EXTRA_libbase_la_SOURCES += bsmbsm_aPxpby_real.def
 EXTRA_libbase_la_SOURCES += bsmbsm_pack.def
-EXTRA_libbase_la_SOURCES += dsgbsvx.def
 EXTRA_libbase_la_SOURCES += exprparse_impl.hpp
 EXTRA_libbase_la_SOURCES += filterop.def
-EXTRA_libbase_la_SOURCES += gbdddddmv.def
-EXTRA_libbase_la_SOURCES += gbddddmv.def
-EXTRA_libbase_la_SOURCES += gbdddmv.def
-EXTRA_libbase_la_SOURCES += gbddmv.def
-EXTRA_libbase_la_SOURCES += gbdmv.def
-EXTRA_libbase_la_SOURCES += gbmv.def
 EXTRA_libbase_la_SOURCES += reacting_imexop.def
 EXTRA_libbase_la_SOURCES += rholut_imexop.def
-EXTRA_libbase_la_SOURCES += sbmv.def
 
 # Sources requiring IEEE-faithful floating point behavior
 # Built separately to utilize separate optimization settings
