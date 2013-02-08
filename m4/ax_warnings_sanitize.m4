@@ -14,7 +14,7 @@
 #
 # LAST MODIFICATION
 #
-#   2010-09-21
+#   2013-02-08
 #
 # COPYLEFT
 #
@@ -65,7 +65,6 @@ case $ax_cv_c_compiler_vendor in #(
          ;;#(
   gnu)   AX_APPEND_COMPILE_FLAGS([-Wextra])
          AX_APPEND_COMPILE_FLAGS([-fdiagnostics-show-option])
-         AX_APPEND_COMPILE_FLAGS([-Wstrict-aliasing])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_c_compiler_vendor = $ax_cv_c_compiler_vendor unknown])
@@ -73,6 +72,8 @@ case $ax_cv_c_compiler_vendor in #(
 esac
 # Disable warnings on unrecognized pragmas for any compiler
 AX_APPEND_COMPILE_FLAGS([-Wno-unknown-pragmas])
+# Enable strict aliasing warnings for any compiler
+AX_APPEND_COMPILE_FLAGS([-Wstrict-aliasing])
 AC_LANG_POP()
 AC_LANG_PUSH([C++])
 case $ax_cv_cxx_compiler_vendor in #(
@@ -101,7 +102,6 @@ dnl      AX_APPEND_COMPILE_FLAGS([-wd2015])
          ;;#(
   gnu)   AX_APPEND_COMPILE_FLAGS([-Wextra])
          AX_APPEND_COMPILE_FLAGS([-fdiagnostics-show-option])
-         AX_APPEND_COMPILE_FLAGS([-Wstrict-aliasing])
          ;;#(
   *)     # Problem may occur if AX_COMPILER_VENDOR not called prior to AX_WARNINGS_SANITIZE
          AC_MSG_WARN([AX_WARNINGS[]_SANITIZE: ax_cv_cxx_compiler_vendor = $ax_cv_cxx_compiler_vendor unknown])
@@ -109,5 +109,7 @@ dnl      AX_APPEND_COMPILE_FLAGS([-wd2015])
 esac
 # Disable warnings on unrecognized pragmas for any compiler
 AX_APPEND_COMPILE_FLAGS([-Wno-unknown-pragmas])
+# Enable strict aliasing warnings for any compiler
+AX_APPEND_COMPILE_FLAGS([-Wstrict-aliasing])
 AC_LANG_POP()
 ])
