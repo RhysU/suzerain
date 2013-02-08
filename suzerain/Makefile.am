@@ -144,6 +144,7 @@ libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
 libsuzerain_la_LIBADD     = libblasetal.la
+libsuzerain_la_LIBADD    += libbspline.la
 libsuzerain_la_LIBADD    += libbase.la
 libsuzerain_la_LIBADD    += libprecise.la
 libsuzerain_la_LIBADD    += libsupport.la
@@ -160,7 +161,8 @@ libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
-# These routines ("BLAS et. al.") may be simply used elsewhere.
+# These routines ("BLAS et. al.") should be directly usable elsewhere
+# caveat a Boost.Preprocessor dependency.
 #
 # When in doubt, check libblasetal_la_CPPFLAGS to see if something belongs.  If
 # it won't compile without libbase_la_CPPFLAGS, it belongs in libbase.la.
@@ -186,33 +188,52 @@ EXTRA_libblasetal_la_SOURCES += gbdmv.def
 EXTRA_libblasetal_la_SOURCES += gbmv.def
 EXTRA_libblasetal_la_SOURCES += sbmv.def
 
-# Logic without (relatively) extensive external dependencies
+# Functionality related to B-splines built atop the GSL.
+# Includes a variety of banded operator functionality and compute kernels.
+#
+# When in doubt, check libbspline_la_CPPFLAGS to see if something belongs.  If
+# it won't compile without libbase_la_CPPFLAGS, it belongs in libbase.la.
+noinst_LTLIBRARIES          += libbspline.la
+libbspline_la_LDFLAGS        = # Convenience-only
+libbspline_la_CPPFLAGS       = $(libblasetal_la_CPPFLAGS) # Append!
+libbspline_la_CPPFLAGS      += $(GSL_CFLAGS)
+libbspline_la_SOURCES        = bsmbsm.c
+libbspline_la_SOURCES       += bspline.c
+libbspline_la_SOURCES       += bsplineop.c
+libbspline_la_SOURCES       += error.c
+libbspline_la_SOURCES       += filterop.c
+libbspline_la_SOURCES       += gbmatrix.c
+libbspline_la_SOURCES       += htstretch.c
+libbspline_la_SOURCES       += pre_gsl.c
+libbspline_la_SOURCES       += reacting_imexop.c
+libbspline_la_SOURCES       += rholut_imexop.c
+EXTRA_libbspline_la_SOURCES  = bsmbsm_aPxpby_complex.def
+EXTRA_libbspline_la_SOURCES += bsmbsm_aPxpby_real.def
+EXTRA_libbspline_la_SOURCES += bsmbsm_pack.def
+EXTRA_libbspline_la_SOURCES += filterop.def
+EXTRA_libbspline_la_SOURCES += reacting_imexop.def
+EXTRA_libbspline_la_SOURCES += rholut_imexop.def
+
+# Logic with more extensive external dependencies, in particular
+# depending on parallel decomposition details.
 #
 # When in doubt, check libbase_la_CPPFLAGS to see if something belongs.  If it
 # won't compile without libsupport_la_CPPFLAGS, it belongs in libsupport.la.
 noinst_LTLIBRARIES       += libbase.la
 libbase_la_LDFLAGS        = # Convenience-only
-libbase_la_CPPFLAGS       = $(libblasetal_la_CPPFLAGS) # Append!
+libbase_la_CPPFLAGS       = $(libbspline_la_CPPFLAGS) # Append!
 libbase_la_CPPFLAGS      += $(EIGEN_CFLAGS)
 libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_CPPFLAGS      += $(GSL_CFLAGS)
-libbase_la_SOURCES        = bsmbsm.c
-libbase_la_SOURCES       += bspline.c
-libbase_la_SOURCES       += bsplineop.c
-libbase_la_SOURCES       += diffwave.c
-libbase_la_SOURCES       += error.c
+libbase_la_SOURCES        = diffwave.c
 libbase_la_SOURCES       += exprparse_dchar.cpp
 libbase_la_SOURCES       += exprparse_dstr.cpp
 libbase_la_SOURCES       += exprparse_fchar.cpp
 libbase_la_SOURCES       += exprparse_fstr.cpp
-libbase_la_SOURCES       += filterop.c
 libbase_la_SOURCES       += fftw.cpp
-libbase_la_SOURCES       += gbmatrix.c
 libbase_la_SOURCES       += grid_specification.cpp
-libbase_la_SOURCES       += htstretch.c
 libbase_la_SOURCES       += inorder.c
 libbase_la_SOURCES       += l2.cpp
 libbase_la_SOURCES       += mass_operator.cpp
@@ -222,20 +243,11 @@ libbase_la_SOURCES       += ndx.cpp
 libbase_la_SOURCES       += operator_base.cpp
 libbase_la_SOURCES       += os.c
 libbase_la_SOURCES       += pencil_grid.cpp
-libbase_la_SOURCES       += pre_gsl.c
-libbase_la_SOURCES       += reacting_imexop.c
-libbase_la_SOURCES       += rholut_imexop.c
 libbase_la_SOURCES       += richardson.c
 libbase_la_SOURCES       += rngstream.cpp
 libbase_la_SOURCES       += svehla.c
 libbase_la_SOURCES       += zgbsv_specification.cpp
-EXTRA_libbase_la_SOURCES  = bsmbsm_aPxpby_complex.def
-EXTRA_libbase_la_SOURCES += bsmbsm_aPxpby_real.def
-EXTRA_libbase_la_SOURCES += bsmbsm_pack.def
-EXTRA_libbase_la_SOURCES += exprparse_impl.hpp
-EXTRA_libbase_la_SOURCES += filterop.def
-EXTRA_libbase_la_SOURCES += reacting_imexop.def
-EXTRA_libbase_la_SOURCES += rholut_imexop.def
+EXTRA_libbase_la_SOURCES  = exprparse_impl.hpp
 
 # Sources requiring IEEE-faithful floating point behavior
 # Built separately to utilize separate optimization settings
