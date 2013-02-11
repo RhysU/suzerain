@@ -189,13 +189,20 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    // Perform final housekeeping prior to time advance
+    // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
     log_discretization_quality();
     prepare_controller(initial_t);
     save_metadata();
+    const real_t elapsed_wall_time = advance_controller(); // Negative on error
 
-    // FIXME STARTHERE
+    // If we advanced by any time steps, log the observed linearization error
+    if (elapsed_wall_time >= 0 && controller->current_nt() > 0) {
+        log_linearization_error(build_timeprefix(controller->current_t(),
+                                                 controller->current_nt()),
+                                controller->current_t(),
+                                controller->current_nt());
+    }
 
-    return EXIT_SUCCESS;
+    return elapsed_wall_time >= 0;
 }
