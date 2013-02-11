@@ -78,8 +78,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     const support::noise_definition noisedef;
     bool use_explicit  = false;
     bool use_implicit  = false;
-    bool use_yang11    = false;
-    bool use_smr91     = false;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
 
     // Register binary-specific options
@@ -87,8 +85,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     options.add_options()
         ("explicit", "Use purely explicit operators")
         ("implicit", "Use hybrid implicit/explicit operators")
-        ("smr91",    "Advance time per Spalart, Moser, and Rogers 1991")
-        ("yang11",   "Advance time per Shan Yang's 2011 thesis")
         ("solver",   boost::program_options::value<string>(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for any implicit solves")
@@ -104,14 +100,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         use_explicit = true;
     } else {
         use_implicit = true;
-    }
-
-    // Select type of timestepping schemes to use (default smr91)
-    options.conflicting_options("smr91", "yang11");
-    if (options.variables().count("yang11")) {
-        use_yang11 = true;
-    } else {
-        use_smr91 = true;
     }
 
     if (positional.size() != 1) {
