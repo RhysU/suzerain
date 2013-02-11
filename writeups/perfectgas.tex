@@ -1330,14 +1330,14 @@ nothing but the ``mass matrix'' $M$, viz.
   M &= D^{(0)}
 \end{align}
 Similar to, but different from, the approaches discussed by
-\citet[\textsection{}2.1.3]{Kwok2001}, Suzerain uses the Greville abscissae as
-its collocation points \citep{Johnson2005Higher}.  Selecting these abscissae,
-also called Marsden--Schoenberg points, automatically avoids the near-wall
-stability problems detailed and worked around by
-\citet[\textsection{}4.4]{Kwok2001}.  Boundary conditions may be enforced for
-B-spline derivatives by using that the $j$th derivative of the function at the
-first (last) collocation point depends only on the first (last) $j+1$ B-spline
-coefficients.
+\citet[\textsection{}2.1.3]{Kwok2001}, Suzerain uses the Greville abscissae,
+also called the Marsden-Schoenberg points, as its collocation points
+\citep{Johnson2005Higher,Botella2003Bspline}.  Selecting these abscissae, also
+called Marsden--Schoenberg points, automatically avoids the near-wall stability
+problems detailed and worked around by \citet[\textsection{}4.4]{Kwok2001}.
+Boundary conditions may be enforced for B-spline derivatives by using that the
+$j$th derivative of the function at the first (last) collocation point depends
+only on the first (last) $j+1$ B-spline coefficients.
 
 For some uniform B-spline order $k$ and wall-normal number of degrees of
 freedom $N_y$, $N_y - k + 2$ breakpoint locations must be specified.  Here
