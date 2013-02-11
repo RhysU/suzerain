@@ -37,6 +37,9 @@
 #include <suzerain/zgbsv_specification.hpp>
 
 #include "driver.hpp"
+#include "channel_treatment.hpp"
+#include "explicit_operator.hpp"
+#include "hybrid_operator.hpp"
 
 #pragma warning(disable:1419)
 
@@ -71,6 +74,8 @@ int main(int argc, char **argv)
 int
 suzerain::perfect::driver_advance::run(int argc, char **argv)
 {
+    using boost::math::isnan;
+    using std::numeric_limits;
     using std::string;
     using std::vector;
 
@@ -108,13 +113,89 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
     const std::string restart_file = positional[0];
 
-    // FIXME STARTHERE
+    INFO0("Loading restart file: " << restart_file);
+    real_t initial_t = numeric_limits<real_t>::quiet_NaN();
+    {
+        // Obtain exact restart scenario via "push/pop" pair below
+        shared_ptr<scenario_definition> restart_scenario
+                = make_shared<scenario_definition>();
 
-    DEBUG0("Establishing runtime parallel infrastructure and resources");
+        // Load the restart details with state going into state_linear
+        esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
+        esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
+        restart_scenario.swap(scenario);  // "push"
+        load_restart(esioh, initial_t);
+        restart_scenario.swap(scenario);  // "pop"
+        esio_file_close(esioh);
+        esio_handle_finalize(esioh);
+
+        // If necessary, adjust total energy to account for scenario changes
+        bool necessary = false;
+        if (    (isnan)(scenario->Ma)
+             || scenario->Ma != restart_scenario->Ma) {
+            necessary = true;
+            scenario->Ma = restart_scenario->Ma;
+        }
+        if (    (isnan)(scenario->gamma)
+            || scenario->gamma != restart_scenario->gamma) {
+            necessary = true;
+            scenario->gamma = restart_scenario->gamma;
+        }
+        if (necessary) {
+            state_nonlinear->assign(*state_linear);
+            adjust_scenario(*state_nonlinear, *scenario, *grid,
+                            *dgrid, *cop, restart_scenario->Ma,
+                            restart_scenario->gamma);
+            state_linear->assign(*state_nonlinear);
+        }
+    }
+
+    if (msoln) {
+        INFO0("Restart file prescribes a manufactured solution");
+        if (!(isnan)(scenario->bulk_rho)) {
+            WARN0("Manufactured solution incompatible with bulk_rho = "
+                  << scenario->bulk_rho);
+        }
+        if (!(isnan)(scenario->bulk_rho_u)) {
+            WARN0("Manufactured solution incompatible with bulk_rho_u = "
+                  << scenario->bulk_rho_u);
+        }
+    }
+
+    // If requested, add noise to the momentum fields at startup (expensive).
+    if (noisedef.percent > 0) {
+        state_nonlinear->assign(*state_linear);
+        add_noise(*state_nonlinear, noisedef, *scenario,
+                  *grid, *dgrid, *cop, *b);
+        state_linear->assign(*state_nonlinear);
+    }
+
+    // Prepare spatial operators depending on request advance type
+    if (use_explicit) {
+        INFO0("Initializing explicit timestepping operators");
+        L.reset(new channel_treatment<isothermal_mass_operator>(
+                    *scenario, *grid, *dgrid, *cop, *b, common_block));
+        N.reset(new explicit_nonlinear_operator(
+                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+    } else if (use_implicit) {
+        INFO0("Initializing hybrid implicit/explicit timestepping operators");
+        L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
+                    solver_spec, *scenario, *grid, *dgrid,
+                    *cop, *b, common_block));
+        N.reset(new hybrid_nonlinear_operator(
+                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+    } else {
+        FATAL0("Sanity error in operator selection");
+        return EXIT_FAILURE;
+    }
+
+    // Perform final housekeeping prior to time advance
     establish_ieee_mode();
-    load_grid_and_operators(NULL);
-    establish_decomposition();
-    establish_state_storage(fields.size(), fields.size());
+    log_discretization_quality();
+    prepare_controller(initial_t);
+    save_metadata();
+
+    // FIXME STARTHERE
 
     return EXIT_SUCCESS;
 }
