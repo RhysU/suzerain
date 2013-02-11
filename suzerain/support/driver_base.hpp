@@ -486,8 +486,8 @@ protected:
      * this method with the desired functionality.  Invoking the superclass
      * method in the override is optional.
      *
-     * The default implementation into #state_nonlinear from the provided ESIO
-     * handle file per #fields.  It can recover data stored using the \ref
+     * The default implementation loads into #state_nonlinear from the provided
+     * ESIO handle file per #fields.  It can recover data stored using the \ref
      * save_state_hook implementation.
      *
      * @param esioh An ESIO handle pointing to an open, readable file.
