@@ -485,7 +485,7 @@ driver_base::advance_controller(
     if (   final_restart
         && success
         && last_restart_saved_nt != controller->current_nt()) {
-        INFO0("Saving final restart file");
+        INFO0("Saving restart file after time controller halted");
         save_restart(controller->current_t(), controller->current_nt());
     }
 
