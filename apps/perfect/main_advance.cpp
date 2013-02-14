@@ -204,5 +204,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                 controller->current_nt());
     }
 
-    return elapsed_wall_time >= 0;
+    // Report error to the OS iff advance_control reported an error
+    return elapsed_wall_time < 0;
 }
