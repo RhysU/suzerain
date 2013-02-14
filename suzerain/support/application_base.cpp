@@ -246,8 +246,8 @@ application_base::establish_decomposition(
         INFO0("Rank grid used for decomposition: "
                << dgrid->processor_grid[0] << " "
                << dgrid->processor_grid[1]);
-        INFO0("Zero-zero modes located on MPI_COMM_WORLD rank "
-              << dgrid->rank_zero_zero_modes);
+        DEBUG0("Zero-zero modes located on MPI_COMM_WORLD rank "
+               << dgrid->rank_zero_zero_modes);
         SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
