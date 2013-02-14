@@ -249,6 +249,9 @@ public:
      * time and time step number.  Care is taken to ensure sequential outputs
      * are minimally distinct.
      *
+     * Subclasses overriding this method should likely also override
+     * \ref build_timeprefix_description.
+     *
      * @param t  Simulation time to output
      * @param nt Simulation time step to output
      *
@@ -257,6 +260,27 @@ public:
     virtual std::string build_timeprefix(
             const time_type t,
             const step_type nt);
+
+    /**
+     * Build a fixed-width label matching the output of \ref build_timeprefix.
+     * Additional left padding is required to match a given \c timeprefix
+     * string.
+     *
+     * @return a string suitable for use in output status messages.
+     */
+    virtual std::string build_timeprefix_description(
+            const char * describe_t  = "t",
+            const char * describe_nt = "nt");
+
+    /**
+     * Compute digits required in mantissa to ensure time output is monotonic.
+     * This process ensures multiple status lines are minimally distinct and
+     * requires interrogating several details within #timedef.
+     *
+     * @return the maximum of <code>max(0, -floor(log10(dt)))</code>
+     * across several pathological values of \c dt implied by #timedef.
+     */
+    virtual int build_timeprefix_mantissa_digits();
 
     /**
      * Routine to output status, generally called via the timecontroller.

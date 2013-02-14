@@ -486,7 +486,7 @@ driver_base::advance_controller(
     if (   final_restart
         && success
         && last_restart_saved_nt != controller->current_nt()) {
-        INFO0("Saving restart file after time controller halted");
+        INFO0("Saving restart file after time controller finished");
         save_restart(controller->current_t(), controller->current_nt());
     }
 
@@ -592,23 +592,19 @@ driver_base::advance_controller(
     return success ? wtime_advance : -wtime_advance;
 }
 
+/**
+ * Width constant used in build_timeprefix and friends for \c nt.
+ * If more than ten million steps have elapsed, bully for you.
+ */
+static const std::streamsize timeprefix_setw_nt = 7;
+
 std::string
 driver_base::build_timeprefix(
         const driver_base::time_type t,
         const driver_base::step_type nt)
 {
-    using std::max;
-    using std::floor;
-    using std::log10;
-
     // Precision computations ensure multiple status lines minimally distinct
-    real_t np = 0;
-    if (timedef->status_dt > 0) {
-        np = max(np, -floor(log10(timedef->status_dt)));
-    }
-    if (timedef->status_nt > 0) {
-        np = max(np, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
-    }
+    const std::streamsize np = build_timeprefix_mantissa_digits();
 
     // Build string using the computed precision information
     std::ostringstream oss;
@@ -621,8 +617,42 @@ driver_base::build_timeprefix(
     } else {
         oss << t;
     }
-    oss << ' ' << std::setw(7) << nt;
+    oss << ' ' << std::setw(timeprefix_setw_nt) << nt;
+
     return oss.str();
+}
+
+std::string
+driver_base::build_timeprefix_description(
+            const char * describe_t,
+            const char * describe_nt)
+{
+    // Build string with inter-label spacing matching build_timeprefix output
+    std::ostringstream oss;
+    oss << describe_t
+        << ' '
+        << std::setw(timeprefix_setw_nt) << describe_nt;
+    return oss.str();
+}
+
+int
+driver_base::build_timeprefix_mantissa_digits()
+{
+    using std::max;
+    using std::floor;
+    using std::log10;
+
+    real_t n = 0;
+    if (timedef->status_dt > 0) {
+        n = max(n, -floor(log10(timedef->status_dt)));
+    }
+    if (timedef->status_nt > 0) {
+        n = max(n, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
+    }
+
+    // While n was real-valued to please the type system,
+    // the result mathematically had to be an integer.
+    return static_cast<int>(n);
 }
 
 bool
@@ -670,7 +700,7 @@ driver_base::log_status_L2(
     // Show headers only on first invocation
     std::ostringstream msg;
     if (!log_status_L2_header_shown) {
-        msg << timeprefix;
+        msg << std::setw(timeprefix.size()) << build_timeprefix_description();
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
@@ -716,7 +746,7 @@ driver_base::log_status_bulk(
     // Show headers only on first invocation
     std::ostringstream msg;
     if (!log_status_bulk_header_shown) {
-        msg << timeprefix;
+        msg << std::setw(timeprefix.size()) << build_timeprefix_description();
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(bulk_state, msg.str());
