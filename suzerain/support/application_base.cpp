@@ -266,9 +266,14 @@ application_base::establish_decomposition(
     DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
 
     // Display normalized workloads metrics relative to zero-zero workload
-    if (output_load) {
+    // (only done when the information is non-trivial in the multi-rank case)
+    if (output_load && nranks > 1) {
         real_t sendbuf[4];
         if (dgrid->has_zero_zero_modes()) {
+            INFO("Wave space zero-zero rank workload     (XYZ): "
+                 << dgrid->local_wave_extent);
+            INFO("Physical space zero-zero rank workload (XYZ): "
+                 << dgrid->local_physical_extent);
             sendbuf[0] = (real_t) dgrid->local_wave_extent.prod();
             sendbuf[1] = (real_t) dgrid->local_physical_extent.prod();
         }
@@ -290,9 +295,9 @@ application_base::establish_decomposition(
         SUZERAIN_MPICHKR(MPI_Reduce(sendbuf, recvbuf, 4,
                          suzerain::mpi::datatype<real_t>(),
                          MPI_MIN, 0, MPI_COMM_WORLD));
-        INFO0("Wave space zero-zero normalized workloads     (min/mean/max): "
+        INFO0("Wave space zero-zero-rank normalized workloads     (min/mean/max): "
               << recvbuf[0] << ", " << mean_w << ", " << -recvbuf[2]);
-        INFO0("Physical space zero-zero normalized workloads (min/mean/max): "
+        INFO0("Physical space zero-zero-rank normalized workloads (min/mean/max): "
               << recvbuf[1] << ", " << mean_p << ", " << -recvbuf[3]);
     }
 }
