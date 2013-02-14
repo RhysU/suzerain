@@ -467,7 +467,7 @@ driver_base::advance_controller(
 #endif
     }
     if (soft_teardown) {
-        INFO0("Time controller stopped advancing due to tear down signal");
+        INFO0("Time controller stopped advancing in reaction to tear down signal");
         success = true; // ...treat like successful advance
     } else if (!success && controller->current_dt() < controller->min_dt()) {
         WARN0("Time controller halted because step " << controller->current_dt()
