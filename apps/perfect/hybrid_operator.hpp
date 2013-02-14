@@ -74,7 +74,7 @@ public:
           scenario(scenario),
           common(common)
     {
-        INFO0("isothermal_hybrid_linear_operator solving using "
+        INFO0("Linear isothermal_hybrid_linear_operator using "
               << static_cast<std::string>(spec));
     }
 
