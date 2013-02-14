@@ -423,6 +423,7 @@ driver_base::advance_controller(
     bool success = true;
     const time_type t_initial  = controller->current_t();
     const step_type nt_initial = controller->current_nt();
+    soft_teardown = false;
     wtime_advance_start = MPI_Wtime();
 #pragma warning(push,disable:1572)
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
@@ -450,7 +451,7 @@ driver_base::advance_controller(
                 INFO0("Advancing simulation until terminated by a signal");
                 success = controller->advance();
             } else {
-                INFO0("Simulation will not be advanced");
+                INFO0("Simulation will not be advanced in time");
             }
             break;
         default:
@@ -466,7 +467,7 @@ driver_base::advance_controller(
 #endif
     }
     if (soft_teardown) {
-        INFO0("Time controller stopped advancing due to teardown signal");
+        INFO0("Time controller stopped advancing due to tear down signal");
         success = true; // ...treat like successful advance
     } else if (!success && controller->current_dt() < controller->min_dt()) {
         WARN0("Time controller halted because step " << controller->current_dt()
