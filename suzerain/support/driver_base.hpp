@@ -574,13 +574,13 @@ protected:
      * Flag used to control whether \ref log_status_L2 shows headers.
      * The default implementation disables headers after the first invocation.
      */
-    bool log_status_L2_show_header;
+    bool log_status_L2_header_shown;
 
     /**
      * Flag used to control whether \ref log_status_bulk shows headers.
      * The default implementation disables headers after the first invocation.
      */
-    bool log_status_bulk_show_header;
+    bool log_status_bulk_header_shown;
 
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;

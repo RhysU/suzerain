@@ -135,8 +135,8 @@ driver_base::driver_base(
     , N()
     , controller()
     , soft_teardown(true)
-    , log_status_L2_show_header(false)
-    , log_status_bulk_show_header(false)
+    , log_status_L2_header_shown(false)
+    , log_status_bulk_header_shown(false)
     , wtime_load_restart(std::numeric_limits<double>::quiet_NaN())
     , wtime_advance_start(std::numeric_limits<double>::quiet_NaN())
     , last_status_nt(std::numeric_limits<step_type>::max())
@@ -669,14 +669,14 @@ driver_base::log_status_L2(
 
     // Show headers only on first invocation
     std::ostringstream msg;
-    if (log_status_L2_show_header) {
+    if (!log_status_L2_header_shown) {
         msg << timeprefix;
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(log_L2, msg.str());
         INFO0(log_rms, msg.str());
         msg.str("");
-        log_status_L2_show_header = false;
+        log_status_L2_header_shown = true;
     }
 
     // Collective computation of the L_2 norms
@@ -715,13 +715,13 @@ driver_base::log_status_bulk(
 
     // Show headers only on first invocation
     std::ostringstream msg;
-    if (log_status_bulk_show_header) {
+    if (!log_status_bulk_header_shown) {
         msg << timeprefix;
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
         INFO0(bulk_state, msg.str());
         msg.str("");
-        log_status_bulk_show_header = false;
+        log_status_bulk_header_shown = true;
     }
 
     // Compute operator for finding bulk quantities from coefficients
