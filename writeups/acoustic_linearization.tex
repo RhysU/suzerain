@@ -72,19 +72,44 @@ from which one can write the 3D Euler Equations
 \end{equation}
 We linearize about a reference state $\phi_0 = \{\rho_0, {\rho u}_0,
 {\rho v}_0, {\rho w}_0, {\rho E}_0 \}$ such that
-\begin{equation}
+\begin{equation}\label{eq:system}
  \partial_t \phi +  F_0 \partial_x \phi + G_0 \partial_y \phi + H_0 \partial_z
   \phi = 0
   .
 \end{equation}
-Let's consider only the wall-normal components for further analysis, as
-these are expected to create the strictest criterion.  We assume that our
-linearized flux Jacobian can be diagonalized, such that $G_0 = R \lambda
-R^{-1}$, and so
+Let's consider only the wall-normal components for further analysis, as these
+are expected to create the strictest criterion.  The linearized flux Jacobian
+can be diagonalized per $G_0 = R \Lambda R^{-1}$ where $\Lambda$ is a diagonal
+matrix containing the eigenvalues of $G_0$.  Without loss of generality, one
+may write
 \begin{equation}
- \partial_t \phi +  F_0 \partial_x \phi + R \lambda R^{-1} \partial_y \phi + H_0 \partial_z
-  \phi = 0
+  \Lambda = \operatorname{diag}\left[v+c,v-c,v,v,v\right]
 \end{equation}
-
+where it is the eigenvalues $v\pm{}c$ that lead to the most restrictive
+CFL-related limitations for system~\eqref{eq:system}.  These are the acoustic
+modes traveling at the speed of sound $c$ relative to the wall-normal velocity
+$v$.  Decomposing
+\begin{equation}
+  \Lambda = \Lambda_v + \Lambda_c =
+  \operatorname{diag}\left[v,v,v,v,v\right]
+  +
+  \operatorname{diag}\left[c,-c,0,0,0\right]
+\end{equation}
+so that $ G_0 = R \left(\Lambda_v + \Lambda_c\right) R^{-1} $ permits recasting
+\eqref{eq:system} as
+\begin{equation}
+    \partial_t \phi
+ +  F_0 \partial_x \phi
+ +  \underbrace{
+      G_0 \partial_y \phi - R \Lambda_c R^{-1} \partial_y \phi
+    }_{R \Lambda_v R^{-1}}
+ +  \underbrace{R \Lambda_c R^{-1}}_{\text{Implicit}} \partial_y \phi
+ +  H_0 \partial_z \phi
+  = 0
+  .
+\end{equation}
+One may approximately remove the wall-normal acoustic CFL restriction by
+treating operator $R \Lambda_c R^{-1}$ in a linearly implicit fashion as these
+are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $\Lambda$.
 
 \end{document}
