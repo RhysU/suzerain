@@ -5,7 +5,8 @@
 .NOTPARALLEL:
 
 # LaTeX and BiBTeX source files
-TEXSOURCES  = channel_treatment.tex
+TEXSOURCES  = acoustic_linearization.tex
+TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += filter.tex
 TEXSOURCES += L2.tex
