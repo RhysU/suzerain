@@ -112,4 +112,14 @@ One may approximately remove the wall-normal acoustic CFL restriction by
 treating operator $R \Lambda_c R^{-1}$ in a linearly implicit fashion as these
 are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $\Lambda$.
 
+Linearly-implicit treatment of $R \Lambda_c R^{-1}$ may be undesirably
+expensive due to cross-equation coupling.  For example, the density will appear
+within the total energy equation in a way decreasing the sparsity of the
+resulting discrete operator.  Instead, one may choose to linearly treat a
+perturbed operator $ R \tilde\Lambda_c R^{-1} $ with reduced coupling.  This
+can be successful provided that the remaining, explicitly treated linear
+portion of the Euler spatial operator, $ R \tilde\Lambda_v R^{-1} = G_0 - R
+\tilde\Lambda_c R^{-1} $, has no eigenvalues markedly different from $v$ as
+measured relative to $c$.
+
 \end{document}
