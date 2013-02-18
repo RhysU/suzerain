@@ -16,8 +16,9 @@ TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
 TEXSOURCES += reacting_linearization.tex
 
-# Images, References, etc.
-EXTRA_DIST  = inhomogeneity.gz
+# Notebooks, Images, References, etc.
+EXTRA_DIST  = Euler_Eigensystem_MassFraction_3D.nb
+EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += inhomogeneity.eps
 EXTRA_DIST += references.bib
 EXTRA_DIST += transfer_function.eps
