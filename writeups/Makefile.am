@@ -18,7 +18,8 @@ TEXSOURCES += reactinggas.tex
 TEXSOURCES += reacting_linearization.tex
 
 # Notebooks, Images, References, etc.
-EXTRA_DIST  = Euler_Eigensystem_MassFraction_3D.nb
+EXTRA_DIST  = Acoustics_WallNormal_3D.nb
+EXTRA_DIST += Euler_Eigensystem_MassFraction_3D.nb
 EXTRA_DIST += Euler_Eigensystem_3D.nb
 EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += inhomogeneity.eps
