@@ -42,7 +42,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        $L^2$ computations using Suzerain's discretization
+        Linearization of the Acoustics in the Inviscid Operator
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -58,31 +58,32 @@
 \begin{document}
 
 In this document we detail the process by which we capture the linear
-and non-linear (acoustic) terms of the hyperbolic Euler equations. 
+and non-linear (acoustic) terms of the hyperbolic Euler equations.
 
-Define state as,
+Define state as
 \begin{equation}
- \phi = \{\rho, \rho u, \rho E \}
+ \phi = \{\rho, \rho u, \rho v, \rho w, \rho E \}
 \end{equation}
-
-Starting the 3d Euler Equations,
+from which one can write the 3D Euler Equations
 \begin{equation}
  \partial_t \phi + \partial_x F(\phi) + \partial_y G(\phi) + \partial_z
-  H(\phi) = 0 
+  H(\phi) = 0
+  .
 \end{equation}
-We linearize about a reference state, ($\phi_0 = \{\rho_0, \rho u_0,
-\rho E_0 \}$) such that,
+We linearize about a reference state $\phi_0 = \{\rho_0, {\rho u}_0,
+{\rho v}_0, {\rho w}_0, {\rho E}_0 \}$ such that
 \begin{equation}
  \partial_t \phi +  F_0 \partial_x \phi + G_0 \partial_y \phi + H_0 \partial_z
-  \phi = 0 
+  \phi = 0
+  .
 \end{equation}
 Let's consider only the wall-normal components for further analysis, as
-these are expected to create the strictest criterion. We assume that our
-linearized flux jacobian can be diagonalized, such that $G_0 = R \lambda
+these are expected to create the strictest criterion.  We assume that our
+linearized flux Jacobian can be diagonalized, such that $G_0 = R \lambda
 R^{-1}$, and so
 \begin{equation}
  \partial_t \phi +  F_0 \partial_x \phi + R \lambda R^{-1} \partial_y \phi + H_0 \partial_z
-  \phi = 0 
+  \phi = 0
 \end{equation}
 
 
