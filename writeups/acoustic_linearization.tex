@@ -1,0 +1,426 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{parskip}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
+\usepackage{wrapfig}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        $L^2$ computations using Suzerain's discretization
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Document-specific commands
+\newcommand{\ii}{\ensuremath{\mathrm{i}}}
+\newcommand{\htrans}[1]{{#1}^{\ensuremath{\mathsf{H}}}}
+\newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
+
+\begin{document}
+
+In this document we detail how to compute $L^2$ norm-related quantities using
+Suzerain's discretization.  In this discretization, any instantaneous,
+real-valued field $u\!\left(x,y,z\right)$ on the spatial domain
+$\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
+\left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ is discretized as
+\begin{align}
+  u^h(x,y,z)
+&=
+  \sum_{l=0}^{N_y - 1}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \hat{u}_{l m n}
+  B_l\!\left(y\right)
+  e^{\ii\frac{2\pi{}m}{L_x}x}
+  e^{\ii\frac{2\pi{}n}{L_z}z}
+=
+  \sum_{l}\sum_{m}\sum_{n}
+  \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+\end{align}
+where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
+B-spline basis for some order and some knot selection.
+
+\section{$L^2$ norm of a discrete field}
+
+We wish to compute the $L^2$ norm of a discrete field $u^h$.  By direct
+computation we find
+\begin{align}
+  \left|\left|
+    u^h
+  \right|\right|^{2}_{L^{2}_{xyz}}
+&=
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u^h \overline{u^h}
+  \,d\!z \,d\!x \,d\!y
+\\ &\approx
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+    \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
+  \right)
+  \,d\!z \,d\!x \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l^\prime}
+  \int_0^{L_y}
+  \left(
+    B_l\!\left(y\right)
+    B_{l^\prime}\!\left(y\right)
+    \sum_{m}
+    \sum_{m^\prime}
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    \left(
+      e^{\ii k_m x}
+      e^{-\ii k_{m^\prime} x}
+      \sum_{n}
+      \sum_{n^\prime}
+      \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+      \left(
+        e^{\ii k_n z}
+        e^{-\ii k_{n^\prime} z}
+        \hat{u}_{l m n}
+        \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+      \right)
+      \,d\!z
+    \right)
+    \,d\!x
+  \right)
+  \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l^\prime}
+  \int_0^{L_y}
+  \left(
+    B_l\!\left(y\right)
+    B_{l^\prime}\!\left(y\right)
+    \sum_{m}
+    \sum_{m^\prime}
+    \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+    \left(
+      e^{\ii k_m x}
+      e^{-\ii k_{m^\prime} x}
+      L_z \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m^\prime n}}
+    \right)
+    \,d\!x
+  \right)
+  \,d\!y
+\\ &=
+  \sum_{l}
+  \sum_{l^\prime}
+  \int_0^{L_y}
+  \left(
+    B_l\!\left(y\right)
+    B_{l^\prime}\!\left(y\right)
+    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
+  \right)
+  \,d\!y
+\\ &=
+   L_x L_z \sum_{m} \sum_{n}
+  \sum_{l}
+  \hat{u}_{l m n}
+  \sum_{l^\prime}
+  \overline{\hat{u}_{l^\prime m n}}
+  \int_0^{L_y}
+  B_l\!\left(y\right)
+  B_{l^\prime}\!\left(y\right)
+  \,d\!y
+\\ &=
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
+   \quad\text{where}\quad
+   M = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
+   \label{eq:L2uh}
+   .
+\end{align}
+In the above expression the three-dimensional field of transform coefficients
+$\hat{u}_{l m n}$ is treated as a two-dimensional collection of length $N_y$
+vectors indexed by $m$ and $n$.  For a B-spline basis with piecewise polynomial
+order $k - 1$ giving rise to a real-valued, symmetric positive definite matrix
+$M$ with bandwidth $2k-1$, the computational cost to find $\left|\left| u^h
+\right|\right|^{2}_{L^{2}_{xyz}}$ scales as $\OO{k N_x N_y^2 N_z}$.
+
+The $y$-varying norm over the $x$ and $z$ directions can be computed via
+\begin{align}
+  \left|\left|
+    u^h
+  \right|\right|^{2}_{L^{2}_{xz}}
+  \!(y)
+&=
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  u^h
+  \overline{u^h}
+  \,d\!z \,d\!x
+\\ &\approx
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
+    \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+    B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
+  \right)
+  \,d\!z \,d\!x
+\\ &=
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m}
+  \sum_{m^\prime}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \left(
+    e^{\ii k_m x}
+    e^{-\ii k_{m^\prime} x}
+    \sum_{n}
+    \sum_{n^\prime}
+    \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+    \left(
+      e^{\ii k_n z}
+      e^{-\ii k_{n^\prime} z}
+      \hat{u}_{l m n}
+      \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+    \right)
+    \,d\!z
+  \right)
+  \,d\!x
+\\ &=
+  L_x L_z
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
+  .
+\end{align}
+Using the limited, symmetric support of the products $B_l\left(y\right)
+B_{l^\prime}\left(y\right)$ to reduce the required operations, one can compute
+this fully functional representation of $\left|\left| u^h
+\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to $\OO{k N_x
+N_y^2 N_z}$.
+
+When $\left|\left|u^h\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
+only of interest at points $y_j$, the previous expression yields
+\begin{align}
+  \left|\left|
+    u^h
+  \right|\right|^{2}_{L^{2}_{xz}}
+  \!(y_j)
+&\approx
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left(
+    \sum_{l}
+    B_l\!\left(y_j\right)
+    \hat{u}_{l m n}
+  \right)
+  \left(
+    \sum_{l^\prime}
+    B_{l^\prime}\!\left(y_j\right)
+    \overline{\hat{u}_{l^\prime m n}}
+  \right)
+\\ &=
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left|
+    \sum_{l}
+    B_l\!\left(y_j\right)
+    \hat{u}_{l m n}
+  \right|^{2}
+\\ &=
+  L_x L_z
+  \sum_{m} \sum_{n}
+  \left|
+      \left(M \hat{u}_{m n}\right)\bigr|_{y=y_j}
+  \right|^{2}
+  \quad\text{where}\quad
+  M = B_l\!\left(y_j\right)
+\end{align}
+where again the three-dimensional field is treated as as a two-dimensional
+field of vectors.  The computational cost for this operation is much lower than
+the others at $\OO{\left(2k-1\right) N_x N_y N_z}$.
+
+These three results include summations over all coefficients in the homogeneous
+$x$ and $z$ directions, namely $m \in \left\{-N_x/2, \dots, 0, \dots,
+N_x/2-1\right\}$ and $n \in \left\{-N_z/2, \dots, 0, \dots, N_z/2-1\right\}$.
+Because $u\!\left(x,y,z\right)$ is real-valued, its transform coefficients
+$\hat{u}_{lmn}$ exhibit conjugate symmetry in one of the homogeneous
+directions.  Often, not all of these coefficients are stored.  Consequently,
+care must be exercised when evaluating summations like $\sum_m \sum_n$ within
+such norm calculations.
+
+More concretely, say one employs conjugate symmetry in the $x$ direction
+when computing $f\!\left(\hat{u}_{lmn}\right)$.  Then
+\begin{align}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  f\!\left(\hat{u}_{lmn}\right)
+&=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\!\left(\hat{u}_{lmn}\right)
+    +
+    \sum_{m=-\frac{N_x}{2}}^{-1}
+    f\!\left(\hat{u}_{lmn}\right)
+  \right]
+\\ &=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \sum_{m=0}^{\frac{N_x}{2}-1}
+    f\!\left(\hat{u}_{lmn}\right)
+    +
+    \sum_{m=1}^{\frac{N_x}{2}}
+    f\!\left(\overline{\hat{u}_{lmn}}\right)
+  \right]
+\\ &=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=0}
+    +
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+    \left[
+      f\!\left(\hat{u}_{lmn}\right)
+      +
+      f\!\left(\overline{\hat{u}_{lmn}}\right)
+    \right]
+    +
+    \left.f\!\left(\overline{\hat{u}_{lmn}}\right)\right|_{m=\frac{N_x}{2}}
+  \right]
+  .
+\intertext{
+When $f\!\left(\hat{u}_{lmn}\right) = f\!\left(\overline{\hat{u}_{lmn}}\right)$
+holds, as it does for $\left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}$,
+$\left|\left| u^h \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, and $\left|\left|
+u^h \right|\right|^{2}_{L^{2}_{xz}} \!(y_j)$, the summands further simplify to
+yield
+}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  f\!\left(\hat{u}_{lmn}\right)
+&=
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \left[
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=0}
+    +
+    2
+    \sum_{m=1}^{\frac{N_x}{2}-1}
+      f\!\left(\hat{u}_{lmn}\right)
+    +
+    \left.f\!\left(\hat{u}_{lmn}\right)\right|_{m=\frac{N_x}{2}}
+  \right]
+  .
+\end{align}
+
+% Not useful so commented out...
+%%\section{$L^2$ approximation error of a discrete field}
+%%
+%%To measure the $L^2$ approximation error of a discrete field $u^h$ against a
+%%known, analytic field $u$, we wish to compute $\left|\left| u - u^h
+%%\right|\right|^{2}_{L^{2}_{xyz}}$.  Employing inner product notation we find
+%%\begin{align}
+%%  \left|\left| u - u^h \right|\right|^{2}_{L^{2}_{xyz}}
+%%&=
+%%  \left( u-u^h, u-u^h \right)
+%%\\ &=
+%%    \left( u, u \right)
+%%  - \left( u, u^h \right)
+%%  - \left( u^h, u \right)
+%%  + \left(u^h, u^h\right)
+%%\\ &=
+%%    \left|\left| u   \right|\right|^{2}_{L^{2}_{xyz}}
+%%  - 2 \left( u, u^h \right)_{L^{2}_{xyz}}
+%%  + \left|\left| u^h \right|\right|^{2}_{L^{2}_{xyz}}
+%%\end{align}
+%%using that both $u$ and $u^h$ are real-valued.  The first term can be evaluated
+%%analytically.  The third term can be computed following \eqref{eq:L2uh}.
+%%
+%%The second term may be treated as
+%%\begin{align}
+%%  \left( u^h, u \right)_{L^{2}_{xyz}}
+%%&=
+%%  \int_0^{L_y}
+%%  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+%%  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+%%  u\!\left(x,y,z\right)
+%%  \left(
+%%    \sum_{l}\sum_{m}\sum_{n}
+%%    \hat{u}_{l m n}B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+%%  \right)
+%%  \,d\!z \,d\!x \,d\!y
+%%% \\ &=
+%%%   \sum_{n}
+%%%   \left(
+%%%     \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+%%%     \sum_{m}
+%%%     \left(
+%%%       \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+%%%       \sum_{l}
+%%%       \hat{u}_{l m n}
+%%%       \left(
+%%%         \int_0^{L_y}
+%%%         u\!\left(x,y,z\right)
+%%%         B_l\!\left(y\right)
+%%%         \,d\!y
+%%%       \right)
+%%%       e^{\ii k_m x}
+%%%       \,d\!x
+%%%     \right)
+%%%     e^{\ii k_n z}
+%%%     \,d\!z
+%%%   \right)
+%%\end{align}
+%%where some flash of insight as to a convenient computational technique would be
+%%quite helpful.
+
+\end{document}
