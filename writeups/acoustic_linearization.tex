@@ -57,8 +57,8 @@
 
 \begin{document}
 
-In this document we detail the process by which we capture the linear
-and non-linear (acoustic) terms of the hyperbolic Euler equations.
+This document details the process by which we isolate the linearized
+acoustic terms within the hyperbolic Euler equations.
 
 Define state as
 \begin{equation}
@@ -89,7 +89,7 @@ where it is the eigenvalues $v\pm{}c$ that lead to the most restrictive
 CFL-related limitations for system~\eqref{eq:system}.  These are the acoustic
 modes traveling at the speed of sound $c$ relative to the wall-normal velocity
 $v$.  Decomposing
-\begin{equation}
+\begin{equation}\label{eq:eigdecomp}
   \Lambda = \Lambda_v + \Lambda_c =
   \operatorname{diag}\left[v,v,v,v,v\right]
   +
@@ -112,11 +112,6 @@ One may approximately remove the wall-normal acoustic CFL restriction by
 treating operator $R \Lambda_c R^{-1}$ in a linearly implicit fashion as these
 are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $\Lambda$.
 
-Conversely, the $\lambda_v$ term can be further simplified as 
-\begin{equation}
-R \tilde\Lambda_v R^{-1} =  R v I R^{-1} = v R I R^{-1} = v I R R^{-1} = v I.
-\end{equation}
-
 Linearly-implicit treatment of $R \Lambda_c R^{-1}$ may be undesirably
 expensive due to cross-equation coupling.  For example, the density will appear
 within the total energy equation in a way decreasing the sparsity of the
@@ -127,6 +122,52 @@ portion of the Euler spatial operator, $ R \tilde\Lambda_v R^{-1} = G_0 - R
 \tilde\Lambda_c R^{-1} $, has no eigenvalues markedly different from $v$ as
 measured relative to $c$.
 
+Notice \eqref{eq:eigdecomp} implies
+\begin{align}
+G_0 &= R \left(\Lambda_v + \Lambda_c\right) R^{-1}    \\
+    &= R \left(v I + \Lambda_c\right) R^{-1}          \\
+    &= R \left(v I\right) R^{-1} + R \Lambda_c R^{-1} \\
+    &= vI + R \Lambda_c R^{-1}
+\intertext{
+so that
+}
+  \label{eq:G0Lambdac}
+  R \Lambda_c R^{-1} &= G_0 - vI
+  .
+\end{align}
+Though the particular form of $R$ and $G_0$ depends on our choice for $\phi$, a
+result analogous to \eqref{eq:G0Lambdac} exists for any state variable
+selection.
 
+Temporarily consider the primitive state
+\begin{equation}
+  \psi = \left\{\rho, u, v, w, p\right\}
+\end{equation}
+for which the wall-normal Jacobian is
+\begin{equation}
+ G_{\psi,0} =
+ \begin{bmatrix}
+   v  &  0  &  \rho       & 0 &  0          \\
+   0  &  v  &  0          & 0 &  0          \\
+   0  &  0  &  v          & 0 &  \rho^{-1}  \\
+   0  &  0  &  0          & v &  0          \\
+   0  &  0  &  \gamma{}p  & 0 &  v          \\
+ \end{bmatrix}
+\end{equation}
+By \eqref{eq:G0Lambdac},
+\begin{equation}
+ R_\psi \Lambda_C R_\psi^{-1} =
+ \begin{bmatrix}
+   0  &  0  &  \rho       & 0 &  0          \\
+   0  &  0  &  0          & 0 &  0          \\
+   0  &  0  &  0          & 0 &  \rho^{-1}  \\
+   0  &  0  &  0          & 0 &  0          \\
+   0  &  0  &  \gamma{}p  & 0 &  0          \\
+ \end{bmatrix}
+\end{equation}
+which has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$ using that
+$c=\sqrt{\gamma p / \rho}$.  Decoupling the first equation by neglecting the
+$\rho$ does not perturb the eigenvalues.  Neglecting either the $\rho^{-1}$ or
+$\gamma p$ terms causes the reduced operator to no longer capture acoustics.
 
 \end{document}
