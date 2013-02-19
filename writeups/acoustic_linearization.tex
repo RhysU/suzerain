@@ -110,7 +110,7 @@ so that $ G_0 = R \left(\Lambda_v + \Lambda_c\right) R^{-1} $ permits recasting
 \end{equation}
 One may approximately remove the wall-normal acoustic CFL restriction by
 treating operator $R \Lambda_c R^{-1}$ in a linearly implicit fashion as these
-are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $\Lambda$.
+are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $G_0$.
 
 Linearly-implicit treatment of $R \Lambda_c R^{-1}$ may be undesirably
 expensive due to cross-equation coupling.  For example, the density will appear
@@ -169,5 +169,20 @@ which has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$ using that
 $c=\sqrt{\gamma p / \rho}$.  Decoupling the first equation by neglecting the
 $\rho$ does not perturb the eigenvalues.  Neglecting either the $\rho^{-1}$ or
 $\gamma p$ terms causes the reduced operator to no longer capture acoustics.
+
+Returning to conserved state $\phi$, the linearized acoustics are accounted for
+by nothing but
+\begin{equation}\label{eq:cons}
+  G_0 - vI =
+\begin{bmatrix}
+ -v & 0 & 1 & 0 & 0 \\
+ -u v & 0 & u & 0 & 0 \\
+ \frac{1}{2} \left(v^2 (\gamma-3)+u^2 (\gamma-1)+w^2 (\gamma-1 )\right) & u(1-\gamma) & v (2-\gamma ) & w(1-\gamma) & \gamma-1  \\
+ -v w & 0 & w & 0 & 0 \\
+ \frac{1}{2} v \left(-2 h+\left(u^2+v^2+w^2\right) (\gamma-1 )\right) & u v (1-\gamma ) & h-v^2 (\gamma-1 ) & v w (1-\gamma ) & v (\gamma-1)
+\end{bmatrix}
+\end{equation}
+where $h=e + c^2 / \gamma$.
+As expected, \eqref{eq:cons} has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$.
 
 \end{document}
