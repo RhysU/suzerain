@@ -164,14 +164,16 @@ acoustic operator are as follows:
  \end{bmatrix}
 \end{align}
 The eigenvalues of $R_\psi \Lambda_c R_\psi^{-1}$ are $\left\{c, -c, 0, 0,
-0\right\}$ using that $c=\sqrt{\gamma p / \rho}$.  Decoupling the first
-equation by neglecting the $\rho$ does not perturb the eigenvalues but it
-does perturb the eigenvectors.  Specifically, the $\pm{}a$ eigenvectors
-for $R_\psi \Lambda_c R_\psi^{-1}$ have components like $c^{-2}$ in the $\rho$
-``direction'' while the corresponding eigenvectors for $R_\psi \tilde\Lambda_c
-R_\psi^{-1}$ do not.  Neglecting either the $\rho^{-1}$ or $\gamma p$ terms
-causes the reduced operator to no longer capture acoustic-like eigenvalues.
-Consequently, we select
+0\right\}$ using that $c=\sqrt{\gamma p / \rho}$.  Neglecting either the
+$\rho^{-1}$ or $\gamma p$ terms causes the reduced operator to no longer
+capture acoustic-like eigenvalues and so we avoid considering those terms
+further.  Decoupling the first equation by neglecting the $\rho$ does not
+perturb the eigenvalues but it does perturb the eigenvectors.  Specifically,
+the $\pm{}a$ eigenvectors for $R_\psi \Lambda_c R_\psi^{-1}$ have components in
+the $\rho$, $v$, and $p$ directions like $1/a^2$, $1/a/\rho$, and $1$
+respectively while $R_\psi \tilde\Lambda_c R_\psi^{-1}$ has components like
+$0$, $1/a/\rho$, and $1$ in those directions.  Notice the $\rho$-related
+component has disappeared.  Consequently, we select
 \begin{equation}\label{eq:approxprim}
  R_\psi \tilde\Lambda_c R_\psi^{-1} =
  \begin{bmatrix}
@@ -184,7 +186,7 @@ Consequently, we select
 \end{equation}
 for linearization purposes as it appears to maximally decouple the equations in
 the hopes that neglecting the $c^{-2}$ eigenvector components does not spoil
-the physics.
+the physics. {\color{red}(Review decision)}
 
 We now use a similarity transformation to map~\eqref{eq:approxprim} onto our
 chosen state variables.  That is, we use
