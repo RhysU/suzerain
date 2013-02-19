@@ -57,21 +57,22 @@
 
 \begin{document}
 
-This document details the process by which we isolate the linearized
+This document describes how to isolate the linearized
 acoustic terms within the hyperbolic Euler equations.
 
 Define state as
 \begin{equation}
  \phi = \{\rho, \rho u, \rho v, \rho w, \rho E \}
 \end{equation}
-from which one can write the 3D Euler Equations
+from which one can write the 3D Euler equations
 \begin{equation}
  \partial_t \phi + \partial_x F(\phi) + \partial_y G(\phi) + \partial_z
   H(\phi) = 0
   .
 \end{equation}
-We linearize about a reference state $\phi_0 = \{\rho_0, {\rho u}_0,
-{\rho v}_0, {\rho w}_0, {\rho E}_0 \}$ such that
+We linearize about a reference state $\phi_0 = \{\rho_0, \left\{\rho
+u\right\}_0, \left\{\rho v\right\}_0, \left\{\rho w\right\}_0, \left\{\rho
+E\right\}_0 \}$ such that
 \begin{equation}\label{eq:system}
  \partial_t \phi +  F_0 \partial_x \phi + G_0 \partial_y \phi + H_0 \partial_z
   \phi = 0
@@ -113,11 +114,9 @@ treating operator $R \Lambda_c R^{-1}$ in a linearly implicit fashion as these
 are nothing but the terms giving rise to the $\pm{}c$ wave speeds in $G_0$.
 
 Linearly-implicit treatment of $R \Lambda_c R^{-1}$ may be undesirably
-expensive due to cross-equation coupling.  For example, the density will appear
-within the total energy equation in a way decreasing the sparsity of the
-resulting discrete operator.  Instead, one may choose to linearly treat a
-perturbed operator $ R \tilde\Lambda_c R^{-1} $ with reduced coupling.  This
-can be successful provided that the remaining, explicitly treated linear
+expensive due to cross-equation coupling.  Instead, one may choose to linearly
+treat a perturbed operator $ R \tilde\Lambda_c R^{-1} $ with reduced coupling.
+This can be successful provided that the remaining, explicitly treated linear
 portion of the Euler spatial operator, $ R \tilde\Lambda_v R^{-1} = G_0 - R
 \tilde\Lambda_c R^{-1} $, has no eigenvalues markedly different from $v$ as
 measured relative to $c$.
@@ -139,13 +138,14 @@ Though the particular form of $R$ and $G_0$ depends on our choice for $\phi$, a
 result analogous to \eqref{eq:G0Lambdac} exists for any state variable
 selection.
 
-Temporarily consider the primitive state
+Recall the primitive variable state vector
 \begin{equation}
   \psi = \left\{\rho, u, v, w, p\right\}
 \end{equation}
-for which the wall-normal Jacobian is
-\begin{equation}
- G_{\psi,0} =
+for which the complete wall-normal Jacobian and, by \eqref{eq:G0Lambdac}, the
+acoustic operator are as follows:
+\begin{align}
+ G_{\psi,0} &=
  \begin{bmatrix}
    v  &  0  &  \rho       & 0 &  0          \\
    0  &  v  &  0          & 0 &  0          \\
@@ -153,10 +153,8 @@ for which the wall-normal Jacobian is
    0  &  0  &  0          & v &  0          \\
    0  &  0  &  \gamma{}p  & 0 &  v          \\
  \end{bmatrix}
-\end{equation}
-By \eqref{eq:G0Lambdac},
-\begin{equation}
- R_\psi \Lambda_C R_\psi^{-1} =
+&
+ R_\psi \Lambda_c R_\psi^{-1} &=
  \begin{bmatrix}
    0  &  0  &  \rho       & 0 &  0          \\
    0  &  0  &  0          & 0 &  0          \\
@@ -164,51 +162,118 @@ By \eqref{eq:G0Lambdac},
    0  &  0  &  0          & 0 &  0          \\
    0  &  0  &  \gamma{}p  & 0 &  0          \\
  \end{bmatrix}
-\end{equation}
-which has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$ using that
-$c=\sqrt{\gamma p / \rho}$.  Decoupling the first equation by neglecting the
-$\rho$ does not perturb the eigenvalues.  Neglecting either the $\rho^{-1}$ or
-$\gamma p$ terms causes the reduced operator to no longer capture acoustics.
-
-Returning to conserved state $\phi$, the linearized acoustics are accounted for
-by nothing but
-\begin{equation}\label{eq:cons}
-  G_0 - vI =
-\begin{bmatrix}
- -v & 0 & 1 & 0 & 0 \\
- -u v & 0 & u & 0 & 0 \\
- \frac{1}{2} \left(v^2 (\gamma-3)+u^2 (\gamma-1)+w^2 (\gamma-1 )\right) & u(1-\gamma) & v (2-\gamma ) & w(1-\gamma) & \gamma-1  \\
- -v w & 0 & w & 0 & 0 \\
- \frac{1}{2} v \left(-2 h+\left(u^2+v^2+w^2\right) (\gamma-1 )\right) & u v (1-\gamma ) & h-v^2 (\gamma-1 ) & v w (1-\gamma ) & v (\gamma-1)
-\end{bmatrix}
-\end{equation}
-where $h=e + c^2 / \gamma$.
-As expected, \eqref{eq:cons} has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$.
-
-Decoupling the density equation in \eqref{eq:cons} gives the operator
-\begin{equation}
-\begin{bmatrix}
- -v & 0 & 0 & 0 & 0 \\
- 0 & 0 & u & 0 & 0 \\
- 0 & u(1-\gamma) & v (2-\gamma ) & w(1-\gamma) & \gamma-1  \\
- 0 & 0 & w & 0 & 0 \\
- 0 & u v (1-\gamma ) & h-v^2 (\gamma-1 ) & v w (1-\gamma ) & v (\gamma-1)
-\end{bmatrix}
-\end{equation}
-with the following four eigenvalues:
-\begin{align}
- &0
-&
- &-v
-&
-&\frac{v \pm \sqrt{8 c^2+v^2+4 h (1-\gamma)}}{2}
 \end{align}
-The first two eigenvalues are not problematic relative to $\Lambda_v$.
-In a quiescent fluid, 
-\begin{equation}
- c^2=h(\gamma-1) \implies
-\sqrt{8 c^2+v^2+4 h (1-\gamma)} = 2c
-.
+The eigenvalues of $R_\psi \Lambda_c R_\psi^{-1}$ are $\left\{c, -c, 0, 0,
+0\right\}$ using that $c=\sqrt{\gamma p / \rho}$.  Decoupling the first
+equation by neglecting the $\rho$ does not perturb the eigenvalues but it
+does perturb the eigenvectors.  Specifically, the $\pm{}a$ eigenvectors
+for $R_\psi \Lambda_c R_\psi^{-1}$ have components like $c^{-2}$ in the $\rho$
+``direction'' while the corresponding eigenvectors for $R_\psi \tilde\Lambda_c
+R_\psi^{-1}$ do not.  Neglecting either the $\rho^{-1}$ or $\gamma p$ terms
+causes the reduced operator to no longer capture acoustic-like eigenvalues.
+Consequently, we select
+\begin{equation}\label{eq:approxprim}
+ R_\psi \tilde\Lambda_c R_\psi^{-1} =
+ \begin{bmatrix}
+   0  &  0  &  0          & 0 &  0          \\
+   0  &  0  &  0          & 0 &  0          \\
+   0  &  0  &  0          & 0 &  \rho^{-1}  \\
+   0  &  0  &  0          & 0 &  0          \\
+   0  &  0  &  \gamma{}p  & 0 &  0          \\
+ \end{bmatrix}
 \end{equation}
+for linearization purposes as it appears to maximally decouple the equations in
+the hopes that neglecting the $c^{-2}$ eigenvector components does not spoil
+the physics.
+
+We now use a similarity transformation to map~\eqref{eq:approxprim} onto our
+chosen state variables.  That is, we use
+\begin{align}
+  \frac{\partial \phi}{\partial \psi}
+  &=
+ \begin{bmatrix}
+  1                      & 0      & 0      & 0      &  0                  \\
+  u                      & \rho   & 0      & 0      &  0                  \\
+  v                      & 0      & \rho   & 0      &  0                  \\
+  w                      & 0      & 0      & \rho   &  0                  \\
+  \frac{q}{2}  & \rho u & \rho v & \rho w &  \frac{1}{\gamma-1} \\
+ \end{bmatrix}
+&
+  \frac{\partial \psi}{\partial \phi}
+  &=
+ \begin{bmatrix}
+ 1 & 0 & 0 & 0 & 0 \\
+ -\frac{u}{\rho } & \frac{1}{\rho } & 0 & 0 & 0 \\
+ -\frac{v}{\rho } & 0 & \frac{1}{\rho } & 0 & 0 \\
+ -\frac{w}{\rho } & 0 & 0 & \frac{1}{\rho } & 0 \\
+ \frac{\gamma-1}{2} q  & u(1-\gamma) & v(1-\gamma) & w(1-\gamma) & \gamma-1
+ \end{bmatrix}
+\end{align}
+where $q=u^2+v^2+w^2$.  Then
+\begin{align}
+ R \tilde\Lambda_c R^{-1}
+ &=
+  \frac{\partial \phi}{\partial \psi}
+ R_\psi \tilde\Lambda_c R_\psi^{-1}
+  \frac{\partial \psi}{\partial \phi}
+\\
+ &=
+\begin{bmatrix}
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 \\
+ \frac{1}{2} q (\gamma-1) & u(1-\gamma)  & v(1-\gamma)  & w(1-\gamma)  & \gamma-1  \\
+ 0 & 0 & 0 & 0 & 0 \\
+ \frac{1}{2} q v (\gamma-1 )+\frac{p v \gamma }{\rho(1-\gamma) } & u v (1-\gamma ) & v^2 (1-\gamma )+\frac{p \gamma }{(\gamma-1) \rho } & v w (1-\gamma ) & v (\gamma-1 )
+\end{bmatrix}
+.
+\end{align}
+This last statement seemingly implies that, for a conservative formulation,
+implicitly handling wall-normal acoustics requires some form of five-equation
+coupling.
+
+%%
+%%
+%%
+%%
+%%Returning to conserved state $\phi$, the linearized acoustics are accounted for
+%%by nothing but
+%%\begin{equation}\label{eq:cons}
+%%  G_0 - vI =
+%%\begin{bmatrix}
+%% -v & 0 & 1 & 0 & 0 \\
+%% -u v & 0 & u & 0 & 0 \\
+%% \frac{1}{2} \left(v^2 (\gamma-3)+u^2 (\gamma-1)+w^2 (\gamma-1 )\right) & u(1-\gamma) & v (2-\gamma ) & w(1-\gamma) & \gamma-1  \\
+%% -v w & 0 & w & 0 & 0 \\
+%% \frac{1}{2} v \left(-2 h+\left(u^2+v^2+w^2\right) (\gamma-1 )\right) & u v (1-\gamma ) & h-v^2 (\gamma-1 ) & v w (1-\gamma ) & v (\gamma-1)
+%%\end{bmatrix}
+%%\end{equation}
+%%where $h=e + c^2 / \gamma$.
+%%As expected, \eqref{eq:cons} has eigenvalues $\left\{c, -c, 0, 0, 0\right\}$.
+%%
+%%Decoupling the density equation in \eqref{eq:cons} gives the operator
+%%\begin{equation}
+%%\begin{bmatrix}
+%% -v & 0 & 0 & 0 & 0 \\
+%% 0 & 0 & u & 0 & 0 \\
+%% 0 & u(1-\gamma) & v (2-\gamma ) & w(1-\gamma) & \gamma-1  \\
+%% 0 & 0 & w & 0 & 0 \\
+%% 0 & u v (1-\gamma ) & h-v^2 (\gamma-1 ) & v w (1-\gamma ) & v (\gamma-1)
+%%\end{bmatrix}
+%%\end{equation}
+%%with the following four eigenvalues:
+%%\begin{align}
+%% &0
+%%&
+%% &-v
+%%&
+%%&\frac{v \pm \sqrt{8 c^2+v^2+4 h (1-\gamma)}}{2}
+%%\end{align}
+%%The first two eigenvalues are not problematic relative to $\Lambda_v$.
+%%In a quiescent fluid,
+%%\begin{equation}
+%% c^2=h(\gamma-1) \implies
+%%\sqrt{8 c^2+v^2+4 h (1-\gamma)} = 2c
+%%.
+%%\end{equation}
 
 \end{document}
