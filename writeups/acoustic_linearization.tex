@@ -167,7 +167,7 @@ The eigenvalues of $R_\psi \Lambda_c R_\psi^{-1}$ are $\left\{c, -c, 0, 0,
 0\right\}$ using that $c=\sqrt{\gamma p / \rho}$.  Neglecting either the
 $\rho^{-1}$ or $\gamma p$ terms causes the reduced operator to no longer
 capture acoustic-like eigenvalues and so we avoid considering those terms
-further.  Decoupling the first equation by neglecting the $\rho$ does not
+further.  Decoupling the first equation by neglecting the $\rho$ term does not
 perturb the eigenvalues but it does perturb the eigenvectors.  Specifically,
 the $\pm{}a$ eigenvectors for $R_\psi \Lambda_c R_\psi^{-1}$ have components in
 the $\rho$, $v$, and $p$ directions like $1/a^2$, $1/a/\rho$, and $1$
@@ -213,10 +213,10 @@ chosen state variables.  That is, we use
 \end{align}
 where $q=u^2+v^2+w^2$.  Then
 \begin{align}
- R \tilde\Lambda_c R^{-1}
- &=
+  R \tilde\Lambda_c R^{-1}
+  &=
   \frac{\partial \phi}{\partial \psi}
- R_\psi \tilde\Lambda_c R_\psi^{-1}
+  R_\psi \tilde\Lambda_c R_\psi^{-1}
   \frac{\partial \psi}{\partial \phi}
 \\
  &=
@@ -231,7 +231,19 @@ where $q=u^2+v^2+w^2$.  Then
 \end{align}
 This last statement seemingly implies that, for a conservative formulation,
 implicitly handling wall-normal acoustics requires some form of five-equation
-coupling.
+treatment though it may not require a five-equation solve.
+
+Of course, one may implicitly treat
+\begin{align}
+  R \Lambda_c R^{-1}
+ &=
+  \frac{\partial \phi}{\partial \psi}
+  R_\psi \Lambda_c R_\psi^{-1}
+  \frac{\partial \psi}{\partial \phi}
+\end{align}
+and avoid introducing any sound-speed dependent perturbation to the acoustic
+eigenspace.  This, however, increases the cross-equation coupling and
+solve costs.
 
 %%
 %%
