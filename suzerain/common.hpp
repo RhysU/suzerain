@@ -113,18 +113,18 @@ SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
- * evaluates to boolean \c false, then a <tt>std::logic_error</tt> is thrown
+ * evaluates to boolean \c false, then a <tt>std::runtime_error</tt> is thrown
  * with message \c msg.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
  * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
  */
 #define SUZERAIN_ENSURE_MSG(expr, msg) \
-    SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, ::std::logic_error)
+    SUZERAIN_ENSURE_MSGEXCEPT(expr, msg, ::std::runtime_error)
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
- * evaluates to boolean \c false, then a <tt>std::logic_error</tt> is thrown.
+ * evaluates to boolean \c false, then a <tt>std::runtime_error</tt> is thrown.
  *
  * This macro is intended for <tt>assert</tt>-like checks which should always
  * be performed regardless of whether or not \c NDEBUG is <tt>define</tt>d.
