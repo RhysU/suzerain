@@ -123,9 +123,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // Load the restart details with state going into state_linear
         esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
         esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
-        restart_scenario.swap(scenario);  // "push"
+        restart_scenario.swap(scenario);              // "push"
         load_restart(esioh, initial_t);
-        restart_scenario.swap(scenario);  // "pop"
+        restart_scenario.swap(scenario);              // "pop"
+        scenario->populate(*restart_scenario, false); // merge non-default
         esio_file_close(esioh);
         esio_handle_finalize(esioh);
 
