@@ -84,9 +84,9 @@
 #include <boost/numeric/conversion/converter.hpp>
 #include <boost/ptr_container/ptr_list.hpp>
 // https://svn.boost.org/trac/boost/ticket/4276
-SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
-#include <boost/ptr_container/ptr_map.hpp>
 SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
+#include <boost/ptr_container/ptr_map.hpp>
+SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/ref.hpp>
 #include <boost/scoped_array.hpp>
