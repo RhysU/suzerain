@@ -26,16 +26,26 @@ namespace suzerain {
 
 namespace support {
 
+// For maybe_XXX_impl to indicates a \c real_t is a default value
+static bool default_value(const real_t& v)
+{ return (boost::math::isnan)(v); }
+
+// For maybe_XXX_impl to indicates an \c int is a default value
+static bool default_value(const int& v)
+{ return v == 0; }
+
 // Compare and contrast maybe_override just below
-bool
-definition_base::maybe_populate(
-        const char*   name,
-        const char*   description,
-              real_t& destination,
-        const real_t& source,
-        const bool    verbose)
+// One translation-local template instantiated multiple times below
+template<typename T>
+static bool
+maybe_populate_impl(
+        const char* name,
+        const char* description,
+              T&    destination,
+        const T&    source,
+        const bool  verbose)
 {
-    if ((boost::math::isnan)(destination)) {
+    if (default_value(destination)) {
         if (verbose) {
             if (description) {
                 INFO0("Populating " << name
@@ -60,19 +70,21 @@ definition_base::maybe_populate(
 }
 
 // Compare and contrast maybe_populate just above
-bool
-definition_base::maybe_override(
-        const char*   name,
-        const char*   description,
-              real_t& destination,
-        const real_t& source,
-        const bool    verbose)
+// One translation-local template instantiated multiple times below
+template<typename T>
+static bool
+maybe_override_impl(
+        const char* name,
+        const char* description,
+              T&    destination,
+        const T&    source,
+        const bool  verbose)
 {
-    if (!(boost::math::isnan)(source)) {
+    if (!default_value(source)) {
 #pragma warning(push,disable:1572)
         if (    verbose
              && source != destination
-             && !(boost::math::isnan)(destination)) {
+             && !default_value(destination)) {
 #pragma warning(pop)
             if (description) {
                 INFO0("Overriding " << name
@@ -96,7 +108,30 @@ definition_base::maybe_override(
     return false;
 }
 
-// Compare and contrast maybe_override just below
+bool
+definition_base::maybe_populate(
+        const char*   name,
+        const char*   description,
+              real_t& destination,
+        const real_t& source,
+        const bool    verbose)
+{
+    return maybe_populate_impl(
+            name, description, destination, source, verbose);
+}
+
+bool
+definition_base::maybe_override(
+        const char*   name,
+        const char*   description,
+              real_t& destination,
+        const real_t& source,
+        const bool    verbose)
+{
+    return maybe_override_impl(
+            name, description, destination, source, verbose);
+}
+
 bool
 definition_base::maybe_populate(
         const char* name,
@@ -105,31 +140,10 @@ definition_base::maybe_populate(
         const int&  source,
         const bool  verbose)
 {
-    if (0 == destination) {
-        if (verbose) {
-            if (description) {
-                INFO0("Populating " << name
-                      << " (" << description << ") to be " << source);
-            } else {
-                INFO0("Populating " << name << " to be " << source);
-            }
-        }
-        destination = source;
-        return true;
-    }
-
-    if (verbose) {
-        if (description) {
-            DEBUG0("Retaining " << name
-                   << " (" << description << ") as " << destination);
-        } else {
-            DEBUG0("Retaining " << name << " as " << destination);
-        }
-    }
-    return false;
+    return maybe_populate_impl(
+            name, description, destination, source, verbose);
 }
 
-// Compare and contrast maybe_populate just above
 bool
 definition_base::maybe_override(
         const char* name,
@@ -138,30 +152,8 @@ definition_base::maybe_override(
         const int&  source,
         const bool  verbose)
 {
-    if (0 != source) {
-        if (    verbose
-             && source != destination
-             && 0 != destination) {
-            if (description) {
-                INFO0("Overriding " << name
-                      << " (" << description << ") to be " << source);
-            } else {
-                INFO0("Overriding " << name << " to be " << source);
-            }
-        }
-        destination = source;
-        return true;
-    }
-
-    if (verbose) {
-        if (description) {
-            DEBUG0("Retaining " << name
-                   << " (" << description << ") as " << destination);
-        } else {
-            DEBUG0("Retaining " << name << " as " << destination);
-        }
-    }
-    return false;
+    return maybe_override_impl(
+            name, description, destination, source, verbose);
 }
 
 } // namespace support
