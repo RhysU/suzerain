@@ -70,6 +70,29 @@ public:
                         const real_t beta,
                         const real_t gamma);
 
+    /** Virtual destructor to permit use as a base class */
+    virtual ~scenario_definition();
+
+    /**
+     * Populate any NaN members in \c this with values from \c that.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when a value is retained?
+     */
+    virtual void populate(
+            const scenario_definition& that,
+            const bool verbose = false);
+
+    /**
+     * Override members in \c this with non-NaN values from \c that.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when an override occurs?
+     */
+    virtual void override(
+            const scenario_definition& that,
+            const bool verbose = false);
+
     /** @copydoc support::definition_base::options_description() */
     boost::program_options::options_description options_description();
 
@@ -123,17 +146,18 @@ public:
 /**
  * Save a scenario_definition in an ESIO-based file.
  *
- * @param h        Open, writable handle in which details will be saved.
- * @param scenario Scenario to be saved.
+ * @param h Open, writable handle in which details will be saved.
+ * @param s Scenario to be saved.
  */
 void save(const esio_handle h,
-          const scenario_definition& scenario);
+          const scenario_definition& s);
 
 /**
  * Load a scenario_definition from an ESIO-based file.
+ * Non-<tt>NaN</tt> values within \c s will not be overwritten.
  *
- * @param h        Open, readable handle from which details will be loaded.
- * @param scenario Scenario to be saved.
+ * @param h Open, readable handle from which details will be loaded.
+ * @param s Scenario to be overridden.
  */
 void load(const esio_handle h,
           scenario_definition& scenario);

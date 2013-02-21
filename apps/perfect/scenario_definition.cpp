@@ -81,31 +81,30 @@ scenario_definition::scenario_definition(
 {
 }
 
-// Descriptions used in options_description and possibly save/load.
-static const char description_Re[]
-        = "Reynolds number";
+scenario_definition::~scenario_definition()
+{
+    // NOP
+}
 
-static const char description_Ma[]
-        = "Mach number";
+// Strings used in options_description and populate/override/save/load.
+static const char name_Re[]         = "Re";
+static const char name_Ma[]         = "Ma";
+static const char name_Pr[]         = "Pr";
+static const char name_bulk_rho[]   = "bulk_rho";
+static const char name_bulk_rho_u[] = "bulk_rho_u";
+static const char name_alpha[]      = "alpha";
+static const char name_beta[]       = "beta";
+static const char name_gamma[]      = "gamma";
 
-static const char description_Pr[]
-        = "Prandtl number";
-
-static const char description_bulk_rho[]
-        = "Bulk density target";
-
-static const char description_bulk_rho_u[]
-        = "Bulk momentum target";
-
-static const char description_alpha[]
-        = "Ratio of bulk to dynamic viscosity";
-
-static const char description_beta[]
-        = "Temperature power law exponent";
-
-static const char description_gamma[]
-        = "Ratio of specific heats";
-
+// Descriptions used in options_description and populate/override/save/load.
+static const char desc_Re[]         = "Reynolds number";
+static const char desc_Ma[]         = "Mach number";
+static const char desc_Pr[]         = "Prandtl number";
+static const char desc_bulk_rho[]   = "Bulk density target";
+static const char desc_bulk_rho_u[] = "Bulk momentum target";
+static const char desc_alpha[]      = "Ratio of bulk to dynamic viscosity";
+static const char desc_beta[]       = "Temperature power law exponent";
+static const char desc_gamma[]      = "Ratio of specific heats";
 
 boost::program_options::options_description
 scenario_definition::options_description()
@@ -128,148 +127,189 @@ scenario_definition::options_description()
 
     // Re
     p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Re, "Re"));
+    p->notifier(bind(&parse_positive, _1, &Re, name_Re));
     if (!(boost::math::isnan)(Re)) {
         p->default_value(lexical_cast<string>(Re));
     }
-    retval.add_options()("Re", p.release(), description_Re);
+    retval.add_options()(name_Re, p.release(), desc_Re);
 
     // Ma
     p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Ma, "Ma"));
+    p->notifier(bind(&parse_positive, _1, &Ma, name_Ma));
     if (!(boost::math::isnan)(Ma)) {
         p->default_value(lexical_cast<string>(Ma));
     }
-    retval.add_options()("Ma", p.release(), description_Ma);
+    retval.add_options()(name_Ma, p.release(), desc_Ma);
 
     // Pr
     p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Pr, "Pr"));
+    p->notifier(bind(&parse_positive, _1, &Pr, name_Pr));
     if (!(boost::math::isnan)(Pr)) {
         p->default_value(lexical_cast<string>(Pr));
     }
-    retval.add_options()("Pr", p.release(), description_Pr);
+    retval.add_options()(name_Pr, p.release(), desc_Pr);
 
     // bulk_rho
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho, "bulk_rho"));
+    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho, name_bulk_rho));
     if (!(boost::math::isnan)(bulk_rho)) {
         p->default_value(lexical_cast<string>(bulk_rho));
     }
-    retval.add_options()("bulk_rho", p.release(), description_bulk_rho);
+    retval.add_options()(name_bulk_rho, p.release(), desc_bulk_rho);
 
     // bulk_rho_u
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_u, "bulk_rho_u"));
+    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_u, name_bulk_rho_u));
     if (!(boost::math::isnan)(bulk_rho_u)) {
         p->default_value(lexical_cast<string>(bulk_rho_u));
     }
-    retval.add_options()("bulk_rho_u", p.release(), description_bulk_rho_u);
+    retval.add_options()(name_bulk_rho_u, p.release(), desc_bulk_rho_u);
 
     // alpha
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &alpha, "alpha"));
+    p->notifier(bind(&parse_nonnegative, _1, &alpha, name_alpha));
     if (!(boost::math::isnan)(alpha)) {
         p->default_value(lexical_cast<string>(alpha));
     }
-    retval.add_options()("alpha", p.release(), description_alpha);
+    retval.add_options()(name_alpha, p.release(), desc_alpha);
 
     // beta
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &beta, "beta"));
+    p->notifier(bind(&parse_nonnegative, _1, &beta, name_beta));
     if (!(boost::math::isnan)(beta)) {
         p->default_value(lexical_cast<string>(beta));
     }
-    retval.add_options()("beta", p.release(), description_beta);
+    retval.add_options()(name_beta, p.release(), desc_beta);
 
     // gamma
     p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &gamma, "gamma"));
+    p->notifier(bind(&parse_positive, _1, &gamma, name_gamma));
     if (!(boost::math::isnan)(gamma)) {
         p->default_value(lexical_cast<string>(gamma));
     }
-    retval.add_options()("gamma", p.release(), description_gamma);
+    retval.add_options()(name_gamma, p.release(), desc_gamma);
 
     return retval;
 }
 
+// Compare and contrast maybe_override just below
+static void
+maybe_populate(const char *name,
+               const char *desc,
+                     real_t& dst,
+               const real_t& src,
+               const bool verbose)
+{
+    if ((boost::math::isnan)(dst)) {
+        if (verbose) {
+            DEBUG0("Populating " << name << " (" << desc << ") to be " << src);
+        }
+        dst = src;
+    } else {
+        if (verbose) {
+            INFO0("Retaining " << name << " (" << desc << ") as " << dst);
+        }
+    }
+}
+
+// Compare and contrast maybe_populate just above
+static void
+maybe_override(const char *name,
+               const char *desc,
+                     real_t& dst,
+               const real_t& src,
+               const bool verbose)
+{
+    if (!(boost::math::isnan)(src)) {
+#pragma warning(push,disable:1572)
+        if (verbose && src != dst && !(boost::math::isnan)(dst)) {
+#pragma warning(pop)
+            INFO0("Overriding " << name << " (" << desc << ") with " << src);
+        }
+        dst = src;
+    } else {
+        if (verbose) {
+            DEBUG0("Retaining " << name << " (" << desc << ") as " << dst);
+        }
+    }
+}
+
+void
+scenario_definition::populate(
+        const scenario_definition& that,
+        const bool verbose)
+{
+#define CALL_MAYBE_POPULATE(mem)                                             \
+    maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_POPULATE(Re);
+    CALL_MAYBE_POPULATE(Ma);
+    CALL_MAYBE_POPULATE(Pr);
+    CALL_MAYBE_POPULATE(bulk_rho);
+    CALL_MAYBE_POPULATE(bulk_rho_u);
+    CALL_MAYBE_POPULATE(alpha);
+    CALL_MAYBE_POPULATE(beta);
+    CALL_MAYBE_POPULATE(gamma);
+#undef CALL_MAYBE_POPULATE
+}
+
+void
+scenario_definition::override(
+        const scenario_definition& that,
+        const bool verbose)
+{
+#define CALL_MAYBE_OVERRIDE(mem)                                            \
+    maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_OVERRIDE(Re);
+    CALL_MAYBE_OVERRIDE(Ma);
+    CALL_MAYBE_OVERRIDE(Pr);
+    CALL_MAYBE_OVERRIDE(bulk_rho);
+    CALL_MAYBE_OVERRIDE(bulk_rho_u);
+    CALL_MAYBE_OVERRIDE(alpha);
+    CALL_MAYBE_OVERRIDE(beta);
+    CALL_MAYBE_OVERRIDE(gamma);
+#undef CALL_MAYBE_OVERRIDE
+}
+
 void save(const esio_handle h,
-          const scenario_definition& scenario)
+          const scenario_definition& s)
 {
     DEBUG0("Storing scenario_definition parameters");
 
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
-
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, "Re", &scenario.Re, 0, description_Re);
-    esio_line_write(h, "Ma", &scenario.Ma, 0, description_Ma);
-    esio_line_write(h, "Pr", &scenario.Pr, 0, description_Pr);
-    esio_line_write(h, "bulk_rho",   &scenario.bulk_rho,
-                    0, description_bulk_rho);
-    esio_line_write(h, "bulk_rho_u", &scenario.bulk_rho_u,
-                    0, description_bulk_rho_u);
-    esio_line_write(h, "alpha", &scenario.alpha, 0, description_alpha);
-    esio_line_write(h, "beta", &scenario.beta,   0, description_beta);
-    esio_line_write(h, "gamma", &scenario.gamma, 0, description_gamma);
+    esio_line_write(h, name_Re,         &s.Re,         0, desc_Re);
+    esio_line_write(h, name_Ma,         &s.Ma,         0, desc_Ma);
+    esio_line_write(h, name_Pr,         &s.Pr,         0, desc_Pr);
+    esio_line_write(h, name_bulk_rho,   &s.bulk_rho,   0, desc_bulk_rho);
+    esio_line_write(h, name_bulk_rho_u, &s.bulk_rho_u, 0, desc_bulk_rho_u);
+    esio_line_write(h, name_alpha,      &s.alpha,      0, desc_alpha);
+    esio_line_write(h, name_beta,       &s.beta,       0, desc_beta);
+    esio_line_write(h, name_gamma,      &s.gamma,      0, desc_gamma);
 }
 
 void load(const esio_handle h,
-          scenario_definition& scenario)
+          scenario_definition& s)
 {
     DEBUG0("Loading scenario_definition parameters");
 
-    esio_line_establish(h, 1, 0, 1); // All ranks load
+    // All ranks load data into temporary storage
+    esio_line_establish(h, 1, 0, 1);
+    scenario_definition t;
 
-    if (!(boost::math::isnan)(scenario.Re)) {
-        INFO0("Overriding scenario using Re = " << scenario.Re);
-    } else {
-        esio_line_read(h, "Re", &scenario.Re, 0);
-    }
+    esio_line_read(h, name_Re,         &t.Re,         0);
+    esio_line_read(h, name_Ma,         &t.Ma,         0);
+    esio_line_read(h, name_Pr,         &t.Pr,         0);
+    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
+    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    esio_line_read(h, name_alpha,      &t.alpha,      0);
+    esio_line_read(h, name_beta,       &t.beta,       0);
+    esio_line_read(h, name_gamma,      &t.gamma,      0);
 
-    if (!(boost::math::isnan)(scenario.Ma)) {
-        INFO0("Overriding scenario using Ma = " << scenario.Ma);
-    } else {
-        esio_line_read(h, "Ma", &scenario.Ma, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.Pr)) {
-        INFO0("Overriding scenario using Pr = " << scenario.Pr);
-    } else {
-        esio_line_read(h, "Pr", &scenario.Pr, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.bulk_rho)) {
-        INFO0("Overriding scenario using bulk_rho = " << scenario.bulk_rho);
-    } else {
-        esio_line_read(h, "bulk_rho", &scenario.bulk_rho, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.bulk_rho_u)) {
-        INFO0("Overriding scenario using bulk_rho_u = " << scenario.bulk_rho_u);
-    } else {
-        esio_line_read(h, "bulk_rho_u", &scenario.bulk_rho_u, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.alpha)) {
-        INFO0("Overriding scenario using alpha = " << scenario.alpha);
-    } else {
-        esio_line_read(h, "alpha", &scenario.alpha, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.beta)) {
-        INFO0("Overriding scenario using beta = " << scenario.beta);
-    } else {
-        esio_line_read(h, "beta", &scenario.beta, 0);
-    }
-
-    if (!(boost::math::isnan)(scenario.gamma)) {
-        INFO0("Overriding scenario using gamma = " << scenario.gamma);
-    } else {
-        esio_line_read(h, "gamma", &scenario.gamma, 0);
-    }
+    // Populate the argument based on temporary storage
+    s.populate(t, true);
 }
 
 } // namespace perfect
