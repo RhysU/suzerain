@@ -267,6 +267,7 @@ libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
 libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
 libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
 libsupport_la_SOURCES        = support/application_base.cpp
+libsupport_la_SOURCES       += support/definition_base.cpp
 libsupport_la_SOURCES       += support/driver_base.cpp
 libsupport_la_SOURCES       += support/fftw_definition.cpp
 libsupport_la_SOURCES       += support/field.cpp
