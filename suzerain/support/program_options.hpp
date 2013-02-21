@@ -17,11 +17,14 @@
  * Classes handling program options parsing.
  */
 
-#include <boost/program_options.hpp>
-
 #include <suzerain/common.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/support/definition_base.hpp>
+
+// https://svn.boost.org/trac/boost/ticket/7568
+SUZERAIN_GCC_DIAG_OFF(unused-parameter);
+#include <boost/program_options.hpp>
+SUZERAIN_GCC_DIAG_ON(unused-parameter);
 
 namespace suzerain {
 
