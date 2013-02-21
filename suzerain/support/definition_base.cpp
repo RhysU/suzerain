@@ -96,6 +96,74 @@ definition_base::maybe_override(
     return false;
 }
 
+// Compare and contrast maybe_override just below
+bool
+definition_base::maybe_populate(
+        const char* name,
+        const char* description,
+              int&  destination,
+        const int&  source,
+        const bool  verbose)
+{
+    if (0 == destination) {
+        if (verbose) {
+            if (description) {
+                INFO0("Populating " << name
+                      << " (" << description << ") to be " << source);
+            } else {
+                INFO0("Populating " << name << " to be " << source);
+            }
+        }
+        destination = source;
+        return true;
+    }
+
+    if (verbose) {
+        if (description) {
+            DEBUG0("Retaining " << name
+                   << " (" << description << ") as " << destination);
+        } else {
+            DEBUG0("Retaining " << name << " as " << destination);
+        }
+    }
+    return false;
+}
+
+// Compare and contrast maybe_populate just above
+bool
+definition_base::maybe_override(
+        const char* name,
+        const char* description,
+              int&  destination,
+        const int&  source,
+        const bool  verbose)
+{
+    if (0 != source) {
+        if (    verbose
+             && source != destination
+             && 0 != destination) {
+            if (description) {
+                INFO0("Overriding " << name
+                      << " (" << description << ") to be " << source);
+            } else {
+                INFO0("Overriding " << name << " to be " << source);
+            }
+        }
+        destination = source;
+        return true;
+    }
+
+    if (verbose) {
+        if (description) {
+            DEBUG0("Retaining " << name
+                   << " (" << description << ") as " << destination);
+        } else {
+            DEBUG0("Retaining " << name << " as " << destination);
+        }
+    }
+    return false;
+}
+
 } // namespace support
 
 } // namespace suzerain

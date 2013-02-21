@@ -88,13 +88,53 @@ protected:
      * @param source      Data used whenever it is non-NaN.
      * @param verbose     Should a human-readable message be logged?
      *
-     * @return \c True whenever \c destination was overriden from \c source.
+     * @return \c True whenever \c destination was overridden from \c source.
      */
     static bool maybe_override(const char*   name,
                                const char*   description,
                                      real_t& destination,
                                const real_t& source,
                                const bool    verbose);
+
+    /**
+     * If \c destination is zero, populate it with the value from source.
+     * When \c verbose, log an informative message using \c name and
+     * \c description.
+     *
+     * @param name        Name to use for any logging.
+     * @param description A short description of \c name to use for logging.
+     *                    If \c NULL, no description will be logged.
+     * @param destination Location to possibly assign from \c source.
+     * @param source      Data used whenever \c destination is zero.
+     * @param verbose     Should a human-readable message be logged?
+     *
+     * @return \c True whenever \c destination was populated from \c source.
+     */
+    static bool maybe_populate(const char* name,
+                               const char* description,
+                                     int&  destination,
+                               const int&  source,
+                               const bool  verbose);
+
+    /**
+     * If \c source is non-zero, override \c destination with its value.
+     * When \c verbose, log an informative message using \c name and
+     * \c description.
+     *
+     * @param name        Name to use for any logging.
+     * @param description A short description of \c name to use for logging.
+     *                    If \c NULL, no description will be logged.
+     * @param destination Location to possibly assign from \c source.
+     * @param source      Data used whenever it is non-zero.
+     * @param verbose     Should a human-readable message be logged?
+     *
+     * @return \c True whenever \c destination was overridden from \c source.
+     */
+    static bool maybe_override(const char* name,
+                               const char* description,
+                                     int&  destination,
+                               const int&  source,
+                               const bool  verbose);
 
     /**@}*/
 };
