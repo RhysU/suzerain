@@ -488,7 +488,7 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
 {
     SUZERAIN_TIMER_SCOPED("timecontroller::advance");
 
-    assert(min_dt_ <= max_dt_);
+    SUZERAIN_ENSURE(min_dt_ <= max_dt_);
     using std::min;
 
     // Maintain the next simulation time something interesting must happen
@@ -507,7 +507,7 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
         // Determine maximum possible step size allowed by all criteria
         const TimeType possible_dt
             = min(max_dt_, min(final_t, next_event_t) - current_t_);
-        assert(possible_dt > 0);
+        SUZERAIN_ENSURE(possible_dt > 0);
 
         // Take a single step, record new step and time, and update statistics
         current_dt_ = stepper_(possible_dt);
@@ -518,7 +518,7 @@ StopType timecontroller<TimeType,StepType,StopType>::advance(
         if (SUZERAIN_UNLIKELY(!(boost::math::isfinite)(current_dt_))) {
             return false; // By design !isfinite(current_t_)
         }
-        assert(current_dt_ <= possible_dt);
+        SUZERAIN_ENSURE(current_dt_ <= possible_dt);
 
         // Check callbacks and determine next callback simulation time
         next_event_t = std::numeric_limits<TimeType>::max();
