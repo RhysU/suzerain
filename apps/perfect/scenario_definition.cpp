@@ -202,12 +202,12 @@ maybe_populate(const char *name,
 {
     if ((boost::math::isnan)(dst)) {
         if (verbose) {
-            DEBUG0("Populating " << name << " (" << desc << ") to be " << src);
+            INFO0("Populating " << name << " (" << desc << ") to be " << src);
         }
         dst = src;
     } else {
         if (verbose) {
-            INFO0("Retaining " << name << " (" << desc << ") as " << dst);
+            DEBUG0("Retaining " << name << " (" << desc << ") as " << dst);
         }
     }
 }
@@ -224,7 +224,7 @@ maybe_override(const char *name,
 #pragma warning(push,disable:1572)
         if (verbose && src != dst && !(boost::math::isnan)(dst)) {
 #pragma warning(pop)
-            INFO0("Overriding " << name << " (" << desc << ") with " << src);
+            INFO0("Overriding " << name << " (" << desc << ") to be " << src);
         }
         dst = src;
     } else {
@@ -295,21 +295,18 @@ void load(const esio_handle h,
 {
     DEBUG0("Loading scenario_definition parameters");
 
-    // All ranks load data into temporary storage
-    esio_line_establish(h, 1, 0, 1);
-    scenario_definition t;
+    esio_line_establish(h, 1, 0, 1); // All ranks load
 
-    esio_line_read(h, name_Re,         &t.Re,         0);
-    esio_line_read(h, name_Ma,         &t.Ma,         0);
-    esio_line_read(h, name_Pr,         &t.Pr,         0);
-    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
-    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
-    esio_line_read(h, name_alpha,      &t.alpha,      0);
-    esio_line_read(h, name_beta,       &t.beta,       0);
-    esio_line_read(h, name_gamma,      &t.gamma,      0);
-
-    // Populate the argument based on temporary storage
-    s.populate(t, true);
+    scenario_definition t(s);  // Copy values on entry
+    esio_line_read(h, name_Re,         &s.Re,         0);
+    esio_line_read(h, name_Ma,         &s.Ma,         0);
+    esio_line_read(h, name_Pr,         &s.Pr,         0);
+    esio_line_read(h, name_bulk_rho,   &s.bulk_rho,   0);
+    esio_line_read(h, name_bulk_rho_u, &s.bulk_rho_u, 0);
+    esio_line_read(h, name_alpha,      &s.alpha,      0);
+    esio_line_read(h, name_beta,       &s.beta,       0);
+    esio_line_read(h, name_gamma,      &s.gamma,      0);
+    s.override(t, true);       // Override load results with entry
 }
 
 } // namespace perfect
