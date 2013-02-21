@@ -192,48 +192,6 @@ scenario_definition::options_description()
     return retval;
 }
 
-// Compare and contrast maybe_override just below
-static void
-maybe_populate(const char *name,
-               const char *desc,
-                     real_t& dst,
-               const real_t& src,
-               const bool verbose)
-{
-    if ((boost::math::isnan)(dst)) {
-        if (verbose) {
-            INFO0("Populating " << name << " (" << desc << ") to be " << src);
-        }
-        dst = src;
-    } else {
-        if (verbose) {
-            DEBUG0("Retaining " << name << " (" << desc << ") as " << dst);
-        }
-    }
-}
-
-// Compare and contrast maybe_populate just above
-static void
-maybe_override(const char *name,
-               const char *desc,
-                     real_t& dst,
-               const real_t& src,
-               const bool verbose)
-{
-    if (!(boost::math::isnan)(src)) {
-#pragma warning(push,disable:1572)
-        if (verbose && src != dst && !(boost::math::isnan)(dst)) {
-#pragma warning(pop)
-            INFO0("Overriding " << name << " (" << desc << ") to be " << src);
-        }
-        dst = src;
-    } else {
-        if (verbose) {
-            DEBUG0("Retaining " << name << " (" << desc << ") as " << dst);
-        }
-    }
-}
-
 void
 scenario_definition::populate(
         const scenario_definition& that,

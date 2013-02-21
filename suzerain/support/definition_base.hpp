@@ -51,6 +51,52 @@ public:
     /** Virtual destructor as appropriate for a base class. */
     virtual ~definition_base() {}
 
+protected:
+
+    /**@name Helpers for subclass implementations */
+    /**@{*/
+
+    /**
+     * If \c destination is NaN, populate it with the value from source.
+     * When \c verbose, log an informative message using \c name and
+     * \c description.
+     *
+     * @param name        Name to use for any logging.
+     * @param description A short description of \c name to use for logging.
+     *                    If \c NULL, no description will be logged.
+     * @param destination Location to possibly assign from \c source.
+     * @param source      Data used whenever \c destination is NaN.
+     * @param verbose     Should a human-readable message be logged?
+     *
+     * @return \c True whenever \c destination was populated from \c source.
+     */
+    static bool maybe_populate(const char*   name,
+                               const char*   description,
+                                     real_t& destination,
+                               const real_t& source,
+                               const bool    verbose);
+
+    /**
+     * If \c source is non-NaN, override \c destination with its value.
+     * When \c verbose, log an informative message using \c name and
+     * \c description.
+     *
+     * @param name        Name to use for any logging.
+     * @param description A short description of \c name to use for logging.
+     *                    If \c NULL, no description will be logged.
+     * @param destination Location to possibly assign from \c source.
+     * @param source      Data used whenever it is non-NaN.
+     * @param verbose     Should a human-readable message be logged?
+     *
+     * @return \c True whenever \c destination was overriden from \c source.
+     */
+    static bool maybe_override(const char*   name,
+                               const char*   description,
+                                     real_t& destination,
+                               const real_t& source,
+                               const bool    verbose);
+
+    /**@}*/
 };
 
 } // namespace support
