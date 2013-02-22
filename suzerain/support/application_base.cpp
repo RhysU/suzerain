@@ -258,12 +258,18 @@ application_base::establish_decomposition(
     }
 
     // Log rank-by-rank decomposition results in debug mode
-    DEBUG("Local wave start      (XYZ): " << dgrid->local_wave_start);
-    DEBUG("Local wave end        (XYZ): " << dgrid->local_wave_end);
-    DEBUG("Local wave extent     (XYZ): " << dgrid->local_wave_extent);
-    DEBUG("Local physical start  (XYZ): " << dgrid->local_physical_start);
-    DEBUG("Local physical end    (XYZ): " << dgrid->local_physical_end);
-    DEBUG("Local physical extent (XYZ): " << dgrid->local_physical_extent);
+    DEBUG("Local wave start      (XYZ): "
+          << dgrid->local_wave_start.transpose());
+    DEBUG("Local wave end        (XYZ): "
+          << dgrid->local_wave_end.transpose());
+    DEBUG("Local wave extent     (XYZ): "
+          << dgrid->local_wave_extent.transpose());
+    DEBUG("Local physical start  (XYZ): "
+          << dgrid->local_physical_start.transpose());
+    DEBUG("Local physical end    (XYZ): "
+          << dgrid->local_physical_end.transpose());
+    DEBUG("Local physical extent (XYZ): "
+          << dgrid->local_physical_extent.transpose());
 
     // Display normalized workloads metrics relative to zero-zero workload
     // (only done when the information is non-trivial in the multi-rank case)
@@ -271,9 +277,9 @@ application_base::establish_decomposition(
         real_t sendbuf[4];
         if (dgrid->has_zero_zero_modes()) {
             INFO("Wave space zero-zero rank workload     (XYZ): "
-                 << dgrid->local_wave_extent);
+                 << dgrid->local_wave_extent.transpose());
             INFO("Physical space zero-zero rank workload (XYZ): "
-                 << dgrid->local_physical_extent);
+                 << dgrid->local_physical_extent.transpose());
             sendbuf[0] = (real_t) dgrid->local_wave_extent.prod();
             sendbuf[1] = (real_t) dgrid->local_physical_extent.prod();
         }
