@@ -655,27 +655,27 @@ driver_base::build_timeprefix_mantissa_digits()
         n = max(n, -floor(log10(timedef->status_dt)));
     }
 
-    // Restart, statistics, and status frequencies measured in time steps
-    // Check both minimum and maximum time step sizes as only one or the
-    // other might be specified in some meaningful (or consistent fashion).
+    // Restart, statistics, and status frequencies measured in
+    // time steps checking against minimum step sizes
     if (restartdef->nt > 0) {
-        n = max(n, -floor(log10(timedef->max_dt * restartdef->nt)) + 1);
-    }
-    if (restartdef->nt > 0) {
-        n = max(n, -floor(log10(timedef->min_dt * restartdef->nt)) + 1);
+        n = max(n, -floor(log10(timedef->min_dt * restartdef->nt)));
     }
     if (statsdef->nt > 0) {
-        n = max(n, -floor(log10(timedef->max_dt * statsdef->nt)) + 1);
-    }
-    if (statsdef->nt > 0) {
-        n = max(n, -floor(log10(timedef->min_dt * statsdef->nt)) + 1);
+        n = max(n, -floor(log10(timedef->min_dt * statsdef->nt)));
     }
     if (timedef->status_nt > 0) {
-        n = max(n, -floor(log10(timedef->max_dt * timedef->status_nt)) + 1);
+        n = max(n, -floor(log10(timedef->min_dt * timedef->status_nt)));
     }
-    if (timedef->status_nt > 0) {
-        n = max(n, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
+
+    // Maximum time step sizes as a human-friendly service to the user
+    if (timedef->max_dt > 0) {
+        n = max(n, -floor(log10(timedef->max_dt)));
     }
+
+    // Pad the result by one decimal place so the user realizes
+    // that the time steps are not exactly what is output--
+    // some drift will be noticeable in this final digit
+    n += 1;
 
     // While n was real-valued to please the type system,
     // the result mathematically had to be an integer.
