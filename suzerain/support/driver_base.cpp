@@ -643,8 +643,35 @@ driver_base::build_timeprefix_mantissa_digits()
     using std::log10;
 
     real_t n = 0;
+
+    // Restart, statistics, and status frequencies measured in simulation time
+    if (restartdef->dt > 0) {
+        n = max(n, -floor(log10(restartdef->dt)));
+    }
+    if (statsdef->dt > 0) {
+        n = max(n, -floor(log10(statsdef->dt)));
+    }
     if (timedef->status_dt > 0) {
         n = max(n, -floor(log10(timedef->status_dt)));
+    }
+
+    // Restart, statistics, and status frequencies measured in time steps
+    // Check both minimum and maximum time step sizes as only one or the
+    // other might be specified in some meaningful (or consistent fashion).
+    if (restartdef->nt > 0) {
+        n = max(n, -floor(log10(timedef->max_dt * restartdef->nt)) + 1);
+    }
+    if (restartdef->nt > 0) {
+        n = max(n, -floor(log10(timedef->min_dt * restartdef->nt)) + 1);
+    }
+    if (statsdef->nt > 0) {
+        n = max(n, -floor(log10(timedef->max_dt * statsdef->nt)) + 1);
+    }
+    if (statsdef->nt > 0) {
+        n = max(n, -floor(log10(timedef->min_dt * statsdef->nt)) + 1);
+    }
+    if (timedef->status_nt > 0) {
+        n = max(n, -floor(log10(timedef->max_dt * timedef->status_nt)) + 1);
     }
     if (timedef->status_nt > 0) {
         n = max(n, -floor(log10(timedef->min_dt * timedef->status_nt)) + 1);
