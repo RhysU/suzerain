@@ -667,14 +667,19 @@ driver_base::build_timeprefix_mantissa_digits()
         n = max(n, -floor(log10(timedef->min_dt * timedef->status_nt)));
     }
 
+    // Maximum simulation duration measured as time
+    if (timedef->advance_dt > 0) {
+        n = max(n, -floor(log10(timedef->advance_dt)));
+    }
+
     // Maximum time step sizes as a human-friendly service to the user
     if (timedef->max_dt > 0) {
         n = max(n, -floor(log10(timedef->max_dt)));
     }
 
     // Pad the result by one decimal place so the user realizes
-    // that the time steps are not exactly what is output--
-    // some drift will be noticeable in this final digit
+    // that the time steps are not exactly what is output as
+    // some drift will likely be noticeable in this final digit
     n += 1;
 
     // While n was real-valued to please the type system,
