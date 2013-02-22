@@ -335,8 +335,8 @@ driver_base::prepare_controller(
 
     // Register statistics-related callbacks per statistics_{dt,nt}.
     // If no non-default, non-zero values were provided, be sensible.
-    if (   options.variables()["stats_dt"].defaulted()
-        && options.variables()["stats_nt"].defaulted()
+    if (   options.variables()["statistics_dt"].defaulted()
+        && options.variables()["statistics_nt"].defaulted()
         && !statsdef->dt
         && !statsdef->nt) {
         default_statistics_interval(statsdef->dt, statsdef->nt);
