@@ -261,7 +261,7 @@ int main(int argc, char **argv)
     esio_string_set(esioh, "/", "generated_by",
                     (std::string("channel ") + revstr).c_str()); // Ticket #2595
     scenario.save(esioh);
-    support::save(esioh, grid);
+    grid.save(esioh);
     support::save(esioh, b, cop, gop);
     support::save(esioh, timedef);
     perfect::save(esioh, msoln, scenario, grid);

@@ -632,7 +632,7 @@ int main(int argc, char **argv)
 
             // Store the scenario and numerics metadata
             scenario->save(h.get());
-            support::save(h.get(), *grid);
+            grid->save(h.get());
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
             support::save(h.get(), b, cop, gop);
@@ -738,7 +738,7 @@ static quantity::storage_map_type process(
     shared_ptr<bsplineop> cop;
     support::load_time(h.get(), time);
     scenario.load(h.get());
-    support::load(h.get(), grid);
+    grid.load(h.get());
     support::load(h.get(), timedef);
     support::load(h.get(), b, cop);
     assert(b->n() == grid.N.y());

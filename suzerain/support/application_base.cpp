@@ -174,7 +174,7 @@ application_base::load_grid_and_operators(
 
     // Possibly load the grid parameters from the restart file
     if (esioh) {
-        load(esioh, *grid);
+        grid->load(esioh);
     }
 
     // Create the discrete B-spline operators
@@ -191,7 +191,7 @@ application_base::save_grid_and_operators(
     SUZERAIN_ENSURE(cop);
     SUZERAIN_ENSURE(gop);
 
-    save(esioh, *grid);
+    grid->save(esioh);
     save(esioh, b, cop, gop);
 }
 

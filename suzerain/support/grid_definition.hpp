@@ -77,28 +77,59 @@ public:
                     const int    Nz,
                     const real_t DAFz);
 
+    /** Virtual destructor to permit use as a base class */
+    virtual ~grid_definition();
+
+    /**
+     * Populate any NaN members in \c this with values from \c that.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when a value is retained?
+     */
+    virtual void populate(
+            const grid_definition& that,
+            const bool verbose = false);
+
+    /**
+     * Override members in \c this with non-NaN values from \c that.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when an override occurs?
+     */
+    virtual void override(
+            const grid_definition& that,
+            const bool verbose = false);
+
+    /**
+     * Save grid details into an ESIO-based file.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param h Open, writable handle in which details will be saved.
+     */
+    virtual void save(
+            const esio_handle h) const;
+
+    /**
+     * Populate grid details from an ESIO-based file.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param h       Open, readable handle from which details will be loaded.
+     * @param verbose Should logging be emitted when a value is retained?
+     */
+    virtual void load(
+            const esio_handle h,
+            const bool verbose = true);
+
     /** @copydoc support::definition_base::options_description() */
     boost::program_options::options_description options_description();
 
 };
-
-/**
- * Save a grid_definition in an ESIO-based file.
- *
- * @param h    Open, writable handle in which details will be saved.
- * @param grid Grid to be saved.
- */
-void save(const esio_handle h,
-          const grid_definition& grid);
-
-/**
- * Load a grid_definition from an ESIO-based file.
- *
- * @param h    Open, readable handle from which details will be loaded.
- * @param grid Grid to be saved.
- */
-void load(const esio_handle h,
-          grid_definition& grid);
 
 } // namespace support
 

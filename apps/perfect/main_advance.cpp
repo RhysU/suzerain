@@ -116,19 +116,19 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     INFO0("Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
-        // Preserve exact restart file details via push/pop/merge below
+        // Preserve exact restart file details via Push/Pop/Merge below
         shared_ptr<scenario_definition> restart_scenario
                 = make_shared<scenario_definition>();
 
         // Load the restart details with state going into state_linear
-        esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
-        esio_file_open(esioh, restart_file.c_str(), 0);
-        restart_scenario.swap(scenario);              // push
-        load_restart(esioh, initial_t);
-        restart_scenario.swap(scenario);              // pop
-        scenario->populate(*restart_scenario, true);  // merge
-        esio_file_close(esioh);
-        esio_handle_finalize(esioh);
+        shared_ptr<boost::remove_pointer<esio_handle>::type> h( // RAII
+                esio_handle_initialize(MPI_COMM_WORLD),
+                esio_handle_finalize);
+        esio_file_open(h.get(), restart_file.c_str(), 0);
+        restart_scenario.swap(scenario);                        // Push
+        load_restart(h.get(), initial_t);
+        restart_scenario.swap(scenario);                        // Pop
+        scenario->populate(*restart_scenario, true);            // Merge
 
         // Adjust total energy as necessary to account for any scenario change
         state_nonlinear->assign(*state_linear);

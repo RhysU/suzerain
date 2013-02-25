@@ -78,41 +78,60 @@ grid_definition::grid_definition(const real_t Lx,
 {
 }
 
-// Descriptions used in options_description and possibly save/load.
-static const char description_Lx[]
+grid_definition::~grid_definition()
+{
+    // NOP
+}
+
+// Strings used in options_description and populate/override/save/load.
+static const char name_Lx[]      = "Lx";
+static const char name_Nx[]      = "Nx";
+static const char name_DAFx[]    = "DAFx";
+static const char name_Ly[]      = "Ly";
+static const char name_Ny[]      = "Ny";
+static const char name_k[]       = "k";
+static const char name_htdelta[] = "htdelta";
+static const char name_Lz[]      = "Lz";
+static const char name_Nz[]      = "Nz";
+static const char name_DAFz[]    = "DAFz";
+static const char name_Pa[]      = "Pa";
+static const char name_Pb[]      = "Pb";
+
+// Description used in options_description and populate/override/save/load.
+static const char desc_Lx[]
         = "Domain length in streamwise X direction";
 
-static const char description_Nx[]
+static const char desc_Nx[]
         = "Global logical extents in streamwise X direction";
 
-static const char description_DAFx[]
+static const char desc_DAFx[]
         = "Dealiasing factor in streamwise X direction";
 
-static const char description_Ly[]
+static const char desc_Ly[]
         = "Domain length in wall-normal Y direction";
 
-static const char description_Ny[]
+static const char desc_Ny[]
         = "Global logical extents in wall-normal Y direction";
 
-static const char description_k[]
+static const char desc_k[]
         = "Wall-normal B-spline order (4 is piecewise cubic)";
 
-static const char description_htdelta[]
+static const char desc_htdelta[]
         = "Wall-normal breakpoint hyperbolic tangent stretching";
 
-static const char description_Lz[]
+static const char desc_Lz[]
         = "Domain length in spanwise Z direction";
 
-static const char description_Nz[]
+static const char desc_Nz[]
         = "Global logical extents in spanwise Z direction";
 
-static const char description_DAFz[]
+static const char desc_DAFz[]
         = "Dealiasing factor in spanwise Z direction";
 
-static const char description_Pa[]
+static const char desc_Pa[]
         = "Processor count in the Pa decomposition direction";
 
-static const char description_Pb[]
+static const char desc_Pb[]
         = "Processor count in the Pb decomposition direction";
 
 boost::program_options::options_description
@@ -143,11 +162,11 @@ grid_definition::options_description()
     // Lx
     p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &L.x(),
-                     &ensure_positive<real_t>, "Lx"));
+                     &ensure_positive<real_t>, name_Lx));
     if (!(boost::math::isnan)(L.x())) {
         p->default_value(lexical_cast<string>(L.x()));
     }
-    retval.add_options()("Lx", p.release(), description_Lx);
+    retval.add_options()(name_Lx, p.release(), desc_Lx);
 
     // Nx
     p.reset(value<string>());
@@ -156,7 +175,7 @@ grid_definition::options_description()
     if (N.x()) {
         p->default_value(lexical_cast<string>(N.x()));
     }
-    retval.add_options()("Nx", p.release(), description_Nx);
+    retval.add_options()(name_Nx, p.release(), desc_Nx);
 
     // DAFx
     p.reset(value<string>());
@@ -165,16 +184,16 @@ grid_definition::options_description()
     if (!(boost::math::isnan)(DAF.x())) {
         p->default_value(lexical_cast<string>(DAF.x()));
     }
-    retval.add_options()("DAFx", p.release(), description_DAFx);
+    retval.add_options()(name_DAFx, p.release(), desc_DAFx);
 
     // Ly
     p.reset(value<string>(NULL));
     p->notifier(bind(&parse_option<real_t>, _1, &L.y(),
-                     &ensure_positive<real_t>, "Ly"));
+                     &ensure_positive<real_t>, name_Ly));
     if (!(boost::math::isnan)(L.y())) {
         p->default_value(lexical_cast<string>(L.y()));
     }
-    retval.add_options()("Ly", p.release(), description_Ly);
+    retval.add_options()(name_Ly, p.release(), desc_Ly);
 
     // Ny
     p.reset(value<string>());
@@ -183,37 +202,37 @@ grid_definition::options_description()
     if (N.y()) {
         p->default_value(lexical_cast<string>(N.y()));
     }
-    retval.add_options()("Ny", p.release(), description_Ny);
+    retval.add_options()(name_Ny, p.release(), desc_Ny);
 
     // k
     p.reset(value<string>());
     if (k) {
         p->notifier(bind(&parse_option<int>, _1, &k,
-                         &ensure_positive<int>, "k"));
+                         &ensure_positive<int>, name_k));
         p->default_value(lexical_cast<string>(k));
     } else {
         p->notifier(bind(&parse_option<int>, _1, &k,
-                         &ensure_nonnegative<int>, "k"));
+                         &ensure_nonnegative<int>, name_k));
     }
-    retval.add_options()("k", p.release(), description_k);
+    retval.add_options()(name_k, p.release(), desc_k);
 
     // htdelta
     p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &htdelta,
-                     &ensure_nonnegative<real_t>, "htdelta"));
+                     &ensure_nonnegative<real_t>, name_htdelta));
     if (!(boost::math::isnan)(htdelta)) {
         p->default_value(lexical_cast<string>(htdelta));
     }
-    retval.add_options()("htdelta", p.release(), description_htdelta);
+    retval.add_options()(name_htdelta, p.release(), desc_htdelta);
 
     // Lz
     p.reset(value<string>());
     p->notifier(bind(&parse_option<real_t>, _1, &L.z(),
-                     &ensure_positive<real_t>, "Lz"));
+                     &ensure_positive<real_t>, name_Lz));
     if (!(boost::math::isnan)(L.z())) {
         p->default_value(lexical_cast<string>(L.z()));
     }
-    retval.add_options()("Lz", p.release(), description_Lz);
+    retval.add_options()(name_Lz, p.release(), desc_Lz);
 
     // Nz
     p.reset(value<string>());
@@ -222,7 +241,7 @@ grid_definition::options_description()
     if (N.z()) {
         p->default_value(lexical_cast<string>(N.z()));
     }
-    retval.add_options()("Nz", p.release(), description_Nz);
+    retval.add_options()(name_Nz, p.release(), desc_Nz);
 
     // DAFz
     p.reset(value<string>());
@@ -231,31 +250,110 @@ grid_definition::options_description()
     if (!(boost::math::isnan)(DAF.z())) {
         p->default_value(lexical_cast<string>(DAF.z()));
     }
-    retval.add_options()("DAFz", p.release(), description_DAFz);
+    retval.add_options()(name_DAFz, p.release(), desc_DAFz);
 
     // Pa
     p.reset(value<string>());
     p->notifier(bind(&parse_option<int>, _1, &P[0],
-                     &ensure_nonnegative<int>, "Pa"));
+                     &ensure_nonnegative<int>, name_Pa));
     if (P[0]) {
         p->default_value(lexical_cast<string>(P[0]));
     }
-    retval.add_options()("Pa", p.release(), description_Pa);
+    retval.add_options()(name_Pa, p.release(), desc_Pa);
 
     // Pb
     p.reset(value<string>());
     p->notifier(bind(&parse_option<int>, _1, &P[1],
-                     &ensure_nonnegative<int>, "Pb"));
+                     &ensure_nonnegative<int>, name_Pb));
     if (P[1]) {
         p->default_value(lexical_cast<string>(P[1]));
     }
-    retval.add_options()("Pb", p.release(), description_Pb);
+    retval.add_options()(name_Pb, p.release(), desc_Pb);
 
     return retval;
 }
 
-void save(const esio_handle h,
-          const grid_definition& grid)
+void
+grid_definition::populate(
+        const grid_definition& that,
+        const bool verbose)
+{
+    maybe_populate(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);
+    {
+        int value = N.x();
+        maybe_populate(name_Nx, desc_Nx, value, that.N.x(), verbose);
+        Nx(value);
+    }
+    {
+        double factor = DAF.x();
+        maybe_populate(name_DAFx, desc_DAFx, factor, that.DAF.x(), verbose);
+        DAFx(factor);
+    }
+    maybe_populate(name_Ly, desc_Ly, L.y(), that.L.y(), verbose);
+    {
+        int value = N.y();
+        maybe_populate(name_Ny, desc_Ny, value, that.N.y(), verbose);
+        Ny(value);
+    }
+    maybe_populate(name_k, desc_k, k, that.k, verbose);
+    maybe_populate(name_htdelta, desc_htdelta, htdelta, that.htdelta, verbose);
+    maybe_populate(name_Lz, desc_Lz, L.z(), that.L.z(), verbose);
+    {
+        int value = N.z();
+        maybe_populate(name_Nz, desc_Nz, value, that.N.z(), verbose);
+        Nz(value);
+    }
+    {
+        double factor = DAF.z();
+        maybe_populate(name_DAFz, desc_DAFz, factor, that.DAF.z(), verbose);
+        DAFz(factor);
+    }
+    maybe_populate(name_Pa, desc_Pa, P[0], that.P[0], verbose);
+    maybe_populate(name_Pb, desc_Pb, P[1], that.P[1], verbose);
+}
+
+void
+grid_definition::override(
+        const grid_definition& that,
+        const bool verbose)
+{
+    maybe_override(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);
+    {
+        int value = N.x();
+        maybe_override(name_Nx, desc_Nx, value, that.N.x(), verbose);
+        Nx(value);
+    }
+    {
+        double factor = DAF.x();
+        maybe_override(name_DAFx, desc_DAFx, factor, that.DAF.x(), verbose);
+        DAFx(factor);
+    }
+    maybe_override(name_Ly, desc_Ly, L.y(), that.L.y(), verbose);
+    {
+        int value = N.y();
+        maybe_override(name_Ny, desc_Ny, value, that.N.y(), verbose);
+        Ny(value);
+    }
+    maybe_override(name_k, desc_k, k, that.k, verbose);
+    maybe_override(name_htdelta, desc_htdelta, htdelta, that.htdelta, verbose);
+    maybe_override(name_Lz, desc_Lz, L.z(), that.L.z(), verbose);
+    {
+        int value = N.z();
+        maybe_override(name_Nz, desc_Nz, value, that.N.z(), verbose);
+        Nz(value);
+    }
+    {
+        double factor = DAF.z();
+        maybe_override(name_DAFz, desc_DAFz, factor, that.DAF.z(), verbose);
+        DAFz(factor);
+    }
+    maybe_override(name_Pa, desc_Pa, P[0], that.P[0], verbose);
+    maybe_override(name_Pb, desc_Pb, P[1], that.P[1], verbose);
+}
+
+void
+grid_definition::save(
+        const esio_handle h) const
 {
     // Only root writes data
     int procid;
@@ -265,35 +363,35 @@ void save(const esio_handle h,
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, "Lx",      &grid.L.x(),   0, description_Lx     );
-    esio_line_write(h, "Nx",      &grid.N.x(),   0, description_Nx     );
-    esio_line_write(h, "DAFx",    &grid.DAF.x(), 0, description_DAFx   );
-    esio_line_write(h, "Ly",      &grid.L.y(),   0, description_Ly     );
-    esio_line_write(h, "Ny",      &grid.N.y(),   0, description_Ny     );
-    esio_line_write(h, "k",       &grid.k,       0, description_k      );
-    esio_line_write(h, "htdelta", &grid.htdelta, 0, description_htdelta);
-    esio_line_write(h, "Lz",      &grid.L.z(),   0, description_Lz     );
-    esio_line_write(h, "Nz",      &grid.N.z(),   0, description_Nz     );
-    esio_line_write(h, "DAFz",    &grid.DAF.z(), 0, description_DAFz   );
+    esio_line_write(h, name_Lx,      &this->L.x(),   0, desc_Lx     );
+    esio_line_write(h, name_Nx,      &this->N.x(),   0, desc_Nx     );
+    esio_line_write(h, name_DAFx,    &this->DAF.x(), 0, desc_DAFx   );
+    esio_line_write(h, name_Ly,      &this->L.y(),   0, desc_Ly     );
+    esio_line_write(h, name_Ny,      &this->N.y(),   0, desc_Ny     );
+    esio_line_write(h, name_k,       &this->k,       0, desc_k      );
+    esio_line_write(h, name_htdelta, &this->htdelta, 0, desc_htdelta);
+    esio_line_write(h, name_Lz,      &this->L.z(),   0, desc_Lz     );
+    esio_line_write(h, name_Nz,      &this->N.z(),   0, desc_Nz     );
+    esio_line_write(h, name_DAFz,    &this->DAF.z(), 0, desc_DAFz   );
 
     DEBUG0("Storing wavenumber vectors for Fourier bases");
-    ArrayXc cbuf(std::max(grid.N.x(), grid.N.z()));
+    ArrayXc cbuf(std::max(N.x(), N.z()));
 
     // Obtain wavenumbers via computing 1*(i*kx)/i
     cbuf.fill(complex_t(1,0));
     diffwave::apply(1, 0, complex_t(0,-1), cbuf.data(),
-            grid.L.x(), grid.L.z(),
-            1, grid.N.x(), grid.N.x(), 0, grid.N.x(), 1, 1, 0, 1);
-    esio_line_establish(h, grid.N.x(), 0, (procid == 0 ? grid.N.x() : 0));
+            L.x(), L.z(),
+            1, N.x(), N.x(), 0, N.x(), 1, 1, 0, 1);
+    esio_line_establish(h, N.x(), 0, (procid == 0 ? N.x() : 0));
     esio_line_write(h, "kx", reinterpret_cast<real_t *>(cbuf.data()),
             2, "Wavenumbers in streamwise X direction"); // Re(cbuf)
 
     // Obtain wavenumbers via computing 1*(i*kz)/i
     cbuf.fill(complex_t(1,0));
     diffwave::apply(0, 1, complex_t(0,-1), cbuf.data(),
-            grid.L.x(), grid.L.z(),
-            1, 1, 1, 0, 1, grid.N.z(), grid.N.z(), 0, grid.N.z());
-    esio_line_establish(h, grid.N.z(), 0, (procid == 0 ? grid.N.z() : 0));
+            L.x(), L.z(),
+            1, 1, 1, 0, 1, N.z(), N.z(), 0, N.z());
+    esio_line_establish(h, N.z(), 0, (procid == 0 ? N.z() : 0));
     esio_line_write(h, "kz", reinterpret_cast<real_t *>(cbuf.data()),
             2, "Wavenumbers in spanwise Z direction"); // Re(cbuf)
 
@@ -301,106 +399,71 @@ void save(const esio_handle h,
     ArrayXr rbuf;
 
     // Obtain collocation points in x using [-Lx/2, Lx/2]) and dN.x()
-    if (grid.dN.x() > 1) {
-        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.x(), 0, grid.dN.x() - 1);
-        rbuf *= grid.L.x() / grid.dN.x();
-        rbuf -= grid.L.x() / 2;
+    if (dN.x() > 1) {
+        rbuf = ArrayXr::LinSpaced(Sequential, dN.x(), 0, dN.x() - 1);
+        rbuf *= L.x() / dN.x();
+        rbuf -= L.x() / 2;
     } else {
-        rbuf = ArrayXr::Constant(grid.dN.x(), 0);
+        rbuf = ArrayXr::Constant(dN.x(), 0);
     }
     esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
     esio_line_write(h, "collocation_points_x", rbuf.data(), 0,
             "Collocation points for the dealiased, streamwise X direction");
 
     // Obtain collocation points in z using [-Lz/2, Lz/2]) and dN.z()
-    if (grid.dN.z() > 1) {
-        rbuf = ArrayXr::LinSpaced(Sequential, grid.dN.z(), 0, grid.dN.z() - 1);
-        rbuf *= grid.L.z() / grid.dN.z();
-        rbuf -= grid.L.z() / 2;
+    if (dN.z() > 1) {
+        rbuf = ArrayXr::LinSpaced(Sequential, dN.z(), 0, dN.z() - 1);
+        rbuf *= L.z() / dN.z();
+        rbuf -= L.z() / 2;
     } else {
-        rbuf = ArrayXr::Constant(grid.dN.z(), 0);
+        rbuf = ArrayXr::Constant(dN.z(), 0);
     }
     esio_line_establish(h, rbuf.size(), 0, (procid == 0 ? rbuf.size() : 0));
     esio_line_write(h, "collocation_points_z", rbuf.data(), 0,
             "Collocation points for the dealiased, spanwise Z direction");
 }
 
-void load(const esio_handle h,
-          grid_definition& grid)
+void
+grid_definition::load(
+        const esio_handle h,
+        const bool verbose)
 {
     DEBUG0("Loading grid_definition parameters");
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 
-    if (!(boost::math::isnan)(grid.L.x())) {
-        INFO0("Overriding grid using Lx = " << grid.L.x());
-    } else {
-        esio_line_read(h, "Lx", &grid.L.x(), 0);
-    }
-
-    if (grid.N.x()) {
-        INFO0("Overriding grid using Nx = " << grid.N.x());
-    } else {
+    grid_definition t;
+    esio_line_read(h, name_Lx, &t.L.x(), 0);
+    {
         int value;
-        esio_line_read(h, "Nx", &value, 0);
-        grid.Nx(value);
+        esio_line_read(h, name_Nx, &value, 0);
+        t.Nx(value);
     }
-
-    if (!((boost::math::isnan)(grid.DAF.x()))) {
-        INFO0("Overriding grid using DAFx = " << grid.DAF.x());
-    } else {
+    {
         double factor;
-        esio_line_read(h, "DAFx", &factor, 0);
-        grid.DAFx(factor);
+        esio_line_read(h, name_DAFx, &factor, 0);
+        t.DAFx(factor);
     }
-
-    if (!(boost::math::isnan)(grid.L.y())) {
-        INFO0("Overriding grid using Ly = " << grid.L.y());
-    } else {
-        esio_line_read(h, "Ly", &grid.L.y(), 0);
-    }
-
-    if (grid.N.y()) {
-        INFO0("Overriding grid using Ny = " << grid.N.y());
-    } else {
+    esio_line_read(h, name_Ly, &t.L.y(), 0);
+    {
         int value;
-        esio_line_read(h, "Ny", &value, 0);
-        grid.Ny(value);
+        esio_line_read(h, name_Ny, &value, 0);
+        t.Ny(value);
     }
-
-    if (grid.k) {
-        INFO0("Overriding grid using k = " << grid.k);
-    } else {
-        esio_line_read(h, "k", &grid.k, 0);
-    }
-
-    if (!((boost::math::isnan)(grid.htdelta))) {
-        INFO0("Overriding grid using htdelta = " << grid.htdelta);
-    } else {
-        esio_line_read(h, "htdelta", &grid.htdelta, 0);
-    }
-
-    if (!(boost::math::isnan)(grid.L.z())) {
-        INFO0("Overriding grid using Lz = " << grid.L.z());
-    } else {
-        esio_line_read(h, "Lz", &grid.L.z(), 0);
-    }
-
-    if (grid.N.z()) {
-        INFO0("Overriding grid using Nz = " << grid.N.z());
-    } else {
+    esio_line_read(h, name_k, &t.k, 0);
+    esio_line_read(h, name_htdelta, &t.htdelta, 0);
+    esio_line_read(h, name_Lz, &t.L.z(), 0);
+    {
         int value;
-        esio_line_read(h, "Nz", &value, 0);
-        grid.Nz(value);
+        esio_line_read(h, name_Nz, &value, 0);
+        t.Nz(value);
     }
-
-    if (!((boost::math::isnan)(grid.DAF.z()))) {
-        INFO0("Overriding grid using DAFz = " << grid.DAF.z());
-    } else {
+    {
         double factor;
-        esio_line_read(h, "DAFz", &factor, 0);
-        grid.DAFz(factor);
+        esio_line_read(h, name_DAFz, &factor, 0);
+        t.DAFz(factor);
     }
+    this->populate(t, verbose);  // Prefer incoming to temporary
 }
 
 } // end namespace support

@@ -1006,7 +1006,7 @@ int main(int argc, char **argv)
         const_cast<scenario_definition&>(scenario).gamma
                 = ((boost::math::isnan)(cli_gamma)) ? restart_gamma : cli_gamma;
     }
-    support::load(esioh, const_cast<grid_definition&>(grid));
+    const_cast<grid_definition&>(grid).load(esioh);
     support::load(esioh, const_cast<time_definition&>(timedef));
     perfect::load(esioh, msoln, scenario, grid);
     esio_file_close(esioh);
@@ -1117,7 +1117,7 @@ int main(int argc, char **argv)
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
         scenario.save(h);
-        support::save(h, grid);
+        grid.save(h);
         support::save(h, b, cop, gop);
         support::save(h, timedef);
         perfect::save(h, msoln, scenario, grid);
