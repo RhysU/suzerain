@@ -116,39 +116,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     INFO0("Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
-        // Obtain exact restart scenario via "push/pop" pair below
+        // Preserve exact restart file details via push/pop/merge below
         shared_ptr<scenario_definition> restart_scenario
                 = make_shared<scenario_definition>();
 
         // Load the restart details with state going into state_linear
         esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
-        esio_file_open(esioh, restart_file.c_str(), 0 /* read-only */);
-        restart_scenario.swap(scenario);              // "push"
+        esio_file_open(esioh, restart_file.c_str(), 0);
+        restart_scenario.swap(scenario);              // push
         load_restart(esioh, initial_t);
-        restart_scenario.swap(scenario);              // "pop"
-        scenario->populate(*restart_scenario, true);  // merge non-default
+        restart_scenario.swap(scenario);              // pop
+        scenario->populate(*restart_scenario, true);  // merge
         esio_file_close(esioh);
         esio_handle_finalize(esioh);
 
-        // If necessary, adjust total energy to account for scenario changes
-        bool necessary = false;
-        if (    (isnan)(scenario->Ma)
-             || scenario->Ma != restart_scenario->Ma) {
-            necessary = true;
-            scenario->Ma = restart_scenario->Ma;
-        }
-        if (    (isnan)(scenario->gamma)
-            || scenario->gamma != restart_scenario->gamma) {
-            necessary = true;
-            scenario->gamma = restart_scenario->gamma;
-        }
-        if (necessary) {
-            state_nonlinear->assign(*state_linear);
-            adjust_scenario(*state_nonlinear, *scenario, *grid,
-                            *dgrid, *cop, restart_scenario->Ma,
-                            restart_scenario->gamma);
-            state_linear->assign(*state_nonlinear);
-        }
+        // Adjust total energy as necessary to account for any scenario change
+        state_nonlinear->assign(*state_linear);
+        adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop,
+                        restart_scenario->Ma, restart_scenario->gamma);
+        state_linear->assign(*state_nonlinear);
     }
 
     if (msoln) {
