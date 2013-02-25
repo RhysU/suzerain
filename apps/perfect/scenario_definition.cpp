@@ -251,14 +251,15 @@ scenario_definition::save(
 
 void
 scenario_definition::load(
-        const esio_handle h)
+        const esio_handle h,
+        const bool verbose)
 {
     DEBUG0("Loading scenario_definition parameters");
 
     // All ranks load
     esio_line_establish(h, 1, 0, 1);
 
-    scenario_definition t(*this);  // Copy values on entry
+    scenario_definition t;
     esio_line_read(h, name_Re,         &t.Re,         0);
     esio_line_read(h, name_Ma,         &t.Ma,         0);
     esio_line_read(h, name_Pr,         &t.Pr,         0);
@@ -267,7 +268,7 @@ scenario_definition::load(
     esio_line_read(h, name_alpha,      &t.alpha,      0);
     esio_line_read(h, name_beta,       &t.beta,       0);
     esio_line_read(h, name_gamma,      &t.gamma,      0);
-    this->override(t, true);       // Override load results with entry
+    this->populate(t, verbose);  // Prefer this to incoming
 }
 
 } // namespace perfect

@@ -104,16 +104,20 @@ public:
      *
      * @param h Open, writable handle in which details will be saved.
      */
-    virtual void save(const esio_handle h) const;
+    virtual void save(
+            const esio_handle h) const;
 
     /**
-     * Load scenario from an ESIO-based file.
+     * Populate scenario from an ESIO-based file.
      * Subclasses should override this method adding any desired functionality
      * either before or after invoking the superclass version.
      *
-     * @param h Open, readable handle from which details will be loaded.
+     * @param h       Open, readable handle from which details will be loaded.
+     * @param verbose Should logging be emitted when a value is retained?
      */
-    virtual void load(const esio_handle h);
+    virtual void load(
+            const esio_handle h,
+            const bool verbose = true);
 
     /** @copydoc support::definition_base::options_description() */
     boost::program_options::options_description options_description();
