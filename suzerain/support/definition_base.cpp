@@ -47,11 +47,12 @@ maybe_populate_impl(
 {
     if (default_value(destination)) {
         if (verbose) {
+            // Populating a default isn't interesting, hence DEBUG0
             if (description) {
-                INFO0("Populating " << name
+                DEBUG0("Populating " << name
                       << " (" << description << ") to be " << source);
             } else {
-                INFO0("Populating " << name << " to be " << source);
+                DEBUG0("Populating " << name << " to be " << source);
             }
         }
         destination = source;
@@ -60,10 +61,11 @@ maybe_populate_impl(
 
     if (verbose) {
         if (description) {
-            DEBUG0("Retaining " << name
-                   << " (" << description << ") as " << destination);
+            // Retaining an existing setting is interesting, hence INFO0
+            INFO0("Clutching onto " << name
+                   << " (" << description << ") of " << destination);
         } else {
-            DEBUG0("Retaining " << name << " as " << destination);
+            INFO0("Clutching onto " << name << " of " << destination);
         }
     }
     return false;
@@ -86,6 +88,7 @@ maybe_override_impl(
              && source != destination
              && !default_value(destination)) {
 #pragma warning(pop)
+            // Overriding is value is interesting, hence INFO0
             if (description) {
                 INFO0("Overriding " << name
                       << " (" << description << ") to be " << source);
@@ -98,6 +101,7 @@ maybe_override_impl(
     }
 
     if (verbose) {
+        // Retaining an existing setting isn't interesting, hence DEBUG0
         if (description) {
             DEBUG0("Retaining " << name
                    << " (" << description << ") as " << destination);

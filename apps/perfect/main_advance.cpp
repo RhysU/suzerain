@@ -126,7 +126,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         restart_scenario.swap(scenario);              // "push"
         load_restart(esioh, initial_t);
         restart_scenario.swap(scenario);              // "pop"
-        scenario->populate(*restart_scenario, false); // merge non-default
+        scenario->populate(*restart_scenario, true);  // merge non-default
         esio_file_close(esioh);
         esio_handle_finalize(esioh);
 
