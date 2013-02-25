@@ -53,6 +53,7 @@
 // Boost.Preprocessor was included in common.h
 SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
+SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/algorithm/string.hpp>
@@ -97,8 +98,9 @@ SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
-SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
+SUZERAIN_GCC_DIAG_ON(unused-variable);
 SUZERAIN_GCC_DIAG_ON(unused-parameter);
+SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
