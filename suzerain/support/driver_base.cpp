@@ -348,6 +348,8 @@ driver_base::prepare_controller(
 
     // Register any necessary signal handling logic once per unique signal
     {
+        logging::logger_type log_signal = logging::get_logger("signal");
+
         // Obtain a set of signal numbers which we need to register
         std::vector<int> s;
         s.insert(s.end(), signaldef.status.begin(),
@@ -367,15 +369,15 @@ driver_base::prepare_controller(
             const char * name = suzerain_signal_name(*i);
             if (SIG_ERR != signal2(*i, &driver_base_process_signal)) {
                 if (name) {
-                    DEBUG0("Registered signal handler for " << name);
+                    DEBUG0(log_signal, "Registered handler for " << name);
                 } else {
-                    DEBUG0("Registered signal handler for " << *i);
+                    DEBUG0(log_signal, "Registered handler for " << *i);
                 }
             } else {
                 if (name) {
-                    WARN0("Unable to register signal handler for " << name);
+                    WARN0(log_signal, "Unable to register handler for " << name);
                 } else {
-                    WARN0("Unable to register signal handler for " << *i);
+                    WARN0(log_signal, "Unable to register handler for " << *i);
                 }
             }
         }
@@ -1157,6 +1159,12 @@ driver_base::process_any_signals_received(
         const time_type t,
         const step_type nt)
 {
+    // The signal logger is looked up whenever logging occurs, rather
+    // than once at the beginning of the routine via something like
+    //   logging::logger_type log_signal = logging::get_logger("signal");
+    // to avoid overhead in the common case when nothing is logged.
+    static const char log_signal[] = "signal";
+
     // this->allreducer performs the Allreduce necessary to get local status
     // from signal::global_received into actions within this->signal_received.
 
@@ -1164,13 +1172,15 @@ driver_base::process_any_signals_received(
     bool keep_advancing = true;
 
     if (signal_received[signal::log_status]) {
-        INFO0("Outputting simulation status due to receipt of "
+        INFO0(log_signal,
+              "Outputting simulation status due to receipt of "
               << suzerain_signal_name(signal_received[signal::log_status]));
         keep_advancing = keep_advancing && log_status(t, nt);
     }
 
     if (signal_received[signal::write_restart]) {
-        INFO0("Writing restart file due to receipt of "
+        INFO0(log_signal,
+              "Writing restart file due to receipt of "
               << suzerain_signal_name(signal_received[signal::write_restart]));
         keep_advancing = keep_advancing && save_restart(t, nt);
     }
@@ -1178,13 +1188,15 @@ driver_base::process_any_signals_received(
     if (signal_received[signal::teardown_reactive]) {
         const char * const name = suzerain_signal_name(
                 signal_received[signal::teardown_reactive]);
-        INFO0("Initiating teardown due to receipt of " << name);
+        INFO0(log_signal,
+              "Initiating teardown due to receipt of " << name);
         soft_teardown  = true;
         keep_advancing = false;
         switch (signal_received[signal::teardown_reactive]) {
             case SIGINT:
             case SIGTERM:
-                INFO0("Receipt of another " << name <<
+                INFO0(log_signal,
+                      "Receipt of another " << name <<
                       " will forcibly terminate program");
                 signal2(signal_received[signal::teardown_reactive], SIG_DFL);
                 break;
@@ -1192,7 +1204,8 @@ driver_base::process_any_signals_received(
     }
 
     if (signal_received[signal::teardown_proactive]) {
-        INFO0("Initiating proactive teardown because of wall time constraint");
+        INFO0(log_signal,
+              "Initiating proactive teardown because of wall time constraint");
         soft_teardown  = true;
         keep_advancing = false;
     }
@@ -1200,7 +1213,8 @@ driver_base::process_any_signals_received(
     if (signal_received[signal::write_statistics]) {
         const char * const name = suzerain_signal_name(
                 signal_received[signal::write_statistics]);
-        INFO0("Computing and writing statistics due to receipt of " << name);
+        INFO0(log_signal,
+              "Computing and writing statistics due to receipt of " << name);
         keep_advancing = keep_advancing && save_statistics(t, nt);
     }
 
