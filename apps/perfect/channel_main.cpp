@@ -998,7 +998,7 @@ int main(int argc, char **argv)
         const_cast<scenario_definition&>(scenario).Ma
             = const_cast<scenario_definition&>(scenario).gamma
             = numeric_limits<real_t>::quiet_NaN();
-        perfect::load(esioh, const_cast<scenario_definition&>(scenario));
+        const_cast<scenario_definition&>(scenario).load(esioh);
         restart_Ma    = scenario.Ma;
         restart_gamma = scenario.gamma;
         const_cast<scenario_definition&>(scenario).Ma
@@ -1116,7 +1116,7 @@ int main(int argc, char **argv)
         esio_file_create(h, restart.metadata.c_str(), 1 /* overwrite */);
         esio_string_set(h, "/", "generated_by",
                         (std::string("channel ") + revstr).c_str()); // Ticket #2595
-        perfect::save(h, scenario);
+        scenario.save(h);
         support::save(h, grid);
         support::save(h, b, cop, gop);
         support::save(h, timedef);

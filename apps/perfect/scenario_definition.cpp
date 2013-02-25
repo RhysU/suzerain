@@ -228,8 +228,9 @@ scenario_definition::override(
 #undef CALL_MAYBE_OVERRIDE
 }
 
-void save(const esio_handle h,
-          const scenario_definition& s)
+void
+scenario_definition::save(
+        const esio_handle h) const
 {
     DEBUG0("Storing scenario_definition parameters");
 
@@ -238,33 +239,35 @@ void save(const esio_handle h,
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, name_Re,         &s.Re,         0, desc_Re);
-    esio_line_write(h, name_Ma,         &s.Ma,         0, desc_Ma);
-    esio_line_write(h, name_Pr,         &s.Pr,         0, desc_Pr);
-    esio_line_write(h, name_bulk_rho,   &s.bulk_rho,   0, desc_bulk_rho);
-    esio_line_write(h, name_bulk_rho_u, &s.bulk_rho_u, 0, desc_bulk_rho_u);
-    esio_line_write(h, name_alpha,      &s.alpha,      0, desc_alpha);
-    esio_line_write(h, name_beta,       &s.beta,       0, desc_beta);
-    esio_line_write(h, name_gamma,      &s.gamma,      0, desc_gamma);
+    esio_line_write(h, name_Re,         &this->Re,         0, desc_Re);
+    esio_line_write(h, name_Ma,         &this->Ma,         0, desc_Ma);
+    esio_line_write(h, name_Pr,         &this->Pr,         0, desc_Pr);
+    esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
+    esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
+    esio_line_write(h, name_alpha,      &this->alpha,      0, desc_alpha);
+    esio_line_write(h, name_beta,       &this->beta,       0, desc_beta);
+    esio_line_write(h, name_gamma,      &this->gamma,      0, desc_gamma);
 }
 
-void load(const esio_handle h,
-          scenario_definition& s)
+void
+scenario_definition::load(
+        const esio_handle h)
 {
     DEBUG0("Loading scenario_definition parameters");
 
-    esio_line_establish(h, 1, 0, 1); // All ranks load
+    // All ranks load
+    esio_line_establish(h, 1, 0, 1);
 
-    scenario_definition t(s);  // Copy values on entry
-    esio_line_read(h, name_Re,         &s.Re,         0);
-    esio_line_read(h, name_Ma,         &s.Ma,         0);
-    esio_line_read(h, name_Pr,         &s.Pr,         0);
-    esio_line_read(h, name_bulk_rho,   &s.bulk_rho,   0);
-    esio_line_read(h, name_bulk_rho_u, &s.bulk_rho_u, 0);
-    esio_line_read(h, name_alpha,      &s.alpha,      0);
-    esio_line_read(h, name_beta,       &s.beta,       0);
-    esio_line_read(h, name_gamma,      &s.gamma,      0);
-    s.override(t, true);       // Override load results with entry
+    scenario_definition t(*this);  // Copy values on entry
+    esio_line_read(h, name_Re,         &t.Re,         0);
+    esio_line_read(h, name_Ma,         &t.Ma,         0);
+    esio_line_read(h, name_Pr,         &t.Pr,         0);
+    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
+    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    esio_line_read(h, name_alpha,      &t.alpha,      0);
+    esio_line_read(h, name_beta,       &t.beta,       0);
+    esio_line_read(h, name_gamma,      &t.gamma,      0);
+    this->override(t, true);       // Override load results with entry
 }
 
 } // namespace perfect

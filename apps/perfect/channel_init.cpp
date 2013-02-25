@@ -260,7 +260,7 @@ int main(int argc, char **argv)
     esio_file_create(esioh, restart_file.c_str(), clobber);
     esio_string_set(esioh, "/", "generated_by",
                     (std::string("channel ") + revstr).c_str()); // Ticket #2595
-    perfect::save(esioh, scenario);
+    scenario.save(esioh);
     support::save(esioh, grid);
     support::save(esioh, b, cop, gop);
     support::save(esioh, timedef);

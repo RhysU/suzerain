@@ -249,7 +249,7 @@ driver::save_metadata_hook(
         const esio_handle esioh)
 {
     super::save_metadata_hook(esioh);
-    save(esioh, *scenario);
+    scenario->save(esioh);
     save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -259,7 +259,7 @@ driver::load_metadata_hook(
         const esio_handle esioh)
 {
     super::load_metadata_hook(esioh);
-    load(esioh, *scenario);
+    scenario->load(esioh);
     load(esioh, msoln, *scenario, *grid);
     return;
 }

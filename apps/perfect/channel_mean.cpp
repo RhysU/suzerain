@@ -631,7 +631,7 @@ int main(int argc, char **argv)
             esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
-            perfect::save(h.get(), *scenario);
+            scenario->save(h.get());
             support::save(h.get(), *grid);
             shared_ptr<suzerain::bsplineop> gop(new suzerain::bsplineop(
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
@@ -737,7 +737,7 @@ static quantity::storage_map_type process(
     shared_ptr<bspline> b;
     shared_ptr<bsplineop> cop;
     support::load_time(h.get(), time);
-    perfect::load(h.get(), scenario);
+    scenario.load(h.get());
     support::load(h.get(), grid);
     support::load(h.get(), timedef);
     support::load(h.get(), b, cop);

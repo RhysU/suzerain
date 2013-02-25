@@ -75,6 +75,8 @@ public:
 
     /**
      * Populate any NaN members in \c this with values from \c that.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
      *
      * @param that    Instance from which information is taken.
      * @param verbose Should logging be emitted when a value is retained?
@@ -85,6 +87,8 @@ public:
 
     /**
      * Override members in \c this with non-NaN values from \c that.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
      *
      * @param that    Instance from which information is taken.
      * @param verbose Should logging be emitted when an override occurs?
@@ -92,6 +96,24 @@ public:
     virtual void override(
             const scenario_definition& that,
             const bool verbose = false);
+
+    /**
+     * Save scenario into an ESIO-based file.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param h Open, writable handle in which details will be saved.
+     */
+    virtual void save(const esio_handle h) const;
+
+    /**
+     * Load scenario from an ESIO-based file.
+     * Subclasses should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param h Open, readable handle from which details will be loaded.
+     */
+    virtual void load(const esio_handle h);
 
     /** @copydoc support::definition_base::options_description() */
     boost::program_options::options_description options_description();
@@ -142,25 +164,6 @@ public:
     real_t gamma;
 
 };
-
-/**
- * Save a scenario_definition in an ESIO-based file.
- *
- * @param h Open, writable handle in which details will be saved.
- * @param s Scenario to be saved.
- */
-void save(const esio_handle h,
-          const scenario_definition& s);
-
-/**
- * Load a scenario_definition from an ESIO-based file.
- * Non-<tt>NaN</tt> values within \c s will not be overwritten.
- *
- * @param h Open, readable handle from which details will be loaded.
- * @param s Scenario to be overridden.
- */
-void load(const esio_handle h,
-          scenario_definition& scenario);
 
 } // namespace perfect
 
