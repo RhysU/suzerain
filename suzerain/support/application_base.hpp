@@ -39,7 +39,7 @@
 #include <suzerain/support/fftw_definition.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/program_options.hpp>
-#include <suzerain/support/who.hpp>
+#include <suzerain/support/who_base.hpp>
 
 namespace suzerain {
 
@@ -53,6 +53,7 @@ namespace support {
  * are executing within the same operating system process.
  */
 class application_base
+    : private who_base<application_base>
 {
 public:
 

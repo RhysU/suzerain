@@ -113,6 +113,7 @@ driver_base::driver_base(
                        argument_synopsis,
                        description,
                        revstr)
+    , who_base<driver_base>("driver")
     , restartdef(make_shared<restart_definition>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",

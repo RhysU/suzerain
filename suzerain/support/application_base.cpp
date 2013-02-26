@@ -61,7 +61,8 @@ application_base::application_base(
         const std::string &argument_synopsis,
         const std::string &description,
         const std::string &revstr)
-    : revstr(revstr)
+    : who_base<application_base>("app")
+    , revstr(revstr)
     , options(application_synopsis,
               argument_synopsis,
               description,
