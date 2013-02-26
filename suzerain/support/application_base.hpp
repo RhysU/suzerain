@@ -39,6 +39,7 @@
 #include <suzerain/support/fftw_definition.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/program_options.hpp>
+#include <suzerain/support/who.hpp>
 
 namespace suzerain {
 

@@ -121,6 +121,7 @@ nobase_pkginclude_HEADERS += support/signal_definition.hpp
 nobase_pkginclude_HEADERS += support/statistics_definition.hpp
 nobase_pkginclude_HEADERS += support/support.hpp
 nobase_pkginclude_HEADERS += support/time_definition.hpp
+nobase_pkginclude_HEADERS += support/who.hpp
 nobase_pkginclude_HEADERS += suzerain-config.h
 nobase_pkginclude_HEADERS += suzerain-revision.h
 nobase_pkginclude_HEADERS += svehla.h
