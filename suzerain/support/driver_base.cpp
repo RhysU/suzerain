@@ -273,7 +273,7 @@ void
 driver_base::prepare_method()
 {
     if (!method) {
-        INFO0("Preparing SMR91 timestepping scheme using evmagfactor "
+        INFO0(who, "Preparing SMR91 timestepping scheme using evmagfactor "
               << timedef->evmagfactor);
         this->method.reset(new timestepper::lowstorage::method<
                     timestepper::lowstorage::smr91,
@@ -287,7 +287,7 @@ driver_base::prepare_controller(
         const driver_base::time_type initial_t,
         const real_t chi)
 {
-    INFO0("Preparing controller at initial_t " << initial_t
+    INFO0(who, "Preparing controller at initial_t " << initial_t
           << " for step size in [" << timedef->min_dt
           << ", " << timedef->max_dt << "]");
 
@@ -376,9 +376,11 @@ driver_base::prepare_controller(
                 }
             } else {
                 if (name) {
-                    WARN0(log_signal, "Unable to register handler for " << name);
+                    WARN0(log_signal,
+                          "Unable to register handler for " << name);
                 } else {
-                    WARN0(log_signal, "Unable to register handler for " << *i);
+                    WARN0(log_signal,
+                          "Unable to register handler for " << *i);
                 }
             }
         }
@@ -432,33 +434,33 @@ driver_base::advance_controller(
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
 #pragma warning(pop)
         case 3:
-            INFO0("Advancing simulation by at most " << timedef->advance_dt
-                   << " units of physical time");
-            INFO0("Advancing simulation by at most " << timedef->advance_nt
-                   << " discrete time steps");
+            INFO0(who, "Advancing simulation by at most "
+                  << timedef->advance_dt << " units of physical time");
+            INFO0(who, "Advancing simulation by at most "
+                  << timedef->advance_nt << " discrete time steps");
             success = controller->advance(t_initial + timedef->advance_dt,
                                           timedef->advance_nt);
             break;
         case 2:
-            INFO0("Advancing simulation by at most " << timedef->advance_dt
-                   << " units of physical time");
+            INFO0(who, "Advancing simulation by at most "
+                  << timedef->advance_dt << " units of physical time");
             success = controller->advance(t_initial + timedef->advance_dt);
             break;
         case 1:
-            INFO0("Advancing simulation by at most " << timedef->advance_nt
-                   << " discrete time steps");
+            INFO0(who, "Advancing simulation by at most "
+                  << timedef->advance_nt << " discrete time steps");
             success = controller->step(timedef->advance_nt);
             break;
         case 0:
             if (options.variables()["advance_nt"].defaulted()) {
-                INFO0("Advancing simulation until terminated by a signal");
+                INFO0(who, "Advancing simulation until terminated by a signal");
                 success = controller->advance();
             } else {
-                INFO0("Simulation will not be advanced in time");
+                INFO0(who, "Simulation will not be advanced in time");
             }
             break;
         default:
-            FATAL0("Sanity error in advance_controller");
+            FATAL0(who, "Sanity error in advance_controller");
             return EXIT_FAILURE;
     }
     const double wtime_advance_end = MPI_Wtime();
@@ -470,13 +472,14 @@ driver_base::advance_controller(
 #endif
     }
     if (soft_teardown) {
-        INFO0("Time controller stopped advancing in reaction to tear down signal");
+        INFO0(who, "Time controller stopped in reaction to tear down signal");
         success = true; // ...treat like successful advance
     } else if (!success && controller->current_dt() < controller->min_dt()) {
-        WARN0("Time controller halted because step " << controller->current_dt()
-              << " was smaller than min_dt " << controller->min_dt() );
+        WARN0(who, "Time controller halted because step "
+              << controller->current_dt() << " was smaller than min_dt "
+              << controller->min_dt() );
     } else if (!success) {
-        WARN0("Time controller halted unexpectedly");
+        WARN0(who, "Time controller halted unexpectedly");
     }
 
     // Output status if it was not just output during time advancement
@@ -489,7 +492,7 @@ driver_base::advance_controller(
     if (   final_restart
         && success
         && last_restart_saved_nt != controller->current_nt()) {
-        INFO0("Saving restart file after time controller finished");
+        INFO0(who, "Saving restart file after time controller finished");
         save_restart(controller->current_t(), controller->current_nt());
     }
 
@@ -514,7 +517,7 @@ driver_base::advance_controller(
         FILE * const tmp = tmpfile();
         if (!tmp) {
             WARN("Could not open temporary file to read "
-                    << header << " " << strerror(errno));
+                 << header << " " << strerror(errno));
             INFO(header);
         } else {
             fflush(stdout);
@@ -533,7 +536,7 @@ driver_base::advance_controller(
             rewind(tmp);
             if (!buf) {
                 WARN("Could not allocate buffer to read "
-                        << header << " " << strerror(errno));
+                     << header << " " << strerror(errno));
             } else {
                 fread(buf, sizeof(buf[0]), len, tmp);
             }
@@ -546,22 +549,23 @@ driver_base::advance_controller(
 #endif
 
         // Admit what overhead we're neglecting in the following calculations
-        INFO0("Advancement rate calculations ignore "
-                              << MPI_Wtime() - wtime_mpi_init - wtime_advance
-                              << " seconds of fixed overhead");
+        INFO0(who, "Advancement rate calculations ignore "
+              << MPI_Wtime() - wtime_mpi_init - wtime_advance
+              << " seconds of fixed overhead");
 
         // Advance rate measured in a (mostly) problem-size-agnostic metric
-        INFO0("Advancing at " << wtime_advance / nsteps / grid->N.prod()
-                              << " wall seconds per time step per grid point");
+        INFO0(who, "Advancing at "
+              << wtime_advance / nsteps / grid->N.prod()
+              << " wall seconds per time step per grid point");
 
         // Advance rate measured in a problem-size-dependent metric
-        INFO0("Advancing at " << wtime_advance / nsteps
-                              << " wall seconds per time step");
+        INFO0(who, "Advancing at " << wtime_advance / nsteps
+              << " wall seconds per time step");
 
         // Advance rate measured in nondimensional simulation time units
-        INFO0("Advancing at " <<   wtime_advance
-                                 / (controller->current_t() - t_initial)
-                              << " wall seconds per simulation time unit");
+        INFO0(who, "Advancing at "
+              << wtime_advance / (controller->current_t() - t_initial)
+              << " wall seconds per simulation time unit");
     }
 
     // Output details on time advancement (whenever advancement occurred)
@@ -572,7 +576,7 @@ driver_base::advance_controller(
         msg << "Advanced simulation from t_initial = " << t_initial
             << " to t_final = " << controller->current_t()
             << " in " << nsteps << " steps";
-        INFO0(msg.str());
+        INFO0(who, msg.str());
         msg.str("");
         msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.50));
         msg << "Min/mean/max/stddev of delta_t: "
@@ -580,7 +584,7 @@ driver_base::advance_controller(
             << controller->taken_mean() << ", "
             << controller->taken_max()  << ", "
             << controller->taken_stddev();
-        INFO0(msg.str());
+        INFO0(who, msg.str());
         msg.str("");
         msg << "Mean delta_t criteria versus minimum criterion: ";
         const size_t n = delta_t_ratios.size();
@@ -589,7 +593,7 @@ driver_base::advance_controller(
             msg << acc::mean(delta_t_ratios[i]);
             if (i < n-1) msg << ", ";
         }
-        INFO0(msg.str());
+        INFO0(who, msg.str());
     }
 
     return success ? wtime_advance : -wtime_advance;
@@ -699,7 +703,8 @@ driver_base::log_status(
 
     // Defensively avoid multiple invocations with no intervening changes
     if (last_status_nt == nt) {
-        DEBUG0("Cowardly refusing to repeatedly show status at nt = " << nt);
+        DEBUG0(who, "Cowardly refusing to repeatedly show status at nt = "
+               << nt);
         return true;
     }
 
@@ -839,7 +844,7 @@ driver_base::save_metadata()
 {
     SUZERAIN_TIMER_SCOPED("driver_base::save_metadata");
 
-    DEBUG0("Saving metadata temporary file: " << restartdef->metadata);
+    DEBUG0(who, "Saving metadata temporary file: " << restartdef->metadata);
 
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
     esio_file_create(esioh, restartdef->metadata.c_str(), 1 /* overwrite */);
@@ -882,7 +887,8 @@ driver_base::save_restart(
 {
     // Defensively avoid multiple invocations with no intervening changes
     if (last_restart_saved_nt == nt) {
-        DEBUG0("Cowardly refusing to save multiple restarts at nt = " << nt);
+        DEBUG0(who, "Cowardly refusing to save multiple restarts at nt = "
+               << nt);
         return true;
     }
 
@@ -893,10 +899,10 @@ driver_base::save_restart(
     SUZERAIN_TIMER_SCOPED("driver_base::save_restart");
 
     const double starttime = MPI_Wtime();
-    INFO0(timeprefix << " Starting to save restart");
+    INFO0(who, timeprefix << " Starting to save restart");
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
-    DEBUG0("Cloning " << restartdef->metadata
+    DEBUG0(who, "Cloning " << restartdef->metadata
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
@@ -907,14 +913,14 @@ driver_base::save_restart(
     const bool continue_advancing =    save_state_hook(esioh)
                                     || save_statistics_hook(esioh);
 
-    DEBUG0("Committing " << restartdef->uncommitted
+    DEBUG0(who, "Committing " << restartdef->uncommitted
            << " as a restart file using template " << restartdef->destination);
     esio_file_close_restart(esioh, restartdef->destination.c_str(),
                             restartdef->retain);
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
-    INFO0(timeprefix << " Committed restart in " << elapsed << " seconds");
+    INFO0(who, timeprefix << " Committed restart in " << elapsed << " seconds");
 
     last_restart_saved_nt = nt; // Maintain last successful restart time step
 
@@ -929,7 +935,7 @@ driver_base::save_restart(
         const bool overwrite)
 {
     const double starttime = MPI_Wtime();
-    INFO0("Starting to save restart file " << dstfile);
+    INFO0(who, "Starting to save restart file " << dstfile);
     SUZERAIN_TIMER_SCOPED("driver_base::save_restart (one-off)");
 
     // Save metadata ensuring previously set values are not reused
@@ -938,7 +944,7 @@ driver_base::save_restart(
     metadata_saved = false;
 
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
-    DEBUG0("Cloning " << restartdef->metadata << " to " << dstfile);
+    DEBUG0(who, "Cloning " << restartdef->metadata << " to " << dstfile);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     dstfile.c_str(), overwrite);
     save_time(esioh, t);
@@ -952,7 +958,7 @@ driver_base::save_restart(
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
-    INFO0("Committed restart file " << dstfile
+    INFO0(who, "Committed restart file " << dstfile
           << " in "<< elapsed << " seconds");
 
     return continue_advancing;
@@ -985,7 +991,8 @@ driver_base::save_statistics(
 {
     // Defensively avoid multiple invocations with no intervening changes
     if (last_statistics_saved_nt == nt) {
-        DEBUG0("Cowardly refusing to save multiple samples at nt = " << nt);
+        DEBUG0(who, "Cowardly refusing to save multiple samples at nt = "
+               << nt);
         return true;
     }
 
@@ -996,11 +1003,11 @@ driver_base::save_statistics(
     SUZERAIN_TIMER_SCOPED("driver_base::save_statistics");
 
     const double starttime = MPI_Wtime();
-    DEBUG0("Started to store statistics at t = " << t << " and nt = " << nt);
+    DEBUG0(who, timeprefix << " Started to store statistics");
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
 
     // We use restartdef->{metadata,uncommitted} for statistics too.
-    DEBUG0("Cloning " << restartdef->metadata
+    DEBUG0(who, "Cloning " << restartdef->metadata
            << " to " << restartdef->uncommitted);
     esio_file_clone(esioh, restartdef->metadata.c_str(),
                     restartdef->uncommitted.c_str(), 1 /*overwrite*/);
@@ -1009,14 +1016,16 @@ driver_base::save_statistics(
     // Invoke subclass extension point
     const bool continue_advancing = save_statistics_hook(esioh);
 
-    DEBUG0("Committing " << restartdef->uncommitted
-           << " as a statistics file using template " << statsdef->destination);
+    DEBUG0(who, "Committing " << restartdef->uncommitted
+           << " as a statistics file using template "
+           << statsdef->destination);
     esio_file_close_restart(esioh, statsdef->destination.c_str(),
                             statsdef->retain);
     esio_handle_finalize(esioh);
 
     const double elapsed = MPI_Wtime() - starttime;
-    INFO0(timeprefix << " Committed statistics in " << elapsed << " seconds");
+    INFO0(who, timeprefix << " Committed statistics in "
+          << elapsed << " seconds");
 
     last_statistics_saved_nt = nt; // Maintain last successful statistics nt
 
@@ -1109,11 +1118,12 @@ driver_base::load_state_hook(
             allreal = allreal && (ncomponents == 1);
             allcplx = allcplx && (ncomponents == 2);
             if (ncomponents == 0 || ncomponents > 2) {
-                WARN0("Field /" << fields[i].location
+                WARN0(who, "Field /" << fields[i].location
                       << " looks fishy; ncomponents = " << ncomponents);
             }
         } else {
-            WARN0("Field /" << fields[i].location << " not found in restart");
+            WARN0(who, "Field /" << fields[i].location
+                  << " not found in restart");
         }
     }
 

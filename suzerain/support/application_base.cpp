@@ -81,7 +81,7 @@ application_base::application_base(
     , use_p3dfft(false)
     , use_underling(false)
 #endif
-    , who("app")
+    , who("application")
 {
 }
 
@@ -134,8 +134,8 @@ application_base::initialize(int argc, char **argv)
     // Record build and invocation for posterity and to aid in debugging
     std::ostringstream os;
     std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
-    INFO0("Invocation: " << os.str());
-    INFO0("Build:      " << suzerain::version("", revstr));
+    INFO0(who, "Invocation: " << os.str());
+    INFO0(who, "Build:      " << suzerain::version("", revstr));
 
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     // Select pencil decomposition and FFT library to use (default p3dfft)
@@ -208,19 +208,19 @@ application_base::establish_decomposition(
 
     // Display information on the global degrees of freedom
     if (output_size) {
-        INFO0("Number of MPI ranks:               " << nranks);
-        INFO0("Grid degrees of freedom    (GDOF): " << grid->N.prod());
-        INFO0("GDOF by direction           (XYZ): " << grid->N.x() << " "
-                                                    << grid->N.y() << " "
-                                                    << grid->N.z());
-        INFO0("Dealiased GDOF by direction (XYZ): " << grid->dN.x() << " "
-                                                    << grid->dN.y() << " "
-                                                    << grid->dN.z());
+        INFO0(who, "Number of MPI ranks:               " << nranks);
+        INFO0(who, "Grid degrees of freedom    (GDOF): " << grid->N.prod());
+        INFO0(who, "GDOF by direction           (XYZ): " << grid->N.x() << " "
+                                                         << grid->N.y() << " "
+                                                         << grid->N.z());
+        INFO0(who, "Dealiased GDOF by direction (XYZ): " << grid->dN.x() << " "
+                                                         << grid->dN.y() << " "
+                                                         << grid->dN.z());
     }
 
     // Establish the parallel decomposition and output some timing
     if (output_plan) {
-        INFO0("Preparing MPI transpose and Fourier transform plans...");
+        INFO0(who, "Preparing MPI transpose and Fourier transform plans...");
     }
     double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
@@ -241,20 +241,20 @@ application_base::establish_decomposition(
 #endif
     wtime_fftw_planning = MPI_Wtime() - begin;
     if (output_plan) {
-        INFO0("MPI transpose and Fourier transform planning by "
+        INFO0(who, "MPI transpose and Fourier transform planning by "
               << dgrid->implementation() << " took "
               << wtime_fftw_planning << " seconds");
-        INFO0("Rank grid used for decomposition: "
+        INFO0(who, "Rank grid used for decomposition: "
                << dgrid->processor_grid[0] << " "
                << dgrid->processor_grid[1]);
-        DEBUG0("Zero-zero modes located on MPI_COMM_WORLD rank "
+        DEBUG0(who, "Zero-zero modes located on MPI_COMM_WORLD rank "
                << dgrid->rank_zero_zero_modes);
         SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
     wisdom_gather(fftwdef->plan_wisdom);
     if (output_plan) {
-        INFO0("FFTW wisdom gathered and saved in additional "
+        INFO0(who, "FFTW wisdom gathered and saved in additional "
               << (MPI_Wtime() - begin) << " seconds");
     }
 
@@ -302,9 +302,11 @@ application_base::establish_decomposition(
         SUZERAIN_MPICHKR(MPI_Reduce(sendbuf, recvbuf, 4,
                          suzerain::mpi::datatype<real_t>(),
                          MPI_MIN, 0, MPI_COMM_WORLD));
-        INFO0("Wave space zero-zero-rank normalized workloads     (min/mean/max): "
+        INFO0(who,
+              "Wave space zero-zero-normalized workloads     (min/mean/max): "
               << recvbuf[0] << ", " << mean_w << ", " << -recvbuf[2]);
-        INFO0("Physical space zero-zero-rank normalized workloads (min/mean/max): "
+        INFO0(who,
+              "Physical space zero-zero-normalized workloads (min/mean/max): "
               << recvbuf[1] << ", " << mean_p << ", " << -recvbuf[3]);
     }
 }
@@ -353,7 +355,7 @@ application_base::establish_state_storage(
 void
 application_base::establish_ieee_mode()
 {
-    DEBUG0("Establishing floating point environment from GSL_IEEE_MODE");
+    DEBUG0(who, "Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 }
 
@@ -378,13 +380,14 @@ application_base::log_discretization_quality()
     vec.head<1>()[0] -= -1;                             // Exact head
     vec.tail<1>()[0] -=  1;                             // Exact tail
     double relerr = vec.norm() / std::sqrt(real_t(2));  // Exact 2-norm
-    INFO0("B-spline discrete conservation relative error near "
+    INFO0(who, "B-spline discrete conservation relative error near "
           << relerr * 100 << "%");
 
     // Compute and display condition number
     double rcond;
     boplu.rcond(norm, rcond);
-    INFO0("B-spline mass matrix has condition number near " << (1 / rcond));
+    INFO0(who, "B-spline mass matrix has condition number near "
+          << (1 / rcond));
 }
 
 } // end namespace support
