@@ -49,6 +49,7 @@ driver::driver(
                   description,
                   revstr)
     , scenario(make_shared<scenario_definition>())
+    , who("perfect")
 {
     this->fields = default_fields();
 }
@@ -212,7 +213,7 @@ driver::compute_statistics(
         mean.Crho()         = common_block.Crho();
         mean.Crhou_dot_u()  = common_block.Crhou_dot_u();
     } else {
-        WARN0("Could not obtain mean quantities set by implicit forcing");
+        WARN0(who, "Could not obtain mean quantities set by implicit forcing");
         using std::numeric_limits;
         mean.f          ().setConstant(numeric_limits<real_t>::quiet_NaN());
         mean.f_dot_u    ().setConstant(numeric_limits<real_t>::quiet_NaN());
@@ -273,14 +274,14 @@ driver::save_statistics_hook(
 #pragma warning(push,disable:1572)
     if (t == mean.t) {
 #pragma warning(pop)
-        DEBUG0("Cowardly refusing to re-sample statistics at t = " << t);
+        DEBUG0(who, "Cowardly refusing to re-sample statistics at t = " << t);
     } else {
         const double starttime = MPI_Wtime();
         compute_statistics(t);
         const double elapsed = MPI_Wtime() - starttime;
         const step_type nt = controller->current_nt();
         const std::string timeprefix(build_timeprefix(t, nt));
-        INFO0(timeprefix << " Computed statistics in "
+        INFO0(who, timeprefix << " Computed statistics in "
               << elapsed << " seconds");
     }
 

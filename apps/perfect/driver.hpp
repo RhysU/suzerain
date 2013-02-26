@@ -182,6 +182,11 @@ protected:
      */
     virtual void default_restart_interval(time_type& t, step_type&);
 
+private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
+
 };
 
 } // end namespace perfect
