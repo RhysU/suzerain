@@ -52,10 +52,16 @@ struct driver_init : public driver
                  "RESTART-FILE",
                  "",
                  revstr)
+        , who("init")
     {}
 
     /** Implementation below in this file */
     int run(int argc, char **argv);
+
+private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 };
 
 } /* namespace perfect */ } /* namespace suzerain */
@@ -144,17 +150,17 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    DEBUG0("Establishing runtime parallel infrastructure and resources");
+    DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
     load_grid_and_operators(NULL);
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
 
-    DEBUG0("Initializing state_linear to contain the data in wave space");
+    DEBUG0(who, "Initializing state_linear to contain the data in wave space");
     if (mms >= 0) {
 
-        INFO0("Manufactured solution will be initialized at t = " << mms);
-        INFO0("Disabling bulk_rho and bulk_rho_u constraints"
+        INFO0(who, "Manufactured solution will be initialized at t = " << mms);
+        INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
               " due to manufactured solution use");
         scenario->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
@@ -234,7 +240,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     }
 
-    DEBUG0("Saving the newly initialized state to disk");
+    DEBUG0(who, "Saving the newly initialized state to disk");
     if (msoln) {
         save_restart(mms, restart_file, clobber);
     } else {

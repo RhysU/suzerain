@@ -53,10 +53,16 @@ struct driver_advance : public driver
                  "RESTART-FILE",
                  "",
                  revstr)
+        , who("advance")
     {}
 
     /** Implementation below in this file */
     int run(int argc, char **argv);
+
+private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 };
 
 } /* namespace perfect */ } /* namespace suzerain */
@@ -113,7 +119,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
     const std::string restart_file = positional[0];
 
-    INFO0("Loading restart file: " << restart_file);
+    INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
@@ -138,13 +144,13 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     if (msoln) {
-        INFO0("Restart file prescribes a manufactured solution");
+        INFO0(who, "Restart file prescribes a manufactured solution");
         if (!(isnan)(scenario->bulk_rho)) {
-            WARN0("Manufactured solution incompatible with bulk_rho = "
+            WARN0(who, "Manufactured solution incompatible with bulk_rho = "
                   << scenario->bulk_rho);
         }
         if (!(isnan)(scenario->bulk_rho_u)) {
-            WARN0("Manufactured solution incompatible with bulk_rho_u = "
+            WARN0(who, "Manufactured solution incompatible with bulk_rho_u = "
                   << scenario->bulk_rho_u);
         }
     }
@@ -159,20 +165,21 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Prepare spatial operators depending on request advance type
     if (use_explicit) {
-        INFO0("Initializing explicit timestepping operators");
+        INFO0(who, "Initializing explicit timestepping operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
                     *scenario, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
-        INFO0("Initializing hybrid implicit/explicit timestepping operators");
+        INFO0(who,
+              "Initializing hybrid implicit/explicit timestepping operators");
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
         N.reset(new hybrid_nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else {
-        FATAL0("Sanity error in operator selection");
+        FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
     }
 
