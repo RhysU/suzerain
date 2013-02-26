@@ -35,7 +35,6 @@
 #include <suzerain/support/signal_definition.hpp>
 #include <suzerain/support/statistics_definition.hpp>
 #include <suzerain/support/time_definition.hpp>
-#include <suzerain/support/who_base.hpp>
 #include <suzerain/timecontroller.hpp>
 #include <suzerain/timestepper.hpp>
 
@@ -112,9 +111,7 @@ class delta_t_allreducer;
  * to have been invoked), loading statistics via \ref load_statistics should
  * not require a viable parallel pencil grid.
  */
-class driver_base
-    : public application_base,
-      private who_base<driver_base>
+class driver_base : public application_base
 {
     /** Provides simple access to the superclass type */
     typedef application_base super;
@@ -646,6 +643,9 @@ private:
      * all ranks as well as aggregating POSIX signals received on any rank.
      */
     const scoped_ptr<delta_t_allreducer> allreducer;
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 
 };
 

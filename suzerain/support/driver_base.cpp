@@ -113,7 +113,6 @@ driver_base::driver_base(
                        argument_synopsis,
                        description,
                        revstr)
-    , who_base<driver_base>("driver")
     , restartdef(make_shared<restart_definition>(
                 /* metadata    */ "metadata.h5.XXXXXX",
                 /* uncommitted */ "uncommitted.h5.XXXXXX",
@@ -153,6 +152,7 @@ driver_base::driver_base(
                                         this->last_restart_saved_nt,
                                         this->delta_t_ratios,
                                         this->signal_received))
+    , who("driver")
 {
     std::fill(signal_received.begin(), signal_received.end(), 0);
 }

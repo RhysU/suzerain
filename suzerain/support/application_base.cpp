@@ -61,8 +61,7 @@ application_base::application_base(
         const std::string &argument_synopsis,
         const std::string &description,
         const std::string &revstr)
-    : who_base<application_base>("app")
-    , revstr(revstr)
+    : revstr(revstr)
     , options(application_synopsis,
               argument_synopsis,
               description,
@@ -82,6 +81,7 @@ application_base::application_base(
     , use_p3dfft(false)
     , use_underling(false)
 #endif
+    , who("app")
 {
 }
 
