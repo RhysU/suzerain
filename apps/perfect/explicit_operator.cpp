@@ -65,6 +65,21 @@ public:
     }
 };
 
+isothermal_mass_operator::isothermal_mass_operator(
+        const scenario_definition &scenario,
+        const grid_specification &grid,
+        const pencil_grid &dgrid,
+        const bsplineop &cop,
+        bspline &b,
+        operator_common_block &common)
+    : mass_operator(grid, dgrid, cop, b)
+    , scenario(scenario)
+    , common(common)
+    , who("operator.L")
+{
+    // NOP
+}
+
 void isothermal_mass_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,

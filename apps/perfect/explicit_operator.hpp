@@ -112,11 +112,7 @@ public:
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
-            operator_common_block &common)
-        : mass_operator(grid, dgrid, cop, b),
-          scenario(scenario),
-          common(common)
-    {}
+            operator_common_block &common);
 
     /**
      * Performs the following steps:
@@ -148,6 +144,9 @@ protected:
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
     operator_common_block &common;
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 
 };
 
