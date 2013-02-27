@@ -2,7 +2,7 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_channel_setup.sh"
+source "`dirname $0`/test_setup.sh"
 
 # FIXME Ticket 2065 use 'NP=2;P=--Pa=2' 'NP=2;P=--Pb=2' in METACASES
 # FIXME Ticket 2065 using run/prun and -v -V options to aid debugging

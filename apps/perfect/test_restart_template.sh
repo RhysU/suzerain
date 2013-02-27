@@ -2,7 +2,7 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_channel_setup.sh"
+source "`dirname $0`/test_setup.sh"
 
 # Shorthand for binary under test for desired operator without statistics
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default

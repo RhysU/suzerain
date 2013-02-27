@@ -2,7 +2,7 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_channel_setup.sh"
+source "`dirname $0`/test_setup.sh"
 
 # Ensure our restart-loading can handle sample laminar fields
 banner "Restarting from current laminar restart file"

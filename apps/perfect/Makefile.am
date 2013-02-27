@@ -77,41 +77,41 @@ channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
 ## the parallelism available during 'make check'.
 ##
 
-dist_check_SCRIPTS += test_channel_setup.sh     # Common initialization
+dist_check_SCRIPTS += test_setup.sh     # Common initialization
 
 # Restart handling using coefficient-based restart files
-TESTS              += test_channel_restart_explicit.sh
-TESTS              += test_channel_restart_implicit.sh
-dist_check_SCRIPTS += test_channel_restart_template.sh
-dist_check_SCRIPTS += test_channel_restart_explicit.sh
-dist_check_SCRIPTS += test_channel_restart_implicit.sh
+TESTS              += test_restart_explicit.sh
+TESTS              += test_restart_implicit.sh
+dist_check_SCRIPTS += test_restart_template.sh
+dist_check_SCRIPTS += test_restart_explicit.sh
+dist_check_SCRIPTS += test_restart_implicit.sh
 
 # Serial/parallel equivalence for degenerate parallel decompositions
 # Not important from a utility perspective, but great for hitting edge cases
-TESTS              += test_channel_dparallel.sh
-dist_check_SCRIPTS += test_channel_dparallel.sh
+TESTS              += test_dparallel.sh
+dist_check_SCRIPTS += test_dparallel.sh
 
 # Serial/parallel equivalence for normal parallel decompositions
-TESTS              += test_channel_parallel_explicit.sh
-TESTS              += test_channel_parallel_implicit.sh
-dist_check_SCRIPTS += test_channel_parallel_template.sh
-dist_check_SCRIPTS += test_channel_parallel_explicit.sh
-dist_check_SCRIPTS += test_channel_parallel_implicit.sh
+TESTS              += test_parallel_explicit.sh
+TESTS              += test_parallel_implicit.sh
+dist_check_SCRIPTS += test_parallel_template.sh
+dist_check_SCRIPTS += test_parallel_explicit.sh
+dist_check_SCRIPTS += test_parallel_implicit.sh
 
 # Read canned, legacy fields to test backwards compatibility
-TESTS              += test_channel_fields.sh
-dist_check_SCRIPTS += test_channel_fields.sh
+TESTS              += test_fields.sh
+dist_check_SCRIPTS += test_fields.sh
 
 # Adding fluctuations at startup
-TESTS              += test_channel_fluct.sh
-dist_check_SCRIPTS += test_channel_fluct.sh
+TESTS              += test_fluct.sh
+dist_check_SCRIPTS += test_fluct.sh
 
 # Restart handling using collocation-value-based restart files
-TESTS              += test_channel_physical_explicit.sh
-TESTS              += test_channel_physical_implicit.sh
-dist_check_SCRIPTS += test_channel_physical_template.sh
-dist_check_SCRIPTS += test_channel_physical_explicit.sh
-dist_check_SCRIPTS += test_channel_physical_implicit.sh
+TESTS              += test_physical_explicit.sh
+TESTS              += test_physical_implicit.sh
+dist_check_SCRIPTS += test_physical_template.sh
+dist_check_SCRIPTS += test_physical_explicit.sh
+dist_check_SCRIPTS += test_physical_implicit.sh
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

@@ -2,7 +2,7 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_channel_setup.sh"
+source "`dirname $0`/test_setup.sh"
 
 : ${ADVANCE:=--advance_nt=10 --status_nt=5 --fluct_percent=10 --fluct_seed=45678}
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default

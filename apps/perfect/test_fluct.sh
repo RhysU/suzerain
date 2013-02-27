@@ -2,7 +2,7 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_channel_setup.sh"
+source "`dirname $0`/test_setup.sh"
 
 : ${ADVANCE:=--advance_nt=0 --fluct_percent=10 --fluct_seed=45678  \
                             --fluct_kxfrac=0.5: --fluct_kzfrac=:0.5}
