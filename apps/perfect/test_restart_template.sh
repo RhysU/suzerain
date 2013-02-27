@@ -6,7 +6,7 @@ source "`dirname $0`/test_setup.sh"
 
 # Shorthand for binary under test for desired operator without statistics
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
-channel="prun ../channel $OPER --statistics_dt=0 --statistics_nt=0"
+perfect="prun ../perfect_advance $OPER --statistics_dt=0 --statistics_nt=0"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
@@ -29,16 +29,16 @@ eval "$METACASE"
 banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P
     differ_exclude $exclude_datasets mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
-    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=2 $P
-    $channel mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=2 $P
+    $perfect mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan b0.h5 c0.h5 /t
@@ -48,9 +48,9 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
 banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
                      --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
-    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
     differ_exclude $exclude_datasets mms0.h5 b0.h5
 )
@@ -58,9 +58,9 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
                      --k=$(($k+1))
-    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
                      --k=$(($k  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ_exclude $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
@@ -73,9 +73,9 @@ banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $channel mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
                      --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
-    $channel a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
                      --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ_exclude $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho

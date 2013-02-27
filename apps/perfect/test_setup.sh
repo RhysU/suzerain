@@ -6,7 +6,7 @@ source "`dirname $0`/../test_infrastructure.sh"
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for binary in ./channel_init ./channel
+for binary in ./perfect_init ./perfect_advance
 do
     if [ ! -x $binary ]; then
         echo "ERROR: $binary not found or not executable" 1>&2
@@ -30,7 +30,7 @@ declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./channel_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
+runq ./perfect_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
 chmod +r "$testdir/mms0.h5"
 
@@ -63,7 +63,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
         $0 ~ /^[[:space:]]*}[[:space:]]*$/                 {keep = 0}       \
         keep == 1 { print $0 }'
 
-    # Ensure that the entire fourth column (the imaginary component) is identically zero
+    # Ensure that the entire fourth column (imag component) is identically zero
     awk $awk_h5dump_dataonly realmodes | awk '$4 != 0.0 { exit 1 }' \
         || (cat realmodes && false)
 )
