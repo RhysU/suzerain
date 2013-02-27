@@ -16,7 +16,7 @@ AC_ARG_PROGRAM
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 AX_ENABLE_BUILDDIR
-AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign)
+AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign check-news)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.61])
 AX_CHECK_ENABLE_DEBUG([info])
