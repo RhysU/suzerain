@@ -42,7 +42,9 @@
 
 #pragma warning(disable:383 1572)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -144,12 +146,7 @@ public:
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
-            const shared_ptr<const manufactured_solution>& msoln)
-        : operator_base(grid, dgrid, cop, b),
-          scenario(scenario),
-          common(common),
-          msoln(msoln)
-    {}
+            const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
             const real_t time,
@@ -171,12 +168,17 @@ protected:
 
 private:
 
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
+
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
     hybrid_nonlinear_operator(const hybrid_nonlinear_operator&);
     hybrid_nonlinear_operator& operator=(const hybrid_nonlinear_operator&);
 
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 #endif  /* SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP */

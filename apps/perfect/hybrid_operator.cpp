@@ -708,6 +708,23 @@ isothermal_hybrid_linear_operator::imexop_s() const
     return retval;
 }
 
+hybrid_nonlinear_operator::hybrid_nonlinear_operator(
+        const scenario_definition &scenario,
+        const grid_specification &grid,
+        const pencil_grid &dgrid,
+        const bsplineop &cop,
+        bspline &b,
+        operator_common_block &common,
+        const shared_ptr<const manufactured_solution>& msoln)
+    : operator_base(grid, dgrid, cop, b)
+    , scenario(scenario)
+    , common(common)
+    , msoln(msoln)
+    , who("operator.N")
+{
+    // NOP
+}
+
 std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
