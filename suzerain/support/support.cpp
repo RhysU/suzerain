@@ -56,6 +56,9 @@
 using boost::numeric_cast;
 using std::size_t;
 
+// Helps to identify from whom logging messages are being emitted.
+static const std::string who("support");
+
 namespace suzerain {
 
 namespace support {
@@ -165,19 +168,19 @@ void wisdom_broadcast(const std::string& wisdom_file)
 
         FILE *w = fopen(wisdom_file.c_str(), "r");
         if (w) {
-            INFO0("Loading wisdom from file " << wisdom_file);
+            INFO0(who, "Loading wisdom from file " << wisdom_file);
             if (flock(fileno(w), LOCK_SH)) {
-                WARN0("LOCK_SH failed on wisdom file "
+                WARN0(who, "LOCK_SH failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
             fftw_import_wisdom_from_file(w);
             if (flock(fileno(w), LOCK_UN)) {
-                WARN0("LOCK_UN failed on wisdom file "
+                WARN0(who, "LOCK_UN failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
             fclose(w);
         } else {
-            WARN0("Unable to open wisdom file "
+            WARN0(who, "Unable to open wisdom file "
                   << wisdom_file << ": " << strerror(errno));
         }
     }
@@ -199,19 +202,19 @@ void wisdom_gather(const std::string& wisdom_file)
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
         FILE *w = fopen(wisdom_file.c_str(), "w+");
         if (w) {
-            INFO0("Saving wisdom to file " << wisdom_file);
+            INFO0(who, "Saving wisdom to file " << wisdom_file);
             if (flock(fileno(w), LOCK_EX)) {
-                WARN0("LOCK_EX failed on wisdom file "
+                WARN0(who, "LOCK_EX failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
             fftw_export_wisdom_to_file(w);
             if (flock(fileno(w), LOCK_UN)) {
-                WARN0("LOCK_UN failed on wisdom file "
+                WARN0(who, "LOCK_UN failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
             fclose(w);
         } else {
-            WARN0("Unable to open wisdom file "
+            WARN0(who, "Unable to open wisdom file "
                   << wisdom_file << ": " << strerror(errno));
         }
     }
@@ -227,7 +230,7 @@ real_t create(const int ndof,
               shared_ptr<bspline>& b,
               shared_ptr<bsplineop>& cop)
 {
-    INFO0("Creating B-spline basis of order " << k
+    INFO0(who, "Creating B-spline basis of order " << k
           << " on [" << left << ", " << right << "] with "
           << ndof << " DOF stretched per htdelta " << htdelta);
 
@@ -287,7 +290,7 @@ void save(const esio_handle h,
     int procid;
     esio_handle_comm_rank(h, &procid);
 
-    DEBUG0("Saving B-spline knot details");
+    DEBUG0(who, "Saving B-spline knot details");
 
     ArrayXr buf(b->nknot());
 
@@ -330,7 +333,7 @@ void save(const esio_handle h,
         esio_attribute_write(h, name, "n",  cop->n());
     }
 
-    DEBUG0("Saving B-spline Galerkin L2 derivative operators");
+    DEBUG0(who, "Saving B-spline Galerkin L2 derivative operators");
 
     for (int k = 0; k <= gop->nderiv(); ++k) {
         snprintf(name, sizeof(name), "Gy%dT", k);
@@ -408,7 +411,7 @@ real_t load(const esio_handle h,
 
     real_t abserr = std::numeric_limits<real_t>::quiet_NaN();
 
-    DEBUG0("Loading B-spline workspaces based on restart contents");
+    DEBUG0(who, "Loading B-spline workspaces based on restart contents");
 
     // All ranks load B-spline order
     int k;
@@ -452,7 +455,7 @@ real_t load(const esio_handle h,
             for (int i = 0; i < colpoints.size(); ++i)
                 e = max(e, abs(b->collocation_point(i) - colpoints[i]));
 
-            DEBUG0("Max difference between breakpoint-computed and loaded"
+            DEBUG0(who, "Max difference between breakpoint-computed and loaded"
                    " collocation points is " << e);
 
             if (e < bsplines_distinct_distance)
@@ -461,10 +464,11 @@ real_t load(const esio_handle h,
     }
 
     if (colpoints_found && abscissae_veto_breakpoints) {
-        DEBUG0("Collocation points from restart used to build B-spline basis");
+        DEBUG0(who,
+               "Collocation points from restart used to build B-spline basis");
         b = make_shared<bspline>(k, bspline::from_abscissae(),
                                  colpoints.size(), colpoints.data(), &abserr);
-        DEBUG0("Computed B-spline basis has Greville abscissae abserr of "
+        DEBUG0(who, "Computed B-spline basis has Greville abscissae abserr of "
                << abserr);
     }
 
@@ -491,7 +495,7 @@ void save_time(const esio_handle h,
 
     esio_line_write(h, "t", &time, 0, "Simulation physical time");
 
-    DEBUG0("Saved simulation time " << time);
+    DEBUG0(who, "Saved simulation time " << time);
 }
 
 void load_time(const esio_handle h,
@@ -502,7 +506,7 @@ void load_time(const esio_handle h,
 
     esio_line_read(h, "t", &time, 0);
 
-    DEBUG0("Loaded simulation time " << time);
+    DEBUG0(who, "Loaded simulation time " << time);
 }
 
 // Pooling employed in allocate_padded_state implementations
@@ -534,7 +538,9 @@ contiguous_state<4,complex_t>* allocate_padded_state(
     // shared_range given boost::bind-based Deleter to invoke release()
     pool_type::blocks blocks = it->second->acquire(howmany_fields);
     shared_range<complex_t> storage(blocks.begin(), blocks.end(),
-            boost::bind(&pool_type::release, boost::ref(*(it->second)), blocks));
+                                    boost::bind(&pool_type::release,
+                                                boost::ref(*(it->second)),
+                                                blocks));
 
     // Create instance using provided storage
     contiguous_state<4,complex_t> * const retval =
