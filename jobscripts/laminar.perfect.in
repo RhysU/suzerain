@@ -2,8 +2,8 @@
 set -e
 
 # Specify operational defaults which may be overridden in the environment
-: ${LAMINAR_INITIAL:=@bindir@/channel_init}
-: ${LAMINAR_ADVANCE:=@bindir@/channel}
+: ${LAMINAR_INITIAL:=@bindir@/perfect_init}
+: ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
 
 # Parse incoming parameters
 OPTS="k:,htdelta:,alpha:,beta:,gamma:,Re:,Ma:,Pr:"
