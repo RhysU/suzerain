@@ -68,15 +68,7 @@ public:
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
-            operator_common_block &common)
-        : operator_base(grid, dgrid, cop, b),
-          spec(spec),
-          scenario(scenario),
-          common(common)
-    {
-        INFO0("Linear isothermal_hybrid_linear_operator using "
-              << static_cast<std::string>(spec));
-    }
+            operator_common_block &common);
 
     virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,
@@ -121,16 +113,10 @@ protected:
 private:
 
     /** Pack scenario parameters for rholut_imexop.h usage */
-    suzerain_rholut_imexop_scenario imexop_s() const
-    {
-        suzerain_rholut_imexop_scenario retval;
-        retval.Re    = scenario.Re;
-        retval.Pr    = scenario.Pr;
-        retval.Ma    = scenario.Ma;
-        retval.alpha = scenario.alpha;
-        retval.gamma = scenario.gamma;
-        return retval;
-    }
+    suzerain_rholut_imexop_scenario imexop_s() const;
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 
 };
 

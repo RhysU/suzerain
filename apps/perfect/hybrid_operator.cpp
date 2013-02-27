@@ -62,6 +62,24 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 
 namespace suzerain { namespace perfect {
 
+isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
+        const zgbsv_specification& spec,
+        const scenario_definition &scenario,
+        const grid_specification &grid,
+        const pencil_grid &dgrid,
+        const bsplineop &cop,
+        bspline &b,
+        operator_common_block &common)
+    : operator_base(grid, dgrid, cop, b)
+    , spec(spec)
+    , scenario(scenario)
+    , common(common)
+    , who("operator.L")
+{
+    INFO0(who, "Linear isothermal_hybrid_linear_operator using "
+          << static_cast<std::string>(spec));
+}
+
 void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
@@ -676,6 +694,18 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     }
 
     // State leaves method as coefficients in X, Y, and Z directions
+}
+
+suzerain_rholut_imexop_scenario
+isothermal_hybrid_linear_operator::imexop_s() const
+{
+    suzerain_rholut_imexop_scenario retval;
+    retval.Re    = scenario.Re;
+    retval.Pr    = scenario.Pr;
+    retval.Ma    = scenario.Ma;
+    retval.alpha = scenario.alpha;
+    retval.gamma = scenario.gamma;
+    return retval;
 }
 
 std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
