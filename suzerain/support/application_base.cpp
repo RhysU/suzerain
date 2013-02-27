@@ -220,7 +220,9 @@ application_base::establish_decomposition(
 
     // Establish the parallel decomposition and output some timing
     if (output_plan) {
-        INFO0(who, "Preparing MPI transpose and Fourier transform plans...");
+        INFO0(who, "Preparing MPI transpose and Fourier transform plans ("
+              << c_str(fftwdef->rigor_mpi) << ", "
+              << c_str(fftwdef->rigor_fft) << ")");
     }
     double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
@@ -244,11 +246,13 @@ application_base::establish_decomposition(
         INFO0(who, "MPI transpose and Fourier transform planning by "
               << dgrid->implementation() << " took "
               << wtime_fftw_planning << " seconds");
-        INFO0(who, "Rank grid used for decomposition: "
-               << dgrid->processor_grid[0] << " "
-               << dgrid->processor_grid[1]);
-        DEBUG0(who, "Zero-zero modes located on MPI_COMM_WORLD rank "
-               << dgrid->rank_zero_zero_modes);
+        if (dgrid->processor_grid.prod() != 1) {
+            INFO0(who, "Rank grid used for decomposition: "
+                  << dgrid->processor_grid[0] << " "
+                  << dgrid->processor_grid[1]);
+            DEBUG0(who, "Zero-zero modes located on MPI_COMM_WORLD rank "
+                   << dgrid->rank_zero_zero_modes);
+        }
         SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
