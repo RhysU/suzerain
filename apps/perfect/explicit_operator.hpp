@@ -64,12 +64,7 @@ public:
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
-            const shared_ptr<const manufactured_solution>& msoln)
-        : operator_base(grid, dgrid, cop, b),
-          scenario(scenario),
-          common(common),
-          msoln(msoln)
-    {}
+            const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
             const real_t time,
@@ -90,6 +85,9 @@ protected:
     const shared_ptr<const manufactured_solution> msoln;
 
 private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
     explicit_nonlinear_operator(const explicit_nonlinear_operator&);

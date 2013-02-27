@@ -112,6 +112,23 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
+explicit_nonlinear_operator::explicit_nonlinear_operator(
+        const scenario_definition &scenario,
+        const grid_specification &grid,
+        const pencil_grid &dgrid,
+        const bsplineop &cop,
+        bspline &b,
+        operator_common_block &common,
+        const shared_ptr<const manufactured_solution>& msoln)
+    : operator_base(grid, dgrid, cop, b)
+    , scenario(scenario)
+    , common(common)
+    , msoln(msoln)
+    , who("operator.N")
+{
+    // NOP
+}
+
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
