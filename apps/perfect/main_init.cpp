@@ -181,13 +181,13 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         msoln.reset();
         fill(*state_linear, 0);
 
-        DEBUG("Initialization uses constant rho, v, w, and T");
+        INFO("Initialization uses constant rho, v, w, and T");
         const real_t rho = scenario->bulk_rho;
         const real_t v   = 0;
         const real_t w   = 0;
         const real_t T   = 1;
 
-        DEBUG("Finding normalization so u = (y*(L-y))^npower integrates to 1");
+        INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization;
         if (npower == 1) {
             // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
@@ -206,7 +206,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                           /   (denom1 * denom2 * denom3);
         }
 
-        DEBUG("Preparing the wall-normal streamwise velocity profile");
+        INFO("Preparing the wall-normal streamwise velocity profile");
         ArrayXr u(grid->N.y());
         for (int j = 0; j < u.size(); ++j) {
             const real_t y_j = b->collocation_point(j);
@@ -215,18 +215,18 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                  * pow(y_j * (grid->L.y() - y_j), npower);
         }
 
-        DEBUG("Preparing specific internal energy using the equation of state");
+        INFO("Preparing specific internal energy using the equation of state");
         ArrayXr E = T / (scenario->gamma*(scenario->gamma - 1))
                   + (scenario->Ma*scenario->Ma/2) * (u*u + v*v + w*w);
 
-        DEBUG("Converting the u and E profiles to B-spline coefficients");
+        INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
         suzerain::bsplineop_lu masslu(*cop);
         masslu.opform_mass(*cop);
         masslu.solve(1, u.data(), 1, u.size());
         masslu.solve(1, E.data(), 1, E.size());
 
-        DEBUG("Copying the coefficients directly into the zero-zero modes");
+        INFO("Copying the coefficients directly into the zero-zero modes");
         Map<VectorXc>((*state_linear)[ndx::e  ].origin(), grid->N.y())
                 = (rho * E).cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::mx ].origin(), grid->N.y())
@@ -240,7 +240,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     }
 
-    DEBUG0(who, "Saving the newly initialized state to disk");
+    INFO0(who, "Saving the newly initialized state to disk");
     if (msoln) {
         save_restart(mms, restart_file, clobber);
     } else {
