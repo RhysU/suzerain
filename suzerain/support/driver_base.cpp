@@ -287,6 +287,8 @@ driver_base::prepare_controller(
         const driver_base::time_type initial_t,
         const real_t chi)
 {
+    using std::fmod;
+
     INFO0(who, "Preparing controller at initial_t " << initial_t
           << " for step size in [" << timedef->min_dt
           << ", " << timedef->max_dt << "]");
@@ -307,6 +309,8 @@ driver_base::prepare_controller(
                 initial_t, timedef->min_dt, timedef->max_dt));
 
     // Register status callbacks status_{dt,nt} as requested.
+    // However, the first callback occurs modulo the requested dt value.
+    // to permit sampling rate continuity across restarts.
     // If no non-default, non-zero values were provided, permit override.
     if (    options.variables()["status_dt"].defaulted()
          && options.variables()["status_nt"].defaulted()
@@ -315,6 +319,9 @@ driver_base::prepare_controller(
         default_status_interval(timedef->status_dt, timedef->status_nt);
     }
     controller->add_periodic_callback(
+            (timedef->status_dt ?   timedef->status_dt
+                                  - fmod(initial_t, timedef->status_dt)
+                                : controller->forever_t()),
             (timedef->status_dt ? timedef->status_dt
                                 : controller->forever_t()),
             (timedef->status_nt ? timedef->status_nt
@@ -322,6 +329,7 @@ driver_base::prepare_controller(
             boost::bind(&driver_base::log_status, this, _1, _2));
 
     // Register restart-writing callbacks restart_{dt,nt} as requested.
+    // Again, the first callback occurs modulo the requested dt value.
     // If no non-default, non-zero values were provided, permit override.
     if (    options.variables()["restart_dt"].defaulted()
          && options.variables()["restart_nt"].defaulted()
@@ -330,11 +338,14 @@ driver_base::prepare_controller(
         default_restart_interval(restartdef->dt, restartdef->nt);
     }
     controller->add_periodic_callback(
+            (restartdef->dt ? restartdef->dt - fmod(initial_t, restartdef->dt)
+                            : controller->forever_t()),
             (restartdef->dt ? restartdef->dt : controller->forever_t()),
             (restartdef->nt ? restartdef->nt : controller->forever_nt()),
             boost::bind(&driver_base::save_restart, this, _1, _2));
 
     // Register statistics-related callbacks per statistics_{dt,nt}.
+    // Again, the first callback occurs modulo the requested dt value.
     // If no non-default, non-zero values were provided, be sensible.
     if (   options.variables()["statistics_dt"].defaulted()
         && options.variables()["statistics_nt"].defaulted()
@@ -343,6 +354,8 @@ driver_base::prepare_controller(
         default_statistics_interval(statsdef->dt, statsdef->nt);
     }
     controller->add_periodic_callback(
+            (statsdef->dt ? statsdef->dt - fmod(initial_t, statsdef->dt)
+                          : controller->forever_t()),
             (statsdef->dt ? statsdef->dt : controller->forever_t()),
             (statsdef->nt ? statsdef->nt : controller->forever_nt()),
             boost::bind(&driver_base::save_statistics, this, _1, _2));
