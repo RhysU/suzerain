@@ -310,7 +310,7 @@ driver_base::prepare_controller(
 
     // Register status callbacks status_{dt,nt} as requested.
     // However, the first callback occurs modulo the requested dt value.
-    // to permit sampling rate continuity across restarts.
+    // to permit sampling rate continuity across shutdown/restart.
     // If no non-default, non-zero values were provided, permit override.
     if (    options.variables()["status_dt"].defaulted()
          && options.variables()["status_nt"].defaulted()
