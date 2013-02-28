@@ -236,6 +236,39 @@ public:
                                CallbackType callback);
 
     /**
+     * Register a periodic callback to be invoked during advance().  As the
+     * controller marches the simulation, \c callback will be invoked \c
+     * every_dt time steps or after \c every_t simulation time passes,
+     * whichever comes first.  The first such invocation will occur no
+     * more than \c first_dt time units after this registration call.
+     *
+     * @param first_dt The maximum simulation time duration before the
+     *                 first callback.  Use forever_t() if you want no
+     *                 callbacks based on the current simulation time.
+     * @param every_dt The maximum simulation time duration between callbacks.
+     *                 Use forever_t() if you want no callbacks based on
+     *                 the current simulation time.
+     * @param every_nt The simulation time step count between callbacks.
+     *                 Use forever_nt() if you want no callbacks based on
+     *                 the current time step.
+     * @param callback The callback to invoke.  See add_callback() for
+     *                 a discussion of this argument's semantics.
+     *
+     * Specifying <tt>every_dt == forever_t()</tt> and <tt>every_nt ==
+     * forever_nt()</tt> causes the callback to be discarded.  If a
+     * once-only callback is desired, instead use \ref add_callback.
+     *
+     * @see <a href="http://www.boost.org/doc/html/ref.html">Boost.Ref</a>
+     *      if you need to provide a stateful or noncopyable functor
+     *      as the \c callback argument.
+     */
+    template<typename CallbackType>
+    void add_periodic_callback(TimeType first_dt,
+                               TimeType every_dt,
+                               StepType every_nt,
+                               CallbackType callback);
+
+    /**
      * Advance the simulation in time using the time stepper set at
      * construction time and perform required callbacks along the way.  The
      * simulation will advance until either current_t() reaches \c final_t or
@@ -461,7 +494,21 @@ void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
         StepType every_nt,
         CallbackType callback)
 {
+    // Register the callback using first_dt = every_dt
+    return add_periodic_callback(every_dt, every_dt, every_nt, callback);
+}
+
+template< typename TimeType, typename StepType, typename StopType >
+template< typename CallbackType >
+void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
+        TimeType first_dt,
+        TimeType every_dt,
+        StepType every_nt,
+        CallbackType callback)
+{
+    // first_dt after every_dt to improve messages when delegation target
     if (every_dt <= 0) throw std::invalid_argument("every_dt <= 0");
+    if (first_dt <= 0) throw std::invalid_argument("first_dt <= 0");
     if (every_nt <= 0) throw std::invalid_argument("every_nt <= 0");
 
     // Avoid runtime costs for callbacks that should never occur.
@@ -475,7 +522,7 @@ void timecontroller<TimeType,StepType,StopType>::add_periodic_callback(
     e->periodic = true;
     e->every_dt = every_dt;
     e->every_nt = every_nt;
-    e->next_t   = add_and_coerce_overflow_to_max(current_t_,   every_dt);
+    e->next_t   = add_and_coerce_overflow_to_max(current_t_,   first_dt);
     e->next_nt  = add_and_coerce_overflow_to_max(current_nt(), every_nt);
     e->callback = callback;
     entries_.push_back(e);        // Transfer Entry memory ownership
