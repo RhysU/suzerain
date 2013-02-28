@@ -40,8 +40,8 @@ public:
      *                     committing statistics output files.
      * @param retain       Maximum number of committed statistics files
      *                     to retain.
-     * @param nt           Number of simulation steps between sampling.
-     * @param dt           Amount of simulation time between sampling.
+     * @param nt           Number of simulation steps between samples.
+     * @param dt           Amount of simulation time between samples.
      *
      * @see ESIO's esio_file_close_restart() for the semantics of
      *      \c desttemplate and \c retain.
@@ -69,13 +69,13 @@ public:
     std::size_t retain;
 
     /**
-     * The maximum amount of simulation time between sampling statistics.
+     * The maximum amount of simulation time between statistical samples.
      */
     real_t dt;
 
     /**
-     * The maximum number of simulation steps to take between sampling
-     * statistics.
+     * The maximum number of simulation steps to take between statistical
+     * samples.
      */
     std::size_t nt;
 };

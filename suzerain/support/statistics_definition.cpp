@@ -93,11 +93,11 @@ statistics_definition::options_description()
      ->notifier(bind(&parse_option<real_t>, _1, &dt,
                      &ensure_nonnegative<real_t>, "statistics_dt"))
      ->default_value(lexical_cast<string>(dt)),
-     "Maximum amount of simulation time between sampling statistics")
+     "Maximum amount of simulation time between statistical samples")
     ("statistics_nt", value<string>(NULL)
      ->notifier(bind(&parse_size_t, _1, &nt, "statistics_nt"))
      ->default_value(lexical_cast<string>(nt)),
-     "Maximum number of time steps between sampling statistics")
+     "Maximum number of time steps between statistical samples")
     ;
 
     return retval;
