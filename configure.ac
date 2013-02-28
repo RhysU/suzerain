@@ -216,7 +216,18 @@ AC_CACHE_SAVE
 dnl ----------------------------------------------
 dnl Chemistry library requirements
 dnl ----------------------------------------------
-AM_CONDITIONAL([HAVE_CANTERA], [true])  dnl Implement!
+build_reacting=false
+PKG_CHECK_MODULES([ANTIOCH],
+    [antioch >= 0.0.0], [
+        AC_DEFINE([HAVE_ANTIOCH],1,[Define if Antioch is available])
+        build_reacting=true
+    ],[
+       : dnl Do nothing as not finding Antioch is not an error
+    ])
+AM_CONDITIONAL([BUILD_REACTING], [test x$build_reacting != xfalse])
+if test x$build_reacting = xfalse; then
+    AC_MSG_NOTICE([Because no chemistry library was detected, some functionality may not be built.])
+fi
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
