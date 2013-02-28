@@ -924,7 +924,7 @@ driver_base::save_restart(
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
-                                    || save_statistics_hook(esioh);
+                                    && save_statistics_hook(esioh);
 
     DEBUG0(who, "Committing " << restartdef->uncommitted
            << " as a restart file using template " << restartdef->destination);
@@ -965,7 +965,7 @@ driver_base::save_restart(
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
-                                    || save_statistics_hook(esioh);
+                                    && save_statistics_hook(esioh);
 
     esio_file_close(esioh);
     esio_handle_finalize(esioh);
