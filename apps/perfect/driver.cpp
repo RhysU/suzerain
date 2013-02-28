@@ -269,22 +269,29 @@ bool
 driver::save_statistics_hook(
         const esio_handle esioh)
 {
-    // Either compute mean quantities or re-use existing data in this->mean
-    const time_type t  = controller->current_t();
-#pragma warning(push,disable:1572)
-    if (t == mean.t) {
-#pragma warning(pop)
-        DEBUG0(who, "Cowardly refusing to re-sample statistics at t = " << t);
+    // Should we compute the statistics or re-use cached values?
+    bool use_cached = false;
+    std::string prefix;
+    time_type t = std::numeric_limits<super::time_type>::quiet_NaN();
+    if (controller) {
+        t = controller->current_t();
+        use_cached = (t == mean.t);
+        prefix = build_timeprefix(t, controller->current_nt());
+        prefix.append(1, ' ');
+    }
+
+    // Compute statistics whenever necessary
+    if (use_cached) {
+        DEBUG0(who, prefix << "Cowardly refusing to re-compute statistics");
     } else {
         const double starttime = MPI_Wtime();
         compute_statistics(t);
         const double elapsed = MPI_Wtime() - starttime;
-        const step_type nt = controller->current_nt();
-        const std::string timeprefix(build_timeprefix(t, nt));
-        INFO0(who, timeprefix << " Computed statistics in "
+        INFO0(who, prefix << "Computed statistics in "
               << elapsed << " seconds");
     }
 
+    // Save statistics and invoke superclass hook
     save(esioh, mean);
     return super::save_statistics_hook(esioh);
 }
