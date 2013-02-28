@@ -222,7 +222,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
         suzerain::bsplineop_lu masslu(*cop);
-        masslu.opform_mass(*cop);
+        masslu.factor_mass(*cop);
         masslu.solve(1, u.data(), 1, u.size());
         masslu.solve(1, E.data(), 1, E.size());
 
