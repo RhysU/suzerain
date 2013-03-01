@@ -159,26 +159,19 @@ public:
      * Constructor setting <tt>this->t = NaN</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    mean_quantities()
-        : t(std::numeric_limits<real_t>::quiet_NaN())
-    {}
+    mean_quantities();
 
     /**
      * Constructor setting <tt>this->t = t</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    explicit mean_quantities(real_t t)
-        : t(t)
-    {}
+    explicit mean_quantities(real_t t);
 
     /**
      * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
      * storage containing \c Ny rows.
      */
-    mean_quantities(real_t t, storage_type::Index Ny)
-        : t(t),
-          storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
-    {}
+    mean_quantities(real_t t, storage_type::Index Ny);
 
     /** Save quantities to a restart file. */
     void save(const esio_handle h) const;

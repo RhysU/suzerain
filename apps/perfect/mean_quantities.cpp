@@ -53,6 +53,27 @@ namespace suzerain {
 
 namespace perfect {
 
+mean_quantities::mean_quantities()
+    : t(std::numeric_limits<real_t>::quiet_NaN())
+{
+    // NOP
+}
+
+mean_quantities::mean_quantities(real_t )
+    : t(t)
+{
+    // NOP
+}
+
+mean_quantities::mean_quantities(
+        real_t t,
+        mean_quantities::storage_type::Index Ny)
+    : t(t),
+      storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+{
+    // NOP
+}
+
 // Helper for the mean_quantities::save(...) implementation just below
 class mean_quantities_saver
 {
