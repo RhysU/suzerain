@@ -756,7 +756,7 @@ static quantity::storage_map_type process(
     // Load samples as coefficients
     auto_ptr<perfect::mean_quantities> m(
             new perfect::mean_quantities(time, b->n()));
-    perfect::load(h.get(), *m.get());
+    m->load(h.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {

@@ -485,11 +485,11 @@ private:
 
 };
 
-void save(const esio_handle h, const mean_quantities& m)
+void mean_quantities::save(const esio_handle h) const
 {
-    if (m.storage.size()) {
+    if (this->storage.size()) {
         mean_saver f(h, "bar_");
-        m.foreach(f);
+        this->foreach(f);
     } else {
         WARN0("No mean quantity samples saved--"
               " trivial storage needs detected");
@@ -542,20 +542,22 @@ private:
 
 };
 
-void load(const esio_handle h, mean_quantities& m)
+void mean_quantities::load(const esio_handle h)
 {
+    // Defensively NaN out all storage in the instance prior to load.
+    // this->t presumably set afterwards using load_time
+    this->t = std::numeric_limits<real_t>::quiet_NaN();
+    this->storage.fill(std::numeric_limits<real_t>::quiet_NaN());
+
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
                                         &cglobal, &bglobal, &aglobal)) {
-        m.storage.resize(aglobal, NoChange);
+        this->storage.resize(aglobal, NoChange);
         mean_loader f(h, "bar_");
-        m.foreach(f);
-        // m.t presumably set externally using load_time
+        this->foreach(f);
     } else {
         WARN0("No mean quantity samples loaded--"
               " unable to anticipate storage needs");
-        m.storage.fill(std::numeric_limits<real_t>::quiet_NaN());
-        m.t = std::numeric_limits<real_t>::quiet_NaN();
     }
 }
 

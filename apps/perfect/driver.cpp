@@ -294,7 +294,7 @@ driver::save_statistics_hook(
     }
 
     // Save statistics and invoke superclass hook
-    save(esioh, mean);
+    mean.save(esioh);
     return super::save_statistics_hook(esioh, t);
 }
 
@@ -302,7 +302,7 @@ void
 driver::load_statistics_hook(
         const esio_handle esioh)
 {
-    load(esioh, mean);
+    mean.load(esioh);
     support::load_time(esioh, mean.t);
     return super::load_statistics_hook(esioh);
 }

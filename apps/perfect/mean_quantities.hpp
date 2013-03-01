@@ -180,6 +180,16 @@ public:
           storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     {}
 
+    /** Save quantities to a restart file. */
+    void save(const esio_handle h) const;
+
+    /**
+     * Load quantities from a restart file.  Statistics not present in the
+     * restart file are considered to be all NaNs.  On return, #t will be NaN
+     * and must be populated in some other manner.
+     */
+    void load(const esio_handle h);
+
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
 
@@ -277,16 +287,6 @@ mean_quantities sample_mean_quantities(
         const bsplineop &cop,
         contiguous_state<4,complex_t> &swave,
         const real_t t);
-
-/** Save a \ref mean_quantities instance in a restart file */
-void save(const esio_handle h, const mean_quantities& m);
-
-/**
- * Load a \ref mean_quantities instance from a restart file.  Statistics not
- * present in the restart file are considered to be all NaNs.  On utter
- * failure, <tt>m.t</tt> will be NaN as well.
- */
-void load(const esio_handle h, mean_quantities& m);
 
 } // end namespace perfect
 
