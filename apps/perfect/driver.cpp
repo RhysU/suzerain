@@ -270,13 +270,14 @@ driver::save_statistics_hook(
         const esio_handle esioh,
         const driver::time_type t)
 {
-    // Should we compute the statistics or re-use cached values?
-    bool use_cached = false;
+    // Should we compute fresh statistics or re-use cached values?
+#pragma warning(push,disable:1572)
+    const bool use_cached = controller && (t == mean.t);
+#pragma warning(pop)
+
+    // Compute a prefix for logging purposes, including a trailing space
     std::string prefix;
     if (controller) {
-#pragma warning(push,disable:1572)
-        use_cached = (t == mean.t);
-#pragma warning(pop)
         prefix = build_timeprefix(t, controller->current_nt());
         prefix.append(1, ' ');
     }
