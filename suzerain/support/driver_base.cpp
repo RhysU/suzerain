@@ -924,7 +924,7 @@ driver_base::save_restart(
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
-                                    && save_statistics_hook(esioh);
+                                    && save_statistics_hook(esioh, t);
 
     DEBUG0(who, "Committing " << restartdef->uncommitted
            << " as a restart file using template " << restartdef->destination);
@@ -965,7 +965,7 @@ driver_base::save_restart(
     // Invoke subclass extension points for both restart AND statistics
     state_nonlinear->assign(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
-                                    && save_statistics_hook(esioh);
+                                    && save_statistics_hook(esioh, t);
 
     esio_file_close(esioh);
     esio_handle_finalize(esioh);
@@ -1027,7 +1027,7 @@ driver_base::save_statistics(
     save_time(esioh, t);
 
     // Invoke subclass extension point
-    const bool continue_advancing = save_statistics_hook(esioh);
+    const bool continue_advancing = save_statistics_hook(esioh, t);
 
     DEBUG0(who, "Committing " << restartdef->uncommitted
            << " as a statistics file using template "
@@ -1158,9 +1158,11 @@ driver_base::load_state_hook(
 
 bool
 driver_base::save_statistics_hook(
-        const esio_handle esioh)
+        const esio_handle esioh,
+        const driver_base::time_type t)
 {
     SUZERAIN_UNUSED(esioh);
+    SUZERAIN_UNUSED(t);
 
     // For example:
     //     perfect::store(esioh, samples);

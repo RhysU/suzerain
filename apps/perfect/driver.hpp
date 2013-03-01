@@ -162,12 +162,13 @@ protected:
     /**
      * Beyond the inherited behavior, this method invokes \ref
      * compute_statistics and saves #mean.  Any currently cached results in
-     * #mean will be reused <em>without recomputation</em> whenever <tt>mean.t
-     * = controller->current_t()</tt>.
+     * #mean will be reused <em>without recomputation</em> whenever
+     * <tt>this->controller && mean.t == t</tt>.
      * @copydetails driver_base::save_statistics_hook
      */
     virtual bool save_statistics_hook(
-            const esio_handle esioh);
+            const esio_handle esioh,
+            const time_type t);
 
     /**
      * Beyond the inherited behavior, this method loads #mean.

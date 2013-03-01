@@ -530,13 +530,19 @@ protected:
      * Subclasses should override this method adding any desired functionality
      * either before or after invoking the superclass implementation.
      *
+     * @param esioh An ESIO handle pointing to an open, writeable file.
+     * @param t     The simulation time at which statistics are being requested.
+     *              The time should not be saved, as this is the role of
+     *              \ref save_statistics, but it may be used for logging
+     *              purposes or to avoid re-computing statistics multiple
+     *              times at one simulation time when #controller is used.
+     *
      * @returns True if any active time advance should continue.
      *          False otherwise.
-     *
-     * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual bool save_statistics_hook(
-            const esio_handle esioh);
+            const esio_handle esioh,
+            const time_type t);
 
     /**
      * Hook permitting loading arbitrary information from statistical sample
@@ -546,10 +552,10 @@ protected:
      * Subclasses should override this method adding any desired functionality
      * either before or after invoking the superclass implementation.
      *
+     * @param esioh An ESIO handle pointing to an open, writable file.
+     *
      * @returns True if any active time advance should continue.
      *          False otherwise.
-     *
-     * @param esioh An ESIO handle pointing to an open, writable file.
      */
     virtual void load_statistics_hook(
             const esio_handle esioh);

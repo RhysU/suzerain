@@ -267,15 +267,16 @@ driver::load_metadata_hook(
 
 bool
 driver::save_statistics_hook(
-        const esio_handle esioh)
+        const esio_handle esioh,
+        const driver::time_type t)
 {
     // Should we compute the statistics or re-use cached values?
     bool use_cached = false;
     std::string prefix;
-    time_type t = std::numeric_limits<super::time_type>::quiet_NaN();
     if (controller) {
-        t = controller->current_t();
+#pragma warning(push,disable:1572)
         use_cached = (t == mean.t);
+#pragma warning(pop)
         prefix = build_timeprefix(t, controller->current_nt());
         prefix.append(1, ' ');
     }
@@ -293,7 +294,7 @@ driver::save_statistics_hook(
 
     // Save statistics and invoke superclass hook
     save(esioh, mean);
-    return super::save_statistics_hook(esioh);
+    return super::save_statistics_hook(esioh, t);
 }
 
 void
