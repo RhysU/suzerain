@@ -487,8 +487,13 @@ private:
 
 void save(const esio_handle h, const mean_quantities& m)
 {
-    mean_saver f(h, "bar_");
-    m.foreach(f);
+    if (m.storage.size()) {
+        mean_saver f(h, "bar_");
+        m.foreach(f);
+    } else {
+        WARN0("No mean quantity samples saved--"
+              " trivial storage needs detected");
+    }
 }
 
 // Helper for the load(...) implementation just below
