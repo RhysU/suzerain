@@ -52,6 +52,9 @@
 // Include Boost functionality used throughout Suzerain
 // Boost.Preprocessor was included in common.h
 SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/accumulators/accumulators.hpp>
@@ -100,6 +103,9 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/utility.hpp>
 SUZERAIN_GCC_DIAG_ON(unused-variable);
 SUZERAIN_GCC_DIAG_ON(unused-parameter);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
+SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
 SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
 
 /**
