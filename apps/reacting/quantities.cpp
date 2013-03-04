@@ -85,9 +85,10 @@ class quantities_saver
 
 public:
 
-    quantities_saver(const esio_handle esioh,
+    quantities_saver(const std::string& who,
+                     const esio_handle  esioh,
                      const std::string& prefix)
-        : esioh(esioh), prefix(prefix) {}
+        : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
     void operator()(const std::string& name, const EigenArray& dat) const
@@ -109,6 +110,7 @@ public:
 
 private:
 
+    std::string who;
     esio_handle esioh;
     std::string prefix;
 
@@ -117,7 +119,7 @@ private:
 void quantities::save(const esio_handle h) const
 {
     if (this->storage.size()) {
-        quantities_saver f(h, "bar_");
+        quantities_saver f(this->who, h, "bar_");
         this->foreach(f);
     } else {
         WARN0(who, "No mean quantity samples saved--"
@@ -131,9 +133,10 @@ class quantities_loader
 
 public:
 
-    quantities_loader(const esio_handle esioh,
+    quantities_loader(const std::string& who,
+                      const esio_handle esioh,
                       const std::string& prefix)
-        : esioh(esioh), prefix(prefix) {}
+        : who(who), esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
     void operator()(const std::string& name, const EigenArray& dat_) const {
@@ -159,7 +162,8 @@ public:
                                  dat.rows(), 0, (procid == 0 ? dat.rows() : 0));
             esio_field_read(esioh, key.c_str(), dat.data(), 0, 0, 0);
         } else {
-            WARN0("Unable to load " << key << " for nscalar = " << dat.cols());
+            WARN0(who, "Unable to load " << key
+                  << " for nscalar = " << dat.cols());
             dat.fill(std::numeric_limits<
                      typename EigenArray::Scalar>::quiet_NaN());
         }
@@ -167,6 +171,7 @@ public:
 
 private:
 
+    std::string who;
     esio_handle esioh;
     std::string prefix;
 
@@ -183,7 +188,7 @@ void quantities::load(const esio_handle h)
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
                                         &cglobal, &bglobal, &aglobal)) {
         this->storage.resize(aglobal, NoChange);
-        quantities_loader f(h, "bar_");
+        quantities_loader f(this->who, h, "bar_");
         this->foreach(f);
     } else {
         WARN0(who, "No mean quantity samples loaded--"
