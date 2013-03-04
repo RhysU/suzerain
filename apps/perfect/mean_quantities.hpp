@@ -256,6 +256,11 @@ public:
         BOOST_PP_SEQ_FOR_EACH(INVOKE,,SUZERAIN_PERFECT_MEAN_QUANTITIES)
     }
 #undef INVOKE
+
+private:
+
+    /** Helps to identify from whom logging messages are being emitted. */
+    std::string who;
 };
 
 /**

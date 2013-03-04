@@ -53,14 +53,18 @@ namespace suzerain {
 
 namespace perfect {
 
+static const char default_who[] = "quantities";
+
 mean_quantities::mean_quantities()
     : t(std::numeric_limits<real_t>::quiet_NaN())
+    , who(default_who)
 {
     // NOP
 }
 
 mean_quantities::mean_quantities(real_t )
     : t(t)
+    , who(default_who)
 {
     // NOP
 }
@@ -70,6 +74,7 @@ mean_quantities::mean_quantities(
         mean_quantities::storage_type::Index Ny)
     : t(t),
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+    , who(default_who)
 {
     // NOP
 }
@@ -80,7 +85,8 @@ class mean_quantities_saver
 
 public:
 
-    mean_quantities_saver(const esio_handle esioh, const std::string& prefix)
+    mean_quantities_saver(const esio_handle esioh,
+                          const std::string& prefix)
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
@@ -114,8 +120,8 @@ void mean_quantities::save(const esio_handle h) const
         mean_quantities_saver f(h, "bar_");
         this->foreach(f);
     } else {
-        WARN0("No mean quantity samples saved--"
-              " trivial storage needs detected");
+        WARN0(who, "No mean quantity samples saved--"
+                   " trivial storage needs detected");
     }
 }
 
@@ -154,7 +160,7 @@ public:
         } else {
             WARN0("Unable to load " << key << " for nscalar = " << dat.cols());
             dat.fill(std::numeric_limits<
-                    typename EigenArray::Scalar>::quiet_NaN());
+                     typename EigenArray::Scalar>::quiet_NaN());
         }
     }
 
@@ -179,8 +185,8 @@ void mean_quantities::load(const esio_handle h)
         mean_quantities_loader f(h, "bar_");
         this->foreach(f);
     } else {
-        WARN0("No mean quantity samples loaded--"
-              " unable to anticipate storage needs");
+        WARN0(who, "No mean quantity samples loaded--"
+                   " unable to anticipate storage needs");
     }
 }
 
