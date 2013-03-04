@@ -45,7 +45,7 @@
 #include <suzerain/support/time_definition.hpp>
 
 #include "perfect.hpp"
-#include "mean_quantities.hpp"
+#include "quantities.hpp"
 
 // Introduce shorthand for common names
 using boost::math::constants::pi;
@@ -754,8 +754,7 @@ static quantity::storage_map_type process(
     boplu->factor_mass(*cop.get());
 
     // Load samples as coefficients
-    auto_ptr<perfect::mean_quantities> m(
-            new perfect::mean_quantities(time, b->n()));
+    auto_ptr<perfect::quantities> m(new perfect::quantities(time, b->n()));
     m->load(h.get());
     if (m->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);

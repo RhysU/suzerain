@@ -197,7 +197,7 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign(*state_linear);
-    mean = perfect::sample_mean_quantities(
+    mean = perfect::sample_quantities(
             *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
@@ -228,9 +228,9 @@ driver::compute_statistics(
     bsplineop_lu mass(*cop);
     mass.opform_mass(*cop);
     mass.factor();
-    mass.solve(mean_quantities::nscalars::implicit,
-               mean.storage.middleCols<mean_quantities::nscalars::implicit>(
-                   mean_quantities::nscalars::physical).data(),
+    mass.solve(quantities::nscalars::implicit,
+               mean.storage.middleCols<quantities::nscalars::implicit>(
+                   quantities::nscalars::physical).data(),
                mean.storage.innerStride(), mean.storage.outerStride());
 }
 

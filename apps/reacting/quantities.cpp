@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc mean_quantities.hpp
+ * @copydoc quantities.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include "mean_quantities.hpp"
+#include "quantities.hpp"
 
 #include <esio/error.h>
 
@@ -53,34 +53,40 @@ namespace suzerain {
 
 namespace perfect {
 
-mean_quantities::mean_quantities()
+static const char default_who[] = "quantities";
+
+quantities::quantities()
     : t(std::numeric_limits<real_t>::quiet_NaN())
+    , who(default_who)
 {
     // NOP
 }
 
-mean_quantities::mean_quantities(real_t )
+quantities::quantities(real_t )
     : t(t)
+    , who(default_who)
 {
     // NOP
 }
 
-mean_quantities::mean_quantities(
+quantities::quantities(
         real_t t,
-        mean_quantities::storage_type::Index Ny)
+        quantities::storage_type::Index Ny)
     : t(t),
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
+    , who(default_who)
 {
     // NOP
 }
 
-// Helper for the mean_quantities::save(...) implementation just below
-class mean_quantities_saver
+// Helper for the quantities::save(...) implementation just below
+class quantities_saver
 {
 
 public:
 
-    mean_quantities_saver(const esio_handle esioh, const std::string& prefix)
+    quantities_saver(const esio_handle esioh,
+                     const std::string& prefix)
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
@@ -108,24 +114,25 @@ private:
 
 };
 
-void mean_quantities::save(const esio_handle h) const
+void quantities::save(const esio_handle h) const
 {
     if (this->storage.size()) {
-        mean_quantities_saver f(h, "bar_");
+        quantities_saver f(h, "bar_");
         this->foreach(f);
     } else {
-        WARN0("No mean quantity samples saved--"
-              " trivial storage needs detected");
+        WARN0(who, "No mean quantity samples saved--"
+                   " trivial storage needs detected");
     }
 }
 
-// Helper for the mean_quantities::load(...) implementation just below
-class mean_quantities_loader
+// Helper for the quantities::load(...) implementation just below
+class quantities_loader
 {
 
 public:
 
-    mean_quantities_loader(const esio_handle esioh, const std::string& prefix)
+    quantities_loader(const esio_handle esioh,
+                      const std::string& prefix)
         : esioh(esioh), prefix(prefix) {}
 
     template< typename EigenArray >
@@ -154,7 +161,7 @@ public:
         } else {
             WARN0("Unable to load " << key << " for nscalar = " << dat.cols());
             dat.fill(std::numeric_limits<
-                    typename EigenArray::Scalar>::quiet_NaN());
+                     typename EigenArray::Scalar>::quiet_NaN());
         }
     }
 
@@ -165,7 +172,7 @@ private:
 
 };
 
-void mean_quantities::load(const esio_handle h)
+void quantities::load(const esio_handle h)
 {
     // Defensively NaN out all storage in the instance prior to load.
     // this->t presumably set afterwards using load_time
@@ -176,11 +183,11 @@ void mean_quantities::load(const esio_handle h)
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho",
                                         &cglobal, &bglobal, &aglobal)) {
         this->storage.resize(aglobal, NoChange);
-        mean_quantities_loader f(h, "bar_");
+        quantities_loader f(h, "bar_");
         this->foreach(f);
     } else {
-        WARN0("No mean quantity samples loaded--"
-              " unable to anticipate storage needs");
+        WARN0(who, "No mean quantity samples loaded--"
+                   " unable to anticipate storage needs");
     }
 }
 
@@ -189,7 +196,7 @@ void mean_quantities::load(const esio_handle h)
 // Reading through that file, especially the apply_operator implementation, is
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.
-mean_quantities sample_mean_quantities(
+quantities sample_quantities(
         const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -241,7 +248,7 @@ mean_quantities sample_mean_quantities(
                                auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
-    mean_quantities ret(t, Ny);
+    quantities ret(t, Ny);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
@@ -349,7 +356,7 @@ mean_quantities sample_mean_quantities(
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
                 [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
         BOOST_PP_SEQ_FOR_EACH(DECLARE,,
-                SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL)
+                SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
 #undef DECLARE
 
         for (int k = dgrid.local_physical_start.z();
@@ -521,7 +528,7 @@ mean_quantities sample_mean_quantities(
             BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
         BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,
-                SUZERAIN_PERFECT_MEAN_QUANTITIES_PHYSICAL)
+                SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
 #undef EXTRACT_SUM
 #undef MOVE_SUM_INTO_TMP
 
@@ -536,7 +543,7 @@ mean_quantities sample_mean_quantities(
         // Reduce operation requires no additional storage on rank-zero
         SUZERAIN_MPICHKR(MPI_Reduce(
                 MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
-                mpi::datatype<mean_quantities::storage_type::Scalar>::value,
+                mpi::datatype<quantities::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
     } else {
@@ -546,12 +553,12 @@ mean_quantities sample_mean_quantities(
         tmp.resizeLike(ret.storage);
         tmp.setZero();
         SUZERAIN_MPICHKR(MPI_Reduce(ret.storage.data(), tmp.data(), tmp.size(),
-                mpi::datatype<mean_quantities::storage_type::Scalar>::value,
+                mpi::datatype<quantities::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
         // Force non-zero ranks contain all NaNs to help detect usage errors
         ret.storage.fill(std::numeric_limits<
-                mean_quantities::storage_type::Scalar>::quiet_NaN());
+                quantities::storage_type::Scalar>::quiet_NaN());
 
         // Return from all non-zero ranks
         return ret;
@@ -568,16 +575,16 @@ mean_quantities sample_mean_quantities(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
-    scaled_mass.solve(mean_quantities::nscalars::physical,
-            ret.storage.middleCols<mean_quantities::nscalars::physical>(
-                mean_quantities::nscalars::wave).data(),
+    scaled_mass.solve(quantities::nscalars::physical,
+            ret.storage.middleCols<quantities::nscalars::physical>(
+                quantities::nscalars::wave).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
 
     // Fill with NaNs those samples which were not computed by this method
 #define FILL(r, data, tuple)                                         \
     ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
-            mean_quantities::storage_type::Scalar>::quiet_NaN());
-    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_PERFECT_MEAN_QUANTITIES_IMPLICIT)
+            quantities::storage_type::Scalar>::quiet_NaN());
+    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_PERFECT_QUANTITIES_IMPLICIT)
 #undef FILL
 
     return ret;

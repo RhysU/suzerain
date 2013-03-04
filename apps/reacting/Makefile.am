@@ -9,7 +9,7 @@ include ../Common.am
 noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = perfect.hpp               perfect.cpp
 libperfect_la_SOURCES += scenario_definition.hpp   scenario_definition.cpp
-libperfect_la_SOURCES += mean_quantities.hpp       mean_quantities.cpp
+libperfect_la_SOURCES += quantities.hpp            quantities.cpp
 libperfect_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
 libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
 libperfect_la_SOURCES += driver.hpp                driver.cpp
