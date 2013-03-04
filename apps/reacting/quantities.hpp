@@ -178,10 +178,12 @@ public:
 
     /**
      * Load quantities from a restart file.  Statistics not present in the
-     * restart file are considered to be all NaNs.  On return, #t will be NaN
-     * and must be populated in some other manner.
+     * restart file are considered to be all NaNs.  Member #t, which is not
+     * modified by this routine, is presumably set in some other fashion.
+     *
+     * @return True if some quantities could be loaded.  False otherwise.
      */
-    void load(const esio_handle h);
+    bool load(const esio_handle h);
 
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
