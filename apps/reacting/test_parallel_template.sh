@@ -10,7 +10,7 @@ source "`dirname $0`/test_setup.sh"
 banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../perfect_advance $OPER mms0.h5 --restart_destination "serial#.h5" $ADVANCE
+    run ../reacting_advance $OPER mms0.h5 --restart_destination "serial#.h5" $ADVANCE
 )
 
 # Run each test case in this file under the following circumstances
@@ -23,7 +23,7 @@ eval "$METACASE"
 banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
-    prun ../perfect_advance $OPER mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prun ../reacting_advance $OPER mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ_exclude $exclude_datasets_bar --delta=3e-13 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do

@@ -18,22 +18,22 @@ libperfect_la_SOURCES += driver.hpp                driver.cpp
 ## Applications
 ##
 
-bin_PROGRAMS         += perfect_init
-perfect_init_SOURCES  = main_init.cpp
-perfect_init_SOURCES += main_init_svnrev.c
-BUILT_SOURCES        += main_init_svnrev.h
-perfect_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+bin_PROGRAMS          += reacting_init
+reacting_init_SOURCES  = main_init.cpp
+reacting_init_SOURCES += main_init_svnrev.c
+BUILT_SOURCES         += main_init_svnrev.h
+reacting_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
 main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
-bin_PROGRAMS            += perfect_advance
-perfect_advance_SOURCES  = main_advance.cpp
-perfect_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
-perfect_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
-perfect_advance_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
-perfect_advance_SOURCES += main_advance_svnrev.c
-BUILT_SOURCES           += main_advance_svnrev.h
-perfect_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+bin_PROGRAMS            += reacting_advance
+reacting_advance_SOURCES  = main_advance.cpp
+reacting_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
+reacting_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
+reacting_advance_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
+reacting_advance_SOURCES += main_advance_svnrev.c
+BUILT_SOURCES            += main_advance_svnrev.h
+reacting_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
 main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
@@ -42,13 +42,13 @@ main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 ## TODO Eliminate these as part of closing ticket #2736
 ##
 
-bin_PROGRAMS         += channel_mean
-channel_mean_SOURCES  = channel_mean.cpp
-channel_mean_SOURCES += channel_mean_svnrev.c
-BUILT_SOURCES        += channel_mean_svnrev.h
-channel_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
+#bin_PROGRAMS         += channel_mean
+#channel_mean_SOURCES  = channel_mean.cpp
+#channel_mean_SOURCES += channel_mean_svnrev.c
+#BUILT_SOURCES        += channel_mean_svnrev.h
+#channel_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+#channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
+#	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
 ## Tests for perfect gas applications
