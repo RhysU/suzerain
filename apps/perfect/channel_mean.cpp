@@ -748,10 +748,17 @@ static quantity::storage_map_type process(
     if (!i_grid)     i_grid    .reset(new grid_definition    (grid    ));
     if (!i_timedef)  i_timedef .reset(new time_definition    (timedef ));
 
-    // Compute factorized mass matrix
+    // Compute factorized mass matrix for current operators in use
     shared_ptr<suzerain::bsplineop_lu> boplu
         = suzerain::make_shared<suzerain::bsplineop_lu>(*cop.get());
     boplu->factor_mass(*cop.get());
+
+    // Likewise, use b and friends if i_b was not supplied by the caller
+    if (!i_b) {
+        i_b     = b;
+        i_bop   = cop;
+        i_boplu = boplu;
+    }
 
     // Load samples as coefficients
     auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
@@ -1211,14 +1218,6 @@ static quantity::storage_map_type process(
         ;
 
 #undef C
-
-    // Use b and friends if i_b was not supplied by the caller
-    // This mutates the shared_ptrs provided by the caller
-    if (!i_b) {
-        i_b     = b;
-        i_bop   = cop;
-        i_boplu = boplu;
-    }
 
     const real_t bsplines_dist = b->distance_to(*i_b);
     if (bsplines_dist <= suzerain_bspline_distance_distinct) {
