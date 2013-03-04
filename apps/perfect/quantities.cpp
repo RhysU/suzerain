@@ -177,11 +177,12 @@ private:
 
 };
 
-void quantities::load(const esio_handle h)
+bool quantities::load(const esio_handle h)
 {
+    // Were any quantities loaded from file?
+    bool success = false;
+
     // Defensively NaN out all storage in the instance prior to load.
-    // this->t presumably set afterwards using load_time
-    this->t = std::numeric_limits<real_t>::quiet_NaN();
     this->storage.fill(std::numeric_limits<real_t>::quiet_NaN());
 
     int cglobal, bglobal, aglobal;
@@ -190,10 +191,13 @@ void quantities::load(const esio_handle h)
         this->storage.resize(aglobal, NoChange);
         quantities_loader f(this->who, h, "bar_");
         this->foreach(f);
+        success = true;
     } else {
         WARN0(who, "No mean quantity samples loaded--"
                    " unable to anticipate storage needs");
     }
+
+    return success;
 }
 
 
