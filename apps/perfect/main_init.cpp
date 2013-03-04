@@ -29,7 +29,6 @@
 #include <suzerain/config.h>
 #endif
 
-#include <boost/math/special_functions/gamma.hpp>
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
