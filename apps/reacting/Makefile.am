@@ -38,19 +38,6 @@ main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
-## Old, non-suzerain::support::application_base channel application(s)
-## TODO Eliminate these as part of closing ticket #2736
-##
-
-#bin_PROGRAMS         += channel_mean
-#channel_mean_SOURCES  = channel_mean.cpp
-#channel_mean_SOURCES += channel_mean_svnrev.c
-#BUILT_SOURCES        += channel_mean_svnrev.h
-#channel_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-#channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
-#	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
-
-##
 ## Tests for perfect gas applications
 ##
 ## Identical test logic varying only in the operator choices (e.g. --explicit
