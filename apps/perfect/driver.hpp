@@ -32,7 +32,7 @@
 #include <suzerain/support/driver_base.hpp>
 
 #include "manufactured_solution.hpp"
-#include "mean_quantities.hpp"
+#include "quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
 #include "scenario_definition.hpp"
 
@@ -86,7 +86,7 @@ public:
      * mechanism to avoid expensive recomputations.  Implicitly computed mean
      * quantities are tracked via \ref common_block.
      */
-    mean_quantities mean;
+    quantities mean;
 
     /**
      * When \c msoln is true, log messages containing the absolute

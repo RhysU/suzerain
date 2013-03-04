@@ -45,7 +45,7 @@
 #include <suzerain/support/time_definition.hpp>
 
 #include "perfect.hpp"
-#include "mean_quantities.hpp"
+#include "quantities.hpp"
 
 // Introduce shorthand for common names
 using boost::math::constants::pi;
@@ -754,10 +754,9 @@ static quantity::storage_map_type process(
     boplu->factor_mass(*cop.get());
 
     // Load samples as coefficients
-    auto_ptr<perfect::mean_quantities> m(
-            new perfect::mean_quantities(time, b->n()));
-    m->load(h.get());
-    if (m->t >= 0) {
+    auto_ptr<perfect::quantities> q(new perfect::quantities(time, b->n()));
+    q->load(h.get());
+    if (q->t >= 0) {
         DEBUG0("Successfully loaded sample collection from " << filename);
     } else {
         WARN0("No valid sample collection found in " << filename);
@@ -770,7 +769,7 @@ static quantity::storage_map_type process(
     s->fill(numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
 #define ACCUMULATE(coeff_name, coeff_col, point_name)                 \
-    cop->accumulate(0, 1.0, m->coeff_name().col(coeff_col).data(), 1, \
+    cop->accumulate(0, 1.0, q->coeff_name().col(coeff_col).data(), 1, \
                     0.0, s->col(quantity::point_name).data(),   1)
     ACCUMULATE(rho,              0, bar_rho               );
     ACCUMULATE(rho_u,            0, bar_rho_u             );
@@ -865,12 +864,12 @@ static quantity::storage_map_type process(
     // Store time and collocation points into s.
     // Not strictly necessary, but very useful for textual output
     // and as a sanity check of any later grid projection.
-    s->col(quantity::t).fill(m->t);
+    s->col(quantity::t).fill(q->t);
     for (int i = 0; i < b->n(); ++i)
         s->col(quantity::y)[i] = b->collocation_point(i);
 
     // Free coefficient-related resources
-    m.reset();
+    q.reset();
 
     // Introduce shorthand for constants
     const real_t Ma    = scenario.Ma;
