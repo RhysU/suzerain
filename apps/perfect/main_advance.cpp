@@ -87,15 +87,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Storage for binary-specific options
     const support::noise_definition noisedef;
-    bool use_explicit  = false;
-    bool use_implicit  = false;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
     options.add_options()
-        ("explicit", "Use purely explicit operators")
-        ("implicit", "Use hybrid implicit/explicit operators")
+        ("explicit", boost::program_options::bool_switch(),
+                     "Use purely explicit operators")
+        ("implicit", boost::program_options::bool_switch(),
+                     "Use hybrid implicit/explicit operators")
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for any implicit solves")
@@ -106,12 +106,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     vector<string> positional = initialize(argc, argv);
 
     // Select type of timestepping operators to use (default implicit)
-    options.conflicting_options("implicit", "explicit");
-    if (options.variables().count("explicit")) {
-        use_explicit = true;
-    } else {
-        use_implicit = true;
-    }
+    options.conflicting_options("explicit", "implicit");
+    const bool use_explicit =  options.variables()["explicit"].as<bool>();
+    const bool use_implicit =  options.variables()["implicit"].as<bool>()
+                            || !use_explicit;
 
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
@@ -163,16 +161,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign(*state_nonlinear);
     }
 
-    // Prepare spatial operators depending on request advance type
+    // Prepare spatial operators depending on requested advance type
     if (use_explicit) {
-        INFO0(who, "Initializing explicit timestepping operators");
+        INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
                     *scenario, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
-        INFO0(who,
-              "Initializing hybrid implicit/explicit timestepping operators");
+        INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
