@@ -96,7 +96,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     options.add_options()
         ("explicit", "Use purely explicit operators")
         ("implicit", "Use hybrid implicit/explicit operators")
-        ("solver",   boost::program_options::value<string>(&solver_spec)
+        ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for any implicit solves")
     ;
@@ -117,7 +117,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         FATAL0("Exactly one restart file name must be specified");
         return EXIT_FAILURE;
     }
-    const std::string restart_file = positional[0];
+    const string restart_file = positional[0];
 
     INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
