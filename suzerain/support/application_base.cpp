@@ -392,6 +392,31 @@ application_base::log_discretization_quality()
     boplu.rcond(norm, rcond);
     INFO0(who, "B-spline mass matrix has condition number near "
           << (1 / rcond));
+
+    // Compute collocation point spacing relative to Fourier directions...
+    real_t min_delta_y, med_delta_y, max_delta_y;
+    {
+        using namespace boost::accumulators;
+        accumulator_set< real_t, stats<tag::min, tag::median, tag::max> > acc;
+        for (int i = 0; i < b->n(); ++i) acc(b->spacing_collocation_point(i));
+        min_delta_y = extract::min (acc);
+        med_delta_y = extract::median(acc);
+        max_delta_y = extract::max (acc);
+    }
+    if (grid->N.x() > 1) { // ...but display only for non-trivial X basis...
+        const real_t inv_delta_x = grid->N.x() / grid->L.x();
+        INFO0(who, "Collocation spacing min/median/max relative to delta_x: "
+              << min_delta_y * inv_delta_x << ", "
+              << med_delta_y * inv_delta_x << ", "
+              << max_delta_y * inv_delta_x);
+    }
+    if (grid->N.z() > 1) { // ...and display only for non-trivial Z basis.
+        const real_t inv_delta_z = grid->N.z() / grid->L.z();
+        INFO0(who, "Collocation spacing min/median/max relative to delta_z: "
+              << min_delta_y * inv_delta_z << ", "
+              << med_delta_y * inv_delta_z << ", "
+              << max_delta_y * inv_delta_z);
+    }
 }
 
 } // end namespace support
