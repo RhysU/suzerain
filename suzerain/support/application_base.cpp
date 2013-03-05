@@ -87,9 +87,7 @@ application_base::application_base(
 
 application_base::~application_base()
 {
-#ifdef HAVE_UNDERLING
-    underling_cleanup();
-#endif
+    // NOP
 }
 
 std::vector<std::string>
