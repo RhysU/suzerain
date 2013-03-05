@@ -121,8 +121,10 @@ application_base::initialize(int argc, char **argv)
     // Add additional standalone options
     options.add_options()
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-        ("p3dfft",    "Use P3DFFT for MPI-parallel FFTs")
-        ("underling", "Use underling for MPI-parallel FFTs")
+        ("p3dfft",    boost::program_options::bool_switch(),
+                      "Use P3DFFT for MPI-parallel FFTs")
+        ("underling", boost::program_options::bool_switch(),
+                      "Use underling for MPI-parallel FFTs")
 #endif
         ;
 
@@ -135,14 +137,12 @@ application_base::initialize(int argc, char **argv)
     INFO0(who, "Invocation: " << os.str());
     INFO0(who, "Build:      " << suzerain::version("", revstr));
 
+    // Select pencil decomposition and FFT library to use
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
-    // Select pencil decomposition and FFT library to use (default p3dfft)
     options.conflicting_options("p3dfft", "underling");
-    if (options.variables().count("underling")) {
-        use_underling = true;
-    } else {
-        use_p3dfft = true;
-    }
+    use_underling = options.variables()["underling"].as<bool>();
+    use_p3dfft    = options.variables()["p3dfft"   ].as<bool>()
+                  || !use_underling; // Default p3dfft
 #endif
 
     switch (options.verbose()) {
