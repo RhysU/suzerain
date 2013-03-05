@@ -60,7 +60,7 @@ using std::size_t;
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 std::vector<support::field> default_fields()
 {
@@ -765,6 +765,6 @@ add_noise(contiguous_state<4,complex_t> &state,
     state[ndx::mz] = s[ndx::mz];
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain

@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_MANUFACTURED_SOLUTION_HPP
-#define SUZERAIN_PERFECT_MANUFACTURED_SOLUTION_HPP
+#ifndef SUZERAIN_REACTING_MANUFACTURED_SOLUTION_HPP
+#define SUZERAIN_REACTING_MANUFACTURED_SOLUTION_HPP
 
 /** @file
- * Method of manufactured solution details for the perfect gas application.
+ * Method of manufactured solution details for the reacting flow application.
  */
 
 #include <esio/esio.h>
@@ -42,10 +42,10 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
- * Manufactured solution employed throughout the perfect gas code.
+ * Manufactured solution employed throughout the reacting flow code.
  *
  * By subclassing \ref support::definition_base we can pass an instance to
  * program_options::add_definition method to permit modifying parameters via
@@ -149,8 +149,8 @@ void accumulate_manufactured_solution(
         bspline &b,
         const real_t simulation_time);
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_PERFECT_MANUFACTURED_SOLUTION_HPP
+#endif // SUZERAIN_REACTING_MANUFACTURED_SOLUTION_HPP

@@ -41,7 +41,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 // A helper class for implementing isothermal, no-slip boundary conditions
 class IsothermalNoSlipFunctor
@@ -173,6 +173,6 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
     }
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain

@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
-#define SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
+#ifndef SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
+#define SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
 
 /** @file
  * Hybrid implicit/explicit Navier--Stokes operators.
@@ -44,7 +44,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -177,8 +177,8 @@ private:
 
 };
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP */
+#endif  /* SUZERAIN_REACTING_HYBRID_OPERATOR_HPP */

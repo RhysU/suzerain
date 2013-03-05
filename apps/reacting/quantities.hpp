@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_QUANTITIES_HPP
-#define SUZERAIN_PERFECT_QUANTITIES_HPP
+#ifndef SUZERAIN_REACTING_QUANTITIES_HPP
+#define SUZERAIN_REACTING_QUANTITIES_HPP
 
 /** @file
  * Sampling logistics for mean quantity profiles.
@@ -40,7 +40,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
  * Encapsulate the mean quantities detailed in the "Sampling logistics" section
@@ -288,8 +288,8 @@ quantities sample_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t);
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_PERFECT_QUANTITIES_HPP
+#endif // SUZERAIN_REACTING_QUANTITIES_HPP

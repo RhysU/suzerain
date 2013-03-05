@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_HPP
-#define SUZERAIN_PERFECT_HPP
+#ifndef SUZERAIN_REACTING_HPP
+#define SUZERAIN_REACTING_HPP
 
 /** @file
- * Support logic for the perfect gas application.
+ * Support logic for the reacting flow application.
  */
 
 #include <esio/esio.h>
@@ -53,9 +53,9 @@ namespace suzerain {
 namespace support { class field; }
 
 /**
- * Functionality used throughout the Suzerain perfect gas application.
+ * Functionality used throughout the Suzerain reacting flow application.
  */
-namespace perfect {
+namespace reacting {
 
 /** Return default nondimensional field information per \ref suzerain::ndx. */
 std::vector<support::field> default_fields();
@@ -129,8 +129,8 @@ add_noise(contiguous_state<4,complex_t> &state,
           const bsplineop& cop,
           bspline &b);
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_PERFECT_HPP
+#endif // SUZERAIN_REACTING_HPP

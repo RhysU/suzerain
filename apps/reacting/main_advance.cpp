@@ -43,13 +43,13 @@
 
 #pragma warning(disable:1419)
 
-namespace suzerain { namespace perfect {
+namespace suzerain { namespace reacting {
 
 /** Application for initializing new restart files. */
 struct driver_advance : public driver
 {
     driver_advance(const std::string& revstr)
-        : driver("Compressible, perfect gas simulation time advancement",
+        : driver("Compressible, reacting flow simulation time advancement",
                  "RESTART-FILE",
                  "",
                  revstr)
@@ -65,7 +65,7 @@ private:
     std::string who;
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} /* namespace reacting */ } /* namespace suzerain */
 
 // Provided by main_advance_svnrev.{c,h} so revstr updates are merely relinking
 extern "C" const char revstr[];
@@ -73,12 +73,12 @@ extern "C" const char revstr[];
 /** Instantiate and invoke the application */
 int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_advance app(revstr);
+    suzerain::reacting::driver_advance app(revstr);
     return app.run(argc, argv);
 }
 
 int
-suzerain::perfect::driver_advance::run(int argc, char **argv)
+suzerain::reacting::driver_advance::run(int argc, char **argv)
 {
     using boost::math::isnan;
     using std::numeric_limits;

@@ -37,7 +37,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 driver::driver(
         const std::string &application_synopsis,
@@ -49,7 +49,7 @@ driver::driver(
                   description,
                   revstr)
     , scenario(make_shared<scenario_definition>())
-    , who("perfect")
+    , who("reacting")
 {
     this->fields = default_fields();
 }
@@ -197,7 +197,7 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign(*state_linear);
-    mean = perfect::sample_quantities(
+    mean = reacting::sample_quantities(
             *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
@@ -322,6 +322,6 @@ driver::default_restart_interval(
     }
 }
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain

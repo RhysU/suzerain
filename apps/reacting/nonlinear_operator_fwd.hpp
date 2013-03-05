@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_NONLINEAR_OPERATOR_FWD_HPP
-#define SUZERAIN_PERFECT_NONLINEAR_OPERATOR_FWD_HPP
+#ifndef SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP
+#define SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP
 
 /** @file
  * Declarations of Nonlinear Navier--Stokes spatial operators
@@ -38,7 +38,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -448,8 +448,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag);
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_NONLINEAR_OPERATOR_FWD_HPP */
+#endif  /* SUZERAIN_REACTING_NONLINEAR_OPERATOR_FWD_HPP */

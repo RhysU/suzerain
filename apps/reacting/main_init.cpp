@@ -22,7 +22,7 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * Application executing \ref suzerain::perfect::driver_init::run.
+ * Application executing \ref suzerain::reacting::driver_init::run.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -41,13 +41,13 @@
 
 #pragma warning(disable:1419)
 
-namespace suzerain { namespace perfect {
+namespace suzerain { namespace reacting {
 
 /** Application for initializing new restart files. */
 struct driver_init : public driver
 {
     driver_init(const std::string& revstr)
-        : driver("Compressible, perfect gas simulation initialization",
+        : driver("Compressible, reacting flow simulation initialization",
                  "RESTART-FILE",
                  "",
                  revstr)
@@ -63,7 +63,7 @@ private:
     std::string who;
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} /* namespace reacting */ } /* namespace suzerain */
 
 // Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
 extern "C" const char revstr[];
@@ -71,12 +71,12 @@ extern "C" const char revstr[];
 /** Instantiate and invoke the application */
 int main(int argc, char **argv)
 {
-    suzerain::perfect::driver_init app(revstr);
+    suzerain::reacting::driver_init app(revstr);
     return app.run(argc, argv);
 }
 
 int
-suzerain::perfect::driver_init::run(int argc, char **argv)
+suzerain::reacting::driver_init::run(int argc, char **argv)
 {
     using boost::math::constants::pi;
     using boost::math::tgamma;

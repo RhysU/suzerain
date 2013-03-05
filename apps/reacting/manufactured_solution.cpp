@@ -44,7 +44,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 const std::string manufactured_solution::default_caption(
         "Manufactured solution parameters");
@@ -152,7 +152,7 @@ void save(const esio_handle h,
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, location, &one, 0,
-            "Is a suzerain::perfect::manufactured_solution in use?");
+            "Is a suzerain::reacting::manufactured_solution in use?");
 
     DEBUG0("Storing manufactured_solution parameters");
 
@@ -369,6 +369,6 @@ void accumulate_manufactured_solution(
     }
 }
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain

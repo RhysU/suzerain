@@ -51,7 +51,7 @@ using boost::numeric_cast;
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 static const char default_who[] = "quantities";
 
@@ -599,6 +599,6 @@ quantities sample_quantities(
     return ret;
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain

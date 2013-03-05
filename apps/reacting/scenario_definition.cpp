@@ -47,7 +47,7 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-namespace perfect {
+namespace reacting {
 
 scenario_definition::scenario_definition()
     : Re        (std::numeric_limits<real_t>::quiet_NaN())
@@ -271,6 +271,6 @@ scenario_definition::load(
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain

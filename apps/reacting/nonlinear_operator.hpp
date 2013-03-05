@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
-#define SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP
+#ifndef SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP
+#define SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP
 
 /** @file
  * Implementation of Nonlinear Navier--Stokes spatial operators
@@ -45,7 +45,7 @@
 
 #pragma warning(disable:280 383 1572)
 
-namespace suzerain { namespace perfect {
+namespace suzerain { namespace reacting {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
@@ -989,6 +989,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // State leaves method as collocation point values in Y direction
 }
 
-} /* namespace perfect */ } /* namespace suzerain */
+} /* namespace reacting */ } /* namespace suzerain */
 
-#endif  /* SUZERAIN_PERFECT_NONLINEAR_OPERATOR_HPP */
+#endif  /* SUZERAIN_REACTING_NONLINEAR_OPERATOR_HPP */

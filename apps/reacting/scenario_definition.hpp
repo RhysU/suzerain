@@ -10,11 +10,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
-#define SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+#ifndef SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP
+#define SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP
 
 /** @file
- * Classes handling perfect gas problem scenario parameters.
+ * Classes handling reacting flow problem scenario parameters.
  */
 
 #include <esio/esio.h>
@@ -32,7 +32,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
  * Holds nondimensional parameters like the Reynolds and Prandtl numbers as
@@ -169,8 +169,8 @@ public:
 
 };
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain
 
-#endif // SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
+#endif // SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP

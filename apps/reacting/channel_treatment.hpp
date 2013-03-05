@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
-#define SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
+#ifndef SUZERAIN_REACTING_CHANNEL_TREATMENT_HPP
+#define SUZERAIN_REACTING_CHANNEL_TREATMENT_HPP
 
 /** @file
  * A mixin providing implicit channel forcing.
@@ -43,7 +43,7 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
  * A mixin providing channel problem treatment atop any
@@ -341,8 +341,8 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain
 
-#endif /* SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP */
+#endif /* SUZERAIN_REACTING_CHANNEL_TREATMENT_HPP */

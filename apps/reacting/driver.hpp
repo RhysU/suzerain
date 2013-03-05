@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_DRIVER_HPP
-#define SUZERAIN_PERFECT_DRIVER_HPP
+#ifndef SUZERAIN_REACTING_DRIVER_HPP
+#define SUZERAIN_REACTING_DRIVER_HPP
 
 /** @file
- * A driver for nondimensional perfect gas simulations.
+ * A driver for reacting flow simulations.
  */
 
 #include <suzerain/common.hpp>
@@ -38,10 +38,10 @@
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 /**
- * A driver class for managing a nondimensional perfect gas application using
+ * A driver class for managing a reacting application using
  * details from \ref suzerain::rholut.  Instantiate from within \c main().
  */
 class driver : public support::driver_base
@@ -61,7 +61,7 @@ public:
      * @copydoc driver_base::initialize
      *
      * While #scenario is registered in #options during this method, #msoln is
-     * not as not all perfect gas binaries will expose related options.
+     * not as not all reacting flow binaries will expose related options.
      */
     virtual std::vector<std::string> initialize(
             int argc,
@@ -190,8 +190,8 @@ private:
 
 };
 
-} // end namespace perfect
+} // end namespace reacting
 
 } // end namespace suzerain
 
-#endif // SUZERAIN_PERFECT_DRIVER_HPP
+#endif // SUZERAIN_REACTING_DRIVER_HPP

@@ -60,7 +60,7 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
-namespace suzerain { namespace perfect {
+namespace suzerain { namespace reacting {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
@@ -754,4 +754,4 @@ std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
     }
 }
 
-} /* namespace perfect */ } /* namespace suzerain */
+} /* namespace reacting */ } /* namespace suzerain */
