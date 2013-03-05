@@ -16,9 +16,10 @@ eval "$METACASE"
 
 banner "Reproducibility of adding fluctuations to an existing field"
 (
+    # TODO: Switch back to implicit once that capability is resurrected
     cd $testdir
-    prun ../reacting_advance mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
-    prun ../reacting_advance mms0.h5 --restart_destination "b#.h5" $ADVANCE $P
+    prun ../reacting_advance --explicit mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prun ../reacting_advance --explicit mms0.h5 --restart_destination "b#.h5" $ADVANCE $P
     differ --delta=2e-14 --nan a0.h5 b0.h5
 )
 
