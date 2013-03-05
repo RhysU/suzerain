@@ -41,7 +41,7 @@
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 
 #pragma warning(disable:280 383 1572)
 

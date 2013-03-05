@@ -33,7 +33,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 
 namespace suzerain {
 

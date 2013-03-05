@@ -37,7 +37,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 #include "manufactured_solution.hpp"
 
 #pragma warning(disable:383 1572)

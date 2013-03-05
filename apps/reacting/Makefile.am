@@ -6,13 +6,13 @@ include ../Common.am
 ### Logic common to many different binaries within this subdirectory
 ###
 
-noinst_LTLIBRARIES    += libperfect.la
-libperfect_la_SOURCES  = perfect.hpp               perfect.cpp
-libperfect_la_SOURCES += scenario_definition.hpp   scenario_definition.cpp
-libperfect_la_SOURCES += quantities.hpp            quantities.cpp
-libperfect_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
-libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
-libperfect_la_SOURCES += driver.hpp                driver.cpp
+noinst_LTLIBRARIES     += libreacting.la
+libreacting_la_SOURCES  = reacting.hpp              reacting.cpp
+libreacting_la_SOURCES += scenario_definition.hpp   scenario_definition.cpp
+libreacting_la_SOURCES += quantities.hpp            quantities.cpp
+libreacting_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
+libreacting_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
+libreacting_la_SOURCES += driver.hpp                driver.cpp
 
 ##
 ## Applications
@@ -22,23 +22,23 @@ bin_PROGRAMS          += reacting_init
 reacting_init_SOURCES  = main_init.cpp
 reacting_init_SOURCES += main_init_svnrev.c
 BUILT_SOURCES         += main_init_svnrev.h
-reacting_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
+reacting_init_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
+main_init_svnrev.h: $(reacting_init_SOURCES) $(libreacting_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
-bin_PROGRAMS            += reacting_advance
+bin_PROGRAMS             += reacting_advance
 reacting_advance_SOURCES  = main_advance.cpp
 reacting_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
 reacting_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
 reacting_advance_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
 reacting_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES            += main_advance_svnrev.h
-reacting_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
+reacting_advance_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
+main_advance_svnrev.h: $(reacting_advance_SOURCES) $(libreacting_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
-## Tests for perfect gas applications
+## Tests for reacting flow applications
 ##
 ## Identical test logic varying only in the operator choices (e.g. --explicit
 ## versus implicit) are broken out into separate, templated tests to increase

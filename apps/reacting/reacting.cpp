@@ -22,14 +22,14 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc perfect.hpp
+ * @copydoc reacting.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>

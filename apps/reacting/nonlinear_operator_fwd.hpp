@@ -34,7 +34,7 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timers.h>
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 
 namespace suzerain {
 

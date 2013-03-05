@@ -39,7 +39,7 @@
 #include <suzerain/storage.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "perfect.hpp"
+#include "reacting.hpp"
 
 namespace suzerain {
 
