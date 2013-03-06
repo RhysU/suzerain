@@ -24,6 +24,7 @@ perfect_init_SOURCES += main_init_svnrev.c
 BUILT_SOURCES        += main_init_svnrev.h
 perfect_init_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
 main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
+main_init_svnrev.h: $(perfect_advance_SOURCES) # Ticket 2783
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS            += perfect_advance
@@ -35,6 +36,7 @@ perfect_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES           += main_advance_svnrev.h
 perfect_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
 main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
+main_advance_svnrev.h: $(perfect_init_SOURCES) # Ticket 2783
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
