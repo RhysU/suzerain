@@ -175,6 +175,50 @@ complete $L$ will be placed here. This way passing to the discrete
 implementation need only reference the summary.
 
 
+\section{Acoustics}
+
+In order to determine the acoustic effects that are contributing to our
+operator, we will linearize the Euler equations.
+
+We start with the 1d Euler equations:
+\begin{eqnarray}
+ \rho_t + (\rho u)_x = 0 \\
+ (\rho u)_t + (\rho u^2 + p)_x = 0 \\
+ E_t + [u(E+p)]_x = 0 
+\end{eqnarray}
+
+The entropy of this flow is:
+\begin{equation}
+ S = c_v \text{Log}(\frac{P}{\rho^\gamma}) + C
+\end{equation}
+Which can be rearranged as,
+\begin{equation}
+ \frac{S}{c_v}= C'\text{Log}(\frac{P}{\rho^\gamma})
+\end{equation}
+which is equivalent to,
+\begin{equation}
+ k e^{S/c_v} = \frac{P}{\rho^\gamma}
+\end{equation}
+Or,
+\begin{equation}
+ P = k e^{S/c_v}\rho^\gamma 
+\end{equation}
+Thus, we have an equation of state such that $P = P(\rho,S)$. For an
+isentropic flow, $\delta S=0$, therefore, our equation of state is: 
+\begin{equation}
+ P = \hat k\rho^\gamma
+\end{equation}
+and the Euler equations reduce to:
+\begin{eqnarray}
+ \rho_t + (\rho u)_x = 0 \\
+ (\rho u)_t + (\rho u^2 + \hat k \rho\gamma)_x = 0
+\end{eqnarray}
+
+We now seek to linearize this system of equations. In essence we have a
+base state
+
+
+
 \section{ToDo}
 
 \begin{itemize}
