@@ -861,14 +861,31 @@ driver_base::save_metadata()
 
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
     esio_file_create(esioh, restartdef->metadata.c_str(), 1 /* overwrite */);
-    esio_string_set(esioh, "/", "generated_by", revstr.c_str()); // Ticket #2595
 
+    // Per Ticket #2595 we cannot ignore string-based attributes set on "/" in
+    // version 1.8.x of h5diff.  This makes ignoring version information
+    // problematic for regression tests.  As a workaround, we write a dataset
+    // whose path can be excluded by h5diff version 1.8.6 or later.
+    static const char ignorable_location[] = "metadata_generated";
+
+    // Store time(2) result as floating point to avoid sizeof(time_t) issues
+    const real_t now = static_cast<real_t>(std::time(NULL));
+    // Though all ranks invoked time(2), only the value from rank zero is saved
+    int procid;
+    esio_handle_comm_rank(esioh, &procid);
+    esio_line_establish(esioh, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(esioh, ignorable_location, &now, 0,
+            "Time since the Epoch when metadata saved according to time(2)");
+
+    // Off that entry we may hang any number of ignorable attributes
+    esio_string_set(esioh, ignorable_location, "revision", revstr.c_str());
+
+    // TODO Broadcast who from rank zero and save
+    // TODO Broadcast uname details from rank zero and save
+
+    // Save known metadata and then invoke subclass extension point
     save_grid_and_operators(esioh);
-
-    SUZERAIN_ENSURE(timedef);
-    save(esioh, *timedef);
-
-    // Invoke subclass extension point
+    if (timedef) save(esioh, *timedef);
     save_metadata_hook(esioh);
 
     esio_file_close(esioh);
