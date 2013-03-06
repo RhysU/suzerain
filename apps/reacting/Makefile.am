@@ -51,7 +51,8 @@ main_advance_svnrev.h: $(reacting_init_SOURCES) # Ticket 2783
 ## the parallelism available during 'make check'.
 ##
 
-dist_check_SCRIPTS += test_setup.sh     # Common initialization
+dist_check_SCRIPTS += test_setup.sh # Common initialization...
+AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
 
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh

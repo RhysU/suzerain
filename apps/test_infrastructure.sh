@@ -43,6 +43,14 @@ test -z "${TEST_DEBUG-}" && trap "teardown" EXIT
 
 # Minimalistic command execution infrastructure
 
+alert() {
+    # Requires AM_TESTS_FD_REDIRECT in Makefile.am
+    if test -t 9; then
+        echo WARN: "$@" >&9
+    fi
+    echo WARN: "$@"
+}
+
 banner_prefix=`basename $0`
 banner() {
     echo
@@ -59,12 +67,19 @@ prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"           
 prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; echo; }
 
 differ() {
-    outfile=`mktemp --tmpdir="$testdir"`
-    echo h5diff -r "$@"  2>&1 | tee -a $outfile
-    echo                 2>&1 |      >>$outfile
+    local h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
+    local h5diff_version_number=$(echo $h5diff_version_string | sed -e 's/\.//g')
+    if test "$h5diff_version_number" -lt 186; then
+        alert "Skipping portions of test as h5diff $h5diff_version_string lacks required --exclude-path"
+        exit 77 # See http://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html
+    fi
+    local outfile=`mktemp --tmpdir="$testdir"`
+    local prefix="--exclude-path /metadata_generated"
+    echo h5diff --report $prefix "$@" 2>&1 | tee -a $outfile
+    echo                              2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
     # embedded awk script used to add a ratio column and pretty up the output
-    h5diff -r "$@"    2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
+    h5diff --report $prefix "$@"      2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
             BEGIN { OFMT=" %+14.8g"; aligner="column -t" }
             {
                 sub("[[:space:]]*$", "")
@@ -103,14 +118,4 @@ differ() {
             }
 HERE
     ) && false)
-}
-
-differ_exclude() {
-    h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
-    h5diff_version_number=$(echo $h5diff_version_string | sed -e 's/\.//g')
-    if test "$h5diff_version_number" -lt 186; then
-        echo "WARN: Skipping 'h5diff $@' as $h5diff_version_string lacks --exclude-path\n"
-    else
-        differ "$@"
-    fi
 }

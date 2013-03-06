@@ -24,8 +24,9 @@ CC  = @MPICC@
 extra: $(EXTRA_PROGRAMS) $(check_PROGRAMS)
 
 # Specify test environment for 'make check'
-TESTS_ENVIRONMENT  = TMPDIR=$(abs_builddir)
-TESTS_ENVIRONMENT += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
+TESTS_ENVIRONMENT     = TMPDIR=$(abs_builddir)
+TESTS_ENVIRONMENT    += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
+AM_TESTS_FD_REDIRECT  = 9>&2 # Use descriptor 9 to get human attention
 
 # Notice that all tests build for 'make all' target to be successful.
 # Much of the C++ functionality is header-only; this ensures it builds.

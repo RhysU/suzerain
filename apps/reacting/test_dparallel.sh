@@ -36,7 +36,7 @@ banner "Idempotence of serial versus degenerate parallel without time advance"
     cd $testdir
     $s_reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0
     $p_reacting mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $P
-    differ_exclude --use-system-epsilon $exclude_datasets a0.h5 b0.h5
+    differ --use-system-epsilon $exclude_datasets a0.h5 b0.h5
 )
 
 banner "Idempotence of serial versus degenerate parallel with time advance"

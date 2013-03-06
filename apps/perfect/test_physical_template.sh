@@ -53,7 +53,7 @@ banner "Equivalence of a field advanced both with and without a physical space r
                       --restart_physical --max_dt=1e-5
     $perfect pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P \
                       --restart_physical --max_dt=1e-5
-    differ_exclude $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
+    differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test
 )
 
