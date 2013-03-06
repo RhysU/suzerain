@@ -66,7 +66,6 @@ public:
 };
 
 isothermal_mass_operator::isothermal_mass_operator(
-        const scenario_definition &scenario,
         const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -74,7 +73,6 @@ isothermal_mass_operator::isothermal_mass_operator(
         bspline &b,
         operator_common_block &common)
     : mass_operator(grid, dgrid, cop, b)
-    , scenario(scenario)
     , chdef(chdef)
     , common(common)
     , who("operator.L")
@@ -108,8 +106,15 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
             = state[indices[ndx::rho][walls][range()][range()]];
 
     // Prepare functor setting pointwise BCs given density locations
+    // NOTE: gamma required to get correct nondimensional energy at the wall
+    // const IsothermalNoSlipFunctor bc_functor(
+    // 	     state.strides()[0], scenario.gamma);
+
+    // FIXME: Replacing scenario.gamma here with 1.4 to allow refactor
+    // of scenario_definition to proceed.  Will eventually refactor
+    // this functor to take wall temp and Cv arguments.
     const IsothermalNoSlipFunctor bc_functor(
-            state.strides()[0], scenario.gamma);
+	     state.strides()[0], 1.4);
 
     // Apply the functor to all wall-only density locations
     multi_array::for_each(state_view, bc_functor);

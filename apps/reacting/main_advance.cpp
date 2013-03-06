@@ -171,16 +171,16 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-	            *scenario, *chdef, *grid, *dgrid, *cop, *b, common_block));
+	            *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
       		    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
-        L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-		    solver_spec, *scenario, *chdef, *grid, *dgrid,
-                    *cop, *b, common_block));
-        N.reset(new hybrid_nonlinear_operator(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+        // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
+	// 	    solver_spec, *scenario, *chdef, *grid, *dgrid,
+        //             *cop, *b, common_block));
+        // N.reset(new hybrid_nonlinear_operator(
+        //             *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
 	FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
 	return EXIT_FAILURE;
     } else {

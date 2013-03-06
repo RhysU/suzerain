@@ -73,7 +73,6 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
-            const scenario_definition &scenario,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -89,7 +88,6 @@ public:
      */
     channel_treatment(
             const zgbsv_specification& spec,
-            const scenario_definition &scenario,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -157,14 +155,13 @@ private:
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
-            const scenario_definition &scenario,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(scenario, chdef, grid, dgrid, cop, b, common),
+    : BaseClass(chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -173,14 +170,13 @@ channel_treatment<BaseClass>::channel_treatment(
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const zgbsv_specification& spec,
-            const scenario_definition &scenario,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(spec, scenario, chdef, grid, dgrid, cop, b, common),
+    : BaseClass(spec, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -221,7 +217,6 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     // Shorthand
     using std::size_t;
     operator_common_block &common = this->common;
-    const scenario_definition &scenario = this->scenario;
     const channel_definition &chdef = this->chdef;
     const int Ny = this->dgrid.global_wave_extent.y();
 
@@ -254,9 +249,7 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
         //     directly add the result to the total energy equation.
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
         cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
-                                                       * scenario.Ma
-                                                       * common.u();
+        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = common.u();
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format

@@ -108,7 +108,6 @@ class isothermal_mass_operator : public mass_operator
 public:
 
     isothermal_mass_operator(
-	    const scenario_definition &scenario,
 	    const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -140,9 +139,6 @@ public:
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
 protected:
-
-    /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
 
     /** The scenario in which the operator is used */
     const channel_definition &chdef;
