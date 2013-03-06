@@ -25,7 +25,6 @@ reacting_init_SOURCES += main_init_svnrev.c
 BUILT_SOURCES         += main_init_svnrev.h
 reacting_init_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 main_init_svnrev.h: $(reacting_init_SOURCES) $(libreacting_la_SOURCES)
-main_init_svnrev.h: $(reacting_advance_SOURCES) # Ticket 2783
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 bin_PROGRAMS             += reacting_advance
@@ -40,7 +39,6 @@ reacting_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES            += main_advance_svnrev.h
 reacting_advance_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 main_advance_svnrev.h: $(reacting_advance_SOURCES) $(libreacting_la_SOURCES)
-main_advance_svnrev.h: $(reacting_init_SOURCES) # Ticket 2783
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
