@@ -89,10 +89,11 @@ differ() {
                 for (i = 1; i <= n; ++i) {
                     printf OFMT, b[i] | aligner
                 }
-                if (b[2]+0 != 0) {
-                    printf OFMT, b[1]/b[2] | aligner
+                if (b[2]+0 == 0) {
+                    # Output nothing otherwise division by zero occurs
+                    # Outputting "NaN" is unsatisfactory as Inf might result
                 } else {
-                    printf " NaN" | aligner
+                    printf OFMT, b[1]/b[2] | aligner
                 }
                 printf "\n"| aligner
                 next
