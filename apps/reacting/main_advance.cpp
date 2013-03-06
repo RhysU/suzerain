@@ -124,15 +124,21 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         shared_ptr<scenario_definition> restart_scenario
                 = make_shared<scenario_definition>();
 
+        shared_ptr<channel_definition> restart_chdef
+                = make_shared<channel_definition>();
+
         // Load the restart details with state going into state_linear
         shared_ptr<boost::remove_pointer<esio_handle>::type> h( // RAII
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
         esio_file_open(h.get(), restart_file.c_str(), 0);
         restart_scenario.swap(scenario);                        // Push
+        restart_chdef.swap(chdef);
         load_restart(h.get(), initial_t);
         restart_scenario.swap(scenario);                        // Pop
+        restart_chdef.swap(chdef);
         scenario->populate(*restart_scenario, true);            // Merge
+        chdef->populate(*restart_chdef, true); 
 
         // Adjust total energy as necessary to account for any scenario change
         state_nonlinear->assign(*state_linear);
@@ -143,13 +149,13 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     if (msoln) {
         INFO0(who, "Restart file prescribes a manufactured solution");
-        if (!(isnan)(scenario->bulk_rho)) {
+        if (!(isnan)(chdef->bulk_rho)) {
             WARN0(who, "Manufactured solution incompatible with bulk_rho = "
-                  << scenario->bulk_rho);
+                  << chdef->bulk_rho);
         }
-        if (!(isnan)(scenario->bulk_rho_u)) {
+        if (!(isnan)(chdef->bulk_rho_u)) {
             WARN0(who, "Manufactured solution incompatible with bulk_rho_u = "
-                  << scenario->bulk_rho_u);
+                  << chdef->bulk_rho_u);
         }
     }
 
@@ -165,16 +171,16 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block));
+	            *scenario, *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+      		    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
-        // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-        //             solver_spec, *scenario, *grid, *dgrid,
-        //             *cop, *b, common_block));
-        // N.reset(new hybrid_nonlinear_operator(
-        //             *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+        L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
+		    solver_spec, *scenario, *chdef, *grid, *dgrid,
+                    *cop, *b, common_block));
+        N.reset(new hybrid_nonlinear_operator(
+                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
 	FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
 	return EXIT_FAILURE;
     } else {

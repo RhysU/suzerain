@@ -65,6 +65,7 @@ namespace suzerain { namespace reacting {
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
         const scenario_definition &scenario,
+        const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -73,6 +74,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     : operator_base(grid, dgrid, cop, b)
     , spec(spec)
     , scenario(scenario)
+    , chdef(chdef)
     , common(common)
     , who("operator.L")
 {

@@ -67,6 +67,7 @@ public:
 
 isothermal_mass_operator::isothermal_mass_operator(
         const scenario_definition &scenario,
+        const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -74,6 +75,7 @@ isothermal_mass_operator::isothermal_mass_operator(
         operator_common_block &common)
     : mass_operator(grid, dgrid, cop, b)
     , scenario(scenario)
+    , chdef(chdef)
     , common(common)
     , who("operator.L")
 {

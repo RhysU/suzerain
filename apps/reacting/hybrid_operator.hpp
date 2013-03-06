@@ -39,6 +39,7 @@
 #include <suzerain/zgbsv_specification.hpp>
 
 #include "manufactured_solution.hpp"
+#include "channel_definition.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -66,6 +67,7 @@ public:
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -108,6 +110,9 @@ protected:
 
     /** The scenario in which the operator is used */
     const scenario_definition &scenario;
+
+    /** The scenario in which the operator is used */
+    const channel_definition &chdef;
 
     /** Houses data required for operator application and inversion */
     operator_common_block &common;

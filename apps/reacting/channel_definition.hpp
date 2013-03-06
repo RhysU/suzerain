@@ -10,8 +10,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP
-#define SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP
+#ifndef SUZERAIN_CHANNEL_DEFINITION_HPP
+#define SUZERAIN_CHANNEL_DEFINITION_HPP
 
 /** @file
  * Classes handling reacting flow problem scenario parameters.
@@ -21,6 +21,8 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
+
+// FIXME Break bulk_rho and bulk_rho_u into channel_definition class
 
 /** @file
  * Provides classes handling problem scenario parameters which are either
@@ -37,7 +39,7 @@ namespace reacting {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class scenario_definition : public support::definition_base
+class channel_definition : public support::definition_base
 {
 public:
 
@@ -45,27 +47,20 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    scenario_definition();
+    channel_definition();
 
     /**
      * Construct an instance with the given parameter values.
      *
-     * @param Re         Reynolds number.
-     * @param Ma         Mach number.
-     * @param Pr         Prandtl number.
-     * @param alpha      Ratio of bulk to dynamic viscosity.
-     * @param beta       Temperature power law exponent.
-     * @param gamma      Ratio of specific heats.
+     * @param bulk_rho   Bulk density target.
+     * @param bulk_rho_u Bulk streamwise momentum target.
      */
-    scenario_definition(const real_t Re,
-                        const real_t Ma,
-                        const real_t Pr,
-                        const real_t alpha,
-                        const real_t beta,
-                        const real_t gamma);
+    channel_definition(const real_t bulk_rho,
+                        const real_t bulk_rho_u);
+
 
     /** Virtual destructor to permit use as a base class */
-    virtual ~scenario_definition();
+    virtual ~channel_definition();
 
     /**
      * Populate any NaN members in \c this with values from \c that.
@@ -76,7 +71,7 @@ public:
      * @param verbose Should logging be emitted when a value is retained?
      */
     virtual void populate(
-            const scenario_definition& that,
+            const channel_definition& that,
             const bool verbose = false);
 
     /**
@@ -88,7 +83,7 @@ public:
      * @param verbose Should logging be emitted when an override occurs?
      */
     virtual void override(
-            const scenario_definition& that,
+            const channel_definition& that,
             const bool verbose = false);
 
     /**
@@ -117,39 +112,14 @@ public:
     boost::program_options::options_description options_description();
 
     /**
-     * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}
-     * l_{0}}{\mu_{0}}\f$.
+     * The bulk density used as a target for integral constraints.
      */
-    real_t Re;
+    real_t bulk_rho;
 
     /**
-     * The Mach number \f$\mbox{Ma}=\frac{u_{0}}{a_{0}}\f$.
+     * The bulk streamwise momentum used as a target for integral constraints.
      */
-    real_t Ma;
-
-    /**
-     * The Prandtl number \f$\mbox{Pr}=\frac{\mu_{0}
-     * C_{p}}{\kappa_{0}}\f$.
-     */
-    real_t Pr;
-
-    /**
-     * The ratio of bulk viscosity to dynamic viscosity according to \f$
-     * \mu_{B} = \alpha \mu \f$ or equivalently \f$ \lambda = \left( \alpha -
-     * \frac{2}{3}\mu \right)\f$.
-     */
-    real_t alpha;
-
-    /**
-     * The temperature power law exponent \f$\beta\f$ where
-     * \f$\frac{\mu}{\mu_0} = \left(\frac{T}{T_0}\right)^{\beta}\f$.
-     */
-    real_t beta;
-
-    /**
-     * The ratio of specific heats \f$\gamma=C_p/C_v\f$.
-     */
-    real_t gamma;
+    real_t bulk_rho_u;
 
 };
 
@@ -157,4 +127,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_REACTING_SCENARIO_DEFINITION_HPP
+#endif // SUZERAIN_CHANNEL_DEFINITION_HPP

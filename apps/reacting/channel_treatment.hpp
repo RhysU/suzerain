@@ -74,6 +74,7 @@ public:
      */
     channel_treatment(
             const scenario_definition &scenario,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -89,6 +90,7 @@ public:
     channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -123,14 +125,14 @@ private:
     bool constrain_bulk_rho_u() const
     {
         // Yes when non-inf, non-NaN.
-        return (boost::math::isnormal)(this->scenario.bulk_rho_u);
+        return (boost::math::isnormal)(this->chdef.bulk_rho_u);
     }
 
     /** Should bulk density constraint be enforced? */
     bool constrain_bulk_rho() const
     {
         // Yes when non-inf, non-NaN.
-        return (boost::math::isnormal)(this->scenario.bulk_rho);
+        return (boost::math::isnormal)(this->chdef.bulk_rho);
     }
 
     /** Precomputed integration coefficients */
@@ -156,12 +158,13 @@ private:
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const scenario_definition &scenario,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(scenario, grid, dgrid, cop, b, common),
+    : BaseClass(scenario, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -171,12 +174,13 @@ template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(spec, scenario, grid, dgrid, cop, b, common),
+    : BaseClass(spec, scenario, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -218,6 +222,7 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     using std::size_t;
     operator_common_block &common = this->common;
     const scenario_definition &scenario = this->scenario;
+    const channel_definition &chdef = this->chdef;
     const int Ny = this->dgrid.global_wave_extent.y();
 
     // Sidesteps assertions when local rank contains no wavespace information
@@ -278,9 +283,9 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     // Assemble the matrix problem for simultaneous integral constraints
     // Notice Matrix2r::operator<< depicts the matrix in row-major fashion
     Vector2r crhs;
-    crhs <<    scenario.bulk_rho
+    crhs <<    chdef.bulk_rho
              - bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny).real())
-         ,     scenario.bulk_rho_u
+         ,     chdef.bulk_rho_u
              - bulkcoeff.dot(mean.segment(ndx::mx  * Ny, Ny).real())
          ;
     Matrix2r cmat;

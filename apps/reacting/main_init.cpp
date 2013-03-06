@@ -99,11 +99,12 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     scenario->Re         = 100;
     scenario->Ma         = 1.5;
     scenario->Pr         = 0.7;
-    scenario->bulk_rho   = 1;
-    scenario->bulk_rho_u = 1;
     scenario->alpha      = 0;
     scenario->beta       = real_t(2) / 3;
     scenario->gamma      = 1.4;
+
+    chdef->bulk_rho   = 1;
+    chdef->bulk_rho_u = 1;
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
@@ -161,8 +162,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
         INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
               " due to manufactured solution use");
-        scenario->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
-        scenario->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
+        chdef->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
+        chdef->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
 
         accumulate_manufactured_solution(
                 1, *msoln, 0, *state_nonlinear, *grid, *dgrid, *cop, *b, mms);
@@ -181,7 +182,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         fill(*state_linear, 0);
 
         INFO("Initialization uses constant rho, v, w, and T");
-        const real_t rho = scenario->bulk_rho;
+        const real_t rho = chdef->bulk_rho;
         const real_t v   = 0;
         const real_t w   = 0;
         const real_t T   = 1;
@@ -209,7 +210,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         ArrayXr u(grid->N.y());
         for (int j = 0; j < u.size(); ++j) {
             const real_t y_j = b->collocation_point(j);
-            u[j] = scenario->bulk_rho_u
+            u[j] = chdef->bulk_rho_u
                  * normalization
                  * pow(y_j * (grid->L.y() - y_j), npower);
         }

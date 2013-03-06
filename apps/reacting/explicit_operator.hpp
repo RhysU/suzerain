@@ -39,6 +39,7 @@
 
 #include "reacting.hpp"
 #include "manufactured_solution.hpp"
+#include "channel_definition.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -107,7 +108,8 @@ class isothermal_mass_operator : public mass_operator
 public:
 
     isothermal_mass_operator(
-            const scenario_definition &scenario,
+	    const scenario_definition &scenario,
+	    const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -141,6 +143,9 @@ protected:
 
     /** The scenario in which the operator is used */
     const scenario_definition &scenario;
+
+    /** The scenario in which the operator is used */
+    const channel_definition &chdef;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */
     operator_common_block &common;

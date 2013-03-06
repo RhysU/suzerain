@@ -49,6 +49,7 @@ driver::driver(
                   description,
                   revstr)
     , scenario(make_shared<scenario_definition>())
+    , chdef(make_shared<channel_definition>())
     , who("reacting")
 {
     this->fields = default_fields();
@@ -61,6 +62,7 @@ driver::initialize(
 {
     // msoln is not used by all binaries and is therefore not added below
     options.add_definition(*scenario);
+    options.add_definition(*chdef);
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
@@ -251,6 +253,7 @@ driver::save_metadata_hook(
 {
     super::save_metadata_hook(esioh);
     scenario->save(esioh);
+    chdef->save(esioh);
     save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -261,6 +264,7 @@ driver::load_metadata_hook(
 {
     super::load_metadata_hook(esioh);
     scenario->load(esioh);
+    chdef->load(esioh);
     load(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -313,9 +317,9 @@ driver::default_restart_interval(
         step_type&)
 {
     real_t flowthrough_time = std::numeric_limits<real_t>::quiet_NaN();
-    if (grid && scenario) {
+    if (grid && chdef) {
         flowthrough_time =  grid->L.x()
-                         / (scenario->bulk_rho_u / scenario->bulk_rho);
+                         / (chdef->bulk_rho_u / chdef->bulk_rho);
     }
     if (boost::math::isnormal(flowthrough_time)) {
         t = flowthrough_time;

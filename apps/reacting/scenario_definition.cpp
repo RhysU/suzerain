@@ -53,8 +53,6 @@ scenario_definition::scenario_definition()
     : Re        (std::numeric_limits<real_t>::quiet_NaN())
     , Ma        (std::numeric_limits<real_t>::quiet_NaN())
     , Pr        (std::numeric_limits<real_t>::quiet_NaN())
-    , bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
-    , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
     , alpha     (std::numeric_limits<real_t>::quiet_NaN())
     , beta      (std::numeric_limits<real_t>::quiet_NaN())
     , gamma     (std::numeric_limits<real_t>::quiet_NaN())
@@ -65,16 +63,12 @@ scenario_definition::scenario_definition(
         const real_t Re,
         const real_t Ma,
         const real_t Pr,
-        const real_t bulk_rho,
-        const real_t bulk_rho_u,
         const real_t alpha,
         const real_t beta,
         const real_t gamma)
     : Re        (Re        )
     , Ma        (Ma        )
     , Pr        (Pr        )
-    , bulk_rho  (bulk_rho  )
-    , bulk_rho_u(bulk_rho_u)
     , alpha     (alpha     )
     , beta      (beta      )
     , gamma     (gamma     )
@@ -90,8 +84,6 @@ scenario_definition::~scenario_definition()
 static const char name_Re[]         = "Re";
 static const char name_Ma[]         = "Ma";
 static const char name_Pr[]         = "Pr";
-static const char name_bulk_rho[]   = "bulk_rho";
-static const char name_bulk_rho_u[] = "bulk_rho_u";
 static const char name_alpha[]      = "alpha";
 static const char name_beta[]       = "beta";
 static const char name_gamma[]      = "gamma";
@@ -100,8 +92,6 @@ static const char name_gamma[]      = "gamma";
 static const char desc_Re[]         = "Reynolds number";
 static const char desc_Ma[]         = "Mach number";
 static const char desc_Pr[]         = "Prandtl number";
-static const char desc_bulk_rho[]   = "Bulk density target";
-static const char desc_bulk_rho_u[] = "Bulk momentum target";
 static const char desc_alpha[]      = "Ratio of bulk to dynamic viscosity";
 static const char desc_beta[]       = "Temperature power law exponent";
 static const char desc_gamma[]      = "Ratio of specific heats";
@@ -149,22 +139,6 @@ scenario_definition::options_description()
     }
     retval.add_options()(name_Pr, p.release(), desc_Pr);
 
-    // bulk_rho
-    p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho, name_bulk_rho));
-    if (!(boost::math::isnan)(bulk_rho)) {
-        p->default_value(lexical_cast<string>(bulk_rho));
-    }
-    retval.add_options()(name_bulk_rho, p.release(), desc_bulk_rho);
-
-    // bulk_rho_u
-    p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_u, name_bulk_rho_u));
-    if (!(boost::math::isnan)(bulk_rho_u)) {
-        p->default_value(lexical_cast<string>(bulk_rho_u));
-    }
-    retval.add_options()(name_bulk_rho_u, p.release(), desc_bulk_rho_u);
-
     // alpha
     p.reset(value<string>());
     p->notifier(bind(&parse_nonnegative, _1, &alpha, name_alpha));
@@ -202,8 +176,6 @@ scenario_definition::populate(
     CALL_MAYBE_POPULATE(Re);
     CALL_MAYBE_POPULATE(Ma);
     CALL_MAYBE_POPULATE(Pr);
-    CALL_MAYBE_POPULATE(bulk_rho);
-    CALL_MAYBE_POPULATE(bulk_rho_u);
     CALL_MAYBE_POPULATE(alpha);
     CALL_MAYBE_POPULATE(beta);
     CALL_MAYBE_POPULATE(gamma);
@@ -220,8 +192,6 @@ scenario_definition::override(
     CALL_MAYBE_OVERRIDE(Re);
     CALL_MAYBE_OVERRIDE(Ma);
     CALL_MAYBE_OVERRIDE(Pr);
-    CALL_MAYBE_OVERRIDE(bulk_rho);
-    CALL_MAYBE_OVERRIDE(bulk_rho_u);
     CALL_MAYBE_OVERRIDE(alpha);
     CALL_MAYBE_OVERRIDE(beta);
     CALL_MAYBE_OVERRIDE(gamma);
@@ -242,8 +212,6 @@ scenario_definition::save(
     esio_line_write(h, name_Re,         &this->Re,         0, desc_Re);
     esio_line_write(h, name_Ma,         &this->Ma,         0, desc_Ma);
     esio_line_write(h, name_Pr,         &this->Pr,         0, desc_Pr);
-    esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
-    esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
     esio_line_write(h, name_alpha,      &this->alpha,      0, desc_alpha);
     esio_line_write(h, name_beta,       &this->beta,       0, desc_beta);
     esio_line_write(h, name_gamma,      &this->gamma,      0, desc_gamma);
@@ -263,8 +231,6 @@ scenario_definition::load(
     esio_line_read(h, name_Re,         &t.Re,         0);
     esio_line_read(h, name_Ma,         &t.Ma,         0);
     esio_line_read(h, name_Pr,         &t.Pr,         0);
-    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
-    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
     esio_line_read(h, name_alpha,      &t.alpha,      0);
     esio_line_read(h, name_beta,       &t.beta,       0);
     esio_line_read(h, name_gamma,      &t.gamma,      0);
