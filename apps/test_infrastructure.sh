@@ -89,7 +89,7 @@ differ() {
                 for (i = 1; i <= n; ++i) {
                     printf OFMT, b[i] | aligner
                 }
-                if (b[2] != 0) {
+                if (b[2]+0 != 0) {
                     printf OFMT, b[1]/b[2] | aligner
                 } else {
                     printf " NaN" | aligner
