@@ -49,7 +49,7 @@ public:
      *
      * @param filter_phi Filter source strength.
      */
-    filter_definition(const real_t filter_phi);
+    explicit filter_definition(const real_t filter_phi);
 
 
     /** Virtual destructor to permit use as a base class */
