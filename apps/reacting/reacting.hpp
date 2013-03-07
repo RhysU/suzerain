@@ -59,44 +59,6 @@ namespace reacting {
 std::vector<support::field> default_fields();
 
 /**
- * Store the current simulation primitive state as collocation point values
- * into an open restart file.  Note that <tt>state</tt>'s contents are
- * destroyed.  Collocation point values required only for dealiasing purposes
- * <i>are</i> stored but only those points informed by non-dealiased state.
- * This method is less efficient and the restart data less flexible than that
- * produced by save_coefficients().
- */
-void save_collocation_values(
-        const esio_handle h,
-        contiguous_state<4,complex_t>& swave,
-        const grid_specification& grid,
-        const pencil_grid& dgrid,
-        const bsplineop& cop);
-
-/**
- * Load the current simulation state from an open collocation point value
- * restart file.  Cannot handle interpolating onto a different grid.
- */
-void load_collocation_values(
-        const esio_handle h,
-        contiguous_state<4,complex_t>& state,
-        const grid_specification& grid,
-        const pencil_grid& dgrid,
-        const bsplineop& cop,
-        const bspline& b);
-
-/**
- * Interrogate an open restart file and invoke either load_coefficients()
- * or load_collocation_values() as necessary.
- */
-void load(const esio_handle h,
-          contiguous_state<4,complex_t>& state,
-          const grid_specification& grid,
-          const pencil_grid& dgrid,
-          const bsplineop& cop,
-          const bspline& b);
-
-/**
  * Hold temperature and density constant while changing the Mach number and
  * ratio of specific heats.  On input, \c state should contain total energy
  * fields using \c old_Ma and \c old_gamma.  On output \c state will contain
