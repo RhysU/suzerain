@@ -178,7 +178,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
              Ma,
              Pr,
              Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag, 1); // FIXME: last arg in number of species
     } else {
         return apply_navier_stokes_spatial_operator<false, linearize::none>
             (alpha,
@@ -187,7 +187,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
              Ma,
              Pr,
              Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag, 1); // FIXME: last arg in number of species
     }
 }
 
