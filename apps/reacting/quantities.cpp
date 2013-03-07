@@ -206,6 +206,7 @@ bool quantities::load(const esio_handle h)
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.
 quantities sample_quantities(
+	const single_ideal_gas_constitutive& cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,

@@ -52,12 +52,12 @@ public:
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
     single_ideal_gas_constitutive(const real_t Cp,
-				 const real_t Cv,
-				 const real_t Pr,
-				 const real_t T0,
-				 const real_t mu0,
-				 const real_t beta,
-				 const real_t alpha);
+				  const real_t Cv,
+				  const real_t Pr,
+				  const real_t T0,
+				  const real_t mu0,
+				  const real_t beta,
+				  const real_t alpha);
 
 
     /** Virtual destructor to permit use as a base class */
@@ -141,7 +141,7 @@ public:
                    real_t& mu,
                    real_t& kap,
                    real_t* hs,
-                   real_t* om);
+                   real_t* om) const;
 
     /**
      * Report the number of species (just one here).
@@ -182,7 +182,6 @@ public:
      * The ratio of bulk viscosity to dynamic viscosity.
      */
     real_t alpha;
-
 };
 
 } // namespace reacting

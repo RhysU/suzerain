@@ -94,21 +94,18 @@ manufactured_solution::options_description()
 }
 
 manufactured_solution&
-manufactured_solution::match()
+manufactured_solution::match(const single_ideal_gas_constitutive& cmods)
 {
 
-    // FIXME: Using constants below to allow me to remove
-    // scenario_definition dependence w/out breaking
-    // tests.  Will refactor this to use constitutive laws
-    // classes once that functionality exists.
-    // 
+    this->gamma = cmods.Cp / cmods.Cv;
+    this->beta  = cmods.beta;
+    this->R     = cmods.Cp - cmods.Cv;
+    this->mu_r  = cmods.mu0;
+    this->T_r   = cmods.T0;
 
-    this->alpha = 0.0;
-    this->beta  = real_t(2) / 3;
-    this->gamma = 1.4;
-    this->Ma    = 1.15;
-    this->Re    = 100.0;
-    this->Pr    = 0.7;
+    // NOTE: Appears that manufactured solution *assumes* that
+    // Pr = 0.7 and alpha = 0.0, so we can't set those!
+
     return *this;
 }
 
@@ -124,16 +121,16 @@ manufactured_solution::match(const grid_specification& grid)
 manufactured_solution&
 manufactured_solution::isothermal_channel()
 {
-    nsctpl_rholut::isothermal_channel(*this);
-    //nsctpl::isothermal_channel(*this);
+    //nsctpl_rholut::isothermal_channel(*this);
+    nsctpl::isothermal_channel(*this);
     return *this;
 }
 
 manufactured_solution&
 manufactured_solution::isothermal_flat_plate()
 {
-    nsctpl_rholut::isothermal_flat_plate(*this);
-    //nsctpl::isothermal_flat_plate(*this);
+    //nsctpl_rholut::isothermal_flat_plate(*this);
+    nsctpl::isothermal_flat_plate(*this);
     return *this;
 }
 
@@ -149,6 +146,7 @@ attribute_storer(const esio_handle &h,
 
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution>& msoln,
+	  const single_ideal_gas_constitutive& cmods,
           const grid_specification& grid,
           const char *location)
 {
@@ -172,31 +170,23 @@ void save(const esio_handle h,
     msoln->w  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
     msoln->T  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
 
-// #pragma warning(push,disable:1572)
-//     // Check parameters stored with the scenario not the manufactured solution
-//     // because scenario parameters should be loaded from scenario_definition
-//     if (msoln->alpha != scenario.alpha)
-//         WARN0("Manufactured solution alpha mismatches with scenario");
-//     if (msoln->beta  != scenario.beta)
-//         WARN0("Manufactured solution beta mismatches with scenario");
-//     if (msoln->gamma != scenario.gamma)
-//         WARN0("Manufactured solution gamma mismatches with scenario");
-//     if (msoln->Ma    != scenario.Ma)
-//         WARN0("Manufactured solution Ma mismatches with scenario");
-//     if (msoln->Re    != scenario.Re)
-//         WARN0("Manufactured solution Re mismatches with scenario");
-//     if (msoln->Pr    != scenario.Pr)
-//         WARN0("Manufactured solution Pr mismatches with scenario");
 
-//     // Check parameters stored with the grid not the manufactured solution
-//     // because grid parameters should be loaded from grid_specification
-//     if (msoln->Lx    != grid.L.x())
-//         WARN0("Manufactured solution Lx mismatches with grid");
-//     if (msoln->Ly    != grid.L.y())
-//         WARN0("Manufactured solution Ly mismatches with grid");
-//     if (msoln->Lz    != grid.L.z())
-//         WARN0("Manufactured solution Lz mismatches with grid");
-// #pragma warning(pop)
+
+#pragma warning(push,disable:1572)
+    // Check parameters stored with the scenario not the manufactured solution
+    // because scenario parameters should be loaded from scenario_definition
+
+    // FIXME: Add this check back!!!
+
+    // Check parameters stored with the grid not the manufactured solution
+    // because grid parameters should be loaded from grid_specification
+    if (msoln->Lx    != grid.L.x())
+        WARN0("Manufactured solution Lx mismatches with grid");
+    if (msoln->Ly    != grid.L.y())
+        WARN0("Manufactured solution Ly mismatches with grid");
+    if (msoln->Lz    != grid.L.z())
+        WARN0("Manufactured solution Lz mismatches with grid");
+#pragma warning(pop)
 }
 
 /** Helper for load(...,shared_ptr<manufactured_solution>&,...). */
@@ -217,6 +207,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
+	  const single_ideal_gas_constitutive& cmods,
           const grid_specification& grid,
           const char *location)
 {
@@ -247,8 +238,8 @@ void load(const esio_handle h,
     msoln->w  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
     msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
 
-    // Scenario parameters set to match supplied arguments
-    msoln->match();
+    // Parameters set to match supplied arguments
+    msoln->match(cmods);
     msoln->match(grid);
 }
 

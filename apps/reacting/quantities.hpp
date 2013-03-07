@@ -36,6 +36,8 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
+#include "single_ideal_gas_constitutive.hpp"
+
 namespace suzerain {
 
 namespace reacting {
@@ -278,6 +280,7 @@ private:
  * @return Mean quantities as B-spline coefficients.
  */
 quantities sample_quantities(
+	const single_ideal_gas_constitutive& cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,

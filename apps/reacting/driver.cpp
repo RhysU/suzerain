@@ -70,8 +70,8 @@ driver::initialize(
     // However, if msoln was provided, match its contents to other members
     if (msoln) {
         // FIXME: Current match is hardcoded. 
-        msoln->match();
-        if (grid)     msoln->match(*grid);
+        if (cmods) msoln->match(*cmods);
+        if (grid)  msoln->match(*grid);
     }
 
     return positional;
@@ -201,7 +201,7 @@ driver::compute_statistics(
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign(*state_linear);
     mean = reacting::sample_quantities(
-            *grid, *dgrid, *cop, *state_nonlinear, t);
+	   *cmods, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.means.rows() == mean.storage.rows()) {
@@ -255,7 +255,7 @@ driver::save_metadata_hook(
     super::save_metadata_hook(esioh);
     chdef->save(esioh);
     cmods->save(esioh);
-    save(esioh, msoln, *grid);
+    save(esioh, msoln, *cmods, *grid);
     return;
 }
 
@@ -266,7 +266,7 @@ driver::load_metadata_hook(
     super::load_metadata_hook(esioh);
     chdef->load(esioh);
     cmods->load(esioh);
-    load(esioh, msoln, *grid);
+    load(esioh, msoln, *cmods, *grid);
     return;
 }
 

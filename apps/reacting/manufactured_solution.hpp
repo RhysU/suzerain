@@ -37,8 +37,10 @@
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-#include "nsctpl_rholut.hpp"
-//#include "nsctpl.hpp"
+//#include "nsctpl_rholut.hpp"
+#include "nsctpl.hpp"
+
+#include "single_ideal_gas_constitutive.hpp"
 
 namespace suzerain {
 
@@ -56,12 +58,12 @@ namespace reacting {
  * \ref match() and the later group using \ref
  * match(const grid_specification&).
  */
-class manufactured_solution
-    : public nsctpl_rholut::manufactured_solution<real_t>,
-      public support::definition_base
 // class manufactured_solution
-//     : public nsctpl::manufactured_solution<real_t>,
+//     : public nsctpl_rholut::manufactured_solution<real_t>,
 //       public support::definition_base
+class manufactured_solution
+    : public nsctpl::manufactured_solution<real_t>,
+      public support::definition_base
 {
 public:
 
@@ -78,8 +80,8 @@ public:
     /** Constructor permitting a non-default caption. */
     explicit manufactured_solution(const std::string& caption);
 
-    /** Hardcode (temporarily) #alpha, #beta, #gamma, #Ma, #Pr, and #Re. */
-    manufactured_solution& match();
+    /** Set #gamma, #beta, #R, #T_r, #mu_r. */
+    manufactured_solution& match(const single_ideal_gas_constitutive& cmods);
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
     manufactured_solution& match(const grid_specification& grid);
@@ -115,6 +117,7 @@ private:
  */
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
+	  const single_ideal_gas_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 
@@ -128,6 +131,7 @@ void save(const esio_handle h,
  */
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
+	  const single_ideal_gas_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 

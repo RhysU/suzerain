@@ -255,6 +255,45 @@ single_ideal_gas_constitutive::load(
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
+// Evaluate: takes state and gives back everything we need from
+// Cantera, including temp, pres, transport props, enthalpies, and
+// reaction rates
+void 
+single_ideal_gas_constitutive::evaluate (const real_t  e,
+					 const real_t* m,
+					 const real_t  rho,
+					 const real_t* species,
+					 const real_t* cs,
+					 real_t& T,
+					 real_t& p,
+					 real_t* Ds,
+					 real_t& mu,
+					 real_t& kap,
+					 real_t* hs,
+					 real_t* om) const
+{
+    // NOTE: Really only have e, m, rho input and T, p, mu, kap
+    // output.  Everything else is used for the multispecies case.
+
+    // convenience (some of which could be moved out to save a couple flops)
+    const real_t irho = 1.0/rho;
+    const real_t gam = Cp/Cv;
+    const real_t gmi = gam-1.0;
+    const real_t Rgas = Cp-Cv;
+
+    p = gmi * (e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]));
+
+    T = irho * p / Rgas;
+
+    mu = mu0 * pow( T/T0, beta );
+
+    kap = mu * Cp / Pr;
+
+    Ds = NULL;
+    hs = NULL;
+    om = NULL;
+}
+
 } // namespace reacting
 
 } // namespace suzerain

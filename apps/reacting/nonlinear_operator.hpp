@@ -393,6 +393,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
+    // Instantiate Eigen variable length arrays to store species
+    // specific info
+    VectorXr species(Ns); // species densities
+    VectorXr Ds     (Ns); // mass diffusivities
+    VectorXr hs     (Ns); // species enthalpies
+    VectorXr om     (Ns); // reaction source terms
+    VectorXr cs     (Ns); // species mass fractions
+
+    // TODO: check eigen syntax here.  It appears that we need to pass
+    // 3 to the ctor even though it knows this size at compile time.
+    // Am I crazy?
+    //
+    MatrixX3r grad_species (Ns,3); // spatial derivatives of species densities
+    MatrixX3r grad_cs      (Ns,3); // spatial derivatives of species mass fractions
+    MatrixX3r sdiff        (Ns,3); // diffusive fluxes for species equations
+
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides (pass 1)");
@@ -413,6 +429,205 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // TODO: Add physics calculations!!!
 
+	    // Unpack density-related quantities
+	  const real_t   rho         ( sphys(ndx::rho,    offset));
+
+	  const real_t  irho = 1.0/rho;
+	  
+	  const Vector3r grad_rho    (  auxp(aux::rho+dir::x,  offset),
+					auxp(aux::rho+dir::y,  offset),
+					auxp(aux::rho+dir::z,  offset));
+	  
+	  // Unpack momentum-related quantities
+	  const Vector3r m    ( sphys(ndx::mx, offset),
+				sphys(ndx::my, offset),
+				sphys(ndx::mz, offset));
+	  const real_t   div_m(  auxp(aux::mx+dir::x, offset)
+				 + auxp(aux::my+dir::y, offset)
+				 + auxp(aux::mz+dir::z, offset));
+	  const Matrix3r grad_m;
+	  const_cast<Matrix3r&>(grad_m) <<
+	                                   auxp(aux::mx+dir::x,  offset),
+	                                   auxp(aux::mx+dir::y,  offset),
+           	                           auxp(aux::mx+dir::z,  offset),
+                                           auxp(aux::my+dir::x,  offset),
+                                           auxp(aux::my+dir::y,  offset),
+                                           auxp(aux::my+dir::z,  offset),
+                                           auxp(aux::mz+dir::x,  offset),
+                                           auxp(aux::mz+dir::y,  offset),
+                                           auxp(aux::mz+dir::z,  offset);
+
+	  // Unpack total energy-related quantities
+	  const real_t e        (sphys(ndx::e,       offset));
+	  
+	  // Unpack species variables
+	  // NOTE: In species vector, idx 0 is the dilluter (the species
+	  // that is not explicitly part of the state vector)
+	  species(0) = rho;
+
+	  grad_species(0,0) = grad_rho(0);
+	  grad_species(0,1) = grad_rho(1);
+	  grad_species(0,2) = grad_rho(2);
+	  
+	  for (unsigned int s=1; s<Ns; ++s) {
+	    species(s) = sphys(ndx::species + s - 1, offset);
+	    
+	    grad_species(s,0) = auxp(aux::species + s - 1 + dir::x, offset);
+	    grad_species(s,1) = auxp(aux::species + s - 1 + dir::y, offset);
+	    grad_species(s,2) = auxp(aux::species + s - 1 + dir::z, offset);
+	    
+	    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+	    species(0)        -= species(s);
+	    
+	    grad_species(0,0) -= grad_species(s,0);
+	    grad_species(0,1) -= grad_species(s,1);
+	    grad_species(0,2) -= grad_species(s,2);
+	  }
+	  
+	  // Compute mass fractions and mass fraction gradients
+	  for (unsigned int s=0; s<Ns; ++s) {
+	    
+	    cs(s) = irho * species(s);
+	    
+	    grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
+	    grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
+	    grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
+	    
+	  }
+	  
+	  
+	  // Compute velocity-related quantities
+	  const Vector3r u          = suzerain::rholut::u(rho, m);
+	  const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
+	  const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
+	  
+	  
+	  // Compute temperature, pressure, mass diffusivities,
+	  // viscosity, thermal conductivity, species enthalpies, and
+	  // reaction source terms
+	  real_t T, p, mu, kap;
+	  cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
+		         T, p, Ds.data(), mu, kap, hs.data(), om.data());
+	  
+	  // TODO: Compute bulk viscosity.
+	  // TODO: Get alpha here
+	  const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
+	  
+	  // Compute quantities related to the viscous stress tensor
+	  const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
+	  
+	  
+	  // Place to sum species fluxes from Fick's model
+	  Vector3r sdifftot (0.0, 0.0, 0.0);
+	  
+	  // Compute Fick's model contribution to diffusive fluxes and sum
+	  for (unsigned int s=0; s<Ns; ++s) {
+	    
+	    sdiff(s,0) = rho * Ds(s) * grad_cs(s,0);
+	    sdiff(s,1) = rho * Ds(s) * grad_cs(s,1);
+	    sdiff(s,2) = rho * Ds(s) * grad_cs(s,2);
+	    
+	    sdifftot(0) += sdiff(s,0);
+	    sdifftot(1) += sdiff(s,1);
+	    sdifftot(2) += sdiff(s,2);
+	    
+	  }
+	  
+	  // Subtract off cs*sdifftot to get SCEBD fluxes
+	  for (unsigned int s=0; s<Ns; ++s) {
+	    
+	    sdiff(s,0) -= cs(s) * sdifftot(0);
+	    sdiff(s,1) -= cs(s) * sdifftot(1);
+	    sdiff(s,2) -= cs(s) * sdifftot(2);
+	    
+	  }
+	  
+	  
+	  // Source terms get accumulated into state storage
+	  //
+	  // NOTE: Sign correct for source appearing on the RHS---i.e.,
+	  // U_t + div(F) = S.
+	  //
+	  // TODO: Add slow growth terms.
+	  sphys(ndx::e  , offset) = 0.0;
+	  sphys(ndx::mx , offset) = 0.0;
+	  sphys(ndx::my , offset) = 0.0;
+	  sphys(ndx::mz , offset) = 0.0;
+	  sphys(ndx::rho, offset) = 0.0;
+	  
+	  for (unsigned int s=1; s<Ns; ++s) {
+	    sphys(ndx::rho+s, offset) = om(s);
+	  }
+	  
+	  
+	  // Fluxes get accumulated into auxp
+	  //
+	  // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
+	  // U_t + div(F) = S(U).
+	  //
+	  // TODO: "Eigenify" these calcs where appropriate
+	  
+	  Vector3r vwork = tau*u; // TODO: check that this does what I think
+	  
+	  //----------------------------------------------------------------------
+	  // ENERGY                    = u     * (rho*H) - viscous work ...
+	  auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
+	  auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
+	  auxp(aux::e +dir::z, offset) = u.z() * (e + p) - vwork.z() ;
+	  
+	  // ... - species enthalpy term
+	  if (Ns>1) {
+	    // NOTE: If Ns=1, we should have sdiff(0,*) = 0.0.  Thus,
+	    // this loop would be entered but shouldn't do anything.
+	    for (unsigned int s=0; s<Ns; ++s) {
+	      auxp(aux::e +dir::x, offset) -= sdiff(s, 0) * hs(s);
+	      auxp(aux::e +dir::y, offset) -= sdiff(s, 1) * hs(s);
+	      auxp(aux::e +dir::z, offset) -= sdiff(s, 2) * hs(s);
+	    }
+	  }
+	  // NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
+	  //----------------------------------------------------------------------
+	  
+	  //----------------------------------------------------------------------
+	  // MOMENTUM                  = convection     - viscous    + pressure
+	  auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
+	  auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
+	  auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
+	  
+	  auxp(aux::my+dir::x, offset) = u.y() * m.x()  -  tau(0,1)       ;
+	  auxp(aux::my+dir::y, offset) = u.y() * m.y()  -  tau(1,1)  +  p ;
+	  auxp(aux::my+dir::z, offset) = u.y() * m.z()  -  tau(2,1)       ;
+	  
+	  auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
+	  auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
+	  auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
+	  //----------------------------------------------------------------------
+	  
+	  //----------------------------------------------------------------------
+	  // mass                       = mass flux
+	  auxp(aux::rho+dir::x, offset) = m.x();
+	  auxp(aux::rho+dir::y, offset) = m.y();
+	  auxp(aux::rho+dir::z, offset) = m.z();
+	  //----------------------------------------------------------------------
+	  
+	  //----------------------------------------------------------------------
+	  // species
+	  for (unsigned int s=0; s<Ns-1; ++s) {
+	    // NOTE: species(0) is the species that is not explicitly carried!
+	    
+	    //                                = convection     - diffusion
+	    auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
+	    auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
+	    auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
+	    
+	  }
+	  //----------------------------------------------------------------------
+	  
+	  // Finally, put temperature and thermal conductivity data
+	  // into auxp for later use
+	  auxp(aux::kap, offset) = kap;
+	  auxp(aux::T  , offset) = T;
+	  
 	    // FIXME: Put stable time step calculation back in.
 
 	    //
@@ -640,14 +855,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     		    // to call individual src fcns to avoid drift from
     		    // masa src.
     		    //
-    		    ms.Q_conservative(x, y, z, time, Q_rho,
-    				      Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
+    		    // ms.Q_conservative(x, y, z, time, Q_rho,
+    		    // 		      Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
 
-    		    // Q_rho   = ms.Q_rho (x, y, z, time);
-    		    // Q_rho_u = ms.Q_rhou(x, y, z, time);
-    		    // Q_rho_v = ms.Q_rhov(x, y, z, time);
-    		    // Q_rho_w = ms.Q_rhow(x, y, z, time);
-    		    // Q_rho_E = ms.Q_rhoe(x, y, z, time);
+    		    Q_rho   = ms.Q_rho (x, y, z, time);
+    		    Q_rho_u = ms.Q_rhou(x, y, z, time);
+    		    Q_rho_v = ms.Q_rhov(x, y, z, time);
+    		    Q_rho_w = ms.Q_rhow(x, y, z, time);
+    		    Q_rho_E = ms.Q_rhoe(x, y, z, time);
 
                     sphys(ndx::e,   offset) += Q_rho_E;
                     sphys(ndx::mx,  offset) += Q_rho_u;
@@ -693,6 +908,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // separately.
     {
 
+      // TODO: Is this really what I need?
       suzerain::bsplineop_luz massluz(o.cop);
       //const complex_t scale_factor = grid.dN.x() * grid.dN.z();
       const complex_t scale_factor = 1.0; //grid.dN.x() * grid.dN.z();
@@ -706,7 +922,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
       for (size_t i = 0; i < state_count; ++i) {
 
-	// FIXME: This doesn't compile... input types incorrect
         // Apply inverse mass matrix to Y flux to get to pure
         // coefficient representation
         //o.bop_solve(boplu, auxw, aux::e + dir::count*i + dir::y);
