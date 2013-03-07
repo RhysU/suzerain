@@ -971,7 +971,6 @@ driver_base::save_restart(
     // Save metadata ensuring previously set values are not reused
     metadata_saved = false;
     save_metadata();
-    metadata_saved = false;
 
     esio_handle esioh = esio_handle_initialize(MPI_COMM_WORLD);
     DEBUG0(who, "Cloning " << restartdef->metadata << " to " << dstfile);
