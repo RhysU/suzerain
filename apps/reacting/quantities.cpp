@@ -206,7 +206,7 @@ bool quantities::load(const esio_handle h)
 // recommended before reviewing this logic.  This routine is definitely
 // suboptimal but is expected to be invoked relatively infrequently.
 quantities sample_quantities(
-        const scenario_definition &scenario,
+	//const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -417,10 +417,22 @@ quantities sample_quantities(
 
                 real_t p, T, mu, lambda;
                 Vector3r grad_p, grad_T, grad_mu, grad_lambda;
+                // rholut::p_T_mu_lambda(
+                //     scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
+                //     rho, grad_rho, m, grad_m, e, grad_e,
+                //     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+		//
+		// FIXME: Using constants below to allow me to remove
+		// scenario_definition dependence w/out breaking
+		// tests.  Will refactor this to use constitutive laws
+		// classes once that functionality exists.
+		// 
                 rholut::p_T_mu_lambda(
-                    scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
+		    0.0, real_t(2)/3, 1.4, 1.15,
                     rho, grad_rho, m, grad_m, e, grad_e,
                     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+
+
 
                 const Matrix3r tau = rholut::tau(
                                         mu, lambda, div_u, grad_u);

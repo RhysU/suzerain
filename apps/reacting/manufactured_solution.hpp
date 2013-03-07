@@ -38,6 +38,7 @@
 #include <suzerain/support/definition_base.hpp>
 
 #include "nsctpl_rholut.hpp"
+//#include "nsctpl.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {
@@ -59,6 +60,9 @@ namespace reacting {
 class manufactured_solution
     : public nsctpl_rholut::manufactured_solution<real_t>,
       public support::definition_base
+// class manufactured_solution
+//     : public nsctpl::manufactured_solution<real_t>,
+//       public support::definition_base
 {
 public:
 
@@ -76,13 +80,14 @@ public:
     explicit manufactured_solution(const std::string& caption);
 
     /** Set #alpha, #beta, #gamma, #Ma, #Pr, and #Re to match \c scenario. */
-    manufactured_solution& match(const scenario_definition& scenario);
+    //manufactured_solution& match(const scenario_definition& scenario);
+    manufactured_solution& match();
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
     manufactured_solution& match(const grid_specification& grid);
 
     /**
-     * Set #rho, #u, #v, #w, and #T per nsctpl_rholut::isothermal_channel.
+     * Set #rho, #u, #v, #w, and #T per nsctpl::isothermal_channel.
      *
      * Afterwards, \ref match(const scenario_definition&) and \ref match(const
      * grid_specification&) may need to be called.
@@ -90,7 +95,7 @@ public:
     manufactured_solution& isothermal_channel();
 
     /**
-     * Set #rho, #u, #v, #w, and #T per nsctpl_rholut::isothermal_flat_plate.
+     * Set #rho, #u, #v, #w, and #T per nsctpl::isothermal_flat_plate.
      *
      * @copydetails isothermal_channel
      */
@@ -112,7 +117,6 @@ private:
  */
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
-          const scenario_definition& scenario,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 
@@ -126,7 +130,6 @@ void save(const esio_handle h,
  */
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-          const scenario_definition& scenario,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 

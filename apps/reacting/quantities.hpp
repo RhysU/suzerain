@@ -36,7 +36,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
-#include "scenario_definition.hpp"
+//#include "scenario_definition.hpp"
 
 namespace suzerain {
 
@@ -281,7 +281,7 @@ private:
  * @return Mean quantities as B-spline coefficients.
  */
 quantities sample_quantities(
-        const scenario_definition &scenario,
+	//const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,

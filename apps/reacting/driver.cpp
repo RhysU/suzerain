@@ -48,7 +48,7 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
-    , scenario(make_shared<scenario_definition>())
+      //, scenario(make_shared<scenario_definition>())
     , chdef(make_shared<channel_definition>())
     , who("reacting")
 {
@@ -61,7 +61,7 @@ driver::initialize(
         char **argv)
 {
     // msoln is not used by all binaries and is therefore not added below
-    options.add_definition(*scenario);
+    //options.add_definition(*scenario);
     options.add_definition(*chdef);
 
     // Delegate to superclass initialization
@@ -69,7 +69,8 @@ driver::initialize(
 
     // However, if msoln was provided, match its contents to other members
     if (msoln) {
-        if (scenario) msoln->match(*scenario);
+        //if (scenario) msoln->match(*scenario);
+        msoln->match();
         if (grid)     msoln->match(*grid);
     }
 
@@ -199,8 +200,10 @@ driver::compute_statistics(
 
     // Obtain mean samples from instantaneous fields stored in state_linear
     state_nonlinear->assign(*state_linear);
+    // mean = reacting::sample_quantities(
+    //         *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
     mean = reacting::sample_quantities(
-            *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
+            *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.means.rows() == mean.storage.rows()) {
@@ -252,9 +255,10 @@ driver::save_metadata_hook(
         const esio_handle esioh)
 {
     super::save_metadata_hook(esioh);
-    scenario->save(esioh);
+    //scenario->save(esioh);
     chdef->save(esioh);
-    save(esioh, msoln, *scenario, *grid);
+    //save(esioh, msoln, *scenario, *grid);
+    save(esioh, msoln, *grid);
     return;
 }
 
@@ -263,9 +267,10 @@ driver::load_metadata_hook(
         const esio_handle esioh)
 {
     super::load_metadata_hook(esioh);
-    scenario->load(esioh);
+    //scenario->load(esioh);
     chdef->load(esioh);
-    load(esioh, msoln, *scenario, *grid);
+    //load(esioh, msoln, *scenario, *grid);
+    load(esioh, msoln, *grid);
     return;
 }
 

@@ -123,7 +123,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_specification& noise,
-          const scenario_definition& scenario,
+          //const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,

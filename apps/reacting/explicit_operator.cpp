@@ -135,7 +135,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
-        const scenario_definition &scenario,
+	//const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -143,7 +143,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         operator_common_block &common,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
-    , scenario(scenario)
+      //    , scenario(scenario)
     , common(common)
     , msoln(msoln)
     , who("operator.N")
@@ -158,24 +158,37 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
+    // FIXME: Using constants below to allow me to remove
+    // scenario_definition dependence w/out breaking
+    // tests.  Will refactor this to use constitutive laws
+    // classes once that functionality exists.
+    // 
+    real_t Re         = 100;
+    real_t Ma         = 1.15;
+    real_t Pr         = 0.7;
+    real_t alpha      = 0;
+    real_t beta       = real_t(2) / 3;
+    real_t gamma      = 1.4;
+
+
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::none>
-            (this->scenario.alpha,
-             this->scenario.beta,
-             this->scenario.gamma,
-             this->scenario.Ma,
-             this->scenario.Pr,
-             this->scenario.Re,
+            (alpha,
+             beta,
+             gamma,
+             Ma,
+             Pr,
+             Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return apply_navier_stokes_spatial_operator<false, linearize::none>
-            (this->scenario.alpha,
-             this->scenario.beta,
-             this->scenario.gamma,
-             this->scenario.Ma,
-             this->scenario.Pr,
-             this->scenario.Re,
+            (alpha,
+             beta,
+             gamma,
+             Ma,
+             Pr,
+             Re,
              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }

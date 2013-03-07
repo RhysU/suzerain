@@ -938,8 +938,20 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     const real_t x = o.x(i);
 
                     real_t Q_rho, Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E;
-                    ms.Q_conservative(x, y, z, time, Q_rho,
-                                      Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
+		    // FIXME(?): nsctpl.hpp does not provide this
+		    // method (where nsctpl_rholut did). Could add it.
+		    // For now however, I'm choosing to refactor here
+		    // to call individual src fcns to avoid drift from
+		    // masa src.
+		    //
+		    ms.Q_conservative(x, y, z, time, Q_rho,
+				      Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
+
+		    // Q_rho   = ms.Q_rho (x, y, z, time);
+		    // Q_rho_u = ms.Q_rhou(x, y, z, time);
+		    // Q_rho_v = ms.Q_rhov(x, y, z, time);
+		    // Q_rho_w = ms.Q_rhow(x, y, z, time);
+		    // Q_rho_E = ms.Q_rhoe(x, y, z, time);
 
                     sphys(ndx::e,   offset) += Q_rho_E;
                     sphys(ndx::mx,  offset) += Q_rho_u;

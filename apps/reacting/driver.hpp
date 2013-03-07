@@ -34,7 +34,7 @@
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
-#include "scenario_definition.hpp"
+//#include "scenario_definition.hpp"
 #include "channel_definition.hpp"
 
 namespace suzerain {
@@ -69,7 +69,7 @@ public:
             char **argv);
 
     /** Nondimensional scenario parameters used by physics routines. */
-    shared_ptr<scenario_definition> scenario;
+    //shared_ptr<scenario_definition> scenario;
 
     /** Nondimensional scenario parameters used by physics routines. */
     shared_ptr<channel_definition> chdef;

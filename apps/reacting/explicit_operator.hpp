@@ -59,7 +59,7 @@ class explicit_nonlinear_operator
 public:
 
     explicit_nonlinear_operator(
-            const scenario_definition &scenario,
+	    //const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -77,7 +77,7 @@ public:
 protected:
 
     /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    //const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
     operator_common_block &common;
