@@ -14,7 +14,7 @@
 #define SUZERAIN_FILTER_DEFINITION_HPP
 
 /** @file
- * Classes handling reacting channel flow problem scenario parameters.
+ * Classes handling filter source parameters.
  */
 
 #include <esio/esio.h>
@@ -23,8 +23,8 @@
 #include <suzerain/support/definition_base.hpp>
 
 /** @file 
- * Provides classes handling problem defintion for channel
- * flow, e.g., bulk density and momentum.
+ * Provides classes handling problem defintion for filter
+ * source term, e.g., strength coefficient.
  */
 
 namespace suzerain {
@@ -32,7 +32,7 @@ namespace suzerain {
 namespace reacting {
 
 /**
- * Holds parameters defining channel flow case.
+ * Holds parameters defining filter source.
  */
 class filter_definition : public support::definition_base
 {
@@ -47,11 +47,9 @@ public:
     /**
      * Construct an instance with the given parameter values.
      *
-     * @param bulk_rho   Bulk density target.
-     * @param bulk_rho_u Bulk streamwise momentum target.
+     * @param filter_phi Filter source strength.
      */
-    filter_definition(const real_t bulk_rho,
-                        const real_t bulk_rho_u);
+    filter_definition(const real_t filter_phi);
 
 
     /** Virtual destructor to permit use as a base class */
@@ -107,14 +105,9 @@ public:
     boost::program_options::options_description options_description();
 
     /**
-     * The bulk density used as a target for integral constraints.
+     * The filter source strength coefficient.
      */
-    real_t bulk_rho;
-
-    /**
-     * The bulk streamwise momentum used as a target for integral constraints.
-     */
-    real_t bulk_rho_u;
+    real_t filter_phi;
 
 };
 

@@ -27,7 +27,7 @@
 
 /** @file 
  * Provides classes handling problem defintion for filter
- * flow, e.g., bulk density and momentum.
+ * source term, e.g., strength coefficient.
  */
 
 namespace suzerain {
@@ -49,16 +49,13 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 namespace reacting {
 
 filter_definition::filter_definition()
-    : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
-    , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
+    : filter_phi(std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
 filter_definition::filter_definition(
-        const real_t bulk_rho,
-        const real_t bulk_rho_u)
-    : bulk_rho  (bulk_rho  )
-    , bulk_rho_u(bulk_rho_u)
+        const real_t filter_phi)
+    : filter_phi(filter_phi)
 {
 }
 
@@ -68,12 +65,10 @@ filter_definition::~filter_definition()
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char name_bulk_rho[]   = "bulk_rho";
-static const char name_bulk_rho_u[] = "bulk_rho_u";
+static const char name_filter_phi[] = "filter_phi";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_bulk_rho[]   = "Bulk density target";
-static const char desc_bulk_rho_u[] = "Bulk momentum target";
+static const char desc_filter_phi[] = "Filter source strength";
 
 boost::program_options::options_description
 filter_definition::options_description()
@@ -86,7 +81,7 @@ filter_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
-    options_description retval("filter flow scenario parameters");
+    options_description retval("filter source parameters");
 
     // Complicated add_options() calls done to allow changing the default value
     // displayed when the default is NaN.  NaN is used as a NOP value by client
@@ -94,21 +89,13 @@ filter_definition::options_description()
 
     auto_ptr<typed_value<string> > p;
 
-    // bulk_rho
+    // filter_phi
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho, name_bulk_rho));
-    if (!(boost::math::isnan)(bulk_rho)) {
-        p->default_value(lexical_cast<string>(bulk_rho));
+    p->notifier(bind(&parse_nonnegative, _1, &filter_phi, name_filter_phi));
+    if (!(boost::math::isnan)(filter_phi)) {
+        p->default_value(lexical_cast<string>(filter_phi));
     }
-    retval.add_options()(name_bulk_rho, p.release(), desc_bulk_rho);
-
-    // bulk_rho_u
-    p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_u, name_bulk_rho_u));
-    if (!(boost::math::isnan)(bulk_rho_u)) {
-        p->default_value(lexical_cast<string>(bulk_rho_u));
-    }
-    retval.add_options()(name_bulk_rho_u, p.release(), desc_bulk_rho_u);
+    retval.add_options()(name_filter_phi, p.release(), desc_filter_phi);
 
     return retval;
 }
@@ -120,8 +107,7 @@ filter_definition::populate(
 {
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
-    CALL_MAYBE_POPULATE(bulk_rho);
-    CALL_MAYBE_POPULATE(bulk_rho_u);
+    CALL_MAYBE_POPULATE(filter_phi);
 #undef CALL_MAYBE_POPULATE
 }
 
@@ -132,8 +118,7 @@ filter_definition::override(
 {
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
-    CALL_MAYBE_OVERRIDE(bulk_rho);
-    CALL_MAYBE_OVERRIDE(bulk_rho_u);
+    CALL_MAYBE_OVERRIDE(filter_phi);
 #undef CALL_MAYBE_OVERRIDE
 }
 
@@ -148,8 +133,7 @@ filter_definition::save(
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
-    esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
+    esio_line_write(h, name_filter_phi, &this->filter_phi, 0, desc_filter_phi);
 }
 
 void
@@ -163,8 +147,7 @@ filter_definition::load(
     esio_line_establish(h, 1, 0, 1);
 
     filter_definition t;
-    esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
-    esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    esio_line_read(h, name_filter_phi, &t.filter_phi, 0);
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
