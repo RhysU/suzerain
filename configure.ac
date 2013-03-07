@@ -12,9 +12,9 @@ AM_CONFIG_HEADER([suzerain/config.h])
 AX_PREFIX_CONFIG_H([suzerain/suzerain-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AC_ARG_PROGRAM
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+AC_ARG_PROGRAM
 AX_ENABLE_BUILDDIR
 AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign check-news)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
