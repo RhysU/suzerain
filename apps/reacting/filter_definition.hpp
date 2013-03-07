@@ -119,7 +119,7 @@ public:
                const double  alpha,
                const double* x,
                const int     incx,
-                     double* y)
+                     double* y) const
     {
         if (SUZERAIN_UNLIKELY(!r || r->n != n)) {
             SUZERAIN_TIMER_SCOPED("filter_definition::prepare_real");
@@ -137,7 +137,7 @@ public:
                const complex_double  alpha,
                const complex_double* x,
                const int     incx,
-                     complex_double* y)
+                     complex_double* y) const
     {
         if (SUZERAIN_UNLIKELY(!z || z->n != n)) {
             SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
@@ -153,16 +153,16 @@ public:
 protected:
 
     /** Prepare a real-valued filter workspace of length \c n. */
-    int prepare_real(const int n);
+    int prepare_real(const int n) const;
 
     /** Prepare a complex-valued filter workspace of length \c n. */
-    int prepare_complex(const int n);
+    int prepare_complex(const int n) const;
 
     /** A filtering workspace for real-valued state. */
-    shared_ptr<suzerain_filterop_workspace> r;
+    mutable shared_ptr<suzerain_filterop_workspace> r;
 
     /** A filtering workspace for complex-valued state. */
-    shared_ptr<suzerain_filteropz_workspace> z;
+    mutable shared_ptr<suzerain_filteropz_workspace> z;
 
 };
 

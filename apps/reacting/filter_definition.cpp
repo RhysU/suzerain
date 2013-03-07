@@ -173,7 +173,7 @@ static const suzerain_filterop_boundary_treatment b_last
 
 int
 filter_definition::prepare_real(
-        const int n)
+        const int n) const
 {
     r.reset(suzerain_filterop_alloc(n, method, r_method_params,
                                     b_first, b_last),
@@ -183,7 +183,7 @@ filter_definition::prepare_real(
 
 int
 filter_definition::prepare_complex(
-        const int n)
+        const int n) const
 {
     z.reset(suzerain_filteropz_alloc(n, method, z_method_params,
                                      b_first, b_last),
