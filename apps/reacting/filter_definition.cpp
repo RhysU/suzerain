@@ -165,11 +165,11 @@ static const complex_double *z_method_params
 
 // FIXME Default boundary treatment on first edge
 static const suzerain_filterop_boundary_treatment b_first
-    = SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY;
+    = SUZERAIN_FILTEROP_BOUNDARY_NOFILTER;
 
 // FIXME Default boundary treatment on second edge
 static const suzerain_filterop_boundary_treatment b_last
-    = SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY;
+    = SUZERAIN_FILTEROP_BOUNDARY_NOFILTER;
 
 int
 filter_definition::prepare_real(
