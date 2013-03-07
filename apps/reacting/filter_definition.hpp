@@ -20,6 +20,8 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/filterop.h>
+#include <suzerain/timers.h>
 #include <suzerain/support/definition_base.hpp>
 
 /** @file
@@ -108,6 +110,59 @@ public:
      * The filter source strength coefficient.
      */
     real_t filter_phi;
+
+    /**
+     * @copydoc suzerain_filterop_filter
+     * @param n Vector length for \c x and \c y
+     */
+    int filter(const int     n,
+               const double  alpha,
+               const double* x,
+               const int     incx,
+                     double* y)
+    {
+        if (SUZERAIN_UNLIKELY(!r || r->n != n)) {
+            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_real");
+            const int err = prepare_real(n);
+            if (SUZERAIN_UNLIKELY(err)) return err;
+        }
+        return suzerain_filterop_filter(alpha, x, incx, y, r.get());
+    }
+
+    /**
+     * @copydoc suzerain_filterop_filter
+     * @param n Vector length for \c x and \c y
+     */
+    int filter(const int     n,
+               const complex_double  alpha,
+               const complex_double* x,
+               const int     incx,
+                     complex_double* y)
+    {
+        if (SUZERAIN_UNLIKELY(!z || z->n != n)) {
+            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            const int err = prepare_complex(n);
+            if (SUZERAIN_UNLIKELY(err)) return err;
+        }
+        return suzerain_filteropz_filter(alpha, x, incx, y, z.get());
+    }
+
+    /** Reset any previously initialized filtering parameters. */
+    void reset();
+
+protected:
+
+    /** Prepare a real-valued filter workspace of length \c n. */
+    int prepare_real(const int n);
+
+    /** Prepare a complex-valued filter workspace of length \c n. */
+    int prepare_complex(const int n);
+
+    /** A filtering workspace for real-valued state. */
+    shared_ptr<suzerain_filterop_workspace> r;
+
+    /** A filtering workspace for complex-valued state. */
+    shared_ptr<suzerain_filteropz_workspace> z;
 
 };
 

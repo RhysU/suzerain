@@ -151,6 +151,53 @@ filter_definition::load(
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
+// FIXME Default method
+static const suzerain_filterop_method method
+    = SUZERAIN_FILTEROP_COOKCABOT2005;
+
+// FIXME Use default parameters for the method
+static const double *r_method_params
+    = NULL;
+
+// FIXME Use default parameters for the method
+static const complex_double *z_method_params
+    = NULL;
+
+// FIXME Default boundary treatment on first edge
+static const suzerain_filterop_boundary_treatment b_first
+    = SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY;
+
+// FIXME Default boundary treatment on second edge
+static const suzerain_filterop_boundary_treatment b_last
+    = SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY;
+
+int
+filter_definition::prepare_real(
+        const int n)
+{
+    r.reset(suzerain_filterop_alloc(n, method, r_method_params,
+                                    b_first, b_last),
+            suzerain_filterop_free);
+    return suzerain_filterop_factorize(r.get());
+}
+
+int
+filter_definition::prepare_complex(
+        const int n)
+{
+    z.reset(suzerain_filteropz_alloc(n, method, z_method_params,
+                                     b_first, b_last),
+            suzerain_filteropz_free);
+    return suzerain_filteropz_factorize(z.get());
+}
+
+void
+filter_definition::reset()
+{
+    r.reset();
+    z.reset();
+}
+
 } // namespace reacting
 
 } // namespace suzerain
