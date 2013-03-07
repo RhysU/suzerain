@@ -167,9 +167,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-	            *chdef, *grid, *dgrid, *cop, *b, common_block));
+		    *cmods, *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
-      		    *grid, *dgrid, *cop, *b, common_block, msoln));
+		    *cmods, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(

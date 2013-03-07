@@ -95,29 +95,19 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     grid->Nz(1);
     grid->DAFz(1.5);
 
-    // // Establish default scenario parameters
-    // scenario->Re         = 100;
-    // scenario->Ma         = 1.5;
-    // scenario->Pr         = 0.7;
-    // scenario->alpha      = 0;
-    // scenario->beta       = real_t(2) / 3;
-    // scenario->gamma      = 1.4;
-
     // Establish default scenario parameters
-    // FIXME: Using constants below to allow me to remove
-    // scenario_definition dependence w/out breaking
-    // tests.  Will refactor this to use constitutive laws
-    // classes once that functionality exists.
-    // 
-    real_t Re         = 100;
-    real_t Ma         = 1.15;
-    real_t Pr         = 0.7;
-    real_t alpha      = 0;
-    real_t beta       = real_t(2) / 3;
-    real_t gamma      = 1.4;
+    // Cp and Cv computed from R=287 J/(kg*K), gamma=1.4
+    cmods->Cp = 1.00450000000000e+03; // J/(kg*K)
+    cmods->Cv = 7.17500000000000e+02; // J/(kg*K)
+    cmods->Pr = 0.7;
+    cmods->T0 = 273.0; // K
+    cmods->mu0 = 1.716e-5; // (N*s)/m^2
+    cmods->beta = real_t(2) / 3;
+    cmods->alpha = 0.0;
 
     chdef->bulk_rho   = 1;
     chdef->bulk_rho_u = 1;
+    chdef->T_wall     = 1;
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
@@ -198,7 +188,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         const real_t rho = chdef->bulk_rho;
         const real_t v   = 0;
         const real_t w   = 0;
-        const real_t T   = 1;
+        const real_t T   = chdef->T_wall;
 
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization;
@@ -229,7 +219,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = T / (gamma*(gamma - 1)) + (Ma*Ma/2) * (u*u + v*v + w*w);
+        ArrayXr E = cmods->Cv*T + (u*u + v*v + w*w);
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)

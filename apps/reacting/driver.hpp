@@ -35,6 +35,7 @@
 #include "quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
 #include "channel_definition.hpp"
+#include "single_ideal_gas_constitutive.hpp"
 
 namespace suzerain {
 
@@ -72,6 +73,9 @@ public:
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
+
+    /** Constitutive law for a single species ideal gas */
+    shared_ptr<single_ideal_gas_constitutive> cmods;
 
     /**
      * Data sharable between #L and #N to permit computing implicit forcing.

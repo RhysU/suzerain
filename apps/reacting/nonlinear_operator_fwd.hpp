@@ -432,22 +432,17 @@ enum type {
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
-          class ManufacturedSolution>
+          class ManufacturedSolution,
+	  class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
-            const real_t alpha,
-            const real_t beta,
-            const real_t gamma,
-            const real_t Ma,
-            const real_t Pr,
-            const real_t Re,
             const operator_base &o,
             operator_common_block &common,
             const shared_ptr<const ManufacturedSolution>& msoln,
+            const ConstitutiveModels& cmods,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-            const unsigned int Ns);
+            const real_t evmaxmag_imag);
 
 } // namespace reacting
 

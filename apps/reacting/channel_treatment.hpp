@@ -40,6 +40,7 @@
 #include <suzerain/zgbsv_specification.hpp>
 
 #include "reacting.hpp"
+#include "single_ideal_gas_constitutive.hpp"
 
 namespace suzerain {
 
@@ -73,6 +74,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
+	    const single_ideal_gas_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -80,20 +82,21 @@ public:
             bspline &b,
             operator_common_block &common);
 
-    /**
-     * Constructor delegating to BaseClass.
-     *
-     * BaseClass must make its constructor arguments available as member
-     * variables under the same name as those found in this constructor.
-     */
-    channel_treatment(
-            const zgbsv_specification& spec,
-            const channel_definition &chdef,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common);
+    // /**
+    //  * Constructor delegating to BaseClass.
+    //  *
+    //  * BaseClass must make its constructor arguments available as member
+    //  * variables under the same name as those found in this constructor.
+    //  */
+    // channel_treatment(
+    //         const zgbsv_specification& spec,
+    //         const single_ideal_gas_constitutive& cmods,
+    //         const channel_definition &chdef,
+    //         const grid_specification &grid,
+    //         const pencil_grid &dgrid,
+    //         const bsplineop &cop,
+    //         bspline &b,
+    //         operator_common_block &common);
 
     /** Virtual destructor as the class has virtual methods. */
     virtual ~channel_treatment() {}
@@ -155,32 +158,33 @@ private:
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
+	    const single_ideal_gas_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(chdef, grid, dgrid, cop, b, common),
+    : BaseClass(cmods, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
 }
 
-template< typename BaseClass >
-channel_treatment<BaseClass>::channel_treatment(
-            const zgbsv_specification& spec,
-            const channel_definition &chdef,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common)
-    : BaseClass(spec, chdef, grid, dgrid, cop, b, common),
-      jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
-{
-    this->finish_construction(grid, dgrid, cop, b);
-}
+// template< typename BaseClass >
+// channel_treatment<BaseClass>::channel_treatment(
+//             const zgbsv_specification& spec,
+//             const channel_definition &chdef,
+//             const grid_specification &grid,
+//             const pencil_grid &dgrid,
+//             const bsplineop &cop,
+//             bspline &b,
+//             operator_common_block &common)
+//     : BaseClass(spec, chdef, grid, dgrid, cop, b, common),
+//       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
+// {
+//     this->finish_construction(grid, dgrid, cop, b);
+// }
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::finish_construction(

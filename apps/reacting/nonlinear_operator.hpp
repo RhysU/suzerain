@@ -87,24 +87,21 @@ namespace suzerain { namespace reacting {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
-          class ManufacturedSolution>
+          class ManufacturedSolution,
+	  class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
-            const real_t alpha,
-            const real_t beta,
-            const real_t gamma,
-            const real_t Ma,
-            const real_t Pr,
-            const real_t Re,
             const operator_base &o,
             operator_common_block &common,
             const shared_ptr<const ManufacturedSolution>& msoln,
+            const ConstitutiveModels& cmods,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-	    const unsigned int Ns )
+            const real_t evmaxmag_imag)
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
+
+    const size_t Ns = cmods.Ns();
 
     assert(Ns>0);
 
@@ -242,17 +239,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //
     //********************************************************************
 
-    // Compute derived constants before inner loops
-    const real_t alpha13          = alpha + real_t(1)/real_t(3);
-    const real_t inv_Re           = 1 / Re;
-    const real_t inv_Ma2          = 1 / (Ma * Ma);
-    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
-    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
+    // // Compute derived constants before inner loops
+    // const real_t alpha13          = alpha + real_t(1)/real_t(3);
+    // const real_t inv_Re           = 1 / Re;
+    // const real_t inv_Ma2          = 1 / (Ma * Ma);
+    // const real_t Ma2_over_Re      = (Ma * Ma) / Re;
+    // const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
     const real_t lambda2_x        = o.lambda2_x;
     const real_t lambda2_z        = o.lambda2_z;
-    const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
+    //const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
 
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small

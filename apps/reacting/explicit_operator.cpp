@@ -48,12 +48,14 @@ class IsothermalNoSlipFunctor
 {
 private:
     const ptrdiff_t field_stride;
-    const real_t    inv_gamma_gamma1;
+    const real_t    Cv;
+    const real_t    T_wall;
 
 public:
-    IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t gamma)
-        : field_stride(field_stride),
-          inv_gamma_gamma1(1 / (gamma * (gamma - 1)))
+    IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t Cv, real_t T_wall)
+        : field_stride(field_stride)
+	, Cv(Cv)
+	, T_wall(T_wall)
     {}
 
     void operator()(complex_t &rho) const
@@ -61,11 +63,12 @@ public:
         (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*inv_gamma_gamma1;
+        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*Cv*T_wall; //rho*inv_gamma_gamma1;
     }
 };
 
 isothermal_mass_operator::isothermal_mass_operator(
+        const single_ideal_gas_constitutive& cmods,
         const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -73,6 +76,7 @@ isothermal_mass_operator::isothermal_mass_operator(
         bspline &b,
         operator_common_block &common)
     : mass_operator(grid, dgrid, cop, b)
+    , cmods(cmods)
     , chdef(chdef)
     , common(common)
     , who("operator.L")
@@ -106,15 +110,8 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
             = state[indices[ndx::rho][walls][range()][range()]];
 
     // Prepare functor setting pointwise BCs given density locations
-    // NOTE: gamma required to get correct nondimensional energy at the wall
-    // const IsothermalNoSlipFunctor bc_functor(
-    // 	     state.strides()[0], scenario.gamma);
-
-    // FIXME: Replacing scenario.gamma here with 1.4 to allow refactor
-    // of scenario_definition to proceed.  Will eventually refactor
-    // this functor to take wall temp and Cv arguments.
     const IsothermalNoSlipFunctor bc_functor(
-	     state.strides()[0], 1.4);
+	  state.strides()[0], cmods.Cv, chdef.T_wall);
 
     // Apply the functor to all wall-only density locations
     multi_array::for_each(state_view, bc_functor);
@@ -135,6 +132,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
+        const single_ideal_gas_constitutive& cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -142,6 +140,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         operator_common_block &common,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
+    , cmods(cmods)
     , common(common)
     , msoln(msoln)
     , who("operator.N")
@@ -156,38 +155,13 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
-    // FIXME: Using constants below to allow me to remove
-    // scenario_definition dependence w/out breaking
-    // tests.  Will refactor this to use constitutive laws
-    // classes once that functionality exists.
-    // 
-    real_t Re         = 100;
-    real_t Ma         = 1.15;
-    real_t Pr         = 0.7;
-    real_t alpha      = 0;
-    real_t beta       = real_t(2) / 3;
-    real_t gamma      = 1.4;
-
-
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::none>
-            (alpha,
-             beta,
-             gamma,
-             Ma,
-             Pr,
-             Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag, 1); // FIXME: last arg in number of species
+            (*this, common, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return apply_navier_stokes_spatial_operator<false, linearize::none>
-            (alpha,
-             beta,
-             gamma,
-             Ma,
-             Pr,
-             Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag, 1); // FIXME: last arg in number of species
+            (*this, common, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

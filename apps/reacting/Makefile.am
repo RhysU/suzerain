@@ -14,6 +14,10 @@ libreacting_la_SOURCES += quantities.hpp            quantities.cpp
 libreacting_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
 libreacting_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
 libreacting_la_SOURCES += driver.hpp                driver.cpp
+libreacting_la_SOURCES += single_ideal_gas_constitutive.hpp
+libreacting_la_SOURCES += single_ideal_gas_constitutive.cpp
+
+
 
 ##
 ## Applications
