@@ -22,8 +22,8 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-/** @file 
- * Provides classes handling problem defintion for filter
+/** @file
+ * Provides classes handling problem definition for filter
  * source term, e.g., strength coefficient.
  */
 

@@ -25,7 +25,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-/** @file 
+/** @file
  * Provides classes handling problem defintion for filter
  * source term, e.g., strength coefficient.
  */
