@@ -45,8 +45,6 @@
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
-#include "scenario_definition.hpp"
-
 namespace suzerain {
 
 // Forward declaration
@@ -71,7 +69,6 @@ std::vector<support::field> default_fields();
 void save_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
-        const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop);
@@ -83,7 +80,6 @@ void save_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
-        const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop,
@@ -95,7 +91,6 @@ void load_collocation_values(
  */
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
-          const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,
@@ -109,7 +104,6 @@ void load(const esio_handle h,
  */
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
-                const scenario_definition& scenario,
                 const grid_specification& grid,
                 const pencil_grid& dgrid,
                 const bsplineop& cop,
@@ -123,7 +117,6 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_specification& noise,
-          //const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,

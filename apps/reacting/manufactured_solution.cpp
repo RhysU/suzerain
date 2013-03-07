@@ -94,15 +94,8 @@ manufactured_solution::options_description()
 }
 
 manufactured_solution&
-//manufactured_solution::match(const scenario_definition& scenario)
 manufactured_solution::match()
 {
-    // this->alpha = scenario.alpha;
-    // this->beta  = scenario.beta;
-    // this->gamma = scenario.gamma;
-    // this->Ma    = scenario.Ma;
-    // this->Re    = scenario.Re;
-    // this->Pr    = scenario.Pr;
 
     // FIXME: Using constants below to allow me to remove
     // scenario_definition dependence w/out breaking

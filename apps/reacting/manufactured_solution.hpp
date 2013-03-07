@@ -39,7 +39,6 @@
 
 #include "nsctpl_rholut.hpp"
 //#include "nsctpl.hpp"
-#include "scenario_definition.hpp"
 
 namespace suzerain {
 
@@ -54,7 +53,7 @@ namespace reacting {
  *
  * None of #alpha, #beta, #gamma, #Ma, #Pr, #Re or #Lx, #Ly, #Lz are modified
  * when used in this fashion.  The former group will need to be synced using
- * \ref match(const scenario_definition&) and the later group using \ref
+ * \ref match() and the later group using \ref
  * match(const grid_specification&).
  */
 class manufactured_solution
@@ -79,8 +78,7 @@ public:
     /** Constructor permitting a non-default caption. */
     explicit manufactured_solution(const std::string& caption);
 
-    /** Set #alpha, #beta, #gamma, #Ma, #Pr, and #Re to match \c scenario. */
-    //manufactured_solution& match(const scenario_definition& scenario);
+    /** Hardcode (temporarily) #alpha, #beta, #gamma, #Ma, #Pr, and #Re. */
     manufactured_solution& match();
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
@@ -89,7 +87,7 @@ public:
     /**
      * Set #rho, #u, #v, #w, and #T per nsctpl::isothermal_channel.
      *
-     * Afterwards, \ref match(const scenario_definition&) and \ref match(const
+     * Afterwards, \ref match() and \ref match(const
      * grid_specification&) may need to be called.
      */
     manufactured_solution& isothermal_channel();

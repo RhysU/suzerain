@@ -39,7 +39,9 @@
 #include "driver.hpp"
 #include "channel_treatment.hpp"
 #include "explicit_operator.hpp"
-#include "hybrid_operator.hpp"
+
+// FIXME: Hybrid implicit/explicit has not been kept current with scenario changes.
+//#include "hybrid_operator.hpp"
 
 #pragma warning(disable:1419)
 
@@ -121,9 +123,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
         // Preserve exact restart file details via Push/Pop/Merge below
-        // shared_ptr<scenario_definition> restart_scenario
-        //         = make_shared<scenario_definition>();
-
         shared_ptr<channel_definition> restart_chdef
                 = make_shared<channel_definition>();
 
@@ -132,18 +131,15 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                 esio_handle_initialize(MPI_COMM_WORLD),
                 esio_handle_finalize);
         esio_file_open(h.get(), restart_file.c_str(), 0);
-        //restart_scenario.swap(scenario);                        // Push
         restart_chdef.swap(chdef);
         load_restart(h.get(), initial_t);
-        //restart_scenario.swap(scenario);                        // Pop
         restart_chdef.swap(chdef);
-        //scenario->populate(*restart_scenario, true);            // Merge
         chdef->populate(*restart_chdef, true); 
 
         // Adjust total energy as necessary to account for any scenario change
         state_nonlinear->assign(*state_linear);
-        // adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop,
-        //                 restart_scenario->Ma, restart_scenario->gamma);
+	// FIXME: Currently no functionality to adjust scenario
+        //adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop, restart_scenario->Ma, restart_scenario->gamma);
         state_linear->assign(*state_nonlinear);
     }
 
@@ -172,8 +168,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
 	            *chdef, *grid, *dgrid, *cop, *b, common_block));
-        // N.reset(new explicit_nonlinear_operator(
-      	// 	    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
         N.reset(new explicit_nonlinear_operator(
       		    *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {

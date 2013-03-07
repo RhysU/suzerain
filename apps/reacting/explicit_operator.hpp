@@ -59,7 +59,6 @@ class explicit_nonlinear_operator
 public:
 
     explicit_nonlinear_operator(
-	    //const scenario_definition &scenario,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -75,9 +74,6 @@ public:
             const std::size_t substep_index) const;
 
 protected:
-
-    /** The scenario in which the operator is used */
-    //const scenario_definition &scenario;
 
     /** Houses data additionally required for some linear operators */
     operator_common_block &common;
@@ -140,7 +136,7 @@ public:
 
 protected:
 
-    /** The scenario in which the operator is used */
+    /** The channel flow case for which the operator is used */
     const channel_definition &chdef;
 
     /** Houses data required for \ref invert_mass_plus_scaled_operator */

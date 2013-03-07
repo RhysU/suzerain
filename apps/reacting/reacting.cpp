@@ -77,7 +77,6 @@ std::vector<support::field> default_fields()
 void save_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& swave,
-        const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop)
@@ -179,7 +178,6 @@ void save_collocation_values(
 void load_collocation_values(
         const esio_handle h,
         contiguous_state<4,complex_t>& state,
-        const scenario_definition& scenario,
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop,
@@ -297,7 +295,6 @@ void load_collocation_values(
 
 void load(const esio_handle h,
           contiguous_state<4,complex_t>& state,
-          const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,
@@ -338,102 +335,103 @@ void load(const esio_handle h,
         support::load_coefficients(h, fields, state, grid, dgrid, cop, b);
     } else {
         INFO0("Loading collocation-based, physical-space restart data");
-        load_collocation_values(h, state, scenario, grid, dgrid, cop, b);
+	load_collocation_values(h, state, grid, dgrid, cop, b);
     }
     DEBUG0("Finished loading simulation fields");
 }
 
 void
 adjust_scenario(contiguous_state<4,complex_t> &swave,
-                const scenario_definition& scenario,
                 const grid_specification& grid,
                 const pencil_grid& dgrid,
                 const bsplineop& cop,
                 const real_t old_Ma,
                 const real_t old_gamma)
 {
-    // We are only prepared to handle a fixed number of fields in this routine
-    enum { state_count = 5 };
+    WARN0("suzerain::reacting::adjust_scenario is not supported yet for reacting flows.");
+    return;
 
-    // Ensure state storage meets this routine's assumptions
-    SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
-    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
-    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
-    SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
+//     // We are only prepared to handle a fixed number of fields in this routine
+//     enum { state_count = 5 };
 
-    bool quickreturn = true;
-#pragma warning(push,disable:1572)
-    if (old_Ma != scenario.Ma) {
-#pragma warning(pop)
-        INFO0("Changing state Mach number from "
-              << old_Ma << " to " << scenario.Ma);
-        quickreturn = false;
-    }
-#pragma warning(push,disable:1572)
-    if (old_gamma != scenario.gamma) {
-#pragma warning(pop)
-        INFO0("Changing state ratio of specific heats from "
-              << old_gamma << " to " << scenario.gamma);
-        quickreturn = false;
-    }
-    if (quickreturn) {
-        DEBUG0("Not rescaling energy as scenario parameters have not changed");
-        return;
-    }
+//     // Ensure state storage meets this routine's assumptions
+//     SUZERAIN_ENSURE(                  swave.shape()[0]  == state_count);
+//     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[1]) == dgrid.local_wave_extent.y());
+//     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[2]) == dgrid.local_wave_extent.x());
+//     SUZERAIN_ENSURE(numeric_cast<int>(swave.shape()[3]) == dgrid.local_wave_extent.z());
 
-    // Convert state to physical space collocation points
-    operator_tools otool(grid, dgrid, cop);
-    physical_view<state_count> sphys(dgrid, swave);
-    for (size_t k = 0; k < state_count; ++k) {
-        otool.bop_apply(0, 1.0, swave, k);
-        dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
-    }
+//     bool quickreturn = true;
+// #pragma warning(push,disable:1572)
+//     if (old_Ma != scenario.Ma) {
+// #pragma warning(pop)
+//         INFO0("Changing state Mach number from "
+//               << old_Ma << " to " << scenario.Ma);
+//         quickreturn = false;
+//     }
+// #pragma warning(push,disable:1572)
+//     if (old_gamma != scenario.gamma) {
+// #pragma warning(pop)
+//         INFO0("Changing state ratio of specific heats from "
+//               << old_gamma << " to " << scenario.gamma);
+//         quickreturn = false;
+//     }
+//     if (quickreturn) {
+//         DEBUG0("Not rescaling energy as scenario parameters have not changed");
+//         return;
+//     }
 
-    // Adjust total energy by the necessary amount at every collocation point
-    // This procedure is not the cheapest or least numerically noisy,
-    // but it does re-use existing compute kernels in a readable way.
-    INFO0("Holding density and temperature constant during changes");
-    for (int offset = 0, j = dgrid.local_physical_start.y();
-        j < dgrid.local_physical_end.y();
-        ++j) {
-        const int last_zxoffset = offset
-                                + dgrid.local_physical_extent.z()
-                                * dgrid.local_physical_extent.x();
-        for (; offset < last_zxoffset; ++offset) {
+//     // Convert state to physical space collocation points
+//     operator_tools otool(grid, dgrid, cop);
+//     physical_view<state_count> sphys(dgrid, swave);
+//     for (size_t k = 0; k < state_count; ++k) {
+//         otool.bop_apply(0, 1.0, swave, k);
+//         dgrid.transform_wave_to_physical(&sphys.coeffRef(k,0));
+//     }
 
-            const real_t   e  (sphys(ndx::e,   offset));
-            const Vector3r m  (sphys(ndx::mx,  offset),
-                               sphys(ndx::my,  offset),
-                               sphys(ndx::mz,  offset));
-            const real_t   rho(sphys(ndx::rho, offset));
+//     // Adjust total energy by the necessary amount at every collocation point
+//     // This procedure is not the cheapest or least numerically noisy,
+//     // but it does re-use existing compute kernels in a readable way.
+//     INFO0("Holding density and temperature constant during changes");
+//     for (int offset = 0, j = dgrid.local_physical_start.y();
+//         j < dgrid.local_physical_end.y();
+//         ++j) {
+//         const int last_zxoffset = offset
+//                                 + dgrid.local_physical_extent.z()
+//                                 * dgrid.local_physical_extent.x();
+//         for (; offset < last_zxoffset; ++offset) {
 
-            // Compute temperature using old_gamma, old_Ma
-            real_t p, T;
-            rholut::p_T(scenario.alpha, scenario.beta, old_gamma, old_Ma,
-                        rho, m, e, /*out*/ p, /*out*/ T);
-            // Compute total energy from new gamma, Ma, rho, T
-            rholut::p(scenario.gamma, rho, T, /*out*/ p);
-            sphys(ndx::e, offset) = rholut::energy_internal(scenario.gamma, p)
-                                  + rholut::energy_kinetic(scenario.Ma, rho, m);
-        }
-    }
+//             const real_t   e  (sphys(ndx::e,   offset));
+//             const Vector3r m  (sphys(ndx::mx,  offset),
+//                                sphys(ndx::my,  offset),
+//                                sphys(ndx::mz,  offset));
+//             const real_t   rho(sphys(ndx::rho, offset));
 
-    // Convert state back to wave space coefficients in X, Y, and Z
-    // building FFT normalization constant into the mass matrix
-    bsplineop_luz massluz(cop);
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-    massluz.opform(1, &scale_factor, cop);
-    massluz.factor();
-    for (size_t i = 0; i < state_count; ++i) {
-        dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
-        otool.bop_solve(massluz, swave, i);
-    }
+//             // Compute temperature using old_gamma, old_Ma
+//             real_t p, T;
+//             rholut::p_T(scenario.alpha, scenario.beta, old_gamma, old_Ma,
+//                         rho, m, e, /*out*/ p, /*out*/ T);
+//             // Compute total energy from new gamma, Ma, rho, T
+//             rholut::p(scenario.gamma, rho, T, /*out*/ p);
+//             sphys(ndx::e, offset) = rholut::energy_internal(scenario.gamma, p)
+//                                   + rholut::energy_kinetic(scenario.Ma, rho, m);
+//         }
+//     }
+
+//     // Convert state back to wave space coefficients in X, Y, and Z
+//     // building FFT normalization constant into the mass matrix
+//     bsplineop_luz massluz(cop);
+//     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+//     massluz.opform(1, &scale_factor, cop);
+//     massluz.factor();
+//     for (size_t i = 0; i < state_count; ++i) {
+//         dgrid.transform_physical_to_wave(&sphys.coeffRef(i, 0));
+//         otool.bop_solve(massluz, swave, i);
+//     }
 }
 
 void
 add_noise(contiguous_state<4,complex_t> &state,
           const noise_specification& noise,
-          //const scenario_definition& scenario,
           const grid_specification& grid,
           const pencil_grid& dgrid,
           const bsplineop& cop,

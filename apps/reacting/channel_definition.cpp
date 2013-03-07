@@ -25,9 +25,9 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-/** @file
- * Provides classes handling channel flow scenario parameters 
- * which describe the particular channel flow being simulated.
+/** @file 
+ * Provides classes handling problem defintion for channel
+ * flow, e.g., bulk density and momentum.
  */
 
 namespace suzerain {

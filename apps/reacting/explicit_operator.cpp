@@ -135,7 +135,6 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
-	//const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -143,7 +142,6 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         operator_common_block &common,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
-      //    , scenario(scenario)
     , common(common)
     , msoln(msoln)
     , who("operator.N")

@@ -14,7 +14,7 @@
 #define SUZERAIN_CHANNEL_DEFINITION_HPP
 
 /** @file
- * Classes handling reacting flow problem scenario parameters.
+ * Classes handling reacting channel flow problem scenario parameters.
  */
 
 #include <esio/esio.h>
@@ -22,12 +22,9 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-// FIXME Break bulk_rho and bulk_rho_u into channel_definition class
-
-/** @file
- * Provides classes handling problem scenario parameters which are either
- * reference quantities or nondimensional parameters describing a particular
- * problem setup.
+/** @file 
+ * Provides classes handling problem defintion for channel
+ * flow, e.g., bulk density and momentum.
  */
 
 namespace suzerain {
@@ -35,9 +32,7 @@ namespace suzerain {
 namespace reacting {
 
 /**
- * Holds nondimensional parameters like the Reynolds and Prandtl numbers as
- * well as nondimensional problem geometry.  See the Suzerain model document's
- * nondimensionalization section for more information.
+ * Holds parameters defining channel flow case.
  */
 class channel_definition : public support::definition_base
 {

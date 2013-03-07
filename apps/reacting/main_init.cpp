@@ -229,8 +229,6 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        // ArrayXr E = T / (scenario->gamma*(scenario->gamma - 1))
-        //           + (scenario->Ma*scenario->Ma/2) * (u*u + v*v + w*w);
         ArrayXr E = T / (gamma*(gamma - 1)) + (Ma*Ma/2) * (u*u + v*v + w*w);
 
         INFO("Converting the u and E profiles to B-spline coefficients");

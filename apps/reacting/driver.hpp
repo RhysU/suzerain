@@ -34,7 +34,6 @@
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
-//#include "scenario_definition.hpp"
 #include "channel_definition.hpp"
 
 namespace suzerain {
@@ -61,17 +60,14 @@ public:
     /**
      * @copydoc driver_base::initialize
      *
-     * While #scenario is registered in #options during this method, #msoln is
+     * While #chdef is registered in #options during this method, #msoln is
      * not as not all reacting flow binaries will expose related options.
      */
     virtual std::vector<std::string> initialize(
             int argc,
             char **argv);
 
-    /** Nondimensional scenario parameters used by physics routines. */
-    //shared_ptr<scenario_definition> scenario;
-
-    /** Nondimensional scenario parameters used by physics routines. */
+    /** Channel definition parameters. */
     shared_ptr<channel_definition> chdef;
 
     /** Nondimensional manufactured solution optionally used by applications. */
@@ -150,14 +146,14 @@ protected:
             const step_type nt);
 
     /**
-     * Beyond the inherited behavior, this method saves #scenario and #msoln.
+     * Beyond the inherited behavior, this method saves #chdef and #msoln.
      * @copydetails driver_base::save_metadata_hook
      */
     virtual void save_metadata_hook(
             const esio_handle esioh);
 
     /**
-     * Beyond the inherited behavior, this method loads #scenario and #msoln.
+     * Beyond the inherited behavior, this method loads #chdef and #msoln.
      * @copydetails driver_base::save_metadata_hook
      */
     virtual void load_metadata_hook(
@@ -183,7 +179,7 @@ protected:
 
     /**
      * The default interval is a fractional flow through time per #grid
-     * and #scenario.
+     * and #chdef.
      */
     virtual void default_restart_interval(time_type& t, step_type&);
 

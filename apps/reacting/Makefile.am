@@ -8,7 +8,6 @@ include ../Common.am
 
 noinst_LTLIBRARIES     += libreacting.la
 libreacting_la_SOURCES  = reacting.hpp              reacting.cpp
-#libreacting_la_SOURCES += scenario_definition.hpp   scenario_definition.cpp
 libreacting_la_SOURCES += channel_definition.hpp    channel_definition.cpp
 libreacting_la_SOURCES += quantities.hpp            quantities.cpp
 libreacting_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp

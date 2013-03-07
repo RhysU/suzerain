@@ -36,8 +36,6 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
-//#include "scenario_definition.hpp"
-
 namespace suzerain {
 
 namespace reacting {
@@ -271,7 +269,6 @@ private:
  * SUZERAIN_PERFECT_QUANTITIES_IMPLICIT.  This is an expensive, collective
  * method producing valid results <em>only on rank zero</em>.
  *
- * @param[in]     scenario Scenario parameters.
  * @param[in]     grid     Grid parameters.
  * @param[in]     dgrid    Pencil decomposition parameters.
  * @param[in]     cop      B-spline operator workspace.
@@ -281,7 +278,6 @@ private:
  * @return Mean quantities as B-spline coefficients.
  */
 quantities sample_quantities(
-	//const scenario_definition &scenario,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
