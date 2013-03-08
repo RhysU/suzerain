@@ -103,8 +103,8 @@ manufactured_solution::match(const single_ideal_gas_constitutive& cmods)
     this->mu_r  = cmods.mu0;
     this->T_r   = cmods.T0;
 
-    // NOTE: Appears that manufactured solution *assumes* that
-    // Pr = 0.7 and alpha = 0.0, so we can't set those!
+    this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*cmods.Pr);
+    this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
 
     return *this;
 }

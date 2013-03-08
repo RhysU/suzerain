@@ -416,10 +416,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-        // FIXME: Put stable time step calculation back in.
-        // // Wall-normal operator eigenvalue estimates depend on location
-        // const real_t lambda1_y = o.lambda1_y(j);
-        // const real_t lambda2_y = o.lambda2_y(j);
+        std::cout << "j = " << j << std::endl;
+
+        // Wall-normal operator eigenvalue estimates depend on location
+        const real_t lambda1_y = o.lambda1_y(j);
+        const real_t lambda2_y = o.lambda2_y(j);
 
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
@@ -628,118 +629,131 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 	  auxp(aux::kap, offset) = kap;
 	  auxp(aux::T  , offset) = T;
 	  
-	    // FIXME: Put stable time step calculation back in.
+            // Determine the minimum observed stable time step when necessary
+            // This logic used to call some canned routines, but additional
+            // monitoring requirements forced inlining many of these details.
+            // See delta_t_candidates declaration (above) for descriptions.
+            //
+            // details on these computations in the three-directional case.
+            if (ZerothSubstep) {
 
-	    //
-            // // Determine the minimum observed stable time step when necessary
-            // // This logic used to call some canned routines, but additional
-            // // monitoring requirements forced inlining many of these details.
-            // // See delta_t_candidates declaration (above) for descriptions.
-            // //
-            // // details on these computations in the three-directional case.
-            // if (ZerothSubstep) {
+                // minnan(...) calls only required on *_xyz_delta_t as the
+                // three-dimensional criterion should collect any NaNs
+                // occurring within the direction-dependent criteria.  min(...)
+                // is presumably a touch faster and is preferred when possible.
+                using math::minnan;
 
-            //     // minnan(...) calls only required on *_xyz_delta_t as the
-            //     // three-dimensional criterion should collect any NaNs
-            //     // occurring within the direction-dependent criteria.  min(...)
-            //     // is presumably a touch faster and is preferred when possible.
-            //     using math::minnan;
+                // See timestepper::convective_stability_criterion
+		//
+		// FIXME: Use cmods to compute speed of sound!!!
+		const real_t a = sqrt(1.4*287.0*T);
+                real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
+                real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
+                switch (Linearize) {
+                    default:
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
 
-            //     // See timestepper::convective_stability_criterion
-            //     const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
-            //     real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
-            //     real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
-            //     switch (Linearize) {
-            //         default:
-            //             SUZERAIN_ERROR_REPORT("Unimplemented!",
-            //                                   SUZERAIN_ESANITY);
+                    // Explicit treatment forces including acoustics
+                    // in stability and has a zero reference velocity.
+                    case linearize::none:
+                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                        fluct_ua_l1_x = ua_l1_x;
+                        fluct_ua_l1_y = ua_l1_y;
+                        fluct_ua_l1_z = ua_l1_z;
+                        break;
 
-            //         // Explicit treatment forces including acoustics
-            //         // in stability and has a zero reference velocity.
-            //         case linearize::none:
-            //             ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-            //             ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
-            //             ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
-            //             fluct_ua_l1_x = ua_l1_x;
-            //             fluct_ua_l1_y = ua_l1_y;
-            //             fluct_ua_l1_z = ua_l1_z;
-            //             break;
+                    // Implicit acoustics sets the effective sound speed
+                    // to zero within the convective_stability_criterion.
+                    // Fluctuating velocity is taken relative to references.
+                    case linearize::rhome:
+ 		        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
+                        // ua_l1_x       = abs(u.x()            ) * lambda1_x;
+                        // ua_l1_y       = abs(u.y()            ) * lambda1_y;
+                        // ua_l1_z       = abs(u.z()            ) * lambda1_z;
+                        // fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
+                        // fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                        // fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
+                        break;
+                }
+                convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
+                        evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
+                convtotal_x_delta_t   = min   (convtotal_x_delta_t,
+                        evmaxmag_imag / ua_l1_x);
+                convtotal_y_delta_t   = min   (convtotal_y_delta_t,
+                        evmaxmag_imag / ua_l1_y);
+                convtotal_z_delta_t   = min   (convtotal_z_delta_t,
+                        evmaxmag_imag / ua_l1_z);
+                convfluct_xyz_delta_t = minnan(convfluct_xyz_delta_t,
+                        evmaxmag_imag / (  fluct_ua_l1_x
+                                         + fluct_ua_l1_y
+                                         + fluct_ua_l1_z));
+                convfluct_x_delta_t   = min   (convfluct_x_delta_t,
+                        evmaxmag_imag / fluct_ua_l1_x);
+                convfluct_y_delta_t   = min   (convfluct_y_delta_t,
+                        evmaxmag_imag / fluct_ua_l1_y);
+                convfluct_z_delta_t   = min   (convfluct_z_delta_t,
+                        evmaxmag_imag / fluct_ua_l1_z);
 
-            //         // Implicit acoustics sets the effective sound speed
-            //         // to zero within the convective_stability_criterion.
-            //         // Fluctuating velocity is taken relative to references.
-            //         case linearize::rhome:
-            //             ua_l1_x       = abs(u.x()            ) * lambda1_x;
-            //             ua_l1_y       = abs(u.y()            ) * lambda1_y;
-            //             ua_l1_z       = abs(u.z()            ) * lambda1_z;
-            //             fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
-            //             fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
-            //             fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
-            //             break;
-            //     }
-            //     convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
-            //             evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
-            //     convtotal_x_delta_t   = min   (convtotal_x_delta_t,
-            //             evmaxmag_imag / ua_l1_x);
-            //     convtotal_y_delta_t   = min   (convtotal_y_delta_t,
-            //             evmaxmag_imag / ua_l1_y);
-            //     convtotal_z_delta_t   = min   (convtotal_z_delta_t,
-            //             evmaxmag_imag / ua_l1_z);
-            //     convfluct_xyz_delta_t = minnan(convfluct_xyz_delta_t,
-            //             evmaxmag_imag / (  fluct_ua_l1_x
-            //                              + fluct_ua_l1_y
-            //                              + fluct_ua_l1_z));
-            //     convfluct_x_delta_t   = min   (convfluct_x_delta_t,
-            //             evmaxmag_imag / fluct_ua_l1_x);
-            //     convfluct_y_delta_t   = min   (convfluct_y_delta_t,
-            //             evmaxmag_imag / fluct_ua_l1_y);
-            //     convfluct_z_delta_t   = min   (convfluct_z_delta_t,
-            //             evmaxmag_imag / fluct_ua_l1_z);
+		//std::cout << "convtotal_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
+		//std::cout << "convfluct_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
 
-            //     // See timestepper::diffusive_stability_criterion
-            //     // Antidiffusive locations might be ignored when linearized.
-            //     // Hence we compute criteria within the switch statment.
-            //     const real_t nu = mu / rho;
-            //     real_t diffusivity;
-            //     switch (Linearize) {
-            //         default:
-            //             SUZERAIN_ERROR_REPORT("Unimplemented!",
-            //                                   SUZERAIN_ESANITY);
 
-            //         // Explicit treatment forces a zero reference diffusivity
-            //         case linearize::none:
-            //             diffusivity = maxdiffconst * nu;
-            //             diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-            //                       evmaxmag_real
-            //                     / diffusivity
-            //                     / (lambda2_x + lambda2_y + lambda2_z));
-            //             diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_x);
-            //             diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_y);
-            //             diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_z);
-            //             break;
+                // See timestepper::diffusive_stability_criterion
+                // Antidiffusive locations might be ignored when linearized.
+                // Hence we compute criteria within the switch statment.
+                const real_t nu = mu / rho;
+                real_t diffusivity;
+                switch (Linearize) {
+                    default:
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
 
-            //         // Implicit diffusion permits removing a reference value.
-            //         // Antidiffusive (nu - ref_nu) is fine and not computed.
-            //         case linearize::rhome:
-            //             diffusivity = nu - ref_nu;    // Compute sign wrt ref.
-            //             if (diffusivity <= 0) break;  // NaN => false, proceed
-            //             diffusivity *= maxdiffconst;  // Rescale as necessary.
-            //             diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-            //                       evmaxmag_real
-            //                     / diffusivity
-            //                     / (lambda2_x + lambda2_y + lambda2_z));
-            //             diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_x);
-            //             diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_y);
-            //             diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-            //                     evmaxmag_real / diffusivity / lambda2_z);
-            //             break;
-            //     } // end switch(Linearize)
-            // } // end if(ZerothSubstep}
+                    // Explicit treatment forces a zero reference diffusivity
+                    case linearize::none:
+		        //diffusivity = maxdiffconst * nu;
+		        // FIXME: Handle thermal conductivity and mass diffusivities correctly!
+		        diffusivity = nu;
+                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                  evmaxmag_real
+                                / diffusivity
+                                / (lambda2_x + lambda2_y + lambda2_z));
+                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_x);
+                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_y);
+                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                evmaxmag_real / diffusivity / lambda2_z);
+                        break;
+
+                    // Implicit diffusion permits removing a reference value.
+                    // Antidiffusive (nu - ref_nu) is fine and not computed.
+                    case linearize::rhome:
+		        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                                              SUZERAIN_ESANITY);
+                        // diffusivity = nu - ref_nu;    // Compute sign wrt ref.
+                        // if (diffusivity <= 0) break;  // NaN => false, proceed
+                        // diffusivity *= maxdiffconst;  // Rescale as necessary.
+                        // diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                        //           evmaxmag_real
+                        //         / diffusivity
+                        //         / (lambda2_x + lambda2_y + lambda2_z));
+                        // diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                        //         evmaxmag_real / diffusivity / lambda2_x);
+                        // diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                        //         evmaxmag_real / diffusivity / lambda2_y);
+                        // diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                        //         evmaxmag_real / diffusivity / lambda2_z);
+                        break;
+
+
+			//std::cout << "diffusive_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
+
+                } // end switch(Linearize)
+            } // end if(ZerothSubstep}
 
         } // end X // end Z
 

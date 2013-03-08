@@ -458,8 +458,6 @@ add_noise(contiguous_state<4,complex_t> &state,
     //     velocity and compute new total energy using perturbed
     //     velocities.
 
-    // FIXME: Eliminate Ma dependence here.  Keeping for now to ensure tests pass.
-    const real_t Ma = 1.15; //scenario.Ma;
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
@@ -478,13 +476,15 @@ add_noise(contiguous_state<4,complex_t> &state,
                                  p(ndx::my,  offset),
                                  p(ndx::mz,  offset));
                 const real_t rho(p(ndx::rho, offset));
-                const real_t e_int = rholut::energy_internal(Ma, rho, m, e);
+		// Setting Ma=1 makes this correct for dimensional case
+                const real_t e_int = rholut::energy_internal(1.0, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
                 m.x() += rho * p(state_count + 0, offset);
                 m.y() += rho * p(state_count + 1, offset);
                 m.z() += rho * p(state_count + 2, offset);
-                const real_t e_kin = rholut::energy_kinetic(Ma, rho, m);
+		// Setting Ma=1 makes this correct for dimensional case
+                const real_t e_kin = rholut::energy_kinetic(1.0, rho, m);
                 e = e_int + e_kin;
 
                 // Store results back to state fields

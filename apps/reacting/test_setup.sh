@@ -23,14 +23,13 @@ fi
 
 
 banner "Creating initial field to use for tests"
-declare -r  Re=100
-declare -r  Ma=1.15
+declare -r  T_wall=300
 declare -ir Nx=4
 declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./reacting_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
+runq ./reacting_init "$testdir/mms0.h5" --mms=0 --T_wall=$T_wall         \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
 chmod +r "$testdir/mms0.h5"
 
