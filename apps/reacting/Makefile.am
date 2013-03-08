@@ -76,8 +76,8 @@ dist_check_SCRIPTS += test_parallel_explicit.sh
 #dist_check_SCRIPTS += test_parallel_implicit.sh
 
 # Read canned, legacy fields to test backwards compatibility
-TESTS              += test_fields.sh
-dist_check_SCRIPTS += test_fields.sh
+#TESTS              += test_fields.sh
+#dist_check_SCRIPTS += test_fields.sh
 
 # Adding fluctuations at startup
 TESTS              += test_fluct.sh
