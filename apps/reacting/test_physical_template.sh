@@ -32,14 +32,36 @@ banner "Idempotence of restarting from physical space without time advance${OPER
     cd $testdir
     $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
                       --restart_physical
-    differ --delta=1e-15 pmms0.h5 a0.h5
+    #differ --delta=1e-15 pmms0.h5 a0.h5
+    differ --relative=5e-14 pmms0.h5 a0.h5
 )
 
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0
-    differ --delta=5e-15 mms0.h5 a0.h5
+    
+    # original: absolute tolerance too tight because now working with
+    # dimensional variables
+    #
+    #differ --delta=5e-15 mms0.h5 a0.h5
+
+    # relative tolerance doesn't work well because many of the entries
+    # we want to check are small numbers computed from operations on
+    # big numbers, so relative errors are large
+    #
+    #differ --relative=5e-14 mms0.h5 a0.h5
+
+    # so... use a large absolute tolerance for now 
+    #
+    # FIXME: Find a better solution.  Want to be able to find
+    # differences that are larger than some tolerance in *both* a
+    # relative and absolute sense, but h5diff doesn't provide this
+    # automatically.
+    #
+    # NOTE: Tolerance based on rho_E * 1e-15
+    #
+    differ --delta=2e-10 mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"
