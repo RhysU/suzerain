@@ -55,34 +55,34 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
     differ $exclude_datasets mms0.h5 b0.h5
 )
 
-banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
-(
-    cd $testdir
-    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
-                     --k=$(($k+1))
-    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
-                     --k=$(($k  ))
-    # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=3e-4 mms0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=6e-5 mms0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=7e-4 mms0.h5 b0.h5 /rho_E
-)
-
-banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
-(
-    cd $testdir
-    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
-                     --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
-    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
-                     --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
-    # Chosen tolerances are wholly empirical and represent nothing deep
-    differ $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho
-    differ $exclude_datasets --delta=1e-4 mms0.h5 b0.h5 /rho_u
-    differ $exclude_datasets --delta=7e-6 mms0.h5 b0.h5 /rho_v
-    differ $exclude_datasets --delta=3e-5 mms0.h5 b0.h5 /rho_w
-    differ $exclude_datasets --delta=2e-4 mms0.h5 b0.h5 /rho_E
-)
+#banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
+#(
+#    cd $testdir
+#    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+#                     --k=$(($k+1))
+#    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+#                     --k=$(($k  ))
+#    # Chosen tolerances are wholly empirical and represent nothing deep
+#    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
+#    differ $exclude_datasets --delta=3e-4 mms0.h5 b0.h5 /rho_u
+#    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho_v
+#    differ $exclude_datasets --delta=6e-5 mms0.h5 b0.h5 /rho_w
+#    differ $exclude_datasets --delta=7e-4 mms0.h5 b0.h5 /rho_E
+#)
+#
+#banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
+#(
+#    cd $testdir
+#    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+#                     --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
+#    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+#                     --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
+#    # Chosen tolerances are wholly empirical and represent nothing deep
+#    differ $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho
+#    differ $exclude_datasets --delta=1e-4 mms0.h5 b0.h5 /rho_u
+#    differ $exclude_datasets --delta=7e-6 mms0.h5 b0.h5 /rho_v
+#    differ $exclude_datasets --delta=3e-5 mms0.h5 b0.h5 /rho_w
+#    differ $exclude_datasets --delta=2e-4 mms0.h5 b0.h5 /rho_E
+#)
 
 done
