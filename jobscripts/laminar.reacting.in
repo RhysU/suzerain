@@ -1,0 +1,87 @@
+#!/bin/bash
+set -e
+
+# Specify operational defaults which may be overridden in the environment
+: ${LAMINAR_INITIAL:=@bindir@/perfect_init}
+: ${LAMINAR_ADVANCE:=@bindir@/perfect_advance}
+
+# Parse incoming parameters
+OPTS="k:,htdelta:,alpha:,beta:,gamma:,Re:,Ma:,Pr:"
+ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
+if [ $? -ne 0 ]; then exit 1; fi
+eval set -- "$ARGS"
+
+# Process incoming parameters versus defaults
+# Defaults based on Coleman, Kim, and Moser JFM 1995
+k=8
+htdelta=3
+alpha=
+beta=0.7
+gamma=
+Re=3000
+Ma=1.5
+Pr=0.7
+while true;
+do
+    case "$1" in
+        --)         shift 1;break;;
+        -h|--help)  echo "Usage: $(basename -- "$0") [OPTIONS]... -- [SOLVEROPTS]..."
+                    echo "Generate a laminar solution on your workstation."
+                    echo
+                    echo "Options:"
+                    cat <<EOF | column -t -s "\&" | sed -e 's/^/    /' | sort
+-h&--help&Show this help message.
+  &--k&Specify the wall-normal B-spline order
+  &--htdelta&Set grid stretching factor
+  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
+  &--beta&Temperature power law exponent within manufactured solution
+  &--gamma&Ratio of specific heats within manufactured solution
+  &--Re&Reynolds number within manufactured solution
+  &--Ma&Mach number within manufactured solution
+  &--Pr&Prandtl number within manufactured solution
+EOF
+                    echo
+                    echo "GNU parallel is great for managing multiple cases.  For example,"
+                    echo "    parallel -u '@pkgdatadir@/jobscripts/laminar.perfect --k={} -- --evmagfactor=0.8' ::: 6 7 8 9"
+                    echo "runs a collection of independent cases in parallel passing"
+                    echo "--evmagfactor to the solver to modify time step aggressiveness."
+                    echo "Output is stored in a k-specific directory name like laminar_k08."
+                    exit;;
+        --k)        k="$2";        shift 2;;
+        --htdelta)  htdelta="$2";  shift 2;;
+        --alpha)    alpha="$2";    shift 2;;
+        --beta)     beta="$2";     shift 2;;
+        --gamma)    gamma="$2";    shift 2;;
+        --Re)       Re="$2";       shift 2;;
+        --Ma)       Ma="$2";       shift 2;;
+        --Pr)       Pr="$2";       shift 2;;
+    esac
+done
+
+# Create or overwrite a directory and then change into it
+dir=$(printf "laminar_k%02d" $k)
+rm -rvf $dir
+mkdir -v $dir
+cd $dir
+
+# Table of incremental cases to run towards getting steady state
+Ny=(   64    96)
+dt=(15000 15000)
+
+# Generate an initial condition
+"$LAMINAR_INITIAL" t0.h5                                                    \
+    --k=$k --Nx=1 --Ny=${Ny[0]} --Nz=1 --htdelta=$htdelta                   \
+    ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta} ${gamma:+--gamma=$gamma} \
+    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}
+cp t0.h5 restart0.h5
+
+# Advance through each situation in the incremental table
+declare -i t=0
+for i in "${!Ny[@]}"
+do
+    "$LAMINAR_ADVANCE" restart0.h5 --Ny=${Ny[$i]} --advance_dt=${dt[$i]} \
+        --status_nt=100 --statistics_dt=0 --statistics_nt=0              \
+        --restart_retain=10 "$@"
+    t+=${dt[$i]}
+    cp -v restart0.h5 t${t}.h5
+done
