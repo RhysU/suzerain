@@ -36,6 +36,7 @@
 #include "nonlinear_operator_fwd.hpp"
 #include "channel_definition.hpp"
 #include "single_ideal_gas_constitutive.hpp"
+#include "filter_definition.hpp"
 
 namespace suzerain {
 
@@ -76,6 +77,9 @@ public:
 
     /** Constitutive law for a single species ideal gas */
     shared_ptr<single_ideal_gas_constitutive> cmods;
+
+    /** Filter source parameters. */
+    shared_ptr<filter_definition> fsdef;
 
     /**
      * Data sharable between #L and #N to permit computing implicit forcing.

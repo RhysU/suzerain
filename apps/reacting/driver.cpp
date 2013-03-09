@@ -50,6 +50,7 @@ driver::driver(
                   revstr)
     , chdef(make_shared<channel_definition>())
     , cmods(make_shared<single_ideal_gas_constitutive>())
+    , fsdef(make_shared<filter_definition>())
     , who("reacting")
 {
     this->fields = default_fields();
@@ -63,6 +64,7 @@ driver::initialize(
     // msoln is not used by all binaries and is therefore not added below
     options.add_definition(*chdef);
     options.add_definition(*cmods);
+    options.add_definition(*fsdef);
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
@@ -255,6 +257,7 @@ driver::save_metadata_hook(
     super::save_metadata_hook(esioh);
     chdef->save(esioh);
     cmods->save(esioh);
+    fsdef->save(esioh);
     save(esioh, msoln, *cmods, *grid);
     return;
 }
@@ -266,6 +269,7 @@ driver::load_metadata_hook(
     super::load_metadata_hook(esioh);
     chdef->load(esioh);
     cmods->load(esioh);
+    fsdef->load(esioh);
     load(esioh, msoln, *cmods, *grid);
     return;
 }
