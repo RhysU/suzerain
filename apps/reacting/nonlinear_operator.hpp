@@ -416,8 +416,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-        std::cout << "j = " << j << std::endl;
-
         // Wall-normal operator eigenvalue estimates depend on location
         const real_t lambda1_y = o.lambda1_y(j);
         const real_t lambda2_y = o.lambda2_y(j);
