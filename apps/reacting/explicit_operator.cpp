@@ -138,10 +138,12 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common,
+        const filter_definition &fsdef,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)
     , common(common)
+    , fsdef(fsdef)
     , msoln(msoln)
     , who("operator.N")
 {
@@ -158,10 +160,10 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::none>
-            (*this, common, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
+            (*this, common, fsdef, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return apply_navier_stokes_spatial_operator<false, linearize::none>
-            (*this, common, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
+            (*this, common, fsdef, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

@@ -43,6 +43,7 @@
 #include <suzerain/support/logging.hpp>
 
 #include "reacting.hpp"
+#include "filter_definition.hpp"
 
 #pragma warning(disable:280 383 1572)
 
@@ -92,6 +93,7 @@ template <bool ZerothSubstep,
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
+            const filter_definition &fsdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
             const real_t time,
@@ -141,6 +143,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 		aux_count, o.dgrid));                               // RAII
     state_type &auxw = *_auxw_ptr;                                  // Brevity
 
+    // Auxiliary storage for filter source:
+    // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
+    // We assume no garbage values in the memory will impact us (for speed).
+    // Number of fields for filter source is equal to number of variables
+    scoped_ptr<state_type> _fsrcw_ptr(
+	    support::allocate_padded_state<state_type>(
+		state_count, o.dgrid));                               // RAII
+    state_type &fsrcw = *_fsrcw_ptr;                                   // Brevity
+
     // Sanity check incoming swave's and auxw's shape and contiguity
     SUZERAIN_ENSURE(swave.shape()[0] == swave_count);
     SUZERAIN_ENSURE(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
@@ -151,6 +162,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
     SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
     SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
+    SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4, fsrcw.shape()   + 1));
+    SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4, fsrcw.strides() + 1));
 
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
@@ -206,6 +219,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
 
+    // FIXME: filter source 
+    //        compute for energy
+
     // Everything else (all spatial derivatives)
     for (size_t var = ndx::mx; var<state_count; ++var) {
 
@@ -223,6 +239,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       // Zeros wavenumbers present only for dealiasing in the target storage
       o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::x );
       o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::z );
+
+      // FIXME: filter source 
+      //        compute for all other variables
+
     }
 
     physical_view<> auxp (o.dgrid, auxw );
@@ -924,6 +944,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       massluz.opform(1, &scale_factor, o.cop);
       massluz.factor();
 
+      // FIXME: filter source 
+      //        scale source for dealiasing
+
       //suzerain::bsplineop_lu boplu(o.cop);
 
       // FIXME: Need form mass matrix call
@@ -943,6 +966,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // b/c we need to subtract divergence from source
         o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
                                1, swave, i );
+
+        // FIXME: filter source 
+        //        accumulate into source
 
         // Accumulate X and Z derivatives of X and Z fluxes into source
 

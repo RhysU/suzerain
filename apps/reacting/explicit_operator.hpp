@@ -41,6 +41,7 @@
 #include "manufactured_solution.hpp"
 #include "channel_definition.hpp"
 #include "single_ideal_gas_constitutive.hpp"
+#include "filter_definition.hpp"
 
 
 #pragma warning(disable:383 1572)
@@ -67,6 +68,7 @@ public:
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common,
+            const filter_definition &fsdef,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -86,6 +88,9 @@ protected:
 
     /** Holds optional manufactured solution forcing details */
     const shared_ptr<const manufactured_solution> msoln;
+
+    /** The filter source definition */
+    const filter_definition &fsdef;
 
 private:
 
@@ -154,7 +159,6 @@ protected:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
-
 };
 
 } // namespace reacting

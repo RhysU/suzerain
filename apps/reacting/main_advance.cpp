@@ -136,6 +136,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         restart_chdef.swap(chdef);
         chdef->populate(*restart_chdef, true); 
 
+        // FIXME: filter source 
+        //        initialize with info from restart here (?)
+
         // Adjust total energy as necessary to account for any scenario change
         state_nonlinear->assign(*state_linear);
 	// FIXME: Currently no functionality to adjust scenario
@@ -169,7 +172,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         L.reset(new channel_treatment<isothermal_mass_operator>(
 		    *cmods, *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
-		    *cmods, *grid, *dgrid, *cop, *b, common_block, msoln));
+		    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(

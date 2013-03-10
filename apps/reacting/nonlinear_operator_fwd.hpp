@@ -35,6 +35,7 @@
 #include <suzerain/timers.h>
 
 #include "reacting.hpp"
+#include "filter_definition.hpp"
 
 namespace suzerain {
 
@@ -402,6 +403,7 @@ enum type {
  *        operational details.
  * \param common Shared storage for interaction with an linear_operator
  *        implementation providing forcing and boundary conditions.
+ * \param fsdef Definitions for filter source.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
  *        then it will be used to provide manufactured forcing terms.
  * \param time Simulation time at which the operator should be applied.
@@ -437,6 +439,7 @@ template <bool ZerothSubstep,
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
+            const filter_definition &fsdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
             const real_t time,
