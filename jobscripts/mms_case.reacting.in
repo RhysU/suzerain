@@ -2,12 +2,12 @@
 set -e
 
 # Specify operational defaults which may be overridden in the environment
-: ${MMS_CASE_INITIAL:=@bindir@/perfect_init}
-: ${MMS_CASE_ADVANCE:=@bindir@/perfect_advance}
-: ${MMS_CASE_NPROC:=4}
+: ${MMS_DIM_CASE_INITIAL:=@bindir@/reacting_init}
+: ${MMS_DIM_CASE_ADVANCE:=@bindir@/reacting_advance}
+: ${MMS_DIM_CASE_NPROC:=4}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,gamma:,Re:,Ma:,Pr:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,Cp:,Cv:,Pr:,T0:,mu0:,T_wall:,N:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -25,10 +25,12 @@ np=
 tfinal=0.0005
 alpha=1
 beta=
-gamma=
-Re=
-Ma=
+Cp=
+Cv=
 Pr=
+T0=
+mu0=
+T_wall=
 no=()
 while true;
 do
@@ -49,10 +51,12 @@ do
   &--tfinal&Time to which manufactured field should be advanced
   &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
   &--beta&Temperature power law exponent within manufactured solution
-  &--gamma&Ratio of specific heats within manufactured solution
-  &--Re&Reynolds number within manufactured solution
-  &--Ma&Mach number within manufactured solution
-  &--Pr&Prandtl number within manufactured solution
+  &--Cp&Specific heat at constant pressure
+  &--Cv&Specific heat at constant volume
+  &--Pr&Prandtl number
+  &--T0&Reference temperature for viscosity power law
+  &--mu0&Reference viscosity for viscosity power law
+  &--T_wall&Wall temperature
   &--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
   &--no_x&Disable all X derivatives in the solution
   &--no_xy&Disable all X-Y mixed derivatives in the solution
@@ -64,7 +68,7 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 12 24 36 48 72 96"
+                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.reacting --np=4 --N={} -- --explicit' ::: 12 24 36 48 72 96"
                     echo "runs a sequence of MPI-parallel cases one after another passing"
                     echo "option --explicit to the solver to force explicit time stepping."
                     echo
@@ -84,10 +88,12 @@ EOF
         --tfinal)   tfinal="$2";   shift 2;;
         --alpha)    alpha="$2";    shift 2;;
         --beta)     beta="$2";     shift 2;;
-        --gamma)    gamma="$2";    shift 2;;
-        --Re)       Re="$2";       shift 2;;
-        --Ma)       Ma="$2";       shift 2;;
+        --Cp)       Cp="$2";       shift 2;;
+        --Cv)       Cv="$2";       shift 2;;
         --Pr)       Pr="$2";       shift 2;;
+        --T0)       T0="$2";       shift 2;;
+        --mu0)      mu0="$2";      shift 2;;
+        --T_wall)   T_wall="$2";   shift 2;;
         --N)        Nx=$(expr 2 \* "$2" / 3);
                     Ny="$2";
                     Nz=$(expr 2 \* "$2" / 3);
@@ -119,7 +125,7 @@ EOF
 done
 
 # Create or overwrite a directory and then change into it
-dir=$(printf "Ny%03d" $Ny)
+dir=$(printf "mms_dim_Ny%03d" $Ny)
 rm -rvf $dir
 mkdir -v $dir
 cd $dir
@@ -130,22 +136,24 @@ cd $dir
 # in section 4.1 of Tadmor, Eitan. "A review of numerical methods for nonlinear
 # partial differential equations." Bulletin of the American Mathematical
 # Society, Vol. 49, No. 4. (October 2012): 507-554
-"$MMS_CASE_INITIAL" initial.h5                           \
+"$MMS_DIM_CASE_INITIAL" initial.h5                           \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
-    ${gamma:+--gamma=$gamma}                             \
-    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}      \
+    ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
+    ${T0:+--T0=$T0} ${mu0:+--mu0=$mu0}                   \
+    ${T_wall:+--T_wall=$T_wall}                          \
     --mms=0       "${no[@]}"
-"$MMS_CASE_INITIAL" final.h5                             \
+"$MMS_DIM_CASE_INITIAL" final.h5                             \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
-    ${gamma:+--gamma=$gamma}                             \
-    ${Re:+--Re=$Re} ${Ma:+--Ma=$Ma} ${Pr:+--Pr=$Pr}      \
+    ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
+    ${T0:+--T0=$T0} ${mu0:+--mu0=$mu0}                   \
+    ${T_wall:+--T_wall=$T_wall}                          \
     --mms=$tfinal "${no[@]}"
 
 # Advance the initial condition until the final time is reached
 # Notice any unknown arguments from the command line appear here
-${np+mpiexec -np $np} "$MMS_CASE_ADVANCE" initial.h5                 \
+${np+mpiexec -np $np} "$MMS_DIM_CASE_ADVANCE" initial.h5                 \
     --statistics_nt=0 --statistics_dt=0 --status_nt=25 --status_dt=0 \
     --advance_nt=0 --advance_dt=$tfinal "$@"
 
