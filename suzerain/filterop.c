@@ -50,11 +50,13 @@
 #include "filterop.def"
 
 
-void suzerain_filteropz_source_apply(
+int
+suzerain_filteropz_source_apply(
     const complex_double alpha, complex_double * const x,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
+    const int Nz, const int dNz, const int dkbz, const int dkez,
+    const suzerain_filteropz_workspace *w)
 {
     assert(Ny >= 0);                // Sanity check Y direction
     assert(Nx >= 0);                // Sanity check X direction
@@ -73,26 +75,30 @@ void suzerain_filteropz_source_apply(
     const int absmin_wm = suzerain_inorder_wavenumber_absmin(Nx);
     const int absmin_wn = suzerain_inorder_wavenumber_absmin(Nz);
 
+    /* Allocate scratch space */
+    complex_double * const scratch 
+        = suzerain_blas_malloc(Ny * sizeof(scratch[0]));
+    const int incscratch = 1;
+    if (scratch == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
+    }
+
     // Overwrite x with alpha*D*x for storage, dealiasing details
     // Generalized loops are hideous but permit one linear pass through memory
-    int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
-    int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
+//     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
+//     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nkeeper  = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
+        const int nkeeper 
+            = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
         if (nkeeper) {
-            // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
-//             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mkeeper = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
+                const int mkeeper 
+                    = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
                     // FIXME: Call method to compute filter/filter source
 
-                    // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
-//                     const double mscale
-//                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-//                     const complex_double malpha = mscale*alpha_ipow;
 //                     suzerain_blas_zscal(Ny, malpha, x+moff, 1);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
@@ -102,15 +108,20 @@ void suzerain_filteropz_source_apply(
             memset(x+noff, 0, sz*sizeof(x[0]));  // Scale by zero
         }
     }
+
+    suzerain_blas_free(scratch);
+    return SUZERAIN_SUCCESS;
 }
 
 
-void suzerain_filteropz_source_accumulate(
+int
+suzerain_filteropz_source_accumulate(
     const complex_double alpha, const complex_double * const x,
     const complex_double beta,        complex_double * const y,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez)
+    const int Nz, const int dNz, const int dkbz, const int dkez,
+    const suzerain_filteropz_workspace *w)
 {
     assert(dkex == dkbx || dkez == dkbz || x != y); // Trivial or not aliased?
     assert(Ny >= 0);                                // Sanity check Y direction
@@ -130,26 +141,30 @@ void suzerain_filteropz_source_accumulate(
     const int absmin_wm = suzerain_inorder_wavenumber_absmin(Nx);
     const int absmin_wn = suzerain_inorder_wavenumber_absmin(Nz);
 
+    /* Allocate scratch space */
+    complex_double * const scratch 
+        = suzerain_blas_malloc(Ny * sizeof(scratch[0]));
+    const int incscratch = 1;
+    if (scratch == NULL) {
+        SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
+    }
+
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing details
     // Generalized loops are hideous but permit one linear pass through memory
-    int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
-    int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
+//     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
+//     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nkeeper = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
+        const int nkeeper 
+            = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
         if (nkeeper) {
-            // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
-//             const double nscale = gsl_sf_pow_int(twopioverLz*nfreqidx, dzcnt);
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mkeeper = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
+                const int mkeeper 
+                    = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
                     // FIXME: Call method to compute filter/filter source
 
-                    // Relies on gsl_sf_pow_int(0.0, 0) == 1.0
-//                     const double mscale
-//                         = nscale*gsl_sf_pow_int(twopioverLx*mfreqidx, dxcnt);
-//                     const complex_double malpha = mscale*alpha_ipow;
 //                     suzerain_blas_zaxpby(Ny, malpha, x+moff, 1, beta, y+moff, 1);
                 } else {
                     suzerain_blas_zscal(Ny, beta, y+moff, 1);
@@ -159,5 +174,8 @@ void suzerain_filteropz_source_accumulate(
             suzerain_blas_zscal(sz,beta,y+noff,1);
         }
     }
+
+    suzerain_blas_free(scratch);
+    return SUZERAIN_SUCCESS;
 }
 

@@ -503,12 +503,20 @@ suzerain_filteropz_filter(
  *                      in field \c z in the Z direction.
  * @param[in]     dkez  The last (exclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
+ * @param[in]     w     Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ *
+ * \memberof suzerain_filteropz_workspace
  */
-void suzerain_filteropz_source_apply(
+int
+suzerain_filteropz_source_apply(
     const complex_double alpha, complex_double *x,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez);
+    const int Nz, const int dNz, const int dkbz, const int dkez,
+    const suzerain_filteropz_workspace *w);
 
 /**
  * Given two complex-valued, wave-space fields \f$x\f$ and \f$y\f$, compute \f$
@@ -543,17 +551,25 @@ void suzerain_filteropz_source_apply(
  *                      in field \c z in the Z direction.
  * @param[in]     dkez  The last (exclusive) in-order frequency contained
  *                      in field \c z in the Z direction.
+ * @param[in]     w     Workspace to use.
+ *
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
  *
  * @see suzerain_filteropz_source_apply() for more information on the storage 
  *      layout for field \c x.  Field \c y has storage requirements identical 
  *      to those of \c x.
+ *
+ * \memberof suzerain_filteropz_workspace
  */
-void suzerain_filteropz_source_accumulate(
+int
+suzerain_filteropz_source_accumulate(
     const complex_double alpha, const complex_double *x,
     const complex_double beta,        complex_double *y,
     const int Ny,
     const int Nx, const int dNx, const int dkbx, const int dkex,
-    const int Nz, const int dNz, const int dkbz, const int dkez);
+    const int Nz, const int dNz, const int dkbz, const int dkez,
+    const suzerain_filteropz_workspace *w);
 
 #ifdef __cplusplus
 } /* extern "C" */
