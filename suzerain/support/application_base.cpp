@@ -222,9 +222,9 @@ application_base::establish_decomposition(
               << c_str(fftwdef->rigor_mpi) << ", "
               << c_str(fftwdef->rigor_fft) << ")");
     }
+    wisdom_broadcast(fftwdef->plan_wisdom);
     double begin = MPI_Wtime();
     fftw_set_timelimit(fftwdef->plan_timelimit);
-    wisdom_broadcast(fftwdef->plan_wisdom);
 #if defined(SUZERAIN_HAVE_P3DFFT) && defined(SUZERAIN_HAVE_UNDERLING)
     if (use_p3dfft) {
         dgrid = make_shared<pencil_grid_p3dfft>(
@@ -254,8 +254,7 @@ application_base::establish_decomposition(
         SUZERAIN_ENSURE((grid->dN == dgrid->global_physical_extent).all());
     }
     begin = MPI_Wtime();
-    wisdom_gather(fftwdef->plan_wisdom);
-    if (output_plan) {
+    if (wisdom_gather(fftwdef->plan_wisdom) && output_plan) {
         INFO0(who, "FFTW wisdom gathered and saved in additional "
               << (MPI_Wtime() - begin) << " seconds");
     }

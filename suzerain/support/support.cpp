@@ -150,17 +150,13 @@ void mpi_abort_on_error_handler(const char * reason,
     MPI_Abort(MPI_COMM_WORLD, errno ? errno : EXIT_FAILURE);
 }
 
-void wisdom_broadcast(const std::string& wisdom_file)
+bool wisdom_broadcast(const std::string& wisdom_file)
 {
-    if (wisdom_file.empty()) return; // Short circuit if no path provided
-
-    // Only load wisdom from disk if FFTW MPI is available via underling.
-    // Otherwise every rank hits the filesystem which is an O(N) bottleneck
-    // versus a fixed O(1) planning cost on each rank.
-#ifdef HAVE_UNDERLING
+    int success = 0;
+    if (wisdom_file.empty()) return success; // Short circuit if no path provided
 
     // If available, load wisdom from disk on rank 0 and broadcast it
-    // Attempt advisory locking to reduce processes stepping on each other
+    // Attempt advisory locking to avoid multiple jobs stepping on each other
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
 
         // Import any system-wide wisdom available
@@ -168,12 +164,12 @@ void wisdom_broadcast(const std::string& wisdom_file)
 
         FILE *w = fopen(wisdom_file.c_str(), "r");
         if (w) {
-            INFO0(who, "Loading wisdom from file " << wisdom_file);
+            INFO0(who, "Loading FFTW wisdom from file " << wisdom_file);
             if (flock(fileno(w), LOCK_SH)) {
                 WARN0(who, "LOCK_SH failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
-            fftw_import_wisdom_from_file(w);
+            success = fftw_import_wisdom_from_file(w);
             if (flock(fileno(w), LOCK_UN)) {
                 WARN0(who, "LOCK_UN failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
@@ -186,15 +182,14 @@ void wisdom_broadcast(const std::string& wisdom_file)
     }
     fftw_mpi_broadcast_wisdom(MPI_COMM_WORLD);
 
-#endif /* HAVE_UNDERLING */
+    MPI_Bcast(&success, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    return success;
 }
 
-void wisdom_gather(const std::string& wisdom_file)
+bool wisdom_gather(const std::string& wisdom_file)
 {
-    if (wisdom_file.empty()) return; // Short circuit if no path provided
-
-    // Only save wisdom to disk if FFTW MPI is available via underling.
-#ifdef HAVE_UNDERLING
+    int success = 0;
+    if (wisdom_file.empty()) return success; // Short circuit if no path provided
 
     // If available, gather wisdom and then write to disk on rank 0
     // Attempt advisory locking to reduce processes stepping on each other
@@ -202,7 +197,7 @@ void wisdom_gather(const std::string& wisdom_file)
     if (mpi::comm_rank(MPI_COMM_WORLD) == 0) {
         FILE *w = fopen(wisdom_file.c_str(), "w+");
         if (w) {
-            INFO0(who, "Saving wisdom to file " << wisdom_file);
+            INFO0(who, "Saving FFTW wisdom to file " << wisdom_file);
             if (flock(fileno(w), LOCK_EX)) {
                 WARN0(who, "LOCK_EX failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
@@ -212,14 +207,15 @@ void wisdom_gather(const std::string& wisdom_file)
                 WARN0(who, "LOCK_UN failed on wisdom file "
                       << wisdom_file << ": " << strerror(errno));
             }
-            fclose(w);
+            success = !fclose(w);
         } else {
             WARN0(who, "Unable to open wisdom file "
                   << wisdom_file << ": " << strerror(errno));
         }
     }
 
-#endif /* HAVE_UNDERLING */
+    MPI_Bcast(&success, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    return success;
 }
 
 real_t create(const int ndof,

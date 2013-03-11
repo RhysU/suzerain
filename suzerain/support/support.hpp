@@ -95,11 +95,19 @@ void mpi_abort_on_error_handler(const char * reason,
                                 const char * origin,
                                 const char * strerror);
 
-/** If wisdom_file is not empty, read wisdom on rank zero and broadcast */
-void wisdom_broadcast(const std::string& wisdom_file);
+/**
+ * If wisdom_file is not empty, read wisdom on rank zero and broadcast.
+ *
+ * @return True if wisdom was successfully broadcast.  False otherwise.
+ */
+bool wisdom_broadcast(const std::string& wisdom_file);
 
-/** If wisdom_file is not empty, gather wisdom to rank zero and write it */
-void wisdom_gather(const std::string& wisdom_file);
+/**
+ * If wisdom_file is not empty, gather wisdom to rank zero and write it.
+ *
+ * @return True if wisdom was successfully gathered.  False otherwise.
+ */
+bool wisdom_gather(const std::string& wisdom_file);
 
 // FIXME Remove and place logic into application_base
 /**
