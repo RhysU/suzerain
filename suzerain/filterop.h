@@ -462,6 +462,99 @@ suzerain_filteropz_filter(
 
 /**@}*/
 
+/**
+ * Given a complex-valued, wave-space field \f$x\f$, compute 
+ * \f$ x \leftarrow{} \alpha (F-I) x\f$.  
+ * The implementation accounts for the field potentially being dealiased,
+ * distributed across multiple machines, and representing a domain of arbitrary
+ * length in the X and Z directions.  This routine may also be used to
+ * efficiently zero higher wavenumbers used only for dealiasing when <tt>dxcnt
+ * == 0</tt>, <tt>dzcnt == 0</tt> (where usually \f$\alpha = 1\f$).  All
+ * Nyquist modes \e are zeroed when <tt>dxcnt == 0</tt>, <tt>dzcnt == 0</tt>.
+ *
+ * The input and output data \c x is stored column-major over the Y direction
+ * (index range <tt>0</tt> to <tt>Ny-1</tt>), X direction (index range
+ * <tt>dkbx</tt> to <tt>dkex</tt>), and Z direction (index range <tt>dkbz</tt>
+ * to <tt>dkez</tt>).  This layout is equivalent to Dmitry Pekurovsky's P3DFFT
+ * storage order when Y is specified to be STRIDE1 in wave space.  Complex
+ * values are stored as C arrays of length two with the real part preceding
+ * the imaginary part.
+ *
+ * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
+ * @param[in,out] x     Input and output wave-space field
+ * @param[in]     Ny    Number of points in the Y direction
+ * @param[in]     Nx    Number of points in the X direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNx   Number of dealiased points in the X direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbx  The first (inclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     dkex  The last (exclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     Nz    Number of points in the Z direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNz   Number of dealiased points in the Z direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbz  The first (inclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ * @param[in]     dkez  The last (exclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ */
+void suzerain_filteropz_source_apply(
+    const complex_double alpha, complex_double *x,
+    const int Ny,
+    const int Nx, const int dNx, const int dkbx, const int dkex,
+    const int Nz, const int dNz, const int dkbz, const int dkez);
+
+/**
+ * Given two complex-valued, wave-space fields \f$x\f$ and \f$y\f$, compute \f$
+ * y \leftarrow{} \alpha (F-I) x + \beta{}y\f$.  
+ * The implementation accounts for the field potentially
+ * being dealiased, distributed across multiple machines, and representing a
+ * domain of arbitrary length in the X and Z directions.
+ *
+ * @param[in]     alpha Complex-valued scaling factor \f$\alpha\f$
+ * @param[in]     x     Input wave-space field to be differentiated
+ * @param[in]     beta  Complex-valued scaling factor \f$\beta\f$
+ * @param[in,out] y     Input and output wave-space field where
+ *                      accumulation takes place.
+ * @param[in]     Ny    Number of points in the Y direction
+ * @param[in]     Nx    Number of points in the X direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNx   Number of dealiased points in the X direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbx  The first (inclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     dkex  The last (exclusive) in-order frequency contained
+ *                      in field \c x in the X direction.
+ * @param[in]     Nz    Number of points in the Z direction, which
+ *                      determines the maximum wavenumbers which are
+ *                      retained when differentiating.
+ * @param[in]     dNz   Number of dealiased points in the Z direction,
+ *                      which determines of offsets are translated into
+ *                      frequencies.
+ * @param[in]     dkbz  The first (inclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ * @param[in]     dkez  The last (exclusive) in-order frequency contained
+ *                      in field \c z in the Z direction.
+ *
+ * @see suzerain_filteropz_source_apply() for more information on the storage 
+ *      layout for field \c x.  Field \c y has storage requirements identical 
+ *      to those of \c x.
+ */
+void suzerain_filteropz_source_accumulate(
+    const complex_double alpha, const complex_double *x,
+    const complex_double beta,        complex_double *y,
+    const int Ny,
+    const int Nx, const int dNx, const int dkbx, const int dkex,
+    const int Nz, const int dNz, const int dkbz, const int dkez);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
