@@ -51,21 +51,21 @@ namespace suzerain { namespace reacting {
 
   // Indices for state fields
   struct ndx { enum {
-      e,
-      mx,
-      my,
-      mz,
-      rho,
-      species
-    }; };
+          e,
+          mx,
+          my,
+          mz,
+          rho,
+          species
+      }; };
 
   // Indices for directions
   struct dir { enum {
-      y,
-      x,
-      z,
-      count
-    }; };
+          y,
+          x,
+          z,
+          count
+      }; };
 
   // Indices for auxiliary storage.
   //
@@ -74,37 +74,37 @@ namespace suzerain { namespace reacting {
   // so I didn't do it.
   //
   struct aux { enum {
-      kap     = 0,
-      T       = 1,
-      gT      = 2,
-      e       = 2 + 1*dir::count,
-      mx      = 2 + 2*dir::count,
-      my      = 2 + 3*dir::count,
-      mz      = 2 + 4*dir::count,
-      rho     = 2 + 5*dir::count,
-      species = 2 + 6*dir::count
-    }; };
+          kap     = 0,
+          T       = 1,
+          gT      = 2,
+          e       = 2 + 1*dir::count,
+          mx      = 2 + 2*dir::count,
+          my      = 2 + 3*dir::count,
+          mz      = 2 + 4*dir::count,
+          rho     = 2 + 5*dir::count,
+          species = 2 + 6*dir::count
+      }; };
 
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
           class ManufacturedSolution,
-	  class ConstitutiveModels>
+          class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
             const filter_definition &fsdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
+            const suzerain::bsplineop_luz& massluz,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
-
+    
     const size_t Ns = cmods.Ns();
-
     assert(Ns>0);
 
     // Shorthand
@@ -115,45 +115,34 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::min;
     using std::size_t;
     using std::sqrt;
-
+    
     // State enters method as coefficients in X, Y, and Z directions
 
-
-   // Get total number of conserved state fields
-    //const int state_count = Ns+4; // = (Ns-1) species + 5 (rho, ru, rv, rw, rE)
+    // Get total number of conserved state fields
     const size_t state_count = Ns+4; // = (Ns-1) species + 5 (rho, ru, rv, rw, rE)
 
     // Get total number of fields in aux storage
     const size_t aux_count = (aux::species      +   // everything *except* species derivatives
                               dir::count*(Ns-1) );  // spatial derivatives of species
-
-    // FIXME: Will have to change for reacting!!
-    // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    enum { swave_count = 5 };
-    assert(static_cast<int>(ndx::e  ) < swave_count);
-    assert(static_cast<int>(ndx::mx ) < swave_count);
-    assert(static_cast<int>(ndx::my ) < swave_count);
-    assert(static_cast<int>(ndx::mz ) < swave_count);
-    assert(static_cast<int>(ndx::rho) < swave_count);
-
+    
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     scoped_ptr<state_type> _auxw_ptr(
-	    support::allocate_padded_state<state_type>(
-		aux_count, o.dgrid));                               // RAII
+            support::allocate_padded_state<state_type>(
+                aux_count, o.dgrid));                               // RAII
     state_type &auxw = *_auxw_ptr;                                  // Brevity
-
+    
     // Auxiliary storage for filter source:
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     // Number of fields for filter source is equal to number of variables
     scoped_ptr<state_type> _fsrcw_ptr(
-	    support::allocate_padded_state<state_type>(
-		state_count, o.dgrid));                               // RAII
-    state_type &fsrcw = *_fsrcw_ptr;                                   // Brevity
+            support::allocate_padded_state<state_type>(
+                state_count, o.dgrid));                               // RAII
+    state_type &fsrcw = *_fsrcw_ptr;                                  // Brevity
 
     // Sanity check incoming swave's and auxw's shape and contiguity
-    SUZERAIN_ENSURE(swave.shape()[0] == swave_count);
+    SUZERAIN_ENSURE(swave.shape()[0] == state_count);
     SUZERAIN_ENSURE(swave.shape()[1] == (unsigned) o.dgrid.local_wave_extent.y());
     SUZERAIN_ENSURE(swave.shape()[2] == (unsigned) o.dgrid.local_wave_extent.x());
     SUZERAIN_ENSURE(swave.shape()[3] == (unsigned) o.dgrid.local_wave_extent.z());
@@ -218,10 +207,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Energy (no derivatives)
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
-
+    
     // FIXME: filter source 
     //        compute for energy
-
+    
     // Everything else (all spatial derivatives)
     for (size_t var = ndx::mx; var<state_count; ++var) {
 
@@ -259,16 +248,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //
     //********************************************************************
 
-    // // Compute derived constants before inner loops
-    // const real_t alpha13          = alpha + real_t(1)/real_t(3);
-    // const real_t inv_Re           = 1 / Re;
-    // const real_t inv_Ma2          = 1 / (Ma * Ma);
-    // const real_t Ma2_over_Re      = (Ma * Ma) / Re;
-    // const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
+    // Compute derived constants before inner loops
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
     const real_t lambda2_x        = o.lambda2_x;
     const real_t lambda2_z        = o.lambda2_z;
+
+    // FIXME: Handle diffusive dt constraints properly (see below)
     //const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
 
     // Type of Boost.Accumulator to use for summation processes.
@@ -328,17 +314,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          && Linearize != linearize::none) {  // References and mean velocity
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
-	
-	// FIXME: Have to add this code back (w/ appropriate mods) to
-	// support implicit reacting
-	FATAL0("suzerain::reacting::apply_navier_stokes_spatial_operator only supports linearize::none");
+        
+        // FIXME: Have to add this code back (w/ appropriate mods) to
+        // support implicit reacting
+        FATAL0("suzerain::reacting::apply_navier_stokes_spatial_operator only supports linearize::none");
 
     } else {                                 // Mean velocity profile only
-
+        
         SUZERAIN_TIMER_SCOPED("mean velocity profile");
-
-	// NOTE: I'm leaving this block alone w/out really looking at it.
-	// TODO: Figure out if/how it must change for reacting.
+        
+        // NOTE: I'm leaving this block alone w/out really looking at it.
+        // TODO: Figure out if/how it must change for reacting.
 
         // Zero all reference quantities on fully-explicit zeroth substep
         if (ZerothSubstep && Linearize == linearize::none) {
@@ -435,218 +421,213 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
-
+        
         // Wall-normal operator eigenvalue estimates depend on location
         const real_t lambda1_y = o.lambda1_y(j);
         const real_t lambda2_y = o.lambda2_y(j);
-
+        
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
                                 * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
+            
+            // Unpack density-related quantities
+            const real_t   rho         ( sphys(ndx::rho,    offset));
+            
+            const real_t  irho = 1.0/rho;
+            
+            const Vector3r grad_rho    (  auxp(aux::rho+dir::x,  offset),
+                                          auxp(aux::rho+dir::y,  offset),
+                                          auxp(aux::rho+dir::z,  offset));
+            
+            // Unpack momentum-related quantities
+            const Vector3r m    ( sphys(ndx::mx, offset),
+                                  sphys(ndx::my, offset),
+                                  sphys(ndx::mz, offset));
+            const real_t   div_m(  auxp(aux::mx+dir::x, offset)
+                                 + auxp(aux::my+dir::y, offset)
+                                 + auxp(aux::mz+dir::z, offset));
+            const Matrix3r grad_m;
+            const_cast<Matrix3r&>(grad_m) <<
+                auxp(aux::mx+dir::x,  offset),
+                auxp(aux::mx+dir::y,  offset),
+                auxp(aux::mx+dir::z,  offset),
+                auxp(aux::my+dir::x,  offset),
+                auxp(aux::my+dir::y,  offset),
+                auxp(aux::my+dir::z,  offset),
+                auxp(aux::mz+dir::x,  offset),
+                auxp(aux::mz+dir::y,  offset),
+                auxp(aux::mz+dir::z,  offset);
 
-            // TODO: Add physics calculations!!!
+            // Unpack total energy-related quantities
+            const real_t e        (sphys(ndx::e,       offset));
+            
+            // Unpack species variables
+            // NOTE: In species vector, idx 0 is the dilluter (the species
+            // that is not explicitly part of the state vector)
+            species(0) = rho;
 
-	    // Unpack density-related quantities
-	  const real_t   rho         ( sphys(ndx::rho,    offset));
-
-	  const real_t  irho = 1.0/rho;
-	  
-	  const Vector3r grad_rho    (  auxp(aux::rho+dir::x,  offset),
-					auxp(aux::rho+dir::y,  offset),
-					auxp(aux::rho+dir::z,  offset));
-	  
-	  // Unpack momentum-related quantities
-	  const Vector3r m    ( sphys(ndx::mx, offset),
-				sphys(ndx::my, offset),
-				sphys(ndx::mz, offset));
-	  const real_t   div_m(  auxp(aux::mx+dir::x, offset)
-				 + auxp(aux::my+dir::y, offset)
-				 + auxp(aux::mz+dir::z, offset));
-	  const Matrix3r grad_m;
-	  const_cast<Matrix3r&>(grad_m) <<
-	                                   auxp(aux::mx+dir::x,  offset),
-	                                   auxp(aux::mx+dir::y,  offset),
-           	                           auxp(aux::mx+dir::z,  offset),
-                                           auxp(aux::my+dir::x,  offset),
-                                           auxp(aux::my+dir::y,  offset),
-                                           auxp(aux::my+dir::z,  offset),
-                                           auxp(aux::mz+dir::x,  offset),
-                                           auxp(aux::mz+dir::y,  offset),
-                                           auxp(aux::mz+dir::z,  offset);
-
-	  // Unpack total energy-related quantities
-	  const real_t e        (sphys(ndx::e,       offset));
-	  
-	  // Unpack species variables
-	  // NOTE: In species vector, idx 0 is the dilluter (the species
-	  // that is not explicitly part of the state vector)
-	  species(0) = rho;
-
-	  grad_species(0,0) = grad_rho(0);
-	  grad_species(0,1) = grad_rho(1);
-	  grad_species(0,2) = grad_rho(2);
-	  
-	  for (unsigned int s=1; s<Ns; ++s) {
-	    species(s) = sphys(ndx::species + s - 1, offset);
-	    
-	    grad_species(s,0) = auxp(aux::species + s - 1 + dir::x, offset);
-	    grad_species(s,1) = auxp(aux::species + s - 1 + dir::y, offset);
-	    grad_species(s,2) = auxp(aux::species + s - 1 + dir::z, offset);
-	    
-	    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
-	    species(0)        -= species(s);
-	    
-	    grad_species(0,0) -= grad_species(s,0);
-	    grad_species(0,1) -= grad_species(s,1);
-	    grad_species(0,2) -= grad_species(s,2);
-	  }
-	  
-	  // Compute mass fractions and mass fraction gradients
-	  for (unsigned int s=0; s<Ns; ++s) {
-	    
-	    cs(s) = irho * species(s);
-	    
-	    grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
-	    grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
-	    grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
-	    
-	  }
-	  
-	  
-	  // Compute velocity-related quantities
-	  const Vector3r u          = suzerain::rholut::u(rho, m);
-	  const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
-	  const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
-	  
-	  
-	  // Compute temperature, pressure, mass diffusivities,
-	  // viscosity, thermal conductivity, species enthalpies, and
-	  // reaction source terms
-	  real_t T, p, mu, kap;
-	  cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
-		         T, p, Ds.data(), mu, kap, hs.data(), om.data());
-	  
-	  // TODO: Compute bulk viscosity.
-	  // TODO: Get alpha here
-	  const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
-	  
-	  // Compute quantities related to the viscous stress tensor
-	  const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
-	  
-	  
-	  // Place to sum species fluxes from Fick's model
-	  Vector3r sdifftot (0.0, 0.0, 0.0);
-	  
-	  // Compute Fick's model contribution to diffusive fluxes and sum
-	  for (unsigned int s=0; s<Ns; ++s) {
-	    
-	    sdiff(s,0) = rho * Ds(s) * grad_cs(s,0);
-	    sdiff(s,1) = rho * Ds(s) * grad_cs(s,1);
-	    sdiff(s,2) = rho * Ds(s) * grad_cs(s,2);
-	    
-	    sdifftot(0) += sdiff(s,0);
-	    sdifftot(1) += sdiff(s,1);
-	    sdifftot(2) += sdiff(s,2);
-	    
-	  }
-	  
-	  // Subtract off cs*sdifftot to get SCEBD fluxes
-	  for (unsigned int s=0; s<Ns; ++s) {
-	    
-	    sdiff(s,0) -= cs(s) * sdifftot(0);
-	    sdiff(s,1) -= cs(s) * sdifftot(1);
-	    sdiff(s,2) -= cs(s) * sdifftot(2);
-	    
-	  }
-	  
-	  
-	  // Source terms get accumulated into state storage
-	  //
-	  // NOTE: Sign correct for source appearing on the RHS---i.e.,
-	  // U_t + div(F) = S.
-	  //
-	  // TODO: Add slow growth terms.
-	  sphys(ndx::e  , offset) = 0.0;
-	  sphys(ndx::mx , offset) = 0.0;
-	  sphys(ndx::my , offset) = 0.0;
-	  sphys(ndx::mz , offset) = 0.0;
-	  sphys(ndx::rho, offset) = 0.0;
-	  
-	  for (unsigned int s=1; s<Ns; ++s) {
-	    sphys(ndx::rho+s, offset) = om(s);
-	  }
-	  
-	  
-	  // Fluxes get accumulated into auxp
-	  //
-	  // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
-	  // U_t + div(F) = S(U).
-	  //
-	  // TODO: "Eigenify" these calcs where appropriate
-	  
-	  Vector3r vwork = tau*u; // TODO: check that this does what I think
-	  
-	  //----------------------------------------------------------------------
-	  // ENERGY                    = u     * (rho*H) - viscous work ...
-	  auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
-	  auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
-	  auxp(aux::e +dir::z, offset) = u.z() * (e + p) - vwork.z() ;
-	  
-	  // ... - species enthalpy term
-	  if (Ns>1) {
-	    // NOTE: If Ns=1, we should have sdiff(0,*) = 0.0.  Thus,
-	    // this loop would be entered but shouldn't do anything.
-	    for (unsigned int s=0; s<Ns; ++s) {
-	      auxp(aux::e +dir::x, offset) -= sdiff(s, 0) * hs(s);
-	      auxp(aux::e +dir::y, offset) -= sdiff(s, 1) * hs(s);
-	      auxp(aux::e +dir::z, offset) -= sdiff(s, 2) * hs(s);
-	    }
-	  }
-	  // NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
-	  //----------------------------------------------------------------------
-	  
-	  //----------------------------------------------------------------------
-	  // MOMENTUM                  = convection     - viscous    + pressure
-	  auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
-	  auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
-	  auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
-	  
-	  auxp(aux::my+dir::x, offset) = u.y() * m.x()  -  tau(0,1)       ;
-	  auxp(aux::my+dir::y, offset) = u.y() * m.y()  -  tau(1,1)  +  p ;
-	  auxp(aux::my+dir::z, offset) = u.y() * m.z()  -  tau(2,1)       ;
-	  
-	  auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
-	  auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
-	  auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
-	  //----------------------------------------------------------------------
-	  
-	  //----------------------------------------------------------------------
-	  // mass                       = mass flux
-	  auxp(aux::rho+dir::x, offset) = m.x();
-	  auxp(aux::rho+dir::y, offset) = m.y();
-	  auxp(aux::rho+dir::z, offset) = m.z();
-	  //----------------------------------------------------------------------
-	  
-	  //----------------------------------------------------------------------
-	  // species
-	  for (unsigned int s=0; s<Ns-1; ++s) {
-	    // NOTE: species(0) is the species that is not explicitly carried!
-	    
-	    //                                = convection     - diffusion
-	    auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
-	    auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
-	    auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
-	    
-	  }
-	  //----------------------------------------------------------------------
-	  
-	  // Finally, put temperature and thermal conductivity data
-	  // into auxp for later use
-	  auxp(aux::kap, offset) = kap;
-	  auxp(aux::T  , offset) = T;
-	  
+            grad_species(0,0) = grad_rho(0);
+            grad_species(0,1) = grad_rho(1);
+            grad_species(0,2) = grad_rho(2);
+            
+            for (unsigned int s=1; s<Ns; ++s) {
+                species(s) = sphys(ndx::species + s - 1, offset);
+                
+                grad_species(s,0) = auxp(aux::species + s - 1 + dir::x, offset);
+                grad_species(s,1) = auxp(aux::species + s - 1 + dir::y, offset);
+                grad_species(s,2) = auxp(aux::species + s - 1 + dir::z, offset);
+                
+                // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                species(0)        -= species(s);
+                
+                grad_species(0,0) -= grad_species(s,0);
+                grad_species(0,1) -= grad_species(s,1);
+                grad_species(0,2) -= grad_species(s,2);
+            }
+            
+            // Compute mass fractions and mass fraction gradients
+            for (unsigned int s=0; s<Ns; ++s) {
+                
+                cs(s) = irho * species(s);
+                
+                grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
+                grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
+                grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
+                
+            }
+          
+          
+            // Compute velocity-related quantities
+            const Vector3r u          = suzerain::rholut::u(rho, m);
+            const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
+            const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
+            
+            
+            // Compute temperature, pressure, mass diffusivities,
+            // viscosity, thermal conductivity, species enthalpies, and
+            // reaction source terms
+            real_t T, p, mu, kap;
+            cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
+                           T, p, Ds.data(), mu, kap, hs.data(), om.data());
+            
+            const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
+          
+            // Compute quantities related to the viscous stress tensor
+            const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
+          
+            // Place to sum species fluxes from Fick's model
+            Vector3r sdifftot (0.0, 0.0, 0.0);
+            
+            // Compute Fick's model contribution to diffusive fluxes and sum
+            for (unsigned int s=0; s<Ns; ++s) {
+                
+                sdiff(s,0) = rho * Ds(s) * grad_cs(s,0);
+                sdiff(s,1) = rho * Ds(s) * grad_cs(s,1);
+                sdiff(s,2) = rho * Ds(s) * grad_cs(s,2);
+                
+                sdifftot(0) += sdiff(s,0);
+                sdifftot(1) += sdiff(s,1);
+                sdifftot(2) += sdiff(s,2);
+                
+            }
+            
+            // Subtract off cs*sdifftot to get SCEBD fluxes
+            for (unsigned int s=0; s<Ns; ++s) {
+                
+                sdiff(s,0) -= cs(s) * sdifftot(0);
+                sdiff(s,1) -= cs(s) * sdifftot(1);
+                sdiff(s,2) -= cs(s) * sdifftot(2);
+                
+            }
+          
+          
+            // Source terms get accumulated into state storage
+            //
+            // NOTE: Sign correct for source appearing on the RHS---i.e.,
+            // U_t + div(F) = S.
+            //
+            // TODO: Add slow growth terms.
+            sphys(ndx::e  , offset) = 0.0;
+            sphys(ndx::mx , offset) = 0.0;
+            sphys(ndx::my , offset) = 0.0;
+            sphys(ndx::mz , offset) = 0.0;
+            sphys(ndx::rho, offset) = 0.0;
+            
+            for (unsigned int s=1; s<Ns; ++s) {
+                sphys(ndx::rho+s, offset) = om(s);
+            }
+          
+          
+            // Fluxes get accumulated into auxp
+            //
+            // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
+            // U_t + div(F) = S(U).
+            //
+            // TODO: "Eigenify" these calcs where appropriate
+            
+            Vector3r vwork = tau*u; // TODO: check that this does what I think
+            
+            //----------------------------------------------------------------------
+            // ENERGY                    = u     * (rho*H) - viscous work ...
+            auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
+            auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
+            auxp(aux::e +dir::z, offset) = u.z() * (e + p) - vwork.z() ;
+            
+            // ... - species enthalpy term
+            if (Ns>1) {
+                // NOTE: If Ns=1, we should have sdiff(0,*) = 0.0.  Thus,
+                // this loop would be entered but shouldn't do anything.
+                for (unsigned int s=0; s<Ns; ++s) {
+                    auxp(aux::e +dir::x, offset) -= sdiff(s, 0) * hs(s);
+                    auxp(aux::e +dir::y, offset) -= sdiff(s, 1) * hs(s);
+                    auxp(aux::e +dir::z, offset) -= sdiff(s, 2) * hs(s);
+                }
+            }
+            // NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
+            //----------------------------------------------------------------------
+            
+            //----------------------------------------------------------------------
+            // MOMENTUM                  = convection     - viscous    + pressure
+            auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
+            auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
+            auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
+            
+            auxp(aux::my+dir::x, offset) = u.y() * m.x()  -  tau(0,1)       ;
+            auxp(aux::my+dir::y, offset) = u.y() * m.y()  -  tau(1,1)  +  p ;
+            auxp(aux::my+dir::z, offset) = u.y() * m.z()  -  tau(2,1)       ;
+            
+            auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
+            auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
+            auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
+            //----------------------------------------------------------------------
+          
+            //----------------------------------------------------------------------
+            // mass                       = mass flux
+            auxp(aux::rho+dir::x, offset) = m.x();
+            auxp(aux::rho+dir::y, offset) = m.y();
+            auxp(aux::rho+dir::z, offset) = m.z();
+            //----------------------------------------------------------------------
+            
+            //----------------------------------------------------------------------
+            // species
+            for (unsigned int s=0; s<Ns-1; ++s) {
+                // NOTE: species(0) is the species that is not explicitly carried!
+                
+                //                                = convection     - diffusion
+                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
+                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
+                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
+                
+            }
+            //----------------------------------------------------------------------
+            
+            // Finally, put temperature and thermal conductivity data
+            // into auxp for later use
+            auxp(aux::kap, offset) = kap;
+            auxp(aux::T  , offset) = T;
+            
             // Determine the minimum observed stable time step when necessary
             // This logic used to call some canned routines, but additional
             // monitoring requirements forced inlining many of these details.
@@ -662,9 +643,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 using math::minnan;
 
                 // See timestepper::convective_stability_criterion
-		//
-		// FIXME: Use cmods to compute speed of sound!!!
-		const real_t a = sqrt(1.4*287.0*T);
+                //
+                // FIXME: Use cmods to compute speed of sound!!!
+                const real_t a = sqrt(1.4*287.0*T);
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
@@ -687,7 +668,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // to zero within the convective_stability_criterion.
                     // Fluctuating velocity is taken relative to references.
                     case linearize::rhome:
- 		        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
                         // ua_l1_x       = abs(u.x()            ) * lambda1_x;
                         // ua_l1_y       = abs(u.y()            ) * lambda1_y;
@@ -716,10 +697,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 convfluct_z_delta_t   = min   (convfluct_z_delta_t,
                         evmaxmag_imag / fluct_ua_l1_z);
 
-		//std::cout << "convtotal_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
-		//std::cout << "convfluct_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
-
-
                 // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
@@ -732,9 +709,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                     // Explicit treatment forces a zero reference diffusivity
                     case linearize::none:
-		        //diffusivity = maxdiffconst * nu;
-		        // FIXME: Handle thermal conductivity and mass diffusivities correctly!
-		        diffusivity = nu;
+                        //diffusivity = maxdiffconst * nu;
+                        // FIXME: Handle thermal conductivity and mass diffusivities correctly!
+                        diffusivity = mu*max(1.4/0.7, max(real_t(1), cmods.alpha));
+                        diffusivity /= rho;
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real
                                 / diffusivity
@@ -750,7 +728,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // Implicit diffusion permits removing a reference value.
                     // Antidiffusive (nu - ref_nu) is fine and not computed.
                     case linearize::rhome:
-		        SUZERAIN_ERROR_REPORT("Unimplemented!",
+                        SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
                         // diffusivity = nu - ref_nu;    // Compute sign wrt ref.
                         // if (diffusivity <= 0) break;  // NaN => false, proceed
@@ -768,13 +746,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         break;
 
 
-			//std::cout << "diffusive_xyz_delta_t = " << convtotal_xyz_delta_t << std::endl;
-
                 } // end switch(Linearize)
             } // end if(ZerothSubstep}
-
+            
         } // end X // end Z
-
+        
     } // end Y
     SUZERAIN_TIMER_END("nonlinear right hand sides (pass 1)");
 
@@ -790,15 +766,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // This is the second transform stage.
 
 
-    // (1) Temperature from physical to wave space
+    // (1a) Temperature from physical to wave space (still collocation in y)
     o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
-
-
-    // TODO: Apply inverse mass matrix to get to pure coefficient space
-
-    // ...and zero wavenumbers present only for dealiasing
-    o.zero_dealiasing_modes(auxw, aux::T);
-
+    
+    // (1b) Apply inverse mass matrix to get to pure coefficient space
+    o.bop_solve(massluz, auxw, aux::T);
+    
+    // ... and zero wavenumbers present only for dealiasing 
+    // while simultaneously normalizing FFT
+    o.diffwave_apply(0, 0, 1.0/(o.grid.dN.x() * o.grid.dN.z()), auxw, aux::T);
 
     // (2) Get derivatives.
     //
@@ -826,30 +802,30 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          j < o.dgrid.local_physical_end.y();
          ++j) {
 
-      // Iterate across the j-th ZX plane
-      const int last_zxoffset = offset
-                              + o.dgrid.local_physical_extent.z()
-                              * o.dgrid.local_physical_extent.x();
-      for (; offset < last_zxoffset; ++offset) {
-
-        // Thermal conductivity
-        const real_t   kap       ( auxp(aux::kap     ,   offset));
-
-        // Extract grad(T)
-        const Vector3r grad_T    ( auxp(aux::gT+dir::x,  offset),
-                                   auxp(aux::gT+dir::y,  offset),
-                                   auxp(aux::gT+dir::z,  offset));
-
-        // Accumulate into energy fluxes
-        //
-        // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
-        // U_t + div(F) = S(U).
-        auxp(aux::e +dir::x, offset) -= kap*grad_T.x();
-        auxp(aux::e +dir::y, offset) -= kap*grad_T.y();
-        auxp(aux::e +dir::z, offset) -= kap*grad_T.z();
-
-
-      } // end x,z
+        // Iterate across the j-th ZX plane
+        const int last_zxoffset = offset
+                                + o.dgrid.local_physical_extent.z()
+                                * o.dgrid.local_physical_extent.x();
+        for (; offset < last_zxoffset; ++offset) {
+            
+            // Thermal conductivity
+            const real_t   kap       ( auxp(aux::kap,   offset));
+            
+            // Extract grad(T)
+            const Vector3r grad_T    ( auxp(aux::gT+dir::x, offset),
+                                       auxp(aux::gT+dir::y, offset),
+                                       auxp(aux::gT+dir::z, offset));
+            
+            // Accumulate into energy fluxes
+            //
+            // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
+            // U_t + div(F) = S(U).
+            auxp(aux::e +dir::x, offset) -= kap*grad_T.x();
+            auxp(aux::e +dir::y, offset) -= kap*grad_T.y();
+            auxp(aux::e +dir::z, offset) -= kap*grad_T.z();
+            
+            
+        } // end x,z
     } // end y
     SUZERAIN_TIMER_END("nonlinear right hand sides (pass 2)");
 
@@ -861,131 +837,112 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Dereference the msoln smart pointer outside the compute loop
         const ManufacturedSolution &ms = *msoln;
-
+        
         for (int offset = 0, j = o.dgrid.local_physical_start.y();
              j < o.dgrid.local_physical_end.y();
              ++j) {
-
+            
             const real_t y = o.y(j);
 
             for (int k = o.dgrid.local_physical_start.z();
-                k < o.dgrid.local_physical_end.z();
-                ++k) {
-
+                 k < o.dgrid.local_physical_end.z();
+                 ++k) {
+                
                 const real_t z = o.z(k);
-
+                
                 for (int i = o.dgrid.local_physical_start.x();
-                    i < o.dgrid.local_physical_end.x();
-                    ++i, /* NB */ ++offset) {
-
+                     i < o.dgrid.local_physical_end.x();
+                     ++i, /* NB */ ++offset) {
+                    
                     const real_t x = o.x(i);
-
+                    
                     real_t Q_rho, Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E;
-
+                    
                     // Would prefer
-    		    //   ms.Q_conservative(x, y, z, time, Q_rho,
-    		    //                     Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
+                    //   ms.Q_conservative(x, y, z, time, Q_rho,
+                    //                     Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
                     // but see MASA ticket #2794
-
-    		    Q_rho   = ms.Q_rho (x, y, z, time);
-    		    Q_rho_u = ms.Q_rhou(x, y, z, time);
-    		    Q_rho_v = ms.Q_rhov(x, y, z, time);
-    		    Q_rho_w = ms.Q_rhow(x, y, z, time);
-    		    Q_rho_E = ms.Q_rhoe(x, y, z, time);
-
+                    
+                    Q_rho   = ms.Q_rho (x, y, z, time);
+                    Q_rho_u = ms.Q_rhou(x, y, z, time);
+                    Q_rho_v = ms.Q_rhov(x, y, z, time);
+                    Q_rho_w = ms.Q_rhow(x, y, z, time);
+                    Q_rho_E = ms.Q_rhoe(x, y, z, time);
+                    
                     sphys(ndx::e,   offset) += Q_rho_E;
                     sphys(ndx::mx,  offset) += Q_rho_u;
                     sphys(ndx::my,  offset) += Q_rho_v;
                     sphys(ndx::mz,  offset) += Q_rho_w;
                     sphys(ndx::rho, offset) += Q_rho;
-
+                    
                 } // end X
-
+                
             } // end Z
-
+            
         } // end Y
-
+        
     } // end msoln
-
-
+    
+    
     // TODO: Anything related to BCs that must be done in physical
     // space.
-
+    
     // At this point we have accumulated sources (into sphys/swave)
     // and fluxes (into auxp/auxw) in physical space.  Now we need to
     // get back to wave space to finish accumulating the RHS.
-
-
+    
+    
     // Collectively convert source to wave space using parallel FFTs
     for (size_t i = 0; i < state_count; ++i) {
-      o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
+        o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
     }
 
     // Collectively convert fluxes to wave space using parallel FFTs
     for (size_t i = aux::e; i < aux_count; ++i) {
-      o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
+        o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
     }
-
-
+    
+    
     // Now we have sources and fluxes in wave space.  More
     // specifically, we have X,Z coefficients and Y collocation pts.
     // The last piece is to apply the divergence to the fluxes and
     // accumulate into the sources.
-
+    
     // Note that the divergence is never formed explicitly.  We
     // accumulate the Y, X, and Z derivatives into the source
     // separately.
     {
-
-      // TODO: Is this really what I need?
-      suzerain::bsplineop_luz massluz(o.cop);
-      //const complex_t scale_factor = grid.dN.x() * grid.dN.z();
-      const complex_t scale_factor = 1.0; //grid.dN.x() * grid.dN.z();
-      massluz.opform(1, &scale_factor, o.cop);
-      massluz.factor();
-
-      // FIXME: filter source 
-      //        scale source for dealiasing
-
-      //suzerain::bsplineop_lu boplu(o.cop);
-
-      // FIXME: Need form mass matrix call
-      // FIXME: Move these ops outside this function
-
-      for (size_t i = 0; i < state_count; ++i) {
-
-        // Apply inverse mass matrix to Y flux to get to pure
-        // coefficient representation
-        //o.bop_solve(boplu, auxw, aux::e + dir::count*i + dir::y);
-	o.bop_solve(massluz, auxw, aux::e + dir::count*i + dir::y);
-
-        //o.diffwave_apply(0, 0, 1, auxw, aux::e + dir::count*i + dir::y);
-
-        // Accumulate Y derivative of Y flux (at collocation pts in Y
-        // and coefficients in X,Z) into source.  Note that alpha = -1
-        // b/c we need to subtract divergence from source
-        o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
-                               1, swave, i );
-
         // FIXME: filter source 
-        //        accumulate into source
-
-        // Accumulate X and Z derivatives of X and Z fluxes into source
-
-        // alpha = -1 b/c we need to subtract divergence from source
-        o.diffwave_accumulate(1, 0, -1, auxw , aux::e + dir::count*i + dir::x,
-                                     1, swave, i );
-
-        // alpha = -1 b/c we need to subtract divergence from source
-        o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
-                                     1, swave, i );
-
-        // and zero wavenumbers present only for dealiasing to
-        // prevent "leakage" of dealiasing modes to other routines.
-        o.zero_dealiasing_modes(swave, i);
-
-      } // end for
-
+        //        scale source for dealiasing
+        
+        for (size_t i = 0; i < state_count; ++i) {
+            
+            // Apply inverse mass matrix to Y flux to get to pure
+            // coefficient representation
+            o.bop_solve(massluz, auxw, aux::e + dir::count*i + dir::y);
+            
+            // Accumulate Y derivative of Y flux (at collocation pts in Y
+            // and coefficients in X,Z) into source.  Note that alpha = -1
+            // b/c we need to subtract divergence from source
+            o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
+                                   1, swave, i );
+            
+            // Accumulate X and Z derivatives of X and Z fluxes into source
+            
+            // alpha = -1 b/c we need to subtract divergence from source
+            o.diffwave_accumulate(1, 0, -1, auxw , aux::e + dir::count*i + dir::x,
+                                         1, swave, i );
+            
+            // alpha = -1 b/c we need to subtract divergence from source
+            o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
+                                         1, swave, i );
+            
+            // and zero wavenumbers present only for dealiasing to
+            // prevent "leakage" of dealiasing modes to other routines.
+            o.zero_dealiasing_modes(swave, i);
+            
+        } // end for
+        
     } // end accumulate
 
     // Return the stable time step criteria separately on each rank.  The time

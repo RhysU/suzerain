@@ -54,8 +54,8 @@ private:
 public:
     IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t Cv, real_t T_wall)
         : field_stride(field_stride)
-	, Cv(Cv)
-	, T_wall(T_wall)
+        , Cv(Cv)
+        , T_wall(T_wall)
     {}
 
     void operator()(complex_t &rho) const
@@ -94,24 +94,24 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
-
+    
     // Shorthand
     using boost::indices;
     typedef boost::multi_array_types::index_range range;
-
+    
     // Indexes only the first and last collocation point
     const std::size_t Ny         = state.shape()[1];
     const std::size_t wall_lower = 0;
     const std::size_t wall_upper = Ny - 1;
     range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
-
+    
     // Prepare a state view of density locations at lower and upper walls
     multi_array::ref<complex_t,4>::array_view<3>::type state_view
             = state[indices[ndx::rho][walls][range()][range()]];
 
     // Prepare functor setting pointwise BCs given density locations
     const IsothermalNoSlipFunctor bc_functor(
-	  state.strides()[0], cmods.Cv, chdef.T_wall);
+            state.strides()[0], cmods.Cv, chdef.T_wall);
 
     // Apply the functor to all wall-only density locations
     multi_array::for_each(state_view, bc_functor);
@@ -143,13 +143,15 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)
     , common(common)
-    , fsdef(fsdef)
     , msoln(msoln)
+    , fsdef(fsdef)
+    , massluz(cop)
     , who("operator.N")
 {
-    // NOP
+    // form and factor mass matrix once prior to use in nonlinear operator
+    massluz.factor_mass(cop);
 }
-
+    
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
@@ -160,13 +162,13 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::none>
-            (*this, common, fsdef, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
+            (*this, common, fsdef, msoln, cmods, massluz, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
         return apply_navier_stokes_spatial_operator<false, linearize::none>
-            (*this, common, fsdef, msoln, cmods, time, swave, evmaxmag_real, evmaxmag_imag);
+            (*this, common, fsdef, msoln, cmods, massluz, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
-
+    
 } // namespace reacting
 
 } // namespace suzerain

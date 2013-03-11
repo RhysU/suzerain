@@ -60,9 +60,9 @@ class explicit_nonlinear_operator
       public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
-
+    
     explicit_nonlinear_operator(
- 	    const single_ideal_gas_constitutive& cmods,
+            const single_ideal_gas_constitutive& cmods,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -92,6 +92,9 @@ protected:
     /** The filter source definition */
     const filter_definition &fsdef;
 
+    /** Mass matrix required by apply_operator */
+    suzerain::bsplineop_luz massluz;
+
 private:
 
     /** Helps to identify from whom logging messages are being emitted. */
@@ -115,8 +118,8 @@ class isothermal_mass_operator : public mass_operator
 public:
 
     isothermal_mass_operator(
-	    const single_ideal_gas_constitutive& cmods,
-	    const channel_definition &chdef,
+            const single_ideal_gas_constitutive& cmods,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
