@@ -23,6 +23,8 @@
 #include <suzerain/filterop.h>
 #include <suzerain/timers.h>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/grid_specification.hpp>
+#include <suzerain/pencil_grid.hpp>
 
 /** @file
  * Provides classes handling problem definition for filter
@@ -147,8 +149,81 @@ public:
         return suzerain_filteropz_filter(alpha, x, incx, y, z.get());
     }
 
+    
+    /**
+     * @copydoc suzerain_filteropz_source_apply
+     */
+    template<typename MultiArrayX, typename MultiArrayY>
+    int filter_source_apply(
+                             const grid_specification &grid,
+                             const pencil_grid &dgrid,
+                             const typename MultiArrayX::element& alpha,
+                             const MultiArrayX &x,
+                             int ndx_x) const
+    {
+        if (SUZERAIN_UNLIKELY(!z || z->n != dgrid.global_wave_extent.y())) {
+            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            const int err = prepare_complex(dgrid.global_wave_extent.y());
+            if (SUZERAIN_UNLIKELY(err)) return err;
+        }
+
+        return suzerain_filteropz_source_apply(
+                alpha, x[ndx_x].origin(),
+                dgrid.global_wave_extent.y(),
+                grid.N.x(),
+                grid.dN.x(),
+                dgrid.local_wave_start.x(),
+                dgrid.local_wave_end.x(),
+                grid.N.z(),
+                grid.dN.z(),
+                dgrid.local_wave_start.z(),
+                dgrid.local_wave_end.z(),
+                z.get());
+    }
+
+
+    /**
+     * @copydoc suzerain_filteropz_source_accumulate
+     */
+    template<typename MultiArrayX, typename MultiArrayY>
+    int filter_source_accumulate(
+                             const grid_specification &grid,
+                             const pencil_grid &dgrid,
+                             const typename MultiArrayX::element& alpha,
+                             const MultiArrayX &x,
+                             int ndx_x,
+                             const typename MultiArrayY::element& beta,
+                             MultiArrayY &y,
+                             int ndx_y) const
+    {
+        if (SUZERAIN_UNLIKELY(!z || z->n != dgrid.global_wave_extent.y())) {
+            SUZERAIN_TIMER_SCOPED("filter_definition::prepare_complex");
+            const int err = prepare_complex(dgrid.global_wave_extent.y());
+            if (SUZERAIN_UNLIKELY(err)) return err;
+        }
+
+        assert(std::equal(x.shape()   + 1, x.shape()   + 4, y.shape()   + 1));
+        assert(std::equal(x.strides() + 1, x.strides() + 4, y.strides() + 1));
+
+        return suzerain_filteropz_source_accumulate(
+                alpha, x[ndx_x].origin(),
+                beta,  y[ndx_y].origin(),
+                dgrid.global_wave_extent.y(),
+                grid.N.x(),
+                grid.dN.x(),
+                dgrid.local_wave_start.x(),
+                dgrid.local_wave_end.x(),
+                grid.N.z(),
+                grid.dN.z(),
+                dgrid.local_wave_start.z(),
+                dgrid.local_wave_end.z(),
+                z.get());
+    }
+
+
     /** Reset any previously initialized filtering parameters. */
     void reset();
+
 
 protected:
 

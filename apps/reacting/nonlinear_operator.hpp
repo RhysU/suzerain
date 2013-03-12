@@ -204,13 +204,21 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // NOTE: The indexing here *assumes* that the total energy is
     // stored first.
 
+    // FIXME: filter source 
+    //        compute damping coefficient
+    const complex_double alpha = 0;
+ 
     // Energy (no derivatives)
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
-    
+   
     // FIXME: filter source 
     //        compute for energy
-    
+    fsdef.filter_source_accumulate(o.grid, o.dgrid,
+        alpha, swave, ndx::e,
+        0.,    fsrcw, ndx::e);
+
+
     // Everything else (all spatial derivatives)
     for (size_t var = ndx::mx; var<state_count; ++var) {
 
@@ -231,7 +239,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
       // FIXME: filter source 
       //        compute for all other variables
-
+      fsdef.filter_source_accumulate(o.grid, o.dgrid,
+          alpha, swave, var,
+          0.,    fsrcw, var);
     }
 
     physical_view<> auxp (o.dgrid, auxw );
@@ -936,7 +946,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // alpha = -1 b/c we need to subtract divergence from source
             o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
                                          1, swave, i );
-            
+
             // and zero wavenumbers present only for dealiasing to
             // prevent "leakage" of dealiasing modes to other routines.
             o.zero_dealiasing_modes(swave, i);
