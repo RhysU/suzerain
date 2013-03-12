@@ -17,8 +17,11 @@ eval "$METACASE"
 banner "Reproducibility of adding fluctuations to an existing field"
 (
     cd $testdir
-    prun ../perfect_advance mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
-    prun ../perfect_advance mms0.h5 --restart_destination "b#.h5" $ADVANCE $P
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    prun ../perfect_advance mms0.h5 --restart_destination "a#.h5" \
+                                    $ADVANCE $WIZ $P
+    prun ../perfect_advance mms0.h5 --restart_destination "b#.h5" \
+                                    $ADVANCE $WIZ $P
     differ --delta=2e-14 --nan a0.h5 b0.h5
 )
 

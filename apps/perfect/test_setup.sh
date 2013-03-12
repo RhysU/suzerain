@@ -21,7 +21,7 @@ fi
 
 # $(testdir) has already been created by test_infrastructure.sh for scratch use
 
-
+# We save the initial wisdom in $testdir for possible reuse (ticket #2515)
 banner "Creating initial field to use for tests"
 declare -r  Re=100
 declare -r  Ma=1.15
@@ -31,7 +31,8 @@ declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
 runq ./perfect_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
-                    --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz
+                    --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
+                    "--plan_wisdom=$testdir/wisdom.init"
 chmod +r "$testdir/mms0.h5"
 
 

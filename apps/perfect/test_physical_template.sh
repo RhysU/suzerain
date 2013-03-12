@@ -15,14 +15,18 @@ NP=
 P=
 eval "$METACASE"
 
+# We want to share wisdom across test cases as much as possible to tamp down
+# rounding-related discrepancies due to FFT kernel differences (ticket #2515).
+WIZ="--plan_wisdom=$(mktemp --tmpdir=$testdir wisdom.XXXXXX)"
+
 # Prepare pmms0.h5 in serial, then in parallel, and ensure both match
 # pmms0.h5 restart file is used in the tests that follow
 banner "Preparation of physical-space version of wave-based test field${OPER:+ ($OPER)}"
 (
     cd $testdir
     run ../perfect_advance $OPER mms0.h5 --restart_destination "pmms#.h5" \
-                                         --advance_nt=0 --restart_physical
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
+                                         --advance_nt=0 --restart_physical $WIZ
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ \
                      --restart_physical
     differ --delta=5e-16 pmms0.h5 a0.h5
 )
@@ -30,7 +34,7 @@ banner "Preparation of physical-space version of wave-based test field${OPER:+ (
 banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                       --restart_physical
     differ --delta=1e-15 pmms0.h5 a0.h5
 )
@@ -38,7 +42,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0
+    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ
     differ --delta=5e-15 mms0.h5 a0.h5
 )
 
@@ -47,11 +51,11 @@ banner "Equivalence of a field advanced both with and without a physical space r
 # timesteps necessarily magnifying O(epsilon) restart errors
 (
     cd $testdir
-    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P \
+    $perfect pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
                       --restart_physical --max_dt=1e-5
-    $perfect a0.h5    --restart_destination "b#.h5" --advance_nt=2 $P \
+    $perfect a0.h5    --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
                       --restart_physical --max_dt=1e-5
-    $perfect pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P \
+    $perfect pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
                       --restart_physical --max_dt=1e-5
     differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
     # Paths like /bar_foo not checked as part of this test

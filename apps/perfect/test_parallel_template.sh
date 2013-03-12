@@ -7,10 +7,15 @@ source "`dirname $0`/test_setup.sh"
 : ${ADVANCE:=--advance_nt=10 --status_nt=5 --fluct_percent=10 --fluct_seed=45678}
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
 
+# We want to share wisdom across test cases as much as possible to tamp down
+# rounding-related discrepancies due to FFT kernel differences (ticket #2515)
+WIZ="--plan_wisdom=$(mktemp "--tmpdir=$testdir" wisdom.XXXXXX)"
+
 banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../perfect_advance $OPER mms0.h5 --restart_destination "serial#.h5" $ADVANCE
+    run ../perfect_advance $OPER mms0.h5 --restart_destination "serial#.h5" \
+                                         $ADVANCE $WIZ
 )
 
 # Run each test case in this file under the following circumstances
@@ -23,7 +28,8 @@ eval "$METACASE"
 banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
-    prun ../perfect_advance $OPER mms0.h5 --restart_destination "a#.h5" $ADVANCE $P
+    prun ../perfect_advance $OPER mms0.h5 --restart_destination "a#.h5" \
+                                          $ADVANCE $P $WIZ
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ $exclude_datasets_bar --delta=3e-13 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do

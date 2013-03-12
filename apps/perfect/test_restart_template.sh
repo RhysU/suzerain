@@ -29,16 +29,18 @@ eval "$METACASE"
 banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P
+    WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P
     differ $exclude_datasets mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P
-    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=2 $P
-    $perfect mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=2 $WIZ $P
+    $perfect mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan b0.h5 c0.h5 /t
@@ -48,9 +50,10 @@ banner "Equivalence of a field advanced both with and without a restart${OPER:+ 
 banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
-    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
     differ $exclude_datasets mms0.h5 b0.h5
 )
@@ -58,9 +61,10 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --k=$(($k+1))
-    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --k=$(($k  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
@@ -73,9 +77,10 @@ banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
 banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
-    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $P \
+    $perfect a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
     # Chosen tolerances are wholly empirical and represent nothing deep
     differ $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho
