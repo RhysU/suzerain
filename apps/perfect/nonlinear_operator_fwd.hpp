@@ -354,8 +354,8 @@ namespace linearize {
 
 /** What type of hybrid implicit/explicit linearization is employed? */
 enum type {
-    none,  ///< No linearization implying a fully implicit treatment
-    rhome  ///< Linearization of density, momentum, and total energy
+    none,      ///< No linearization implying a fully explicit treatment
+    rhome_xyz  ///< Density, momentum, and total energy across X, Y, and Z
 };
 
 } // namespace linearize

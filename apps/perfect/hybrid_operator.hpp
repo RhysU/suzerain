@@ -61,7 +61,7 @@ class isothermal_hybrid_linear_operator
 public:
 
     /** Determines the extent of the implicit treatment */
-    static const linearize::type linearization = linearize::rhome;
+    static const linearize::type linearization = linearize::rhome_xyz;
 
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,

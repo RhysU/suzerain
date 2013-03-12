@@ -709,7 +709,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         ;
                         // No need to adjust explicit viscous work term
                     break;
-                case linearize::rhome:
+                case linearize::rhome_xyz:
                     sphys(ndx::e, offset) +=
                         // Explicit convective/acoustic less implicit portion
                         - rholut::explicit_div_e_plus_p_u(
@@ -755,7 +755,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         - inv_Ma2 * grad_p
                         ;
                     break;
-                case linearize::rhome:
+                case linearize::rhome_xyz:
                     momentum_rhs +=
                         // Explicit convective term less implicit portion
                         - rholut::explicit_div_rho_inverse_m_outer_m(
@@ -790,7 +790,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 case linearize::none:
                     sphys(ndx::rho, offset) = - div_m; // Explicit convection
                     break;
-                case linearize::rhome:
+                case linearize::rhome_xyz:
                     sphys(ndx::rho, offset) = 0;       // Implicit convection
                     break;
             }
@@ -832,7 +832,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // Implicit acoustics sets the effective sound speed
                     // to zero within the convective_stability_criterion.
                     // Fluctuating velocity is taken relative to references.
-                    case linearize::rhome:
+                    case linearize::rhome_xyz:
                         ua_l1_x       = abs(u.x()            ) * lambda1_x;
                         ua_l1_y       = abs(u.y()            ) * lambda1_y;
                         ua_l1_z       = abs(u.z()            ) * lambda1_z;
@@ -887,7 +887,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                     // Implicit diffusion permits removing a reference value.
                     // Antidiffusive (nu - ref_nu) is fine and not computed.
-                    case linearize::rhome:
+                    case linearize::rhome_xyz:
                         diffusivity = nu - ref_nu;    // Compute sign wrt ref.
                         if (diffusivity <= 0) break;  // NaN => false, proceed
                         diffusivity *= maxdiffconst;  // Rescale as necessary.
@@ -958,7 +958,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Collectively convert state to wave space using parallel FFTs
     for (size_t i = 0; i < swave_count; ++i) {
 
-        if (Linearize == linearize::rhome && i == ndx::rho && !msoln) {
+        if (Linearize == linearize::rhome_xyz && i == ndx::rho && !msoln) {
 
             // When density equation is handled fully implicitly AND no
             // manufactured solution is employed, save some communications by
