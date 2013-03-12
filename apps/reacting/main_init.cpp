@@ -118,6 +118,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             + " (active only when --mms supplied)");
     options.add_definition(msoln->isothermal_channel());
 
+    // Establish default filter parameters
+    fsdef->filter_phi = 0.0;
+    
     // Establish binary-specific options
     std::pointer_to_binary_function<real_t,const char*,void>
         ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);
