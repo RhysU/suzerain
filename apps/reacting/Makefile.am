@@ -17,6 +17,10 @@ libreacting_la_SOURCES += driver.hpp                driver.cpp
 libreacting_la_SOURCES += single_ideal_gas_constitutive.hpp
 libreacting_la_SOURCES += single_ideal_gas_constitutive.cpp
 
+if BUILD_REACTING
+libreacting_la_SOURCES += antioch_constitutive.hpp
+libreacting_la_SOURCES += antioch_constitutive.cpp
+endif
 
 
 ##

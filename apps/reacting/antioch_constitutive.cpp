@@ -11,24 +11,25 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc single_ideal_gas_constitutive.hpp
+ * @copydoc antioch_constitutive.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include "single_ideal_gas_constitutive.hpp"
+#ifdef HAVE_ANTIOCH
+
+#include "antioch_constitutive.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-/** @file 
- * Provides constitutive models for a single species ideal gas
- * with constant specific heats, constant Prandtl number, and power
- * law viscosity.
+/** @file
+ * Class wrapping libantioch functionality for chemically reacting
+ * flow
  */
 
 namespace suzerain {
@@ -49,60 +50,45 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace reacting {
 
-single_ideal_gas_constitutive::single_ideal_gas_constitutive()
-    : Cp    (std::numeric_limits<real_t>::quiet_NaN())
-    , Cv    (std::numeric_limits<real_t>::quiet_NaN())
-    , Pr    (std::numeric_limits<real_t>::quiet_NaN())
-    , T0    (std::numeric_limits<real_t>::quiet_NaN())
-    , mu0   (std::numeric_limits<real_t>::quiet_NaN())
-    , beta  (std::numeric_limits<real_t>::quiet_NaN())
-    , alpha (std::numeric_limits<real_t>::quiet_NaN())
+antioch_constitutive::antioch_constitutive()
+    : species_names(0)
+    , chem_input_file()
+    , Le   (std::numeric_limits<real_t>::quiet_NaN())
+    , alpha(std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
-single_ideal_gas_constitutive::single_ideal_gas_constitutive(
-        const real_t Cp,
-	const real_t Cv,
-	const real_t Pr,
-	const real_t T0,
-	const real_t mu0,
-	const real_t beta,
-	const real_t alpha)
-    : Cp    (Cp)
-    , Cv    (Cv)
-    , Pr    (Pr)
-    , T0    (T0)
-    , mu0   (mu0)
-    , beta  (beta)
+antioch_constitutive::antioch_constitutive(
+    const std::vector<std::string>& species_names,
+    const std::string& chem_input_file,
+    const real_t Le,
+    const real_t alpha)
+    : species_names  (species_names)
+    , chem_input_file(chem_input_file)
+    , Le    (Le)
     , alpha (alpha)
 {
 }
 
-single_ideal_gas_constitutive::~single_ideal_gas_constitutive()
+antioch_constitutive::~antioch_constitutive()
 {
     // NOP
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char name_Cp[]    = "Cp";
-static const char name_Cv[]    = "Cv";
-static const char name_Pr[]    = "Pr";
-static const char name_T0[]    = "T0";
-static const char name_mu0[]   = "mu0";
-static const char name_beta[]  = "beta";
-static const char name_alpha[] = "alpha";
+static const char name_species_names[]   = "species";
+static const char name_chem_input_file[] = "chemfile";
+static const char name_Le[]              = "Le";
+static const char name_alpha[]           = "alpha";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_Cp[]    = "Specific heat at constant pressure";
-static const char desc_Cv[]    = "Specific heat at constant volume";
-static const char desc_Pr[]    = "Prandtl number";
-static const char desc_T0[]    = "Reference temperature for viscosity power law";
-static const char desc_mu0[]   = "Reference viscosity for viscosity power law";
-static const char desc_beta[]  = "Exponent for viscosity power law";
-static const char desc_alpha[] = "Ratio of bulk to dynamic viscosity";
+static const char desc_species_names[]   = "List of species in mixture";
+static const char desc_chem_input_file[] = "Chemistry input file";
+static const char desc_Le[]              = "Lewis number";
+static const char desc_alpha[]           = "Ratio of bulk to dynamic viscosity";
 
 boost::program_options::options_description
-single_ideal_gas_constitutive::options_description()
+antioch_constitutive::options_description()
 {
     using boost::bind;
     using boost::lexical_cast;
@@ -111,8 +97,9 @@ single_ideal_gas_constitutive::options_description()
     using boost::program_options::value;
     using std::auto_ptr;
     using std::string;
+    using std::vector;
 
-    options_description retval("Single species ideal gas constitutive law parameters");
+    options_description retval("libantioch constitutive law parameters");
 
     // Complicated add_options() calls done to allow changing the default value
     // displayed when the default is NaN.  NaN is used as a NOP value by client
@@ -120,53 +107,22 @@ single_ideal_gas_constitutive::options_description()
 
     auto_ptr<typed_value<string> > p;
 
-    // Cp
-    p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Cp, name_Cp));
-    if (!(boost::math::isnan)(Cp)) {
-        p->default_value(lexical_cast<string>(Cp));
-    }
-    retval.add_options()(name_Cp, p.release(), desc_Cp);
+    // species
+    retval.add_options()(name_species_names, 
+                         value<vector<string> >(), 
+                         desc_species_names);
 
-    // Cv
+    // chemistry input file
+    retval.add_options()(name_chem_input_file,
+                         value<string>(),
+                         desc_chem_input_file);
+    // Le
     p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Cv, name_Cv));
-    if (!(boost::math::isnan)(Cv)) {
-        p->default_value(lexical_cast<string>(Cv));
+    p->notifier(bind(&parse_positive, _1, &Le, name_Le));
+    if (!(boost::math::isnan)(Le)) {
+        p->default_value(lexical_cast<string>(Le));
     }
-    retval.add_options()(name_Cv, p.release(), desc_Cv);
-
-    // Pr
-    p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &Pr, name_Pr));
-    if (!(boost::math::isnan)(Pr)) {
-        p->default_value(lexical_cast<string>(Pr));
-    }
-    retval.add_options()(name_Pr, p.release(), desc_Pr);
-
-    // T0
-    p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &T0, name_T0));
-    if (!(boost::math::isnan)(T0)) {
-        p->default_value(lexical_cast<string>(T0));
-    }
-    retval.add_options()(name_T0, p.release(), desc_T0);
-
-    // mu0
-    p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &mu0, name_mu0));
-    if (!(boost::math::isnan)(mu0)) {
-        p->default_value(lexical_cast<string>(mu0));
-    }
-    retval.add_options()(name_mu0, p.release(), desc_mu0);
-
-    // beta
-    p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &beta, name_beta));
-    if (!(boost::math::isnan)(beta)) {
-        p->default_value(lexical_cast<string>(beta));
-    }
-    retval.add_options()(name_beta, p.release(), desc_beta);
+    retval.add_options()(name_Le, p.release(), desc_Le);
 
     // alpha
     p.reset(value<string>());
@@ -181,119 +137,140 @@ single_ideal_gas_constitutive::options_description()
 }
 
 void
-single_ideal_gas_constitutive::populate(
-        const single_ideal_gas_constitutive& that,
+antioch_constitutive::populate(
+        const antioch_constitutive& that,
         const bool verbose)
 {
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
-    CALL_MAYBE_POPULATE(Cp);
-    CALL_MAYBE_POPULATE(Cv);
-    CALL_MAYBE_POPULATE(Pr);
-    CALL_MAYBE_POPULATE(T0);
-    CALL_MAYBE_POPULATE(mu0);
-    CALL_MAYBE_POPULATE(beta);
+    CALL_MAYBE_POPULATE(Le);
     CALL_MAYBE_POPULATE(alpha);
 #undef CALL_MAYBE_POPULATE
 }
 
 void
-single_ideal_gas_constitutive::override(
-        const single_ideal_gas_constitutive& that,
+antioch_constitutive::override(
+        const antioch_constitutive& that,
         const bool verbose)
 {
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
-    CALL_MAYBE_OVERRIDE(Cp);
-    CALL_MAYBE_OVERRIDE(Cv);
-    CALL_MAYBE_OVERRIDE(Pr);
-    CALL_MAYBE_OVERRIDE(T0);
-    CALL_MAYBE_OVERRIDE(mu0);
-    CALL_MAYBE_OVERRIDE(beta);
+    CALL_MAYBE_OVERRIDE(Le);
     CALL_MAYBE_OVERRIDE(alpha);
 #undef CALL_MAYBE_OVERRIDE
 }
 
 void
-single_ideal_gas_constitutive::save(
+antioch_constitutive::save(
         const esio_handle h) const
 {
-    DEBUG0("Storing single_ideal_gas_constitutive parameters");
+    DEBUG0("Storing antioch_constitutive parameters");
 
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, name_Cp,    &this->Cp,    0, desc_Cp   );
-    esio_line_write(h, name_Cv,    &this->Cv,    0, desc_Cv   );
-    esio_line_write(h, name_Pr,    &this->Pr,    0, desc_Pr   );
-    esio_line_write(h, name_T0,    &this->T0,    0, desc_T0   );
-    esio_line_write(h, name_mu0,   &this->mu0,   0, desc_mu0  );
-    esio_line_write(h, name_beta,  &this->beta,  0, desc_beta );
-    esio_line_write(h, name_alpha, &this->alpha, 0, desc_alpha);
+    // NOTE: approach similar to that taken for "metadata_generated"
+    // in driver_base::save_metadata
+    static const char acd[] = "antioch_constitutive_data";
+
+    // FIXME: Figure out how to set this to the antioch revision number
+    real_t antioch_rev = 0.0;
+    esio_line_write(h, acd, &antioch_rev, 0, 
+                    "Place to stash all antioch_constitutive related data.");
+
+    // number of species
+    int Ns = this->species_names.size();
+    esio_attribute_write(h, acd, "Ns", Ns);
+
+    // species names
+    for (size_t i=0; i<species_names.size(); ++i)
+    {
+        std::string speci("Species_"+i);
+        esio_string_set(h, acd, speci.c_str(), this->species_names[i].c_str());
+    }
+    
+    // Lewis number
+    esio_attribute_write(h, acd, name_Le   , &this->Le);
+
+    // alpha
+    esio_attribute_write(h, acd, name_alpha, &this->alpha);
 }
 
 void
-single_ideal_gas_constitutive::load(
+antioch_constitutive::load(
         const esio_handle h,
         const bool verbose)
 {
-    DEBUG0("Loading single_ideal_gas_constitutive parameters");
+    DEBUG0("Loading antioch_constitutive parameters");
 
     // All ranks load
     esio_line_establish(h, 1, 0, 1);
 
-    single_ideal_gas_constitutive t;
-    esio_line_read(h, name_Cp,    &t.Cp,    0);
-    esio_line_read(h, name_Cv,    &t.Cv,    0);
-    esio_line_read(h, name_Pr,    &t.Pr,    0);
-    esio_line_read(h, name_T0,    &t.T0,    0);
-    esio_line_read(h, name_mu0,   &t.mu0,   0);
-    esio_line_read(h, name_beta,  &t.beta,  0);
-    esio_line_read(h, name_alpha, &t.alpha, 0);
-    this->populate(t, verbose);  // Prefer this to incoming
+    antioch_constitutive t;
+
+    static const char acd[] = "antioch_constitutive_data";
+
+    // number of species
+    int Ns;
+    esio_attribute_read(h, acd, "Ns", &Ns);
+
+    t.species_names.reserve(Ns);
+
+    // species names
+    for (int i=0; i<Ns; ++i)
+    {
+        std::string speci("Species_"+i);
+        char* tmp = esio_string_get(h, acd, speci.c_str());
+        t.species_names.push_back(tmp);
+        free(tmp);
+    }
+
+    // Lewis number
+    esio_attribute_read(h, acd, name_Le   , &t.Le);
+
+    // alpha
+    esio_attribute_read(h, acd, name_alpha, &t.alpha);
+
+    // Prefer this to incoming (handle explictly for string data)
+    if (this->species_names.size() > 0)
+        INFO0("Clutching onto " << name_species_names << " over incoming");
+    else
+        this->species_names = t.species_names;
+
+    if (this->chem_input_file.size() > 0)
+        INFO0("Clutching onto " << name_chem_input_file << " over incoming");
+    else
+        this->chem_input_file = t.chem_input_file;
+
+
+    // Prefer this to incoming
+    this->populate(t, verbose);  
 }
 
 // Evaluate: takes state and gives back everything we need from
 // Cantera, including temp, pres, transport props, enthalpies, and
 // reaction rates
 void 
-single_ideal_gas_constitutive::evaluate (const real_t  e,
-					 const real_t* m,
-					 const real_t  rho,
-					 const real_t* species,
-					 const real_t* cs,
-					 real_t& T,
-					 real_t& p,
-					 real_t* Ds,
-					 real_t& mu,
-					 real_t& kap,
-					 real_t* hs,
-					 real_t* om) const
+antioch_constitutive::evaluate (const real_t  e,
+                                const real_t* m,
+                                const real_t  rho,
+                                const real_t* species,
+                                const real_t* cs,
+                                real_t& T,
+                                real_t& p,
+                                real_t* Ds,
+                                real_t& mu,
+                                real_t& kap,
+                                real_t* hs,
+                                real_t* om) const
 {
-    // NOTE: Really only have e, m, rho input and T, p, mu, kap
-    // output.  Everything else is used for the multispecies case.
-
-    // convenience (some of which could be moved out to save a couple flops)
-    const real_t irho = 1.0/rho;
-    const real_t gam = Cp/Cv;
-    const real_t gmi = gam-1.0;
-    const real_t Rgas = Cp-Cv;
-
-    p = gmi * (e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]));
-
-    T = irho * p / Rgas;
-
-    mu = mu0 * pow( T/T0, beta );
-
-    kap = mu * Cp / Pr;
-
-    Ds = NULL;
-    hs = NULL;
-    om = NULL;
+    FATAL0("antioch_constitutive::evaluate is not implemented yet!");
 }
 
 } // namespace reacting
 
 } // namespace suzerain
+
+#endif // HAVE_ANTIOCH

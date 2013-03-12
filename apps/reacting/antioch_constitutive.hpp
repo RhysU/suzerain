@@ -10,32 +10,35 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SINGLE_IDEAL_GAS_CONSTITUTIVE_HPP
-#define SUZERAIN_SINGLE_IDEAL_GAS_CONSTITUTIVE_HPP
+#ifndef SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
+#define SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
 
 /** @file
- * Classes handling reacting channel flow problem scenario parameters.
+ * Class wrapping libantioch functionality for chemically reacting
+ * flow
  */
+
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+
+#ifdef HAVE_ANTIOCH // only makes sense when antioch is available
 
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-/** @file 
- * Provides constitutive models for a single species ideal gas
- * with constant specific heats, constant Prandtl number, and power
- * law viscosity.
- */
 
 namespace suzerain {
 
 namespace reacting {
 
 /**
- * Holds parameters defining channel flow case.
+ * Provides constitutive models for a mixture of ideal gasses
+ * leveraging libantioch
  */
-class single_ideal_gas_constitutive : public support::definition_base
+class antioch_constitutive : public support::definition_base
 {
 public:
 
@@ -43,25 +46,22 @@ public:
      * Construct an instance with all parameters set to NaN.
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
-    single_ideal_gas_constitutive();
+    antioch_constitutive();
 
     /**
      * Construct an instance with the given parameter values.
      *
-     * @param bulk_rho   Bulk density target.
+     * @param Ns   Number of species
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
-    single_ideal_gas_constitutive(const real_t Cp,
-				  const real_t Cv,
-				  const real_t Pr,
-				  const real_t T0,
-				  const real_t mu0,
-				  const real_t beta,
-				  const real_t alpha);
+    antioch_constitutive(const std::vector<std::string>& species_names,
+                         const std::string& chem_input_file,
+                         const real_t Le,
+                         const real_t alpha);
 
 
     /** Virtual destructor to permit use as a base class */
-    virtual ~single_ideal_gas_constitutive();
+    virtual ~antioch_constitutive();
 
     /**
      * Populate any NaN members in \c this with values from \c that.
@@ -72,7 +72,7 @@ public:
      * @param verbose Should logging be emitted when a value is retained?
      */
     virtual void populate(
-            const single_ideal_gas_constitutive& that,
+            const antioch_constitutive& that,
             const bool verbose = false);
 
     /**
@@ -84,7 +84,7 @@ public:
      * @param verbose Should logging be emitted when an override occurs?
      */
     virtual void override(
-            const single_ideal_gas_constitutive& that,
+            const antioch_constitutive& that,
             const bool verbose = false);
 
     /**
@@ -120,15 +120,15 @@ public:
      * @param[in] e       Total energy per unit volume.
      * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
      * @param[in] rho     Mixture density.
-     * @param[in] species Species densities (should not contain anything here).
-     * @param[in] cs      Species mass fractions (should not contain anything here).
+     * @param[in] species Species densities.
+     * @param[in] cs      Species mass fractions. 
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
-     * @param[out] Ds     Mass diffusivities (won't have anything here).
+     * @param[out] Ds     Mass diffusivities. 
      * @param[out] mu     Dynamic viscosity.
      * @param[out] kap    Thermal conductivity.
-     * @param[out] hs     Species enthalpies (won't have anything here).
-     * @param[out] om     Reaction source terms (won't have anything here).
+     * @param[out] hs     Species enthalpies.
+     * @param[out] om     Reaction source terms.
      */
     void evaluate (const real_t  e,
                    const real_t* m,
@@ -144,39 +144,26 @@ public:
                    real_t* om) const;
 
     /**
-     * Report the number of species (just one here).
+     * Report the number of species in the mixture.
      */
-    const std::size_t Ns() const { return 1; }
+    const std::size_t Ns() const { return species_names.size(); }
+
+protected:
 
     /**
-     * The specific heat at constant pressure.
+     * Vector of names of species in mixture
      */
-    real_t Cp;
+    std::vector<std::string> species_names;
 
     /**
-     * The specific heat at constant volume.
+     * Kinetics input filename
      */
-    real_t Cv;
+    std::string chem_input_file;
 
     /**
-     * The Prandtl number.
+     * The Lewis number used to compute diffusivities
      */
-    real_t Pr;
-
-    /**
-     * The reference temperature for the viscosity power law.
-     */
-    real_t T0;
-
-    /**
-     * The reference viscosity for the viscosity power law.
-     */
-    real_t mu0;
-
-    /**
-     * The power in the viscosity power law.
-     */
-    real_t beta;
+    real_t Le;
 
     /**
      * The ratio of bulk viscosity to dynamic viscosity.
@@ -188,4 +175,6 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SINGLE_IDEAL_GAS_CONSTITUTIVE_HPP
+#endif // HAVE_ANTIOCH
+
+#endif // SUZERAIN_ANTIOCH_CONSTITUTIVE_HPP
