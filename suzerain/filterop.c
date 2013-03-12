@@ -97,8 +97,10 @@ suzerain_filteropz_source_apply(
                 const int mkeeper 
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
-                    // FIXME: Call method to compute filter/filter source
-
+                    // FIXME: Review computation of filter source
+                    suzerain_filteropz_filter(1., x+moff, 1, scratch, w);
+                    for (int j = 0; j < Ny; ++j) {
+                        x[moff + j] = alpha * (scratch[j] - x[moff + j]);}
 //                     suzerain_blas_zscal(Ny, malpha, x+moff, 1);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
@@ -163,7 +165,11 @@ suzerain_filteropz_source_accumulate(
                 const int mkeeper 
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
-                    // FIXME: Call method to compute filter/filter source
+                    // FIXME: Review computation of filter source
+                    suzerain_filteropz_filter(1., x+moff, 1, scratch, w);
+                    for (int j = 0; j < Ny; ++j) {
+                        y[moff + j] = alpha * (scratch[j] - x[moff + j])
+                            + beta * y[moff+j];}
 
 //                     suzerain_blas_zaxpby(Ny, malpha, x+moff, 1, beta, y+moff, 1);
                 } else {
