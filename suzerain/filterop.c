@@ -75,11 +75,10 @@ suzerain_filteropz_source_apply(
     const int absmin_wm = suzerain_inorder_wavenumber_absmin(Nx);
     const int absmin_wn = suzerain_inorder_wavenumber_absmin(Nz);
 
-    /* Allocate scratch space */
-    complex_double * const scratch 
-        = suzerain_blas_malloc(Ny * sizeof(scratch[0]));
-    const int incscratch = 1;
-    if (scratch == NULL) {
+    // All Level 1 BLAS operations are on contiguous vectors
+    // Allocate contiguous scratch space
+    complex_double * const s = suzerain_blas_malloc(Ny * sizeof(s[0]));
+    if (s == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
@@ -87,30 +86,19 @@ suzerain_filteropz_source_apply(
     // Generalized loops are hideous but permit one linear pass through memory
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nkeeper 
+        const int nkeeper
             = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
         if (nkeeper) {
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mkeeper 
+                const int mkeeper
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
-                    // FIXME: Review computation of filter source
-                    //        check sequence of operations below
-                    // Compute s->(\alpha*filtered_field)
-                    suzerain_filteropz_filter(alpha, x+moff, /*x contiguous */ 1, 
-                        scratch, w);
-
-                    // Compute x-> s - \alpha*x
-                    suzerain_blas_zaxpby(Ny, 1., scratch, incscratch, 
-                        -alpha, x+moff, /*x contiguous */ 1);
-
-                    // FIXME: sequence above replaces this code
-//                     suzerain_filteropz_filter(1., x+moff, /*x contiguous */ 1, 
-//                         scratch, w);
-//                     for (int j = 0; j < Ny; ++j) {
-//                         x[moff + j] = alpha * (scratch[j] - x[moff + j]);}
-
+                    // Compute s <- alpha*F*x for filter F
+                    //         x <- s - \alpha*x
+                    // Result  x <- alpha*(F - I)*x
+                    suzerain_filteropz_filter(alpha, x+moff, 1, s, w);
+                    suzerain_blas_zaxpby(Ny, 1., s, 1, -alpha, x+moff, 1);
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
                 }
@@ -120,7 +108,7 @@ suzerain_filteropz_source_apply(
         }
     }
 
-    suzerain_blas_free(scratch);
+    suzerain_blas_free(s);
     return SUZERAIN_SUCCESS;
 }
 
@@ -152,11 +140,10 @@ suzerain_filteropz_source_accumulate(
     const int absmin_wm = suzerain_inorder_wavenumber_absmin(Nx);
     const int absmin_wn = suzerain_inorder_wavenumber_absmin(Nz);
 
-    /* Allocate scratch space */
-    complex_double * const scratch 
-        = suzerain_blas_malloc(Ny * sizeof(scratch[0]));
-    const int incscratch = 1;
-    if (scratch == NULL) {
+    // All Level 1 BLAS operations are on contiguous vectors
+    // Allocate contiguous scratch space
+    complex_double * const s = suzerain_blas_malloc(Ny * sizeof(s[0]));
+    if (s == NULL) {
         SUZERAIN_ERROR("failed to allocate scratch space", SUZERAIN_ENOMEM);
     }
 
@@ -164,34 +151,21 @@ suzerain_filteropz_source_accumulate(
     // Generalized loops are hideous but permit one linear pass through memory
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
-        const int nkeeper 
+        const int nkeeper
             = suzerain_inorder_wavenumber_abs(dNz, n) <= absmin_wn;
         if (nkeeper) {
             for (int m = dkbx; m < dkex; ++m) {
                 const int moff = noff + sx*(m - dkbx);
-                const int mkeeper 
+                const int mkeeper
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
-                    // FIXME: Review computation of filter source
-                    //        check sequence of operations below
-                    // Compute s->(\alpha*filtered_field)
-                    suzerain_filteropz_filter(alpha, x+moff, /*x contiguous */ 1, 
-                        scratch, w);
-
-                    // Compute s-> -\alpha*x + s
-                    suzerain_blas_zaxpy(Ny, -alpha, x+moff, /*x contiguous */ 1, 
-                        scratch, incscratch);
-
-                    // Compute y-> s + \beta*y
-                    suzerain_blas_zaxpby(Ny, 1., scratch, incscratch, 
-                        beta, y+moff, /*y contiguous */ 1);
-
-                    // FIXME: sequence above replaces this code
-//                     suzerain_filteropz_filter(1., x+moff, /*x contiguous */ 1, 
-//                         scratch, w);
-//                     for (int j = 0; j < Ny; ++j) {
-//                         y[moff + j] = alpha * (scratch[j] - x[moff + j])
-//                             + beta * y[moff+j];}
+                    // Compute s <- alpha*F*x for filter F
+                    //         s <- -alpha*x + s
+                    //         y <- s + beta*y
+                    // Result  y <- alpha*(F - I)*x + beta*y
+                    suzerain_filteropz_filter(alpha, x+moff, 1, s, w);
+                    suzerain_blas_zaxpy(Ny, -alpha, x+moff, 1, s, 1);
+                    suzerain_blas_zaxpby(Ny, 1., s, 1, beta, y+moff, 1);
                 } else {
                     suzerain_blas_zscal(Ny, beta, y+moff, 1);
                 }
@@ -201,7 +175,7 @@ suzerain_filteropz_source_accumulate(
         }
     }
 
-    suzerain_blas_free(scratch);
+    suzerain_blas_free(s);
     return SUZERAIN_SUCCESS;
 }
 
