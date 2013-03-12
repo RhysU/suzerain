@@ -34,17 +34,19 @@ eval "$METACASE"
 banner "Idempotence of serial versus degenerate parallel without time advance"
 (
     cd $testdir
-    $s_reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0
-    $p_reacting mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $P
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $s_reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ 
+    $p_reacting mms0.h5 --restart_destination "b#.h5" --advance_nt=0 $WIZ $P
     differ --use-system-epsilon $exclude_datasets a0.h5 b0.h5
 )
 
 banner "Idempotence of serial versus degenerate parallel with time advance"
 (
     cd $testdir
-    $s_reacting mms0.h5 -v --restart_destination "a#.h5" --advance_nt=3 \
+    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
+    $s_reacting mms0.h5 -v --restart_destination "a#.h5" --advance_nt=3 $WIZ \
                        --status_nt=1 --evmagfactor=0.2
-    $p_reacting mms0.h5 -v --restart_destination "b#.h5" --advance_nt=3 \
+    $p_reacting mms0.h5 -v --restart_destination "b#.h5" --advance_nt=3 $WIZ \
                        --status_nt=1 --evmagfactor=0.2 $P
     differ --use-system-epsilon a0.h5 b0.h5
 )

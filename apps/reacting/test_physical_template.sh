@@ -15,22 +15,26 @@ NP=
 P=
 eval "$METACASE"
 
+# We want to share wisdom across test cases as much as possible to tamp down
+# rounding-related discrepancies due to FFT kernel differences (ticket #2515).
+WIZ="--plan_wisdom=$(mktemp --tmpdir=$testdir wisdom.XXXXXX)"
+
 # Prepare pmms0.h5 in serial, then in parallel, and ensure both match
 # pmms0.h5 restart file is used in the tests that follow
 banner "Preparation of physical-space version of wave-based test field${OPER:+ ($OPER)}"
 (
     cd $testdir
     run ../reacting_advance $OPER mms0.h5 --restart_destination "pmms#.h5" \
-                                         --advance_nt=0 --restart_physical
+                                         --advance_nt=0 --restart_physical $WIZ
     $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 \
-                     --restart_physical
+                     --restart_physical $WIZ
     differ --delta=5e-16 pmms0.h5 a0.h5
 )
 
 banner "Idempotence of restarting from physical space without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $P \
+    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                       --restart_physical
     #differ --delta=1e-15 pmms0.h5 a0.h5
     differ --relative=5e-14 pmms0.h5 a0.h5
@@ -39,7 +43,7 @@ banner "Idempotence of restarting from physical space without time advance${OPER
 banner "Conversion from physical- to wave-based restart without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
-    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0
+    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ
     
     # original: absolute tolerance too tight because now working with
     # dimensional variables
@@ -69,11 +73,11 @@ banner "Equivalence of a field advanced both with and without a physical space r
 # timesteps necessarily magnifying O(epsilon) restart errors
 (
     cd $testdir
-    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $P \
+    $reacting pmms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P \
                       --restart_physical --max_dt=1e-5
-    $reacting a0.h5    --restart_destination "b#.h5" --advance_nt=2 $P \
+    $reacting a0.h5    --restart_destination "b#.h5" --advance_nt=2 $WIZ $P \
                       --restart_physical --max_dt=1e-5
-    $reacting pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $P \
+    $reacting pmms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P \
                       --restart_physical --max_dt=1e-5
     # FIXME: Ticket 2790.  See comments above.
     #differ $exclude_datasets_bar --delta=6e-13 b0.h5 c0.h5
