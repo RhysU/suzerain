@@ -206,7 +206,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // FIXME: filter source 
     //        compute damping coefficient
-    const complex_double alpha = 0;
+    // FIXME: to start testing, use directly a user defined value;
+    //        to do is to figure out proper coefficients for each variable;
+    //        see if it works to set the coefficient for rho = 0;
+    const complex_double alpha = fsdef.filter_phi;
  
     // Energy (no derivatives)
     o.zero_dealiasing_modes(swave, ndx::e);
@@ -946,6 +949,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // alpha = -1 b/c we need to subtract divergence from source
             o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
                                          1, swave, i );
+
+            // FIXME: filter source 
+            // Accumulate filter source while simultaneously scaling for FFT
+            // alpha = dNx*dNz to scale for dealiasing
+            o.diffwave_accumulate(0, 0, 
+                o.grid.dN.x() * o.grid.dN.z(), fsrcw, i,
+                1                            , swave, i);
 
             // and zero wavenumbers present only for dealiasing to
             // prevent "leakage" of dealiasing modes to other routines.
