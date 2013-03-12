@@ -85,8 +85,6 @@ suzerain_filteropz_source_apply(
 
     // Overwrite x with alpha*D*x for storage, dealiasing details
     // Generalized loops are hideous but permit one linear pass through memory
-//     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
-//     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
         const int nkeeper 
@@ -98,10 +96,21 @@ suzerain_filteropz_source_apply(
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
                     // FIXME: Review computation of filter source
-                    suzerain_filteropz_filter(1., x+moff, 1, scratch, w);
-                    for (int j = 0; j < Ny; ++j) {
-                        x[moff + j] = alpha * (scratch[j] - x[moff + j]);}
-//                     suzerain_blas_zscal(Ny, malpha, x+moff, 1);
+                    //        check sequence of operations below
+                    // Compute s->(\alpha*filtered_field)
+                    suzerain_filteropz_filter(alpha, x+moff, /*x contiguous */ 1, 
+                        scratch, w);
+
+                    // Compute x-> s - \alpha*x
+                    suzerain_blas_zaxpby(Ny, 1., scratch, incscratch, 
+                        -alpha, x+moff, /*x contiguous */ 1);
+
+                    // FIXME: sequence above replaces this code
+//                     suzerain_filteropz_filter(1., x+moff, /*x contiguous */ 1, 
+//                         scratch, w);
+//                     for (int j = 0; j < Ny; ++j) {
+//                         x[moff + j] = alpha * (scratch[j] - x[moff + j]);}
+
                 } else {
                     memset(x+moff, 0, Ny*sizeof(x[0])); // Scale by zero
                 }
@@ -153,8 +162,6 @@ suzerain_filteropz_source_accumulate(
 
     // Accumulate y <- alpha*D*x + beta*y for storage, dealiasing details
     // Generalized loops are hideous but permit one linear pass through memory
-//     int nfreqidx = INT_MAX;  // Hoisted out of loops to avoid uninitialized
-//     int mfreqidx = INT_MAX;  // usage warnings.  Convince yourself it's OK.
     for (int n = dkbz; n < dkez; ++n) {
         const int noff = sz*(n - dkbz);
         const int nkeeper 
@@ -166,12 +173,25 @@ suzerain_filteropz_source_accumulate(
                     = suzerain_inorder_wavenumber_abs(dNx, m) <= absmin_wm;
                 if (mkeeper) {
                     // FIXME: Review computation of filter source
-                    suzerain_filteropz_filter(1., x+moff, 1, scratch, w);
-                    for (int j = 0; j < Ny; ++j) {
-                        y[moff + j] = alpha * (scratch[j] - x[moff + j])
-                            + beta * y[moff+j];}
+                    //        check sequence of operations below
+                    // Compute s->(\alpha*filtered_field)
+                    suzerain_filteropz_filter(alpha, x+moff, /*x contiguous */ 1, 
+                        scratch, w);
 
-//                     suzerain_blas_zaxpby(Ny, malpha, x+moff, 1, beta, y+moff, 1);
+                    // Compute s-> -\alpha*x + s
+                    suzerain_blas_zaxpy(Ny, -alpha, x+moff, /*x contiguous */ 1, 
+                        scratch, incscratch);
+
+                    // Compute y-> s + \beta*y
+                    suzerain_blas_zaxpby(Ny, 1., scratch, incscratch, 
+                        beta, y+moff, /*y contiguous */ 1);
+
+                    // FIXME: sequence above replaces this code
+//                     suzerain_filteropz_filter(1., x+moff, /*x contiguous */ 1, 
+//                         scratch, w);
+//                     for (int j = 0; j < Ny; ++j) {
+//                         y[moff + j] = alpha * (scratch[j] - x[moff + j])
+//                             + beta * y[moff+j];}
                 } else {
                     suzerain_blas_zscal(Ny, beta, y+moff, 1);
                 }
