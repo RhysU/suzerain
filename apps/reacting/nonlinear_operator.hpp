@@ -217,10 +217,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
    
     // FIXME: filter source 
     //        compute for energy
-    fsdef.filter_source_accumulate(o.grid, o.dgrid,
-        alpha, swave, ndx::e,
-        0.,    fsrcw, ndx::e);
-
+    fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, ndx::e,
+                                             0.,    fsrcw, ndx::e);
 
     // Everything else (all spatial derivatives)
     for (size_t var = ndx::mx; var<state_count; ++var) {
@@ -242,9 +240,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
       // FIXME: filter source 
       //        compute for all other variables
-      fsdef.filter_source_accumulate(o.grid, o.dgrid,
-          alpha, swave, var,
-          0.,    fsrcw, var);
+      fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, var,
+                                               0.,    fsrcw, var);
     }
 
     physical_view<> auxp (o.dgrid, auxw );
