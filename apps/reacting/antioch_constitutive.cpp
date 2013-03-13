@@ -27,6 +27,8 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
+#include <antioch/antioch_version.h>
+
 /** @file
  * Class wrapping libantioch functionality for chemically reacting
  * flow
@@ -175,8 +177,8 @@ antioch_constitutive::save(
     // in driver_base::save_metadata
     static const char acd[] = "antioch_constitutive_data";
 
-    // FIXME: Figure out how to set this to the antioch revision number
-    real_t antioch_rev = 0.0;
+    // FIXME: version is written by save but not read by load
+    int antioch_rev = Antioch::get_antioch_version();
     esio_line_write(h, acd, &antioch_rev, 0, 
                     "Place to stash all antioch_constitutive related data.");
 

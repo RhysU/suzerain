@@ -2,6 +2,8 @@
 
 include ../Common.am
 
+
+
 ###
 ### Logic common to many different binaries within this subdirectory
 ###
@@ -18,8 +20,10 @@ libreacting_la_SOURCES += single_ideal_gas_constitutive.hpp
 libreacting_la_SOURCES += single_ideal_gas_constitutive.cpp
 
 if BUILD_REACTING
+AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 libreacting_la_SOURCES += antioch_constitutive.hpp
 libreacting_la_SOURCES += antioch_constitutive.cpp
+libreacting_la_LIBADD   = $(ANTIOCH_LIBS)
 endif
 
 
