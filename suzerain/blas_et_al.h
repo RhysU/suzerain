@@ -4000,7 +4000,7 @@ suzerain_lapackext_zgbsv(
  *   <li>permits the user to provide a preexisting single
  *       or double precision factorization,</li>
  *   <li>returns the single or double precision factorization
- *       for subsequent reuse,<li>
+ *       for subsequent reuse,</li>
  *   <li>permits the caller to provide the Frobenius norm of \f$A\f$,</li>
  *   <li>assumes only one right hand side is of interest
  *       (above changes, however, permit efficient repeated invocation),</li>
@@ -4018,7 +4018,7 @@ suzerain_lapackext_zgbsv(
  *   <li>requires the user to specify the maximum number of refinements
  *       to attempt (Langou et al. suggested thirty, <tt>?gbrfsx</tt> suggests
  *       up to one hundred in aggressive circumstances like providing
- *       approximate factorizations),<li>
+ *       approximate factorizations),</li>
  *   <li>makes accessible the number iterative refinements attempted,</li>
  *   <li>and makes accessible the final residual vector and residual.</li>
  * </ol>
