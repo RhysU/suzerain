@@ -138,14 +138,15 @@ cd $dir
 # in section 4.1 of Tadmor, Eitan. "A review of numerical methods for nonlinear
 # partial differential equations." Bulletin of the American Mathematical
 # Society, Vol. 49, No. 4. (October 2012): 507-554
-"$MMS_DIM_CASE_INITIAL" initial.h5                           \
+"$MMS_DIM_CASE_INITIAL" initial.h5 -v                    \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
     ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
     ${T0:+--T0=$T0} ${mu0:+--mu0=$mu0}                   \
     ${T_wall:+--T_wall=$T_wall}                          \
+    ${filter_phi:+--filter_phi=$filter_phi}              \
     --mms=0       "${no[@]}"
-"$MMS_DIM_CASE_INITIAL" final.h5                             \
+"$MMS_DIM_CASE_INITIAL" final.h5 -v                      \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
     ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
@@ -156,8 +157,12 @@ cd $dir
 # Advance the initial condition until the final time is reached
 # Notice any unknown arguments from the command line appear here
 ${np+mpiexec -np $np} "$MMS_DIM_CASE_ADVANCE" initial.h5                 \
-    --statistics_nt=0 --statistics_dt=0 --status_nt=25 --status_dt=0 \
+    --statistics_nt=0 --statistics_dt=0 --status_nt=1 --status_dt=0 \
     --advance_nt=0 --advance_dt=$tfinal "$@"
+
+#${np+mpiexec -np $np} "$MMS_DIM_CASE_ADVANCE" initial.h5 -v         \
+#    --statistics_nt=0 --statistics_dt=0 --status_nt=1 --status_dt=0 \
+#    --advance_nt=1000 "$@"
 
 # Now, look in 'mms.abserr' in the resulting log.dat for global error.
 # Check convergence rates across three or more runs using 'orderest'.
