@@ -486,19 +486,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Solver-related operational details
-    const char *mname = "UNKNOWN";          // Used for error reporting
     char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
-    switch (spec.method()) {
-    case zgbsv_specification::zgbsv:
-        mname = "suzerain_lapackext_zgbsv";
-        break;
-    case zgbsv_specification::zgbsvx:
-        mname = "suzerain_lapack_zgbsvx";
-        break;
-    case zgbsv_specification::zcgbsvx:
-        mname = "suzerain_lapackext_zcgbsvx";
-        break;
-    }
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common output for all solvers
     char equed;                     // zgbsvx equilibration type
@@ -586,10 +574,10 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
 
             case zgbsv_specification::zgbsv:                    // In-place
-                SUZERAIN_TIMER_BEGIN(mname);
+                SUZERAIN_TIMER_BEGIN(spec.mname());
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
-                SUZERAIN_TIMER_END(mname);
+                SUZERAIN_TIMER_END(spec.mname());
 
                 if (SUZERAIN_UNLIKELY(n == 0 && m == 0 && !info)) {
                     info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU,
@@ -599,13 +587,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 break;
 
             case zgbsv_specification::zgbsvx:                   // Out-of-place
-                SUZERAIN_TIMER_BEGIN(mname);
+                SUZERAIN_TIMER_BEGIN(spec.mname());
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r.data(), c.data(),
                     b.data(), A.N, x.data(), A.N,
                     &rcond, &ferr, &berr, work.data(), rwork.data());
-                SUZERAIN_TIMER_END(mname);
+                SUZERAIN_TIMER_END(spec.mname());
 
                 // TODO Statistics on rcond, equed, ferr, and berr
 
@@ -623,7 +611,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 break;
 
             case zgbsv_specification::zcgbsvx:                  // Out-of-place
-                SUZERAIN_TIMER_BEGIN(mname);
+                SUZERAIN_TIMER_BEGIN(spec.mname());
                 fact  = spec.reuse() ? fact : 'N';
                 apprx = fact == 'N' ? 0 : 1;
                 aiter = spec.aiter();
@@ -635,7 +623,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                         A.N, A.KL, A.KU, patpt.data(), &afrob, lu.data(),
                         ipiv.data(), b.data(), x.data(), &siter, &diter,
                         &tolsc, work.data(), &res);
-                SUZERAIN_TIMER_END(mname);
+                SUZERAIN_TIMER_END(spec.mname());
 
                 // TODO Statistics on fact, apprx, siter, diter, tolsc, res
 
@@ -671,13 +659,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             } else if (info < 0) {
                 snprintf(buffer, sizeof(buffer),
                     "%s reported error in argument %d",
-                    mname, -info);
+                    spec.mname(), -info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (info <= A.N) {
                 snprintf(buffer, sizeof(buffer),
                     "%s reported singularity in PA^TP^T row %d"
                     " corresponding to A row %d for state scalar %d",
-                    mname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
+                    spec.mname(), info-1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             } else if (   info == A.N+1
@@ -685,11 +673,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 snprintf(buffer, sizeof(buffer),
                     "%s reported condition number like %g for "
                     " m=%d, n=%d with km=%g, kn=%g",
-                    mname, 1/rcond, m, n, km, kn);
+                    spec.mname(), 1/rcond, m, n, km, kn);
                 WARN(buffer); // Warn user but continue...
             } else {
                 snprintf(buffer, sizeof(buffer),
-                    "%s reported unknown error %d", mname, info);
+                    "%s reported unknown error %d", spec.mname(), info);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
         }
