@@ -452,11 +452,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     suzerain_bsmbsm A = suzerain_bsmbsm_construct(
             (int) swave_count, Ny, cop.max_kl(), cop.max_ku());
 #ifndef NDEBUG
-# define SCRATCH_C(type, name, ...) \
-         type name = type::Constant(__VA_ARGS__, suzerain::complex::NaN<type::Scalar>())
-# define SCRATCH_R(type, name, ...) \
-         type name = type::Constant(__VA_ARGS__, std::numeric_limits<type::Scalar>::quiet_NaN())
-# define SCRATCH_I(type, name, ...) \
+# define SCRATCH_C(type, name, ...)                             \
+         type name = type::Constant(__VA_ARGS__,                \
+                suzerain::complex::NaN<type::Scalar>())
+# define SCRATCH_R(type, name, ...)                             \
+         type name = type::Constant(__VA_ARGS__,                \
+                std::numeric_limits<type::Scalar>::quiet_NaN())
+# define SCRATCH_I(type, name, ...)                             \
          type name = type::Constant(__VA_ARGS__, -12345)
 #else
 # define SCRATCH_C(type, name, ...) type name(__VA_ARGS__)
@@ -487,9 +489,15 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     const char *mname = "UNKNOWN";          // Used for error reporting
     char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
     switch (spec.method()) {
-    case zgbsv_specification::zgbsv:   mname = "suzerain_lapackext_zgbsv";   break;
-    case zgbsv_specification::zgbsvx:  mname = "suzerain_lapack_zgbsvx";     break;
-    case zgbsv_specification::zcgbsvx: mname = "suzerain_lapackext_zcgbsvx"; break;
+    case zgbsv_specification::zgbsv:
+        mname = "suzerain_lapackext_zgbsv";
+        break;
+    case zgbsv_specification::zgbsvx:
+        mname = "suzerain_lapack_zgbsvx";
+        break;
+    case zgbsv_specification::zcgbsvx:
+        mname = "suzerain_lapackext_zcgbsvx";
+        break;
     }
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common output for all solvers
@@ -524,7 +532,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
-            // Short circuiting did NOT occur for Nyquist or dealiasing modes...
+            // Short circuiting DIDN'T occur for Nyquist or dealiasing modes...
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
                 memset(p, 0, A.N*sizeof(p[0]));             // so we may zero,
@@ -550,7 +558,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
             // Given state pencil "p" the rest of the solve loop looks like
             //
-            //     b := P p            using suzerain_bsmbsm_?aPxpby
+            //     b := P p            using suzerain_bsmbsm_zaPxpby
             //     apply BC to RHS     using IsothermalNoSlipPATPTEnforcer
             //     apply BC to PA^TP^T using IsothermalNoSlipPATPTEnforcer
             //     x := (LU)^-T b      using ?gbsvx which factorizes PA^TP^T
@@ -563,9 +571,9 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
             SUZERAIN_TIMER_BEGIN("implicit operator BCs");
             bc_enforcer.rhs(b.data());
-            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place LUP
+            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place
                 bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
-            } else {                                   // Out-of-place LUP
+            } else {                                            // Out-of-place
                 bc_enforcer.op(A, patpt.data(), patpt.colStride());
             }
             SUZERAIN_TIMER_END("implicit operator BCs");
@@ -577,7 +585,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             default:
                 SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
 
-            case zgbsv_specification::zgbsv:                    // In-place LUP, solve
+            case zgbsv_specification::zgbsv:                    // In-place
                 SUZERAIN_TIMER_BEGIN(mname);
                 info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
                     lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
@@ -649,9 +657,9 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             }
 
             SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place solve
+            if (spec.method() == zgbsv_specification::zgbsv) {  // In-place
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
-            } else {                                   // Out-of-place solve
+            } else {                                            // Out-of-place
                 suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
             }
             SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
@@ -672,7 +680,8 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                     mname, info - 1, suzerain_bsmbsm_q(A.S, A.n, info-1),
                     suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
                 SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            } else if (info == A.N+1 && spec.method() == zgbsv_specification::zgbsvx) {
+            } else if (   info == A.N+1
+                       && spec.method() == zgbsv_specification::zgbsvx) {
                 snprintf(buffer, sizeof(buffer),
                     "%s reported condition number like %g for "
                     " m=%d, n=%d with km=%g, kn=%g",
