@@ -94,5 +94,12 @@ dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
 #dist_check_SCRIPTS += test_physical_implicit.sh
 
+if BUILD_REACTING
+TESTS                             += test_antioch_constitutive
+EXTRA_PROGRAMS                     = test_antioch_constitutive
+test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
+test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
+endif
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

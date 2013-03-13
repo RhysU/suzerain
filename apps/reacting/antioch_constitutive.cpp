@@ -190,7 +190,10 @@ antioch_constitutive::save(
         std::string speci("Species_"+i);
         esio_string_set(h, acd, speci.c_str(), this->species_names[i].c_str());
     }
-    
+
+    // chemistry input file
+    esio_string_set(h, acd, "chem_input_file", this->chem_input_file.c_str());    
+
     // Lewis number
     esio_attribute_write(h, acd, name_Le   , &this->Le);
 
@@ -226,6 +229,11 @@ antioch_constitutive::load(
         t.species_names.push_back(tmp);
         free(tmp);
     }
+
+    // chemistry input file
+    char* tmp = esio_string_get(h, acd, "chem_input_file");
+    t.chem_input_file = tmp;
+    free(tmp);
 
     // Lewis number
     esio_attribute_read(h, acd, name_Le   , &t.Le);

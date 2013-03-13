@@ -148,8 +148,6 @@ public:
      */
     const std::size_t Ns() const { return species_names.size(); }
 
-protected:
-
     /**
      * Vector of names of species in mixture
      */
