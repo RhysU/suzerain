@@ -53,7 +53,8 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 namespace reacting {
 
 antioch_constitutive::antioch_constitutive()
-    : species_names(0)
+    : antioch_ver(Antioch::get_antioch_version())
+    , species_names(0)
     , chem_input_file()
     , Le   (std::numeric_limits<real_t>::quiet_NaN())
     , alpha(std::numeric_limits<real_t>::quiet_NaN())
@@ -65,7 +66,8 @@ antioch_constitutive::antioch_constitutive(
     const std::string& chem_input_file,
     const real_t Le,
     const real_t alpha)
-    : species_names  (species_names)
+    : antioch_ver(Antioch::get_antioch_version())
+    , species_names  (species_names)
     , chem_input_file(chem_input_file)
     , Le    (Le)
     , alpha (alpha)
@@ -178,9 +180,8 @@ antioch_constitutive::save(
     static const char acd[] = "antioch_constitutive_data";
 
     // FIXME: version is written by save but not read by load
-    int antioch_rev = Antioch::get_antioch_version();
-    esio_line_write(h, acd, &antioch_rev, 0, 
-                    "Place to stash all antioch_constitutive related data.");
+    esio_line_write(h, acd, &antioch_ver, 0, 
+                    "Antioch version number and antioch_contitutive data.");
 
     // number of species
     int Ns = this->species_names.size();
@@ -216,6 +217,16 @@ antioch_constitutive::load(
     antioch_constitutive t;
 
     static const char acd[] = "antioch_constitutive_data";
+
+    // antioch version
+    esio_line_read(h, acd, &t.antioch_ver, 0);
+
+    // Will never overwrite antioch version info
+    if (t.antioch_ver != this->antioch_ver) {
+        //... but warn if it doesn't match
+        WARN0("Antioch version has changed.  Was " << t.antioch_ver 
+              << " when written.  Is now " << this->antioch_ver);
+    }
 
     // number of species
     int Ns;

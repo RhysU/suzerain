@@ -149,6 +149,11 @@ public:
     const std::size_t Ns() const { return species_names.size(); }
 
     /**
+     * Version of libantioch reported by Antioch::get_antioch_version
+     */
+    int antioch_ver;
+
+    /**
      * Vector of names of species in mixture
      */
     std::vector<std::string> species_names;
