@@ -95,5 +95,9 @@ dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
 dist_check_SCRIPTS += test_physical_implicit.sh
 
+# Ensure various implicit solver types give roughly equivalent results
+TESTS              += test_implicit_solvers.sh
+dist_check_SCRIPTS += test_implicit_solvers.sh
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
