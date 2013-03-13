@@ -28,18 +28,24 @@ class zgbsv_specification
 {
 public:
 
+    /** Which general banded solver is specified? */
     enum method_type { zgbsvx = 1, zgbsv, zcgbsvx };
 
+    /** Construct a default solver specification */
     zgbsv_specification();
+
+    /** Construct a solver specification by parsing the given \c spec. */
     zgbsv_specification(const std::string &spec);
 
-    method_type method() const { return method_; }
-    bool        equil()  const { return equil_;  }
-    bool        reuse()  const { return reuse_;  }
-    int         aiter()  const { return aiter_;  }
-    int         siter()  const { return siter_;  }
-    int         diter()  const { return diter_;  }
-    double      tolsc()  const { return tolsc_;  }
+    method_type  method()   const { return method_; }
+    bool         equil()    const { return equil_;  }
+    bool         reuse()    const { return reuse_;  }
+    int          aiter()    const { return aiter_;  }
+    int          siter()    const { return siter_;  }
+    int          diter()    const { return diter_;  }
+    double       tolsc()    const { return tolsc_;  }
+    bool         in_place() const;
+    const char * mname()    const;
 
     operator std::string () const;
     bool operator==(const zgbsv_specification &that) const;

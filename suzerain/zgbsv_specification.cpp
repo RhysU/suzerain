@@ -102,6 +102,26 @@ zgbsv_specification::zgbsv_specification(const std::string& spec)
     *this = s;
 }
 
+bool zgbsv_specification::in_place() const
+{
+    switch (method_) {
+    case zgbsv_specification::zgbsv:   return true;
+    case zgbsv_specification::zgbsvx:  return false;
+    case zgbsv_specification::zcgbsvx: return false;
+    default:                           return false;
+    }
+}
+
+const char * zgbsv_specification::mname() const
+{
+    switch (method_) {
+    case zgbsv_specification::zgbsv:   return "suzerain_lapackext_zgbsv";
+    case zgbsv_specification::zgbsvx:  return "suzerain_lapack_zgbsvx";
+    case zgbsv_specification::zcgbsvx: return "suzerain_lapackext_zcgbsvx";
+    default:                           return "UNKNOWN";
+    }
+}
+
 zgbsv_specification::operator std::string () const
 {
     std::ostringstream os;
