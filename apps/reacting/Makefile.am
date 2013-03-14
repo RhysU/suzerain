@@ -99,10 +99,14 @@ dist_check_SCRIPTS += test_physical_explicit.sh
 #dist_check_SCRIPTS += test_physical_implicit.sh
 
 if BUILD_REACTING
-TESTS                             += test_antioch_constitutive
-EXTRA_PROGRAMS                     = test_antioch_constitutive
+TESTS                             += test_antioch_constitutive.sh
+dist_check_SCRIPTS                += test_antioch_constitutive.sh
+
+check_PROGRAMS                     = test_antioch_constitutive
 test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
 test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
+
+TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
 endif
 
 # Required for AX_AM_MACROS

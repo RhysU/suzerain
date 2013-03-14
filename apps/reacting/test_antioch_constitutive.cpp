@@ -179,7 +179,7 @@ int test_save_load(MPI_Comm comm)
 /*
  * Check that call to init_antioch puts objects in desired state
  */
-int test_init_antioch()
+int test_init_antioch(const std::string& chem_xml_file)
 {
     
     using suzerain::reacting::antioch_constitutive;
@@ -195,13 +195,10 @@ int test_init_antioch()
     species_names.push_back( "O" );
     species_names.push_back( "NO" );
 
-    // Not a real file... only checking name consistency
-    std::string chem_input_file("fake_filename.xml");
-        
     const real_t Le = 0.7;
     const real_t alpha = 0.5;
 
-    antioch_constitutive acl1(species_names, chem_input_file, Le, alpha);
+    antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
 
     acl1.init_antioch();
 
@@ -252,15 +249,16 @@ int test_init_antioch()
 
 int main(int argc, char **argv)
 {
-    // MPI_Init(&argc, &argv);                     // Initialize MPI...
-    // atexit((void (*) ()) MPI_Finalize);         // ...finalize at exit
-    // suzerain::support::logging::initialize(     // Initialize logging
-    //     MPI_COMM_WORLD,    
-    //     suzerain::support::log4cxx_config_console); // correct???
+
+    // Check command line count.
+    if( argc != 2 ) {
+        std::cerr << "Error: Must specify reaction set XML input file." << std::endl;
+        return 1;
+    }
+
+    std::string chem_xml_file(argv[1]);
 
     initialize_test_env(argc, argv);
-
-    std::cout << "Running the antioch_constitutive unit test suite" << std::endl;
 
     int etot=0;
 
@@ -270,7 +268,7 @@ int main(int argc, char **argv)
     else std::cout << " passed." << std::endl;
                      
     std::cout << "Running test_init_antioch..." << std::endl;
-    ierr = test_init_antioch(); etot += ierr;
+    ierr = test_init_antioch(chem_xml_file); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
 
