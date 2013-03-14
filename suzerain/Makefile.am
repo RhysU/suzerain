@@ -131,6 +131,7 @@ nobase_pkginclude_HEADERS += traits.hpp
 nobase_pkginclude_HEADERS += utility.hpp
 nobase_pkginclude_HEADERS += validation.hpp
 nobase_pkginclude_HEADERS += version.hpp
+nobase_pkginclude_HEADERS += zgbsv_bsmbsm_solver.hpp
 nobase_pkginclude_HEADERS += zgbsv_specification.hpp
 
 # Public library is assembled from multiple convenience libraries
@@ -246,6 +247,7 @@ libbase_la_SOURCES       += pencil_grid.cpp
 libbase_la_SOURCES       += richardson.c
 libbase_la_SOURCES       += rngstream.cpp
 libbase_la_SOURCES       += svehla.c
+libbase_la_SOURCES       += zgbsv_bsmbsm_solver.cpp
 libbase_la_SOURCES       += zgbsv_specification.cpp
 EXTRA_libbase_la_SOURCES  = exprparse_impl.hpp
 
