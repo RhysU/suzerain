@@ -576,13 +576,15 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
             case zgbsv_specification::zgbsv:
                 SUZERAIN_TIMER_BEGIN(spec.mname());
-                assert(spec.in_place() == true);
-                info = suzerain_lapackext_zgbsv(trans, A.N, A.KL, A.KU, 1,
-                    lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
+                assert(spec.reuse()    == false);
+                assert(spec.in_place() == true );
+                fact = default_fact;
+                info = suzerain_lapackext_zgbsv(&fact, trans, A.N, A.KL, A.KU,
+                    1, lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
                 SUZERAIN_TIMER_END(spec.mname());
 
                 if (SUZERAIN_UNLIKELY(n == 0 && m == 0 && !info)) {
-                    info = suzerain_lapack_zgbtrs(trans, A.N, A.KL, A.KU,
+                    info = suzerain_lapackext_zgbsv(&fact, trans, A.N, A.KL, A.KU,
                         nconstraints, lu.data(), lu.colStride(), ipiv.data(),
                         ic0->data(), A.N);
                 }
@@ -591,6 +593,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             case zgbsv_specification::zgbsvx:
                 SUZERAIN_TIMER_BEGIN(spec.mname());
                 assert(spec.in_place() == false);
+                assert(spec.reuse()    == false);
                 info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
                     patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
                     ipiv.data(), &equed, r.data(), c.data(),

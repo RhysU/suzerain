@@ -5025,6 +5025,7 @@ suzerain_blasext_zpromote(
 
 inline int
 suzerain_lapackext_sgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -5036,7 +5037,11 @@ suzerain_lapackext_sgbsv(
         float *b,
         const int ldb)
 {
-    int info = suzerain_lapack_sgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    int info = 0;
+    if (toupper(*fact) == 'N') {
+        info  = suzerain_lapack_sgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+        *fact = 'F';
+    }
     if (!info) {
         info = suzerain_lapack_sgbtrs(
                 trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
@@ -5046,6 +5051,7 @@ suzerain_lapackext_sgbsv(
 
 inline int
 suzerain_lapackext_dgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -5057,7 +5063,11 @@ suzerain_lapackext_dgbsv(
         double *b,
         const int ldb)
 {
-    int info = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    int info = 0;
+    if (toupper(*fact) == 'N') {
+        info = suzerain_lapack_dgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+        *fact = 'F';
+    }
     if (!info) {
         info = suzerain_lapack_dgbtrs(
                 trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
@@ -5067,6 +5077,7 @@ suzerain_lapackext_dgbsv(
 
 inline int
 suzerain_lapackext_cgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -5078,7 +5089,11 @@ suzerain_lapackext_cgbsv(
         complex_float *b,
         const int ldb)
 {
-    int info = suzerain_lapack_cgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    int info = 0;
+    if (toupper(*fact) == 'N') {
+        info = suzerain_lapack_cgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+        *fact = 'F';
+    }
     if (!info) {
         info = suzerain_lapack_cgbtrs(
                 trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);
@@ -5088,6 +5103,7 @@ suzerain_lapackext_cgbsv(
 
 inline int
 suzerain_lapackext_zgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -5099,7 +5115,11 @@ suzerain_lapackext_zgbsv(
         complex_double *b,
         const int ldb)
 {
-    int info = suzerain_lapack_zgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+    int info = 0;
+    if (toupper(*fact) == 'N') {
+        info = suzerain_lapack_zgbtrf(n, n, kl, ku, ab, ldab, ipiv);
+        *fact = 'F';
+    }
     if (!info) {
         info = suzerain_lapack_zgbtrs(
                 trans, n, kl, ku, nrhs, ab, ldab, ipiv, b, ldb);

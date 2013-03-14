@@ -3909,11 +3909,15 @@ suzerain_blasext_zpromote(
 
 /*!
  * \brief Compute the solution to a banded system of linear equations \f$ AX=B
- * \f$ using an in-place LU factorization.  This is implemented as a call to
- * GBTRF followed by a call to GBTRS.
+ * \f$ using an in-place LU factorization.  This is implemented as a
+ * possible call to GBTRF followed by a call to GBTRS.
  *
  * Transposes of \f$ A \f$ can be taken using the \c trans parameter.
  *
+ * \param[in,out] fact  One of 'N' or 'F'.  When 'N' on entry, \f$ A \f$ is
+ *                      factorized and \c fact is set to 'F' on exit.
+ *                      Otherwise, \f$ A \f$ must have been factorized in-place
+ *                      by a previous call to this method employing 'N'.
  * \param[in]     trans One of 'N', 'T', or 'C' for no transpose,
  *                      a transpose, or a conjugate transpose, respectively.
  * \param[in]     n
@@ -3930,13 +3934,14 @@ suzerain_blasext_zpromote(
  */
 int
 suzerain_lapackext_sgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
         const int ku,
         const int nrhs,
         float *ab,
-        const int ldab,
+const int ldab,
         int *ipiv,
         float *b,
         const int ldb);
@@ -3944,6 +3949,7 @@ suzerain_lapackext_sgbsv(
 /*! \copydoc suzerain_lapackext_sgbsv */
 int
 suzerain_lapackext_dgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -3958,6 +3964,7 @@ suzerain_lapackext_dgbsv(
 /*! \copydoc suzerain_lapackext_sgbsv */
 int
 suzerain_lapackext_cgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
@@ -3972,6 +3979,7 @@ suzerain_lapackext_cgbsv(
 /*! \copydoc suzerain_lapackext_sgbsv */
 int
 suzerain_lapackext_zgbsv(
+        char * const fact,
         const char trans,
         const int n,
         const int kl,
