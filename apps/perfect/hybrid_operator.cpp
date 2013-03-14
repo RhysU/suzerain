@@ -512,7 +512,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const real_t kn = twopioverLz*wn;
 
         // Factorization reuse will not aid us across large jumps in km
-        fact = (spec.reuse() && dkex - dkbx > 1) ? default_fact : fact;
+        if (dkex - dkbx > 1) fact = default_fact;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
@@ -521,12 +521,12 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             // Get pointer to (.,m,n)-th state pencil
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
-            // Short circuiting DIDN'T occur for Nyquist or dealiasing modes...
+            // Short circuiting didn't yet occur for Nyquist/dealiasing modes...
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
-                memset(p, 0, A.N*sizeof(p[0]));             // so we may zero,
-                fact = spec.reuse() ? default_fact : fact;  // mark reuse moot,
-                continue;                                   // and then bail.
+                memset(p, 0, A.N*sizeof(p[0]));  // ...so we can zero,
+                fact = default_fact;             // mark reuse moot,
+                continue;                        // and then short circuit.
             }
 
             // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
@@ -616,8 +616,8 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             case zgbsv_specification::zcgbsvx:
                 SUZERAIN_TIMER_BEGIN(spec.mname());
                 assert(spec.in_place() == false);
-                fact  = spec.reuse() ? fact : 'N';
-                apprx = fact == 'N' ? 0 : 1;
+                fact  = spec.reuse() ? fact : default_fact;
+                apprx = fact == default_fact ? 0 : 1;
                 aiter = spec.aiter();
                 afrob = -1;
                 siter = spec.siter();
