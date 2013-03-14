@@ -296,28 +296,28 @@ class IsothermalNoSlipPATPTEnforcer
 
 public:
 
-    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A,
+    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
                                   const suzerain_rholut_imexop_scenario &s)
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
         // Starting offset to named scalars in interleaved_state pencil
-        const int start_e   = static_cast<int>(ndx::e  ) * A.n;
-        const int start_mx  = static_cast<int>(ndx::mx ) * A.n;
-        const int start_my  = static_cast<int>(ndx::my ) * A.n;
-        const int start_mz  = static_cast<int>(ndx::mz ) * A.n;
-        const int start_rho = static_cast<int>(ndx::rho) * A.n;
+        const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
+        const int mx0  = static_cast<int>(ndx::mx ) * A_T.n;
+        const int my0  = static_cast<int>(ndx::my ) * A_T.n;
+        const int mz0  = static_cast<int>(ndx::mz ) * A_T.n;
+        const int rho0 = static_cast<int>(ndx::rho) * A_T.n;
 
-        // Relative to start_foo what is the offset to lower, upper walls
-        const int wall[nwalls] = { 0, A.n - 1};
+        // Relative to foo0 what is the offset to lower, upper walls
+        const int wall[nwalls] = { 0, A_T.n - 1};
 
         // Prepare indices within PA^TP^T corresponding to the walls.
-        // Uses that A_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
+        // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
-            e     [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_e   + wall[i]);
-            noslip[i][0] = suzerain_bsmbsm_qinv(A.S, A.n, start_mx  + wall[i]);
-            noslip[i][1] = suzerain_bsmbsm_qinv(A.S, A.n, start_my  + wall[i]);
-            noslip[i][2] = suzerain_bsmbsm_qinv(A.S, A.n, start_mz  + wall[i]);
-            rho   [i]    = suzerain_bsmbsm_qinv(A.S, A.n, start_rho + wall[i]);
+            e     [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, e0   + wall[i]);
+            noslip[i][0] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mx0  + wall[i]);
+            noslip[i][1] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, my0  + wall[i]);
+            noslip[i][2] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mz0  + wall[i]);
+            rho   [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
         }
     }
 
