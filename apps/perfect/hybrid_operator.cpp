@@ -550,9 +550,10 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             //     b := P p            using suzerain_bsmbsm_zaPxpby
             //     apply BC to RHS     using IsothermalNoSlipPATPTEnforcer
             //     apply BC to PA^TP^T using IsothermalNoSlipPATPTEnforcer
-            //     x := (LU)^-T b      using ?gbsvx which factorizes PA^TP^T
-            //                         or ?gbsv which factorizes in place
-            //     p := P^T x          using suzerain_bsmbsm_?aPxpby
+            //     x := (LU)^-T b      using zcgbsvx/zgbsvx which factorize
+            //                         PA^TP^T out-of-place or zgbsv which
+            //                         factorizes in-place
+            //     p := P^T x          using suzerain_bsmbsm_zaPxpby
 
             SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
             suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
