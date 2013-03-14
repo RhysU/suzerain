@@ -168,6 +168,9 @@ void
 antioch_constitutive::save(
         const esio_handle h) const
 {
+
+    using boost::lexical_cast;
+
     DEBUG0("Storing antioch_constitutive parameters");
 
     // Only root writes data
@@ -190,7 +193,7 @@ antioch_constitutive::save(
     // species names
     for (size_t i=0; i<species_names.size(); ++i)
     {
-        std::string speci("Species_"+i);
+        std::string speci("Species_" + lexical_cast<std::string>(i));
         esio_string_set(h, acd, speci.c_str(), this->species_names[i].c_str());
     }
 
@@ -209,6 +212,8 @@ antioch_constitutive::load(
         const esio_handle h,
         const bool verbose)
 {
+    using boost::lexical_cast;
+
     DEBUG0("Loading antioch_constitutive parameters");
 
     // All ranks load
@@ -237,7 +242,7 @@ antioch_constitutive::load(
     // species names
     for (int i=0; i<Ns; ++i)
     {
-        std::string speci("Species_"+i);
+        std::string speci("Species_" + lexical_cast<std::string>(i));
         char* tmp = esio_string_get(h, acd, speci.c_str());
         t.species_names.push_back(tmp);
         free(tmp);
