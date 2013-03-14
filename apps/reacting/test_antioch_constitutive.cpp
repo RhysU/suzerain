@@ -236,7 +236,12 @@ int test_init_antioch(const std::string& chem_xml_file)
         nerr += 1;
     }
 
-    // TODO: Test with a valid chem input file (e.g., air_5sp.xml) and check number of reactions
+    // ... number of reactions (NOTE: result specific to air_sp5.xml and species selected!)
+    if (acl1.reactions->n_reactions() != 5) {
+        std::cerr << "Error: acl1.reactions->n_reactions() = " << acl1.reactions->n_reactions()
+                  << " but should be " << 5 << std::endl;
+        nerr += 1;
+    }
 
     // The cea_thermo object has required curve fits
     if (!acl1.cea_thermo->check()) {

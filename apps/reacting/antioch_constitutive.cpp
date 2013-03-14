@@ -28,6 +28,7 @@
 #include <suzerain/validation.hpp>
 
 #include <antioch/antioch_version.h>
+#include <antioch/read_reaction_set_data_xml.h>
 
 /** @file
  * Class wrapping libantioch functionality for chemically reacting
@@ -282,8 +283,12 @@ void antioch_constitutive::init_antioch()
     reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
     cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
 
-    // FIXME: Uncomment this line once test_init_antioch supports real input file
-    //Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, true, *reactions);
+    // FIXME: This will do for now, but need to think about what
+    // happens in parallel to avoid all ranks trying to read this
+    // file.
+    Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, 
+                                                false /* verbose */, 
+                                                *reactions);
 
     // TODO: Add consistency asserts... everybody has same number of
     // species, number of reactions is sane, valid curve fits,
