@@ -29,6 +29,10 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
+#include <antioch/chemical_mixture.h>
+#include <antioch/reaction_set.h>
+#include <antioch/cea_thermo.h>
+
 
 namespace suzerain {
 
@@ -38,7 +42,8 @@ namespace reacting {
  * Provides constitutive models for a mixture of ideal gasses
  * leveraging libantioch
  */
-class antioch_constitutive : public support::definition_base
+class antioch_constitutive : public support::definition_base,
+                             public boost::noncopyable
 {
 public:
 
@@ -114,6 +119,14 @@ public:
 
 
     /**
+     * Initialize antioch objects that persist over whole program
+     * life.  Must be called after \ref species_names and \ref
+     * chem_input_file have been properly initialized.
+     */
+    void init_antioch();
+
+
+    /**
      * Given conserved state, compute required thermodynamic and
      * transport quantities for evaluating Navier-Stokes operator.
      *
@@ -172,6 +185,26 @@ public:
      * The ratio of bulk viscosity to dynamic viscosity.
      */
     real_t alpha;
+
+
+    /**
+     * Antioch::ChemicalMixture object, required for anything with
+     * antioch
+     */
+    shared_ptr<Antioch::ChemicalMixture<real_t> > mixture;
+
+    /**
+     * Antioch::ReactionSet object, used by Kinetics in evaluating
+     * reaction srcs
+     */
+    shared_ptr<Antioch::ReactionSet<real_t> > reactions;
+
+    /**
+     * Antioch::CEAThermodynamics object, used to compute inputs for
+     * reaction src evaluation
+     */
+    shared_ptr<Antioch::CEAThermodynamics<real_t> > cea_thermo;
+
 };
 
 } // namespace reacting

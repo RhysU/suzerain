@@ -270,9 +270,22 @@ antioch_constitutive::load(
     this->populate(t, verbose);  
 }
 
-// Evaluate: takes state and gives back everything we need from
-// Cantera, including temp, pres, transport props, enthalpies, and
-// reaction rates
+
+void antioch_constitutive::init_antioch()
+{
+    mixture    = make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
+    reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
+    cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
+
+    // FIXME: Uncomment this line once test_init_antioch supports real input file
+    //Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, true, *reactions);
+
+    // TODO: Add consistency asserts... everybody has same number of
+    // species, number of reactions is sane, valid curve fits,
+    // anything else?
+}
+
+// Evaluate everything
 void 
 antioch_constitutive::evaluate (const real_t  e,
                                 const real_t* m,

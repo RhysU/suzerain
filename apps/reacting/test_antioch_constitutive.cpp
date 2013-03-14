@@ -29,7 +29,10 @@
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/logging.hpp>
 
+#include <antioch/chemical_species.h>
+
 #include "antioch_constitutive.hpp"
+
 
 /*
  * Initialize minimial test environment: MPI and logging
@@ -173,6 +176,79 @@ int test_save_load(MPI_Comm comm)
     return nerr;
 }
 
+/*
+ * Check that call to init_antioch puts objects in desired state
+ */
+int test_init_antioch()
+{
+    
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=5;
+    species_names.reserve(Ns);
+    species_names.push_back( "N2" );
+    species_names.push_back( "O2" );
+    species_names.push_back( "N" );
+    species_names.push_back( "O" );
+    species_names.push_back( "NO" );
+
+    // Not a real file... only checking name consistency
+    std::string chem_input_file("fake_filename.xml");
+        
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    antioch_constitutive acl1(species_names, chem_input_file, Le, alpha);
+
+    acl1.init_antioch();
+
+    // Check that initialized objects appear to have valid information...
+    // but not exhaustively... that's for antioch to test
+    int nerr=0;
+
+    // The mixture object
+    // ... number of species
+    if (acl1.mixture->n_species() != Ns) {
+        std::cerr << "Error: acl1.mixture->n_species() = " << acl1.mixture->n_species()
+                  << " but should be " << Ns << std::endl;
+        nerr += 1;
+    }
+        
+    // ... species name map
+    const std::vector<Antioch::Species> species_list = acl1.mixture->species_list();
+    for (unsigned int i=0; i<Ns; i++) {
+        // convenience
+        const std::map<std::string,Antioch::Species>& smap = acl1.mixture->species_name_map();
+
+        if( smap.find( species_names[i] )->second != species_list[i] ){
+            std::cerr << "Error: species name map and species list ordering mismatch" << std::endl
+                      << "species_name_map = " << smap.find( species_names[i] )->second
+                      << ", species_list = " << species_list[i] << std::endl;
+            nerr += 1;
+        }
+    }
+
+    // The reaction object
+    // ... number of species
+    if (acl1.reactions->n_species() != acl1.mixture->n_species()) {
+        std::cerr << "Error: acl1.reactions->n_species() = " << acl1.mixture->n_species()
+                  << " but should be " << Ns << std::endl;
+        nerr += 1;
+    }
+
+    // TODO: Test with a valid chem input file (e.g., air_5sp.xml) and check number of reactions
+
+    // The cea_thermo object has required curve fits
+    if (!acl1.cea_thermo->check()) {
+        std::cerr << "Error: acl1.cea_thermo does not have curve fits for all specis (why not?)." << std::endl;
+        nerr += 1;
+    }
+
+    return nerr;
+}
 
 int main(int argc, char **argv)
 {
@@ -186,13 +262,21 @@ int main(int argc, char **argv)
 
     std::cout << "Running the antioch_constitutive unit test suite" << std::endl;
 
+    int etot=0;
+
     std::cout << "Running test_save_load..." << std::endl;
-    int ierr = test_save_load(MPI_COMM_WORLD);
+    int ierr = test_save_load(MPI_COMM_WORLD); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
                      
+    std::cout << "Running test_init_antioch..." << std::endl;
+    ierr = test_init_antioch(); etot += ierr;
+    if (ierr!=0) std::cout << " FAILED." << std::endl;
+    else std::cout << " passed." << std::endl;
 
-    return ierr;
+    std::cout << "Encountered " << etot << " total errors." << std::endl;
+
+    return etot;
 }
 
 #endif // HAVE_ANTIOCH
