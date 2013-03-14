@@ -486,7 +486,8 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Solver-related operational details
-    char fact = spec.equil() ? 'E' : 'N';   // Equilibrate?
+    const char default_fact = spec.equil() ? 'E' : 'N'; // Equilibriate?
+    char fact = default_fact;       // Initial operation is the default
     static const char trans = 'T';  // Un-transpose transposed operator
     int info;                       // Common output for all solvers
     char equed;                     // zgbsvx equilibration type
@@ -511,7 +512,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const real_t kn = twopioverLz*wn;
 
         // Factorization reuse will not aid us across large jumps in km
-        fact = (spec.reuse() && dkex - dkbx > 1) ? 'N' : fact;
+        fact = (spec.reuse() && dkex - dkbx > 1) ? default_fact : fact;
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
@@ -524,7 +525,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
                 memset(p, 0, A.N*sizeof(p[0]));             // so we may zero,
-                fact = spec.reuse() ? 'N' : fact;           // mark reuse moot,
+                fact = spec.reuse() ? default_fact : fact;  // mark reuse moot,
                 continue;                                   // and then bail.
             }
 
