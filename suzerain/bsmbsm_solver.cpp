@@ -27,9 +27,9 @@ namespace suzerain {
 
 bsmbsm_solver::bsmbsm_solver(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& specification)
+        const zgbsv_specification& spec)
     : suzerain_bsmbsm(bsmbsm)
-    , zgbsv_specification(specification)
+    , spec(spec)
     , LU(KL + LD, N)
     , b(N)
     , A(KL + LU.data(), LD, N, KL + KU) // Aliases LU
@@ -46,18 +46,18 @@ bsmbsm_solver::bsmbsm_solver(
 
 bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& specification)
-    : bsmbsm_solver(bsmbsm, specification)
+        const zgbsv_specification& spec)
+    : bsmbsm_solver(bsmbsm, spec)
 {
-    if (method() != zgbsv_specification::zgbsv) throw std::invalid_argument(
-            "Invalid method() in bsmbsm_solver_zgbsv");
-    assert(in_place() == true);
+    if (spec.method() != zgbsv_specification::zgbsv)
+        throw std::invalid_argument("Invalid spec in bsmbsm_solver_zgbsv");
+    assert(spec.in_place() == true);
 }
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& specification)
-    : bsmbsm_solver(bsmbsm, specification)
+        const zgbsv_specification& spec)
+    : bsmbsm_solver(bsmbsm, spec)
     , r(N)       // Per zgbsvx requirements
     , c(N)       // Per zgbsvx requirements
     , work(2*N)  // Per zgbsvx requirements
@@ -65,11 +65,11 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     , A_(LD, N)  // Operator storage for out-of-place factorization
     , x_(N)      // Solution storage for out-of-place solution
 {
-    if (method() != zgbsv_specification::zgbsvx) throw std::invalid_argument(
-            "Invalid method() in bsmbsm_solver_zgbsvx");
+    if (spec.method() != zgbsv_specification::zgbsvx)
+        throw std::invalid_argument("Invalid method in bsmbsm_solver_zgbsvx");
 
     // See Eigen "Changing the mapped array" documentation for details
-    assert(in_place() == false);
+    assert(spec.in_place() == false);
     new (&A) A_type(A_.data(), A_.rows(), A_.cols(), A_.colStride());
     new (&x) x_type(x_.data(), x_.rows());
 
@@ -86,17 +86,17 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& specification)
-    : bsmbsm_solver(bsmbsm, specification)
+        const zgbsv_specification& spec)
+    : bsmbsm_solver(bsmbsm, spec)
     , work(2*N)  // Per zcgbsvx requirements
     , A_(LD, N)  // Operator storage for out-of-place factorization
     , x_(N)      // Solution storage for out-of-place solution
 {
-    if (method() != zgbsv_specification::zcgbsvx) throw std::invalid_argument(
-            "Invalid method() in bsmbsm_solver_zcgbsvx");
+    if (spec.method() != zgbsv_specification::zcgbsvx)
+        throw std::invalid_argument("Invalid method in bsmbsm_solver_zcgbsvx");
 
     // See Eigen "Changing the mapped array" documentation for details
-    assert(in_place() == false);
+    assert(spec.in_place() == false);
     new (&A) A_type(A_.data(), A_.rows(), A_.cols(), A_.colStride());
     new (&x) x_type(x_.data(), x_.rows());
 

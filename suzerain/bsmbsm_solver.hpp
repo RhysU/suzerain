@@ -26,15 +26,17 @@ namespace suzerain {
 
 // TODO Document
 
-class bsmbsm_solver : public suzerain_bsmbsm, public zgbsv_specification
+class bsmbsm_solver : public suzerain_bsmbsm
 {
 
 protected:
 
     bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
-                  const zgbsv_specification& specification);
+                  const zgbsv_specification& spec);
 
 public:
+
+    zgbsv_specification spec;
 
     ArrayXXc LU;
 
@@ -57,7 +59,7 @@ class bsmbsm_solver_zgbsv : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
-                        const zgbsv_specification& specification);
+                        const zgbsv_specification& spec);
 
 
 };
@@ -67,7 +69,7 @@ class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                         const zgbsv_specification& specification);
+                         const zgbsv_specification& spec);
 
     ArrayXr  r;
     ArrayXr  c;
@@ -86,7 +88,7 @@ class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                          const zgbsv_specification& specification);
+                          const zgbsv_specification& spec);
 
     ArrayXc  work;
 
