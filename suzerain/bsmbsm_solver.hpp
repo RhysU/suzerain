@@ -50,7 +50,7 @@ public:
 
     PX_type PX;
 
-    typedef Array<int, Dynamic, 1, ColMajor> ipiv_type;
+    typedef Matrix<int, Dynamic, 1> ipiv_type;
 
     ipiv_type ipiv;
 
@@ -209,13 +209,13 @@ protected:
 
     char equed_;
 
-    Array<double, Dynamic, 1, ColMajor> r_;
+    Matrix<double, Dynamic, 1> r_;
 
-    Array<double, Dynamic, 1, ColMajor> c_;
+    Matrix<double, Dynamic, 1> c_;
 
-    Array<complex_double, Dynamic, 2, ColMajor> work_;
+    Matrix<complex_double, Dynamic, 2, ColMajor> work_;
 
-    Array<double, Dynamic, 1, ColMajor> rwork_;
+    Matrix<double, Dynamic, 1> rwork_;
 
     double rcond_;
 
@@ -243,7 +243,7 @@ protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
 
-    Array<complex_double, Dynamic, 2, ColMajor> work_;
+    Matrix<complex_double, Dynamic, 2, ColMajor> work_;
 
 private:
 
