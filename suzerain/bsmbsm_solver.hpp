@@ -174,6 +174,11 @@ public:
                          const zgbsv_specification& spec,
                          const int                  nrhs);
 
+    char equed() const
+    {
+        return equed_;
+    }
+
     Array<double, Dynamic, 1, ColMajor> r;
 
     Array<double, Dynamic, 1, ColMajor> c;
@@ -186,9 +191,12 @@ protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
 
+    char equed_;
+
 private:
 
     LU_type PAPT_;
+
     PB_type PX_;
 
 };

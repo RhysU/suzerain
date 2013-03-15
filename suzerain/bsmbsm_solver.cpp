@@ -109,6 +109,7 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     , c(N)          // Per zgbsvx requirements
     , work(N, 2)    // Per zgbsvx requirements
     , rwork(N)      // Per zgbsvx requirements
+    , equed_('N')   // Default for non-factorized operator
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
