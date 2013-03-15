@@ -249,6 +249,20 @@ int test_init_antioch(const std::string& chem_xml_file)
         nerr += 1;
     }
 
+    // the kinetics evaluator
+    if (acl1.kinetics->n_species()!=Ns) {
+        std::cerr << "Error: acl1.kinetics->n_species() = " << acl1.kinetics->n_species()
+                  << " but should be " << Ns << std::endl;
+        nerr += 1;
+    }
+
+    if (acl1.kinetics->n_reactions()!=5) {
+        std::cerr << "Error: acl1.kinetics->n_reactions() = " << acl1.kinetics->n_reactions()
+                  << " but should be " << 5 << std::endl;
+        nerr += 1;
+    }
+    
+
     return nerr;
 }
 

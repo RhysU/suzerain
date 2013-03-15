@@ -32,6 +32,7 @@
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
+#include <antioch/kinetics_evaluator.h>
 
 
 namespace suzerain {
@@ -125,7 +126,6 @@ public:
      */
     void init_antioch();
 
-
     /**
      * Given conserved state, compute required thermodynamic and
      * transport quantities for evaluating Navier-Stokes operator.
@@ -204,6 +204,16 @@ public:
      * reaction src evaluation
      */
     shared_ptr<Antioch::CEAThermodynamics<real_t> > cea_thermo;
+
+    /**
+     * Antioch::KineticsEvaluator object, used to actually compute
+     * mass sources due to chemical reactions.
+     *
+     * FIXME: This object used in this way probably makes this class
+     * thread unsafe.  See comments in antioch/kinetics_evaluator.h
+     * and issue #2798.
+     */
+    shared_ptr<Antioch::KineticsEvaluator<real_t> > kinetics;
 
 };
 

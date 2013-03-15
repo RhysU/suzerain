@@ -290,6 +290,8 @@ void antioch_constitutive::init_antioch()
                                                 false /* verbose */, 
                                                 *reactions);
 
+    kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
+
     // TODO: Add consistency asserts... everybody has same number of
     // species, number of reactions is sane, valid curve fits,
     // anything else?
@@ -311,6 +313,26 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t* om) const
 {
     FATAL0("antioch_constitutive::evaluate is not implemented yet!");
+
+  // // Mass fractions
+  // std::vector<Scalar> Y(n_species,0.2);
+
+  // const Scalar R_mix = chem_mixture.R(Y);
+
+  // const Scalar rho = P/(R_mix*T);
+
+  // std::vector<Scalar> molar_densities(n_species,0.0);
+  // chem_mixture.molar_densities(rho,Y,molar_densities);
+
+  // std::vector<Scalar> h_RT_minus_s_R(n_species);
+  // typedef typename Antioch::CEAThermodynamics<Scalar>::template Cache<Scalar> Cache;
+  // thermo.h_RT_minus_s_R(Cache(T),h_RT_minus_s_R);
+
+  // Antioch::KineticsEvaluator<Scalar> kinetics( reaction_set );
+  // std::vector<Scalar> omega_dot(n_species);
+  
+  // kinetics.compute_mass_sources( T, rho, R_mix, Y, molar_densities, h_RT_minus_s_R, omega_dot );
+
 }
 
 } // namespace reacting
