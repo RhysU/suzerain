@@ -178,7 +178,7 @@ public:
 
     Array<double, Dynamic, 1, ColMajor> c;
 
-    Array<complex_double, Dynamic, 1, ColMajor> work;
+    Array<complex_double, Dynamic, 2, ColMajor> work;
 
     Array<double, Dynamic, 1, ColMajor> rwork;
 
@@ -201,7 +201,7 @@ public:
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
-    Array<complex_double, Dynamic, 1, ColMajor> work;
+    Array<complex_double, Dynamic, 2, ColMajor> work;
 
 protected:
 

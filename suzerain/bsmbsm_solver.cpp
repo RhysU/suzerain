@@ -107,7 +107,7 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     : bsmbsm_solver(bsmbsm, spec, nrhs)
     , r(N)          // Per zgbsvx requirements
     , c(N)          // Per zgbsvx requirements
-    , work(2*N)     // Per zgbsvx requirements
+    , work(N, 2)    // Per zgbsvx requirements
     , rwork(N)      // Per zgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
@@ -148,7 +148,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const zgbsv_specification& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
-    , work(2*N)     // Per zcgbsvx requirements
+    , work(N, 2)    // Per zcgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
