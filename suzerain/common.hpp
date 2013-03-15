@@ -247,6 +247,7 @@ using boost::array;         /**< \namespace suzerain */
  */
 
 // Bring common Eigen names into this namespace
+using Eigen::Aligned;      /**< \namespace suzerain */
 using Eigen::Array;        /**< \namespace suzerain */
 using Eigen::ColMajor;     /**< \namespace suzerain */
 using Eigen::Dynamic;      /**< \namespace suzerain */
