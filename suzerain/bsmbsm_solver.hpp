@@ -88,7 +88,7 @@ public:
 
 protected:
 
-    virtual int solve_hook(const char trans);
+    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
 
 };
 
@@ -106,7 +106,7 @@ public:
 
 protected:
 
-    virtual int solve_hook(const char trans);
+    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
 
 private:
 
@@ -126,7 +126,7 @@ public:
 
 protected:
 
-    virtual int solve_hook(const char trans);
+    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
 
 private:
 
