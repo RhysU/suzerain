@@ -34,19 +34,25 @@ public:
 
     zgbsv_specification spec;
 
-    ArrayXXc LU;
+    typedef Matrix<complex_double, Dynamic, Dynamic, ColMajor> LU_type;
 
-    ArrayXXc PB;
+    LU_type LU;
 
-    typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > PAPT_type;
+    typedef LU_type PB_type;
+
+    PB_type PB;
+
+    typedef Map<LU_type, Aligned, OuterStride<Dynamic> > PAPT_type;
 
     PAPT_type PAPT;
 
-    typedef Map<ArrayXXc, Aligned> PX_type;
+    typedef Map<PB_type, Aligned> PX_type;
 
     PX_type PX;
 
-    ArrayXi ipiv;
+    typedef Array<int, Dynamic, 1, ColMajor> ipiv_type;
+
+    ipiv_type ipiv;
 
     int supply_b(const complex_double *b, const int j, const int incb = 1)
     {
@@ -138,7 +144,7 @@ protected:
 
     char fact_;
 
-    int  apprx_;
+    int apprx_;
 
 private:
 
@@ -168,10 +174,13 @@ public:
                          const zgbsv_specification& spec,
                          const int                  nrhs);
 
-    ArrayXr r;
-    ArrayXr c;
-    ArrayXc work;
-    ArrayXr rwork;
+    Array<double, Dynamic, 1, ColMajor> r;
+
+    Array<double, Dynamic, 1, ColMajor> c;
+
+    Array<complex_double, Dynamic, 1, ColMajor> work;
+
+    Array<double, Dynamic, 1, ColMajor> rwork;
 
 protected:
 
@@ -179,8 +188,8 @@ protected:
 
 private:
 
-    ArrayXXc PAPT_;
-    ArrayXXc PX_;
+    LU_type PAPT_;
+    PB_type PX_;
 
 };
 
@@ -192,7 +201,7 @@ public:
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
-    ArrayXc work;
+    Array<complex_double, Dynamic, 1, ColMajor> work;
 
 protected:
 
@@ -200,8 +209,8 @@ protected:
 
 private:
 
-    ArrayXXc PAPT_;
-    ArrayXXc PX_;
+    LU_type PAPT_;
+    PB_type PX_;
 
 };
 
