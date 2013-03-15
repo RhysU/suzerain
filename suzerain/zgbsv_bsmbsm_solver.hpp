@@ -24,7 +24,7 @@
 
 namespace suzerain {
 
-// TODO Implement
+// TODO Document
 
 class zgbsv_bsmbsm_solver
     : public zgbsv_specification
@@ -38,19 +38,17 @@ protected:
 
 public:
 
-    typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > A_type;
-
-    typedef Map<ArrayXXc, Aligned                       > LU_type;
-
-    typedef Map<ArrayXc,  Aligned                       > x_type;
-
-    A_type A;
-
-    LU_type LU;
+    ArrayXXc LU;
 
     ArrayXi ipiv;
 
     ArrayXc b;
+
+    typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > A_type;
+
+    A_type A;
+
+    typedef Map<ArrayXc, Aligned> x_type;
 
     x_type x;
 
@@ -64,13 +62,28 @@ public:
     zgbsv_bsmbsm_solver_zgbsv(const zgbsv_specification& specification,
                               const suzerain_bsmbsm&     bsmbsm);
 
-private:
-
-    ArrayXXc buf;
-
-
-
 };
+
+//class zgbsv_bsmbsm_solver_zgbsvx
+//    : public zgbsv_bsmbsm_solver
+//{
+//public:
+//
+//    zgbsv_bsmbsm_solver_zgbsvx(const zgbsv_specification& specification,
+//                               const suzerain_bsmbsm&     bsmbsm);
+//
+//private:
+//
+//    ArrayXr  r;
+//    ArrayXr  c;
+//    ArrayXc  work;
+//    ArrayXr  rwork;
+//
+//    ArrayXXc buf_A;
+//    ArrayXXc buf_LU;
+//    ArrayXc  buf_x;
+//
+//};
 
 } // namespace suzerain
 
