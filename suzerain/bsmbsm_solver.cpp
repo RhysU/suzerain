@@ -19,12 +19,11 @@
 #endif
 
 #include <suzerain/bsmbsm_solver.hpp>
+#include <suzerain/blas_et_al.h>
 #include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 
 namespace suzerain {
-
-// TODO Finish implementing
 
 bsmbsm_solver::bsmbsm_solver(
         const suzerain_bsmbsm&     bsmbsm,
@@ -94,10 +93,9 @@ bsmbsm_solver_zgbsv::solve_hook(
         const char trans,
         const int nrhs)
 {
-    SUZERAIN_UNUSED(trans);
-    SUZERAIN_UNUSED(nrhs);
-
-    return -1; // FIXME Implement
+    return suzerain_lapackext_zgbsv(&fact_, trans, N, KL, KU, nrhs,
+                                    LU.data(), LU.colStride(), ipiv.data(),
+                                    PB.data(), PB.colStride());
 }
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
@@ -137,10 +135,15 @@ bsmbsm_solver_zgbsvx::solve_hook(
         const char trans,
         const int nrhs)
 {
-    SUZERAIN_UNUSED(trans);
-    SUZERAIN_UNUSED(nrhs);
-
-    return -1; // FIXME Implement
+    return suzerain_lapack_zgbsvx(fact_, trans, N, KL, KU, nrhs,
+                                  PAPT.data(), PAPT.colStride(),
+                                  LU.data(), LU.colStride(), ipiv.data(),
+                                  &equed_, r_().data(), c_().data(),
+                                  PB.data(), PB.colStride(),
+                                  PX.data(), PX.colStride(),
+                                  &rcond_, ferr_().data(), berr_().data(),
+                                  work_.data(), rwork_().data());
+    fact_ = 'F';
 }
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
