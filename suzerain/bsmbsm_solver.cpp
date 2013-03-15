@@ -181,7 +181,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
     , afrob_(-1)          // Per zcgbsvx requirements
     , iter_(2, nrhs)      // Stores (aiter, siter, diter) x nrhs
     , tolscres_(2, nrhs)  // Stores (tolsc, res) x nrhs
-    , work_(N, 2)         // Per zcgbsvx requirements
+    , r_(N)               // Stores solution residual for each Pb.
     , PAPT_(LD, N)        // Operator storage for out-of-place factorization
     , PX_(N, nrhs)        // Solution storage for out-of-place solution
 {
@@ -198,7 +198,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
 #ifndef NDEBUG
     iter_    .setConstant(-12345);
     tolscres_.setConstant(std::numeric_limits<double>::quiet_NaN());
-    work_    .setConstant(suzerain::complex::NaN<complex_double>());
+    r_       .setConstant(suzerain::complex::NaN<complex_double>());
     PAPT_    .setConstant(suzerain::complex::NaN<complex_double>());
     PX_      .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
@@ -222,7 +222,7 @@ bsmbsm_solver_zcgbsvx::solve_hook(
 #ifndef NDEBUG
     iter_    .setConstant(-12345);
     tolscres_.setConstant(std::numeric_limits<double>::quiet_NaN());
-    work_    .setConstant(suzerain::complex::NaN<complex_double>());
+    r_       .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
     int info = 0, j = -1;
     while (!info && ++j < nrhs) {
@@ -234,8 +234,7 @@ bsmbsm_solver_zcgbsvx::solve_hook(
                                           LU.data(), ipiv.data(),
                                           PB.data(), PX.data(),
                                           &siter_()[j], &diter_()[j],
-                                          &tolsc_()[j], work_.data(),
-                                          &res_()[j]);
+                                          &tolsc_()[j], r_.data(), &res_()[j]);
     }
 
     return info;

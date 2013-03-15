@@ -253,7 +253,7 @@ protected:
     tolscres_type::RowXpr tolsc_() { return tolscres_.row(0); }
     tolscres_type::RowXpr res_()   { return tolscres_.row(1); }
 
-    Matrix<complex_double, Dynamic, 2, ColMajor> work_;
+    Matrix<complex_double, Dynamic, 1> r_;
 
 private:
 
