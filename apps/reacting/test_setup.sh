@@ -6,7 +6,7 @@ source "`dirname $0`/../test_infrastructure.sh"
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for binary in ./reacting_init ./reacting_advance
+for binary in ./perfect_init ./reacting_advance
 do
     if [ ! -x $binary ]; then
         echo "ERROR: $binary not found or not executable" 1>&2
@@ -30,7 +30,7 @@ declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./reacting_init "$testdir/mms0.h5" --mms=0 --T_wall=$T_wall          \
+runq ./perfect_init "$testdir/mms0.h5" --mms=0 --T_wall=$T_wall          \
                      --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
                      "--plan_wisdom=$testdir/wisdom.init"
 chmod +r "$testdir/mms0.h5"
