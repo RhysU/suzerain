@@ -30,11 +30,6 @@ namespace suzerain {
 class bsmbsm_solver : public suzerain_bsmbsm
 {
 
-protected:
-
-    bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
-                  const zgbsv_specification& spec);
-
 public:
 
     zgbsv_specification spec;
@@ -59,11 +54,28 @@ public:
         return suzerain_bsmbsm_zaPxpby('N', S, n, 1, b, incb, 0, Pb.data(), 1);
     }
 
-    int demand_x(complex_double *x, int incx = 1)
+    int solve(const char trans)
+    {
+        SUZERAIN_TIMER_SCOPED(spec.mname());
+        return solve_internal(trans);
+    }
+
+    int demand_x(complex_double *x, int incx = 1) const
     {
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
         return suzerain_bsmbsm_zaPxpby('T', S, n, 1, Px.data(), 1, 0, x, incx);
     }
+
+protected:
+
+    bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
+                  const zgbsv_specification& spec);
+
+    virtual int solve_hook(const char trans) = 0;
+
+private:
+
+    int solve_internal(const char trans);
 
 };
 
@@ -74,6 +86,9 @@ public:
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
                         const zgbsv_specification& spec);
 
+protected:
+
+    virtual int solve_hook(const char trans);
 
 };
 
@@ -88,6 +103,10 @@ public:
     ArrayXr c;
     ArrayXc work;
     ArrayXr rwork;
+
+protected:
+
+    virtual int solve_hook(const char trans);
 
 private:
 
@@ -104,6 +123,10 @@ public:
                           const zgbsv_specification& spec);
 
     ArrayXc work;
+
+protected:
+
+    virtual int solve_hook(const char trans);
 
 private:
 

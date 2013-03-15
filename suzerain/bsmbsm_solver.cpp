@@ -20,6 +20,7 @@
 
 #include <suzerain/bsmbsm_solver.hpp>
 #include <suzerain/complex.hpp>
+#include <suzerain/error.h>
 
 namespace suzerain {
 
@@ -42,6 +43,33 @@ bsmbsm_solver::bsmbsm_solver(
     Pb  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     ipiv.setConstant(-12345);
 #endif
+}
+
+int
+bsmbsm_solver::solve_internal(const char trans)
+{
+    const int info = solve_hook(trans); // Invoke subclass-specific hook
+    if (info == 0) return info;         // Eagerly return on success
+
+    // Otherwise, loudly report any errors that occurred during the solve
+    char buffer[128];
+    if (info < 0) {
+        snprintf(buffer, sizeof(buffer),
+            "%s reported error in argument %d",
+            spec.mname(), -info);
+        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
+    } else if (info <= N) {
+        snprintf(buffer, sizeof(buffer),
+            "%s reported singularity in PAP^T row %d"
+            " corresponding to A row %d for state scalar %d",
+            spec.mname(), info - 1, suzerain_bsmbsm_q(S, n, info - 1),
+            suzerain_bsmbsm_q(S, n, info - 1) / n);
+        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
+    } else {
+        snprintf(buffer, sizeof(buffer),
+            "%s reported unknown error %d", spec.mname(), info);
+        SUZERAIN_ERROR(buffer, SUZERAIN_ESANITY);
+    }
 }
 
 bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
