@@ -89,22 +89,9 @@ public:
         return apprx_;
     }
 
-    bool apprx(const bool value)
-    {
-        const bool old = apprx_;
-        if (spec.reuse())
-            apprx_ = value;
-        return old;
-    }
+    virtual bsmbsm_solver& supplied_PAPT();
 
-    void supplied_PAPT()
-    {
-        if (spec.reuse()) {
-            apprx_ = fact_ != default_fact();
-        } else {
-            fact_ = default_fact();
-        }
-    }
+    virtual bool apprx(const bool value);
 
     int solve(const char trans, const int nrhs)
     {
@@ -232,8 +219,8 @@ private:
 
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 {
-    /** Type of the contiguous storage housing aiter, siter, and diter. */
-    typedef Matrix<int, 3, Dynamic, ColMajor> iter_type;
+    /** Type of the contiguous storage housing siter and diter. */
+    typedef Matrix<int, 2, Dynamic, ColMajor> iter_type;
 
     /** Type of the contiguous storage housing tolsc and res. */
     typedef Matrix<double, 2, Dynamic, ColMajor> tolscres_type;
@@ -244,9 +231,10 @@ public:
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
-    iter_type::ConstRowXpr aiter() const { return iter_.row(0); }
-    iter_type::ConstRowXpr siter() const { return iter_.row(1); }
-    iter_type::ConstRowXpr diter() const { return iter_.row(2); }
+    virtual bsmbsm_solver& supplied_PAPT();
+
+    iter_type::ConstRowXpr siter() const { return iter_.row(0); }
+    iter_type::ConstRowXpr diter() const { return iter_.row(1); }
 
     tolscres_type::ConstRowXpr tolsc() const { return tolscres_.row(0); }
     tolscres_type::ConstRowXpr res()   const { return tolscres_.row(1); }
@@ -258,9 +246,8 @@ protected:
     double afrob_;
 
     iter_type iter_;
-    iter_type::RowXpr aiter_() { return iter_.row(0); }
-    iter_type::RowXpr siter_() { return iter_.row(1); }
-    iter_type::RowXpr diter_() { return iter_.row(2); }
+    iter_type::RowXpr siter_() { return iter_.row(0); }
+    iter_type::RowXpr diter_() { return iter_.row(1); }
 
     tolscres_type tolscres_;
     tolscres_type::RowXpr tolsc_() { return tolscres_.row(0); }

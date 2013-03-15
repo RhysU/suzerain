@@ -47,6 +47,26 @@ bsmbsm_solver::bsmbsm_solver(
 #endif
 }
 
+bsmbsm_solver&
+bsmbsm_solver::supplied_PAPT()
+{
+    if (spec.reuse()) {
+        apprx_ = fact_ != default_fact();
+    } else {
+        fact_ = default_fact();
+    }
+    return *this;
+}
+
+bool
+bsmbsm_solver::apprx(const bool value)
+{
+    const bool old = apprx_;
+    if (spec.reuse())
+        apprx_ = value;
+    return old;
+}
+
 int
 bsmbsm_solver::solve_internal(const char trans,
                               const int nrhs)
@@ -93,6 +113,7 @@ bsmbsm_solver_zgbsv::solve_hook(
         const char trans,
         const int nrhs)
 {
+    assert(apprx_ == false);
     return suzerain_lapackext_zgbsv(&fact_, trans, N, KL, KU, nrhs,
                                     LU.data(), LU.colStride(), ipiv.data(),
                                     PB.data(), PB.colStride());
@@ -135,6 +156,12 @@ bsmbsm_solver_zgbsvx::solve_hook(
         const char trans,
         const int nrhs)
 {
+    assert(apprx_ == false);
+#ifndef NDEBUG
+    rcwork_.setConstant(std::numeric_limits<double>::quiet_NaN());
+    err_   .setConstant(std::numeric_limits<double>::quiet_NaN());
+    work_  .setConstant(suzerain::complex::NaN<complex_double>());
+#endif
     return suzerain_lapack_zgbsvx(fact_, trans, N, KL, KU, nrhs,
                                   PAPT.data(), PAPT.colStride(),
                                   LU.data(), LU.colStride(), ipiv.data(),
@@ -152,7 +179,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
     , afrob_(-1)          // Per zcgbsvx requirements
-    , iter_(3, nrhs)      // Stores (aiter, siter, diter) x nrhs
+    , iter_(2, nrhs)      // Stores (aiter, siter, diter) x nrhs
     , tolscres_(2, nrhs)  // Stores (tolsc, res) x nrhs
     , work_(N, 2)         // Per zcgbsvx requirements
     , PAPT_(LD, N)        // Operator storage for out-of-place factorization
@@ -177,15 +204,41 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
 #endif
 }
 
+bsmbsm_solver&
+bsmbsm_solver_zcgbsvx::supplied_PAPT()
+{
+    afrob_ = -1;
+    return bsmbsm_solver::supplied_PAPT();
+}
+
 int
 bsmbsm_solver_zcgbsvx::solve_hook(
         const char trans,
         const int nrhs)
 {
-    SUZERAIN_UNUSED(trans);
-    SUZERAIN_UNUSED(nrhs);
+    if (!apprx_) {
+        fact_ = default_fact();
+    }
+#ifndef NDEBUG
+    iter_    .setConstant(-12345);
+    tolscres_.setConstant(std::numeric_limits<double>::quiet_NaN());
+    work_    .setConstant(suzerain::complex::NaN<complex_double>());
+#endif
+    int info = 0, j = -1;
+    while (!info && ++j < nrhs) {
+        siter_()[j] = spec.siter();
+        diter_()[j] = spec.diter();
+        tolsc_()[j] = spec.tolsc();
+        info = suzerain_lapackext_zcgbsvx(&fact_, &apprx_, spec.aiter(), trans,
+                                          N, KL, KU, PAPT.data(), &afrob_,
+                                          LU.data(), ipiv.data(),
+                                          PB.data(), PX.data(),
+                                          &siter_()[j], &diter_()[j],
+                                          &tolsc_()[j], work_.data(),
+                                          &res_()[j]);
+    }
 
-    return -1; // FIXME Implement
+    return info;
 }
 
 } // end namespace suzerain
