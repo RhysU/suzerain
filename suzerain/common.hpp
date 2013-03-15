@@ -257,6 +257,7 @@ using Eigen::NoChange;     /**< \namespace suzerain */
 using Eigen::OuterStride;  /**< \namespace suzerain */
 using Eigen::RowMajor;     /**< \namespace suzerain */
 using Eigen::Sequential;   /**< \namespace suzerain */
+using Eigen::Stride;       /**< \namespace suzerain */
 using Eigen::Unaligned;    /**< \namespace suzerain */
 
 /**
