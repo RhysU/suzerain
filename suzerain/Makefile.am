@@ -44,6 +44,7 @@ nobase_pkginclude_HEADERS += allocator.hpp
 nobase_pkginclude_HEADERS += blas_et_al.h
 nobase_pkginclude_HEADERS += blas_et_al.hpp
 nobase_pkginclude_HEADERS += bsmbsm.h
+nobase_pkginclude_HEADERS += bsmbsm_solver.hpp
 nobase_pkginclude_HEADERS += bspline.h
 nobase_pkginclude_HEADERS += bspline.hpp
 nobase_pkginclude_HEADERS += bsplineop.h
@@ -131,7 +132,6 @@ nobase_pkginclude_HEADERS += traits.hpp
 nobase_pkginclude_HEADERS += utility.hpp
 nobase_pkginclude_HEADERS += validation.hpp
 nobase_pkginclude_HEADERS += version.hpp
-nobase_pkginclude_HEADERS += zgbsv_bsmbsm_solver.hpp
 nobase_pkginclude_HEADERS += zgbsv_specification.hpp
 
 # Public library is assembled from multiple convenience libraries
@@ -228,7 +228,8 @@ libbase_la_CPPFLAGS      += $(UNDERLING_CFLAGS)
 libbase_la_CPPFLAGS      += $(P3DFFT_CFLAGS)
 libbase_la_CPPFLAGS      += $(FFTW3_MPI_THREADS_CFLAGS)
 libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
-libbase_la_SOURCES        = diffwave.c
+libbase_la_SOURCES        = bsmbsm_solver.cpp
+libbase_la_SOURCES       += diffwave.c
 libbase_la_SOURCES       += exprparse_dchar.cpp
 libbase_la_SOURCES       += exprparse_dstr.cpp
 libbase_la_SOURCES       += exprparse_fchar.cpp
@@ -247,7 +248,6 @@ libbase_la_SOURCES       += pencil_grid.cpp
 libbase_la_SOURCES       += richardson.c
 libbase_la_SOURCES       += rngstream.cpp
 libbase_la_SOURCES       += svehla.c
-libbase_la_SOURCES       += zgbsv_bsmbsm_solver.cpp
 libbase_la_SOURCES       += zgbsv_specification.cpp
 EXTRA_libbase_la_SOURCES  = exprparse_impl.hpp
 

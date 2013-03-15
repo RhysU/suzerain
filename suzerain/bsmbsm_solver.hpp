@@ -10,8 +10,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_ZGBSV_BSMBSM_SOLVER_HPP
-#define SUZERAIN_ZGBSV_BSMBSM_SOLVER_HPP
+#ifndef SUZERAIN_BSMBSM_SOLVER_HPP
+#define SUZERAIN_BSMBSM_SOLVER_HPP
 
 /** @file
  * Encapsulates solving BSMBSM problems per a \ref zgbsv_specification.
@@ -26,15 +26,13 @@ namespace suzerain {
 
 // TODO Document
 
-class zgbsv_bsmbsm_solver
-    : public zgbsv_specification
-    , public suzerain_bsmbsm
+class bsmbsm_solver : public suzerain_bsmbsm, public zgbsv_specification
 {
 
 protected:
 
-    zgbsv_bsmbsm_solver(const zgbsv_specification& specification,
-                        const suzerain_bsmbsm&     bsmbsm);
+    bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
+                  const zgbsv_specification& specification);
 
 public:
 
@@ -54,23 +52,22 @@ public:
 
 };
 
-class zgbsv_bsmbsm_solver_zgbsv
-    : public zgbsv_bsmbsm_solver
+class bsmbsm_solver_zgbsv : public bsmbsm_solver
 {
 public:
 
-    zgbsv_bsmbsm_solver_zgbsv(const zgbsv_specification& specification,
-                              const suzerain_bsmbsm&     bsmbsm);
+    bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
+                        const zgbsv_specification& specification);
+
 
 };
 
-class zgbsv_bsmbsm_solver_zgbsvx
-    : public zgbsv_bsmbsm_solver
+class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 {
 public:
 
-    zgbsv_bsmbsm_solver_zgbsvx(const zgbsv_specification& specification,
-                               const suzerain_bsmbsm&     bsmbsm);
+    bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
+                         const zgbsv_specification& specification);
 
     ArrayXr  r;
     ArrayXr  c;
@@ -84,13 +81,12 @@ private:
 
 };
 
-class zgbsv_bsmbsm_solver_zcgbsvx
-    : public zgbsv_bsmbsm_solver
+class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 {
 public:
 
-    zgbsv_bsmbsm_solver_zcgbsvx(const zgbsv_specification& specification,
-                                const suzerain_bsmbsm&     bsmbsm);
+    bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
+                          const zgbsv_specification& specification);
 
     ArrayXc  work;
 
@@ -103,4 +99,4 @@ private:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_ZGBSV_BSMBSM_SOLVER_HPP
+#endif // SUZERAIN_BSMBSM_SOLVER_HPP
