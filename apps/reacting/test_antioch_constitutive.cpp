@@ -266,6 +266,78 @@ int test_init_antioch(const std::string& chem_xml_file)
     return nerr;
 }
 
+
+/*
+ * Check that call to antioch_constitutive::evaluate "works"
+ */
+int test_evaluate(const std::string& chem_xml_file)
+{
+    
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=5;
+    species_names.reserve(Ns);
+    species_names.push_back( "N2" );
+    species_names.push_back( "O2" );
+    species_names.push_back( "N" );
+    species_names.push_back( "O" );
+    species_names.push_back( "NO" );
+
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
+
+    acl1.init_antioch();
+
+    // Set up state (not physically meaningful yet)
+    real_t e          = 717500; // a big number s.t. T isn't really, really small
+    real_t m[3]       = {0.0, 0.0, 0.0};
+    real_t rho        = 1.0;
+    real_t species[5] = {0.5, 0.2, 0.1, 0.1, 0.1};
+    real_t cs[5]      = {0.5, 0.2, 0.1, 0.1, 0.1};
+
+    // Storage for computed quantities
+    real_t T=-1, p=-1, Ds[5], mu, kap, hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0};
+
+    // Eval rxn sources, trans, thermo
+    acl1.evaluate(e, m, rho, species, cs,   /* input  */
+                  T, p, Ds, mu, kap, hs, om /* output */);
+
+
+    // check that it did something potentially sane 
+    //
+    // FIXME: make these checks stronger once final version of
+    // evaluate function is complete
+
+    int nerr=0;
+
+    //... T and p are positive
+    if (T<=0.0) {
+        std::cerr << "Error: encountered negative temperature." << std::endl;
+        nerr += 1;
+    }
+
+    if (p<=0.0) {
+        std::cerr << "Error: encountered negative pressure." << std::endl;
+        nerr += 1;
+    }
+    
+    //... source terms sum to zero
+    real_t som = 0.0;
+    for (unsigned int i=0; i<5; ++i) som += om[i];
+    if (std::abs(som)>5e-10) { // Tolerance empirical, max src term has magn 1.8e6
+        std::cerr << "Error: reaction source terms do not sum to zero. "
+                  << "Computed sum = " << som << std::endl;
+        nerr += 1;
+    }
+
+    return nerr;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -288,6 +360,11 @@ int main(int argc, char **argv)
                      
     std::cout << "Running test_init_antioch..." << std::endl;
     ierr = test_init_antioch(chem_xml_file); etot += ierr;
+    if (ierr!=0) std::cout << " FAILED." << std::endl;
+    else std::cout << " passed." << std::endl;
+
+    std::cout << "Running test_evaluate..." << std::endl;
+    ierr = test_evaluate(chem_xml_file); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
 

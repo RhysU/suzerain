@@ -29,6 +29,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
+#include "antioch/vector_utils.h" // should this be necessary?
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
@@ -214,6 +215,9 @@ public:
      * and issue #2798.
      */
     shared_ptr<Antioch::KineticsEvaluator<real_t> > kinetics;
+
+    
+    // TODO: Add antioch support for transport properties
 
 };
 

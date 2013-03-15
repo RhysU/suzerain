@@ -312,7 +312,7 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t* hs,
                                 real_t* om) const
 {
-    FATAL0("antioch_constitutive::evaluate is not implemented yet!");
+    WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
     const real_t irho = 1.0/rho;
 
@@ -349,27 +349,32 @@ antioch_constitutive::evaluate (const real_t  e,
 
     // Compute pressure: ideal gas law with mixture gas constant
     p = rho*R_mix*T;
-    
 
     std::vector<real_t> h_RT_minus_s_R(Ns);
     typedef typename Antioch::CEAThermodynamics<real_t>::Cache<real_t> Cache;
-    this->cea_thermo->h_RT_minus_s_R(Cache(T),h_RT_minus_s_R);
+    Cache cea_cache(T);
+    this->cea_thermo->h_RT_minus_s_R(cea_cache,h_RT_minus_s_R);
 
     // Species eqn source terms
     std::vector<real_t> omega_dot(Ns);
     this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, h_RT_minus_s_R, 
                                         omega_dot);
     for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
-    
 
     // Species enthalpies
+    // FIXME: Currently from CEA... probably not what we want
+    for (unsigned int i=0; i<Ns; ++i)
+        hs[i] = this->cea_thermo->h(cea_cache, i);
 
     // Transport
-
+    // FIXME: Add antioch support
+    mu = 1.0;
+    kap = 1.0;
+    for (size_t i=0; i<Ns; ++i) Ds[i] = 1.0;
 
     // TODO: assert that om sums to zero
     // TODO: assert that T and p are positive
-
+    // TODO: assert transport props are positive
 }
 
 } // namespace reacting
