@@ -179,6 +179,30 @@ public:
         return equed_;
     }
 
+    double rcond() const
+    {
+        return rcond_;
+    }
+
+    double cond() const
+    {
+        return 1 / rcond_;
+    }
+
+    typedef Matrix<double, 1, Dynamic> ferr_type;
+
+    const ferr_type& ferr()
+    {
+        return ferr_;
+    }
+
+    typedef ferr_type berr_type;
+
+    const berr_type& berr()
+    {
+        return berr_;
+    }
+
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
@@ -192,6 +216,12 @@ protected:
     Array<complex_double, Dynamic, 2, ColMajor> work_;
 
     Array<double, Dynamic, 1, ColMajor> rwork_;
+
+    double rcond_;
+
+    ferr_type ferr_;
+
+    berr_type berr_;
 
 private:
 
