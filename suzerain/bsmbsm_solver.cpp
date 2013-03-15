@@ -42,8 +42,8 @@ bsmbsm_solver::bsmbsm_solver(
 {
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
-    LU  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    PB  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    LU  .setConstant(suzerain::complex::NaN<complex_double>());
+    PB  .setConstant(suzerain::complex::NaN<complex_double>());
     ipiv.setConstant(-12345);
 #endif
 }
@@ -123,12 +123,12 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
-    r    .setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
-    c    .setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
-    work .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    rwork.setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
-    PAPT_.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    PX_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    r    .setConstant(std::numeric_limits<double>::quiet_NaN());
+    c    .setConstant(std::numeric_limits<double>::quiet_NaN());
+    work .setConstant(suzerain::complex::NaN<complex_double>());
+    rwork.setConstant(std::numeric_limits<double>::quiet_NaN());
+    PAPT_.setConstant(suzerain::complex::NaN<complex_double>());
+    PX_  .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
 }
 
@@ -163,9 +163,9 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
-    work .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    PAPT_.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    PX_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    work .setConstant(suzerain::complex::NaN<complex_double>());
+    PAPT_.setConstant(suzerain::complex::NaN<complex_double>());
+    PX_  .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
 }
 
