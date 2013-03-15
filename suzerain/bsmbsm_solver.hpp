@@ -63,19 +63,33 @@ public:
         return info;
     }
 
-    int supply_B(const complex_double *B) { return supply_B(B, N, 1); }
-
-    int solve(const char trans, const int nrhs)
+    int supply_B(const complex_double *B)
     {
-        SUZERAIN_TIMER_SCOPED(spec.mname());
-        return solve_internal(trans, nrhs);
+        return supply_B(B, N, 1);
     }
 
-    char fact() const { return fact_; }
+    char fact() const
+    {
+        return fact_;
+    }
 
-    char default_fact() { return spec.equil() ? 'E' : 'N'; }
+    char default_fact() const
+    {
+        return spec.equil() ? 'E' : 'N';
+    }
 
-    int apprx() const { return apprx_; }
+    bool apprx() const
+    {
+        return apprx_;
+    }
+
+    bool apprx(const bool value)
+    {
+        const bool old = apprx_;
+        if (spec.reuse())
+            apprx_ = value;
+        return old;
+    }
 
     void supplied_PAPT()
     {
@@ -86,7 +100,16 @@ public:
         }
     }
 
-    int solve(const char trans) { return solve(trans, PB.cols()); }
+    int solve(const char trans, const int nrhs)
+    {
+        SUZERAIN_TIMER_SCOPED(spec.mname());
+        return solve_internal(trans, nrhs);
+    }
+
+    int solve(const char trans)
+    {
+        return solve(trans, PB.cols());
+    }
 
     int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
