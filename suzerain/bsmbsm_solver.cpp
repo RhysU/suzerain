@@ -105,11 +105,11 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const zgbsv_specification& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
-    , r(N)          // Per zgbsvx requirements
-    , c(N)          // Per zgbsvx requirements
-    , work(N, 2)    // Per zgbsvx requirements
-    , rwork(N)      // Per zgbsvx requirements
-    , equed_('N')   // Default for non-factorized operator
+    , equed_('N')   // Default for non-factorized per zgbsvx
+    , r_(N)         // Per zgbsvx requirements
+    , c_(N)         // Per zgbsvx requirements
+    , work_(N, 2)   // Per zgbsvx requirements
+    , rwork_(N)     // Per zgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
@@ -124,12 +124,12 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
-    r    .setConstant(std::numeric_limits<double>::quiet_NaN());
-    c    .setConstant(std::numeric_limits<double>::quiet_NaN());
-    work .setConstant(suzerain::complex::NaN<complex_double>());
-    rwork.setConstant(std::numeric_limits<double>::quiet_NaN());
-    PAPT_.setConstant(suzerain::complex::NaN<complex_double>());
-    PX_  .setConstant(suzerain::complex::NaN<complex_double>());
+    r_    .setConstant(std::numeric_limits<double>::quiet_NaN());
+    c_    .setConstant(std::numeric_limits<double>::quiet_NaN());
+    work_ .setConstant(suzerain::complex::NaN<complex_double>());
+    rwork_.setConstant(std::numeric_limits<double>::quiet_NaN());
+    PAPT_ .setConstant(suzerain::complex::NaN<complex_double>());
+    PX_   .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
 }
 
@@ -149,7 +149,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const zgbsv_specification& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
-    , work(N, 2)    // Per zcgbsvx requirements
+    , work_(N, 2)    // Per zcgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
@@ -164,7 +164,7 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
-    work .setConstant(suzerain::complex::NaN<complex_double>());
+    work_.setConstant(suzerain::complex::NaN<complex_double>());
     PAPT_.setConstant(suzerain::complex::NaN<complex_double>());
     PX_  .setConstant(suzerain::complex::NaN<complex_double>());
 #endif

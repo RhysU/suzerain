@@ -179,19 +179,19 @@ public:
         return equed_;
     }
 
-    Array<double, Dynamic, 1, ColMajor> r;
-
-    Array<double, Dynamic, 1, ColMajor> c;
-
-    Array<complex_double, Dynamic, 2, ColMajor> work;
-
-    Array<double, Dynamic, 1, ColMajor> rwork;
-
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
 
     char equed_;
+
+    Array<double, Dynamic, 1, ColMajor> r_;
+
+    Array<double, Dynamic, 1, ColMajor> c_;
+
+    Array<complex_double, Dynamic, 2, ColMajor> work_;
+
+    Array<double, Dynamic, 1, ColMajor> rwork_;
 
 private:
 
@@ -209,15 +209,16 @@ public:
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
-    Array<complex_double, Dynamic, 2, ColMajor> work;
-
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
 
+    Array<complex_double, Dynamic, 2, ColMajor> work_;
+
 private:
 
     LU_type PAPT_;
+
     PB_type PX_;
 
 };
