@@ -36,46 +36,71 @@ public:
 
     ArrayXXc LU;
 
-    ArrayXc Pb;
+    ArrayXXc PB;
 
     typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > PAPT_type;
 
     PAPT_type PAPT;
 
-    typedef Map<ArrayXc, Aligned> Px_type;
+    typedef Map<ArrayXXc, Aligned> PX_type;
 
-    Px_type Px;
+    PX_type PX;
 
     ArrayXi ipiv;
 
-    int supply_b(const complex_double *b, int incb = 1)
+    int supply_b(const complex_double *b, const int j, const int incb = 1)
     {
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
-        return suzerain_bsmbsm_zaPxpby('N', S, n, 1, b, incb, 0, Pb.data(), 1);
+        return suzerain_bsmbsm_zaPxpby('N', S, n, 1, b,                incb,
+                                                  0, PB.col(j).data(), 1);
     }
 
-    int solve(const char trans)
+    int supply_B(const complex_double *B, const int ldB, const int incB = 1)
+    {
+        int info = 0, j = -1;
+        while (!info && ++j < PB.cols())
+            info = supply_b(B + j*ldB, j, incB);
+        return info;
+    }
+
+    int supply_B(const complex_double *B) { return supply_B(B, N, 1); }
+
+    int solve(const char trans, const int nrhs)
     {
         SUZERAIN_TIMER_SCOPED(spec.mname());
-        return solve_internal(trans);
+        return solve_internal(trans, nrhs);
     }
 
-    int demand_x(complex_double *x, int incx = 1) const
+    int solve(const char trans) { return solve(trans, PB.cols()); }
+
+    int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
-        return suzerain_bsmbsm_zaPxpby('T', S, n, 1, Px.data(), 1, 0, x, incx);
+        return suzerain_bsmbsm_zaPxpby('T', S, n, 1, PX.col(j).data(), 1,
+                                                  0, x,                incx);
     }
+
+    int demand_X(complex_double *X, const int ldX, const int incX = 1) const
+    {
+        int info = 0, j = -1;
+        while (!info && ++j < PB.cols())
+            info = demand_x(X + j*ldX, j, incX);
+        return info;
+    }
+
+    int demand_X(complex_double *X) const { return demand_X(X, N, 1); }
 
 protected:
 
     bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
-                  const zgbsv_specification& spec);
+                  const zgbsv_specification& spec,
+                  const int                  nrhs);
 
-    virtual int solve_hook(const char trans) = 0;
+    virtual int solve_hook(const char trans, const int nrhs) = 0;
 
 private:
 
-    int solve_internal(const char trans);
+    int solve_internal(const char trans, const int nrhs);
 
 };
 
@@ -84,11 +109,13 @@ class bsmbsm_solver_zgbsv : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
-                        const zgbsv_specification& spec);
+                        const zgbsv_specification& spec,
+                        const int                  nrhs);
 
 protected:
 
-    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
+    virtual int solve_hook(const char trans, const int nrhs)
+    { return -1; /* FIXME */ }
 
 };
 
@@ -97,7 +124,8 @@ class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                         const zgbsv_specification& spec);
+                         const zgbsv_specification& spec,
+                         const int                  nrhs);
 
     ArrayXr r;
     ArrayXr c;
@@ -106,12 +134,13 @@ public:
 
 protected:
 
-    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
+    virtual int solve_hook(const char trans, const int nrhs)
+    { return -1; /* FIXME */ }
 
 private:
 
     ArrayXXc PAPT_;
-    ArrayXc  Px_;
+    ArrayXXc PX_;
 
 };
 
@@ -120,18 +149,20 @@ class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 public:
 
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
-                          const zgbsv_specification& spec);
+                          const zgbsv_specification& spec,
+                          const int                  nrhs);
 
     ArrayXc work;
 
 protected:
 
-    virtual int solve_hook(const char trans) { return -1; /* FIXME */ }
+    virtual int solve_hook(const char trans, const int nrhs)
+    { return -1; /* FIXME */ }
 
 private:
 
     ArrayXXc PAPT_;
-    ArrayXc  Px_;
+    ArrayXXc PX_;
 
 };
 

@@ -28,28 +28,32 @@ namespace suzerain {
 
 bsmbsm_solver::bsmbsm_solver(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec)
+        const zgbsv_specification& spec,
+        const int                  nrhs)
     : suzerain_bsmbsm(bsmbsm)
     , spec(spec)
     , LU(KL + LD, N)
-    , Pb(N)
+    , PB(N, nrhs)
     , PAPT(KL + LU.data(), LD, N, KL + KU) // Aliases LU
-    , Px(Pb.data(), N)                     // Aliases Pb
+    , PX(PB.data(), PB.rows(), PB.cols())  // Aliases PB
     , ipiv(N)
 {
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
     LU  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    Pb  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    PB  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     ipiv.setConstant(-12345);
 #endif
 }
 
 int
-bsmbsm_solver::solve_internal(const char trans)
+bsmbsm_solver::solve_internal(const char trans,
+                              const int nrhs)
 {
-    const int info = solve_hook(trans); // Invoke subclass-specific hook
-    if (info == 0) return info;         // Eagerly return on success
+    if (SUZERAIN_UNLIKELY(nrhs < 1 || nrhs > PB.cols()))
+        throw std::invalid_argument("Invalid nrhs supplied to solve()");
+    const int info = solve_hook(trans, nrhs); // Invoke subclass-specific hook
+    if (info == 0) return info;               // Eagerly return on success
 
     // Otherwise, loudly report any errors that occurred during the solve
     char buffer[128];
@@ -74,8 +78,9 @@ bsmbsm_solver::solve_internal(const char trans)
 
 bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec)
-    : bsmbsm_solver(bsmbsm, spec)
+        const zgbsv_specification& spec,
+        const int                  nrhs)
+    : bsmbsm_solver(bsmbsm, spec, nrhs)
 {
     if (spec.method() != zgbsv_specification::zgbsv)
         throw std::invalid_argument("Invalid spec in bsmbsm_solver_zgbsv");
@@ -84,14 +89,15 @@ bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec)
-    : bsmbsm_solver(bsmbsm, spec)
+        const zgbsv_specification& spec,
+        const int                  nrhs)
+    : bsmbsm_solver(bsmbsm, spec, nrhs)
     , r(N)          // Per zgbsvx requirements
     , c(N)          // Per zgbsvx requirements
     , work(2*N)     // Per zgbsvx requirements
     , rwork(N)      // Per zgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
-    , Px_(N)        // Solution storage for out-of-place solution
+    , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
     if (spec.method() != zgbsv_specification::zgbsvx)
         throw std::invalid_argument("Invalid method in bsmbsm_solver_zgbsvx");
@@ -100,7 +106,7 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     assert(spec.in_place() == false);
     new (&PAPT) PAPT_type(PAPT_.data(), PAPT_.rows(),
                           PAPT_.cols(), PAPT_.colStride());
-    new (&Px)   Px_type(Px_.data(), Px_.rows());
+    new (&PX)   PX_type(PX_.data(), PX_.rows(), PX_.cols());
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
@@ -109,17 +115,18 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     work .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     rwork.setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
     PAPT_.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    Px_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    PX_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
 #endif
 }
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
-        const zgbsv_specification& spec)
-    : bsmbsm_solver(bsmbsm, spec)
+        const zgbsv_specification& spec,
+        const int                  nrhs)
+    : bsmbsm_solver(bsmbsm, spec, nrhs)
     , work(2*N)     // Per zcgbsvx requirements
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
-    , Px_(N)        // Solution storage for out-of-place solution
+    , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
     if (spec.method() != zgbsv_specification::zcgbsvx)
         throw std::invalid_argument("Invalid method in bsmbsm_solver_zcgbsvx");
@@ -128,13 +135,13 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
     assert(spec.in_place() == false);
     new (&PAPT) PAPT_type(PAPT_.data(), PAPT_.rows(),
                           PAPT_.cols(), PAPT_.colStride());
-    new (&Px) Px_type(Px_.data(), Px_.rows());
+    new (&PX)   PX_type(PX_.data(), PX_.rows(), PX_.cols());
 
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
     work .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     PAPT_.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
-    Px_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    PX_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
 #endif
 }
 
