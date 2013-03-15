@@ -169,7 +169,7 @@ protected:
 class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 {
     /** Type of the contiguous storage housing ferr and berr. */
-    typedef Matrix<real_t, 2, Dynamic, ColMajor> err_type;
+    typedef Matrix<double, 2, Dynamic, ColMajor> err_type;
 
 public:
 
@@ -226,11 +226,22 @@ private:
 
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 {
+    /** Type of the contiguous storage housing aiter, siter, and diter. */
+    typedef Matrix<int, 3, Dynamic, ColMajor> iter_type;
+
 public:
 
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
                           const zgbsv_specification& spec,
                           const int                  nrhs);
+
+    iter_type::RowXpr      aiter()       { return iter_.row(0); }
+    iter_type::RowXpr      siter()       { return iter_.row(1); }
+    iter_type::RowXpr      diter()       { return iter_.row(2); }
+
+    iter_type::ConstRowXpr aiter() const { return iter_.row(0); }
+    iter_type::ConstRowXpr siter() const { return iter_.row(1); }
+    iter_type::ConstRowXpr diter() const { return iter_.row(2); }
 
 protected:
 
@@ -238,11 +249,7 @@ protected:
 
     double afrob_;
 
-    Matrix<int, 1, Dynamic> aiter_;
-
-    Matrix<int, 1, Dynamic> siter_;
-
-    Matrix<int, 1, Dynamic> diter_;
+    iter_type iter_;
 
     Matrix<double, 1, Dynamic> tolsc_;
 

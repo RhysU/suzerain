@@ -151,15 +151,13 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const zgbsv_specification& spec,
         const int                  nrhs)
     : bsmbsm_solver(bsmbsm, spec, nrhs)
-    , afrob_(-1)    // Per zcgbsvx requirements
-    , aiter_(nrhs)  // For nrhs distinct zcgbsvx invocations
-    , siter_(nrhs)  // For nrhs distinct zcgbsvx invocations
-    , diter_(nrhs)  // For nrhs distinct zcgbsvx invocations
-    , tolsc_(nrhs)  // For nrhs distinct zcgbscx invocations
-    , work_(N, 2)   // Per zcgbsvx requirements
-    , res_(nrhs)    // For nrhs distinct zcgbscx invocations
-    , PAPT_(LD, N)  // Operator storage for out-of-place factorization
-    , PX_(N, nrhs)  // Solution storage for out-of-place solution
+    , afrob_(-1)     // Per zcgbsvx requirements
+    , iter_(3, nrhs) // Stores (aiter, siter, diter) x nrhs
+    , tolsc_(nrhs)   // For nrhs distinct zcgbscx invocations
+    , work_(N, 2)    // Per zcgbsvx requirements
+    , res_(nrhs)     // For nrhs distinct zcgbscx invocations
+    , PAPT_(LD, N)   // Operator storage for out-of-place factorization
+    , PX_(N, nrhs)   // Solution storage for out-of-place solution
 {
     if (spec.method() != zgbsv_specification::zcgbsvx)
         throw std::invalid_argument("Invalid method in bsmbsm_solver_zcgbsvx");
