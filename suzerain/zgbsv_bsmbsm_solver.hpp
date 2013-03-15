@@ -84,6 +84,23 @@ private:
 
 };
 
+class zgbsv_bsmbsm_solver_zcgbsvx
+    : public zgbsv_bsmbsm_solver
+{
+public:
+
+    zgbsv_bsmbsm_solver_zcgbsvx(const zgbsv_specification& specification,
+                                const suzerain_bsmbsm&     bsmbsm);
+
+    ArrayXc  work;
+
+private:
+
+    ArrayXXc A_;
+    ArrayXc  x_;
+
+};
+
 } // namespace suzerain
 
 #endif // SUZERAIN_ZGBSV_BSMBSM_SOLVER_HPP
