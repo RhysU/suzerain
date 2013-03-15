@@ -27,15 +27,35 @@ namespace suzerain {
 zgbsv_bsmbsm_solver::zgbsv_bsmbsm_solver(
         const zgbsv_specification& specification,
         const suzerain_bsmbsm&    bsmbsm)
-    : zgbsv_specification(specification) // Copy
-    , suzerain_bsmbsm(bsmbsm)            // Copy
-    , A(0, 0, 0)              // See Eigen "Changing the mapped array" docs
-    , LU(0, 0, 0)             // Ditto
-    , ipiv(bsmbsm.N)          // Required storage known
-    , b(bsmbsm.N)             // Required storage known
-    , x(b.data(), bsmbsm.N)   // Defaults to b but possibly changed by subclass
+    : zgbsv_specification(specification)
+    , suzerain_bsmbsm(bsmbsm)
+    , A(0, 0, 0)       // Degenerate, requires subclass override
+    , LU(0, 0, 0)      // Degenerate, requires subclass override
+    , ipiv(N)          // Required storage already known per bsmbsm
+    , b(N)             // Required storage already known per bsmbsm
+    , x(0, 0)          // Degenerate, requires subclass override
 {
     // NOP
+}
+
+zgbsv_bsmbsm_solver_zgbsv::zgbsv_bsmbsm_solver_zgbsv(
+        const zgbsv_specification& specification,
+        const suzerain_bsmbsm&    bsmbsm)
+    : zgbsv_bsmbsm_solver(specification, bsmbsm)
+{
+    // See Eigen "Changing the mapped array" for details on placement new calls
+    if (method() != zgbsv_specification::zgbsv) throw std::invalid_argument(
+            "Invalid method() in zgbsv_bsmbsm_solver_zgbsv");
+
+    // Allocate storage for in-place LU which also stores A pre-factorization
+    // Beginning A offset different from LU per LAPACK ZGBTRF requirements
+    buf.resize(LD + KL, N);
+    new (&A)  A_type (buf.data() + KL, LD,         buf.cols(), buf.colStride());
+    new (&LU) LU_type(buf.data(),      buf.rows(), buf.cols()                 );
+
+    // As solve is in-place, output x simply aliases right hand side b
+    assert(in_place() == true);
+    new (&x) x_type(b.data(), N);
 }
 
 } // end namespace suzerain
