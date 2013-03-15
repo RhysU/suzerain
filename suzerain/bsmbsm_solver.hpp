@@ -243,7 +243,19 @@ protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
 
+    double afrob_;
+
+    Matrix<int, 1, Dynamic> aiter_;
+
+    Matrix<int, 1, Dynamic> siter_;
+
+    Matrix<int, 1, Dynamic> diter_;
+
+    Matrix<double, 1, Dynamic> tolsc_;
+
     Matrix<complex_double, Dynamic, 2, ColMajor> work_;
+
+    Matrix<double, 1, Dynamic> res_;
 
 private:
 
