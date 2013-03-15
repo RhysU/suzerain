@@ -269,4 +269,20 @@ This approximate linearized acoustic treatment requires at least a two-equation
 coupled solve.  It is the lowest cost treatment which could reasonably be
 expected to succeed in specialized circumstances.
 
+\section{Coupling only between Wall-Normal Velocity and Energy}
+
+In order to reduce complexity even further, we can consider coupling between only the wall-normal 
+component of velocity and the energy equation. This then provides a matrix of the form
+
+\begin{equation}\label{eq:reduced}
+ \begin{bmatrix}
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & v(1-\gamma)  & 0 & \gamma-1  \\
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & v^2 (1-\gamma)+\frac{c^2}{\gamma-1} & 0 & v (\gamma-1 )
+\end{bmatrix}
+\end{equation}
+This matrix has an identical eigensystem to the previous one, indicating that it still retains the essential acoustic properties. 
+
 \end{document}
