@@ -314,24 +314,61 @@ antioch_constitutive::evaluate (const real_t  e,
 {
     FATAL0("antioch_constitutive::evaluate is not implemented yet!");
 
-  // // Mass fractions
-  // std::vector<Scalar> Y(n_species,0.2);
+    const real_t irho = 1.0/rho;
 
-  // const Scalar R_mix = chem_mixture.R(Y);
+    // FIXME: Incoming vectors are currently raw pointers (result of
+    // .data calls on Eigen objects), but Antioch wants std::vector.
+    // I'll kludge it here to get the thing compiling.  Soon, roystgnr
+    // should have Antioch taking Eigen::Array objects (see issue
+    // #2799), which we can pass directly from
+    // apply_navier_stokes_spatial_operator.  If not, I will refactor
+    // apply_navier_stokes_spatial_operator to use Eigen::Map to wrap
+    // std::vector, allowing easy passing to Antioch.
+    //
+    // Either way, this whole function will be refactored, but the
+    // basic steps are as follows:
 
-  // const Scalar rho = P/(R_mix*T);
+    const size_t Ns = this->Ns();
 
-  // std::vector<Scalar> molar_densities(n_species,0.0);
-  // chem_mixture.molar_densities(rho,Y,molar_densities);
+    // Mass fractions
+    std::vector<real_t> Y(cs, cs+Ns);
 
-  // std::vector<Scalar> h_RT_minus_s_R(n_species);
-  // typedef typename Antioch::CEAThermodynamics<Scalar>::template Cache<Scalar> Cache;
-  // thermo.h_RT_minus_s_R(Cache(T),h_RT_minus_s_R);
+    // Mixture gas constant
+    const real_t R_mix = this->mixture->R(Y);
 
-  // Antioch::KineticsEvaluator<Scalar> kinetics( reaction_set );
-  // std::vector<Scalar> omega_dot(n_species);
-  
-  // kinetics.compute_mass_sources( T, rho, R_mix, Y, molar_densities, h_RT_minus_s_R, omega_dot );
+    std::vector<real_t> molar_densities(Ns,0.0);
+    this->mixture->molar_densities(rho,Y,molar_densities);
+
+    // Compute temperature 
+    // FIXME: Replace w/ correct call to stat mech thermo once that
+    // exists (see #2795)
+    const real_t re_internal = e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+    T = irho*re_internal / 717.5; // 717.5 is Cv for air... this will
+                                  // be fixed naturally during
+                                  // conversion to stat mech
+
+    // Compute pressure: ideal gas law with mixture gas constant
+    p = rho*R_mix*T;
+    
+
+    std::vector<real_t> h_RT_minus_s_R(Ns);
+    typedef typename Antioch::CEAThermodynamics<real_t>::Cache<real_t> Cache;
+    this->cea_thermo->h_RT_minus_s_R(Cache(T),h_RT_minus_s_R);
+
+    // Species eqn source terms
+    std::vector<real_t> omega_dot(Ns);
+    this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, h_RT_minus_s_R, 
+                                        omega_dot);
+    for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
+    
+
+    // Species enthalpies
+
+    // Transport
+
+
+    // TODO: assert that om sums to zero
+    // TODO: assert that T and p are positive
 
 }
 
