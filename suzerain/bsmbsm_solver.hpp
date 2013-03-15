@@ -20,6 +20,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/timers.h>
 #include <suzerain/zgbsv_specification.hpp>
 
 namespace suzerain {
@@ -51,6 +52,18 @@ public:
     Px_type Px;
 
     ArrayXi ipiv;
+
+    int supply_b(const complex_double *b, int incb = 1)
+    {
+        SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
+        return suzerain_bsmbsm_zaPxpby('N', S, n, 1, b, incb, 0, Pb.data(), 1);
+    }
+
+    int demand_x(complex_double *x, int incx = 1)
+    {
+        SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
+        return suzerain_bsmbsm_zaPxpby('T', S, n, 1, Px.data(), 1, 0, x, incx);
+    }
 
 };
 
