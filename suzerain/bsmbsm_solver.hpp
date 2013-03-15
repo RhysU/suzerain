@@ -168,6 +168,9 @@ protected:
 
 class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 {
+    /** Type of the contiguous storage housing r, c, and rwork. */
+    typedef Matrix<double, Dynamic, 3, ColMajor> rcwork_type;
+
     /** Type of the contiguous storage housing ferr and berr. */
     typedef Matrix<double, 2, Dynamic, ColMajor> err_type;
 
@@ -192,6 +195,10 @@ public:
         return 1 / rcond_;
     }
 
+    rcwork_type::ConstColXpr r()     const { return rcwork_.col(0); }
+    rcwork_type::ConstColXpr c()     const { return rcwork_.col(1); }
+    rcwork_type::ConstColXpr rwork() const { return rcwork_.col(2); }
+
     err_type::ConstRowXpr ferr() const { return err_.row(0); }
     err_type::ConstRowXpr berr() const { return err_.row(1); }
 
@@ -201,20 +208,19 @@ protected:
 
     char equed_;
 
-    Matrix<double, Dynamic, 1> r_;
+    rcwork_type rcwork_;
+    rcwork_type::ColXpr r_()     { return rcwork_.col(0); }
+    rcwork_type::ColXpr c_()     { return rcwork_.col(1); }
+    rcwork_type::ColXpr rwork_() { return rcwork_.col(2); }
 
-    Matrix<double, Dynamic, 1> c_;
-
-    Matrix<complex_double, Dynamic, 2, ColMajor> work_;
-
-    Matrix<double, Dynamic, 1> rwork_;
 
     double rcond_;
 
     err_type err_;
-
     err_type::RowXpr ferr_() { return err_.row(0); }
     err_type::RowXpr berr_() { return err_.row(1); }
+
+    Matrix<complex_double, Dynamic, 2, ColMajor> work_;
 
 private:
 
@@ -229,6 +235,9 @@ class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
     /** Type of the contiguous storage housing aiter, siter, and diter. */
     typedef Matrix<int, 3, Dynamic, ColMajor> iter_type;
 
+    /** Type of the contiguous storage housing tolsc and res. */
+    typedef Matrix<double, 2, Dynamic, ColMajor> tolscres_type;
+
 public:
 
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
@@ -239,6 +248,9 @@ public:
     iter_type::ConstRowXpr siter() const { return iter_.row(1); }
     iter_type::ConstRowXpr diter() const { return iter_.row(2); }
 
+    tolscres_type::ConstRowXpr tolsc() const { return tolscres_.row(0); }
+    tolscres_type::ConstRowXpr res()   const { return tolscres_.row(1); }
+
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
@@ -246,16 +258,15 @@ protected:
     double afrob_;
 
     iter_type iter_;
-
     iter_type::RowXpr aiter_() { return iter_.row(0); }
     iter_type::RowXpr siter_() { return iter_.row(1); }
     iter_type::RowXpr diter_() { return iter_.row(2); }
 
-    Matrix<double, 1, Dynamic> tolsc_;
+    tolscres_type tolscres_;
+    tolscres_type::RowXpr tolsc_() { return tolscres_.row(0); }
+    tolscres_type::RowXpr res_()   { return tolscres_.row(1); }
 
     Matrix<complex_double, Dynamic, 2, ColMajor> work_;
-
-    Matrix<double, 1, Dynamic> res_;
 
 private:
 
