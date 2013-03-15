@@ -44,6 +44,9 @@ bsmbsm_solver::bsmbsm_solver(
     PB  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     ipiv.setConstant(-12345);
 #endif
+
+    // Pretend we have a PAPT operator ready to go
+    supplied_PAPT();
 }
 
 int
