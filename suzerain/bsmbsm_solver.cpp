@@ -87,6 +87,17 @@ bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
     assert(spec.in_place() == true);
 }
 
+int
+bsmbsm_solver_zgbsv::solve_hook(
+        const char trans,
+        const int nrhs)
+{
+    SUZERAIN_UNUSED(trans);
+    SUZERAIN_UNUSED(nrhs);
+
+    return -1; // FIXME Implement
+}
+
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
         const zgbsv_specification& spec,
@@ -119,6 +130,17 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
 #endif
 }
 
+int
+bsmbsm_solver_zgbsvx::solve_hook(
+        const char trans,
+        const int nrhs)
+{
+    SUZERAIN_UNUSED(trans);
+    SUZERAIN_UNUSED(nrhs);
+
+    return -1; // FIXME Implement
+}
+
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
         const zgbsv_specification& spec,
@@ -143,6 +165,17 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
     PAPT_.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     PX_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
 #endif
+}
+
+int
+bsmbsm_solver_zcgbsvx::solve_hook(
+        const char trans,
+        const int nrhs)
+{
+    SUZERAIN_UNUSED(trans);
+    SUZERAIN_UNUSED(nrhs);
+
+    return -1; // FIXME Implement
 }
 
 } // end namespace suzerain
