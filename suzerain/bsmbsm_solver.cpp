@@ -37,6 +37,8 @@ bsmbsm_solver::bsmbsm_solver(
     , PAPT(KL + LU.data(), LD, N, KL + KU) // Aliases LU
     , PX(PB.data(), PB.rows(), PB.cols())  // Aliases PB
     , ipiv(N)
+    , fact_(default_fact())
+    , apprx_(0)
 {
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
@@ -44,9 +46,6 @@ bsmbsm_solver::bsmbsm_solver(
     PB  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
     ipiv.setConstant(-12345);
 #endif
-
-    // Pretend we have a PAPT operator ready to go
-    supplied_PAPT();
 }
 
 int

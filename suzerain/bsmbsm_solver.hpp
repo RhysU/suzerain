@@ -48,8 +48,6 @@ public:
 
     ArrayXi ipiv;
 
-    void supplied_PAPT() { fact_ = spec.equil() ? 'E' : 'N'; }
-
     int supply_b(const complex_double *b, const int j, const int incb = 1)
     {
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
@@ -73,9 +71,22 @@ public:
         return solve_internal(trans, nrhs);
     }
 
-    int solve(const char trans) { return solve(trans, PB.cols()); }
-
     char fact() const { return fact_; }
+
+    char default_fact() { return spec.equil() ? 'E' : 'N'; }
+
+    int apprx() const { return apprx_; }
+
+    void supplied_PAPT()
+    {
+        if (spec.reuse()) {
+            apprx_ = fact_ != default_fact();
+        } else {
+            fact_ = default_fact();
+        }
+    }
+
+    int solve(const char trans) { return solve(trans, PB.cols()); }
 
     int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
@@ -103,6 +114,8 @@ protected:
     virtual int solve_hook(const char trans, const int nrhs) = 0;
 
     char fact_;
+
+    int  apprx_;
 
 private:
 
