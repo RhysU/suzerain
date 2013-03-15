@@ -168,6 +168,9 @@ protected:
 
 class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 {
+    /** Type of the contiguous storage housing ferr and berr. */
+    typedef Matrix<real_t, 2, Dynamic, ColMajor> err_type;
+
 public:
 
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
@@ -189,19 +192,11 @@ public:
         return 1 / rcond_;
     }
 
-    typedef Matrix<double, 1, Dynamic> ferr_type;
+    err_type::RowXpr      ferr()       { return err_.row(0); }
+    err_type::RowXpr      berr()       { return err_.row(1); }
 
-    const ferr_type& ferr()
-    {
-        return ferr_;
-    }
-
-    typedef ferr_type berr_type;
-
-    const berr_type& berr()
-    {
-        return berr_;
-    }
+    err_type::ConstRowXpr ferr() const { return err_.row(0); }
+    err_type::ConstRowXpr berr() const { return err_.row(1); }
 
 protected:
 
@@ -219,9 +214,7 @@ protected:
 
     double rcond_;
 
-    ferr_type ferr_;
-
-    berr_type berr_;
+    err_type err_;
 
 private:
 

@@ -111,8 +111,7 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     , work_(N, 2)   // Per zgbsvx requirements
     , rwork_(N)     // Per zgbsvx requirements
     , rcond_(std::numeric_limits<double>::quiet_NaN())
-    , ferr_(nrhs)   // Per zgbsvx requirements
-    , berr_(nrhs)   // Per zgbsvx requirements
+    , err_(2, nrhs) // Stores (ferr, berr) x nrhs
     , PAPT_(LD, N)  // Operator storage for out-of-place factorization
     , PX_(N, nrhs)  // Solution storage for out-of-place solution
 {
