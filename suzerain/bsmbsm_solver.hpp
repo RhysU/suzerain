@@ -192,9 +192,6 @@ public:
         return 1 / rcond_;
     }
 
-    err_type::RowXpr      ferr()       { return err_.row(0); }
-    err_type::RowXpr      berr()       { return err_.row(1); }
-
     err_type::ConstRowXpr ferr() const { return err_.row(0); }
     err_type::ConstRowXpr berr() const { return err_.row(1); }
 
@@ -216,6 +213,9 @@ protected:
 
     err_type err_;
 
+    err_type::RowXpr ferr_() { return err_.row(0); }
+    err_type::RowXpr berr_() { return err_.row(1); }
+
 private:
 
     LU_type PAPT_;
@@ -235,10 +235,6 @@ public:
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
-    iter_type::RowXpr      aiter()       { return iter_.row(0); }
-    iter_type::RowXpr      siter()       { return iter_.row(1); }
-    iter_type::RowXpr      diter()       { return iter_.row(2); }
-
     iter_type::ConstRowXpr aiter() const { return iter_.row(0); }
     iter_type::ConstRowXpr siter() const { return iter_.row(1); }
     iter_type::ConstRowXpr diter() const { return iter_.row(2); }
@@ -250,6 +246,10 @@ protected:
     double afrob_;
 
     iter_type iter_;
+
+    iter_type::RowXpr aiter_() { return iter_.row(0); }
+    iter_type::RowXpr siter_() { return iter_.row(1); }
+    iter_type::RowXpr diter_() { return iter_.row(2); }
 
     Matrix<double, 1, Dynamic> tolsc_;
 
