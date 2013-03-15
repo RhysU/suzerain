@@ -38,8 +38,6 @@ public:
 
     ArrayXXc LU;
 
-    ArrayXi ipiv;
-
     ArrayXc b;
 
     typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > A_type;
@@ -49,6 +47,8 @@ public:
     typedef Map<ArrayXc, Aligned> x_type;
 
     x_type x;
+
+    ArrayXi ipiv;
 
 };
 

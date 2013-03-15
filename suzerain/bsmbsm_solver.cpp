@@ -19,6 +19,7 @@
 #endif
 
 #include <suzerain/bsmbsm_solver.hpp>
+#include <suzerain/complex.hpp>
 
 namespace suzerain {
 
@@ -30,12 +31,17 @@ bsmbsm_solver::bsmbsm_solver(
     : suzerain_bsmbsm(bsmbsm)
     , zgbsv_specification(specification)
     , LU(KL + LD, N)
-    , ipiv(N)
     , b(N)
     , A(KL + LU.data(), LD, N, KL + KU) // Aliases LU
     , x(b.data(), N)                    // Aliases b
+    , ipiv(N)
 {
-    // NOP
+    // Defensively set NaNs or NaN-like values on debug builds
+#ifndef NDEBUG
+    LU  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    b   .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    ipiv.setConstant(-12345);
+#endif
 }
 
 bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
@@ -66,6 +72,16 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     assert(in_place() == false);
     new (&A) A_type(A_.data(), A_.rows(), A_.cols(), A_.colStride());
     new (&x) x_type(x_.data(), x_.rows());
+
+    // Defensively set NaNs or NaN-like values on debug builds
+#ifndef NDEBUG
+    r    .setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
+    c    .setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
+    work .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    rwork.setConstant(std::numeric_limits<suzerain::real_t>::quiet_NaN());
+    A_   .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    x_   .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+#endif
 }
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
@@ -83,6 +99,13 @@ bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
     assert(in_place() == false);
     new (&A) A_type(A_.data(), A_.rows(), A_.cols(), A_.colStride());
     new (&x) x_type(x_.data(), x_.rows());
+
+    // Defensively set NaNs or NaN-like values on debug builds
+#ifndef NDEBUG
+    work.setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    A_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+    x_  .setConstant(suzerain::complex::NaN<suzerain::complex_t>());
+#endif
 }
 
 } // end namespace suzerain
