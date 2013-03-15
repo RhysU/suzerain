@@ -48,4 +48,24 @@ zgbsv_bsmbsm_solver_zgbsv::zgbsv_bsmbsm_solver_zgbsv(
     assert(in_place() == true);
 }
 
+zgbsv_bsmbsm_solver_zgbsvx::zgbsv_bsmbsm_solver_zgbsvx(
+        const zgbsv_specification& specification,
+        const suzerain_bsmbsm&    bsmbsm)
+    : zgbsv_bsmbsm_solver(specification, bsmbsm)
+    , r(N)       // Per zgbsvx requirements
+    , c(N)       // Per zgbsvx requirements
+    , work(2*N)  // Per zgbsvx requirements
+    , rwork(N)   // Per zgbsvx requirements
+    , A_(LD, N)  // Operator storage for out-of-place factorization
+    , x_(N)      // Solution storage for out-of-place solution
+{
+    if (method() != zgbsv_specification::zgbsvx) throw std::invalid_argument(
+            "Invalid method() in zgbsv_bsmbsm_solver_zgbsvx");
+
+    // See Eigen "Changing the mapped array" documentation for details
+    assert(in_place() == false);
+    new (&A) A_type(A_.data(), A_.rows(), A_.cols(), A_.colStride());
+    new (&x) x_type(x_.data(), x_.rows());
+}
+
 } // end namespace suzerain

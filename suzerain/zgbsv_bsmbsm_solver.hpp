@@ -64,26 +64,25 @@ public:
 
 };
 
-//class zgbsv_bsmbsm_solver_zgbsvx
-//    : public zgbsv_bsmbsm_solver
-//{
-//public:
-//
-//    zgbsv_bsmbsm_solver_zgbsvx(const zgbsv_specification& specification,
-//                               const suzerain_bsmbsm&     bsmbsm);
-//
-//private:
-//
-//    ArrayXr  r;
-//    ArrayXr  c;
-//    ArrayXc  work;
-//    ArrayXr  rwork;
-//
-//    ArrayXXc buf_A;
-//    ArrayXXc buf_LU;
-//    ArrayXc  buf_x;
-//
-//};
+class zgbsv_bsmbsm_solver_zgbsvx
+    : public zgbsv_bsmbsm_solver
+{
+public:
+
+    zgbsv_bsmbsm_solver_zgbsvx(const zgbsv_specification& specification,
+                               const suzerain_bsmbsm&     bsmbsm);
+
+    ArrayXr  r;
+    ArrayXr  c;
+    ArrayXc  work;
+    ArrayXr  rwork;
+
+private:
+
+    ArrayXXc A_;
+    ArrayXc  x_;
+
+};
 
 } // namespace suzerain
 
