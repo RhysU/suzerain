@@ -24,13 +24,16 @@ namespace suzerain {
 
 // TODO Implement
 
-zgbsv_bsmbsm_solver::zgbsv_bsmbsm_solver(const suzerain_bsmbsm& bsmbsm)
-    : suzerain_bsmbsm(bsmbsm) // Copy the given BSMBSM problem size
+zgbsv_bsmbsm_solver::zgbsv_bsmbsm_solver(
+        const zgbsv_specification& specification,
+        const suzerain_bsmbsm&    bsmbsm)
+    : zgbsv_specification(specification) // Copy
+    , suzerain_bsmbsm(bsmbsm)            // Copy
     , A(0, 0, 0)              // See Eigen "Changing the mapped array" docs
     , LU(0, 0, 0)             // Ditto
     , ipiv(bsmbsm.N)          // Required storage known
     , b(bsmbsm.N)             // Required storage known
-    , x(b.data(), bsmbsm.N)   // Changeable by subclass, defaults to b
+    , x(b.data(), bsmbsm.N)   // Defaults to b but possibly changed by subclass
 {
     // NOP
 }

@@ -26,10 +26,13 @@ namespace suzerain {
 
 // TODO Implement
 
-struct zgbsv_bsmbsm_solver : public suzerain_bsmbsm
+struct zgbsv_bsmbsm_solver
+    : public zgbsv_specification
+    , public suzerain_bsmbsm
 {
 
-    zgbsv_bsmbsm_solver(const suzerain_bsmbsm& bsmbsm);
+    zgbsv_bsmbsm_solver(const zgbsv_specification& specification,
+                        const suzerain_bsmbsm&     bsmbsm);
 
     typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > A_type;
 
