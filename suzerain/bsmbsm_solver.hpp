@@ -40,15 +40,15 @@ public:
 
     ArrayXXc LU;
 
-    ArrayXc b;
+    ArrayXc Pb;
 
-    typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > A_type;
+    typedef Map<ArrayXXc, Aligned, OuterStride<Dynamic> > PAPT_type;
 
-    A_type A;
+    PAPT_type PAPT;
 
-    typedef Map<ArrayXc, Aligned> x_type;
+    typedef Map<ArrayXc, Aligned> Px_type;
 
-    x_type x;
+    Px_type Px;
 
     ArrayXi ipiv;
 
@@ -71,15 +71,15 @@ public:
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
                          const zgbsv_specification& spec);
 
-    ArrayXr  r;
-    ArrayXr  c;
-    ArrayXc  work;
-    ArrayXr  rwork;
+    ArrayXr r;
+    ArrayXr c;
+    ArrayXc work;
+    ArrayXr rwork;
 
 private:
 
-    ArrayXXc A_;
-    ArrayXc  x_;
+    ArrayXXc PAPT_;
+    ArrayXc  Px_;
 
 };
 
@@ -90,12 +90,12 @@ public:
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
                           const zgbsv_specification& spec);
 
-    ArrayXc  work;
+    ArrayXc work;
 
 private:
 
-    ArrayXXc A_;
-    ArrayXc  x_;
+    ArrayXXc PAPT_;
+    ArrayXc  Px_;
 
 };
 
