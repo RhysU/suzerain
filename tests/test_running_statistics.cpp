@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
     for (std::size_t i = 0; i < N; ++i) {
         BOOST_CHECK((boost::math::isnan)(r.min(i)));
         BOOST_CHECK((boost::math::isnan)(r.max(i)));
-        BOOST_CHECK((boost::math::isnan)(r.mean(i)));
+        BOOST_CHECK((boost::math::isnan)(r.avg(i)));
         BOOST_CHECK((boost::math::isnan)(r.var(i)));
         BOOST_CHECK((boost::math::isnan)(r.std(i)));
     }

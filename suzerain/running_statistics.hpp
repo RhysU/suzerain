@@ -58,7 +58,7 @@ public:
     inline Real max(std::size_t i) const;
 
     /** Obtain the running mean for quantity \c i. */
-    inline Real mean(std::size_t i) const;
+    inline Real avg(std::size_t i) const;
 
     /** Obtain the running variance for quantity \c i. */
     inline Real var(std::size_t i) const;
@@ -142,7 +142,7 @@ Real running_statistics<Real,N>::max(std::size_t i) const
 }
 
 template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::mean(std::size_t i) const
+Real running_statistics<Real,N>::avg(std::size_t i) const
 {
     assert(i < N);
     using std::numeric_limits;
