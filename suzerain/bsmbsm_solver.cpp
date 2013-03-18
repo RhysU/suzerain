@@ -171,6 +171,8 @@ bsmbsm_solver_zgbsvx::solve_hook(
                                   &rcond_, ferr_().data(), berr_().data(),
                                   work_.data(), rwork_().data());
     fact_ = 'F';
+
+    // TODO Implement statistics gathering using 'stats'
 }
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
@@ -235,6 +237,8 @@ bsmbsm_solver_zcgbsvx::solve_hook(
                                           PB.data(), PX.data(),
                                           &siter_()[j], &diter_()[j],
                                           &tolsc_()[j], r_.data(), &res_()[j]);
+
+        // TODO Implement statistics gathering using 'stats'
     }
 
     return info;

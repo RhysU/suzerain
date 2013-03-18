@@ -20,6 +20,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/running_statistics.hpp>
 #include <suzerain/timers.h>
 #include <suzerain/zgbsv_specification.hpp>
 
@@ -103,6 +104,8 @@ public:
     {
         return solve(trans, PB.cols());
     }
+
+    // TODO Add statistics reporting capabilities as virtual method
 
     int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
@@ -215,6 +218,9 @@ private:
 
     PB_type PX_;
 
+    // Track statistics on { equed(R), equed(C), rcond, ferr, berr }
+    typedef running_statistics<double, 5> stats_type;
+    stats_type stats;
 };
 
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
@@ -260,6 +266,11 @@ private:
     LU_type PAPT_;
 
     PB_type PX_;
+
+    // Track statistics on
+    // { fact(S), fact(D), apprx, afrob, siter, diter, tolsc, res }
+    typedef running_statistics<double, 8> stats_type;
+    stats_type stats;
 
 };
 
