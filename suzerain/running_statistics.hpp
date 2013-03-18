@@ -19,6 +19,7 @@
  * benefit from custom logic.
  */
 
+#include <cassert>
 #include <cmath>
 #include <limits>
 
@@ -27,112 +28,43 @@ namespace suzerain {
 /**
  * Accumulates running minimum, maximum, mean, and variance details from a data
  * stream.  Adapted from http://www.johndcook.com/standard_deviation.html.
- * Extended to track a fixed number of quantities sampled together.
+ * Extended to track a fixed number of quantities with concurrently provided
+ * samples.
  *
- * @tparam N       Number of distinct statistics to track
- * @tparam Real    Floating point type used for input and accumulation
- * @tparam Integer Integral type used for accumulation
+ * @tparam Real Floating point type used for input and accumulation
+ * @tparam N    Number of distinct quantities to simultaneously track
  */
-template <std::size_t N,
-          typename Real = double>
+template <typename Real, std::size_t N>
 class running_statistics
 {
 public:
 
-    running_statistics()
-    {
-        reset();
-    }
+    /** Default constructor. */
+    running_statistics();
 
-    Integer count() const
-    {
-        return n_;
-    }
+    /** Provide quantity samples in locations <tt>x[0], ..., x[N-1]</tt>. */
+    void operator()(const Real* x);
 
-    Real minimum(std::size_t i) const
-    {
-        return min_[i];
-    };
+    /** Obtain the running number of samples provided thus far. */
+    inline std::size_t count() const;
 
-    Real maximum(std::size_t i) const
-    {
-        return max_[i];
-    };
+    /** Obtain the minimum sample observed for quantity \c i. */
+    inline Real min(std::size_t i) const;
 
-    Real mean(std::size_t i) const
-    {
-        using std::numeric_limits;
-        return (n_ > 0) ? newM_[i] : numeric_limits<Real>::quiet_NaN();
-    }
+    /** Obtain the maximum sample observed for quantity \c i. */
+    inline Real max(std::size_t i) const;
 
-    Real variance() const
-    {
-        using std::numeric_limits;
-        return  (n_ > 1) ? newS_/(n_ - 1)
-              : (n_ = 1) ? 0
-              :            numeric_limits<Real>::quiet_NaN();
-    }
+    /** Obtain the running mean for quantity \c i. */
+    inline Real mean(std::size_t i) const;
 
-    Real stddev() const
-    {
-        using std::sqrt;
-        return sqrt(variance());
-    }
+    /** Obtain the running variance for quantity \c i. */
+    inline Real var(std::size_t i) const;
 
-    void reset()
-    {
-        n_ = 0;
-        using std::numeric_limits;
-        for (std::size_t i = 0; i < N; ++i)
-            min_[i] = max_[i] = numeric_limits<Real>::quiet_NaN();
-    }
+    /** Obtain the running standard deviation for quantity \c i. */
+    inline Real std(std::size_t i) const;
 
-    void operator()(const Real* x)
-    {
-        using std::min;
-        using std::max;
-        using std::size_t;
-
-        // See Knuth TAOCP vol 2, 3rd edition, page 232
-        ++n_;
-
-        if (n_ > 1) {  // Second and subsequent iteration
-
-            // Process moments for current iteration
-            const Real inv_n = static_cast<Real>(1) / n_;
-            for (size_t i = 0; i < N; ++i)
-                newM_[i] = oldM_[i] + (x[i] - oldM_[i]) * inv_n;
-            for (size_t i = 0; i < N; ++i)
-                newS_[i] = oldS_[i] + (x[i] - oldM_[i])*(x[i] - newM_[i]);
-
-            // Prepare to process moments for next iteration
-            for (size_t i = 0; i < N; ++i)
-                oldM_[i] = newM_[i];
-            for (size_t i = 0; i < N; ++i)
-                oldS_[i] = newS_[i];
-
-            // Process extrema for current iteration
-            for (size_t i = 0; i < N; ++i)
-                min_[i] = min(min_[i], x[i]);
-            for (size_t i = 0; i < N; ++i)
-                max_[i] = max(max_[i], x[i]);
-
-        } else {       // Initial iteration
-
-            // Initialize moments
-            for (size_t i = 0; i < N; ++i)
-                oldM_[i] = newM_[i] = x[i];
-            for (size_t i = 0; i < N; ++i)
-                oldS_[i] = 0;
-
-            // Initialize extrama
-            for (size_t i = 0; i < N; ++i)
-                min_[i] = x[i];
-            for (size_t i = 0; i < N; ++i)
-                max_[i] = x[i];
-
-        }
-    }
+    /** Reset the instance to its newly constructed state. */
+    void clear();
 
 private:
 
@@ -140,6 +72,106 @@ private:
 
     std::size_t n_;
 };
+
+template <typename Real, std::size_t N>
+running_statistics::running_statistics()
+{
+    clear();
+}
+
+template <typename Real, std::size_t N>
+void operator()(const Real* x)
+{
+    // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232
+    using std::min;
+    using std::max;
+    ++n_;
+
+    if (n_ > 1) {  // Second and subsequent iteration
+
+        // Process moments for current iteration
+        const Real inv_n = static_cast<Real>(1) / n_;
+        for (std::size_t i = 0; i < N; ++i)
+            newM_[i] = oldM_[i] + (x[i] - oldM_[i]) * inv_n;
+        for (std::size_t i = 0; i < N; ++i)
+            newS_[i] = oldS_[i] + (x[i] - oldM_[i])*(x[i] - newM_[i]);
+
+        // Prepare to process moments for next iteration
+        for (std::size_t i = 0; i < N; ++i) oldM_[i] = newM_[i];
+        for (std::size_t i = 0; i < N; ++i) oldS_[i] = newS_[i];
+
+        // Process extrema for current iteration
+        for (std::size_t i = 0; i < N; ++i) min_[i] = min(min_[i], x[i]);
+        for (std::size_t i = 0; i < N; ++i) max_[i] = max(max_[i], x[i]);
+
+    } else {       // Initial iteration
+
+        // Initialize moments
+        for (std::size_t i = 0; i < N; ++i) oldM_[i] = x[i];
+        for (std::size_t i = 0; i < N; ++i) newM_[i] = x[i];
+        for (std::size_t i = 0; i < N; ++i) oldS_[i] = 0;
+
+        // Initialize extrema
+        for (std::size_t i = 0; i < N; ++i) min_[i] = x[i];
+        for (std::size_t i = 0; i < N; ++i) max_[i] = x[i];
+
+    }
+}
+
+template <typename Real, std::size_t N>
+std::size_t count() const
+{
+    return n_;
+}
+
+template <typename Real, std::size_t N>
+Real min(std::size_t i) const
+{
+    assert(i < N);
+    return min_[i];
+}
+
+template <typename Real, std::size_t N>
+Real max(std::size_t i) const
+{
+    assert(i < N);
+    return max_[i];
+}
+
+template <typename Real, std::size_t N>
+Real mean(std::size_t i) const
+{
+    assert(i < N);
+    using std::numeric_limits;
+    return (n_ > 0) ? newM_[i] : numeric_limits<Real>::quiet_NaN();
+}
+
+template <typename Real, std::size_t N>
+Real var(std::size_t i) const
+{
+    assert(i < N);
+    using std::numeric_limits;
+    return  (n_ >  1) ? newS_[i]/(n_ - 1)
+          : (n_ == 1) ? 0
+          :             numeric_limits<Real>::quiet_NaN();
+}
+
+template <typename Real, std::size_t N>
+Real std(std::size_t i) const
+{
+    assert(i < N);
+    using std::sqrt;
+    return sqrt(var());
+}
+
+template <typename Real, std::size_t N>
+void clear()
+{
+    n_ = 0;
+    using std::numeric_limits;
+    for (std::size_t i = 0; i < N; ++i)
+        min_[i] = max_[i] = numeric_limits<Real>::quiet_NaN();
+}
 
 } // namespace suzerain
 
