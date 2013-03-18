@@ -175,7 +175,20 @@ bsmbsm_solver_zgbsvx::summarize_statistics() const
 {
     std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
 
-    // TODO Implement
+    std::ostringstream msg;
+    msg.precision(static_cast<int>(std::numeric_limits<double>::digits10*0.5));
+    retval.reserve(retval.size() + stats_type::static_size);
+    for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+        msg.str("");
+        msg << "Min/mean/max/stddev of "
+            << stats_names[i]
+            << ": "
+            << stats.min(i) << ", "
+            << stats.avg(i) << ", "
+            << stats.max(i) << ", "
+            << stats.std(i);
+        retval.push_back(msg.str());
+    }
 
     return retval;
 }
@@ -272,7 +285,20 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
 {
     std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
 
-    // TODO Implement
+    std::ostringstream msg;
+    msg.precision(static_cast<int>(std::numeric_limits<double>::digits10*0.5));
+    retval.reserve(retval.size() + stats_type::static_size);
+    for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+        msg.str("");
+        msg << "Min/mean/max/stddev of "
+            << stats_names[i]
+            << ": "
+            << stats.min(i) << ", "
+            << stats.avg(i) << ", "
+            << stats.max(i) << ", "
+            << stats.std(i);
+        retval.push_back(msg.str());
+    }
 
     return retval;
 }
