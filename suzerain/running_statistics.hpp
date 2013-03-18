@@ -41,9 +41,11 @@ template <typename Real, std::size_t N>
 class running_statistics
 {
 public:
-
     /** Default constructor. */
     running_statistics();
+
+    /** Number of quantities per <tt>operator()(const T*)</tt> invocation */
+    std::size_t size() const { return N; }
 
     /** Provide quantity samples in locations <tt>x[0], ..., x[N-1]</tt>. */
     void operator()(const Real x[N]);
@@ -68,9 +70,6 @@ public:
 
     /** Reset the instance to its newly constructed state. */
     void clear();
-
-    /** Number of quantities per operator() invocation */
-    static const std::size_t static_size = N;
 
 private:
 

@@ -80,6 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 
     // Construct the accumulator
     suzerain::running_statistics<T,N> r1;
+    BOOST_CHECK_EQUAL(N, r1.size());
     BOOST_TEST_PASSPOINT();
 
     BOOST_TEST_MESSAGE("Testing initial behavior before any samples provided");
@@ -108,6 +109,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 
     // Clear the accumulator and ensure the same behavior persists
     r1.clear();
+    BOOST_CHECK_EQUAL(N, r1.size());
     BOOST_TEST_PASSPOINT();
 
     BOOST_TEST_MESSAGE("Testing post-reset behavior before any samples");
@@ -136,6 +138,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 
     // Copy accumulator and ensure we can resume processing
     suzerain::running_statistics<T,N> r2(r1);
+    BOOST_CHECK_EQUAL(N, r2.size());
     BOOST_TEST_PASSPOINT();
 
     for (std::size_t j = M/2; j < M; ++j) { // NB Resuming other half!
