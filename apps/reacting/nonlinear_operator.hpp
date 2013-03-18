@@ -791,6 +791,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Compute Y derivatives of variable var at collocation points
     o.bop_accumulate(1,    1, auxw, aux::T, 0, auxw, aux::gT + dir::y);
 
+    // Get to collocation points in preparation for computing x and z
+    // derivatives
+    o.bop_apply     (0,    1, auxw, aux::T);
+
     // Compute X- and Z- derivatives of variable var at collocation points
     // Zeros wavenumbers present only for dealiasing in the target storage
     o.diffwave_accumulate(1, 0, 1, auxw, aux::T,  0, auxw, aux::gT + dir::x );
