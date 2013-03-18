@@ -105,8 +105,6 @@ public:
         return solve(trans, PB.cols());
     }
 
-    // TODO Add statistics reporting capabilities as virtual method
-
     int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
@@ -123,6 +121,8 @@ public:
     }
 
     int demand_X(complex_double *X) const { return demand_X(X, N, 1); }
+
+    virtual std::vector<std::string> summarize_statistics() const;
 
 protected:
 
@@ -149,6 +149,8 @@ public:
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
                         const zgbsv_specification& spec,
                         const int                  nrhs);
+
+    std::vector<std::string> summarize_statistics() const;
 
 protected:
 
@@ -196,6 +198,8 @@ public:
     typedef running_statistics<double, 5> stats_type;
     static const char * const stats_names[stats_type::static_size];
     stats_type stats;
+
+    std::vector<std::string> summarize_statistics() const;
 
 protected:
 
@@ -250,6 +254,8 @@ public:
     typedef running_statistics<double, 8> stats_type;
     static const char * const stats_names[stats_type::static_size];
     stats_type stats;
+
+    std::vector<std::string> summarize_statistics() const;
 
 protected:
 

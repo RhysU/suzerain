@@ -67,6 +67,16 @@ bsmbsm_solver::apprx(const bool value)
     return old;
 }
 
+std::vector<std::string>
+bsmbsm_solver::summarize_statistics() const
+{
+    std::vector<std::string> retval;
+    std::ostringstream msg;
+    msg << "Employed bsmbsm_solver per specification " << spec;
+    retval.push_back(msg.str());
+    return retval;
+}
+
 int
 bsmbsm_solver::solve_internal(const char trans,
                               const int nrhs)
@@ -108,6 +118,16 @@ bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
     assert(spec.in_place() == true);
 }
 
+std::vector<std::string>
+bsmbsm_solver_zgbsv::summarize_statistics() const
+{
+    std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
+
+    // TODO Implement
+
+    return retval;
+}
+
 int
 bsmbsm_solver_zgbsv::solve_hook(
         const char trans,
@@ -118,15 +138,6 @@ bsmbsm_solver_zgbsv::solve_hook(
                                     LU.data(), LU.colStride(), ipiv.data(),
                                     PB.data(), PB.colStride());
 }
-
-const char * const bsmbsm_solver_zgbsvx::stats_names[
-        bsmbsm_solver_zgbsvx::stats_type::static_size] = {
-    "Row equilibration (equed)",
-    "Column equilibration (equed)",
-    "Condition number (1/rcond)",
-    "Forward error bound (ferr)",
-    "Backward error bound (berr)"
-};
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
@@ -158,6 +169,25 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
     PAPT_  .setConstant(suzerain::complex::NaN<complex_double>());
     PX_    .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
+}
+
+const char * const bsmbsm_solver_zgbsvx::stats_names[
+        bsmbsm_solver_zgbsvx::stats_type::static_size] = {
+    "Row equilibration (equed)",
+    "Column equilibration (equed)",
+    "Condition number (1/rcond)",
+    "Forward error bound (ferr)",
+    "Backward error bound (berr)"
+};
+
+std::vector<std::string>
+bsmbsm_solver_zgbsvx::summarize_statistics() const
+{
+    std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
+
+    // TODO Implement
+
+    return retval;
 }
 
 int
@@ -246,6 +276,16 @@ const char * const bsmbsm_solver_zcgbsvx::stats_names[
     "Fraction of tolerance (tolsc)",
     "Residual 2-norm (res)"
 };
+
+std::vector<std::string>
+bsmbsm_solver_zcgbsvx::summarize_statistics() const
+{
+    std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
+
+    // TODO Implement
+
+    return retval;
+}
 
 int
 bsmbsm_solver_zcgbsvx::solve_hook(
