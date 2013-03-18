@@ -28,23 +28,22 @@ template class suzerain::running_statistics<float,  1>;
 // Types to be tested
 typedef boost::mpl::list<double,float> test_types;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 {
     // Test data: Samples, one per row
-    static const T data[6][3] = {
+    static const T data[5][3] = {
         {  2,        -3,         5},
         { -3,         5,        -7},
         {  5,        -7,        11},
         { -7,        11,       -13},
         { 11,       -13,        17},
-        {-13,        17,       -19}
     };
 
     static const std::size_t M = sizeof(data   )/sizeof(data[0]   );
     static const std::size_t N = sizeof(data[0])/sizeof(data[0][0]);
 
     // Test data: Running means after each sample row
-    static const T mean[M][N] = {
+    static const T avg[M][N] = {
         {     T(2),        -T(3),         T(5)},
         {  -1/T(2),         T(1),        -T(1)},
         {   4/T(3),      -5/T(3),         T(3)},
@@ -79,16 +78,31 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
          {11,        11,        17}
     };
 
-    suzerain::running_statistics<T,N> r;
+    // Construct the accumulator
+    suzerain::running_statistics<T,N> r1;
 
-    // Check initial behavior before any samples provided
-    BOOST_CHECK_EQUAL(0, r.count());
+    BOOST_TEST_MESSAGE("Testing initial behavior before any samples provided");
+    BOOST_CHECK_EQUAL(0U, r1.count());
     for (std::size_t i = 0; i < N; ++i) {
-        BOOST_CHECK((boost::math::isnan)(r.min(i)));
-        BOOST_CHECK((boost::math::isnan)(r.max(i)));
-        BOOST_CHECK((boost::math::isnan)(r.avg(i)));
-        BOOST_CHECK((boost::math::isnan)(r.var(i)));
-        BOOST_CHECK((boost::math::isnan)(r.std(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.min(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.max(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.avg(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.var(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.std(i)));
+    }
+
+    for (std::size_t j = 0; j < M; ++j) {
+        BOOST_TEST_MESSAGE("Testing behavior after sample " << (j + 1));
+        const T close_enough = 25*(M + 1)*std::numeric_limits<T>::epsilon();
+        r1(data[j]);
+        for (std::size_t i = 0; i < N; ++i) {
+            using std::sqrt;
+            BOOST_CHECK_CLOSE(min[j][i],  r1.min(i),       close_enough);
+            BOOST_CHECK_CLOSE(max[j][i],  r1.max(i),       close_enough);
+            BOOST_CHECK_CLOSE(avg[j][i],  r1.avg(i),       close_enough);
+            BOOST_CHECK_CLOSE(var[j][i],  r1.var(i),       close_enough);
+            BOOST_CHECK_CLOSE(r1.std(i),  sqrt(var[j][i]), close_enough);
+        }
     }
 
     BOOST_CHECK_EQUAL(N, 3U);
