@@ -31,7 +31,7 @@ typedef boost::mpl::list<double,float> test_types;
 BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
 {
     // Test data: Samples, one per row
-    static const T data[][3] = {
+    static const T data[6][3] = {
         {  2,        -3,         5},
         { -3,         5,        -7},
         {  5,        -7,        11},
@@ -40,8 +40,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
         {-13,        17,       -19}
     };
 
+    static const std::size_t M = sizeof(data   )/sizeof(data[0]   );
+    static const std::size_t N = sizeof(data[0])/sizeof(data[0][0]);
+
     // Test data: Running means after each sample row
-    static const T mean[][sizeof(data)/sizeof(data[0])] = {
+    static const T mean[M][N] = {
         {     T(2),        -T(3),         T(5)},
         {  -1/T(2),         T(1),        -T(1)},
         {   4/T(3),      -5/T(3),         T(3)},
@@ -50,7 +53,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
     };
 
     // Test data: Running variance after each sample row
-    static const T var[][sizeof(data)/sizeof(data[0])] = {
+    static const T var[M][N] = {
         {      T(0),        T( 0),       T(  0) },
         {   25/T(2),        T(32),       T( 72) },
         {   49/T(3),    112/T( 3),       T( 84) },
@@ -59,7 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
     };
 
     // Test data: Running minimum after each sample row
-    static const T min[][sizeof(data)/sizeof(data[0])] = {
+    static const T min[M][N] = {
         {  2,        -3,         5},
         { -3,        -3,        -7},
         { -3,        -7,        -7},
@@ -68,7 +71,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
     };
 
     // Test data: Running maximum after each sample row
-    static const T max[][sizeof(data)/sizeof(data[0])] = {
+    static const T max[M][N] = {
          { 2,        -3,         5},
          { 2,         5,         5},
          { 5,         5,        11},
@@ -76,7 +79,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
          {11,        11,        17}
     };
 
-    suzerain::running_statistics<T,sizeof(data)/sizeof(data[0])> r;
+    suzerain::running_statistics<T,N> r;
 
-    BOOST_CHECK(true);
+    // Check initial behavior before any samples provided
+    BOOST_CHECK_EQUAL(0, r.count());
+    for (std::size_t i = 0; i < N; ++i) {
+        BOOST_CHECK((boost::math::isnan)(r.min(i)));
+        BOOST_CHECK((boost::math::isnan)(r.max(i)));
+        BOOST_CHECK((boost::math::isnan)(r.mean(i)));
+        BOOST_CHECK((boost::math::isnan)(r.var(i)));
+        BOOST_CHECK((boost::math::isnan)(r.std(i)));
+    }
+
+    BOOST_CHECK_EQUAL(N, 3U);
 }
