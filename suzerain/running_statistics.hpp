@@ -69,6 +69,9 @@ public:
     /** Reset the instance to its newly constructed state. */
     void clear();
 
+    /** Number of quantities per operator() invocation */
+    static const std::size_t static_size = N;
+
 private:
 
     Real oldM_[N], newM_[N], oldS_[N], newS_[N], min_[N], max_[N];
