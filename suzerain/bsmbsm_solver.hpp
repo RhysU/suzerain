@@ -192,6 +192,11 @@ public:
     err_type::ConstRowXpr ferr() const { return err_.row(0); }
     err_type::ConstRowXpr berr() const { return err_.row(1); }
 
+    // Track statistics on various quantities after each solve
+    typedef running_statistics<double, 5> stats_type;
+    static const char * const stats_names[stats_type::static_size];
+    stats_type stats;
+
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
@@ -217,10 +222,6 @@ private:
     LU_type PAPT_;
 
     PB_type PX_;
-
-    // Track statistics on { equed(R), equed(C), rcond, ferr, berr }
-    typedef running_statistics<double, 5> stats_type;
-    stats_type stats;
 };
 
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
@@ -245,6 +246,11 @@ public:
     tolscres_type::ConstRowXpr tolsc() const { return tolscres_.row(0); }
     tolscres_type::ConstRowXpr res()   const { return tolscres_.row(1); }
 
+    // Track statistics on various quantities after each solve
+    typedef running_statistics<double, 8> stats_type;
+    static const char * const stats_names[stats_type::static_size];
+    stats_type stats;
+
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
@@ -266,11 +272,6 @@ private:
     LU_type PAPT_;
 
     PB_type PX_;
-
-    // Track statistics on
-    // { fact(S), fact(D), apprx, afrob, siter, diter, tolsc, res }
-    typedef running_statistics<double, 8> stats_type;
-    stats_type stats;
 
 };
 

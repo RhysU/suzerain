@@ -119,6 +119,15 @@ bsmbsm_solver_zgbsv::solve_hook(
                                     PB.data(), PB.colStride());
 }
 
+const char * const bsmbsm_solver_zgbsvx::stats_names[
+        bsmbsm_solver_zgbsvx::stats_type::static_size] = {
+    "Row equilibration (equed)",
+    "Column equilibration (equed)",
+    "Condition number (1/rcond)",
+    "Forward error bound (ferr)",
+    "Backward error bound (berr)"
+};
+
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
         const suzerain_bsmbsm&     bsmbsm,
         const zgbsv_specification& spec,
@@ -156,23 +165,36 @@ bsmbsm_solver_zgbsvx::solve_hook(
         const char trans,
         const int nrhs)
 {
-    assert(apprx_ == false);
 #ifndef NDEBUG
     rcwork_.setConstant(std::numeric_limits<double>::quiet_NaN());
     err_   .setConstant(std::numeric_limits<double>::quiet_NaN());
     work_  .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
-    return suzerain_lapack_zgbsvx(fact_, trans, N, KL, KU, nrhs,
-                                  PAPT.data(), PAPT.colStride(),
-                                  LU.data(), LU.colStride(), ipiv.data(),
-                                  &equed_, r_().data(), c_().data(),
-                                  PB.data(), PB.colStride(),
-                                  PX.data(), PX.colStride(),
-                                  &rcond_, ferr_().data(), berr_().data(),
-                                  work_.data(), rwork_().data());
+
+    // Perform the requested solve
+    assert(apprx_ == false);
+    const int info = suzerain_lapack_zgbsvx(fact_, trans, N, KL, KU, nrhs,
+            PAPT.data(), PAPT.colStride(), LU.data(), LU.colStride(),
+            ipiv.data(), &equed_, r_().data(), c_().data(), PB.data(),
+            PB.colStride(), PX.data(), PX.colStride(), &rcond_,
+            ferr_().data(), berr_().data(), work_.data(), rwork_().data());
     fact_ = 'F';
 
-    // TODO Implement statistics gathering using 'stats'
+    // Track statistics for each right hand side per stats_type/stats_names
+    double samples[stats_type::static_size] = {
+        (equed_ == 'R' || equed_ == 'B'),
+        (equed_ == 'C' || equed_ == 'B'),
+        (1 / rcond_),
+        /* ferr below */ std::numeric_limits<double>::quiet_NaN(),
+        /* berr below */ std::numeric_limits<double>::quiet_NaN()
+    };
+    for (int j = 0; j < nrhs; ++j) {
+        samples[3] = ferr_()[j];
+        samples[4] = berr_()[j];
+        stats(samples);
+    }
+
+    return info;
 }
 
 bsmbsm_solver_zcgbsvx::bsmbsm_solver_zcgbsvx(
@@ -213,21 +235,37 @@ bsmbsm_solver_zcgbsvx::supplied_PAPT()
     return bsmbsm_solver::supplied_PAPT();
 }
 
+const char * const bsmbsm_solver_zcgbsvx::stats_names[
+        bsmbsm_solver_zcgbsvx::stats_type::static_size] = {
+    "Single precision LU (fact)",
+    "Double precision LU (fact)",
+    "Approx factorization (apprx)",
+    "Frobenius norm (afrob)",
+    "Single precision refinement (siter)",
+    "Double precision refinement (diter)",
+    "Fraction of tolerance (tolsc)",
+    "Residual 2-norm (res)"
+};
+
 int
 bsmbsm_solver_zcgbsvx::solve_hook(
         const char trans,
         const int nrhs)
 {
-    if (!apprx_) {
-        fact_ = default_fact();
-    }
 #ifndef NDEBUG
     iter_    .setConstant(-12345);
     tolscres_.setConstant(std::numeric_limits<double>::quiet_NaN());
     r_       .setConstant(suzerain::complex::NaN<complex_double>());
 #endif
+
+    // Perform the requested solve processing each right hand side in turn
+    if (!apprx_) {
+        fact_ = default_fact();
+    }
     int info = 0, j = -1;
     while (!info && ++j < nrhs) {
+
+        // Reset specification-related constants for each right hand side
         siter_()[j] = spec.siter();
         diter_()[j] = spec.diter();
         tolsc_()[j] = spec.tolsc();
@@ -238,7 +276,12 @@ bsmbsm_solver_zcgbsvx::solve_hook(
                                           &siter_()[j], &diter_()[j],
                                           &tolsc_()[j], r_.data(), &res_()[j]);
 
-        // TODO Implement statistics gathering using 'stats'
+        // Track statistics for each right hand side per stats_type/stats_names
+        double samples[stats_type::static_size] = {
+            (fact_ == 'S'), (fact_ == 'D'), apprx_, afrob_,
+            siter_()[j], diter_()[j], tolsc_()[j], res_()[j]
+        };
+        stats(samples);
     }
 
     return info;
