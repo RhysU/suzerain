@@ -26,42 +26,100 @@
 
 namespace suzerain {
 
-// TODO Document
-
+/**
+ * Abstract base class for solving BSMBSM problems per a \ref
+ * zgbsv_specification.
+ *
+ * To use the interface, users
+ * <ol>
+ *   <li>obtain a subclass instance,</li>
+ *   <li>invoke #supply_B or #supply_b to set the right hand side(s),</li>
+ *   <li>supply an unfactored operator into #PAPT per suzerain_bsmbsm.h,</li>
+ *   <li>invoke #supplied_PAPT,</li>
+ *   <li>invoke #solve to factorize and perform backsubstitution,</li>
+ *   <li>and finally invoke #demand_X or #demand_x to obtain the solution.</li>
+ * </ol>
+ * If <tt>spec.in_place() == true</tt>, storage #LU and #PAPT are coincident as
+ * are #PB and #PX.  For maximum flexibility, it should be assumed that calling
+ * #solve destroys the contents of #PB and #PAPT.
+ *
+ * Users can, and should, reuse an instance for repeatedly solving problems of
+ * some given size.  Factorizations will be reused when possible.  When a new
+ * operator is of interest, invoke #supplied_PAPT again to inform the instance
+ * that a new operator is stored in #PAPT.  If <tt>spec.reuse()</tt>,
+ * subclasses may attempt to reuse the previous factorization unless
+ * apprx(const bool) is called after #supplied_PAPT.  For example,
+ * <tt>supplied_PAPT.apprx(false)</tt>.
+ *
+ * @see The definition of a BSMBSM problem in \ref bsmbsm.h.
+ */
 class bsmbsm_solver : public suzerain_bsmbsm
 {
 
 public:
 
+    /** What solve specification does this instance use? */
     zgbsv_specification spec;
 
+    /** What is the storage type for the LU factorization? */
     typedef Matrix<complex_double, Dynamic, Dynamic, ColMajor> LU_type;
 
+    /** Storage for the LU factorization in conjunction with #ipiv. */
     LU_type LU;
 
+    /** What is the storage type for permuted right hand sides \f$P B\f$? */
     typedef LU_type PB_type;
 
+    /** Storage for permuted right hand sides \f$P B\f$. */
     PB_type PB;
 
+    /** How is the \f$P A P^{\mbox{T}}\f$ operator stored? */
     typedef Map<LU_type, Aligned, OuterStride<Dynamic> > PAPT_type;
 
+    /** Storage for the \f$P A P^{\mbox{T}}\f$ operator. */
     PAPT_type PAPT;
 
+    /** What is the storage type for permuted solutions \f$P X\f$? */
     typedef Map<PB_type, Aligned> PX_type;
 
+    /** Storage for permuted solutions \f$P X\f$. */
     PX_type PX;
 
+    /** What is the storage type for LU-related pivots? */
     typedef Matrix<int, Dynamic, 1> ipiv_type;
 
+    /** Storage for the factorization pivots in conjuntion with #LU */
     ipiv_type ipiv;
 
+    /**
+     * Supply a non-permuted right hand side to #PB.
+     * This routine automatically accounts for the BSMBSM-related renumbering.
+     *
+     * @param b    Data containing one right hand side.
+     * @param j    Index of the right hand side.  After #solve, column \c j of
+     *             #PX will contain the corresponding permuted solution.
+     * @param incb Stride between adjacent elements of \c b.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int supply_b(const complex_double *b, const int j, const int incb = 1)
     {
+        assert(0 <= j && j < PB.cols());
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
         return suzerain_bsmbsm_zaPxpby('N', S, n, 1, b,                incb,
                                                   0, PB.col(j).data(), 1);
     }
 
+    /**
+     * Supply <tt>PB.cols()</tt> non-permuted right hand sides to #PB.
+     * This routine automatically accounts for the BSMBSM-related renumbering.
+     *
+     * @param B    Data containing <tt>PB.cols()</tt> right hand sides.
+     * @param ldB  Leading dimension between adjacent right hand sides.
+     * @param incB Stride between adjacent elements in each right hand side.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int supply_B(const complex_double *B, const int ldB, const int incB = 1)
     {
         int info = 0, j = -1;
@@ -70,48 +128,121 @@ public:
         return info;
     }
 
+    /**
+     * Supply <tt>PB.cols()</tt> non-permuted, contiguous right hand sides to
+     * #PB.  This routine automatically accounts for the BSMBSM-related
+     * renumbering.
+     *
+     * @param B Data containing <tt>PB.cols()</tt> right hand sides.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int supply_B(const complex_double *B)
     {
         return supply_B(B, N, 1);
     }
 
+    /**
+     * Is a factorized operator available in #LU and #ipiv?
+     *
+     * @return 'N' if an operator is not factorized.
+     *         Otherwise, some non-'N' subclass-dependent value.
+     */
     char fact() const
     {
         return fact_;
     }
 
+    /**
+     * Should factorizations be equilibrated by default per #spec?
+     *
+     * @return 'E' if <tt>spec.equil() == true</tt>.
+     *         Otherwise, 'N'.
+     */
     char default_fact() const
     {
         return spec.equil() ? 'E' : 'N';
     }
 
+    /** Could the next #solve invocation use an approximate factorization? */
     bool apprx() const
     {
         return apprx_;
     }
 
+    /** Inform the solver that a new operator has been specified with #PAPT. */
     virtual bsmbsm_solver& supplied_PAPT();
 
-    virtual bool apprx(const bool value);
+    /**
+     * Inform the solver that using an approximate factorization for the next
+     * call to #solve is either acceptable or not.  This might be called
+     * immediately after #supplied_PAPT().
+     *
+     * @return True if a factorization could have been reused
+     *         prior to this invocation.  False otherwise.
+     */
+    virtual bool apprx(const bool acceptable);
 
+    /**
+     * Solve \f$ LU P X =  P B \f$ or \f$ {LU}^{\mbox{T}} P X = P B \f$.
+     * Factorization is performed if appropriate.  Any subclass-specific,
+     * right-hand-side-related outputs are only defined on indices <tt>0, ...,
+     * nrhs - 1</tt>.
+     *
+     * @param trans Should \f$A\f$ or \f$A^{\mbox{T}}\f$ be used?
+     * @param nrhs  Number of right hand sides up to a maximum of
+     *              <tt>PB.cols()</tt>.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int solve(const char trans, const int nrhs)
     {
         SUZERAIN_TIMER_SCOPED(spec.mname());
         return solve_internal(trans, nrhs);
     }
 
+    /**
+     * Solve \f$ LU P X =  P B \f$ or \f$ {LU}^{\mbox{T}} P X = P B \f$.
+     *
+     * @param trans Should \f$A\f$ or \f$A^{\mbox{T}}\f$ be used?
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int solve(const char trans)
     {
         return solve(trans, PB.cols());
     }
 
+    /**
+     * Demand a non-permuted solution from #PX.  This routine automatically
+     * accounts for the BSMBSM-related renumbering.
+     *
+     * @param x    Destination for requested one right hand side.
+     * @param j    Index of the right hand side to request.
+     *             Before #solve, column \c j of
+     *             #PB contained the corresponding permuted solution.
+     * @param incx Stride between adjacent elements of \c x.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int demand_x(complex_double *x, const int j, const int incx = 1) const
     {
+        assert(0 <= j && j < PX.cols());
         SUZERAIN_TIMER_SCOPED("suzerain_bsmbsm_zaPxpby");
         return suzerain_bsmbsm_zaPxpby('T', S, n, 1, PX.col(j).data(), 1,
                                                   0, x,                incx);
     }
 
+    /**
+     * Demand<tt>PX.cols()</tt> non-permuted solutions from #PX.  This routine
+     * automatically accounts for the BSMBSM-related renumbering.
+     *
+     * @param X    Destination for requested <tt>PX.cols</tt> right hand sides.
+     * @param ldX  Leading dimension between adjacent right hand sides.
+     * @param incX Stride between adjacent elements in each right hand side.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int demand_X(complex_double *X, const int ldX, const int incX = 1) const
     {
         int info = 0, j = -1;
@@ -120,8 +251,22 @@ public:
         return info;
     }
 
+    /**
+     * Demand <tt>PX.cols()</tt> non-permuted, contiguous solutions from #PX.
+     * This routine automatically accounts for the BSMBSM-related renumbering.
+     *
+     * @param X Destination for requested <tt>PX.cols</tt> right hand sides.
+     *
+     * @return Zero on success.  Nonzero otherwise.
+     */
     int demand_X(complex_double *X) const { return demand_X(X, N, 1); }
 
+    /**
+     * Prepare a human-readable summary of the solution procedure.
+     * Possibly prepare additional output describing operational statistics.
+     *
+     * @return Each string is one self-contained message suitable for logging.
+     */
     virtual std::vector<std::string> summarize_statistics() const;
 
 protected:
@@ -141,6 +286,8 @@ private:
     int solve_internal(const char trans, const int nrhs);
 
 };
+
+// TODO Document below here
 
 class bsmbsm_solver_zgbsv : public bsmbsm_solver
 {

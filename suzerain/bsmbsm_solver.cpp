@@ -59,11 +59,11 @@ bsmbsm_solver::supplied_PAPT()
 }
 
 bool
-bsmbsm_solver::apprx(const bool value)
+bsmbsm_solver::apprx(const bool acceptable)
 {
     const bool old = apprx_;
     if (spec.reuse())
-        apprx_ = value;
+        apprx_ = acceptable;
     return old;
 }
 
