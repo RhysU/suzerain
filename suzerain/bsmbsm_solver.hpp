@@ -150,8 +150,6 @@ public:
                         const zgbsv_specification& spec,
                         const int                  nrhs);
 
-    std::vector<std::string> summarize_statistics() const;
-
 protected:
 
     virtual int solve_hook(const char trans, const int nrhs);
@@ -199,7 +197,7 @@ public:
     static const char * const stats_names[stats_type::static_size];
     stats_type stats;
 
-    std::vector<std::string> summarize_statistics() const;
+    virtual std::vector<std::string> summarize_statistics() const;
 
 protected:
 
@@ -255,7 +253,7 @@ public:
     static const char * const stats_names[stats_type::static_size];
     stats_type stats;
 
-    std::vector<std::string> summarize_statistics() const;
+    virtual std::vector<std::string> summarize_statistics() const;
 
 protected:
 

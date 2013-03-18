@@ -118,16 +118,6 @@ bsmbsm_solver_zgbsv::bsmbsm_solver_zgbsv(
     assert(spec.in_place() == true);
 }
 
-std::vector<std::string>
-bsmbsm_solver_zgbsv::summarize_statistics() const
-{
-    std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
-
-    // TODO Implement
-
-    return retval;
-}
-
 int
 bsmbsm_solver_zgbsv::solve_hook(
         const char trans,
