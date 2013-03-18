@@ -43,7 +43,7 @@ public:
     running_statistics();
 
     /** Provide quantity samples in locations <tt>x[0], ..., x[N-1]</tt>. */
-    void operator()(const Real* x);
+    void operator()(const Real x[N]);
 
     /** Obtain the running number of samples provided thus far. */
     inline std::size_t count() const;
@@ -80,7 +80,7 @@ running_statistics::running_statistics()
 }
 
 template <typename Real, std::size_t N>
-void operator()(const Real* x)
+void operator()(const Real x[N])
 {
     // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232
     using std::min;
