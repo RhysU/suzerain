@@ -2,7 +2,7 @@
 set -e
 
 # Specify operational defaults which may be overridden in the environment
-: ${LAMINAR_INITIAL:=@bindir@/perfect_init}
+: ${LAMINAR_INITIAL:=@bindir@/reacting_init}
 : ${LAMINAR_ADVANCE:=@bindir@/reacting_advance}
 
 # Parse incoming parameters

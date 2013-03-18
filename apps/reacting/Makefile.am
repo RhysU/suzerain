@@ -39,14 +39,6 @@ reacting_init_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 main_init_svnrev.h: $(reacting_init_SOURCES) $(libreacting_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
-bin_PROGRAMS         += perfect_init
-perfect_init_SOURCES  = perfect_init.cpp
-perfect_init_SOURCES += perfect_init_svnrev.c
-BUILT_SOURCES        += perfect_init_svnrev.h
-perfect_init_LDADD   = ./libreacting.la ../../suzerain/libsuzerain.la
-perfect_init_svnrev.h: $(perfect_init_SOURCES) $(libreacting_la_SOURCES)
-	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
-
 bin_PROGRAMS             += reacting_advance
 reacting_advance_SOURCES  = main_advance.cpp
 reacting_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
