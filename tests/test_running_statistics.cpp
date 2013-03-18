@@ -80,6 +80,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 
     // Construct the accumulator
     suzerain::running_statistics<T,N> r1;
+    BOOST_TEST_PASSPOINT();
 
     BOOST_TEST_MESSAGE("Testing initial behavior before any samples provided");
     BOOST_CHECK_EQUAL(0U, r1.count());
@@ -97,13 +98,57 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
         r1(data[j]);
         for (std::size_t i = 0; i < N; ++i) {
             using std::sqrt;
-            BOOST_CHECK_CLOSE(min[j][i],  r1.min(i),       close_enough);
-            BOOST_CHECK_CLOSE(max[j][i],  r1.max(i),       close_enough);
-            BOOST_CHECK_CLOSE(avg[j][i],  r1.avg(i),       close_enough);
-            BOOST_CHECK_CLOSE(var[j][i],  r1.var(i),       close_enough);
-            BOOST_CHECK_CLOSE(r1.std(i),  sqrt(var[j][i]), close_enough);
+            BOOST_CHECK_CLOSE(min[j][i], r1.min(i),       close_enough);
+            BOOST_CHECK_CLOSE(max[j][i], r1.max(i),       close_enough);
+            BOOST_CHECK_CLOSE(avg[j][i], r1.avg(i),       close_enough);
+            BOOST_CHECK_CLOSE(var[j][i], r1.var(i),       close_enough);
+            BOOST_CHECK_CLOSE(r1.std(i), sqrt(var[j][i]), close_enough);
         }
     }
 
-    BOOST_CHECK_EQUAL(N, 3U);
+    // Clear the accumulator and ensure the same behavior persists
+    r1.clear();
+    BOOST_TEST_PASSPOINT();
+
+    BOOST_TEST_MESSAGE("Testing post-reset behavior before any samples");
+    BOOST_CHECK_EQUAL(0U, r1.count());
+    for (std::size_t i = 0; i < N; ++i) {
+        BOOST_CHECK((boost::math::isnan)(r1.min(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.max(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.avg(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.var(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.std(i)));
+    }
+
+    for (std::size_t j = 0; j < M/2; ++j) { // NB Only half used!
+        BOOST_TEST_MESSAGE("Testing post-reset behavior after " << (j + 1));
+        const T close_enough = 25*(M + 1)*std::numeric_limits<T>::epsilon();
+        r1(data[j]);
+        for (std::size_t i = 0; i < N; ++i) {
+            using std::sqrt;
+            BOOST_CHECK_CLOSE(min[j][i], r1.min(i),       close_enough);
+            BOOST_CHECK_CLOSE(max[j][i], r1.max(i),       close_enough);
+            BOOST_CHECK_CLOSE(avg[j][i], r1.avg(i),       close_enough);
+            BOOST_CHECK_CLOSE(var[j][i], r1.var(i),       close_enough);
+            BOOST_CHECK_CLOSE(r1.std(i), sqrt(var[j][i]), close_enough);
+        }
+    }
+
+    // Copy accumulator and ensure we can resume processing
+    suzerain::running_statistics<T,N> r2(r1);
+    BOOST_TEST_PASSPOINT();
+
+    for (std::size_t j = M/2; j < M; ++j) { // NB Resuming other half!
+        BOOST_TEST_MESSAGE("Testing post-copy behavior after " << (j + 1));
+        const T close_enough = 25*(M + 1)*std::numeric_limits<T>::epsilon();
+        r2(data[j]);
+        for (std::size_t i = 0; i < N; ++i) {
+            using std::sqrt;
+            BOOST_CHECK_CLOSE(min[j][i], r2.min(i),       close_enough);
+            BOOST_CHECK_CLOSE(max[j][i], r2.max(i),       close_enough);
+            BOOST_CHECK_CLOSE(avg[j][i], r2.avg(i),       close_enough);
+            BOOST_CHECK_CLOSE(var[j][i], r2.var(i),       close_enough);
+            BOOST_CHECK_CLOSE(r2.std(i), sqrt(var[j][i]), close_enough);
+        }
+    }
 }
