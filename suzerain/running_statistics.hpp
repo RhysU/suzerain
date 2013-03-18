@@ -19,6 +19,7 @@
  * benefit from custom logic.
  */
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -74,13 +75,13 @@ private:
 };
 
 template <typename Real, std::size_t N>
-running_statistics::running_statistics()
+running_statistics<Real,N>::running_statistics()
 {
     clear();
 }
 
 template <typename Real, std::size_t N>
-void operator()(const Real x[N])
+void running_statistics<Real,N>::operator()(const Real x[N])
 {
     // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232
     using std::min;
@@ -119,27 +120,27 @@ void operator()(const Real x[N])
 }
 
 template <typename Real, std::size_t N>
-std::size_t count() const
+std::size_t running_statistics<Real,N>::count() const
 {
     return n_;
 }
 
 template <typename Real, std::size_t N>
-Real min(std::size_t i) const
+Real running_statistics<Real,N>::min(std::size_t i) const
 {
     assert(i < N);
     return min_[i];
 }
 
 template <typename Real, std::size_t N>
-Real max(std::size_t i) const
+Real running_statistics<Real,N>::max(std::size_t i) const
 {
     assert(i < N);
     return max_[i];
 }
 
 template <typename Real, std::size_t N>
-Real mean(std::size_t i) const
+Real running_statistics<Real,N>::mean(std::size_t i) const
 {
     assert(i < N);
     using std::numeric_limits;
@@ -147,7 +148,7 @@ Real mean(std::size_t i) const
 }
 
 template <typename Real, std::size_t N>
-Real var(std::size_t i) const
+Real running_statistics<Real,N>::var(std::size_t i) const
 {
     assert(i < N);
     using std::numeric_limits;
@@ -157,15 +158,15 @@ Real var(std::size_t i) const
 }
 
 template <typename Real, std::size_t N>
-Real std(std::size_t i) const
+Real running_statistics<Real,N>::std(std::size_t i) const
 {
     assert(i < N);
     using std::sqrt;
-    return sqrt(var());
+    return sqrt(var(i));
 }
 
 template <typename Real, std::size_t N>
-void clear()
+void running_statistics<Real,N>::clear()
 {
     n_ = 0;
     using std::numeric_limits;
