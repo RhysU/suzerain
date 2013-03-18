@@ -23,15 +23,60 @@
 
 // Explicit instantiation to flush out compilation errors
 template class suzerain::running_statistics<double, 5>;
-template class suzerain::running_statistics<double, 1>;
-template class suzerain::running_statistics<float,  3>;
+template class suzerain::running_statistics<float,  1>;
 
-// TODO Implement
-BOOST_AUTO_TEST_SUITE(one_suite)
+// Types to be tested
+typedef boost::mpl::list<double,float> test_types;
 
-BOOST_AUTO_TEST_CASE( totally_suite )
+BOOST_AUTO_TEST_CASE_TEMPLATE( stuff, T, test_types )
 {
+    // Test data: Samples, one per row
+    static const T data[][3] = {
+        {  2,        -3,         5},
+        { -3,         5,        -7},
+        {  5,        -7,        11},
+        { -7,        11,       -13},
+        { 11,       -13,        17},
+        {-13,        17,       -19}
+    };
+
+    // Test data: Running means after each sample row
+    static const T mean[][sizeof(data)/sizeof(data[0])] = {
+        {     T(2),        -T(3),         T(5)},
+        {  -1/T(2),         T(1),        -T(1)},
+        {   4/T(3),      -5/T(3),         T(3)},
+        {  -3/T(4),       3/T(2),        -T(1)},
+        {   8/T(5),      -7/T(5),      13/T(5)}
+    };
+
+    // Test data: Running variance after each sample row
+    static const T var[][sizeof(data)/sizeof(data[0])] = {
+        {      T(0),        T( 0),       T(  0) },
+        {   25/T(2),        T(32),       T( 72) },
+        {   49/T(3),    112/T( 3),       T( 84) },
+        {  113/T(4),        T(65),       T(120) },
+        {  244/T(5),    454/T( 5),   774/T(  5) }
+    };
+
+    // Test data: Running minimum after each sample row
+    static const T min[][sizeof(data)/sizeof(data[0])] = {
+        {  2,        -3,         5},
+        { -3,        -3,        -7},
+        { -3,        -7,        -7},
+        { -7,        -7,       -13},
+        { -7,       -13,       -13}
+    };
+
+    // Test data: Running maximum after each sample row
+    static const T max[][sizeof(data)/sizeof(data[0])] = {
+         { 2,        -3,         5},
+         { 2,         5,         5},
+         { 5,         5,        11},
+         { 5,        11,        11},
+         {11,        11,        17}
+    };
+
+    suzerain::running_statistics<T,sizeof(data)/sizeof(data[0])> r;
+
     BOOST_CHECK(true);
 }
-
-BOOST_AUTO_TEST_SUITE_END()
