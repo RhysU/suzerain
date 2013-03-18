@@ -26,6 +26,8 @@
 
 namespace suzerain {
 
+// TODO Assertions in running_statistics complain loudly when N == 0
+
 /**
  * Accumulates running minimum, maximum, mean, and variance details from a data
  * stream.  Adapted from http://www.johndcook.com/standard_deviation.html.

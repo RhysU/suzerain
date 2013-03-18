@@ -23,9 +23,8 @@
 
 // Explicit instantiation to flush out compilation errors
 template class suzerain::running_statistics<double, 5>;
-// template class suzerain::running_statistics<double, 1>;
-// template class suzerain::running_statistics<double, 0>;
-// template class suzerain::running_statistics<float,  3>;
+template class suzerain::running_statistics<double, 1>;
+template class suzerain::running_statistics<float,  3>;
 
 // TODO Implement
 BOOST_AUTO_TEST_SUITE(one_suite)
