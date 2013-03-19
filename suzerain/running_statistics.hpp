@@ -45,7 +45,10 @@ public:
     running_statistics();
 
     /** Provide quantity samples in locations <tt>x[0], ..., x[N-1]</tt>. */
-    void operator()(const Real x[N]);
+    running_statistics& operator()(const Real x[N]);
+
+    /** Incorporate running information from another instance. */
+    running_statistics& operator()(const running_statistics& o);
 
     /** Obtain the running number of samples provided thus far. */
     inline std::size_t count() const;
@@ -79,6 +82,7 @@ private:
     Real oldM_[N], newM_[N], oldS_[N], newS_[N], min_[N], max_[N];
 
     std::size_t n_;
+
 };
 
 template <typename Real, std::size_t N>
@@ -88,7 +92,8 @@ running_statistics<Real,N>::running_statistics()
 }
 
 template <typename Real, std::size_t N>
-void running_statistics<Real,N>::operator()(const Real x[N])
+running_statistics<Real,N>& running_statistics<Real,N>::operator()(
+    const Real x[N])
 {
     // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232
     using std::min;
@@ -124,6 +129,44 @@ void running_statistics<Real,N>::operator()(const Real x[N])
         for (std::size_t i = 0; i < N; ++i) max_[i] = x[i];
 
     }
+
+    return *this;
+}
+
+template <typename Real, std::size_t N>
+running_statistics<Real,N>& running_statistics<Real,N>::operator()(
+    const running_statistics& o)
+{
+    const std::size_t total = n_ + o.n_;  // How many samples in combined data?
+    if (o.n_ == 0) return *this;          // Other contains no data; run away
+    if (n_   == 0) return *this = o;      // We contain no data; simply copy
+    assert(total >= 1);                   // Voila, degeneracy sidestepped
+
+    // Obtain target values using weighted linear combinations
+    // Notice n_ is not update until after all updates occur
+    const Real theta = Real(n_) / total;
+    for (std::size_t i = 0; i < N; ++i) {
+        const Real comboM = (    theta) *   avg(i)
+                          + (1 - theta) * o.avg(i);
+        const Real comboV = (    theta) * (  var(i) +   avg(i) *   avg(i))
+                          + (1 - theta) * (o.var(i) + o.avg(i) * o.avg(i))
+                          - comboM * comboM;
+        newM_[i] = comboM;
+        newS_[i] = (total - 1) * comboV;
+    }
+    n_ = total;
+
+    // Prepare to process moments for next operator()(const Real*) iteration
+    for (std::size_t i = 0; i < N; ++i) oldM_[i] = newM_[i];
+    for (std::size_t i = 0; i < N; ++i) oldS_[i] = newS_[i];
+
+    // Process extrema in straightforward manner
+    using std::min;
+    using std::max;
+    for (std::size_t i = 0; i < N; ++i) min_[i] = min(min_[i], o.min_[i]);
+    for (std::size_t i = 0; i < N; ++i) max_[i] = max(max_[i], o.max_[i]);
+
+    return *this;
 }
 
 template <typename Real, std::size_t N>
