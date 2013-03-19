@@ -343,37 +343,37 @@ public:
                          const zgbsv_specification& spec,
                          const int                  nrhs);
 
-    /** @return \c equed from last ZGBSVX invocation. */
+    /** @return \c equed from any prior suzerain_lapack_zgbsvx() usage. */
     char equed() const
     {
         return equed_;
     }
 
-    /** @return \c rcond from last ZGBSVX invocation. */
+    /** @return \c rcond from any prior suzerain_lapack_zgbsvx() usage. */
     double rcond() const
     {
         return rcond_;
     }
 
-    /** @return <tt>1 / cond</tt> from last ZGBSVX invocation. */
+    /** @return <tt>1/cond</tt> from any prior suzerain_lapack_zgbsvx() usage.*/
     double cond() const
     {
         return 1 / rcond_;
     }
 
-    /** @return <tt>r</tt> from last ZGBSVX invocation. */
+    /** @return <tt>r</tt> from any prior suzerain_lapack_zgbsvx() usage. */
     rcwork_type::ConstColXpr r()     const { return rcwork_.col(0); }
 
-    /** @return <tt>c</tt> from last ZGBSVX invocation. */
+    /** @return <tt>c</tt> from any prior suzerain_lapack_zgbsvx() usage. */
     rcwork_type::ConstColXpr c()     const { return rcwork_.col(1); }
 
-    /** @return <tt>rwork</tt> from last ZGBSVX invocation. */
+    /** @return <tt>rwork</tt> from any prior suzerain_lapack_zgbsvx() usage. */
     rcwork_type::ConstColXpr rwork() const { return rcwork_.col(2); }
 
-    /** @return <tt>ferr</tt> from last ZGBSVX invocation. */
+    /** @return <tt>ferr</tt> from any prior suzerain_lapack_zgbsvx() usage. */
     err_type::ConstRowXpr ferr() const { return err_.row(0); }
 
-    /** @return <tt>berr</tt> from last ZGBSVX invocation. */
+    /** @return <tt>berr</tt> from any prior suzerain_lapack_zgbsvx() usage. */
     err_type::ConstRowXpr berr() const { return err_.row(1); }
 
     /** Type for tracking statistics on various quantities after each solve. */
@@ -415,7 +415,7 @@ private:
 };
 
 /**
- * Solve BSMBSM problems using suzerain_lapackext_zcgbsvx.
+ * Solve BSMBSM problems using suzerain_lapackext_zcgbsvx().
  */
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 {
@@ -433,7 +433,7 @@ public:
      *
      * @param bsmbsm Defines the BSMBSM problem.
      * @param spec   Defines the solver behavior.
-     * @param nrhs   Maximum number of right hand sides per #solve invocation.
+     * @param nrhs   Maximum number of right hand sides per #solve usage.
      *
      * @throw <tt>std::invalid_argument</tt> if
      *        <tt>spec.method() != zgbsv_specification::zcgbsvx</tt>.
@@ -444,22 +444,22 @@ public:
 
     virtual bsmbsm_solver& supplied_PAPT();
 
-    /** @return \c afrob from last suzerain_lapackext_zcgbsvx invocation. */
+    /** @return \c afrob from any prior suzerain_lapackext_zcgbsvx() usage. */
     double afrob() const
     {
         return afrob_;
     }
 
-    /** @return \c siter from last suzerain_lapackext_zcgbsvx invocation. */
+    /** @return \c siter from any prior suzerain_lapackext_zcgbsvx() usage. */
     iter_type::ConstRowXpr siter() const { return iter_.row(0); }
 
-    /** @return \c diter from last suzerain_lapackext_zcgbsvx invocation. */
+    /** @return \c diter from any prior suzerain_lapackext_zcgbsvx() usage. */
     iter_type::ConstRowXpr diter() const { return iter_.row(1); }
 
-    /** @return \c tolsc from last suzerain_lapackext_zcgbsvx invocation. */
+    /** @return \c tolsc from any prior suzerain_lapackext_zcgbsvx() usage. */
     tolscres_type::ConstRowXpr tolsc() const { return tolscres_.row(0); }
 
-    /** @return \c res from last suzerain_lapackext_zcgbsvx invocation. */
+    /** @return \c res from any prior suzerain_lapackext_zcgbsvx() usage. */
     tolscres_type::ConstRowXpr res()   const { return tolscres_.row(1); }
 
     /** Type for tracking statistics on various quantities after each solve. */
