@@ -287,12 +287,24 @@ private:
 
 };
 
-// TODO Document below here
-
+/**
+ * Solve BSMBSM problems using LAPACK's ZGBSV, ZGBTRF, and ZGBTRS.
+ */
 class bsmbsm_solver_zgbsv : public bsmbsm_solver
 {
 public:
 
+    /**
+     * Construct an instance for the given problem size,
+     * solver specification, and maximum number of right hand sides.
+     *
+     * @param bsmbsm Defines the BSMBSM problem.
+     * @param spec   Defines the solver behavior.
+     * @param nrhs   Maximum number of right hand sides per #solve invocation.
+     *
+     * @throw <tt>std::invalid_argument</tt> if
+     *        <tt>spec.method() != zgbsv_specification::zgbsv</tt>.
+     */
     bsmbsm_solver_zgbsv(const suzerain_bsmbsm&     bsmbsm,
                         const zgbsv_specification& spec,
                         const int                  nrhs);
@@ -303,6 +315,9 @@ protected:
 
 };
 
+/**
+ * Solve BSMBSM problems using LAPACK's ZGBSVX.
+ */
 class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 {
     /** Type of the contiguous storage housing r, c, and rwork. */
@@ -313,35 +328,61 @@ class bsmbsm_solver_zgbsvx : public bsmbsm_solver
 
 public:
 
+    /**
+     * Construct an instance for the given problem size,
+     * solver specification, and maximum number of right hand sides.
+     *
+     * @param bsmbsm Defines the BSMBSM problem.
+     * @param spec   Defines the solver behavior.
+     * @param nrhs   Maximum number of right hand sides per #solve invocation.
+     *
+     * @throw <tt>std::invalid_argument</tt> if
+     *        <tt>spec.method() != zgbsv_specification::zgbsvx</tt>.
+     */
     bsmbsm_solver_zgbsvx(const suzerain_bsmbsm&     bsmbsm,
                          const zgbsv_specification& spec,
                          const int                  nrhs);
 
+    /** @return \c equed from last ZGBSVX invocation. */
     char equed() const
     {
         return equed_;
     }
 
+    /** @return \c rcond from last ZGBSVX invocation. */
     double rcond() const
     {
         return rcond_;
     }
 
+    /** @return <tt>1 / cond</tt> from last ZGBSVX invocation. */
     double cond() const
     {
         return 1 / rcond_;
     }
 
+    /** @return <tt>r</tt> from last ZGBSVX invocation. */
     rcwork_type::ConstColXpr r()     const { return rcwork_.col(0); }
+
+    /** @return <tt>c</tt> from last ZGBSVX invocation. */
     rcwork_type::ConstColXpr c()     const { return rcwork_.col(1); }
+
+    /** @return <tt>rwork</tt> from last ZGBSVX invocation. */
     rcwork_type::ConstColXpr rwork() const { return rcwork_.col(2); }
 
+    /** @return <tt>ferr</tt> from last ZGBSVX invocation. */
     err_type::ConstRowXpr ferr() const { return err_.row(0); }
+
+    /** @return <tt>berr</tt> from last ZGBSVX invocation. */
     err_type::ConstRowXpr berr() const { return err_.row(1); }
 
-    // Track statistics on various quantities after each solve
+    /** Type for tracking statistics on various quantities after each solve. */
     typedef running_statistics<double, 5> stats_type;
+
+    /** Human-readable names of the statistics which are tracked. */
     static const char * const stats_names[stats_type::static_size];
+
+    /** Tracks statistics on various quantities after each solve. */
     stats_type stats;
 
     virtual std::vector<std::string> summarize_statistics() const;
@@ -373,6 +414,9 @@ private:
     PB_type PX_;
 };
 
+/**
+ * Solve BSMBSM problems using suzerain_lapackext_zcgbsvx.
+ */
 class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 {
     /** Type of the contiguous storage housing siter and diter. */
@@ -383,21 +427,42 @@ class bsmbsm_solver_zcgbsvx : public bsmbsm_solver
 
 public:
 
+    /**
+     * Construct an instance for the given problem size,
+     * solver specification, and maximum number of right hand sides.
+     *
+     * @param bsmbsm Defines the BSMBSM problem.
+     * @param spec   Defines the solver behavior.
+     * @param nrhs   Maximum number of right hand sides per #solve invocation.
+     *
+     * @throw <tt>std::invalid_argument</tt> if
+     *        <tt>spec.method() != zgbsv_specification::zcgbsvx</tt>.
+     */
     bsmbsm_solver_zcgbsvx(const suzerain_bsmbsm&     bsmbsm,
                           const zgbsv_specification& spec,
                           const int                  nrhs);
 
     virtual bsmbsm_solver& supplied_PAPT();
 
+    /** @return \c siter from last suzerain_lapackext_zcgbsvx invocation. */
     iter_type::ConstRowXpr siter() const { return iter_.row(0); }
+
+    /** @return \c diter from last suzerain_lapackext_zcgbsvx invocation. */
     iter_type::ConstRowXpr diter() const { return iter_.row(1); }
 
+    /** @return \c tolsc from last suzerain_lapackext_zcgbsvx invocation. */
     tolscres_type::ConstRowXpr tolsc() const { return tolscres_.row(0); }
+
+    /** @return \c res from last suzerain_lapackext_zcgbsvx invocation. */
     tolscres_type::ConstRowXpr res()   const { return tolscres_.row(1); }
 
-    // Track statistics on various quantities after each solve
+    /** Type for tracking statistics on various quantities after each solve. */
     typedef running_statistics<double, 8> stats_type;
+
+    /** Human-readable names of the statistics which are tracked. */
     static const char * const stats_names[stats_type::static_size];
+
+    /** Tracks statistics on various quantities after each solve. */
     stats_type stats;
 
     virtual std::vector<std::string> summarize_statistics() const;
