@@ -33,6 +33,7 @@
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
+#include <antioch/stat_mech_thermo.h>
 #include <antioch/kinetics_evaluator.h>
 
 
@@ -205,6 +206,12 @@ public:
      * reaction src evaluation
      */
     shared_ptr<Antioch::CEAThermodynamics<real_t> > cea_thermo;
+
+    /**
+     * Antioch::StatMechThermodynamics object, used to compute
+     * temperature from internal energy
+     */
+    shared_ptr<Antioch::StatMechThermodynamics<real_t> > sm_thermo;
 
     /**
      * Antioch::KineticsEvaluator object, used to actually compute

@@ -294,7 +294,7 @@ int test_evaluate(const std::string& chem_xml_file)
     acl1.init_antioch();
 
     // Set up state (not physically meaningful yet)
-    real_t e          = 717500; // a big number s.t. T isn't really, really small
+    real_t e          = 5717500; // a really big number s.t. T isn't really, really small
     real_t m[3]       = {0.0, 0.0, 0.0};
     real_t rho        = 1.0;
     real_t species[5] = {0.5, 0.2, 0.1, 0.1, 0.1};
@@ -317,12 +317,12 @@ int test_evaluate(const std::string& chem_xml_file)
 
     //... T and p are positive
     if (T<=0.0) {
-        std::cerr << "Error: encountered negative temperature." << std::endl;
+        std::cerr << "Error: T = " << T << " <= 0 is not allowed!" << std::endl;
         nerr += 1;
     }
 
     if (p<=0.0) {
-        std::cerr << "Error: encountered negative pressure." << std::endl;
+        std::cerr << "Error: p = " << p << " <= 0 is not allowed!" << std::endl;
         nerr += 1;
     }
     

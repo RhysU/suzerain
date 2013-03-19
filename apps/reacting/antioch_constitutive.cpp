@@ -199,7 +199,7 @@ antioch_constitutive::save(
     }
 
     // chemistry input file
-    esio_string_set(h, acd, "chem_input_file", this->chem_input_file.c_str());    
+    esio_string_set(h, acd, "chem_input_file", this->chem_input_file.c_str());
 
     // Lewis number
     esio_attribute_write(h, acd, name_Le   , &this->Le);
@@ -282,6 +282,7 @@ void antioch_constitutive::init_antioch()
     mixture    = make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
     reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
     cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
+    sm_thermo  = make_shared<Antioch::StatMechThermodynamics<real_t> >(*mixture);
 
     // FIXME: This will do for now, but need to think about what
     // happens in parallel to avoid all ranks trying to read this
@@ -339,17 +340,19 @@ antioch_constitutive::evaluate (const real_t  e,
     std::vector<real_t> molar_densities(Ns,0.0);
     this->mixture->molar_densities(rho,Y,molar_densities);
 
-    // Compute temperature 
-    // FIXME: Replace w/ correct call to stat mech thermo once that
-    // exists (see #2795)
+    // Compute temperature from internal energy (assuming thermal equilibrium)
     const real_t re_internal = e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
-    T = irho*re_internal / 717.5; // 717.5 is Cv for air... this will
-                                  // be fixed naturally during
-                                  // conversion to stat mech
+    T = this->sm_thermo->T_from_e_tot(irho*re_internal, Y);
 
     // Compute pressure: ideal gas law with mixture gas constant
     p = rho*R_mix*T;
 
+    // Use CEA thermo to compute h_RT_minus_s_R for reaction
+    // calculations 
+    //
+    // NOTE: This is how FIN-S does it, so we follow for
+    // complete consistency.  But, it might make more sense to use
+    // stat mech based thermo to get this info... I'm not sure.
     std::vector<real_t> h_RT_minus_s_R(Ns);
     typedef typename Antioch::CEAThermodynamics<real_t>::Cache<real_t> Cache;
     Cache cea_cache(T);
@@ -357,14 +360,13 @@ antioch_constitutive::evaluate (const real_t  e,
 
     // Species eqn source terms
     std::vector<real_t> omega_dot(Ns);
-    this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, h_RT_minus_s_R, 
-                                        omega_dot);
+    this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, 
+                                         h_RT_minus_s_R, omega_dot);
     for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
 
-    // Species enthalpies
-    // FIXME: Currently from CEA... probably not what we want
+    // Species enthalpies (assuming thermal equilibrium)
     for (unsigned int i=0; i<Ns; ++i)
-        hs[i] = this->cea_thermo->h(cea_cache, i);
+        hs[i] = this->sm_thermo->h_tot(i, T);
 
     // Transport
     // FIXME: Add antioch support
