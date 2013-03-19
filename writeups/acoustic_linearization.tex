@@ -286,4 +286,20 @@ component of velocity and the energy equation. This then provides a matrix of th
 This matrix has an identical eigensystem to the previous one, indicating that it still retains the essential acoustic properties. 
 Finally, note that workbook ``Acoustics\_WallNormal\_MassFraction\_3d.nb'' demonstrates that these results are identical in the precence of 
 variable $\gamma$. 
+
+\subsection{Exact Acoustic System}
+The following matrix exactly preserves the eigensystem, e.g. when the following matrix is subtracted from the full matrix, only eigvenvalues of ``v'' remain:
+\begin{equation}\label{eq:reduced}
+\left(
+\begin{array}{ccccc}
+ -v & 0 & 1 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & -u (\gamma -1) & v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
+ 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & v \gamma -v
+\end{array}
+\right)
+\end{equation}
+If the objective is to only not introduce additional acoustic-like eigenvalues, then the 1,1 and 3,3 elements can have a v subtracted.
+
 \end{document}
