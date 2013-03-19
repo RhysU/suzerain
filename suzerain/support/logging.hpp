@@ -363,7 +363,7 @@ inline logger_type get_logger(const S& name, const T& child)
 
 /** Retrieve a descendent of a particular logger by name */
 template <typename T>
-inline logger_type& get_logger(logger_type& logger, const T& child)
+inline logger_type get_logger(logger_type& logger, const T& child)
 {
     std::string s;
     logger->getName(s);
