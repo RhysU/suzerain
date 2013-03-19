@@ -22,11 +22,11 @@
 #include <suzerain/common.hpp>
 
 // Explicit instantiation to flush out compilation errors
-template class suzerain::running_statistics<double, 5>;
 template class suzerain::running_statistics<float,  1>;
+template class suzerain::running_statistics<double, 5>;
 
 // Types to be tested
-typedef boost::mpl::list<double,float> test_types;
+typedef boost::mpl::list<float,double> test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
 {
@@ -152,6 +152,40 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( examine, T, test_types )
             BOOST_CHECK_CLOSE(avg[j][i], r2.avg(i),       close_enough);
             BOOST_CHECK_CLOSE(var[j][i], r2.var(i),       close_enough);
             BOOST_CHECK_CLOSE(r2.std(i), sqrt(var[j][i]), close_enough);
+        }
+    }
+
+    // Merge two trivial accumulators and get the results for no samples
+    BOOST_TEST_MESSAGE("Testing merge behavior on trivial instances");
+    r1.clear();
+    r2.clear();
+    r1(r2);
+    for (std::size_t i = 0; i < N; ++i) {
+        BOOST_CHECK((boost::math::isnan)(r1.min(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.max(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.avg(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.var(i)));
+        BOOST_CHECK((boost::math::isnan)(r1.std(i)));
+    }
+
+    // Merge two accumulators and get the results for expected data
+    for (std::size_t k = 0; k < M; ++k) {  // Split on [0, k), [k, M)
+        r1.clear();
+        r2.clear();
+        for (std::size_t j = 0; j < k; ++j) r1(data[j]);  // First  portion
+        BOOST_REQUIRE_EQUAL(k, r1.count());
+        for (std::size_t j = k; j < M; ++j) r2(data[j]);  // Second portion
+        BOOST_REQUIRE_EQUAL(M - k, r2.count());
+        r1(r2);                                           // Merge the two
+
+        BOOST_TEST_MESSAGE("Testing merge behavior at split " << k);
+        const T close_enough = 25*(M + 1)*std::numeric_limits<T>::epsilon();
+        for (std::size_t i = 0; i < N; ++i) {
+            BOOST_CHECK_CLOSE(min[M-1][i], r1.min(i),         close_enough);
+            BOOST_CHECK_CLOSE(max[M-1][i], r1.max(i),         close_enough);
+            BOOST_CHECK_CLOSE(avg[M-1][i], r1.avg(i),         close_enough);
+            BOOST_CHECK_CLOSE(var[M-1][i], r1.var(i),         close_enough);
+            BOOST_CHECK_CLOSE(r1.std(i),   sqrt(var[M-1][i]), close_enough);
         }
     }
 }

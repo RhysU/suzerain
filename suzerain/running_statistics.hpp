@@ -142,17 +142,15 @@ running_statistics<Real,N>& running_statistics<Real,N>::operator()(
     if (n_   == 0) return *this = o;      // We contain no data; simply copy
     assert(total >= 1);                   // Voila, degeneracy sidestepped
 
-    // Obtain target values using weighted linear combinations
-    // Notice n_ is not update until after all updates occur
-    const Real theta = Real(n_) / total;
+    // Obtain combined statistics
     for (std::size_t i = 0; i < N; ++i) {
-        const Real comboM = (    theta) *   avg(i)
-                          + (1 - theta) * o.avg(i);
-        const Real comboV = (    theta) * (  var(i) +   avg(i) *   avg(i))
-                          + (1 - theta) * (o.var(i) + o.avg(i) * o.avg(i))
-                          - comboM * comboM;
+        const Real comboM = (n_ * avg(i) + o.n_ * o.avg(i)) / total;
+        const Real comboS = (n_   == 1 ? 0 :   newS_[i])
+                          + (o.n_ == 1 ? 0 : o.newS_[i])
+                          + (newM_[i] - o.newM_[i]) * (newM_[i] - o.newM_[i])
+                            * (n_ * o.n_) / total;
         newM_[i] = comboM;
-        newS_[i] = (total - 1) * comboV;
+        newS_[i] = comboS;
     }
     n_ = total;
 
