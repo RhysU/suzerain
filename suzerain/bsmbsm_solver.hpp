@@ -27,7 +27,7 @@
 namespace suzerain {
 
 /**
- * Abstract base class for solving BSMBSM problems per a \ref
+ * An abstract base class for solving BSMBSM problems per a \ref
  * zgbsv_specification.
  *
  * To use the interface, users
@@ -56,7 +56,17 @@ namespace suzerain {
 class bsmbsm_solver : public suzerain_bsmbsm
 {
 
+protected:
+
+    /** Direct construction verboten; construct a subclass. */
+    bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
+                  const zgbsv_specification& spec,
+                  const int                  nrhs);
+
 public:
+
+    /** Virtual destructor as appropriate for an abstract base class. */
+    virtual ~bsmbsm_solver() { /* NOP */ }
 
     /** What solve specification does this instance use? */
     zgbsv_specification spec;
@@ -270,10 +280,6 @@ public:
     virtual std::vector<std::string> summarize_statistics() const;
 
 protected:
-
-    bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
-                  const zgbsv_specification& spec,
-                  const int                  nrhs);
 
     virtual int solve_hook(const char trans, const int nrhs) = 0;
 
