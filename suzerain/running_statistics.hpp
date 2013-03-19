@@ -31,8 +31,9 @@ namespace suzerain {
 /**
  * Accumulates running minimum, maximum, mean, and variance details from a data
  * stream.  Adapted from http://www.johndcook.com/standard_deviation.html.
- * Extended to track a fixed number of quantities with concurrently provided
- * samples.
+ * Extended to track a fixed number of distinct quantities with concurrently
+ * provided samples and to permit merging statistics from multiple instances.
+ * Storage overhead reduced relative to Cook's presentation.
  *
  * @tparam Real Floating point type used for input and accumulation
  * @tparam N    Number of distinct quantities to simultaneously track
@@ -51,22 +52,28 @@ public:
     running_statistics& operator()(const running_statistics& o);
 
     /** Obtain the running number of samples provided thus far. */
-    inline std::size_t count() const;
+    std::size_t count() const
+    { return n_; }
 
     /** Obtain the minimum sample observed for quantity \c i. */
-    inline Real min(std::size_t i) const;
+    Real min(std::size_t i) const
+    { assert(i < N); return min_[i]; }
 
     /** Obtain the maximum sample observed for quantity \c i. */
-    inline Real max(std::size_t i) const;
+    Real max(std::size_t i) const
+    { assert(i < N); return max_[i]; }
 
     /** Obtain the running mean for quantity \c i. */
-    inline Real avg(std::size_t i) const;
+    Real avg(std::size_t i) const
+    { assert(i < N); return M_[i]; }
 
-    /** Obtain the running variance for quantity \c i. */
-    inline Real var(std::size_t i) const;
+    /** Obtain the running sample variance for quantity \c i. */
+    Real var(std::size_t i) const
+    { assert(i < N); return n_ == 1 ? 0 : S_[i] / (n_ - 1); }
 
-    /** Obtain the running standard deviation for quantity \c i. */
-    inline Real std(std::size_t i) const;
+    /** Obtain the running sample standard deviation for quantity \c i. */
+    Real std(std::size_t i) const
+    { using std::sqrt; return sqrt(var(i)); }
 
     /** Reset the instance to its newly constructed state. */
     void clear();
@@ -79,7 +86,7 @@ public:
 
 private:
 
-    Real oldM_[N], newM_[N], oldS_[N], newS_[N], min_[N], max_[N];
+    Real M_[N], S_[N], min_[N], max_[N];
 
     std::size_t n_;
 
@@ -95,39 +102,33 @@ template <typename Real, std::size_t N>
 running_statistics<Real,N>& running_statistics<Real,N>::operator()(
     const Real x[N])
 {
-    // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232
-    using std::min;
+    // Algorithm from Knuth TAOCP vol 2, 3rd edition, page 232.
+    // Knuth shows better behavior than Welford 1962 on test data.
+
     using std::max;
+    using std::min;
+
     ++n_;
 
-    if (n_ > 1) {  // Second and subsequent iteration
+    if (n_ > 1) {  // Second and subsequent invocation
 
-        // Process moments for current iteration
-        const Real inv_n = static_cast<Real>(1) / n_;
-        for (std::size_t i = 0; i < N; ++i)
-            newM_[i] = oldM_[i] + (x[i] - oldM_[i]) * inv_n;
-        for (std::size_t i = 0; i < N; ++i)
-            newS_[i] = oldS_[i] + (x[i] - oldM_[i])*(x[i] - newM_[i]);
+        const Real inv_n = Real(1) / n_;
+        for (std::size_t i = 0; i < N; ++i) {
+            const Real d  = x[i] - M_[i];
+            M_[i]        += d * inv_n;
+            S_[i]        += d * (x[i] - M_[i]);
+            min_[i]       = min(min_[i], x[i]);
+            max_[i]       = max(max_[i], x[i]);
+        }
 
-        // Prepare to process moments for next iteration
-        for (std::size_t i = 0; i < N; ++i) oldM_[i] = newM_[i];
-        for (std::size_t i = 0; i < N; ++i) oldS_[i] = newS_[i];
+    } else {       // First invocation requires special treatment
 
-        // Process extrema for current iteration
-        for (std::size_t i = 0; i < N; ++i) min_[i] = min(min_[i], x[i]);
-        for (std::size_t i = 0; i < N; ++i) max_[i] = max(max_[i], x[i]);
-
-    } else {       // Initial iteration
-
-        // Initialize moments
-        for (std::size_t i = 0; i < N; ++i) oldM_[i] = x[i];
-        for (std::size_t i = 0; i < N; ++i) newM_[i] = x[i];
-        for (std::size_t i = 0; i < N; ++i) oldS_[i] = 0;
-
-        // Initialize extrema
-        for (std::size_t i = 0; i < N; ++i) min_[i] = x[i];
-        for (std::size_t i = 0; i < N; ++i) max_[i] = x[i];
-
+        for (std::size_t i = 0; i < N; ++i) {
+            M_[i]   = x[i];
+            S_[i]   = 0;
+            min_[i] = x[i];
+            max_[i] = x[i];
+        }
     }
 
     return *this;
@@ -137,89 +138,36 @@ template <typename Real, std::size_t N>
 running_statistics<Real,N>& running_statistics<Real,N>::operator()(
     const running_statistics& o)
 {
+    using std::max;
+    using std::min;
+
     const std::size_t total = n_ + o.n_;  // How many samples in combined data?
     if (o.n_ == 0) return *this;          // Other contains no data; run away
     if (n_   == 0) return *this = o;      // We contain no data; simply copy
     assert(total >= 1);                   // Voila, degeneracy sidestepped
 
-    // Obtain combined statistics
+    // Combine statistics from both instances into this
     for (std::size_t i = 0; i < N; ++i) {
-        const Real comboM = (n_ * avg(i) + o.n_ * o.avg(i)) / total;
-        const Real comboS = (n_   == 1 ? 0 :   newS_[i])
-                          + (o.n_ == 1 ? 0 : o.newS_[i])
-                          + (newM_[i] - o.newM_[i]) * (newM_[i] - o.newM_[i])
-                            * (n_ * o.n_) / total;
-        newM_[i] = comboM;
-        newS_[i] = comboS;
+        const Real dM = M_[i] - o.M_[i];  // Cancellation issues?
+        M_[i]         = (n_ * avg(i) + o.n_ * o.avg(i)) / total;
+        S_[i]         = (n_   == 1 ? 0 :   S_[i])
+                      + (o.n_ == 1 ? 0 : o.S_[i])
+                      + ((dM * dM) * (n_ * o.n_)) / total;
+        min_[i]       = min(min_[i], o.min_[i]);
+        max_[i]       = max(max_[i], o.max_[i]);
     }
     n_ = total;
-
-    // Prepare to process moments for next operator()(const Real*) iteration
-    for (std::size_t i = 0; i < N; ++i) oldM_[i] = newM_[i];
-    for (std::size_t i = 0; i < N; ++i) oldS_[i] = newS_[i];
-
-    // Process extrema in straightforward manner
-    using std::min;
-    using std::max;
-    for (std::size_t i = 0; i < N; ++i) min_[i] = min(min_[i], o.min_[i]);
-    for (std::size_t i = 0; i < N; ++i) max_[i] = max(max_[i], o.max_[i]);
 
     return *this;
 }
 
 template <typename Real, std::size_t N>
-std::size_t running_statistics<Real,N>::count() const
-{
-    return n_;
-}
-
-template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::min(std::size_t i) const
-{
-    assert(i < N);
-    return min_[i];
-}
-
-template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::max(std::size_t i) const
-{
-    assert(i < N);
-    return max_[i];
-}
-
-template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::avg(std::size_t i) const
-{
-    assert(i < N);
-    using std::numeric_limits;
-    return (n_ > 0) ? newM_[i] : numeric_limits<Real>::quiet_NaN();
-}
-
-template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::var(std::size_t i) const
-{
-    assert(i < N);
-    using std::numeric_limits;
-    return  (n_ >  1) ? newS_[i]/(n_ - 1)
-          : (n_ == 1) ? 0
-          :             numeric_limits<Real>::quiet_NaN();
-}
-
-template <typename Real, std::size_t N>
-Real running_statistics<Real,N>::std(std::size_t i) const
-{
-    assert(i < N);
-    using std::sqrt;
-    return sqrt(var(i));
-}
-
-template <typename Real, std::size_t N>
 void running_statistics<Real,N>::clear()
 {
-    n_ = 0;
     using std::numeric_limits;
     for (std::size_t i = 0; i < N; ++i)
-        min_[i] = max_[i] = numeric_limits<Real>::quiet_NaN();
+        M_[i] = S_[i] = min_[i] = max_[i] = numeric_limits<Real>::quiet_NaN();
+    n_ = 0;
 }
 
 } // namespace suzerain
