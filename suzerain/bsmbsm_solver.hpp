@@ -444,6 +444,12 @@ public:
 
     virtual bsmbsm_solver& supplied_PAPT();
 
+    /** @return \c afrob from last suzerain_lapackext_zcgbsvx invocation. */
+    double afrob() const
+    {
+        return afrob_;
+    }
+
     /** @return \c siter from last suzerain_lapackext_zcgbsvx invocation. */
     iter_type::ConstRowXpr siter() const { return iter_.row(0); }
 
