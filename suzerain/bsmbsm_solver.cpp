@@ -25,6 +25,28 @@
 
 namespace suzerain {
 
+bsmbsm_solver*
+bsmbsm_solver::build(
+        const suzerain_bsmbsm&     bsmbsm,
+        const zgbsv_specification& spec,
+        const int                  nrhs)
+{
+    switch (spec.method()) {
+
+    case zgbsv_specification::zgbsv:
+        return new bsmbsm_solver_zgbsv(bsmbsm, spec, nrhs);
+
+    case zgbsv_specification::zgbsvx:
+        return new bsmbsm_solver_zgbsvx(bsmbsm, spec, nrhs);
+
+    case zgbsv_specification::zcgbsvx:
+        return new bsmbsm_solver_zcgbsvx(bsmbsm, spec, nrhs);
+
+    }
+
+    throw std::invalid_argument("bsmbsm_solver::build: unknown spec.method()");
+}
+
 bsmbsm_solver::bsmbsm_solver(
         const suzerain_bsmbsm&     bsmbsm,
         const zgbsv_specification& spec,

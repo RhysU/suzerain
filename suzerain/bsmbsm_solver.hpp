@@ -58,12 +58,33 @@ class bsmbsm_solver : public suzerain_bsmbsm
 
 protected:
 
-    /** Direct construction verboten; construct a subclass. */
+    /**
+     * Public construction verboten.
+     * Either construct a subclass or use the static build() method.
+     */
     bsmbsm_solver(const suzerain_bsmbsm&     bsmbsm,
                   const zgbsv_specification& spec,
                   const int                  nrhs);
 
 public:
+
+    /**
+     * Construct an instance for the given problem size,
+     * solver specification, and maximum number of right hand sides.
+     *
+     * @param bsmbsm Defines the BSMBSM problem.
+     * @param spec   Defines the solver behavior.
+     * @param nrhs   Maximum number of right hand sides per #solve invocation.
+     *
+     * @return a <tt>new</tt> subclass instance matching the request.
+     *         Callers must subsequently <tt>delete</tt> the instance.
+     *
+     * @throw <tt>std::invalid_argument</tt> if
+     *        <tt>spec.method()</tt> is unknown.
+     */
+    static bsmbsm_solver* build(const suzerain_bsmbsm&     bsmbsm,
+                                const zgbsv_specification& spec,
+                                const int                  nrhs);
 
     /** Virtual destructor as appropriate for an abstract base class. */
     virtual ~bsmbsm_solver() { /* NOP */ }
