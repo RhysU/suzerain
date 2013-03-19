@@ -26,6 +26,9 @@
 
 namespace suzerain {
 
+// TODO Too much logic is inlined in the bsmbsm_solver base class
+//      (Inlining done so that timers are invoked only when available)
+
 /**
  * An abstract base class for solving BSMBSM problems per a \ref
  * zgbsv_specification.
@@ -228,6 +231,7 @@ public:
      */
     int solve(const char trans, const int nrhs)
     {
+        if (nrhs == 0) return 0;              // Avoid timing degenerate calls
         SUZERAIN_TIMER_SCOPED(spec.mname());
         return solve_internal(trans, nrhs);
     }
