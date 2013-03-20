@@ -255,13 +255,9 @@ suzerain_reacting_imexop_accumulate(
         }
 
         if (LIKELY(in_rho_v)) {
-            (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],
-                phi*gm1*ikm,               REF(uy),
-                w->D_T[M],  w->ld, IN(rho_v), 1.0, OUT(rho_u));
 
-            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi,                      REF(ux),
-                phi*ap13*invRe*ikm,        REF(nu),
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
