@@ -380,13 +380,7 @@ FUNCNAME()(
         }
 
         if (rho_u >= 0) {
-            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                     phi*gm1*ikn,                REF(ux),
-                    -phi*ikm,                    REF(uz),
-                    -phi*ap13*invRe*km*kn,       REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            PACK(z)(A_T, rho_u, rho_w, 1.0, buf, patpt);
+            PACK(z)(A_T, rho_u, rho_w, 0.0, 0, patpt);
         }
 
         if (rho_v >= 0) {
