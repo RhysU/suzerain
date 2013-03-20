@@ -197,19 +197,21 @@ bsmbsm_solver_zgbsvx::summarize_statistics() const
 {
     std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
 
-    std::ostringstream msg;
-    msg.precision(static_cast<int>(std::numeric_limits<double>::digits10*0.5));
-    retval.reserve(retval.size() + stats_type::static_size);
-    for (std::size_t i = 0; i < stats_type::static_size; ++i) {
-        msg.str("");
-        msg << "Min/avg/max/std of "
-            << stats_names[i]
-            << ": "
-            << stats.min(i) << ", "
-            << stats.avg(i) << ", "
-            << stats.max(i) << ", "
-            << stats.std(i);
-        retval.push_back(msg.str());
+    if (stats.count() > 0) {  // Add operational details when solves occurred
+        std::ostringstream msg;
+        msg.precision(std::numeric_limits<double>::digits10/2 + 1);
+        retval.reserve(retval.size() + stats_type::static_size);
+        for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+            msg.str("");
+            msg << "Min/avg/max/std of "
+                << stats_names[i]
+                << ": "
+                << stats.min(i) << ", "
+                << stats.avg(i) << ", "
+                << stats.max(i) << ", "
+                << stats.std(i);
+            retval.push_back(msg.str());
+        }
     }
 
     return retval;
@@ -307,19 +309,21 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
 {
     std::vector<std::string> retval = bsmbsm_solver::summarize_statistics();
 
-    std::ostringstream msg;
-    msg.precision(static_cast<int>(std::numeric_limits<double>::digits10*0.5));
-    retval.reserve(retval.size() + stats_type::static_size);
-    for (std::size_t i = 0; i < stats_type::static_size; ++i) {
-        msg.str("");
-        msg << "Min/avg/max/std of "
-            << stats_names[i]
-            << ": "
-            << stats.min(i) << ", "
-            << stats.avg(i) << ", "
-            << stats.max(i) << ", "
-            << stats.std(i);
-        retval.push_back(msg.str());
+    if (stats.count() > 0) {  // Add operational details when solves occurred
+        std::ostringstream msg;
+        msg.precision(std::numeric_limits<double>::digits10/2 + 1);
+        retval.reserve(retval.size() + stats_type::static_size);
+        for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+            msg.str("");
+            msg << "Min/avg/max/std of "
+                << stats_names[i]
+                << ": "
+                << stats.min(i) << ", "
+                << stats.avg(i) << ", "
+                << stats.max(i) << ", "
+                << stats.std(i);
+            retval.push_back(msg.str());
+        }
     }
 
     return retval;
