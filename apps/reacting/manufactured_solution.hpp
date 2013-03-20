@@ -40,7 +40,7 @@
 //#include "nsctpl_rholut.hpp"
 #include "nsctpl.hpp"
 
-#include "single_ideal_gas_constitutive.hpp"
+#include "antioch_constitutive.hpp"
 
 namespace suzerain {
 
@@ -81,7 +81,7 @@ public:
     explicit manufactured_solution(const std::string& caption);
 
     /** Set #gamma, #beta, #R, #T_r, #mu_r. */
-    manufactured_solution& match(const single_ideal_gas_constitutive& cmods);
+    manufactured_solution& match(const antioch_constitutive& cmods);
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
     manufactured_solution& match(const grid_specification& grid);
@@ -117,7 +117,7 @@ private:
  */
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
-	  const single_ideal_gas_constitutive& cmods,
+	  const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 
@@ -131,7 +131,7 @@ void save(const esio_handle h,
  */
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-	  const single_ideal_gas_constitutive& cmods,
+	  const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 

@@ -95,15 +95,15 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     grid->Nz(1);
     grid->DAFz(1.5);
 
-    // Establish default scenario parameters
-    // Cp and Cv computed from R=287 J/(kg*K), gamma=1.4
-    cmods->Cp = 1.00450000000000e+03; // J/(kg*K)
-    cmods->Cv = 7.17500000000000e+02; // J/(kg*K)
-    cmods->Pr = 0.7;
-    cmods->T0 = 273.0; // K
-    cmods->mu0 = 1.716e-5; // (N*s)/m^2
-    cmods->beta = real_t(2) / 3;
-    cmods->alpha = 0.0;
+    // // Establish default scenario parameters
+    // // Cp and Cv computed from R=287 J/(kg*K), gamma=1.4
+    // cmods->Cp = 1.00450000000000e+03; // J/(kg*K)
+    // cmods->Cv = 7.17500000000000e+02; // J/(kg*K)
+    // cmods->Pr = 0.7;
+    // cmods->T0 = 273.0; // K
+    // cmods->mu0 = 1.716e-5; // (N*s)/m^2
+    // cmods->beta = real_t(2) / 3;
+    // cmods->alpha = 0.0;
 
     chdef->bulk_rho   = 1;
     chdef->bulk_rho_u = 1;
@@ -222,7 +222,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = cmods->Cv*T + 0.5*(u*u + v*v + w*w);
+        //ArrayXr E = cmods->Cv*T + 0.5*(u*u + v*v + w*w);
+        // FIXME: Get internal energy from antioch
+        ArrayXr E = 717.5*T + 0.5*(u*u + v*v + w*w);
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)

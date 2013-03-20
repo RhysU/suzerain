@@ -114,12 +114,12 @@ antioch_constitutive::options_description()
 
     // species
     retval.add_options()(name_species_names, 
-                         value<vector<string> >(), 
+                         value(&species_names), 
                          desc_species_names);
 
     // chemistry input file
     retval.add_options()(name_chem_input_file,
-                         value<string>(),
+                         value(&chem_input_file),
                          desc_chem_input_file);
     // Le
     p.reset(value<string>());
@@ -370,9 +370,20 @@ antioch_constitutive::evaluate (const real_t  e,
 
     // Transport
     // FIXME: Add antioch support
-    mu = 1.0;
-    kap = 1.0;
-    for (size_t i=0; i<Ns; ++i) Ds[i] = 1.0;
+
+    // For now, hardcode some numbers for air
+    mu = 1.716e-5 * pow( T/273.0, 0.6667 );
+
+    real_t Cp = this->sm_thermo->cp(T, T, Y);
+
+    kap = mu * Cp / 0.7;
+
+    // Is this right?  Copied from FIN-S but looks like inverse if Le
+    // to me.
+    real_t D0 = this->Le*kap*irho/Cp;
+
+    for (unsigned int i=0; i<Ns; ++i)
+        Ds[i] = D0;
 
     // TODO: assert that om sums to zero
     // TODO: assert that T and p are positive

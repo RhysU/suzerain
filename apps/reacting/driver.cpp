@@ -49,7 +49,7 @@ driver::driver(
                   description,
                   revstr)
     , chdef(make_shared<channel_definition>())
-    , cmods(make_shared<single_ideal_gas_constitutive>())
+    , cmods(make_shared<antioch_constitutive>())
     , fsdef(make_shared<filter_definition>())
     , who("reacting")
 {
@@ -254,11 +254,13 @@ void
 driver::save_metadata_hook(
         const esio_handle esioh)
 {
+    DEBUG0("In driver::save_metadata_hook");
     super::save_metadata_hook(esioh);
     chdef->save(esioh);
     cmods->save(esioh);
     fsdef->save(esioh);
     save(esioh, msoln, *cmods, *grid);
+    DEBUG0("Leaving driver::save_metadata_hook");
     return;
 }
 
@@ -279,6 +281,8 @@ driver::save_statistics_hook(
         const esio_handle esioh,
         const driver::time_type t)
 {
+    DEBUG0(who, "In driver::save_statistics_hook");
+    
     // Should we compute fresh statistics or re-use cached values?
 #pragma warning(push,disable:1572)
     const bool use_cached = controller && (t == mean.t);

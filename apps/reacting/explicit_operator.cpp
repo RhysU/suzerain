@@ -68,7 +68,7 @@ public:
 };
 
 isothermal_mass_operator::isothermal_mass_operator(
-        const single_ideal_gas_constitutive& cmods,
+        const antioch_constitutive& cmods,
         const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -109,9 +109,14 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     multi_array::ref<complex_t,4>::array_view<3>::type state_view
             = state[indices[ndx::rho][walls][range()][range()]];
 
+    // // Prepare functor setting pointwise BCs given density locations
+    // const IsothermalNoSlipFunctor bc_functor(
+    //         state.strides()[0], cmods.Cv, chdef.T_wall);
+
     // Prepare functor setting pointwise BCs given density locations
+    // FIXME: Refactor wall BC to do the appropriate thing for multispecies flow
     const IsothermalNoSlipFunctor bc_functor(
-            state.strides()[0], cmods.Cv, chdef.T_wall);
+            state.strides()[0], 717.5, chdef.T_wall);
 
     // Apply the functor to all wall-only density locations
     multi_array::for_each(state_view, bc_functor);
@@ -132,7 +137,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
-        const single_ideal_gas_constitutive& cmods,
+        const antioch_constitutive& cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,

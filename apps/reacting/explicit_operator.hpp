@@ -40,7 +40,7 @@
 #include "reacting.hpp"
 #include "manufactured_solution.hpp"
 #include "channel_definition.hpp"
-#include "single_ideal_gas_constitutive.hpp"
+#include "antioch_constitutive.hpp"
 #include "filter_definition.hpp"
 
 
@@ -62,7 +62,7 @@ class explicit_nonlinear_operator
 public:
     
     explicit_nonlinear_operator(
-            const single_ideal_gas_constitutive& cmods,
+            const antioch_constitutive& cmods,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -81,7 +81,7 @@ public:
 protected:
 
     /** Contains constitutive models and related parameters */
-    const single_ideal_gas_constitutive& cmods;
+    const antioch_constitutive& cmods;
 
     /** Houses data additionally required for some linear operators */
     operator_common_block &common;
@@ -118,7 +118,7 @@ class isothermal_mass_operator : public mass_operator
 public:
 
     isothermal_mass_operator(
-            const single_ideal_gas_constitutive& cmods,
+            const antioch_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -152,7 +152,7 @@ public:
 protected:
 
     /** Contains constitutive models and related parameters */
-    const single_ideal_gas_constitutive& cmods;
+    const antioch_constitutive& cmods;
 
     /** The channel flow case for which the operator is used */
     const channel_definition &chdef;

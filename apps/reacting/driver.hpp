@@ -35,7 +35,7 @@
 #include "quantities.hpp"
 #include "nonlinear_operator_fwd.hpp"
 #include "channel_definition.hpp"
-#include "single_ideal_gas_constitutive.hpp"
+#include "antioch_constitutive.hpp"
 #include "filter_definition.hpp"
 
 namespace suzerain {
@@ -76,7 +76,7 @@ public:
     shared_ptr<manufactured_solution> msoln;
 
     /** Constitutive law for a single species ideal gas */
-    shared_ptr<single_ideal_gas_constitutive> cmods;
+    shared_ptr<antioch_constitutive> cmods;
 
     /** Filter source parameters. */
     shared_ptr<filter_definition> fsdef;

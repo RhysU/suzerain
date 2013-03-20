@@ -94,16 +94,30 @@ manufactured_solution::options_description()
 }
 
 manufactured_solution&
-manufactured_solution::match(const single_ideal_gas_constitutive& cmods)
+manufactured_solution::match(const antioch_constitutive& cmods)
 {
+    // FIXME: Make this function do what it is supposed to---i.e.,
+    // make the manufactured solution parameters match the
+    // constitutive laws class.  See previous implementation valid for
+    // single_ideal_gas_constitutive below.
+    WARN0("Call to manufactured_solution::match not supported");
 
-    this->gamma = cmods.Cp / cmods.Cv;
-    this->beta  = cmods.beta;
-    this->R     = cmods.Cp - cmods.Cv;
-    this->mu_r  = cmods.mu0;
-    this->T_r   = cmods.T0;
+    // this->gamma = cmods.Cp / cmods.Cv;
+    // this->beta  = cmods.beta;
+    // this->R     = cmods.Cp - cmods.Cv;
+    // this->mu_r  = cmods.mu0;
+    // this->T_r   = cmods.T0;
 
-    this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*cmods.Pr);
+    // this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*cmods.Pr);
+    // this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
+
+    this->gamma = 1.4;
+    this->beta  = 0.7;
+    this->R     = 287.0;
+    this->mu_r  = 1.0e-5;
+    this->T_r   = 273.0;
+
+    this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*0.7);
     this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
 
     return *this;
@@ -146,7 +160,7 @@ attribute_storer(const esio_handle &h,
 
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution>& msoln,
-	  const single_ideal_gas_constitutive& cmods,
+	  const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location)
 {
@@ -207,7 +221,7 @@ static void NaNer(const std::string&, real_t& value)
 
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-	  const single_ideal_gas_constitutive& cmods,
+	  const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location)
 {

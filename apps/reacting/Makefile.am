@@ -2,7 +2,14 @@
 
 include ../Common.am
 
+##
+## While there are some files here that will compile w/out antioch,
+## the overall capability does not make sense without antioch support,
+## so skip unless antioch is detected at configure time.
+##
+if BUILD_REACTING
 
+AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 
 ###
 ### Logic common to many different binaries within this subdirectory
@@ -16,16 +23,11 @@ libreacting_la_SOURCES += quantities.hpp            quantities.cpp
 libreacting_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
 libreacting_la_SOURCES += nsctpl_fwd.hpp            nsctpl.hpp
 libreacting_la_SOURCES += driver.hpp                driver.cpp
-libreacting_la_SOURCES += single_ideal_gas_constitutive.hpp
-libreacting_la_SOURCES += single_ideal_gas_constitutive.cpp
-
-if BUILD_REACTING
-AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
+#libreacting_la_SOURCES += single_ideal_gas_constitutive.hpp
+#libreacting_la_SOURCES += single_ideal_gas_constitutive.cpp
 libreacting_la_SOURCES += antioch_constitutive.hpp
 libreacting_la_SOURCES += antioch_constitutive.cpp
 libreacting_la_LIBADD   = $(ANTIOCH_LIBS)
-endif
-
 
 ##
 ## Applications
@@ -98,7 +100,6 @@ dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
 #dist_check_SCRIPTS += test_physical_implicit.sh
 
-if BUILD_REACTING
 TESTS                             += test_antioch_constitutive.sh
 dist_check_SCRIPTS                += test_antioch_constitutive.sh
 
@@ -107,7 +108,8 @@ test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
 test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 
 TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
-endif
+
+endif # if BUILD_REACTING
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@

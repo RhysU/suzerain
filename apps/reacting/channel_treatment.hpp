@@ -40,7 +40,7 @@
 #include <suzerain/zgbsv_specification.hpp>
 
 #include "reacting.hpp"
-#include "single_ideal_gas_constitutive.hpp"
+#include "antioch_constitutive.hpp"
 
 namespace suzerain {
 
@@ -74,7 +74,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
-	    const single_ideal_gas_constitutive& cmods,
+	    const antioch_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -90,7 +90,7 @@ public:
     //  */
     // channel_treatment(
     //         const zgbsv_specification& spec,
-    //         const single_ideal_gas_constitutive& cmods,
+    //         const antioch_constitutive& cmods,
     //         const channel_definition &chdef,
     //         const grid_specification &grid,
     //         const pencil_grid &dgrid,
@@ -158,7 +158,7 @@ private:
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
-	    const single_ideal_gas_constitutive& cmods,
+	    const antioch_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
