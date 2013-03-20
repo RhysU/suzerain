@@ -55,8 +55,8 @@ bsmbsm_solver::bsmbsm_solver(
     , spec(spec)
     , LU(KL + LD, N)
     , PB(N, nrhs)
-    , PAPT(KL + LU.data(), LD, N, KL + KU) // Aliases LU
-    , PX(PB.data(), PB.rows(), PB.cols())  // Aliases PB
+    , PAPT(LU.data() + KL, LU.rows() - KL, LU.cols(), LU.colStride())  // Alias
+    , PX(PB.data(), PB.rows(), PB.cols())                              // Alias
     , ipiv(N)
     , fact_(default_fact())
     , apprx_(0)
