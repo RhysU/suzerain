@@ -134,21 +134,10 @@ FUNCNAME()(
         }
 
         if (rho_v >= 0) {
-            const double coeff_nuuy
-                = Ma2*invRe*(ginvPr-1)*(km2+kn2);
-            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*coeff_nuuy,              REF(nuuy),
-                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                    phi*Ma2*invRe*ap13*ikm,      REF(nuux),
-                    phi*Ma2*invRe*ap13*ikn,      REF(nuuz),
-                    -phi,                        REF(e_divm),
-                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
-                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+                    D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_v, rho_E, 1.0, buf, patpt);
         }
