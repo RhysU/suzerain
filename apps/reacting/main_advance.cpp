@@ -119,6 +119,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     }
     const string restart_file = positional[0];
 
+
     INFO0(who, "Loading restart file: " << restart_file);
     real_t initial_t = numeric_limits<real_t>::quiet_NaN();
     {
@@ -145,6 +146,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         //adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop, restart_scenario->Ma, restart_scenario->gamma);
         state_linear->assign(*state_nonlinear);
     }
+
+    INFO0(who, "Initializing antioch_constitutive");
+    cmods->init_antioch();
 
     if (msoln) {
         INFO0(who, "Restart file prescribes a manufactured solution");

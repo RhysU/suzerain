@@ -268,6 +268,84 @@ int test_init_antioch(const std::string& chem_xml_file)
 
 
 /*
+ * Check that call to init_antioch puts objects in desired state
+ */
+int test_init_antioch_CPAir()
+{
+    
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=1;
+    species_names.reserve(Ns);
+    species_names.push_back( "CPAir" );
+
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    //antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
+    antioch_constitutive acl1;
+
+    acl1.species_names = species_names;
+    acl1.Le = Le;
+    acl1.alpha = alpha;
+
+    acl1.init_antioch();
+
+    // Check that initialized objects appear to have valid information...
+    // but not exhaustively... that's for antioch to test
+    int nerr=0;
+
+    // The mixture object
+    // ... number of species
+    if (acl1.mixture->n_species() != Ns) {
+        std::cerr << "Error: acl1.mixture->n_species() = " << acl1.mixture->n_species()
+                  << " but should be " << Ns << std::endl;
+        nerr += 1;
+    }
+        
+    // ... species name map
+    const std::vector<Antioch::Species> species_list = acl1.mixture->species_list();
+    for (unsigned int i=0; i<Ns; i++) {
+        // convenience
+        const std::map<std::string,Antioch::Species>& smap = acl1.mixture->species_name_map();
+
+        if( smap.find( species_names[i] )->second != species_list[i] ){
+            std::cerr << "Error: species name map and species list ordering mismatch" << std::endl
+                      << "species_name_map = " << smap.find( species_names[i] )->second
+                      << ", species_list = " << species_list[i] << std::endl;
+            nerr += 1;
+        }
+    }
+
+    // The reaction object
+    // ... number of species
+    if (acl1.reactions->n_species() != acl1.mixture->n_species()) {
+        std::cerr << "Error: acl1.reactions->n_species() = " << acl1.mixture->n_species()
+                  << " but should be " << Ns << std::endl;
+        nerr += 1;
+    }
+
+    // ... number of reactions (NOTE: result specific to air_sp5.xml and species selected!)
+    if (acl1.reactions->n_reactions() != 0) {
+        std::cerr << "Error: acl1.reactions->n_reactions() = " << acl1.reactions->n_reactions()
+                  << " but should be " << 0 << std::endl;
+        nerr += 1;
+    }
+
+    // The cea_thermo object has required curve fits
+    if (!acl1.cea_thermo->check()) {
+        std::cerr << "Error: acl1.cea_thermo does not have curve fits for all specis (why not?)." << std::endl;
+        nerr += 1;
+    }
+
+    return nerr;
+}
+
+
+/*
  * Check that call to antioch_constitutive::evaluate "works"
  */
 int test_evaluate(const std::string& chem_xml_file)
@@ -360,6 +438,11 @@ int main(int argc, char **argv)
                      
     std::cout << "Running test_init_antioch..." << std::endl;
     ierr = test_init_antioch(chem_xml_file); etot += ierr;
+    if (ierr!=0) std::cout << " FAILED." << std::endl;
+    else std::cout << " passed." << std::endl;
+
+    std::cout << "Running test_init_antioch_CPAir..." << std::endl;
+    ierr = test_init_antioch_CPAir(); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
 

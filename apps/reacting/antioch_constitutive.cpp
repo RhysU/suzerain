@@ -279,19 +279,23 @@ antioch_constitutive::load(
 
 void antioch_constitutive::init_antioch()
 {
+    WARN0("antioch_constitutive is not fully functional yet!");
+
     mixture    = make_shared<Antioch::ChemicalMixture<real_t> >(species_names);
     reactions  = make_shared<Antioch::ReactionSet<real_t> >(*mixture);
     cea_thermo = make_shared<Antioch::CEAThermodynamics<real_t> >(*mixture);
     sm_thermo  = make_shared<Antioch::StatMechThermodynamics<real_t> >(*mixture);
 
-    // FIXME: This will do for now, but need to think about what
-    // happens in parallel to avoid all ranks trying to read this
-    // file.
-    Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, 
-                                                false /* verbose */, 
-                                                *reactions);
 
-    kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
+    if (this->Ns() > 1) {
+        // FIXME: This will do for now, but need to think about what
+        // happens in parallel to avoid all ranks trying to read this
+        // file.
+        Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, 
+                                                    false /* verbose */, 
+                                                    *reactions);
+        kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
+    }
 
     // TODO: Add consistency asserts... everybody has same number of
     // species, number of reactions is sane, valid curve fits,
@@ -313,7 +317,7 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t* hs,
                                 real_t* om) const
 {
-    WARN0("antioch_constitutive::evaluate is not fully functional yet!");
+    //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
     const real_t irho = 1.0/rho;
 
@@ -358,12 +362,19 @@ antioch_constitutive::evaluate (const real_t  e,
     Cache cea_cache(T);
     this->cea_thermo->h_RT_minus_s_R(cea_cache,h_RT_minus_s_R);
 
-    // Species eqn source terms
-    std::vector<real_t> omega_dot(Ns);
-    this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, 
-                                         h_RT_minus_s_R, omega_dot);
-    for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
 
+    // protect against calling kinetics when there are no kinetics
+    // TODO: Set up antioch to avoid this if (i.e., make call to kinetics ok)
+    if (Ns>1) {
+        // Species eqn source terms
+        std::vector<real_t> omega_dot(Ns);
+        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, 
+                                             h_RT_minus_s_R, omega_dot);
+        for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
+    } else {
+        om[0] = 0.0;
+    }
+    
     // Species enthalpies (assuming thermal equilibrium)
     for (unsigned int i=0; i<Ns; ++i)
         hs[i] = this->sm_thermo->h_tot(i, T);

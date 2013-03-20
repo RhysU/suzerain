@@ -105,6 +105,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // cmods->beta = real_t(2) / 3;
     // cmods->alpha = 0.0;
 
+    cmods->Le = 0.9;
+    cmods->alpha = 0.0;
+
     chdef->bulk_rho   = 1;
     chdef->bulk_rho_u = 1;
     chdef->T_wall     = 1;
@@ -155,6 +158,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
+    
+    DEBUG0(who, "Initializing antioch_constitutive");
+    cmods->init_antioch();
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
