@@ -186,12 +186,6 @@ suzerain_reacting_imexop_accumulate(
         suzerain_blas_zscal(n, beta, OUT(rho_E));
 
         /* in_rho_E */ {
-            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*s->gamma*ikm,           REF(ux),
-                -phi*s->gamma*ikn,           REF(uz),
-                -phi*ginvRePr*(km2+kn2),     REF(nu),
-                w->D_T[M],  w->ld, IN(rho_E), 1.0, OUT(rho_E));
-
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi*s->gamma,               REF(uy),
                 w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
