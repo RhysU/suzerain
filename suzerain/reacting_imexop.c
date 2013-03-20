@@ -195,6 +195,7 @@ suzerain_reacting_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 
+	// whats up with this guy?
         if (LIKELY(in_rho_u)) {
             const double coeff_nuux
                 = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
@@ -490,14 +491,12 @@ suzerain_reacting_imexop_accumulate(
 
         if (LIKELY(in_rho_E)) {/* NOP */};
 
-        if (LIKELY(in_rho_u)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
-                -phi*ikm, w->D_T[M], w->ld, IN(rho_u),  1.0, OUT(rho));
+        if (LIKELY(in_rho_u)) {/* NOP */};
 
         if (LIKELY(in_rho_v)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
                 -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
 
-        if (LIKELY(in_rho_w)) (*p_gbmv)(trans, n, n, w->kl[M],  w->ku[M],
-                -phi*ikn, w->D_T[M], w->ld, IN(rho_w),  1.0, OUT(rho));
+        if (LIKELY(in_rho_w)) {/* NOP */};
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));
