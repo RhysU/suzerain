@@ -39,8 +39,6 @@
 void
 suzerain_reacting_imexop_accumulate(
         const complex_double phi,
-        const double km,
-        const double kn,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
         const suzerain_reacting_imexop_refld    * const ld,
@@ -72,10 +70,6 @@ suzerain_reacting_imexop_accumulate(
     assert(!(!in_rho   ^ !out_rho  )); // ditto
 
     // Prepare shorthand for some useful derived values
-    const complex_double ikm = _Complex_I*km;
-    const complex_double ikn = _Complex_I*kn;
-    const double km2         = km*km;
-    const double kn2         = kn*kn;
     const double gm1         = s->gamma - 1;
     const double gm3         = s->gamma - 3;
     const double ap43        = s->alpha + 4.0/3.0;
