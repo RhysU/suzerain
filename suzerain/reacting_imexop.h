@@ -123,10 +123,6 @@ typedef struct {
  * equation).
  *
  * @param[in] phi Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param[in] km X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
- *               (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in] kn Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
- *               (from, for example, \ref suzerain_inorder_wavenumber).
  * @param[in] s  Scenario parameters used to form the operator.
  * @param[in] r  Reference quantities used to form the operator.
  * @param[in] ld Strides between reference quantity values.
@@ -151,8 +147,6 @@ typedef struct {
 void
 suzerain_reacting_imexop_accumulate(
         const complex_double phi,
-        const double km,
-        const double kn,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
         const suzerain_reacting_imexop_refld    * const ld,
@@ -193,10 +187,6 @@ suzerain_reacting_imexop_accumulate(
  * permutation returned in \c A_T.
  *
  * @param[in]  phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param[in]  km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
- *                   (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in]  kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
- *                   (from, for example, \ref suzerain_inorder_wavenumber).
  * @param[in]  s     Scenario parameters used to form the operator.
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
@@ -225,8 +215,6 @@ suzerain_reacting_imexop_accumulate(
 void
 suzerain_reacting_imexop_packc(
         const complex_double phi,
-        const double km,
-        const double kn,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
         const suzerain_reacting_imexop_refld    * const ld,
@@ -264,10 +252,6 @@ suzerain_reacting_imexop_packc(
  * <tt>gbtrf</tt> the operator starts at row <tt>A_T->KL</tt>.
  *
  * @param[in]  phi   Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
- * @param[in]  km    X direction wavenumber \f$k_m = 2\pi{}m/L_x\f$
- *                   (from, for example, \ref suzerain_inorder_wavenumber).
- * @param[in]  kn    Z direction wavenumber \f$k_n = 2\pi{}n/L_z\f$
- *                   (from, for example, \ref suzerain_inorder_wavenumber).
  * @param[in]  s     Scenario parameters used to form the operator.
  * @param[in]  r     Reference quantities used to form the operator.
  * @param[in]  ld    Strides between reference quantity values.
@@ -296,8 +280,6 @@ suzerain_reacting_imexop_packc(
 void
 suzerain_reacting_imexop_packf(
         const complex_double phi,
-        const double km,
-        const double kn,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
         const suzerain_reacting_imexop_refld    * const ld,
