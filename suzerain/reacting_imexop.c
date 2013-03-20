@@ -264,17 +264,9 @@ suzerain_reacting_imexop_accumulate(
         if (LIKELY(in_rho_w)) {/* NOP */};
 
         if (LIKELY(in_rho)) {
-            (*p_gbdddddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*0.5*gm1*ikm,          REF(u2),
-                phi*ikm,                   REF(uxux),
-                phi*ikn,                   REF(uxuz),
-                phi*invRe*(ap43*km2+kn2),  REF(nuux),
-                phi*ap13*invRe*km*kn,      REF(nuuz),
-                w->D_T[M],  w->ld, IN(rho), 1.0, OUT(rho_u));
 
-            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 phi,                       REF(uxuy),
-                -phi*ap13*invRe*ikm,       REF(nuuy),
                 w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],

@@ -211,18 +211,10 @@ FUNCNAME()(
         }
 
         if (rho  >= 0) {
-            suzerain_blasext_zgb_dddddiag_scale_acc_d(PREAMBLE,
-                    -phi*0.5*gm1*ikm,            REF(u2),
-                     phi*ikm,                    REF(uxux),
-                     phi*ikn,                    REF(uxuz),
-                     phi*invRe*(ap43*km2 + kn2), REF(nuux),
-                     phi*ap13*invRe*km*kn,       REF(nuuz),
-                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                      phi,                        REF(uxuy),
-                    -phi*ap13*invRe*ikm,         REF(nuuy),
-                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -phi*invRe,                  REF(nuux),
