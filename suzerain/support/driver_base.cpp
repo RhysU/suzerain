@@ -592,7 +592,7 @@ driver_base::advance_controller(
         INFO0(who, msg.str());
         msg.str("");
         msg.precision(static_cast<int>(numeric_limits<real_t>::digits10*0.50));
-        msg << "Min/mean/max/stddev of delta_t: "
+        msg << "Min/avg/max/std of delta_t: "
             << controller->taken_min()  << ", "
             << controller->taken_mean() << ", "
             << controller->taken_max()  << ", "

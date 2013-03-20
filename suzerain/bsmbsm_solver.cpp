@@ -202,7 +202,7 @@ bsmbsm_solver_zgbsvx::summarize_statistics() const
     retval.reserve(retval.size() + stats_type::static_size);
     for (std::size_t i = 0; i < stats_type::static_size; ++i) {
         msg.str("");
-        msg << "Min/mean/max/stddev of "
+        msg << "Min/avg/max/std of "
             << stats_names[i]
             << ": "
             << stats.min(i) << ", "
@@ -312,7 +312,7 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
     retval.reserve(retval.size() + stats_type::static_size);
     for (std::size_t i = 0; i < stats_type::static_size; ++i) {
         msg.str("");
-        msg << "Min/mean/max/stddev of "
+        msg << "Min/avg/max/std of "
             << stats_names[i]
             << ": "
             << stats.min(i) << ", "
