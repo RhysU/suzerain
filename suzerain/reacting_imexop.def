@@ -221,7 +221,7 @@ FUNCNAME()(
     if (rho_u >= 0) { // Prepare streamwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_u, -gm1*invMa2*ikm*phi, M, patpt);
+            PACK(zd)(A_T, rho_E, rho_u, 0.0, 0, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
