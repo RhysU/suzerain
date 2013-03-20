@@ -124,24 +124,11 @@ FUNCNAME()(
             PACK(z)(A_T, rho_E, rho_E, 1.0, buf, patpt);
         }
 
-	// whats up with this guy?
         if (rho_u >= 0) {
-            const double coeff_nuux
-                = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
-
-            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                    phi*coeff_nuux,              REF(nuux),
-                    -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
-                    -phi*ikm,                    REF(e_divm),
-                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
-
-            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
-                    phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
-                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
-                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
+                    D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             PACK(z)(A_T, rho_u, rho_E, 1.0, buf, patpt);
         }

@@ -195,19 +195,7 @@ suzerain_reacting_imexop_accumulate(
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 
-	// whats up with this guy?
         if (LIKELY(in_rho_u)) {
-            const double coeff_nuux
-                = Ma2*invRe*((ginvPr-ap43)*km2 + (ginvPr-1)*kn2);
-            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
-                phi*coeff_nuux,              REF(nuux),
-                -phi*Ma2*invRe*ap13*km*kn,   REF(nuuz),
-                -phi*ikm,                    REF(e_divm),
-                w->D_T[M],  w->ld, IN(rho_u), 1.0, OUT(rho_E));
-
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi*Ma2*invRe*ap13*ikm,      REF(nuuy),
-                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_E));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
                 phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
