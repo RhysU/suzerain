@@ -71,13 +71,25 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         bspline &b,
         operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
-    , spec(spec)
+    , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
+                5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
+                spec, 1))
     , scenario(scenario)
     , common(common)
     , who("operator.L")
 {
-    INFO0(who, "Linear isothermal_hybrid_linear_operator using "
-          << static_cast<std::string>(spec));
+    // NOP
+}
+
+isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
+{
+    // TODO Allreduce bsmbsm_solver statistics from all ranks
+    if (solver) {
+        std::vector<std::string> summary = solver->summarize_statistics();
+        for (std::size_t i = 0; i < summary.size(); ++i) {
+            INFO0(who, summary[i]);
+        }
+    }
 }
 
 void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
@@ -97,12 +109,11 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(substep_index);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    enum { swave_count = 5 };
-    assert(static_cast<int>(ndx::e  ) < swave_count);
-    assert(static_cast<int>(ndx::mx ) < swave_count);
-    assert(static_cast<int>(ndx::my ) < swave_count);
-    assert(static_cast<int>(ndx::mz ) < swave_count);
-    assert(static_cast<int>(ndx::rho) < swave_count);
+    assert(static_cast<int>(ndx::e  ) < solver->S);
+    assert(static_cast<int>(ndx::mx ) < solver->S);
+    assert(static_cast<int>(ndx::my ) < solver->S);
+    assert(static_cast<int>(ndx::mz ) < solver->S);
+    assert(static_cast<int>(ndx::rho) < solver->S);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -121,13 +132,13 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [0] ==   swave_count);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.strides()[1] ==             1);
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) solver->S);
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(state.strides()[1] ==                    1);
 
     // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
-    VectorXc tmp(Ny * swave_count);
+    VectorXc tmp(solver->N);
     suzerain_rholut_imexop_scenario s(this->imexop_s());
     suzerain_rholut_imexop_ref   ref;
     suzerain_rholut_imexop_refld ld;
@@ -150,7 +161,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
             complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
             // Copy pencil into temporary storage
-            blas::copy(swave_count * Ny, p, 1, tmp.data(), 1);
+            blas::copy(solver->N, p, 1, tmp.data(), 1);
 
             // Accumulate result back into state storage automatically
             // adjusting for when input imaginary part a priori should be zero
@@ -193,12 +204,11 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(substep_index);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    enum { swave_count = 5 };
-    assert(static_cast<int>(ndx::e  ) < swave_count);
-    assert(static_cast<int>(ndx::mx ) < swave_count);
-    assert(static_cast<int>(ndx::my ) < swave_count);
-    assert(static_cast<int>(ndx::mz ) < swave_count);
-    assert(static_cast<int>(ndx::rho) < swave_count);
+    assert(static_cast<int>(ndx::e  ) < solver->S);
+    assert(static_cast<int>(ndx::mx ) < solver->S);
+    assert(static_cast<int>(ndx::my ) < solver->S);
+    assert(static_cast<int>(ndx::mz ) < solver->S);
+    assert(static_cast<int>(ndx::rho) < solver->S);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -219,11 +229,11 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     // Input and output state storage has contiguous wall-normal scalars?
     // Furthermore, input has contiguous wall-normal pencils of all state?
     SUZERAIN_ENSURE(output.is_isomorphic(input));
-    SUZERAIN_ENSURE(input.shape()   [0] ==   swave_count);
-    SUZERAIN_ENSURE(input.strides() [0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(input.shape()   [1] == (unsigned) Ny);
-    SUZERAIN_ENSURE(input.strides() [1] ==             1);
-    SUZERAIN_ENSURE(output.strides()[1] ==             1);
+    SUZERAIN_ENSURE(input.shape()   [0] == (unsigned) solver->S);
+    SUZERAIN_ENSURE(input.strides() [0] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(input.shape()   [1] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(input.strides() [1] ==                    1);
+    SUZERAIN_ENSURE(output.strides()[1] ==                    1);
 
     // Scratch for suzerain_rholut_imexop_accumulate usage
     suzerain_rholut_imexop_scenario s(this->imexop_s());
@@ -404,12 +414,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(substep_index);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    enum { swave_count = 5 };
-    assert(static_cast<int>(ndx::e  ) < swave_count);
-    assert(static_cast<int>(ndx::mx ) < swave_count);
-    assert(static_cast<int>(ndx::my ) < swave_count);
-    assert(static_cast<int>(ndx::mz ) < swave_count);
-    assert(static_cast<int>(ndx::rho) < swave_count);
+    assert(static_cast<int>(ndx::e  ) < solver->S);
+    assert(static_cast<int>(ndx::mx ) < solver->S);
+    assert(static_cast<int>(ndx::my ) < solver->S);
+    assert(static_cast<int>(ndx::mz ) < solver->S);
+    assert(static_cast<int>(ndx::rho) < solver->S);
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -428,56 +437,24 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.strides()[1] ==             1);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] ==   swave_count);
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(state.strides()[1] ==                    1);
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)        Ny);
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) solver->S);
 
     // Compute how many additional mean constraints we must solve
     // Ensure conformant, mean constraints are arriving on the correct rank
     const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
     if (nconstraints) {
         SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
-        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned) Ny);
-        SUZERAIN_ENSURE(ic0->strides()[1] ==             1);
-        SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned) Ny);
-        SUZERAIN_ENSURE(ic0->shape()  [0] ==   swave_count);
+        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)        Ny);
+        SUZERAIN_ENSURE(ic0->strides()[1] ==                    1);
+        SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned)        Ny);
+        SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) solver->S);
     }
 
     // channel_treatment step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
-
-    // Details for suzerain_rholut_imexop-based "inversion" using ?GBSVX
-    // Macros used to automatically increase paranoia during debug builds
-    suzerain_bsmbsm A = suzerain_bsmbsm_construct(
-            (int) swave_count, Ny, cop.max_kl(), cop.max_ku());
-#ifndef NDEBUG
-# define SCRATCH_C(type, name, ...)                             \
-         type name = type::Constant(__VA_ARGS__,                \
-                suzerain::complex::NaN<type::Scalar>())
-# define SCRATCH_R(type, name, ...)                             \
-         type name = type::Constant(__VA_ARGS__,                \
-                std::numeric_limits<type::Scalar>::quiet_NaN())
-# define SCRATCH_I(type, name, ...)                             \
-         type name = type::Constant(__VA_ARGS__, -12345)
-#else
-# define SCRATCH_C(type, name, ...) type name(__VA_ARGS__)
-# define SCRATCH_R(type, name, ...) type name(__VA_ARGS__)
-# define SCRATCH_I(type, name, ...) type name(__VA_ARGS__)
-#endif
-    SCRATCH_C(ArrayXXc, buf,     A.ld,      A.n); // For packc calls
-    SCRATCH_C(ArrayXXc, patpt,   A.LD,      A.N); // Holds PA^TP^T
-    SCRATCH_C(ArrayXXc, lu,      A.LD+A.KL, A.N); // Holds LU of PA^TP^T
-    SCRATCH_I(ArrayXi,  ipiv,    A.N);            // Linear solve...
-    SCRATCH_R(ArrayXr,  r,       A.N);
-    SCRATCH_R(ArrayXr,  c,       A.N);
-    SCRATCH_C(ArrayXc,  b,       A.N);
-    SCRATCH_C(ArrayXc,  x,       A.N);
-    SCRATCH_C(ArrayXc,  work,  2*A.N);
-    SCRATCH_R(ArrayXr,  rwork,   A.N);
-#undef SCRATCH_C
-#undef SCRATCH_R
-#undef SCRATCH_I
 
     // Pack reference details for suzerain_rholut_imexop routines
     suzerain_rholut_imexop_scenario s(this->imexop_s());
@@ -485,26 +462,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     suzerain_rholut_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
-    // Solver-related operational details
-    const char default_fact = spec.equil() ? 'E' : 'N'; // Equilibriate?
-    char fact = default_fact;       // Initial operation is the default
-    static const char trans = 'T';  // Un-transpose transposed operator
-    int info;                       // Common output for all solvers
-    char equed;                     // zgbsvx equilibration type
-    real_t rcond, ferr, berr;       // zgbsvx outputs for one RHS
-    real_t afrob, tolsc, res;       // zcgbsvx outputs for one RHS...
-    int apprx, aiter, siter, diter; // ...Ditto
-
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(A, s);
+    IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s);
 
-    // Apply P x followed by BCs to any mean constraint data
-    for (std::size_t i = 0; i < nconstraints; ++i) {
-        suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1,
-                                ic0->data() + i*A.N, 1, 0, b.data(), 1);
-        bc_enforcer.rhs(b.data());
-        blas::copy(A.N, b.data(), 1, ic0->data() + i*A.N, 1);
-    }
+    // Prepare a scratch buffer for packc/packf usage
+    ArrayXXc buf(solver->ld, solver->n);
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     for (int n = dkbz; n < dkez; ++n) {
@@ -512,7 +474,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const real_t kn = twopioverLz*wn;
 
         // Factorization reuse will not aid us across large jumps in km
-        if (dkex - dkbx > 1) fact = default_fact;
+        if (dkex - dkbx > 1) solver->apprx(false);
 
         for (int m = dkbx; m < dkex; ++m) {
             const int wm = wavenumber(dNx, m);
@@ -524,178 +486,56 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             // Short circuiting didn't yet occur for Nyquist/dealiasing modes...
             if (   std::abs(wn) > wavenumber_absmin(Nz)
                 || std::abs(wm) > wavenumber_absmin(Nx)) {
-                memset(p, 0, A.N*sizeof(p[0]));  // ...so we can zero,
-                fact = default_fact;             // mark reuse moot,
-                continue;                        // and then short circuit.
+                memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
+                solver->apprx(false);                  // mark reuse moot, and
+                continue;                              // then short circuit.
             }
 
-            // Form complex-valued, wavenumber-dependent PA^TP^T within patpt.
-            // This is the transpose of the implicit operator we desire.
-            SUZERAIN_TIMER_BEGIN("implicit operator assembly");
-            if (spec.in_place()) { // Pack for in-place LUP factorization
+            // Form complex-valued, wavenumber-dependent PA^TP^T
+            static const char trans = 'T';
+            if (solver->spec.in_place()) { // Pack for in-place LU
+                SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
                 suzerain_rholut_imexop_packf(
                         phi, km, kn, &s, &ref, &ld, cop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                        buf.data(), &A, lu.data());
-            } else {               // Pack for out-of-place LUP factorization
+                        buf.data(), solver.get(), solver->LU.data());
+            } else {                       // Pack for out-of-place LU
+                SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
                 suzerain_rholut_imexop_packc(
                         phi, km, kn, &s, &ref, &ld, cop.get(),
                         ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                        buf.data(), &A, patpt.data());
+                        buf.data(), solver.get(), solver->PAPT.data());
             }
-            SUZERAIN_TIMER_END("implicit operator assembly");
-
-            // Given state pencil "p" the rest of the solve loop looks like
-            //
-            //     b := P p            using suzerain_bsmbsm_zaPxpby
-            //     apply BC to RHS     using IsothermalNoSlipPATPTEnforcer
-            //     apply BC to PA^TP^T using IsothermalNoSlipPATPTEnforcer
-            //     x := (LU)^-T b      using zcgbsvx/zgbsvx which factorize
-            //                         PA^TP^T out-of-place or zgbsv which
-            //                         factorizes in-place
-            //     p := P^T x          using suzerain_bsmbsm_zaPxpby
-
-            SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            suzerain_bsmbsm_zaPxpby('N', A.S, A.n, 1, p, 1, 0, b.data(), 1);
-            SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
-
-            SUZERAIN_TIMER_BEGIN("implicit operator BCs");
-            bc_enforcer.rhs(b.data());
-            if (spec.in_place()) {
-                bc_enforcer.op(A, lu.data() + A.KL, lu.colStride());
-            } else {
-                bc_enforcer.op(A, patpt.data(), patpt.colStride());
+            // Apply boundary conditions to PA^TP^T
+            {
+                SUZERAIN_TIMER_SCOPED("implicit operator BCs");
+                bc_enforcer.op(*solver, solver->PAPT.data(),
+                                        solver->PAPT.colStride());
             }
-            SUZERAIN_TIMER_END("implicit operator BCs");
+            // Inform the solver about the new, unfactorized operator
+            solver->supplied_PAPT();
 
-            // Perform the factorization and back substitution
-            // Additionally, reuse factorization to solve any mean constraints
-            switch (spec.method()) {
+            // Form right hand side, apply BCs, factorize, and solve.
+            // Beware that much ugly, ugly magic is hidden just below.
+            solver->supply_B(p);
+            {
+                SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
+                bc_enforcer.rhs(solver->PB.data());
+            }
+            solver->solve(trans);
+            solver->demand_X(p);
 
-            default:
-                SUZERAIN_ERROR_VOID("unknown solve_type", SUZERAIN_ESANITY);
-
-            case zgbsv_specification::zgbsv:
-                SUZERAIN_TIMER_BEGIN(spec.mname());
-                assert(spec.reuse()    == false);
-                assert(spec.in_place() == true );
-                fact = default_fact;
-                info = suzerain_lapackext_zgbsv(&fact, trans, A.N, A.KL, A.KU,
-                    1, lu.data(), lu.colStride(), ipiv.data(), b.data(), A.N);
-                SUZERAIN_TIMER_END(spec.mname());
-
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0 && !info)) {
-                    info = suzerain_lapackext_zgbsv(&fact, trans, A.N, A.KL, A.KU,
-                        nconstraints, lu.data(), lu.colStride(), ipiv.data(),
-                        ic0->data(), A.N);
+            // If necessary, solve any required integral constraints
+            if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
+                for (std::size_t i = 0; i < nconstraints; ++i) {
+                    SUZERAIN_TIMER_SCOPED("implicit constraint solution");
+                    solver->supply_B(ic0->data() + i * solver->N);
+                    bc_enforcer.rhs(solver->PB.data());
+                    solver->solve(trans);
+                    solver->demand_X(ic0->data() + i * solver->N);
                 }
-                break;
-
-            case zgbsv_specification::zgbsvx:
-                SUZERAIN_TIMER_BEGIN(spec.mname());
-                assert(spec.in_place() == false);
-                assert(spec.reuse()    == false);
-                info = suzerain_lapack_zgbsvx(fact, trans, A.N, A.KL, A.KU, 1,
-                    patpt.data(), patpt.colStride(), lu.data(), lu.colStride(),
-                    ipiv.data(), &equed, r.data(), c.data(),
-                    b.data(), A.N, x.data(), A.N,
-                    &rcond, &ferr, &berr, work.data(), rwork.data());
-                SUZERAIN_TIMER_END(spec.mname());
-
-                // TODO Statistics on rcond, equed, ferr, and berr
-
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
-                    for (std::size_t i = 0; i < nconstraints && !info; ++i) {
-                        blas::copy(A.N, ic0->data() + i*A.N, 1, b.data(), 1);
-                        info = suzerain_lapack_zgbsvx('F', trans, A.N, A.KL,
-                                A.KU, 1, patpt.data(), patpt.colStride(),
-                                lu.data(), lu.colStride(), ipiv.data(), &equed,
-                                r.data(), c.data(), b.data(), A.N,
-                                ic0->data() + i*A.N, A.N, &rcond, &ferr, &berr,
-                                work.data(), rwork.data());
-                    }
-                }
-                break;
-
-            case zgbsv_specification::zcgbsvx:
-                SUZERAIN_TIMER_BEGIN(spec.mname());
-                assert(spec.in_place() == false);
-                fact  = spec.reuse() ? fact : default_fact;
-                apprx = fact == default_fact ? 0 : 1;
-                aiter = spec.aiter();
-                afrob = -1;
-                siter = spec.siter();
-                diter = spec.diter();
-                tolsc = spec.tolsc();
-                info  = suzerain_lapackext_zcgbsvx(&fact, &apprx, aiter, trans,
-                        A.N, A.KL, A.KU, patpt.data(), &afrob, lu.data(),
-                        ipiv.data(), b.data(), x.data(), &siter, &diter,
-                        &tolsc, work.data(), &res);
-                SUZERAIN_TIMER_END(spec.mname());
-
-                // TODO Statistics on fact, apprx, siter, diter, tolsc, res
-
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
-                    for (std::size_t i = 0; i < nconstraints && !info; ++i) {
-                        aiter = spec.aiter();
-                        siter = spec.siter();
-                        diter = spec.diter();
-                        tolsc = spec.tolsc();
-                        blas::copy(A.N, ic0->data() + i*A.N, 1, b.data(), 1);
-                        info = suzerain_lapackext_zcgbsvx(&fact, &apprx, aiter,
-                                trans, A.N, A.KL, A.KU, patpt.data(), &afrob,
-                                lu.data(), ipiv.data(), b.data(),
-                                ic0->data() + i*A.N, &siter, &diter, &tolsc,
-                                work.data(), &res);
-                    }
-                }
-                break;
-            }
-
-            SUZERAIN_TIMER_BEGIN("suzerain_bsmbsm_zaPxpby");
-            if (spec.in_place()) {
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, b.data(), 1, 0, p, 1);
-            } else {
-                suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1, x.data(), 1, 0, p, 1);
-            }
-            SUZERAIN_TIMER_END("suzerain_bsmbsm_zaPxpby");
-
-            // Report any errors that occurred during the solve
-            char buffer[128];
-            if (info == 0) {
-                // Success
-            } else if (info < 0) {
-                snprintf(buffer, sizeof(buffer),
-                    "%s reported error in argument %d",
-                    spec.mname(), -info);
-                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            } else if (info <= A.N) {
-                snprintf(buffer, sizeof(buffer),
-                    "%s reported singularity in PA^TP^T row %d"
-                    " corresponding to A row %d for state scalar %d",
-                    spec.mname(), info-1, suzerain_bsmbsm_q(A.S, A.n, info-1),
-                    suzerain_bsmbsm_q(A.S, A.n, info-1) / A.n);
-                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
-            } else if (   info == A.N+1
-                       && spec.method() == zgbsv_specification::zgbsvx) {
-                snprintf(buffer, sizeof(buffer),
-                    "%s reported condition number like %g for "
-                    " m=%d, n=%d with km=%g, kn=%g",
-                    spec.mname(), 1/rcond, m, n, km, kn);
-                WARN(buffer); // Warn user but continue...
-            } else {
-                snprintf(buffer, sizeof(buffer),
-                    "%s reported unknown error %d", spec.mname(), info);
-                SUZERAIN_ERROR_VOID(buffer, SUZERAIN_ESANITY);
             }
         }
-    }
-
-    // Apply P^T x to any additional mean constraint solutions
-    for (std::size_t i = 0; i < nconstraints; ++i) {
-        suzerain_bsmbsm_zaPxpby('T', A.S, A.n, 1,
-                                ic0->data() + i*A.N, 1, 0, b.data(), 1);
-        blas::copy(A.N, b.data(), 1, ic0->data() + i*A.N, 1);
     }
 
     // State leaves method as coefficients in X, Y, and Z directions

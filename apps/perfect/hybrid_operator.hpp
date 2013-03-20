@@ -30,6 +30,7 @@
 
 #include "nonlinear_operator_fwd.hpp"
 
+#include <suzerain/bsmbsm_solver.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
@@ -72,6 +73,8 @@ public:
             bspline &b,
             operator_common_block &common);
 
+    ~isothermal_hybrid_linear_operator();
+
     virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,
              multi_array::ref<complex_t,4> &state,
@@ -104,7 +107,7 @@ public:
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
-    const zgbsv_specification spec;
+    shared_ptr<bsmbsm_solver> solver;
 
     /** The scenario in which the operator is used */
     const scenario_definition &scenario;
