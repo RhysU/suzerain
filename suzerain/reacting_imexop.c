@@ -423,12 +423,9 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho_w));
 
-        if (LIKELY(in_rho_E)) (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
-                -phi*gm1*invMa2*ikn, w->D_T[M], w->ld, IN(rho_E),
-                1.0, OUT(rho_w));
+        if (LIKELY(in_rho_E)) {/* NOP */};
 
-        if (LIKELY(in_rho_u)) {
-        }
+        if (LIKELY(in_rho_u)) {/* NOP */};
 
         if (LIKELY(in_rho_v)) {
             (*p_gbdmv)(trans, n, w->kl[M], w->ku[M],

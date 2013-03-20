@@ -376,7 +376,7 @@ FUNCNAME()(
     if (rho_w >= 0) { // Prepare spanwise momentum row
 
         if (rho_E >= 0) {
-            PACK(zd)(A_T, rho_E, rho_w, -gm1*invMa2*ikn*phi, M, patpt);
+            PACK(zd)(A_T, rho_E, rho_w, 0.0, 0, patpt);
         }
 
         if (rho_u >= 0) {
