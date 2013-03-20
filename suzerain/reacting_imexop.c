@@ -427,11 +427,6 @@ suzerain_reacting_imexop_accumulate(
         }
 
         /* in_rho_w */ {
-            (*p_gbdddmv)(trans, n, w->kl[M], w->ku[M],
-                -phi*ikm,                  REF(ux),
-                phi*gm3*ikn,               REF(uz),
-                -phi*invRe*(km2+ap43*kn2), REF(nu),
-                w->D_T[M],  w->ld, IN(rho_w), 1.0, OUT(rho_w));
 
             (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
                 -phi,                      REF(uy),

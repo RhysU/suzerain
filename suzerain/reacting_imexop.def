@@ -389,15 +389,10 @@ FUNCNAME()(
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_w */ {
-            suzerain_blasext_zgb_dddiag_scale_acc_d(PREAMBLE,
-                    -ikm,                        REF(ux),
-                    gm3*ikn,                     REF(uz),
-                    -invRe*(km2 + ap43*kn2),     REF(nu),
-                    M,  1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     -1.0,                        REF(uy),
-                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     invRe,                       REF(nu),
