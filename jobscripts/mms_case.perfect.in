@@ -64,7 +64,7 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect --np=4 --N={} -- --explicit' ::: 12 24 36 48 72 96"
+                    echo "    parallel -u -j1 '@pkgdatadir@/jobscripts/mms_case.perfect' --np=4 --N={} -- --explicit ::: 12 24 36 48 72 96"
                     echo "runs a sequence of MPI-parallel cases one after another passing"
                     echo "option --explicit to the solver to force explicit time stepping."
                     echo

@@ -48,7 +48,7 @@ do
 EOF
                     echo
                     echo "GNU parallel is great for managing multiple cases.  For example,"
-                    echo "    parallel -u '@pkgdatadir@/jobscripts/laminar.reacting --k={} -- --evmagfactor=0.8' ::: 6 7 8 9"
+                    echo "    parallel -u '@pkgdatadir@/jobscripts/laminar.reacting' --k={} -- --evmagfactor=0.8 ::: 6 7 8 9"
                     echo "runs a collection of independent cases in parallel passing"
                     echo "--evmagfactor to the solver to modify time step aggressiveness."
                     echo "Output is stored in a k-specific directory name like laminar_k08."
