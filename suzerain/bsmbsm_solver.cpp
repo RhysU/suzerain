@@ -185,11 +185,11 @@ bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
 
 const char * const bsmbsm_solver_zgbsvx::stats_names[
         bsmbsm_solver_zgbsvx::stats_type::static_size] = {
-    "Row equilibration (equed)",
-    "Column equilibration (equed)",
-    "Condition number (1/rcond)",
-    "Forward error bound (ferr)",
-    "Backward error bound (berr)"
+    "row equilibration (equed)",
+    "column equilibration (equed)",
+    "condition number (1/rcond)",
+    "forward error bound (ferr)",
+    "backward error bound (berr)"
 };
 
 std::vector<std::string>
@@ -292,14 +292,14 @@ bsmbsm_solver_zcgbsvx::supplied_PAPT()
 
 const char * const bsmbsm_solver_zcgbsvx::stats_names[
         bsmbsm_solver_zcgbsvx::stats_type::static_size] = {
-    "Single precision LU (fact)",
-    "Double precision LU (fact)",
-    "Approx factorization (apprx)",
+    "single precision LU (fact)",
+    "double precision LU (fact)",
+    "approx factorization (apprx)",
     "Frobenius norm (afrob)",
-    "Single precision refinement (siter)",
-    "Double precision refinement (diter)",
-    "Fraction of tolerance (tolsc)",
-    "Residual 2-norm (res)"
+    "single precision refinement (siter)",
+    "double precision refinement (diter)",
+    "fraction of tolerance (tolsc)",
+    "residual 2-norm (res)"
 };
 
 std::vector<std::string>
