@@ -168,6 +168,33 @@ suzerain_rholut_imexop_accumulate(
         complex_double *out_rho );
 
 /**
+ * Accumulate the ``zero-zero'' mode 'linear implicit operator application \f$y
+ * \leftarrow{} \left(M + \varphi{}L\right) x + \beta{} y\f$.  This method is
+ * equivalent to calling suzerain_rholut_imexop_accumulate() using <tt>km ==
+ * 0</tt> and <tt>kn == 0</tt> but should be appreciably faster.
+ *
+ * @see The documentation of suzerain_rholut_imexop_accumulate() for details.
+ */
+void
+suzerain_rholut_imexop_accumulate00(
+        const complex_double phi,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const complex_double *in_rho_E,
+        const complex_double *in_rho_w,
+        const complex_double *in_rho_v,
+        const complex_double *in_rho_u,
+        const complex_double *in_rho,
+        const complex_double beta,
+        complex_double *out_rho_E,
+        complex_double *out_rho_u,
+        complex_double *out_rho_v,
+        complex_double *out_rho_w,
+        complex_double *out_rho );
+
+/**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding
  * locations within contiguous storage of \f$P\left(M +
  * \varphi{}L\right)^{\mbox{T}}P^{\mbox{T}}\f$ for use by the BLAS'
