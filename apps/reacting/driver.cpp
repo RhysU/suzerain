@@ -70,13 +70,6 @@ driver::initialize(
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
 
-    // However, if msoln was provided, match its contents to other members
-    if (msoln) {
-        // FIXME: Current match is hardcoded. 
-        if (cmods) msoln->match(*cmods);
-        if (grid)  msoln->match(*grid);
-    }
-
     return positional;
 }
 

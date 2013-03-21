@@ -164,6 +164,16 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     DEBUG0(who, "Initializing antioch_constitutive");
     cmods->init_antioch();
 
+    // If msoln was provided, match its contents to other members. Do
+    // here b/c cmods doesn't make sense until after init_antioch.
+    // Must protect against calling match when not use mms b/c match
+    // will throw exception when multispecies case detected.
+    if (mms >=0 && msoln) {
+        if (cmods) msoln->match(*cmods);
+        if (grid)  msoln->match(*grid);
+    }
+
+
     
     DEBUG0(who, "Add species to fields");
     add_species_fields(cmods->species_names, this->fields);

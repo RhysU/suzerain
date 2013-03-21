@@ -65,7 +65,8 @@ banner "Conversion from physical- to wave-based restart without time advance${OP
     #
     # NOTE: Tolerance based on rho_E * 1e-15
     #
-    differ --delta=2e-10 mms0.h5 a0.h5
+    #differ --delta=2e-10 mms0.h5 a0.h5
+    differ --delta=3e-10 mms0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a physical space restart${OPER:+ ($OPER)}"

@@ -96,11 +96,35 @@ manufactured_solution::options_description()
 manufactured_solution&
 manufactured_solution::match(const antioch_constitutive& cmods)
 {
+    // Check incoming cmods for consistency with available
+    // manufactured solution
+    if (cmods.Ns()!=1) 
+        throw std::invalid_argument("MMS only available for single species!");
+
+    if (cmods.species_names[0]!="CPAir" && cmods.species_names[0]!="CPN2") 
+        throw std::invalid_argument(
+            "MMS only available for calorically perfect gas!");
+
     // FIXME: Make this function do what it is supposed to---i.e.,
     // make the manufactured solution parameters match the
     // constitutive laws class.  See previous implementation valid for
     // single_ideal_gas_constitutive below.
+
     WARN0("Call to manufactured_solution::match not supported");
+
+    // Since only allow single species, mass fractions are trivial
+    std::vector<real_t> trivial_mass_fractions(1, 1.0);
+
+    // Note: T, Tv, and mass_fractions inputs
+    // Temperatures are irrelevant (calorically perfect) but mass
+    // fraction input is necessary
+    real_t Cv = cmods.sm_thermo->cv(1.0,1.0,trivial_mass_fractions);
+    real_t Cp = cmods.sm_thermo->cp(1.0,1.0,trivial_mass_fractions);
+    
+    real_t Rmix = cmods.mixture->R(trivial_mass_fractions);
+
+
+
 
     // this->gamma = cmods.Cp / cmods.Cv;
     // this->beta  = cmods.beta;
@@ -111,9 +135,10 @@ manufactured_solution::match(const antioch_constitutive& cmods)
     // this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*cmods.Pr);
     // this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
 
-    this->gamma = 1.4;
+    this->gamma = Cp/Cv;
+    this->R     = Rmix;
+
     this->beta  = 0.7;
-    this->R     = 287.0;
     this->mu_r  = 1.0e-5;
     this->T_r   = 273.0;
 
@@ -253,7 +278,8 @@ void load(const esio_handle h,
     msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
 
     // Parameters set to match supplied arguments
-    msoln->match(cmods);
+    // Match must happen *after* call to antioch_constitutive::init_antioch
+    //msoln->match(cmods); 
     msoln->match(grid);
 }
 

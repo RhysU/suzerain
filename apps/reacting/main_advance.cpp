@@ -150,6 +150,13 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     INFO0(who, "Initializing antioch_constitutive");
     cmods->init_antioch();
 
+    // However, if msoln was provided, match its contents to other members
+    // Do here b/c cmods doesn't make sense until after init_antioch
+    if (msoln) {
+        if (cmods) msoln->match(*cmods);
+        if (grid)  msoln->match(*grid);
+    }
+
     if (msoln) {
         INFO0(who, "Restart file prescribes a manufactured solution");
         if (!(isnan)(chdef->bulk_rho)) {
