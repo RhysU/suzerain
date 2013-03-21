@@ -111,6 +111,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     chdef->bulk_rho   = 1;
     chdef->bulk_rho_u = 1;
     chdef->T_wall     = 1;
+    chdef->wall_mass_fractions.push_back(1.0);
+    
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
@@ -204,6 +206,19 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         const real_t w   = 0;
         const real_t T   = chdef->T_wall;
 
+        std::vector<real_t> rho_s;
+        if (cmods->Ns()>1) {
+            // TODO: Assert that number of wall_mass_fractions is correct
+
+            INFO("Initialization uses constant rho_s equal to bulk_rho*wall_mass_frac");
+            rho_s.resize(cmods->Ns()-1);
+            
+            for (size_t s=0; s<cmods->Ns()-1; ++s) {
+                // yes, +1 b/c first is the diluter
+                rho_s[s] = chdef->bulk_rho*chdef->wall_mass_fractions[s+1]; 
+            }
+        }
+
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization;
         if (npower == 1) {
@@ -235,7 +250,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         INFO("Preparing specific internal energy using the equation of state");
         //ArrayXr E = cmods->Cv*T + 0.5*(u*u + v*v + w*w);
         // FIXME: Get internal energy from antioch
-        ArrayXr E = 717.5*T + 0.5*(u*u + v*v + w*w);
+        //ArrayXr E = 717.5*T + 0.5*(u*u + v*v + w*w);
+        ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions) 
+            + 0.5*(u*u + v*v + w*w);
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
@@ -255,6 +272,13 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
                 .setConstant(rho * w);
         Map<VectorXc>((*state_linear)[ndx::rho].origin(), grid->N.y())
                 .setConstant(rho    );
+
+        if (cmods->Ns()>1) {
+            for (size_t s=1; s<cmods->Ns(); ++s) {
+                Map<VectorXc>((*state_linear)[ndx::rho+s].origin(), grid->N.y())
+                    .setConstant(rho_s[s-1]);
+            }
+        }
 
     }
 

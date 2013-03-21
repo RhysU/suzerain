@@ -74,11 +74,13 @@ channel_definition::~channel_definition()
 static const char name_bulk_rho[]   = "bulk_rho";
 static const char name_bulk_rho_u[] = "bulk_rho_u";
 static const char name_T_wall[]     = "T_wall";
+static const char name_mass_fractions_wall[] = "wall_mass_frac";
 
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_bulk_rho[]   = "Bulk density target";
 static const char desc_bulk_rho_u[] = "Bulk momentum target";
 static const char desc_T_wall[]     = "Wall temperature";
+static const char desc_mass_fractions_wall[] = "Wall mass fractions";
 
 boost::program_options::options_description
 channel_definition::options_description()
@@ -122,6 +124,12 @@ channel_definition::options_description()
         p->default_value(lexical_cast<string>(T_wall));
     }
     retval.add_options()(name_T_wall, p.release(), desc_T_wall);
+
+    // FIXME: Check validity of incoming values
+    retval.add_options()(name_mass_fractions_wall, 
+                         value(&wall_mass_fractions), 
+                         desc_mass_fractions_wall);
+
 
     return retval;
 }

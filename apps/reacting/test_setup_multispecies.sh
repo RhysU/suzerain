@@ -26,9 +26,10 @@ set -eu
 
 # We save the initial wisdom in $testdir for possible reuse (ticket #2515)
 banner "Creating initial field to use for tests"
-declare -r  T_wall=300
+declare -r  T_wall=5000
 declare -r  spec1="N2"
 declare -r  spec2="N"
+declare -r  bulk_rho=0.06;
 declare -ir Nx=4
 declare -ir Ny=12
 declare -ir k=6
@@ -38,6 +39,7 @@ declare -ir Nz=6
 : ${ANTIOCH_DATA_DIR:=.}
 
 runq ./reacting_init -v "$testdir/multi0.h5" --species=$spec1 --species=$spec2 \
+                     --wall_mass_frac=0.9 --wall_mass_frac=0.1 --bulk_rho=$bulk_rho \
                      --chemfile="${ANTIOCH_DATA_DIR}/air_5sp.xml" --T_wall=$T_wall \
                      --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
                      "--plan_wisdom=$testdir/wisdom.init"

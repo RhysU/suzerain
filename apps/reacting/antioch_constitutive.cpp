@@ -401,6 +401,15 @@ antioch_constitutive::evaluate (const real_t  e,
     // TODO: assert transport props are positive
 }
 
+
+real_t 
+antioch_constitutive::e_from_T (const real_t  T,
+                                const std::vector<real_t> mass_fractions) const
+{
+    return this->sm_thermo->e_tot(T, mass_fractions);
+}
+
+
 } // namespace reacting
 
 } // namespace suzerain

@@ -159,6 +159,16 @@ public:
                    real_t* om) const;
 
     /**
+     * Given temperature and mass fractions, compute internal energy
+     *
+     * @param[in] T              Temperature
+     * @param[in] mass_fractions Mass fractions
+     * @param[out] e             Internal energy
+     */
+    real_t e_from_T (const real_t  T,
+                     const std::vector<real_t> mass_fractions) const;
+
+    /**
      * Report the number of species in the mixture.
      */
     const std::size_t Ns() const { return species_names.size(); }

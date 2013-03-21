@@ -122,6 +122,11 @@ public:
      */
     real_t T_wall;
 
+    /**
+     * The desired wall mass fractions
+     */
+    std::vector<real_t> wall_mass_fractions;
+
 };
 
 } // namespace reacting
