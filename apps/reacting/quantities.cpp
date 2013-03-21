@@ -213,8 +213,17 @@ quantities sample_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
+    // FIXME: This function needs to be refactored to support reacting
+    if (cmods.Ns()>1) {
+        WARN0("sample_quantitites", 
+              "sample_quantities does not support reacting flow yet!");
+    }
+
     // We are only prepared to handle a fixed number of fields in this routine
-    enum { state_count = 5 };
+    //enum { state_count = 5 };
+
+    const size_t Ns = cmods.Ns();
+    const size_t state_count = Ns+4;
 
     // Shorthand
     const std::size_t Ny = swave.shape()[1];
@@ -332,8 +341,11 @@ quantities sample_quantities(
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    physical_view<aux::count> auxp(dgrid, auxw);
-    physical_view<state_count>sphys(dgrid, swave);
+    // physical_view<aux::count> auxp(dgrid, auxw);
+    // physical_view<state_count>sphys(dgrid, swave);
+
+    physical_view<> auxp(dgrid, auxw);
+    physical_view<>sphys(dgrid, swave);
     for (std::size_t i = 0; i < state_count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }

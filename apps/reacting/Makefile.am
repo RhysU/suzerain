@@ -64,6 +64,7 @@ main_advance_svnrev.h: $(reacting_advance_SOURCES) $(libreacting_la_SOURCES)
 ##
 
 dist_check_SCRIPTS += test_setup.sh # Common initialization...
+dist_check_SCRIPTS += test_setup_multispecies.sh # Common initialization (for multispecies)
 AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
 
 # Restart handling using coefficient-based restart files
@@ -100,6 +101,7 @@ dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
 #dist_check_SCRIPTS += test_physical_implicit.sh
 
+# Unit tests for antioch_constitutive class
 TESTS                             += test_antioch_constitutive.sh
 dist_check_SCRIPTS                += test_antioch_constitutive.sh
 
@@ -108,6 +110,9 @@ test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
 test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 
 TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
+
+# Multispecies restart
+TESTS += test_setup_multispecies.sh 
 
 endif # if BUILD_REACTING
 

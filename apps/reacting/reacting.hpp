@@ -55,8 +55,13 @@ namespace support { class field; }
  */
 namespace reacting {
 
-/** Return default nondimensional field information per \ref suzerain::ndx. */
+/** Return field information per \ref suzerain::ndx (no species case). */
 std::vector<support::field> default_fields();
+
+/** Update fields to contain species */
+void add_species_fields( const std::vector<std::string>& species_names,
+                         std::vector<support::field>& fields );
+
 
 /**
  * Hold temperature and density constant while changing the Mach number and

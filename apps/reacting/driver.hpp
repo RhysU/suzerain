@@ -72,7 +72,7 @@ public:
     /** Channel definition parameters. */
     shared_ptr<channel_definition> chdef;
 
-    /** Nondimensional manufactured solution optionally used by applications. */
+    /** Manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
 
     /** Constitutive law for a single species ideal gas */

@@ -162,6 +162,11 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     DEBUG0(who, "Initializing antioch_constitutive");
     cmods->init_antioch();
 
+    
+    DEBUG0(who, "Add species to fields");
+    add_species_fields(cmods->species_names, this->fields);
+    
+
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
     load_grid_and_operators(NULL);

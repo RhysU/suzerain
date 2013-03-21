@@ -53,6 +53,7 @@ driver::driver(
     , fsdef(make_shared<filter_definition>())
     , who("reacting")
 {
+    // Sets up usual 5 fields.  If necessary, species are added later.
     this->fields = default_fields();
 }
 
@@ -254,13 +255,11 @@ void
 driver::save_metadata_hook(
         const esio_handle esioh)
 {
-    DEBUG0("In driver::save_metadata_hook");
     super::save_metadata_hook(esioh);
     chdef->save(esioh);
     cmods->save(esioh);
     fsdef->save(esioh);
     save(esioh, msoln, *cmods, *grid);
-    DEBUG0("Leaving driver::save_metadata_hook");
     return;
 }
 

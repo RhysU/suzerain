@@ -67,11 +67,40 @@ std::vector<support::field> default_fields()
     std::vector<support::field> retval(ndx::identifier.static_size);
     for (size_t i = 0; i < ndx::identifier.static_size; ++i) {
         retval[i].identifier   = ndx::identifier[i];
-        retval[i].description += "Nondimensional ";
+        retval[i].description += "Dimensional ";
         retval[i].description += ndx::description[i];
         retval[i].location     = ndx::identifier[i];
     }
     return retval;
+}
+
+void add_species_fields( const std::vector<std::string>& species_names,
+                         std::vector<support::field>& fields )
+{
+    // Nothing to do if we only have 1 specie
+    if (species_names.size()==1) return;
+
+    // number of species
+    const size_t Ns = species_names.size();
+
+    // number of other variables
+    const size_t Nv = fields.size();
+
+    // total number of field variables we need
+    const size_t Nf = Nv + Ns - 1;
+
+    // get space for species
+    fields.resize(Nf);
+
+    // initialize species
+    for (size_t i = Nv; i < Nf; ++i) {
+        // yes: +1 b/c first in species list is the diluter
+        fields[i].identifier   = "rho_" + species_names[i-Nv+1]; 
+        fields[i].description += "Dimensional ";
+        fields[i].description += species_names[i-Nv+1];
+        fields[i].description += " density";
+        fields[i].location     = "rho_" + species_names[i-Nv+1];
+    }
 }
 
 void

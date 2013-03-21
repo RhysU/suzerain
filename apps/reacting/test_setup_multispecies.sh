@@ -22,19 +22,26 @@ fi
 # $(testdir) has already been created by test_infrastructure.sh for scratch use
 
 
+set -eu
+
 # We save the initial wisdom in $testdir for possible reuse (ticket #2515)
 banner "Creating initial field to use for tests"
 declare -r  T_wall=300
-declare -r  spec="CPAir"
+declare -r  spec1="N2"
+declare -r  spec2="N"
 declare -ir Nx=4
 declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./reacting_init "$testdir/mms0.h5" --mms=0 --species=$spec --T_wall=$T_wall \
+
+: ${ANTIOCH_DATA_DIR:=.}
+
+runq ./reacting_init -v "$testdir/multi0.h5" --species=$spec1 --species=$spec2 \
+                     --chemfile="${ANTIOCH_DATA_DIR}/air_5sp.xml" --T_wall=$T_wall \
                      --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
                      "--plan_wisdom=$testdir/wisdom.init"
-chmod +r "$testdir/mms0.h5"
+chmod +r "$testdir/multi0.h5"
 
 
 banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
@@ -54,7 +61,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
             cmd+=(-d "/$field[$realmode;;1,1,$Ny]")
         done
     done
-    cmd+=(-w 8 -m %22.14g mms0.h5)
+    cmd+=(-w 8 -m %22.14g multi0.h5)
     echo ${cmd[*]}
     ${cmd[*]} > realmodes 2>&1 \
         || (cat realmodes && false)
@@ -72,7 +79,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
 
 
 banner "Building --exclude-paths for filtering samples"
-datasets_bar=$(h5ls -f "$testdir/mms0.h5" | egrep '^/bar_' | cut "-d " -f 1)
+datasets_bar=$(h5ls -f "$testdir/multi0.h5" | egrep '^/bar_' | cut "-d " -f 1)
 exclude_datasets_bar=""
 for dset in $datasets_bar
 do
