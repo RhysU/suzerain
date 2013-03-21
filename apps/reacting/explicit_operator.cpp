@@ -48,22 +48,28 @@ class IsothermalNoSlipFunctor
 {
 private:
     const ptrdiff_t field_stride;
-    const real_t    Cv;
-    const real_t    T_wall;
+    const real_t    e_tot;
+    const std::vector<real_t>& wall_mass_fractions;
 
 public:
-    IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t Cv, real_t T_wall)
+    IsothermalNoSlipFunctor(ptrdiff_t field_stride, 
+                            const real_t e_tot, 
+                            const std::vector<real_t>& wall_mass_fractions)
         : field_stride(field_stride)
-        , Cv(Cv)
-        , T_wall(T_wall)
+        , e_tot(e_tot)
+        , wall_mass_fractions(wall_mass_fractions)
     {}
 
     void operator()(complex_t &rho) const
     {
+        for (size_t s=1; s<wall_mass_fractions.size(); ++s) {
+            (&rho)[s*field_stride] = rho*wall_mass_fractions[s];
+        }
+
         (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
         (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*Cv*T_wall; //rho*inv_gamma_gamma1;
+        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*e_tot;
     }
 };
 
@@ -109,14 +115,11 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     multi_array::ref<complex_t,4>::array_view<3>::type state_view
             = state[indices[ndx::rho][walls][range()][range()]];
 
-    // // Prepare functor setting pointwise BCs given density locations
-    // const IsothermalNoSlipFunctor bc_functor(
-    //         state.strides()[0], cmods.Cv, chdef.T_wall);
-
     // Prepare functor setting pointwise BCs given density locations
-    // FIXME: Refactor wall BC to do the appropriate thing for multispecies flow
     const IsothermalNoSlipFunctor bc_functor(
-            state.strides()[0], 717.5, chdef.T_wall);
+        state.strides()[0], 
+        cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions), 
+        chdef.wall_mass_fractions);
 
     // Apply the functor to all wall-only density locations
     multi_array::for_each(state_view, bc_functor);

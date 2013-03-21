@@ -52,7 +52,8 @@ public:
      */
     channel_definition(const real_t bulk_rho,
 		       const real_t bulk_rho_u,
-		       const real_t T_wall);
+		       const real_t T_wall,
+                       const std::vector<real_t> wall_mass_fractions);
 
 
     /** Virtual destructor to permit use as a base class */

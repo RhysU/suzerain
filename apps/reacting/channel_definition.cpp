@@ -52,16 +52,19 @@ channel_definition::channel_definition()
     : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
     , T_wall    (std::numeric_limits<real_t>::quiet_NaN())
+    , wall_mass_fractions()
 {
 }
 
 channel_definition::channel_definition(
         const real_t bulk_rho,
         const real_t bulk_rho_u,
-	const real_t T_wall)
+	const real_t T_wall,
+        const std::vector<real_t> wall_mass_fractions)
     : bulk_rho  (bulk_rho  )
     , bulk_rho_u(bulk_rho_u)
     , T_wall    (T_wall)
+    , wall_mass_fractions(wall_mass_fractions)
 {
 }
 
@@ -145,6 +148,8 @@ channel_definition::populate(
     CALL_MAYBE_POPULATE(bulk_rho_u);
     CALL_MAYBE_POPULATE(T_wall);
 #undef CALL_MAYBE_POPULATE
+    if (this->wall_mass_fractions.size()==0)
+        this->wall_mass_fractions = that.wall_mass_fractions;
 }
 
 void
@@ -158,6 +163,8 @@ channel_definition::override(
     CALL_MAYBE_OVERRIDE(bulk_rho_u);
     CALL_MAYBE_OVERRIDE(T_wall);
 #undef CALL_MAYBE_OVERRIDE
+    if (this->wall_mass_fractions.size()!=0)
+        this->wall_mass_fractions = that.wall_mass_fractions;
 }
 
 void
@@ -169,11 +176,19 @@ channel_definition::save(
     // Only root writes data
     int procid;
     esio_handle_comm_rank(h, &procid);
-    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
+    // scalars
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
     esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
     esio_line_write(h, name_T_wall,     &this->T_wall,     0, desc_T_wall);
+
+    // mass fractions vector
+    esio_line_establish(h, this->wall_mass_fractions.size(), 
+                        0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, name_mass_fractions_wall, 
+                    this->wall_mass_fractions.data(), 1, 
+                    desc_mass_fractions_wall);
 }
 
 void
@@ -183,13 +198,25 @@ channel_definition::load(
 {
     DEBUG0("Loading channel_definition parameters");
 
-    // All ranks load
-    esio_line_establish(h, 1, 0, 1);
-
     channel_definition t;
+
+    // All ranks load
+
+    // Scalars
+    esio_line_establish(h, 1, 0, 1);
     esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
     esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
     esio_line_read(h, name_T_wall,     &t.T_wall,     0);
+
+    // Mass fractions vector
+    int Ns;
+    esio_line_size(h, name_mass_fractions_wall, &Ns);
+    t.wall_mass_fractions.resize(Ns);
+
+    esio_line_establish(h, Ns, 0, Ns);
+    esio_line_read(h, name_mass_fractions_wall, 
+                   t.wall_mass_fractions.data(), 1);
+
     this->populate(t, verbose);  // Prefer this to incoming
 }
 
