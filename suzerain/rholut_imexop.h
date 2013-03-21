@@ -132,9 +132,6 @@ typedef struct {
  * @param[in] r  Reference quantities used to form the operator.
  * @param[in] ld Strides between reference quantity values.
  * @param[in] w  B-spline workspace providing discrete operators.
- * @param[in] imagzero  Treat imaginary part of all input data as if
- *                      it were uniformly zero?  That is, assume
-                        <tt>Im(in_rho{,u,v,w,E}) == 0</tt>.
  * @param[in]  in_rho_E  Wall-normal input data for \f$\rho{}E\f$.
  * @param[in]  in_rho_w  Wall-normal input data for \f$\rho{}w\f$.
  * @param[in]  in_rho_v  Wall-normal input data for \f$\rho{}v\f$.
@@ -158,7 +155,6 @@ suzerain_rholut_imexop_accumulate(
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
         const suzerain_bsplineop_workspace    * const w,
-        const int imagzero,
         const complex_double *in_rho_E,
         const complex_double *in_rho_w,
         const complex_double *in_rho_v,

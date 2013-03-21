@@ -165,10 +165,9 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
 
             // Accumulate result back into state storage automatically
             // adjusting for when input imaginary part a priori should be zero
-            SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, cop.get(),
-                    wn == 0 && wm == 0,
                     tmp.data() + ndx::e   * Ny,
                     tmp.data() + ndx::mx  * Ny,
                     tmp.data() + ndx::my  * Ny,
@@ -180,7 +179,6 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                     p + ndx::my  * Ny,
                     p + ndx::mz  * Ny,
                     p + ndx::rho * Ny);
-            SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
         }
     }
 }
@@ -256,10 +254,9 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
 
             // Accumulate result automatically adjusting for when input
             // imaginary part a priori should be zero
-            SUZERAIN_TIMER_BEGIN("suzerain_rholut_imexop_accumulate");
+            SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, cop.get(),
-                    wn == 0 && wm == 0,
                     &input [ndx::e  ][0][m - dkbx][n - dkbz],
                     &input [ndx::mx ][0][m - dkbx][n - dkbz],
                     &input [ndx::my ][0][m - dkbx][n - dkbz],
@@ -271,7 +268,6 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                     &output[ndx::my  ][0][m - dkbx][n - dkbz],
                     &output[ndx::mz  ][0][m - dkbx][n - dkbz],
                     &output[ndx::rho ][0][m - dkbx][n - dkbz]);
-            SUZERAIN_TIMER_END("suzerain_rholut_imexop_accumulate");
 
         }
     }
