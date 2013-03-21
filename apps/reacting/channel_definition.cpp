@@ -129,6 +129,7 @@ channel_definition::options_description()
     retval.add_options()(name_T_wall, p.release(), desc_T_wall);
 
     // FIXME: Check validity of incoming values
+    // Must be non-negative and sum to 1
     retval.add_options()(name_mass_fractions_wall, 
                          value(&wall_mass_fractions), 
                          desc_mass_fractions_wall);

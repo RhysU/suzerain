@@ -204,8 +204,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // NOTE: The indexing here *assumes* that the total energy is
     // stored first.
 
-    // FIXME: filter source 
-    //        compute damping coefficient
     // FIXME: to start testing, use directly a user defined value;
     //        to do is to figure out proper coefficients for each variable;
     //        see if it works to set the coefficient for rho = 0;
@@ -215,8 +213,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
    
-    // FIXME: filter source 
-    //        compute for energy
+    // Filter source: compute for energy
     fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, ndx::e,
                                              0.,    fsrcw, ndx::e);
 
@@ -238,8 +235,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::x );
       o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::z );
 
-      // FIXME: filter source 
-      //        compute for all other variables
+      // Filter source: compute for variable var
       fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, var,
                                                0.,    fsrcw, var);
     }
@@ -926,8 +922,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // accumulate the Y, X, and Z derivatives into the source
     // separately.
     {
-        // FIXME: filter source 
-        //        scale source for dealiasing
         
         for (size_t i = 0; i < state_count; ++i) {
             
@@ -951,7 +945,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
                                          1, swave, i );
 
-            // FIXME: filter source 
             // Accumulate filter source while simultaneously scaling for FFT
             // alpha = dNx*dNz to scale for dealiasing
             o.diffwave_accumulate(0, 0, 
