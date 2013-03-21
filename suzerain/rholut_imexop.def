@@ -67,7 +67,7 @@ FUNCNAME()(
     const double * const D1 = w->D_T[1] - (w->max_ku - w->ku[1]);
     const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[1]);
     assert(w->nderiv >= 2);         // Enough derivatives in workspace?
-    assert(A_T->ld == w->ld);         // Compatible storage?
+    assert(A_T->ld == w->ld);       // Compatible storage?
 
     // Prepare shorthand for some useful derived values
     const complex_double ikm = _Complex_I*km;
