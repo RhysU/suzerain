@@ -2,10 +2,11 @@
 set -eu
 
 # Initialize test infrastructure
-source "`dirname $0`/test_setup.sh"
+source "`dirname $0`/test_setup_multispecies.sh"
 
 # Shorthand for binary under test for desired operator without statistics
-: ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
+#: ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
+OPER=--explicit
 reacting="prun ../reacting_advance $OPER --statistics_dt=0 --statistics_nt=0"
 
 # These datasets are related to implicit forcing and only are meaningful when
@@ -30,17 +31,17 @@ banner "Idempotence of restarting without time advance${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=wisdom.init" # Prepared by test_setup.sh
-    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P
-    differ $exclude_datasets mms0.h5 a0.h5
+    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P
+    differ $exclude_datasets multi0.h5 a0.h5
 )
 
 banner "Equivalence of a field advanced both with and without a restart${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P
+    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=2 $WIZ $P
     $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=2 $WIZ $P
-    $reacting mms0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P
+    $reacting multi0.h5 --restart_destination "c#.h5" --advance_nt=4 $WIZ $P
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan b0.h5 c0.h5 /t
@@ -51,43 +52,11 @@ banner "Upsample/downsample both homogeneous directions${OPER:+ ($OPER)}"
 (
     cd $testdir
     WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
+    $reacting multi0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
                      --Nx=$((2*$Nx)) --Nz=$((3*$Nz))
     $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
                      --Nx=$((  $Nx)) --Nz=$((  $Nz))
-    differ $exclude_datasets mms0.h5 b0.h5
+    differ $exclude_datasets multi0.h5 b0.h5
 )
-
-#banner "Upsample/downsample inhomogeneous direction order${OPER:+ ($OPER)}"
-#(
-#    cd $testdir
-#    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-#    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
-#                     --k=$(($k+1))
-#    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
-#                     --k=$(($k  ))
-#    # Chosen tolerances are wholly empirical and represent nothing deep
-#    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho
-#    differ $exclude_datasets --delta=3e-4 mms0.h5 b0.h5 /rho_u
-#    differ $exclude_datasets --delta=5e-5 mms0.h5 b0.h5 /rho_v
-#    differ $exclude_datasets --delta=6e-5 mms0.h5 b0.h5 /rho_w
-#    differ $exclude_datasets --delta=7e-4 mms0.h5 b0.h5 /rho_E
-#)
-#
-#banner "Upsample/downsample inhomogeneous direction NDOF and htdelta${OPER:+ ($OPER)}"
-#(
-#    cd $testdir
-#    WIZ="--plan_wisdom=$(mktemp wisdom.XXXXXX)"
-#    $reacting mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ $P \
-#                     --Ny=$((2*$Ny)) --htdelta=$(($htdelta+1))
-#    $reacting a0.h5   --restart_destination "b#.h5" --advance_nt=0 $WIZ $P \
-#                     --Ny=$((  $Ny)) --htdelta=$(($htdelta  ))
-#    # Chosen tolerances are wholly empirical and represent nothing deep
-#    differ $exclude_datasets --delta=6e-6 mms0.h5 b0.h5 /rho
-#    differ $exclude_datasets --delta=1e-4 mms0.h5 b0.h5 /rho_u
-#    differ $exclude_datasets --delta=7e-6 mms0.h5 b0.h5 /rho_v
-#    differ $exclude_datasets --delta=3e-5 mms0.h5 b0.h5 /rho_w
-#    differ $exclude_datasets --delta=2e-4 mms0.h5 b0.h5 /rho_E
-#)
 
 done

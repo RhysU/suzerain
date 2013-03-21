@@ -112,7 +112,8 @@ test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain
 TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
 
 # Multispecies restart
-TESTS += test_setup_multispecies.sh 
+TESTS              += test_restart_multispecies_explicit.sh
+dist_check_SCRIPTS += test_restart_multispecies_explicit.sh
 
 endif # if BUILD_REACTING
 

@@ -271,6 +271,11 @@ driver::load_metadata_hook(
     chdef->load(esioh);
     cmods->load(esioh);
     fsdef->load(esioh);
+    
+    // After cmods->load, have valid species names, so we can update
+    // fields to include species
+    add_species_fields(cmods->species_names, this->fields);
+    
     load(esioh, msoln, *cmods, *grid);
     return;
 }
