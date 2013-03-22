@@ -117,23 +117,6 @@ suzerain_reacting_imexop_accumulate(
                                                     const double *, const int,
                                              /* NB */ const void *, const int,
                             const complex_double, complex_double *, const int);
-    typedef int gbddddmv_t (const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                                                    const double *, const int,
-                                             /* NB */ const void *, const int,
-                            const complex_double, complex_double *, const int);
-    typedef int gbdddddmv_t(const char, const int, const int, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                            const complex_double,   const double *, const int,
-                                                    const double *, const int,
-                                             /* NB */ const void *, const int,
-                            const complex_double, complex_double *, const int);
 
     // In the first case, treat x arguments as complex with stride one...
     int inc_in = 1;
@@ -141,8 +124,6 @@ suzerain_reacting_imexop_accumulate(
     gbdmv_t     *p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_z;
     gbddmv_t    *p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_z;
     gbdddmv_t   *p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_z;
-    gbddddmv_t  *p_gbddddmv  = (gbddddmv_t *)  & suzerain_blasext_zgbddddmv_d_z;
-    gbdddddmv_t *p_gbdddddmv = (gbdddddmv_t *) &suzerain_blasext_zgbdddddmv_d_z;
 
     // ...but in the second case, treat x arguments as real with stride two.
     if (SUZERAIN_UNLIKELY(imagzero)) {
@@ -151,8 +132,6 @@ suzerain_reacting_imexop_accumulate(
         p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_d;
         p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_d;
         p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_d;
-        p_gbddddmv  = (gbddddmv_t *)  & suzerain_blasext_zgbddddmv_d_d;
-        p_gbdddddmv = (gbdddddmv_t *) &suzerain_blasext_zgbdddddmv_d_d;
     }
 
     // Shorthand for the common pattern of providing "in_foo, inc" pairs.
