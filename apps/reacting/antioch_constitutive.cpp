@@ -400,16 +400,17 @@ antioch_constitutive::evaluate (const real_t  e,
         hs[i] = this->sm_thermo->h_tot(i, T);
 
     // Transport
-    // FIXME: Add antioch support
-
-    // For now, hardcode some numbers for air
-    mu = 1.716e-5 * pow( T/273.0, 0.6667 );
+    mu = this->wilke_evaluator->mu(T, Y);
 
     real_t Cp = this->sm_thermo->cp(T, T, Y);
 
+    // FIXME: Will be
+    // kap = this->wilke_evaluator->k(T, Y);
+    // but that is not fully implemented, so 
+    // do this for now
     kap = mu * Cp / 0.7;
 
-    // Is this right?  Copied from FIN-S but looks like inverse if Le
+    // Is this right?  Copied from FIN-S but looks like inverse of Le
     // to me.
     real_t D0 = this->Le*kap*irho/Cp;
 
