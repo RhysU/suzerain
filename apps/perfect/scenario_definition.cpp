@@ -25,12 +25,6 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-/** @file
- * Provides classes handling problem scenario parameters which are either
- * reference quantities or nondimensional parameters describing a particular
- * problem setup.
- */
-
 namespace suzerain {
 
 static void parse_positive(const std::string& s, real_t *t, const char *n)

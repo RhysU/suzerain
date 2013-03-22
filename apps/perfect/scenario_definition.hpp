@@ -13,10 +13,6 @@
 #ifndef SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
 #define SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
 
-/** @file
- * Classes handling perfect gas problem scenario parameters.
- */
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
