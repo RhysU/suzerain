@@ -36,6 +36,7 @@
 #include "channel_treatment.hpp"
 #include "explicit_operator.hpp"
 #include "hybrid_operator.hpp"
+#include "perfect.hpp"
 
 #pragma warning(disable:1419)
 

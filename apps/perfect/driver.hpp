@@ -33,7 +33,7 @@
 
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
-#include "nonlinear_operator_fwd.hpp"
+#include "common_block.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {

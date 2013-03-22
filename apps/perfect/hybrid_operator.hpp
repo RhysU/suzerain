@@ -28,18 +28,19 @@
  * Hybrid implicit/explicit Navier--Stokes operators.
  */
 
-#include "nonlinear_operator_fwd.hpp"
-
 #include <suzerain/bsmbsm_solver.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/timestepper.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
+#include "common_block.hpp"
 #include "manufactured_solution.hpp"
+#include "navier_stokes.hpp"
 
 #pragma warning(disable:383 1572)
 

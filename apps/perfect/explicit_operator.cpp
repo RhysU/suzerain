@@ -31,7 +31,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
-#include "nonlinear_operator.hpp"
+#include "navier_stokes.hpp"
 
 #pragma warning(disable:383 1572)
 

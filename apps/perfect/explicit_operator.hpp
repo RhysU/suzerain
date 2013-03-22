@@ -28,8 +28,6 @@
  * Fully explicit, linearization-ready Navier--Stokes operators.
  */
 
-#include "nonlinear_operator_fwd.hpp"
-
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
@@ -37,7 +35,7 @@
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 
-#include "perfect.hpp"
+#include "common_block.hpp"
 #include "manufactured_solution.hpp"
 
 #pragma warning(disable:383 1572)

@@ -28,8 +28,6 @@
  * A mixin providing implicit channel forcing.
  */
 
-#include "nonlinear_operator_fwd.hpp"
-
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
@@ -37,9 +35,11 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/storage.hpp>
+#include <suzerain/timestepper.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "perfect.hpp"
+#include "common_block.hpp"
+#include "scenario_definition.hpp"
 
 namespace suzerain {
 

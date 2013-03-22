@@ -25,6 +25,8 @@
  * @copydoc hybrid_operator.hpp
  */
 
+#include "hybrid_operator.hpp"
+
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
 #include <suzerain/complex.hpp>
@@ -37,8 +39,8 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
 
-#include "hybrid_operator.hpp"
-#include "nonlinear_operator.hpp"
+#include "common_block.hpp"
+#include "navier_stokes.hpp"
 
 #pragma warning(disable:383 1572)
 
