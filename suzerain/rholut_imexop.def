@@ -474,5 +474,4 @@ FUNCNAME()(
 }
 
 #undef FUNCNAME
-#undef FUNCNAME00
 #undef PACK
