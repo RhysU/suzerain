@@ -161,7 +161,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign(*state_nonlinear);
     }
 
-    // Prepare spatial operators depending on requested advance type
+    // Prepare spatial operators depending on requested advance options
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         common_block.linearization = linearize::none;
