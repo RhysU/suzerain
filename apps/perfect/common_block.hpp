@@ -30,7 +30,6 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/rholut_imexop.h>
-#include <suzerain/state_fwd.hpp>
 
 #include "linearize_type.hpp"
 #include "slowgrowth_type.hpp"
