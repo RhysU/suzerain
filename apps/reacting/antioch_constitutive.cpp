@@ -29,6 +29,8 @@
 
 #include <antioch/antioch_version.h>
 #include <antioch/read_reaction_set_data_xml.h>
+#include <antioch/blottner_parsing.h>
+
 
 /** @file
  * Class wrapping libantioch functionality for chemically reacting
@@ -296,6 +298,24 @@ void antioch_constitutive::init_antioch()
                                                     *reactions);
         kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
     }
+
+
+    mixture_mu = make_shared<Antioch::MixtureViscosity<
+                             Antioch::BlottnerViscosity<real_t>, real_t> > 
+        (*mixture);
+
+    Antioch::read_blottner_data_ascii_default(*mixture_mu);
+
+    mixture_kappa = make_shared<Antioch::EuckenThermalConductivity<
+                                Antioch::StatMechThermodynamics<real_t> > > 
+        (*sm_thermo);
+
+    wilke_mixture = make_shared<Antioch::WilkeMixture<real_t> >(*mixture);
+
+    wilke_evaluator = make_shared<
+        Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>,
+        Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >, real_t> >
+        (*wilke_mixture, *mixture_mu, *mixture_kappa );
 
     // TODO: Add consistency asserts... everybody has same number of
     // species, number of reactions is sane, valid curve fits,
