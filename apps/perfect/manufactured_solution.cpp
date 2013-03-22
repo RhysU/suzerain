@@ -25,10 +25,6 @@
  * @copydoc manufactured_solution.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "manufactured_solution.hpp"
 
 #include <esio/error.h>

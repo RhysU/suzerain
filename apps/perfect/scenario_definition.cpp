@@ -14,10 +14,6 @@
  * @copydoc scenario_definition.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "scenario_definition.hpp"
 
 #include <suzerain/common.hpp>

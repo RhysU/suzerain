@@ -25,10 +25,6 @@
  * Compute discrete conservation error for given basis
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>

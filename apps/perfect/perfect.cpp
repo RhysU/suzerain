@@ -25,10 +25,6 @@
  * @copydoc perfect.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "perfect.hpp"
 
 #include <esio/error.h>

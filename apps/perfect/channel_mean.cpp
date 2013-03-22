@@ -28,10 +28,6 @@
 // FIXME Support loading multiple sample collections per file
 // FIXME Allow excluding particular time ranges in the output
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>

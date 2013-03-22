@@ -25,10 +25,6 @@
  * Application executing \ref suzerain::perfect::driver_advance::run.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>

@@ -14,10 +14,6 @@
  * @copydoc common_block.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "common_block.hpp"
 
 #include <suzerain/common.hpp>

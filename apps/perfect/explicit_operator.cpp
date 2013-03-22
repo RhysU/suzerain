@@ -25,10 +25,6 @@
  * @copydoc explicit_operator.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>

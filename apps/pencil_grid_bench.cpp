@@ -25,10 +25,6 @@
  * A suzerain::pencil_grid test based on Dmitry Pekurovsky's P3DFFT work.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/operator_base.hpp>
