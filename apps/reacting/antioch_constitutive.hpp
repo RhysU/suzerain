@@ -35,6 +35,11 @@
 #include <antioch/cea_thermo.h>
 #include <antioch/stat_mech_thermo.h>
 #include <antioch/kinetics_evaluator.h>
+#include <antioch/mixture_viscosity.h>
+#include <antioch/blottner_viscosity.h>
+#include <antioch/eucken_thermal_conductivity.h>
+#include <antioch/wilke_mixture.h>
+#include <antioch/wilke_evaluator.h>
 
 
 namespace suzerain {
@@ -233,7 +238,33 @@ public:
      */
     shared_ptr<Antioch::KineticsEvaluator<real_t> > kinetics;
 
+    /**
+     * Antioch::MixtureViscosity object, used to compute species
+     * viscosities using Blottner curve fits.
+     */
+    shared_ptr<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>,
+                                real_t> > mixture_mu;
+
+    /**
+     * Antioch::EuckenThermalConductivity object, used to compute
+     * species thermal conductivity according to Eucken model.
+     */
+    shared_ptr<Antioch::EuckenThermalConductivity<
+                   Antioch::StatMechThermodynamics<real_t> > > mixture_kappa;
     
+    /**
+     * Antioch::WilkeMixture object, used by Antioch::WilkeEvaluator
+     */
+    shared_ptr<Antioch::WilkeMixture<real_t> > wilke_mixture;
+
+    /**
+     * Antioch::WilkeMixture object, computes mixture transport
+     * properties
+     */
+    shared_ptr<Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>, 
+                                       Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >,
+                                       real_t> > wilke_evaluator;
+
     // TODO: Add antioch support for transport properties
 
 };
