@@ -162,6 +162,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Prepare spatial operators depending on requested advance options
+    common_block.slow_treatment = slowgrowth::none;
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         common_block.linearization = linearize::none;

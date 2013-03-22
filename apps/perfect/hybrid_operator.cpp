@@ -576,27 +576,27 @@ std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
-    SUZERAIN_ENSURE(common.linearization != linearize::none);
-
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
-        return apply_navier_stokes_spatial_operator<true,  linearize::rhome_xyz>
-            (this->scenario.alpha,
-             this->scenario.beta,
-             this->scenario.gamma,
-             this->scenario.Ma,
-             this->scenario.Pr,
-             this->scenario.Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+        return apply_navier_stokes_spatial_operator<
+                true,  linearize::rhome_xyz, slowgrowth::none
+            >(this->scenario.alpha,
+              this->scenario.beta,
+              this->scenario.gamma,
+              this->scenario.Ma,
+              this->scenario.Pr,
+              this->scenario.Re,
+              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     } else {
-        return apply_navier_stokes_spatial_operator<false, linearize::rhome_xyz>
-            (this->scenario.alpha,
-             this->scenario.beta,
-             this->scenario.gamma,
-             this->scenario.Ma,
-             this->scenario.Pr,
-             this->scenario.Re,
-             *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
+        return apply_navier_stokes_spatial_operator<
+                false, linearize::rhome_xyz, slowgrowth::none
+            >(this->scenario.alpha,
+              this->scenario.beta,
+              this->scenario.gamma,
+              this->scenario.Ma,
+              this->scenario.Pr,
+              this->scenario.Re,
+              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
     }
 }
 

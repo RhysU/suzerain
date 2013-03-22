@@ -49,6 +49,7 @@ namespace suzerain { namespace perfect {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
+          slowgrowth::type SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t alpha,
@@ -65,6 +66,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
+    // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
 
     // Shorthand
@@ -76,7 +78,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::size_t;
     using std::sqrt;
 
-    // State enters method as coefficients in X, Y, and Z directions
+    // Compile-time template parameters are used to reduce jumps at runtime.
+    // Ensure that someone didn't hand in a mismatched common block.
+    SUZERAIN_ENSURE(common.linearization  == Linearize);
+    SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
     enum { swave_count = 5 };

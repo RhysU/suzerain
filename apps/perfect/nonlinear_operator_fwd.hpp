@@ -94,6 +94,7 @@ namespace perfect {
  *         quantities for linearization.
  * \tparam Linearize What type of hybrid implicit/explicit linearization
  *         is employed?
+ * \tparam SlowTreatment What type of slow growth forcing should be applied?
  * \tparam ManufacturedSolution What manufactured solution should be used to
  *         provide additional forcing (when enabled)?
  *
@@ -105,6 +106,7 @@ namespace perfect {
  */
 template <bool ZerothSubstep,
           linearize::type  Linearize,
+          slowgrowth::type SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t alpha,

@@ -28,6 +28,7 @@ namespace perfect {
 
 operator_common_block::operator_common_block()
     : linearization(linearize::none)
+    , slow_treatment(slowgrowth::none)
 {
     // NOP
 }
