@@ -90,11 +90,15 @@ manufactured_solution::options_description()
     T.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects temperature field", _1, _2));
 
+    // TODO: Add mu0, Tref, beta, Pr to MMS parameters These will be
+    // used to make cmods match MMS in manufactured_solution::match
+    // fcn below rather than the other way around.
+
     return retval;
 }
 
 manufactured_solution&
-manufactured_solution::match(const antioch_constitutive& cmods)
+manufactured_solution::match(antioch_constitutive& cmods)
 {
     // Check incoming cmods for consistency with available
     // manufactured solution
@@ -110,11 +114,13 @@ manufactured_solution::match(const antioch_constitutive& cmods)
     // constitutive laws class.  See previous implementation valid for
     // single_ideal_gas_constitutive below.
 
-    WARN0("Call to manufactured_solution::match not supported");
+    WARN0("Manipulating constitutive model parameters to "
+          "match input manufactured solution.");
 
     // Since only allow single species, mass fractions are trivial
     std::vector<real_t> trivial_mass_fractions(1, 1.0);
 
+    // Thermodynamics
     // Note: T, Tv, and mass_fractions inputs
     // Temperatures are irrelevant (calorically perfect) but mass
     // fraction input is necessary
@@ -123,7 +129,27 @@ manufactured_solution::match(const antioch_constitutive& cmods)
     
     real_t Rmix = cmods.mixture->R(trivial_mass_fractions);
 
+    
+    // Transport
+    // FIXME: Don't hardcode.  Read from MMS options.
+    const real_t mu0 = 1e-3; 
+    const real_t beta = 0.7; 
+    const real_t Tref = 273.0;
 
+    std::vector<real_t> blottner_coeffs(3);
+    // Blottner says: mu = 0.1*exp( a*log(T)^2 + b*log(T) + c).  Thus,
+
+    // for a = 0 reduces blottner to power law
+    blottner_coeffs[0] = 0.0; 
+
+    // with b = power law exponent
+    blottner_coeffs[1] = beta;
+
+    // and 0.1*exp(c) = mu0/(Tref^beta)
+    blottner_coeffs[2] = std::log(mu0/(0.1*std::pow(Tref, beta)));
+
+    // Set blottner parameters
+    cmods.mixture_mu->reset_coeffs(0, blottner_coeffs);
 
 
     // this->gamma = cmods.Cp / cmods.Cv;

@@ -81,7 +81,7 @@ public:
     explicit manufactured_solution(const std::string& caption);
 
     /** Set #gamma, #beta, #R, #T_r, #mu_r. */
-    manufactured_solution& match(const antioch_constitutive& cmods);
+    manufactured_solution& match(antioch_constitutive& cmods);
 
     /** Set #Lx, #Ly, and #Lz to match \c grid. */
     manufactured_solution& match(const grid_specification& grid);
