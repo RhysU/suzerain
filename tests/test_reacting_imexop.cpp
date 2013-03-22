@@ -41,6 +41,8 @@
 
 #include "test_tools.hpp"
 
+// FIXME Testing loops over unused wavenumbers km, kn.  Remove.
+
 BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 typedef double real_t;
@@ -96,8 +98,8 @@ static void operator_consistency(const parameters& p)
 
     // Initialize scenario parameters
     const complex_t phi(M_SQRT2/11, M_LOG2E/13);
-    const real_t&   km = p.km;
-    const real_t&   kn = p.kn;
+    const real_t&   km = p.km;  SUZERAIN_UNUSED(km);
+    const real_t&   kn = p.kn;  SUZERAIN_UNUSED(kn);
 
     suzerain_reacting_imexop_scenario s;
     s.Re    = 3000;
@@ -143,7 +145,7 @@ static void operator_consistency(const parameters& p)
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
         suzerain_reacting_imexop_accumulate(
-            phi, km, kn, &s, &r, &ld, op.get(), p.imagzero,
+            phi, /* km, kn, */ &s, &r, &ld, op.get(), p.imagzero,
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
     }
@@ -170,7 +172,7 @@ static void operator_consistency(const parameters& p)
     using suzerain::complex::NaN;
     fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
-    suzerain_reacting_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
+    suzerain_reacting_imexop_packc(phi, /* km, kn, */ &s, &r, &ld, op.get(),
                                    0, 1, 2, 3, 4, buf.get(), &A, papt.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
