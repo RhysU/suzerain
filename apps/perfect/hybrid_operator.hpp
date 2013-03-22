@@ -61,9 +61,6 @@ class isothermal_hybrid_linear_operator
 {
 public:
 
-    /** Determines the extent of the implicit treatment */
-    static const linearize::type linearization = linearize::rhome_xyz;
-
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const scenario_definition &scenario,
@@ -137,10 +134,6 @@ class hybrid_nonlinear_operator
       >
 {
 public:
-
-    /** Determines the implicit treatment of the paired linear_operator. */
-    static const linearize::type linearization
-            = isothermal_hybrid_linear_operator::linearization;
 
     hybrid_nonlinear_operator(
             const scenario_definition &scenario,

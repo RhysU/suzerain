@@ -90,6 +90,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
+    SUZERAIN_ENSURE(common.linearization == linearize::none);
 
     // Shorthand
     using boost::indices;
@@ -151,6 +152,8 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
+    SUZERAIN_ENSURE(common.linearization == linearize::none);
+
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::none>

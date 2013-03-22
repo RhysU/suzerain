@@ -40,6 +40,27 @@ namespace suzerain {
 
 namespace perfect {
 
+/** Provides scoping semantics for linearize::type */
+namespace linearize {
+
+/** What type of hybrid implicit/explicit linearization is employed? */
+enum type {
+    none,      ///< No linearization implying a fully explicit treatment
+    rhome_xyz  ///< Density, momentum, and total energy across X, Y, and Z
+};
+
+} // namespace linearize
+
+/** Provides scoping semantics for slowgrowth::type */
+namespace slowgrowth {
+
+/** What slow growth sources are employed? */
+enum type {
+    none   ///< No slow growth sources
+};
+
+} // namespace slowgrowth
+
 /**
  * Storage for holding quantities computed during nonlinear operator
  * application which either are required for linear operator application or for
@@ -56,7 +77,13 @@ class operator_common_block
 public:
 
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
-    operator_common_block() {}
+    operator_common_block() : linearization(linearize::none) { }
+
+    /**
+     * Determines the extent of the implicit treatment
+     * by the paired linear and nonlinear operators.
+     */
+    linearize::type linearization;
 
     /**
      * The mean quantities, stored as collocation point values in \c means,
@@ -348,27 +375,6 @@ private:
     operator_common_block(const operator_common_block&);
     operator_common_block& operator=(const operator_common_block&);
 };
-
-/** Provides scoping semantics for linearize::type */
-namespace linearize {
-
-/** What type of hybrid implicit/explicit linearization is employed? */
-enum type {
-    none,      ///< No linearization implying a fully explicit treatment
-    rhome_xyz  ///< Density, momentum, and total energy across X, Y, and Z
-};
-
-} // namespace linearize
-
-/** Provides scoping semantics for slowgrowth::type */
-namespace slowgrowth {
-
-/** What slow growth sources are employed? */
-enum type {
-    none   ///< No slow growth sources
-};
-
-} // namespace slowgrowth
 
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The

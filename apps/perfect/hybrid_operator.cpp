@@ -100,6 +100,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
         const std::size_t substep_index) const
 {
     SUZERAIN_TIMER_SCOPED("apply_mass_plus_scaled_operator");
+    SUZERAIN_ENSURE(common.linearization != linearize::none);
 
     // Shorthand
     using inorder::wavenumber;
@@ -193,6 +194,7 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
         const std::size_t substep_index) const
 {
     SUZERAIN_TIMER_SCOPED("accumulate_mass_plus_scaled_operator");
+    SUZERAIN_ENSURE(common.linearization != linearize::none);
 
     // Shorthand
     using inorder::wavenumber;
@@ -401,6 +403,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     // State enters method as collocation point values in Y direction
 
     SUZERAIN_TIMER_SCOPED("invert_mass_plus_scaled_operator");
+    SUZERAIN_ENSURE(common.linearization != linearize::none);
 
     // Shorthand
     using inorder::wavenumber;
@@ -573,6 +576,8 @@ std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
+    SUZERAIN_ENSURE(common.linearization != linearize::none);
+
     // Dispatch to implementation paying nothing for substep-related ifs
     if (substep_index == 0) {
         return apply_navier_stokes_spatial_operator<true,  linearize::rhome_xyz>
