@@ -35,31 +35,12 @@
 #include <suzerain/timers.h>
 
 #include "perfect.hpp"
+#include "linearize_type.hpp"
+#include "slowgrowth_type.hpp"
 
 namespace suzerain {
 
 namespace perfect {
-
-/** Provides scoping semantics for linearize::type */
-namespace linearize {
-
-/** What type of hybrid implicit/explicit linearization is employed? */
-enum type {
-    none,      ///< No linearization implying a fully explicit treatment
-    rhome_xyz  ///< Density, momentum, and total energy across X, Y, and Z
-};
-
-} // namespace linearize
-
-/** Provides scoping semantics for slowgrowth::type */
-namespace slowgrowth {
-
-/** What slow growth sources are employed? */
-enum type {
-    none   ///< No slow growth sources
-};
-
-} // namespace slowgrowth
 
 /**
  * Storage for holding quantities computed during nonlinear operator

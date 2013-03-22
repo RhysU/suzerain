@@ -28,6 +28,8 @@ main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
 
 bin_PROGRAMS            += perfect_advance
 perfect_advance_SOURCES  = main_advance.cpp
+perfect_advance_SOURCES += linearize_type.hpp
+perfect_advance_SOURCES += slowgrowth_type.hpp
 perfect_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
 perfect_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
 perfect_advance_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
