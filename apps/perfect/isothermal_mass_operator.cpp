@@ -31,7 +31,8 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/state.hpp>
 
-#include "navier_stokes.hpp"
+#include "common_block.hpp"
+#include "scenario_definition.hpp"
 
 #pragma warning(disable:383 1572)
 
