@@ -29,18 +29,23 @@
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/bsmbsm.h>
+#include <suzerain/bsmbsm_solver.hpp>
 #include <suzerain/complex.hpp>
 #include <suzerain/error.h>
 #include <suzerain/gbmatrix.h>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>
+#include <suzerain/zgbsv_specification.hpp>
 
 #include "common_block.hpp"
 #include "navier_stokes.hpp"
+#include "scenario_definition.hpp"
 
 #pragma warning(disable:383 1572)
 
