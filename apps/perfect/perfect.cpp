@@ -37,12 +37,15 @@
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/htstretch.h>
 #include <suzerain/inorder.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/noise_specification.hpp>
 #include <suzerain/operator_tools.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/rngstream.hpp>
@@ -50,6 +53,8 @@
 #include <suzerain/support/field.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
+
+#include "scenario_definition.hpp"
 
 using boost::numeric_cast;
 using std::size_t;

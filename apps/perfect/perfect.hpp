@@ -39,23 +39,24 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
-#include <suzerain/noise_specification.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
-#include "scenario_definition.hpp"
-
 namespace suzerain {
 
-// Forward declaration
+// Forward declarations
 namespace support { class field; }
+class grid_specification;
+class noise_specification;
+class pencil_grid;
 
 /**
  * Functionality used throughout the Suzerain perfect gas application.
  */
 namespace perfect {
+
+// Forward declarations
+class scenario_definition;
 
 /** Return default nondimensional field information per \ref suzerain::ndx. */
 std::vector<support::field> default_fields();
