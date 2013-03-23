@@ -28,7 +28,9 @@
 #include "nonlinear_operator.hpp"
 
 #include <suzerain/common.hpp>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/ndx.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
 #include "common_block.hpp"

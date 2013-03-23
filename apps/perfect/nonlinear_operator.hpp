@@ -28,21 +28,23 @@
  * A nonlinear Navier--Stokes spatial operator.
  */
 
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
-
-#include "common_block.hpp"
-#include "manufactured_solution.hpp"
-
-#pragma warning(disable:383 1572)
 
 namespace suzerain {
 
+// Forward declarations
+class grid_specification;
+class pencil_grid;
+
 namespace perfect {
+
+// Forward declarations
+class operator_common_block;
+class manufactured_solution;
+class scenario_definition;
 
 /**
  * A boundary-condition agnostic Navier&ndash;Stokes operator.
