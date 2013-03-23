@@ -32,7 +32,9 @@
 #include <suzerain/state.hpp>
 
 #include "common_block.hpp"
+#include "manufactured_solution.hpp"
 #include "navier_stokes.hpp"
+#include "scenario_definition.hpp"
 
 #pragma warning(disable:383 1572)
 

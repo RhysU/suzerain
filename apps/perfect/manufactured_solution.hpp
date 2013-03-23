@@ -32,17 +32,21 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 
 #include "nsctpl_rholut.hpp"
-#include "scenario_definition.hpp"
 
 namespace suzerain {
 
+// Forward declarations
+class grid_specification;
+class pencil_grid;
+
 namespace perfect {
+
+// Forward declarations
+class scenario_definition;
 
 /**
  * Manufactured solution employed throughout the perfect gas code.
