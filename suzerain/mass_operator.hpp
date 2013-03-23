@@ -35,7 +35,6 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
 namespace suzerain {
