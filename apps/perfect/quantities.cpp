@@ -34,14 +34,19 @@
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
+#include <suzerain/grid_specification.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
+#include <suzerain/pencil_grid.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/shared_range.hpp>
+#include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
+
+#include "scenario_definition.hpp"
 
 using boost::numeric_cast;
 

@@ -42,6 +42,7 @@
 
 #include "perfect.hpp"
 #include "quantities.hpp"
+#include "scenario_definition.hpp"
 
 // Introduce shorthand for common names
 using boost::math::constants::pi;

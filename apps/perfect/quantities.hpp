@@ -32,15 +32,18 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/state.hpp>
-
-#include "scenario_definition.hpp"
+#include <suzerain/state_fwd.hpp>
 
 namespace suzerain {
 
+// Forward declarations
+class grid_specification;
+class pencil_grid;
+
 namespace perfect {
+
+// Forward declarations
+class scenario_definition;
 
 /**
  * Encapsulate the mean quantities detailed in the "Sampling logistics" section
@@ -150,7 +153,7 @@ public:
     real_t t;
 
     /** Type of the contiguous storage used to house all scalars */
-    typedef Eigen::Array<real_t, Eigen::Dynamic, nscalars::total> storage_type;
+    typedef Array<real_t, Dynamic, nscalars::total> storage_type;
 
     /** Contiguous storage used to house all means */
     storage_type storage;
