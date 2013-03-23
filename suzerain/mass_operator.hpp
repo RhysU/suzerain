@@ -30,14 +30,16 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
-#include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
 namespace suzerain {
+
+// Forward declarations
+class grid_specification;
+class pencil_grid;
 
 /** A linear operator which applies or inverts a B-spline mass matrix. */
 class mass_operator
