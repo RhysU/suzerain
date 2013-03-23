@@ -28,12 +28,11 @@
  * A driver for nondimensional perfect gas simulations.
  */
 
-#include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>
 
+#include "common_block.hpp"
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
-#include "common_block.hpp"
 #include "scenario_definition.hpp"
 
 namespace suzerain {
