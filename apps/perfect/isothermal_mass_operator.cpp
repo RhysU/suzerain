@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc explicit_operator.hpp
+ * @copydoc isothermal_mass_operator.hpp
  */
 
-#include "explicit_operator.hpp"
+#include "isothermal_mass_operator.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
@@ -122,54 +122,6 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
 
     // State leaves method as coefficients in X, Y, and Z directions
-}
-
-explicit_nonlinear_operator::explicit_nonlinear_operator(
-        const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
-        bspline &b,
-        operator_common_block &common,
-        const shared_ptr<const manufactured_solution>& msoln)
-    : operator_base(grid, dgrid, cop, b)
-    , scenario(scenario)
-    , common(common)
-    , msoln(msoln)
-    , who("operator.N")
-{
-    // NOP
-}
-
-std::vector<real_t> explicit_nonlinear_operator::apply_operator(
-            const real_t time,
-            contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-            const std::size_t substep_index) const
-{
-    // Dispatch to implementation paying nothing for substep-related ifs
-    if (substep_index == 0) {
-        return apply_navier_stokes_spatial_operator<
-                true,  linearize::none, slowgrowth::none
-            >(this->scenario.alpha,
-              this->scenario.beta,
-              this->scenario.gamma,
-              this->scenario.Ma,
-              this->scenario.Pr,
-              this->scenario.Re,
-              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
-    } else {
-        return apply_navier_stokes_spatial_operator<
-                false, linearize::none, slowgrowth::none
-            >(this->scenario.alpha,
-              this->scenario.beta,
-              this->scenario.gamma,
-              this->scenario.Ma,
-              this->scenario.Pr,
-              this->scenario.Re,
-              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
-    }
 }
 
 } // namespace perfect

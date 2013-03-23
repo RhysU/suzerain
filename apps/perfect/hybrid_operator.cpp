@@ -58,7 +58,9 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 #pragma float_control(precise, off)
 #pragma fp_contract(on)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
@@ -550,52 +552,6 @@ isothermal_hybrid_linear_operator::imexop_s() const
     return retval;
 }
 
-hybrid_nonlinear_operator::hybrid_nonlinear_operator(
-        const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
-        bspline &b,
-        operator_common_block &common,
-        const shared_ptr<const manufactured_solution>& msoln)
-    : operator_base(grid, dgrid, cop, b)
-    , scenario(scenario)
-    , common(common)
-    , msoln(msoln)
-    , who("operator.N")
-{
-    // NOP
-}
+} // namespace perfect
 
-std::vector<real_t> hybrid_nonlinear_operator::apply_operator(
-            const real_t time,
-            contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-            const std::size_t substep_index) const
-{
-    // Dispatch to implementation paying nothing for substep-related ifs
-    if (substep_index == 0) {
-        return apply_navier_stokes_spatial_operator<
-                true,  linearize::rhome_xyz, slowgrowth::none
-            >(this->scenario.alpha,
-              this->scenario.beta,
-              this->scenario.gamma,
-              this->scenario.Ma,
-              this->scenario.Pr,
-              this->scenario.Re,
-              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
-    } else {
-        return apply_navier_stokes_spatial_operator<
-                false, linearize::rhome_xyz, slowgrowth::none
-            >(this->scenario.alpha,
-              this->scenario.beta,
-              this->scenario.gamma,
-              this->scenario.Ma,
-              this->scenario.Pr,
-              this->scenario.Re,
-              *this, common, msoln, time, swave, evmaxmag_real, evmaxmag_imag);
-    }
-}
-
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace suzerain

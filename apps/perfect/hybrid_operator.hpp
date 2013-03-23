@@ -50,8 +50,7 @@ namespace perfect {
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
- * requires interoperation with hybrid_nonlinear_operator via
- * operator_common_block.
+ * requires interoperation with nonlinear_operator via operator_common_block.
  */
 class isothermal_hybrid_linear_operator
   : public operator_base,
@@ -120,57 +119,6 @@ private:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
-
-};
-
-/**
- * A boundary-condition agnostic, hybrid explicit Navier&ndash;Stokes operator.
- *
- * @see apply_navier_stokes_spatial_operator for the guts of the implementation.
- */
-class hybrid_nonlinear_operator
-    : public operator_base,
-      public timestepper::nonlinear_operator<
-            contiguous_state<4,complex_t>
-      >
-{
-public:
-
-    hybrid_nonlinear_operator(
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common,
-            const shared_ptr<const manufactured_solution>& msoln);
-
-    virtual std::vector<real_t> apply_operator(
-            const real_t time,
-            contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
-            const std::size_t substep_index) const;
-
-protected:
-
-    /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
-
-    /** Houses data additionally required for some linear operators */
-    operator_common_block &common;
-
-    /** Holds optional manufactured solution forcing details */
-    const shared_ptr<const manufactured_solution> msoln;
-
-private:
-
-    /** Helps to identify from whom logging messages are being emitted. */
-    std::string who;
-
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
-    hybrid_nonlinear_operator(const hybrid_nonlinear_operator&);
-    hybrid_nonlinear_operator& operator=(const hybrid_nonlinear_operator&);
 
 };
 

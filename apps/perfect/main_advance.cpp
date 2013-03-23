@@ -32,15 +32,18 @@
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "driver.hpp"
 #include "channel_treatment.hpp"
-#include "explicit_operator.hpp"
+#include "driver.hpp"
 #include "hybrid_operator.hpp"
+#include "isothermal_mass_operator.hpp"
+#include "nonlinear_operator.hpp"
 #include "perfect.hpp"
 
 #pragma warning(disable:1419)
 
-namespace suzerain { namespace perfect {
+namespace suzerain {
+
+namespace perfect {
 
 /** Application for initializing new restart files. */
 struct driver_advance : public driver
@@ -62,7 +65,9 @@ private:
     std::string who;
 };
 
-} /* namespace perfect */ } /* namespace suzerain */
+} // namespace perfect
+
+} // namespace suzerain
 
 // Provided by main_advance_svnrev.{c,h} so revstr updates are merely relinking
 extern "C" const char revstr[];
@@ -165,7 +170,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         common_block.linearization = linearize::none;
         L.reset(new channel_treatment<isothermal_mass_operator>(
                     *scenario, *grid, *dgrid, *cop, *b, common_block));
-        N.reset(new explicit_nonlinear_operator(
+        N.reset(new nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
@@ -173,7 +178,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
-        N.reset(new hybrid_nonlinear_operator(
+        N.reset(new nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else {
         FATAL0(who, "Sanity error in operator selection");

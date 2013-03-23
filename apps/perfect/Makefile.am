@@ -33,8 +33,10 @@ main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
 
 bin_PROGRAMS            += perfect_advance
 perfect_advance_SOURCES  = main_advance.cpp
-perfect_advance_SOURCES += explicit_operator.hpp   explicit_operator.cpp
-perfect_advance_SOURCES += hybrid_operator.hpp     hybrid_operator.cpp
+perfect_advance_SOURCES += isothermal_mass_operator.hpp \
+                           isothermal_mass_operator.cpp
+perfect_advance_SOURCES += nonlinear_operator.hpp nonlinear_operator.cpp
+perfect_advance_SOURCES += hybrid_operator.hpp    hybrid_operator.cpp
 perfect_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES           += main_advance_svnrev.h
 perfect_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
