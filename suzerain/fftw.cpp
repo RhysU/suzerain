@@ -31,12 +31,15 @@
 
 #include <suzerain/fftw.hpp>
 
+#include <cctype>
+
 namespace suzerain {
 
 namespace fftw {
 
 rigor rigor_from(const char *name)
 {
+    using std::tolower;
     if (name) {
         switch (tolower(name[0])) {
             default:  break;

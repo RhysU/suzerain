@@ -28,9 +28,9 @@
  * C++ utilities for working with FFTW's C-based API.
  */
 
-#include <fftw3.h>
+#include <ostream>
 
-#include <suzerain/common.hpp>
+#include <fftw3.h>
 
 namespace suzerain {
 
@@ -116,8 +116,8 @@ int default_nthreads();
  * @return the modified output stream.
  */
 template< typename charT, typename traits >
-::std::basic_ostream<charT,traits>& operator<<(
-        ::std::basic_ostream<charT,traits> &os,
+std::basic_ostream<charT,traits>& operator<<(
+        std::basic_ostream<charT,traits> &os,
         const rigor &r)
 {
     return os << c_str(r);
