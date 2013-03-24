@@ -29,6 +29,7 @@ namespace suzerain {
 // TODO Assertions in running_statistics complain loudly when N == 0
 // TODO Permit serialization and reconstruction using a raw buffer
 // TODO Provide MPI reduction operator using serialization capability
+// TODO How do we defend against overflowing the counter?
 
 /**
  * Accumulates running minimum, maximum, mean, and variance details from a data
