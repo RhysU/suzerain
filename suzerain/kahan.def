@@ -125,3 +125,5 @@ SCALAR NAME(kahan,5)(const SCALAR a0,
 
 #undef NAME
 #undef SCALAR
+
+/* vim: ft=c */

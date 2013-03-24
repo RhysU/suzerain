@@ -113,3 +113,5 @@ AFFIXPREC(suzerain_bsmbsm_,pack)(
 #undef SOURCE
 #undef TARGET
 #undef AFFIXPREC
+
+/* vim: ft=c */

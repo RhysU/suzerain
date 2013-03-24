@@ -301,3 +301,5 @@ double_precision_attempt:
 #undef DCHAR
 #undef NORM
 #undef DNRM2
+
+/* vim: ft=c */

@@ -673,3 +673,5 @@ WORK(suzerain_filterop,_filter)(
 #undef SCALAR
 #undef BLAS
 #undef WORK
+
+/* vim: ft=c */

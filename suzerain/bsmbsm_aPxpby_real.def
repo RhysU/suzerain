@@ -161,3 +161,5 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
 
 #undef COMPONENT
 #undef AFFIXPREC
+
+/* vim: ft=c */

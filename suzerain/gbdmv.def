@@ -206,3 +206,5 @@ STATIC int FUNCTION(
 #undef TYPE_Y
 #undef KL
 #undef KU
+
+/* vim: ft=c */
