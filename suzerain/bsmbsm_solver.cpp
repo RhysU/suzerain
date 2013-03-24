@@ -202,7 +202,9 @@ bsmbsm_solver_zgbsvx::summarize_statistics() const
         std::ostringstream msg;
         msg.precision(std::numeric_limits<double>::digits10/2 + 1);
         retval.reserve(retval.size() + stats_type::static_size);
-        for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+        for (std::size_t i = spec.equil() ? 0 : 2; // Skip equed when disabled
+             i < stats_type::static_size;
+             ++i) {
             msg.str("");
             msg << "Min/avg/max/std of "
                 << stats_names[i]
