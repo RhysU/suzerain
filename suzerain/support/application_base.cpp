@@ -402,14 +402,14 @@ application_base::log_discretization_quality()
     }
     if (grid->N.x() > 1) { // ...but display only for non-trivial X basis...
         const real_t inv_delta_x = grid->N.x() / grid->L.x();
-        INFO0(who, "Collocation spacing min/median/max relative to delta_x: "
+        INFO0(who, "Collocation spacing min/med/max relative to delta_x: "
               << min_delta_y * inv_delta_x << ", "
               << med_delta_y * inv_delta_x << ", "
               << max_delta_y * inv_delta_x);
     }
     if (grid->N.z() > 1) { // ...and display only for non-trivial Z basis.
         const real_t inv_delta_z = grid->N.z() / grid->L.z();
-        INFO0(who, "Collocation spacing min/median/max relative to delta_z: "
+        INFO0(who, "Collocation spacing min/med/max relative to delta_z: "
               << min_delta_y * inv_delta_z << ", "
               << med_delta_y * inv_delta_z << ", "
               << max_delta_y * inv_delta_z);
