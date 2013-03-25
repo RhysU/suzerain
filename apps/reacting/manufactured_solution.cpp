@@ -152,6 +152,8 @@ manufactured_solution::match(antioch_constitutive& cmods)
     // Note: Parameters of transport models are stored as part of MMS
     // class.  Here we update the constitutive laws class to be
     // consistent with what is stored by MMS.
+
+    // Viscosity: Make Blottner match power law
     const real_t mu0 = this->mu_r;
     const real_t beta = this->beta; 
     const real_t Tref = this->T_r;
@@ -171,9 +173,12 @@ manufactured_solution::match(antioch_constitutive& cmods)
     // Set blottner parameters
     cmods.mixture_mu->reset_coeffs(0, blottner_coeffs);
 
-    // FIXME
-    this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*0.7);
-    this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
+    // Thermal conductivity: Weird factor of 19/4 makes
+    // man. soln. match Eucken for CPAir and CPN2
+    this->kappa_r  = (real_t(19)/real_t(4))*this->mu_r*this->R;
+
+    // Bulk viscosity
+    this->lambda_r = (cmods.alpha-(real_t(2)/real_t(3)))*this->mu_r;
 
     return *this;
 }
