@@ -321,6 +321,13 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
         msg.precision(std::numeric_limits<double>::digits10/2 + 1);
         retval.reserve(retval.size() + stats_type::static_size);
         for (std::size_t i = 0; i < stats_type::static_size; ++i) {
+            // Suppress by-definition uninteresting statistics
+            if (i == 0 && (spec.siter() < 0 || spec.diter() < 0)) continue;
+            if (i == 1 && (spec.siter() < 0 || spec.diter() < 0)) continue;
+            if (i == 2 && !spec.reuse()    ) continue;
+            if (i == 3 && spec.tolsc() == 0) continue;  // Implies afrob == -1
+            if (i == 4 && spec.siter() <  0) continue;
+            if (i == 5 && spec.diter() <  0) continue;
             msg.str("");
             msg << "Min/avg/max/std of "
                 << stats_names[i]
