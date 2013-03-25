@@ -226,9 +226,13 @@ bsmbsm_solver_zgbsvx::solve_hook(
         const int nrhs)
 {
 #ifndef NDEBUG
-    rcwork_.setConstant(std::numeric_limits<double>::quiet_NaN());
-    err_   .setConstant(std::numeric_limits<double>::quiet_NaN());
-    work_  .setConstant(suzerain::complex::NaN<complex_double>());
+    if (fact_ != 'F') {  // NaN r, c, and rwork on 'N' or 'E'...
+        rcwork_ .setConstant(std::numeric_limits<double>::quiet_NaN());
+    } else {             // ...but maintain r and c on 'F' per ZGBSVX
+        rwork_().setConstant(std::numeric_limits<double>::quiet_NaN());
+    }
+    err_ .setConstant(std::numeric_limits<double>::quiet_NaN());
+    work_.setConstant(suzerain::complex::NaN<complex_double>());
 #endif
 
     // Perform the requested solve
