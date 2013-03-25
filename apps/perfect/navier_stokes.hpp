@@ -763,22 +763,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
-                case linearize::none:
-                    sphys(ndx::e, offset) +=
-                        // Explicit convective and acoustic terms
-                        - rholut::div_e_u(
-                                e, grad_e, u, div_u
-                            )
-                        - rholut::div_p_u(
-                                p, grad_p, u, div_u
-                            )
-                        // Explicit energy diffusion terms
-                        + inv_Re_Pr_gamma1 * rholut::div_mu_grad_T(
-                                grad_T, div_grad_T, mu, grad_mu
-                            )
-                        ;
-                        // No need to adjust explicit viscous work term
-                    break;
+
                 case linearize::rhome_xyz:
                     sphys(ndx::e, offset) +=
                         // Explicit convective/acoustic less implicit portion
@@ -807,6 +792,23 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         )
                         ;
                     break;
+
+                case linearize::none:
+                    sphys(ndx::e, offset) +=
+                        // Explicit convective and acoustic terms
+                        - rholut::div_e_u(
+                                e, grad_e, u, div_u
+                            )
+                        - rholut::div_p_u(
+                                p, grad_p, u, div_u
+                            )
+                        // Explicit energy diffusion terms
+                        + inv_Re_Pr_gamma1 * rholut::div_mu_grad_T(
+                                grad_T, div_grad_T, mu, grad_mu
+                            )
+                        ;
+                        // No need to adjust explicit viscous work term
+                    break;
             }
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
@@ -817,14 +819,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
-                case linearize::none:
-                    momentum_rhs +=
-                        // Explicit convective term
-                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
-                        // Explicit pressure term
-                        - inv_Ma2 * grad_p
-                        ;
-                    break;
+
                 case linearize::rhome_xyz:
                     momentum_rhs +=
                         // Explicit convective term less implicit portion
@@ -844,6 +839,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         )
                         ;
                     break;
+
+                case linearize::none:
+                    momentum_rhs +=
+                        // Explicit convective term
+                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
+                        // Explicit pressure term
+                        - inv_Ma2 * grad_p
+                        ;
+                    break;
             }
             sphys(ndx::mx, offset) = momentum_rhs.x();
             sphys(ndx::my, offset) = momentum_rhs.y();
@@ -857,11 +861,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
-                case linearize::none:
-                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
-                    break;
+
                 case linearize::rhome_xyz:
                     sphys(ndx::rho, offset) = 0;       // Implicit convection
+                    break;
+
+                case linearize::none:
+                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
                     break;
             }
 
@@ -888,17 +894,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
 
-                    // Explicit treatment forces including acoustics
-                    // in stability and has a zero reference velocity.
-                    case linearize::none:
-                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
-                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
-                        fluct_ua_l1_x = ua_l1_x;
-                        fluct_ua_l1_y = ua_l1_y;
-                        fluct_ua_l1_z = ua_l1_z;
-                        break;
-
                     // Implicit acoustics sets the effective sound speed
                     // to zero within the convective_stability_criterion.
                     // Fluctuating velocity is taken relative to references.
@@ -909,6 +904,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
                         fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
                         fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
+                        break;
+
+                    // Explicit treatment forces including acoustics
+                    // in stability and has a zero reference velocity.
+                    case linearize::none:
+                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                        fluct_ua_l1_x = ua_l1_x;
+                        fluct_ua_l1_y = ua_l1_y;
+                        fluct_ua_l1_z = ua_l1_z;
                         break;
                 }
                 convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
@@ -940,9 +946,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
 
-                    // Explicit treatment forces a zero reference diffusivity
-                    case linearize::none:
-                        diffusivity = maxdiffconst * nu;
+                    // Implicit diffusion permits removing a reference value.
+                    // Antidiffusive (nu - ref_nu) is fine and not computed.
+                    case linearize::rhome_xyz:
+                        diffusivity = nu - ref_nu;    // Compute sign wrt ref.
+                        if (diffusivity <= 0) break;  // NaN => false, proceed
+                        diffusivity *= maxdiffconst;  // Rescale as necessary.
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real
                                 / diffusivity
@@ -955,12 +964,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 evmaxmag_real / diffusivity / lambda2_z);
                         break;
 
-                    // Implicit diffusion permits removing a reference value.
-                    // Antidiffusive (nu - ref_nu) is fine and not computed.
-                    case linearize::rhome_xyz:
-                        diffusivity = nu - ref_nu;    // Compute sign wrt ref.
-                        if (diffusivity <= 0) break;  // NaN => false, proceed
-                        diffusivity *= maxdiffconst;  // Rescale as necessary.
+                    // Explicit treatment forces a zero reference diffusivity
+                    case linearize::none:
+                        diffusivity = maxdiffconst * nu;
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real
                                 / diffusivity
