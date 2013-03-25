@@ -7,7 +7,7 @@ set -e
 : ${MMS_DIM_CASE_NPROC:=4}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,Cp:,Cv:,Pr:,T0:,mu0:,T_wall:,N:,filter_phi:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,T_r:,mu_r:,T_wall:,N:,filter_phi:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -25,11 +25,8 @@ np=
 tfinal=0.0005
 alpha=1
 beta=
-Cp=
-Cv=
-Pr=
-T0=
-mu0=
+T_r=
+mu_r=
 T_wall=
 no=()
 while true;
@@ -51,11 +48,8 @@ do
   &--tfinal&Time to which manufactured field should be advanced
   &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
   &--beta&Temperature power law exponent within manufactured solution
-  &--Cp&Specific heat at constant pressure
-  &--Cv&Specific heat at constant volume
-  &--Pr&Prandtl number
-  &--T0&Reference temperature for viscosity power law
-  &--mu0&Reference viscosity for viscosity power law
+  &--T_r&Reference temperature for viscosity power law
+  &--mu_r&Reference viscosity for viscosity power law
   &--T_wall&Wall temperature
   &--filter_phi&Filter parameter
   &--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
@@ -89,11 +83,8 @@ EOF
         --tfinal)   tfinal="$2";   shift 2;;
         --alpha)    alpha="$2";    shift 2;;
         --beta)     beta="$2";     shift 2;;
-        --Cp)       Cp="$2";       shift 2;;
-        --Cv)       Cv="$2";       shift 2;;
-        --Pr)       Pr="$2";       shift 2;;
-        --T0)       T0="$2";       shift 2;;
-        --mu0)      mu0="$2";      shift 2;;
+        --T_r)      T_r="$2";      shift 2;;
+        --mu_r)     mu_r="$2";     shift 2;;
         --T_wall)   T_wall="$2";   shift 2;;
         --filter_phi) filter_phi="$2"; shift 2;;
         --N)        Nx=$(expr 2 \* "$2" / 3);
@@ -141,18 +132,16 @@ cd $dir
 "$MMS_DIM_CASE_INITIAL" initial.h5 -v                    \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
-    ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
-    ${T0:+--T0=$T0} ${mu0:+--mu0=$mu0}                   \
+    ${T_r:+--T_r=$T_r} ${mu_r:+--mu_r=$mu_r}             \
     ${T_wall:+--T_wall=$T_wall}                          \
     ${filter_phi:+--filter_phi=$filter_phi}              \
-    --mms=0       "${no[@]}"
+    --mms=0 --species=CPAir "${no[@]}"
 "$MMS_DIM_CASE_INITIAL" final.h5 -v                      \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
-    ${Cp:+--Cp=$Cp} ${Cv:+--Cv=$Cv} ${Pr:+--Pr=$Pr}      \
-    ${T0:+--T0=$T0} ${mu0:+--mu0=$mu0}                   \
+    ${T_r:+--T_r=$T_r} ${mu_r:+--mu_r=$mu_r}             \
     ${T_wall:+--T_wall=$T_wall}                          \
-    --mms=$tfinal "${no[@]}"
+    --mms=$tfinal --species=CPAir "${no[@]}"
 
 # Advance the initial condition until the final time is reached
 # Notice any unknown arguments from the command line appear here
