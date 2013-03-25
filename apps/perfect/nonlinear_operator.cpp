@@ -88,19 +88,26 @@ std::vector<real_t> nonlinear_operator::apply_operator(
         default:
             SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
-        case linearize::none:
-            return (substep_index == 0)
-                 ? apply_navier_stokes_spatial_operator<true,
-                        linearize::none, slowgrowth::none>(ARGUMENTS)
-                 : apply_navier_stokes_spatial_operator<false,
-                        linearize::none, slowgrowth::none>(ARGUMENTS);
-
         case linearize::rhome_xyz:
             return (substep_index == 0)
                  ? apply_navier_stokes_spatial_operator<true,
                         linearize::rhome_xyz, slowgrowth::none>(ARGUMENTS)
                  : apply_navier_stokes_spatial_operator<false,
                         linearize::rhome_xyz, slowgrowth::none>(ARGUMENTS);
+
+        case linearize::rhome_y:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::rhome_y, slowgrowth::none>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::rhome_y, slowgrowth::none>(ARGUMENTS);
+
+        case linearize::none:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::none, slowgrowth::none>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::none, slowgrowth::none>(ARGUMENTS);
         }
         break;
 

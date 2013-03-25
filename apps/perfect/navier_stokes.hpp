@@ -767,6 +767,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     )
                 ;
             switch (Linearize) {
+                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
@@ -823,6 +824,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                   inv_Re * div_tau
                 ;
             switch (Linearize) {
+                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
@@ -865,6 +867,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
+                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
@@ -922,6 +925,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         fluct_ua_l1_y = ua_l1_y;
                         fluct_ua_l1_z = ua_l1_z;
                         break;
+
+                    // Wall-normal-only implicit acoustics and convection
+                    // is nothing but a hybrid of the above two cases.
+                    case linearize::rhome_y:
+                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                        ua_l1_y       = (abs(u.y())    ) * lambda1_y;
+                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                        fluct_ua_l1_x = ua_l1_x;
+                        fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                        fluct_ua_l1_z = ua_l1_z;
+                        break;
                 }
                 convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
                         evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
@@ -944,7 +958,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
-                // Hence we compute criteria within the switch statment.
+                // Hence we compute criteria within the switch statement.
                 const real_t nu = mu / rho;
                 real_t diffusivity;
                 switch (Linearize) {
@@ -969,6 +983,32 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         diffusive_z_delta_t   = min   (diffusive_z_delta_t,
                                 evmaxmag_real / diffusivity / lambda2_z);
                         break;
+
+                    // Wall-normal implicit diffusion permits removing a
+                    // reference value in only the Y direction.  Notice
+                    // antidiffusive (nu - ref_nu) is fine but requires
+                    // chomping to zero to avoid circumventing the XZ checks,
+                    // however minnan is required in case ref_nu is NaN.
+                    // Notice also that we /want/ to avoid NaN's arising from
+                    // diffusivity_y == 0 in diffusive_y_delta_t computation.
+                    case linearize::rhome_y:
+                    {
+                        diffusivity          = maxdiffconst * nu;      // X Z
+                        real_t diffusivity_y = maxdiffconst            // Y
+                                             * minnan(nu - ref_nu, real_t(0));
+                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                  evmaxmag_real
+                                / (   diffusivity   * lambda2_x
+                                    + diffusivity_y * lambda2_y
+                                    + diffusivity   * lambda2_z));
+                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                evmaxmag_real / (diffusivity   * lambda2_x));
+                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                evmaxmag_real / (diffusivity_y * lambda2_y));
+                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                evmaxmag_real / (diffusivity   * lambda2_z));
+                        break;
+                    }
 
                     // Explicit treatment forces a zero reference diffusivity
                     case linearize::none:
