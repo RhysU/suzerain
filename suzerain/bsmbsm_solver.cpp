@@ -317,7 +317,6 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
         msg.precision(std::numeric_limits<double>::digits10/2 + 1);
         retval.reserve(retval.size() + stats_type::static_size);
         for (std::size_t i = 0; i < stats_type::static_size; ++i) {
-            if (spec.tolsc() == 0 && i == 3) continue;  // Suppress afrob == -1
             msg.str("");
             msg << "Min/avg/max/std of "
                 << stats_names[i]
