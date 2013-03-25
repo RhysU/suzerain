@@ -158,8 +158,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
+    // TODO Only linearize::rhome_y needs e_yy.  Avoid overhead in other cases.
     struct aux { enum {
-        e_y, div_grad_e, e_x, e_z,
+        e_y,   e_yy,   div_grad_e, e_x, e_z,
         mx_y,  mx_yy,  mx_x,  mx_xx,  mx_xz,  mx_z,  mx_zz,  mx_xy,  mx_yz,
         my_y,  my_yy,  my_x,  my_xx,  my_xz,  my_z,  my_zz,  my_xy,  my_yz,
         mz_y,  mz_yy,  mz_x,  mz_xx,  mz_xz,  mz_z,  mz_zz,  mz_xy,  mz_yz,
@@ -226,7 +227,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Zero wavenumbers present only for dealiasing along the way
     o.zero_dealiasing_modes(  swave, ndx::e);
     o.bop_accumulate(1,    1, swave, ndx::e, 0, auxw, aux::e_y);
-    o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::div_grad_e);
+    o.bop_accumulate(2,    1, swave, ndx::e, 0, auxw, aux::e_yy);
+    std::memcpy(auxw[aux::div_grad_e].origin(), auxw[aux::e_yy].origin(),
+                static_cast<size_t>(   auxw[aux::div_grad_e + 1].origin()
+                                     - auxw[aux::div_grad_e    ].origin())
+                                   * sizeof(complex_t));
     o.bop_apply     (0,    1, swave, ndx::e);
 
     // Compute X- and Z- derivatives of total energy at collocation points
