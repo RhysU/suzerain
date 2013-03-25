@@ -660,6 +660,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const Vector3r grad_e ( auxp(aux::e_x,        offset),
                                     auxp(aux::e_y,        offset),
                                     auxp(aux::e_z,        offset));
+            const real_t e_yy      (auxp(aux::e_yy,       offset));
             const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
             // Unpack momentum-related quantities
