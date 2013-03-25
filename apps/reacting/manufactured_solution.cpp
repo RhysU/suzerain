@@ -72,10 +72,21 @@ static void option_adder(
               description);
 }
 
+// Strings used in options_description and save/load.
+static const char name_T_r[]  = "T_r";
+static const char name_mu_r[] = "mu_r";
+static const char name_beta[] = "beta";
+
+// Descriptions used in options_description and save/load.
+static const char desc_T_r[]  = "Reference temperature for viscosity power law (for MMS)";
+static const char desc_mu_r[] = "Reference viscosity for viscosity power law (for MMS)";
+static const char desc_beta[] = "Exponent for viscosity power law (for MMS)";
+
 boost::program_options::options_description
 manufactured_solution::options_description()
 {
     using boost::bind;
+    using boost::program_options::value;
 
     boost::program_options::options_description retval(caption);
 
@@ -90,9 +101,18 @@ manufactured_solution::options_description()
     T.foreach_parameter  (bind(option_adder, retval.add_options(),
                                "Affects temperature field", _1, _2));
 
-    // TODO: Add mu0, Tref, beta, Pr to MMS parameters These will be
-    // used to make cmods match MMS in manufactured_solution::match
-    // fcn below rather than the other way around.
+    // TODO: Check validity of incoming values
+    retval.add_options()(name_T_r,
+                         value(&this->T_r)->default_value(273.0), 
+                         desc_T_r);
+
+    retval.add_options()(name_mu_r,
+                         value(&this->mu_r)->default_value(1852./100000000.),
+                         desc_mu_r);
+
+    retval.add_options()(name_beta,
+                         value(&this->beta)->default_value(2./3.), 
+                         desc_beta);
 
     return retval;
 }
@@ -109,12 +129,8 @@ manufactured_solution::match(antioch_constitutive& cmods)
         throw std::invalid_argument(
             "MMS only available for calorically perfect gas!");
 
-    // FIXME: Make this function do what it is supposed to---i.e.,
-    // make the manufactured solution parameters match the
-    // constitutive laws class.  See previous implementation valid for
-    // single_ideal_gas_constitutive below.
-
-    WARN0("Manipulating constitutive model parameters to "
+    // Tell user we're going to mess with their incoming cmods
+    INFO0("Manipulating constitutive model parameters to "
           "match input manufactured solution.");
 
     // Since only allow single species, mass fractions are trivial
@@ -129,12 +145,16 @@ manufactured_solution::match(antioch_constitutive& cmods)
     
     real_t Rmix = cmods.mixture->R(trivial_mass_fractions);
 
-    
+    this->gamma = Cp/Cv;
+    this->R     = Rmix;
+
     // Transport
-    // FIXME: Don't hardcode.  Read from MMS options.
-    const real_t mu0 = 1e-3; 
-    const real_t beta = 0.7; 
-    const real_t Tref = 273.0;
+    // Note: Parameters of transport models are stored as part of MMS
+    // class.  Here we update the constitutive laws class to be
+    // consistent with what is stored by MMS.
+    const real_t mu0 = this->mu_r;
+    const real_t beta = this->beta; 
+    const real_t Tref = this->T_r;
 
     std::vector<real_t> blottner_coeffs(3);
     // Blottner says: mu = 0.1*exp( a*log(T)^2 + b*log(T) + c).  Thus,
@@ -151,23 +171,7 @@ manufactured_solution::match(antioch_constitutive& cmods)
     // Set blottner parameters
     cmods.mixture_mu->reset_coeffs(0, blottner_coeffs);
 
-
-    // this->gamma = cmods.Cp / cmods.Cv;
-    // this->beta  = cmods.beta;
-    // this->R     = cmods.Cp - cmods.Cv;
-    // this->mu_r  = cmods.mu0;
-    // this->T_r   = cmods.T0;
-
-    // this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*cmods.Pr);
-    // this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
-
-    this->gamma = Cp/Cv;
-    this->R     = Rmix;
-
-    this->beta  = 0.7;
-    this->mu_r  = 1.0e-5;
-    this->T_r   = 273.0;
-
+    // FIXME
     this->kappa_r  = (this->gamma*this->R*this->mu_r) / ((this->gamma - 1)*0.7);
     this->lambda_r = -(real_t(2)/real_t(3))*this->mu_r; // FIXME: make consistent with cmods.alpha
 
@@ -235,7 +239,10 @@ void save(const esio_handle h,
     msoln->w  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
     msoln->T  .foreach_parameter(bind(attribute_storer, h, location, _1, _2));
 
-
+    // Scenario params
+    esio_line_write(h, name_T_r,  &msoln->T_r,  0, desc_T_r );
+    esio_line_write(h, name_mu_r, &msoln->mu_r, 0, desc_mu_r);
+    esio_line_write(h, name_beta, &msoln->beta, 0, desc_beta);
 
 #pragma warning(push,disable:1572)
     // Check parameters stored with the scenario not the manufactured solution
@@ -302,6 +309,11 @@ void load(const esio_handle h,
     msoln->v  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
     msoln->w  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
     msoln->T  .foreach_parameter(bind(attribute_loader, h, location, _1, _2));
+
+    // Scenario params
+    esio_line_read(h, name_T_r,  &msoln->T_r,  0);
+    esio_line_read(h, name_mu_r, &msoln->mu_r, 0);
+    esio_line_read(h, name_beta, &msoln->beta, 0);
 
     // Parameters set to match supplied arguments
     // Match must happen *after* call to antioch_constitutive::init_antioch
