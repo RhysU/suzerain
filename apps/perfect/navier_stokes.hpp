@@ -974,6 +974,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     case linearize::rhome_xyz:
                         diffusivity -= ref_nu;        // Compute sign wrt ref.
                         if (diffusivity <= 0) break;  // NaN => false, proceed
+                        // ...
+                        // Fall through!
+                        // ...
+
+                    // Explicit treatment forces a zero reference diffusivity
+                    case linearize::none:
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real / (   diffusivity
                                                     * (   md_lambda2_x
@@ -1011,21 +1017,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 evmaxmag_real / (diffusivity   * md_lambda2_z));
                         break;
                     }
-
-                    // Explicit treatment forces a zero reference diffusivity
-                    case linearize::none:
-                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real / (   diffusivity
-                                                    * (   md_lambda2_x
-                                                        + md_lambda2_y
-                                                        + md_lambda2_z)));
-                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_x));
-                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_y));
-                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_z));
-                        break;
                 }
             }
 
