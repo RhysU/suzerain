@@ -114,9 +114,29 @@ Finally, $\Delta{}T$. This can be expressed as,
  T}{\partial U} )\cdot \nabla U + \frac{\partial T}{\partial U} \nabla^2 U  
 \end{equation}
 (U is conserved state, e.g. $U=\{\rho,\rho u,\rho v, \rho w, \rho E
-\}$) This requires $\frac{\partial T}{\partial U}$. 
-
-
+\}$) This requires $\frac{\partial T}{\partial U}$. T is functionally
+dependent on the energy and species concentrations, e.g.
+\begin{equation}
+ T = f(e,Y)
+\end{equation}
+Therefore, the derivative must be,
+\begin{equation}
+ \frac{\partial T}{\partial U} = \frac{\partial f}{\partial
+  e}\frac{\partial e}{\partial U} + \frac{\partial f}{\partial
+  Y}\frac{\partial Y}{\partial U}
+\end{equation}
+The raw computation of T is attained by inverting the following equation
+for a given species concentration,
+\begin{equation}
+e = e_{tr}(T,Y) + e_{ve}(T,Y) + e_{0}(Y)
+\end{equation}
+Thus, if we perturb e by $\delta e$ and examine the effect of T for
+fixed Y, and expand as a Taylor Series,
+\begin{align}
+e + \delta e &= e_{tr}(T + \delta T,Y) + e_{ve}(T+\delta T,Y) + e_{0}(Y) \\
+ &\approx e_{tr}(T,Y) + \frac{\partial e_{tr}}{\partial T} \delta T +
+ e_{ve}(T,Y)+ \frac{\partial e_{ve}}{\partial T} \delta T + e_{0}(Y)
+\end{align}
 
 % Finally, $\Delta{}T$. This will be identical to the current treatment in
 % suzerain if $\gamma$ is constant, e.g. $T=\gamma \frac{p}{\rho}$
