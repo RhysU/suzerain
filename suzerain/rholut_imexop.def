@@ -474,7 +474,6 @@ FUNCNAME()(
 }
 
 #undef FUNCNAME
-#undef FUNCNAME00
 #undef PACK
 
 /* vim: ft=c */

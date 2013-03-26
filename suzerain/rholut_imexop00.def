@@ -1,0 +1,57 @@
+/*--------------------------------------------------------------------------
+ *
+ * Copyright (C) 2012, 2013 Rhys Ulerich
+ * Copyright (C) 2012, 2013 The PECOS Development Team
+ * Please see http://pecos.ices.utexas.edu for more information on PECOS.
+ *
+ * This file is part of Suzerain.
+ *
+ * Suzerain is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Suzerain is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Suzerain.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *--------------------------------------------------------------------------
+ */
+
+/** @file
+ * Templated functionality used within rholut_imexop00.c
+ */
+
+// #include-time parameters available followed by a sample usage.
+// Each of these are #undef-ed at the end of this template file
+//
+// #define FUNCNAME00() /* Function name, e.g. suzerain_rholut_imexop_packc00 */
+// #define PACK(x)      /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
+
+void
+FUNCNAME00()(
+        const complex_double phi,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int rho_E,
+        const int rho_u,
+        const int rho_v,
+        const int rho_w,
+        const int rho,
+        complex_double * const buf,
+        suzerain_bsmbsm * const A_T,
+        complex_double * const patpt)
+{
+    // FIXME Implement
+}
+
+#undef FUNCNAME00
+#undef PACK
+
+/* vim: ft=c */

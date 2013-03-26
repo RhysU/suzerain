@@ -209,12 +209,14 @@ libbspline_la_SOURCES       += htstretch.c
 libbspline_la_SOURCES       += pre_gsl.c
 libbspline_la_SOURCES       += reacting_imexop.c
 libbspline_la_SOURCES       += rholut_imexop.c
+libbspline_la_SOURCES       += rholut_imexop00.c
 EXTRA_libbspline_la_SOURCES  = bsmbsm_aPxpby_complex.def
 EXTRA_libbspline_la_SOURCES += bsmbsm_aPxpby_real.def
 EXTRA_libbspline_la_SOURCES += bsmbsm_pack.def
 EXTRA_libbspline_la_SOURCES += filterop.def
 EXTRA_libbspline_la_SOURCES += reacting_imexop.def
 EXTRA_libbspline_la_SOURCES += rholut_imexop.def
+EXTRA_libbspline_la_SOURCES += rholut_imexop00.def
 
 # Logic with more extensive external dependencies, in particular
 # depending on parallel decomposition details.
