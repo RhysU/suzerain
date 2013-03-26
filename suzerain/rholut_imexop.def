@@ -55,6 +55,10 @@ FUNCNAME()(
     // accumulation-without-assembly and assembly match.  The test cases in
     // tests/test_rholut_imexop.cpp are invaluable in checking the coherence of
     // these two pieces of logic.
+    //
+    // When you modify this routine, you may also need to modify
+    // rholut_imexop00.c and rholut_imexop00.def so the zero-zero
+    // mode case is handled consistently.
 
     // How many rows and columns of banded submatrices will we build?
     const int nneg = (rho_E >= 0)
