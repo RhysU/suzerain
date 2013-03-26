@@ -265,6 +265,33 @@ suzerain_rholut_imexop_packc(
         complex_double * const patpt);
 
 /**
+ * Pack the ``zero-zero'' mode portion of '\f$\left(M +
+ * \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding locations within
+ * contiguous storage of \f$P\left(M +
+ * \varphi{}L\right)^{\mbox{T}}P^{\mbox{T}}\f$ for use by the BLAS'
+ * <tt>gbmv</tt> or LAPACK's <tt>gbsvx</tt>.  This method is equivalent to
+ * calling suzerain_rholut_imexop_packc() using <tt>km == 0</tt> and <tt>kn ==
+ * 0</tt> but should be appreciably faster.
+ *
+ * @see The documentation of suzerain_rholut_imexop_packc() for details.
+ */
+void
+suzerain_rholut_imexop_packc00(
+        const complex_double phi,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int rho_E,
+        const int rho_w,
+        const int rho_v,
+        const int rho_u,
+        const int rho,
+        complex_double * const buf,
+        suzerain_bsmbsm * const A_T,
+        complex_double * const patpt);
+
+/**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding
  * locations within contiguous, LU factorization-ready storage of \f$P\left(M +
  * \varphi{}L\right)^{\mbox{T}}P^{\mbox{T}}\f$ for use by the LAPACK's
@@ -322,6 +349,33 @@ suzerain_rholut_imexop_packf(
         const complex_double phi,
         const double km,
         const double kn,
+        const suzerain_rholut_imexop_scenario * const s,
+        const suzerain_rholut_imexop_ref      * const r,
+        const suzerain_rholut_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int rho_E,
+        const int rho_w,
+        const int rho_v,
+        const int rho_u,
+        const int rho,
+        complex_double * const buf,
+        suzerain_bsmbsm * const A_T,
+        complex_double *const patpt);
+
+/**
+ * Pack the ``zero-zero'' mode portion of '\f$\left(M +
+ * \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding locations within
+ * contiguous, LU factorization-ready storage of \f$P\left(M +
+ * \varphi{}L\right)^{\mbox{T}}P^{\mbox{T}}\f$ for use by the LAPACK's
+ * <tt>gbtrf</tt> or <tt>gbsv</tt>.  This method is equivalent to calling
+ * suzerain_rholut_imexop_packf() using <tt>km == 0</tt> and <tt>kn == 0</tt>
+ * but should be appreciably faster.
+ *
+ * @see The documentation of suzerain_rholut_imexop_packf() for details.
+ */
+void
+suzerain_rholut_imexop_packf00(
+        const complex_double phi,
         const suzerain_rholut_imexop_scenario * const s,
         const suzerain_rholut_imexop_ref      * const r,
         const suzerain_rholut_imexop_refld    * const ld,
