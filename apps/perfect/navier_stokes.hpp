@@ -869,7 +869,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                   inv_Re * div_tau
                 ;
             switch (Linearize) {
-                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
@@ -892,6 +891,36 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         )
                         ;
                     break;
+
+                case linearize::rhome_y:
+                    // Subtract colored terms from perfect gas writeup figure 2
+                    momentum_rhs.x() -=
+                                   ref_uu(0,1) * grad_rho.y()
+                        - inv_Re * ref_nuu.x() * rho_yy
+                        -          ref_u.y()   * grad_m(0,1)
+                        + inv_Re * ref_nu      * mx_yy
+                        -          ref_u.x()   * grad_m(1,1)
+                        ;
+                    momentum_rhs.y() -=
+                          (ref_uu(1,1) - gamma1 / 2 * ref_u2) * grad_rho.y()
+                        - alpha43 * inv_Re * ref_nuu.y()      * rho_yy
+                        + gamma1 * ref_u.x()                  * grad_m(0,1)
+                        + (gamma1 - 2) * ref_u.y()            * grad_m(1,1)
+                        + alpha43 * inv_Re * ref_nu           * my_yy
+                        + gamma1 * ref_u.z()                  * grad_m(2,1)
+                        - gamma1 * inv_Ma2                    * grad_e.y()
+                        ;
+                    momentum_rhs.z() -=
+                                   ref_uu(1,2) * grad_rho.y()
+                        - inv_Re * ref_nuu.z() * rho_yy
+                        -          ref_u.z()   * grad_m(1,1)
+                        -          ref_u.y()   * grad_m(2,1)
+                        + inv_Re * ref_nu      * mz_yy
+                        ;
+
+                    // ...
+                    // Fall through!
+                    // ...
 
                 case linearize::none:
                     momentum_rhs +=
