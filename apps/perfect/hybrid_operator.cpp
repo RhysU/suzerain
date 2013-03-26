@@ -169,8 +169,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
             // Copy pencil into temporary storage
             blas::copy(solver->N, p, 1, tmp.data(), 1);
 
-            // Accumulate result back into state storage automatically
-            // adjusting for when input imaginary part a priori should be zero
+            // Accumulate result back into state storage
             SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, cop.get(),
@@ -259,8 +258,7 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
             if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
             const real_t km = twopioverLx*wm;
 
-            // Accumulate result automatically adjusting for when input
-            // imaginary part a priori should be zero
+            // Accumulate result
             SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
             suzerain_rholut_imexop_accumulate(
                     phi, km, kn, &s, &ref, &ld, cop.get(),
