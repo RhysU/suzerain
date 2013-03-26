@@ -328,7 +328,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t inv_Re           = 1 / Re;
     const real_t inv_Ma2          = 1 / (Ma * Ma);
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;
-    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
+    const real_t gamma1           = gamma - 1;
+    const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * gamma1);
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
     const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
