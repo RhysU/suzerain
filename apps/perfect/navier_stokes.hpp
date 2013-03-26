@@ -331,9 +331,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * (gamma - 1));
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
-    const real_t lambda2_x        = o.lambda2_x;
-    const real_t lambda2_z        = o.lambda2_z;
     const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
+    const real_t md_lambda2_x     = maxdiffconst * o.lambda2_x;
+    const real_t md_lambda2_z     = maxdiffconst * o.lambda2_z;
 
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
@@ -610,8 +610,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          ++j) {
 
         // Wall-normal operator eigenvalue estimates depend on location
-        const real_t lambda1_y = o.lambda1_y(j);
-        const real_t lambda2_y = o.lambda2_y(j);
+        const real_t lambda1_y    = o.lambda1_y(j);
+        const real_t md_lambda2_y = maxdiffconst * o.lambda2_y(j);
 
         // Unpack appropriate wall-normal reference quantities
         const Vector3r ref_u              (common.ref_ux        ()[j],
@@ -741,6 +741,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                   rho, grad_rho, m, grad_m, e, grad_e,
                                   p, grad_p, T, grad_T,
                                   mu, grad_mu, lambda, grad_lambda);
+            const real_t nu         = mu / rho;
             const real_t div_grad_p = rholut::div_grad_p(
                                         gamma, Ma,
                                         rho, grad_rho, div_grad_rho,
@@ -959,8 +960,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statement.
-                const real_t nu = mu / rho;
-                real_t diffusivity;
+                //
+                // We already absorbed maxdiffconst within md_lambda2_{x,y,z}
+                // to account for viscous, bulk viscous, and thermal effects.
+                real_t diffusivity = nu;
                 switch (Linearize) {
                     default:
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
@@ -969,19 +972,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // Implicit diffusion permits removing a reference value.
                     // Antidiffusive (nu - ref_nu) is fine and not computed.
                     case linearize::rhome_xyz:
-                        diffusivity = nu - ref_nu;    // Compute sign wrt ref.
+                        diffusivity -= ref_nu;        // Compute sign wrt ref.
                         if (diffusivity <= 0) break;  // NaN => false, proceed
-                        diffusivity *= maxdiffconst;  // Rescale as necessary.
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real
-                                / diffusivity
-                                / (lambda2_x + lambda2_y + lambda2_z));
+                                  evmaxmag_real / (   diffusivity
+                                                    * (   md_lambda2_x
+                                                        + md_lambda2_y
+                                                        + md_lambda2_z)));
                         diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_x);
+                                evmaxmag_real / (diffusivity * md_lambda2_x));
                         diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_y);
+                                evmaxmag_real / (diffusivity * md_lambda2_y));
                         diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_z);
+                                evmaxmag_real / (diffusivity * md_lambda2_z));
                         break;
 
                     // Wall-normal implicit diffusion permits removing a
@@ -993,36 +996,35 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // diffusivity_y == 0 in diffusive_y_delta_t computation.
                     case linearize::rhome_y:
                     {
-                        diffusivity          = maxdiffconst * nu;      // X Z
-                        real_t diffusivity_y = maxdiffconst            // Y
-                                             * minnan(nu - ref_nu, real_t(0));
+                        const real_t diffusivity_y
+                                = minnan(diffusivity - ref_nu, real_t(0));
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real
-                                / (   diffusivity   * lambda2_x
-                                    + diffusivity_y * lambda2_y
-                                    + diffusivity   * lambda2_z));
+                                / (   diffusivity   * md_lambda2_x
+                                    + diffusivity_y * md_lambda2_y
+                                    + diffusivity   * md_lambda2_z));
                         diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / (diffusivity   * lambda2_x));
+                                evmaxmag_real / (diffusivity   * md_lambda2_x));
                         diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / (diffusivity_y * lambda2_y));
+                                evmaxmag_real / (diffusivity_y * md_lambda2_y));
                         diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / (diffusivity   * lambda2_z));
+                                evmaxmag_real / (diffusivity   * md_lambda2_z));
                         break;
                     }
 
                     // Explicit treatment forces a zero reference diffusivity
                     case linearize::none:
-                        diffusivity = maxdiffconst * nu;
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real
-                                / diffusivity
-                                / (lambda2_x + lambda2_y + lambda2_z));
+                                  evmaxmag_real / (   diffusivity
+                                                    * (   md_lambda2_x
+                                                        + md_lambda2_y
+                                                        + md_lambda2_z)));
                         diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_x);
+                                evmaxmag_real / (diffusivity * md_lambda2_x));
                         diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_y);
+                                evmaxmag_real / (diffusivity * md_lambda2_y));
                         diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_z);
+                                evmaxmag_real / (diffusivity * md_lambda2_z));
                         break;
                 }
             }
