@@ -17,20 +17,20 @@ eval set -- "$ARGS"
 # Defaults chosen to permit --explicit or --implicit version of suggested
 # command to complete in a single time step at all resolutions.
 k=6
-Nx=1
+Nx=32
 Ny=32
-Nz=1
+Nz=32
 htdelta=0
 np=
-tfinal=0.0005
-alpha=1
+tfinal=0.000001
+alpha=0
 beta=
 Cp=
 Cv=
 Pr=
 T0=
 mu0=
-T_wall=
+T_wall=300
 no=()
 while true;
 do
@@ -49,7 +49,7 @@ do
   &--htdelta&Set grid stretching factor
   &--np&Use MPI and specify number of processors to use
   &--tfinal&Time to which manufactured field should be advanced
-  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 1)
+  &--alpha&Ratio of bulk to dynamic viscosity within manufactured solution (Default 0)
   &--beta&Temperature power law exponent within manufactured solution
   &--Cp&Specific heat at constant pressure
   &--Cv&Specific heat at constant volume
@@ -79,6 +79,14 @@ EOF
                     echo "will print the final MMS absolute error for each executed case."
                     echo "With @pkgdatadir@/postproc/orderest such"
                     echo "results may be used to compute the observed order of convergence."
+                    echo
+                    echo "The default parameters are set to evaluate convergence of spatial schemes."
+                    echo "The recommended setup is to set the --no_t option, and to use a mesh size"
+                    echo "sequence of 32, 64, 128, and 256 points in y."
+                    echo
+                    echo "To evaluate convergence of the time discretization scheme, it is recommended"
+                    echo "to set --tfinal=0.0002, and to set --max_dt such that the simulations take"
+                    echo "100, 150, 200, 250, and 300 timesteps."
                     exit;;
         --k)        k="$2";        shift 2;;
         --Nx)       Nx="$2";       shift 2;;
