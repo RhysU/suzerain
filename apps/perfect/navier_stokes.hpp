@@ -325,11 +325,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Compute derived constants before inner loops
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
+    const real_t alpha43          = alpha + real_t(4)/real_t(3);
     const real_t inv_Re           = 1 / Re;
     const real_t inv_Ma2          = 1 / (Ma * Ma);
     const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t gamma1           = gamma - 1;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * gamma1);
+    const real_t gamma_over_Pr    = gamma / Pr;
     const real_t lambda1_x        = o.lambda1_x;
     const real_t lambda1_z        = o.lambda1_z;
     const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
@@ -682,6 +684,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                         auxp(aux::mz_x,  offset),
                                         auxp(aux::mz_y,  offset),
                                         auxp(aux::mz_z,  offset);
+            const real_t   mx_yy     (  auxp(aux::mx_yy, offset));
+            const real_t   my_yy     (  auxp(aux::my_yy, offset));
+            const real_t   mz_yy     (  auxp(aux::mz_yy, offset));
             const Vector3r div_grad_m(  auxp(aux::mx_xx, offset)
                                       + auxp(aux::mx_yy, offset)
                                       + auxp(aux::mx_zz, offset),
@@ -706,6 +711,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
                                           auxp(aux::rho_y,  offset),
                                           auxp(aux::rho_z,  offset));
+            const real_t   rho_yy      (  auxp(aux::rho_yy, offset));
             const real_t   div_grad_rho(  auxp(aux::rho_xx, offset)
                                         + auxp(aux::rho_yy, offset)
                                         + auxp(aux::rho_zz, offset));
@@ -769,7 +775,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     )
                 ;
             switch (Linearize) {
-                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
@@ -801,6 +806,44 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         )
                         ;
                     break;
+
+                case linearize::rhome_y:
+                {
+                    // Build up colored terms from perfect gas writeup figure 2
+                    const real_t term_rho_y
+                        = - ref_e_gradrho.y();
+                    const real_t term_rho_yy
+                        = gamma * inv_Re_Pr_gamma1 * ref_e_deltarho
+                        - Ma2_over_Re * (ref_nuu2 + alpha13 * ref_nuuu(1,1));
+                    const real_t term_mx_yy
+                        = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.x();
+                    const real_t term_my_y
+                        = - ref_e_divm;
+                    const real_t term_my_yy
+                        = Ma2_over_Re * (alpha43 - gamma_over_Pr) * ref_nuu.y();
+                    const real_t term_mz_yy
+                        = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.z();
+                    const real_t term_e_y
+                        = - gamma * ref_u.y();
+                    const real_t term_e_yy
+                        = inv_Re * gamma_over_Pr * ref_nu;
+
+                    // Subtract terms scaled by appropriate state derivatives
+                    sphys(ndx::e, offset) -=
+                          term_rho_y  * grad_rho.y()
+                        + term_rho_yy * rho_yy
+                        + term_mx_yy  * mx_yy
+                        + term_my_y   * grad_m(1,1)
+                        + term_my_yy  * my_yy
+                        + term_mz_yy  * mz_yy
+                        + term_e_y    * grad_e.y()
+                        + term_e_yy   * e_yy
+                        ;
+
+                    // ...
+                    // Fall through!
+                    // ...
+                }
 
                 case linearize::none:
                     sphys(ndx::e, offset) +=
@@ -869,16 +912,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
-                case linearize::rhome_y: // FIXME
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
 
-                case linearize::rhome_xyz:
-                    sphys(ndx::rho, offset) = 0;       // Implicit convection
+                case linearize::rhome_xyz:    // Fully implicit convection
+                    sphys(ndx::rho, offset) = 0;
                     break;
 
-                case linearize::none:
-                    sphys(ndx::rho, offset) = - div_m; // Explicit convection
+                case linearize::rhome_y:      // Implicit Y but Explicit X, Z
+                    sphys(ndx::rho, offset) = - grad_m(0,0) - grad_m(2,2);
+                    break;
+
+                case linearize::none:         // Full explicit convection
+                    sphys(ndx::rho, offset) = - div_m;
                     break;
             }
 
