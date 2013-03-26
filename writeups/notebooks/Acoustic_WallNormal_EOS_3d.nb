@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     87772,       2242]
-NotebookOptionsPosition[     86597,       2196]
-NotebookOutlinePosition[     86935,       2211]
-CellTagsIndexPosition[     86892,       2208]
+NotebookDataLength[     87909,       2245]
+NotebookOptionsPosition[     86734,       2199]
+NotebookOutlinePosition[     87072,       2214]
+CellTagsIndexPosition[     87029,       2211]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -561,8 +561,10 @@ Cell[BoxData[
 Cell[CellGroupData[{
 
 Cell[BoxData[
- RowBox[{"Eigenvalues", "[", "M", "]"}]], "Input",
- CellChangeTimes->{{3.5733155681671124`*^9, 3.573315573188093*^9}}],
+ RowBox[{
+  RowBox[{"Eigenvalues", "[", "M", "]"}], "//", "FullSimplify"}]], "Input",
+ CellChangeTimes->{{3.5733155681671124`*^9, 3.573315573188093*^9}, {
+  3.573315839212715*^9, 3.573315846923863*^9}}],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -2191,11 +2193,12 @@ Cell[BoxData[
            SuperscriptBox["u", "2"], " ", "v", " ", "\[Rho]", " ", 
            SubsuperscriptBox["\[Rho]R", "m", "2"]}]}], ")"}]}]}], "&"}], ",", 
      "4"}], "]"}]}], "}"}]], "Output",
- CellChangeTimes->{3.5733155740396767`*^9}]
+ CellChangeTimes->{
+  3.5733155740396767`*^9, {3.5733158439324217`*^9, 3.5733158489751043`*^9}}]
 }, Open  ]]
 },
 WindowSize->{1242, 867},
-WindowMargins->{{208, Automatic}, {23, Automatic}},
+WindowMargins->{{Automatic, 216}, {13, Automatic}},
 FrontEndVersion->"8.0 for Linux x86 (64-bit) (November 7, 2010)",
 StyleDefinitions->"Default.nb"
 ]
@@ -2241,8 +2244,8 @@ Cell[9650, 333, 3586, 111, 151, "Output"]
 }, Open  ]],
 Cell[13251, 447, 3561, 111, 148, InheritFromParent],
 Cell[CellGroupData[{
-Cell[16837, 562, 132, 2, 30, "Input"],
-Cell[16972, 566, 69609, 1627, 846, "Output"]
+Cell[16837, 562, 216, 4, 30, "Input"],
+Cell[17056, 568, 69662, 1628, 846, "Output"]
 }, Open  ]]
 }
 ]
