@@ -137,7 +137,16 @@ e + \delta e &= e_{tr}(T + \delta T,Y) + e_{ve}(T+\delta T,Y) + e_{0}(Y) \\
  &\approx e_{tr}(T,Y) + \frac{\partial e_{tr}}{\partial T} \delta T +
  e_{ve}(T,Y)+ \frac{\partial e_{ve}}{\partial T} \delta T + e_{0}(Y)
 \end{align}
-
+Therefore, 
+\begin{align}
+\delta e &\approx \left( \frac{\partial e_{tr}}{\partial T} +
+ \frac{\partial e_{ve}}{\partial T} \right) \delta T \\ 
+ &= c_v(T,Y)
+\end{align}
+and
+\begin{equation}
+ \frac{\partial f}{\partial e} = \frac{\partial T}{\partial e} = \frac{1}{\partial c_v}
+\end{equation}
 % Finally, $\Delta{}T$. This will be identical to the current treatment in
 % suzerain if $\gamma$ is constant, e.g. $T=\gamma \frac{p}{\rho}$
 % \begin{equation}
