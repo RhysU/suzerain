@@ -100,7 +100,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                      "Use hybrid implicit/explicit operators")
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
-                     "Use the specified algorithm for any implicit solves")
+                     "Use the specified algorithm for --implicit solves")
     ;
 
     // Initialize application and then process binary-specific options
@@ -109,6 +109,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Select type of timestepping operators to use (default implicit)
     options.conflicting_options("explicit", "implicit");
+    options.conflicting_options("explicit", "solver");
     const bool use_explicit =  options.variables()["explicit"].as<bool>();
     const bool use_implicit =  options.variables()["implicit"].as<bool>()
                             || !use_explicit;
