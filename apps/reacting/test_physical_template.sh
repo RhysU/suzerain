@@ -17,7 +17,7 @@ eval "$METACASE"
 
 # We want to share wisdom across test cases as much as possible to tamp down
 # rounding-related discrepancies due to FFT kernel differences (ticket #2515).
-WIZ="--plan_wisdom=$(mktemp --tmpdir=$testdir wisdom.XXXXXX)"
+WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 
 # Prepare pmms0.h5 in serial, then in parallel, and ensure both match
 # pmms0.h5 restart file is used in the tests that follow

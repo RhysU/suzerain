@@ -9,7 +9,7 @@ source "`dirname $0`/test_setup.sh"
 
 # We want to share wisdom across test cases as much as possible to tamp down
 # rounding-related discrepancies due to FFT kernel differences (ticket #2515)
-WIZ="--plan_wisdom=$(mktemp "--tmpdir=$testdir" wisdom.XXXXXX)"
+WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 
 banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
@@ -34,9 +34,9 @@ banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
     differ $exclude_datasets_bar --delta=3e-13 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do
         #differ --delta=5e-12 serial0.h5 a0.h5 $dset
-	# FIXME: Ticket 2790 to improve diffing tolerances
-	# NOTE: Tolerance so large b/c /bar_mu_grad_T has data on order 5e9
-	# TODO: Why so large?  Does this make sense?
+        # FIXME: Ticket 2790 to improve diffing tolerances
+        # NOTE: Tolerance so large b/c /bar_mu_grad_T has data on order 5e9
+        # TODO: Why so large?  Does this make sense?
         differ --delta=2e-6 serial0.h5 a0.h5 $dset
     done
 )
