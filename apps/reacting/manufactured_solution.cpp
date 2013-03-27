@@ -197,6 +197,32 @@ manufactured_solution::isothermal_channel()
 {
     //nsctpl_rholut::isothermal_channel(*this);
     nsctpl::isothermal_channel(*this);
+
+    // Rescale time frequencies and density coefficients
+    const real_t rho_scale  = real_t(355)/real_t(10000000);
+    const real_t itime_scale = 200;
+
+    // density coefficients
+    this->rho.a_0  = rho_scale * real_t(1);
+    this->rho.a_xy = rho_scale * real_t(1) / real_t(11);
+    this->rho.a_y  = rho_scale * real_t(1) / real_t(7);
+    this->rho.a_yz = rho_scale * real_t(1) / real_t(31);
+
+    // time frequency coefficients
+    this->rho.f_xy = itime_scale * real_t(3);
+    this->rho.f_y  = itime_scale * real_t(1);
+    this->u.f_xy   = itime_scale * real_t(3);
+    this->u.f_y    = itime_scale * real_t(1);
+    this->u.f_yz   = itime_scale * real_t(2);
+    this->v.f_y    = itime_scale * real_t(1);
+    this->v.f_yz   = itime_scale * real_t(2);
+    this->w.f_xy   = itime_scale * real_t(3);
+    this->w.f_y    = itime_scale * real_t(1);
+    this->w.f_yz   = itime_scale * real_t(2);
+    this->T.f_xy   = itime_scale * real_t(3);
+    this->T.f_y    = itime_scale * real_t(1);
+    this->T.f_yz   = itime_scale * real_t(2);
+
     return *this;
 }
 
@@ -205,6 +231,32 @@ manufactured_solution::isothermal_flat_plate()
 {
     //nsctpl_rholut::isothermal_flat_plate(*this);
     nsctpl::isothermal_flat_plate(*this);
+
+    // Rescale time frequencies and density coefficients
+    const real_t rho_scale  = real_t(355)/real_t(10000000);
+    const real_t itime_scale = 200;
+
+    // density coefficients
+    this->rho.a_0  = rho_scale * real_t(1);
+    this->rho.a_xy = rho_scale * real_t(1) / real_t(11);
+    this->rho.a_y  = rho_scale * real_t(1) / real_t(7);
+    this->rho.a_yz = rho_scale * real_t(1) / real_t(31);
+
+    // time frequency coefficients
+    this->rho.f_xy = itime_scale * real_t(3);
+    this->rho.f_y  = itime_scale * real_t(1);
+    this->u.f_xy   = itime_scale * real_t(3);
+    this->u.f_y    = itime_scale * real_t(1);
+    this->u.f_yz   = itime_scale * real_t(2);
+    this->v.f_y    = itime_scale * real_t(1);
+    this->v.f_yz   = itime_scale * real_t(2);
+    this->w.f_xy   = itime_scale * real_t(3);
+    this->w.f_y    = itime_scale * real_t(1);
+    this->w.f_yz   = itime_scale * real_t(2);
+    this->T.f_xy   = itime_scale * real_t(3);
+    this->T.f_y    = itime_scale * real_t(1);
+    this->T.f_yz   = itime_scale * real_t(2);
+
     return *this;
 }
 
