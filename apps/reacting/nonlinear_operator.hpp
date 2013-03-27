@@ -410,13 +410,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     VectorXr om     (Ns); // reaction source terms
     VectorXr cs     (Ns); // species mass fractions
 
-    // TODO: check eigen syntax here.  It appears that we need to pass
-    // 3 to the ctor even though it knows this size at compile time.
-    // Am I crazy?
-    //
-    MatrixX3r grad_species (Ns,3); // spatial derivatives of species densities
-    MatrixX3r grad_cs      (Ns,3); // spatial derivatives of species mass fractions
-    MatrixX3r sdiff        (Ns,3); // diffusive fluxes for species equations
+    Matrix3Xr grad_species (3,Ns); // spatial derivatives of species densities
+    Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fractions
+    Matrix3Xr sdiff        (3,Ns); // diffusive fluxes for species equations
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
@@ -472,22 +468,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             species(0) = rho;
 
             grad_species(0,0) = grad_rho(0);
-            grad_species(0,1) = grad_rho(1);
-            grad_species(0,2) = grad_rho(2);
+            grad_species(1,0) = grad_rho(1);
+            grad_species(2,0) = grad_rho(2);
             
             for (unsigned int s=1; s<Ns; ++s) {
                 species(s) = sphys(ndx::species + s - 1, offset);
                 
-                grad_species(s,0) = auxp(aux::species + s - 1 + dir::x, offset);
-                grad_species(s,1) = auxp(aux::species + s - 1 + dir::y, offset);
-                grad_species(s,2) = auxp(aux::species + s - 1 + dir::z, offset);
+                grad_species(0,s) = auxp(aux::species + s - 1 + dir::x, offset);
+                grad_species(1,s) = auxp(aux::species + s - 1 + dir::y, offset);
+                grad_species(2,s) = auxp(aux::species + s - 1 + dir::z, offset);
                 
                 // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                 species(0)        -= species(s);
                 
-                grad_species(0,0) -= grad_species(s,0);
-                grad_species(0,1) -= grad_species(s,1);
-                grad_species(0,2) -= grad_species(s,2);
+                grad_species(0,0) -= grad_species(0,s);
+                grad_species(1,0) -= grad_species(1,s);
+                grad_species(2,0) -= grad_species(2,s);
             }
             
             // Compute mass fractions and mass fraction gradients
@@ -495,9 +491,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 
                 cs(s) = irho * species(s);
                 
-                grad_cs(s,0) = irho * (grad_species(s,0) - cs(s) * grad_rho(0));
-                grad_cs(s,1) = irho * (grad_species(s,1) - cs(s) * grad_rho(1));
-                grad_cs(s,2) = irho * (grad_species(s,2) - cs(s) * grad_rho(2));
+                grad_cs(0,s) = irho * (grad_species(0,s) - cs(s) * grad_rho(0));
+                grad_cs(1,s) = irho * (grad_species(1,s) - cs(s) * grad_rho(1));
+                grad_cs(2,s) = irho * (grad_species(2,s) - cs(s) * grad_rho(2));
                 
             }
           
@@ -526,22 +522,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Compute Fick's model contribution to diffusive fluxes and sum
             for (unsigned int s=0; s<Ns; ++s) {
                 
-                sdiff(s,0) = rho * Ds(s) * grad_cs(s,0);
-                sdiff(s,1) = rho * Ds(s) * grad_cs(s,1);
-                sdiff(s,2) = rho * Ds(s) * grad_cs(s,2);
+                sdiff(0,s) = rho * Ds(s) * grad_cs(0,s);
+                sdiff(1,s) = rho * Ds(s) * grad_cs(1,s);
+                sdiff(2,s) = rho * Ds(s) * grad_cs(2,s);
                 
-                sdifftot(0) += sdiff(s,0);
-                sdifftot(1) += sdiff(s,1);
-                sdifftot(2) += sdiff(s,2);
+                sdifftot(0) += sdiff(0,s);
+                sdifftot(1) += sdiff(1,s);
+                sdifftot(2) += sdiff(2,s);
                 
             }
             
             // Subtract off cs*sdifftot to get SCEBD fluxes
             for (unsigned int s=0; s<Ns; ++s) {
                 
-                sdiff(s,0) -= cs(s) * sdifftot(0);
-                sdiff(s,1) -= cs(s) * sdifftot(1);
-                sdiff(s,2) -= cs(s) * sdifftot(2);
+                sdiff(0,s) -= cs(s) * sdifftot(0);
+                sdiff(1,s) -= cs(s) * sdifftot(1);
+                sdiff(2,s) -= cs(s) * sdifftot(2);
                 
             }
           
@@ -580,12 +576,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             
             // ... - species enthalpy term
             if (Ns>1) {
-                // NOTE: If Ns=1, we should have sdiff(0,*) = 0.0.  Thus,
+                // NOTE: If Ns=1, we should have sdiff(*,0) = 0.0.  Thus,
                 // this loop would be entered but shouldn't do anything.
                 for (unsigned int s=0; s<Ns; ++s) {
-                    auxp(aux::e +dir::x, offset) -= sdiff(s, 0) * hs(s);
-                    auxp(aux::e +dir::y, offset) -= sdiff(s, 1) * hs(s);
-                    auxp(aux::e +dir::z, offset) -= sdiff(s, 2) * hs(s);
+                    auxp(aux::e +dir::x, offset) -= sdiff(0,s) * hs(s);
+                    auxp(aux::e +dir::y, offset) -= sdiff(1,s) * hs(s);
+                    auxp(aux::e +dir::z, offset) -= sdiff(2,s) * hs(s);
                 }
             }
             // NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
@@ -619,9 +615,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // NOTE: species(0) is the species that is not explicitly carried!
                 
                 //                                = convection     - diffusion
-                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(s+1,0);
-                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(s+1,1);
-                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(s+1,2);
+                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(0,s+1);
+                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(1,s+1);
+                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(2,s+1);
                 
             }
             //----------------------------------------------------------------------
