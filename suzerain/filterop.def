@@ -70,12 +70,12 @@ static int WORK(suzerain_filterop,_operator_bandwidths)(
 
     // Add new method-specific routines here, when necessary
     switch (method) {
-        case SUZERAIN_FILTEROP_COOKCABOT2005:
-            retval = WORK(suzerain_filterop,_operator_bandwidths_cookcabot2005)(
-                        method_params, klat, kuat, klbt, kubt);
-            break;
-        default:
-            SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
+    case SUZERAIN_FILTEROP_COOKCABOT2005:
+        retval = WORK(suzerain_filterop,_operator_bandwidths_cookcabot2005)(
+                    method_params, klat, kuat, klbt, kubt);
+        break;
+    default:
+        SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
     }
 
     assert(*klat >= 0);
@@ -206,12 +206,12 @@ static int WORK(suzerain_filterop,_operator_assemble)(
 
     // Add new method-specific routines here, when necessary
     switch (w->method) {
-        case SUZERAIN_FILTEROP_COOKCABOT2005:
-            retval = WORK(suzerain_filterop,_operator_assemble_cookcabot2005)(
-                        method_params, w);
-            break;
-        default:
-            SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
+    case SUZERAIN_FILTEROP_COOKCABOT2005:
+        retval = WORK(suzerain_filterop,_operator_assemble_cookcabot2005)(
+                    method_params, w);
+        break;
+    default:
+        SUZERAIN_ERROR_NULL("Unknown method", SUZERAIN_ESANITY);
     }
 
     return retval;
@@ -226,258 +226,258 @@ static int WORK(suzerain_filterop,_operator_boundaries)(
 
     // Add new boundary-type routines here, when necessary
     switch (w->b_first) {
-        case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
-            /* Nothing to be done */
-            break;
+    case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
+        /* Nothing to be done */
+        break;
 
-        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
-            // Replace near-boundary schemes on B^T
-            {
-                // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
-                // Incorporate the ku offset and decrement ld to speed indexing
-                int ku = w->kubt, ld = w->ldbt;
-                int nbs = imax(w->kuat, w->kubt); // nbs: near-boundary stencils
-                SCALAR * bt_j = w->B_T;
-                bt_j += ku*inc;
-                ld -= inc;
+    case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
+        // Replace near-boundary schemes on B^T
+        {
+            // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
+            // Incorporate the ku offset and decrement ld to speed indexing
+            int ku = w->kubt, ld = w->ldbt;
+            int nbs = imax(w->kuat, w->kubt); // nbs: near-boundary stencils
+            SCALAR * bt_j = w->B_T;
+            bt_j += ku*inc;
+            ld -= inc;
 
-                for (int j = 0; j < nbs; bt_j += ld, ++j) {
+            for (int j = 0; j < nbs; bt_j += ld, ++j) {
 
-                    // Start at j - ku, go down to 1
-                    for (int joff = w->kubt; joff > 0; --joff) {
-                        bt_j[(j-joff)*inc] = 0;
-                    }
-                    // Diagonal element
-                    bt_j[(j  )*inc] = 1;
-                    // Start at 1, go to j + kl
-                    for (int joff = 1; joff < w->klbt+1; ++joff) {
-                        bt_j[(j+joff)*inc] = 0;
-                    }
+                // Start at j - ku, go down to 1
+                for (int joff = w->kubt; joff > 0; --joff) {
+                    bt_j[(j-joff)*inc] = 0;
+                }
+                // Diagonal element
+                bt_j[(j  )*inc] = 1;
+                // Start at 1, go to j + kl
+                for (int joff = 1; joff < w->klbt+1; ++joff) {
+                    bt_j[(j+joff)*inc] = 0;
                 }
             }
+        }
 
-            // Replace near-boundary schemes on A^T
-            {
-                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
-                int kl = w->klat, ku = w->kuat, ld = w->ldat;
-                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
-                SCALAR * at_j = w->A_T + kl; // For factorization-ready data
-                at_j += ku*inc;
-                ld -= inc;
+        // Replace near-boundary schemes on A^T
+        {
+            // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+            int kl = w->klat, ku = w->kuat, ld = w->ldat;
+            int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
+            SCALAR * at_j = w->A_T + kl; // For factorization-ready data
+            at_j += ku*inc;
+            ld -= inc;
 
-                // The number of near-boundary schemes that need to be replaced
-                // goes by the width of the stencil (widest side), in this case,
-                // that of B_T
-                for (int j = 0; j < nbs; at_j += ld, ++j) {
+            // The number of near-boundary schemes that need to be replaced
+            // goes by the width of the stencil (widest side), in this case,
+            // that of B_T
+            for (int j = 0; j < nbs; at_j += ld, ++j) {
 
-                    // Start at j - ku, go down to 1
-                    for (int joff = w->kuat; joff > 0; --joff) {
-                        at_j[(j-joff)*inc] = 0;
-                    }
-                    // Diagonal element
-                    at_j[(j  )*inc] = 1;
-                    // Start at 1, go to j + kl
-                    for (int joff = 1; joff < w->klat+1; ++joff) {
-                        at_j[(j+joff)*inc] = 0;
-                    }
+                // Start at j - ku, go down to 1
+                for (int joff = w->kuat; joff > 0; --joff) {
+                    at_j[(j-joff)*inc] = 0;
+                }
+                // Diagonal element
+                at_j[(j  )*inc] = 1;
+                // Start at 1, go to j + kl
+                for (int joff = 1; joff < w->klat+1; ++joff) {
+                    at_j[(j+joff)*inc] = 0;
                 }
             }
-            break;
+        }
+        break;
 
-        case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY:
-            // Replace near-boundary schemes on B^T
-            {
-                // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
-                // Incorporate the ku offset and decrement ld to speed indexing
-                int ku = w->kubt, ld = w->ldbt;
-                SCALAR * bt_j  = w->B_T;
-                bt_j += ku*inc;
-                ld -= inc;
+    case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY:
+        // Replace near-boundary schemes on B^T
+        {
+            // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
+            // Incorporate the ku offset and decrement ld to speed indexing
+            int ku = w->kubt, ld = w->ldbt;
+            SCALAR * bt_j  = w->B_T;
+            bt_j += ku*inc;
+            ld -= inc;
 
-                for (int j = 0; j < w->kubt; bt_j += ld, ++j) {
+            for (int j = 0; j < w->kubt; bt_j += ld, ++j) {
 
-                    // Boundary element is bt_j[0];
-                    for (int joff = 1; joff < w->kubt+1-j; ++joff) {
-                        // Consider f(-joff) = 2*f(0) - f(joff)
-                        bt_j[(0     )*inc] += 2*bt_j[(0-joff)*inc];
-                        bt_j[(0+joff)*inc] -=   bt_j[(0-joff)*inc];
-                        // Reset value at ghost element
-                        bt_j[(0-joff)*inc]  = 0;
-                    }
+                // Boundary element is bt_j[0];
+                for (int joff = 1; joff < w->kubt+1-j; ++joff) {
+                    // Consider f(-joff) = 2*f(0) - f(joff)
+                    bt_j[(0     )*inc] += 2*bt_j[(0-joff)*inc];
+                    bt_j[(0+joff)*inc] -=   bt_j[(0-joff)*inc];
+                    // Reset value at ghost element
+                    bt_j[(0-joff)*inc]  = 0;
                 }
             }
+        }
 
-            // Replace near-boundary schemes on A^T
-            {
-                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
-                int kl = w->klat, ku = w->kuat, ld = w->ldat;
-                SCALAR * at_j = w->A_T + kl; // For factorization-ready data
-                at_j += ku*inc;
-                ld -= inc;
+        // Replace near-boundary schemes on A^T
+        {
+            // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+            int kl = w->klat, ku = w->kuat, ld = w->ldat;
+            SCALAR * at_j = w->A_T + kl; // For factorization-ready data
+            at_j += ku*inc;
+            ld -= inc;
 
-                // The number of near-boundary schemes that need to be replaced
-                // goes in general by the width of the stencil (widest side).
-                // In the symmetry case, however, the only rows that change 
-                // in A_T are those with coefficients of A_T at ghost points.
-                for (int j = 0; j < w->kuat; at_j += ld, ++j) {
+            // The number of near-boundary schemes that need to be replaced
+            // goes in general by the width of the stencil (widest side).
+            // In the symmetry case, however, the only rows that change 
+            // in A_T are those with coefficients of A_T at ghost points.
+            for (int j = 0; j < w->kuat; at_j += ld, ++j) {
 
-                    // Boundary element is at_j[0];
-                    for (int joff = 1; joff < w->kuat+1-j; ++joff) {
-                        // Consider f(-joff) = 2*f(0) - f(joff)
-                        at_j[(0     )*inc] += 2*at_j[(0-joff)*inc];
-                        at_j[(0+joff)*inc] -=   at_j[(0-joff)*inc];
-                        // Reset value at ghost element
-                        at_j[(0-joff)*inc]  = 0;                     
-                    }
+                // Boundary element is at_j[0];
+                for (int joff = 1; joff < w->kuat+1-j; ++joff) {
+                    // Consider f(-joff) = 2*f(0) - f(joff)
+                    at_j[(0     )*inc] += 2*at_j[(0-joff)*inc];
+                    at_j[(0+joff)*inc] -=   at_j[(0-joff)*inc];
+                    // Reset value at ghost element
+                    at_j[(0-joff)*inc]  = 0;                     
                 }
             }
-            break;
+        }
+        break;
 
-        case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
-        default:
-            SUZERAIN_ERROR_NULL("Unknown first boundary treatment",
-                                SUZERAIN_ESANITY);
+    case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
+    default:
+        SUZERAIN_ERROR_NULL("Unknown first boundary treatment",
+                            SUZERAIN_ESANITY);
     }
 
     switch (w->b_last) {
-        case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
-            /* Nothing to be done */
-            break;
+    case SUZERAIN_FILTEROP_BOUNDARY_IGNORE:
+        /* Nothing to be done */
+        break;
 
-        case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
-            // Replace near-boundary schemes on B^T
-            {
-                // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
-                // Incorporate the ku offset and decrement ld to speed indexing.
-                int ku = w->kubt, ld = w->ldbt;
-                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
-                SCALAR * bt_j = w->B_T;
+    case SUZERAIN_FILTEROP_BOUNDARY_NOFILTER:
+        // Replace near-boundary schemes on B^T
+        {
+            // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
+            // Incorporate the ku offset and decrement ld to speed indexing.
+            int ku = w->kubt, ld = w->ldbt;
+            int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
+            SCALAR * bt_j = w->B_T;
 
-                // Walk the upper end forwards:
-                // Point initially to element (n-nbs) in the diagonal
-                bt_j += (ku*inc + (n-nbs)*(w->ldbt)*inc);
-                ld -= inc;
+            // Walk the upper end forwards:
+            // Point initially to element (n-nbs) in the diagonal
+            bt_j += (ku*inc + (n-nbs)*(w->ldbt)*inc);
+            ld -= inc;
 
-                // Walk the matrix forwards
-                for (int j = 0; j < nbs; bt_j += ld, ++j) {
+            // Walk the matrix forwards
+            for (int j = 0; j < nbs; bt_j += ld, ++j) {
 
-                    // Start at j - ku, go down to 1
-                    for (int joff = w->kubt; joff > 0; --joff) {
-                        bt_j[(j-joff)*inc] = 0;
-                    }
-                    // Diagonal element
-                    bt_j[(j  )*inc] = 1;
-                    // Start at 1, go to j + kl
-                    for (int joff = 1; joff < w->klbt+1; ++joff) {
-                        bt_j[(j+joff)*inc] = 0;
-                    }
+                // Start at j - ku, go down to 1
+                for (int joff = w->kubt; joff > 0; --joff) {
+                    bt_j[(j-joff)*inc] = 0;
                 }
-
-                // Note: To walk the upper end backwards instead, the initial
-                // bt_j offset points initially to the last diagonal element,
-                // as
-                //     bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
-                // and the outer loop changes to
-                //     for (int j = 0; j > -nbs; bt_j -= ld, --j) { ... }
-
-            }
-
-            // Replace near-boundary schemes on A^T
-            {
-                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
-                int kl = w->klat, ku = w->kuat, ld = w->ldat;
-                int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
-                SCALAR * at_j = w->A_T + kl; // For factorization-ready data
-
-                // Walk the upper end forwards:
-                // Point initially to element (n-nbs) in the diagonal
-                at_j += (ku*inc + (n-nbs)*(w->ldat)*inc);
-                ld -= inc;
-
-                // Walk the matrix forwards
-                for (int j = 0; j < nbs; at_j += ld, ++j) {
-
-                    // Start at j - ku, go down to 1
-                    for (int joff = w->kuat; joff > 0; --joff) {
-                        at_j[(j-joff)*inc] = 0;
-                    }
-                    // Diagonal element
-                    at_j[(j  )*inc] = 1;
-                    // Start at 1, go to j + kl
-                    for (int joff = 1; joff < w->klat+1; ++joff) {
-                        at_j[(j+joff)*inc] = 0;
-                    }
-                }
-
-                // Note: To walk the upper end backwards instead, the initial
-                // at_j offset points initially to the last diagonal element,
-                // as
-                //     at_j += (ku*inc + (n-1)*(w->ldat)*inc);
-                // and the outer loop changes to
-                //     for (int j = 0; j > -nbs; at_j -= ld, --j) { ... }
-            }
-            break;
-
-        case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY:
-            // Replace near-boundary schemes on B^T
-            {
-                // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
-                // Incorporate the ku offset and decrement ld to speed indexing
-                int ku = w->kubt, ld = w->ldbt;
-                SCALAR * bt_j  = w->B_T;
-
-                // Walk the upper end backwards
-                // Point initially to element (n-1) in the diagonal
-                bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
-                ld -= inc;
-
-                for (int j = 0; j > -w->klbt; bt_j -= ld, --j) {
-
-                    // Boundary element is bt_j[0]
-                    for (int joff = 1; joff < (w->klbt)+1+j; ++joff) {
-                        // Consider f(n-1+joff) = 2*f(n-1) - f(n-1-joff)
-                        bt_j[(0     )*inc] += 2*bt_j[(0+joff)*inc];
-                        bt_j[(0-joff)*inc] -=   bt_j[(0+joff)*inc];
-                        // Reset value at ghost element
-                        bt_j[(0+joff)*inc]  = 0;
-                    }
+                // Diagonal element
+                bt_j[(j  )*inc] = 1;
+                // Start at 1, go to j + kl
+                for (int joff = 1; joff < w->klbt+1; ++joff) {
+                    bt_j[(j+joff)*inc] = 0;
                 }
             }
 
+            // Note: To walk the upper end backwards instead, the initial
+            // bt_j offset points initially to the last diagonal element,
+            // as
+            //     bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
+            // and the outer loop changes to
+            //     for (int j = 0; j > -nbs; bt_j -= ld, --j) { ... }
 
-            // Replace near-boundary schemes on A^T
-            {
-                // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
-                int kl = w->klat, ku = w->kuat, ld = w->ldat;
-                SCALAR * at_j = w->A_T + kl; // For factorization-ready data
+        }
 
-                // Walk the upper end backwards
-                // Point initially to element (n-1) in the diagonal
-                at_j += (ku*inc + (n-1)*(w->ldat)*inc);
-                ld -= inc;
+        // Replace near-boundary schemes on A^T
+        {
+            // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+            int kl = w->klat, ku = w->kuat, ld = w->ldat;
+            int nbs = imax(w->klat, w->klbt); // nbs: near-boundary stencils
+            SCALAR * at_j = w->A_T + kl; // For factorization-ready data
 
-                // The number of near-boundary schemes that need to be replaced
-                // goes in general by the width of the stencil (widest side).
-                // In the symmetry case, however, the only rows that change 
-                // in A_T are those with coefficients of A_T at ghost points.
-                for (int j = 0; j > -(w->klat); at_j -= ld, --j) {
+            // Walk the upper end forwards:
+            // Point initially to element (n-nbs) in the diagonal
+            at_j += (ku*inc + (n-nbs)*(w->ldat)*inc);
+            ld -= inc;
 
-                    // Boundary element is at_j[0];
-                    for (int joff = 1; joff < (w->klat)+1+j; ++joff) {
-                        // Consider f(n-1+joff) = 2*f(n-1) - f(n-1-joff)
-                        at_j[(0     )*inc] += 2*at_j[(0+joff)*inc];
-                        at_j[(0-joff)*inc] -=   at_j[(0+joff)*inc];
-                        // Reset value at ghost element
-                        at_j[(0+joff)*inc]  = 0;
-                    }
+            // Walk the matrix forwards
+            for (int j = 0; j < nbs; at_j += ld, ++j) {
+
+                // Start at j - ku, go down to 1
+                for (int joff = w->kuat; joff > 0; --joff) {
+                    at_j[(j-joff)*inc] = 0;
+                }
+                // Diagonal element
+                at_j[(j  )*inc] = 1;
+                // Start at 1, go to j + kl
+                for (int joff = 1; joff < w->klat+1; ++joff) {
+                    at_j[(j+joff)*inc] = 0;
                 }
             }
-            break;
 
-        case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
-        default:
-            SUZERAIN_ERROR_NULL("Unknown last boundary treatment",
-                                SUZERAIN_ESANITY);
+            // Note: To walk the upper end backwards instead, the initial
+            // at_j offset points initially to the last diagonal element,
+            // as
+            //     at_j += (ku*inc + (n-1)*(w->ldat)*inc);
+            // and the outer loop changes to
+            //     for (int j = 0; j > -nbs; at_j -= ld, --j) { ... }
+        }
+        break;
+
+    case SUZERAIN_FILTEROP_BOUNDARY_SYMMETRY:
+        // Replace near-boundary schemes on B^T
+        {
+            // Banded matrix access has form a[(ku+i)*inc + j*(lda-inc)].
+            // Incorporate the ku offset and decrement ld to speed indexing
+            int ku = w->kubt, ld = w->ldbt;
+            SCALAR * bt_j  = w->B_T;
+
+            // Walk the upper end backwards
+            // Point initially to element (n-1) in the diagonal
+            bt_j += (ku*inc + (n-1)*(w->ldbt)*inc);
+            ld -= inc;
+
+            for (int j = 0; j > -w->klbt; bt_j -= ld, --j) {
+
+                // Boundary element is bt_j[0]
+                for (int joff = 1; joff < (w->klbt)+1+j; ++joff) {
+                    // Consider f(n-1+joff) = 2*f(n-1) - f(n-1-joff)
+                    bt_j[(0     )*inc] += 2*bt_j[(0+joff)*inc];
+                    bt_j[(0-joff)*inc] -=   bt_j[(0+joff)*inc];
+                    // Reset value at ghost element
+                    bt_j[(0+joff)*inc]  = 0;
+                }
+            }
+        }
+
+
+        // Replace near-boundary schemes on A^T
+        {
+            // Again, access has form a[(ku + i)*inc + j*(lda - inc)].
+            int kl = w->klat, ku = w->kuat, ld = w->ldat;
+            SCALAR * at_j = w->A_T + kl; // For factorization-ready data
+
+            // Walk the upper end backwards
+            // Point initially to element (n-1) in the diagonal
+            at_j += (ku*inc + (n-1)*(w->ldat)*inc);
+            ld -= inc;
+
+            // The number of near-boundary schemes that need to be replaced
+            // goes in general by the width of the stencil (widest side).
+            // In the symmetry case, however, the only rows that change 
+            // in A_T are those with coefficients of A_T at ghost points.
+            for (int j = 0; j > -(w->klat); at_j -= ld, --j) {
+
+                // Boundary element is at_j[0];
+                for (int joff = 1; joff < (w->klat)+1+j; ++joff) {
+                    // Consider f(n-1+joff) = 2*f(n-1) - f(n-1-joff)
+                    at_j[(0     )*inc] += 2*at_j[(0+joff)*inc];
+                    at_j[(0-joff)*inc] -=   at_j[(0+joff)*inc];
+                    // Reset value at ghost element
+                    at_j[(0+joff)*inc]  = 0;
+                }
+            }
+        }
+        break;
+
+    case SUZERAIN_FILTEROP_BOUNDARY_PERIODIC: // TODO
+    default:
+        SUZERAIN_ERROR_NULL("Unknown last boundary treatment",
+                            SUZERAIN_ESANITY);
     }
 
     return retval;

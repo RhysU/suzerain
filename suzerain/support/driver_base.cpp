@@ -446,35 +446,35 @@ driver_base::advance_controller(
 #pragma warning(push,disable:1572)
     switch ((!!timedef->advance_dt << 1) + !!timedef->advance_nt) {
 #pragma warning(pop)
-        case 3:
-            INFO0(who, "Advancing simulation by at most "
-                  << timedef->advance_dt << " units of physical time");
-            INFO0(who, "Advancing simulation by at most "
-                  << timedef->advance_nt << " discrete time steps");
-            success = controller->advance(t_initial + timedef->advance_dt,
-                                          timedef->advance_nt);
-            break;
-        case 2:
-            INFO0(who, "Advancing simulation by at most "
-                  << timedef->advance_dt << " units of physical time");
-            success = controller->advance(t_initial + timedef->advance_dt);
-            break;
-        case 1:
-            INFO0(who, "Advancing simulation by at most "
-                  << timedef->advance_nt << " discrete time steps");
-            success = controller->step(timedef->advance_nt);
-            break;
-        case 0:
-            if (options.variables()["advance_nt"].defaulted()) {
-                INFO0(who, "Advancing simulation until terminated by a signal");
-                success = controller->advance();
-            } else {
-                INFO0(who, "Simulation will not be advanced in time");
-            }
-            break;
-        default:
-            FATAL0(who, "Sanity error in advance_controller");
-            return EXIT_FAILURE;
+    case 3:
+        INFO0(who, "Advancing simulation by at most "
+              << timedef->advance_dt << " units of physical time");
+        INFO0(who, "Advancing simulation by at most "
+              << timedef->advance_nt << " discrete time steps");
+        success = controller->advance(t_initial + timedef->advance_dt,
+                                      timedef->advance_nt);
+        break;
+    case 2:
+        INFO0(who, "Advancing simulation by at most "
+              << timedef->advance_dt << " units of physical time");
+        success = controller->advance(t_initial + timedef->advance_dt);
+        break;
+    case 1:
+        INFO0(who, "Advancing simulation by at most "
+              << timedef->advance_nt << " discrete time steps");
+        success = controller->step(timedef->advance_nt);
+        break;
+    case 0:
+        if (options.variables()["advance_nt"].defaulted()) {
+            INFO0(who, "Advancing simulation until terminated by a signal");
+            success = controller->advance();
+        } else {
+            INFO0(who, "Simulation will not be advanced in time");
+        }
+        break;
+    default:
+        FATAL0(who, "Sanity error in advance_controller");
+        return EXIT_FAILURE;
     }
     const double wtime_advance_end = MPI_Wtime();
     const step_type nsteps = controller->current_nt() - nt_initial;
@@ -1235,13 +1235,13 @@ driver_base::process_any_signals_received(
         soft_teardown  = true;
         keep_advancing = false;
         switch (signal_received[signal::teardown_reactive]) {
-            case SIGINT:
-            case SIGTERM:
-                INFO0(log_signal,
-                      "Receipt of another " << name <<
-                      " will forcibly terminate program");
-                signal2(signal_received[signal::teardown_reactive], SIG_DFL);
-                break;
+        case SIGINT:
+        case SIGTERM:
+            INFO0(log_signal,
+                  "Receipt of another " << name <<
+                  " will forcibly terminate program");
+            signal2(signal_received[signal::teardown_reactive], SIG_DFL);
+            break;
         }
     }
 

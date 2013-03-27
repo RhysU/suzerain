@@ -726,26 +726,26 @@ FPT periodic_function<FPT,Integer>::physical_evaluate(
         ? constant : 0;
     for (Integer j = 1; j < max_mode_exclusive; ++j) {
         switch (derivative % 4) {
-            case 0:
-                retval +=   j * pow(j*(2.0*M_PI/length), derivative)
-                          * constant
-                          * sin(j*(2.0*M_PI/length)*x + shift);
-                break;
-            case 1:
-                retval +=   j * pow(j*(2.0*M_PI/length), derivative)
-                          * constant
-                          * cos(j*(2.0*M_PI/length)*x + shift);
-                break;
-            case 2:
-                retval -=   j * pow(j*(2.0*M_PI/length), derivative)
-                          * constant
-                          * sin(j*(2.0*M_PI/length)*x + shift);
-                break;
-            case 3:
-                retval -=   j * pow(j*(2.0*M_PI/length), derivative)
-                          * constant
-                          * cos(j*(2.0*M_PI/length)*x + shift);
-                break;
+        case 0:
+            retval +=   j * pow(j*(2.0*M_PI/length), derivative)
+                      * constant
+                      * sin(j*(2.0*M_PI/length)*x + shift);
+            break;
+        case 1:
+            retval +=   j * pow(j*(2.0*M_PI/length), derivative)
+                      * constant
+                      * cos(j*(2.0*M_PI/length)*x + shift);
+            break;
+        case 2:
+            retval -=   j * pow(j*(2.0*M_PI/length), derivative)
+                      * constant
+                      * sin(j*(2.0*M_PI/length)*x + shift);
+            break;
+        case 3:
+            retval -=   j * pow(j*(2.0*M_PI/length), derivative)
+                      * constant
+                      * cos(j*(2.0*M_PI/length)*x + shift);
+            break;
         }
     }
     return retval;

@@ -196,20 +196,20 @@ public: // swap, reset
 #else
         // Perform a "logical" swap without triggering is_singular() asserts.
         switch (this->is_singular() + (o.is_singular() << 1)) {
-            case 0:  // neither singular
-                ::boost::swap(static_cast<iterator_range&>(*this),
-                              static_cast<iterator_range&>(o));
-                break;
-            case 1:  // only this singular so copy o and make o singular
-                this->iterator_range::operator=(o);
-                o.iterator_range::advance_begin(::boost::distance(o));
-                break;
-            case 2:  // only o singular so copy this and make this singular
-                o.iterator_range::operator=(*this);
-                iterator_range::advance_begin(::boost::distance(*this));
-                break;
-            case 3:  // both singular so do nothing
-                break;
+        case 0:  // neither singular
+            ::boost::swap(static_cast<iterator_range&>(*this),
+                          static_cast<iterator_range&>(o));
+            break;
+        case 1:  // only this singular so copy o and make o singular
+            this->iterator_range::operator=(o);
+            o.iterator_range::advance_begin(::boost::distance(o));
+            break;
+        case 2:  // only o singular so copy this and make this singular
+            o.iterator_range::operator=(*this);
+            iterator_range::advance_begin(::boost::distance(*this));
+            break;
+        case 3:  // both singular so do nothing
+            break;
         }
 #endif
         p_.swap(o.p_);

@@ -275,11 +275,11 @@ static void permute(const Problem<float> &p, gsl_permutation *g, float *x)
         = gsl_vector_float_view_array_with_stride(x, abs(p.incx), p.S*p.n);
     if (p.incx < 0) gsl_vector_float_reverse(&v.vector);
     switch (toupper(p.trans)) {
-        case 'N': gsl_permute_vector_float        (g, &v.vector);
-                  break;
-        case 'T': gsl_permute_vector_float_inverse(g, &v.vector);
-                  break;
-        default:  BOOST_FAIL("Unknown p.trans");
+    case 'N': gsl_permute_vector_float        (g, &v.vector);
+              break;
+    case 'T': gsl_permute_vector_float_inverse(g, &v.vector);
+              break;
+    default:  BOOST_FAIL("Unknown p.trans");
     }
     if (p.incx < 0) gsl_vector_float_reverse(&v.vector);
 }
@@ -292,11 +292,11 @@ static void permute(const Problem<double> &p, gsl_permutation *g, double *x)
         = gsl_vector_view_array_with_stride(x, abs(p.incx), p.S*p.n);
     if (p.incx < 0) gsl_vector_reverse(&v.vector);
     switch (toupper(p.trans)) {
-        case 'N': gsl_permute_vector        (g, &v.vector);
-                  break;
-        case 'T': gsl_permute_vector_inverse(g, &v.vector);
-                  break;
-        default:  BOOST_FAIL("Unknown p.trans");
+    case 'N': gsl_permute_vector        (g, &v.vector);
+              break;
+    case 'T': gsl_permute_vector_inverse(g, &v.vector);
+              break;
+    default:  BOOST_FAIL("Unknown p.trans");
     }
     if (p.incx < 0) gsl_vector_reverse(&v.vector);
 }
@@ -312,11 +312,11 @@ static void permute(const Problem<std::complex<float> > &p,
                 (float *) x, abs(p.incx), p.S*p.n);
     if (p.incx < 0) gsl_vector_complex_float_reverse(&v.vector);
     switch (toupper(p.trans)) {
-        case 'N': gsl_permute_vector_complex_float        (g, &v.vector);
-                  break;
-        case 'T': gsl_permute_vector_complex_float_inverse(g, &v.vector);
-                  break;
-        default:  BOOST_FAIL("Unknown p.trans");
+    case 'N': gsl_permute_vector_complex_float        (g, &v.vector);
+              break;
+    case 'T': gsl_permute_vector_complex_float_inverse(g, &v.vector);
+              break;
+    default:  BOOST_FAIL("Unknown p.trans");
     }
     if (p.incx < 0) gsl_vector_complex_float_reverse(&v.vector);
 }
@@ -332,11 +332,11 @@ static void permute(const Problem<std::complex<double> > &p,
                 (double *) x, abs(p.incx), p.S*p.n);
     if (p.incx < 0) gsl_vector_complex_reverse(&v.vector);
     switch (toupper(p.trans)) {
-        case 'N': gsl_permute_vector_complex        (g, &v.vector);
-                  break;
-        case 'T': gsl_permute_vector_complex_inverse(g, &v.vector);
-                  break;
-        default:  BOOST_FAIL("Unknown p.trans");
+    case 'N': gsl_permute_vector_complex        (g, &v.vector);
+              break;
+    case 'T': gsl_permute_vector_complex_inverse(g, &v.vector);
+              break;
+    default:  BOOST_FAIL("Unknown p.trans");
     }
     if (p.incx < 0) gsl_vector_complex_reverse(&v.vector);
 }

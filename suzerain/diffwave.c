@@ -44,10 +44,10 @@ void scale_by_imaginary_power(const complex_double in,
 {
     // Modulo-four-like operation for 2's complement p
     switch (p & 3) {
-        case 0: *out =  in           ; break; // I^0 = 1
-        case 1: *out =  in*_Complex_I; break; // I^1 = I = I^-3
-        case 2: *out = -in           ; break; // I^2 = -1 = I^-2
-        case 3: *out = -in*_Complex_I; break; // I^3 = -I = I^-1
+    case 0: *out =  in           ; break; // I^0 = 1
+    case 1: *out =  in*_Complex_I; break; // I^1 = I = I^-3
+    case 2: *out = -in           ; break; // I^2 = -1 = I^-2
+    case 3: *out = -in*_Complex_I; break; // I^3 = -I = I^-1
     }
 }
 

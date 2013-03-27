@@ -40,10 +40,10 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
 
     // Adjust for P versus P^T operation
     switch (toupper(trans)) {
-        case 'N': break;
-        case 'T': S ^= n; n ^= S; S ^= n;  // (S <=> n) ==> (q <=> q^-1)
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'N': break;
+    case 'T': S ^= n; n ^= S; S ^= n;  // (S <=> n) ==> (q <=> q^-1)
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Work with memory using separate real- and imaginary-valued components

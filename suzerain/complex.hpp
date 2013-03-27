@@ -579,22 +579,22 @@ void assign_complex_scaled_ipower(Complex1 &SUZERAIN_RESTRICT dest,
                                   const int ipower)
 {
     switch (ipower & 3) { // Modulo-four-like operation for 2s complement
-        case 3: // I^3 = -I = I^-1
-            real(dest) = alpha*real_ipower<3>(src);
-            imag(dest) = alpha*imag_ipower<3>(src);
-            break;
-        case 2: // I^2 = -1 = I^-2
-            real(dest) = alpha*real_ipower<2>(src);
-            imag(dest) = alpha*imag_ipower<2>(src);
-            break;
-        case 1: // I^1 = I = I^-3
-            real(dest) = alpha*real_ipower<1>(src);
-            imag(dest) = alpha*imag_ipower<1>(src);
-            break;
-        case 0: // I^0 = 1
-            real(dest) = alpha*real_ipower<0>(src);
-            imag(dest) = alpha*imag_ipower<0>(src);
-            break;
+    case 3: // I^3 = -I = I^-1
+        real(dest) = alpha*real_ipower<3>(src);
+        imag(dest) = alpha*imag_ipower<3>(src);
+        break;
+    case 2: // I^2 = -1 = I^-2
+        real(dest) = alpha*real_ipower<2>(src);
+        imag(dest) = alpha*imag_ipower<2>(src);
+        break;
+    case 1: // I^1 = I = I^-3
+        real(dest) = alpha*real_ipower<1>(src);
+        imag(dest) = alpha*imag_ipower<1>(src);
+        break;
+    case 0: // I^0 = 1
+        real(dest) = alpha*real_ipower<0>(src);
+        imag(dest) = alpha*imag_ipower<0>(src);
+        break;
     }
 }
 

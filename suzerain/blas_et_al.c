@@ -84,22 +84,22 @@ suzerain_blas_malloc(size_t size)
     const int status = posix_memalign(&p, SUZERAIN_BLAS_ALIGNMENT, size);
 
     switch (status) {
-        case 0:
+    case 0:
 #ifndef NDEBUG  /* Debug?  Fill likely double-valued buffers with NaNs. */
-            {
-                const double NaN = nan("NAN");
-                const size_t quo = size / sizeof(double);
-                for (size_t i = 0; i < quo; ++i) ((double *)p)[i] = NaN;
-            }
+    {
+        const double NaN = nan("NAN");
+        const size_t quo = size / sizeof(double);
+        for (size_t i = 0; i < quo; ++i) ((double *)p)[i] = NaN;
+    }
 #endif
-            return p;
-        case ENOMEM:
-            return NULL;
-        case EINVAL:
-        default:
-            fprintf(stderr, "Fatal posix_memalign error at %s:%d-- %s\n",
-                    __FILE__, __LINE__, strerror(status));
-            abort();
+        return p;
+    case ENOMEM:
+        return NULL;
+    case EINVAL:
+    default:
+        fprintf(stderr, "Fatal posix_memalign error at %s:%d-- %s\n",
+                __FILE__, __LINE__, strerror(status));
+        abort();
     }
 }
 
@@ -3993,12 +3993,12 @@ suzerain_blasext_sgb_diag_scale_acc(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4064,12 +4064,12 @@ suzerain_blasext_dgb_diag_scale_acc(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4135,12 +4135,12 @@ suzerain_blasext_cgb_diag_scale_acc(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4208,12 +4208,12 @@ suzerain_blasext_zgb_diag_scale_acc(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4281,12 +4281,12 @@ suzerain_blasext_zgb_diag_scale_acc_d(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4359,12 +4359,12 @@ suzerain_blasext_zgb_ddiag_scale_acc_d(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4445,12 +4445,12 @@ suzerain_blasext_zgb_dddiag_scale_acc_d(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4537,12 +4537,12 @@ suzerain_blasext_zgb_ddddiag_scale_acc_d(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible
@@ -4640,12 +4640,12 @@ suzerain_blasext_zgb_dddddiag_scale_acc_d(
 
     // If necessary, recast side == 'L' details into a side == 'R' traversal
     switch (toupper(side)) {
-        case 'R': break;
-        case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
-                  incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
-                  kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
-                  break;
-        default:  return suzerain_blas_xerbla(__func__, 1);
+    case 'R': break;
+    case 'L': inca = lda - inca; a += ku - kl*inca;  // Traverse A by rows
+              incb = ldb - incb; b += ku - kl*incb;  // Traverse B by rows
+              kl ^= ku; ku ^= kl; kl ^= ku;          // Swap kl and ku
+              break;
+    default:  return suzerain_blas_xerbla(__func__, 1);
     }
 
     // Quick return if possible

@@ -775,93 +775,93 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     )
                 ;
             switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                    break;
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+                break;
 
-                case linearize::rhome_xyz:
-                    sphys(ndx::e, offset) +=
-                        // Explicit convective/acoustic less implicit portion
-                        - rholut::explicit_div_e_plus_p_u(
-                                gamma, Ma, rho, grad_rho,
-                                m, div_m, grad_m, e, grad_e, p,
-                                ref_e_divm, ref_e_gradrho, ref_u)
-                        // Explicit portion of energy diffusion terms
-                        + inv_Re_Pr_gamma1 * (
-                              grad_mu.dot(grad_T)
-                            + rholut::explicit_mu_div_grad_T(
-                                 gamma, Ma, mu, rho, grad_rho, div_grad_rho, m,
-                                 grad_m, div_grad_m, e, div_grad_e, p, grad_p,
-                                 ref_nu, ref_nuu, ref_e_deltarho)
+            case linearize::rhome_xyz:
+                sphys(ndx::e, offset) +=
+                    // Explicit convective/acoustic less implicit portion
+                    - rholut::explicit_div_e_plus_p_u(
+                            gamma, Ma, rho, grad_rho,
+                            m, div_m, grad_m, e, grad_e, p,
+                            ref_e_divm, ref_e_gradrho, ref_u)
+                    // Explicit portion of energy diffusion terms
+                    + inv_Re_Pr_gamma1 * (
+                          grad_mu.dot(grad_T)
+                        + rholut::explicit_mu_div_grad_T(
+                             gamma, Ma, mu, rho, grad_rho, div_grad_rho, m,
+                             grad_m, div_grad_m, e, div_grad_e, p, grad_p,
+                             ref_nu, ref_nuu, ref_e_deltarho)
+                    )
+                    // Subtract implicit portions of viscous work terms per
+                    // rholut::explicit_u_dot_mu_div_grad_u and
+                    // rholut::explicit_u_dot_mu_plus_lambda_grad_div_u
+                    - Ma2_over_Re * (
+                          ref_nuu.dot(div_grad_m)
+                        - ref_nuu2*div_grad_rho
+                        + alpha13*(
+                            ref_nuu.dot(grad_div_m)
+                          - grad_grad_rho.cwiseProduct(ref_nuuu).sum()
                         )
-                        // Subtract implicit portions of viscous work terms per
-                        // rholut::explicit_u_dot_mu_div_grad_u and
-                        // rholut::explicit_u_dot_mu_plus_lambda_grad_div_u
-                        - Ma2_over_Re * (
-                              ref_nuu.dot(div_grad_m)
-                            - ref_nuu2*div_grad_rho
-                            + alpha13*(
-                                ref_nuu.dot(grad_div_m)
-                              - grad_grad_rho.cwiseProduct(ref_nuuu).sum()
-                            )
+                    )
+                    ;
+                break;
+
+            case linearize::rhome_y:
+            {
+                // Build up colored terms from perfect gas writeup figure 2
+                const real_t term_rho_y
+                    = - ref_e_gradrho.y();
+                const real_t term_rho_yy
+                    = gamma * inv_Re_Pr_gamma1 * ref_e_deltarho
+                    - Ma2_over_Re * (ref_nuu2 + alpha13 * ref_nuuu(1,1));
+                const real_t term_mx_yy
+                    = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.x();
+                const real_t term_my_y
+                    = - ref_e_divm;
+                const real_t term_my_yy
+                    = Ma2_over_Re * (alpha43 - gamma_over_Pr) * ref_nuu.y();
+                const real_t term_mz_yy
+                    = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.z();
+                const real_t term_e_y
+                    = - gamma * ref_u.y();
+                const real_t term_e_yy
+                    = inv_Re * gamma_over_Pr * ref_nu;
+
+                // Subtract terms scaled by appropriate state derivatives
+                sphys(ndx::e, offset) -=
+                      term_rho_y  * grad_rho.y()
+                    + term_rho_yy * rho_yy
+                    + term_mx_yy  * mx_yy
+                    + term_my_y   * grad_m(1,1)
+                    + term_my_yy  * my_yy
+                    + term_mz_yy  * mz_yy
+                    + term_e_y    * grad_e.y()
+                    + term_e_yy   * e_yy
+                    ;
+
+                // ...
+                // Fall through!
+                // ...
+            }
+
+            case linearize::none:
+                sphys(ndx::e, offset) +=
+                    // Explicit convective and acoustic terms
+                    - rholut::div_e_u(
+                            e, grad_e, u, div_u
                         )
-                        ;
-                    break;
-
-                case linearize::rhome_y:
-                {
-                    // Build up colored terms from perfect gas writeup figure 2
-                    const real_t term_rho_y
-                        = - ref_e_gradrho.y();
-                    const real_t term_rho_yy
-                        = gamma * inv_Re_Pr_gamma1 * ref_e_deltarho
-                        - Ma2_over_Re * (ref_nuu2 + alpha13 * ref_nuuu(1,1));
-                    const real_t term_mx_yy
-                        = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.x();
-                    const real_t term_my_y
-                        = - ref_e_divm;
-                    const real_t term_my_yy
-                        = Ma2_over_Re * (alpha43 - gamma_over_Pr) * ref_nuu.y();
-                    const real_t term_mz_yy
-                        = Ma2_over_Re * (1 - gamma_over_Pr) * ref_nuu.z();
-                    const real_t term_e_y
-                        = - gamma * ref_u.y();
-                    const real_t term_e_yy
-                        = inv_Re * gamma_over_Pr * ref_nu;
-
-                    // Subtract terms scaled by appropriate state derivatives
-                    sphys(ndx::e, offset) -=
-                          term_rho_y  * grad_rho.y()
-                        + term_rho_yy * rho_yy
-                        + term_mx_yy  * mx_yy
-                        + term_my_y   * grad_m(1,1)
-                        + term_my_yy  * my_yy
-                        + term_mz_yy  * mz_yy
-                        + term_e_y    * grad_e.y()
-                        + term_e_yy   * e_yy
-                        ;
-
-                    // ...
-                    // Fall through!
-                    // ...
-                }
-
-                case linearize::none:
-                    sphys(ndx::e, offset) +=
-                        // Explicit convective and acoustic terms
-                        - rholut::div_e_u(
-                                e, grad_e, u, div_u
-                            )
-                        - rholut::div_p_u(
-                                p, grad_p, u, div_u
-                            )
-                        // Explicit energy diffusion terms
-                        + inv_Re_Pr_gamma1 * rholut::div_mu_grad_T(
-                                grad_T, div_grad_T, mu, grad_mu
-                            )
-                        ;
-                        // No need to adjust explicit viscous work term
-                    break;
+                    - rholut::div_p_u(
+                            p, grad_p, u, div_u
+                        )
+                    // Explicit energy diffusion terms
+                    + inv_Re_Pr_gamma1 * rholut::div_mu_grad_T(
+                            grad_T, div_grad_T, mu, grad_mu
+                        )
+                    ;
+                    // No need to adjust explicit viscous work term
+                break;
             }
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
@@ -870,68 +870,68 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                   inv_Re * div_tau
                 ;
             switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                    break;
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+                break;
 
-                case linearize::rhome_xyz:
-                    momentum_rhs +=
-                        // Explicit convective term less implicit portion
-                        - rholut::explicit_div_rho_inverse_m_outer_m(
-                                grad_rho, div_m, grad_m, u, ref_u, ref_uu)
-                        // Explicit pressure less implicit pressure terms
-                        - inv_Ma2 * rholut::explicit_grad_p(
-                                gamma, Ma, rho, grad_rho, m, grad_m,
-                                ref_u2, ref_u)
-                        // Subtract implicit portions of viscous terms per
-                        // rholut::explicit_mu_div_grad_u and
-                        // rholut::explicit_mu_plus_lambda_grad_div_u
-                        - inv_Re * (
-                            ref_nu*(div_grad_m + alpha13*grad_div_m)
-                          - ref_nuu*div_grad_rho
-                          - alpha13*grad_grad_rho*ref_nuu
-                        )
-                        ;
-                    break;
+            case linearize::rhome_xyz:
+                momentum_rhs +=
+                    // Explicit convective term less implicit portion
+                    - rholut::explicit_div_rho_inverse_m_outer_m(
+                            grad_rho, div_m, grad_m, u, ref_u, ref_uu)
+                    // Explicit pressure less implicit pressure terms
+                    - inv_Ma2 * rholut::explicit_grad_p(
+                            gamma, Ma, rho, grad_rho, m, grad_m,
+                            ref_u2, ref_u)
+                    // Subtract implicit portions of viscous terms per
+                    // rholut::explicit_mu_div_grad_u and
+                    // rholut::explicit_mu_plus_lambda_grad_div_u
+                    - inv_Re * (
+                        ref_nu*(div_grad_m + alpha13*grad_div_m)
+                      - ref_nuu*div_grad_rho
+                      - alpha13*grad_grad_rho*ref_nuu
+                    )
+                    ;
+                break;
 
-                case linearize::rhome_y:
-                    // Subtract colored terms from perfect gas writeup figure 2
-                    momentum_rhs.x() -=
-                                   ref_uu(0,1) * grad_rho.y()
-                        - inv_Re * ref_nuu.x() * rho_yy
-                        -          ref_u.y()   * grad_m(0,1)
-                        + inv_Re * ref_nu      * mx_yy
-                        -          ref_u.x()   * grad_m(1,1)
-                        ;
-                    momentum_rhs.y() -=
-                          (ref_uu(1,1) - gamma1 / 2 * ref_u2) * grad_rho.y()
-                        - alpha43 * inv_Re * ref_nuu.y()      * rho_yy
-                        + gamma1 * ref_u.x()                  * grad_m(0,1)
-                        + (gamma1 - 2) * ref_u.y()            * grad_m(1,1)
-                        + alpha43 * inv_Re * ref_nu           * my_yy
-                        + gamma1 * ref_u.z()                  * grad_m(2,1)
-                        - gamma1 * inv_Ma2                    * grad_e.y()
-                        ;
-                    momentum_rhs.z() -=
-                                   ref_uu(1,2) * grad_rho.y()
-                        - inv_Re * ref_nuu.z() * rho_yy
-                        -          ref_u.z()   * grad_m(1,1)
-                        -          ref_u.y()   * grad_m(2,1)
-                        + inv_Re * ref_nu      * mz_yy
-                        ;
+            case linearize::rhome_y:
+                // Subtract colored terms from perfect gas writeup figure 2
+                momentum_rhs.x() -=
+                               ref_uu(0,1) * grad_rho.y()
+                    - inv_Re * ref_nuu.x() * rho_yy
+                    -          ref_u.y()   * grad_m(0,1)
+                    + inv_Re * ref_nu      * mx_yy
+                    -          ref_u.x()   * grad_m(1,1)
+                    ;
+                momentum_rhs.y() -=
+                      (ref_uu(1,1) - gamma1 / 2 * ref_u2) * grad_rho.y()
+                    - alpha43 * inv_Re * ref_nuu.y()      * rho_yy
+                    + gamma1 * ref_u.x()                  * grad_m(0,1)
+                    + (gamma1 - 2) * ref_u.y()            * grad_m(1,1)
+                    + alpha43 * inv_Re * ref_nu           * my_yy
+                    + gamma1 * ref_u.z()                  * grad_m(2,1)
+                    - gamma1 * inv_Ma2                    * grad_e.y()
+                    ;
+                momentum_rhs.z() -=
+                               ref_uu(1,2) * grad_rho.y()
+                    - inv_Re * ref_nuu.z() * rho_yy
+                    -          ref_u.z()   * grad_m(1,1)
+                    -          ref_u.y()   * grad_m(2,1)
+                    + inv_Re * ref_nu      * mz_yy
+                    ;
 
-                    // ...
-                    // Fall through!
-                    // ...
+                // ...
+                // Fall through!
+                // ...
 
-                case linearize::none:
-                    momentum_rhs +=
-                        // Explicit convective term
-                        - rholut::div_u_outer_m(m, grad_m, u, div_u)
-                        // Explicit pressure term
-                        - inv_Ma2 * grad_p
-                        ;
-                    break;
+            case linearize::none:
+                momentum_rhs +=
+                    // Explicit convective term
+                    - rholut::div_u_outer_m(m, grad_m, u, div_u)
+                    // Explicit pressure term
+                    - inv_Ma2 * grad_p
+                    ;
+                break;
             }
             sphys(ndx::mx, offset) = momentum_rhs.x();
             sphys(ndx::my, offset) = momentum_rhs.y();
@@ -943,21 +943,21 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                    break;
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+                break;
 
-                case linearize::rhome_xyz:    // Fully implicit convection
-                    sphys(ndx::rho, offset) = 0;
-                    break;
+            case linearize::rhome_xyz:    // Fully implicit convection
+                sphys(ndx::rho, offset) = 0;
+                break;
 
-                case linearize::rhome_y:      // Implicit Y but Explicit X, Z
-                    sphys(ndx::rho, offset) = - grad_m(0,0) - grad_m(2,2);
-                    break;
+            case linearize::rhome_y:      // Implicit Y but Explicit X, Z
+                sphys(ndx::rho, offset) = - grad_m(0,0) - grad_m(2,2);
+                break;
 
-                case linearize::none:         // Full explicit convection
-                    sphys(ndx::rho, offset) = - div_m;
-                    break;
+            case linearize::none:         // Full explicit convection
+                sphys(ndx::rho, offset) = - div_m;
+                break;
             }
 
             // Determine the minimum observed stable time step when necessary
@@ -979,43 +979,43 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
-                    default:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        break;
+                default:
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+                    break;
 
-                    // Implicit acoustics sets the effective sound speed
-                    // to zero within the convective_stability_criterion.
-                    // Fluctuating velocity is taken relative to references.
-                    case linearize::rhome_xyz:
-                        ua_l1_x       = abs(u.x()            ) * lambda1_x;
-                        ua_l1_y       = abs(u.y()            ) * lambda1_y;
-                        ua_l1_z       = abs(u.z()            ) * lambda1_z;
-                        fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
-                        fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
-                        fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
-                        break;
+                // Implicit acoustics sets the effective sound speed
+                // to zero within the convective_stability_criterion.
+                // Fluctuating velocity is taken relative to references.
+                case linearize::rhome_xyz:
+                    ua_l1_x       = abs(u.x()            ) * lambda1_x;
+                    ua_l1_y       = abs(u.y()            ) * lambda1_y;
+                    ua_l1_z       = abs(u.z()            ) * lambda1_z;
+                    fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
+                    fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                    fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
+                    break;
 
-                    // Explicit treatment forces including acoustics
-                    // in stability and has a zero reference velocity.
-                    case linearize::none:
-                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
-                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
-                        fluct_ua_l1_x = ua_l1_x;
-                        fluct_ua_l1_y = ua_l1_y;
-                        fluct_ua_l1_z = ua_l1_z;
-                        break;
+                // Explicit treatment forces including acoustics
+                // in stability and has a zero reference velocity.
+                case linearize::none:
+                    ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                    ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                    ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                    fluct_ua_l1_x = ua_l1_x;
+                    fluct_ua_l1_y = ua_l1_y;
+                    fluct_ua_l1_z = ua_l1_z;
+                    break;
 
-                    // Wall-normal-only implicit acoustics and convection
-                    // is nothing but a hybrid of the above two cases.
-                    case linearize::rhome_y:
-                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                        ua_l1_y       = (abs(u.y())    ) * lambda1_y;
-                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
-                        fluct_ua_l1_x = ua_l1_x;
-                        fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
-                        fluct_ua_l1_z = ua_l1_z;
-                        break;
+                // Wall-normal-only implicit acoustics and convection
+                // is nothing but a hybrid of the above two cases.
+                case linearize::rhome_y:
+                    ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                    ua_l1_y       = (abs(u.y())    ) * lambda1_y;
+                    ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                    fluct_ua_l1_x = ua_l1_x;
+                    fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                    fluct_ua_l1_z = ua_l1_z;
+                    break;
                 }
                 convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
                         evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
@@ -1044,58 +1044,58 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // to account for viscous, bulk viscous, and thermal effects.
                 real_t diffusivity = nu;
                 switch (Linearize) {
-                    default:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        break;
+                default:
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+                    break;
 
-                    // Implicit diffusion permits removing a reference value.
-                    // Antidiffusive (nu - ref_nu) is fine and not computed.
-                    case linearize::rhome_xyz:
-                        diffusivity -= ref_nu;        // Compute sign wrt ref.
-                        if (diffusivity <= 0) break;  // NaN => false, proceed
-                        // ...
-                        // Fall through!
-                        // ...
+                // Implicit diffusion permits removing a reference value.
+                // Antidiffusive (nu - ref_nu) is fine and not computed.
+                case linearize::rhome_xyz:
+                    diffusivity -= ref_nu;        // Compute sign wrt ref.
+                    if (diffusivity <= 0) break;  // NaN => false, proceed
+                    // ...
+                    // Fall through!
+                    // ...
 
-                    // Explicit treatment forces a zero reference diffusivity
-                    case linearize::none:
-                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real / (   diffusivity
-                                                    * (   md_lambda2_x
-                                                        + md_lambda2_y
-                                                        + md_lambda2_z)));
-                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_x));
-                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_y));
-                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / (diffusivity * md_lambda2_z));
-                        break;
+                // Explicit treatment forces a zero reference diffusivity
+                case linearize::none:
+                    diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                              evmaxmag_real / (   diffusivity
+                                                * (   md_lambda2_x
+                                                    + md_lambda2_y
+                                                    + md_lambda2_z)));
+                    diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                            evmaxmag_real / (diffusivity * md_lambda2_x));
+                    diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                            evmaxmag_real / (diffusivity * md_lambda2_y));
+                    diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                            evmaxmag_real / (diffusivity * md_lambda2_z));
+                    break;
 
-                    // Wall-normal implicit diffusion permits removing a
-                    // reference value in only the Y direction.  Notice
-                    // antidiffusive (nu - ref_nu) is fine but requires
-                    // chomping to zero to avoid circumventing the XZ checks,
-                    // however minnan is required in case ref_nu is NaN.
-                    // Notice also that we /want/ to avoid NaN's arising from
-                    // diffusivity_y == 0 in diffusive_y_delta_t computation.
-                    case linearize::rhome_y:
-                    {
-                        const real_t diffusivity_y
-                                = minnan(diffusivity - ref_nu, real_t(0));
-                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real
-                                / (   diffusivity   * md_lambda2_x
-                                    + diffusivity_y * md_lambda2_y
-                                    + diffusivity   * md_lambda2_z));
-                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / (diffusivity   * md_lambda2_x));
-                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / (diffusivity_y * md_lambda2_y));
-                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / (diffusivity   * md_lambda2_z));
-                        break;
-                    }
+                // Wall-normal implicit diffusion permits removing a
+                // reference value in only the Y direction.  Notice
+                // antidiffusive (nu - ref_nu) is fine but requires
+                // chomping to zero to avoid circumventing the XZ checks,
+                // however minnan is required in case ref_nu is NaN.
+                // Notice also that we /want/ to avoid NaN's arising from
+                // diffusivity_y == 0 in diffusive_y_delta_t computation.
+                case linearize::rhome_y:
+                {
+                    const real_t diffusivity_y
+                            = minnan(diffusivity - ref_nu, real_t(0));
+                    diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                              evmaxmag_real
+                            / (   diffusivity   * md_lambda2_x
+                                + diffusivity_y * md_lambda2_y
+                                + diffusivity   * md_lambda2_z));
+                    diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                            evmaxmag_real / (diffusivity   * md_lambda2_x));
+                    diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                            evmaxmag_real / (diffusivity_y * md_lambda2_y));
+                    diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                            evmaxmag_real / (diffusivity   * md_lambda2_z));
+                    break;
+                }
                 }
             }
 

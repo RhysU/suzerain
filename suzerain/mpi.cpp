@@ -32,15 +32,15 @@ std::string error_string(const int errorcode)
     int resultlen;
     const int status = MPI_Error_string(errorcode, errorstring, &resultlen);
     switch (status) {
-        case MPI_SUCCESS:
-            retval << errorstring;
-            break;
-        case MPI_ERR_ARG:
-            retval << "No error string known for code " << errorcode;
-            break;
-        default:
-            retval << "Unknown error " << status
-                   << " when retrieving string for code " << errorcode;
+    case MPI_SUCCESS:
+        retval << errorstring;
+        break;
+    case MPI_ERR_ARG:
+        retval << "No error string known for code " << errorcode;
+        break;
+    default:
+        retval << "Unknown error " << status
+               << " when retrieving string for code " << errorcode;
     }
 
     return retval.str();
