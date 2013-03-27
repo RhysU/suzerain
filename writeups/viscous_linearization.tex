@@ -187,15 +187,53 @@ Solving for $\frac{\partial T}{\partial Y_i}$ gives,
  C_v \delta T = - e_i \delta Y_i \\
  \frac{\partial T}{\partial Y_i} = - \frac{e_i}{C_v}
 \end{align}
+This is,
+\begin{equation}
+ \frac{\partial f}{\partial Y_i} = \frac{\partial T}{\partial Y_i} = -\frac{e_i}{C_v}
+\end{equation}
+
 %
 % 
 %
 \subsection{$\frac{\partial e}{\partial U}$}
 
+For our linearization, we only need derivatives with respect to
+wall-normal velocity and energy. This is because of our choice of
+coupling. 
+
+Thus, we only require $\frac{\partial e}{\partial \rho v}$ and
+$\frac{\partial e}{\partial \rho E}$
+
+\begin{equation}
+e = \frac{\rho E}{\rho } - \frac{1}{2} \frac{1}{\rho^2} \left((\rho u)^2
+							+ (\rho v)^2
+							+ (\rho w)^2 \right)
+\end{equation}
+Then, 
+\begin{equation}
+\frac{\partial e}{\partial \rho E}  = \frac{1}{\rho}
+\end{equation}
+and,
+\begin{equation}
+\frac{\partial e}{\partial \rho v}  = -\frac{v}{\rho}
+\end{equation}
+
+Thus, we now have what we need to complete the process,  
+\begin{equation}
+\frac{\partial T}{\partial \rho E}  = \frac{\partial T}{\partial e}
+ \frac{\partial e}{\partial \rho E} = \frac{1}{\rho C_v} 
+\end{equation}
+and,
+\begin{equation}
+\frac{\partial T}{\partial \rho v}  = \frac{\partial T}{\partial e}
+ \frac{\partial e}{\partial \rho v} = -\frac{v}{\rho C_v} = -\frac{\rho v}{\rho^2 C_v}
+\end{equation}
+
+
 %
 % 
 %
-\subsection{$\frac{\partial Y}{\partial U}$}
+%\subsection{$\frac{\partial Y}{\partial U}$}
 
 
 % Finally, $\Delta{}T$. This will be identical to the current treatment in
