@@ -227,13 +227,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
       o.zero_dealiasing_modes(swave, var);
-      o.bop_accumulate(1,    1, swave, var, 0, auxw, aux::e + dir::count*var + dir::y);
+      o.bop_accumulate(1,    1, swave, var, 
+                             0, auxw , aux::e + dir::count*var + dir::y);
       o.bop_apply     (0,    1, swave, var);
 
       // Compute X- and Z- derivatives of variable var at collocation points
       // Zeros wavenumbers present only for dealiasing in the target storage
-      o.diffwave_accumulate(1, 0, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::x );
-      o.diffwave_accumulate(0, 1, 1, swave, var,  0, auxw, aux::e + dir::count*var + dir::z );
+      o.diffwave_accumulate(1, 0, 1, swave, var,  
+                                  0, auxw , aux::e + dir::count*var + dir::x );
+      o.diffwave_accumulate(0, 1, 1, swave, var,  
+                                  0, auxw , aux::e + dir::count*var + dir::z );
 
       // Filter source: compute for variable var
       fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, var,
@@ -320,7 +323,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         
         // FIXME: Have to add this code back (w/ appropriate mods) to
         // support implicit reacting
-        FATAL0("suzerain::reacting::apply_navier_stokes_spatial_operator only supports linearize::none");
+        FATAL0("suzerain::reacting::apply_navier_stokes_spatial_operator "
+               "only supports linearize::none");
 
     } else {                                 // Mean velocity profile only
         
@@ -499,9 +503,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
           
           
             // Compute velocity-related quantities
-            const Vector3r u          = suzerain::rholut::u(rho, m);
-            const real_t div_u        = suzerain::rholut::div_u(rho, grad_rho, m, div_m);
-            const Matrix3r grad_u     = suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
+            const Vector3r u     = suzerain::rholut::u(rho, m);
+
+            const real_t div_u   = 
+                suzerain::rholut::div_u(rho, grad_rho, m, div_m);
+
+            const Matrix3r grad_u= 
+                suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
             
             
             // Compute temperature, pressure, mass diffusivities,
@@ -509,12 +517,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // reaction source terms
             real_t T, p, mu, kap, a, Cp;
             cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
-                           T, p, Ds.data(), mu, kap, hs.data(), om.data(), a, Cp);
+                           T, p, Ds.data(), mu, kap, 
+                           hs.data(), om.data(), a, Cp);
             
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
           
             // Compute quantities related to the viscous stress tensor
-            const Matrix3r tau     = suzerain::rholut::tau(mu, lam, div_u, grad_u);
+            const Matrix3r tau = suzerain::rholut::tau(mu, lam, div_u, grad_u);
           
             // Place to sum species fluxes from Fick's model
             Vector3r sdifftot (0.0, 0.0, 0.0);
@@ -568,7 +577,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             
             Vector3r vwork = tau*u; // TODO: check that this does what I think
             
-            //----------------------------------------------------------------------
+            //----------------------------------------------------------------
             // ENERGY                    = u     * (rho*H) - viscous work ...
             auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
             auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
@@ -584,11 +593,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     auxp(aux::e +dir::z, offset) -= sdiff(2,s) * hs(s);
                 }
             }
-            // NOTE: rest of energy flux (i.e., the heat flux) is accumulated below.
-            //----------------------------------------------------------------------
+            // NOTE: the heat flux is accumulated below (in traversal 3)
+            //----------------------------------------------------------------
             
-            //----------------------------------------------------------------------
-            // MOMENTUM                  = convection     - viscous    + pressure
+            //----------------------------------------------------------------
+            // MOMENTUM                  = convection     - viscous    +pressure
             auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
             auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
             auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
@@ -600,24 +609,24 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
             auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
             auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
-            //----------------------------------------------------------------------
+            //----------------------------------------------------------------
           
-            //----------------------------------------------------------------------
+            //----------------------------------------------------------------
             // mass                       = mass flux
             auxp(aux::rho+dir::x, offset) = m.x();
             auxp(aux::rho+dir::y, offset) = m.y();
             auxp(aux::rho+dir::z, offset) = m.z();
-            //----------------------------------------------------------------------
+            //----------------------------------------------------------------
             
-            //----------------------------------------------------------------------
+            //----------------------------------------------------------------
             // species
             for (unsigned int s=0; s<Ns-1; ++s) {
-                // NOTE: species(0) is the species that is not explicitly carried!
+                // NOTE: species(0) is the diluter!
                 
-                //                                = convection     - diffusion
-                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x()  - sdiff(0,s+1);
-                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y()  - sdiff(1,s+1);
-                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z()  - sdiff(2,s+1);
+                //                                = convection    - diffusion
+                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x() - sdiff(0,s+1);
+                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y() - sdiff(1,s+1);
+                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z() - sdiff(2,s+1);
                 
             }
             //----------------------------------------------------------------------
