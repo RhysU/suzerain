@@ -260,19 +260,19 @@ FILE * suzerain_set_stream(FILE * new_stream);
 
 /** Shorthand for using \c SUZERAIN_ERROR_VAL for unimplemented logic. */
 #define SUZERAIN_ERROR_VAL_UNIMPLEMENTED(value) \
-        SUZERAIN_ERROR_VAL("Unimplemented logic!", SUZERAIN_EUNIMPL, value);
+        SUZERAIN_ERROR_VAL("Unimplemented logic!", SUZERAIN_EUNIMPL, value)
 
 /** Shorthand for using \c SUZERAIN_ERROR_VOID for unimplemented logic. */
 #define SUZERAIN_ERROR_VOID_UNIMPLEMENTED() \
-        SUZERAIN_ERROR_VOID("Unimplemented logic!", SUZERAIN_EUNIMPL);
+        SUZERAIN_ERROR_VOID("Unimplemented logic!", SUZERAIN_EUNIMPL)
 
 /** Shorthand for using \c SUZERAIN_ERROR_NULL for unimplemented logic. */
 #define SUZERAIN_ERROR_NULL_UNIMPLEMENTED() \
-        SUZERAIN_ERROR_NULL("Unimplemented logic!", SUZERAIN_EUNIMPL);
+        SUZERAIN_ERROR_NULL("Unimplemented logic!", SUZERAIN_EUNIMPL)
 
 /** Shorthand for using \c SUZERAIN_ERROR_REPORT for unimplemented logic. */
 #define SUZERAIN_ERROR_REPORT_UNIMPLEMENTED() \
-        SUZERAIN_ERROR_REPORT("Unimplemented logic!", SUZERAIN_EUNIMPL);
+        SUZERAIN_ERROR_REPORT("Unimplemented logic!", SUZERAIN_EUNIMPL)
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* Internal helper macro for implementing SUZERAIN_MPICHKx macros */
