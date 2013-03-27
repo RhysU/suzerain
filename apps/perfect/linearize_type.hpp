@@ -35,11 +35,14 @@ namespace perfect {
 /** Provides scoping semantics for linearize::type */
 namespace linearize {
 
-/** What type of hybrid implicit/explicit linearization is employed? */
+/**
+ * What type of hybrid implicit/explicit linearization is employed?
+ * All valid types will evaluate to true in a boolean context.
+ */
 enum type {
-    rhome_xyz, ///< Density, momentum, and total energy across X, Y, and Z
-    rhome_y,   ///< Density, momentum, and total energy implicit in Y only
-    none       ///< No linearization implying a fully explicit treatment
+    rhome_xyz = 1, ///< Density, momentum, and total energy across X, Y, and Z
+    rhome_y,       ///< Density, momentum, and total energy implicit in Y only
+    none           ///< No linearization implying a fully explicit treatment
 };
 
 } // namespace linearize

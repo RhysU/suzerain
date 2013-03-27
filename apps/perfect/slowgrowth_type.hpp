@@ -35,9 +35,12 @@ namespace perfect {
 /** Provides scoping semantics for slowgrowth::type */
 namespace slowgrowth {
 
-/** What slow growth sources are employed? */
+/**
+ * What slow growth sources are employed?
+ * All valid types will evaluate to true in a boolean context.
+ */
 enum type {
-    none   ///< No slow growth sources
+    none = 1  ///< No slow growth sources
 };
 
 } // namespace slowgrowth
