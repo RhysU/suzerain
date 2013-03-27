@@ -55,18 +55,14 @@ BOOST_STATIC_ASSERT(NREFS == sizeof(suzerain_rholut_imexop_refld)/sizeof(int));
 
 struct parameters
 {
-    real_t km;
-    real_t kn;
-    int    refndx;
+    int refndx;
 };
 
 template< typename charT, typename traits >
 std::basic_ostream<charT,traits>& operator<<(
         std::basic_ostream<charT,traits> &os, const parameters& p)
 {
-    return os << "{km="        << p.km
-              << ", kn="       << p.kn
-              << ", refndx="   << p.refndx << '}';
+    return os << "{refndx="   << p.refndx << '}';
 }
 
 // Free function checking if the apply and pack operations are
@@ -94,8 +90,6 @@ static void operator_consistency(const parameters& p)
 
     // Initialize scenario parameters
     const complex_t phi(M_SQRT2/11, M_LOG2E/13);
-    const real_t&   km = p.km;
-    const real_t&   kn = p.kn;
 
     suzerain_rholut_imexop_scenario s;
     s.Re    = 3000;
@@ -135,8 +129,8 @@ static void operator_consistency(const parameters& p)
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
-        suzerain_rholut_imexop_accumulate(
-            phi, km, kn, &s, &r, &ld, op.get(),
+        suzerain_rholut_imexop_accumulate00(
+            phi, &s, &r, &ld, op.get(),
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);
     }
@@ -163,8 +157,8 @@ static void operator_consistency(const parameters& p)
     using suzerain::complex::NaN;
     fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
-    suzerain_rholut_imexop_packc(phi, km, kn, &s, &r, &ld, op.get(),
-                                 0, 1, 2, 3, 4, buf.get(), &A, papt.get());
+    suzerain_rholut_imexop_packc00(phi, &s, &r, &ld, op.get(),
+                                   0, 1, 2, 3, 4, buf.get(), &A, papt.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {
@@ -246,17 +240,11 @@ bool init_unit_test_suite() {
     using boost::unit_test::framework::master_test_suite;
     master_test_suite().p_name.value = __FILE__;
 
-    // Use a mixture of non-zero and zero wavenumbers in each of X, Z
-    // Done as zero-wavenumbers hit degenerate portions of BLAS-like calls.
+    // Use zero wavenumbers in each of X, Z
     //
     // First register all-zero reference values to tickle degenerate cases.
     // Then register nonzero references one-by-one to ensure consistency.
-    parameters p[] = { {    0,      0, /*refndx*/-1},
-                       {    0, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      0, /*refndx*/-1},
-                       {    1, 3*M_PI, /*refndx*/-1},
-                       {7*M_E,      1, /*refndx*/-1},
-                       {7*M_E, 3*M_PI, /*refndx*/-1} };
+    parameters p[] = { {/*refndx*/-1}  };
     for (int i = -1; i < (int) NREFS; ++i) {
         for (size_t j = 0; j < sizeof(p)/sizeof(p[0]); ++j) {
             p[j].refndx = i;
