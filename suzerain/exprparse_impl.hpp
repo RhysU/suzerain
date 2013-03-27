@@ -113,7 +113,7 @@ void exprparse_range_impl(const std::string& s,
                           T *valmin, T *valmax,
                           const T defaultmin, const T defaultmax,
                           const T absmin, const T absmax,
-                          const char *name = NULL)
+                          const char *name)
 {
     if (!name) name = "exprparse_range input";
     assert(absmin <= defaultmin);
