@@ -82,11 +82,13 @@ std::vector<real_t> nonlinear_operator::apply_operator(
     switch (common.slow_treatment) {
     default:
         SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+        break;
 
     case slowgrowth::none:
         switch (common.linearization) {
         default:
             SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+            break;
 
         case linearize::rhome_xyz:
             return (substep_index == 0)

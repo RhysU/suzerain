@@ -654,6 +654,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     default:
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
+                        break;
 
                     // Explicit treatment forces including acoustics
                     // in stability and has a zero reference velocity.
@@ -709,6 +710,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     default:
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
+                        break;
 
                     // Explicit treatment forces a zero reference diffusivity
                     case linearize::none:

@@ -777,6 +777,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    break;
 
                 case linearize::rhome_xyz:
                     sphys(ndx::e, offset) +=
@@ -871,6 +872,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    break;
 
                 case linearize::rhome_xyz:
                     momentum_rhs +=
@@ -943,6 +945,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    break;
 
                 case linearize::rhome_xyz:    // Fully implicit convection
                     sphys(ndx::rho, offset) = 0;
@@ -979,6 +982,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     default:
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
+                        break;
 
                     // Implicit acoustics sets the effective sound speed
                     // to zero within the convective_stability_criterion.
@@ -1044,6 +1048,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     default:
                         SUZERAIN_ERROR_REPORT("Unimplemented!",
                                               SUZERAIN_ESANITY);
+                        break;
 
                     // Implicit diffusion permits removing a reference value.
                     // Antidiffusive (nu - ref_nu) is fine and not computed.
