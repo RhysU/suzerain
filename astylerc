@@ -7,6 +7,8 @@ convert-tabs
 indent-col1-comments
 indent-preprocessor
 indent=spaces=4
+# !indent-switches
+# !indent-cases
 keep-one-line-statements
 min-conditional-indent=0
 pad-header
