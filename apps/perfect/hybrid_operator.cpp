@@ -190,7 +190,41 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
         }
         break;
 
-    case linearize::rhome_y: // FIXME
+    case linearize::rhome_y:
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+            if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
+
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+                if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
+
+                // Get pointer to (.,m,n)-th state pencil
+                complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+                // Copy pencil into temporary storage
+                blas::copy(solver->N, p, 1, tmp.data(), 1);
+
+                // Accumulate result back into state storage
+                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate00");
+                suzerain_rholut_imexop_accumulate00(
+                        phi, &s, &ref, &ld, cop.get(),
+                        tmp.data() + ndx::e   * Ny,
+                        tmp.data() + ndx::mx  * Ny,
+                        tmp.data() + ndx::my  * Ny,
+                        tmp.data() + ndx::mz  * Ny,
+                        tmp.data() + ndx::rho * Ny,
+                        0.0,
+                        p + ndx::e   * Ny,
+                        p + ndx::mx  * Ny,
+                        p + ndx::my  * Ny,
+                        p + ndx::mz  * Ny,
+                        p + ndx::rho * Ny);
+            }
+        }
+        break;
+
+
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
 
@@ -289,7 +323,35 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
         }
         break;
 
-    case linearize::rhome_y: // FIXME
+    case linearize::rhome_y:
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+            if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
+
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+                if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
+
+                // Accumulate result
+                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate00");
+                suzerain_rholut_imexop_accumulate00(
+                        phi, &s, &ref, &ld, cop.get(),
+                        &input [ndx::e  ][0][m - dkbx][n - dkbz],
+                        &input [ndx::mx ][0][m - dkbx][n - dkbz],
+                        &input [ndx::my ][0][m - dkbx][n - dkbz],
+                        &input [ndx::mz ][0][m - dkbx][n - dkbz],
+                        &input [ndx::rho][0][m - dkbx][n - dkbz],
+                        beta,
+                        &output[ndx::e   ][0][m - dkbx][n - dkbz],
+                        &output[ndx::mx  ][0][m - dkbx][n - dkbz],
+                        &output[ndx::my  ][0][m - dkbx][n - dkbz],
+                        &output[ndx::mz  ][0][m - dkbx][n - dkbz],
+                        &output[ndx::rho ][0][m - dkbx][n - dkbz]);
+
+            }
+        }
+        break;
+
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
