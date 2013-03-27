@@ -652,8 +652,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
                     default:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         break;
 
                     // Explicit treatment forces including acoustics
@@ -671,8 +670,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // to zero within the convective_stability_criterion.
                     // Fluctuating velocity is taken relative to references.
                     case linearize::rhome:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         // ua_l1_x       = abs(u.x()            ) * lambda1_x;
                         // ua_l1_y       = abs(u.y()            ) * lambda1_y;
                         // ua_l1_z       = abs(u.z()            ) * lambda1_z;
@@ -708,8 +706,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t diffusivity;
                 switch (Linearize) {
                     default:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         break;
 
                     // Explicit treatment forces a zero reference diffusivity
@@ -732,8 +729,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // Implicit diffusion permits removing a reference value.
                     // Antidiffusive (nu - ref_nu) is fine and not computed.
                     case linearize::rhome:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         // diffusivity = nu - ref_nu;    // Compute sign wrt ref.
                         // if (diffusivity <= 0) break;  // NaN => false, proceed
                         // diffusivity *= maxdiffconst;  // Rescale as necessary.

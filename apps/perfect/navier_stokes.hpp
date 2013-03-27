@@ -776,7 +776,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 ;
             switch (Linearize) {
                 default:
-                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                     break;
 
                 case linearize::rhome_xyz:
@@ -871,7 +871,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 ;
             switch (Linearize) {
                 default:
-                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                     break;
 
                 case linearize::rhome_xyz:
@@ -944,7 +944,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
                 default:
-                    SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                     break;
 
                 case linearize::rhome_xyz:    // Fully implicit convection
@@ -980,8 +980,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
                     default:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         break;
 
                     // Implicit acoustics sets the effective sound speed
@@ -1046,8 +1045,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t diffusivity = nu;
                 switch (Linearize) {
                     default:
-                        SUZERAIN_ERROR_REPORT("Unimplemented!",
-                                              SUZERAIN_ESANITY);
+                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                         break;
 
                     // Implicit diffusion permits removing a reference value.

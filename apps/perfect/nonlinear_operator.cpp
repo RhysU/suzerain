@@ -81,13 +81,13 @@ std::vector<real_t> nonlinear_operator::apply_operator(
     // Dispatch to an optimized implementation depending on case:
     switch (common.slow_treatment) {
     default:
-        SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
         break;
 
     case slowgrowth::none:
         switch (common.linearization) {
         default:
-            SUZERAIN_ERROR_REPORT("Unimplemented!", SUZERAIN_ESANITY);
+            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
             break;
 
         case linearize::rhome_xyz:
@@ -117,8 +117,6 @@ std::vector<real_t> nonlinear_operator::apply_operator(
     }
 
 #undef ARGUMENTS
-
-    throw new std::logic_error("Theoretically unreachable location reached");
 }
 
 } // namespace perfect
