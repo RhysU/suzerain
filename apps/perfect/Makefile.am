@@ -69,10 +69,10 @@ AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
 
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh
-TESTS              += test_restart_implicit.sh
+TESTS              += test_restart_rhome_xyz.sh
 dist_check_SCRIPTS += test_restart_template.sh
 dist_check_SCRIPTS += test_restart_explicit.sh
-dist_check_SCRIPTS += test_restart_implicit.sh
+dist_check_SCRIPTS += test_restart_rhome_xyz.sh
 
 # Serial/parallel equivalence for degenerate parallel decompositions
 # Not important from a utility perspective, but great for hitting edge cases
@@ -81,10 +81,10 @@ dist_check_SCRIPTS += test_dparallel.sh
 
 # Serial/parallel equivalence for normal parallel decompositions
 TESTS              += test_parallel_explicit.sh
-TESTS              += test_parallel_implicit.sh
+TESTS              += test_parallel_rhome_xyz.sh
 dist_check_SCRIPTS += test_parallel_template.sh
 dist_check_SCRIPTS += test_parallel_explicit.sh
-dist_check_SCRIPTS += test_parallel_implicit.sh
+dist_check_SCRIPTS += test_parallel_rhome_xyz.sh
 
 # Read canned, legacy fields to test backwards compatibility
 TESTS              += test_fields.sh
@@ -96,10 +96,10 @@ dist_check_SCRIPTS += test_fluct.sh
 
 # Restart handling using collocation-value-based restart files
 TESTS              += test_physical_explicit.sh
-TESTS              += test_physical_implicit.sh
+TESTS              += test_physical_rhome_xyz.sh
 dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
-dist_check_SCRIPTS += test_physical_implicit.sh
+dist_check_SCRIPTS += test_physical_rhome_xyz.sh
 
 # Ensure various implicit solver types give roughly equivalent results
 TESTS              += test_implicit_solvers.sh

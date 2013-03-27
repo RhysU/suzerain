@@ -2,5 +2,5 @@
 set -eu
 
 # Run test template for implicit operators
-OPER=--implicit
+OPER=--implicit=rhome_xyz
 source "`dirname $0`/test_physical_template.sh"
