@@ -63,10 +63,11 @@ enum suzerain_error_status {
     SUZERAIN_EBADFUNC =  9, /**< Problem with user-supplied function */
     SUZERAIN_EMAXITER = 11, /**< Exceeded max number of iterations */
     SUZERAIN_EZERODIV = 12, /**< Tried to divide by zero */
-    SUZERAIN_EROUND   = 18, /**< failed because of roundoff error */
-    SUZERAIN_EBADLEN  = 19, /**< matrix or vector lengths are not conformant */
-    SUZERAIN_ESING    = 21, /**< apparent singularity detected */
-    SUZERAIN_EDIVERGE = 22  /**< integral or series is divergent */
+    SUZERAIN_EROUND   = 18, /**< Failed because of roundoff error */
+    SUZERAIN_EBADLEN  = 19, /**< Matrix or vector lengths are not conformant */
+    SUZERAIN_ESING    = 21, /**< Apparent singularity detected */
+    SUZERAIN_EDIVERGE = 22, /**< Integral or series is divergent */
+    SUZERAIN_EUNIMPL  = 24  /**< Requested feature not (yet) implemented */
 };
 
 /**
@@ -256,6 +257,22 @@ FILE * suzerain_set_stream(FILE * new_stream);
        do { \
        suzerain_error (reason, __FILE__, __LINE__, suzerain_errno) ; \
        } while (0)
+
+/** Shorthand for using \c SUZERAIN_ERROR_VAL for unimplemented logic. */
+#define SUZERAIN_ERROR_VAL_UNIMPLEMENTED(value) \
+        SUZERAIN_ERROR_VAL("Unimplemented logic!", SUZERAIN_EUNIMPL, value);
+
+/** Shorthand for using \c SUZERAIN_ERROR_VOID for unimplemented logic. */
+#define SUZERAIN_ERROR_VOID_UNIMPLEMENTED() \
+        SUZERAIN_ERROR_VOID("Unimplemented logic!", SUZERAIN_EUNIMPL);
+
+/** Shorthand for using \c SUZERAIN_ERROR_NULL for unimplemented logic. */
+#define SUZERAIN_ERROR_NULL_UNIMPLEMENTED() \
+        SUZERAIN_ERROR_NULL("Unimplemented logic!", SUZERAIN_EUNIMPL);
+
+/** Shorthand for using \c SUZERAIN_ERROR_REPORT for unimplemented logic. */
+#define SUZERAIN_ERROR_REPORT_UNIMPLEMENTED() \
+        SUZERAIN_ERROR_REPORT("Unimplemented logic!", SUZERAIN_EUNIMPL);
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 /* Internal helper macro for implementing SUZERAIN_MPICHKx macros */

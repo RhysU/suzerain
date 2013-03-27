@@ -174,6 +174,8 @@ suzerain_strerror(const int suzerain_errno)
         return "apparent singularity detected";
     case SUZERAIN_EDIVERGE:
         return "integral or series is divergent";
+    case SUZERAIN_EUNIMPL:
+        return "requested feature not (yet) implemented";
     default:
         return "unknown error code" ;
     }
