@@ -47,11 +47,12 @@ test_error_LDADD    = ../suzerain/libsuzerain.la
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_error_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+# TODO Logic is header-only, but Intel requires libsuzerain.la link on Lonestar
 TESTS                           += test_running_statistics
 EXTRA_PROGRAMS                  += test_running_statistics
 test_running_statistics_SOURCES  = test_running_statistics.cpp
 test_running_statistics_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_running_statistics_LDADD    = # ../suzerain/libsuzerain.la # Code is standalone
+test_running_statistics_LDADD    = ../suzerain/libsuzerain.la
 test_running_statistics_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_running_statistics_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
