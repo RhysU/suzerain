@@ -26,7 +26,7 @@ fi
 
 # Create directory for scratch use
 test -z "${TMPDIR-}" && export TMPDIR=.
-testdir="$(readlink -f "$(mktemp -d)")"
+testdir="$(readlink -f "$(mktemp -d "$TMPDIR/testdir.XXXXXX")")"
 
 # Install teardown() function at exit unless TEST_DEBUG is non-empty
 declare -ir starttime=`date +%s`
@@ -73,7 +73,7 @@ differ() {
         alert "Skipping portions of test as h5diff $h5diff_version_string lacks required --exclude-path"
         exit 77 # See http://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html
     fi
-    local outfile=$(mktemp "$testdir/tmp.XXXXXX")
+    local outfile=$(mktemp "$testdir/differ.XXXXXX")
     local prefix="--exclude-path /metadata_generated"
     echo h5diff --report $prefix "$@" 2>&1 | tee -a $outfile
     echo                              2>&1 |      >>$outfile
