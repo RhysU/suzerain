@@ -12,10 +12,11 @@ TEXSOURCES += filter.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
-TEXSOURCES += skewadjoint.tex
-TEXSOURCES += smr91.tex
 TEXSOURCES += reactinggas.tex
 TEXSOURCES += reacting_linearization.tex
+TEXSOURCES += skewadjoint.tex
+TEXSOURCES += smr91.tex
+TEXSOURCES += viscous_linearization.tex
 
 # Notebooks, Images, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
