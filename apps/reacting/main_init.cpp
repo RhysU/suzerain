@@ -258,9 +258,6 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        //ArrayXr E = cmods->Cv*T + 0.5*(u*u + v*v + w*w);
-        // FIXME: Get internal energy from antioch
-        //ArrayXr E = 717.5*T + 0.5*(u*u + v*v + w*w);
         ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions) 
             + 0.5*(u*u + v*v + w*w);
 
