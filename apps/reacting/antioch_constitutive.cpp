@@ -428,6 +428,28 @@ antioch_constitutive::evaluate (const real_t  e,
     // TODO: assert transport props are positive
 }
 
+void 
+antioch_constitutive::evaluate (const real_t    e,
+                                const Vector3r& m,
+                                const real_t    rho,
+                                const VectorXr& species,
+                                const VectorXr& cs,
+                                real_t&   T,
+                                real_t&   p,
+                                VectorXr& Ds,
+                                real_t&   mu,
+                                real_t&   kap,
+                                VectorXr& hs,
+                                VectorXr& om,
+                                real_t&   a,
+                                real_t&   Cp) const
+{
+    // FIXME: Really use eigen types
+    this->evaluate(e, m.data(), rho, species.data(), cs.data(),
+                   T, p, Ds.data(), mu, kap, 
+                   hs.data(), om.data(), a, Cp);
+}
+
 
 real_t 
 antioch_constitutive::e_from_T (const real_t  T,

@@ -26,6 +26,7 @@
 
 #ifdef HAVE_ANTIOCH // only makes sense when antioch is available
 
+#include <suzerain/common.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/logging.hpp>
 
@@ -417,6 +418,87 @@ int test_evaluate(const std::string& chem_xml_file)
     return nerr;
 }
 
+/*
+ * Check that call to antioch_constitutive::evaluate "works"
+ */
+int test_evaluate_eigen(const std::string& chem_xml_file)
+{
+    
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+    using suzerain::Vector3r;
+    using suzerain::VectorXr;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=5;
+    species_names.reserve(Ns);
+    species_names.push_back( "N2" );
+    species_names.push_back( "O2" );
+    species_names.push_back( "N" );
+    species_names.push_back( "O" );
+    species_names.push_back( "NO" );
+
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
+
+    acl1.init_antioch();
+
+    // Set up state (not physically meaningful yet)
+    real_t e   = 5717500; // a really big number s.t. T isn't really, really small
+    Vector3r m (0.0, 0.0, 0.0);
+    real_t rho = 1.0;
+    VectorXr species(Ns), cs(Ns);
+
+    species(0) = cs(0) = 0.5;
+    species(1) = cs(1) = 0.2;
+    species(2) = cs(2) = 0.1;
+    species(3) = cs(3) = 0.1;
+    species(4) = cs(4) = 0.1;
+
+    // Storage for computed quantities
+    real_t T=-1, p=-1, mu, kap, a=-1, Cp=0;
+    VectorXr Ds(Ns), hs(Ns), om(Ns);
+    om(0) = om(1) = om(2) = om(3) = om(4) = 1.0;
+
+    // Eval rxn sources, trans, thermo
+    acl1.evaluate(e, m, rho, species, cs,   /* input  */
+                  T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
+
+
+    // check that it did something potentially sane 
+    //
+    // FIXME: make these checks stronger once final version of
+    // evaluate function is complete
+
+    int nerr=0;
+
+    //... T and p are positive
+    if (T<=0.0) {
+        std::cerr << "Error: T = " << T << " <= 0 is not allowed!" << std::endl;
+        nerr += 1;
+    }
+
+    if (p<=0.0) {
+        std::cerr << "Error: p = " << p << " <= 0 is not allowed!" << std::endl;
+        nerr += 1;
+    }
+    
+    //... source terms sum to zero
+    real_t som = 0.0;
+    for (unsigned int i=0; i<Ns; ++i) som += om(i);
+    if (std::abs(som)>5e-10) { // Tolerance empirical, max src term has magn 1.8e6
+        std::cerr << "Error: reaction source terms do not sum to zero. "
+                  << "Computed sum = " << som << std::endl;
+        nerr += 1;
+    }
+
+    return nerr;
+}
+
+
 int main(int argc, char **argv)
 {
 
@@ -449,6 +531,11 @@ int main(int argc, char **argv)
 
     std::cout << "Running test_evaluate..." << std::endl;
     ierr = test_evaluate(chem_xml_file); etot += ierr;
+    if (ierr!=0) std::cout << " FAILED." << std::endl;
+    else std::cout << " passed." << std::endl;
+
+    std::cout << "Running test_evaluate..." << std::endl;
+    ierr = test_evaluate_eigen(chem_xml_file); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
 

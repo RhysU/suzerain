@@ -516,9 +516,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
             real_t T, p, mu, kap, a, Cp;
-            cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
-                           T, p, Ds.data(), mu, kap, 
-                           hs.data(), om.data(), a, Cp);
+            cmods.evaluate(e, m, rho, species, cs,
+                           T, p, Ds, mu, kap, hs, om, a, Cp);
             
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
           

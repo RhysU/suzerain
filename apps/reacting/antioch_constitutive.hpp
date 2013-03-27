@@ -166,6 +166,38 @@ public:
                    real_t& Cp) const;
 
     /**
+     * Given conserved state, compute required thermodynamic and
+     * transport quantities for evaluating Navier-Stokes operator.
+     *
+     * @param[in] e       Total energy per unit volume.
+     * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
+     * @param[in] rho     Mixture density.
+     * @param[in] species Species densities.
+     * @param[in] cs      Species mass fractions. 
+     * @param[out] T      Temperature.
+     * @param[out] p      Pressure.
+     * @param[out] Ds     Mass diffusivities. 
+     * @param[out] mu     Dynamic viscosity.
+     * @param[out] kap    Thermal conductivity.
+     * @param[out] hs     Species enthalpies.
+     * @param[out] om     Reaction source terms.
+     */
+    void evaluate (const real_t    e,
+                   const Vector3r& m,
+                   const real_t    rho,
+                   const VectorXr& species,
+                   const VectorXr& cs,
+                   real_t&   T,
+                   real_t&   p,
+                   VectorXr& Ds,
+                   real_t&   mu,
+                   real_t&   kap,
+                   VectorXr& hs,
+                   VectorXr& om,
+                   real_t&   a,
+                   real_t&   Cp) const;
+
+    /**
      * Given temperature and mass fractions, compute internal energy
      *
      * @param[in] T              Temperature
