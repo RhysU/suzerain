@@ -252,6 +252,7 @@ driver::save_metadata_hook(
     chdef->save(esioh);
     cmods->save(esioh);
     fsdef->save(esioh);
+    fsdef->save_filteropz(esioh, dgrid->global_wave_extent.y());
     save(esioh, msoln, *cmods, *grid);
     return;
 }

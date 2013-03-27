@@ -156,8 +156,9 @@ static const suzerain_filterop_method method
     = SUZERAIN_FILTEROP_COOKCABOT2005;
 
 // FIXME Use default parameters for the method
-static const double *r_method_params
-    = NULL;
+// static const double *r_method_params
+//     = NULL;
+static const double r_method_params[1] = {6.55026621150074e-01};
 
 // FIXME Use default parameters for the method
 static const complex_double *z_method_params
@@ -196,6 +197,69 @@ filter_definition::reset()
 {
     r.reset();
     z.reset();
+}
+
+void filter_definition::save_filteropz(const esio_handle h,
+                                       const int n,
+                                       const char *location)
+{
+    // Only save filter op if hasn't been prepared yet
+    if (SUZERAIN_UNLIKELY(!r)) {
+        DEBUG0("Storing filter operators");
+
+        // Create
+        r.reset(suzerain_filterop_alloc(n, method, r_method_params,
+                                        b_first, b_last),
+                suzerain_filterop_free);
+
+        // Write
+
+        // Only root writes data
+        int procid;
+        esio_handle_comm_rank(h, &procid);
+
+        char name[8] = {};
+        char comment[127] = {};
+
+        // A transpose
+        snprintf(name, sizeof(name), "AT");
+        snprintf(comment, sizeof(comment),
+                 "Filter operator trans(A(i,j)) = AT[j,ku+i-j] for"
+                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)");
+        const int lda = r->ldat; //r->kuat + 1 + r->klat;// cop->ku(k) + 1 + cop->kl(k);
+        //const int lda = r->kuat + 1 + r->klat;// cop->ku(k) + 1 + cop->kl(k);
+        esio_plane_establish(h,
+                             r->n, 0, (procid == 0 ? r->n : 0),
+                             lda,  0, (procid == 0 ? lda  : 0));
+        //esio_plane_write(h, name, r->A_T+r->klat, 0, 0, comment);
+        esio_plane_write(h, name, r->A_T, 0, 0, comment);
+        esio_attribute_write(h, name, "kl", r->klat);
+        esio_attribute_write(h, name, "ku", r->kuat);
+        esio_attribute_write(h, name, "m",  r->n);
+        esio_attribute_write(h, name, "n",  r->n);
+
+        // B transpose
+        snprintf(name, sizeof(name), "BT");
+        snprintf(comment, sizeof(comment),
+                 "Filter operator trans(B(i,j)) = BT[j,ku+i-j] for"
+                 " 0 <= j < n, max(0,j-ku-1) <= i < min(m,j+kl)");
+        const int ldb = r->kubt + 1 + r->klbt;// cop->ku(k) + 1 + cop->kl(k);
+        esio_plane_establish(h,
+                             r->n, 0, (procid == 0 ? r->n : 0),
+                             ldb,  0, (procid == 0 ? ldb  : 0));
+        esio_plane_write(h, name, r->B_T, 0, 0, comment);
+        esio_attribute_write(h, name, "kl", r->klbt);
+        esio_attribute_write(h, name, "ku", r->kubt);
+        esio_attribute_write(h, name, "m",  r->n);
+        esio_attribute_write(h, name, "n",  r->n);
+
+        // Destroy
+        r.reset();
+
+    }
+
+    // Otherwise, don't
+
 }
 
 } // namespace reacting

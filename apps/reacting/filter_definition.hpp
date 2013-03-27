@@ -229,6 +229,11 @@ public:
     /** Reset any previously initialized filtering parameters. */
     void reset();
 
+    /** Save filter operators. */
+    void save_filteropz(const esio_handle h,
+                        const int n,
+                        const char *location = "filter_operators");
+
 protected:
 
     /** Prepare a real-valued filter workspace of length \c n. */
