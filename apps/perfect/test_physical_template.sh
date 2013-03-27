@@ -24,7 +24,7 @@ WIZ="--plan_wisdom=$(mktemp "$testdir/wisdom.XXXXXX")"
 banner "Preparation of physical-space version of wave-based test field${OPER:+ ($OPER)}"
 (
     cd $testdir
-    run ../perfect_advance $OPER mms0.h5 --restart_destination "pmms#.h5" \
+    run ../perfect_advance mms0.h5 $OPER --restart_destination "pmms#.h5" \
                                          --advance_nt=0 --restart_physical $WIZ
     $perfect mms0.h5 --restart_destination "a#.h5" --advance_nt=0 $WIZ \
                      --restart_physical
