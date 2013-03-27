@@ -185,7 +185,6 @@ antioch_constitutive::save(
     // in driver_base::save_metadata
     static const char acd[] = "antioch_constitutive_data";
 
-    // FIXME: version is written by save but not read by load
     esio_line_write(h, acd, &antioch_ver, 0, 
                     "Antioch version number and antioch_contitutive data.");
 
