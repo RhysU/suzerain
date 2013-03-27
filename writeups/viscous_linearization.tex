@@ -170,10 +170,23 @@ series.
 \end{align}
 Subtracting off e leaves only,
 \begin{equation}
-yar
+0 \approx \left( \frac{\partial e_{tr}}{\partial T} + \frac{\partial
+	   e_{ve}}{\partial T} \right) \delta T + 
+           \left( \frac{\partial e_{tr}}{\partial Y_i} + \frac{\partial
+	    e_{ve}}{\partial Y_i} + \frac{\partial
+	    e_{0}}{\partial Y_i} \right) \delta Y_i
 \end{equation}
-
-
+The first term is the heat capacity at constant volume ($C_v(T,Y_i)$) and the
+second is the internal energy of the ith species ($e_i(T)$), e.g. 
+\begin{equation}
+0 \approx C_v(T,Y_i) \delta T + 
+          e_i(T)     \delta Y_i
+\end{equation}
+Solving for $\frac{\partial T}{\partial Y_i}$ gives, 
+\begin{align}
+ C_v \delta T = - e_i \delta Y_i \\
+ \frac{\partial T}{\partial Y_i} = - \frac{e_i}{C_v}
+\end{align}
 %
 % 
 %
