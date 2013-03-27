@@ -302,4 +302,4 @@ double_precision_attempt:
 #undef NORM
 #undef DNRM2
 
-/* vim: ft=c */
+/* vim: set ft=c: */

@@ -219,4 +219,4 @@ STATIC int FUNCTION(
 #undef KL
 #undef KU
 
-/* vim: ft=c */
+/* vim: set ft=c: */

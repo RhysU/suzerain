@@ -354,4 +354,4 @@ FUNCNAME()(
 #undef FUNCNAME
 #undef PACK
 
-/* vim: ft=c */
+/* vim: set ft=c: */
