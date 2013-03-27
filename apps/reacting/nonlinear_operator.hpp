@@ -514,9 +514,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Compute temperature, pressure, mass diffusivities,
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
-            real_t T, p, mu, kap, a;
+            real_t T, p, mu, kap, a, Cp;
             cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
-                           T, p, Ds.data(), mu, kap, hs.data(), om.data(), a);
+                           T, p, Ds.data(), mu, kap, hs.data(), om.data(), a, Cp);
             
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
           
@@ -650,9 +650,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // See timestepper::convective_stability_criterion
                 //
-                // FIXME: Use cmods to compute speed of sound!!!
-                //const real_t a = sqrt(1.4*287.0*T);
-                // Speed of sound returned by cmods.evaluate
+                // NOTE: Speed of sound a computed by cmods.evaluate above
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
@@ -707,7 +705,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
-                const real_t nu = mu / rho;
+                const real_t nu = mu  /  rho;
+                const real_t kd = kap / (rho*Cp); // thermal diffusivity
                 real_t diffusivity;
                 switch (Linearize) {
                     default:
@@ -716,10 +715,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                     // Explicit treatment forces a zero reference diffusivity
                     case linearize::none:
-                        //diffusivity = maxdiffconst * nu;
-                        // FIXME: Handle thermal conductivity and mass diffusivities correctly!
-                        diffusivity = mu*max(1.4/0.7, max(real_t(1), cmods.alpha));
-                        diffusivity /= rho;
+                        // FIXME: Handle species diffusion properly
+                        diffusivity = max(kd, max(real_t(1), cmods.alpha)*nu);
+
                         diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                   evmaxmag_real
                                 / diffusivity

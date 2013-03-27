@@ -380,11 +380,11 @@ int test_evaluate(const std::string& chem_xml_file)
 
     // Storage for computed quantities
     real_t T=-1, p=-1, Ds[5], mu, kap, 
-        hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0}, a=-1;
+        hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0}, a=-1, Cp=0;
 
     // Eval rxn sources, trans, thermo
     acl1.evaluate(e, m, rho, species, cs,   /* input  */
-                  T, p, Ds, mu, kap, hs, om, a /* output */);
+                  T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
 
 
     // check that it did something potentially sane 

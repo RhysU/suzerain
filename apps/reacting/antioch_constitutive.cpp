@@ -336,7 +336,8 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t& kap,
                                 real_t* hs,
                                 real_t* om,
-                                real_t& a ) const
+                                real_t& a,
+                                real_t& Cp) const
 {
     //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
@@ -404,8 +405,8 @@ antioch_constitutive::evaluate (const real_t  e,
     mu  = this->wilke_evaluator->mu(T, Y);
     kap = this->wilke_evaluator->k (T, Y);
 
-    // FIXME: Use Antioch::ConstantLewisDiffusivity here
-    real_t Cp = this->sm_thermo->cp(T, T, Y);
+    // Used by transport calcs and output
+    Cp = this->sm_thermo->cp(T, T, Y);
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
     // looks like inverse of Le to me.

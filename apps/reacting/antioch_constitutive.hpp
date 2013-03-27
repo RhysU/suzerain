@@ -162,7 +162,8 @@ public:
                    real_t& kap,
                    real_t* hs,
                    real_t* om,
-                   real_t& a ) const;
+                   real_t& a,
+                   real_t& Cp) const;
 
     /**
      * Given temperature and mass fractions, compute internal energy
