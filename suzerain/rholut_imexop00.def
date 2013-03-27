@@ -343,4 +343,7 @@ FUNCNAME00()(
 #undef FUNCNAME00
 #undef PACK
 
-/* vim: set ft=c: */
+/* vim: set ft=c:   */
+/* Local Variables: */
+/* mode: c          */
+/* End:             */

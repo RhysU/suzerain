@@ -321,4 +321,7 @@ AFFIXPREC(suzerain_bsmbsm_,aPxpby)(
 #undef COMPLEX
 #undef AFFIXPREC
 
-/* vim: set ft=c: */
+/* vim: set ft=c:   */
+/* Local Variables: */
+/* mode: c          */
+/* End:             */

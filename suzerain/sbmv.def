@@ -212,4 +212,7 @@ STATIC int FUNCTION(
 #undef TYPE_Y
 #undef K
 
-/* vim: set ft=c: */
+/* vim: set ft=c:   */
+/* Local Variables: */
+/* mode: c          */
+/* End:             */

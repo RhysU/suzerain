@@ -126,4 +126,7 @@ SCALAR NAME(kahan,5)(const SCALAR a0,
 #undef NAME
 #undef SCALAR
 
-/* vim: set ft=c: */
+/* vim: set ft=c:   */
+/* Local Variables: */
+/* mode: c          */
+/* End:             */
