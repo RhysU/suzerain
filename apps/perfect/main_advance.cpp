@@ -90,14 +90,17 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Storage for binary-specific options
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
+    string implicit("rhome_xyz");
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
     options.add_options()
         ("explicit", boost::program_options::bool_switch(),
                      "Use purely explicit operators")
-        ("implicit", boost::program_options::bool_switch(),
-                     "Use hybrid implicit/explicit operators")
+        ("implicit", boost::program_options::value(&implicit)
+                         ->implicit_value(implicit),
+                     "Use hybrid implicit/explicit operators, optionally"
+                     " choosing rhome_xyz or rhome_y linearized treatment")
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for --implicit solves")
@@ -111,8 +114,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     options.conflicting_options("explicit", "implicit");
     options.conflicting_options("explicit", "solver");
     const bool use_explicit =  options.variables()["explicit"].as<bool>();
-    const bool use_implicit =  options.variables()["implicit"].as<bool>()
+    const bool use_implicit =  options.variables().count("implicit")
                             || !use_explicit;
+
+    // Validate implicit option; implicit_value "captures" following argument
+    // Establish common_block.linearization based on the result
+    if (use_implicit) {
+        boost::algorithm::trim(implicit);
+        INFO0("Implicit linearization employed: " << implicit);
+        if (implicit == "rhome_xyz") {
+            common_block.linearization = linearize::rhome_xyz;
+        } else if (implicit == "rhome_y") {
+            common_block.linearization = linearize::rhome_y;
+        } else {
+            FATAL0("Unknown --implicit option:  " << implicit);
+            return EXIT_FAILURE;
+        }
+    } else {
+        common_block.linearization = linearize::none;
+    }
 
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
@@ -168,14 +188,12 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     common_block.slow_treatment = slowgrowth::none;
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
-        common_block.linearization = linearize::none;
         L.reset(new channel_treatment<isothermal_mass_operator>(
                     *scenario, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
-        common_block.linearization = linearize::rhome_xyz;
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
