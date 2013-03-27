@@ -156,9 +156,9 @@ static const suzerain_filterop_method method
     = SUZERAIN_FILTEROP_COOKCABOT2005;
 
 // FIXME Use default parameters for the method
-// static const double *r_method_params
-//     = NULL;
-static const double r_method_params[1] = {6.55026621150074e-01};
+static const double *r_method_params
+    = NULL;
+//static const double r_method_params[1] = {6.55026621150074e-01};
 
 // FIXME Use default parameters for the method
 static const complex_double *z_method_params
