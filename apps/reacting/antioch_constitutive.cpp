@@ -335,7 +335,8 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t& mu,
                                 real_t& kap,
                                 real_t* hs,
-                                real_t* om) const
+                                real_t* om,
+                                real_t& a ) const
 {
     //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
@@ -412,6 +413,15 @@ antioch_constitutive::evaluate (const real_t  e,
 
     for (unsigned int i=0; i<Ns; ++i)
         Ds[i] = D0;
+
+
+    // Speed of sound (frozen)
+    real_t Rmix = this->mixture->R(Y);
+    real_t Cv   = this->sm_thermo->cv(T, T, Y);
+
+    real_t af2 = (1.0 + Rmix/Cv)*Rmix*T;
+
+    a = std::sqrt(af2);
 
     // TODO: assert that om sums to zero
     // TODO: assert that T and p are positive

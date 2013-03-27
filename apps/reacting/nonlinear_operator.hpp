@@ -514,9 +514,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Compute temperature, pressure, mass diffusivities,
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
-            real_t T, p, mu, kap;
+            real_t T, p, mu, kap, a;
             cmods.evaluate(e, m.data(), rho, species.data(), cs.data(),
-                           T, p, Ds.data(), mu, kap, hs.data(), om.data());
+                           T, p, Ds.data(), mu, kap, hs.data(), om.data(), a);
             
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
           
@@ -651,7 +651,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // See timestepper::convective_stability_criterion
                 //
                 // FIXME: Use cmods to compute speed of sound!!!
-                const real_t a = sqrt(1.4*287.0*T);
+                //const real_t a = sqrt(1.4*287.0*T);
+                // Speed of sound returned by cmods.evaluate
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
