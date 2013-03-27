@@ -775,10 +775,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     )
                 ;
             switch (Linearize) {
-            default:
-                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                break;
-
             case linearize::rhome_xyz:
                 sphys(ndx::e, offset) +=
                     // Explicit convective/acoustic less implicit portion
@@ -862,6 +858,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     ;
                     // No need to adjust explicit viscous work term
                 break;
+
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
@@ -870,10 +869,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                   inv_Re * div_tau
                 ;
             switch (Linearize) {
-            default:
-                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                break;
-
             case linearize::rhome_xyz:
                 momentum_rhs +=
                     // Explicit convective term less implicit portion
@@ -932,6 +927,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     - inv_Ma2 * grad_p
                     ;
                 break;
+
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
             sphys(ndx::mx, offset) = momentum_rhs.x();
             sphys(ndx::my, offset) = momentum_rhs.y();
@@ -943,10 +941,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // anticipation of possible manufactured solution forcing.  See
             // subsequent transform_physical_to_wave if you monkey around here.
             switch (Linearize) {
-            default:
-                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                break;
-
             case linearize::rhome_xyz:    // Fully implicit convection
                 sphys(ndx::rho, offset) = 0;
                 break;
@@ -958,6 +952,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             case linearize::none:         // Full explicit convection
                 sphys(ndx::rho, offset) = - div_m;
                 break;
+
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
 
             // Determine the minimum observed stable time step when necessary
@@ -979,10 +976,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                    break;
-
                 // Implicit acoustics sets the effective sound speed
                 // to zero within the convective_stability_criterion.
                 // Fluctuating velocity is taken relative to references.
@@ -1016,6 +1009,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
                     fluct_ua_l1_z = ua_l1_z;
                     break;
+
+                default:
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                 }
                 convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
                         evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
@@ -1044,10 +1040,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // to account for viscous, bulk viscous, and thermal effects.
                 real_t diffusivity = nu;
                 switch (Linearize) {
-                default:
-                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                    break;
-
                 // Implicit diffusion permits removing a reference value.
                 // Antidiffusive (nu - ref_nu) is fine and not computed.
                 case linearize::rhome_xyz:
@@ -1096,6 +1088,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                             evmaxmag_real / (diffusivity   * md_lambda2_z));
                     break;
                 }
+
+                default:
+                    SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
                 }
             }
 

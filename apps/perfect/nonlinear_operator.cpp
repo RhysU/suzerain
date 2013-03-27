@@ -80,16 +80,10 @@ std::vector<real_t> nonlinear_operator::apply_operator(
 
     // Dispatch to an optimized implementation depending on case:
     switch (common.slow_treatment) {
-    default:
-        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
-        break;
 
+    // TODO Copy/modify case below when nontrivial slow_treatment available
     case slowgrowth::none:
         switch (common.linearization) {
-        default:
-            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
-            break;
-
         case linearize::rhome_xyz:
             return (substep_index == 0)
                  ? apply_navier_stokes_spatial_operator<true,
@@ -110,10 +104,17 @@ std::vector<real_t> nonlinear_operator::apply_operator(
                         linearize::none, slowgrowth::none>(ARGUMENTS)
                  : apply_navier_stokes_spatial_operator<false,
                         linearize::none, slowgrowth::none>(ARGUMENTS);
+
+        default:
+            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+            break;
         }
         break;
 
-    // TODO Duplicate above case when nontrivial slow_treatment available
+    default:
+        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+        break;
+
     }
 
 #undef ARGUMENTS
