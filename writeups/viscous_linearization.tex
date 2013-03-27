@@ -125,6 +125,12 @@ Therefore, the derivative must be,
   e}\frac{\partial e}{\partial U} + \frac{\partial f}{\partial
   Y}\frac{\partial Y}{\partial U}
 \end{equation}
+
+%
+% 
+%
+\subsection{$\frac{\partial f}{\partial e}$}
+
 The raw computation of T is attained by inverting the following equation
 for a given species concentration,
 \begin{equation}
@@ -147,6 +153,38 @@ and
 \begin{equation}
  \frac{\partial f}{\partial e} = \frac{\partial T}{\partial e} = \frac{1}{\partial c_v}
 \end{equation}
+
+%
+% 
+%
+\subsection{$\frac{\partial f}{\partial Y_i}$}
+
+Now, we perturb $Y_i$ as well as T, and again expand as a Taylor
+series. 
+\begin{align}
+ e &= e_{tr}(T+\delta T, Y + \delta Y ) + e_{ve}(T+\delta T, Y + \delta Y ) + e_{0}(Y + \delta Y) \\
+ &\approx e_{tr}(T,Y) +  e_{ve}(T,Y) + e_{0}(Y) \\
+ & + \frac{\partial e_{tr}}{\partial T} \delta T + \frac{\partial e_{tr}}{\partial Y_i} \delta Y_i
+   + \frac{\partial e_{ve}}{\partial T} \delta T + \frac{\partial e_{ve}}{\partial Y_i} \delta Y_i 
+   + \frac{\partial e_{o}}{\partial Y_i} \delta Y_i 
+\end{align}
+Subtracting off e leaves only,
+\begin{equation}
+yar
+\end{equation}
+
+
+%
+% 
+%
+\subsection{$\frac{\partial e}{\partial U}$}
+
+%
+% 
+%
+\subsection{$\frac{\partial Y}{\partial U}$}
+
+
 % Finally, $\Delta{}T$. This will be identical to the current treatment in
 % suzerain if $\gamma$ is constant, e.g. $T=\gamma \frac{p}{\rho}$
 % \begin{equation}
@@ -225,6 +263,14 @@ We distribute the $\rho^{-1}$ and expand several of the derivatives,
 \end{equation}
 Thus, the second and third terms ($D_s \Delta \rho_s$ and $D_s \rho^{-1}
 \rho_s \Delta \rho$) are components of the linear operator. 
+
+
+
+
+%
+% energy equation
+%
+%
 
 \subsection{Energy Equation}
 
