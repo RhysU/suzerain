@@ -260,9 +260,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t lambda2_x        = o.lambda2_x;
     const real_t lambda2_z        = o.lambda2_z;
 
-    // FIXME: Handle diffusive dt constraints properly (see below)
-    //const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
-
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
     // and we will add many small numbers to a large magnitude sum.
