@@ -5,7 +5,7 @@ set -eu
 source "`dirname $0`/test_setup.sh"
 
 : ${ADVANCE:=--advance_nt=1 --statistics_dt=0 --statistics_nt=0}
-: ${OPER:=--implicit} # E.g. '--explicit' or unset to use default
+: ${OPER:=--implicit=rhome_xyz} # Implicit in three directions is best test
 
 # We want to share wisdom across test cases as much as possible to tamp down
 # rounding-related discrepancies due to FFT kernel differences (ticket #2515)
