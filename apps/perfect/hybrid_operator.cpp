@@ -154,7 +154,9 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
     switch (common.linearization) {
+
     case linearize::rhome_xyz:
+    {
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -189,8 +191,10 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
             }
         }
         break;
+    }
 
     case linearize::rhome_y:
+    {
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -223,7 +227,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
             }
         }
         break;
-
+    }
 
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
@@ -292,7 +296,9 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
     switch (common.linearization) {
+
     case linearize::rhome_xyz:
+    {
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -322,8 +328,10 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
             }
         }
         break;
+    }
 
     case linearize::rhome_y:
+    {
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
@@ -351,6 +359,7 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
             }
         }
         break;
+    }
 
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
@@ -550,8 +559,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     ArrayXXc buf(solver->ld, solver->n);
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
+    //
+    // The loop structure changes markedly on rhome_xyz vs rhome_y,
+    // but the basic sequence of steps remains identical in each case.
     switch (common.linearization) {
+
     case linearize::rhome_xyz:
+    {
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
             const real_t kn = twopioverLz*wn;
@@ -621,8 +635,76 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             }
         }
         break;
+    }
 
-    case linearize::rhome_y: // FIXME
+    case linearize::rhome_y:
+    {
+        // Form complex-valued, wavenumber-independent PA^TP^T
+        static const char trans = 'T';
+        if (solver->spec.in_place()) { // Pack for in-place LU
+            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf00)");
+            suzerain_rholut_imexop_packf00(
+                    phi, &s, &ref, &ld, cop.get(),
+                    ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
+                    buf.data(), solver.get(), solver->LU.data());
+        } else {                       // Pack for out-of-place LU
+            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc00)");
+            suzerain_rholut_imexop_packc00(
+                    phi, &s, &ref, &ld, cop.get(),
+                    ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
+                    buf.data(), solver.get(), solver->PAPT.data());
+        }
+        // Apply boundary conditions to PA^TP^T
+        {
+            SUZERAIN_TIMER_SCOPED("implicit operator BCs");
+            bc_enforcer.op(*solver, solver->PAPT.data(),
+                                    solver->PAPT.colStride());
+        }
+        // Inform the solver about the new, unfactorized operator
+        solver->supplied_PAPT();
+
+        // Solve using a new right hand side for each wavenumber pair km, kn
+        for (int n = dkbz; n < dkez; ++n) {
+            const int wn = wavenumber(dNz, n);
+
+            for (int m = dkbx; m < dkex; ++m) {
+                const int wm = wavenumber(dNx, m);
+
+                // Get pointer to (.,m,n)-th state pencil
+                complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+                // Continue didn't yet occur for Nyquist/dealiasing modes...
+                if (   std::abs(wn) > wavenumber_absmin(Nz)
+                    || std::abs(wm) > wavenumber_absmin(Nx)) {
+                    memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
+                    continue;                              // and short circuit.
+                }
+
+                // Form right hand side, apply BCs, factorize, and solve.
+                // Beware that much ugly, ugly magic is hidden just below.
+                solver->supply_B(p);
+                {
+                    SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
+                    bc_enforcer.rhs(solver->PB.data());
+                }
+                solver->solve(trans);
+                solver->demand_X(p);
+            }
+        }
+
+        // If necessary, solve any required integral constraints
+        for (std::size_t i = 0; i < nconstraints; ++i) {
+            SUZERAIN_TIMER_SCOPED("implicit constraint solution");
+            solver->supply_B(ic0->data() + i * solver->N);
+            bc_enforcer.rhs(solver->PB.data());
+            solver->solve(trans);
+            solver->demand_X(ic0->data() + i * solver->N);
+        }
+
+        break;
+    }
+
+
     default:
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
