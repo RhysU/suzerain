@@ -118,6 +118,7 @@ std::vector<real_t> nonlinear_operator::apply_operator(
 
 #undef ARGUMENTS
 
+    throw new std::logic_error("Theoretically unreachable location reached");
 }
 
 } // namespace perfect
