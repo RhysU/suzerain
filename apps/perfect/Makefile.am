@@ -70,7 +70,7 @@ AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh
 TESTS              += test_restart_rhome_xyz.sh
-#  TESTS              += test_restart_rhome_y.sh  # FIXME Disabled #2485
+TESTS              += test_restart_rhome_y.sh
 dist_check_SCRIPTS += test_restart_template.sh
 dist_check_SCRIPTS += test_restart_explicit.sh
 dist_check_SCRIPTS += test_restart_rhome_xyz.sh
@@ -84,7 +84,7 @@ dist_check_SCRIPTS += test_dparallel.sh
 # Serial/parallel equivalence for normal parallel decompositions
 TESTS              += test_parallel_explicit.sh
 TESTS              += test_parallel_rhome_xyz.sh
-#  TESTS              += test_parallel_rhome_y.sh  # FIXME Disabled #2485
+TESTS              += test_parallel_rhome_y.sh
 dist_check_SCRIPTS += test_parallel_template.sh
 dist_check_SCRIPTS += test_parallel_explicit.sh
 dist_check_SCRIPTS += test_parallel_rhome_xyz.sh
@@ -101,7 +101,7 @@ dist_check_SCRIPTS += test_fluct.sh
 # Restart handling using collocation-value-based restart files
 TESTS              += test_physical_explicit.sh
 TESTS              += test_physical_rhome_xyz.sh
-#  TESTS              += test_physical_rhome_y.sh  # FIXME Disabled #2485
+TESTS              += test_physical_rhome_y.sh
 dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
 dist_check_SCRIPTS += test_physical_rhome_xyz.sh
