@@ -29,7 +29,51 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-#include "antioch/vector_utils.h" // should this be necessary?
+#include <antioch/vector_utils.h>
+
+// FIXME: I want to do this
+//#include <antioch/eigen_utils.h> 
+// ... but I'm doing this instead to workaround issue #2815.  This
+// pulls in just enough of the eigen utils functionality to allow me
+// to build.  But, when #2815 is done, remove the following...
+namespace Antioch
+{
+template <typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+struct value_type<Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> >
+{
+  typedef Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> 
+    container_type;
+  typedef _Scalar type;
+};
+
+template <typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline
+Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+zero_clone(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& example)
+{
+  // We can't just use setZero here with arbitrary Scalar types
+  if (example.size())
+    return 
+      Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+      (example.rows(), example.cols()).setConstant(zero_clone(example[0]));
+
+  return 
+    Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+    (example.rows(), example.cols());
+}
+
+// A function for zero-setting vectorized numeric types
+template <typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+inline
+void set_zero(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& a)
+{
+  // We can't just use setZero here with arbitrary Scalar types
+  if (a.size())
+    a.setConstant (zero_clone(a[0]));
+}
+}
+// end remove
+
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
