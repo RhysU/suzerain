@@ -445,8 +445,6 @@ antioch_constitutive::evaluate (const real_t    e,
                                 real_t&   Cp) const
 {
 
-    //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
-
     const real_t irho = 1.0/rho;
 
     const size_t Ns = this->Ns();
@@ -454,18 +452,13 @@ antioch_constitutive::evaluate (const real_t    e,
     // Mixture gas constant
     const real_t R_mix = this->mixture->R(cs);
 
-    //std::vector<real_t> molar_densities(Ns,0.0);
     VectorXr molar_densities(Ns);
     molar_densities.setZero();
     this->mixture->molar_densities(rho,cs,molar_densities);
 
-    // FIXME: Only necessary b/c sm_thermo doesn't support eigen input yet.
-    // Mass fractions
-    std::vector<real_t> Y(cs.data(), cs.data()+Ns);
-
     // Compute temperature from internal energy (assuming thermal equilibrium)
     const real_t re_internal = e - 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
-    T = this->sm_thermo->T_from_e_tot(irho*re_internal, Y);
+    T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs);
 
     // Compute pressure: ideal gas law with mixture gas constant
     p = rho*R_mix*T;
@@ -476,7 +469,6 @@ antioch_constitutive::evaluate (const real_t    e,
     // NOTE: This is how FIN-S does it, so we follow for
     // complete consistency.  But, it might make more sense to use
     // stat mech based thermo to get this info... I'm not sure.
-    //std::vector<real_t> h_RT_minus_s_R(Ns);
     VectorXr h_RT_minus_s_R(Ns);
     typedef typename Antioch::CEAThermodynamics<real_t>::Cache<real_t> Cache;
     Cache cea_cache(T);
@@ -502,7 +494,7 @@ antioch_constitutive::evaluate (const real_t    e,
     kap = this->wilke_evaluator->k (T, cs);
 
     // Used by transport calcs and output
-    Cp = this->sm_thermo->cp(T, T, Y);
+    Cp = this->sm_thermo->cp(T, T, cs);
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
     // looks like inverse of Le to me.
@@ -513,7 +505,7 @@ antioch_constitutive::evaluate (const real_t    e,
 
 
     // Speed of sound (frozen)
-    real_t Cv   = this->sm_thermo->cv(T, T, Y);
+    real_t Cv   = this->sm_thermo->cv(T, T, cs);
 
     real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
 
