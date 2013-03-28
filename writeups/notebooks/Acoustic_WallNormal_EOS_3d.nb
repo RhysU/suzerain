@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     93305,       2461]
-NotebookOptionsPosition[     91277,       2391]
-NotebookOutlinePosition[     91617,       2406]
-CellTagsIndexPosition[     91574,       2403]
+NotebookDataLength[     87917,       2344]
+NotebookOptionsPosition[     85888,       2274]
+NotebookOutlinePosition[     86228,       2289]
+CellTagsIndexPosition[     86185,       2286]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -43,7 +43,7 @@ Cell[BoxData[
    3.5733144292540503`*^9, 3.573316417603598*^9, 3.5734046296800623`*^9, 
    3.57340751822682*^9, 3.573407564605845*^9, 3.573407705190063*^9, 
    3.5734077862882977`*^9, 3.5734086010960827`*^9, 3.573474596697899*^9, 
-   3.5734746837258*^9}]
+   3.5734746837258*^9, 3.573474859244038*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -58,7 +58,8 @@ Cell[BoxData["B"], "Output",
  CellChangeTimes->{{3.573314448519405*^9, 3.573314452601655*^9}, 
    3.573316417715063*^9, 3.573404629785554*^9, 3.5734075183479347`*^9, 
    3.5734075646719913`*^9, 3.573407705253298*^9, 3.573407786390646*^9, 
-   3.573408601179216*^9, 3.573474596893592*^9, 3.5734746838182592`*^9}]
+   3.573408601179216*^9, 3.573474596893592*^9, 3.5734746838182592`*^9, 
+   3.573474859347928*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -67,21 +68,23 @@ Cell[BoxData[
  RowBox[{
   SubscriptBox["T", "\[Rho]u"], "=", " ", 
   RowBox[{
-   RowBox[{
-    RowBox[{"-", "u"}], "/", "\[Rho]"}], " ", 
-   SubscriptBox["c", "v"]}]}]], "Input",
+   RowBox[{"-", "u"}], "/", 
+   RowBox[{"(", 
+    RowBox[{"\[Rho]", " ", 
+     SubscriptBox["c", "v"]}], ")"}]}]}]], "Input",
  CellChangeTimes->{{3.573314462423349*^9, 3.573314495877973*^9}, 
-   3.573474679956126*^9}],
+   3.573474679956126*^9, {3.573474845308592*^9, 3.573474849435878*^9}}],
 
 Cell[BoxData[
  RowBox[{"-", 
-  FractionBox[
-   RowBox[{"u", " ", 
-    SubscriptBox["c", "v"]}], "\[Rho]"]}]], "Output",
+  FractionBox["u", 
+   RowBox[{"\[Rho]", " ", 
+    SubscriptBox["c", "v"]}]]}]], "Output",
  CellChangeTimes->{{3.573314484279982*^9, 3.573314499705763*^9}, 
    3.5733164177183228`*^9, 3.573404629788938*^9, 3.573407518351459*^9, 
    3.573407564725404*^9, 3.573407705284869*^9, 3.573407786394038*^9, 
-   3.573408601182788*^9, 3.573474596897023*^9, 3.5734746838786077`*^9}]
+   3.573408601182788*^9, 3.573474596897023*^9, 3.5734746838786077`*^9, 
+   3.573474859351791*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -90,21 +93,22 @@ Cell[BoxData[
  RowBox[{
   SubscriptBox["T", "\[Rho]v"], "=", " ", 
   RowBox[{
-   RowBox[{
-    RowBox[{"-", "v"}], "/", "\[Rho]"}], " ", 
-   SubscriptBox["c", "v"]}]}]], "Input",
+   RowBox[{"-", "v"}], "/", 
+   RowBox[{"(", 
+    RowBox[{"\[Rho]", " ", 
+     SubscriptBox["c", "v"]}], ")"}]}]}]], "Input",
  CellChangeTimes->{{3.573314503390443*^9, 3.573314504142316*^9}, 
-   3.573474678547827*^9}],
+   3.573474678547827*^9, {3.573474851699854*^9, 3.5734748535959*^9}}],
 
 Cell[BoxData[
  RowBox[{"-", 
-  FractionBox[
-   RowBox[{"v", " ", 
-    SubscriptBox["c", "v"]}], "\[Rho]"]}]], "Output",
+  FractionBox["v", 
+   RowBox[{"\[Rho]", " ", 
+    SubscriptBox["c", "v"]}]]}]], "Output",
  CellChangeTimes->{3.573314505983727*^9, 3.5733164177218122`*^9, 
   3.573404629792727*^9, 3.573407518355082*^9, 3.573407564729569*^9, 
   3.573407705314023*^9, 3.573407786397315*^9, 3.573408601186413*^9, 
-  3.573474596900453*^9, 3.5734746838820477`*^9}]
+  3.573474596900453*^9, 3.5734746838820477`*^9, 3.5734748593553553`*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -113,21 +117,22 @@ Cell[BoxData[
  RowBox[{
   SubscriptBox["T", "\[Rho]w"], "=", " ", 
   RowBox[{
-   RowBox[{
-    RowBox[{"-", "w"}], "/", "\[Rho]"}], " ", 
-   SubscriptBox["c", "v"]}]}]], "Input",
+   RowBox[{"-", "w"}], "/", 
+   RowBox[{"(", 
+    RowBox[{"\[Rho]", " ", 
+     SubscriptBox["c", "v"]}], ")"}]}]}]], "Input",
  CellChangeTimes->{{3.573314509164736*^9, 3.5733145110624723`*^9}, 
-   3.573474675476362*^9}],
+   3.573474675476362*^9, {3.573474855228568*^9, 3.573474856811805*^9}}],
 
 Cell[BoxData[
  RowBox[{"-", 
-  FractionBox[
-   RowBox[{"w", " ", 
-    SubscriptBox["c", "v"]}], "\[Rho]"]}]], "Output",
+  FractionBox["w", 
+   RowBox[{"\[Rho]", " ", 
+    SubscriptBox["c", "v"]}]]}]], "Output",
  CellChangeTimes->{3.573314512296924*^9, 3.573316417724967*^9, 
   3.5734046297966747`*^9, 3.5734075183586607`*^9, 3.573407564732897*^9, 
   3.573407705317525*^9, 3.573407786400585*^9, 3.5734086011899967`*^9, 
-  3.573474596904133*^9, 3.573474683885332*^9}]
+  3.573474596904133*^9, 3.573474683885332*^9, 3.573474859358581*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -148,7 +153,7 @@ Cell[BoxData[
  CellChangeTimes->{3.5733145460131607`*^9, 3.5733164178314342`*^9, 
   3.57340462979992*^9, 3.573407518399123*^9, 3.5734075647363462`*^9, 
   3.573407705320959*^9, 3.5734077864038486`*^9, 3.573408601222155*^9, 
-  3.573474596907929*^9, 3.573474683888619*^9}]
+  3.573474596907929*^9, 3.573474683888619*^9, 3.573474859361866*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -297,17 +302,20 @@ Cell[BoxData[
      RowBox[{"-", 
       FractionBox[
        RowBox[{"u", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], ",", 
+        SubscriptBox["\[Rho]R", "m"]}], 
+       RowBox[{"\[Rho]", " ", 
+        SubscriptBox["c", "v"]}]]}], ",", 
      RowBox[{
       RowBox[{"2", " ", "v"}], "-", 
-      RowBox[{"v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", 
-     RowBox[{
-      RowBox[{"-", "w"}], " ", 
-      SubscriptBox["c", "v"], " ", 
-      SubscriptBox["R", "m"]}], ",", 
+      FractionBox[
+       RowBox[{"v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"w", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
      FractionBox[
       SubscriptBox["R", "m"], 
       SubscriptBox["c", "v"]]}], "}"}], ",", 
@@ -338,19 +346,22 @@ Cell[BoxData[
          RowBox[{"R", " ", "T"}], "+", 
          RowBox[{"B", " ", "\[Rho]", " ", 
           SubscriptBox["R", "m"]}]}], ")"}]}]}], ",", 
-     RowBox[{
-      RowBox[{"-", "u"}], " ", "v", " ", 
-      SubscriptBox["c", "v"], " ", 
-      SubscriptBox["R", "m"]}], ",", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"u", " ", "v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
      RowBox[{"H", "-", 
-      RowBox[{
-       SuperscriptBox["v", "2"], " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", 
-     RowBox[{
-      RowBox[{"-", "v"}], " ", "w", " ", 
-      SubscriptBox["c", "v"], " ", 
-      SubscriptBox["R", "m"]}], ",", 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"v", " ", "w", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
      RowBox[{"v", "+", 
       FractionBox[
        RowBox[{"v", " ", 
@@ -359,7 +370,7 @@ Cell[BoxData[
  CellChangeTimes->{
   3.573407623092886*^9, 3.573407705353217*^9, 3.573407786432399*^9, 
    3.573408601256246*^9, {3.573408809119924*^9, 3.57340881821415*^9}, 
-   3.573474597005239*^9, 3.5734746839474583`*^9}],
+   3.573474597005239*^9, 3.5734746839474583`*^9, 3.573474859419951*^9}],
 
 Cell[BoxData[
  TagBox[
@@ -396,17 +407,20 @@ Cell[BoxData[
       RowBox[{"-", 
        FractionBox[
         RowBox[{"u", " ", 
-         SubscriptBox["c", "v"], " ", 
-         SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], 
+         SubscriptBox["\[Rho]R", "m"]}], 
+        RowBox[{"\[Rho]", " ", 
+         SubscriptBox["c", "v"]}]]}], 
       RowBox[{
        RowBox[{"2", " ", "v"}], "-", 
-       RowBox[{"v", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], 
-      RowBox[{
-       RowBox[{"-", "w"}], " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}], 
+       FractionBox[
+        RowBox[{"v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"w", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
       FractionBox[
        SubscriptBox["R", "m"], 
        SubscriptBox["c", "v"]]},
@@ -434,19 +448,22 @@ Cell[BoxData[
           RowBox[{"R", " ", "T"}], "+", 
           RowBox[{"B", " ", "\[Rho]", " ", 
            SubscriptBox["R", "m"]}]}], ")"}]}]}], 
-      RowBox[{
-       RowBox[{"-", "u"}], " ", "v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}], 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"u", " ", "v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
       RowBox[{"H", "-", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], 
-      RowBox[{
-       RowBox[{"-", "v"}], " ", "w", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}], 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["v", "2"], " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"v", " ", "w", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
       RowBox[{"v", "+", 
        FractionBox[
         RowBox[{"v", " ", 
@@ -468,7 +485,7 @@ Cell[BoxData[
  CellChangeTimes->{
   3.573407623092886*^9, 3.573407705353217*^9, 3.573407786432399*^9, 
    3.573408601256246*^9, {3.573408809119924*^9, 3.57340881821415*^9}, 
-   3.573474597005239*^9, 3.573474683950171*^9}],
+   3.573474597005239*^9, 3.5734746839474583`*^9, 3.573474859422696*^9}],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -483,6 +500,9 @@ Cell[BoxData[
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"3", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
+        SubsuperscriptBox["c", "v", "2"]}], "-", 
+       RowBox[{"5", " ", "v", " ", "\[Rho]", " ", 
+        SuperscriptBox["#1", "3"], " ", 
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"\[Rho]", " ", 
         SuperscriptBox["#1", "4"], " ", 
@@ -491,11 +511,19 @@ Cell[BoxData[
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"3", " ", 
+       RowBox[{"2", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"v", " ", "vH", " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"B", " ", 
@@ -503,39 +531,12 @@ Cell[BoxData[
         SuperscriptBox["\[Rho]", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"]}], "-", 
-       RowBox[{
-        SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "-", 
        RowBox[{"u", " ", "uv", " ", "v", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "-", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "+", 
-       RowBox[{
-        SuperscriptBox["#1", "3"], " ", 
-        RowBox[{"(", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"-", "5"}], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"]}], "-", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubscriptBox["c", "v"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"2", " ", "R", " ", "T", " ", 
         SuperscriptBox["v", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
@@ -573,21 +574,19 @@ Cell[BoxData[
         SubscriptBox["R", "\[Alpha]"], " ", 
         SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
@@ -603,21 +602,17 @@ Cell[BoxData[
           RowBox[{"H", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"4", " ", 
+          RowBox[{
            SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "+", 
+          RowBox[{
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
           RowBox[{"B", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"R", " ", "T", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -637,7 +632,7 @@ Cell[BoxData[
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"#1", " ", 
         RowBox[{"(", 
@@ -650,31 +645,26 @@ Cell[BoxData[
           RowBox[{"2", " ", "H", " ", "v", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"6", " ", 
+          RowBox[{"3", " ", 
            SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"vH", " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"2", " ", "v", " ", 
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"2", " ", "B", " ", "v", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"2", " ", "v", " ", 
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubsuperscriptBox["R", "m", "2"]}], "-", 
           RowBox[{"3", " ", "R", " ", "T", " ", "v", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -707,15 +697,14 @@ Cell[BoxData[
            SubscriptBox["R", "\[Alpha]"], " ", 
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "-", 
           RowBox[{"u", " ", "uv", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{"2", " ", 
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}]}], "&"}], ",", "1"}], 
     "]"}], ",", 
@@ -729,6 +718,9 @@ Cell[BoxData[
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"3", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
+        SubsuperscriptBox["c", "v", "2"]}], "-", 
+       RowBox[{"5", " ", "v", " ", "\[Rho]", " ", 
+        SuperscriptBox["#1", "3"], " ", 
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"\[Rho]", " ", 
         SuperscriptBox["#1", "4"], " ", 
@@ -737,11 +729,19 @@ Cell[BoxData[
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"3", " ", 
+       RowBox[{"2", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"v", " ", "vH", " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"B", " ", 
@@ -749,39 +749,12 @@ Cell[BoxData[
         SuperscriptBox["\[Rho]", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"]}], "-", 
-       RowBox[{
-        SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "-", 
        RowBox[{"u", " ", "uv", " ", "v", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "-", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "+", 
-       RowBox[{
-        SuperscriptBox["#1", "3"], " ", 
-        RowBox[{"(", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"-", "5"}], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"]}], "-", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubscriptBox["c", "v"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"2", " ", "R", " ", "T", " ", 
         SuperscriptBox["v", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
@@ -819,21 +792,19 @@ Cell[BoxData[
         SubscriptBox["R", "\[Alpha]"], " ", 
         SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
@@ -849,21 +820,17 @@ Cell[BoxData[
           RowBox[{"H", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"4", " ", 
+          RowBox[{
            SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "+", 
+          RowBox[{
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
           RowBox[{"B", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"R", " ", "T", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -883,7 +850,7 @@ Cell[BoxData[
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"#1", " ", 
         RowBox[{"(", 
@@ -896,31 +863,26 @@ Cell[BoxData[
           RowBox[{"2", " ", "H", " ", "v", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"6", " ", 
+          RowBox[{"3", " ", 
            SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"vH", " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"2", " ", "v", " ", 
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"2", " ", "B", " ", "v", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"2", " ", "v", " ", 
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubsuperscriptBox["R", "m", "2"]}], "-", 
           RowBox[{"3", " ", "R", " ", "T", " ", "v", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -953,15 +915,14 @@ Cell[BoxData[
            SubscriptBox["R", "\[Alpha]"], " ", 
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "-", 
           RowBox[{"u", " ", "uv", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{"2", " ", 
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}]}], "&"}], ",", "2"}], 
     "]"}], ",", 
@@ -975,6 +936,9 @@ Cell[BoxData[
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"3", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
+        SubsuperscriptBox["c", "v", "2"]}], "-", 
+       RowBox[{"5", " ", "v", " ", "\[Rho]", " ", 
+        SuperscriptBox["#1", "3"], " ", 
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"\[Rho]", " ", 
         SuperscriptBox["#1", "4"], " ", 
@@ -983,11 +947,19 @@ Cell[BoxData[
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"3", " ", 
+       RowBox[{"2", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"v", " ", "vH", " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"B", " ", 
@@ -995,39 +967,12 @@ Cell[BoxData[
         SuperscriptBox["\[Rho]", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"]}], "-", 
-       RowBox[{
-        SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "-", 
        RowBox[{"u", " ", "uv", " ", "v", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "-", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "+", 
-       RowBox[{
-        SuperscriptBox["#1", "3"], " ", 
-        RowBox[{"(", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"-", "5"}], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"]}], "-", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubscriptBox["c", "v"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"2", " ", "R", " ", "T", " ", 
         SuperscriptBox["v", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1065,21 +1010,19 @@ Cell[BoxData[
         SubscriptBox["R", "\[Alpha]"], " ", 
         SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
@@ -1095,21 +1038,17 @@ Cell[BoxData[
           RowBox[{"H", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"4", " ", 
+          RowBox[{
            SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "+", 
+          RowBox[{
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
           RowBox[{"B", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"R", " ", "T", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1129,7 +1068,7 @@ Cell[BoxData[
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"#1", " ", 
         RowBox[{"(", 
@@ -1142,31 +1081,26 @@ Cell[BoxData[
           RowBox[{"2", " ", "H", " ", "v", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"6", " ", 
+          RowBox[{"3", " ", 
            SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"vH", " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"2", " ", "v", " ", 
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"2", " ", "B", " ", "v", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"2", " ", "v", " ", 
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubsuperscriptBox["R", "m", "2"]}], "-", 
           RowBox[{"3", " ", "R", " ", "T", " ", "v", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1199,15 +1133,14 @@ Cell[BoxData[
            SubscriptBox["R", "\[Alpha]"], " ", 
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "-", 
           RowBox[{"u", " ", "uv", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{"2", " ", 
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}]}], "&"}], ",", "3"}], 
     "]"}], ",", 
@@ -1221,6 +1154,9 @@ Cell[BoxData[
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"3", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
+        SubsuperscriptBox["c", "v", "2"]}], "-", 
+       RowBox[{"5", " ", "v", " ", "\[Rho]", " ", 
+        SuperscriptBox["#1", "3"], " ", 
         SubsuperscriptBox["c", "v", "2"]}], "+", 
        RowBox[{"\[Rho]", " ", 
         SuperscriptBox["#1", "4"], " ", 
@@ -1229,11 +1165,19 @@ Cell[BoxData[
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"3", " ", 
+       RowBox[{"2", " ", 
         SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"v", " ", "vH", " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["R", "m"]}], "+", 
+       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
         SubscriptBox["c", "v"], " ", 
         SubscriptBox["R", "m"]}], "-", 
        RowBox[{"B", " ", 
@@ -1241,39 +1185,12 @@ Cell[BoxData[
         SuperscriptBox["\[Rho]", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"]}], "-", 
-       RowBox[{
-        SuperscriptBox["v", "4"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{"v", " ", "w", " ", "wv", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
-        SubscriptBox["R", "m"]}], "-", 
        RowBox[{"u", " ", "uv", " ", "v", " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "-", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubsuperscriptBox["R", "m", "2"]}], "+", 
-       RowBox[{
-        SuperscriptBox["#1", "3"], " ", 
-        RowBox[{"(", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"-", "5"}], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"]}], "-", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubscriptBox["c", "v"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"2", " ", "R", " ", "T", " ", 
         SuperscriptBox["v", "2"], " ", 
         SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1311,21 +1228,19 @@ Cell[BoxData[
         SubscriptBox["R", "\[Alpha]"], " ", 
         SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "3"], " ", 
+        SubscriptBox["c", "v"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{"u", " ", "uv", " ", "v", " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
         SuperscriptBox["u", "2"], " ", 
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "2"], " ", 
         SubscriptBox["R", "m"], " ", 
         SubscriptBox["\[Rho]R", "m"]}], "+", 
        RowBox[{
@@ -1341,21 +1256,17 @@ Cell[BoxData[
           RowBox[{"H", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"4", " ", 
+          RowBox[{
            SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "+", 
+          RowBox[{
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
           RowBox[{"B", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
-          RowBox[{
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"R", " ", "T", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1375,7 +1286,7 @@ Cell[BoxData[
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}], "+", 
        RowBox[{"#1", " ", 
         RowBox[{"(", 
@@ -1388,31 +1299,26 @@ Cell[BoxData[
           RowBox[{"2", " ", "H", " ", "v", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"6", " ", 
+          RowBox[{"3", " ", 
            SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"vH", " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"2", " ", "v", " ", 
+           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
+           SubscriptBox["c", "v"], " ", 
+           SubscriptBox["R", "m"]}], "-", 
+          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
            SubscriptBox["c", "v"], " ", 
            SubscriptBox["R", "m"]}], "+", 
           RowBox[{"2", " ", "B", " ", "v", " ", 
            SuperscriptBox["\[Rho]", "2"], " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"]}], "+", 
-          RowBox[{"3", " ", 
-           SuperscriptBox["v", "3"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"2", " ", "v", " ", 
-           SuperscriptBox["w", "2"], " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "-", 
-          RowBox[{"w", " ", "wv", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
-           SubscriptBox["R", "m"]}], "+", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", "\[Rho]", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubsuperscriptBox["R", "m", "2"]}], "-", 
           RowBox[{"3", " ", "R", " ", "T", " ", "v", " ", 
            SubsuperscriptBox["c", "v", "2"], " ", 
@@ -1445,22 +1351,21 @@ Cell[BoxData[
            SubscriptBox["R", "\[Alpha]"], " ", 
            SubscriptBox["\[Rho]", "\[Alpha]"]}], "-", 
           RowBox[{"u", " ", "uv", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{"2", " ", 
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "3"], " ", 
+           SubscriptBox["c", "v"], " ", 
            SubscriptBox["\[Rho]R", "m"]}], "-", 
           RowBox[{
            SuperscriptBox["u", "2"], " ", "v", " ", 
-           SubsuperscriptBox["c", "v", "2"], " ", 
            SubscriptBox["R", "m"], " ", 
            SubscriptBox["\[Rho]R", "m"]}]}], ")"}]}]}], "&"}], ",", "4"}], 
     "]"}]}], "}"}]], "Output",
  CellChangeTimes->{
   3.573407623092886*^9, 3.573407705353217*^9, 3.573407786432399*^9, 
    3.573408601256246*^9, {3.573408809119924*^9, 3.57340881821415*^9}, 
-   3.573474597005239*^9, 3.573474684145842*^9}]
+   3.573474597005239*^9, 3.5734746839474583`*^9, 3.5734748595874643`*^9}]
 }, Open  ]],
 
 Cell["\<\
@@ -1543,17 +1448,20 @@ Cell[BoxData[
      RowBox[{"-", 
       FractionBox[
        RowBox[{"u", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], ",", 
+        SubscriptBox["\[Rho]R", "m"]}], 
+       RowBox[{"\[Rho]", " ", 
+        SubscriptBox["c", "v"]}]]}], ",", 
      RowBox[{
       RowBox[{"2", " ", "v"}], "-", 
-      RowBox[{"v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", 
-     RowBox[{
-      RowBox[{"-", "w"}], " ", 
-      SubscriptBox["c", "v"], " ", 
-      SubscriptBox["R", "m"]}], ",", 
+      FractionBox[
+       RowBox[{"v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"w", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
      FractionBox[
       SubscriptBox["R", "m"], 
       SubscriptBox["c", "v"]]}], "}"}], ",", 
@@ -1563,10 +1471,11 @@ Cell[BoxData[
    RowBox[{"{", 
     RowBox[{"0", ",", "0", ",", "0", ",", 
      RowBox[{"H", "-", 
-      RowBox[{
-       SuperscriptBox["v", "2"], " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", "0", ",", 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", "0", ",", 
      RowBox[{"v", "+", 
       FractionBox[
        RowBox[{"v", " ", 
@@ -1581,7 +1490,7 @@ Cell[BoxData[
    3.573405616399206*^9}, 3.573407518920492*^9, 3.573407565075939*^9, {
    3.573407632824334*^9, 3.573407634765671*^9}, 3.57340770678201*^9, 
    3.573407787682399*^9, 3.573408602675432*^9, 3.5734745974510193`*^9, 
-   3.573474684221829*^9}],
+   3.573474684221829*^9, 3.5734748596593037`*^9}],
 
 Cell[BoxData[
  TagBox[
@@ -1593,27 +1502,31 @@ Cell[BoxData[
       RowBox[{"-", 
        FractionBox[
         RowBox[{"u", " ", 
-         SubscriptBox["c", "v"], " ", 
-         SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], 
+         SubscriptBox["\[Rho]R", "m"]}], 
+        RowBox[{"\[Rho]", " ", 
+         SubscriptBox["c", "v"]}]]}], 
       RowBox[{
        RowBox[{"2", " ", "v"}], "-", 
-       RowBox[{"v", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], 
-      RowBox[{
-       RowBox[{"-", "w"}], " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}], 
+       FractionBox[
+        RowBox[{"v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"w", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
       FractionBox[
        SubscriptBox["R", "m"], 
        SubscriptBox["c", "v"]]},
      {"0", "0", "0", "0", "v", "0"},
      {"0", "0", "0", 
       RowBox[{"H", "-", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], "0", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["v", "2"], " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], "0", 
       RowBox[{"v", "+", 
        FractionBox[
         RowBox[{"v", " ", 
@@ -1641,90 +1554,46 @@ Cell[BoxData[
    3.573405616399206*^9}, 3.573407518920492*^9, 3.573407565075939*^9, {
    3.573407632824334*^9, 3.573407634765671*^9}, 3.57340770678201*^9, 
    3.573407787682399*^9, 3.573408602675432*^9, 3.5734745974510193`*^9, 
-   3.573474684223566*^9}],
+   3.573474684221829*^9, 3.573474859661528*^9}],
 
 Cell[BoxData[
  RowBox[{"{", 
   RowBox[{"v", ",", "v", ",", "v", ",", "v", ",", 
-   FractionBox[
-    RowBox[{
-     RowBox[{"-", 
-      SqrtBox[
-       RowBox[{
-        RowBox[{
-         SuperscriptBox["v", "2"], " ", 
-         SubsuperscriptBox["c", "v", "2"]}], "-", 
-        RowBox[{"2", " ", 
-         SubscriptBox["c", "v"], " ", 
-         RowBox[{"(", 
-          RowBox[{
-           RowBox[{
-            RowBox[{"-", "2"}], " ", "H"}], "+", 
-           SuperscriptBox["v", "2"], "+", 
-           RowBox[{
-            SuperscriptBox["v", "2"], " ", 
-            SubsuperscriptBox["c", "v", "2"]}]}], ")"}], " ", 
-         SubscriptBox["R", "m"]}], "+", 
-        RowBox[{
-         SuperscriptBox["v", "2"], " ", 
-         SuperscriptBox[
-          RowBox[{"(", 
-           RowBox[{
-            RowBox[{"-", "1"}], "+", 
-            SubsuperscriptBox["c", "v", "2"]}], ")"}], "2"], " ", 
-         SubsuperscriptBox["R", "m", "2"]}]}]]}], "+", 
-     RowBox[{"v", " ", 
-      RowBox[{"(", 
-       RowBox[{
-        SubscriptBox["R", "m"], "+", 
-        RowBox[{
-         SubscriptBox["c", "v"], " ", 
-         RowBox[{"(", 
-          RowBox[{"3", "-", 
-           RowBox[{
-            SubscriptBox["c", "v"], " ", 
-            SubscriptBox["R", "m"]}]}], ")"}]}]}], ")"}]}]}], 
-    RowBox[{"2", " ", 
-     SubscriptBox["c", "v"]}]], ",", 
-   FractionBox[
-    RowBox[{
+   RowBox[{
+    FractionBox[
+     RowBox[{"3", " ", "v"}], "2"], "-", 
+    FractionBox[
      SqrtBox[
       RowBox[{
        RowBox[{
         SuperscriptBox["v", "2"], " ", 
-        SubsuperscriptBox["c", "v", "2"]}], "-", 
-       RowBox[{"2", " ", 
-        SubscriptBox["c", "v"], " ", 
+        SubscriptBox["c", "v"]}], "+", 
+       RowBox[{"4", " ", 
         RowBox[{"(", 
-         RowBox[{
-          RowBox[{
-           RowBox[{"-", "2"}], " ", "H"}], "+", 
-          SuperscriptBox["v", "2"], "+", 
-          RowBox[{
-           SuperscriptBox["v", "2"], " ", 
-           SubsuperscriptBox["c", "v", "2"]}]}], ")"}], " ", 
-        SubscriptBox["R", "m"]}], "+", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SuperscriptBox[
-         RowBox[{"(", 
-          RowBox[{
-           RowBox[{"-", "1"}], "+", 
-           SubsuperscriptBox["c", "v", "2"]}], ")"}], "2"], " ", 
-        SubsuperscriptBox["R", "m", "2"]}]}]], "+", 
-     RowBox[{"v", " ", 
-      RowBox[{"(", 
-       RowBox[{
-        SubscriptBox["R", "m"], "+", 
+         RowBox[{"H", "-", 
+          SuperscriptBox["v", "2"]}], ")"}], " ", 
+        SubscriptBox["R", "m"]}]}]], 
+     RowBox[{"2", " ", 
+      SqrtBox[
+       SubscriptBox["c", "v"]]}]]}], ",", 
+   RowBox[{
+    FractionBox["1", "2"], " ", 
+    RowBox[{"(", 
+     RowBox[{
+      RowBox[{"3", " ", "v"}], "+", 
+      FractionBox[
+       SqrtBox[
         RowBox[{
-         SubscriptBox["c", "v"], " ", 
-         RowBox[{"(", 
-          RowBox[{"3", "-", 
-           RowBox[{
-            SubscriptBox["c", "v"], " ", 
-            SubscriptBox["R", "m"]}]}], ")"}]}]}], ")"}]}]}], 
-    RowBox[{"2", " ", 
-     SubscriptBox["c", "v"]}]]}], "}"}]], "Output",
+         RowBox[{
+          SuperscriptBox["v", "2"], " ", 
+          SubscriptBox["c", "v"]}], "+", 
+         RowBox[{"4", " ", 
+          RowBox[{"(", 
+           RowBox[{"H", "-", 
+            SuperscriptBox["v", "2"]}], ")"}], " ", 
+          SubscriptBox["R", "m"]}]}]], 
+       SqrtBox[
+        SubscriptBox["c", "v"]]]}], ")"}]}]}], "}"}]], "Output",
  CellChangeTimes->{{3.573404653069718*^9, 3.57340465807393*^9}, 
    3.573404704804719*^9, 3.573404776764185*^9, 3.573404819594535*^9, {
    3.573404920664988*^9, 3.573404923786317*^9}, 3.5734049793051977`*^9, {
@@ -1734,7 +1603,7 @@ Cell[BoxData[
    3.573405616399206*^9}, 3.573407518920492*^9, 3.573407565075939*^9, {
    3.573407632824334*^9, 3.573407634765671*^9}, 3.57340770678201*^9, 
    3.573407787682399*^9, 3.573408602675432*^9, 3.5734745974510193`*^9, 
-   3.573474684628645*^9}]
+   3.573474684221829*^9, 3.5734748598547173`*^9}]
 }, Open  ]],
 
 Cell["\<\
@@ -1825,12 +1694,14 @@ Cell[BoxData[
      RowBox[{"-", 
       FractionBox[
        RowBox[{"u", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], ",", 
+        SubscriptBox["\[Rho]R", "m"]}], 
+       RowBox[{"\[Rho]", " ", 
+        SubscriptBox["c", "v"]}]]}], ",", 
      RowBox[{"v", "-", 
-      RowBox[{"v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", "0", ",", 
+      FractionBox[
+       RowBox[{"v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", "0", ",", 
      FractionBox[
       SubscriptBox["R", "m"], 
       SubscriptBox["c", "v"]]}], "}"}], ",", 
@@ -1850,7 +1721,7 @@ Cell[BoxData[
    3.573408707872986*^9, 3.5734087529539003`*^9, {3.573408842768613*^9, 
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.5734091588861113`*^9}, 
-   3.573474599100473*^9, 3.573474684705851*^9}],
+   3.573474599100473*^9, 3.573474684705851*^9, 3.573474859928452*^9}],
 
 Cell[BoxData[
  TagBox[
@@ -1862,12 +1733,14 @@ Cell[BoxData[
       RowBox[{"-", 
        FractionBox[
         RowBox[{"u", " ", 
-         SubscriptBox["c", "v"], " ", 
-         SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], 
+         SubscriptBox["\[Rho]R", "m"]}], 
+        RowBox[{"\[Rho]", " ", 
+         SubscriptBox["c", "v"]}]]}], 
       RowBox[{"v", "-", 
-       RowBox[{"v", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], "0", 
+       FractionBox[
+        RowBox[{"v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], "0", 
       FractionBox[
        SubscriptBox["R", "m"], 
        SubscriptBox["c", "v"]]},
@@ -1897,7 +1770,7 @@ Cell[BoxData[
    3.573408707872986*^9, 3.5734087529539003`*^9, {3.573408842768613*^9, 
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.5734091588861113`*^9}, 
-   3.573474599100473*^9, 3.573474684707349*^9}],
+   3.573474599100473*^9, 3.573474684705851*^9, 3.573474859929936*^9}],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -1907,9 +1780,10 @@ Cell[BoxData[
      SubscriptBox["R", "m"]}], 
     SubscriptBox["c", "v"]], ",", 
    RowBox[{"v", "-", 
-    RowBox[{"v", " ", 
-     SubscriptBox["c", "v"], " ", 
-     SubscriptBox["R", "m"]}]}]}], "}"}]], "Output",
+    FractionBox[
+     RowBox[{"v", " ", 
+      SubscriptBox["R", "m"]}], 
+     SubscriptBox["c", "v"]]}]}], "}"}]], "Output",
  CellChangeTimes->{{3.573405625078021*^9, 3.573405644329769*^9}, 
    3.573405680575629*^9, 3.573407519953733*^9, 3.573407566097039*^9, 
    3.573407638636757*^9, 3.573407708039898*^9, 3.5734077887128983`*^9, 
@@ -1917,7 +1791,7 @@ Cell[BoxData[
    3.573408707872986*^9, 3.5734087529539003`*^9, {3.573408842768613*^9, 
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.5734091588861113`*^9}, 
-   3.573474599100473*^9, 3.573474684708653*^9}]
+   3.573474599100473*^9, 3.573474684705851*^9, 3.573474859931172*^9}]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -1997,12 +1871,14 @@ Cell[BoxData[
      RowBox[{"-", 
       FractionBox[
        RowBox[{"u", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], ",", 
+        SubscriptBox["\[Rho]R", "m"]}], 
+       RowBox[{"\[Rho]", " ", 
+        SubscriptBox["c", "v"]}]]}], ",", 
      RowBox[{"v", "-", 
-      RowBox[{"v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", "0", ",", "0"}], "}"}], ",", 
+      FractionBox[
+       RowBox[{"v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", "0", ",", "0"}], "}"}], ",", 
    RowBox[{"{", 
     RowBox[{"0", ",", "0", ",", "0", ",", "w", ",", "0", ",", "0"}], "}"}], 
    ",", 
@@ -2021,15 +1897,17 @@ Cell[BoxData[
         RowBox[{
          RowBox[{"-", "R"}], "+", 
          SubscriptBox["R", "\[Alpha]"]}], ")"}]}]}], ",", "0", ",", 
-     RowBox[{
-      RowBox[{"-", "u"}], " ", "v", " ", 
-      SubscriptBox["c", "v"], " ", 
-      SubscriptBox["R", "m"]}], ",", 
+     RowBox[{"-", 
+      FractionBox[
+       RowBox[{"u", " ", "v", " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", 
      RowBox[{"H", "-", 
-      RowBox[{
-       SuperscriptBox["v", "2"], " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}]}], ",", "0", ",", 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["v", "2"], " ", 
+        SubscriptBox["R", "m"]}], 
+       SubscriptBox["c", "v"]]}], ",", "0", ",", 
      FractionBox[
       RowBox[{"v", " ", 
        SubscriptBox["R", "m"]}], 
@@ -2042,7 +1920,7 @@ Cell[BoxData[
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.573409195511216*^9}, 
    3.573409232200706*^9, {3.57340926627674*^9, 3.573409486364237*^9}, 
-   3.573474599245385*^9, 3.573474684790421*^9}],
+   3.573474599245385*^9, 3.573474684790421*^9, 3.57347486000945*^9}],
 
 Cell[BoxData[
  TagBox[
@@ -2067,12 +1945,14 @@ Cell[BoxData[
       RowBox[{"-", 
        FractionBox[
         RowBox[{"u", " ", 
-         SubscriptBox["c", "v"], " ", 
-         SubscriptBox["\[Rho]R", "m"]}], "\[Rho]"]}], 
+         SubscriptBox["\[Rho]R", "m"]}], 
+        RowBox[{"\[Rho]", " ", 
+         SubscriptBox["c", "v"]}]]}], 
       RowBox[{"v", "-", 
-       RowBox[{"v", " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], "0", "0"},
+       FractionBox[
+        RowBox[{"v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], "0", "0"},
      {"0", "0", "0", "w", "0", "0"},
      {
       RowBox[{
@@ -2088,15 +1968,17 @@ Cell[BoxData[
          RowBox[{
           RowBox[{"-", "R"}], "+", 
           SubscriptBox["R", "\[Alpha]"]}], ")"}]}]}], "0", 
-      RowBox[{
-       RowBox[{"-", "u"}], " ", "v", " ", 
-       SubscriptBox["c", "v"], " ", 
-       SubscriptBox["R", "m"]}], 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{"u", " ", "v", " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], 
       RowBox[{"H", "-", 
-       RowBox[{
-        SuperscriptBox["v", "2"], " ", 
-        SubscriptBox["c", "v"], " ", 
-        SubscriptBox["R", "m"]}]}], "0", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["v", "2"], " ", 
+         SubscriptBox["R", "m"]}], 
+        SubscriptBox["c", "v"]]}], "0", 
       FractionBox[
        RowBox[{"v", " ", 
         SubscriptBox["R", "m"]}], 
@@ -2122,7 +2004,7 @@ Cell[BoxData[
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.573409195511216*^9}, 
    3.573409232200706*^9, {3.57340926627674*^9, 3.573409486364237*^9}, 
-   3.573474599245385*^9, 3.573474684792306*^9}],
+   3.573474599245385*^9, 3.573474684790421*^9, 3.573474860011496*^9}],
 
 Cell[BoxData[
  RowBox[{"{", 
@@ -2132,9 +2014,10 @@ Cell[BoxData[
      SubscriptBox["R", "m"]}], 
     SubscriptBox["c", "v"]], ",", 
    RowBox[{"v", "-", 
-    RowBox[{"v", " ", 
-     SubscriptBox["c", "v"], " ", 
-     SubscriptBox["R", "m"]}]}]}], "}"}]], "Output",
+    FractionBox[
+     RowBox[{"v", " ", 
+      SubscriptBox["R", "m"]}], 
+     SubscriptBox["c", "v"]]}]}], "}"}]], "Output",
  CellChangeTimes->{{3.573405625078021*^9, 3.573405644329769*^9}, 
    3.573405680575629*^9, 3.573407519953733*^9, 3.573407566097039*^9, 
    3.573407638636757*^9, 3.573407708039898*^9, 3.5734077887128983`*^9, 
@@ -2143,7 +2026,7 @@ Cell[BoxData[
    3.5734088491436996`*^9}, {3.573408964412813*^9, 3.573408989969883*^9}, 
    3.573409029310383*^9, {3.57340913879282*^9, 3.573409195511216*^9}, 
    3.573409232200706*^9, {3.57340926627674*^9, 3.573409486364237*^9}, 
-   3.573474599245385*^9, 3.573474684793919*^9}]
+   3.573474599245385*^9, 3.573474684790421*^9, 3.57347486001315*^9}]
 }, Open  ]],
 
 Cell["\<\
@@ -2168,7 +2051,7 @@ Cell[BoxData[
    3.573408995259405*^9, 3.573409032162315*^9, {3.5734091424141703`*^9, 
    3.573409162701182*^9}, 3.5734092027013817`*^9, 3.573409234559293*^9, {
    3.57340926839076*^9, 3.573409488254681*^9}, 3.573474599252907*^9, 
-   3.573474684873699*^9}]
+   3.573474684873699*^9, 3.573474860016803*^9}]
 }, Open  ]],
 
 Cell["", "Text",
@@ -2407,62 +2290,62 @@ CellTagsIndex->{}
 Notebook[{
 Cell[CellGroupData[{
 Cell[579, 22, 351, 11, 30, "Input"],
-Cell[933, 35, 456, 10, 47, "Output"]
+Cell[933, 35, 478, 10, 47, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1426, 50, 196, 4, 30, "Input"],
-Cell[1625, 56, 310, 4, 29, "Output"]
+Cell[1448, 50, 196, 4, 30, "Input"],
+Cell[1647, 56, 336, 5, 29, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[1972, 65, 269, 8, 30, "Input"],
-Cell[2244, 75, 399, 8, 47, "Output"]
+Cell[2020, 66, 341, 9, 30, "Input"],
+Cell[2364, 77, 425, 9, 47, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[2680, 88, 269, 8, 30, "Input"],
-Cell[2952, 98, 372, 8, 47, "Output"]
+Cell[2826, 91, 339, 9, 30, "Input"],
+Cell[3168, 102, 396, 8, 47, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[3361, 111, 271, 8, 30, "Input"],
-Cell[3635, 121, 374, 8, 47, "Output"]
+Cell[3601, 115, 343, 9, 30, "Input"],
+Cell[3947, 126, 396, 8, 47, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[4046, 134, 252, 7, 30, "Input"],
-Cell[4301, 143, 355, 7, 49, "Output"]
+Cell[4380, 139, 252, 7, 30, "Input"],
+Cell[4635, 148, 377, 7, 49, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[4693, 155, 3470, 100, 156, "Input"],
-Cell[8166, 257, 3249, 104, 87, "Output"],
-Cell[11418, 363, 3438, 107, 146, "Output"],
-Cell[14859, 472, 42333, 990, 470, "Output"]
+Cell[5049, 160, 3470, 100, 156, "Input"],
+Cell[8522, 262, 3381, 110, 91, "Output"],
+Cell[11906, 374, 3578, 113, 151, "Output"],
+Cell[15487, 489, 37195, 878, 436, "Output"]
 }, Open  ]],
-Cell[57207, 1465, 200, 4, 30, "Text"],
+Cell[52697, 1370, 200, 4, 30, "Text"],
 Cell[CellGroupData[{
-Cell[57432, 1473, 2179, 53, 107, "Input"],
-Cell[59614, 1528, 2091, 55, 48, "Output"],
-Cell[61708, 1585, 2228, 58, 137, "Output"],
-Cell[63939, 1645, 3229, 91, 61, "Output"]
+Cell[52922, 1378, 2179, 53, 107, "Input"],
+Cell[55104, 1433, 2187, 59, 52, "Output"],
+Cell[57294, 1494, 2326, 62, 142, "Output"],
+Cell[59623, 1558, 1754, 47, 70, "Output"]
 }, Open  ]],
-Cell[67183, 1739, 258, 5, 30, "Text"],
+Cell[61392, 1608, 258, 5, 30, "Text"],
 Cell[CellGroupData[{
-Cell[67466, 1748, 2209, 60, 107, "Input"],
-Cell[69678, 1810, 1660, 42, 48, "Output"],
-Cell[71341, 1854, 1786, 45, 137, "Output"],
-Cell[73130, 1901, 867, 18, 48, "Output"]
+Cell[61675, 1617, 2209, 60, 107, "Input"],
+Cell[63887, 1679, 1717, 44, 48, "Output"],
+Cell[65607, 1725, 1845, 47, 137, "Output"],
+Cell[67455, 1774, 904, 19, 48, "Output"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[74034, 1924, 1471, 43, 107, "Input"],
-Cell[75508, 1969, 2665, 75, 78, "Output"],
-Cell[78176, 2046, 2823, 78, 137, "Output"],
-Cell[81002, 2126, 936, 19, 48, "Output"]
+Cell[68396, 1798, 1471, 43, 107, "Input"],
+Cell[69870, 1843, 2758, 79, 82, "Output"],
+Cell[72631, 1924, 2921, 82, 142, "Output"],
+Cell[75555, 2008, 972, 20, 48, "Output"]
 }, Open  ]],
-Cell[81953, 2148, 218, 4, 30, "Text"],
+Cell[76542, 2031, 218, 4, 30, "Text"],
 Cell[CellGroupData[{
-Cell[82196, 2156, 155, 3, 30, "Input"],
-Cell[82354, 2161, 448, 9, 29, "Output"]
+Cell[76785, 2039, 155, 3, 30, "Input"],
+Cell[76943, 2044, 470, 9, 29, "Output"]
 }, Open  ]],
-Cell[82817, 2173, 137, 2, 30, "Text"],
-Cell[82957, 2177, 6329, 157, 172, "Text"],
-Cell[89289, 2336, 1984, 53, 87, "Text"]
+Cell[77428, 2056, 137, 2, 30, "Text"],
+Cell[77568, 2060, 6329, 157, 172, "Text"],
+Cell[83900, 2219, 1984, 53, 87, "Text"]
 }
 ]
 *)
