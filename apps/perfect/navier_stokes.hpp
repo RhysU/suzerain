@@ -969,7 +969,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // three-dimensional criterion should collect any NaNs
                 // occurring within the direction-dependent criteria.  min(...)
                 // is presumably a touch faster and is preferred when possible.
+                //
+                // maxnan(...) truncate non-positive values but prefer NaNs.
                 using math::minnan;
+                using math::maxnan;
 
                 // See timestepper::convective_stability_criterion
                 const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
@@ -1068,13 +1071,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // reference value in only the Y direction.  Notice
                 // antidiffusive (nu - ref_nu) is fine but requires
                 // chomping to zero to avoid circumventing the XZ checks,
-                // however minnan is required in case ref_nu is NaN.
+                // however maxnan is required in case ref_nu is NaN.
                 // Notice also that we /want/ to avoid NaN's arising from
                 // diffusivity_y == 0 in diffusive_y_delta_t computation.
                 case linearize::rhome_y:
                 {
                     const real_t diffusivity_y
-                            = minnan(diffusivity - ref_nu, real_t(0));
+                            = maxnan(diffusivity - ref_nu, real_t(0));
                     diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                               evmaxmag_real
                             / (   diffusivity   * md_lambda2_x
