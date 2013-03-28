@@ -45,18 +45,20 @@
 #include <valarray>
 #include <vector>
 
-// Include Eigen functionality used through Suzerain
-#include <Eigen/Core>
-#include <Eigen/SVD>
-
-// Include Boost functionality used throughout Suzerain
-// Boost.Preprocessor was included in common.h
+// If possible, begin suppressing warnings from Eigen and Boost headers
 SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 SUZERAIN_GCC_DIAG_OFF(unused-variable);
+
+// Include Eigen functionality used through Suzerain
+#include <Eigen/Core>
+#include <Eigen/SVD>
+
+// Include Boost functionality used throughout Suzerain
+// Boost.Preprocessor was included in common.h
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
 #include <boost/algorithm/string.hpp>
@@ -101,12 +103,14 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/typeof/typeof.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/utility.hpp>
-SUZERAIN_GCC_DIAG_ON(unused-variable);
-SUZERAIN_GCC_DIAG_ON(unused-parameter);
+
+// If possible, stop suppressing warnings from Eigen and Boost headers
+SUZERAIN_GCC_DIAG_OFF(unused-variable);
+SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
 SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
-SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
+SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
