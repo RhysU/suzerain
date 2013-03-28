@@ -121,17 +121,17 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Establish common_block.linearization based on the result
     if (use_implicit) {
         boost::algorithm::trim(implicit);
-        INFO0("Implicit linearization employed: " << implicit);
         if (implicit == "rhome_xyz") {
             common_block.linearization = linearize::rhome_xyz;
         } else if (implicit == "rhome_y") {
             common_block.linearization = linearize::rhome_y;
         } else {
-            FATAL0("Unknown --implicit option:  " << implicit);
+            FATAL0("Unknown --implicit argument:  " << implicit);
             return EXIT_FAILURE;
         }
     } else {
         common_block.linearization = linearize::none;
+        implicit = "none";
     }
 
     if (positional.size() != 1) {
@@ -194,6 +194,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
+        INFO0(who, "Implicit linearization employed: " << implicit);
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
