@@ -44,7 +44,9 @@
 
 /**
  * Invoke <tt>SUZERAIN_TIMER_BEGIN(id)</tt> and
- * <tt>SUZERAIN_TIMER_BEGIN(id)</tt> using a scope guard.
+ * <tt>SUZERAIN_TIMER_BEGIN(id)</tt> using a scope guard.  The C-style string
+ * identifier <tt>id</tt> must have a lifetime longer than the scope guard,
+ * otherwise the behavior is undefined.
  */
 #define SUZERAIN_TIMER_SCOPED(id)                                   \
     SUZERAIN_TIMER_SCOPED_HELPER1(id,__LINE__)
@@ -52,11 +54,15 @@
 #define SUZERAIN_TIMER_SCOPED_HELPER1(id,line)                      \
     SUZERAIN_TIMER_SCOPED_HELPER2(id,line)
 
-#define SUZERAIN_TIMER_SCOPED_HELPER2(id,line)                      \
-    struct SuzerainTimerScoped_##line {                             \
-        SuzerainTimerScoped_##line()  { SUZERAIN_TIMER_BEGIN(id); } \
-        ~SuzerainTimerScoped_##line() { SUZERAIN_TIMER_END  (id); } \
-    } suzeraintimerscoped_##line
+#define SUZERAIN_TIMER_SCOPED_HELPER2(id,line)             \
+class SuzerainTimerScoped_##line {                         \
+    const char *id_;                                       \
+public:                                                    \
+    SuzerainTimerScoped_##line(const char *id_) : id_(id_) \
+        { SUZERAIN_TIMER_BEGIN(id_); }                     \
+    ~SuzerainTimerScoped_##line()                          \
+        { SUZERAIN_TIMER_END  (id_); }                     \
+} suzeraintimerscoped_##line(id)
 
 #endif  // #ifdef __cplusplus
 

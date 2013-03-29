@@ -232,9 +232,7 @@ public:
     int solve(const char trans, const int nrhs)
     {
         if (nrhs == 0) return 0;              // Avoid timing degenerate calls
-        const char * mname = spec.mname();    // Capture id for scoped timer...
-        SUZERAIN_UNUSED(mname);               // ...which isn't used if no GRVY
-        SUZERAIN_TIMER_SCOPED(mname);         // ...so fix ticket #2813 already.
+        SUZERAIN_TIMER_SCOPED(spec.mname());
         return solve_internal(trans, nrhs);
     }
 
