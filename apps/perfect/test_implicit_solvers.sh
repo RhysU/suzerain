@@ -32,8 +32,8 @@ do
 banner "Similarity of solver specification ${SPECIFICATION:+ ($SPECIFICATION)}"
 (
     cd $testdir
-    ../perfect_advance $OPER $ADVANCE $WIZ --solver=$SPECIFICATION mms0.h5 \
-                       --restart_destination "b#.h5"
+    ../perfect_advance $OPER ${DECOMP:-} $ADVANCE $WIZ --solver=$SPECIFICATION \
+                       mms0.h5 --restart_destination "b#.h5"
 
     # Ensure simulation time "/t" matches before bothering with anything else
     differ --use-system-epsilon --nan a0.h5 b0.h5 /t

@@ -6,7 +6,7 @@ source "`dirname $0`/test_setup.sh"
 
 # Shorthand for binary under test for desired operator without statistics
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
-perfect="prun ../perfect_advance $OPER --statistics_dt=0 --statistics_nt=0"
+perfect="prun ../perfect_advance ${DECOMP:-} $OPER --statistics_dt=0 --statistics_nt=0"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.

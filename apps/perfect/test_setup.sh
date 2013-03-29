@@ -32,7 +32,7 @@ declare -ir htdelta=1
 declare -ir Nz=6
 runq ./perfect_init "$testdir/mms0.h5" --mms=0 --Re=$Re --Ma=$Ma         \
                     --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
-                    "--plan_wisdom=$testdir/wisdom.init"
+                    ${DECOMP:-} "--plan_wisdom=$testdir/wisdom.init"
 chmod +r "$testdir/mms0.h5"
 
 

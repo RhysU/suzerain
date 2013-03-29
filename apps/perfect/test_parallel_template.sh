@@ -15,7 +15,7 @@ banner "Generating serial result for comparison purposes${OPER:+ ($OPER)}"
 (
     cd $testdir
     run ../perfect_advance mms0.h5 $OPER --restart_destination "serial#.h5" \
-                                         $ADVANCE $WIZ
+                                         $ADVANCE $WIZ ${DECOMP:-}
 )
 
 # Run each test case in this file under the following circumstances
@@ -29,7 +29,7 @@ banner "Equivalence of serial and parallel execution${OPER:+ ($OPER)}"
 (
     cd $testdir
     prun ../perfect_advance mms0.h5 $OPER --restart_destination "a#.h5" \
-                                          $ADVANCE $P $WIZ
+                                          $ADVANCE $P $WIZ ${DECOMP:-}
     # Stricter tolerance performed first for non-/bar_foo quantities
     differ $exclude_datasets_bar --delta=3e-13 --nan serial0.h5 a0.h5
     for dset in $datasets_bar; do
