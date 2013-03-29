@@ -325,7 +325,9 @@ bsmbsm_solver_zcgbsvx::summarize_statistics() const
             if (i == 0 && (spec.siter() < 0 || spec.diter() < 0)) continue;
             if (i == 1 && (spec.siter() < 0 || spec.diter() < 0)) continue;
             if (i == 2 && !spec.reuse()    ) continue;
+#pragma warning(push,disable:1572)
             if (i == 3 && spec.tolsc() == 0) continue;  // Implies afrob == -1
+#pragma warning(pop)
             if (i == 4 && spec.siter() <  0) continue;
             if (i == 5 && spec.diter() <  0) continue;
             msg.str("");
