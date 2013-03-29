@@ -28,6 +28,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
