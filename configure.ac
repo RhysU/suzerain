@@ -367,6 +367,7 @@ AC_CONFIG_FILES([
     jobscripts/Makefile
     postproc/Makefile
     lib/Makefile
+    lib/suzerain-p3dfft/Makefile
     suzerain/Makefile
     tests/Makefile
     writeups/Makefile
