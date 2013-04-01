@@ -91,6 +91,42 @@ if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
 AC_LANG_POP([C++])
+AC_LANG_PUSH([Fortran])
+AC_PROG_FC
+AX_COMPILER_VENDOR
+AC_FC_LIBRARY_LDFLAGS
+AC_FC_FREEFORM
+AC_FC_LINE_LENGTH([132])
+AC_FC_WRAPPERS
+dnl BEGIN: Ensure that preprocessor is run on free-form Fortran .F90 sources
+dnl Stupidly complicated to get correct.  Modify FCFLAGS_F90 with result.
+dnl When Autoconf 2.69 is more common, AC_FC_PP_SRCEXT([F90]) should be used.
+AC_FC_SRCEXT([F90])
+ax_save_FCFLAGS=$FCFLAGS
+AC_MSG_CHECKING([for flags required to enable Fortran preprocessing])
+for fppflag in '' -fpp -cpp '-x f95-cpp-input' none
+do
+    if test "x$fppflag" == xnone; then
+        AC_MSG_RESULT([unknown])
+        AC_MSG_ERROR([Could not enable Fortran preprocessing])
+        break
+    fi
+    ax_fpp_save_FCFLAGS=$FCFLAGS
+    FCFLAGS="$FCFLAGS $fppflag"
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[#define TESTDEFINE])],[
+                         FCFLAGS=$ax_fpp_save_FCFLAGS
+                         break
+                      ],[
+                         FCFLAGS=$ax_fpp_save_FCFLAGS
+                      ])
+done
+AC_MSG_RESULT([$fppflag])
+FCFLAGS_F90="$FCFLAGS_F90 $fppflag"
+dnl END: Ensure that preprocessor is run on free-form Fortran .F90 sources
+if test "x$ax_enable_debug" != "xno"; then
+    AX_TRACEBACK()
+fi
+AC_LANG_POP([Fortran])
 AC_CACHE_SAVE
 
 dnl ----------------------------------------------
@@ -126,6 +162,10 @@ m4_append([AC_LANG(C++)],[
     ac_compile="./libtool --mode=compile --tag=CXX $ac_compile"
     ac_link="./libtool --mode=link --tag=CXX $ac_link"
 ])[]dnl
+m4_append([AC_LANG(Fortran)],[
+    ac_compile="./libtool --mode=compile --tag=FC $ac_compile"
+    ac_link="./libtool --mode=link --tag=FC $ac_link"
+])[]dnl
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -138,6 +178,9 @@ AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for C++, e.g. mpicxx.))
 AC_LANG_POP([C++])
+AC_LANG_PUSH([Fortran])
+ACX_MPI(,AC_MSG_ERROR(Could not find MPI compilation tools for Fortran, e.g. mpf90.))
+AC_LANG_POP([Fortran])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
@@ -214,6 +257,11 @@ BOOST_TYPETRAITS
 AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
+dnl ------------------------------------------------
+dnl Fortran library requirements
+dnl ------------------------------------------------
+dnl None
+
 dnl ----------------------------------------------
 dnl Chemistry library requirements
 dnl ----------------------------------------------
@@ -232,7 +280,7 @@ fi
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
-dnl C/C++ compilation strictness and compatibility
+dnl Compilation strictness and compatibility
 dnl ------------------------------------------------
 dnl Strictness must come after libraries to avoid breaking AC_CHECK_LIB
 AC_LANG_PUSH([C])
@@ -277,6 +325,9 @@ case $ax_cv_cxx_compiler_vendor in #(
     gnu|*)    AX_APPEND_COMPILE_FLAGS([-fno-unsafe-math-optimizations],[CXXFLAGS_PRECISE]) ;;
 esac
 AC_LANG_POP([C++])
+AC_LANG_PUSH([Fortran])
+AX_FCFLAGS_WARN_ALL
+AC_LANG_POP([Fortran])
 AX_WARNINGS_SANITIZE
 AX_INTEL_SC_ANALYSIS
 AC_CACHE_SAVE
