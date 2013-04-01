@@ -1,9 +1,11 @@
-
 Copyright (c) 2006-2008 Dmitry Pekurovsky
 Copyright (c) 2006-2008 University of California, San Diego
 
 Copyright (C) 2008 Jens Henrik Goebbert (ghost cell support)
 RWTH-Aachen, Germany
+
+Copyright (c) 2008-2009 Rhys Ulerich    (disabled wall-normal FFTs)
+University of Texas at Austin
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
