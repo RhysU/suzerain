@@ -201,7 +201,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //               convection implicitly.
     //   diffusive_* is diffusive stability linearized however is appropriate.
     //   *_xyz_*     accounts for restrictions in all three directions.
-    //               It must be more retrictive than any single direction.
+    //               It must be more restrictive than any single direction.
     //   *_x_*       accounts for restrictions in streamwise direction only.
     //   *_y_*       accounts for restrictions in wall-normal direction only
     //   *_z_*       accounts for restrictions in spanwise direction only
