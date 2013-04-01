@@ -21,7 +21,9 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.61])
 AX_CHECK_ENABLE_DEBUG([info])
 AX_AM_MACROS
+AX_AM_JOBSERVER([no])
 AX_ADD_AM_CTAGSFLAGS
+AC_PROG_SED
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
 dnl ------------------------------------------------
@@ -87,8 +89,6 @@ AX_COMPILER_VENDOR
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
-AC_PROG_SED
-AX_AM_JOBSERVER([no])
 AC_LANG_POP([C++])
 AC_CACHE_SAVE
 
