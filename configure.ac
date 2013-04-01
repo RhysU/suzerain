@@ -76,6 +76,7 @@ dnl     AR="xiar"
 dnl     CFLAGS="$CFLAGS -ipo"
 dnl     CXXFLAGS="$CXXFLAGS -ipo"
 dnl     FFLAGS="$FFLAGS -ipo"
+dnl     FCFLAGS="$FCFLAGS -ipo"
 dnl ])
 dnl AC_LANG_POP()
 fi
