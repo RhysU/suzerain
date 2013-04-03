@@ -124,8 +124,33 @@
 \renewcommand{\arraystretch}{9.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
+% species density row
+  \entry{\rho_{\alpha}\rho_{\alpha}}
+  \subcoeff{
+      \ind{\bm{\frac{1}{\vp}}} % M
+  }{
+  }{
+  }
+& \entry{\rho\mx }
+  \subcoeff{
+  }{
+  }{
+  }
+& \entry{\rho\my }
+  \subcoeff{
+  }{
+    \ind{- 1}
+  }{
+  }
+& \entry{\rho\mz }
+  \subcoeff{
+  }{
+  }{
+  }
+& \entry{\rho{}e }
+  \ind{0}
 % Density row
-  \entry{\rho\rho}
+ \\\entry{\rho\rho}
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
   }{
@@ -152,17 +177,7 @@
 % Streamwise momentum row
 \\\entry{\mx\rho }
   \subcoeff{
-    \begin{pmatrix}
-        \frac{1-\g}{2}\ii\km\C{u^2}{}
-      + \frac{\left(\alpha+\frac{4}{3}\right)\km^2+\kn^2}{\Re}\C{\nu{}u_x}{}
-      + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_z}{}
-      \\
-      + \ii\km\C{u_x u_x}{}
-      + \ii\kn\C{u_x u_z}{}
-    \end{pmatrix}
   }{
-    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu{}u_y}{}
-    + \ind{\C{u_x u_y}{}}
   }{
     \ind{- \frac{1}{\Re}\C{\nu{}u_x}{}}
   }
@@ -387,6 +402,13 @@
 \end{bmatrix}
 \renewcommand{\arraystretch}{1.0}
 \begin{bmatrix}
+  \hat{\rho_{\alpha}}_{\left(0,\,m,\,n\right)} \\
+  \vdots \\
+  \hat{\rho_{\alpha}}_{\left(N_y-1,\,m,\,n\right)} \\
+\\%
+\\%
+\\%
+\\%
   \hat{\rho}_{\left(0,\,m,\,n\right)} \\
   \vdots \\
   \hat{\rho}_{\left(N_y-1,\,m,\,n\right)} \\
