@@ -131,6 +131,11 @@
   }{
   }{
   }
+& \entry{\rho\rho_{\alpha} }
+  \subcoeff{
+  }{
+  }{
+  }
 & \entry{\rho\mx }
   \subcoeff{
   }{
@@ -150,9 +155,14 @@
 & \entry{\rho{}e }
   \ind{0}
 % Density row
- \\\entry{\rho\rho}
+ \\\entry{\rho_{\alpha}\rho}
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
+  }{
+  }{
+  }
+& \entry{\rho\rho }
+  \subcoeff{
   }{
   }{
   }
@@ -175,7 +185,12 @@
 & \entry{\rho{}e }
   \ind{0}
 % Streamwise momentum row
-\\\entry{\mx\rho }
+\\\entry{\mx\rho_{\alpha} }
+  \subcoeff{
+  }{
+  }{
+  }
+& \entry{\mx\rho }
   \subcoeff{
   }{
   }{
@@ -215,7 +230,13 @@
   }{
   }
 % Wall-normal momentum row
-\\\entry{\my\rho }
+\\\entry{\my\rho_{\alpha} }
+  \subcoeff{
+  }{
+  }{
+  }
+& 
+\entry{\my\rho }
   \subcoeff{
       \frac{\km^2+\kn^2}{\Re}\C{\nu{}u_y}{}
     + \ii\km\C{u_x u_y}{}
@@ -263,7 +284,13 @@
   }{
   }
 % Spanwise momentum row
-\\\entry{\mz\rho}
+\\\entry{\mz\rho_{\alpha} }
+  \subcoeff{
+  }{
+  }{
+  }
+& 
+\entry{\mz\rho}
   \subcoeff{
     \begin{pmatrix}
         \frac{1-\g}{2}\ii\kn\C{u^2}{}
@@ -313,7 +340,13 @@
   }{
   }
 % Total energy row
-\\\entry{e\rho  }
+\\\entry{e\rho_{\alpha} }
+  \subcoeff{
+  }{
+  }{
+  }
+& 
+\entry{e\rho  }
   \subcoeff{
     \begin{pmatrix}
       - \ii\left(\km\C{e_x}{\nabla\rho} + \kn\C{e_z}{\nabla\rho}\right)
