@@ -99,6 +99,7 @@
 Our full matrix M,
 \begin{equation}
 \tiny
+M = 
 \left(
 \begin{array}{cccccc}
  v & -\frac{v \rho _{\alpha }}{\rho } & 0 & \frac{\rho _{\alpha }}{\rho } & 0 & 0 \\
@@ -116,6 +117,7 @@ Our full matrix M,
 From this, we construct a linearized matrix of the form,
 \begin{equation}
 \tiny
+L = 
 \left(
 \begin{array}{cccccc}
  0 & 0 & 0 & 0 & 0 & 0 \\
@@ -160,37 +162,26 @@ suzerain.
 \renewcommand{\arraystretch}{9.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
+%
 % species density row
+%
+% is this here?
   \entry{\rho_{\alpha}\rho_{\alpha}}
-  \subcoeff{
-      \ind{\bm{\frac{1}{\vp}}} % M
-  }{
-  }{
-  }
+%      \ind{\bm{\frac{1}{\vp}}}
+  \ind{0}
 & \entry{\rho\rho_{\alpha} }
-  \subcoeff{
-  }{
-  }{
-  }
+ \ind{0}
 & \entry{\rho\mx }
-  \subcoeff{
-  }{
-  }{
-  }
+ \ind{0}
 & \entry{\rho\my }
-  \subcoeff{
-  }{
-    \ind{- 1}
-  }{
-  }
+ \ind{0}
 & \entry{\rho\mz }
-  \subcoeff{
-  }{
-  }{
-  }
+ \ind{0}
 & \entry{\rho{}e }
   \ind{0}
+%
 % Density row
+%
  \\\entry{\rho_{\alpha}\rho}
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
