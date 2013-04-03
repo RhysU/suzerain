@@ -222,23 +222,17 @@ suzerain.
   }
 & \entry{\mx\my  }
   \subcoeff{
-      \left(\g-1\right)\ii\km\C{u_y}{}
   }{
     \ind{- \C{u_x}{}}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\mx\mz  }
   \subcoeff{
-      \left(\g-1\right)\ii\km\C{u_z}{}
-    - \ii\kn\C{u_x}{}
-    - \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu}{}
   }{
   }{
   }
 & \entry{\mx{}e  }
   \subcoeff{
-      \frac{1-\g}{\Ma^2}\ii\km
   }{
   }{
   }
@@ -248,32 +242,21 @@ suzerain.
 & 
 \entry{\my\rho }
   \subcoeff{
-      \frac{\km^2+\kn^2}{\Re}\C{\nu{}u_y}{}
-    + \ii\km\C{u_x u_y}{}
-    + \ii\kn\C{u_y u_z}{}
   }{
       \ind{\frac{1-\g}{2}\C{u^2}{}}
-    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\left(
-         \km\C{\nu{}u_x}{} + \kn\C{\nu{}u_z}{}
-      \right)
-    + \ind{\C{u_y u_y}{}}
+    \ind{+} \ind{\C{u_y u_y}{}}
   }{
     \ind{- \frac{\alpha+\frac{4}{3}}{\Re}\C{\nu{}u_y}{}}
   }
 & \entry{\my\mx  }
   \subcoeff{
-    - \ii\km\C{u_y}{}
   }{
       \ind{\left(\g-1\right)\C{u_x}{}}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\ii\km\C{\nu}{}
   }{
   }
 & \entry{\my\my  }
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
-    - \ii\km\C{u_x}{}
-    - \ii\kn\C{u_z}{}
-    - \frac{\km^2+\kn^2}{\Re}\C{\nu}{}
   }{
       \ind{\left(\g-3\right)\C{u_y}{}}
   }{
@@ -281,10 +264,8 @@ suzerain.
   }
 & \entry{\my\mz  }
   \subcoeff{
-    - \ii\kn\C{u_y}{}
   }{
       \ind{\left(\g-1\right)\C{u_z}{}}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\my{}e  }
