@@ -96,7 +96,43 @@
 
 \begin{document}
 
+Our full matrix M,
+\begin{equation}
+\tiny
+\left(
+\begin{array}{cccccc}
+ v & -\frac{v \rho _{\alpha }}{\rho } & 0 & \frac{\rho _{\alpha }}{\rho } & 0 & 0 \\
+ 0 & v & 0 & 1 & 0 & 0 \\
+ 0 & -u v & v & u & 0 & 0 \\
+ (\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right) & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma
+   -1) & -u (\gamma -1) & 2 v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
+ 0 & -v w & 0 & w & v & 0 \\
+ v \left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right)\right) & v \left(R T+\left(\frac{1}{2}
+   \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & (\gamma -1) v+v
+\end{array}
+\right)
+\end{equation}
 
+From this, we construct a linearized matrix of the form,
+\begin{equation}
+\tiny
+\left(
+\begin{array}{cccccc}
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & v & 0 & 0 & 0 & 0 \\
+ 0 & -u v & 0 & u & 0 & 0 \\
+ 0 & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T
+   \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho } & -u (\gamma -1) & v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
+ 0 & -v w & 0 & w & 0 & 0 \\
+ 0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & v (\gamma -1)
+\end{array}
+\right)
+\end{equation}
+
+The next page details how this matrix is actually organized in
+suzerain. 
+
+\newpage
 \begin{sidewaysfigure}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
