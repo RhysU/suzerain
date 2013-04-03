@@ -280,42 +280,25 @@ suzerain.
 & 
 \entry{\mz\rho}
   \subcoeff{
-    \begin{pmatrix}
-        \frac{1-\g}{2}\ii\kn\C{u^2}{}
-      + \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu{}u_z}{}
-      + \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu{}u_x}{}
-      \\
-      + \ii\km\C{u_x u_z}{}
-      + \ii\kn\C{u_z u_z}{}
-    \end{pmatrix}
   }{
-    - \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu{}u_y}{}
-    + \ind{\C{u_y u_z}{}}
+    \ind{\C{u_y u_z}{}}
   }{
     \ind{- \frac{1}{\Re}\C{\nu{}u_z}{}}
   }
 & \entry{\mz\mx }
   \subcoeff{
-      \left(\g-1\right)\ii\kn\C{u_x}{}
-    - \ii\km\C{u_z}{}
-    - \frac{\alpha+\frac{1}{3}}{\Re}\km\kn\C{\nu}{}
   }{
   }{
   }
 & \entry{\mz\my }
   \subcoeff{
-      \left(\g-1\right)\ii\kn\C{u_y}{}
   }{
     \ind{- \C{u_z}{}}
-    + \frac{\alpha+\frac{1}{3}}{\Re}\ii\kn\C{\nu}{}
   }{
   }
 & \entry{\mz\mz }
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
-    - \ii\km\C{u_x}{}
-    + \left(\g-3\right)\ii\kn\C{u_z}{}
-    - \frac{\km^2+\left(\alpha+\frac{4}{3}\right)\kn^2}{\Re}\C{\nu}{}
   }{
     \ind{- \C{u_y}{}}
   }{
@@ -323,7 +306,6 @@ suzerain.
   }
 & \entry{\mz{}e }
   \subcoeff{
-      \frac{1-\g}{\Ma^2}\ii\kn
   }{
   }{
   }
@@ -333,24 +315,8 @@ suzerain.
 & 
 \entry{e\rho  }
   \subcoeff{
-    \begin{pmatrix}
-      - \ii\left(\km\C{e_x}{\nabla\rho} + \kn\C{e_z}{\nabla\rho}\right)
-      \\
-      - \g\frac{\km^2+\kn^2}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}
-      + \frac{\Ma^2}{\Re}\left(\km^2+\kn^2\right)\C{\nu{}u^2}{}
-      \\
-      + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
-              \km^2 \C{\nu{}u_x u_x}{}
-          + 2 \km\kn\C{\nu{}u_x u_z}{}
-          +   \kn^2 \C{\nu{}u_z u_z}{}
-        \right)
-    \end{pmatrix}
   }{
     \ind{- \C{e_y}{\nabla\rho}}
-    + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
-       - 2\ii\km\C{\nu{}u_x u_y}{}
-       - 2\ii\kn\C{\nu{}u_y u_z}{}
-      \right)
   }{
     \ind{
       {\frac{\g}{\Re\Pr\left(\g-1\right)}\C{e}{\Delta\rho}}
@@ -360,30 +326,14 @@ suzerain.
   }
 & \entry{e\mx   }
   \subcoeff{
-    \begin{pmatrix}
-      \frac{\Ma^2}{\Re}\left[
-          \left(\frac{\g}{\Pr}-\left(\alpha+\frac{4}{3}\right)\right)\km^2
-        + \left(\frac{\g}{\Pr}-1                              \right)\kn^2
-      \right] \C{\nu{}u_x}{}
-      \\
-      - \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right) \km\kn\C{\nu{}u_z}{}
-      - \ii\km\C{e}{\nabla\cdot{}m}
-    \end{pmatrix}
   }{
-    \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\km\C{\nu{}u_y}{}
   }{
     \ind{\frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right)\C{\nu{}u_x}{}}
   }
 & \entry{e\my   }
   \subcoeff{
-    \frac{\Ma^2}{\Re}\left(\frac{\g}{\Pr} - 1\right)
-    \left(\km^2+\kn^2\right)\C{\nu{}u_y}{}
   }{
     \ind{- \C{e}{\nabla\cdot{}m}}
-    + \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\left(
-          \ii\km\C{\nu{}u_x}{}
-        + \ii\kn\C{\nu{}u_z}{}
-      \right)
   }{
     \ind{
     \frac{\Ma^2}{\Re}\left[
@@ -393,25 +343,13 @@ suzerain.
   }
 & \entry{e\mz   }
   \subcoeff{
-    \begin{pmatrix}
-      \frac{\Ma^2}{\Re}\left[
-          \left(\frac{\g}{\Pr}-1                              \right)\km^2
-        + \left(\frac{\g}{\Pr}-\left(\alpha+\frac{4}{3}\right)\right)\kn^2
-      \right] \C{\nu{}u_z}{}
-      \\
-      - \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right) \km\kn\C{\nu{}u_x}{}
-      - \ii\kn\C{e}{\nabla\cdot{}m}
-    \end{pmatrix}
   }{
-    \frac{\Ma^2}{\Re}\left(\alpha+\frac{1}{3}\right)\ii\kn\C{\nu{}u_y}{}
   }{
     \ind{\frac{\Ma^2}{\Re}\left(1 - \frac{\g}{\Pr}\right) \C{\nu{}u_z}{}}
   }
 & \entry{ee     }
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
-    - \g\ii\left(\km\C{u_x}{} + \kn\C{u_z}{}\right)
-    - \frac{\g}{\Re\Pr}\left(\km^2+\kn^2\right)\C{\nu}{}
   }{
     \ind{- \g\C{u_y}{}}
   }{
