@@ -17,6 +17,7 @@ TEXSOURCES += reacting_linearization.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += viscous_linearization.tex
+TEXSOURCES += full_linear_operator.tex
 
 # Notebooks, Images, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
