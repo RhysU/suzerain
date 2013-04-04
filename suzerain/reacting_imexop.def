@@ -220,8 +220,11 @@ FUNCNAME()(
     if (rho_v >= 0) { // Prepare wall-normal momentum row
 
         if (rho_E >= 0) {
-            //PACK(zd)(A_T, rho_E, rho_v, -gm1*invMa2*phi, D1, patpt);
-            PACK(z)(A_T, rho_E, rho_v, 0.0, 0, patpt);
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -phi,                 REF(p_rE),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+            PACK(z)(A_T, rho_E, rho_v, 1.0, buf, patpt);
         }
 
         if (rho_u >= 0) {
