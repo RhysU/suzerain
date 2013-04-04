@@ -9,6 +9,7 @@ TEXSOURCES  = acoustic_linearization.tex
 TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += filter.tex
+TEXSOURCES += full_linear_operator.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
@@ -17,7 +18,6 @@ TEXSOURCES += reacting_linearization.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 TEXSOURCES += viscous_linearization.tex
-TEXSOURCES += full_linear_operator.tex
 
 # Notebooks, Images, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
@@ -25,8 +25,8 @@ EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_1D_Pressure.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_3D.nb
-EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += inhomogeneity.eps
+EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += references.bib
 EXTRA_DIST += transfer_function.eps
 
