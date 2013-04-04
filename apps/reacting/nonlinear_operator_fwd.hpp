@@ -30,7 +30,7 @@
  */
 
 #include <suzerain/operator_base.hpp>
-#include <suzerain/rholut_imexop.h>
+#include <suzerain/reacting_imexop.h>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timers.h>
 
@@ -51,6 +51,8 @@ class operator_common_block
     /** Type of the contiguous storage housing all mean quantities */
     typedef Array<real_t, Dynamic, 18, ColMajor> means_type;
 
+
+    // FIXME: Set size correctly
     /** Type of the contiguous storage housing all reference quantities */
     typedef Array<real_t, 26, Dynamic, ColMajor> refs_type;
 
@@ -217,115 +219,24 @@ public:
     refs_type::RowXpr      ref_ux()               { return refs.row( 0); }
     refs_type::RowXpr      ref_uy()               { return refs.row( 1); }
     refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
-    refs_type::RowXpr      ref_u2()               { return refs.row( 3); }
-    refs_type::RowXpr      ref_uxux()             { return refs.row( 4); }
-    refs_type::RowXpr      ref_uxuy()             { return refs.row( 5); }
-    refs_type::RowXpr      ref_uxuz()             { return refs.row( 6); }
-    refs_type::RowXpr      ref_uyuy()             { return refs.row( 7); }
-    refs_type::RowXpr      ref_uyuz()             { return refs.row( 8); }
-    refs_type::RowXpr      ref_uzuz()             { return refs.row( 9); }
-    refs_type::RowXpr      ref_nu()               { return refs.row(10); }
-    refs_type::RowXpr      ref_nuux()             { return refs.row(11); }
-    refs_type::RowXpr      ref_nuuy()             { return refs.row(12); }
-    refs_type::RowXpr      ref_nuuz()             { return refs.row(13); }
-    refs_type::RowXpr      ref_nuu2()             { return refs.row(14); }
-    refs_type::RowXpr      ref_nuuxux()           { return refs.row(15); }
-    refs_type::RowXpr      ref_nuuxuy()           { return refs.row(16); }
-    refs_type::RowXpr      ref_nuuxuz()           { return refs.row(17); }
-    refs_type::RowXpr      ref_nuuyuy()           { return refs.row(18); }
-    refs_type::RowXpr      ref_nuuyuz()           { return refs.row(19); }
-    refs_type::RowXpr      ref_nuuzuz()           { return refs.row(20); }
-    refs_type::RowXpr      ref_ex_gradrho()       { return refs.row(21); }
-    refs_type::RowXpr      ref_ey_gradrho()       { return refs.row(22); }
-    refs_type::RowXpr      ref_ez_gradrho()       { return refs.row(23); }
-    refs_type::RowXpr      ref_e_divm()           { return refs.row(24); }
-    refs_type::RowXpr      ref_e_deltarho()       { return refs.row(25); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
     refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
-    refs_type::ConstRowXpr ref_u2()         const { return refs.row( 3); }
-    refs_type::ConstRowXpr ref_uxux()       const { return refs.row( 4); }
-    refs_type::ConstRowXpr ref_uxuy()       const { return refs.row( 5); }
-    refs_type::ConstRowXpr ref_uxuz()       const { return refs.row( 6); }
-    refs_type::ConstRowXpr ref_uyuy()       const { return refs.row( 7); }
-    refs_type::ConstRowXpr ref_uyuz()       const { return refs.row( 8); }
-    refs_type::ConstRowXpr ref_uzuz()       const { return refs.row( 9); }
-    refs_type::ConstRowXpr ref_nu()         const { return refs.row(10); }
-    refs_type::ConstRowXpr ref_nuux()       const { return refs.row(11); }
-    refs_type::ConstRowXpr ref_nuuy()       const { return refs.row(12); }
-    refs_type::ConstRowXpr ref_nuuz()       const { return refs.row(13); }
-    refs_type::ConstRowXpr ref_nuu2()       const { return refs.row(14); }
-    refs_type::ConstRowXpr ref_nuuxux()     const { return refs.row(15); }
-    refs_type::ConstRowXpr ref_nuuxuy()     const { return refs.row(16); }
-    refs_type::ConstRowXpr ref_nuuxuz()     const { return refs.row(17); }
-    refs_type::ConstRowXpr ref_nuuyuy()     const { return refs.row(18); }
-    refs_type::ConstRowXpr ref_nuuyuz()     const { return refs.row(19); }
-    refs_type::ConstRowXpr ref_nuuzuz()     const { return refs.row(20); }
-    refs_type::ConstRowXpr ref_ex_gradrho() const { return refs.row(21); }
-    refs_type::ConstRowXpr ref_ey_gradrho() const { return refs.row(22); }
-    refs_type::ConstRowXpr ref_ez_gradrho() const { return refs.row(23); }
-    refs_type::ConstRowXpr ref_e_divm()     const { return refs.row(24); }
-    refs_type::ConstRowXpr ref_e_deltarho() const { return refs.row(25); }
 
+    
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
-    void imexop_ref(suzerain_rholut_imexop_ref   &ref,
-                    suzerain_rholut_imexop_refld &ld)
+    void imexop_ref(suzerain_reacting_imexop_ref   &ref,
+                    suzerain_reacting_imexop_refld &ld)
     {
         ref.ux         = ref_ux().data();
         ref.uy         = ref_uy().data();
         ref.uz         = ref_uz().data();
-        ref.u2         = ref_u2().data();
-        ref.uxux       = ref_uxux().data();
-        ref.uxuy       = ref_uxuy().data();
-        ref.uxuz       = ref_uxuz().data();
-        ref.uyuy       = ref_uyuy().data();
-        ref.uyuz       = ref_uyuz().data();
-        ref.uzuz       = ref_uzuz().data();
-        ref.nu         = ref_nu().data();
-        ref.nuux       = ref_nuux().data();
-        ref.nuuy       = ref_nuuy().data();
-        ref.nuuz       = ref_nuuz().data();
-        ref.nuu2       = ref_nuu2().data();
-        ref.nuuxux     = ref_nuuxux().data();
-        ref.nuuxuy     = ref_nuuxuy().data();
-        ref.nuuxuz     = ref_nuuxuz().data();
-        ref.nuuyuy     = ref_nuuyuy().data();
-        ref.nuuyuz     = ref_nuuyuz().data();
-        ref.nuuzuz     = ref_nuuzuz().data();
-        ref.ex_gradrho = ref_ex_gradrho().data();
-        ref.ey_gradrho = ref_ey_gradrho().data();
-        ref.ez_gradrho = ref_ez_gradrho().data();
-        ref.e_divm     = ref_e_divm().data();
-        ref.e_deltarho = ref_e_deltarho().data();
 
         const int inc = refs.colStride();
         ld.ux         = inc;
         ld.uy         = inc;
         ld.uz         = inc;
-        ld.u2         = inc;
-        ld.uxux       = inc;
-        ld.uxuy       = inc;
-        ld.uxuz       = inc;
-        ld.uyuy       = inc;
-        ld.uyuz       = inc;
-        ld.uzuz       = inc;
-        ld.nu         = inc;
-        ld.nuux       = inc;
-        ld.nuuy       = inc;
-        ld.nuuz       = inc;
-        ld.nuu2       = inc;
-        ld.nuuxux     = inc;
-        ld.nuuxuy     = inc;
-        ld.nuuxuz     = inc;
-        ld.nuuyuy     = inc;
-        ld.nuuyuz     = inc;
-        ld.nuuzuz     = inc;
-        ld.ex_gradrho = inc;
-        ld.ey_gradrho = inc;
-        ld.ez_gradrho = inc;
-        ld.e_divm     = inc;
-        ld.e_deltarho = inc;
     }
 
     /** @} */

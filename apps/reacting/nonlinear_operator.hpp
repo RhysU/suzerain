@@ -281,6 +281,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 >
             > summing_accumulator_type;
 
+    // Before any traversals, instantiate Eigen variable length arrays to store species
+    // specific info
+    VectorXr species(Ns); // species densities
+    VectorXr Ds     (Ns); // mass diffusivities
+    VectorXr hs     (Ns); // species enthalpies
+    VectorXr om     (Ns); // reaction source terms
+    VectorXr cs     (Ns); // species mass fractions
+
+    Matrix3Xr grad_species (3,Ns); // spatial derivatives of species densities
+    Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fractions
+    Matrix3Xr sdiff        (3,Ns); // diffusive fluxes for species equations
+
+
     //********************************************************************
     //
     // Physical space is traversed linearly using a single offset 'offset'.
@@ -320,11 +333,110 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
          && Linearize != linearize::none) {  // References and mean velocity
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
-        
-        // FIXME: Have to add this code back (w/ appropriate mods) to
-        // support implicit reacting
-        FATAL0("suzerain::reacting::apply_navier_stokes_spatial_operator "
-               "only supports linearize::none");
+
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const size_t leftNotOnRank = o.dgrid.local_physical_start.y();
+        if (leftNotOnRank) common.refs.leftCols(leftNotOnRank).setZero();
+
+        // Sum reference quantities as a function of y(j) into common.ref_*
+        // See writeups/derivation.tex or rholut_imexop.h for definitions
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
+            j < o.dgrid.local_physical_end.y();
+            ++j) {
+
+            // Prepare logical indices using a struct for scoping (e.g. ref::ux).
+            struct ref { enum { ux, uy, uz, 
+                                count // Sentry
+            }; };
+
+            // An array of summing_accumulator_type holds all running sums.
+            // This gives nicer construction and allows looping over results.
+            summing_accumulator_type acc[ref::count];
+
+            const int last_zxoffset = offset
+                                    + o.dgrid.local_physical_extent.z()
+                                    * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+
+                // First, unpack conserved state...
+
+                // ... mixture density
+                const real_t   rho         ( sphys(ndx::rho,    offset));
+                const real_t  irho = 1.0/rho;
+                
+                // ... momentum
+                const Vector3r m    ( sphys(ndx::mx, offset),
+                                      sphys(ndx::my, offset),
+                                      sphys(ndx::mz, offset));
+
+                // ... total energy
+                const real_t e        (sphys(ndx::e,       offset));
+            
+                // ... species densities
+                // NOTE: In species vector, idx 0 is the dilluter (the species
+                // that is not explicitly part of the state vector)
+                species(0) = rho;
+                for (unsigned int s=1; s<Ns; ++s) {
+                    species(s) = sphys(ndx::species + s - 1, offset);
+                
+                    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                    species(0)        -= species(s);
+                }
+
+                // Second, compute required derived quantities...
+            
+                // ... mass fractions
+                for (unsigned int s=0; s<Ns; ++s) {
+                    cs(s) = irho * species(s);
+                }
+                    
+                // ... velocity
+                const Vector3r u     = suzerain::rholut::u(rho, m);
+
+
+                // Finally, accumulate reference quantities into running sums...
+
+                // ...including simple velocity-related quantities...
+                acc[ref::ux](u.x());
+                acc[ref::uy](u.y());
+                acc[ref::uz](u.z());
+                
+            } // end X // end Z
+
+#ifndef NDEBUG
+            // Ensure that all accumulators saw a consistent number of samples
+            const size_t expected = boost::accumulators::count(acc[0]);
+            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
+                const size_t observed = boost::accumulators::count(acc[k]);
+                assert(expected == observed);
+            }
+#endif
+
+            // Store sums into common block in preparation for MPI Allreduce
+            using boost::accumulators::sum;
+            common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
+            common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
+            common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
+
+        } // end Y
+
+        // Zero y(j) not present on this rank to avoid accumulating garbage
+        const size_t rightNotOnRank = common.refs.cols()
+                                    - o.dgrid.local_physical_end.y();
+        if (rightNotOnRank) common.refs.rightCols(rightNotOnRank).setZero();
+
+        // Allreduce and scale common.refs sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need references for linearization
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
+                common.refs.size(), mpi::datatype<real_t>::value,
+                MPI_SUM, MPI_COMM_WORLD));
+        common.refs /= (   o.dgrid.global_physical_extent.x()
+                         * o.dgrid.global_physical_extent.z());
+
+        // Copy mean velocity information into common.{u, v, w}()
+        common.u() = common.ref_ux();
+        common.v() = common.ref_uy();
+        common.w() = common.ref_uz();
 
     } else {                                 // Mean velocity profile only
         
@@ -405,18 +517,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
 
     }
-
-    // Instantiate Eigen variable length arrays to store species
-    // specific info
-    VectorXr species(Ns); // species densities
-    VectorXr Ds     (Ns); // mass diffusivities
-    VectorXr hs     (Ns); // species enthalpies
-    VectorXr om     (Ns); // reaction source terms
-    VectorXr cs     (Ns); // species mass fractions
-
-    Matrix3Xr grad_species (3,Ns); // spatial derivatives of species densities
-    Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fractions
-    Matrix3Xr sdiff        (3,Ns); // diffusive fluxes for species equations
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
