@@ -516,6 +516,51 @@ antioch_constitutive::evaluate (const real_t    e,
     // // TODO: assert transport props are positive
 }
 
+void 
+antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
+                                                          const Vector3r& m,
+                                                          const real_t    rho,
+                                                          const VectorXr& species,
+                                                          const VectorXr& cs,
+                                                          real_t&   p_rho,
+                                                          real_t&   p_rsum,
+                                                          Vector3r& p_m,
+                                                          real_t&   p_e,
+                                                          real_t&   gamma) const
+{
+    const real_t irho = 1.0/rho;
+    
+    const size_t Ns = this->Ns();
+    
+    // Compute temperature from internal energy (assuming thermal equilibrium)
+    const real_t re_kinetic = 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+    const real_t re_internal = e - re_kinetic;
+    const real_t T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs);
+
+    const real_t Cp = this->sm_thermo->cp(T, T, cs);
+    const real_t Cv = this->sm_thermo->cv(T, T, cs);
+
+    gamma = Cp/Cv;
+    const real_t gmi = gamma-1.0;
+
+    const real_t R0 = this->mixture->R(0);
+    const real_t e0int = this->sm_thermo->e_tot(0, T, T);
+
+    p_rho = R0*T + gmi*(-e0int + irho*re_kinetic);
+
+    p_rsum = 0.0;
+    for (unsigned int i=1; i<Ns; ++i){
+        const real_t dR = this->mixture->R(i) - R0;
+        const real_t deint = e0int - this->sm_thermo->e_tot(i, T, T);
+
+        p_rsum += cs[i]*(dR*T + gmi*deint);
+    }
+
+    p_m = -gmi*irho*m;
+
+    p_e = -gmi;
+}
+
 
 real_t 
 antioch_constitutive::e_from_T (const real_t  T,

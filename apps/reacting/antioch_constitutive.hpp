@@ -199,6 +199,32 @@ public:
                    real_t&   Cp) const;
 
     /**
+     * Given conserved state, compute derivatives of pressure wrt
+     * state required for linear operator reference quantities.
+     *
+     * @param[in] e       Total energy per unit volume.
+     * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
+     * @param[in] rho     Mixture density.
+     * @param[in] species Species densities.
+     * @param[in] cs      Species mass fractions. 
+     * @param[out] p_rho  Derivative of pressure wrt mixture density
+     * @param[out] p_rsum Sum of mass frac(s) * dp/d(rho(s)) for s=2:Ns
+     * @param[out] p_m    Derivatives of p wrt m
+     * @param[out] p_e    Derivative of p wrt e (= rho*total energy)
+     * @param[out] gamma  Mixture gamma (= Cp_mix / Cv_mix)
+     */
+    void evaluate_pressure_derivs_and_gamma (const real_t    e,
+                                             const Vector3r& m,
+                                             const real_t    rho,
+                                             const VectorXr& species,
+                                             const VectorXr& cs,
+                                             real_t&   p_rho,
+                                             real_t&   p_rsum,
+                                             Vector3r& p_m,
+                                             real_t&   p_e,
+                                             real_t&   gamma) const;
+
+    /**
      * Given temperature and mass fractions, compute internal energy
      *
      * @param[in] T              Temperature

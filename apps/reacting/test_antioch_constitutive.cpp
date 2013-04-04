@@ -498,6 +498,67 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
     return nerr;
 }
 
+/*
+ * Check that call to evaluate_pressure_derivs_and_gamma "works"
+ */
+int test_evaluate_pressure_derivs_and_gamma(const std::string& chem_xml_file)
+{
+    
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+    using suzerain::Vector3r;
+    using suzerain::VectorXr;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=5;
+    species_names.reserve(Ns);
+    species_names.push_back( "N2" );
+    species_names.push_back( "O2" );
+    species_names.push_back( "N" );
+    species_names.push_back( "O" );
+    species_names.push_back( "NO" );
+
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
+
+    acl1.init_antioch();
+
+    // Set up state (not physically meaningful yet)
+    real_t e   = 5717500; // a really big number s.t. T isn't really, really small
+    Vector3r m (1.0, 2.0, 3.0);
+    real_t rho = 1.5;
+    VectorXr species(Ns), cs(Ns);
+
+    cs(0) = 0.5;
+    cs(1) = 0.2;
+    cs(2) = 0.1;
+    cs(3) = 0.1;
+    cs(4) = 0.1;
+
+    species = rho*cs;
+
+    // Storage for computed quantities
+    real_t p_rho=-1, p_rsum=-1, p_e=-1, gam=0;
+    Vector3r p_m;
+
+    // Eval rxn sources, trans, thermo
+    acl1.evaluate_pressure_derivs_and_gamma(
+        e, m, rho, species, cs,   /* input */
+        p_rho, p_rsum, p_m, p_e, gam /* output */);
+
+
+    // TODO: Add a finite difference check against acl1.evaluate
+
+    int nerr=0;
+
+    // FIXME: For now this passes as long as above call doesn't die somehow
+
+    return nerr;
+}
+
 
 int main(int argc, char **argv)
 {
