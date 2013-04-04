@@ -31,6 +31,10 @@
 
 #include <suzerain/pencil_grid.hpp>
 
+#ifdef SUZERAIN_HAVE_P3DFFT
+#include <suzerain-p3dfft/p3dfft_d.h>
+#endif
+
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/error.h>

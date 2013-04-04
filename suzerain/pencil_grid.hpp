@@ -32,10 +32,6 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/timers.h>
 
-#ifdef SUZERAIN_HAVE_P3DFFT
-#include <p3dfft_d.h>
-#endif
-
 #ifdef SUZERAIN_HAVE_UNDERLING
 #include <underling/underling.hpp>
 #include <underling/underling_fftw.hpp>

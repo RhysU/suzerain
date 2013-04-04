@@ -196,28 +196,27 @@ PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
     ], [
         AC_MSG_WARN([Could not find GRVY pkg-config file; Continuing...])
     ])
-PKG_CHECK_MODULES([P3DFFT],[suzerain-p3dfft],[
-        AC_DEFINE([HAVE_P3DFFT],[1],
-                  [Defined if Suzerain-specific version of P3DFFT found])
-        found_suzerain_p3dfft=yes
-        found_pencil_library=yes
-        AM_CONDITIONAL([HAVE_P3DFFT], [true])
-    ], [
-        AM_CONDITIONAL([HAVE_P3DFFT], [false])
-    ])
 PKG_CHECK_MODULES([UNDERLING],[underling-fftw >= 0.3.0],[
         AC_DEFINE([HAVE_UNDERLING],[1],
                   [Defined if underling library found])
-        found_pencil_library=yes
         AM_CONDITIONAL([HAVE_UNDERLING], [true])
     ], [
         AM_CONDITIONAL([HAVE_UNDERLING], [false])
+        AC_MSG_NOTICE([Did not find the underling library])
     ])
-if [ test "$found_pencil_library" != "yes" ]; then
-    AC_MSG_ERROR([Found neither suzerain-p3dfft nor underling libraries])
-fi
 AC_LANG_POP([C])
 AC_CACHE_SAVE
+
+dnl -------------------------------------------------------------------------
+dnl Our on-off version of P3DFFT has been internalized as of revision r38519.
+dnl For this reason, we are always certain to have a pencil library at build.
+dnl Therefore the following two checks automatically succeed.  They are left
+dnl here in anticipation of the day when P3DFFT can be stripped out entirely.
+dnl When that happens, the underling checks above become a firm requirement.
+dnl -------------------------------------------------------------------------
+AM_CONDITIONAL([HAVE_P3DFFT], [true])
+AC_DEFINE([HAVE_P3DFFT],[1],
+          [Defined if Suzerain-specific version of P3DFFT found])
 
 dnl ------------------------------------------------
 dnl C++ library requirements
