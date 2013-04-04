@@ -98,6 +98,7 @@ AC_FC_LIBRARY_LDFLAGS
 AC_FC_FREEFORM
 AC_FC_LINE_LENGTH([132])
 AC_FC_WRAPPERS
+AC_FC_MODULE_EXTENSION
 dnl BEGIN: Ensure that preprocessor is run on free-form Fortran .F90 sources
 dnl Stupidly complicated to get correct.  Modify FCFLAGS_F90 with result.
 dnl When Autoconf 2.69 is more common, AC_FC_PP_SRCEXT([F90]) should be used.
