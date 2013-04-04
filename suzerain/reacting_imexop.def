@@ -226,12 +226,11 @@ FUNCNAME()(
 
         if (rho_u >= 0) {
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         phi*gm1,              REF(ux), */
-            /*         D1, 1, w->ld, 0.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -phi,                 REF(p_ru),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            /* PACK(z)(A_T, rho_u, rho_v, 1.0, buf, patpt); */
-            PACK(z)(A_T, rho_u, rho_v, 0.0, 0, patpt);
+            PACK(z)(A_T, rho_u, rho_v, 1.0, buf, patpt);
         }
 
         // On diagonal, mass accumulated last to avoid swamping small values.
