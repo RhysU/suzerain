@@ -544,11 +544,11 @@
 
 
       call init_work(nx_fft,ny_fft,nz_fft)
-      call plan_f_r2c(B,nx_fft,A,nxhp,nx_fft,jisize*kjsize,.false.)
-      call plan_b_c2r(A,nxhp,B,nx_fft,nx_fft,jisize*kjsize,.false.)
+      call plan_f_r2c(B,nx_fft,A,nxhp,nx_fft,jisize*kjsize)
+      call plan_b_c2r(A,nxhp,B,nx_fft,nx_fft,jisize*kjsize)
 #ifdef STRIDE1
-      call plan_f_c1(A,iisize,1,A,iisize,1,ny_fft,iisize,.false.)
-      call plan_b_c1(A,iisize,1,A,iisize,1,ny_fft,iisize,.false.)
+      call plan_f_c1(A,iisize,1,A,iisize,1,ny_fft,iisize)
+      call plan_b_c1(A,iisize,1,A,iisize,1,ny_fft,iisize)
          call plan_f_c2(A,1,nz_fft, &
            A,1,nz_fft,nz_fft,NB*iisize,.false.)
       if(OW) then
