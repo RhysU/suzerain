@@ -174,34 +174,15 @@ public:
 
     /** @} */
 
+    // FIXME: Check doxygen to make sure this looks as it is supposed to
     /**
      *
      * The reference quantities stored in \c refs are as follows:
      * \li \c ref_ux         Reference \f$C^{u_x}               \f$
      * \li \c ref_uy         Reference \f$C^{u_y}               \f$
      * \li \c ref_uz         Reference \f$C^{u_z}               \f$
-     * \li \c ref_uxux       Reference \f$C^{u_x u_x}           \f$
-     * \li \c ref_uxuy       Reference \f$C^{u_x u_y}           \f$
-     * \li \c ref_uxuz       Reference \f$C^{u_x u_z}           \f$
-     * \li \c ref_uyuy       Reference \f$C^{u_y u_y}           \f$
-     * \li \c ref_uyuz       Reference \f$C^{u_y u_z}           \f$
-     * \li \c ref_uzuz       Reference \f$C^{u_z u_z}           \f$
-     * \li \c ref_nu         Reference \f$C^{\nu}               \f$
-     * \li \c ref_nuux       Reference \f$C^{\nu u_x}           \f$
-     * \li \c ref_nuuy       Reference \f$C^{\nu u_y}           \f$
-     * \li \c ref_nuuz       Reference \f$C^{\nu u_z}           \f$
-     * \li \c ref_nuu2       Reference \f$C^{\nu u^2}           \f$
-     * \li \c ref_nuuxux     Reference \f$C^{\nu u_x u_x}       \f$
-     * \li \c ref_nuuxuy     Reference \f$C^{\nu u_x u_y}       \f$
-     * \li \c ref_nuuxuz     Reference \f$C^{\nu u_x u_z}       \f$
-     * \li \c ref_nuuyuy     Reference \f$C^{\nu u_y u_y}       \f$
-     * \li \c ref_nuuyuz     Reference \f$C^{\nu u_y u_z}       \f$
-     * \li \c ref_nuuzuz     Reference \f$C^{\nu u_z u_z}       \f$
-     * \li \c ref_ex_gradrho Reference \f$C^{e_x}_{\nabla\rho}  \f$
-     * \li \c ref_ey_gradrho Reference \f$C^{e_y}_{\nabla\rho}  \f$
-     * \li \c ref_ez_gradrho Reference \f$C^{e_z}_{\nabla\rho}  \f$
-     * \li \c ref_e_divm     Reference \f$C^{e}_{\nabla\cdot{}m}\f$
-     * \li \c ref_e_deltarho Reference \f$C^{e}_{\Delta\rho}    \f$
+     * \li \c ref_gamma      Reference \f$\gamma                \f$
+     * \li \c ref_Cmy_rho    Reference \f$C^{my_rho}            \f$
      *
      * Each reference quantity is a single row within \c refs.  This
      * facilitates a stride one operation loading or writing all reference
@@ -219,16 +200,21 @@ public:
     refs_type::RowXpr      ref_ux()               { return refs.row( 0); }
     refs_type::RowXpr      ref_uy()               { return refs.row( 1); }
     refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
+    refs_type::RowXpr      ref_gamma()            { return refs.row( 3); }
+    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 4); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
     refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
-
+    refs_type::ConstRowXpr ref_gamma()      const { return refs.row( 3); }
+    refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 4); }
     
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
                     suzerain_reacting_imexop_refld &ld)
     {
+        // FIXME: update reacting_imexop.h to be consistent with above
+
         ref.ux         = ref_ux().data();
         ref.uy         = ref_uy().data();
         ref.uz         = ref_uz().data();

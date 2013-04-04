@@ -345,7 +345,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             ++j) {
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
-            struct ref { enum { ux, uy, uz, 
+            struct ref { enum { ux, uy, uz,
+                                gamma, Cmy_rho, 
                                 count // Sentry
             }; };
 
@@ -393,13 +394,24 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // ... velocity
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
+                // ... pressure-related quantities
+                real_t p_rho, p_rsum, p_e, gam;
+                Vector3r p_m;
+                cmods.evaluate_pressure_derivs_and_gamma(
+                    e, m, rho, species, cs,
+                    p_rho, p_rsum, p_m, p_e, gam);
+                               
 
                 // Finally, accumulate reference quantities into running sums...
 
                 // ...including simple velocity-related quantities...
-                acc[ref::ux](u.x());
-                acc[ref::uy](u.y());
-                acc[ref::uz](u.z());
+                acc[ref::ux     ](u.x());
+                acc[ref::uy     ](u.y());
+                acc[ref::uz     ](u.z());
+
+                // ...and pressure/equation of state related quantities...
+                acc[ref::gamma](gam);
+                acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Signs?
                 
             } // end X // end Z
 
