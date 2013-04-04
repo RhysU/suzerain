@@ -227,16 +227,16 @@ suzerain_reacting_imexop_accumulate(
 
         /* if (LIKELY(in_rho_w)) {/\* NOP *\/}; */
 
-        /* if (LIKELY(in_rho)) { */
+        if (LIKELY(in_rho)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         phi,                       REF(uxuy), */
-        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u)); */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                phi,                       REF(uxuy),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
-        /*         -phi*invRe,                REF(nuux), */
-        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u)); */
-        /* } */
+            /* (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+            /*     -phi*invRe,                REF(nuux), */
+            /*     w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u)); */
+        }
 
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
@@ -317,16 +317,16 @@ suzerain_reacting_imexop_accumulate(
         /*         w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w)); */
         /* } */
 
-        /* if (LIKELY(in_rho)) { */
+        if (LIKELY(in_rho)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*          phi,                      REF(uyuz), */
-        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w)); */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                 phi,                      REF(uzuy),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
-        /*         -phi*invRe,                REF(nuuz), */
-        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w)); */
-        /* } */
+            /* (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+            /*     -phi*invRe,                REF(nuuz), */
+            /*     w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w)); */
+        }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho_w), 1.0, OUT(rho_w));
