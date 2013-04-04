@@ -168,10 +168,10 @@ suzerain.
 % is this here?
   \entry{\rho_{\alpha}\rho_{\alpha}}
   \subcoeff{
- \ind{\frac{1}{\vp}}
+ \frac{1}{\vp}
   }{
   }{
- D_s 
+ \ind{D_s }
   }
 & \entry{\rho\rho_{\alpha} }
  0
@@ -388,9 +388,7 @@ suzerain.
     N_y$ blocked vectors surrounded by curly braces are to be ``dotted'' against
     the blocked vector $ \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}} $
     to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
-    $N_y \times N_y$ banded matrix. The complex-valued, wavenumber-dependent
-    operator takes wall-normal B-spline coefficients to B-spline collocation point
-    values.
+    $N_y \times N_y$ banded matrix. \ind{The colored entries represent reference quantities}.
 }
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
