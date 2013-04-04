@@ -237,21 +237,21 @@ FUNCNAME()(
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_v */ {
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         gm3,                  REF(uy), */
-            /*         D1, 1, w->ld, 0.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE,
+                    -1.0,                  REF(uy),
+                     1.0,                  REF(vp_rE),// FIXME: correct but misleading (since vp_rE = v*(gam-1))
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
             /*         ap43*invRe,           REF(nu), */
             /*         D2, 1, w->ld, 1.0, buf, 1, A_T->ld); */
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         1.0,                  IDENTITY, */
-            /*         M,  1, w->ld, phi, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    1.0,                  IDENTITY,
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            /* PACK(z)(A_T, rho_v, rho_v, 1.0, buf, patpt); */
+            PACK(z)(A_T, rho_v, rho_v, 1.0, buf, patpt);
 
-            PACK(zd)(A_T, rho_v,  rho_v, 1.0, M, patpt);
         }
 
         if (rho_w >= 0) {
