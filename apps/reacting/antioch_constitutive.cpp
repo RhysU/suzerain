@@ -570,7 +570,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
     p_m = -gmi*irho*m;
 
     // dp/drE
-    p_e = -gmi;
+    p_e = gmi;
 }
 
 
