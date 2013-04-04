@@ -167,8 +167,12 @@ suzerain.
 %
 % is this here?
   \entry{\rho_{\alpha}\rho_{\alpha}}
-%      \ind{\bm{\frac{1}{\vp}}}
-  \ind{0}
+  \subcoeff{
+ \ind{\frac{1}{\vp}}
+  }{
+ \ind{v}
+  }{
+  }
 & \entry{\rho\rho_{\alpha} }
  \ind{0}
 & \entry{\rho\mx }
@@ -186,8 +190,9 @@ suzerain.
  \ind{0}
 & \entry{\rho\rho }
   \subcoeff{
- \ind{v}
+ \ind{\frac{1}{\vp}}
   }{
+ \ind{v}
   }{
   }
 & \entry{\rho\mx }
@@ -209,32 +214,27 @@ suzerain.
 & \entry{\mx\rho }
   \subcoeff{
   }{
+ \ind{-uv}
   }{
   }
 & \entry{\mx\mx  }
   \subcoeff{
       \ind{\bm{\frac{1}{\vp}}} % M
   }{
-    \ind{- \C{u_y}{}}
+ \ind{v}
   }{
     \ind{  \frac{1}{\Re}\C{\nu}{}}
   }
 & \entry{\mx\my  }
   \subcoeff{
   }{
-    \ind{- \C{u_x}{}}
+    \ind{u}
   }{
   }
 & \entry{\mx\mz  }
-  \subcoeff{
-  }{
-  }{
-  }
+ 0
 & \entry{\mx{}e  }
-  \subcoeff{
-  }{
-  }{
-  }
+ 0
 % Wall-normal momentum row
 \\\entry{\my\rho_{\alpha} }
  \ind{0}
