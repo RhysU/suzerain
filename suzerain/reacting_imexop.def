@@ -270,17 +270,15 @@ FUNCNAME()(
 
         if (rho  >= 0) {
 
-            /* suzerain_blasext_zgb_ddiag_scale_acc_d(PREAMBLE, */
-            /*         -phi*0.5*gm1,         REF(u2), */
-            /*          phi,                 REF(uyuy), */
-            /*         D1, 1, w->ld, 0.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                     phi,                 REF(Cmy_rho),
+                    D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
             /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
             /*         -phi*ap43*invRe,      REF(nuuy), */
             /*         D2, 1, w->ld, 1.0, buf, 1, A_T->ld); */
 
-            /* PACK(z)(A_T, rho, rho_v, 1.0, buf, patpt); */
-            PACK(z)(A_T, rho, rho_v, 0.0, 0, patpt);
+            PACK(z)(A_T, rho, rho_v, 1.0, buf, patpt);
         }
 
     }
