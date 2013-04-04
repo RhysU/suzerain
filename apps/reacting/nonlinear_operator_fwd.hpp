@@ -54,7 +54,7 @@ class operator_common_block
 
     // FIXME: Set size correctly
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 26, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 7, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -204,6 +204,7 @@ public:
     refs_type::RowXpr      ref_gamma()            { return refs.row( 3); }
     refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 4); }
     refs_type::RowXpr      ref_Ce_rho()           { return refs.row( 5); }
+    refs_type::RowXpr      ref_Ce_rv()            { return refs.row( 6); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
@@ -211,8 +212,9 @@ public:
     refs_type::ConstRowXpr ref_gamma()      const { return refs.row( 3); }
     refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 4); }
     refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row( 5); }
+    refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row( 6); }
     
-    /** Prepare data for use by implicit operator API in rholut_imexop.h. */
+    /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
                     suzerain_reacting_imexop_refld &ld)
     {

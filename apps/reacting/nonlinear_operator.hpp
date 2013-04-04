@@ -346,7 +346,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
             struct ref { enum { ux, uy, uz,
-                                gamma, Cmy_rho, Ce_rho,
+                                gamma, Cmy_rho, Ce_rho, Ce_rv,
                                 count // Sentry
             }; };
 
@@ -414,6 +414,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::gamma  ](gam);
                 acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
                 acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
+                acc[ref::Ce_rv  ](-H - u.y()*p_m.y()); // TODO: Check signs
                 
             } // end X // end Z
 
