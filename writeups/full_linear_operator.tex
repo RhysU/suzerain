@@ -114,10 +114,10 @@ M =
 \right)
 \end{equation}
 
-From this, we construct a linearized matrix of the form,
+From this, we construct a linearized acoustic matrix of the form,
 \begin{equation}
 \tiny
-L = 
+L_{\text{acoustic}} = 
 \left(
 \begin{array}{cccccc}
  0 & 0 & 0 & 0 & 0 & 0 \\
@@ -127,6 +127,23 @@ L =
    \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho } & -u (\gamma -1) & v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
  0 & -v w & 0 & w & 0 & 0 \\
  0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & v (\gamma -1)
+\end{array}
+\right)
+\end{equation}
+
+
+Additionally, we linearize the viscous operator along the diagonal,
+\begin{equation}
+\tiny
+L_{\text{viscous}} = 
+\left(
+\begin{array}{cccccc}
+ D_s & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & 0 & 0 & 0 & 0 \\
+ 0 & 0 & \frac{\mu}{\rho} & 0 & 0 & 0 \\
+ 0 & 0 & 0 & (\alpha+\frac{4}{3})\frac{\mu}{\rho} & 0 & 0 \\
+ 0 & 0 & 0 & 0 & \frac{\mu}{\rho} & 0 \\
+ 0 & 0 & 0 & 0 & 0 & \frac{1}{\rho c_v} \\
 \end{array}
 \right)
 \end{equation}
