@@ -299,12 +299,12 @@ suzerain_reacting_imexop_accumulate(
 
         /* if (LIKELY(in_rho_u)) {/\* NOP *\/}; */
 
-        /* if (LIKELY(in_rho_v)) { */
+        if (LIKELY(in_rho_v)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         -phi,                      REF(uz), */
-        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w)); */
-        /* } */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi,                      REF(uz),
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w));
+        }
 
         /* /\* in_rho_w *\/ { */
 
