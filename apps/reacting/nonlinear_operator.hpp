@@ -345,8 +345,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             ++j) {
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
-            struct ref { enum { ux, uy, uz,
-                                gamma, Cmy_rho, Ce_rho, Ce_rv,
+            struct ref { enum { ux, uy, uz, uxuy, uzuy,
+                                Cmy_rho, Ce_rho, Ce_rv,
                                 count // Sentry
             }; };
 
@@ -409,9 +409,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::ux     ](u.x());
                 acc[ref::uy     ](u.y());
                 acc[ref::uz     ](u.z());
+                acc[ref::uxuy   ](u.x()*u.y());
+                acc[ref::uzuy   ](u.z()*u.y());
 
                 // ...and pressure/equation of state related quantities...
-                acc[ref::gamma  ](gam);
                 acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
                 acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
                 acc[ref::Ce_rv  ](-H - u.y()*p_m.y()); // TODO: Check signs
@@ -432,7 +433,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
             common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
             common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
-            common.ref_gamma     ()[j] = sum(acc[ref::gamma     ]);
+            common.ref_uxuy      ()[j] = sum(acc[ref::uxuy      ]);
+            common.ref_uzuy      ()[j] = sum(acc[ref::uzuy      ]);
             common.ref_Cmy_rho   ()[j] = sum(acc[ref::Cmy_rho   ]);
             common.ref_Ce_rho    ()[j] = sum(acc[ref::Ce_rho    ]);
             common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);

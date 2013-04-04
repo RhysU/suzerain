@@ -181,9 +181,9 @@ public:
      * \li \c ref_ux         Reference \f$C^{u_x}               \f$
      * \li \c ref_uy         Reference \f$C^{u_y}               \f$
      * \li \c ref_uz         Reference \f$C^{u_z}               \f$
-     * \li \c ref_gamma      Reference \f$\gamma                \f$
      * \li \c ref_Cmy_rho    Reference \f$C^{my_rho}            \f$
-     * \li \c ref_Ce_rho     Reference \f$C^{e_rho}            \f$
+     * \li \c ref_Ce_rho     Reference \f$C^{e_rho}             \f$
+     * \li \c ref_Ce_rv      Reference \f$C^{e_rv}              \f$
      *
      * Each reference quantity is a single row within \c refs.  This
      * facilitates a stride one operation loading or writing all reference
@@ -201,18 +201,20 @@ public:
     refs_type::RowXpr      ref_ux()               { return refs.row( 0); }
     refs_type::RowXpr      ref_uy()               { return refs.row( 1); }
     refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
-    refs_type::RowXpr      ref_gamma()            { return refs.row( 3); }
-    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 4); }
-    refs_type::RowXpr      ref_Ce_rho()           { return refs.row( 5); }
-    refs_type::RowXpr      ref_Ce_rv()            { return refs.row( 6); }
+    refs_type::RowXpr      ref_uxuy()             { return refs.row( 3); }
+    refs_type::RowXpr      ref_uzuy()             { return refs.row( 4); }
+    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 5); }
+    refs_type::RowXpr      ref_Ce_rho()           { return refs.row( 6); }
+    refs_type::RowXpr      ref_Ce_rv()            { return refs.row( 7); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
     refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
-    refs_type::ConstRowXpr ref_gamma()      const { return refs.row( 3); }
-    refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 4); }
-    refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row( 5); }
-    refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row( 6); }
+    refs_type::ConstRowXpr ref_uxuy()       const { return refs.row( 3); }
+    refs_type::ConstRowXpr ref_uzuy()       const { return refs.row( 4); }
+    refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 5); }
+    refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row( 6); }
+    refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row( 7); }
     
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
@@ -223,7 +225,8 @@ public:
         ref.ux         = ref_ux().data();
         ref.uy         = ref_uy().data();
         ref.uz         = ref_uz().data();
-        ref.gamma      = ref_gamma().data();
+        ref.uxuy       = ref_uxuy().data();
+        ref.uzuy       = ref_uzuy().data();
         ref.Cmy_rho    = ref_Cmy_rho().data();
         ref.Ce_rho     = ref_Ce_rho().data();
         ref.Ce_rv      = ref_Ce_rv().data();
@@ -232,7 +235,8 @@ public:
         ld.ux         = inc;
         ld.uy         = inc;
         ld.uz         = inc;
-        ld.gamma      = inc;
+        ld.uxuy       = inc;
+        ld.uzuy       = inc;
         ld.Cmy_rho    = inc;
         ld.Ce_rho     = inc;
         ld.Ce_rv      = inc;
