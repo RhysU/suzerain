@@ -69,17 +69,6 @@ suzerain_reacting_imexop_accumulate(
     assert(!(!in_rho_w ^ !out_rho_w)); // ditto
     assert(!(!in_rho   ^ !out_rho  )); // ditto
 
-    // Prepare shorthand for some useful derived values
-    const double gm1         = s->gamma - 1;
-    const double gm3         = s->gamma - 3;
-    const double ap43        = s->alpha + 4.0/3.0;
-    const double ap13        = s->alpha + 1.0/3.0;
-    const double Ma2         = s->Ma*s->Ma;
-    const double invRe       = 1 / s->Re;
-    const double invMa2      = 1 / Ma2;
-    const double ginvPr      = s->gamma / s->Pr;
-    const double ginvRePr    = s->gamma / (s->Re * s->Pr);
-
     // Accumulate the requested portions of the M + \varphi L operator.  Scale
     // output by beta, accumulate non-mass contributions, and finally
     // accumulate the mass contributions.  Mass contributions come last as they
@@ -229,12 +218,12 @@ suzerain_reacting_imexop_accumulate(
         /*         w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u)); */
         /* } */
 
-        /* if (LIKELY(in_rho_v)) { */
+        if (LIKELY(in_rho_v)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         -phi,                      REF(ux), */
-        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u)); */
-        /* } */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi,                      REF(ux),
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
+        }
 
         /* if (LIKELY(in_rho_w)) {/\* NOP *\/}; */
 
