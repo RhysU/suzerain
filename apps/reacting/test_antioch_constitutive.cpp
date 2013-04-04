@@ -541,13 +541,13 @@ int test_evaluate_pressure_derivs_and_gamma(const std::string& chem_xml_file)
     species = rho*cs;
 
     // Storage for computed quantities
-    real_t p_rho=-1, p_rsum=-1, p_e=-1, gam=0;
+    real_t p=-1, p_rho=-1, p_rsum=-1, p_e=-1, gam=0;
     Vector3r p_m;
 
     // Eval rxn sources, trans, thermo
     acl1.evaluate_pressure_derivs_and_gamma(
         e, m, rho, species, cs,   /* input */
-        p_rho, p_rsum, p_m, p_e, gam /* output */);
+        p, p_rho, p_rsum, p_m, p_e, gam /* output */);
 
 
     // TODO: Add a finite difference check against acl1.evaluate

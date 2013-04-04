@@ -522,6 +522,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
                                                           const real_t    rho,
                                                           const VectorXr& species,
                                                           const VectorXr& cs,
+                                                          real_t&   p,
                                                           real_t&   p_rho,
                                                           real_t&   p_rsum,
                                                           Vector3r& p_m,
@@ -537,17 +538,26 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
     const real_t re_internal = e - re_kinetic;
     const real_t T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs);
 
+    // Pressure
+    const real_t R_mix = this->mixture->R(cs);
+    p = rho*R_mix*T;
+ 
+    // Ratio of mixture specific heats
     const real_t Cp = this->sm_thermo->cp(T, T, cs);
     const real_t Cv = this->sm_thermo->cv(T, T, cs);
 
     gamma = Cp/Cv;
+
+    // gamma-1 for convenience
     const real_t gmi = gamma-1.0;
 
     const real_t R0 = this->mixture->R(0);
     const real_t e0int = this->sm_thermo->e_tot(0, T, T);
 
+    // dp/drho
     p_rho = R0*T + gmi*(-e0int + irho*re_kinetic);
 
+    // \sum_{s=2}^{Ns} c_s dp/drho_s
     p_rsum = 0.0;
     for (unsigned int i=1; i<Ns; ++i){
         const real_t dR = this->mixture->R(i) - R0;
@@ -556,8 +566,10 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
         p_rsum += cs[i]*(dR*T + gmi*deint);
     }
 
+    // dp/dru
     p_m = -gmi*irho*m;
 
+    // dp/drE
     p_e = -gmi;
 }
 

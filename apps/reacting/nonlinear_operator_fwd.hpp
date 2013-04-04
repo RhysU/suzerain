@@ -183,6 +183,7 @@ public:
      * \li \c ref_uz         Reference \f$C^{u_z}               \f$
      * \li \c ref_gamma      Reference \f$\gamma                \f$
      * \li \c ref_Cmy_rho    Reference \f$C^{my_rho}            \f$
+     * \li \c ref_Ce_rho     Reference \f$C^{e_rho}            \f$
      *
      * Each reference quantity is a single row within \c refs.  This
      * facilitates a stride one operation loading or writing all reference
@@ -202,12 +203,14 @@ public:
     refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
     refs_type::RowXpr      ref_gamma()            { return refs.row( 3); }
     refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 4); }
+    refs_type::RowXpr      ref_Ce_rho()           { return refs.row( 5); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
     refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
     refs_type::ConstRowXpr ref_gamma()      const { return refs.row( 3); }
     refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 4); }
+    refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row( 5); }
     
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,

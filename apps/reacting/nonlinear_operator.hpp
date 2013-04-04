@@ -346,7 +346,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
             struct ref { enum { ux, uy, uz,
-                                gamma, Cmy_rho, 
+                                gamma, Cmy_rho, Ce_rho,
                                 count // Sentry
             }; };
 
@@ -395,12 +395,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
                 // ... pressure-related quantities
-                real_t p_rho, p_rsum, p_e, gam;
+                real_t p, p_rho, p_rsum, p_e, gam;
                 Vector3r p_m;
                 cmods.evaluate_pressure_derivs_and_gamma(
                     e, m, rho, species, cs,
-                    p_rho, p_rsum, p_m, p_e, gam);
+                    p, p_rho, p_rsum, p_m, p_e, gam);
                                
+                real_t H = irho*(e + p);
 
                 // Finally, accumulate reference quantities into running sums...
 
@@ -410,8 +411,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::uz     ](u.z());
 
                 // ...and pressure/equation of state related quantities...
-                acc[ref::gamma](gam);
-                acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Signs?
+                acc[ref::gamma  ](gam);
+                acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
+                acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
                 
             } // end X // end Z
 

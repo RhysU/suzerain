@@ -207,6 +207,7 @@ public:
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
      * @param[in] cs      Species mass fractions. 
+     * @param[out] p      Pressure.
      * @param[out] p_rho  Derivative of pressure wrt mixture density
      * @param[out] p_rsum Sum of mass frac(s) * dp/d(rho(s)) for s=2:Ns
      * @param[out] p_m    Derivatives of p wrt m
@@ -218,6 +219,7 @@ public:
                                              const real_t    rho,
                                              const VectorXr& species,
                                              const VectorXr& cs,
+                                             real_t&   p,
                                              real_t&   p_rho,
                                              real_t&   p_rsum,
                                              Vector3r& p_m,
