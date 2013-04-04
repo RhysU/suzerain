@@ -63,12 +63,8 @@ if test "x$ax_enable_debug" != "xyes"; then
     ac_test_CFLAGS=${ac_test_CFLAGS_pre_AX_CC_MAXOPT}
     CFLAGS_MAXOPT=${CFLAGS}
     CFLAGS="${CFLAGS_pre_AX_CC_MAXOPT} ${CFLAGS_MAXOPT}"
-    dnl Presume optimization flags useful for other languages
-    CXXFLAGS="${CXXFLAGS} ${CFLAGS_MAXOPT}"
-    FFLAGS="${FFLAGS} ${CFLAGS_MAXOPT}"
-    FCFLAGS="${FCFLAGS} ${CFLAGS_MAXOPT}"
 dnl dnl Enable IPO if the (Intel) compiler supports it, assumes that
-dnl dnl C/C++/Fortran dnl all support IPO if the compiler supports it.
+dnl dnl C/C++/Fortran all support IPO if the compiler supports it.
 dnl dnl Assumption required because we must replace linker ar with xiar.
 dnl AC_LANG_PUSH([C])
 dnl AX_CHECK_COMPILE_FLAG([-ipo], [
@@ -78,7 +74,6 @@ dnl     CXXFLAGS="$CXXFLAGS -ipo"
 dnl     FFLAGS="$FFLAGS -ipo"
 dnl     FCFLAGS="$FCFLAGS -ipo"
 dnl ])
-dnl AC_LANG_POP()
 fi
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
@@ -87,6 +82,7 @@ AC_LANG_POP([C])
 AC_LANG_PUSH([C++])
 AC_PROG_CXX
 AX_COMPILER_VENDOR
+AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}]) dnl Check if MAXOPT good on C++
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
@@ -94,6 +90,8 @@ AC_LANG_POP([C++])
 AC_LANG_PUSH([Fortran])
 AC_PROG_FC
 AX_COMPILER_VENDOR
+dnl FIXME Intel ifort barfs on -malign-double
+dnl AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}])
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_FREEFORM
 AC_FC_LINE_LENGTH([132])
