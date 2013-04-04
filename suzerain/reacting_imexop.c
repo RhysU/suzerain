@@ -166,16 +166,16 @@ suzerain_reacting_imexop_accumulate(
         /*         w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E)); */
         /* } */
 
-        /* if (LIKELY(in_rho_v)) { */
+        if (LIKELY(in_rho_v)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         -phi,                        REF(e_divm), */
-        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E)); */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                phi,                        REF(Ce_rv),
+                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E));
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
-        /*         phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy), */
-        /*         w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E)); */
-        /* } */
+            /* (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+            /*     phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy), */
+            /*     w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E)); */
+        }
 
         /* if (LIKELY(in_rho_w)) { */
 
@@ -184,18 +184,18 @@ suzerain_reacting_imexop_accumulate(
         /*         w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E)); */
         /* } */
 
-        /* if (LIKELY(in_rho)) { */
+        if (LIKELY(in_rho)) {
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         -phi,                        REF(ey_gradrho), */
-        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E)); */
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                phi,                        REF(Ce_rho),
+                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E));
 
-        /*     (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2], */
-        /*         -phi*Ma2*invRe,              REF(nuu2), */
-        /*         -phi*Ma2*invRe*ap13,         REF(nuuyuy), */
-        /*         phi*ginvRePr/gm1,            REF(e_deltarho), */
-        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E)); */
-        /* } */
+            /* (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2], */
+            /*     -phi*Ma2*invRe,              REF(nuu2), */
+            /*     -phi*Ma2*invRe*ap13,         REF(nuuyuy), */
+            /*     phi*ginvRePr/gm1,            REF(e_deltarho), */
+            /*     w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E)); */
+        }
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho_E), 1.0, OUT(rho_E));
