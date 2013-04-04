@@ -32,7 +32,8 @@ libsuzerain_p3dfft_la_SOURCES += wrap.F90
 libsuzerain_p3dfft_la_LIBADD   = $(FFTW3_LIBS) $(FCLIBS)
 
 # Get rid of module files on 'make clean'
-CLEANFILES = fft_spec.$(FC_MODEXT) p3dfft.$(FC_MODEXT)
+CLEANFILES  = fft_spec.$(FC_MODEXT) p3dfft.$(FC_MODEXT)
+CLEANFILES += *__genmod.f90 *__genmod.$(FC_MODEXT)
 
 # Explicitly provide object dependencies to avoid computing them.
 # These are catalogued in case someone later wants to build regular objects.
