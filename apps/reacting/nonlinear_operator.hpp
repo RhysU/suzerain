@@ -346,6 +346,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
             struct ref { enum { ux, uy, uz, uxuy, uzuy,
+                                p_ru, p_rw, p_rE,
+                                vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
                                 count // Sentry
             }; };
@@ -413,6 +415,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::uzuy   ](u.z()*u.y());
 
                 // ...and pressure/equation of state related quantities...
+                acc[ref::p_ru](p_m.x());
+                acc[ref::p_rw](p_m.z());
+                acc[ref::p_rE](p_e    );
+
+                acc[ref::vp_ru](u.y()*p_m.x());
+                acc[ref::vp_rw](u.y()*p_m.z());
+                acc[ref::vp_rE](u.y()*p_e    );
+
                 acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
                 acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
                 acc[ref::Ce_rv  ](-H - u.y()*p_m.y()); // TODO: Check signs
@@ -435,6 +445,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
             common.ref_uxuy      ()[j] = sum(acc[ref::uxuy      ]);
             common.ref_uzuy      ()[j] = sum(acc[ref::uzuy      ]);
+            common.ref_p_ru      ()[j] = sum(acc[ref::p_ru      ]);
+            common.ref_p_rw      ()[j] = sum(acc[ref::p_rw      ]);
+            common.ref_p_rE      ()[j] = sum(acc[ref::p_rE      ]);
+            common.ref_vp_ru     ()[j] = sum(acc[ref::vp_ru     ]);
+            common.ref_vp_rw     ()[j] = sum(acc[ref::vp_rw     ]);
+            common.ref_vp_rE     ()[j] = sum(acc[ref::vp_rE     ]);
             common.ref_Cmy_rho   ()[j] = sum(acc[ref::Cmy_rho   ]);
             common.ref_Ce_rho    ()[j] = sum(acc[ref::Ce_rho    ]);
             common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);

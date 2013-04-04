@@ -54,7 +54,7 @@ class operator_common_block
 
     // FIXME: Set size correctly
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 7, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 14, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -203,18 +203,30 @@ public:
     refs_type::RowXpr      ref_uz()               { return refs.row( 2); }
     refs_type::RowXpr      ref_uxuy()             { return refs.row( 3); }
     refs_type::RowXpr      ref_uzuy()             { return refs.row( 4); }
-    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row( 5); }
-    refs_type::RowXpr      ref_Ce_rho()           { return refs.row( 6); }
-    refs_type::RowXpr      ref_Ce_rv()            { return refs.row( 7); }
+    refs_type::RowXpr      ref_p_ru()             { return refs.row( 5); }
+    refs_type::RowXpr      ref_p_rw()             { return refs.row( 6); }
+    refs_type::RowXpr      ref_p_rE()             { return refs.row( 7); }
+    refs_type::RowXpr      ref_vp_ru()            { return refs.row( 8); }
+    refs_type::RowXpr      ref_vp_rw()            { return refs.row( 9); }
+    refs_type::RowXpr      ref_vp_rE()            { return refs.row(10); }
+    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row(11); }
+    refs_type::RowXpr      ref_Ce_rho()           { return refs.row(12); }
+    refs_type::RowXpr      ref_Ce_rv()            { return refs.row(13); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
     refs_type::ConstRowXpr ref_uz()         const { return refs.row( 2); }
     refs_type::ConstRowXpr ref_uxuy()       const { return refs.row( 3); }
     refs_type::ConstRowXpr ref_uzuy()       const { return refs.row( 4); }
-    refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row( 5); }
-    refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row( 6); }
-    refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row( 7); }
+    refs_type::ConstRowXpr ref_p_ru()       const { return refs.row( 5); }
+    refs_type::ConstRowXpr ref_p_rw()       const { return refs.row( 6); }
+    refs_type::ConstRowXpr ref_p_rE()       const { return refs.row( 7); }
+    refs_type::ConstRowXpr ref_vp_ru()      const { return refs.row( 8); }
+    refs_type::ConstRowXpr ref_vp_rw()      const { return refs.row( 9); }
+    refs_type::ConstRowXpr ref_vp_rE()      const { return refs.row(10); }
+    refs_type::ConstRowXpr ref_Cmy_rho()    const { return refs.row(11); }
+    refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row(12); }
+    refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row(13); }
     
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
@@ -227,6 +239,12 @@ public:
         ref.uz         = ref_uz().data();
         ref.uxuy       = ref_uxuy().data();
         ref.uzuy       = ref_uzuy().data();
+        ref.p_ru       = ref_p_ru().data();
+        ref.p_rw       = ref_p_rw().data();
+        ref.p_rE       = ref_p_rE().data();
+        ref.vp_ru      = ref_vp_ru().data();
+        ref.vp_rw      = ref_vp_rw().data();
+        ref.vp_rE      = ref_vp_rE().data();
         ref.Cmy_rho    = ref_Cmy_rho().data();
         ref.Ce_rho     = ref_Ce_rho().data();
         ref.Ce_rv      = ref_Ce_rv().data();
@@ -237,6 +255,12 @@ public:
         ld.uz         = inc;
         ld.uxuy       = inc;
         ld.uzuy       = inc;
+        ld.p_ru       = inc;
+        ld.p_rw       = inc;
+        ld.p_rE       = inc;
+        ld.vp_ru      = inc;
+        ld.vp_rw      = inc;
+        ld.vp_rE      = inc;
         ld.Cmy_rho    = inc;
         ld.Ce_rho     = inc;
         ld.Ce_rv      = inc;
