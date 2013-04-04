@@ -154,57 +154,59 @@ suzerain_reacting_imexop_accumulate(
     static const int D2      = 2;
     const int        n       = w->n;
 
+
+    // FIXME: Reincarnate this code as reacting implicit operator
     if (LIKELY(in_rho_E)) {  // Accumulate total energy terms into out_rho_E
 
         suzerain_blas_zscal(n, beta, OUT(rho_E));
 
-        /* in_rho_E */ {
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi*s->gamma,               REF(uy),
-                w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
+        /* /\* in_rho_E *\/ { */
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi*s->gamma,               REF(uy), */
+        /*         w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*ginvRePr,                REF(nu),
-                w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*ginvRePr,                REF(nu), */
+        /*         w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E)); */
+        /* } */
 
-        if (LIKELY(in_rho_u)) {
+        /* if (LIKELY(in_rho_u)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*Ma2*invRe*(1-ginvPr),    REF(nuux),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*Ma2*invRe*(1-ginvPr),    REF(nuux), */
+        /*         w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_E)); */
+        /* } */
 
-        if (LIKELY(in_rho_v)) {
+        /* if (LIKELY(in_rho_v)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                        REF(e_divm),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                        REF(e_divm), */
+        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_E)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*Ma2*invRe*(ap43-ginvPr), REF(nuuy), */
+        /*         w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_E)); */
+        /* } */
 
-        if (LIKELY(in_rho_w)) {
+        /* if (LIKELY(in_rho_w)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*Ma2*invRe*(1-ginvPr),    REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*Ma2*invRe*(1-ginvPr),    REF(nuuz), */
+        /*         w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_E)); */
+        /* } */
 
-        if (LIKELY(in_rho)) {
+        /* if (LIKELY(in_rho)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                        REF(ey_gradrho),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                        REF(ey_gradrho), */
+        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_E)); */
 
-            (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*Ma2*invRe,              REF(nuu2),
-                -phi*Ma2*invRe*ap13,         REF(nuuyuy),
-                phi*ginvRePr/gm1,            REF(e_deltarho),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E));
-        }
+        /*     (*p_gbdddmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         -phi*Ma2*invRe,              REF(nuu2), */
+        /*         -phi*Ma2*invRe*ap13,         REF(nuuyuy), */
+        /*         phi*ginvRePr/gm1,            REF(e_deltarho), */
+        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_E)); */
+        /* } */
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho_E), 1.0, OUT(rho_E));
@@ -214,38 +216,38 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho_u));
 
-        if (LIKELY(in_rho_E)) {/* NOP */};
+        /* if (LIKELY(in_rho_E)) {/\* NOP *\/}; */
 
-        /* in_rho_u */ {
+        /* /\* in_rho_u *\/ { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                      REF(uy), */
+        /*         w->D_T[D1], w->ld, IN(rho_u), 1.0, OUT(rho_u)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*invRe,                 REF(nu), */
+        /*         w->D_T[D2], w->ld, IN(rho_u), 1.0, OUT(rho_u)); */
+        /* } */
 
-        if (LIKELY(in_rho_v)) {
+        /* if (LIKELY(in_rho_v)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                      REF(ux),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                      REF(ux), */
+        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u)); */
+        /* } */
 
-        if (LIKELY(in_rho_w)) {/* NOP */};
+        /* if (LIKELY(in_rho_w)) {/\* NOP *\/}; */
 
-        if (LIKELY(in_rho)) {
+        /* if (LIKELY(in_rho)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi,                       REF(uxuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         phi,                       REF(uxuy), */
+        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_u)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*invRe,                REF(nuux),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         -phi*invRe,                REF(nuux), */
+        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_u)); */
+        /* } */
 
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
@@ -256,46 +258,46 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho_v));
 
-        if (LIKELY(in_rho_E)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
-                -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E),
-                1.0, OUT(rho_v));
+        /* if (LIKELY(in_rho_E)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1], */
+        /*         -phi*gm1*invMa2, w->D_T[D1], w->ld, IN(rho_E), */
+        /*         1.0, OUT(rho_v)); */
 
-        if (LIKELY(in_rho_u)) {
+        /* if (LIKELY(in_rho_u)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi*gm1,              REF(ux),
-                w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         phi*gm1,              REF(ux), */
+        /*         w->D_T[D1],  w->ld, IN(rho_u), 1.0, OUT(rho_v)); */
+        /* } */
 
-        /* in_rho_v */ {
+        /* /\* in_rho_v *\/ { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi*gm3,              REF(uy),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         phi*gm3,              REF(uy), */
+        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*ap43*invRe,       REF(nu),
-                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*ap43*invRe,       REF(nu), */
+        /*         w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v)); */
+        /* } */
 
-        if (LIKELY(in_rho_w)) {
+        /* if (LIKELY(in_rho_w)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                phi*gm1,              REF(uz),
-                w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         phi*gm1,              REF(uz), */
+        /*         w->D_T[D1],  w->ld, IN(rho_w), 1.0, OUT(rho_v)); */
+        /* } */
 
-        if (LIKELY(in_rho)) {
+        /* if (LIKELY(in_rho)) { */
 
-            (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi*0.5*gm1,         REF(u2),
-                 phi,                 REF(uyuy),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v));
+        /*     (*p_gbddmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi*0.5*gm1,         REF(u2), */
+        /*          phi,                 REF(uyuy), */
+        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_v)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*ap43*invRe,      REF(nuuy),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         -phi*ap43*invRe,      REF(nuuy), */
+        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_v)); */
+        /* } */
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho_v), 1.0, OUT(rho_v));
@@ -305,38 +307,38 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho_w));
 
-        if (LIKELY(in_rho_E)) {/* NOP */};
+        /* if (LIKELY(in_rho_E)) {/\* NOP *\/}; */
 
-        if (LIKELY(in_rho_u)) {/* NOP */};
+        /* if (LIKELY(in_rho_u)) {/\* NOP *\/}; */
 
-        if (LIKELY(in_rho_v)) {
+        /* if (LIKELY(in_rho_v)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                      REF(uz),
-                w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                      REF(uz), */
+        /*         w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_w)); */
+        /* } */
 
-        /* in_rho_w */ {
+        /* /\* in_rho_w *\/ { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                -phi,                      REF(uy),
-                w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,                      REF(uy), */
+        /*         w->D_T[D1], w->ld, IN(rho_w), 1.0, OUT(rho_w)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi*invRe,                 REF(nu),
-                w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         phi*invRe,                 REF(nu), */
+        /*         w->D_T[D2], w->ld, IN(rho_w), 1.0, OUT(rho_w)); */
+        /* } */
 
-        if (LIKELY(in_rho)) {
+        /* if (LIKELY(in_rho)) { */
 
-            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
-                 phi,                      REF(uyuz),
-                w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w));
+        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
+        /*          phi,                      REF(uyuz), */
+        /*         w->D_T[D1], w->ld, IN(rho), 1.0, OUT(rho_w)); */
 
-            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                -phi*invRe,                REF(nuuz),
-                w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w));
-        }
+        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+        /*         -phi*invRe,                REF(nuuz), */
+        /*         w->D_T[D2], w->ld, IN(rho), 1.0, OUT(rho_w)); */
+        /* } */
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho_w), 1.0, OUT(rho_w));
@@ -346,14 +348,14 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho));
 
-        if (LIKELY(in_rho_E)) {/* NOP */};
+        /* if (LIKELY(in_rho_E)) {/\* NOP *\/}; */
 
-        if (LIKELY(in_rho_u)) {/* NOP */};
+        /* if (LIKELY(in_rho_u)) {/\* NOP *\/}; */
 
-        if (LIKELY(in_rho_v)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1],
-                -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho));
+        /* if (LIKELY(in_rho_v)) (*p_gbmv)(trans, n, n, w->kl[D1], w->ku[D1], */
+        /*         -phi,     w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho)); */
 
-        if (LIKELY(in_rho_w)) {/* NOP */};
+        /* if (LIKELY(in_rho_w)) {/\* NOP *\/}; */
 
         (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
             1.0, w->D_T[M], w->ld, IN(rho), 1.0, OUT(rho));

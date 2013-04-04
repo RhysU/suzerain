@@ -40,6 +40,7 @@
 extern "C" {
 #endif
 
+// FIXME: Non of this scenario info belongs anymore except alpha
 /** Scenario-like constants used for operator formation. */
 typedef struct {
     double Re;    /**< \f$\mbox{Re} = \frac{\rho_0 u_0 l_0 }{\mu_0}\f$ */
@@ -54,29 +55,10 @@ typedef struct {
     double *ux;         /**< \f$ C^{u_x}                \f$ */
     double *uy;         /**< \f$ C^{u_y}                \f$ */
     double *uz;         /**< \f$ C^{u_z}                \f$ */
-    double *u2;         /**< \f$ C^{u^2}                \f$ */
-    double *uxux;       /**< \f$ C^{u_x u_x}            \f$ */
-    double *uxuy;       /**< \f$ C^{u_x u_y}            \f$ */
-    double *uxuz;       /**< \f$ C^{u_x u_z}            \f$ */
-    double *uyuy;       /**< \f$ C^{u_y u_y}            \f$ */
-    double *uyuz;       /**< \f$ C^{u_y u_z}            \f$ */
-    double *uzuz;       /**< \f$ C^{u_z u_z}            \f$ */
-    double *nu;         /**< \f$ C^{\nu}                \f$ */
-    double *nuux;       /**< \f$ C^{\nu u_x}            \f$ */
-    double *nuuy;       /**< \f$ C^{\nu u_y}            \f$ */
-    double *nuuz;       /**< \f$ C^{\nu u_z}            \f$ */
-    double *nuu2;       /**< \f$ C^{\nu u^2}            \f$ */
-    double *nuuxux;     /**< \f$ C^{\nu u_x u_x}        \f$ */
-    double *nuuxuy;     /**< \f$ C^{\nu u_x u_y}        \f$ */
-    double *nuuxuz;     /**< \f$ C^{\nu u_x u_z}        \f$ */
-    double *nuuyuy;     /**< \f$ C^{\nu u_y u_y}        \f$ */
-    double *nuuyuz;     /**< \f$ C^{\nu u_y u_z}        \f$ */
-    double *nuuzuz;     /**< \f$ C^{\nu u_z u_z}        \f$ */
-    double *ex_gradrho; /**< \f$ C^{e_x}_{\nabla\rho}   \f$ */
-    double *ey_gradrho; /**< \f$ C^{e_y}_{\nabla\rho}   \f$ */
-    double *ez_gradrho; /**< \f$ C^{e_z}_{\nabla\rho}   \f$ */
-    double *e_divm;     /**< \f$ C^{e}_{\nabla\cdot{}m} \f$ */
-    double *e_deltarho; /**< \f$ C^{e}_{\Delta\rho}     \f$ */
+    double *gamma;      // TODO: Doxygen
+    double *Cmy_rho;
+    double *Ce_rho;
+    double *Ce_rv;
 } suzerain_reacting_imexop_ref;
 
 /** Strides between elements in a \ref suzerain_reacting_imexop_ref. */
@@ -84,29 +66,10 @@ typedef struct {
     int ux;             /**< \copydoc suzerain_reacting_imexop_ref::ux         */
     int uy;             /**< \copydoc suzerain_reacting_imexop_ref::uy         */
     int uz;             /**< \copydoc suzerain_reacting_imexop_ref::uz         */
-    int u2;             /**< \copydoc suzerain_reacting_imexop_ref::u2         */
-    int uxux;           /**< \copydoc suzerain_reacting_imexop_ref::uxux       */
-    int uxuy;           /**< \copydoc suzerain_reacting_imexop_ref::uxuy       */
-    int uxuz;           /**< \copydoc suzerain_reacting_imexop_ref::uxuz       */
-    int uyuy;           /**< \copydoc suzerain_reacting_imexop_ref::uyuy       */
-    int uyuz;           /**< \copydoc suzerain_reacting_imexop_ref::uyuz       */
-    int uzuz;           /**< \copydoc suzerain_reacting_imexop_ref::uzuz       */
-    int nu;             /**< \copydoc suzerain_reacting_imexop_ref::nu         */
-    int nuux;           /**< \copydoc suzerain_reacting_imexop_ref::nuux       */
-    int nuuy;           /**< \copydoc suzerain_reacting_imexop_ref::nuuy       */
-    int nuuz;           /**< \copydoc suzerain_reacting_imexop_ref::nuuz       */
-    int nuu2;           /**< \copydoc suzerain_reacting_imexop_ref::nuu2       */
-    int nuuxux;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxux     */
-    int nuuxuy;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxuy     */
-    int nuuxuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuxuz     */
-    int nuuyuy;         /**< \copydoc suzerain_reacting_imexop_ref::nuuyuy     */
-    int nuuyuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuyuz     */
-    int nuuzuz;         /**< \copydoc suzerain_reacting_imexop_ref::nuuzuz     */
-    int ex_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ex_gradrho */
-    int ey_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ey_gradrho */
-    int ez_gradrho;     /**< \copydoc suzerain_reacting_imexop_ref::ez_gradrho */
-    int e_divm;         /**< \copydoc suzerain_reacting_imexop_ref::e_divm     */
-    int e_deltarho;     /**< \copydoc suzerain_reacting_imexop_ref::e_deltarho */
+    int gamma;          // TODO: Doxygen
+    int Cmy_rho;
+    int Ce_rho;
+    int Ce_rv;
 } suzerain_reacting_imexop_refld;
 
 /**

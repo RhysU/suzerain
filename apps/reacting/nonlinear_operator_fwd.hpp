@@ -223,11 +223,19 @@ public:
         ref.ux         = ref_ux().data();
         ref.uy         = ref_uy().data();
         ref.uz         = ref_uz().data();
+        ref.gamma      = ref_gamma().data();
+        ref.Cmy_rho    = ref_Cmy_rho().data();
+        ref.Ce_rho     = ref_Ce_rho().data();
+        ref.Ce_rv      = ref_Ce_rv().data();
 
         const int inc = refs.colStride();
         ld.ux         = inc;
         ld.uy         = inc;
         ld.uz         = inc;
+        ld.gamma      = inc;
+        ld.Cmy_rho    = inc;
+        ld.Ce_rho     = inc;
+        ld.Ce_rv      = inc;
     }
 
     /** @} */
