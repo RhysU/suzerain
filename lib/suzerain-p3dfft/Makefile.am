@@ -7,6 +7,9 @@ CC  = @MPICC@
 CXX = @MPICXX@
 FC  = @MPIFC@
 
+# Building in parallel is too brittle on Intel and compilation is fast enough.
+.NOTPARALLEL:
+
 # Distribute the following files
 EXTRA_DIST     = COPYING COPYRIGHT README
 noinst_HEADERS = p3dfft_internal.h p3dfft_s.h p3dfft_d.h
