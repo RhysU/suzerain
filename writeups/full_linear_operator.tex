@@ -158,7 +158,7 @@ suzerain.
 \hspace{-.04\textwidth}
 {\resizebox{1.08\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
-\ind{\bm{\vp}}
+\bm{\vp}
 \renewcommand{\arraystretch}{1.0} % Adds whitespace between rows
 \addtolength{\arraycolsep}{-.1em}
 \begin{bmatrix}
@@ -328,11 +328,11 @@ suzerain.
   }
 & \entry{ee     }
   \subcoeff{
-      \ind{\bm{\frac{1}{\vp}}} % M
+ \bm{\frac{1}{\vp}} % M
   }{
- v (\gamma -1)
+ \ind{v} (\ind{\gamma} -1)
   }{
-    \ind{\frac{1}{\rho c_v}}
+ \ind{\frac{1}{\rho c_v}}
   }
 \end{bmatrix}
 \renewcommand{\arraystretch}{0.6}
