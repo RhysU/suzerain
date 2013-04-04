@@ -432,6 +432,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
             common.ref_uy        ()[j] = sum(acc[ref::uy        ]);
             common.ref_uz        ()[j] = sum(acc[ref::uz        ]);
+            common.ref_gamma     ()[j] = sum(acc[ref::gamma     ]);
+            common.ref_Cmy_rho   ()[j] = sum(acc[ref::Cmy_rho   ]);
+            common.ref_Ce_rho    ()[j] = sum(acc[ref::Ce_rho    ]);
+            common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);
 
         } // end Y
 
