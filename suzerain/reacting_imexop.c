@@ -149,15 +149,15 @@ suzerain_reacting_imexop_accumulate(
 
         suzerain_blas_zscal(n, beta, OUT(rho_E));
 
-        /* /\* in_rho_E *\/ { */
-        /*     (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1], */
-        /*         -phi*s->gamma,               REF(uy), */
-        /*         w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E)); */
+        /* in_rho_E */ {
+            (*p_gbdmv)(trans, n, w->kl[D1], w->ku[D1],
+                -phi,               REF(vp_rE),
+                w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
 
-        /*     (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
-        /*         phi*ginvRePr,                REF(nu), */
-        /*         w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E)); */
-        /* } */
+            /* (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
+            /*     phi*ginvRePr,                REF(nu), */
+            /*     w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E)); */
+        }
 
         if (LIKELY(in_rho_u)) {
 

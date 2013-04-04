@@ -93,21 +93,19 @@ FUNCNAME()(
         // On diagonal, mass accumulated last to avoid swamping small values.
         // The factor phi is accounted for in this final mass accumulation.
         /* rho_E */ {
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         -s->gamma,                   REF(uy), */
-            /*         D1, 1, w->ld, 1.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    -1.0,                   REF(vp_rE),
+                    D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
             /*         ginvRePr,                    REF(nu), */
             /*         D2, 1, w->ld, 1.0, buf, 1, A_T->ld); */
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         1.0,                         IDENTITY, */
-            /*         M,  1, w->ld, phi, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    1.0,                         IDENTITY,
+                    M,  1, w->ld, phi, buf, 1, A_T->ld);
 
-            /* PACK(z)(A_T, rho_E, rho_E, 1.0, buf, patpt); */
-
-            PACK(zd)(A_T, rho_E,  rho_E, 1.0, M, patpt);
+            PACK(z)(A_T, rho_E, rho_E, 1.0, buf, patpt);
         }
 
         if (rho_u >= 0) {
