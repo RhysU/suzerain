@@ -41,6 +41,28 @@ namespace suzerain {
 
 namespace reacting {
 
+/** Provides scoping semantics for linearize::type */
+namespace linearize {
+
+/** What type of hybrid implicit/explicit linearization is employed? */
+enum type {
+    none,  ///< No linearization implying a fully implicit treatment
+    rhome_y  ///< Linearization of density, momentum, and total energy
+};
+
+} // namespace linearize
+
+/** Provides scoping semantics for slowgrowth::type */
+namespace slowgrowth {
+
+/** What slow growth sources are employed? */
+enum type {
+    none   ///< No slow growth sources
+};
+
+} // namespace slowgrowth
+
+
 /**
  * Storage for holding quantities computed during nonlinear operator
  * application which either are required for linear operator application or for
@@ -60,6 +82,18 @@ public:
 
     /** Default constructor.  Use \ref set_zero to resize prior to use. */
     operator_common_block() {}
+
+    /**
+     * Determines the extent of the implicit treatment
+     * by the paired linear and nonlinear operators.
+     */
+    linearize::type linearization;
+
+    /**
+     * Determines the extent of the slow growth treatment
+     * by the paired linear and nonlinear operators.
+     */
+    slowgrowth::type slow_treatment;
 
     /**
      * The mean quantities, stored as collocation point values in \c means,
@@ -296,26 +330,6 @@ private:
     operator_common_block& operator=(const operator_common_block&);
 };
 
-/** Provides scoping semantics for linearize::type */
-namespace linearize {
-
-/** What type of hybrid implicit/explicit linearization is employed? */
-enum type {
-    none,  ///< No linearization implying a fully implicit treatment
-    rhome  ///< Linearization of density, momentum, and total energy
-};
-
-} // namespace linearize
-
-/** Provides scoping semantics for slowgrowth::type */
-namespace slowgrowth {
-
-/** What slow growth sources are employed? */
-enum type {
-    none   ///< No slow growth sources
-};
-
-} // namespace slowgrowth
 
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The

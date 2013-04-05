@@ -43,10 +43,7 @@ bin_PROGRAMS             += reacting_advance
 reacting_advance_SOURCES  = main_advance.cpp
 reacting_advance_SOURCES += nonlinear_operator_fwd.hpp nonlinear_operator.hpp
 reacting_advance_SOURCES += explicit_operator.cpp explicit_operator.hpp
-## NOTE: not currently compiling hybrid_operator.  Will require major
-## refactor after flux-based, dimensional, explicit capability is
-## online.
-#reacting_advance_SOURCES += hybrid_operator.cpp   hybrid_operator.hpp
+reacting_advance_SOURCES += hybrid_operator.cpp hybrid_operator.hpp
 reacting_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES            += main_advance_svnrev.h
 reacting_advance_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la

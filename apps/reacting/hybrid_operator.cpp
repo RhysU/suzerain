@@ -43,9 +43,11 @@
 #include <suzerain/timers.h>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "common_block.hpp"
-#include "navier_stokes.hpp"
-#include "scenario_definition.hpp"
+//#include "common_block.hpp"
+#include "nonlinear_operator_fwd.hpp"
+//#include "navier_stokes.hpp"
+//#include "scenario_definition.hpp"
+#include "antioch_constitutive.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -65,11 +67,11 @@ suzerain::real_t twopiover(const suzerain::real_t L)
 
 namespace suzerain {
 
-namespace perfect {
+namespace reacting {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
-        const scenario_definition &scenario,
+        const antioch_constitutive &cmods,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -79,7 +81,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
                 5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
                 spec, 1))
-    , scenario(scenario)
+    , cmods(cmods)
     , common(common)
     , who("operator.L")
 {
@@ -143,55 +145,17 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)        Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==                    1);
 
-    // Scratch for "in-place" suzerain_rholut_imexop_accumulate usage
+    // Scratch for "in-place" suzerain_reacting_imexop_accumulate usage
     VectorXc tmp(solver->N);
-    suzerain_rholut_imexop_scenario s(this->imexop_s());
-    suzerain_rholut_imexop_ref   ref;
-    suzerain_rholut_imexop_refld ld;
+    suzerain_reacting_imexop_scenario s(this->imexop_s());
+    suzerain_reacting_imexop_ref   ref;
+    suzerain_reacting_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
     switch (common.linearization) {
-
-    case linearize::rhome_xyz:
-    {
-        for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
-            if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
-            const real_t kn = twopioverLz*wn;
-
-            for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
-                if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
-                const real_t km = twopioverLx*wm;
-
-                // Get pointer to (.,m,n)-th state pencil
-                complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
-
-                // Copy pencil into temporary storage
-                blas::copy(solver->N, p, 1, tmp.data(), 1);
-
-                // Accumulate result back into state storage
-                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
-                suzerain_rholut_imexop_accumulate(
-                        phi, km, kn, &s, &ref, &ld, cop.get(),
-                        tmp.data() + ndx::e   * Ny,
-                        tmp.data() + ndx::mx  * Ny,
-                        tmp.data() + ndx::my  * Ny,
-                        tmp.data() + ndx::mz  * Ny,
-                        tmp.data() + ndx::rho * Ny,
-                        0.0,
-                        p + ndx::e   * Ny,
-                        p + ndx::mx  * Ny,
-                        p + ndx::my  * Ny,
-                        p + ndx::mz  * Ny,
-                        p + ndx::rho * Ny);
-            }
-        }
-        break;
-    }
 
     case linearize::rhome_y:
     {
@@ -210,9 +174,10 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                 blas::copy(solver->N, p, 1, tmp.data(), 1);
 
                 // Accumulate result back into state storage
-                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate00");
-                suzerain_rholut_imexop_accumulate00(
-                        phi, &s, &ref, &ld, cop.get(),
+                SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
+                suzerain_reacting_imexop_accumulate(
+                        phi, &s, &ref, &ld, cop.get(), 
+                        0, // imagzero=false FIXME: update after removing from reacting_imexop
                         tmp.data() + ndx::e   * Ny,
                         tmp.data() + ndx::mx  * Ny,
                         tmp.data() + ndx::my  * Ny,
@@ -286,49 +251,16 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(input.strides() [1] ==                    1);
     SUZERAIN_ENSURE(output.strides()[1] ==                    1);
 
-    // Scratch for suzerain_rholut_imexop_accumulate usage
-    suzerain_rholut_imexop_scenario s(this->imexop_s());
-    suzerain_rholut_imexop_ref   ref;
-    suzerain_rholut_imexop_refld ld;
+    // Scratch for suzerain_reacting_imexop_accumulate usage
+    suzerain_reacting_imexop_scenario s(this->imexop_s());
+    suzerain_reacting_imexop_ref   ref;
+    suzerain_reacting_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
     switch (common.linearization) {
-
-    case linearize::rhome_xyz:
-    {
-        for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
-            if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
-            const real_t kn = twopioverLz*wn;
-
-            for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
-                if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
-                const real_t km = twopioverLx*wm;
-
-                // Accumulate result
-                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
-                suzerain_rholut_imexop_accumulate(
-                        phi, km, kn, &s, &ref, &ld, cop.get(),
-                        &input [ndx::e  ][0][m - dkbx][n - dkbz],
-                        &input [ndx::mx ][0][m - dkbx][n - dkbz],
-                        &input [ndx::my ][0][m - dkbx][n - dkbz],
-                        &input [ndx::mz ][0][m - dkbx][n - dkbz],
-                        &input [ndx::rho][0][m - dkbx][n - dkbz],
-                        beta,
-                        &output[ndx::e   ][0][m - dkbx][n - dkbz],
-                        &output[ndx::mx  ][0][m - dkbx][n - dkbz],
-                        &output[ndx::my  ][0][m - dkbx][n - dkbz],
-                        &output[ndx::mz  ][0][m - dkbx][n - dkbz],
-                        &output[ndx::rho ][0][m - dkbx][n - dkbz]);
-
-            }
-        }
-        break;
-    }
 
     case linearize::rhome_y:
     {
@@ -341,9 +273,10 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                 if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
 
                 // Accumulate result
-                SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate00");
-                suzerain_rholut_imexop_accumulate00(
+                SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
+                suzerain_reacting_imexop_accumulate(
                         phi, &s, &ref, &ld, cop.get(),
+                        0, // imagzero=false FIXME: update after removing from reacting_imexop
                         &input [ndx::e  ][0][m - dkbx][n - dkbz],
                         &input [ndx::mx ][0][m - dkbx][n - dkbz],
                         &input [ndx::my ][0][m - dkbx][n - dkbz],
@@ -396,7 +329,7 @@ class IsothermalNoSlipPATPTEnforcer
 public:
 
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                                  const suzerain_rholut_imexop_scenario &s)
+                                  const suzerain_reacting_imexop_scenario &s)
         : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
     {
         // Starting offset to named scalars in interleaved_state pencil
@@ -546,10 +479,10 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     // channel_treatment step (3) performs the operator solve which for the
     // implicit treatment must be combined with boundary conditions
 
-    // Pack reference details for suzerain_rholut_imexop routines
-    suzerain_rholut_imexop_scenario s(this->imexop_s());
-    suzerain_rholut_imexop_ref   ref;
-    suzerain_rholut_imexop_refld ld;
+    // Pack reference details for suzerain_reacting_imexop routines
+    suzerain_reacting_imexop_scenario s(this->imexop_s());
+    suzerain_reacting_imexop_ref   ref;
+    suzerain_reacting_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
@@ -564,92 +497,19 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     // but the basic sequence of steps remains identical in each case.
     switch (common.linearization) {
 
-    case linearize::rhome_xyz:
-    {
-        for (int n = dkbz; n < dkez; ++n) {
-            const int wn = wavenumber(dNz, n);
-            const real_t kn = twopioverLz*wn;
-
-            // Factorization reuse will not aid us across large jumps in km
-            if (dkex - dkbx > 1) solver->apprx(false);
-
-            for (int m = dkbx; m < dkex; ++m) {
-                const int wm = wavenumber(dNx, m);
-                const real_t km = twopioverLx*wm;
-
-                // Get pointer to (.,m,n)-th state pencil
-                complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
-
-                // Continue didn't yet occur for Nyquist/dealiasing modes...
-                if (   std::abs(wn) > wavenumber_absmin(Nz)
-                    || std::abs(wm) > wavenumber_absmin(Nx)) {
-                    memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
-                    solver->apprx(false);                  // mark reuse moot,
-                    continue;                              // and short circuit.
-                }
-
-                // Form complex-valued, wavenumber-dependent PA^TP^T
-                static const char trans = 'T';
-                if (solver->spec.in_place()) { // Pack for in-place LU
-                    SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
-                    suzerain_rholut_imexop_packf(
-                            phi, km, kn, &s, &ref, &ld, cop.get(),
-                            ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                            buf.data(), solver.get(), solver->LU.data());
-                } else {                       // Pack for out-of-place LU
-                    SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
-                    suzerain_rholut_imexop_packc(
-                            phi, km, kn, &s, &ref, &ld, cop.get(),
-                            ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                            buf.data(), solver.get(), solver->PAPT.data());
-                }
-                // Apply boundary conditions to PA^TP^T
-                {
-                    SUZERAIN_TIMER_SCOPED("implicit operator BCs");
-                    bc_enforcer.op(*solver, solver->PAPT.data(),
-                                            solver->PAPT.colStride());
-                }
-                // Inform the solver about the new, unfactorized operator
-                solver->supplied_PAPT();
-
-                // Form right hand side, apply BCs, factorize, and solve.
-                // Beware that much ugly, ugly magic is hidden just below.
-                solver->supply_B(p);
-                {
-                    SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
-                    bc_enforcer.rhs(solver->PB.data());
-                }
-                solver->solve(trans);
-                solver->demand_X(p);
-
-                // If necessary, solve any required integral constraints
-                if (SUZERAIN_UNLIKELY(n == 0 && m == 0)) {
-                    for (std::size_t i = 0; i < nconstraints; ++i) {
-                        SUZERAIN_TIMER_SCOPED("implicit constraint solution");
-                        solver->supply_B(ic0->data() + i * solver->N);
-                        bc_enforcer.rhs(solver->PB.data());
-                        solver->solve(trans);
-                        solver->demand_X(ic0->data() + i * solver->N);
-                    }
-                }
-            }
-        }
-        break;
-    }
-
     case linearize::rhome_y:
     {
         // Form complex-valued, wavenumber-independent PA^TP^T
         static const char trans = 'T';
         if (solver->spec.in_place()) { // Pack for in-place LU
-            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf00)");
-            suzerain_rholut_imexop_packf00(
+            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
+            suzerain_reacting_imexop_packf(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), solver.get(), solver->LU.data());
         } else {                       // Pack for out-of-place LU
-            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc00)");
-            suzerain_rholut_imexop_packc00(
+            SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
+            suzerain_reacting_imexop_packc(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), solver.get(), solver->PAPT.data());
@@ -712,18 +572,14 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     // State leaves method as coefficients in X, Y, and Z directions
 }
 
-suzerain_rholut_imexop_scenario
+suzerain_reacting_imexop_scenario
 isothermal_hybrid_linear_operator::imexop_s() const
 {
-    suzerain_rholut_imexop_scenario retval;
-    retval.Re    = scenario.Re;
-    retval.Pr    = scenario.Pr;
-    retval.Ma    = scenario.Ma;
-    retval.alpha = scenario.alpha;
-    retval.gamma = scenario.gamma;
+    suzerain_reacting_imexop_scenario retval;
+    retval.alpha = cmods.alpha;
     return retval;
 }
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain

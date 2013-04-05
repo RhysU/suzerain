@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
-#define SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP
+#ifndef SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
+#define SUZERAIN_REACTING_HYBRID_OPERATOR_HPP
 
 /** @file
  * Hybrid implicit/explicit Navier--Stokes operators.
@@ -30,7 +30,8 @@
 
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
-#include <suzerain/rholut_imexop.h>
+//#include <suzerain/rholut_imexop.h>
+#include <suzerain/reacting_imexop.h>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
@@ -42,11 +43,12 @@ class grid_specification;
 class pencil_grid;
 class zgbsv_specification;
 
-namespace perfect {
+namespace reacting {
 
 // Forward declarations
 class operator_common_block;
-class scenario_definition;
+//class scenario_definition;
+class antioch_constitutive; // for alpha
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -63,7 +65,7 @@ public:
 
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
-            const scenario_definition &scenario,
+            const antioch_constitutive &cmods,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -107,23 +109,24 @@ protected:
     shared_ptr<bsmbsm_solver> solver;
 
     /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    //const scenario_definition &scenario;
+    const antioch_constitutive &cmods;
 
     /** Houses data required for operator application and inversion */
     operator_common_block &common;
 
 private:
 
-    /** Pack scenario parameters for rholut_imexop.h usage */
-    suzerain_rholut_imexop_scenario imexop_s() const;
+    /** Pack scenario parameters for reacting_imexop.h usage */
+    suzerain_reacting_imexop_scenario imexop_s() const;
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
 
 };
 
-} // namespace perfect
+} // namespace reacting
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_PERFECT_HYBRID_OPERATOR_HPP */
+#endif  /* SUZERAIN_REACTING_HYBRID_OPERATOR_HPP */
