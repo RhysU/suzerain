@@ -67,6 +67,9 @@ FUNCNAME()(
     assert(w->nderiv >= 2);         // Enough derivatives in workspace?
     assert(A_T->ld == w->ld);         // Compatible storage?
 
+    // Prepare shorthand for some useful derived values
+    const double ap43        = s->alpha + 4.0/3.0;
+
     // We do not know the leading dimension associated with the definition of
     // PACK() so we must overwrite every possible submatrix within PATPT.
     // This is only suboptimal for the zero (rho, rho_E) submatrix and
@@ -248,9 +251,9 @@ FUNCNAME()(
                      1.0,                  REF(vp_rE),// FIXME: correct but misleading (since vp_rE = v*(gam-1))
                     D1, 1, w->ld, 0.0, buf, 1, A_T->ld);
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         ap43*invRe,           REF(nu), */
-            /*         D2, 1, w->ld, 1.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    ap43,                 REF(nu),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                  IDENTITY,

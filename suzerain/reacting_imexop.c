@@ -69,6 +69,9 @@ suzerain_reacting_imexop_accumulate(
     assert(!(!in_rho_w ^ !out_rho_w)); // ditto
     assert(!(!in_rho   ^ !out_rho  )); // ditto
 
+    // Prepare shorthand for some useful derived values
+    const double ap43        = s->alpha + 4.0/3.0;
+
     // Accumulate the requested portions of the M + \varphi L operator.  Scale
     // output by beta, accumulate non-mass contributions, and finally
     // accumulate the mass contributions.  Mass contributions come last as they
@@ -233,7 +236,7 @@ suzerain_reacting_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_u));
         }
 
-        /* if (LIKELY(in_rho_w)) {/\* NOP *\/}; */
+        if (LIKELY(in_rho_w)) {/* NOP */};
 
         if (LIKELY(in_rho)) {
 
@@ -277,9 +280,9 @@ suzerain_reacting_imexop_accumulate(
                  phi,              REF(vp_rE), // FIXME: correct but misleading (since vp_rE = v*(gam-1))
                 w->D_T[D1], w->ld, IN(rho_v), 1.0, OUT(rho_v));
 
-            /* (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2], */
-            /*     phi*ap43*invRe,       REF(nu), */
-            /*     w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v)); */
+            (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+                phi*ap43,          REF(nu),
+                w->D_T[D2], w->ld, IN(rho_v), 1.0, OUT(rho_v));
         }
 
         if (LIKELY(in_rho_w)) {
