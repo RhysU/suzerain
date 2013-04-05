@@ -97,9 +97,9 @@ FUNCNAME()(
                     -1.0,                   REF(vp_rE),
                     D1, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
-            /* suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE, */
-            /*         ginvRePr,                    REF(nu), */
-            /*         D2, 1, w->ld, 1.0, buf, 1, A_T->ld); */
+            suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+                    1.0,                    REF(korCp),
+                    D2, 1, w->ld, 1.0, buf, 1, A_T->ld);
 
             suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
                     1.0,                         IDENTITY,
