@@ -3,9 +3,9 @@
 include ../Common.am
 
 ##
-## While there are some files here that will compile w/out antioch,
-## the overall capability does not make sense without antioch support,
-## so skip unless antioch is detected at configure time.
+## While there are some files here that will compile w/out Antioch,
+## the overall capability does not make sense without Antioch support,
+## so skip unless Antioch is detected at configure time.
 ##
 if BUILD_REACTING
 

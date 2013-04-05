@@ -8,8 +8,6 @@
  *                 please contact P. L'Ecuyer at: lecuyer@iro.umontreal.ca
  * Date:           14 August 2001
  *
- * $Id$
- *
 \***********************************************************************/
 
 /** @file

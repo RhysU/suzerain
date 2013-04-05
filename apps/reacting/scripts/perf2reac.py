@@ -2,7 +2,7 @@
 # Python script to convert a nondimensional channel field
 # from the 'perfect' implementation to a dimensional field
 # for the 'reacting' implementation
-# 
+#
 # Inputs:
 # - The input file name in f (the file will be rewritten)
 # - Parameters under 'Set these values': (by default
@@ -12,7 +12,7 @@
 import numpy
 import h5py
 import math
- 
+
 ######################################################
 # Open all of the files
 f   = h5py.File('physical831181_0_reacting.h5','r+')

@@ -19,6 +19,7 @@ The code depends upon the following libraries:
     4) Log4cxx from http://logging.apache.org/log4cxx/
     5) ESIO from https://red.ices.utexas.edu/projects/esio
     6) underling from https://red.ices.utexas.edu/projects/underling
+    7) FFTW from http://www.fftw.org/
 
 
 2. Configuration
