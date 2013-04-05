@@ -34,6 +34,9 @@
 
 namespace suzerain {
 
+// Forward declarations
+class pencil_grid;
+
 namespace support {
 
 /**
@@ -43,24 +46,28 @@ namespace support {
  *
  * More concretely, suppose one wants to use the hybrid implicit/explicit
  * timestepping schemes defined in \ref timestepper::lowstorage which the state
- * vector \f$ u(t) \f$ to \f$u(t+\Delta{}t)\f$ according to
+ * vector \f$ u(t) \f$ is advanced to \f$u(t+\Delta{}t)\f$ according to
  * \f[
- *   M u_{t} = Lu + N(u)
+ *   M u_{t} = Lu + \chi N(u)
  * \f]
  * where \f$M\f$, \f$L\f$, and \f$N\f$ are linear, linear, and nonlinear
- * operators, respectively.  Instead of \f$N\F$ you have a fully explicit
- * operator implementation $R$ satisfying
+ * operators, respectively.  Scalar \f$\chi\f$ is a fixed multiplicative factor
+ * often used to hide FFT normalization costs.  Instead of \f$N\f$ you have a
+ * fully explicit operator implementation $R$ per
  * \f[
- *   M u_{t} = R(u).
+ *   M u_{t} = \chi R(u).
  * \f]
  * and an implementation of \f$M + \phi L\f$ per \ref
  * timestepper::lowstorage::linear_operator.  To use the low-storage
- * implicit-explicit interface you need \f$N(u) = R(u) - L(u)\f$.
+ * implicit-explicit interface you need
+ * \f[
+ *   N(u) = R(u) - \frac{1}{\chi} Lu.
+ * \f].
  *
  * This class programmatically implements such an \f$N\f$ given implementations
  * of \f$R\f$ and \f$M + \phi L\f$.  It permits having your \f$N\f$
- * automatically adjust to any \f$L\f$ but it comes at the cost of additional
- * memory overhead and runtime cost.
+ * automatically adjust to any sane \f$L\f$ implementation but it comes at the
+ * cost of additional memory and runtime overhead.
  */
 class hybrid_residual_operator
     : public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
@@ -68,10 +75,17 @@ class hybrid_residual_operator
 public:
 
     /**
-     * Default constructor.  After construction, #L and #R must be specified
+     * Default constructor.
+     *
+     * After construction, #L and #R must be specified
      * prior to #apply_operator invocation.
-     * */
-    hybrid_residual_operator();
+     *
+     * @param dgrid Decomposition providing parallel grid details.
+     * @param chi   Scaling factor \f$\chi\f used to form
+     *              \f$ N(u) = R(u) - \frac{1}{\chi} L(u) f$.
+     */
+    explicit hybrid_residual_operator(const pencil_grid &dgrid,
+                                      const real_t chi = 1);
 
     /** State type associated with the linear operator #L. */
     typedef interleaved_state<4, complex_t> state_linear_type;
@@ -111,6 +125,15 @@ public:
             const std::size_t substep_index) const;
 
 private:
+
+    /** The parallel decomposition grid in which the operator is used */
+    const pencil_grid &dgrid;
+
+    /**
+     * Scaling factor \f$\chi\f used to form
+     * \f$ N(u) = R(u) - \frac{1}{\chi} L(u) f$.
+     */
+    const real_t chi;
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
