@@ -517,7 +517,7 @@ antioch_constitutive::evaluate (const real_t    e,
 }
 
 void 
-antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
+antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           const Vector3r& m,
                                                           const real_t    rho,
                                                           const VectorXr& species,
@@ -527,7 +527,9 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
                                                           real_t&   p_rsum,
                                                           Vector3r& p_m,
                                                           real_t&   p_e,
-                                                          real_t&   gamma) const
+                                                          real_t&   mu,
+                                                          real_t&   kaporCp,
+                                                          VectorXr& Ds ) const
 {
     const real_t irho = 1.0/rho;
     
@@ -546,11 +548,11 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
     const real_t Cp = this->sm_thermo->cp(T, T, cs);
     const real_t Cv = this->sm_thermo->cv(T, T, cs);
 
-    gamma = Cp/Cv;
-
-    // gamma-1 for convenience
+    // gamm and gamma-1 for convenience
+    const real_t gamma = Cp/Cv;
     const real_t gmi = gamma-1.0;
 
+    // Gas constant and internal energy of the diluter
     const real_t R0 = this->mixture->R(0);
     const real_t e0int = this->sm_thermo->e_tot(0, T, T);
 
@@ -571,6 +573,19 @@ antioch_constitutive::evaluate_pressure_derivs_and_gamma (const real_t    e,
 
     // dp/drE
     p_e = gmi;
+
+    // Transport
+    mu  = this->wilke_evaluator->mu(T, cs);
+    const real_t kap = this->wilke_evaluator->k (T, cs);
+    
+    kaporCp = kap*irho/Cp;
+
+    // Is this right?  Copied from FIN-S (and antioch has same) but
+    // looks like inverse of Le to me.
+    real_t D0 = this->Le*kap*irho/Cp;
+
+    for (unsigned int i=0; i<Ns; ++i)
+        Ds[i] = D0;
 }
 
 

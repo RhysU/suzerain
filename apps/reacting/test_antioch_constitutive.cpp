@@ -499,9 +499,9 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
 }
 
 /*
- * Check that call to evaluate_pressure_derivs_and_gamma "works"
+ * Check that call to evaluate_pressure_derivs_and_trans "works"
  */
-int test_evaluate_pressure_derivs_and_gamma(const std::string& chem_xml_file)
+int test_evaluate_pressure_derivs_and_trans(const std::string& chem_xml_file)
 {
     
     using suzerain::reacting::antioch_constitutive;
@@ -541,13 +541,14 @@ int test_evaluate_pressure_derivs_and_gamma(const std::string& chem_xml_file)
     species = rho*cs;
 
     // Storage for computed quantities
-    real_t p=-1, p_rho=-1, p_rsum=-1, p_e=-1, gam=0;
+    real_t p=-1, p_rho=-1, p_rsum=-1, p_e=-1, mu=0, kap=0;
     Vector3r p_m;
+    VectorXr Ds(Ns);
 
     // Eval rxn sources, trans, thermo
-    acl1.evaluate_pressure_derivs_and_gamma(
+    acl1.evaluate_pressure_derivs_and_trans(
         e, m, rho, species, cs,   /* input */
-        p, p_rho, p_rsum, p_m, p_e, gam /* output */);
+        p, p_rho, p_rsum, p_m, p_e, mu, kap, Ds /* output */);
 
 
     // TODO: Add a finite difference check against acl1.evaluate

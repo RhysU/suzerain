@@ -212,9 +212,11 @@ public:
      * @param[out] p_rsum Sum of mass frac(s) * dp/d(rho(s)) for s=2:Ns
      * @param[out] p_m    Derivatives of p wrt m
      * @param[out] p_e    Derivative of p wrt e (= rho*total energy)
-     * @param[out] gamma  Mixture gamma (= Cp_mix / Cv_mix)
+     * @param[out] mu     Mixture viscosity
+     * @param[out] kap    Mixture thermal conductivity
+     * @param[out] Ds     Diffusivities
      */
-    void evaluate_pressure_derivs_and_gamma (const real_t    e,
+    void evaluate_pressure_derivs_and_trans (const real_t    e,
                                              const Vector3r& m,
                                              const real_t    rho,
                                              const VectorXr& species,
@@ -224,7 +226,9 @@ public:
                                              real_t&   p_rsum,
                                              Vector3r& p_m,
                                              real_t&   p_e,
-                                             real_t&   gamma) const;
+                                             real_t&   mu,
+                                             real_t&   kaporCp,
+                                             VectorXr& Ds ) const;
 
     /**
      * Given temperature and mass fractions, compute internal energy

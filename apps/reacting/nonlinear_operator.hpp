@@ -349,6 +349,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 p_ru, p_rw, p_rE,
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
+                                nu, korCp,
                                 count // Sentry
             }; };
 
@@ -397,11 +398,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
                 // ... pressure-related quantities
-                real_t p, p_rho, p_rsum, p_e, gam;
+                real_t p, p_rho, p_rsum, p_e, mu, korCp;
                 Vector3r p_m;
-                cmods.evaluate_pressure_derivs_and_gamma(
+                cmods.evaluate_pressure_derivs_and_trans(
                     e, m, rho, species, cs,
-                    p, p_rho, p_rsum, p_m, p_e, gam);
+                    p, p_rho, p_rsum, p_m, p_e, mu, korCp, Ds);
                                
                 real_t H = irho*(e + p);
 
@@ -426,6 +427,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
                 acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
                 acc[ref::Ce_rv  ](-H - u.y()*p_m.y()); // TODO: Check signs
+
+                // ...and viscous-term-related quantities
+                acc[ref::nu   ](mu*irho);
+                acc[ref::korCp](korCp);
                 
             } // end X // end Z
 
@@ -454,6 +459,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_Cmy_rho   ()[j] = sum(acc[ref::Cmy_rho   ]);
             common.ref_Ce_rho    ()[j] = sum(acc[ref::Ce_rho    ]);
             common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);
+            common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
+            common.ref_korCp     ()[j] = sum(acc[ref::korCp     ]);
 
         } // end Y
 
