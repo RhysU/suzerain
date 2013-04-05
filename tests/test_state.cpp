@@ -501,10 +501,10 @@ static void test_assignment_helper(
 {
     load(foo, 1);
 
-    foo.assign(foo); // Self
+    foo.assign_from(foo); // Self
     verify(foo, 1);
 
-    bar.assign(foo);
+    bar.assign_from(foo);
     verify(bar, 1);
 }
 
@@ -650,7 +650,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     // Operation between two nonconforming states throws
     interleaved_state<4,T> foo(size2234());
     interleaved_state<4,T> baz(size(2,2,2,2));
-    BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
+    BOOST_CHECK_THROW(baz.assign_from(foo), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( storage_order, T, test_types )
@@ -899,7 +899,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment3, T, test_types )
 
         // Operation between two nonconforming states throws
         contiguous_state<3,T> baz(size(2,2,2));
-        BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
+        BOOST_CHECK_THROW(baz.assign_from(foo), std::logic_error);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
@@ -947,7 +947,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment4, T, test_types )
 
         // Operation between two nonconforming states throws
         contiguous_state<4,T> baz(size(2,2,2,2));
-        BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
+        BOOST_CHECK_THROW(baz.assign_from(foo), std::logic_error);
     }
 
     BOOST_TEST_MESSAGE("Both instances with padding");
@@ -1502,8 +1502,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( assignment, T, test_types )
     // Operation between two nonconforming states throws
     contiguous_state<4,T>  foo(size2234());
     interleaved_state<4,T> baz(size(2,2,2,2));
-    BOOST_CHECK_THROW(baz.assign(foo), std::logic_error);
-    BOOST_CHECK_THROW(foo.assign(baz), std::logic_error);
+    BOOST_CHECK_THROW(baz.assign_from(foo), std::logic_error);
+    BOOST_CHECK_THROW(foo.assign_from(baz), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( is_isomorphic, T, test_types )

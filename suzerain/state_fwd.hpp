@@ -196,9 +196,9 @@ public:
      * @throw std::logic_error if \c other is not isomorphic.
      */
     template<class OtherDerived>
-    void assign(const state_base<OtherDerived>& other)
+    void assign_from(const state_base<OtherDerived>& other)
     {
-        return derived().assign(other.derived());
+        return derived().assign_from(other.derived());
     }
 
     /**
@@ -286,9 +286,9 @@ public:
     void add_scaled(const Element& factor,
                     const multi_array_type& other);
 
-    void assign(const contiguous_state& other);
+    void assign_from(const contiguous_state& other);
 
-    void assign(const multi_array_type& other);
+    void assign_from(const multi_array_type& other);
 
     void exchange(contiguous_state& other);
 
@@ -367,9 +367,9 @@ public:
     void add_scaled(const Element& factor,
                     const multi_array_type& other);
 
-    void assign(const interleaved_state& other);
+    void assign_from(const interleaved_state& other);
 
-    void assign(const multi_array_type& other);
+    void assign_from(const multi_array_type& other);
 
     void exchange(interleaved_state& other);
 

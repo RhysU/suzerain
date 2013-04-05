@@ -91,7 +91,7 @@ driver::log_manufactured_solution_absolute_error(
     if (!INFO0_ENABLED(mms_abserr)) return;
 
     // Compute L2 of error of state against manufactured solution
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             *grid, *dgrid, *cop, *b, t);
@@ -146,7 +146,7 @@ driver::log_linearization_error(
     //       purposes-- this data is unimportant from the perspective of
     //       measuring actual linearization error.
     const real_t chi = real_t(1) / (grid->dN.x() * grid->dN.z());
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     common_block.set_zero(grid->dN.y());  // Defensive
     N->apply_operator(t, *state_nonlinear,
             method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/0);
@@ -196,7 +196,7 @@ driver::compute_statistics(
     SUZERAIN_TIMER_SCOPED("driver::compute_statistics");
 
     // Obtain mean samples from instantaneous fields stored in state_linear
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     mean = perfect::sample_quantities(
             *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 

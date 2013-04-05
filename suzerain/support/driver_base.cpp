@@ -763,7 +763,7 @@ driver_base::log_status_L2(
     }
 
     // Collective computation of the L_2 norms
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     const std::vector<field_L2> result
         = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
 
@@ -939,7 +939,7 @@ driver_base::save_restart(
     save_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
                                     && save_statistics_hook(esioh, t);
 
@@ -979,7 +979,7 @@ driver_base::save_restart(
     save_time(esioh, t);
 
     // Invoke subclass extension points for both restart AND statistics
-    state_nonlinear->assign(*state_linear);
+    state_nonlinear->assign_from(*state_linear);
     const bool continue_advancing =    save_state_hook(esioh)
                                     && save_statistics_hook(esioh, t);
 
@@ -1006,9 +1006,9 @@ driver_base::load_restart(
     load_time(esioh, t);
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
-    load_state_hook(esioh);                  // Invoke subclass extension point
-    state_linear->assign(*state_nonlinear);  // Copy into state_linear
-    load_statistics_hook(esioh);             // Invoke subclass extension point
+    load_state_hook(esioh);                       // Invoke extension point
+    state_linear->assign_from(*state_nonlinear);  // Copy into state_linear
+    load_statistics_hook(esioh);                  // Invoke extension point
 
     wtime_load_restart = MPI_Wtime() - begin;
 }

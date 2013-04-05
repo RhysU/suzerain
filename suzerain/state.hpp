@@ -453,7 +453,7 @@ void contiguous_state<Dim,Element>::add_scaled(
 }
 
 template< std::size_t Dim, typename Element >
-void contiguous_state<Dim,Element>::assign(
+void contiguous_state<Dim,Element>::assign_from(
             const contiguous_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -473,7 +473,7 @@ void contiguous_state<Dim,Element>::assign(
 }
 
 template< std::size_t Dim, typename Element >
-void contiguous_state<Dim,Element>::assign(
+void contiguous_state<Dim,Element>::assign_from(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -582,7 +582,7 @@ void interleaved_state<Dim,Element>::add_scaled(
 }
 
 template< std::size_t Dim, typename Element >
-void interleaved_state<Dim,Element>::assign(
+void interleaved_state<Dim,Element>::assign_from(
             const interleaved_state& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?
@@ -595,7 +595,7 @@ void interleaved_state<Dim,Element>::assign(
 }
 
 template< std::size_t Dim, typename Element >
-void interleaved_state<Dim,Element>::assign(
+void interleaved_state<Dim,Element>::assign_from(
             const multi_array_type& other)
 {
     if (SUZERAIN_UNLIKELY(this == boost::addressof(other))) return; // Self?

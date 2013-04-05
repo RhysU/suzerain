@@ -159,10 +159,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         scenario->populate(*restart_scenario, true);            // Merge
 
         // Adjust total energy as necessary to account for any scenario change
-        state_nonlinear->assign(*state_linear);
+        state_nonlinear->assign_from(*state_linear);
         adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop,
                         restart_scenario->Ma, restart_scenario->gamma);
-        state_linear->assign(*state_nonlinear);
+        state_linear->assign_from(*state_nonlinear);
     }
 
     if (msoln) {
@@ -179,10 +179,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // If requested, add noise to the momentum fields at startup (expensive).
     if (noisedef.percent > 0) {
-        state_nonlinear->assign(*state_linear);
+        state_nonlinear->assign_from(*state_linear);
         add_noise(*state_nonlinear, noisedef, *scenario,
                   *grid, *dgrid, *cop, *b);
-        state_linear->assign(*state_nonlinear);
+        state_linear->assign_from(*state_nonlinear);
     }
 
     // Prepare spatial operators depending on requested advance options

@@ -1526,7 +1526,7 @@ const typename traits::component<Element>::type step(
     typedef typename traits::component<Element>::type component_type;
 
     // First substep handling is special since we need to determine delta_t
-    b.assign(a);
+    b.assign_from(a);
     const std::vector<component_type> delta_t_candidates
         = N.apply_operator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(), 0);
     component_type delta_t = reducer(delta_t_candidates);

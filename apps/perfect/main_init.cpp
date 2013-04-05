@@ -162,7 +162,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
         accumulate_manufactured_solution(
                 1, *msoln, 0, *state_nonlinear, *grid, *dgrid, *cop, *b, mms);
-        state_linear->assign(*state_nonlinear);
+        state_linear->assign_from(*state_nonlinear);
 
     } else if (!dgrid->has_zero_zero_modes()) {
 

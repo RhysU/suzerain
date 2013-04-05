@@ -141,10 +141,10 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         //        initialize with info from restart here (?)
 
         // Adjust total energy as necessary to account for any scenario change
-        state_nonlinear->assign(*state_linear);
-	// FIXME: Currently no functionality to adjust scenario
+        state_nonlinear->assign_from(*state_linear);
+        // FIXME: Currently no functionality to adjust scenario
         //adjust_scenario(*state_nonlinear, *scenario, *grid, *dgrid, *cop, restart_scenario->Ma, restart_scenario->gamma);
-        state_linear->assign(*state_nonlinear);
+        state_linear->assign_from(*state_nonlinear);
     }
 
     INFO0(who, "Initializing antioch_constitutive");
@@ -171,28 +171,28 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     // If requested, add noise to the momentum fields at startup (expensive).
     if (noisedef.percent > 0) {
-        state_nonlinear->assign(*state_linear);
+        state_nonlinear->assign_from(*state_linear);
         add_noise(*state_nonlinear, noisedef,
                   *grid, *dgrid, *cop, *b);
-        state_linear->assign(*state_nonlinear);
+        state_linear->assign_from(*state_nonlinear);
     }
 
     // Prepare spatial operators depending on requested advance type
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-		    *cmods, *chdef, *grid, *dgrid, *cop, *b, common_block));
+                    *cmods, *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
-		    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
+                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-	// 	    solver_spec, *scenario, *chdef, *grid, *dgrid,
+        //            solver_spec, *scenario, *chdef, *grid, *dgrid,
         //             *cop, *b, common_block));
         // N.reset(new hybrid_nonlinear_operator(
         //             *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
-	FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
-	return EXIT_FAILURE;
+        FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
+        return EXIT_FAILURE;
     } else {
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
