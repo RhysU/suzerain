@@ -40,8 +40,7 @@
 #include "channel_treatment.hpp"
 #include "explicit_operator.hpp"
 
-// FIXME: Hybrid implicit/explicit has not been kept current with scenario changes.
-//#include "hybrid_operator.hpp"
+#include "hybrid_operator.hpp"
 
 #pragma warning(disable:1419)
 
@@ -186,11 +185,15 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
-        // L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-        //            solver_spec, *scenario, *chdef, *grid, *dgrid,
-        //             *cop, *b, common_block));
-        // N.reset(new hybrid_nonlinear_operator(
-        //             *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
+        L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
+		    solver_spec, *cmods, *chdef, *grid, *dgrid,
+                    *cop, *b, common_block));
+
+        // FIXME: Need to use
+        // suzerain::support::hybrid_residual_operator to get the
+        // right thing here.  See #2537.
+        N.reset(new explicit_nonlinear_operator(
+		    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
         FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
         return EXIT_FAILURE;
     } else {

@@ -45,6 +45,7 @@
 
 #include "nonlinear_operator_fwd.hpp"
 #include "antioch_constitutive.hpp"
+#include "channel_definition.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -69,6 +70,7 @@ namespace reacting {
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
         const antioch_constitutive &cmods,
+        const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -79,6 +81,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
                 5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
                 spec, 1))
+    , chdef(chdef)
     , cmods(cmods)
     , common(common)
     , who("operator.L")

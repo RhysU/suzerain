@@ -47,6 +47,7 @@ namespace reacting {
 // Forward declarations
 class operator_common_block;
 class antioch_constitutive;
+class channel_definition;
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -64,6 +65,7 @@ public:
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const antioch_constitutive &cmods,
+            const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
@@ -105,6 +107,9 @@ protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
     shared_ptr<bsmbsm_solver> solver;
+
+    /** Provides info about channel case, e.g., T_wall */
+    const channel_definition &chdef;
 
     /** Access to constitutive laws */
     const antioch_constitutive &cmods;

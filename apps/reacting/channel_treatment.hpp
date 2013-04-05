@@ -82,21 +82,21 @@ public:
             bspline &b,
             operator_common_block &common);
 
-    // /**
-    //  * Constructor delegating to BaseClass.
-    //  *
-    //  * BaseClass must make its constructor arguments available as member
-    //  * variables under the same name as those found in this constructor.
-    //  */
-    // channel_treatment(
-    //         const zgbsv_specification& spec,
-    //         const antioch_constitutive& cmods,
-    //         const channel_definition &chdef,
-    //         const grid_specification &grid,
-    //         const pencil_grid &dgrid,
-    //         const bsplineop &cop,
-    //         bspline &b,
-    //         operator_common_block &common);
+    /**
+     * Constructor delegating to BaseClass.
+     *
+     * BaseClass must make its constructor arguments available as member
+     * variables under the same name as those found in this constructor.
+     */
+    channel_treatment(
+            const zgbsv_specification& spec,
+            const antioch_constitutive& cmods,
+            const channel_definition &chdef,
+            const grid_specification &grid,
+            const pencil_grid &dgrid,
+            const bsplineop &cop,
+            bspline &b,
+            operator_common_block &common);
 
     /** Virtual destructor as the class has virtual methods. */
     virtual ~channel_treatment() {}
@@ -171,20 +171,21 @@ channel_treatment<BaseClass>::channel_treatment(
     this->finish_construction(grid, dgrid, cop, b);
 }
 
-// template< typename BaseClass >
-// channel_treatment<BaseClass>::channel_treatment(
-//             const zgbsv_specification& spec,
-//             const channel_definition &chdef,
-//             const grid_specification &grid,
-//             const pencil_grid &dgrid,
-//             const bsplineop &cop,
-//             bspline &b,
-//             operator_common_block &common)
-//     : BaseClass(spec, chdef, grid, dgrid, cop, b, common),
-//       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
-// {
-//     this->finish_construction(grid, dgrid, cop, b);
-// }
+template< typename BaseClass >
+channel_treatment<BaseClass>::channel_treatment(
+            const zgbsv_specification& spec,
+            const antioch_constitutive& cmods,
+            const channel_definition &chdef,
+            const grid_specification &grid,
+            const pencil_grid &dgrid,
+            const bsplineop &cop,
+            bspline &b,
+            operator_common_block &common)
+    : BaseClass(spec, cmods, chdef, grid, dgrid, cop, b, common),
+      jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
+{
+    this->finish_construction(grid, dgrid, cop, b);
+}
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::finish_construction(
