@@ -112,8 +112,9 @@ struct grammar
         constant_()
         {
             this->add
-                ("digits10", std::numeric_limits<FPT>::digits10  )
                 ("digits",   std::numeric_limits<FPT>::digits    )
+                ("digits10", std::numeric_limits<FPT>::digits10  )
+                ("e" ,       boost::math::constants::e<FPT>()    )
                 ("epsilon",  std::numeric_limits<FPT>::epsilon() )
                 ("pi",       boost::math::constants::pi<FPT>()   )
             ;
@@ -213,12 +214,12 @@ struct grammar
             |   '(' >> expression  [_val =  _1] >> ')'
             |   ('-' >> primary    [_val = -_1])
             |   ('+' >> primary    [_val =  _1])
-            |   no_case[constant]  [_val =  _1]
             |   (no_case[ufunc] >> '(' >> expression >> ')')
                                    [_val = lazy_ufunc(_1, _2)]
             |   (no_case[bfunc] >> '(' >> expression >> ','
                                        >> expression >> ')')
                                    [_val = lazy_bfunc(_1, _2, _3)]
+            |   no_case[constant]  [_val =  _1]
             ;
 
     }

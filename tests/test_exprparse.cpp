@@ -48,6 +48,7 @@ EXPRTEST(literal5, "pi",       boost::math::constants::pi<double>())
 EXPRTEST(literal6, "epsilon",  std::numeric_limits<double>::epsilon())
 EXPRTEST(literal7, "digits",   std::numeric_limits<double>::digits)
 EXPRTEST(literal8, "digits10", std::numeric_limits<double>::digits10)
+EXPRTEST(literal9, "e",        boost::math::constants::e<double>())
 
 EXPRTEST(basicop1, " 2 +\t3\n",   5)       // Whitespace ignored
 EXPRTEST(basicop2, " 2 -\t3\n",  -1)
