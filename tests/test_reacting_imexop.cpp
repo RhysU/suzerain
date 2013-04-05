@@ -102,11 +102,7 @@ static void operator_consistency(const parameters& p)
     const real_t&   kn = p.kn;  SUZERAIN_UNUSED(kn);
 
     suzerain_reacting_imexop_scenario s;
-    s.Re    = 3000;
-    s.Pr    = 0.7;
-    s.Ma    = 1.5;
     s.alpha = 3;
-    s.gamma = 1.4;
 
     // Initialize nonzero reference quantities for p.refndx
     // Abuses what we know about the structure of ...imexop_ref{,ld}.

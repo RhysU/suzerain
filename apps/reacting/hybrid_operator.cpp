@@ -43,10 +43,7 @@
 #include <suzerain/timers.h>
 #include <suzerain/zgbsv_specification.hpp>
 
-//#include "common_block.hpp"
 #include "nonlinear_operator_fwd.hpp"
-//#include "navier_stokes.hpp"
-//#include "scenario_definition.hpp"
 #include "antioch_constitutive.hpp"
 
 #pragma warning(disable:383 1572)
@@ -78,6 +75,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         bspline &b,
         operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
+      // FIXME: 5 needs to be Ns-1+5
     , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
                 5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
                 spec, 1))
@@ -116,6 +114,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
+    // FIXME: Make sure species are ok
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
     assert(static_cast<int>(ndx::e  ) < solver->S);
     assert(static_cast<int>(ndx::mx ) < solver->S);
@@ -328,9 +327,11 @@ class IsothermalNoSlipPATPTEnforcer
 
 public:
 
+    // FIXME: There is no gamma... have to get etot in
+    // See BC treatment in explicit_operator.cpp for how to deal
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
                                   const suzerain_reacting_imexop_scenario &s)
-        : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
+        : gamma_times_one_minus_gamma(1.4*0.4)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;

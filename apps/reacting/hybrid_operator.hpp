@@ -30,7 +30,6 @@
 
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
-//#include <suzerain/rholut_imexop.h>
 #include <suzerain/reacting_imexop.h>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
@@ -47,8 +46,7 @@ namespace reacting {
 
 // Forward declarations
 class operator_common_block;
-//class scenario_definition;
-class antioch_constitutive; // for alpha
+class antioch_constitutive;
 
 /**
  * A hybrid implicit operator that provides no slip, isothermal walls.  It
@@ -108,8 +106,7 @@ protected:
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
     shared_ptr<bsmbsm_solver> solver;
 
-    /** The scenario in which the operator is used */
-    //const scenario_definition &scenario;
+    /** Access to constitutive laws */
     const antioch_constitutive &cmods;
 
     /** Houses data required for operator application and inversion */
