@@ -66,6 +66,8 @@ typedef struct {
     double *Cmy_rho;
     double *Ce_rho;
     double *Ce_rv;
+    double *nu;
+    double *korCp;
 } suzerain_reacting_imexop_ref;
 
 /** Strides between elements in a \ref suzerain_reacting_imexop_ref. */
@@ -84,6 +86,8 @@ typedef struct {
     int Cmy_rho;
     int Ce_rho;
     int Ce_rv;
+    int nu;
+    int korCp;
 } suzerain_reacting_imexop_refld;
 
 /**
