@@ -71,16 +71,13 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
     std::vector<real_t> retval = R->apply_operator(
             time, state, evmaxmag_real, evmaxmag_imag, substep_index);
 //   FIXME: I need to do something sensible for method, delta_t
+//   FIXME: Problem solved!
 //
 //  L->accumulate_mass_plus_scaled_operator(
 //          0, *extra, -1, state,
-//          /* method */ method,
-//          /* delta_t */ delta_t,
 //          substep_index);
 //  L->accumulate_mass_plus_scaled_operator(
 //          -1/chi, *extra, -1, state,
-//          /* method */ method,
-//          /* delta_t */ delta_t,
 //          substep_index);
 
     return retval;

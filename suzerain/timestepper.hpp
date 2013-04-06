@@ -662,8 +662,6 @@ public:
      * @param input         State vector on which to apply the operator.
      * @param beta          Scale factor for output vector during accumulation.
      * @param output        State vector into which to accumulate the result.
-     * @param method        The low storage scheme being used
-     * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
     virtual void accumulate_mass_plus_scaled_operator(
@@ -671,8 +669,6 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const method_interface<element>& method,
-            const component delta_t,
             const std::size_t substep_index) const = 0;
 
     /**
@@ -808,8 +804,6 @@ public:
      * @param input on which to apply the operator.
      * @param beta  Scale factor for output vector during accumulation.
      * @param output on which to accumulate the result.
-     * @param method Ignored.
-     * @param delta_t Ignored.
      * @param substep_index Ignored.
      */
     virtual void accumulate_mass_plus_scaled_operator(
@@ -817,12 +811,8 @@ public:
             const StateA& input,
             const element& beta,
             StateB& output,
-            const method_interface<element>& method,
-            const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
-        SUZERAIN_UNUSED(method);
-        SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         output.scale(beta);
         output.add_scaled(phi*factor + element(1), input);
@@ -1452,7 +1442,7 @@ const typename traits::component<Element>::type substep(
     L.accumulate_mass_plus_scaled_operator(
                   delta_t * m.alpha(substep_index), a,
             chi * delta_t * m.zeta(substep_index),  b,
-            m, delta_t, substep_index);
+            substep_index);
     N.apply_operator(time + delta_t * m.eta(substep_index), a,
                      m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
     b.add_scaled(chi * delta_t * m.gamma(substep_index), a);
@@ -1534,7 +1524,7 @@ const typename traits::component<Element>::type step(
         L.accumulate_mass_plus_scaled_operator(
                 delta_t * m.alpha(i),      a,
                 chi * delta_t * m.zeta(i), b,
-                m, delta_t, i);
+                i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.apply_operator(time + delta_t * m.eta(i), b,
                          m.evmaxmag_real(), m.evmaxmag_imag(), i);

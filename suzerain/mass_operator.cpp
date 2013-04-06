@@ -80,13 +80,9 @@ void mass_operator::accumulate_mass_plus_scaled_operator(
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
         contiguous_state<4,complex_t> &output,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
-    SUZERAIN_UNUSED(method);
-    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     SUZERAIN_ENSURE(output.is_isomorphic(input));

@@ -150,10 +150,10 @@ driver::log_linearization_error(
     N->apply_operator(t, *state_nonlinear,
             method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/0);
     L->accumulate_mass_plus_scaled_operator(
-            1, *state_linear, chi,  *state_nonlinear, *method, 0, /*substep*/0);
+            1, *state_linear, chi,  *state_nonlinear, /*substep*/0);
     common_block.set_zero(grid->dN.y());  // Zero reference quantities
     L->accumulate_mass_plus_scaled_operator(
-            1, *state_linear, -1, *state_nonlinear, *method, 0, /*substep*/0);
+            1, *state_linear, -1, *state_nonlinear, /*substep*/0);
     for (size_t k = 0; k < fields.size(); ++k) {
         diffwave::apply(0, 0, 1, (*state_nonlinear)[k].origin(),
             grid->L.x(), grid->L.z(), dgrid->global_wave_extent.y(),

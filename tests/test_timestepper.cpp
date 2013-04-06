@@ -473,7 +473,6 @@ BOOST_AUTO_TEST_CASE( apply_operator )
 
 BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
 {
-    const method<smr91,double> m;
     typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -482,14 +481,14 @@ BOOST_AUTO_TEST_CASE( accumulate_mass_plus_scaled_operator )
     b[0][0][0] = 3.0;
 
     op_type op(5.0);
-    op.accumulate_mass_plus_scaled_operator(7.0, a, 1.0, b, m);
+    op.accumulate_mass_plus_scaled_operator(7.0, a, 1.0, b);
     BOOST_CHECK_CLOSE(b[0][0][0], 75.0, close_enough);
-    op.accumulate_mass_plus_scaled_operator(0.0, b, 1.0, a, m);
+    op.accumulate_mass_plus_scaled_operator(0.0, b, 1.0, a);
     BOOST_CHECK_CLOSE(a[0][0][0], 77.0, close_enough);
 
     // Ensure we catch an operation between two nonconforming states
     contiguous_state<3,double> c(size3(2,1,1));
-    BOOST_CHECK_THROW(op.accumulate_mass_plus_scaled_operator(3.0, b, 1.0, c, m),
+    BOOST_CHECK_THROW(op.accumulate_mass_plus_scaled_operator(3.0, b, 1.0, c),
                       std::logic_error);
 }
 
