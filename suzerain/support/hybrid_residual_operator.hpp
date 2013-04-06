@@ -34,9 +34,6 @@
 
 namespace suzerain {
 
-// Forward declarations
-class pencil_grid;
-
 namespace support {
 
 /**
@@ -84,12 +81,10 @@ public:
      * After construction, #L and #R must be specified
      * prior to #apply_operator invocation.
      *
-     * @param dgrid Decomposition providing parallel grid details.
      * @param chi   Scaling factor \f$\chi\f used to form
      *              \f$ N(u) = R(u) - \frac{1}{\chi} L(u) f$.
      */
-    explicit hybrid_residual_operator(const pencil_grid &dgrid,
-                                      const real_t chi = 1);
+    explicit hybrid_residual_operator(const real_t chi);
 
     /** State type associated with the linear operator #L. */
     typedef interleaved_state<4, complex_t> state_linear_type;
@@ -129,9 +124,6 @@ public:
             const std::size_t substep_index) const;
 
 private:
-
-    /** The parallel decomposition grid in which the operator is used */
-    const pencil_grid &dgrid;
 
     /**
      * Scaling factor \f$\chi\f used to form

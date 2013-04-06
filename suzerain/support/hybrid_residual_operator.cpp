@@ -31,18 +31,13 @@
 
 #include <suzerain/support/hybrid_residual_operator.hpp>
 
-#include <suzerain/pencil_grid.hpp>
-#include <suzerain/utility.hpp>
-
 namespace suzerain {
 
 namespace support {
 
 hybrid_residual_operator::hybrid_residual_operator(
-        const pencil_grid &dgrid,
-        const real_t       chi)
-    : dgrid(dgrid)
-    , chi(chi)
+        const real_t chi)
+    : chi(chi)
     , who("operator.R")
 {
     // NOP
@@ -55,9 +50,8 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
-    // Allocate extra working storage
-    shared_ptr<state_linear_type> extra = make_shared<state_linear_type>(
-            to_yxz(state.shape()[0], this->dgrid.local_wave_extent));
+    // Allocate (potentially large) extra working storage
+    state_linear_type extra(state.shape());
 
     // The following steps are taken
     //     (1) extra <- state
@@ -70,13 +64,13 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
     // expensive if it turns out to be problematic, but this procedure
     // works in the context of the current APIs.
 
-    extra->assign_from(state);
+    extra.assign_from(state);
     std::vector<real_t> retval = R->apply_operator(
             time, state, evmaxmag_real, evmaxmag_imag, substep_index);
     L->accumulate_mass_plus_scaled_operator(
-            0,      *extra, -1, state, substep_index);
+            0,      extra, -1, state, substep_index);
     L->accumulate_mass_plus_scaled_operator(
-            -1/chi, *extra, -1, state, substep_index);
+            -1/chi, extra, -1, state, substep_index);
 
     return retval;
 }
