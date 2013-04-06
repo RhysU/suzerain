@@ -67,7 +67,11 @@ namespace support {
  * This class programmatically implements such an \f$N\f$ given implementations
  * of \f$R\f$ and \f$M + \phi L\f$.  It permits having your \f$N\f$
  * automatically adjust to any sane \f$L\f$ implementation but it comes at the
- * cost of additional memory and runtime overhead.
+ * cost of nontrivial additional memory and moderate runtime overhead.
+ *
+ * When a good \f$L\f$ and \f$R\f$ combination is found, it is well worthwhile
+ * to encode the corresponding \f$N\f$ directly rather than to continue using
+ * this adaptor.
  */
 class hybrid_residual_operator
     : public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
@@ -109,7 +113,7 @@ public:
             > > L;
 
     /**
-     * The fully-explicit nonlinear operator which operators on
+     * The fully-explicit nonlinear operator which operates on
      * #state_nonlinear.
      */
     shared_ptr<timestepper::nonlinear_operator<

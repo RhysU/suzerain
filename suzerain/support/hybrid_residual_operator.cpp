@@ -66,19 +66,17 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
     //     (4) state <- (M - (1/chi) * L) extra - 1 * state
     // and they ultimately result in
     //         state <- R(u) - (1/chi) Lu = N(u)
+    // There are lots of ways to make this process less computationally
+    // expensive if it turns out to be problematic, but this procedure
+    // works in the context of the current APIs.
 
     extra->assign_from(state);
     std::vector<real_t> retval = R->apply_operator(
             time, state, evmaxmag_real, evmaxmag_imag, substep_index);
-//   FIXME: I need to do something sensible for method, delta_t
-//   FIXME: Problem solved!
-//
-//  L->accumulate_mass_plus_scaled_operator(
-//          0, *extra, -1, state,
-//          substep_index);
-//  L->accumulate_mass_plus_scaled_operator(
-//          -1/chi, *extra, -1, state,
-//          substep_index);
+    L->accumulate_mass_plus_scaled_operator(
+            0,      *extra, -1, state, substep_index);
+    L->accumulate_mass_plus_scaled_operator(
+            -1/chi, *extra, -1, state, substep_index);
 
     return retval;
 }
