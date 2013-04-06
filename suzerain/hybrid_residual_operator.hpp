@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_HYBRID_RESIDUAL_OPERATOR_HPP
-#define SUZERAIN_SUPPORT_HYBRID_RESIDUAL_OPERATOR_HPP
+#ifndef SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP
+#define SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP
 
 /** @file
  * Provides \ref hybrid_residual_operator.
@@ -33,8 +33,6 @@
 #include <suzerain/timestepper.hpp>
 
 namespace suzerain {
-
-namespace support {
 
 /**
  * Builds a hybrid implicit/explicit-ready \ref nonlinear_operator from an
@@ -131,17 +129,12 @@ private:
      */
     const real_t chi;
 
-    /** Helps to identify from whom logging messages are being emitted. */
-    std::string who;
-
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
     hybrid_residual_operator(const hybrid_residual_operator&);
     hybrid_residual_operator& operator=(const hybrid_residual_operator&);
 
 };
 
-} // namespace support
-
 } // namespace suzerain
 
-#endif  /* SUZERAIN_SUPPORT_HYBRID_RESIDUAL_OPERATOR_HPP */
+#endif  /* SUZERAIN_HYBRID_RESIDUAL_OPERATOR_HPP */

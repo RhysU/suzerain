@@ -29,16 +29,15 @@
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/hybrid_residual_operator.hpp>
+#include <suzerain/hybrid_residual_operator.hpp>
+#include <suzerain/multi_array.hpp>
+#include <suzerain/state.hpp>
 
 namespace suzerain {
-
-namespace support {
 
 hybrid_residual_operator::hybrid_residual_operator(
         const real_t chi)
     : chi(chi)
-    , who("operator.R")
 {
     // NOP
 }
@@ -51,7 +50,7 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
             const std::size_t substep_index) const
 {
     // Allocate (potentially large) extra working storage
-    state_linear_type extra(state.shape());
+    state_linear_type extra(shape_array(state));
 
     // The following steps are taken
     //     (1) extra <- state
@@ -74,7 +73,5 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
 
     return retval;
 }
-
-} // namespace support
 
 } // namespace suzerain
