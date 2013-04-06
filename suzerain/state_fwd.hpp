@@ -39,7 +39,6 @@
  */
 
 // TODO Document better
-// TODO Allow interleaved_state/contiguous_state to interoperate
 
 #include <suzerain/common.hpp>
 #include <suzerain/blas_et_al.hpp>
