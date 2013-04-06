@@ -646,15 +646,11 @@ public:
      *
      * @param phi           Scale factor \f$\phi\f$ to use.
      * @param state         State vector on which to apply the operator.
-     * @param method        The low storage scheme being used
-     * @param delta_t       The size of the currently active time step.
      * @param substep_index The (zero-indexed) time stepper substep index.
      */
     virtual void apply_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
-            const method_interface<element>& method,
-            const component delta_t,
             const std::size_t substep_index) const = 0;
 
     /**
@@ -792,18 +788,13 @@ public:
      *
      * @param phi Additional scaling \f$\phi\f$ to apply.
      * @param state to modify in place.
-     * @param delta_t Ignored.
      * @param substep_index Ignored.
      */
     virtual void apply_mass_plus_scaled_operator(
             const element& phi,
             StateA& state,
-            const method_interface<element>& method,
-            const component delta_t = 0,
             const std::size_t substep_index = 0) const
     {
-        SUZERAIN_UNUSED(method);
-        SUZERAIN_UNUSED(delta_t);
         SUZERAIN_UNUSED(substep_index);
         state.scale(phi*factor + element(1));
     }
@@ -1534,7 +1525,7 @@ const typename traits::component<Element>::type step(
     if (max_delta_t > 0) {
         delta_t = math::minnan(delta_t, max_delta_t);
     }
-    L.apply_mass_plus_scaled_operator(delta_t * m.alpha(0), a, m, delta_t, 0);
+    L.apply_mass_plus_scaled_operator(delta_t * m.alpha(0), a, 0);
     a.add_scaled(chi * delta_t * m.gamma(0), b);
     L.invert_mass_plus_scaled_operator(-delta_t * m.beta(0), a, m, delta_t, 0);
 

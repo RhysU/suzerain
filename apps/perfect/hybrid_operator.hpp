@@ -75,8 +75,6 @@ public:
     virtual void apply_mass_plus_scaled_operator(
              const complex_t &phi,
              multi_array::ref<complex_t,4> &state,
-             const timestepper::lowstorage::method_interface<complex_t> &method,
-             const component delta_t,
              const std::size_t substep_index) const;
 
     virtual void accumulate_mass_plus_scaled_operator(

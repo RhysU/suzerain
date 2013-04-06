@@ -59,13 +59,9 @@ mass_operator::~mass_operator()
 void mass_operator::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
         const std::size_t substep_index) const
 {
     SUZERAIN_UNUSED(phi);
-    SUZERAIN_UNUSED(method);
-    SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
     // Verify required assumptions
