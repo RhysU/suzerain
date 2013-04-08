@@ -328,8 +328,6 @@ public:
                                   const real_t &e_tot)
         : e_tot(e_tot)
     {
-        std::cout << "e_tot = " << e_tot << std::endl;
-
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
         const int mx0  = static_cast<int>(ndx::mx ) * A_T.n;

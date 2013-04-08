@@ -199,9 +199,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     *cop, *b, common_block));
 
         // FIXME: Set chi correctly
-        const real_t chi =  (grid->dN.x() * grid->dN.z());
+        const real_t chi = (grid->dN.x() * grid->dN.z());
         shared_ptr<suzerain::hybrid_residual_operator>
-            tmp_hybrid( new hybrid_residual_operator(1.0) );
+            tmp_hybrid( new hybrid_residual_operator(chi) );
 
         tmp_hybrid->R.reset(new explicit_nonlinear_operator(
                                 *cmods, *grid, *dgrid, *cop, *b, 
