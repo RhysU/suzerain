@@ -318,16 +318,18 @@ class IsothermalNoSlipPATPTEnforcer
     int rho[nwalls], noslip[nwalls][nmomentum], e[nwalls];
 
     // Precomputed coefficient based on the isothermal equation of state
-    real_t gamma_times_one_minus_gamma;
+    real_t e_tot;
 
 public:
 
     // FIXME: There is no gamma... have to get etot in
     // See BC treatment in explicit_operator.cpp for how to deal
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                                  const suzerain_reacting_imexop_scenario &s)
-        : gamma_times_one_minus_gamma(-1.4*0.4)
+                                  const real_t &e_tot)
+        : e_tot(e_tot)
     {
+        std::cout << "e_tot = " << e_tot << std::endl;
+
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
         const int mx0  = static_cast<int>(ndx::mx ) * A_T.n;
@@ -400,7 +402,7 @@ public:
             // Scan row and adjust coefficients for constraint
             for (int i = begin; i < end; ++i) {
                 if (i == e[wall]) {
-                    col[i] = rhocoeff*gamma_times_one_minus_gamma;
+                    col[i] = -rhocoeff/e_tot; // TODO: Check me!
                 } else if (i == rho[wall]) {
                     // NOP
                 } else {
@@ -482,7 +484,9 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s);
+    //IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s);
+    IsothermalNoSlipPATPTEnforcer bc_enforcer(
+        *solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
 
     // Prepare a scratch buffer for packc/packf usage
     ArrayXXc buf(solver->ld, solver->n);

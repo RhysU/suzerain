@@ -76,10 +76,10 @@ dist_check_SCRIPTS += test_dparallel.sh
 
 # Serial/parallel equivalence for normal parallel decompositions
 TESTS              += test_parallel_explicit.sh
-#TESTS              += test_parallel_implicit.sh
+TESTS              += test_parallel_implicit.sh
 dist_check_SCRIPTS += test_parallel_template.sh
 dist_check_SCRIPTS += test_parallel_explicit.sh
-#dist_check_SCRIPTS += test_parallel_implicit.sh
+dist_check_SCRIPTS += test_parallel_implicit.sh
 
 # Read canned, legacy fields to test backwards compatibility
 #TESTS              += test_fields.sh
@@ -91,10 +91,10 @@ dist_check_SCRIPTS += test_fluct.sh
 
 # Restart handling using collocation-value-based restart files
 TESTS              += test_physical_explicit.sh
-#TESTS              += test_physical_implicit.sh
+TESTS              += test_physical_implicit.sh
 dist_check_SCRIPTS += test_physical_template.sh
 dist_check_SCRIPTS += test_physical_explicit.sh
-#dist_check_SCRIPTS += test_physical_implicit.sh
+dist_check_SCRIPTS += test_physical_implicit.sh
 
 # Unit tests for antioch_constitutive class
 TESTS                             += test_antioch_constitutive.sh
