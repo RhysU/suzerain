@@ -326,7 +326,7 @@ public:
     // See BC treatment in explicit_operator.cpp for how to deal
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
                                   const suzerain_reacting_imexop_scenario &s)
-        : gamma_times_one_minus_gamma(1.4*0.4)
+        : gamma_times_one_minus_gamma(-1.4*0.4)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;

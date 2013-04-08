@@ -35,6 +35,7 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
+#include <suzerain/hybrid_residual_operator.hpp>
 
 #include "driver.hpp"
 #include "channel_treatment.hpp"
@@ -112,6 +113,13 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     const bool use_implicit =  options.variables()["implicit"].as<bool>()
                             || !use_explicit;
 
+    // Only one implicit option now, so just use if we got '--implicit'
+    if (use_implicit) {
+        common_block.linearization = linearize::rhome_y;
+    } else {
+        common_block.linearization = linearize::none;
+    }
+
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
         return EXIT_FAILURE;
@@ -185,17 +193,22 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
+
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
 		    solver_spec, *cmods, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
-        // FIXME: Need to use
-        // suzerain::support::hybrid_residual_operator to get the
-        // right thing here.  See #2537.
-        N.reset(new explicit_nonlinear_operator(
-		    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
-        FATAL0(who, "Hybrid implicit/explicit operators not supported yet for reacting flow.");
-        return EXIT_FAILURE;
+        // FIXME: Set chi correctly
+        shared_ptr<suzerain::hybrid_residual_operator>
+            tmp_hybrid( new hybrid_residual_operator(1.0) );
+
+        tmp_hybrid->R.reset(new explicit_nonlinear_operator(
+                                *cmods, *grid, *dgrid, *cop, *b, 
+                                common_block, *fsdef, msoln));
+
+        tmp_hybrid->L = this->L;
+
+        this->N = tmp_hybrid;
     } else {
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;

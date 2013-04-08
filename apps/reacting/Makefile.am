@@ -64,10 +64,10 @@ AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
 
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh
-#TESTS              += test_restart_implicit.sh
+TESTS              += test_restart_implicit.sh
 dist_check_SCRIPTS += test_restart_template.sh
 dist_check_SCRIPTS += test_restart_explicit.sh
-#dist_check_SCRIPTS += test_restart_implicit.sh
+dist_check_SCRIPTS += test_restart_implicit.sh
 
 # Serial/parallel equivalence for degenerate parallel decompositions
 # Not important from a utility perspective, but great for hitting edge cases
