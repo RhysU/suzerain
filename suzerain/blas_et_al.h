@@ -3853,7 +3853,7 @@ suzerain_blasext_zgbnorm1(
 int
 suzerain_blasext_ddemote(
         const int n,
-        double *x);
+        void *x);
 
 /**
  * Promote a contiguous single precision vector to
@@ -3871,7 +3871,7 @@ suzerain_blasext_ddemote(
 int
 suzerain_blasext_dpromote(
         const int n,
-        double *x);
+        void *x);
 
 /**
  * Demote a contiguous complex double precision vector to
@@ -3889,7 +3889,7 @@ suzerain_blasext_dpromote(
 int
 suzerain_blasext_zdemote(
         const int n,
-        complex_double *x);
+        void *x);
 
 /**
  * Promote a contiguous complex single precision vector to
@@ -3907,7 +3907,7 @@ suzerain_blasext_zdemote(
 int
 suzerain_blasext_zpromote(
         const int n,
-        complex_double *x);
+        void *x);
 
 /*! @} */
 

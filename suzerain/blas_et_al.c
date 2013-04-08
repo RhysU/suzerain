@@ -4973,15 +4973,20 @@ suzerain_blasext_zgbnorm1(
 inline int
 suzerain_blasext_ddemote(
         const int n,
-        double *x)
+        void *x)
 {
     if (UNLIKELY(n < 0)) return -1;
     if (UNLIKELY(!x))    return -2;
 
+    // Written to be -ansi-alias, -Wstrict-aliasing friendly
+    char * const xchar = (char *) x;
     for (int i = 0; i < n; ++i) {
+        double in;
+        memcpy(&in, xchar + i*sizeof(in), sizeof(in));
 #pragma warning(push,disable:2259)
-        ((float *)x)[i] = x[i];
+        float out = in;
 #pragma warning(pop)
+        memcpy(xchar + i*sizeof(out), &out, sizeof(out));
     }
 
     return 0;
@@ -4990,13 +4995,18 @@ suzerain_blasext_ddemote(
 inline int
 suzerain_blasext_dpromote(
         const int n,
-        double *x)
+        void *x)
 {
     if (UNLIKELY(n < 0)) return -1;
     if (UNLIKELY(!x))    return -2;
 
-    for (int i = n; i --> 0 ;) {
-        x[i] = ((float *)x)[i];
+    // Written to be -ansi-alias, -Wstrict-aliasing friendly
+    char * const xchar = (char *) x;
+    for (int i = n; i --> 0;) {
+        float in;
+        memcpy(&in, xchar + i*sizeof(in), sizeof(in));
+        double out = in;
+        memcpy(xchar + i*sizeof(out), &out, sizeof(out));
     }
 
     return 0;
@@ -5005,15 +5015,20 @@ suzerain_blasext_dpromote(
 inline int
 suzerain_blasext_zdemote(
         const int n,
-        complex_double *x)
+        void *x)
 {
     if (UNLIKELY(n < 0)) return -1;
     if (UNLIKELY(!x))    return -2;
 
+    // Written to be -ansi-alias, -Wstrict-aliasing friendly
+    char * const xchar = (char *) x;
     for (int i = 0; i < n; ++i) {
+        complex_double in;
+        memcpy(&in, xchar + i*sizeof(in), sizeof(in));
 #pragma warning(push,disable:2259)
-        ((complex_float *)x)[i] = x[i];
+        complex_float out = in;
 #pragma warning(pop)
+        memcpy(xchar + i*sizeof(out), &out, sizeof(out));
     }
 
     return 0;
@@ -5022,13 +5037,18 @@ suzerain_blasext_zdemote(
 inline int
 suzerain_blasext_zpromote(
         const int n,
-        complex_double *x)
+        void *x)
 {
     if (UNLIKELY(n < 0)) return -1;
     if (UNLIKELY(!x))    return -2;
 
-    for (int i = n; i --> 0 ;) {
-        x[i] = ((complex_float *)x)[i];
+    // Written to be -ansi-alias, -Wstrict-aliasing friendly
+    char * const xchar = (char *) x;
+    for (int i = n; i --> 0;) {
+        complex_float in;
+        memcpy(&in, xchar + i*sizeof(in), sizeof(in));
+        complex_double out = in;
+        memcpy(xchar + i*sizeof(out), &out, sizeof(out));
     }
 
     return 0;
