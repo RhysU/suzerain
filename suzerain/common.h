@@ -118,6 +118,25 @@
 #define SUZERAIN_RESTRICT __restrict__
 #endif
 
+// Works around -Wstrict-aliasing warnings similarly to
+// http://www.xemacs.org/Documentation/sources/xemacs/src/compiler.h.
+// Seemingly requires using typeof for both GCC/Intel correctness.
+#ifdef SUZERAIN_typeof
+/** Cast to <tt>const void *</tt> without tripping strict aliasing warnings */
+#define SUZERAIN_CONST_CAST_VOIDP(l)                          \
+    (((union { const void *p; SUZERAIN_typeof(l) v; })(l)).p)
+/** Cast to <tt>      void *</tt> without tripping strict aliasing warnings */
+#define SUZERAIN_CAST_VOIDP(l)                                \
+    (((union {       void *p; SUZERAIN_typeof(l) v; })(l)).p)
+#else
+/** Cast to <tt>const void *</tt> without tripping strict aliasing warnings */
+#define SUZERAIN_CONST_CAST_VOIDP(l)                          \
+    (((union { const void *p; typeof(l)          v; })(l)).p)
+/** Cast to <tt>      void *</tt> without tripping strict aliasing warnings */
+#define SUZERAIN_CAST_VOIDP(l)                                \
+    (((union {       void *p; typeof(l)          v; })(l)).p)
+#endif
+
 /* Push/pop-like macros for suppressing GCC warnings lifted from   */
 /* http://dbp-consulting.com/tutorials/SuppressingGCCWarnings.html */
 #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402

@@ -68,12 +68,9 @@ enum { // Required for binary interoperability with MKL
 // Shorthand
 static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
-#define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
-
-// Works around -Wstrict-aliasing warnings similarly to
-// http://www.xemacs.org/Documentation/sources/xemacs/src/compiler.h
-#define CONST_CAST_VOIDP(l) ((union { const void *p; typeof(l) v; })(l)).p
-#define       CAST_VOIDP(l) ((union {       void *p; typeof(l) v; })(l)).p
+#define CAST_VOIDP(l)       SUZERAIN_CAST_VOIDP(l)
+#define CONST_CAST_VOIDP(l) SUZERAIN_CONST_CAST_VOIDP(l)
+#define UNLIKELY(expr)      SUZERAIN_UNLIKELY(expr)
 
 // Many of the short methods have "inline" though their declarations do not.
 // This allows inlining them later within this particular translation unit so
