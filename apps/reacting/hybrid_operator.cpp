@@ -77,25 +77,45 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         bspline &b,
         operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
-      // FIXME: 5 needs to be Ns-1+5
-    , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
-                5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
-                spec, 1))
+    , flow_solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
+                  5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
+                  spec, 1))
     , chdef(chdef)
     , cmods(cmods)
     , common(common)
     , who("operator.L")
 {
-    // NOP
+    // Prepare species solvers
+    species_solver.reserve(cmods.Ns()-1);
+    
+    for (unsigned int i=0; i<cmods.Ns()-1; ++i) {
+        shared_ptr<bsmbsm_solver> tmp(
+            bsmbsm_solver::build(suzerain_bsmbsm_construct(
+                                     1, dgrid.global_wave_extent.y(), 
+                                     cop.max_kl(), cop.max_ku()), spec, 1));
+
+        species_solver.push_back(tmp);
+    }
+    
 }
 
 isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
 {
     // TODO Allreduce bsmbsm_solver statistics from all ranks
-    if (solver) {
-        std::vector<std::string> summary = solver->summarize_statistics();
+    if (flow_solver) {
+        std::vector<std::string> summary = flow_solver->summarize_statistics();
         for (std::size_t i = 0; i < summary.size(); ++i) {
             INFO0(who, summary[i]);
+        }
+    }
+
+    for (std::size_t i = 0; i < species_solver.size(); ++i) {
+        if (species_solver[i]) {
+            std::vector<std::string> 
+                summary = species_solver[i]->summarize_statistics();
+            for (std::size_t i = 0; i < summary.size(); ++i) {
+                INFO0(who, summary[i]);
+            }
         }
     }
 }
@@ -113,13 +133,14 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     using inorder::wavenumber_absmin;
     SUZERAIN_UNUSED(substep_index);
 
-    // FIXME: Make sure species are ok
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    assert(static_cast<int>(ndx::e  ) < solver->S);
-    assert(static_cast<int>(ndx::mx ) < solver->S);
-    assert(static_cast<int>(ndx::my ) < solver->S);
-    assert(static_cast<int>(ndx::mz ) < solver->S);
-    assert(static_cast<int>(ndx::rho) < solver->S);
+    assert(static_cast<int>(ndx::e  ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mx ) < flow_solver->S);
+    assert(static_cast<int>(ndx::my ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mz ) < flow_solver->S);
+    assert(static_cast<int>(ndx::rho) < flow_solver->S);
+
+    // TODO: Assert species solver sized correctly
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -138,13 +159,13 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) solver->S);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(state.strides()[1] ==                    1);
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(state.strides()[1] ==                         1);
 
     // Scratch for "in-place" suzerain_reacting_imexop_accumulate usage
-    VectorXc tmp(solver->N);
+    VectorXc tmp(flow_solver->N); // TODO: another tmp for species accumulate
     suzerain_reacting_imexop_scenario s(this->imexop_s());
     suzerain_reacting_imexop_ref   ref;
     suzerain_reacting_imexop_refld ld;
@@ -169,7 +190,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                 complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
                 // Copy pencil into temporary storage
-                blas::copy(solver->N, p, 1, tmp.data(), 1);
+                blas::copy(flow_solver->N, p, 1, tmp.data(), 1);
 
                 // Accumulate result back into state storage
                 SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
@@ -187,6 +208,11 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                         p + ndx::my  * Ny,
                         p + ndx::mz  * Ny,
                         p + ndx::rho * Ny);
+
+                // TODO: Accumulate species eqns
+                for (std::size_t s=0; s<species_solver.size(); ++s) {
+                    // Call suzerain_species_imexop_accumulate
+                }
             }
         }
         break;
@@ -214,11 +240,13 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(substep_index);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    assert(static_cast<int>(ndx::e  ) < solver->S);
-    assert(static_cast<int>(ndx::mx ) < solver->S);
-    assert(static_cast<int>(ndx::my ) < solver->S);
-    assert(static_cast<int>(ndx::mz ) < solver->S);
-    assert(static_cast<int>(ndx::rho) < solver->S);
+    assert(static_cast<int>(ndx::e  ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mx ) < flow_solver->S);
+    assert(static_cast<int>(ndx::my ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mz ) < flow_solver->S);
+    assert(static_cast<int>(ndx::rho) < flow_solver->S);
+
+    // TODO: Assert species solver sized correctly
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -239,11 +267,11 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     // Input and output state storage has contiguous wall-normal scalars?
     // Furthermore, input has contiguous wall-normal pencils of all state?
     SUZERAIN_ENSURE(output.is_isomorphic(input));
-    SUZERAIN_ENSURE(input.shape()   [0] == (unsigned) solver->S);
-    SUZERAIN_ENSURE(input.strides() [0] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(input.shape()   [1] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(input.strides() [1] ==                    1);
-    SUZERAIN_ENSURE(output.strides()[1] ==                    1);
+    SUZERAIN_ENSURE(input.shape()   [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+    SUZERAIN_ENSURE(input.strides() [0] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(input.shape()   [1] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(input.strides() [1] ==                         1);
+    SUZERAIN_ENSURE(output.strides()[1] ==                         1);
 
     // Scratch for suzerain_reacting_imexop_accumulate usage
     suzerain_reacting_imexop_scenario s(this->imexop_s());
@@ -283,6 +311,11 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
                         &output[ndx::rho ][0][m - dkbx][n - dkbz]);
 
+                // TODO: Accumulate species eqns
+                for (std::size_t s=0; s<species_solver.size(); ++s) {
+                    // Call suzerain_species_imexop_accumulate
+                }
+
             }
         }
         break;
@@ -292,6 +325,10 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 }
+
+
+// TODO: Deal with BCs.  Should we modify the functor below or create
+// a separate one to handle species conditions?  Not sure yet.
 
 /**
  * A functor for applying isothermal conditions for PA^TP^T-based operators.
@@ -411,6 +448,7 @@ public:
     }
 };
 
+// TODO: Modify this routine to do species solves also
 void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
@@ -433,11 +471,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(substep_index);
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
-    assert(static_cast<int>(ndx::e  ) < solver->S);
-    assert(static_cast<int>(ndx::mx ) < solver->S);
-    assert(static_cast<int>(ndx::my ) < solver->S);
-    assert(static_cast<int>(ndx::mz ) < solver->S);
-    assert(static_cast<int>(ndx::rho) < solver->S);
+    assert(static_cast<int>(ndx::e  ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mx ) < flow_solver->S);
+    assert(static_cast<int>(ndx::my ) < flow_solver->S);
+    assert(static_cast<int>(ndx::mz ) < flow_solver->S);
+    assert(static_cast<int>(ndx::rho) < flow_solver->S);
+
+    // TODO: Assert species solver sized correctly
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
@@ -456,20 +496,20 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(state.strides()[1] ==                    1);
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)        Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) solver->S);
+    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(state.strides()[1] ==                         1);
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned)             Ny);
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
 
     // Compute how many additional mean constraints we must solve
     // Ensure conformant, mean constraints are arriving on the correct rank
     const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
     if (nconstraints) {
         SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
-        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)        Ny);
-        SUZERAIN_ENSURE(ic0->strides()[1] ==                    1);
-        SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned)        Ny);
-        SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) solver->S);
+        SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)             Ny); 
+        SUZERAIN_ENSURE(ic0->strides()[1] ==                         1);
+        SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned)             Ny);
+        SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
     }
 
     // channel_treatment step (3) performs the operator solve which for the
@@ -482,12 +522,16 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    //IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s);
     IsothermalNoSlipPATPTEnforcer bc_enforcer(
-        *solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
+        *flow_solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
 
     // Prepare a scratch buffer for packc/packf usage
-    ArrayXXc buf(solver->ld, solver->n);
+    ArrayXXc buf(flow_solver->ld, flow_solver->n);
+
+
+    // TODO: Add species assembly and solves below... need to read
+    // more closely before being more specific about how exactly this
+    // will modify the code.
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     //
@@ -499,27 +543,27 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     {
         // Form complex-valued, wavenumber-independent PA^TP^T
         static const char trans = 'T';
-        if (solver->spec.in_place()) { // Pack for in-place LU
+        if (flow_solver->spec.in_place()) { // Pack for in-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
             suzerain_reacting_imexop_packf(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                    buf.data(), solver.get(), solver->LU.data());
+                    buf.data(), flow_solver.get(), flow_solver->LU.data());
         } else {                       // Pack for out-of-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
             suzerain_reacting_imexop_packc(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
-                    buf.data(), solver.get(), solver->PAPT.data());
+                    buf.data(), flow_solver.get(), flow_solver->PAPT.data());
         }
         // Apply boundary conditions to PA^TP^T
         {
             SUZERAIN_TIMER_SCOPED("implicit operator BCs");
-            bc_enforcer.op(*solver, solver->PAPT.data(),
-                                    solver->PAPT.colStride());
+            bc_enforcer.op(*flow_solver, flow_solver->PAPT.data(),
+                                         flow_solver->PAPT.colStride());
         }
-        // Inform the solver about the new, unfactorized operator
-        solver->supplied_PAPT();
+        // Inform the flow_solver about the new, unfactorized operator
+        flow_solver->supplied_PAPT();
 
         // Solve using a new right hand side for each wavenumber pair km, kn
         for (int n = dkbz; n < dkez; ++n) {
@@ -534,29 +578,29 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 // Continue didn't yet occur for Nyquist/dealiasing modes...
                 if (   std::abs(wn) > wavenumber_absmin(Nz)
                     || std::abs(wm) > wavenumber_absmin(Nx)) {
-                    memset(p, 0, solver->N*sizeof(p[0]));  // ...so we can zero,
+                    memset(p, 0, flow_solver->N*sizeof(p[0]));  // ...so we can zero,
                     continue;                              // and short circuit.
                 }
 
                 // Form right hand side, apply BCs, factorize, and solve.
                 // Beware that much ugly, ugly magic is hidden just below.
-                solver->supply_B(p);
+                flow_solver->supply_B(p);
                 {
                     SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
-                    bc_enforcer.rhs(solver->PB.data());
+                    bc_enforcer.rhs(flow_solver->PB.data());
                 }
-                solver->solve(trans);
-                solver->demand_X(p);
+                flow_solver->solve(trans);
+                flow_solver->demand_X(p);
             }
         }
 
         // If necessary, solve any required integral constraints
         for (std::size_t i = 0; i < nconstraints; ++i) {
             SUZERAIN_TIMER_SCOPED("implicit constraint solution");
-            solver->supply_B(ic0->data() + i * solver->N);
-            bc_enforcer.rhs(solver->PB.data());
-            solver->solve(trans);
-            solver->demand_X(ic0->data() + i * solver->N);
+            flow_solver->supply_B(ic0->data() + i * flow_solver->N);
+            bc_enforcer.rhs(flow_solver->PB.data());
+            flow_solver->solve(trans);
+            flow_solver->demand_X(ic0->data() + i * flow_solver->N);
         }
 
         break;

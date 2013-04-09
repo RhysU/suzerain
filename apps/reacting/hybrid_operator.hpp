@@ -102,7 +102,9 @@ public:
 protected:
 
     /** Controls the solves performed during invert_mass_plus_scaled_operator */
-    shared_ptr<bsmbsm_solver> solver;
+    shared_ptr<bsmbsm_solver> flow_solver;
+
+    std::vector<shared_ptr<bsmbsm_solver> > species_solver;
 
     /** Provides info about channel case, e.g., T_wall */
     const channel_definition &chdef;
