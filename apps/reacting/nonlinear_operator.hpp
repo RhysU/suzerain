@@ -579,6 +579,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
             
+            // Unpack reference quantities (used in dt calc)
+            const Vector3r ref_u              (common.ref_ux        ()[j],
+                                               common.ref_uy        ()[j],
+                                               common.ref_uz        ()[j]);
+
+            const real_t ref_nu(common.ref_nu()[j]);
+            const real_t ref_korCp(common.ref_korCp()[j]);
+                    
+
             // Unpack density-related quantities
             const real_t   rho         ( sphys(ndx::rho,    offset));
             
@@ -799,34 +808,35 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
                 switch (Linearize) {
-                    default:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        break;
+                default:
+                    SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+                    break;
+                    
+                // Explicit treatment forces including acoustics
+                // in stability and has a zero reference velocity.
+                case linearize::none:
+                    ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                    ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
+                    ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                    fluct_ua_l1_x = ua_l1_x;
+                    fluct_ua_l1_y = ua_l1_y;
+                    fluct_ua_l1_z = ua_l1_z;
+                    break;
+                    
+                        
+                // Wall-normal-only implicit acoustics and convection
+                // is nothing but a hybrid of the above two cases.
+                case linearize::rhome_y:
 
-                    // Explicit treatment forces including acoustics
-                    // in stability and has a zero reference velocity.
-                    case linearize::none:
-                        ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
-                        ua_l1_y       = (abs(u.y()) + a) * lambda1_y;
-                        ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
-                        fluct_ua_l1_x = ua_l1_x;
-                        fluct_ua_l1_y = ua_l1_y;
-                        fluct_ua_l1_z = ua_l1_z;
-                        break;
-
-                    // Implicit acoustics sets the effective sound speed
-                    // to zero within the convective_stability_criterion.
-                    // Fluctuating velocity is taken relative to references.
-                    case linearize::rhome_y:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        // ua_l1_x       = abs(u.x()            ) * lambda1_x;
-                        // ua_l1_y       = abs(u.y()            ) * lambda1_y;
-                        // ua_l1_z       = abs(u.z()            ) * lambda1_z;
-                        // fluct_ua_l1_x = abs(u.x() - ref_u.x()) * lambda1_x;
-                        // fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
-                        // fluct_ua_l1_z = abs(u.z() - ref_u.z()) * lambda1_z;
-                        break;
+                    ua_l1_x       = (abs(u.x()) + a) * lambda1_x;
+                    ua_l1_y       = (abs(u.y())    ) * lambda1_y;
+                    ua_l1_z       = (abs(u.z()) + a) * lambda1_z;
+                    fluct_ua_l1_x = ua_l1_x;
+                    fluct_ua_l1_y = abs(u.y() - ref_u.y()) * lambda1_y;
+                    fluct_ua_l1_z = ua_l1_z;
+                    break;
                 }
+
                 convtotal_xyz_delta_t = minnan(convtotal_xyz_delta_t,
                         evmaxmag_imag / (ua_l1_x + ua_l1_y + ua_l1_z));
                 convtotal_x_delta_t   = min   (convtotal_x_delta_t,
@@ -853,47 +863,49 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const real_t kd = kap / (rho*Cp); // thermal diffusivity
                 real_t diffusivity;
                 switch (Linearize) {
-                    default:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        break;
-
+                default:
+                    SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+                    break;
+                    
                     // Explicit treatment forces a zero reference diffusivity
-                    case linearize::none:
-                        // FIXME: Handle species diffusion properly
-                        diffusivity = max(kd, max(real_t(1), cmods.alpha)*nu);
-
-                        diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                                  evmaxmag_real
-                                / diffusivity
-                                / (lambda2_x + lambda2_y + lambda2_z));
-                        diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_x);
-                        diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_y);
-                        diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                                evmaxmag_real / diffusivity / lambda2_z);
-                        break;
-
-                    // Implicit diffusion permits removing a reference value.
-                    // Antidiffusive (nu - ref_nu) is fine and not computed.
-                    case linearize::rhome_y:
-                        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-                        // diffusivity = nu - ref_nu;    // Compute sign wrt ref.
-                        // if (diffusivity <= 0) break;  // NaN => false, proceed
-                        // diffusivity *= maxdiffconst;  // Rescale as necessary.
-                        // diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
-                        //           evmaxmag_real
-                        //         / diffusivity
-                        //         / (lambda2_x + lambda2_y + lambda2_z));
-                        // diffusive_x_delta_t   = min   (diffusive_x_delta_t,
-                        //         evmaxmag_real / diffusivity / lambda2_x);
-                        // diffusive_y_delta_t   = min   (diffusive_y_delta_t,
-                        //         evmaxmag_real / diffusivity / lambda2_y);
-                        // diffusive_z_delta_t   = min   (diffusive_z_delta_t,
-                        //         evmaxmag_real / diffusivity / lambda2_z);
-                        break;
-
-
+                case linearize::none:
+                    // FIXME: Handle species diffusion properly
+                    diffusivity = max(kd, max(real_t(1), cmods.alpha)*nu);
+                    
+                    diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                                   evmaxmag_real
+                                                   / diffusivity
+                                                   / (lambda2_x + lambda2_y + lambda2_z));
+                    diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_x);
+                    diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_y);
+                    diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_z);
+                    break;
+                    
+                // Implicit diffusion permits removing a reference value.
+                // Antidiffusive (nu - ref_nu) is fine and not computed.
+                case linearize::rhome_y:
+                    // Compute sign wrt ref.
+                    diffusivity = max(kd-ref_korCp, 
+                                      max(real_t(1), cmods.alpha)*(nu-ref_nu));
+                    
+                    if (diffusivity <= 0) break;  // NaN => false, proceed
+                    //diffusivity *= maxdiffconst;  // Rescale as necessary.
+                    diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
+                                                   evmaxmag_real
+                                                   / diffusivity
+                                                   / (lambda2_x + lambda2_y + lambda2_z));
+                    diffusive_x_delta_t   = min   (diffusive_x_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_x);
+                    diffusive_y_delta_t   = min   (diffusive_y_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_y);
+                    diffusive_z_delta_t   = min   (diffusive_z_delta_t,
+                                                   evmaxmag_real / diffusivity / lambda2_z);
+                    break;
+                    
+                    
                 } // end switch(Linearize)
             } // end if(ZerothSubstep}
             

@@ -168,15 +168,38 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const std::size_t substep_index) const
 {
     // Dispatch to implementation paying nothing for substep-related ifs
-    if (substep_index == 0) {
-        return apply_navier_stokes_spatial_operator<true,  linearize::none>
-            (*this, common, fsdef, msoln, cmods, massluz, time, swave, evmaxmag_real, evmaxmag_imag);
-    } else {
-        return apply_navier_stokes_spatial_operator<false, linearize::none>
-            (*this, common, fsdef, msoln, cmods, massluz, time, swave, evmaxmag_real, evmaxmag_imag);
+    switch (common.linearization) {
+    case linearize::none:
+        if (substep_index == 0) {
+            return apply_navier_stokes_spatial_operator<true,  linearize::none>
+                (*this, common, fsdef, msoln, cmods, massluz, 
+                 time, swave, evmaxmag_real, evmaxmag_imag);
+        } else {
+            return apply_navier_stokes_spatial_operator<false, linearize::none>
+                (*this, common, fsdef, msoln, cmods, massluz, 
+                 time, swave, evmaxmag_real, evmaxmag_imag);
+        }
+        break;
+        
+    case linearize::rhome_y:
+        if (substep_index == 0) {
+            return apply_navier_stokes_spatial_operator<true,  linearize::rhome_y>
+                (*this, common, fsdef, msoln, cmods, massluz, time, 
+                 swave, evmaxmag_real, evmaxmag_imag);
+        } else {
+            return apply_navier_stokes_spatial_operator<false, linearize::rhome_y>
+                (*this, common, fsdef, msoln, cmods, massluz, 
+                 time, swave, evmaxmag_real, evmaxmag_imag);
+        }
+        break;
+
+    default:
+        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+        break;
     }
-}
     
+}
+
 } // namespace reacting
 
 } // namespace suzerain
