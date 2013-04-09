@@ -1131,12 +1131,18 @@ The scheme treats $N$ with third-order accuracy and $L$ with second-order
 accuracy.  See both \citet[page 323]{spalart_lowstoragerk} and
 \citet[chapter 6]{ShanYang2011} for more accuracy-related details.
 
-Suzerain will advance problems like $Mu_{t}=\tilde{L}u+\chi\tilde{N}\left( u,t
-\right)$ where $\chi$ is a time-independent scalar and both $\tilde{L}$ and
-$\tilde{N}$ take state values to some non-state representation which can be
-converted back to state by the linear ``mass matrix'' operator $M$.  Then by
-$L=M^{-1}\tilde{L}$ and $N=\chi{}M^{-1}\tilde{N}$ the general substep equation
-gives
+Suzerain advances problems like
+\begin{align}
+  \label{eq:timediscretization_mass_chi}
+  Mu_{t}
+  &=
+  \tilde{L}u+\chi\tilde{N}\left( u,t \right)
+\end{align}
+where $\chi$ is a time-independent scalar and both $\tilde{L}$ and $\tilde{N}$
+take state values to some non-state representation which can be converted back
+to state by the linear ``mass matrix'' operator $M$.  Then by
+$L=M^{-1}\tilde{L}$ and $N=\chi{}M^{-1}\tilde{N}$ the general
+substep~\eqref{eq:generaloperatorsubstep} gives
 \begin{align}
   \left(I - \Delta{}t\beta_{i}M^{-1}\tilde{L}\right) u^{i+1}
   &=
@@ -4044,7 +4050,6 @@ much more wieldy,
 Transforming to Fourier space gives a linear condition almost suitable for
 implicit advance per section~\ref{sec:timediscretization},
 \begin{align}
-\label{eq:dimeulertransformcharnotYwave}
   \left[V^L S\right]
   R^Y
   \frac{\partial}{\partial{}t}
@@ -4061,31 +4066,56 @@ implicit advance per section~\ref{sec:timediscretization},
   \hat{V}
 .
 \end{align}
-This last result holds identically for boundary collocation points and boundary
+Notice that when
+$k_x=k_z=0$ the relevant characteristics within the mean state are held
+constant in time.
+The previous evolution equation is a pointwise condition suitable when
+$\hat{V}$ contains pointwise state (e.g. collocation point values).  When
+another representation is chosen for state, one should use
+\begin{align}
+\label{eq:dimeulertransformcharnotYwave}
+  \left[V^L S\right]
+  R^Y
+  M \frac{\partial}{\partial{}t}
+  \hat{V}
+&\approx
+  \ii k_x
+  \left[C^G V^L S\right]
+  R^Y
+  M \hat{V}
+  +
+  \ii k_z
+  \left[B^G V^L S\right]
+  R^Y
+  M \hat{V}
+\end{align}
+where time-invariant $M$ maps state to non-state.  However, the distinction is
+somewhat blurred for B-spline boundary collocation points and boundary
 coefficients because the boundary value for a B-spline basis expansion is
-nothing but the boundary coefficient.  Notice that when $k_x=k_z=0$ the
-relevant characteristics within the mean state are held constant in time.
+nothing but the boundary coefficient.
 
 While constraint~\eqref{eq:dimeulertransformcharnotYwave} fixes the
 characteristics arriving from beyond the boundary, it does not evolve the
 remaining ones determined by the simulation domain.  Returning to the time
 discretization of section~\ref{sec:timediscretization},
-equation~\eqref{eq:timediscretization} evolves coefficients more or less like
+equation~\eqref{eq:timediscretization_mass_chi} evolves coefficients $\hat{V}$
+per
 \begin{align}
-\label{eq:coeffspaceevolve}
-  \frac{\partial}{\partial{}t} \hat{V} &= L \hat{V} + N(\hat{V})
-  .
+  \label{eq:coeffspaceevolve}
+  M \frac{\partial}{\partial{}t} \hat{V} &= L \hat{V} + \chi N(\hat{V})
 \end{align}
-At the nonreflecting $y$ boundary, projecting the evolution into characteristic
+where both $L$ and $N$ map state (e.g. coefficients) to a non-state
+representation (e.g. collocation point values) and $M$ state to non-state.  At
+the nonreflecting $y$ boundary, projecting the evolution into characteristic
 space yields
 \begin{align}
   \left[V^L S\right] R^Y
-  \frac{\partial}{\partial{}t} \hat{V} &=
+  M \frac{\partial}{\partial{}t} \hat{V} &=
   \left[V^L S\right] R^Y
   \left(
     L \hat{V}
     +
-    N(\hat{V})
+    \chi N(\hat{V})
   \right)
   .
 \end{align}
@@ -4094,14 +4124,14 @@ Updating only the unconstrained characteristics using $P^G$ as defined
 \begin{align}
   \left(I - P^G\right)
   \left[V^L S\right] R^Y
-  \frac{\partial}{\partial{}t} \hat{V}
+  M \frac{\partial}{\partial{}t} \hat{V}
 &=
   \left(I - P^G\right)
   \left[V^L S\right] R^Y
   \left(
     L \hat{V}
     +
-    N(\hat{V})
+    \chi N(\hat{V})
   \right)
   .
 \end{align}
@@ -4111,18 +4141,18 @@ using~\eqref{eq:PGidempotence}, and adding that to the above equality,
 \begin{align}
   \left[V^L S\right]
   R^Y
-  \frac{\partial}{\partial{}t}
+  M \frac{\partial}{\partial{}t}
   \hat{V}
 &\approx
   \ii k_x
   \left[C^G V^L S\right]
   R^Y
-  \hat{V}
+  M \hat{V}
   +
   \ii k_z
   \left[B^G V^L S\right]
   R^Y
-  \hat{V}
+  M \hat{V}
 \\
 &{}+
   \left(I - P^G\right)
@@ -4130,7 +4160,7 @@ using~\eqref{eq:PGidempotence}, and adding that to the above equality,
   \left(
     L \hat{V}
     +
-    N(\hat{V})
+    \chi N(\hat{V})
   \right)
 .
 \end{align}
@@ -4138,7 +4168,7 @@ Moving the nonsingular characteristic projection to the right hand side and
 collecting linear terms,
 \begin{align}
 \label{eq:dimeulertransformevolve}
-  \frac{\partial}{\partial{}t}
+  M \frac{\partial}{\partial{}t}
   \hat{V}
 &\approx
 \overbrace{
@@ -4146,7 +4176,7 @@ collecting linear terms,
   \left[V^L S\right]^{-1}
   \left(
     \left( \ii k_x \left[C^G\right] + \ii k_z \left[B^G\right] \right)
-    \left[V^L S\right] R^Y
+    \left[V^L S\right] R^Y M
     +
     \left(I-P^G\right)
     \left[V^L S\right] R^Y
@@ -4156,6 +4186,7 @@ collecting linear terms,
   \hat{V}
 \\
 &{}+
+  \chi
 \underbrace{
   {R^Y}^{-1}
   \left[V^L S\right]^{-1}
