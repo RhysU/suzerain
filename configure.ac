@@ -94,7 +94,6 @@ dnl FIXME Intel ifort barfs on -malign-double
 dnl AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}])
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_FREEFORM
-AC_FC_LINE_LENGTH([132])
 AC_FC_WRAPPERS
 AC_FC_MODULE_EXTENSION
 dnl BEGIN: Ensure that preprocessor is run on free-form Fortran .F90 sources
