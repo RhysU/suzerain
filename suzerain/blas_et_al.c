@@ -70,6 +70,10 @@ static inline int imin(int a, int b) { return a < b ? a : b; }
 static inline int imax(int a, int b) { return a > b ? a : b; }
 #define UNLIKELY(expr) SUZERAIN_UNLIKELY(expr)
 
+// TODO Towards working around -Wstrict-aliasing warnings
+#define CONST_CAST_VOIDP(l) ((const void *)(l))
+#define       CAST_VOIDP(l) ((      void *)(l))
+
 // Many of the short methods have "inline" though their declarations do not.
 // This allows inlining them later within this particular translation unit so
 // we don't pay for needless function call overhead when our BLAS wrapper
@@ -160,7 +164,7 @@ suzerain_blas_cscal(
         const int incx)
 {
     return BLAS_FUNC(cscal,CSCAL)(
-            &n, (const void *) &alpha, (void *) x, &incx);
+            &n, CONST_CAST_VOIDP(&alpha), CAST_VOIDP(x), &incx);
 }
 
 inline void
@@ -171,7 +175,7 @@ suzerain_blas_zscal(
         const int incx)
 {
     return BLAS_FUNC(zscal,ZSCAL)(
-            &n, (const void *) &alpha, (void *) x, &incx);
+            &n, CONST_CAST_VOIDP(&alpha), CAST_VOIDP(x), &incx);
 }
 
 inline void
@@ -204,7 +208,8 @@ suzerain_blas_cswap(
         complex_float *y,
         const int incy)
 {
-    return BLAS_FUNC(cswap,CSWAP)(&n, (void *) x, &incx, (void *) y, &incy);
+    return BLAS_FUNC(cswap,CSWAP)(
+                &n, CAST_VOIDP(x), &incx, CAST_VOIDP(y), &incy);
 }
 
 inline void
@@ -215,7 +220,8 @@ suzerain_blas_zswap(
         complex_double *y,
         const int incy)
 {
-    return BLAS_FUNC(zswap,ZSWAP)(&n, (void *) x, &incx, (void *) y, &incy);
+    return BLAS_FUNC(zswap,ZSWAP)(
+                &n, CAST_VOIDP(x), &incx, CAST_VOIDP(y), &incy);
 }
 
 inline void
@@ -249,7 +255,7 @@ suzerain_blas_ccopy(
         const int incy)
 {
     return BLAS_FUNC(ccopy,CCOPY)(
-            &n, (const void *) x, &incx, (void *) y, &incy);
+            &n, CONST_CAST_VOIDP(x), &incx, CAST_VOIDP(y), &incy);
 }
 
 inline void
@@ -261,7 +267,7 @@ suzerain_blas_zcopy(
         const int incy)
 {
     return BLAS_FUNC(zcopy,ZCOPY)(
-            &n, (const void *) x, &incx, (void *) y, &incy);
+            &n, CONST_CAST_VOIDP(x), &incx, CAST_VOIDP(y), &incy);
 }
 
 inline float
@@ -295,9 +301,9 @@ suzerain_blas_cdotc(
         const int incy,
         complex_float *dotc)
 {
-    return BLAS_FUNC(cdotc,CDOTC)((      void *)dotc, &n,
-                                  (const void *)x,    &incx,
-                                  (const void *)y,    &incy);
+    return BLAS_FUNC(cdotc,CDOTC)(      CAST_VOIDP(dotc), &n,
+                                  CONST_CAST_VOIDP(x   ), &incx,
+                                  CONST_CAST_VOIDP(y   ), &incy);
 }
 
 inline void
@@ -309,9 +315,9 @@ suzerain_blas_zdotc(
         const int incy,
         complex_double *dotc)
 {
-    return BLAS_FUNC(zdotc,ZDOTC)((      void *)dotc, &n,
-                                  (const void *)x,    &incx,
-                                  (const void *)y,    &incy);
+    return BLAS_FUNC(zdotc,ZDOTC)(      CAST_VOIDP(dotc), &n,
+                                  CONST_CAST_VOIDP(x   ), &incx,
+                                  CONST_CAST_VOIDP(y   ), &incy);
 }
 
 inline float
@@ -338,7 +344,7 @@ suzerain_blas_scnrm2(
         const complex_float *x,
         const int incx)
 {
-    return BLAS_FUNC(scnrm2,SCNRM2)(&n, (const void *) x, &incx);
+    return BLAS_FUNC(scnrm2,SCNRM2)(&n, CONST_CAST_VOIDP(x), &incx);
 }
 
 inline double
@@ -347,7 +353,7 @@ suzerain_blas_dznrm2(
         const complex_double *x,
         const int incx)
 {
-    return BLAS_FUNC(dznrm2,DZNRM2)(&n, (const void *) x, &incx);
+    return BLAS_FUNC(dznrm2,DZNRM2)(&n, CONST_CAST_VOIDP(x), &incx);
 }
 
 inline float
@@ -374,7 +380,7 @@ suzerain_blas_scasum(
         const complex_float *x,
         const int incx)
 {
-    return BLAS_FUNC(scasum,SCASUM)(&n, (void *) x, &incx);
+    return BLAS_FUNC(scasum,SCASUM)(&n, CAST_VOIDP(x), &incx);
 }
 
 inline double
@@ -383,7 +389,7 @@ suzerain_blas_dzasum(
         const complex_double *x,
         const int incx)
 {
-    return BLAS_FUNC(dzasum,DZASUM)(&n, (void *) x, &incx);
+    return BLAS_FUNC(dzasum,DZASUM)(&n, CAST_VOIDP(x), &incx);
 }
 
 inline int
@@ -419,7 +425,7 @@ suzerain_blas_icamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    return icamax(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
+    return icamax(&n, CONST_CAST_VOIDP(x), &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity: suzerain_blas_icamax not implemented for BLAS"
 #endif
@@ -432,7 +438,7 @@ suzerain_blas_izamax(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    return izamax(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
+    return izamax(&n, CONST_CAST_VOIDP(x), &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity: suzerain_blas_izamax not implemented for BLAS"
 #endif
@@ -471,7 +477,7 @@ suzerain_blas_icamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    return icamin(&n, (MKL_Complex8 *) x, &incx) - 1 /* zero-indexed */;
+    return icamin(&n, CONST_CAST_VOIDP(x), &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity: suzerain_blas_icamin not implemented for BLAS"
 #endif
@@ -484,7 +490,7 @@ suzerain_blas_izamin(
         const int incx)
 {
 #ifdef SUZERAIN_HAVE_MKL
-    return izamin(&n, (MKL_Complex16 *) x, &incx) - 1 /* zero-indexed */;
+    return izamin(&n, CONST_CAST_VOIDP(x), &incx) - 1 /* zero-indexed */;
 #else
 #error "Sanity: suzerain_blas_izamin not implemented for BLAS"
 #endif
@@ -523,9 +529,9 @@ suzerain_blas_caxpy(
         complex_float *y,
         const int incy)
 {
-    return BLAS_FUNC(caxpy,CAXPY)(&n, (const void *) &alpha,
-                                      (const void *) x, &incx,
-                                      (      void *) y, &incy);
+    return BLAS_FUNC(caxpy,CAXPY)(&n, CONST_CAST_VOIDP(&alpha),
+                                      CONST_CAST_VOIDP(x     ), &incx,
+                                            CAST_VOIDP(y     ), &incy);
 }
 
 inline void
@@ -537,9 +543,9 @@ suzerain_blas_zaxpy(
         complex_double *y,
         const int incy)
 {
-    return BLAS_FUNC(zaxpy,ZAXPY)(&n, (const void *) &alpha,
-                                      (const void *) x, &incx,
-                                      (      void *) y, &incy);
+    return BLAS_FUNC(zaxpy,ZAXPY)(&n, CONST_CAST_VOIDP(&alpha),
+                                      CONST_CAST_VOIDP(x     ), &incx,
+                                            CAST_VOIDP(y     ), &incy);
 }
 
 inline void
@@ -637,9 +643,10 @@ suzerain_blas_caxpby(
         suzerain_blas_cscal(n, beta, y, incy);
     suzerain_blas_caxpy(n, alpha, x, incx, y, incy);
 #else
-    BLAS_FUNC(caxpby,CAXPBY)(&n,
-                             (const void *) &alpha, (const void *) x, &incx,
-                             (const void *) &beta,  (      void *) y, &incy);
+    BLAS_FUNC(caxpby,CAXPBY)(
+            &n,
+            CONST_CAST_VOIDP(&alpha), CONST_CAST_VOIDP(x), &incx,
+            CONST_CAST_VOIDP(&beta ),       CAST_VOIDP(y), &incy);
 #endif
 }
 
@@ -661,9 +668,10 @@ suzerain_blas_zaxpby(
         suzerain_blas_zscal(n, beta, y, incy);
     suzerain_blas_zaxpy(n, alpha, x, incx, y, incy);
 #else
-    BLAS_FUNC(zaxpby,ZAXPBY)(&n,
-                             (const void *) &alpha, (const void *) x, &incx,
-                             (const void *) &beta,  (      void *) y, &incy);
+    BLAS_FUNC(zaxpby,ZAXPBY)(
+            &n,
+            CONST_CAST_VOIDP(&alpha), CONST_CAST_VOIDP(x), &incx,
+            CONST_CAST_VOIDP(&beta ),       CAST_VOIDP(y), &incy);
 #endif
 }
 
@@ -838,8 +846,8 @@ suzerain_blas_cgbmv_external(
 {
     return BLAS_FUNC(cgbmv,CGBMV)(
             &trans, &m, &n, &kl, &ku,
-            (void*)&alpha, (void*)a, &lda, (void*)x, &incx,
-            (void*)&beta,                  (void*)y, &incy);
+            CAST_VOIDP(&alpha), CAST_VOIDP(a), &lda, CAST_VOIDP(x), &incx,
+            CAST_VOIDP(&beta ),                      CAST_VOIDP(y), &incy);
 }
 
 inline void
@@ -860,8 +868,8 @@ suzerain_blas_zgbmv_external(
 {
     return BLAS_FUNC(zgbmv,ZGBMV)(
             &trans, &m, &n, &kl, &ku,
-            (void*)&alpha, (void*)a, &lda, (void*)x, &incx,
-            (void*)&beta,                  (void*)y, &incy);
+            CAST_VOIDP(&alpha), CAST_VOIDP(a), &lda, CAST_VOIDP(x), &incx,
+            CAST_VOIDP(&beta ),                      CAST_VOIDP(y), &incy);
 }
 
 void
@@ -1478,8 +1486,8 @@ void suzerain_lapack_clacpy(
                 const int ldb)
 {
     LAPACK_FUNC(clacpy,CLACPY)((char*)&uplo, (int*)&m, (int*)&n,
-                               (void*)a, (int*)&lda,
-                               (void*)b, (int*)&ldb);
+                               CAST_VOIDP(a), (int*)&lda,
+                               CAST_VOIDP(b), (int*)&ldb);
 }
 
 inline
@@ -1493,8 +1501,8 @@ void suzerain_lapack_zlacpy(
                 const int ldb)
 {
     LAPACK_FUNC(zlacpy,ZLACPY)((char*)&uplo, (int*)&m, (int*)&n,
-                               (void*)a, (int*)&lda,
-                               (void*)b, (int*)&ldb);
+                               CAST_VOIDP(a), (int*)&lda,
+                               CAST_VOIDP(b), (int*)&ldb);
 }
 
 inline float
@@ -1553,7 +1561,7 @@ suzerain_lapack_cgbtrf(
 {
     int info = 0;
     LAPACK_FUNC(cgbtrf,CGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-                               (void*)ab, (int *)&ldab, ipiv, &info);
+                               CAST_VOIDP(ab), (int *)&ldab, ipiv, &info);
     return info;
 }
 
@@ -1569,7 +1577,7 @@ suzerain_lapack_zgbtrf(
 {
     int info = 0;
     LAPACK_FUNC(zgbtrf,ZGBTRF)((int*)&m, (int*)&n, (int*)&kl, (int*)&ku,
-                               (void*)ab, (int *)&ldab, ipiv, &info);
+                               CAST_VOIDP(ab), (int *)&ldab, ipiv, &info);
     return info;
 }
 
@@ -1628,8 +1636,8 @@ suzerain_lapack_cgbtrs(
 {
     int info = 0;
     LAPACK_FUNC(cgbtrs,CGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
-                               (int*)&nrhs, (void*)ab, (int*)&ldab,
-                               (int *)ipiv, (void*)b,  (int*)&ldb, &info);
+                               (int*)&nrhs, CAST_VOIDP(ab), (int*)&ldab,
+                               (int *)ipiv, CAST_VOIDP(b ), (int*)&ldb, &info);
     return info;
 }
 
@@ -1648,8 +1656,8 @@ suzerain_lapack_zgbtrs(
 {
     int info = 0;
     LAPACK_FUNC(zgbtrs,ZGBTRS)((char*)&trans, (int*)&n, (int*)&kl, (int*)&ku,
-                               (int*)&nrhs, (void*)ab, (int*)&ldab,
-                               (int *)ipiv, (void*)b,  (int*)&ldb, &info);
+                               (int*)&nrhs, CAST_VOIDP(ab), (int*)&ldab,
+                               (int *)ipiv, CAST_VOIDP(b ), (int*)&ldb, &info);
     return info;
 }
 
@@ -1711,8 +1719,8 @@ suzerain_lapack_cgbcon(
 {
     int info = 0;
     LAPACK_FUNC(cgbcon,CGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                               (void*)ab, (int*)&ldab, (int*)ipiv,
-                               (float*)&anorm, rcond, (void*)work, rwork,
+                               CAST_VOIDP(ab), (int*)&ldab, (int*)ipiv,
+                               (float*)&anorm, rcond, CAST_VOIDP(work), rwork,
                                &info);
     return info;
 }
@@ -1733,8 +1741,8 @@ suzerain_lapack_zgbcon(
 {
     int info = 0;
     LAPACK_FUNC(zgbcon,ZGBCON)((char*)&norm, (int*)&n, (int*)&kl, (int*)&ku,
-                               (void*)ab, (int*)&ldab, (int*) ipiv,
-                               (double*)&anorm, rcond, (void*)work, rwork,
+                               CAST_VOIDP(ab), (int*)&ldab, (int*) ipiv,
+                               (double*)&anorm, rcond, CAST_VOIDP(work), rwork,
                                &info);
     return info;
 }
@@ -1789,8 +1797,8 @@ suzerain_lapack_cgbsv(
 {
     int info;
     LAPACK_FUNC(cgbsv,CGBSV)((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-                             (void*)ab, (int*)&ldab, ipiv,
-                             (void*)b, (int*)&ldb, &info);
+                             CAST_VOIDP(ab), (int*)&ldab, ipiv,
+                             CAST_VOIDP(b ), (int*)&ldb, &info);
     return info;
 }
 
@@ -1808,8 +1816,8 @@ suzerain_lapack_zgbsv(
 {
     int info;
     zgbsv((int*)&n, (int*)&kl, (int*)&ku, (int*)&nrhs,
-          (void*)ab, (int*)&ldab, ipiv,
-          (void*)b, (int*)&ldb, &info);
+          CAST_VOIDP(ab), (int*)&ldab, ipiv,
+          CAST_VOIDP(b ), (int*)&ldb, &info);
     return info;
 }
 
@@ -1910,12 +1918,13 @@ suzerain_lapack_cgbsvx(
         float *rwork)
 {
     int info;
-    LAPACK_FUNC(cgbsvx,CGBSVX)((char*)&fact, (char*)&trans, (int*)&n,
-                               (int*)&kl, (int*)&ku, (int*)&nrhs, (void*)ab,
-                               (int*)&ldab, (void*)afb, (int*)&ldafb, ipiv,
-                               equed, r, c, (void*)b, (int*)&ldb, (void*)x,
-                               (int*)&ldx, rcond, ferr, berr, (void*)work,
-                               rwork, &info);
+    LAPACK_FUNC(cgbsvx,CGBSVX)(
+            (char*)&fact, (char*)&trans, (int*)&n,
+            (int*)&kl, (int*)&ku, (int*)&nrhs, CAST_VOIDP(ab),
+            (int*)&ldab, CAST_VOIDP(afb), (int*)&ldafb, ipiv,
+            equed, r, c, CAST_VOIDP(b  ), (int*)&ldb, CAST_VOIDP(x),
+            (int*)&ldx, rcond, ferr, berr, CAST_VOIDP(work),
+            rwork, &info);
     return info;
 }
 
@@ -1946,13 +1955,14 @@ suzerain_lapack_zgbsvx(
         double *rwork)
 {
     int info;
-    LAPACK_FUNC(zgbsvx,ZGBSVX)((char*)&fact, (char*)&trans,
-                               (int*)&n, (int*)&kl, (int*)&ku,
-                               (int*)&nrhs, (void*)ab, (int*)&ldab,
-                               (void*)afb, (int*)&ldafb, ipiv, equed,
-                               r, c, (void*)b, (int*)&ldb, (void*)x,
-                               (int*)&ldx, rcond, ferr, berr, (void*)work,
-                               rwork, &info);
+    LAPACK_FUNC(zgbsvx,ZGBSVX)(
+            (char*)&fact, (char*)&trans,
+            (int*)&n, (int*)&kl, (int*)&ku,
+            (int*)&nrhs, CAST_VOIDP(ab), (int*)&ldab,
+            CAST_VOIDP(afb), (int*)&ldafb, ipiv, equed,
+            r, c, CAST_VOIDP(b), (int*)&ldb, CAST_VOIDP(x),
+            (int*)&ldx, rcond, ferr, berr, CAST_VOIDP(work),
+            rwork, &info);
     return info;
 }
 
@@ -2039,12 +2049,13 @@ suzerain_lapack_cgbrfs(
         float *rwork)
 {
     int info;
-    LAPACK_FUNC(cgbrfs,CGBRFS)((char*)&trans, (int*)&n,
-                               (int*)&kl, (int*)&ku, (int*)&nrhs,
-                               (void*)ab, (int*)&ldab, (void*)afb,
-                               (int*)&ldafb, ipiv, (void*)b, (int*)&ldb,
-                               (void*)x, (int*)&ldx, ferr, berr,
-                               (void*)work, rwork, &info);
+    LAPACK_FUNC(cgbrfs,CGBRFS)(
+            (char*)&trans, (int*)&n,
+            (int*)&kl, (int*)&ku, (int*)&nrhs,
+            CAST_VOIDP(ab), (int*)&ldab, CAST_VOIDP(afb),
+            (int*)&ldafb, ipiv, CAST_VOIDP(b), (int*)&ldb,
+            CAST_VOIDP(x), (int*)&ldx, ferr, berr,
+            CAST_VOIDP(work), rwork, &info);
     return info;
 }
 
@@ -2070,12 +2081,13 @@ suzerain_lapack_zgbrfs(
         double *rwork)
 {
     int info;
-    LAPACK_FUNC(zgbrfs,ZGBRFS)((char*)&trans,
-                               (int*)&n, (int*)&kl, (int*)&ku,
-                               (int*)&nrhs, (void*)ab, (int*)&ldab,
-                               (void*)afb, (int*)&ldafb, ipiv, (void*)b,
-                               (int*)&ldb, (void*)x, (int*)&ldx, ferr,
-                               berr, (void*)work, rwork, &info);
+    LAPACK_FUNC(zgbrfs,ZGBRFS)(
+            (char*)&trans,
+            (int*)&n, (int*)&kl, (int*)&ku,
+            (int*)&nrhs, CAST_VOIDP(ab), (int*)&ldab,
+            CAST_VOIDP(afb), (int*)&ldafb, ipiv, CAST_VOIDP(b),
+            (int*)&ldb, CAST_VOIDP(x), (int*)&ldx, ferr,
+            berr, CAST_VOIDP(work), rwork, &info);
     return info;
 }
 
@@ -2119,8 +2131,9 @@ suzerain_lapack_clangb(
         const int ldab,
         float *work)
 {
-    return LAPACK_FUNC(clangb,CLANGB)((char*)&norm, (int*)&n, (int*)&kl,
-                                      (int*)&ku, (void*)ab, (int*)&ldab, work);
+    return LAPACK_FUNC(clangb,CLANGB)(
+            (char*)&norm, (int*)&n, (int*)&kl,
+            (int*)&ku, CAST_VOIDP(ab), (int*)&ldab, work);
 }
 
 inline double
@@ -2133,8 +2146,9 @@ suzerain_lapack_zlangb(
         const int ldab,
         double *work)
 {
-    return LAPACK_FUNC(zlangb,ZLANGB)((char*)&norm, (int*)&n, (int*)&kl,
-                                      (int*)&ku, (void*)ab, (int*)&ldab, work);
+    return LAPACK_FUNC(zlangb,ZLANGB)(
+            (char*)&norm, (int*)&n, (int*)&kl,
+            (int*)&ku, CAST_VOIDP(ab), (int*)&ldab, work);
 }
 
 void
