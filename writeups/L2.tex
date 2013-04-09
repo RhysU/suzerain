@@ -53,6 +53,7 @@
 % Document-specific commands
 \newcommand{\ii}{\ensuremath{\mathrm{i}}}
 \newcommand{\htrans}[1]{{#1}^{\ensuremath{\mathsf{H}}}}
+\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
 \newcommand{\OO}[1]{\operatorname{O}\left(#1\right)}
 
 \begin{document}
@@ -79,21 +80,23 @@ $\left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{} [0,L_y] \times{}
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
 B-spline basis for some order and some knot selection.
 
-\section{$L^2$ norm of a discrete field}
+\section{$L_{xyz}^2$ inner product of two discrete fields}
 
-We wish to compute the $L^2$ norm of a discrete field $u^h$.  By direct
-computation we find
+We wish to compute the $L^2$ inner product of discrete fields $u^h$ and $v^h$.
+By direct computation we find
 \begin{align}
-  \left|\left|
+  \left<
     u^h
-  \right|\right|^{2}_{L^{2}_{xyz}}
+  ,
+    v^h
+  \right>_{L^{2}_{xyz}}
 &=
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
-  u^h \overline{u^h}
+  u^h \overline{v^h}
   \,d\!z \,d\!x \,d\!y
-\\ &\approx
+\\ &=
   \int_0^{L_y}
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
@@ -103,7 +106,7 @@ computation we find
   \right)
   \left(
     \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
-    \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+    \overline{\hat{v}_{l^\prime m^\prime n^\prime}}
     B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
   \right)
   \,d\!z \,d\!x \,d\!y
@@ -127,7 +130,7 @@ computation we find
         e^{\ii k_n z}
         e^{-\ii k_{n^\prime} z}
         \hat{u}_{l m n}
-        \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+        \overline{\hat{v}_{l^\prime m^\prime n^\prime}}
       \right)
       \,d\!z
     \right)
@@ -147,7 +150,7 @@ computation we find
     \left(
       e^{\ii k_m x}
       e^{-\ii k_{m^\prime} x}
-      L_z \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m^\prime n}}
+      L_z \sum_{n} \hat{u}_{l m n} \overline{\hat{v}_{l^\prime m^\prime n}}
     \right)
     \,d\!x
   \right)
@@ -159,7 +162,7 @@ computation we find
   \left(
     B_l\!\left(y\right)
     B_{l^\prime}\!\left(y\right)
-    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
+    L_x L_z \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{v}_{l^\prime m n}}
   \right)
   \,d\!y
 \\ &=
@@ -167,38 +170,68 @@ computation we find
   \sum_{l}
   \hat{u}_{l m n}
   \sum_{l^\prime}
-  \overline{\hat{u}_{l^\prime m n}}
+  \overline{\hat{v}_{l^\prime m n}}
   \int_0^{L_y}
   B_l\!\left(y\right)
   B_{l^\prime}\!\left(y\right)
   \,d\!y
 \\ &=
-   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
+   L_x L_z \sum_{m} \sum_{n} \trans{\hat{u}_{m n}} M \overline{\hat{v}_{m n}}
    \quad\text{where}\quad
    M = \int_0^{L_y} B_l\!\left(y\right) B_{l^\prime}\!\left(y\right) \,d\!y
-   \label{eq:L2uh}
+\\ &=
+   L_x L_z \sum_{m} \sum_{n} \trans{\overline{\hat{v}_{m n}}} \trans{M} \hat{u}_{m n}
+\\ &=
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{v}_{m n}} M \hat{u}_{m n}
+   \quad\text{since}\quad
+   M = \trans{M}
+   \label{eq:ip_uhvh_xyz}
    .
 \end{align}
-In the above expression the three-dimensional field of transform coefficients
-$\hat{u}_{l m n}$ is treated as a two-dimensional collection of length $N_y$
-vectors indexed by $m$ and $n$.  For a B-spline basis with piecewise polynomial
-order $k - 1$ giving rise to a real-valued, symmetric positive definite matrix
-$M$ with bandwidth $2k-1$, the computational cost to find $\left|\left| u^h
-\right|\right|^{2}_{L^{2}_{xyz}}$ scales as $\OO{k N_x N_y^2 N_z}$.
-
-The $y$-varying norm over the $x$ and $z$ directions can be computed via
+%
+The $L_{xyz}^2$ norm of a single field is therefore
 \begin{align}
   \left|\left|
     u^h
-  \right|\right|^{2}_{L^{2}_{xz}}
+  \right|\right|^{2}_{L^{2}_{xyz}}
+&=
+  \left<
+    u^h
+  ,
+    u^h
+  \right>_{L^{2}_{xyz}}
+ =
+   L_x L_z \sum_{m} \sum_{n} \htrans{\hat{u}_{m n}} M \hat{u}_{m n}
+   \label{eq:L2uh}
+   .
+\end{align}
+%
+In the above expressions the three-dimensional fields of transform coefficients,
+$\hat{u}_{l m n}$ and $\hat{v}_{l m n}$, are treated as two-dimensional
+collections of length $N_y$ vectors indexed by $m$ and $n$.  For a B-spline
+basis with piecewise polynomial order $k - 1$ giving rise to a real-valued,
+symmetric positive definite matrix $M$ with bandwidth $2k-1$, the computational
+cost to find $\left< u^h , v^h \right>_{L^{2}_{xyz}}$ scales as $\OO{k N_x
+N_y^2 N_z}$.
+
+\section{$L_{xz}^2$ inner product of two discrete fields}
+
+The $y$-varying inner product of two fields taken across the $x$ and $z$
+directions can be computed via
+\begin{align}
+  \left<
+    u^h
+  ,
+    v^h
+  \right>_{L^{2}_{xz}}
   \!(y)
 &=
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
   u^h
-  \overline{u^h}
+  \overline{v^h}
   \,d\!z \,d\!x
-\\ &\approx
+\\ &=
   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
   \left(
@@ -207,7 +240,7 @@ The $y$-varying norm over the $x$ and $z$ directions can be computed via
   \right)
   \left(
     \sum_{l^\prime}\sum_{m^\prime}\sum_{n^\prime}
-    \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+    \overline{\hat{v}_{l^\prime m^\prime n^\prime}}
     B_{l^\prime}\!\left(y\right)e^{-\ii k_{m^\prime} x}e^{-\ii k_{n^\prime} z}
   \right)
   \,d\!z \,d\!x
@@ -229,7 +262,7 @@ The $y$-varying norm over the $x$ and $z$ directions can be computed via
       e^{\ii k_n z}
       e^{-\ii k_{n^\prime} z}
       \hat{u}_{l m n}
-      \overline{\hat{u}_{l^\prime m^\prime n^\prime}}
+      \overline{\hat{v}_{l^\prime m^\prime n^\prime}}
     \right)
     \,d\!z
   \right)
@@ -240,15 +273,37 @@ The $y$-varying norm over the $x$ and $z$ directions can be computed via
   B_l\!\left(y\right)
   \sum_{l^\prime}
   B_{l^\prime}\!\left(y\right)
-  \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
+  \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{v}_{l^\prime m n}}
+   \label{eq:ip_uhvh_xz}
   .
 \end{align}
 Using the limited, symmetric support of the products $B_l\left(y\right)
 B_{l^\prime}\left(y\right)$ to reduce the required operations, one can compute
-this fully functional representation of $\left|\left| u^h
-\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to $\OO{k N_x
-N_y^2 N_z}$.
+this fully functional representation of $\left< u^h, v^h
+\right>^{2}_{L^{2}_{xz}} \!(y)$ at a cost proportional to $\OO{k N_x N_y^2
+N_z}$.
 
+The $L_{xz}^2$ norm of a single field is therefore
+\begin{align}
+  \left|\left|
+    u^h
+  \right|\right|^{2}_{L^{2}_{xz}}
+&=
+  \left<
+    u^h
+  ,
+    u^h
+  \right>_{L^{2}_{xz}}
+ =
+  L_x L_z
+  \sum_{l}
+  B_l\!\left(y\right)
+  \sum_{l^\prime}
+  B_{l^\prime}\!\left(y\right)
+  \sum_{m} \sum_{n} \hat{u}_{l m n} \overline{\hat{u}_{l^\prime m n}}
+  .
+\end{align}
+%
 When $\left|\left|u^h\right|\right|^{2}_{L^{2}_{xz}} \!(y)$ is
 only of interest at points $y_j$, the previous expression yields
 \begin{align}
@@ -289,6 +344,9 @@ only of interest at points $y_j$, the previous expression yields
 where again the three-dimensional field is treated as as a two-dimensional
 field of vectors.  The computational cost for this operation is much lower than
 the others at $\OO{\left(2k-1\right) N_x N_y N_z}$.
+
+% FIXME STARTHERE
+% TODO  Above result for < u^h , v^h >
 
 These three results include summations over all coefficients in the homogeneous
 $x$ and $z$ directions, namely $m \in \left\{-N_x/2, \dots, 0, \dots,
