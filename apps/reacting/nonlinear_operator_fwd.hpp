@@ -74,9 +74,8 @@ class operator_common_block
     typedef Array<real_t, Dynamic, 18, ColMajor> means_type;
 
 
-    // FIXME: Set size correctly
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 16, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 17, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -248,6 +247,7 @@ public:
     refs_type::RowXpr      ref_Ce_rv()            { return refs.row(13); }
     refs_type::RowXpr      ref_nu()               { return refs.row(14); }
     refs_type::RowXpr      ref_korCp()            { return refs.row(15); }
+    refs_type::RowXpr      ref_Ds()               { return refs.row(16); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
@@ -265,6 +265,7 @@ public:
     refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row(13); }
     refs_type::ConstRowXpr ref_nu()         const { return refs.row(14); }
     refs_type::ConstRowXpr ref_korCp()      const { return refs.row(15); }
+    refs_type::ConstRowXpr ref_Ds()         const { return refs.row(16); }
     
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
@@ -288,6 +289,7 @@ public:
         ref.Ce_rv      = ref_Ce_rv().data();
         ref.nu         = ref_nu().data();
         ref.korCp      = ref_korCp().data();
+        ref.Ds         = ref_Ds().data();
 
         const int inc = refs.colStride();
         ld.ux         = inc;
@@ -306,6 +308,7 @@ public:
         ld.Ce_rv      = inc;
         ld.nu         = inc;
         ld.korCp      = inc;
+        ld.Ds         = inc;
     }
 
     /** @} */

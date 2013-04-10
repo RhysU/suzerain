@@ -44,20 +44,11 @@
 
 #include "reacting.hpp"
 #include "filter_definition.hpp"
+#include "reacting_ndx.hpp"
 
 #pragma warning(disable:280 383 1572)
 
 namespace suzerain { namespace reacting {
-
-  // Indices for state fields
-  struct ndx { enum {
-          e,
-          mx,
-          my,
-          mz,
-          rho,
-          species
-      }; };
 
   // Indices for directions
   struct dir { enum {
@@ -349,7 +340,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 p_ru, p_rw, p_rE,
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
-                                nu, korCp,
+                                nu, korCp, Ds,
                                 count // Sentry
             }; };
 
@@ -431,6 +422,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // ...and viscous-term-related quantities
                 acc[ref::nu   ](mu*irho);
                 acc[ref::korCp](korCp);
+                acc[ref::Ds   ](Ds[0]); // Yes, b/c constant Lewis number!
                 
             } // end X // end Z
 
@@ -461,6 +453,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);
             common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
             common.ref_korCp     ()[j] = sum(acc[ref::korCp     ]);
+            common.ref_Ds        ()[j] = sum(acc[ref::Ds        ]);
 
         } // end Y
 

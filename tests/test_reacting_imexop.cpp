@@ -140,7 +140,7 @@ static void operator_consistency(const parameters& p)
     // Accumulate (M + \varphi{} L) B1 into B2
     for (int j = 0; j < N; ++j) {
         const int jN = j*N;
-        suzerain_reacting_imexop_accumulate(
+        suzerain_reacting_flow_imexop_accumulate(
             phi, /* km, kn, */ &s, &r, &ld, op.get(), p.imagzero,
                &B1[0*n+jN], &B1[1*n+jN], &B1[2*n+jN], &B1[3*n+jN], &B1[4*n+jN],
             0, &B2[0*n+jN], &B2[1*n+jN], &B2[2*n+jN], &B2[3*n+jN], &B2[4*n+jN]);

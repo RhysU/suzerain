@@ -16,7 +16,8 @@ AM_CPPFLAGS += $(ANTIOCH_CFLAGS)
 ###
 
 noinst_LTLIBRARIES     += libreacting.la
-libreacting_la_SOURCES  = reacting.hpp              reacting.cpp
+libreacting_la_SOURCES  = reacting_ndx.hpp
+libreacting_la_SOURCES += reacting.hpp              reacting.cpp
 libreacting_la_SOURCES += channel_definition.hpp    channel_definition.cpp
 libreacting_la_SOURCES += filter_definition.hpp     filter_definition.cpp
 libreacting_la_SOURCES += quantities.hpp            quantities.cpp

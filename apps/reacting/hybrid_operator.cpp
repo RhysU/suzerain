@@ -36,7 +36,7 @@
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/ndx.hpp>
+//#include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -46,6 +46,7 @@
 #include "nonlinear_operator_fwd.hpp"
 #include "antioch_constitutive.hpp"
 #include "channel_definition.hpp"
+#include "reacting_ndx.hpp"
 
 #pragma warning(disable:383 1572)
 
@@ -159,13 +160,21 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
-    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) (flow_solver->S+
+                                                      species_solver.size()));
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned)             Ny);
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)             Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==                         1);
 
+    // Compute total state size
+    std::size_t tmp_size = flow_solver->N;
+    if (species_solver.size()>0) {
+        // All species have same size
+        tmp_size += species_solver.size()*species_solver[0]->N;
+    }
+
     // Scratch for "in-place" suzerain_reacting_imexop_accumulate usage
-    VectorXc tmp(flow_solver->N); // TODO: another tmp for species accumulate
+    VectorXc tmp(tmp_size);
     suzerain_reacting_imexop_scenario s(this->imexop_s());
     suzerain_reacting_imexop_ref   ref;
     suzerain_reacting_imexop_refld ld;
@@ -194,7 +203,9 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
 
                 // Accumulate result back into state storage
                 SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
-                suzerain_reacting_imexop_accumulate(
+
+                // Flow equations
+                suzerain_reacting_flow_imexop_accumulate(
                         phi, &s, &ref, &ld, cop.get(), 
                         0, // imagzero=false FIXME: update after removing from reacting_imexop
                         tmp.data() + ndx::e   * Ny,
@@ -209,10 +220,16 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                         p + ndx::mz  * Ny,
                         p + ndx::rho * Ny);
 
-                // TODO: Accumulate species eqns
-                for (std::size_t s=0; s<species_solver.size(); ++s) {
-                    // Call suzerain_species_imexop_accumulate
+                // Species equations
+                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    suzerain_reacting_species_imexop_accumulate(
+                        phi, &s, &ref, &ld, cop.get(),
+                        0, // imagzero=false FIXME: update after removing from reacting_imexop
+                        tmp.data() + (ndx::species+alfa) * Ny,
+                        0.0,
+                        p + (ndx::species+alfa) * Ny);
                 }
+
             }
         }
         break;
@@ -267,7 +284,8 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     // Input and output state storage has contiguous wall-normal scalars?
     // Furthermore, input has contiguous wall-normal pencils of all state?
     SUZERAIN_ENSURE(output.is_isomorphic(input));
-    SUZERAIN_ENSURE(input.shape()   [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+    SUZERAIN_ENSURE(input.shape()   [0] == (unsigned) (flow_solver->S +
+                                                       species_solver.size()));
     SUZERAIN_ENSURE(input.strides() [0] == (unsigned)             Ny);
     SUZERAIN_ENSURE(input.shape()   [1] == (unsigned)             Ny);
     SUZERAIN_ENSURE(input.strides() [1] ==                         1);
@@ -296,7 +314,9 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
 
                 // Accumulate result
                 SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
-                suzerain_reacting_imexop_accumulate(
+
+                // Flow equations
+                suzerain_reacting_flow_imexop_accumulate(
                         phi, &s, &ref, &ld, cop.get(),
                         0, // imagzero=false FIXME: update after removing from reacting_imexop
                         &input [ndx::e  ][0][m - dkbx][n - dkbz],
@@ -311,9 +331,14 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                         &output[ndx::mz  ][0][m - dkbx][n - dkbz],
                         &output[ndx::rho ][0][m - dkbx][n - dkbz]);
 
-                // TODO: Accumulate species eqns
-                for (std::size_t s=0; s<species_solver.size(); ++s) {
-                    // Call suzerain_species_imexop_accumulate
+                // Species equations
+                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    suzerain_reacting_species_imexop_accumulate(
+                        phi, &s, &ref, &ld, cop.get(),
+                        0, // imagzero=false FIXME: update after removing from reacting_imexop
+                        &input [ndx::species+alfa][0][m - dkbx][n - dkbz],
+                        beta,
+                        &output[ndx::species+alfa][0][m - dkbx][n - dkbz]);
                 }
 
             }

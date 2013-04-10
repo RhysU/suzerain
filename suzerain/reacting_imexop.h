@@ -64,6 +64,7 @@ typedef struct {
     double *Ce_rv;
     double *nu;
     double *korCp;
+    double *Ds;
 } suzerain_reacting_imexop_ref;
 
 /** Strides between elements in a \ref suzerain_reacting_imexop_ref. */
@@ -84,15 +85,17 @@ typedef struct {
     int Ce_rv;
     int nu;
     int korCp;
+    int Ds;
 } suzerain_reacting_imexop_refld;
 
 /**
- * Accumulate the linear implicit operator application \f$y \leftarrow{}
- * \left(M + \varphi{}L\right) x + \beta{} y\f$.  The matrix \f$L\f$ is a
- * function of the provided wavenumbers, scenario parameters, and wall-normal
- * reference quantities.  The problem size and discrete operators are taken
- * from the provided B-spline workspace \c w.  Input and output state variables
- * must be stride one.
+ * Accumulate the linear implicit operator application \f$y
+ * \leftarrow{} \left(M + \varphi{}L\right) x + \beta{} y\f$ for the
+ * flow equations.  The matrix \f$L\f$ is a function of the provided
+ * wavenumbers, scenario parameters, and wall-normal reference
+ * quantities.  The problem size and discrete operators are taken from
+ * the provided B-spline workspace \c w.  Input and output state
+ * variables must be stride one.
  *
  * Providing a \c NULL value for any input and its corresponding output (e.g.
  * \c in_rho and \c out_rho) omits the corresponding part of the operator.
@@ -119,10 +122,9 @@ typedef struct {
  * @param[out] out_rho_u Wall-normal output data for \f$\rho{}u\f$.
  * @param[out] out_rho   Wall-normal output data for \f$\rho{}\f$.
  *
- * @see Model documentation in <tt>writeups/derivation.tex</tt> for details.
  */
 void
-suzerain_reacting_imexop_accumulate(
+suzerain_reacting_flow_imexop_accumulate(
         const complex_double phi,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
@@ -140,6 +142,40 @@ suzerain_reacting_imexop_accumulate(
         complex_double *out_rho_v,
         complex_double *out_rho_w,
         complex_double *out_rho );
+
+/**
+ * Accumulate the linear implicit operator application \f$y
+ * \leftarrow{} \left(M + \varphi{}L\right) x + \beta{} y\f$ for the
+ * sth species equation.  The matrix \f$L\f$ is a function of the
+ * provided scenario parameters and wall-normal reference quantities.
+ * The problem size and discrete operators are taken from the provided
+ * B-spline workspace \c w.  Input and output state variables must be
+ * stride one.
+ *
+ * @param[in] phi Factor \f$\varphi\f$ used in forming \f$M+\varphi{}L\f$.
+ * @param[in] s  Scenario parameters used to form the operator.
+ * @param[in] r  Reference quantities used to form the operator.
+ * @param[in] ld Strides between reference quantity values.
+ * @param[in] w  B-spline workspace providing discrete operators.
+ * @param[in] imagzero  Treat imaginary part of all input data as if
+ *                      it were uniformly zero?  That is, assume
+                        <tt>Im(in_rho{,u,v,w,E}) == 0</tt>.
+ * @param[in]  in_rho_s  Wall-normal input data for \f$\rho{}u\f$.
+ * @param[in]  beta      Accumulation scaling factor \f$\beta\f$.
+ * @param[out] out_rho_s Wall-normal output data for \f$\rho{}u\f$.
+ *
+ */
+void
+suzerain_reacting_species_imexop_accumulate(
+        const complex_double phi,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace      * const w,
+        const int imagzero,
+        const complex_double *in_rho_s,
+        const complex_double beta,
+        complex_double *out_rho_s );
 
 /**
  * Pack \f$\left(M + \varphi{}L\right)^{\mbox{T}}\f$ into the corresponding

@@ -37,7 +37,7 @@
 #include <suzerain/bsmbsm.h>
 
 void
-suzerain_reacting_imexop_accumulate(
+suzerain_reacting_flow_imexop_accumulate(
         const complex_double phi,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
@@ -371,6 +371,121 @@ suzerain_reacting_imexop_accumulate(
 #   undef OUT
 
 }
+
+
+void
+suzerain_reacting_species_imexop_accumulate(
+        const complex_double phi,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        const int imagzero,
+        const complex_double *in_rho_s,
+        const complex_double beta,
+        complex_double *out_rho_s )
+{
+    // When you modify this routine, you must also modify reacting_imexop.def so
+    // that operator accumulation-without-assembly and assembly match.  The
+    // test cases in tests/test_reacting_imexop.cpp are invaluable in checking
+    // the coherence of these two pieces of logic.
+
+    // Sanity checks
+    assert(w->nderiv >= 2);  // Adequate workspace?
+    assert( in_rho_s!=NULL); // Require both input and
+    assert(out_rho_s!=NULL); // output rho_s
+
+    // Accumulate the requested portions of the M + \varphi L operator.  Scale
+    // output by beta, accumulate non-mass contributions, and finally
+    // accumulate the mass contributions.  Mass contributions come last as they
+    // are expected to have magnitudes much larger than phi-- this helps to
+    // ensure better rounding of \varphi L contributions.
+
+    // Two use cases are accommodated.  The first (and vastly more common) case
+    // is applying the operator to in_rho_s as provided.  The second
+    // case applies the operator for Im(in_rho_s) == 0.  Imaginary
+    // parts are entirely ignored.  This is useful to handle the 0th and
+    // Nyquist modes in an even-length DFT without resorting to auxiliary
+    // buffers, different memory access patterns, or duplicated code.
+    //
+    // For brevity, believe it or not, typedef some gbmv-like function
+    // signatures operations but without a (const void *) x vector type:
+    typedef int gbmv_t(const char, const int, const int, const int, const int,
+                            const complex_double,   const double *, const int,
+                                             /* NB */ const void *, const int,
+                            const complex_double, complex_double *, const int);
+    typedef int gbdmv_t    (const char, const int, const int, const int,
+                            const complex_double,   const double *, const int,
+                                                    const double *, const int,
+                                             /* NB */ const void *, const int,
+                            const complex_double, complex_double *, const int);
+    typedef int gbddmv_t   (const char, const int, const int, const int,
+                            const complex_double,   const double *, const int,
+                            const complex_double,   const double *, const int,
+                                                    const double *, const int,
+                                             /* NB */ const void *, const int,
+                            const complex_double, complex_double *, const int);
+    typedef int gbdddmv_t  (const char, const int, const int, const int,
+                            const complex_double,   const double *, const int,
+                            const complex_double,   const double *, const int,
+                            const complex_double,   const double *, const int,
+                                                    const double *, const int,
+                                             /* NB */ const void *, const int,
+                            const complex_double, complex_double *, const int);
+
+    // In the first case, treat x arguments as complex with stride one...
+    int inc_in = 1;
+    gbmv_t      *p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_z;
+    gbdmv_t     *p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_z;
+    gbddmv_t    *p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_z;
+    gbdddmv_t   *p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_z;
+
+    // ...but in the second case, treat x arguments as real with stride two.
+    if (SUZERAIN_UNLIKELY(imagzero)) {
+        inc_in = 2;
+        p_gbmv      = (gbmv_t *)      &        suzerain_blas_zgbmv_d_d;
+        p_gbdmv     = (gbdmv_t *)     &    suzerain_blasext_zgbdmv_d_d;
+        p_gbddmv    = (gbddmv_t *)    &   suzerain_blasext_zgbddmv_d_d;
+        p_gbdddmv   = (gbdddmv_t *)   &  suzerain_blasext_zgbdddmv_d_d;
+    }
+
+    // Shorthand for the common pattern of providing "in_foo, inc" pairs.
+#   define IN(quantity)  in_##quantity, inc_in
+#   define OUT(quantity) out_##quantity, 1
+
+    // Shorthand for the common pattern of providing a "r->foo, ld->foo" pair.
+#   define REF(quantity) r->quantity, ld->quantity
+
+    // Just plain shorthand
+#   define LIKELY(expr) SUZERAIN_LIKELY(expr)
+
+    // We need to account for suzerain_bsplineop_workspace storing the
+    // transpose of the operators when we invoke suzerain_blaseext_* routines.
+    static const char trans = 'T';
+
+    // Prepare several oft-used constants to aid readability
+    static const int M       = 0;
+    static const int D1      = 1;
+    static const int D2      = 2;
+    const int        n       = w->n;
+
+
+    suzerain_blas_zscal(n, beta, OUT(rho_s));
+
+    (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
+               phi,                         REF(Ds),
+               w->D_T[D2], w->ld, IN(rho_s), 1.0, OUT(rho_s));
+
+    (*p_gbmv)(trans, n, n, w->kl[M], w->ku[M],
+              1.0, w->D_T[M], w->ld, IN(rho_s), 1.0, OUT(rho_s));
+
+#   undef LIKELY
+#   undef REF
+#   undef IN
+#   undef OUT
+
+}
+
 
 // suzerain_reacting_imexop_pack{c,f} differ trivially
 // use preprocessor to generate both from the same source template
