@@ -581,7 +581,25 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), flow_solver.get(), flow_solver->PAPT.data());
         }
+
+        for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+            if (species_solver[alfa]->spec.in_place()) { // Pack for in-place LU
+                SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
+                suzerain_reacting_species_imexop_packf(
+                    phi, &s, &ref, &ld, cop.get(),
+                    buf.data(), species_solver[alfa].get(), 
+                    species_solver[alfa]->LU.data());
+            } else {                       // Pack for out-of-place LU
+                SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
+                suzerain_reacting_species_imexop_packc(
+                    phi, &s, &ref, &ld, cop.get(),
+                    buf.data(), species_solver[alfa].get(), 
+                    species_solver[alfa]->PAPT.data());
+            }
+        }
+
         // Apply boundary conditions to PA^TP^T
+        // FIXME: BCs don't support species yet!!!
         {
             SUZERAIN_TIMER_SCOPED("implicit operator BCs");
             bc_enforcer.op(*flow_solver, flow_solver->PAPT.data(),
@@ -609,13 +627,38 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
                 // Form right hand side, apply BCs, factorize, and solve.
                 // Beware that much ugly, ugly magic is hidden just below.
+
+                // Flow RHS
                 flow_solver->supply_B(p);
+
+                // Species RHSs
+                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    species_solver[alfa]->supply_B(p + (ndx::species+alfa)*Ny);
+                }
+
+                // Boundary conditions
                 {
                     SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
+                    // FIXME: BCs don't support species yet!!!
                     bc_enforcer.rhs(flow_solver->PB.data());
                 }
+
+                // Flow solve
                 flow_solver->solve(trans);
+
+                // Species solves
+                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    species_solver[alfa]->solve(trans);
+                }
+
+                // Flow solution
                 flow_solver->demand_X(p);
+
+                // Species solutions
+                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    species_solver[alfa]->demand_X(p + (ndx::species+alfa)*Ny);
+                }
+
             }
         }
 
