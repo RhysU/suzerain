@@ -36,7 +36,6 @@
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
 #include <suzerain/multi_array.hpp>
-//#include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -166,15 +165,15 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)             Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==                         1);
 
-    // Compute total state size
-    std::size_t tmp_size = flow_solver->N;
+    // Compute total state size for pencil
+    int Ntot = flow_solver->N;
     if (species_solver.size()>0) {
         // All species have same size
-        tmp_size += species_solver.size()*species_solver[0]->N;
+        Ntot += species_solver.size()*species_solver[0]->N;
     }
 
     // Scratch for "in-place" suzerain_reacting_imexop_accumulate usage
-    VectorXc tmp(tmp_size);
+    VectorXc tmp(Ntot);
     suzerain_reacting_imexop_scenario s(this->imexop_s());
     suzerain_reacting_imexop_ref   ref;
     suzerain_reacting_imexop_refld ld;
@@ -199,7 +198,7 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                 complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
 
                 // Copy pencil into temporary storage
-                blas::copy(flow_solver->N, p, 1, tmp.data(), 1);
+                blas::copy(Ntot, p, 1, tmp.data(), 1);
 
                 // Accumulate result back into state storage
                 SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
@@ -657,14 +656,21 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             }
         }
 
+        // Compute total state size for pencil
+        int Ntot = flow_solver->N;
+        if (species_solver.size()>0) {
+            // All species have same size
+            Ntot += species_solver.size()*species_solver[0]->N;
+        }
+
         // If necessary, solve any required integral constraints
         // FIXME: Do we (or should we) have integral constraints on species?
         for (std::size_t i = 0; i < nconstraints; ++i) {
             SUZERAIN_TIMER_SCOPED("implicit constraint solution");
-            flow_solver->supply_B(ic0->data() + i * flow_solver->N);
+            flow_solver->supply_B(ic0->data() + i * Ntot);
             bc_enforcer.rhs(flow_solver->PB.data());
             flow_solver->solve(trans);
-            flow_solver->demand_X(ic0->data() + i * flow_solver->N);
+            flow_solver->demand_X(ic0->data() + i * Ntot);
         }
 
         break;
