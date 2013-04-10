@@ -18,7 +18,7 @@ AC_ARG_PROGRAM
 AX_ENABLE_BUILDDIR
 AM_INIT_AUTOMAKE(1.9 nostdinc no-define tar-ustar color-tests silent-rules parallel-tests -Wall foreign check-news)
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
-AC_PREREQ([2.61])
+AC_PREREQ([2.68])
 AX_CHECK_ENABLE_DEBUG([info])
 AX_AM_MACROS
 AX_AM_JOBSERVER([no])
@@ -90,37 +90,46 @@ AC_LANG_POP([C++])
 AC_LANG_PUSH([Fortran])
 AC_PROG_FC
 AX_COMPILER_VENDOR
-dnl FIXME Intel ifort barfs on -malign-double
+dnl FIXME Intel ifort barfs on -malign-double (see Ticket #2829)
 dnl AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}])
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_FREEFORM
 AC_FC_WRAPPERS
-AC_FC_MODULE_EXTENSION
-dnl BEGIN: Ensure that preprocessor is run on free-form Fortran .F90 sources
-dnl Stupidly complicated to get correct.  Modify FCFLAGS_F90 with result.
-dnl When Autoconf 2.69 is more common, AC_FC_PP_SRCEXT([F90]) should be used.
-AC_FC_SRCEXT([F90])
-ax_save_FCFLAGS=$FCFLAGS
-AC_MSG_CHECKING([for flags required to enable Fortran preprocessing])
-for fppflag in '' -fpp -cpp '-x f95-cpp-input' none
-do
-    if test "x$fppflag" == xnone; then
-        AC_MSG_RESULT([unknown])
-        AC_MSG_ERROR([Could not enable Fortran preprocessing])
-        break
-    fi
-    ax_fpp_save_FCFLAGS=$FCFLAGS
-    FCFLAGS="$FCFLAGS $fppflag"
-    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[#define TESTDEFINE])],[
-                         FCFLAGS=$ax_fpp_save_FCFLAGS
-                         break
-                      ],[
-                         FCFLAGS=$ax_fpp_save_FCFLAGS
-                      ])
-done
-AC_MSG_RESULT([$fppflag])
-FCFLAGS_F90="$FCFLAGS_F90 $fppflag"
-dnl END: Ensure that preprocessor is run on free-form Fortran .F90 sources
+dnl Autoconf 2.69 got markedly better at Fortran handling
+m4_version_prereq([2.69],[
+    AC_FC_MODULE_EXTENSION
+    AC_FC_PP_SRCEXT([F90])
+],[
+    AC_MSG_WARN([Configure generated older autoconf version. Please use 2.69 or later.])
+
+    AC_MSG_NOTICE([BEGIN: Stubbed version of AC_FC_MODULE_EXTENSION])
+    AC_SUBST([FC_MODEXT],[mod])
+    AC_MSG_NOTICE([END:   Stubbed version of AC_FC_MODULE_EXTENSION])
+
+    AC_MSG_NOTICE([BEGIN: Stubbed version of AC_FC_PP_SRCEXT])
+    AC_FC_SRCEXT([F90])
+    ax_save_FCFLAGS=$FCFLAGS
+    AC_MSG_CHECKING([for flags required to enable Fortran preprocessing])
+    for fppflag in '' -fpp -cpp '-x f95-cpp-input' none
+    do
+        if test "x$fppflag" == xnone; then
+            AC_MSG_RESULT([unknown])
+            AC_MSG_ERROR([Could not enable Fortran preprocessing])
+            break
+        fi
+        ax_fpp_save_FCFLAGS=$FCFLAGS
+        FCFLAGS="$FCFLAGS $fppflag"
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[#define TESTDEFINE])],[
+                             FCFLAGS=$ax_fpp_save_FCFLAGS
+                             break
+                          ],[
+                             FCFLAGS=$ax_fpp_save_FCFLAGS
+                          ])
+    done
+    AC_MSG_RESULT([$fppflag])
+    FCFLAGS_F90="$FCFLAGS_F90 $fppflag"
+    AC_MSG_NOTICE([END:   Stubbed version of AC_FC_PP_SRCEXT])
+])
 if test "x$ax_enable_debug" != "xno"; then
     AX_TRACEBACK()
 fi
