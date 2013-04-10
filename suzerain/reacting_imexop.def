@@ -29,11 +29,11 @@
 // #include-time parameters available followed by a sample usage.
 // Each of these are #undef-ed at the end of this template file
 //
-// #define FUNCNAME() /* Function name, e.g. suzerain_reacting_imexop_packc */
+// #define FUNCNAME() /* Function name, e.g. suzerain_reacting_flow_imexop_packc */
 // #define PACK(x)    /* suzerain_bsmbsm_ ## x ## pack{c,f}                 */
 
 void
-FUNCNAME()(
+FLOW_FUNCNAME()(
         const complex_double phi,
         const suzerain_reacting_imexop_scenario * const s,
         const suzerain_reacting_imexop_ref      * const r,
@@ -370,7 +370,75 @@ FUNCNAME()(
 
 }
 
-#undef FUNCNAME
+
+void
+SPECIES_FUNCNAME()(
+        const complex_double phi,
+        const suzerain_reacting_imexop_scenario * const s,
+        const suzerain_reacting_imexop_ref      * const r,
+        const suzerain_reacting_imexop_refld    * const ld,
+        const suzerain_bsplineop_workspace    * const w,
+        complex_double * const buf,
+        suzerain_bsmbsm * const A_T,
+        complex_double * const patpt)
+{
+    // When you modify this routine, you must also modify
+    // suzerain_reacting_imexop_accumulate so that operator
+    // accumulation-without-assembly and assembly match.  The test cases in
+    // tests/test_reacting_imexop.cpp are invaluable in checking the coherence of
+    // these two pieces of logic.
+
+    // How many rows and columns of banded submatrices will we build?
+    const int nneg = 1;
+
+    // Compute the BSMBSM structure and named max_kl, max_ku views of w->D_T.
+    *A_T = suzerain_bsmbsm_construct(nneg, w->n, w->max_kl, w->max_ku);
+    const double * const M  = w->D_T[0] - (w->max_ku - w->ku[0]);
+    const double * const D1 = w->D_T[1] - (w->max_ku - w->ku[1]);
+    const double * const D2 = w->D_T[2] - (w->max_ku - w->ku[1]);
+    assert(w->nderiv >= 2);         // Enough derivatives in workspace?
+    assert(A_T->ld == w->ld);         // Compatible storage?
+
+    // We do not know the leading dimension associated with the definition of
+    // PACK() so we must overwrite every possible submatrix within PATPT.
+    // This is only suboptimal for the zero (rho, rho_E) submatrix and
+    // brings with it much flexibility.
+
+    // This routine assembles the transpose of the operator and hence the
+    // equation indices are transposed in calls to PACK(...)(...) and we right
+    // the transpose of the discrete operators by diagonal matrices.
+
+    // The provided buf may contain INFs or NaNs.  Defensively zero it.
+    // Also serves to (possibly) bring the buffer into cache for accumulation.
+    assert(buf);
+    memset(buf, 0, A_T->ld*A_T->n*sizeof(buf[0]));
+
+    // Shorthand for common patterns below
+    static const double one = 1.0;
+#   define IDENTITY      &one,        0
+#   define REF(quantity) r->quantity, ld->quantity
+#   define PREAMBLE      'R', A_T->n, A_T->n, A_T->kl, A_T->ku
+
+    // On diagonal, mass accumulated last to avoid swamping small values.
+    // The factor phi is accounted for in this final mass accumulation.
+    suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+            1.0,                    REF(Ds),
+            D2, 1, w->ld, 0.0, buf, 1, A_T->ld);
+
+    suzerain_blasext_zgb_diag_scale_acc_d(PREAMBLE,
+            1.0,                         IDENTITY,
+            M,  1, w->ld, phi, buf, 1, A_T->ld);
+
+    PACK(z)(A_T, 0, 0, 1.0, buf, patpt);
+
+#   undef IDENTITY
+#   undef REF
+#   undef PREAMBLE
+
+}
+
+#undef FLOW_FUNCNAME
+#undef SPECIES_FUNCNAME
 #undef PACK
 
 /* vim: set ft=c:   */

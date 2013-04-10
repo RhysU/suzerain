@@ -491,11 +491,13 @@ suzerain_reacting_species_imexop_accumulate(
 // use preprocessor to generate both from the same source template
 
 // suzerain_reacting_imexop_packc
-#define FUNCNAME()  suzerain_reacting_imexop_packc
-#define PACK(x)     suzerain_bsmbsm_ ## x ## packc
+#define FLOW_FUNCNAME()    suzerain_reacting_flow_imexop_packc
+#define SPECIES_FUNCNAME() suzerain_reacting_species_imexop_packc
+#define PACK(x)            suzerain_bsmbsm_ ## x ## packc
 #include "reacting_imexop.def"
 
-// suzerain_reacting_imexop_packf
-#define FUNCNAME()  suzerain_reacting_imexop_packf
-#define PACK(x)     suzerain_bsmbsm_ ## x ## packf
+// suzerain_reacting_imexop_pack
+#define FLOW_FUNCNAME()    suzerain_reacting_flow_imexop_packf
+#define SPECIES_FUNCNAME() suzerain_reacting_species_imexop_packf
+#define PACK(x)            suzerain_bsmbsm_ ## x ## packf
 #include "reacting_imexop.def"

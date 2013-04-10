@@ -168,8 +168,8 @@ static void operator_consistency(const parameters& p)
     using suzerain::complex::NaN;
     fill(buf.get(),  buf.get()  + bufsize,  NaN<real_t>());
     fill(papt.get(), papt.get() + paptsize, NaN<real_t>());
-    suzerain_reacting_imexop_packc(phi, /* km, kn, */ &s, &r, &ld, op.get(),
-                                   0, 1, 2, 3, 4, buf.get(), &A, papt.get());
+    suzerain_reacting_flow_imexop_packc(phi, /* km, kn, */ &s, &r, &ld, op.get(),
+                                        0, 1, 2, 3, 4, buf.get(), &A, papt.get());
     for (int i = 0; i < A.N; ++i) {
         const int qi = suzerain_bsmbsm_q(A.S, A.n, i);
         for (int j = 0; j < A.N; ++j) {

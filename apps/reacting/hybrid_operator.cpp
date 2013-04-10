@@ -570,13 +570,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         static const char trans = 'T';
         if (flow_solver->spec.in_place()) { // Pack for in-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packf)");
-            suzerain_reacting_imexop_packf(
+            suzerain_reacting_flow_imexop_packf(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), flow_solver.get(), flow_solver->LU.data());
         } else {                       // Pack for out-of-place LU
             SUZERAIN_TIMER_SCOPED("implicit operator assembly (packc)");
-            suzerain_reacting_imexop_packc(
+            suzerain_reacting_flow_imexop_packc(
                     phi, &s, &ref, &ld, cop.get(),
                     ndx::e, ndx::mx, ndx::my, ndx::mz, ndx::rho,
                     buf.data(), flow_solver.get(), flow_solver->PAPT.data());
