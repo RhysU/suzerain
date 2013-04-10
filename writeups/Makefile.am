@@ -21,10 +21,15 @@ TEXSOURCES += viscous_linearization.tex
 
 # Notebooks, Images, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
+EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
-EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
+EXTRA_DIST += notebooks/Acoustic_WallNormal_EOS_3d.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_1D_Pressure.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_3D.nb
+EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
+EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
+EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
+EXTRA_DIST += notebooks/SMR91_Linearization.nb
 EXTRA_DIST += inhomogeneity.eps
 EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += references.bib
