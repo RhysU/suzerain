@@ -197,7 +197,7 @@ dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 ACX_MKL()
-export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS} ${FLIBS}"
+export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS}"
 AX_PATH_GSL(1.14,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
 PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.6])
