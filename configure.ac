@@ -102,10 +102,12 @@ m4_version_prereq([2.69],[
 ],[
     AC_MSG_WARN([Configure generated older autoconf version. Please use 2.69 or later.])
 
+    m4_pattern_allow([AC_FC_MODULE_EXTENSION])
     AC_MSG_NOTICE([BEGIN: Stubbed version of AC_FC_MODULE_EXTENSION])
     AC_SUBST([FC_MODEXT],[mod])
     AC_MSG_NOTICE([END:   Stubbed version of AC_FC_MODULE_EXTENSION])
 
+    m4_pattern_allow([AC_FC_PP_SRCEXT])
     AC_MSG_NOTICE([BEGIN: Stubbed version of AC_FC_PP_SRCEXT])
     AC_FC_SRCEXT([F90])
     ax_save_FCFLAGS=$FCFLAGS
