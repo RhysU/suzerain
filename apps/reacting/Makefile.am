@@ -109,8 +109,10 @@ TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
 
 # Multispecies restart
 TESTS              += test_restart_multispecies_explicit.sh
+#TESTS              += test_restart_multispecies_implicit.sh
 dist_check_SCRIPTS += test_restart_multispecies_template.sh
 dist_check_SCRIPTS += test_restart_multispecies_explicit.sh
+dist_check_SCRIPTS += test_restart_multispecies_implicit.sh
 
 endif # if BUILD_REACTING
 

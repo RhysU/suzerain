@@ -384,8 +384,6 @@ class IsothermalNoSlipPATPTEnforcer
 
 public:
 
-    // FIXME: There is no gamma... have to get etot in
-    // See BC treatment in explicit_operator.cpp for how to deal
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
                                   const real_t &e_tot)
         : e_tot(e_tot)
@@ -473,7 +471,6 @@ public:
     }
 };
 
-// TODO: Modify this routine to do species solves also
 void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
@@ -524,17 +521,20 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(state.shape()  [1] == (unsigned)             Ny);
     SUZERAIN_ENSURE(state.strides()[1] ==                         1);
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned)             Ny);
-    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+    SUZERAIN_ENSURE(state.shape()  [0] == (unsigned) (flow_solver->S +
+                                                      species_solver.size()));
 
     // Compute how many additional mean constraints we must solve
     // Ensure conformant, mean constraints are arriving on the correct rank
+    // FIXME: Do we (or should we) have integral constraints on species?
     const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
     if (nconstraints) {
         SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
         SUZERAIN_ENSURE(ic0->shape()  [1] == (unsigned)             Ny); 
         SUZERAIN_ENSURE(ic0->strides()[1] ==                         1);
         SUZERAIN_ENSURE(ic0->strides()[0] == (unsigned)             Ny);
-        SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) flow_solver->S); // TODO: mod size for species
+        SUZERAIN_ENSURE(ic0->shape()  [0] == (unsigned) (flow_solver->S +
+                                                         species_solver.size()));
     }
 
     // channel_treatment step (3) performs the operator solve which for the
@@ -552,11 +552,6 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
     // Prepare a scratch buffer for packc/packf usage
     ArrayXXc buf(flow_solver->ld, flow_solver->n);
-
-
-    // TODO: Add species assembly and solves below... need to read
-    // more closely before being more specific about how exactly this
-    // will modify the code.
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
     //
@@ -663,6 +658,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         }
 
         // If necessary, solve any required integral constraints
+        // FIXME: Do we (or should we) have integral constraints on species?
         for (std::size_t i = 0; i < nconstraints; ++i) {
             SUZERAIN_TIMER_SCOPED("implicit constraint solution");
             flow_solver->supply_B(ic0->data() + i * flow_solver->N);
