@@ -4240,7 +4240,7 @@ Rearranging \eqref{eq:dimeulertransformevolve_general} one obtains
     \left[V^L S\right] R^Y
     L
   \right)
-}^{L^G}
+}^{L_I^G}
   \hat{V}
 \\
 &{}+
@@ -4251,22 +4251,22 @@ Rearranging \eqref{eq:dimeulertransformevolve_general} one obtains
   \left(I - P^G\right)
   \left[V^L S\right] R^Y
   N(\hat{V})
-}_{N^G\left(\hat{V}\right)}
+}_{N_I^G\left(\hat{V}\right)}
 .
 \end{align}
 Evidently, Giles' conditions can be shoehorned into
 section~\ref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
 action of any existing global operators $L$ and $N$ to obtain the
-boundary-specific $L^G$ and $N^G$ behavior specified by
+boundary-specific $L_I^G$ and $N_I^G$ behavior described by
 equation~\eqref{eq:dimeulertransformevolve_linear}.  Implementing
-$\left(M+\varphi{}L^G\right)\hat{V}$ in an $L$-agnostic way atop an existing
+$\left(M+\varphi{}L_I^G\right)\hat{V}$ in an $L$-agnostic way atop an existing
 routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place is best
 done by having the latter routine return $\varphi{}L\hat{V}$ so that the
-incremental action of $L^G$ relative to $L$ can be further accumulated:
+incremental action of $L_I^G$ relative to $L$ can be further accumulated:
 \begin{alignat}{10}
 % Makes no sense to me that I needed to use phantom below...
 % ...instead of being able to just use alignat directly.
-\left(M+\varphi{}L^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
+\left(M+\varphi{}L_I^G\right)\hat{V} - \left(M+\varphi{}L\right)\hat{V}
   &={}   &&\ii \varphi{} k_x \, &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[C^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
   &{}+{} &&\ii \varphi{} k_z    &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\left[B^G\right]                    &&\left[V^L S\right] {R^Y} &&\,\,\hat{V} \\
   &{}-{} &&                     &&{R^Y}^{-1} \left[V^L S\right]^{-1} &&\phantom{\Bigl[}P^G\phantom{\Bigr]} &&\left[V^L S\right] {R^Y} &&\left(\varphi{}L\hat{V}\right)
@@ -4276,11 +4276,11 @@ number of equations as $\varphi{}L\hat{V}$ need only be returned for at most
 the two boundaries of $\hat{V}$.  No special handling is required for in-place
 application as it is currently implemented by incrementally applying
 out-of-place routines using auxiliary buffers.  Implementing
-$\left(M+\varphi{}L^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
+$\left(M+\varphi{}L_I^G\right)^{-1}$ atop $\left(M+\varphi{}L\right)^{-1}$ is
 best done by modifying the boundary equations after $M+\varphi{}L$ is formed
 but before the matrix is factorized.  Doing so requires using that, for a
 B-spline basis, $M$ contains only a single one in the boundary equations with
-all other entries being zero.  Happily, $N^G(\hat{V})$ can be found by a
+all other entries being zero.  Happily, $N_I^G(\hat{V})$ can be found by a
 straightforward linear transformation of $N(\hat{V})$ after the latter has been
 computed.  The required $C^G$-, $B^G$-, and $P^G$-related matrices may be
 computed only once per nonreflecting boundary per Runge--Kutta time step from
@@ -4288,39 +4288,49 @@ $\bar{V}$ and then cached for repeated use.
 
 \subsubsection{Implementation primarily within the nonlinear explicit operator}
 
-Rearranging \eqref{eq:dimeulertransformevolve_general} one may also obtain
-FIXME
+Reshuffling \eqref{eq:dimeulertransformevolve_general}, one may instead obtain
+an expression casting the boundary condition primarily as a modification of the
+nonlinear operator $N$:
 \begin{align}
-\label{eq:dimeulertransformevolve_general}
+\label{eq:dimeulertransformevolve_nonlinear}
   M \frac{\partial}{\partial{}t}
   \hat{V}
 &\approx
+\overbrace{
   {R^Y}^{-1}
   \left[V^L S\right]^{-1}
-  \left(I - P^G\right)
+  \left(I-P^G\right)
   \left[V^L S\right] R^Y
-  \left(
-    L \hat{V}
-    +
-    \chi N(\hat{V})
-  \right)
-\\ &{}+
+  L
+}^{L_E^G}
+  \hat{V}
+\\
+&{}+
+  \chi
+\underbrace{
   {R^Y}^{-1}
   \left[V^L S\right]^{-1}
   \left(
-    \ii k_x \left[C^G\right]
+    \chi^{-1}
+    \left( \ii k_x \left[C^G\right] + \ii k_z \left[B^G\right] \right)
+    \left[V^L S\right] R^Y M
+    \hat{V}
     +
-    \ii k_z \left[B^G\right]
+    \left(I - P^G\right)
+    \left[V^L S\right] R^Y
+    N(\hat{V})
   \right)
-  \left[V^L S\right]
-  R^Y
-  M \hat{V}
+}_{N_E^G\left(\hat{V}\right)}
 .
 \end{align}
-Compared to \eqref{eq:dimeulertransformevolve_linear}, this form may be more
-appropriate when implementing the condition in the explicit, nonlinear
-operator.  This may be desirable for simplicity or because implicit treatment
-is not being performed in the streamwise and spanwise directions.
+The form may be more desirable than
+\eqref{eq:dimeulertransformevolve_nonlinear} because it reduces the
+modifications necessary to any existing linear implicit treatment.  In
+particular, it can be used when the streamwise and spanwise directions are not
+being treated implicitly because it requires only wavenumber-independent
+modifications to $L$ to produce $L_E^G$.  Quite conveniently, the $N_E^G$ may be
+computed from $N$ using only information available in Fourier space assuming
+that reference state $\bar{V}$ has already been gathered.
 
 \subsection{Isothermal, transpiring wall boundary condition}
 
