@@ -62,8 +62,7 @@ namespace reacting {
  * Provides constitutive models for a mixture of ideal gasses
  * leveraging libantioch
  */
-class antioch_constitutive : public support::definition_base,
-                             public boost::noncopyable
+class antioch_constitutive : public support::definition_base
 {
 public:
 
@@ -343,8 +342,11 @@ public:
                                        Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >,
                                        real_t> > wilke_evaluator;
 
-    // TODO: Add antioch support for transport properties
+private:
 
+    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    antioch_constitutive(const antioch_constitutive&);
+    antioch_constitutive& operator=(const antioch_constitutive&);
 };
 
 } // namespace reacting
