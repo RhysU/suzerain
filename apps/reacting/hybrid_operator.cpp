@@ -525,7 +525,6 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
     // Compute how many additional mean constraints we must solve
     // Ensure conformant, mean constraints are arriving on the correct rank
-    // FIXME: Do we (or should we) have integral constraints on species?
     const std::size_t nconstraints = ic0 ? ic0->shape()[2]*ic0->shape()[3] : 0;
     if (nconstraints) {
         SUZERAIN_ENSURE(dgrid.has_zero_zero_modes());
@@ -550,6 +549,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         *flow_solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
 
     // Prepare a scratch buffer for packc/packf usage
+    // TODO: comment or max here?
     ArrayXXc buf(flow_solver->ld, flow_solver->n);
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
@@ -602,6 +602,8 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         // Inform the flow_solver about the new, unfactorized operator
         flow_solver->supplied_PAPT();
 
+        // Species solver supplied call
+
         // Solve using a new right hand side for each wavenumber pair km, kn
         for (int n = dkbz; n < dkez; ++n) {
             const int wn = wavenumber(dNz, n);
@@ -622,34 +624,26 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 // Form right hand side, apply BCs, factorize, and solve.
                 // Beware that much ugly, ugly magic is hidden just below.
 
-                // Flow RHS
+                // Flow RHS, BCs, solve
                 flow_solver->supply_B(p);
-
-                // Species RHSs
-                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
-                    species_solver[alfa]->supply_B(p + (ndx::species+alfa)*Ny);
-                }
 
                 // Boundary conditions
                 {
                     SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
-                    // FIXME: BCs don't support species yet!!!
                     bc_enforcer.rhs(flow_solver->PB.data());
                 }
 
-                // Flow solve
                 flow_solver->solve(trans);
-
-                // Species solves
-                for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
-                    species_solver[alfa]->solve(trans);
-                }
-
-                // Flow solution
                 flow_solver->demand_X(p);
 
-                // Species solutions
+
+                // Species RHSs, BCs, solves
                 for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                    species_solver[alfa]->supply_B(p + (ndx::species+alfa)*Ny);
+
+                    // FIXME: BCs don't support species yet!!!
+
+                    species_solver[alfa]->solve(trans);
                     species_solver[alfa]->demand_X(p + (ndx::species+alfa)*Ny);
                 }
 
@@ -664,7 +658,6 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         }
 
         // If necessary, solve any required integral constraints
-        // FIXME: Do we (or should we) have integral constraints on species?
         for (std::size_t i = 0; i < nconstraints; ++i) {
             SUZERAIN_TIMER_SCOPED("implicit constraint solution");
             flow_solver->supply_B(ic0->data() + i * Ntot);
