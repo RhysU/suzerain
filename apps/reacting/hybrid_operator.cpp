@@ -351,9 +351,6 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
 }
 
 
-// TODO: Deal with BCs.  Should we modify the functor below or create
-// a separate one to handle species conditions?  Not sure yet.
-
 /**
  * A functor for applying isothermal conditions for PA^TP^T-based operators.
  * Encapsulated in a class so that the same logic may be applied to real-
@@ -470,6 +467,90 @@ public:
     }
 };
 
+
+/**
+ * A functor for applying mass fraction for the species PA^TP^T-based
+ * operators.  Encapsulated in a class so that the same logic may be
+ * applied to real- and complex-valued operators and right hand sides.
+ *
+ */
+class MassFractionPATPTEnforcer
+{
+    enum { nwalls = 2, nmomentum = 3 };
+
+    // Indices within PA^TP^T at which to apply boundary conditions
+    // Computed once within constructor and then repeatedly used
+    int rho_s[nwalls];
+    int Ny;
+
+    // Precomputed coefficient based on the isothermal equation of state
+    const std::vector<real_t> wall_mass_fractions;
+
+public:
+
+    MassFractionPATPTEnforcer(const suzerain_bsmbsm &A_T,
+                              const std::vector<real_t> wall_mass_fractions)
+        : Ny(A_T.n)
+        , wall_mass_fractions(wall_mass_fractions)
+    {
+        // Starting offset to named scalars in interleaved_state pencil
+        const int rho_s0 = 0;
+
+        // Relative to foo0 what is the offset to lower, upper walls
+        const int wall[nwalls] = { 0, A_T.n - 1};
+
+        // Prepare indices within PA^TP^T corresponding to the walls.
+        // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
+        for (int i = 0; i < nwalls; ++i) {
+            rho_s[i] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho_s0 + wall[i]);
+        }
+    }
+
+    /**
+     * Set RHS to rho*wall_mass_fractions
+     */
+    template<typename T>
+    void rhs(T * const bspec, T * const xflow, const int alfa)
+    {
+        // Note two assumptions...
+        // 1.) alfa+1 implies wall_mass_fractions[0] is diluter
+        // 2.) incoming xflow is non-permuted flow solution
+
+        for (int wall = 0; wall < nwalls; ++wall) {
+            bspec[rho_s[wall]] = 
+                xflow[ndx::rho+wall*(Ny-1)]*wall_mass_fractions[alfa+1];
+        }
+    }
+
+    /**
+     * Modify the equations within PA^TP^T for lower, upper walls where each
+     * contiguous column within PA^TP^T contains one equation.  This storage is
+     * ideal from a cache locality perspective for this boundary condition.
+     * Must be done in conjunction with rhs().
+     */
+    template<typename T>
+    void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
+    {
+        // No attempt made to not unnecessarily disturb matrix conditioning.
+
+        for (int wall = 0; wall < nwalls; ++wall) {
+            int begin, end;
+
+            T * const col = (T *) suzerain_gbmatrix_col(
+                    A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
+                    sizeof(T), rho_s[wall], &begin, &end);
+            // Scan row and adjust coefficients for constraint
+            for (int i = begin; i < end; ++i) {
+                if (i == rho_s[wall]) {
+                    col[i] = 1.0;
+                } else {
+                    col[i] = 0;
+                }
+            }
+        }
+    }
+};
+
 void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
@@ -545,11 +626,21 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(
+    IsothermalNoSlipPATPTEnforcer flow_bc_enforcer(
         *flow_solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
 
+    shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
+    if (species_solver.size()>0) {
+        species_bc_enforcer = 
+            make_shared<MassFractionPATPTEnforcer>(
+                *(species_solver[0]), chdef.wall_mass_fractions);
+    }
+
     // Prepare a scratch buffer for packc/packf usage
-    // TODO: comment or max here?
+    //
+    // NOTE: buf sized for usage with flow operator is always big
+    // enough for usage with decoupled species operators... beware if
+    // you do anything else
     ArrayXXc buf(flow_solver->ld, flow_solver->n);
 
     // Iterate across local wavenumbers and "invert" operator "in-place"
@@ -593,14 +684,28 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         }
 
         // Apply boundary conditions to PA^TP^T
-        // FIXME: BCs don't support species yet!!!
         {
             SUZERAIN_TIMER_SCOPED("implicit operator BCs");
-            bc_enforcer.op(*flow_solver, flow_solver->PAPT.data(),
+            flow_bc_enforcer.op(*flow_solver, flow_solver->PAPT.data(),
                                          flow_solver->PAPT.colStride());
         }
         // Inform the flow_solver about the new, unfactorized operator
         flow_solver->supplied_PAPT();
+
+
+        for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+            
+            {
+                // Apply species BCs to operator
+                SUZERAIN_TIMER_SCOPED("implicit operator BCs"); 
+                species_bc_enforcer->op(*(species_solver[alfa]), 
+                                        species_solver[alfa]->PAPT.data(),
+                                        species_solver[alfa]->PAPT.colStride());
+            }
+
+            // Inform species_solver about new, unfactorized operator
+            species_solver[alfa]->supplied_PAPT();
+        }
 
         // Species solver supplied call
 
@@ -630,7 +735,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 // Boundary conditions
                 {
                     SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
-                    bc_enforcer.rhs(flow_solver->PB.data());
+                    flow_bc_enforcer.rhs(flow_solver->PB.data());
                 }
 
                 flow_solver->solve(trans);
@@ -641,7 +746,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
                     species_solver[alfa]->supply_B(p + (ndx::species+alfa)*Ny);
 
-                    // FIXME: BCs don't support species yet!!!
+                    {
+                        SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
+                        species_bc_enforcer->rhs(species_solver[alfa]->PB.data(),
+                                                 p, alfa);
+                    }
 
                     species_solver[alfa]->solve(trans);
                     species_solver[alfa]->demand_X(p + (ndx::species+alfa)*Ny);
@@ -661,9 +770,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         for (std::size_t i = 0; i < nconstraints; ++i) {
             SUZERAIN_TIMER_SCOPED("implicit constraint solution");
             flow_solver->supply_B(ic0->data() + i * Ntot);
-            bc_enforcer.rhs(flow_solver->PB.data());
+            flow_bc_enforcer.rhs(flow_solver->PB.data());
             flow_solver->solve(trans);
             flow_solver->demand_X(ic0->data() + i * Ntot);
+
+            // FIXME: Need to update species BCs to account for any
+            // change in wall mixture density due to constraint
+            // application
         }
 
         break;
