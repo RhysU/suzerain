@@ -61,7 +61,7 @@ compressible channel within Suzerain's numerical framework.
 \section{Setting}
 
 We advance nondimensional density $\rho$, momentum $\vec{m}=\rho{}\vec{u}$, and
-total energy $e = \rho{}\tilde{e}$ according to
+total energy $e = \rho{}{E}$ according to
 \begin{subequations}
 \begin{align}
   \partial_{t} \rho{} &= R_{\rho}\!\left(\rho,\vec{m},e\right)
@@ -93,7 +93,7 @@ nondimensional equation of state
 \begin{align}
   p  = \frac{\rho{}T}{\gamma}
     &= \left(\gamma-1\right) \left(
-          \rho\tilde{e} - \mbox{Ma}^2\frac{\vec{m}\cdot\vec{m}}{2\rho}
+          \rho{E} - \mbox{Ma}^2\frac{\vec{m}\cdot\vec{m}}{2\rho}
         \right)
 \end{align}
 where temperature $T$ has been nondimensionalized so that $T_\text{wall}=1$
@@ -125,11 +125,11 @@ at $y = 0,2\delta$ implies that at the wall
   = 0.
 \end{align}
 The condition $T=1$ combined with the no-slip condition is equivalent to fixing
-$\tilde{e}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
+${E}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
 \begin{align}
   \partial_{t} e
-  &=  \rho \cancel{\partial_{t} \tilde{e}}
-    + \tilde{e} \partial_{t} \rho
+  &=  \rho \cancel{\partial_{t} {E}}
+    + {E} \partial_{t} \rho
   = \frac{1}{\gamma\left(\gamma-1\right)} \partial_{t} \rho
 \end{align}
 also holds at the wall.  Finally, we find $\vec{f}_{m} =
@@ -236,7 +236,7 @@ associated substep energy contribution $f_{m_x} u_{x}$ can be determined.
 
 Prior to this implicit forcing application, the wall collocation point state
 must be modified to enforce a no-slip, isothermal condition by setting the
-momentum to zero and the total energy $e = \rho \tilde{e} =
+momentum to zero and the total energy $e = \rho {E} =
 \frac{\rho}{\gamma\left(\gamma-1\right)}$.  As in the nonevolution approach,
 the bulk density should be stationary without any special treatment.
 
