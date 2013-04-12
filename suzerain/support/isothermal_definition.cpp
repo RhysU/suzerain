@@ -84,15 +84,15 @@ isothermal_definition::~isothermal_definition()
 }
 
 // Strings used in options_description and populate/override/save/load.
-static const char name_lower_T[]   = "lower_T";
-static const char name_lower_u[]   = "lower_u";
-static const char name_lower_v[]   = "lower_v";
-static const char name_lower_w[]   = "lower_w";
+static const char name_lower_T []  = "lower_T";
+static const char name_lower_u []  = "lower_u";
+static const char name_lower_v []  = "lower_v";
+static const char name_lower_w []  = "lower_w";
 static const char name_lower_cs[]  = "lower_cs";
-static const char name_upper_T[]   = "upper_T";
-static const char name_upper_u[]   = "upper_u";
-static const char name_upper_v[]   = "upper_v";
-static const char name_upper_w[]   = "upper_w";
+static const char name_upper_T []  = "upper_T";
+static const char name_upper_u []  = "upper_u";
+static const char name_upper_v []  = "upper_v";
+static const char name_upper_w []  = "upper_w";
 static const char name_upper_cs[]  = "upper_cs";
 
 
@@ -103,10 +103,10 @@ static const char desc_lower_v []  = "Input for v-velocity at lower boundary";
 static const char desc_lower_w []  = "Input for w-velocity at lower boundary";
 static const char desc_lower_cs[]  = "Input for species mass fractions at \
                                       lower boundary";
-static const char desc_upper_T[]   = "Input for temperature at upper boundary";
-static const char desc_upper_u[]   = "Input for u-velocity at upper boundary";
-static const char desc_upper_v[]   = "Input for v-velocity at upper boundary";
-static const char desc_upper_w[]   = "Input for w-velocity at upper boundary";
+static const char desc_upper_T []  = "Input for temperature at upper boundary";
+static const char desc_upper_u []  = "Input for u-velocity at upper boundary";
+static const char desc_upper_v []  = "Input for v-velocity at upper boundary";
+static const char desc_upper_w []  = "Input for w-velocity at upper boundary";
 static const char desc_upper_cs[]  = "Input for species mass fractions at \
                                       upper boundary";
 
@@ -307,9 +307,9 @@ isothermal_definition::load(
     esio_line_read(h, name_lower_v,   &t.lower_v,   0);
     esio_line_read(h, name_lower_w,   &t.lower_w,   0);
     esio_line_read(h, name_upper_T,   &t.upper_T,   0);
-    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
-    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
-    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
+    esio_line_read(h, name_upper_u,   &t.upper_u,   0);
+    esio_line_read(h, name_upper_v,   &t.upper_v,   0);
+    esio_line_read(h, name_upper_w,   &t.upper_w,   0);
 
     // Mass fractions vector
     int Ns;
