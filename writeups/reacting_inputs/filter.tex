@@ -1,52 +1,52 @@
-\documentclass[11pt]{article}% insert '[draft]' option to show overfull boxes
-\usepackage{authblk}
-
-\usepackage{fullpage}
-\usepackage{todonotes}
-\usepackage{graphicx}
-\usepackage{color}
-\usepackage{amsmath,amsfonts}
-\usepackage{threeparttable}% tables with footnotes
-\usepackage{dcolumn}% decimal-aligned tabular math columns
-\usepackage{hyperref}
-\hypersetup{colorlinks=true,
-citecolor=red,%
-filecolor=black,%
-linkcolor=black,%
-urlcolor=black}
-
-% In conjunction with -shell-escape, automatically convert EPS to PDF
-\usepackage{epstopdf}
-\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
-\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
-    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
-}
-
-%\newcolumntype{d}{D{.}{.}{-1}}
-
-%========================================================================
-% New Commands
-%========================================================================
-%\newcommand{\todo}[1]{ {\color{red} TODO: #1} }
-
-%========================================================================
-% Title Stuff
-%========================================================================
-\title{Filtering Formulation for Suzerain}
-\author{R. D. Moser}
-%\affil{Center for Predictive Engineering and Computational Sciences,\\
-%Institute for Computational Engineering and Sciences,\\
-%The University of Texas at Austin, Austin TX, 78712,\\
-%{\tt rmoser@ices.utexas.edu}}
-
+%\documentclass[11pt]{article}% insert '[draft]' option to show overfull boxes
+%\usepackage{authblk}
 %
-
-%========================================================================
-% Document starts here
-%========================================================================
-\begin{document}
-
-\maketitle
+%\usepackage{fullpage}
+%\usepackage{todonotes}
+%\usepackage{graphicx}
+%\usepackage{color}
+%\usepackage{amsmath,amsfonts}
+%\usepackage{threeparttable}% tables with footnotes
+%\usepackage{dcolumn}% decimal-aligned tabular math columns
+%\usepackage{hyperref}
+%\hypersetup{colorlinks=true,
+%citecolor=red,%
+%filecolor=black,%
+%linkcolor=black,%
+%urlcolor=black}
+%
+%% In conjunction with -shell-escape, automatically convert EPS to PDF
+%\usepackage{epstopdf}
+%\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+%\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+%    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+%}
+%
+%%\newcolumntype{d}{D{.}{.}{-1}}
+%
+%%========================================================================
+%% New Commands
+%%========================================================================
+%%\newcommand{\todo}[1]{ {\color{red} TODO: #1} }
+%
+%%========================================================================
+%% Title Stuff
+%%========================================================================
+%\title{Filtering Formulation for Suzerain}
+%\author{R. D. Moser}
+%%\affil{Center for Predictive Engineering and Computational Sciences,\\
+%%Institute for Computational Engineering and Sciences,\\
+%%The University of Texas at Austin, Austin TX, 78712,\\
+%%{\tt rmoser@ices.utexas.edu}}
+%
+%%
+%
+%%========================================================================
+%% Document starts here
+%%========================================================================
+%\begin{document}
+%
+%\maketitle
 
 
 In the flux formulation, the wall-normal diffusion operator is written
@@ -122,7 +122,8 @@ by Cook \& Cabot, the transfer function is shown in figure~\ref{fig:transfer}.
 
 \begin{figure}[t]
 \begin{center}
-\includegraphics[width=4in]{transfer_function}
+%\includegraphics[width=4in]{reacting_inputs/transfer_function}
+FIXME: Get this figure to work
 \end{center}
  \caption{Transfer function (\ref{eq:transfer}) of the $8^{\rm th}$ order filter defined in
  (\ref{eq:filter}) and table~\ref{tab:coefficients}.}
@@ -137,7 +138,8 @@ near the wall, the stencil will fall outside the domain; 3) the value of
 $\phi$ needs to be selected. Treatment of
 these issues is discussed below.
 
-\paragraph{Parameter Values} The filter is defined by 7 independent
+%\paragraph{Parameter Values} The filter is defined by 7 independent
+Parameter Values: The filter is defined by 7 independent
 parameters, which are constrained by a number of requirements:
 \begin{itemize}
 \item Eighth order accuracy introduced 4 linear constraints required to
@@ -170,7 +172,8 @@ As it happens, all six of these equations are satisfied exactly by the
 coefficients in the table. These values can thus be used, and we can defer finding other
 members of the family of filters until later.
 
-\paragraph{Wall Treatment} There are three fairly straight-forward
+%\paragraph{Wall Treatment} There are three fairly straight-forward
+Wall Treatment: There are three fairly straight-forward
 approaches to filtering at the walls:
 \begin{enumerate}
 \item Just don't apply the filter operator for points near the
@@ -191,7 +194,8 @@ sufficient. The properties of these two approaches should be evaluated
 by analyzing the eigenvalues and eigenvectors of the resulting
 finite-domain $F$ operator.
 
-\paragraph{Selecting the value of $\phi$}
+%\paragraph{Selecting the value of $\phi$}
+Selecting the value of $\phi$:
 One wants to select $\phi$ sufficiently large so that the high
 wavenumbers are effectively damped (eliminated), but not so large as to
 cause significant damping for physically relevant wavenumbers. One
@@ -207,4 +211,4 @@ the resulting operator $\phi(F-I)$ in (\ref{eq:time_filter}) should also
 be evaluated. Victor's experience in Comp regarding this would be useful.
 
 
-\end{document}
+%\end{document}

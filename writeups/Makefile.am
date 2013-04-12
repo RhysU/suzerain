@@ -5,22 +5,35 @@
 .NOTPARALLEL:
 
 # LaTeX and BiBTeX source files
-TEXSOURCES  = acoustic_linearization.tex
-TEXSOURCES += channel_treatment.tex
+
+# Standalone LaTeX documents
+TEXSOURCES  = channel_treatment.tex
 TEXSOURCES += covariance.tex
-TEXSOURCES += filter.tex
-TEXSOURCES += full_linear_operator.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
-TEXSOURCES += reactinggas.tex
-TEXSOURCES += reacting_linearization.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
-TEXSOURCES += viscous_linearization.tex
+
+# Reacting doc broken out amongst many srcs.  Use EXTRA_DIST for
+# everything that gets \input in reacting_main.tex s.t. we don't try
+# to build them standalone (which will fail of course).
+#
+# FIXME: This approach breaks dependency tracking.  Thus, a mod to one
+# of the files that is \input does *not* result in a rebuild of
+# reacting_main.
+TEXSOURCES += reacting_main.tex
+EXTRA_DIST  = reacting_inputs/acoustic_decision_pt.tex
+EXTRA_DIST += reacting_inputs/acoustic_linearization.tex
+EXTRA_DIST += reacting_inputs/filter.tex
+EXTRA_DIST += reacting_inputs/full_linear_operator.tex
+EXTRA_DIST += reacting_inputs/reactinggas.tex
+EXTRA_DIST += reacting_inputs/reacting_linearization.tex
+EXTRA_DIST += reacting_inputs/viscous_linearization.tex
+EXTRA_DIST += reacting_inputs/transfer_function.eps
 
 # Notebooks, Images, References, etc.
-EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
+EXTRA_DIST += notebooks/Acoustics_WallNormal_3D.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Acoustic_WallNormal_EOS_3d.nb
@@ -33,7 +46,7 @@ EXTRA_DIST += notebooks/SMR91_Linearization.nb
 EXTRA_DIST += inhomogeneity.eps
 EXTRA_DIST += inhomogeneity.gz
 EXTRA_DIST += references.bib
-EXTRA_DIST += transfer_function.eps
+
 
 # Build and install writeups
 all-local:      pdf-local

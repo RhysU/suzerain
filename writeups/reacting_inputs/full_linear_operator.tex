@@ -1,101 +1,101 @@
-\documentclass[letterpaper,11pt,nointlimits,reqno,draft]{amsart}
-
-% Avoid "Too many math alphabets used in version normal" issue
-\newcommand\hmmax{0}
-\newcommand\bmmax{0}
-
-% Load the color package first to avoid option clashes
-\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
-
-% General packages
-\usepackage{accents}
-\usepackage{algorithm}
-\usepackage{algorithmic}
-\usepackage{amsfonts}
-\usepackage{fixltx2e,amsmath}
-\usepackage{amssymb}
-\usepackage{bm}
-\usepackage{enumerate}
-\usepackage{fancyhdr}
-\usepackage{floatpag}
-\usepackage{fullpage}
-\usepackage[final]{graphicx}
-\usepackage{ifthen}
-\usepackage{lastpage}
-\usepackage{latexsym}
-\usepackage{mathrsfs}
-\usepackage{mathtools}
-\usepackage[numbers,sort&compress]{natbib}
-\usepackage{parskip}
-\usepackage{pstricks}
-\usepackage{rotating}
-\usepackage{setspace}
-\usepackage{txfonts}
-\usepackage{units}
-\usepackage{varioref}
-\usepackage{wrapfig}
-\usepackage{yhmath}
-
-\usepackage[obeyDraft,textsize=scriptsize]{todonotes}
-
-% In conjunction with -shell-escape, automatically convert EPS to PDF
-\usepackage{epstopdf}
-\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
-\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
-    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
-}
-
-% Hyperref package must be last otherwise the contents are jumbled
-% hypertexnames disabled to fix links pointing to incorrect locations
-\usepackage[colorlinks=true,
-            linkcolor=blue,
-            urlcolor=blue,
-            citecolor=blue,
-            final,
-            hypertexnames=false]{hyperref}
-
-% Fix Todonotes wrongly placed in the margin
-\setlength{\marginparwidth}{2cm}
-
-% Environment sidewaysfigure from rotating plays poorly with amsart class
-% Fix per http://www.latex-community.org/forum/viewtopic.php?f=4&t=1742
-\setlength\rotFPtop{0pt plus 1fil}
-
-\mathtoolsset{showonlyrefs,showmanualtags}
-%%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
-
-% Permit \eqref inside moving environments
-% http://tex.stackexchange.com/questions/61764/eqref-in-captions-with-mathtools
-\MakeRobust{\eqref}
-
-% Line Spacing
-\singlespacing
-
-% Increase table of contents depth
-\setcounter{tocdepth}{4}
-
-% Simplify headings on floating pages
-\floatpagestyle{plain}
-\rotfloatpagestyle{empty}
-
-% Document-specific commands
-\newcommand{\ii}{\ensuremath{\mathrm{i}}}
-\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
-\newcommand{\Knudsen}[1][]{\ensuremath{\mbox{Kn}_{#1}}}
-\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
-\newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
-\newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
-\newcommand{\reference}[1]{\ensuremath{\left\{#1\right\}_{0}}}
-\newcommand{\lessreference}[1]
-  {\ensuremath{\left({#1}-\reference{#1}\right)}}
-\newcommand{\symmetricpart}[1]
-  {\ensuremath{\operatorname{sym}\left(#1\right)}}
-\DeclareMathOperator{\trace}{tr}
-\newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term from slow derivative
-\newcommand{\Cs}{\ensuremath{\mathcal{C}}}  % source term from integral constraints
-
-\begin{document}
-
+%\documentclass[letterpaper,11pt,nointlimits,reqno,draft]{amsart}
+%
+%% Avoid "Too many math alphabets used in version normal" issue
+%\newcommand\hmmax{0}
+%\newcommand\bmmax{0}
+%
+%% Load the color package first to avoid option clashes
+%\usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+%
+%% General packages
+%\usepackage{accents}
+%\usepackage{algorithm}
+%\usepackage{algorithmic}
+%\usepackage{amsfonts}
+%\usepackage{fixltx2e,amsmath}
+%\usepackage{amssymb}
+%\usepackage{bm}
+%\usepackage{enumerate}
+%\usepackage{fancyhdr}
+%\usepackage{floatpag}
+%\usepackage{fullpage}
+%\usepackage[final]{graphicx}
+%\usepackage{ifthen}
+%\usepackage{lastpage}
+%\usepackage{latexsym}
+%\usepackage{mathrsfs}
+%\usepackage{mathtools}
+%\usepackage[numbers,sort&compress]{natbib}
+%\usepackage{parskip}
+%\usepackage{pstricks}
+%\usepackage{rotating}
+%\usepackage{setspace}
+%\usepackage{txfonts}
+%\usepackage{units}
+%\usepackage{varioref}
+%\usepackage{wrapfig}
+%\usepackage{yhmath}
+%
+%\usepackage[obeyDraft,textsize=scriptsize]{todonotes}
+%
+%% In conjunction with -shell-escape, automatically convert EPS to PDF
+%\usepackage{epstopdf}
+%\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+%\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+%    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+%}
+%
+%% Hyperref package must be last otherwise the contents are jumbled
+%% hypertexnames disabled to fix links pointing to incorrect locations
+%\usepackage[colorlinks=true,
+%            linkcolor=blue,
+%            urlcolor=blue,
+%            citecolor=blue,
+%            final,
+%            hypertexnames=false]{hyperref}
+%
+%% Fix Todonotes wrongly placed in the margin
+%\setlength{\marginparwidth}{2cm}
+%
+%% Environment sidewaysfigure from rotating plays poorly with amsart class
+%% Fix per http://www.latex-community.org/forum/viewtopic.php?f=4&t=1742
+%\setlength\rotFPtop{0pt plus 1fil}
+%
+%\mathtoolsset{showonlyrefs,showmanualtags}
+%%%% \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+%
+%% Permit \eqref inside moving environments
+%% http://tex.stackexchange.com/questions/61764/eqref-in-captions-with-mathtools
+%\MakeRobust{\eqref}
+%
+%% Line Spacing
+%\singlespacing
+%
+%% Increase table of contents depth
+%\setcounter{tocdepth}{4}
+%
+%% Simplify headings on floating pages
+%\floatpagestyle{plain}
+%\rotfloatpagestyle{empty}
+%
+%% Document-specific commands
+%\newcommand{\ii}{\ensuremath{\mathrm{i}}}
+%\newcommand{\trans}[1]{{#1}^{\ensuremath{\mathsf{T}}}}
+%\newcommand{\Knudsen}[1][]{\ensuremath{\mbox{Kn}_{#1}}}
+%\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
+%\newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
+%\newcommand{\Prandtl}[1][]{\ensuremath{\mbox{Pr}_{#1}}}
+%\newcommand{\reference}[1]{\ensuremath{\left\{#1\right\}_{0}}}
+%\newcommand{\lessreference}[1]
+%  {\ensuremath{\left({#1}-\reference{#1}\right)}}
+%\newcommand{\symmetricpart}[1]
+%  {\ensuremath{\operatorname{sym}\left(#1\right)}}
+%\DeclareMathOperator{\trace}{tr}
+%\newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term from slow derivative
+%\newcommand{\Cs}{\ensuremath{\mathcal{C}}}  % source term from integral constraints
+%
+%\begin{document}
+%
 \section{Decoupling Species Equations}
 Our full matrix M,
 \begin{equation}
@@ -696,4 +696,4 @@ formulation. The fully implicit matrix is shown in fig. \ref{fig:discreteimplici
 \end{sidewaysfigure}
 
 
-\end{document}
+%\end{document}
