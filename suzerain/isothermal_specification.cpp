@@ -38,43 +38,43 @@ isothermal_specification::isothermal_specification()
     , lower_u(std::numeric_limits<real_t>::quiet_NaN())
     , lower_v(std::numeric_limits<real_t>::quiet_NaN())
     , lower_w(std::numeric_limits<real_t>::quiet_NaN())
-    , lower_mass_fractions(0)
+    , lower_cs(0)
     , upper_T(std::numeric_limits<real_t>::quiet_NaN())
     , upper_u(std::numeric_limits<real_t>::quiet_NaN())
     , upper_v(std::numeric_limits<real_t>::quiet_NaN())
     , upper_w(std::numeric_limits<real_t>::quiet_NaN())
-    , upper_mass_fractions(0)
+    , upper_cs(0)
 {
 }
 
 isothermal_specification::isothermal_specification(
-        const real_t T_wall)
-    : lower_T(T_wall)
+        const real_t wall_T)
+    : lower_T(wall_T)
     , lower_u(0)
     , lower_v(0)
     , lower_w(0)
-    , lower_mass_fractions(0)
-    , upper_T(T_wall)
+    , lower_cs(0)
+    , upper_T(wall_T)
     , upper_u(0)
     , upper_v(0)
     , upper_w(0)
-    , upper_mass_fractions(0)
+    , upper_cs(0)
 {
 }
 
 isothermal_specification::isothermal_specification(
-        const real_t T_wall,
+        const real_t wall_T,
         const real_t inflow_velocity)
-    : lower_T(T_wall)
+    : lower_T(wall_T)
     , lower_u(0)
-    , lower_v( inflow_velocity)  // Inflow has positive sign
+    , lower_v(+inflow_velocity)  // Inflow has positive sign
     , lower_w(0)
-    , lower_mass_fractions(0)
-    , upper_T(T_wall)
+    , lower_cs(0)
+    , upper_T(wall_T)
     , upper_u(0)
     , upper_v(-inflow_velocity)  // Inflow has negative sign
     , upper_w(0)
-    , upper_mass_fractions(0)
+    , upper_cs(0)
 {
 }
 
@@ -87,12 +87,12 @@ isothermal_specification::isothermal_specification(
     , lower_u(0)
     , lower_v(lower_v)
     , lower_w(0)
-    , lower_mass_fractions(0)
+    , lower_cs(0)
     , upper_T(upper_T)
     , upper_u(0)
     , upper_v(upper_v)
     , upper_w(0)
-    , upper_mass_fractions(0)
+    , upper_cs(0)
 {
 }
 
@@ -107,12 +107,12 @@ isothermal_specification::isothermal_specification(
     , lower_u(lower_u)
     , lower_v(lower_v)
     , lower_w(0)
-    , lower_mass_fractions(0)
+    , lower_cs(0)
     , upper_T(upper_T)
     , upper_u(upper_u)
     , upper_v(upper_v)
     , upper_w(0)
-    , upper_mass_fractions(0)
+    , upper_cs(0)
 {
 }
 

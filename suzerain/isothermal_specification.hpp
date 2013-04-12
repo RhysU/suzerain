@@ -43,28 +43,28 @@ public:
 
     /**
      * Construct an instance with all parameters set to NaN and zero-length
-     * #lower_mass_fractions and #upper_mass_fractions.  Clients can use NaN as
-     * a not-yet-specified or use-the-default value.
+     * #lower_cs and #upper_cs.  Clients can use NaN as a not-yet-specified or
+     * use-the-default value.
      */
     isothermal_specification();
 
     /**
      * Specify a no-slip wall with given \f$T\f$ at both boundaries.
      *
-     * @param T_wall \f$T\f$ for both walls.
+     * @param wall_T \f$T\f$ for both walls.
      */
-    isothermal_specification(const real_t T_wall);
+    isothermal_specification(real_t wall_T);
 
     /**
      * Specify a transpiring wall with given inflow velocity \f$v\f$ and
      * temperature \f$T\f$ at both boundaries.
      *
-     * @param T_wall          \f$T\f$ for both walls.
+     * @param wall_T          \f$T\f$ for both walls.
      * @param inflow_velocity \f$v\f$ for both walls with positive values
      *                        oriented blowing into the domain interior.
      */
-    isothermal_specification(const real_t T_wall,
-                             const real_t inflow_velocity);
+    isothermal_specification(real_t wall_T,
+                             real_t inflow_velocity);
 
     /**
      * Specify two different temperatures and wall blowing velocities.
@@ -74,10 +74,10 @@ public:
      * @param upper_T \f$T\f$ at \f$y=L_y\f$
      * @param upper_v \f$v\f$ at \f$y=L_y\f$
      */
-    isothermal_specification(const real_t lower_T,
-                             const real_t lower_v,
-                             const real_t upper_T,
-                             const real_t upper_v);
+    isothermal_specification(real_t lower_T,
+                             real_t lower_v,
+                             real_t upper_T,
+                             real_t upper_v);
 
     /**
      * Specify two different temperatures, wall blowing velocities,
@@ -90,12 +90,12 @@ public:
      * @param upper_u \f$u\f$ at \f$y=L_y\f$
      * @param upper_v \f$v\f$ at \f$y=L_y\f$
      */
-    isothermal_specification(const real_t lower_T,
-                             const real_t lower_u,
-                             const real_t lower_v,
-                             const real_t upper_T,
-                             const real_t upper_u,
-                             const real_t upper_v);
+    isothermal_specification(real_t lower_T,
+                             real_t lower_u,
+                             real_t lower_v,
+                             real_t upper_T,
+                             real_t upper_u,
+                             real_t upper_v);
 
     /**
      * Conditions on the \f$y=0\f$ boundary.
@@ -115,7 +115,7 @@ public:
     real_t lower_w;
 
     /** Species mass fractions \f$c_s\f$ at \f$y=0\f$. */
-    std::vector<real_t> lower_mass_fractions;
+    std::vector<real_t> lower_cs;
 
     /**@}*/
 
@@ -137,7 +137,7 @@ public:
     real_t upper_w;
 
     /** Species mass fractions \f$c_s\f$ at \f$y=L_y\f$. */
-    std::vector<real_t> upper_mass_fractions;
+    std::vector<real_t> upper_cs;
 
     /**@}*/
 
