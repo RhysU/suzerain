@@ -97,18 +97,18 @@ static const char name_upper_cs[]  = "upper_cs";
 
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_lower_T []  = "Input for temperature at lower boundary";
-static const char desc_lower_u []  = "Input for u-velocity at lower boundary";
-static const char desc_lower_v []  = "Input for v-velocity at lower boundary";
-static const char desc_lower_w []  = "Input for w-velocity at lower boundary";
-static const char desc_lower_cs[]  = "Input for species mass fractions at \
-                                      lower boundary";
-static const char desc_upper_T []  = "Input for temperature at upper boundary";
-static const char desc_upper_u []  = "Input for u-velocity at upper boundary";
-static const char desc_upper_v []  = "Input for v-velocity at upper boundary";
-static const char desc_upper_w []  = "Input for w-velocity at upper boundary";
-static const char desc_upper_cs[]  = "Input for species mass fractions at \
-                                      upper boundary";
+static const char desc_lower_T []  = "Temperature at lower boundary";
+static const char desc_lower_u []  = "u-velocity at lower boundary";
+static const char desc_lower_v []  = "v-velocity at lower boundary";
+static const char desc_lower_w []  = "w-velocity at lower boundary";
+static const char desc_lower_cs[]  = "Species mass fractions at lower"
+                                     " boundary";
+static const char desc_upper_T []  = "Temperature at upper boundary";
+static const char desc_upper_u []  = "u-velocity at upper boundary";
+static const char desc_upper_v []  = "v-velocity at upper boundary";
+static const char desc_upper_w []  = "w-velocity at upper boundary";
+static const char desc_upper_cs[]  = "Species mass fractions at"
+                                     " boundary";
 
 
 boost::program_options::options_description
