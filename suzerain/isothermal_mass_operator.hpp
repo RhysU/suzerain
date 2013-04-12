@@ -28,6 +28,7 @@
  * Provides \ref isothermal_mass_operator.
  */
 
+#include <suzerain/common.hpp>
 #include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
@@ -61,6 +62,46 @@ public:
             const bsplineop &cop,
             bspline &b);
 
+    /**
+     * Compute the specific total energy \f$E\f$ on the lower boundary.  The
+     * specified condition is provided but subclasses should account for any
+     * relevant auxiliary information.  For example, when enforcing \c lower_v
+     * is disabled using \c NaN per \ref isothermal_specification#lower_v for a
+     * non-reflecting boundary condition, the instantaneous mean velocity
+     * should instead be used when computing \f$E\f$.
+     *
+     * @param lower_T  Specified per \ref isothermal_specification#lower_T.
+     * @param lower_u  Specified per \ref isothermal_specification#lower_u.
+     * @param lower_v  Specified per \ref isothermal_specification#lower_v.
+     * @param lower_w  Specified per \ref isothermal_specification#lower_w.
+     * @param lower_cs Specified per \ref isothermal_specification#lower_cs.
+     *
+     * @return the value of \f$E\f$ to use when adjusting the lower boundary.
+     */
+    virtual real_t lower_E(const real_t lower_T,
+                           const real_t lower_u,
+                           const real_t lower_v,
+                           const real_t lower_w,
+                           const std::vector<real_t> lower_cs) const = 0;
+
+    /**
+     * Compute the specific total energy \f$E\f$ on the upper boundary.
+     * See \ref lower_E for additional comments.
+     *
+     * @param upper_T  Specified per \ref isothermal_specification#upper_T.
+     * @param upper_u  Specified per \ref isothermal_specification#upper_u.
+     * @param upper_v  Specified per \ref isothermal_specification#upper_v.
+     * @param upper_w  Specified per \ref isothermal_specification#upper_w.
+     * @param upper_cs Specified per \ref isothermal_specification#upper_cs.
+     *
+     * @return the value of \f$E\f$ to use when adjusting the upper boundary.
+     */
+    virtual real_t upper_E(const real_t upper_T,
+                           const real_t upper_u,
+                           const real_t upper_v,
+                           const real_t upper_w,
+                           const std::vector<real_t> upper_cs) const = 0;
+
 ////FIXME Draft
 ////virtual void invert_mass_plus_scaled_operator(
 ////        const complex_t &phi,
@@ -70,7 +111,7 @@ public:
 ////        const std::size_t substep_index,
 ////        multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
-protected:
+private:
 
     /** The lower and upper isothermal boundary specification. */
     const isothermal_specification &spec;
