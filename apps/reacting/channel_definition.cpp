@@ -196,8 +196,8 @@ channel_definition::save(
     esio_line_write(h, name_T_wall,     &this->T_wall,     0, desc_T_wall);
 
     // mass fractions vector
-    esio_line_establish(h, this->wall_mass_fractions.size(), 
-                        0, (procid == 0 ? 1 : 0));
+    int Ns = this->wall_mass_fractions.size();
+    esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
     esio_line_write(h, name_mass_fractions_wall, 
                     this->wall_mass_fractions.data(), 1, 
                     desc_mass_fractions_wall);

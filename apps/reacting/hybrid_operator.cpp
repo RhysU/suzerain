@@ -484,12 +484,12 @@ class MassFractionPATPTEnforcer
     int Ny;
 
     // Precomputed coefficient based on the isothermal equation of state
-    const std::vector<real_t> wall_mass_fractions;
+    const std::vector<real_t>& wall_mass_fractions;
 
 public:
 
     MassFractionPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                              const std::vector<real_t> wall_mass_fractions)
+                              const std::vector<real_t>& wall_mass_fractions)
         : Ny(A_T.n)
         , wall_mass_fractions(wall_mass_fractions)
     {
@@ -695,13 +695,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
         for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
             
-            {
-                // Apply species BCs to operator
-                SUZERAIN_TIMER_SCOPED("implicit operator BCs"); 
-                species_bc_enforcer->op(*(species_solver[alfa]), 
-                                        species_solver[alfa]->PAPT.data(),
-                                        species_solver[alfa]->PAPT.colStride());
-            }
+            // {
+            //     // Apply species BCs to operator
+            //     SUZERAIN_TIMER_SCOPED("implicit operator BCs"); 
+            //     species_bc_enforcer->op(*(species_solver[alfa]), 
+            //                             species_solver[alfa]->PAPT.data(),
+            //                             species_solver[alfa]->PAPT.colStride());
+            // }
 
             // Inform species_solver about new, unfactorized operator
             species_solver[alfa]->supplied_PAPT();
@@ -746,11 +746,11 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
                     species_solver[alfa]->supply_B(p + (ndx::species+alfa)*Ny);
 
-                    {
-                        SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
-                        species_bc_enforcer->rhs(species_solver[alfa]->PB.data(),
-                                                 p, alfa);
-                    }
+                    // {
+                    //     SUZERAIN_TIMER_SCOPED("implicit right hand side BCs");
+                    //     species_bc_enforcer->rhs(species_solver[alfa]->PB.data(),
+                    //                              p, alfa);
+                    // }
 
                     species_solver[alfa]->solve(trans);
                     species_solver[alfa]->demand_X(p + (ndx::species+alfa)*Ny);
@@ -774,9 +774,13 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             flow_solver->solve(trans);
             flow_solver->demand_X(ic0->data() + i * Ntot);
 
-            // FIXME: Need to update species BCs to account for any
-            // change in wall mixture density due to constraint
-            // application
+            // // TODO: Check me
+            // for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+            //     species_bc_enforcer->rhs(
+            //         ic0->data() + i * Ntot + (ndx::species+alfa)*Ny, 
+            //         ic0->data() + i * Ntot, 
+            //         alfa);
+            // }
         }
 
         break;
