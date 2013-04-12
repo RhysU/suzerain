@@ -34,6 +34,16 @@
 namespace suzerain {
 
 isothermal_specification::isothermal_specification()
+    : lower_u(std::numeric_limits<real_t>::quiet_NaN())
+    , lower_v(std::numeric_limits<real_t>::quiet_NaN())
+    , lower_w(std::numeric_limits<real_t>::quiet_NaN())
+    , lower_T(std::numeric_limits<real_t>::quiet_NaN())
+    , lower_mass_fractions(0)
+    , upper_u(std::numeric_limits<real_t>::quiet_NaN())
+    , upper_v(std::numeric_limits<real_t>::quiet_NaN())
+    , upper_w(std::numeric_limits<real_t>::quiet_NaN())
+    , upper_T(std::numeric_limits<real_t>::quiet_NaN())
+    , upper_mass_fractions(0)
 {
 }
 
