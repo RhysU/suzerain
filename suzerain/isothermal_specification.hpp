@@ -35,7 +35,8 @@ namespace suzerain {
 /**
  * Holds parameters for specifying simple isothermal boundary conditions on the
  * \f$y=0\f$ and \f$y=L_y\f$ planes.  These conditions include no-slip walls,
- * transpiring walls, and constant freestream boundaries.
+ * transpiring walls, and constant freestream boundaries.  Code consuming
+ * these values may treat <tt>NaN</tt> as a do-not-enforce-constraint flag.
  */
 class isothermal_specification
 {
@@ -143,19 +144,38 @@ public:
      * @{
      */
 
-    /** Temperature \f$T\f$ at \f$y=0\f$. */
+    /**
+     * Temperature \f$T\f$ at \f$y=0\f$.
+     * Though not enforced, this should be strictly positive for realizability.
+     */
     real_t lower_T;
 
-    /** Streamwise velocity \f$u\f$ at \f$y=0\f$. */
+    /**
+     * Streamwise velocity \f$u\f$ at \f$y=0\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, slip boundaries.
+     */
     real_t lower_u;
 
-    /** Wall-normal velocity \f$v\f$ at \f$y=0\f$. */
+    /**
+     * Wall-normal velocity \f$v\f$ at \f$y=0\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, evolving the reference
+     * velocity of an inflow or outflow boundary.
+     */
     real_t lower_v;
 
-    /** Spanwise velocity \f$w\f$ at \f$y=0\f$. */
+    /**
+     * Spanwise velocity \f$w\f$ at \f$y=0\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, slip boundaries.
+     */
     real_t lower_w;
 
-    /** Species mass fractions \f$c_s\f$ at \f$y=0\f$. */
+    /**
+     * Species mass fractions \f$c_s\f$ at \f$y=0\f$.
+     * Though not enforced, these should sum to one for consistency.
+     */
     std::vector<real_t> lower_cs;
 
     /**@}*/
@@ -165,19 +185,38 @@ public:
      * @{
      */
 
-    /** Temperature \f$T\f$ at \f$y=L_y\f$. */
+    /**
+     * Temperature \f$T\f$ at \f$y=L_y\f$.
+     * Though not enforced, this should be strictly positive for realizability.
+     */
     real_t upper_T;
 
-    /** Streamwise velocity \f$u\f$ at \f$y=L_y\f$. */
+    /**
+     * Streamwise velocity \f$u\f$ at \f$y=L_y\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, slip boundaries.
+     */
     real_t upper_u;
 
-    /** Wall-normal velocity \f$v\f$ at \f$y=L_y\f$. */
+    /**
+     * Wall-normal velocity \f$v\f$ at \f$y=L_y\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, evolving the reference
+     * velocity of an inflow or outflow boundary.
+     */
     real_t upper_v;
 
-    /** Spanwise velocity \f$w\f$ at \f$y=L_y\f$. */
+    /**
+     * Spanwise velocity \f$w\f$ at \f$y=L_y\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * This would permit, for example, slip boundaries.
+     */
     real_t upper_w;
 
-    /** Species mass fractions \f$c_s\f$ at \f$y=L_y\f$. */
+    /**
+     * Species mass fractions \f$c_s\f$ at \f$y=L_y\f$.
+     * Though not enforced, these should sum to one for consistency.
+     */
     std::vector<real_t> upper_cs;
 
     /**@}*/
