@@ -577,8 +577,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                                common.ref_uy        ()[j],
                                                common.ref_uz        ()[j]);
 
-            const real_t ref_nu(common.ref_nu()[j]);
+            const real_t ref_nu   (common.ref_nu()   [j]);
             const real_t ref_korCp(common.ref_korCp()[j]);
+            const real_t ref_Ds   ( (Ds.size()>1) ? common.ref_Ds()[j] : 0.0);
                     
 
             // Unpack density-related quantities
@@ -852,18 +853,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // See timestepper::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
-                const real_t nu = mu  /  rho;
-                const real_t kd = kap / (rho*Cp); // thermal diffusivity
+                const real_t nu  = mu  /  rho;
+                const real_t kd  = kap / (rho*Cp); // thermal diffusivity
+                const real_t Ds0 = ( Ds.size()>1 ? Ds[0] : 0.0 );
+
                 real_t diffusivity;
                 switch (Linearize) {
                 default:
                     SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
                     break;
                     
-                    // Explicit treatment forces a zero reference diffusivity
+                // Explicit treatment forces a zero reference diffusivity
                 case linearize::none:
-                    // FIXME: Handle species diffusion properly
-                    diffusivity = max(kd, max(real_t(1), cmods.alpha)*nu);
+                    // NB: species diffusivities ok b/c constant Le
+                    diffusivity = max(Ds0, 
+                                  max(kd, 
+                                  max(real_t(1), cmods.alpha)*nu));
                     
                     diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                                    evmaxmag_real
@@ -881,8 +886,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // Antidiffusive (nu - ref_nu) is fine and not computed.
                 case linearize::rhome_y:
                     // Compute sign wrt ref.
-                    diffusivity = max(kd-ref_korCp, 
-                                      max(real_t(1), cmods.alpha)*(nu-ref_nu));
+                    diffusivity = max(Ds0-ref_Ds,
+                                  max(kd-ref_korCp, 
+                                  max(real_t(1), cmods.alpha)*(nu-ref_nu)));
                     
                     if (diffusivity <= 0) break;  // NaN => false, proceed
                     //diffusivity *= maxdiffconst;  // Rescale as necessary.
