@@ -62,6 +62,8 @@ public:
 
     void operator()(complex_t &rho) const
     {
+        // TODO Reorder to linearly access e, mx, my, mz, species
+
         for (size_t s=1; s<wall_mass_fractions.size(); ++s) {
             (&rho)[s*field_stride] = rho*wall_mass_fractions[s];
         }
