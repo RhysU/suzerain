@@ -46,6 +46,13 @@
             final,
             hypertexnames=false]{hyperref}
 
+% In conjunction with -shell-escape, automatically convert EPS to PDF
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+}
+
 % Fix Todonotes wrongly placed in the margin
 \setlength{\marginparwidth}{2cm}
 
@@ -110,12 +117,23 @@
 \tableofcontents
 \newpage
 
+\section{Governing Equations}
 \input{reacting_inputs/reactinggas.tex}
 
-\section{The Filter Foo}
+\section{Discretization}
+\input{reacting_inputs/discretization.tex}
+
+\section{Filtering}
 \input{reacting_inputs/filter.tex}
 
+\section{Implicit Formulation Linear Operator}
 \input{reacting_inputs/full_linear_operator.tex}
+
+\section{Boundary Conditions and Implementation}
+\input{reacting_inputs/boundary_conditions.tex}
+
+\section{Statistics}
+\input{reacting_inputs/statistics.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%

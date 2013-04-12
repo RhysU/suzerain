@@ -1,0 +1,999 @@
+
+\section{In support of Favre-averaged Navier--Stokes modeling}
+\label{sec:supportFANS}
+
+\todo{Edit the following for dimensional, reacting formulation}
+
+The Favre-averaged Navier--Stokes (FANS) equations are often used to estimate
+the mean effects of turbulence.  The unclosed FANS equations require modeling
+approximations to be solvable.  Statistics gathered from Suzerain's solution of
+the Navier--Stokes equations may be used to inform the development and
+application of FANS closures.  Extensive background may be found in
+\citet{Chassaing2010} or \citet{SmitsDussauge2005}.
+
+The material in this section borrows liberally (and often literally) from
+\citet{OliverFANSModels2011}.  It departs from that particular document in that
+it employs Suzerain's constitutive relationships, avoids introducing customary
+assumptions about the relative importance of unclosed terms, accounts for
+forcing, and nondimensionalizes the results.
+
+\subsection{Reynolds- and Favre-averages}
+\label{sec:averaging}
+
+The Reynolds average is simply the usual mean of a random variable.  Consider a
+generic flow variable $q$.  The value, $q(x, y, z, t)$, of this variable at a
+particular point in space, $(x, y, z)$, and time, $t$, is a random variable.
+Assuming that the probability density function for $q(x, y, z, t)$ is given by
+$\pi_q(V; x, y, z, t)$, the Reynolds average is defined by
+%
+\begin{equation}
+\label{eqn:reynoldsAvg}
+\bar{q}(x, y, z, t) \equiv \int V \pi_q(V; x, y, z, t) \,\mathrm{d} V.
+\end{equation}
+%
+The Favre average is defined as the density-weighted average.  Thus,
+denoting the fluid density by $\rho(x,y,z, t)$, the Favre average of
+$q(x,y,z, t)$ is
+%
+\begin{equation*}
+\tilde{q}(x,y,z, t) \equiv \frac{ \overline{\rho q}(x,y,z, t) }{ \bar{\rho}(x,y,z, t) }.
+\end{equation*}
+%
+For the remainder of this section to make sense mathematically, it is
+assumed that both the Reynolds and Favre averages are well-defined for
+any required flow variable, $q$.  That is, the integral on the
+right-hand side of (\ref{eqn:reynoldsAvg}) exists whenever required,
+and the Reynolds-averaged density, $\bar{\rho}$, is positive
+everywhere.
+
+In the following, the flow variables will be decomposed into mean and
+fluctuating parts.  Specifically, the fluctuations about the
+mean---denoted by $(\cdot)'$ and $(\cdot)''$ for the Reynolds and
+Favre averages, respectively---are defined by the following
+relationships:
+%
+\begin{align*}
+q' &\equiv q - \bar{q}, \\
+q'' &\equiv q - \tilde{q}.
+\end{align*}
+%
+Using the linearity of the Reynolds average and the fact that
+$\bar{q}$ and $\tilde{q}$ are deterministic, not random, variables, it
+is straightforward to see that
+%
+\begin{gather*}
+\overline{q'} = \overline{q - \bar{q}} = \bar{q} - \bar{q} =  0, \\
+\widetilde{q''} = \widetilde{q - \tilde{q}} = \tilde{q} - \tilde{q} = 0.
+\end{gather*}
+%
+Furthermore,
+%
+\begin{equation*}
+\overline{\rho q''} = \bar{\rho} \widetilde{q''} = 0.
+\end{equation*}
+%
+However, in general,
+%
+\begin{equation*}
+\overline{q''} = \overline{q - \tilde{q}} = \bar{q} - \tilde{q} \neq 0.
+\end{equation*}
+%
+
+Wherever necessary, realizations of random fields of flow quantities
+are assumed to be differentiable in both time and space so that Reynolds
+averaging and differentiation commute.  For example,
+%
+\begin{equation*}
+\overline{ \nabla{}u } = \nabla\bar{u}.
+\end{equation*}
+%
+This commutativity is used to develop the FANS equations.  In contrast, Favre
+averaging and differentiation do not, in general, commute:
+\begin{align}
+  \rho \nabla q &= \rho \nabla q
+\\
+   \rho \widetilde{\nabla{}q} + \rho \left(\nabla{}q\right)''
+&=
+   \rho \nabla \tilde{q} + \rho \nabla{}q''
+\\
+     \bar{\rho} \widetilde{\nabla{}q}
+&=
+     \bar{\rho} \nabla{\tilde{q}}
+   + \overline{\rho \nabla{}q''}
+\\
+&=
+     \bar{\rho} \nabla{\tilde{q}}
+   - \overline{q''\nabla\rho}
+\end{align}
+Here the common convention that taking Favre fluctuations,
+$\left(\cdot\right)''$, has higher precedence than differentiation,
+$\nabla\left(\cdot\right)$, has been adopted.  Rearranging to better examine
+the difference between $\widetilde{\nabla{}q}$ and $\nabla\tilde{q}$ in terms
+of mean quantities,
+\begin{align}
+  \label{eq:favremeancommute}
+  \widetilde{\nabla{}q}
+  -
+  \nabla{\tilde{q}}
+&=
+  \widetilde{\nabla{}q''}
+= - \frac{{\overline{q''\nabla\rho}}}{\bar{\rho}}
+= \frac{\tilde{q}\nabla\bar{\rho}}{\bar{\rho}}
+  - \frac{\overline{q\nabla\rho}}{\bar{\rho}}
+.
+\end{align}
+This lack of commutativity not problematic as it is not required to derive the
+FANS equations.  It does, however, slightly complicate the mean constitutive
+relationships.  The fluctuating gradient and the gradient of the fluctuations
+differ according to
+\begin{align}
+  \label{eq:favrefluctcommute}
+  \left(\nabla{}q\right)'' - \nabla{}q'' &= - \widetilde{\nabla{}q''}
+.
+\end{align}
+In some circumstances, the difference between quantities written using a
+fluctuating gradient and the gradient of the fluctuations can vanish.
+One useful example is
+\begin{align}
+  \label{eq:favrefluctexample}
+\widetilde{f''\left(\nabla{}g\right)''}
+&=
+\overline{\rho{}f''\left(\nabla{}g\right)''}
+=
+\overline{\rho{}f''\left(\nabla{}g'' - \widetilde{\nabla{}g''}\right)}
+=
+\overline{\rho{}f''\nabla{}g''}
+- \overline{\rho{}f''}\widetilde{\nabla{}g''}
+=
+\widetilde{f''\nabla{}g''}
+.
+\end{align}
+
+\subsection{The dimensional Favre-averaged Navier--Stokes equations}
+
+\subsubsection{Derivation}
+
+Recall that equations~\eqref{eq:dim_continuity}, \eqref{eq:dim_momentum},
+and~\eqref{eq:dim_energy} may be written as
+\begin{align}
+    \frac{\partial}{\partial{}t}\rho
+&=
+  - \nabla\cdot\rho{}u
+  + \Ssd_{\rho{}}
+\\
+    \frac{\partial{}}{\partial{}t}\rho{}u
+&=
+  - \nabla\cdot(u\otimes{}\rho{}u)
+  - \nabla{}p + \nabla\cdot{}\tau + f
+  + \Ssd_{\rho{} u}
+\\
+    \frac{\partial}{\partial{}t} \rho{}E
+&=
+  - \nabla\cdot{}\rho{}Hu
+  + \nabla\cdot{}\tau{}u
+  - \nabla\cdot{}q_{s}
+  + f\cdot{}u
+  + q_b
+  + \Ssd_{\rho{} E}
+\end{align}
+where using total enthalpy $H$ reduces the number of terms in the energy
+equation.
+
+A lengthy algebraic procedure \citep[\textsection{}2]{OliverFANSModels2011}
+produces exact equations governing the evolution of mean conserved quantities
+$\bar{\rho}$, $\overline{\rho{}u}= \bar{\rho}\tilde{u}$, and
+$\overline{\rho{}E} = \bar{\rho}\tilde{E}$:
+\begin{subequations}\label{eq:unclosedfansequations}
+\begin{align}
+    \frac{\partial}{\partial{}t}\bar{\rho}
+ =
+ &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+ =
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+  - \nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \bar{\tau}
+      - \bar{\rho}\widetilde{u''\otimes{}u''}
+    \right)
+  + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
+\\
+  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+ =
+ &- \nabla\cdot{}\bar{\rho}\tilde{H}\tilde{u}
+  + \nabla\cdot\left(
+        \left(
+            \bar{\tau}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &- \nabla\cdot\left(
+        \bar{q}_s
+      + \bar{\rho} \widetilde{h''u''}
+    \right)
+  + \bar{f}\cdot\tilde{u}
+  + \overline{f\cdot{}u''}
+  + \bar{q}_{b}
+  + \overline{\Ssd_{\rho{} E}}
+\end{align}
+\end{subequations}
+Several correlations impact the evolution of mean quantities: the Reynolds
+stress $-\bar{\rho}\widetilde{u''\otimes{}u''}$, the Reynolds heat flux
+$\bar{\rho} \widetilde{h''u''}$, turbulent transport
+$-\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}$, turbulent work
+$\overline{\tau{}u''}$, and the forcing-velocity correlation
+$\overline{f\cdot{}u''}$.  The Reynolds stress and heat flux augment the
+viscous stress and heat flux, respectively.  The turbulent transport and work
+terms represent transport of the turbulent kinetic energy density $k$, defined
+below, and viscous stress work due to turbulent velocity fluctuations,
+respectively.
+
+We now average the perfect gas relations from section~\ref{sec:constitutive}.
+The Reynolds average of~\eqref{eq:perfectgaseos} gives
+\begin{align}
+  \bar{p} &= R\overline{\rho{}T} = \bar{\rho}R\tilde{T}
+\end{align}
+while the Favre average of~\eqref{eq:perfectgasenthalpy} gives both
+\begin{align}
+ \tilde{H} &= \tilde{E} + R \tilde{T}
+&
+ \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}.
+\end{align}
+The turbulent kinetic energy density
+\begin{align}
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+ \end{align}
+arises from averaging the total energy given by
+\eqref{eq:perfectgastotalenergy}:
+\begin{align}
+  \rho{} E
+&=
+  \frac{R}{\gamma-1} \rho{}T + \frac{1}{2}\rho{} u^{2}
+\\
+&=
+  \frac{R}{\gamma-1} \rho{}\left( \tilde{T} + T'' \right)
++ \frac{1}{2}\rho{} \left( \tilde{u} + u'' \right)^2
+\\
+  \overline{\rho{}E}
+&=
+  \frac{R}{\gamma-1} \bar{\rho} \tilde{T}
++ \frac{1}{2}\bar{\rho} \tilde{u}^2
++ \frac{1}{2}\overline{\rho{}{u''}^2}
+\\
+  \tilde{E}
+&=
+  \frac{R}{\gamma-1} \tilde{T}
++ \frac{1}{2} \tilde{u}^2
++ k
+\end{align}
+
+An exact equation may be derived for the evolution of $k$
+\citep[\textsection{}5]{OliverFANSModels2011}
+\begin{align}
+\label{eq:fanstke1}
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+ =
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \epsilon
+  + \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &- \overline{u''}\cdot\nabla\bar{p}
+  - \nabla\cdot\overline{p' u''}
+  + \overline{p' \nabla\cdot{}u''}
+  + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+where $A:B$ denotes $\trace \left(\trans{A} B\right)$, and the contribution of
+the slow growth terms is being accounted for. The dissipation rate
+density $\epsilon$, which governs the conversion rate from $k$ to mean internal
+energy, is defined by
+\begin{align}
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+.
+\end{align}
+As \citet[page 216]{Lele1994Compressibility} suggests, expanding $h$,
+averaging, removing the mean state from both sides, and applying perfect gas
+assumptions demonstrates the exact relationship
+\begin{align}
+  \overline{u''}
+&=
+  \frac{\widetilde{T''u''}}{\tilde{T}} - \frac{\overline{p'u''}}{\bar{p}}
+.
+\end{align}
+Substituting $h''$ everywhere for $T''$, noting $\bar{p}/\tilde{h} =
+\frac{\gamma-1}{\gamma}\bar{\rho}$, and differentiating one obtains
+\begin{align}
+  \overline{p'u''}
+&=
+  \frac{\gamma-1}{\gamma} \bar{\rho} \widetilde{h''u''}
+- \bar{p} \overline{u''}
+\\
+  \nabla\cdot \overline{p'u''}
+&=
+  \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
+- \bar{p}\nabla\cdot\overline{u''}
+- \overline{u''}\cdot\nabla{}\bar{p}
+.
+\end{align}
+Rearranging the above result to mimic terms within~\eqref{eq:fanstke1}
+\begin{align}
+  - \overline{u''}\cdot\nabla\bar{p}
+  - \nabla\cdot\overline{p'u''}
+&=
+  \bar{p}\nabla\cdot\overline{u''}
+- \frac{\gamma-1}{\gamma} \nabla\cdot \bar{\rho} \widetilde{h''u''}
+\end{align}
+allows trading an occurrence of $\overline{p'u''}$ for the Reynolds heat
+flux in the exact $k$ equation:
+\begin{align}
+\label{eq:fanstke}
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+ =
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \epsilon
+  + \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &+ \bar{p}\nabla\cdot\overline{u''}
+  - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
+  + \overline{p' \nabla\cdot{}u''}
+  + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+The trade reduces by one the number of correlations appearing in the $k$
+equation which do not appear in the mean continuity, momentum, or energy
+equations.  It also, as Lele suggests, encourages thermodynamic consistency
+when working with pressure correlation information.
+
+Returning to the constitutive relations, combining~\eqref{eq:tauSmub}
+and~\eqref{eq:secondviscosityclaw} one obtains
+\begin{align}
+  \tau
+&= 2 \mu{} S + \alpha \mu \left( \nabla\cdot{}u \right) I.
+\end{align}
+Using the kinematic viscosity $\nu = \mu / \rho$ and averaging,
+\begin{align}
+   \tilde{S}
+&=
+     \frac{1}{2}\left(
+       \widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}}
+     \right)
+   - \frac{1}{3}\left(\widetilde{\nabla\cdot{}u}\right) I
+\\
+  \bar{\tau}
+&=
+    2 \bar{\mu}\tilde{S}
+  + 2 \bar{\rho} \widetilde{\nu''S''}
+  + \alpha \bar{\mu} \widetilde{\nabla\cdot{}u} I
+  + \alpha \bar{\rho} \widetilde{\nu''\left(\nabla\cdot{}u\right)''} I
+.
+\end{align}
+By~\eqref{eq:favrefluctexample},
+$\widetilde{\nu''\left(\nabla\cdot{}u\right)''}$ may also be written
+$\widetilde{\nu''\nabla\cdot{}u''}$ while $\widetilde{\nu''S''}$ is equivalent
+to a version using the deviatoric part of the strain rate of the fluctuating
+velocity field.  Many FANS closure approximations neglect correlations between
+the kinematic viscosity and velocity derivatives.  Many assume $\alpha=0$.
+Accepting those approximations would eliminate the second through fourth terms
+in $\bar{\tau}$.  Making the ubiquitous closure approximations
+$\widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}} \approx \nabla\tilde{u}
++ \trans{\nabla\tilde{u}}$ and
+$\widetilde{\nabla{}\cdot{}u}\approx\nabla\cdot\tilde{u}$ are equivalent to
+neglecting $\widetilde{\nabla{}u''} + \trans{\widetilde{\nabla{}u''}}$ and
+$\widetilde{\nabla{}\cdot{}u''}$ per~\eqref{eq:favremeancommute}.
+
+To find $\bar{q}_s$, combine~\eqref{eq:fourierlaw} and our assumption of a
+constant Prandtl number
+\begin{align}
+  q_{s} &= - \kappa \nabla{} T
+     = - \frac{\kappa}{C_p} \nabla{}h
+     = - \frac{\mu}{\Prandtl} \nabla{}h
+\end{align}
+and again employ $\nu$ when averaging to obtain
+\begin{align}
+  \bar{q}_s
+&= - \frac{1}{\Prandtl}\left(
+                \bar{\mu}\widetilde{\nabla{}h}
+              + \bar{\rho} \widetilde{\nu''\left(\nabla{}h\right)''}
+            \right)
+.
+\end{align}
+Again, by~\eqref{eq:favrefluctexample},
+$\widetilde{\nu''\left(\nabla{}h\right)''}$ may also be written
+$\widetilde{\nu''\nabla{}h''}$.  Again, making the ubiquitous closure
+assumption $\widetilde{\nabla{}h}\approx\nabla\tilde{h}$ is equivalent to
+neglecting $\widetilde{\nabla{}h''}$ per~\eqref{eq:favremeancommute}.
+Straightforward averaging applied to~\eqref{eq:powerlawviscosity} produces
+\begin{align}
+   \bar{\rho}\tilde{\nu}
+ = \bar{\mu}
+&= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
+\end{align}
+which is not computable given only Favre-averaged state.  One commonly accepted
+simplification is taking $\overline{\mu\left(T\right)} \approx
+\mu\left(\tilde{T}\right)$.
+
+\subsubsection{Summary}
+
+The Favre-averaged equations of interest are:
+\begin{subequations}
+\begin{align}
+    \frac{\partial}{\partial{}t}\bar{\rho}
+=
+ &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+ =
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+  - \nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \bar{\tau}
+      - \bar{\rho} \widetilde{u''\otimes{}u''}
+    \right)
+  + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
+\\
+    \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+ =
+ &- \nabla\cdot{}\bar{\rho}\tilde{H}\tilde{u}
+  + \nabla\cdot\left(
+        \left(
+            \bar{\tau}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &- \nabla\cdot\left(
+        \bar{q}_s
+      + \bar{\rho} \widetilde{h''u''}
+    \right)
+  + \bar{f}\cdot\tilde{u}
+  + \overline{f\cdot{}u''}
+  + \bar{q}_b
+  + \overline{\Ssd_{\rho{} E}}
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+=
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+  - \bar{\rho} \epsilon
+  + \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
+      + \overline{\tau{}u''}
+    \right)
+\\
+ &+ \bar{p}\nabla\cdot\overline{u''}
+  - \frac{\gamma-1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{h''u''}
+  + \overline{p' \nabla\cdot{}u''}
+  + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+The equations are augmented by the following relationships:
+\begin{align}
+  \bar{p} &= \bar{\rho}R\tilde{T}
+&
+   \bar{\rho}\tilde{\nu} =
+   \bar{\mu}
+&= \mu_0 \overline{\left(\frac{T}{T_0}\right)^\beta}
+&
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+&
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+\end{align}
+\begin{align}
+  \tilde{E}
+&=
+  \frac{R}{\gamma-1} \tilde{T}
++ \frac{1}{2} \tilde{u}^2
++ k
+&
+  \tilde{H}
+&=
+  \tilde{E}
++ R \tilde{T}
+&
+  \tilde{h} &= \frac{\gamma{}R\tilde{T}}{\gamma-1}
+&
+  \bar{q}_s
+&= - \frac{1}{\Prandtl}\left(
+                \bar{\mu}\widetilde{\nabla{}h}
+              + \bar{\rho} \widetilde{\nu''\left(\nabla{}h\right)''}
+            \right)
+\end{align}
+\begin{align}
+   \tilde{S}
+&=
+     \frac{1}{2}\left(
+       \widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}}
+     \right)
+   - \frac{1}{3}\left(\widetilde{\nabla\cdot{}u}\right) I
+&
+   \bar{\tau}
+&=  2 \bar{\mu}\tilde{S}
+  + 2 \bar{\rho} \widetilde{\nu''S''}
+  + \alpha \bar{\mu} \widetilde{\nabla\cdot{}u} I
+  + \alpha \bar{\rho} \widetilde{\nu''\left(\nabla\cdot{}u\right)''} I
+\end{align}
+\end{subequations}
+One may exactly compute the mean state evolution given the following
+information:
+\begin{align}
+&\bar{\rho}
+&
+&\tilde{u}
+&
+&\tilde{E}
+&
+&\bar{\mu}
+&
+&\bar{f}
+&
+&\bar{q}_b
+&
+&k
+&
+&\epsilon
+&
+&\overline{u''}
+&
+&\symmetricpart{\widetilde{\nabla{}u}}
+\end{align}
+\begin{align}
+&\overline{f\cdot{}u''}
+&
+&\overline{\tau{}u''}
+&
+&\overline{p'\nabla\cdot{}u''}
+&
+&-\widetilde{u''\otimes{}u''}
+&
+&-\frac{1}{2}\widetilde{{u''}^{2}u''}
+&
+&\widetilde{h''u''}
+&
+&\widetilde{\nu''S''}
+&
+&\widetilde{\nu''\left(\nabla\cdot{}u\right)''}
+&
+&\widetilde{\nu''\left(\nabla{}h\right)''}
+\end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+Other ways to minimally capture the mean thermodynamic state, e.g. $\bar{\rho}$
+and $\tilde{T}$, could have been chosen.  The information above are natural
+choices following section~\ref{state_variable_selection}.  Favre-fluctuating
+correlation densities (e.g.  $\widetilde{h''u''}$ are adopted for notational
+brevity instead of their informationally equivalent Reynolds-averaged
+correlations (e.g.  $\overline{\rho{}h''u''}$).
+
+\subsection{The nondimensional Favre-averaged Navier--Stokes equations}
+\label{sec:nondimfans}
+
+The dimensional FANS equations from the last section need to be
+nondimensionalized.   The reference quantity selections made in
+section~\ref{sec:nondimrefq} are used and are augmented by
+\begin{align}
+  k_0 &= u_{0}^2
+&
+  \epsilon_0 &= \frac{u_{0}^2}{t_0}
+\end{align}
+Superscript star notation is suppressed as all terms
+are dimensionless.  The results are:
+\begin{subequations}
+\begin{align}
+    \frac{\partial}{\partial{}t}\bar{\rho}
+=
+ &- \nabla\cdot\bar{\rho}\tilde{u}
+  + \overline{\Ssd_{\rho{}}}
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}\tilde{u}
+=
+ &- \nabla\cdot(\tilde{u}\otimes\bar{\rho}\tilde{u})
+  - \frac{1}{\Mach^2}\nabla{}\bar{p}
+  + \nabla\cdot\left(
+        \frac{\bar{\tau}}{\Reynolds}
+      - \bar{\rho} \widetilde{u''\otimes{}u''}
+    \right)
+  + \bar{f}
+  + \overline{\Ssd_{\rho{} u}}
+\\
+  \frac{\partial}{\partial{}t} \bar{\rho}\tilde{E}
+=
+ &- \nabla\cdot\bar{\rho}\tilde{H}\tilde{u}
+  + \Mach^{2} \nabla\cdot\left(
+        \left(
+            \frac{\bar{\tau}}{\Reynolds}
+          - \bar{\rho} \widetilde{u''\otimes{}u''}
+        \right) \tilde{u}
+      - \frac{1}{2}\bar{\rho}\widetilde{{u''}^{2}u''}
+      + \frac{\overline{\tau{}u''}}{\Reynolds}
+    \right)
+\\
+ &+ \frac{1}{\gamma-1} \nabla\cdot\left(
+      \frac{
+         \bar{\mu} \widetilde{\nabla{}T}
+       + \bar{\rho} \widetilde{\nu'' \left(\nabla{}T\right)''}
+      }{\Reynolds\Prandtl}
+      - \bar{\rho} \widetilde{T''u''}
+    \right)
+  + \Mach^{2} \left(
+        \bar{f}\cdot\tilde{u}
+      + \overline{f\cdot{}u''}
+    \right)
+  + \bar{q}_b
+  + \overline{\Ssd_{\rho{} E}}
+\\
+    \frac{\partial{}}{\partial{}t}\bar{\rho}k
+=
+ &- \nabla\cdot\bar{\rho}k\tilde{u}
+  - \bar{\rho} \widetilde{u''\otimes{}u''} : \nabla\tilde{u}
+  - \frac{\bar{\rho} \epsilon}{\Reynolds}
+  + \nabla\cdot\left(
+        -\frac{1}{2}\bar{\rho} \widetilde{{u''}^{2}u''}
+      + \frac{\overline{\tau{}u''}}{\Reynolds}
+    \right)
+\\
+ &+ \frac{1}{\Mach^2} \left(
+        \bar{p}\nabla\cdot\overline{u''}
+      + \overline{p' \nabla\cdot{}u''}
+      - \frac{1}{\gamma} \nabla\cdot\bar{\rho} \widetilde{T''u''}
+    \right)
+  + \overline{f\cdot{}u''}
+  + \overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+The equations are augmented by the following nondimensional relationships:
+\begin{align}
+  \bar{p} &= \frac{\bar{\rho} \tilde{T}}{\gamma}
+&
+   \bar{\rho}\tilde{\nu} =
+   \bar{\mu}
+&= \overline{T^\beta}
+&
+  k &= \frac{1}{2}\widetilde{{u''}^2}
+&
+  \bar{\rho} \epsilon &= \overline{\tau : \nabla{}u''}
+\end{align}
+\begin{align}
+  \tilde{E}
+&=
+  \frac{\tilde{T}}{\gamma\left(\gamma-1\right)}
+  + \Mach^2 \left( \frac{1}{2}\tilde{u}^2 + k
+  \right)
+&
+  \tilde{H}
+&=
+  \tilde{E} + \frac{\tilde{T}}{\gamma}
+&
+  \tilde{h} &= \frac{\tilde{T}}{\gamma-1}
+\end{align}
+\begin{align}
+   \tilde{S}
+&=
+     \frac{1}{2}\left(
+       \widetilde{\nabla{}u} + \trans{\widetilde{\nabla{}u}}
+     \right)
+   - \frac{1}{3}\left(\widetilde{\nabla\cdot{}u}\right) I
+&
+   \bar{\tau}
+&=  2 \bar{\mu}\tilde{S}
+  + 2 \bar{\rho} \widetilde{\nu''S''}
+  + \alpha \bar{\mu} \widetilde{\nabla\cdot{}u} I
+  + \alpha \bar{\rho} \widetilde{\nu''\left(\nabla\cdot{}u\right)''} I
+\end{align}
+\end{subequations}
+where $\Reynolds$, $\Mach$, and $\Prandtl$ are defined as in
+section~\ref{sec:nondimrefq}.  One may exactly compute the nondimensional mean
+state evolution given the following statistical quantities:
+\begin{align}
+&\bar{\rho}
+&
+&\tilde{u}
+&
+&\tilde{E}
+&
+&\bar{\mu}
+&
+&\bar{f}
+&
+&\bar{q}_b
+&
+&k
+&
+&\epsilon
+&
+&\overline{u''}
+&
+&\symmetricpart{\widetilde{\nabla{}u}}
+\end{align}
+\begin{align}
+&\overline{f\cdot{}u''}
+&
+&\overline{\tau{}u''}
+&
+&\overline{p'\nabla\cdot{}u''}
+&
+&-\widetilde{u''\otimes{}u''}
+&
+&-\frac{1}{2}\widetilde{{u''}^{2}u''}
+&
+&\widetilde{T''u''}
+&
+&\widetilde{\nu''S''}
+&
+&\widetilde{\nu''\left(\nabla\cdot{}u\right)''}
+&
+&\widetilde{\nu''\left(\nabla{}T\right)''}
+\end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u''}
+\end{align}
+
+Notice that the heat flux $\bar{q}_s$ has been merged into the mean energy
+equation to better mimic \eqref{eq:nondim_energy}.  Enthalpy-based correlations
+have been replaced by temperature-based correlations.  Notice also that the
+choice of $p_0$ implies nondimensional $p$ includes a factor of $\gamma$
+relative to the dimensional quantity.  Where possible, nondimensional
+coefficients have been pulled out of the constitutive relationships and pushed
+into the equations (for example, the factor $1/\Reynolds$ arising from the
+dimensional definition of $\bar{\rho}\epsilon$).
+
+Some locally computed quantities, e.g. the local Mach number, local Reynolds
+number, or local eddy viscosity, require rescaling within to account for
+nondimensionalization.  Other quantities, e.g. the local turbulent Prandtl
+number, do not.  Writing the dimensional definition and re-expressing all
+dimensional terms as a nondimensional value multiplied by a reference value
+allows determining any appropriate multiplicative factors.
+
+\subsection{Sampling logistics}
+
+Statistical quantities are obtained by sampling from a well-resolved,
+stationary simulation.  Mean quantity samples may be computed on-the-fly.
+Fluctuating quantity samples, because they must be taken relative to an unknown
+true mean, are computed by combining mean quantity samples following the rules
+in section~\ref{sec:averaging}.
+
+Sampling the following mean quantities is sufficient to compute
+the statistical quantities listed in section~\ref{sec:nondimfans}:
+\begin{align}
+&\bar{\rho}
+&
+&\overline{\rho{}u}
+&
+&\overline{\rho{}E}
+&
+&\bar{\mu}
+&
+&\bar{f}
+&
+&\bar{q}_b
+&
+&\bar{u}
+&
+&\symmetricpart{\overline{\rho\nabla{}u}}
+&
+&\overline{\rho\nabla{}T}
+&
+&\overline{\tau:\nabla{}u}
+&
+&\overline{f\cdot{}u}
+&
+&\bar{\tau}
+\end{align}
+\begin{align}
+&\overline{\tau{}u}
+&
+&\overline{p\nabla\cdot{}u}
+&
+&\overline{\rho{}u\otimes{}u}
+&
+&\overline{\rho{}u\otimes{}u\otimes{}u}
+&
+&\overline{\rho{}Tu}
+&
+&\overline{\mu{}S}
+&
+&\overline{\mu\nabla\cdot{}u}
+&
+&\overline{\mu\nabla{}T}
+\end{align}
+\begin{align}
+&\overline{\Ssd_{\rho{}}}
+&
+&\overline{\Ssd_{\rho{} u}}
+&
+&\overline{\Ssd_{\rho{} E}}
+&
+&\overline{\Ssd_{\rho{} u}\cdot{}u}
+\end{align}
+These additional quantities are of interest and their so-far-unlisted
+dependencies are also gathered:
+\begin{align}
+  \overline{\mu{}''}&= f\left(
+      \bar{\rho}, \bar{\mu}, \overline{\rho\mu}
+  \right)
+  &
+  \overline{\nu{}''} &= f\left(
+      \bar{\rho}, \bar{\mu}, \bar{\nu}
+  \right)
+\end{align}
+After averaging across the homogeneous streamwise $x$ and spanwise $z$
+directions, each sample (ignoring tensor order) is a one-dimensional,
+instantaneous profile varying only along the wall-normal B-spline direction.
+The amount of data gathered may be reduced by exploiting symmetries in
+$\bar{\tau}$, $\overline{\rho{}u\otimes{}u}$,
+$\overline{\rho{}u\otimes{}u\otimes{}u}$, and $\overline{\mu{}S}$.
+
+The instantaneous samples are combined according to the following ordered
+sequence of computations to obtain the desired quantities:
+{ \allowdisplaybreaks[1]
+\begin{align}
+  \tilde{u} &= \bar{\rho}^{-1} \overline{\rho{}u}
+\\
+  \tilde{E} &= \bar{\rho}^{-1} {\overline{\rho{}E}}
+\\
+  \widetilde{u\otimes{}u} &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u}
+\\
+  \widetilde{u''\otimes{}u''} &=
+  \widetilde{u\otimes{}u} - \tilde{u}\otimes\tilde{u}
+\\
+  k &= \frac{1}{2} \trace \widetilde{u''\otimes{}u''}
+\\
+  \tilde{T} &= \gamma\left(\gamma-1\right)\left(
+      \tilde{E} - \Mach^2\left(\frac{1}{2}\tilde{u}^2 + k\right)
+  \right)
+\\
+  \tilde{H} &= \tilde{E} + \frac{\tilde{T}}{\gamma}
+\\
+  \bar{p} &= \frac{\bar{\rho}\tilde{T}}{\gamma}
+\\
+  \overline{\tau:\nabla{}u''} &=
+  \overline{\tau:\nabla{}u} - \bar{\tau}:\nabla\tilde{u}
+\\
+  \epsilon &= \bar{\rho}^{-1} \overline{\tau:\nabla{}u''}
+\\
+  \overline{u''} &= \bar{u} - \tilde{u}
+\\
+  \overline{f\cdot{}u''} &= \overline{f\cdot{}u} - \bar{f}\cdot{}\tilde{u}
+\\
+  \overline{\tau{}u''} &= \overline{\tau{}u} - \bar{\tau}\tilde{u}
+\\
+  \overline{p'\nabla\cdot{}u''}
+  &= \overline{p\nabla\cdot{}u}
+   - \bar{p}\nabla\cdot\bar{u}
+\\
+  \widetilde{u\otimes{}u\otimes{}u}
+  &= \bar{\rho}^{-1} \overline{\rho{}u\otimes{}u\otimes{}u}
+\\
+  \overline{\Ssd_{\rho{} u}\cdot{}u''} 
+  &= \overline{\Ssd_{\rho{} u}\cdot{}u} 
+   - \overline{\Ssd_{\rho{} u}}\cdot{}\tilde{u}
+\end{align}
+}
+
+Expressions for computing $\widetilde{u''\otimes{}u''\otimes{}u''}$ and
+$-\frac{1}{2}\widetilde{{u''}^{2}u''}$ are derived in stages using index
+notation and the summation convention.  Using the identities
+\begin{align}
+  \widetilde{u_{i}u_{j}''}
+&=
+  \widetilde{u_{i}u_{j}} - \tilde{u}_{i}\tilde{u}_{j}
+\\
+  \widetilde{u_{i}u_{j}u_{k}''}
+&=
+  \widetilde{u_{i}u_{j}u_{k}} - \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+\shortintertext{
+and ignoring any symmetry-related simplifications,
+}
+  \widetilde{u_{i}''u_{j}''u_{k}''}
+  &= \bar{\rho}^{-1} \overline{\rho{}\left(u_{i}-\tilde{u}_{i}\right)
+                                     \left(u_{j}-\tilde{u}_{j}\right)
+                                     u_{k}''}
+\\
+  &= \widetilde{u_{i}u_{j}u_{k}''}
+   - \tilde{u}_i \widetilde{u_{j}u_{k}''}
+   - \tilde{u}_j \widetilde{u_{i}u_{k}''}
+%%\\
+%%  &= \widetilde{u_{i}u_{j}u_{k}}
+%%   - \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+%%   - \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+%%   + \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
+%%   - \tilde{u}_{j} \widetilde{u_{i}u_{k}}
+%%   + \tilde{u}_{j} \tilde{u}_{i}\tilde{u}_{k}
+\\
+  &=   \widetilde{u_{i}u_{j}u_{k}}
+   -   \widetilde{u_{i}u_{j}}\tilde{u}_{k}
+   -   \tilde{u}_{i} \widetilde{u_{j} u_{k}}
+   -   \tilde{u}_{j} \widetilde{u_{i}u_{k}}
+   + 2 \tilde{u}_{i} \tilde{u}_{j}\tilde{u}_{k}
+.
+\shortintertext{
+Contracting the first two indices and relabelling the third index,
+}
+  \widetilde{u_{i}''u_{i}''u_{j}''}
+  &= \widetilde{u_{i}u_{i}u_{j}}
+   - \widetilde{u_{i}u_{i}}\tilde{u}_{j}
+   - 2 \tilde{u}_{i} \widetilde{u_{i} u_{j}}
+   + 2 \tilde{u}_{i} \tilde{u}_{i}\tilde{u}_{j}
+   .
+\shortintertext{
+Reverting to direct notation and employing the symmetry of
+$\widetilde{u\otimes{}u}$,
+}
+  \widetilde{{u''}^{2}u''}
+&=
+      \widetilde{u^{2}u}
+  -   \widetilde{u^{2}}\tilde{u}
+  - 2 \widetilde{u\otimes{}u}\tilde{u}
+  + 2 \tilde{u}^2 \tilde{u}
+\end{align}
+where $\widetilde{u^{2}u}$ and $\widetilde{u^2}$ may be computed by contracting
+$\widetilde{u\otimes{}u\otimes{}u}$ and $\widetilde{u\otimes{}u}$,
+respectively.
+
+Continuing the ordered sequence of computations:
+{ \allowdisplaybreaks[1]
+\begin{align}
+  \widetilde{Tu} &= \bar{\rho}^{-1} \overline{\rho{}Tu}
+\\
+  \widetilde{T''u''} &= \widetilde{Tu} - \tilde{T}\tilde{u}
+\\
+  \tilde{\mu} &= \bar{\rho}^{-1} \overline{\rho\mu}
+\\
+  \overline{\mu''} &= \bar{\mu} - \tilde{\mu}
+\\
+  \tilde{\nu} &= \bar{\rho}^{-1} \bar{\mu}
+\\
+  \overline{\nu''} &= \bar{\nu} - \tilde{\nu}
+\\
+  \symmetricpart{\widetilde{\nabla{}u}}
+  &= \bar{\rho}^{-1} \symmetricpart{\overline{\rho\nabla{}u}}
+\\
+  \tilde{S} &= \symmetricpart{\widetilde{\nabla{}u}}
+   - \frac{1}{3} \trace\symmetricpart{\widetilde{\nabla{}u}} I
+\\
+  \widetilde{\nu''S''}
+  &= \bar{\rho}^{-1} \overline{\mu{}S} - \tilde{\nu}\tilde{S}
+\\
+  \widetilde{\nu''\left(\nabla\cdot{}u\right)''}
+  &= \bar{\rho}^{-1} \overline{\mu\nabla\cdot{}u}
+   - \tilde{\nu}\trace\symmetricpart{\widetilde{\nabla{}u}}
+\\
+  \widetilde{\nu''\left(\nabla{}T\right)''}
+  &= \bar{\rho}^{-1} \overline{\mu\nabla{}T}
+   - \tilde{\nu} \bar{\rho}^{-1} \overline{\rho\nabla{}T}
+\end{align}
+}
+
+\subsection{Quantifying statistical quantity convergence}
+\label{sec:quantconvergence}
+
+TODO
