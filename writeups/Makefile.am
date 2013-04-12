@@ -15,25 +15,22 @@ TEXSOURCES += perfectgas.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 
-# Reacting doc broken out amongst many srcs.  Use EXTRA_DIST for
-# everything that gets \input in reacting_main.tex s.t. we don't try
-# to build them standalone (which will fail of course).
-#
-# FIXME: This approach breaks dependency tracking.  Thus, a mod to one
-# of the files that is \input does *not* result in a rebuild of
-# reacting_main.
-TEXSOURCES += reacting_main.tex
-EXTRA_DIST  = reacting_inputs/acoustic_decision_pt.tex
-EXTRA_DIST += reacting_inputs/acoustic_linearization.tex
-EXTRA_DIST += reacting_inputs/filter.tex
-EXTRA_DIST += reacting_inputs/full_linear_operator.tex
-EXTRA_DIST += reacting_inputs/reactinggas.tex
-EXTRA_DIST += reacting_inputs/reacting_linearization.tex
-EXTRA_DIST += reacting_inputs/viscous_linearization.tex
-EXTRA_DIST += reacting_inputs/transfer_function.eps
+# Reacting doc broken out amongst many srcs.
+reacting_TEXSOURCES  = reacting_main.tex
+reacting_TEXSOURCES += reacting_inputs/acoustic_decision_pt.tex
+reacting_TEXSOURCES += reacting_inputs/acoustic_linearization.tex
+reacting_TEXSOURCES += reacting_inputs/filter.tex
+reacting_TEXSOURCES += reacting_inputs/full_linear_operator.tex
+reacting_TEXSOURCES += reacting_inputs/reactinggas.tex
+reacting_TEXSOURCES += reacting_inputs/reacting_linearization.tex
+reacting_TEXSOURCES += reacting_inputs/viscous_linearization.tex
+reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
+
+# Explicit dependencies to get reacting_main to rebuild when necessary
+reacting_main.pdf: $(reacting_TEXSOURCES)
 
 # Notebooks, Images, References, etc.
-EXTRA_DIST += notebooks/Acoustics_WallNormal_3D.nb
+EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Acoustic_WallNormal_EOS_3d.nb
@@ -51,7 +48,7 @@ EXTRA_DIST += references.bib
 # Build and install writeups
 all-local:      pdf-local
 pdf-local:      $(PDFS)
-PDFS          = $(TEXSOURCES:.tex=.pdf)
+PDFS          = $(TEXSOURCES:.tex=.pdf) reacting_main.pdf
 writeupsdir   = $(pkgdatadir)/writeups
 writeups_DATA = $(PDFS)
 
