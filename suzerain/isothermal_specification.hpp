@@ -49,11 +49,18 @@ public:
     isothermal_specification();
 
     /**
-     * Specify a no-slip wall with given \f$T\f$ at both boundaries.
+     * Specify no-slip walls with given \f$T\f$ at both boundaries.
      *
      * @param wall_T \f$T\f$ for both walls.
      */
     isothermal_specification(real_t wall_T);
+
+    /**
+     * @copydoc isothermal_specification(real_t)
+     * @param wall_cs Mass fractions, one per species, at both walls.
+     */
+    isothermal_specification(real_t wall_T,
+                             const std::vector<real_t>& wall_cs);
 
     /**
      * Specify a transpiring wall with given inflow velocity \f$v\f$ and
@@ -67,6 +74,14 @@ public:
                              real_t inflow_velocity);
 
     /**
+     * @copydoc isothermal_specification(real_t,real_t)
+     * @param wall_cs Mass fractions, one per species, at both boundaries.
+     */
+    isothermal_specification(real_t wall_T,
+                             real_t inflow_velocity,
+                             const std::vector<real_t>& wall_cs);
+
+    /**
      * Specify two different temperatures and wall blowing velocities.
      *
      * @param lower_T \f$T\f$ at \f$y=0\f$
@@ -78,6 +93,18 @@ public:
                              real_t lower_v,
                              real_t upper_T,
                              real_t upper_v);
+
+    /**
+     * @copydoc isothermal_specification(real_t,real_t,real_t,real_t)
+     * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
+     * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
+     */
+    isothermal_specification(real_t lower_T,
+                             real_t lower_v,
+                             const std::vector<real_t>& lower_cs,
+                             real_t upper_T,
+                             real_t upper_v,
+                             const std::vector<real_t>& upper_cs);
 
     /**
      * Specify two different temperatures, wall blowing velocities,
@@ -96,6 +123,20 @@ public:
                              real_t upper_T,
                              real_t upper_u,
                              real_t upper_v);
+
+    /**
+     * @copydoc isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t)
+     * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
+     * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
+     */
+    isothermal_specification(real_t lower_T,
+                             real_t lower_u,
+                             real_t lower_v,
+                             const std::vector<real_t>& lower_cs,
+                             real_t upper_T,
+                             real_t upper_u,
+                             real_t upper_v,
+                             const std::vector<real_t>& upper_cs);
 
     /**
      * Conditions on the \f$y=0\f$ boundary.
