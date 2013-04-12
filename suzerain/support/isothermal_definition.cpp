@@ -43,6 +43,13 @@
 
 namespace suzerain {
 
+  
+static void parse(const std::string& s, real_t *t, const char *n)
+{
+    const real_t v = exprparse<real_t>(s, n);
+    *t = v;
+}
+
 static void parse_positive(const std::string& s, real_t *t, const char *n)
 {
     const real_t v = exprparse<real_t>(s, n);
@@ -56,6 +63,10 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
     validation::ensure_nonnegative(v, n);
     *t = v;
 }
+
+// FIXME: Add a parse_bounded for species inputs,
+//        maybe "ensure_zero_one"
+
 
 isothermal_definition::isothermal_definition()
 {
@@ -74,9 +85,26 @@ isothermal_definition::~isothermal_definition()
 
 // Strings used in options_description and populate/override/save/load.
 static const char name_lower_T[]   = "lower_T";
+static const char name_lower_u[]   = "lower_u";
+static const char name_lower_v[]   = "lower_v";
+static const char name_lower_w[]   = "lower_w";
+
+static const char name_upper_T[]   = "upper_T";
+static const char name_upper_u[]   = "upper_u";
+static const char name_upper_v[]   = "upper_v";
+static const char name_upper_w[]   = "upper_w";
+
 
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_lower_T[]   = "Input for temperature at lower boundary";
+static const char desc_lower_u[]   = "Input for u-velocity at lower boundary";
+static const char desc_lower_v[]   = "Input for v-velocity at lower boundary";
+static const char desc_lower_w[]   = "Input for w-velocity at lower boundary";
+
+static const char desc_upper_T[]   = "Input for temperature at upper boundary";
+static const char desc_upper_u[]   = "Input for u-velocity at upper boundary";
+static const char desc_upper_v[]   = "Input for v-velocity at upper boundary";
+static const char desc_upper_w[]   = "Input for w-velocity at upper boundary";
 
 boost::program_options::options_description
 isothermal_definition::options_description()
@@ -97,13 +125,72 @@ isothermal_definition::options_description()
 
     auto_ptr<typed_value<string> > p;
 
+    // FIXME: review which values will be accepted for each input
+
     // lower_T
     p.reset(value<string>());
-    p->notifier(bind(&parse_nonnegative, _1, &lower_T, name_lower_T));
+    p->notifier(bind(&parse_positive, _1, &lower_T, name_lower_T));
     if (!(boost::math::isnan)(lower_T)) {
         p->default_value(lexical_cast<string>(lower_T));
     }
     retval.add_options()(name_lower_T, p.release(), desc_lower_T);
+
+    // lower_u
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &lower_u, name_lower_u));
+    if (!(boost::math::isnan)(lower_u)) {
+        p->default_value(lexical_cast<string>(lower_u));
+    }
+    retval.add_options()(name_lower_u, p.release(), desc_lower_u);
+
+    // lower_v
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &lower_v, name_lower_v));
+    if (!(boost::math::isnan)(lower_v)) {
+        p->default_value(lexical_cast<string>(lower_v));
+    }
+    retval.add_options()(name_lower_v, p.release(), desc_lower_v);
+
+    // lower_w
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &lower_w, name_lower_w));
+    if (!(boost::math::isnan)(lower_w)) {
+        p->default_value(lexical_cast<string>(lower_w));
+    }
+    retval.add_options()(name_lower_w, p.release(), desc_lower_w);
+
+    // upper_T
+    p.reset(value<string>());
+    p->notifier(bind(&parse_positive, _1, &upper_T, name_upper_T));
+    if (!(boost::math::isnan)(upper_T)) {
+        p->default_value(lexical_cast<string>(upper_T));
+    }
+    retval.add_options()(name_upper_T, p.release(), desc_upper_T);
+
+    // upper_u
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &upper_u, name_upper_u));
+    if (!(boost::math::isnan)(upper_u)) {
+        p->default_value(lexical_cast<string>(upper_u));
+    }
+    retval.add_options()(name_upper_u, p.release(), desc_upper_u);
+
+    // upper_v
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &upper_v, name_upper_v));
+    if (!(boost::math::isnan)(upper_v)) {
+        p->default_value(lexical_cast<string>(upper_v));
+    }
+    retval.add_options()(name_upper_v, p.release(), desc_upper_v);
+
+    // upper_w
+    p.reset(value<string>());
+    p->notifier(bind(&parse, _1, &upper_w, name_upper_w));
+    if (!(boost::math::isnan)(upper_w)) {
+        p->default_value(lexical_cast<string>(upper_w));
+    }
+    retval.add_options()(name_upper_w, p.release(), desc_upper_w);
+
 
     return retval;
 }
@@ -116,6 +203,13 @@ isothermal_definition::populate(
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(lower_T);
+    CALL_MAYBE_POPULATE(lower_u);
+    CALL_MAYBE_POPULATE(lower_v);
+    CALL_MAYBE_POPULATE(lower_w);
+    CALL_MAYBE_POPULATE(upper_T);
+    CALL_MAYBE_POPULATE(upper_u);
+    CALL_MAYBE_POPULATE(upper_v);
+    CALL_MAYBE_POPULATE(upper_w);
 #undef CALL_MAYBE_POPULATE
 }
 
@@ -127,6 +221,13 @@ isothermal_definition::override(
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(lower_T);
+    CALL_MAYBE_OVERRIDE(lower_u);
+    CALL_MAYBE_OVERRIDE(lower_v);
+    CALL_MAYBE_OVERRIDE(lower_w);
+    CALL_MAYBE_OVERRIDE(upper_T);
+    CALL_MAYBE_OVERRIDE(upper_u);
+    CALL_MAYBE_OVERRIDE(upper_v);
+    CALL_MAYBE_OVERRIDE(upper_w);
 #undef CALL_MAYBE_OVERRIDE
 }
 
@@ -143,6 +244,14 @@ isothermal_definition::save(
     // scalars
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, name_lower_T,   &this->lower_T,   0, desc_lower_T);
+    esio_line_write(h, name_lower_u,   &this->lower_u,   0, desc_lower_u);
+    esio_line_write(h, name_lower_v,   &this->lower_v,   0, desc_lower_v);
+    esio_line_write(h, name_lower_w,   &this->lower_w,   0, desc_lower_w);
+    esio_line_write(h, name_upper_T,   &this->upper_T,   0, desc_upper_T);
+    esio_line_write(h, name_upper_u,   &this->upper_u,   0, desc_upper_u);
+    esio_line_write(h, name_upper_v,   &this->upper_v,   0, desc_upper_v);
+    esio_line_write(h, name_upper_w,   &this->upper_w,   0, desc_upper_w);
+
 }
 
 void
@@ -159,6 +268,13 @@ isothermal_definition::load(
     // Scalars
     esio_line_establish(h, 1, 0, 1);
     esio_line_read(h, name_lower_T,   &t.lower_T,   0);
+    esio_line_read(h, name_lower_u,   &t.lower_u,   0);
+    esio_line_read(h, name_lower_v,   &t.lower_v,   0);
+    esio_line_read(h, name_lower_w,   &t.lower_w,   0);
+    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
+    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
+    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
+    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
 
     this->populate(t, verbose);  // Prefer this to incoming
 }
