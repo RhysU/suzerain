@@ -48,14 +48,62 @@ public:
      */
     isothermal_specification();
 
+    /**
+     * Specify a no-slip wall with given \f$T\f$ at both boundaries.
+     *
+     * @param T_wall \f$T\f$ for both walls.
+     */
+    isothermal_specification(const real_t T_wall);
 
-    /** Virtual destructor to permit use as a base class */
-    virtual ~isothermal_specification();
+    /**
+     * Specify a transpiring wall with given inflow velocity \f$v\f$ and
+     * temperature \f$T\f$ at both boundaries.
+     *
+     * @param T_wall          \f$T\f$ for both walls.
+     * @param inflow_velocity \f$v\f$ for both walls with positive values
+     *                        oriented blowing into the domain interior.
+     */
+    isothermal_specification(const real_t T_wall,
+                             const real_t inflow_velocity);
+
+    /**
+     * Specify two different temperatures and wall blowing velocities.
+     *
+     * @param lower_T \f$T\f$ at \f$y=0\f$
+     * @param lower_v \f$v\f$ at \f$y=0\f$
+     * @param upper_T \f$T\f$ at \f$y=L_y\f$
+     * @param upper_v \f$v\f$ at \f$y=L_y\f$
+     */
+    isothermal_specification(const real_t lower_T,
+                             const real_t lower_v,
+                             const real_t upper_T,
+                             const real_t upper_v);
+
+    /**
+     * Specify two different temperatures, wall blowing velocities,
+     * and associated streamwise velocities.
+     *
+     * @param lower_T \f$T\f$ at \f$y=0\f$
+     * @param lower_u \f$u\f$ at \f$y=0\f$
+     * @param lower_v \f$v\f$ at \f$y=0\f$
+     * @param upper_T \f$T\f$ at \f$y=L_y\f$
+     * @param upper_u \f$u\f$ at \f$y=L_y\f$
+     * @param upper_v \f$v\f$ at \f$y=L_y\f$
+     */
+    isothermal_specification(const real_t lower_T,
+                             const real_t lower_u,
+                             const real_t lower_v,
+                             const real_t upper_T,
+                             const real_t upper_u,
+                             const real_t upper_v);
 
     /**
      * Conditions on the \f$y=0\f$ boundary.
      * @{
      */
+
+    /** Temperature \f$T\f$ at \f$y=0\f$. */
+    real_t lower_T;
 
     /** Streamwise velocity \f$u\f$ at \f$y=0\f$. */
     real_t lower_u;
@@ -65,9 +113,6 @@ public:
 
     /** Spanwise velocity \f$w\f$ at \f$y=0\f$. */
     real_t lower_w;
-
-    /** Temperature \f$T\f$ at \f$y=0\f$. */
-    real_t lower_T;
 
     /** Species mass fractions \f$c_s\f$ at \f$y=0\f$. */
     std::vector<real_t> lower_mass_fractions;
@@ -79,6 +124,9 @@ public:
      * @{
      */
 
+    /** Temperature \f$T\f$ at \f$y=L_y\f$. */
+    real_t upper_T;
+
     /** Streamwise velocity \f$u\f$ at \f$y=L_y\f$. */
     real_t upper_u;
 
@@ -87,9 +135,6 @@ public:
 
     /** Spanwise velocity \f$w\f$ at \f$y=L_y\f$. */
     real_t upper_w;
-
-    /** Temperature \f$T\f$ at \f$y=L_y\f$. */
-    real_t upper_T;
 
     /** Species mass fractions \f$c_s\f$ at \f$y=L_y\f$. */
     std::vector<real_t> upper_mass_fractions;
