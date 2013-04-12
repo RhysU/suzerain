@@ -26,8 +26,9 @@ reacting_TEXSOURCES += reacting_inputs/reacting_linearization.tex
 reacting_TEXSOURCES += reacting_inputs/viscous_linearization.tex
 reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
 
-# Explicit dependencies to get reacting_main to rebuild when necessary
-reacting_main.pdf: $(reacting_TEXSOURCES)
+# Explicit dependencies where necessary
+reacting_main.dvi reacting_main.pdf: $(reacting_TEXSOURCES)
+perfectgas.dvi perfectgas.pdf: perfectgas.tex inhomogeneity.eps
 
 # Notebooks, Images, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
