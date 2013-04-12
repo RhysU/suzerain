@@ -523,6 +523,22 @@ public:
     }
 
     /**
+     * Set RHS to rho*wall_mass_fractions, non-permuted version
+     */
+    template<typename T>
+    void rhs_non_permuted(T * const bspec, T * const xflow, const int alfa)
+    {
+        // Note two assumptions...
+        // 1.) alfa+1 implies wall_mass_fractions[0] is diluter
+        // 2.) incoming xflow is non-permuted flow solution
+
+        for (int wall = 0; wall < nwalls; ++wall) {
+            bspec[wall*(Ny-1)] = 
+                xflow[ndx::rho*Ny+wall*(Ny-1)]*wall_mass_fractions[alfa+1];
+        }
+    }
+
+    /**
      * Modify the equations within PA^TP^T for lower, upper walls where each
      * contiguous column within PA^TP^T contains one equation.  This storage is
      * ideal from a cache locality perspective for this boundary condition.
@@ -774,13 +790,14 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             flow_solver->solve(trans);
             flow_solver->demand_X(ic0->data() + i * Ntot);
 
-            // // TODO: Check me
-            // for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
-            //     species_bc_enforcer->rhs(
-            //         ic0->data() + i * Ntot + (ndx::species+alfa)*Ny, 
-            //         ic0->data() + i * Ntot, 
-            //         alfa);
-            // }
+
+            // Handle effects of constraints on species wall BCs
+            for (std::size_t alfa=0; alfa<species_solver.size(); ++alfa) {
+                species_bc_enforcer->rhs_non_permuted(
+                    ic0->data() + i * Ntot + (ndx::species+alfa)*Ny, 
+                    ic0->data() + i * Ntot, 
+                    alfa);
+            }
         }
 
         break;
