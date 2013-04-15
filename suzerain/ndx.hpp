@@ -73,6 +73,9 @@ template< typename Index >
 Index rho_(const Index i)
 {
     assert(i > 0);
+    return i + static_cast<Index>(rho);
+}
+
 } // namespace ndx
 
 } // namespace suzerain
