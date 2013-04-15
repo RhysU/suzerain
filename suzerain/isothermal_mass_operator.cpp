@@ -114,42 +114,39 @@ public:
         // Locate the upper density relative to the provided lower density
         complex_t& upper_rho = (&lower_rho)[Ny];
 
+#define LOWER(var) ((&lower_rho)[((var) - ndx::rho)*incf])
+#define UPPER(var) ((&upper_rho)[((var) - ndx::rho)*incf])
+
         // Set total energy to be density times specific total energy
-        if (flags & ENFORCE_LOWER_E)
-            (&lower_rho)[(ndx::e  - ndx::rho)*incf] = lower_rho * lower_E;
-        if (flags & ENFORCE_UPPER_E)
-            (&upper_rho)[(ndx::e  - ndx::rho)*incf] = upper_rho * upper_E;
+        if (flags & ENFORCE_LOWER_E) LOWER(ndx::e) = lower_rho * lower_E;
+        if (flags & ENFORCE_UPPER_E) UPPER(ndx::e) = upper_rho * upper_E;
 
         // Set streamwise momentum to be density times prescribed velocity
-        if (flags & ENFORCE_LOWER_U)
-            (&lower_rho)[(ndx::mx - ndx::rho)*incf] = lower_rho * spec.lower_u;
-        if (flags & ENFORCE_UPPER_U)
-            (&upper_rho)[(ndx::mx - ndx::rho)*incf] = upper_rho * spec.upper_u;
+        if (flags & ENFORCE_LOWER_U) LOWER(ndx::mx) = lower_rho * spec.lower_u;
+        if (flags & ENFORCE_UPPER_U) UPPER(ndx::mx) = upper_rho * spec.upper_u;
 
         // Set wall-normal momentum to be density times prescribed velocity
-        if (flags & ENFORCE_LOWER_V)
-            (&lower_rho)[(ndx::my - ndx::rho)*incf] = lower_rho * spec.lower_v;
-        if (flags & ENFORCE_UPPER_V)
-            (&upper_rho)[(ndx::my - ndx::rho)*incf] = upper_rho * spec.upper_v;
+        if (flags & ENFORCE_LOWER_V) LOWER(ndx::my) = lower_rho * spec.lower_v;
+        if (flags & ENFORCE_UPPER_V) UPPER(ndx::my) = upper_rho * spec.upper_v;
 
         // Set spanwise momentum to be density times prescribed velocity
-        if (flags & ENFORCE_LOWER_W)
-            (&lower_rho)[(ndx::mz - ndx::rho)*incf] = lower_rho * spec.lower_w;
-        if (flags & ENFORCE_UPPER_W)
-            (&upper_rho)[(ndx::mz - ndx::rho)*incf] = upper_rho * spec.upper_w;
+        if (flags & ENFORCE_LOWER_W) LOWER(ndx::mz) = lower_rho * spec.lower_w;
+        if (flags & ENFORCE_UPPER_W) UPPER(ndx::mz) = upper_rho * spec.upper_w;
 
-        // Do nothing to the density equation.
+        // Do nothing to the density equation
 
         // Set species partial densities to be density times mixture fraction.
         // Notice these are always enforced.
         assert(spec.lower_cs.size() == spec.upper_cs.size());
         const std::size_t num_species = spec.lower_cs.size();
-        for (std::size_t i = 1; i < num_species; ++i) {
-            (&lower_rho)[(ndx::rho_(i) - ndx::rho)*incf]
-                    = lower_rho * spec.lower_cs[i];
-            (&upper_rho)[(ndx::rho_(i) - ndx::rho)*incf]
-                    = upper_rho * spec.upper_cs[i];
+        for (std::size_t s = 1; s < num_species; ++s) {
+            LOWER(ndx::rho_(s)) = lower_rho * spec.lower_cs[s];
+            UPPER(ndx::rho_(s)) = upper_rho * spec.upper_cs[s];
         }
+
+#undef LOWER
+#undef UPPER
+
     }
 
     /**
@@ -162,41 +159,38 @@ public:
         // Locate the upper density relative to the provided lower density
         complex_t& upper_rho = (&lower_rho)[Ny];
 
+#define LOWER(var) ((&lower_rho)[((var) - ndx::rho)*incf])
+#define UPPER(var) ((&upper_rho)[((var) - ndx::rho)*incf])
+
         // Set total energy to be density times specific total energy
-        // This will fluctuate in accordance with density fluctuations
-        if (flags & ENFORCE_LOWER_E)
-            (&lower_rho)[(ndx::e  - ndx::rho)*incf] = lower_rho * lower_E;
-        if (flags & ENFORCE_UPPER_E)
-            (&upper_rho)[(ndx::e  - ndx::rho)*incf] = upper_rho * upper_E;
+        if (flags & ENFORCE_LOWER_E) LOWER(ndx::e) = lower_rho * lower_E;
+        if (flags & ENFORCE_UPPER_E) UPPER(ndx::e) = upper_rho * upper_E;
 
         // Set streamwise momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_U)
-            (&lower_rho)[(ndx::mx - ndx::rho)*incf] = 0;
-        if (flags & ENFORCE_UPPER_U)
-            (&upper_rho)[(ndx::mx - ndx::rho)*incf] = 0;
+        if (flags & ENFORCE_LOWER_U) LOWER(ndx::mx) = 0;
+        if (flags & ENFORCE_UPPER_U) UPPER(ndx::mx) = 0;
 
         // Set wall-normal momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_V)
-            (&lower_rho)[(ndx::my - ndx::rho)*incf] = 0;
-        if (flags & ENFORCE_UPPER_V)
-            (&upper_rho)[(ndx::my - ndx::rho)*incf] = 0;
+        if (flags & ENFORCE_LOWER_V) LOWER(ndx::my) = 0;
+        if (flags & ENFORCE_UPPER_V) UPPER(ndx::my) = 0;
 
         // Set spanwise momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_W)
-            (&lower_rho)[(ndx::mz - ndx::rho)*incf] = 0;
-        if (flags & ENFORCE_UPPER_W)
-            (&upper_rho)[(ndx::mz - ndx::rho)*incf] = 0;
+        if (flags & ENFORCE_LOWER_W) LOWER(ndx::mz) = 0;
+        if (flags & ENFORCE_UPPER_W) UPPER(ndx::mz) = 0;
 
-        // Do nothing to the density equation.
+        // Do nothing to the density equation
 
-        // Set species partial density fluctuations to be zero.
-        // Notice these are always enforced.
+        // Set species partial density fluctuations to be zero
         assert(spec.lower_cs.size() == spec.upper_cs.size());
         const std::size_t num_species = spec.lower_cs.size();
-        for (std::size_t i = 1; i < num_species; ++i) {
-            (&lower_rho)[(ndx::rho_(i) - ndx::rho)*incf] = 0;
-            (&upper_rho)[(ndx::rho_(i) - ndx::rho)*incf] = 0;
+        for (std::size_t s = 1; s < num_species; ++s) {
+            LOWER(ndx::rho_(s)) = 0;
+            UPPER(ndx::rho_(s)) = 0;
         }
+
+#undef LOWER
+#undef UPPER
+
     }
 
 };
