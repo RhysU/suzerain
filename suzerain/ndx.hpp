@@ -34,17 +34,22 @@ namespace suzerain {
 
 /**
  * Symbolic indices, identifiers, and descriptions for 3D Navier--Stokes.
- *
  */
 namespace ndx {
 
 // Anonymous enum to declare our state variable storage indices.
 enum {
-    e,    /**< Index for storing total energy         \f$e   = \rho{}E\f$ */
-    mx,   /**< Index for storing streamwise momentum  \f$m_x = \rho{}u\f$ */
-    my,   /**< Index for storing wall-normal momentum \f$m_y = \rho{}v\f$ */
-    mz,   /**< Index for storing spanwise momentum    \f$m_z = \rho{}w\f$ */
-    rho   /**< Index for storing density              \f$      \rho   \f$ */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+    // Force both (e - rho) and (rho - e) to provide usable, signed results.
+    ensure_values_are_signed_to_permit_arbitrary_relative_offsets = -1,
+#endif
+
+    e   = 0, /**< Signed index for total energy         \f$e   = \rho{}E\f$ */
+    mx  = 1, /**< Signed index for streamwise momentum  \f$m_x = \rho{}u\f$ */
+    my  = 2, /**< Signed index for wall-normal momentum \f$m_y = \rho{}v\f$ */
+    mz  = 3, /**< Signed index for spanwise momentum    \f$m_z = \rho{}w\f$ */
+    rho = 4  /**< Signed index for density              \f$\rho         \f$ */
 };
 
 /**
@@ -62,7 +67,8 @@ extern const array<const char *, ndx::rho + 1u> description;
 /**
  * Compute the index of the (<em>zero-indexed</em) <tt>i</tt>-th species
  * partial density for <tt>i > 0</tt>.  Because the diluter species partial
- * density is not tracked, <tt>i > 0</tt> is required.
+ * density if not tracked, <tt>i > 0</tt> is required.  Notice neither
+ * \ref identifier nor \ref description is provided for these indices.
  *
  * @tparam Index Type of the index to return.
  * @param  i     Zero-indexed species of interest.
