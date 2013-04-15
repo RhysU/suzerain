@@ -84,6 +84,9 @@ with time constant $1/\phi$ will be introduced. Making $\phi$
 sufficiently large will effectively kill the high wavenumber content of
 $u$.
 
+
+\subsection{Cook and Cabot 8th Order Filter}
+
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{llllll}
@@ -209,6 +212,14 @@ of $y$, based on say an approximate $\nu$ representing the mean, and the
 actual knot or collocation point locations. The eigen characteristics of
 the resulting operator $\phi(F-I)$ in (\ref{eq:time_filter}) should also
 be evaluated. Victor's experience in Comp regarding this would be useful.
+
+\subsection{Viscous Filter}
+In addition to the Cook and Cabot filter, a filter based on the
+difference between the ``real'' B-spline second derivative operator
+and repeated application of the first derivative operator will be
+investigated.
+
+\todo{Complete documentation of viscous filter}
 
 
 %\end{document}
