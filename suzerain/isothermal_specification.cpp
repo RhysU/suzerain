@@ -130,6 +130,8 @@ isothermal_specification::isothermal_specification(
     , upper_w (0)
     , upper_cs(upper_cs)
 {
+    SUZERAIN_ENSURE_EXCEPT(lower_cs.size() == upper_cs.size(),
+                           std::invalid_argument);
 }
 
 isothermal_specification::isothermal_specification(
@@ -152,6 +154,8 @@ isothermal_specification::isothermal_specification(
     , upper_w (0)
     , upper_cs(upper_cs)
 {
+    SUZERAIN_ENSURE_EXCEPT(lower_cs.size() == upper_cs.size(),
+                           std::invalid_argument);
 }
 
 } // namespace suzerain

@@ -99,6 +99,7 @@ public:
      * @copydoc isothermal_specification(real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
+     * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */
     isothermal_specification(real_t lower_T,
                              real_t lower_v,
@@ -135,6 +136,7 @@ public:
      * @copydoc isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
+     * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
      */
     isothermal_specification(real_t lower_T,
                              real_t lower_u,
