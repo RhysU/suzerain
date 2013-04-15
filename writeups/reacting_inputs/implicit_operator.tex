@@ -12,12 +12,12 @@ terms in the part of the operator that is treated implicitly.  Of
 course, since the SMR91 scheme requires that the implicit operator be
 linear in the state, we cannot exactly capture the full behavior in
 the linear operator.  Further, to reduce the cost of the required
-implicit solves, we will persue a formulation that treats only
+implicit solves, we will pursue a formulation that treats only
 wall-normal portions of the Navier-Stokes right hand sides implicitly.
 This choice implies that the linear operator $\tilde{L}$ is
 independence of wave-number, meaning that we require only one matrix
 factorization per Runge-Kutta substep.  Finally, to avoid factorizing
-an $N_y (N_s + 4) \times N_y (N_s + 4)$, we require that the
+an $N_y (N_s + 4) \times N_y (N_s + 4)$ matrix, we require that the
 formulation decouples the species equations both from the flow and
 each other.  In this case, the species equations have their own
 solvers, which each require factorization of one $N_y \times N_y$
@@ -429,7 +429,7 @@ A_{\mathrm{imp}} = \pp{G}{U} - A_{\mathrm{exp}} = \left[ \begin{array}{cccccc}
 0 & -uv & 0 & u & 0 & 0 \\
 0 & -v^2 +  \pp{p}{\rho} - \xi & \pp{p}{\rho u} & v + \pp{p}{\rho v} & \pp{p}{\rho w} & \pp{p}{\rho E} \\
 0 & -wv & 0 & w & 0 & 0 \\
-0 & -v \left(E + \pp{p}{\rho} - \frac{p}{\rho}\right) & v \pp{p}{\rho u} & E + \frac{p}{\rho} + v \pp{p}{\rho v}  & v \pp{p}{\rho w} & v \pp{p}{\rho E}
+0 & -v \left(E + \frac{p}{\rho} - \pp{p}{\rho}\right) & v \pp{p}{\rho u} & E + \frac{p}{\rho} + v \pp{p}{\rho v}  & v \pp{p}{\rho w} & v \pp{p}{\rho E}
 \end{array} \right].
 \end{equation*}
 %
@@ -550,9 +550,11 @@ It is straightforward but tedious to show that the eigenvalues
 $\lambda_{\mathrm{visc}}$ of this Jacobian matrix satisfy
 %
 \begin{equation*}
-(D_{\alpha} - \lambda_{\mathrm{visc}}) (-\lambda_{\mathrm{visc}}) (\nu - \lambda_{\mathrm{visc}})^3 \left( \frac{\kappa}{\rho C_{v,mix}} - \lambda_{\mathrm{visc}} \right) = 0.
+(D_{\alpha} - \lambda_{\mathrm{visc}}) (-\lambda_{\mathrm{visc}}) (\nu - \lambda_{\mathrm{visc}})^2  \left( \left( \alpha + \frac{4}{3} \right) \nu - \lambda_{\mathrm{visc}} \right) \left( \frac{\kappa}{\rho C_{v,mix}} - \lambda_{\mathrm{visc}} \right) = 0,
 \end{equation*}
 % 
+where $\nu = \mu/\rho$.
+
 Thus, these eigenvalues can be moved into the implicit operator with
 a simple, diagonal treatment.  Specifically, the viscous part of the
 implicit operator is given by
