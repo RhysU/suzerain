@@ -42,10 +42,10 @@ class isothermal_specification;
 class pencil_grid;
 
 /**
- * An abstract mass operator that provides isothermal boundary conditions.
- * Subclasses must provide a way to compute specific total energy given local
- * state information.  In this way, different equations of state may be
- * accommodated.
+ * An abstract mass operator that provides isothermal boundary conditions for
+ * equations ordered per \ref suzerain::ndx.  Subclasses must provide a way to
+ * compute specific total energy given local state information.  In this way,
+ * different equations of state may be accommodated.
  */
 class isothermal_mass_operator : public mass_operator
 {
