@@ -111,6 +111,12 @@ public:
      * Specify two different temperatures, wall blowing velocities,
      * and associated streamwise velocities.
      *
+     * <tt>NaN</tt> may be specified for \c lower_v or \c upper_v to indicate
+     * that the boundary-normal velocity should be determined by some other
+     * means.  Such usage requires auxiliary information (e.g. an instantaneous
+     * mean velocity at the boundary) in conjunction with a boundary condition
+     * implementation (e.g. \ref isothermal_mass_operator).
+     *
      * @param lower_T \f$T\f$ at \f$y=0\f$
      * @param lower_u \f$u\f$ at \f$y=0\f$
      * @param lower_v \f$v\f$ at \f$y=0\f$
