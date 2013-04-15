@@ -102,7 +102,6 @@ public:
                            const real_t upper_w,
                            const std::vector<real_t> upper_cs) const = 0;
 
-////FIXME Draft
 ////virtual void invert_mass_plus_scaled_operator(
 ////        const complex_t &phi,
 ////        multi_array::ref<complex_t,4> &state,
