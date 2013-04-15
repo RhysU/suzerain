@@ -35,15 +35,6 @@ namespace suzerain {
 /**
  * Symbolic indices, identifiers, and descriptions for 3D Navier--Stokes.
  *
- * The last index \e must be <tt>rho</tt>!  In the multi-species cases, mixture
- * density should be in \ref rho and the <tt>i</tt>-th species partial density
- * in <tt>rho + (i-1)</tt>.  That is, the "diluter" species <tt>i == 0</tt>
- * never has its partial density tracked explicitly.  Instead, the diluter
- * species' partial density is found by subtracting all other partial densities
- * from the mixture density <tt>rho</tt>.  This causes all floating point
- * accumulation error to adjust the amount of the diluter species within the
- * simulation. Many routines will assume the equations are stored in this order
- * when attempting to walk memory linearly.
  */
 namespace ndx {
 
@@ -68,6 +59,20 @@ extern const array<const char *, ndx::rho + 1u> identifier;
  */
 extern const array<const char *, ndx::rho + 1u> description;
 
+/**
+ * Compute the index of the (<em>zero-indexed</em) <tt>i</tt>-th species
+ * partial density for <tt>i > 0</tt>.  Because the diluter species partial
+ * density is not tracked, <tt>i > 0</tt> is required.
+ *
+ * @tparam Index Type of the index to return.
+ * @param  i     Zero-indexed species of interest.
+ *
+ * @return The equation index for the <tt>i</tt>-th special partial density.
+ */
+template< typename Index >
+Index rho_(const Index i)
+{
+    assert(i > 0);
 } // namespace ndx
 
 } // namespace suzerain
