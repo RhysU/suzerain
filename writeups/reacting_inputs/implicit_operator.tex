@@ -28,7 +28,7 @@ For clarity in developing the formulation, the inviscid and viscous
 contributions are discussed separately in
 \S\ref{sec:inviscid_implicit_operator} and
 \S\ref{sec:viscous_implicit_operator}, respectively.  In
-\S\ref{sec:complete_implicit_operator} these contributions are added
+\S\ref{sec:complete_implicit_operator} these contributions are combined
 to form the complete implicit operator.
 
 \subsection{Inviscid Contribution}
@@ -408,9 +408,18 @@ A straightforward but tedious analysis shows that the eigenvalues of
 $A_{\mathrm{exp}}$, denoted $\lambda_{\mathrm{exp}}$ satisfy
 %
 \begin{equation*}
--\lambda_{\exp} \left( v - \lambda_{\mathrm{exp}} \right)^5.
+-\lambda_{\exp} \left( v - \lambda_{\mathrm{exp}} \right)^5 = 0.
 \end{equation*}
 %
+Thus,
+%
+\begin{equation*}
+\lambda_{\mathrm{exp}} = v \quad \mathrm{or} \quad \lambda_{\mathrm{exp}} = 0,
+\end{equation*}
+% 
+which clearly achieves the goal of removing acoustics from the
+explicit operator.
+
 Thus, the required implicit operator is given by
 %
 \begin{equation*}
@@ -499,36 +508,91 @@ additional decoupling has not been implemented.
 
 
 \subsection{Viscous Contribution}
-Additionally, we linearize the viscous operator along the diagonal,
+The wall-normal component of the viscous flux is given by
+%
+\begin{equation*}
+G_{\mathrm{visc}} = \left[ \begin{array}{c}
+\rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{y} \\
+0 
+\tau_{21} \\
+\tau_{22} \\
+\tau_{23} \\
+\sum_{s=1}^{N_s} \rho D_{\alpha} h_{\alpha} \pp{c_{\alpha}}{y} + \tau_{2i} u_i - \kappa \pp{T}{y}
+\end{array} \right].
+\end{equation*}
+% 
+Note that the signs are correct for the viscous term appearing on the
+RHS of the Navier-Stokes equations.
+
+To form the appropriate viscous contribution to the implicit
+operator, we are interested in the Jacobian of $G_{visc}$ with respect
+to $\partial U / \partial y$.  We have
+%
+\begin{equation*}
+\pp{G_{\mathrm{visc}}}{(\partial U/ \partial y)} = \left[ \begin{array}{cccccc}
+\mcal{D}_{\alpha} & -c_{\alpha} \mcal{D}_{\alpha} & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & - \mu \frac{u}{\rho} & \frac{\mu}{\rho} & 0 & 0 & 0 \\
+0 & - \left(\alpha + \frac{4}{3} \right) \mu \frac{v}{\rho} & 0 & \left(\alpha + \frac{4}{3} \right) \frac{\mu}{\rho} & 0 & 0 \\
+0 & - \mu \frac{u}{\rho} & 0 & 0 & \frac{\mu}{\rho} & 0 \\
+* & * & * & * & * & \kappa \pp{T}{\rho E} \\
+\end{array} \right],
+\end{equation*}
+% 
+where the $*$ entries are non-zero, but, as will be shown below,
+irrelevant to the current analysis, and
+%
+\begin{equation*}
+\pp{T}{\rho E} = \frac{1}{\rho C_{v,mix}}.
+\end{equation*}
+% 
+It is straightforward but tedious to show that the eigenvalues
+$\lambda_{\mathrm{visc}}$ of this Jacobian matrix satisfy
+%
+\begin{equation*}
+(D_{\alpha} - \lambda_{\mathrm{visc}}) (-\lambda_{\mathrm{visc}}) (\nu - \lambda_{\mathrm{visc}})^3 \left( \frac{\kappa}{\rho C_{v,mix}} - \lambda_{\mathrm{visc}} \right) = 0.
+\end{equation*}
+% 
+Thus, these eigenvalues can be moved into the implicit operator with
+a simple, diagonal treatment.  Specifically, the viscous part of the
+implicit operator is given by
+%
 \begin{equation}
-\tiny
-L_{\text{viscous}} = 
-\left(
+L_{\mathrm{visc}} = 
+\left[
 \begin{array}{cccccc}
- D_s & 0 & 0 & 0 & 0 & 0 \\
+ D_{\alpha} & 0 & 0 & 0 & 0 & 0 \\
  0 & 0 & 0 & 0 & 0 & 0 \\
  0 & 0 & \frac{\mu}{\rho} & 0 & 0 & 0 \\
- 0 & 0 & 0 & (\alpha+\frac{4}{3})\frac{\mu}{\rho} & 0 & 0 \\
+ 0 & 0 & 0 & \left(\alpha+\frac{4}{3}\right)\frac{\mu}{\rho} & 0 & 0 \\
  0 & 0 & 0 & 0 & \frac{\mu}{\rho} & 0 \\
- 0 & 0 & 0 & 0 & 0 & \frac{1}{\rho c_v} \\
+ 0 & 0 & 0 & 0 & 0 & \frac{\kappa}{\rho c_v} \\
 \end{array}
-\right)
+\right]
 \end{equation}
 
 
-\subsection{The Complete Operator}
-Fig. \ref{fig:discreteimplicitop} details how this matrix is actually organized in
-suzerain. 
+\subsection{The Complete, Discrete Operator}
+Loosely speaking, the complete implicit operator is given by
+%
+\begin{equation*}
+M + \varphi \tilde{L} = \varphi \left( \frac{1}{\varphi} M - A_{\mathrm{imp}} D^{(1)} + L_{\mathrm{visc}} D^{(2)} \right),
+\end{equation*}
+% 
+where $M$, $D^{(1)}$, and $D^{(2)}$ are the B-spline mass, first
+derivative, and second derivative operators, respectively, and the
+multiplications of $A_{\mathrm{imp}}$ and $L_{\mathrm{visc}}$ with the
+appropriate derivative operators are interpreted correctly.
+Specifically, the $N_y \times N_y$ derivative operators are scaled by
+$N_y \times N_y$ diagonal matrices formed from reference profiles of
+each entry in $A_{\mathrm{imp}}$ and $L_{\mathrm{visc}}$.  This
+operator is further depicted in Figure~\ref{fig:discreteimplicitop}.
 
-\newpage
 \begin{sidewaysfigure}
 \newcommand{\entry}[1]{}          % Provides comments for subblocks
 \newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
 \newcommand{\D}[1]{D^{(#1)}}      % ditto
 \newcommand{\M}{M}                % ditto
-\newcommand{\g}{\gamma}           % ditto
-\newcommand{\km}{k_{m}}           % ditto
-\newcommand{\kn}{k_{n}}           % ditto
 \newcommand{\mx}{m_{x}}           % ditto
 \newcommand{\my}{m_{y}}           % ditto
 \newcommand{\mz}{m_{z}}           % ditto
@@ -537,10 +601,6 @@ suzerain.
    \renewcommand{\arraystretch}{2.0}
    \begin{Bmatrix}{#1}\\{#2}\\{#3}\end{Bmatrix}
 }}
-\newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
-\renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
-\renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
-\newcommand{\ind}[1]{\textcolor{BrickRed}{#1}}  % Wavenumber independent term
 \hspace{-.04\textwidth}
 {\resizebox{1.08\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
 \begin{align*}
@@ -557,7 +617,7 @@ suzerain.
  \frac{1}{\vp}
   }{
   }{
- \ind{D_s }
+  D_{\alpha}
   }
 & \entry{\rho\rho_{\alpha} }
  0
@@ -578,7 +638,7 @@ suzerain.
   \subcoeff{
  \frac{1}{\vp}
   }{
- \ind{v}
+ 0
   }{
  0
   }
@@ -596,7 +656,7 @@ suzerain.
 & \entry{\mx\rho }
   \subcoeff{
   }{
- \ind{-uv}
+  uv
   }{
   }
 & \entry{\mx\mx  }
@@ -604,12 +664,12 @@ suzerain.
  \bm{\frac{1}{\vp}} % M
   }{
   }{
- \ind{\frac{\mu}{\rho}}
+   \frac{\mu}{\rho}
   }
 & \entry{\mx\my  }
   \subcoeff{
   }{
- \ind{u}
+  -u
   }{
   }
 & \entry{\mx\mz  }
@@ -623,44 +683,44 @@ suzerain.
 \entry{\my\rho }
   \subcoeff{
   }{
-\ind{-v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T
-   \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho }}
+%-v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho }\
+  v^2 - \pp{p}{\rho} - \sum_{\alpha=2}^{N_s} c_{\alpha} \pp{p}{\rho_{\alpha}}
   }{
   }
 & \entry{\my\mx  }
   \subcoeff{
   }{
- \ind{-u} (\ind{\gamma} -1) 
+    -\pp{p}{\rho u}
   }{
   }
 & \entry{\my\my  }
   \subcoeff{
  \bm{\frac{1}{\vp}} % M
   }{
- \ind{v}-\ind{v} (\ind{\gamma} -1)
+    -v -\pp{p}{\rho v}
   }{
- (\alpha +\frac{4}{3}) \ind{\frac{\mu}{\rho}}
+ (\alpha +\frac{4}{3}) \frac{\mu}{\rho}
   }
 & \entry{\my\mz  }
   \subcoeff{
   }{
- -\ind{w} (\ind{\gamma} -1)
+ -\pp{p}{\rho w}
   }{
   }
 & \entry{\my{}e  }
   \subcoeff{
   }{
- \ind{\gamma} -1 
+ - \pp{p}{\rho E}
   }{
   }
 % Spanwise momentum row
 \\\entry{\mz\rho_{\alpha} }
- \ind{0}
+0
 & 
 \entry{\mz\rho}
   \subcoeff{
   }{
-    \ind{-vw}
+    vw
   }{
   }
 & \entry{\mz\mx }
@@ -668,7 +728,7 @@ suzerain.
 & \entry{\mz\my }
   \subcoeff{
   }{
-    \ind{w}
+    -w
   }{
   }
 & \entry{\mz\mz }
@@ -677,7 +737,7 @@ suzerain.
   }{
  0 
   }{
- \ind{\frac{\mu}{\rho}}
+    \frac{\mu}{\rho}
   }
 & \entry{\mz{}e }
  0
@@ -688,34 +748,35 @@ suzerain.
 \entry{e\rho  }
   \subcoeff{
   }{
- \ind{v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH}}
+    %v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH}
+    v \left( E + \frac{p}{\rho} - \pp{p}{\rho} \right)
   }{
   }
 & \entry{e\mx   }
   \subcoeff{
   }{
- -\ind{u} \ind{v} (\ind{\gamma} -1)
+    -v \pp{p}{\rho u}
   }{
   }
 & \entry{e\my   }
   \subcoeff{
   }{
- \ind{H-v^2 (\gamma -1)}
+  -E - \frac{p}{\rho} - v \pp{p}{\rho v}
   }{
   }
 & \entry{e\mz   }
   \subcoeff{
   }{
- -\ind{v} \ind{w} (\ind{\gamma} -1)
+ -v \pp{p}{\rho w}
   }{
   }
 & \entry{ee     }
   \subcoeff{
  \bm{\frac{1}{\vp}} % M
   }{
- \ind{v} (\ind{\gamma} -1)
+ - v \pp{p}{\rho E}
   }{
- \ind{\frac{1}{\rho c_v}}
+ \frac{\kappa}{\rho c_v}
   }
 \end{bmatrix}
 \renewcommand{\arraystretch}{0.6}
@@ -771,235 +832,9 @@ suzerain.
     N_y$ blocked vectors surrounded by curly braces are to be ``dotted'' against
     the blocked vector $ \trans{\begin{bmatrix} \M & \D{1} & \D{2} \end{bmatrix}} $
     to form $N_y \times N_y$ subblocks.  Each of $M$, $\D{1}$, and $\D{2}$ is a
-    $N_y \times N_y$ banded matrix. \ind{The colored entries represent reference quantities}.
+    $N_y \times N_y$ banded matrix. 
 }
 \label{fig:discreteimplicitop}
 \end{sidewaysfigure}
 
 
-The viscous operator is identical to the previous
-formulation. The fully implicit matrix is shown in fig. \ref{fig:discreteimplicitop2}.
-
-\newpage
-\begin{sidewaysfigure}
-\newcommand{\entry}[1]{}          % Provides comments for subblocks
-\newcommand{\C}[2]{C^{#1}_{#2}}   % For brevity below
-\newcommand{\D}[1]{D^{(#1)}}      % ditto
-\newcommand{\M}{M}                % ditto
-\newcommand{\g}{\gamma}           % ditto
-\newcommand{\km}{k_{m}}           % ditto
-\newcommand{\kn}{k_{n}}           % ditto
-\newcommand{\mx}{m_{x}}           % ditto
-\newcommand{\my}{m_{y}}           % ditto
-\newcommand{\mz}{m_{z}}           % ditto
-\newcommand{\vp}{\varphi}         % ditto
-\newcommand{\subcoeff}[3]{{       % ditto
-   \renewcommand{\arraystretch}{2.0}
-   \begin{Bmatrix}{#1}\\{#2}\\{#3}\end{Bmatrix}
-}}
-\newcommand{\Ma}{\ensuremath{\mbox{\small{}Ma}}}
-\renewcommand{\Pr}{\ensuremath{\mbox{\small{}Pr}}}
-\renewcommand{\Re}{\ensuremath{\mbox{\small{}Re}}}
-\newcommand{\ind}[1]{\textcolor{BrickRed}{#1}}  % Wavenumber independent term
-\hspace{-.04\textwidth}
-{\resizebox{1.08\textwidth}{!}{\begin{minipage}[c]{\textwidth}  % SCALE-TO-FIT
-\begin{align*}
-\bm{\vp}
-\renewcommand{\arraystretch}{1.0} % Adds whitespace between rows
-\addtolength{\arraycolsep}{-.1em}
-\begin{bmatrix}
-%
-% species density row
-%
-% is this here?
-  \entry{\rho_{\alpha}\rho_{\alpha}}
-  \subcoeff{
- \frac{1}{\vp}
-  }{
-  }{
- \ind{D_s }
-  }
-& \entry{\rho\rho_{\alpha} }
- 0
-& \entry{\rho\mx }
- 0
-& \entry{\rho\my }
- 0
-& \entry{\rho\mz }
- 0
-& \entry{\rho{}e }
- 0
-%
-% Density row
-%
- \\\entry{\rho_{\alpha}\rho}
- 0
-& \entry{\rho\rho }
-  \subcoeff{
- \frac{1}{\vp}
-  }{
- \ind{v}
-  }{
- 0
-  }
-& \entry{\rho\mx }
- 0
-& \entry{\rho\my }
- 0
-& \entry{\rho\mz }
- 0
-& \entry{\rho{}e }
- 0
-% Streamwise momentum row
-\\\entry{\mx\rho_{\alpha} }
- 0
-& \entry{\mx\rho }
- 0
-& \entry{\mx\mx  }
- \subcoeff{
- \bm{\frac{1}{\vp}} % M
-  }{
-  }{
- \ind{\frac{\mu}{\rho}}
-  }
-& \entry{\mx\my  }
- 0
-& \entry{\mx\mz  }
- 0
-& \entry{\mx{}e  }
- 0
-% Wall-normal momentum row
-\\\entry{\my\rho_{\alpha} }
- 0
-& 
-\entry{\my\rho }
-  \subcoeff{
-  }{
-\ind{-v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right)
- (\gamma -1) + \frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T
-   \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho }}
-  }{
-  }
-& \entry{\my\mx  }
- 0
-& \entry{\my\my  }
-  \subcoeff{
- \bm{\frac{1}{\vp}} % M
-  }{
- \ind{v}-\ind{v} (\ind{\gamma} -1)
-  }{
- (\alpha +\frac{4}{3}) \ind{\frac{\mu}{\rho}}
-  }
-& \entry{\my\mz  }
- 0
-& \entry{\my{}e  }
-  \subcoeff{
-  }{
- \ind{\gamma} -1 
-  }{
-  }
-% Spanwise momentum row
-\\\entry{\mz\rho_{\alpha} }
- \ind{0}
-& 
-\entry{\mz\rho}
- 0
-& \entry{\mz\mx }
- 0
-& \entry{\mz\my }
- 0 
-& \entry{\mz\mz }
-  \subcoeff{
- \bm{\frac{1}{\vp}} % M
-  }{
- 0 
-  }{
- \ind{\frac{\mu}{\rho}}
-  }
-& \entry{\mz{}e }
- 0
-% Total energy row
-\\\entry{e\rho_{\alpha} }
- 0 
-& 
-\entry{e\rho  }
-  \subcoeff{
-  }{
- \ind{v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH}}
-  }{
-  }
-& \entry{e\mx   }
- 0
-& \entry{e\my   }
-  \subcoeff{
-  }{
- \ind{H-v^2 (\gamma -1)}
-  }{
-  }
-& \entry{e\mz   }
- 0 
-& \entry{ee     }
-  \subcoeff{
- \bm{\frac{1}{\vp}} % M
-  }{
- \ind{v} (\ind{\gamma} -1)
-  }{
- \ind{\frac{1}{\rho c_v}}
-  }
-\end{bmatrix}
-\renewcommand{\arraystretch}{0.6}
-\begin{bmatrix}
-  \hat{\rho_{\alpha}}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{\rho_{\alpha}}_{\left(N_y-1,\,m,\,n\right)} \\
-\\%
-\\%
-\\%
-\\%
-  \hat{\rho}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{\rho}_{\left(N_y-1,\,m,\,n\right)} \\
-\\%
-\\%
-\\%
-\\%
-  \hat{\mx}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{\mx}_{\left(N_y-1,\,m,\,n\right)} \\
-\\%
-\\%
-\\%
-\\%
-  \hat{\my}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{\my}_{\left(N_y-1,\,m,\,n\right)} \\
-\\%
-\\%
-\\%
-\\%
-  \hat{\mz}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{\mz}_{\left(N_y-1,\,m,\,n\right)} \\
-\\%
-\\%
-\\%
-\\%
-  \hat{e}_{\left(0,\,m,\,n\right)} \\
-  \vdots \\
-  \hat{e}_{\left(N_y-1,\,m,\,n\right)} \\
-%
-\end{bmatrix}
-\end{align*}
-\end{minipage}}}  % END SCALE-TO-FIT!
-\vspace{2em}
-\\
-\caption[The discrete operator $M+\varphi{}L$ used for implicit time advance]
-{
-    The full linearized matrix for the reduced system.  \ind{The colored
- entries represent reference quantities}. 
-}
-\label{fig:discreteimplicitop2}
-\end{sidewaysfigure}
-
-
-%\end{document}
