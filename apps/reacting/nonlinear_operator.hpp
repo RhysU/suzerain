@@ -415,9 +415,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::vp_rw](u.y()*p_m.z());
                 acc[ref::vp_rE](u.y()*p_e    );
 
-                acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum); // TODO: Check signs
-                acc[ref::Ce_rho ](u.y()*(H - p_rho)); // TODO: Check signs
-                acc[ref::Ce_rv  ](-H - u.y()*p_m.y()); // TODO: Check signs
+                acc[ref::Cmy_rho](u.y()*u.y() - p_rho - p_rsum);
+                acc[ref::Ce_rho ](u.y()*(H - p_rho));
+                acc[ref::Ce_rv  ](-H - u.y()*p_m.y());
 
                 // ...and viscous-term-related quantities
                 acc[ref::nu   ](mu*irho);
@@ -721,7 +721,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             //
             // TODO: "Eigenify" these calcs where appropriate
             
-            Vector3r vwork = tau*u; // TODO: check that this does what I think
+            Vector3r vwork = tau*u; 
             
             //----------------------------------------------------------------
             // ENERGY                    = u     * (rho*H) - viscous work ...
