@@ -134,7 +134,7 @@ namespace detail {
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,1>& x,
-           contiguous_state<1,Element>&  y)
+           contiguous_state<1,Element>& y)
 {
     assert(std::equal(x.shape(), x.shape() + 1, y.shape()));
 
@@ -146,7 +146,7 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,2>& x,
-           contiguous_state<2,Element>&  y)
+           contiguous_state<2,Element>& y)
 {
     typedef typename contiguous_state<2,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 2, y.shape()));
@@ -169,7 +169,7 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,3>& x,
-           contiguous_state<3,Element>&  y)
+           contiguous_state<3,Element>& y)
 {
     typedef typename contiguous_state<3,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 3, y.shape()));
@@ -198,7 +198,7 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,4>& x,
-           contiguous_state<4,Element>&  y)
+           contiguous_state<4,Element>& y)
 {
     typedef typename contiguous_state<4,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 4, y.shape()));
@@ -233,7 +233,7 @@ void apply(BLASFunctor functor,
 template< typename BLASFunctor, typename Element >
 void apply(BLASFunctor functor,
            multi_array::ref<Element,5>& x,
-           contiguous_state<5,Element>&  y)
+           contiguous_state<5,Element>& y)
 {
     typedef typename contiguous_state<5,Element>::index index;
     assert(std::equal(x.shape(), x.shape() + 5, y.shape()));
