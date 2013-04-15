@@ -1,53 +1,460 @@
+This section describes the formulation of the implicit operator
+$\tilde{L}$ in the SMR91 scheme.  See~\ref{sec:temporal_discretization}
+for details of the scheme.
+
+\subsection{Motivating Concerns}
+Given the wall-normal grid stretching required to adequately resolve
+the near-wall features of the solution, it is expected that, in a
+fully explicit treatment, the near-wall, wall-normal acoustic velocity
+and viscous terms would lead to the most constraining time step
+restrictions.  Thus, we pursue a formulation that aims to treat these
+terms in the part of the operator that is treated implicitly.  Of
+course, since the SMR91 scheme requires that the implicit operator be
+linear in the state, we cannot exactly capture the full behavior in
+the linear operator.  Further, to reduce the cost of the required
+implicit solves, we will persue a formulation that treats only
+wall-normal portions of the Navier-Stokes right hand sides implicitly.
+This choice implies that the linear operator $\tilde{L}$ is
+independence of wave-number, meaning that we require only one matrix
+factorization per Runge-Kutta substep.  Finally, to avoid factorizing
+an $N_y (N_s + 4) \times N_y (N_s + 4)$, we require that the
+formulation decouples the species equations both from the flow and
+each other.  In this case, the species equations have their own
+solvers, which each require factorization of one $N_y \times N_y$
+matrix per substep.  The flow solver requires factorization of one $5
+N_y \times 5 N_y$ matrix per substep.
+
+For clarity in developing the formulation, the inviscid and viscous
+contributions are discussed separately in
+\S\ref{sec:inviscid_implicit_operator} and
+\S\ref{sec:viscous_implicit_operator}, respectively.  In
+\S\ref{sec:complete_implicit_operator} these contributions are added
+to form the complete implicit operator.
 
 \subsection{Inviscid Contribution}
-We examine two possibilities: coupling all five flow equations and
-coupling only the conservation of mass, wall-momentum, and energy
-equations.
+\label{sec:inviscid_implicit_operator}
+First, we develop the inviscid contribution to the implicit operator.
+This development is split into two pieces: the derivation of the full
+flux Jacobian and the choice of the implicit operator.
 
-In both cases, the analysis begins from the full inviscid flux
-Jacobian for the $y$-component (i.e., wall-normal) flux.  The full
-flux Jacobian is
+\subsubsection{The Full Wall-Normal Inviscid Flux Jacobian}
+The analysis begins from the full inviscid flux Jacobian for the
+$y$-component (i.e., wall-normal) flux.  For completeness, this flux
+Jacobian is derived here.
+
+To be clear, the conserved state vector is given by
+%
+\begin{equation*}
+U = \left[ \begin{array}{c}
+\rho_{\alpha} \\
+\rho \\
+\rho u\\
+\rho v \\
+\rho w \\
+\rho E
+\end{array} \right],
+\end{equation*}
+%
+where $\rho_{\alpha}$ is the density of species $\alpha$, $\rho$ is
+the mixture density, $\rho u$ is the $x$-momentum, $\rho v$ is the
+$y$-momentum, $\rho w$ is the $z$-momentum, and $\rho E$ is the total
+energy.  Note that $N_s-1$ species densities and the mixture density
+are tracked.  In this work, we adopt the convention that $\alpha \in
+\{2, \ldots, N_s\}$ such that the species $\alpha = 1$ is the diluter.
+
+The flux of interest is the $y$ component of the inviscid flux:
+%
+\begin{equation*}
+G = \left[ \begin{array}{c}
+\rho_{\alpha} v \\
+\rho v \\
+\rho u v\\
+\rho v^2 + p \\
+\rho w v \\
+\rho v H
+\end{array} \right],
+\end{equation*}
+%
+where $p$ is the mixture pressure and $H$ is the total enthalpy.
+
+The Jacobian matrix derived below is similar to the standard inviscid
+flux Jacobian for a calorically perfect gas except that the equation
+of state is more complicated.  In particular, closed-form expressions
+for the temperature and pressure in terms of conserved state variables
+are not available.  Instead, the temperature is computed by
+numerically inverting the following equation:
 %
 \begin{equation}
-\tiny
-M = 
-\left(
-\begin{array}{cccccc}
- v & -\frac{v \rho _{\alpha }}{\rho } & 0 & \frac{\rho _{\alpha }}{\rho } & 0 & 0 \\
- 0 & v & 0 & 1 & 0 & 0 \\
- 0 & -u v & v & u & 0 & 0 \\
- (\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right) & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma
-   -1) & -u (\gamma -1) & 2 v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
- 0 & -v w & 0 & w & v & 0 \\
- v \left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right)\right) & v \left(R T+\left(\frac{1}{2}
-   \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & (\gamma -1) v+v
-\end{array}
-\right)
+\label{eqn:etot_T}
+e_{tot}(c_s, T) = \frac{1}{\rho} \left( \rho E - \frac{1}{2} \rho (u^2 + v^2 + w^2) \right),
 \end{equation}
+% 
+where the mixture internal energy $e_{tot}$ is computed from the
+species energies
+%
+\begin{equation*}
+e_{tot}(c_s, T) = \sum_{s=1}^{N_s} c_s e_{s,tot}(T).
+\end{equation*}
+%
+Once the temperature has been found, the pressure is computed from the
+ideal gas law:
+%
+\begin{equation*}
+p = \sum_{s=1}^{N_s} p_s = \sum_{s=1}^{N_s} \rho_s R_s T = \rho R_{mix} T,
+\end{equation*}
+%
+where $R_{mix} = \sum_{s=1}^{N_s} c_s R_s$ and $R_s$ is the gas
+constant for species $s$.
 
-\subsubsection{Species/Flow Decoupling}
-From this, we construct a linearized acoustic matrix of the form,
-\begin{equation}
-\tiny
-L_{\text{acoustic}} = 
-\left(
-\begin{array}{cccccc}
- 0 & 0 & 0 & 0 & 0 & 0 \\
- 0 & v & 0 & 0 & 0 & 0 \\
- 0 & -u v & 0 & u & 0 & 0 \\
- 0 & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T
-   \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho } & -u (\gamma -1) & v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
- 0 & -v w & 0 & w & 0 & 0 \\
- 0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & v (\gamma -1)
-\end{array}
-\right)
-\end{equation}
-This system has eigenvalues of the following form,
-\begin{equation}
- \lambda  \left(-(v-\lambda )^5\right)
-\end{equation}
-Which is precisely what we desire. No acoustic effects are present, just
-convective velocities or zero.
+To make the derivation as clean as possible, we break the flux into
+two parts: a ``pressure'' part $G_p$ that has explicit dependence on
+the pressure and everything else, referred to here as the
+``convective'' part $G_c$.  Specifically,
+%
+\begin{equation*}
+G = G_c + G_p,
+\end{equation*}
+%
+where
+%
+\begin{equation*}
+G_c = \left[ \begin{array}{c}
+\rho_{\alpha} v \\
+\rho v \\
+\rho u v\\
+\rho v^2 \\
+\rho w v \\
+\rho v E 
+\end{array} \right]
+= \left[ \begin{array}{c}
+\rho_{\alpha} (\rho v) / \rho\\
+\rho v \\
+\rho u (\rho v) / \rho \\
+(\rho v)^2 / \rho \\
+\rho w (\rho v)/ \rho \\
+\rho v (\rho E) / \rho 
+\end{array} \right], \quad
+%
+G_p = \left[ \begin{array}{c}
+0 \\
+0 \\
+0 \\
+p \\
+0 \\
+v p
+\end{array} \right], = \left[ \begin{array}{c}
+0 \\
+0 \\
+0 \\
+p \\
+0 \\
+(\rho v) p / \rho
+\end{array} \right], 
+\end{equation*}
+%
+Because it is trivial to write the convective piece explicitly in
+terms of the conserved state, one can immediately write the Jacobian
+for the convective piece:
+%
+\begin{equation*}
+\pp{G_C}{U} = \left[ \begin{array}{cccccc}
+v I & -\rho_{\alpha} v / \rho & 0 & \rho_{\alpha} / \rho & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 \\
+0 & -uv & v & u & 0 & 0 \\
+0 & -v^2 & 0 & 2v & 0 & 0 \\
+0 & -wv & 0 & w & v & 0 \\
+0 & -vE & 0 & E & 0 & v
+\end{array} \right].
+\end{equation*}
+%
+The pressure contribution is somewhat more difficult.  To begin, write
+the Jacobian in terms of derivatives of the pressure:
+%
+\begin{equation*}
+\pp{G_p}{U} = \left[ \begin{array}{cccccc}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+\pp{p}{\rho_{\alpha}} & \pp{p}{\rho} & \pp{p}{\rho u} & \pp{p}{\rho v} & \pp{p}{\rho w} & \pp{p}{\rho E} \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+v \pp{p}{\rho_{\alpha}} & -v \frac{p}{\rho} + v \pp{p}{\rho} & v \pp{p}{\rho u} & \frac{p}{\rho} + v \pp{p}{\rho v} & v \pp{p}{\rho w} & v \pp{p}{\rho E} \\
+\end{array} \right].
+\end{equation*}
+%
+To find the necessary derivatives of the pressure, begin by examining
+the ideal gas law.  We have
+%
+\begin{equation*}
+p = \rho R_{mix} T = \sum_{s=1}^{N_s} \rho_s R_s T = \rho_1 R_1 T + \sum_{s=2}^{N_2} \rho_s R_s T
+\end{equation*}
+%
+Since
+%
+\begin{equation*}
+\rho = \sum_{s=1}^{N_s} \rho_s \quad \Rarrow \quad \rho_1 = \rho - \sum_{s=2}^{N_s} \rho_s,
+\end{equation*}
+%
+it is clear that
+%
+\begin{align*}
+p & = \left( \rho - \sum_{s=2}^{N_s} \rho_s \right) R_1 T + \sum_{s=2}^{N_s} \rho_s R_s T \\
+& = \rho R_1 T + \sum_{s=2}^{N_s} \rho_s (R_s - R_1) T. \\
+\end{align*}
+%
+Thus,
+%
+\begin{equation*}
+\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{mix} \pp{T}{\rho_{\alpha}},
+\end{equation*}
+%
+and
+%
+\begin{equation*}
+\pp{p}{\rho} = R_1 T + \rho R_{mix} \pp{T}{\rho}.
+\end{equation*}
+%
+Since $\rho R_{mix}$ only depends on the densities, the remaining
+partial derivatives are
+%
+\begin{equation*}
+\pp{p}{\rho u} = \rho R_{mix} \pp{T}{\rho u}, \quad
+\pp{p}{\rho v} = \rho R_{mix} \pp{T}{\rho v}, \quad
+\pp{p}{\rho w} = \rho R_{mix} \pp{T}{\rho w}, \quad
+\pp{p}{\rho E} = \rho R_{mix} \pp{T}{\rho E}.
+\end{equation*}
+%
+Thus, to complete the Jacobian, we require the derivatives of the
+temperature with respect to the conserved state.  To find these
+derivatives, we use implicit differentiation on \eqref{eqn:etot_T}.
+
+To make this procedure slightly cleaner, first multiply through by
+$\rho$ to get
+%
+\begin{equation*}
+\rho e_{tot}(c_s, T) = \sum_{s=1}^{N_s} \rho_s e_{s,tot}(T) = \rho E - \frac{1}{2 \rho } \left( (\rho u)^2 + (\rho v)^2 + (\rho w)^2 \right).
+\end{equation*}
+%
+Eliminating the diluter density gives
+%
+\begin{equation*}
+\rho e_{1,tot}(T) + \sum_{s=2}^{N_s} \rho_s \left[ e_{s,tot}(T) - e_{1,tot}(T) \right] = \rho E - \frac{1}{2 \rho } \left( (\rho u)^2 + (\rho v)^2 + (\rho w)^2 \right).
+\end{equation*}
+%
+
+Differentiating with respect to $\rho_{\alpha}$ gives
+%
+\begin{equation*}
+\rho \pp{e_{1,tot}}{T} \pp{T}{\rho_{\alpha}} + \left[ e_{\alpha, tot}(T) - e_{1,tot}(T) \right] + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho_{\alpha}} = 0.
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+\rho C_{v,mix} \pp{T}{\rho_{\alpha}} = e_{1,tot}(T) - e_{\alpha,tot}(T) \quad \Rarrow \quad \pp{T}{\rho_{\alpha}} = \frac{e_{1,tot} - e_{\alpha,tot}}{ \rho C_{v,mix}},
+\end{equation*}
+%
+where
+%
+\begin{equation*}
+C_{v,mix} = \sum_{s=1}^{N_s} c_s C_{v,s} = \sum_{s=1}^{N_s} c_s \pp{e_{s,tot}}{T}
+\end{equation*}
+%
+
+Differentiating with respect to $\rho$ gives
+%
+\begin{equation*}
+e_{1,tot}(T) + \rho \pp{e_{1,tot}}{T} \pp{T}{\rho} + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho} = \frac{1}{2 \rho^2} \left[ (\rho u)^2 + (\rho v)^2 + (\rho w)^2 \right].
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+e_{1,tot}(T) + \rho C_{v,mix} \pp{T}{\rho} = \frac{1}{2} (u^2 + v^2 + w^2),
+\end{equation*}
+%
+and
+%
+\begin{equation*}
+\pp{T}{\rho} = \frac{ -e_{1,tot}(T) + \frac{1}{2} (u^2 + v^2 + w^2) }{\rho C_{v,mix} }
+\end{equation*}
+%
+
+Differentiating with respect to $\rho u$ gives
+%
+\begin{equation*}
+\rho \pp{e_{1,tot}}{T} \pp{T}{\rho u} + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho u} = -u
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+\pp{T}{\rho u} = \frac{-u}{\rho C_{v,mix}}
+\end{equation*}
+%
+
+Differentiating with respect to $\rho v$ gives
+%
+\begin{equation*}
+\rho \pp{e_{1,tot}}{T} \pp{T}{\rho v} + + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho v} = -v
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+\pp{T}{\rho v} = \frac{-v}{\rho C_{v,mix}}
+\end{equation*}
+%
+
+Differentiating with respect to $\rho w$ gives
+%
+\begin{equation*}
+\rho \pp{e_{1,tot}}{T} \pp{T}{\rho w} + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho w} = -w
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+\pp{T}{\rho w} = \frac{-w}{\rho C_{v,mix}}
+\end{equation*}
+%
+
+Differentiating with respect to $\rho E$ gives
+%
+\begin{equation*}
+\rho \pp{e_{1,tot}}{T} \pp{T}{\rho E} + + \sum_{s=2}^{N_s} \rho_s \left[ \pp{e_{s,tot}}{T} - \pp{e_{1,tot}}{T} \right] \pp{T}{\rho E} = 1
+\end{equation*}
+%
+Thus,
+%
+\begin{equation*}
+\pp{T}{\rho E} = \frac{1}{\rho C_{v,mix}}
+\end{equation*}
+%
+
+We can now collect all the terms and write the Jacobian of the
+pressure component.  We have
+%
+\begin{gather*}
+\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{mix} \frac{(e_{1,tot} - e_{\alpha, tot})}{\rho C_{v,mix}} = (R_{\alpha} - R_1) T + (\gamma_{mix} - 1) (e_{1,tot} - e_{\alpha, tot}), \\
+\pp{p}{\rho} = R_1 T + \rho R_{mix} \left[ \frac{-e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2)}{\rho C_{v,mix}} \right] = R_1 T + (\gamma_{mix} - 1) \left[ -e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2) \right], \\
+\pp{p}{\rho u} = \rho R_{mix} \frac{-u}{\rho C_{v,mix}} = (1 - \gamma_{mix}) u, \\
+\pp{p}{\rho v} = \rho R_{mix} \frac{-v}{\rho C_{v,mix}} = (1 - \gamma_{mix}) v, \\
+\pp{p}{\rho w} = \rho R_{mix} \frac{-w}{\rho C_{v,mix}} = (1 - \gamma_{mix}) w, \\
+\pp{p}{\rho E} = \rho R_{mix} \frac{1}{\rho C_{v,mix}} = (\gamma_{mix} - 1). \\
+\end{gather*}
+%
+
+Thus, the full flux Jacobian is
+%
+\begin{equation*}
+\pp{G}{U} = \left[ \begin{array}{cccccc}
+v I & -\rho_{\alpha} v / \rho & 0 & \rho_{\alpha} / \rho & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 \\
+0 & -uv & v & u & 0 & 0 \\
+\pp{p}{\rho_{\alpha}} & -v^2 +  \pp{p}{\rho} & \pp{p}{\rho u} & 2v + \pp{p}{\rho v} & \pp{p}{\rho w} & \pp{p}{\rho E} \\
+0 & -wv & 0 & w & v & 0 \\
+v \pp{p}{\rho_{\alpha}} & -v \left(E + \frac{p}{\rho} - \pp{p}{\rho}\right) & v \pp{p}{\rho u} & E + \frac{p}{\rho} + v \pp{p}{\rho v}  & v \pp{p}{\rho w} & v \left( 1+ \pp{p}{\rho E} \right)
+\end{array} \right],
+\end{equation*}
+%
+where the necessary pressure derivatives are given above.
+
+% Two species case output from mathematica... saved for posterity
+%The full flux Jacobian is
+%%
+%\begin{equation}
+%\tiny
+%M = 
+%\left(
+%\begin{array}{cccccc}
+% v & -\frac{v \rho _{\alpha }}{\rho } & 0 & \frac{\rho _{\alpha }}{\rho } & 0 & 0 \\
+% 0 & v & 0 & 1 & 0 & 0 \\
+% 0 & -u v & v & u & 0 & 0 \\
+% (\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right) & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma
+%   -1) & -u (\gamma -1) & 2 v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
+% 0 & -v w & 0 & w & v & 0 \\
+% v \left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha }-R\right)\right) & v \left(R T+\left(\frac{1}{2}
+%   \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & (\gamma -1) v+v
+%\end{array}
+%\right)
+%\end{equation}
+
+\subsubsection{The Implicit Operator: Species/Flow Decoupling}
+The goal is to construct an implicit operator such that the inviscid
+flux Jacobian of the part that is treated explicitly has eigenvalues
+that do not depend on the speed of sound while the implicit part does
+not have any coupling between the species equations and the flow.
+This can be accomplished if the inviscid flux Jacobian of the explicit
+part takes the following form:
+%
+\begin{equation*}
+A_{\mathrm{exp}} = \left[ \begin{array}{cccccc}
+v I & -\rho_{\alpha} v / \rho & 0 & \rho_{\alpha} / \rho & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0 \\
+0 & 0 & v & 0 & 0 & 0 \\
+\pp{p}{\rho_{\alpha}} & \xi & 0 & v  & 0 & 0 \\
+0 & 0 & 0 & 0 & v & 0 \\
+v \pp{p}{\rho_{\alpha}} & 0 & 0 & 0  & 0 & v 
+\end{array} \right],
+\end{equation*}
+%
+where
+%
+\begin{equation*}
+\xi = -\sum_{\alpha=2}^{N_s} c_{\alpha} \pp{p}{\rho_{\alpha}}.
+\end{equation*}
+% 
+A straightforward but tedious analysis shows that the eigenvalues of
+$A_{\mathrm{exp}}$, denoted $\lambda_{\mathrm{exp}}$ satisfy
+%
+\begin{equation*}
+-\lambda_{\exp} \left( v - \lambda_{\mathrm{exp}} \right)^5.
+\end{equation*}
+%
+Thus, the required implicit operator is given by
+%
+\begin{equation*}
+A_{\mathrm{imp}} = \pp{G}{U} - A_{\mathrm{exp}} = \left[ \begin{array}{cccccc}
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0 \\
+0 & -uv & 0 & u & 0 & 0 \\
+0 & -v^2 +  \pp{p}{\rho} - \xi & \pp{p}{\rho u} & v + \pp{p}{\rho v} & \pp{p}{\rho w} & \pp{p}{\rho E} \\
+0 & -wv & 0 & w & 0 & 0 \\
+0 & -v \left(E + \pp{p}{\rho} - \frac{p}{\rho}\right) & v \pp{p}{\rho u} & E + \frac{p}{\rho} + v \pp{p}{\rho v}  & v \pp{p}{\rho w} & v \pp{p}{\rho E}
+\end{array} \right].
+\end{equation*}
+%
+
+Note that if further decoupling is required (to speed up the hybrid
+implicit/explicit time step), it is possible to decouple the
+streamwise and spanwise momentum equations without introducing the
+speed of sound into the eigenvalues of the linearized explicit
+operator.  However, this decoupling does introduce a $u$ and $w$
+dependence.  For brevity, this analysis is omitted here because this
+additional decoupling has not been implemented.
+
+%From this, we construct a linearized acoustic matrix of the form,
+%\begin{equation}
+%\tiny
+%L_{\text{acoustic}} = 
+%\left(
+%\begin{array}{cccccc}
+% 0 & 0 & 0 & 0 & 0 & 0 \\
+% 0 & v & 0 & 0 & 0 & 0 \\
+% 0 & -u v & 0 & u & 0 & 0 \\
+% 0 & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T
+%   \left(R_{\alpha }-R\right)\right) \rho _{\alpha }}{\rho } & -u (\gamma -1) & v-v (\gamma -1) & -w (\gamma -1) & \gamma -1 \\
+% 0 & -v w & 0 & w & 0 & 0 \\
+% 0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & -u v (\gamma -1) & H-v^2 (\gamma -1) & -v w (\gamma -1) & v (\gamma -1)
+%\end{array}
+%\right)
+%\end{equation}
+%This system has eigenvalues of the following form,
+%\begin{equation}
+% \lambda  \left(-(v-\lambda )^5\right)
+%\end{equation}
+%Which is precisely what we desire. No acoustic effects are present, just
+%convective velocities or zero.
 
 
 %\subsection{Reference quantities}
@@ -66,29 +473,29 @@ convective velocities or zero.
 %\end{equation}
 
 
-\subsubsection{Further Decoupling Streamwise and Spanwise Momentum}
-Now we only consider treating $\rho e$, $\rho v$ and $\rho$ implicitly
-(neglecting both species equations as well as $\rho u$ and $\rho
-w$). The matrix has the following form:
-\begin{equation}
-\tiny
-\left(
-\begin{array}{cccccc}
- 0 & 0 & 0 & 0 & 0 & 0 \\
- 0 & v & 0 & 0 & 0 & 0 \\
- 0 & 0 & 0 & 0 & 0 & 0 \\
- 0 & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha
-   }-R\right)\right) \rho _{\alpha }}{\rho } & 0 & v-v (\gamma -1) & 0 & \gamma -1 \\
- 0 & 0 & 0 & 0 & 0 & 0 \\
- 0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & 0 & H-v^2 (\gamma -1) & 0 & v (\gamma -1)
-\end{array}
-\right)
-\end{equation}
-
-This gives eigenvalues of the form, 
-\begin{equation}
-(v-\lambda )^4 \left(\lambda ^2+(\gamma -1) \left(u^2+w^2\right)-\lambda  v\right)
-\end{equation}
+%\subsubsection{Further Decoupling Streamwise and Spanwise Momentum}
+%Now we only consider treating $\rho e$, $\rho v$ and $\rho$ implicitly
+%(neglecting both species equations as well as $\rho u$ and $\rho
+%w$). The matrix has the following form:
+%\begin{equation}
+%\tiny
+%\left(
+%\begin{array}{cccccc}
+% 0 & 0 & 0 & 0 & 0 & 0 \\
+% 0 & v & 0 & 0 & 0 & 0 \\
+% 0 & 0 & 0 & 0 & 0 & 0 \\
+% 0 & -v^2+R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)+\frac{\left((\gamma -1) \left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e_{\alpha }\right)+T \left(R_{\alpha
+%   }-R\right)\right) \rho _{\alpha }}{\rho } & 0 & v-v (\gamma -1) & 0 & \gamma -1 \\
+% 0 & 0 & 0 & 0 & 0 & 0 \\
+% 0 & v \left(R T+\left(\frac{1}{2} \left(u^2+v^2+w^2\right)-e\right) (\gamma -1)\right)-\text{vH} & 0 & H-v^2 (\gamma -1) & 0 & v (\gamma -1)
+%\end{array}
+%\right)
+%\end{equation}
+%
+%This gives eigenvalues of the form, 
+%\begin{equation}
+%(v-\lambda )^4 \left(\lambda ^2+(\gamma -1) \left(u^2+w^2\right)-\lambda  v\right)
+%\end{equation}
 
 
 \subsection{Viscous Contribution}
