@@ -37,9 +37,13 @@ namespace suzerain {
  *
  * The last index \e must be <tt>rho</tt>!  In the multi-species cases, mixture
  * density should be in \ref rho and the <tt>i</tt>-th species partial density
- * in <tt>rho + (i-1)</tt>.  That is, \ref rho is the "diluter" species.  Many
- * routines will assume the equations are stored in this order when attempting
- * to walk memory linearly.
+ * in <tt>rho + (i-1)</tt>.  That is, the "diluter" species <tt>i == 0</tt>
+ * never has its partial density tracked explicitly.  Instead, the diluter
+ * species' partial density is found by subtracting all other partial densities
+ * from the mixture density <tt>rho</tt>.  This causes all floating point
+ * accumulation error to adjust the amount of the diluter species within the
+ * simulation. Many routines will assume the equations are stored in this order
+ * when attempting to walk memory linearly.
  */
 namespace ndx {
 
