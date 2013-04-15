@@ -32,6 +32,7 @@
 #include <suzerain/isothermal_mass_operator.hpp>
 
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/inorder.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -55,12 +56,10 @@ isothermal_mass_operator::isothermal_mass_operator(
  * A helper class for implementing isothermal boundary conditions
  * per \ref isothermal_specification.
  */
-class isothermal_functor
+class isothermal_enforcer
 {
 
-    /**
-     * Bitmasks used to precompute and cache which conditions to #flags.
-     */
+    /** Bitmasks used to precompute and cache which conditions to #flags. */
     enum {
         ENFORCE_LOWER_E = 1 << 0,
         ENFORCE_UPPER_E = 1 << 1,
@@ -81,12 +80,12 @@ class isothermal_functor
 
 public:
 
-    /** Prepare a functor for the given strides and parameters. */
-    isothermal_functor(const std::size_t               Ny,
-                       const std::ptrdiff_t            incf,
-                       const isothermal_specification& spec,
-                       const real_t                    lower_E,
-                       const real_t                    upper_E)
+    /** Prepare an instance for the given strides and parameters. */
+    isothermal_enforcer(const std::size_t               Ny,
+                        const std::ptrdiff_t            incf,
+                        const isothermal_specification& spec,
+                        const real_t                    lower_E,
+                        const real_t                    upper_E)
         : Ny(Ny)
         , incf(incf)
         , spec(spec)
@@ -105,7 +104,7 @@ public:
     {}
 
     /**
-     * Apply the functor to wave-space zero-zero mode right hand sides.
+     * Apply the conditions to wave-space zero-zero mode right hand sides.
      * Constant-valued boundary conditions set constant right hand sides.
      * Application order followed the expected state sequencing in memory.
      */
@@ -150,11 +149,11 @@ public:
     }
 
     /**
-     * Apply the functor to wave-space non-zero-zero mode right hand sides.
+     * Apply the conditions to wave-space non-zero-zero mode right hand sides.
      * Constant-valued boundary conditions set zero right hand sides.
      * Application order followed the expected state sequencing in memory.
      */
-    void operator()(complex_t& lower_rho) const
+    void non_zero_zero(complex_t& lower_rho) const
     {
         // Locate the upper density relative to the provided lower density
         complex_t& upper_rho = (&lower_rho)[Ny];
@@ -195,53 +194,85 @@ public:
 
 };
 
-////void isothermal_mass_operator::invert_mass_plus_scaled_operator(
-////        const complex_t &phi,
-////        multi_array::ref<complex_t,4> &state,
-////        const timestepper::lowstorage::method_interface<complex_t> &method,
-////        const component delta_t,
-////        const std::size_t substep_index,
-////        multi_array::ref<complex_t,4> *ic0) const
-////{
-////    // State enters method as coefficients in X and Z directions
-////    // State enters method as collocation point values in Y direction
-////
-////    // Shorthand
-////    using boost::indices;
-////    typedef boost::multi_array_types::index_range range;
-////
-////    // Indexes only the first and last collocation point
-////    const std::size_t Ny         = state.shape()[1];
-////    const std::size_t wall_lower = 0;
-////    const std::size_t wall_upper = Ny - 1;
-////    range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
-////
-////    // Prepare a state view of density locations at lower and upper walls
-////    multi_array::ref<complex_t,4>::array_view<3>::type state_view
-////            = state[indices[ndx::rho][walls][range()][range()]];
-////
-////    // Prepare functor setting pointwise BCs given density locations
-////    const IsothermalNoSlipFunctor bc_functor(
-////        state.strides()[0],
-////        cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions),
-////        chdef.wall_mass_fractions);
-////
-////    // Apply the functor to all wall-only density locations
-////    multi_array::for_each(state_view, bc_functor);
-////
-////    // Apply boundary conditions to any requested constraint problems
-////    if (ic0) {
-////        multi_array::ref<complex_t,4>::array_view<3>::type ic0_view
-////                = (*ic0)[indices[ndx::rho][walls][range()][range()]];
-////        SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
-////        multi_array::for_each(ic0_view, bc_functor);
-////    }
-////
-////    // Perform the usual mass_operator solve across all equations
-////    base::invert_mass_plus_scaled_operator(
-////            phi, state, method, delta_t, substep_index, ic0);
-////
-////    // State leaves method as coefficients in X, Y, and Z directions
-////}
+void isothermal_mass_operator::invert_mass_plus_scaled_operator(
+        const complex_t &phi,
+        multi_array::ref<complex_t,4> &state,
+        const timestepper::lowstorage::method_interface<complex_t> &method,
+        const component delta_t,
+        const std::size_t substep_index,
+        multi_array::ref<complex_t,4> *ic0) const
+{
+    // State enters method as coefficients in X and Z directions
+    // State enters method as collocation point values in Y direction
+
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+
+    // Sidesteps assertions when local rank contains no wavespace information
+    if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
+
+    // Prepare functor setting pointwise BCs given lower density locations.
+    // Applies these to BOTH lower and upper boundaries given only lower one!
+    isothermal_enforcer enforcer(Ny, state.strides()[0], this->spec,
+                                 this->lower_E(spec.lower_T,
+                                               spec.lower_u,
+                                               spec.lower_v,
+                                               spec.lower_w,
+                                               spec.lower_cs),
+                                 this->upper_E(spec.upper_T,
+                                               spec.upper_u,
+                                               spec.upper_v,
+                                               spec.upper_w,
+                                               spec.upper_cs));
+
+    // Enforce the boundary conditions for each non-dealiased right hand side.
+    for (int n = dkbz; n < dkez; ++n) {
+        const int wn = inorder::wavenumber(dNz, n);
+        if (std::abs(wn) > inorder::wavenumber_absmin(Nz)) continue;
+
+        for (int m = dkbx; m < dkex; ++m) {
+            const int wm = inorder::wavenumber(dNx, m);
+            if (std::abs(wm) > inorder::wavenumber_absmin(Nx)) continue;
+
+            // Apply everywhere via density in the (.,m,n)-th state pencil
+            if (SUZERAIN_UNLIKELY(wn == 0 && wm == 0)) {
+                enforcer.    zero_zero(state[ndx::rho][0][m - dkbx][n - dkbz]);
+            } else {
+                enforcer.non_zero_zero(state[ndx::rho][0][m - dkbx][n - dkbz]);
+            }
+        }
+    }
+
+    // Apply zero-zero mode boundary conditions to any requested constraints.
+    // Looping is hideous because of generality behind multi_array indexing.
+    if (ic0) {
+        SUZERAIN_ENSURE(ic0->shape()[0] == state.shape()[0]);
+        SUZERAIN_ENSURE(ic0->shape()[1] == state.shape()[1]);
+        typedef multi_array::ref<complex_t,4>::index index;
+        const index ku = boost::numeric_cast<index>(
+                ic0->index_bases()[2] + ic0->shape()[2]);
+        const index lu = boost::numeric_cast<index>(
+                ic0->index_bases()[3] + ic0->shape()[3]);
+        for (index l = ic0->index_bases()[3]; l < lu; ++l) {
+            for (index k = ic0->index_bases()[2]; k < ku; ++k) {
+                enforcer.zero_zero((*ic0)[ndx::rho][0][k][l]);
+            }
+        }
+    }
+
+    // Perform the usual mass_operator solve across all equations
+    base::invert_mass_plus_scaled_operator(
+            phi, state, method, delta_t, substep_index, ic0);
+
+    // State leaves method as coefficients in X, Y, and Z directions
+}
 
 } // namespace suzerain
