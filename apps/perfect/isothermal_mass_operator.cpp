@@ -28,8 +28,6 @@
 #include "isothermal_mass_operator.hpp"
 
 #include <suzerain/common.hpp>
-#include <suzerain/ndx.hpp>
-#include <suzerain/state.hpp>
 
 #include "common_block.hpp"
 #include "scenario_definition.hpp"
@@ -40,36 +38,15 @@ namespace suzerain {
 
 namespace perfect {
 
-// A helper class for implementing isothermal, no-slip boundary conditions
-class IsothermalNoSlipFunctor
-{
-private:
-    const ptrdiff_t field_stride;
-    const real_t    inv_gamma_gamma1;
-
-public:
-    IsothermalNoSlipFunctor(ptrdiff_t field_stride, real_t gamma)
-        : field_stride(field_stride),
-          inv_gamma_gamma1(1 / (gamma * (gamma - 1)))
-    {}
-
-    void operator()(complex_t &rho) const
-    {
-        (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*inv_gamma_gamma1;
-    }
-};
-
 isothermal_mass_operator::isothermal_mass_operator(
         const scenario_definition &scenario,
+        const isothermal_specification &spec,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common)
-    : mass_operator(grid, dgrid, cop, b)
+    : suzerain::isothermal_mass_operator(spec, grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
     , who("operator.L")
@@ -85,44 +62,36 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> *ic0) const
 {
-    // State enters method as coefficients in X and Z directions
-    // State enters method as collocation point values in Y direction
     SUZERAIN_ENSURE(common.linearization == linearize::none);
-
-    // Shorthand
-    using boost::indices;
-    typedef boost::multi_array_types::index_range range;
-
-    // Indexes only the first and last collocation point
-    const std::size_t Ny         = state.shape()[1];
-    const std::size_t wall_lower = 0;
-    const std::size_t wall_upper = Ny - 1;
-    range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
-
-    // Prepare a state view of density locations at lower and upper walls
-    multi_array::ref<complex_t,4>::array_view<3>::type state_view
-            = state[indices[ndx::rho][walls][range()][range()]];
-
-    // Prepare functor setting pointwise BCs given density locations
-    const IsothermalNoSlipFunctor bc_functor(
-            state.strides()[0], scenario.gamma);
-
-    // Apply the functor to all wall-only density locations
-    multi_array::for_each(state_view, bc_functor);
-
-    // Apply boundary conditions to any requested constraint problems
-    if (ic0) {
-        multi_array::ref<complex_t,4>::array_view<3>::type ic0_view
-                = (*ic0)[indices[ndx::rho][walls][range()][range()]];
-        SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
-        multi_array::for_each(ic0_view, bc_functor);
-    }
-
-    // channel_treatment step (3) performs the usual operator solve
-    base::invert_mass_plus_scaled_operator(
+    return suzerain::isothermal_mass_operator::invert_mass_plus_scaled_operator(
             phi, state, method, delta_t, substep_index, ic0);
+}
 
-    // State leaves method as coefficients in X, Y, and Z directions
+real_t isothermal_mass_operator::lower_E(
+        const real_t lower_T,
+        const real_t lower_u,
+        const real_t lower_v,
+        const real_t lower_w,
+        const std::vector<real_t> lower_cs) const
+{
+    // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
+    assert(lower_cs.size() == 0);
+    const real_t E_internal = lower_T / (scenario.gamma*(scenario.gamma - 1));
+    const real_t E_kinetic  = (scenario.Ma*scenario.Ma) * (  lower_u*lower_u
+                                                           + lower_v*lower_v
+                                                           + lower_w*lower_w);
+    return E_internal + E_kinetic;
+}
+
+real_t isothermal_mass_operator::upper_E(
+        const real_t upper_T,
+        const real_t upper_u,
+        const real_t upper_v,
+        const real_t upper_w,
+        const std::vector<real_t> upper_cs) const
+{
+    // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
+    return lower_E(upper_T, upper_u, upper_v, upper_w, upper_cs);
 }
 
 } // namespace perfect

@@ -28,6 +28,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
@@ -190,7 +191,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block));
+                    *scenario, isothermal_specification(/*TODO Configure*/1),
+                    *grid, *dgrid, *cop, *b, common_block));
         N.reset(new nonlinear_operator(
                     *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {

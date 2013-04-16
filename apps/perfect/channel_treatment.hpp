@@ -30,6 +30,7 @@
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -73,12 +74,13 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common);
+            const scenario_definition& scenario,
+            const isothermal_specification& isothermal,
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b,
+            operator_common_block& common);
 
     /**
      * Constructor delegating to BaseClass.
@@ -87,13 +89,13 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
-            const zgbsv_specification& spec,
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common);
+            const zgbsv_specification& isothermal,
+            const scenario_definition& scenario,
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b,
+            operator_common_block& common);
 
     /** Virtual destructor as the class has virtual methods. */
     virtual ~channel_treatment() {}
@@ -103,9 +105,9 @@ public:
      * The BaseClass is responsible for enforcing all boundary conditions.
      */
     virtual void invert_mass_plus_scaled_operator(
-            const complex_t &phi,
-            multi_array::ref<complex_t,4> &state,
-            const timestepper::lowstorage::method_interface<complex_t> &method,
+            const complex_t& phi,
+            multi_array::ref<complex_t,4>& state,
+            const timestepper::lowstorage::method_interface<complex_t>& method,
             const real_t delta_t,
             const std::size_t substep_index,
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
@@ -114,10 +116,10 @@ private:
 
     /** Common initialization code to be called at end of constructor */
     void finish_construction(
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b);
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b);
 
     /** Should bulk streamwise momentum constraint be enforced? */
     bool constrain_bulk_rho_u() const
@@ -155,13 +157,14 @@ private:
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common)
-    : BaseClass(scenario, grid, dgrid, cop, b, common),
+            const scenario_definition& scenario,
+            const isothermal_specification& isothermal,
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b,
+            operator_common_block& common)
+    : BaseClass(scenario, isothermal, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -169,14 +172,14 @@ channel_treatment<BaseClass>::channel_treatment(
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
-            const zgbsv_specification& spec,
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common)
-    : BaseClass(spec, scenario, grid, dgrid, cop, b, common),
+            const zgbsv_specification& isothermal,
+            const scenario_definition& scenario,
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b,
+            operator_common_block& common)
+    : BaseClass(isothermal, scenario, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);
@@ -184,10 +187,10 @@ channel_treatment<BaseClass>::channel_treatment(
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::finish_construction(
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b)
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b)
 {
     SUZERAIN_UNUSED(cop);
 
@@ -202,9 +205,9 @@ void channel_treatment<BaseClass>::finish_construction(
 
 template< typename BaseClass >
 void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
-        const complex_t &phi,
-        multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
+        const complex_t& phi,
+        multi_array::ref<complex_t,4>& state,
+        const timestepper::lowstorage::method_interface<complex_t>& method,
         const real_t delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> *ic0) const
@@ -216,8 +219,8 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
 
     // Shorthand
     using std::size_t;
-    operator_common_block &common = this->common;
-    const scenario_definition &scenario = this->scenario;
+    operator_common_block& common = this->common;
+    const scenario_definition& scenario = this->scenario;
     const int Ny = this->dgrid.global_wave_extent.y();
 
     // Sidesteps assertions when local rank contains no wavespace information
