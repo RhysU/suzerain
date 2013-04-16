@@ -100,10 +100,10 @@ Once the temperature has been found, the pressure is computed from the
 ideal gas law:
 %
 \begin{equation*}
-p = \sum_{s=1}^{N_s} p_s = \sum_{s=1}^{N_s} \rho_s R_s T = \rho R_{mix} T,
+p = \sum_{s=1}^{N_s} p_s = \sum_{s=1}^{N_s} \rho_s R_s T = \rho R_{\text{mix}} T,
 \end{equation*}
 %
-where $R_{mix} = \sum_{s=1}^{N_s} c_s R_s$ and $R_s$ is the gas
+where $R_{\text{mix}} = \sum_{s=1}^{N_s} c_s R_s$ and $R_s$ is the gas
 constant for species $s$.
 
 To make the derivation as clean as possible, we break the flux into
@@ -185,7 +185,7 @@ To find the necessary derivatives of the pressure, begin by examining
 the ideal gas law.  We have
 %
 \begin{equation*}
-p = \rho R_{mix} T = \sum_{s=1}^{N_s} \rho_s R_s T = \rho_1 R_1 T + \sum_{s=2}^{N_2} \rho_s R_s T
+p = \rho R_{\text{mix}} T = \sum_{s=1}^{N_s} \rho_s R_s T = \rho_1 R_1 T + \sum_{s=2}^{N_2} \rho_s R_s T
 \end{equation*}
 %
 Since
@@ -204,23 +204,23 @@ p & = \left( \rho - \sum_{s=2}^{N_s} \rho_s \right) R_1 T + \sum_{s=2}^{N_s} \rh
 Thus,
 %
 \begin{equation*}
-\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{mix} \pp{T}{\rho_{\alpha}},
+\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{\text{mix}} \pp{T}{\rho_{\alpha}},
 \end{equation*}
 %
 and
 %
 \begin{equation*}
-\pp{p}{\rho} = R_1 T + \rho R_{mix} \pp{T}{\rho}.
+\pp{p}{\rho} = R_1 T + \rho R_{\text{mix}} \pp{T}{\rho}.
 \end{equation*}
 %
-Since $\rho R_{mix}$ only depends on the densities, the remaining
+Since $\rho R_{\text{mix}}$ only depends on the densities, the remaining
 partial derivatives are
 %
 \begin{equation*}
-\pp{p}{\rho u} = \rho R_{mix} \pp{T}{\rho u}, \quad
-\pp{p}{\rho v} = \rho R_{mix} \pp{T}{\rho v}, \quad
-\pp{p}{\rho w} = \rho R_{mix} \pp{T}{\rho w}, \quad
-\pp{p}{\rho E} = \rho R_{mix} \pp{T}{\rho E}.
+\pp{p}{\rho u} = \rho R_{\text{mix}} \pp{T}{\rho u}, \quad
+\pp{p}{\rho v} = \rho R_{\text{mix}} \pp{T}{\rho v}, \quad
+\pp{p}{\rho w} = \rho R_{\text{mix}} \pp{T}{\rho w}, \quad
+\pp{p}{\rho E} = \rho R_{\text{mix}} \pp{T}{\rho E}.
 \end{equation*}
 %
 Thus, to complete the Jacobian, we require the derivatives of the
@@ -250,13 +250,13 @@ Differentiating with respect to $\rho_{\alpha}$ gives
 Thus,
 %
 \begin{equation*}
-\rho C_{v,mix} \pp{T}{\rho_{\alpha}} = e_{1,tot}(T) - e_{\alpha,tot}(T) \quad \Rarrow \quad \pp{T}{\rho_{\alpha}} = \frac{e_{1,tot} - e_{\alpha,tot}}{ \rho C_{v,mix}},
+\rho C_{v,\text{mix}} \pp{T}{\rho_{\alpha}} = e_{1,tot}(T) - e_{\alpha,tot}(T) \quad \Rarrow \quad \pp{T}{\rho_{\alpha}} = \frac{e_{1,tot} - e_{\alpha,tot}}{ \rho C_{v,\text{mix}}},
 \end{equation*}
 %
 where
 %
 \begin{equation*}
-C_{v,mix} = \sum_{s=1}^{N_s} c_s C_{v,s} = \sum_{s=1}^{N_s} c_s \pp{e_{s,tot}}{T}
+C_{v,\text{mix}} = \sum_{s=1}^{N_s} c_s C_{v,s} = \sum_{s=1}^{N_s} c_s \pp{e_{s,tot}}{T}
 \end{equation*}
 %
 
@@ -269,13 +269,13 @@ e_{1,tot}(T) + \rho \pp{e_{1,tot}}{T} \pp{T}{\rho} + \sum_{s=2}^{N_s} \rho_s \le
 Thus,
 %
 \begin{equation*}
-e_{1,tot}(T) + \rho C_{v,mix} \pp{T}{\rho} = \frac{1}{2} (u^2 + v^2 + w^2),
+e_{1,tot}(T) + \rho C_{v,\text{mix}} \pp{T}{\rho} = \frac{1}{2} (u^2 + v^2 + w^2),
 \end{equation*}
 %
 and
 %
 \begin{equation*}
-\pp{T}{\rho} = \frac{ -e_{1,tot}(T) + \frac{1}{2} (u^2 + v^2 + w^2) }{\rho C_{v,mix} }
+\pp{T}{\rho} = \frac{ -e_{1,tot}(T) + \frac{1}{2} (u^2 + v^2 + w^2) }{\rho C_{v,\text{mix}} }
 \end{equation*}
 %
 
@@ -288,7 +288,7 @@ Differentiating with respect to $\rho u$ gives
 Thus,
 %
 \begin{equation*}
-\pp{T}{\rho u} = \frac{-u}{\rho C_{v,mix}}
+\pp{T}{\rho u} = \frac{-u}{\rho C_{v,\text{mix}}}
 \end{equation*}
 %
 
@@ -301,7 +301,7 @@ Differentiating with respect to $\rho v$ gives
 Thus,
 %
 \begin{equation*}
-\pp{T}{\rho v} = \frac{-v}{\rho C_{v,mix}}
+\pp{T}{\rho v} = \frac{-v}{\rho C_{v,\text{mix}}}
 \end{equation*}
 %
 
@@ -314,7 +314,7 @@ Differentiating with respect to $\rho w$ gives
 Thus,
 %
 \begin{equation*}
-\pp{T}{\rho w} = \frac{-w}{\rho C_{v,mix}}
+\pp{T}{\rho w} = \frac{-w}{\rho C_{v,\text{mix}}}
 \end{equation*}
 %
 
@@ -327,7 +327,7 @@ Differentiating with respect to $\rho E$ gives
 Thus,
 %
 \begin{equation*}
-\pp{T}{\rho E} = \frac{1}{\rho C_{v,mix}}
+\pp{T}{\rho E} = \frac{1}{\rho C_{v,\text{mix}}}
 \end{equation*}
 %
 
@@ -335,12 +335,12 @@ We can now collect all the terms and write the Jacobian of the
 pressure component.  We have
 %
 \begin{gather*}
-\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{mix} \frac{(e_{1,tot} - e_{\alpha, tot})}{\rho C_{v,mix}} = (R_{\alpha} - R_1) T + (\gamma_{mix} - 1) (e_{1,tot} - e_{\alpha, tot}), \\
-\pp{p}{\rho} = R_1 T + \rho R_{mix} \left[ \frac{-e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2)}{\rho C_{v,mix}} \right] = R_1 T + (\gamma_{mix} - 1) \left[ -e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2) \right], \\
-\pp{p}{\rho u} = \rho R_{mix} \frac{-u}{\rho C_{v,mix}} = (1 - \gamma_{mix}) u, \\
-\pp{p}{\rho v} = \rho R_{mix} \frac{-v}{\rho C_{v,mix}} = (1 - \gamma_{mix}) v, \\
-\pp{p}{\rho w} = \rho R_{mix} \frac{-w}{\rho C_{v,mix}} = (1 - \gamma_{mix}) w, \\
-\pp{p}{\rho E} = \rho R_{mix} \frac{1}{\rho C_{v,mix}} = (\gamma_{mix} - 1). \\
+\pp{p}{\rho_{\alpha}} = (R_{\alpha} - R_1) T + \rho R_{\text{mix}} \frac{(e_{1,tot} - e_{\alpha, tot})}{\rho C_{v,\text{mix}}} = (R_{\alpha} - R_1) T + (\gamma_{\text{mix}} - 1) (e_{1,tot} - e_{\alpha, tot}), \\
+\pp{p}{\rho} = R_1 T + \rho R_{\text{mix}} \left[ \frac{-e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2)}{\rho C_{v,\text{mix}}} \right] = R_1 T + (\gamma_{\text{mix}} - 1) \left[ -e_{1,tot} + \frac{1}{2} (u^2 + v^2 + w^2) \right], \\
+\pp{p}{\rho u} = \rho R_{\text{mix}} \frac{-u}{\rho C_{v,\text{mix}}} = (1 - \gamma_{\text{mix}}) u, \\
+\pp{p}{\rho v} = \rho R_{\text{mix}} \frac{-v}{\rho C_{v,\text{mix}}} = (1 - \gamma_{\text{mix}}) v, \\
+\pp{p}{\rho w} = \rho R_{\text{mix}} \frac{-w}{\rho C_{v,\text{mix}}} = (1 - \gamma_{\text{mix}}) w, \\
+\pp{p}{\rho E} = \rho R_{\text{mix}} \frac{1}{\rho C_{v,\text{mix}}} = (\gamma_{\text{mix}} - 1). \\
 \end{gather*}
 %
 
@@ -543,14 +543,14 @@ where the $*$ entries are non-zero, but, as will be shown below,
 irrelevant to the current analysis, and
 %
 \begin{equation*}
-\pp{T}{\rho E} = \frac{1}{\rho C_{v,mix}}.
+\pp{T}{\rho E} = \frac{1}{\rho C_{v,\text{mix}}}.
 \end{equation*}
 % 
 It is straightforward but tedious to show that the eigenvalues
 $\lambda_{\mathrm{visc}}$ of this Jacobian matrix satisfy
 %
 \begin{equation*}
-(D_{\alpha} - \lambda_{\mathrm{visc}}) (-\lambda_{\mathrm{visc}}) (\nu - \lambda_{\mathrm{visc}})^2  \left( \left( \alpha + \frac{4}{3} \right) \nu - \lambda_{\mathrm{visc}} \right) \left( \frac{\kappa}{\rho C_{v,mix}} - \lambda_{\mathrm{visc}} \right) = 0,
+(D_{\alpha} - \lambda_{\mathrm{visc}}) (-\lambda_{\mathrm{visc}}) (\nu - \lambda_{\mathrm{visc}})^2  \left( \left( \alpha + \frac{4}{3} \right) \nu - \lambda_{\mathrm{visc}} \right) \left( \frac{\kappa}{\rho C_{v,\text{mix}}} - \lambda_{\mathrm{visc}} \right) = 0,
 \end{equation*}
 % 
 where $\nu = \mu/\rho$.
