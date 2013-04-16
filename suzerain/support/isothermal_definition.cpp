@@ -29,7 +29,9 @@
 #include <suzerain/config.h>
 #endif
 
-#include "isothermal_definition.hpp"
+#include <suzerain/support/isothermal_definition.hpp>
+
+#include <esio/error.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
@@ -291,14 +293,96 @@ isothermal_definition::load(
 
     // Scalars
     esio_line_establish(h, 1, 0, 1);
-    esio_line_read(h, name_lower_T, &t.lower_T,   0);
-    esio_line_read(h, name_lower_u, &t.lower_u,   0);
-    esio_line_read(h, name_lower_v, &t.lower_v,   0);
-    esio_line_read(h, name_lower_w, &t.lower_w,   0);
-    esio_line_read(h, name_upper_T, &t.upper_T,   0);
-    esio_line_read(h, name_upper_u, &t.upper_u,   0);
-    esio_line_read(h, name_upper_v, &t.upper_v,   0);
-    esio_line_read(h, name_upper_w, &t.upper_w,   0);
+
+    // Backwards compatibility
+    // The old, unspecifed default for apps/perfect was to use T_wall = 1.
+    // The old, apps/reacting code saved lower_T = upper_T = T_wall in "/T_wall".
+    // The loading logic honors those two older behaviors in a verbose manner.
+    
+    // set default boundary temperature
+    real_t default_T_wall = 1;
+    if (ESIO_NOTFOUND != esio_line_size(h, "T_wall", NULL)) {
+        esio_line_read(h, "T_wall", &default_T_wall, 0);
+        INFO0("Found old-style wall temperature data = " << default_T_wall);
+    }
+
+    // lower_T
+    if (ESIO_NOTFOUND == esio_line_size(h, name_lower_T, NULL)) {
+        t.lower_T = default_T_wall;
+        INFO0("Lower boundary temperature data not found, using " 
+            << t.lower_T);
+    } else {
+        esio_line_read(h, name_lower_T, &t.lower_T,   0);
+    }
+
+    // upper_T
+    if (ESIO_NOTFOUND == esio_line_size(h, name_upper_T, NULL)) {
+        t.upper_T = default_T_wall;
+        INFO0("Upper boundary temperature data not found, using " 
+            << t.upper_T);
+    } else {
+        esio_line_read(h, name_upper_T, &t.upper_T,   0);
+    }
+
+    // lower_u
+    real_t default_u_wall = 0;
+    if (ESIO_NOTFOUND == esio_line_size(h, name_lower_u, NULL)) {
+        t.lower_u = default_u_wall;
+        INFO0("Lower boundary streamwise velocity data not found, using " 
+            << t.lower_u);
+    } else {
+        esio_line_read(h, name_lower_u, &t.lower_u,   0);
+    }
+
+    // upper_u
+    if (ESIO_NOTFOUND == esio_line_size(h, name_upper_u, NULL)) {
+        t.upper_u = default_u_wall;
+        INFO0("Upper boundary streamwise velocity data not found, using " 
+            << t.upper_u);
+    } else {
+        esio_line_read(h, name_upper_u, &t.upper_u,   0);
+    }
+
+    // lower_v
+    real_t default_v_wall = 0;
+    if (ESIO_NOTFOUND == esio_line_size(h, name_lower_v, NULL)) {
+        t.lower_v = default_v_wall;
+        INFO0("Lower boundary wall-normal velocity data not found, using " 
+            << t.lower_v);
+    } else {
+        esio_line_read(h, name_lower_v, &t.lower_v,   0);
+    }
+
+    // upper_v
+    if (ESIO_NOTFOUND == esio_line_size(h, name_upper_v, NULL)) {
+        t.upper_v = default_v_wall;
+        INFO0("Upper boundary wall-normal velocity data not found, using " 
+            << t.upper_v);
+    } else {
+        esio_line_read(h, name_upper_v, &t.upper_v,   0);
+    }
+
+    // lower_w
+    real_t default_w_wall = 0;
+    if (ESIO_NOTFOUND == esio_line_size(h, name_lower_w, NULL)) {
+        t.lower_w = default_w_wall;
+        INFO0("Lower boundary spanwise velocity data not found, using " 
+            << t.lower_w);
+    } else {
+        esio_line_read(h, name_lower_w, &t.lower_w,   0);
+    }
+
+    // upper_w
+    if (ESIO_NOTFOUND == esio_line_size(h, name_upper_w, NULL)) {
+        t.upper_w = default_w_wall;
+        INFO0("Upper boundary spanwise velocity data not found, using " 
+            << t.upper_w);
+    } else {
+        esio_line_read(h, name_upper_w, &t.upper_w,   0);
+    }
+
+
+    // TODO On mass fractions
 
     // Lower mass fractions vector
     int Ns;
