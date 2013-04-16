@@ -56,6 +56,7 @@ isothermal_mass_operator::isothermal_mass_operator(
  * per \ref isothermal_specification.
  */
 class isothermal_enforcer
+    : public boost::noncopyable // To defend against expense in for_each
 {
 
     /** Bitmasks used to precompute and cache which conditions to #flags. */
@@ -179,7 +180,8 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     typedef boost::multi_array_types::index_range range;
     multi_array::ref<complex_t,4>::array_view<2>::type state_view
             = state[boost::indices[ndx::rho][0][range()][range()]];
-    multi_array::for_each(state_view, enforcer);
+    multi_array::for_each(state_view,
+                          boost::bind<void>(boost::cref(enforcer), _1));
 
     // Apply zero-zero mode boundary conditions to any requested constraints.
     if (ic0) {
@@ -187,7 +189,8 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
         SUZERAIN_ENSURE(ic0->shape()[1] == state.shape()[1]);
         multi_array::ref<complex_t,4>::array_view<2>::type ic0_view
                 = (*ic0)[boost::indices[ndx::rho][0][range()][range()]];
-        multi_array::for_each(ic0_view, enforcer);
+        multi_array::for_each(ic0_view,
+                              boost::bind<void>(boost::cref(enforcer), _1));
     }
 
     // Perform the usual mass_operator solve across all equations
