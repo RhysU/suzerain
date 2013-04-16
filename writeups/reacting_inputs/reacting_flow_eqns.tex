@@ -54,7 +54,7 @@ Specifically, Fick's law is given by
 where $\mcal{D}_{\alpha}$ is the mass diffusivity for species
 $\alpha$ and $c_{\alpha}$ is the mass fraction $\rho_{\alpha} / \rho$.
 These mass diffusivities depend only on the state and will be computed
-using Cantera.
+using Antioch.
 
 Given that the $\mcal{D}_{\alpha}$ values are in general different for
 each $\alpha$, the Fickian model is not guaranteed to satisfy mass
@@ -83,7 +83,7 @@ The source terms $\dot{\omega}_{\alpha}$ in the species equations
 appear due to chemical reactions.  At a given point in space and time,
 these sources depend only on the state at that point in space and
 time.  These terms will be evaluated from reaction mechanisms and
-reaction rate models implemented in Cantera~\cite{?}.  The details of
+reaction rate models implemented in Antioch~\cite{?}.  The details of
 these models will not be discussed further here.
 
 \subsubsection{Viscous Stress}
@@ -94,7 +94,7 @@ The viscous stress is given by
 \end{equation*}
 % 
 Velocity derivatives are easily computed from the state derivatives,
-and the viscosity $\mu$ is computed via a call to Cantera.
+and the viscosity $\mu$ is computed via a call to Antioch.
 
 \subsubsection{Heat Flux}
 The heat flux is given by
@@ -109,7 +109,7 @@ the state is not available.  Thus, we will proceed by computing the
 temperature field in physical space, transforming back to wave space,
 differentiating, and transforming to physical space again.
 
-The thermal conductivity is computed via a call to Cantera.
+The thermal conductivity is computed via a call to Antioch.
 
 \subsubsection{Pressure}
 The mixture pressure is a sum of the species partial pressures:
@@ -125,10 +125,10 @@ p_{\alpha} = \rho_{\alpha} R_{\alpha} T,
 \end{equation*}
 % 
 where $R_{\alpha}$ is the gas constant for the species $\alpha$.
-These values can by obtained from Cantera.
+These values can by obtained from Antioch.
 
 \subsubsection{Species Enthalpies}
-Species enthalpies are determined using Cantera.
+Species enthalpies are determined using Antioch.
 
 \subsection{Transforms}
 This section examines trips between wave and physical space.
