@@ -46,7 +46,7 @@ namespace perfect {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 18, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 24, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all reference quantities */
     typedef Array<real_t, 29, Dynamic, ColMajor> refs_type;
@@ -79,6 +79,12 @@ public:
      *     equation.
      * \li \c v  Treated identically to \c u.
      * \li \c w  Treated identically to \c u.
+     * \li \c uu Gathered by the \e nonlinear operator for miscellaneous use.
+     * \li \c uv Treated identically to \c uu.
+     * \li \c uw Treated identically to \c uu.
+     * \li \c vv Treated identically to \c uu.
+     * \li \c vw Treated identically to \c uu.
+     * \li \c ww Treated identically to \c uu.
      * \li \c SrhoE The \e nonlinear operator accumulates the time-step-specific
      *     temporal mean of the implicit \f$\mathscr{S}_{\rho{}E}\f$ term in
      *     the energy equation.
@@ -144,40 +150,52 @@ public:
     means_type::ColXpr      u()                 { return means.col( 0); }
     means_type::ColXpr      v()                 { return means.col( 1); }
     means_type::ColXpr      w()                 { return means.col( 2); }
-    means_type::ColXpr      SrhoE()             { return means.col( 3); }
-    means_type::ColXpr      Srhou()             { return means.col( 4); }
-    means_type::ColXpr      Srhov()             { return means.col( 5); }
-    means_type::ColXpr      Srhow()             { return means.col( 6); }
-    means_type::ColXpr      Srho()              { return means.col( 7); }
-    means_type::ColXpr      Srhou_dot_u()       { return means.col( 8); }
-    means_type::ColXpr      f()                 { return means.col( 9); }
-    means_type::ColXpr      f_dot_u()           { return means.col(10); }
-    means_type::ColXpr      qb()                { return means.col(11); }
-    means_type::ColXpr      CrhoE()             { return means.col(12); }
-    means_type::ColXpr      Crhou()             { return means.col(13); }
-    means_type::ColXpr      Crhov()             { return means.col(14); }
-    means_type::ColXpr      Crhow()             { return means.col(15); }
-    means_type::ColXpr      Crho()              { return means.col(16); }
-    means_type::ColXpr      Crhou_dot_u()       { return means.col(17); }
+    means_type::ColXpr      uu()                { return means.col( 3); }
+    means_type::ColXpr      uv()                { return means.col( 4); }
+    means_type::ColXpr      uw()                { return means.col( 5); }
+    means_type::ColXpr      vv()                { return means.col( 6); }
+    means_type::ColXpr      vw()                { return means.col( 7); }
+    means_type::ColXpr      ww()                { return means.col( 8); }
+    means_type::ColXpr      SrhoE()             { return means.col( 9); }
+    means_type::ColXpr      Srhou()             { return means.col(10); }
+    means_type::ColXpr      Srhov()             { return means.col(11); }
+    means_type::ColXpr      Srhow()             { return means.col(12); }
+    means_type::ColXpr      Srho()              { return means.col(13); }
+    means_type::ColXpr      Srhou_dot_u()       { return means.col(14); }
+    means_type::ColXpr      f()                 { return means.col(15); }
+    means_type::ColXpr      f_dot_u()           { return means.col(16); }
+    means_type::ColXpr      qb()                { return means.col(17); }
+    means_type::ColXpr      CrhoE()             { return means.col(18); }
+    means_type::ColXpr      Crhou()             { return means.col(19); }
+    means_type::ColXpr      Crhov()             { return means.col(20); }
+    means_type::ColXpr      Crhow()             { return means.col(21); }
+    means_type::ColXpr      Crho()              { return means.col(22); }
+    means_type::ColXpr      Crhou_dot_u()       { return means.col(23); }
 
     means_type::ConstColXpr u()           const { return means.col( 0); }
     means_type::ConstColXpr v()           const { return means.col( 1); }
     means_type::ConstColXpr w()           const { return means.col( 2); }
-    means_type::ConstColXpr SrhoE()       const { return means.col( 3); }
-    means_type::ConstColXpr Srhou()       const { return means.col( 4); }
-    means_type::ConstColXpr Srhov()       const { return means.col( 5); }
-    means_type::ConstColXpr Srhow()       const { return means.col( 6); }
-    means_type::ConstColXpr Srho()        const { return means.col( 7); }
-    means_type::ConstColXpr Srhou_dot_u() const { return means.col( 8); }
-    means_type::ConstColXpr f()           const { return means.col( 9); }
-    means_type::ConstColXpr f_dot_u()     const { return means.col(10); }
-    means_type::ConstColXpr qb()          const { return means.col(11); }
-    means_type::ConstColXpr CrhoE()       const { return means.col(12); }
-    means_type::ConstColXpr Crhou()       const { return means.col(13); }
-    means_type::ConstColXpr Crhov()       const { return means.col(14); }
-    means_type::ConstColXpr Crhow()       const { return means.col(15); }
-    means_type::ConstColXpr Crho()        const { return means.col(16); }
-    means_type::ConstColXpr Crhou_dot_u() const { return means.col(17); }
+    means_type::ConstColXpr uu()          const { return means.col( 3); }
+    means_type::ConstColXpr uv()          const { return means.col( 4); }
+    means_type::ConstColXpr uw()          const { return means.col( 5); }
+    means_type::ConstColXpr vv()          const { return means.col( 6); }
+    means_type::ConstColXpr vw()          const { return means.col( 7); }
+    means_type::ConstColXpr ww()          const { return means.col( 8); }
+    means_type::ConstColXpr SrhoE()       const { return means.col( 9); }
+    means_type::ConstColXpr Srhou()       const { return means.col(10); }
+    means_type::ConstColXpr Srhov()       const { return means.col(11); }
+    means_type::ConstColXpr Srhow()       const { return means.col(12); }
+    means_type::ConstColXpr Srho()        const { return means.col(13); }
+    means_type::ConstColXpr Srhou_dot_u() const { return means.col(14); }
+    means_type::ConstColXpr f()           const { return means.col(15); }
+    means_type::ConstColXpr f_dot_u()     const { return means.col(16); }
+    means_type::ConstColXpr qb()          const { return means.col(17); }
+    means_type::ConstColXpr CrhoE()       const { return means.col(18); }
+    means_type::ConstColXpr Crhou()       const { return means.col(19); }
+    means_type::ConstColXpr Crhov()       const { return means.col(20); }
+    means_type::ConstColXpr Crhow()       const { return means.col(21); }
+    means_type::ConstColXpr Crho()        const { return means.col(22); }
+    means_type::ConstColXpr Crhou_dot_u() const { return means.col(23); }
 
     /** @} */
 

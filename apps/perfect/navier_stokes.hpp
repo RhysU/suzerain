@@ -378,7 +378,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Always gather all reference quantities when using implicit solves.
     // Profiling indicates the overhead is tiny and it keeps the code readable.
     if (    ZerothSubstep
-         && Linearize != linearize::none) {  // References and mean velocity
+         && Linearize != linearize::none) {  // References and velocity moments
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
 
@@ -535,80 +535,100 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.v() = common.ref_uy();
         common.w() = common.ref_uz();
 
-    } else {                                 // Mean velocity profile only
+        // Copy mean Reynolds stresses into common.{uu, uv, uw, vv, vw, ww}()
+        common.uu() = common.ref_uxux();
+        common.uv() = common.ref_uxuy();
+        common.uw() = common.ref_uxuz();
+        common.vv() = common.ref_uyuy();
+        common.vw() = common.ref_uyuz();
+        common.ww() = common.ref_uzuz();
 
-        SUZERAIN_TIMER_SCOPED("mean velocity profile");
+    } else {                                 // Velocity moments
+
+        SUZERAIN_TIMER_SCOPED("velocity moments");
 
         // Zero all reference quantities on fully-explicit zeroth substep
         if (ZerothSubstep && Linearize == linearize::none) {
             common.refs.setZero();
         }
 
-        // Logic below here absolutely requires common.{u,v,w}() be housed
-        // in the leftmost three columns of common.means.  Be sure.
-        assert(common.means.data() == &common.u()[0]);
-        assert(&common.u()[0] + common.means.rows() == &common.v()[0]);
-        assert(&common.v()[0] + common.means.rows() == &common.w()[0]);
+        // Logic below absolutely requires common.{u,v,w}()
+        // and common.{uu,uv,uw,vv,vw,vw}() be housed
+        // in the leftmost nine columns of common.means.  Be sure.
+        enum { h/*owmany*/ = 9 };
+        assert(&common.u ()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.v ()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.w ()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.uu()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.uv()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.uw()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.vv()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.vw()[0] - common.means.data() < h * common.means.rows());
+        assert(&common.ww()[0] - common.means.data() < h * common.means.rows());
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t topNotOnRank = o.dgrid.local_physical_start.y();
         if (topNotOnRank) {
-            common.means.leftCols<3>().topRows(topNotOnRank).setZero();
+            common.means.leftCols<h>().topRows(topNotOnRank).setZero();
         }
 
-        // Sum velocities as a function of y(j) into common.{u,v,w}()
+        // Accumulate velocity moments into common storage as function of y(j)
         for (int offset = 0, j = o.dgrid.local_physical_start.y();
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            summing_accumulator_type ux;
-            summing_accumulator_type uy;
-            summing_accumulator_type uz;
+            summing_accumulator_type acc_u,  acc_v,  acc_w;
+            summing_accumulator_type acc_uu, acc_uv, acc_uw;
+            summing_accumulator_type acc_vv, acc_vw, acc_ww;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
                                     * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
                 const real_t inv_rho = 1 / sphys(ndx::rho, offset);
-                ux(inv_rho * sphys(ndx::mx, offset));
-                uy(inv_rho * sphys(ndx::my, offset));
-                uz(inv_rho * sphys(ndx::mz, offset));
+                const real_t u = inv_rho * sphys(ndx::mx,  offset);
+                const real_t v = inv_rho * sphys(ndx::my,  offset);
+                const real_t w = inv_rho * sphys(ndx::mz,  offset);
+                acc_u(u);
+                acc_v(v);
+                acc_w(w);
+                acc_uu(u * u);
+                acc_uv(u * v);
+                acc_uw(u * w);
+                acc_vv(v * v);
+                acc_vw(v * w);
+                acc_ww(w * w);
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            common.u()[j] = boost::accumulators::sum(ux);
-            common.v()[j] = boost::accumulators::sum(uy);
-            common.w()[j] = boost::accumulators::sum(uz);
+            common.u ()[j] = boost::accumulators::sum(acc_u );
+            common.v ()[j] = boost::accumulators::sum(acc_v );
+            common.w ()[j] = boost::accumulators::sum(acc_w );
+            common.uu()[j] = boost::accumulators::sum(acc_uu);
+            common.uv()[j] = boost::accumulators::sum(acc_uv);
+            common.uw()[j] = boost::accumulators::sum(acc_uw);
+            common.vv()[j] = boost::accumulators::sum(acc_vv);
+            common.vw()[j] = boost::accumulators::sum(acc_vw);
+            common.ww()[j] = boost::accumulators::sum(acc_ww);
 
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t bottomNotOnRank = common.means.leftCols<3>().rows()
+        const size_t bottomNotOnRank = common.means.leftCols<h>().rows()
                                      - o.dgrid.local_physical_end.y();
         if (bottomNotOnRank) {
-            common.means.leftCols<3>().bottomRows(bottomNotOnRank).setZero();
+            common.means.leftCols<h>().bottomRows(bottomNotOnRank).setZero();
         }
 
-        // Reduce, scale common.{u,v,w}() sums to obtain mean on zero-zero rank
-        // Only zero-zero rank needs the information so Reduce is sufficient
-        if (o.dgrid.has_zero_zero_modes()) {
-            SUZERAIN_MPICHKR(MPI_Reduce(MPI_IN_PLACE,
-                        common.means.leftCols<3>().data(),
-                        common.means.leftCols<3>().size(),
-                        mpi::datatype<real_t>::value, MPI_SUM,
-                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-            common.means.leftCols<3>()
-                    /= (   o.dgrid.global_physical_extent.x()
-                         * o.dgrid.global_physical_extent.z());
-        } else {
-            ArrayXXr tmp;
-            tmp.resizeLike(common.means.leftCols<3>());
-            tmp.setZero();
-            SUZERAIN_MPICHKR(MPI_Reduce(common.means.leftCols<3>().data(),
-                        tmp.data(), common.means.leftCols<3>().size(),
-                        mpi::datatype<real_t>::value, MPI_SUM,
-                        o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-        }
+        // Allreduce, scale common.{u,v,w}() and common.{uu,uv,uw,vv,vw,ww}()
+        // sums to obtain mean on all ranks.
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
+                    common.means.leftCols<h>().data(),
+                    common.means.leftCols<h>().size(),
+                    mpi::datatype<real_t>::value,
+                    MPI_SUM, MPI_COMM_WORLD));
+        common.means.leftCols<h>() /= (   o.dgrid.global_physical_extent.x()
+                                        * o.dgrid.global_physical_extent.z());
 
     }
 
