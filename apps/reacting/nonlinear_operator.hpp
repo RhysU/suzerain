@@ -182,6 +182,38 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     real_t &convfluct_z_delta_t   = delta_t_candidates[10];
     real_t &diffusive_z_delta_t   = delta_t_candidates[11];
 
+    // //********************************************************************
+    // // Begin computing viscous filter.  There are five steps.  The
+    // // first four must done here, while the state (swave) is still
+    // // entirely coefficients.  The last step (scaling by reference
+    // // quantities) must be done after the reference quantities are
+    // // computed below (of course).
+    // // 
+    // // Each step is performed independently for each state variable
+    // for (size_t var = ndx::e; var<state_count; ++var) {
+
+    //     // 1.) Accumulate D_1 swave in to fsrcw
+    //     o.bop_accumulate(1, 1, swave, var, 
+    //                         0, fsrcw, var );
+
+    //     // 2.) fsrcw <- M \ fsrcw
+    //     o.bop_solve(massluz, fsrcw, var);
+
+    //     // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
+    //     o.bop_apply(1, 1, fsrcw, var);
+        
+    //     // 4.) fsrcw <- -D_2 swave + fsrcw
+    //     o.bop_accumulate(2, -1, swave, var, 
+    //                          1, fsrcw, var );
+
+    // }
+    // // Now, fsrcw contains -D_2 * swave + D_1 * M \ (D_1 * swave).
+    // //
+    // // To complete the filter source, we need to scale it by the
+    // // appropriate reference.
+    // //********************************************************************
+
+
     //********************************************************************
     //
     // From coefficients, compute values at collocation points for
