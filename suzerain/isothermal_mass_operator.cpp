@@ -33,7 +33,6 @@
 
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>

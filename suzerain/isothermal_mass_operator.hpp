@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
@@ -38,7 +39,6 @@ namespace suzerain {
 
 // Forward declarations
 class grid_specification;
-class isothermal_specification;
 class pencil_grid;
 
 /**
@@ -113,7 +113,7 @@ public:
 private:
 
     /** The lower and upper isothermal boundary specification. */
-    const isothermal_specification &spec;
+    const isothermal_specification spec;
 
 };
 
