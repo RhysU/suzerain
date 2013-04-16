@@ -110,7 +110,7 @@ public:
     void zero_zero(complex_t& lower_rho) const
     {
         // Locate the upper density relative to the provided lower density
-        complex_t& upper_rho = (&lower_rho)[Ny];
+        complex_t& upper_rho = (&lower_rho)[Ny - 1];
 
 #define LOWER(var) ((&lower_rho)[((var) - ndx::rho)*incf])
 #define UPPER(var) ((&upper_rho)[((var) - ndx::rho)*incf])
@@ -155,7 +155,7 @@ public:
     void non_zero_zero(complex_t& lower_rho) const
     {
         // Locate the upper density relative to the provided lower density
-        complex_t& upper_rho = (&lower_rho)[Ny];
+        complex_t& upper_rho = (&lower_rho)[Ny - 1];
 
 #define LOWER(var) ((&lower_rho)[((var) - ndx::rho)*incf])
 #define UPPER(var) ((&upper_rho)[((var) - ndx::rho)*incf])
