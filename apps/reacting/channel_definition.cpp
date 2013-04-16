@@ -25,21 +25,12 @@
  * @copydoc channel_definition.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "channel_definition.hpp"
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
-
-/** @file 
- * Provides classes handling problem defintion for channel
- * flow, e.g., bulk density and momentum.
- */
 
 namespace suzerain {
 
@@ -70,7 +61,7 @@ channel_definition::channel_definition()
 channel_definition::channel_definition(
         const real_t bulk_rho,
         const real_t bulk_rho_u,
-	const real_t T_wall,
+        const real_t T_wall,
         const std::vector<real_t> wall_mass_fractions)
     : bulk_rho  (bulk_rho  )
     , bulk_rho_u(bulk_rho_u)

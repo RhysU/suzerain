@@ -25,10 +25,6 @@
  * @copydoc explicit_operator.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "explicit_operator.hpp"
 
 #include <suzerain/common.hpp>
@@ -52,8 +48,8 @@ private:
     const std::vector<real_t>& wall_mass_fractions;
 
 public:
-    IsothermalNoSlipFunctor(ptrdiff_t field_stride, 
-                            const real_t e_tot, 
+    IsothermalNoSlipFunctor(ptrdiff_t field_stride,
+                            const real_t e_tot,
                             const std::vector<real_t>& wall_mass_fractions)
         : field_stride(field_stride)
         , e_tot(e_tot)
@@ -102,25 +98,25 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
-    
+
     // Shorthand
     using boost::indices;
     typedef boost::multi_array_types::index_range range;
-    
+
     // Indexes only the first and last collocation point
     const std::size_t Ny         = state.shape()[1];
     const std::size_t wall_lower = 0;
     const std::size_t wall_upper = Ny - 1;
     range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
-    
+
     // Prepare a state view of density locations at lower and upper walls
     multi_array::ref<complex_t,4>::array_view<3>::type state_view
             = state[indices[ndx::rho][walls][range()][range()]];
 
     // Prepare functor setting pointwise BCs given density locations
     const IsothermalNoSlipFunctor bc_functor(
-        state.strides()[0], 
-        cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions), 
+        state.strides()[0],
+        cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions),
         chdef.wall_mass_fractions);
 
     // Apply the functor to all wall-only density locations
@@ -161,7 +157,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
     // form and factor mass matrix once prior to use in nonlinear operator
     massluz.factor_mass(cop);
 }
-    
+
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
@@ -174,23 +170,23 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
     case linearize::none:
         if (substep_index == 0) {
             return apply_navier_stokes_spatial_operator<true,  linearize::none>
-                (*this, common, fsdef, msoln, cmods, massluz, 
+                (*this, common, fsdef, msoln, cmods, massluz,
                  time, swave, evmaxmag_real, evmaxmag_imag);
         } else {
             return apply_navier_stokes_spatial_operator<false, linearize::none>
-                (*this, common, fsdef, msoln, cmods, massluz, 
+                (*this, common, fsdef, msoln, cmods, massluz,
                  time, swave, evmaxmag_real, evmaxmag_imag);
         }
         break;
-        
+
     case linearize::rhome_y:
         if (substep_index == 0) {
             return apply_navier_stokes_spatial_operator<true,  linearize::rhome_y>
-                (*this, common, fsdef, msoln, cmods, massluz, time, 
+                (*this, common, fsdef, msoln, cmods, massluz, time,
                  swave, evmaxmag_real, evmaxmag_imag);
         } else {
             return apply_navier_stokes_spatial_operator<false, linearize::rhome_y>
-                (*this, common, fsdef, msoln, cmods, massluz, 
+                (*this, common, fsdef, msoln, cmods, massluz,
                  time, swave, evmaxmag_real, evmaxmag_imag);
         }
         break;
@@ -199,7 +195,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
         SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
         break;
     }
-    
+
 }
 
 } // namespace reacting

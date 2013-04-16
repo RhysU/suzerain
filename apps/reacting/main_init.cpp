@@ -25,10 +25,6 @@
  * Application executing \ref suzerain::reacting::driver_init::run.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
@@ -112,7 +108,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     chdef->bulk_rho_u = 1;
     chdef->T_wall     = 1;
     chdef->wall_mass_fractions.push_back(1.0);
-    
+
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
@@ -125,7 +121,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
     // Establish default filter parameters
     fsdef->filter_phi = 0.0;
-    
+
     // Establish binary-specific options
     std::pointer_to_binary_function<real_t,const char*,void>
         ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);
@@ -160,7 +156,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
-    
+
     DEBUG0(who, "Initializing antioch_constitutive");
     cmods->init_antioch();
 
@@ -174,10 +170,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     }
 
 
-    
+
     DEBUG0(who, "Add species to fields");
     add_species_fields(cmods->species_names, this->fields);
-    
+
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -222,10 +218,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
             INFO("Initialization uses constant rho_s equal to bulk_rho*wall_mass_frac");
             rho_s.resize(cmods->Ns()-1);
-            
+
             for (size_t s=0; s<cmods->Ns()-1; ++s) {
                 // yes, +1 b/c first is the diluter
-                rho_s[s] = chdef->bulk_rho*chdef->wall_mass_fractions[s+1]; 
+                rho_s[s] = chdef->bulk_rho*chdef->wall_mass_fractions[s+1];
             }
         }
 
@@ -258,7 +254,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions) 
+        ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions)
             + 0.5*(u*u + v*v + w*w);
 
         INFO("Converting the u and E profiles to B-spline coefficients");

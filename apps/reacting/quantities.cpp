@@ -25,16 +25,13 @@
  * @copydoc quantities.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "quantities.hpp"
 
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
 #include <suzerain/coalescing_pool.hpp>
+#include <suzerain/common.hpp>
 #include <suzerain/countof.h>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
@@ -215,7 +212,7 @@ quantities sample_quantities(
 {
     // FIXME: This function needs to be refactored to support reacting
     if (cmods.Ns()>1) {
-        WARN0("sample_quantitites", 
+        WARN0("sample_quantitites",
               "sample_quantities does not support reacting flow yet!");
     }
 
@@ -433,14 +430,14 @@ quantities sample_quantities(
                 //     scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
                 //     rho, grad_rho, m, grad_m, e, grad_e,
                 //     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-		//
-		// FIXME: Using constants below to allow me to remove
-		// scenario_definition dependence w/out breaking
-		// tests.  Will refactor this to use constitutive laws
-		// classes once that functionality exists.
-		// 
+                //
+                // FIXME: Using constants below to allow me to remove
+                // scenario_definition dependence w/out breaking
+                // tests.  Will refactor this to use constitutive laws
+                // classes once that functionality exists.
+                //
                 rholut::p_T_mu_lambda(
-		    0.0, real_t(2)/3, 1.4, 1.15,
+                    0.0, real_t(2)/3, 1.4, 1.15,
                     rho, grad_rho, m, grad_m, e, grad_e,
                     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
 

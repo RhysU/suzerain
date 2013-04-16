@@ -25,28 +25,18 @@
  * @copydoc antioch_constitutive.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
-#ifdef HAVE_ANTIOCH
-
-#include "antioch_constitutive.hpp"
-
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
+#ifdef SUZERAIN_HAVE_ANTIOCH
+
+#include "antioch_constitutive.hpp"
+
 #include <antioch/antioch_version.h>
 #include <antioch/read_reaction_set_data_xml.h>
 #include <antioch/blottner_parsing.h>
-
-
-/** @file
- * Class wrapping libantioch functionality for chemically reacting
- * flow
- */
 
 namespace suzerain {
 
@@ -126,8 +116,8 @@ antioch_constitutive::options_description()
     auto_ptr<typed_value<string> > p;
 
     // species
-    retval.add_options()(name_species_names, 
-                         value(&species_names), 
+    retval.add_options()(name_species_names,
+                         value(&species_names),
                          desc_species_names);
 
     // chemistry input file
@@ -196,7 +186,7 @@ antioch_constitutive::save(
     // in driver_base::save_metadata
     static const char acd[] = "antioch_constitutive_data";
 
-    esio_line_write(h, acd, &antioch_ver, 0, 
+    esio_line_write(h, acd, &antioch_ver, 0,
                     "Antioch version number and antioch_contitutive data.");
 
     // number of species
@@ -242,7 +232,7 @@ antioch_constitutive::load(
     // Will never overwrite antioch version info
     if (t.antioch_ver != this->antioch_ver) {
         //... but warn if it doesn't match
-        WARN0("Antioch version has changed.  Was " << t.antioch_ver 
+        WARN0("Antioch version has changed.  Was " << t.antioch_ver
               << " when written.  Is now " << this->antioch_ver);
     }
 
@@ -285,7 +275,7 @@ antioch_constitutive::load(
 
 
     // Prefer this to incoming
-    this->populate(t, verbose);  
+    this->populate(t, verbose);
 }
 
 
@@ -303,21 +293,21 @@ void antioch_constitutive::init_antioch()
         // FIXME: This will do for now, but need to think about what
         // happens in parallel to avoid all ranks trying to read this
         // file.
-        Antioch::read_reaction_set_data_xml<real_t>(chem_input_file, 
-                                                    false /* verbose */, 
+        Antioch::read_reaction_set_data_xml<real_t>(chem_input_file,
+                                                    false /* verbose */,
                                                     *reactions);
         kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
     }
 
 
     mixture_mu = make_shared<Antioch::MixtureViscosity<
-                             Antioch::BlottnerViscosity<real_t>, real_t> > 
+                             Antioch::BlottnerViscosity<real_t>, real_t> >
         (*mixture);
 
     Antioch::read_blottner_data_ascii_default(*mixture_mu);
 
     mixture_kappa = make_shared<Antioch::EuckenThermalConductivity<
-                                Antioch::StatMechThermodynamics<real_t> > > 
+                                Antioch::StatMechThermodynamics<real_t> > >
         (*sm_thermo);
 
     wilke_mixture = make_shared<Antioch::WilkeMixture<real_t> >(*mixture);
@@ -333,7 +323,7 @@ void antioch_constitutive::init_antioch()
 }
 
 // Evaluate everything
-void 
+void
 antioch_constitutive::evaluate (const real_t  e,
                                 const real_t* m,
                                 const real_t  rho,
@@ -384,7 +374,7 @@ antioch_constitutive::evaluate (const real_t  e,
     p = rho*R_mix*T;
 
     // Use CEA thermo to compute h_RT_minus_s_R for reaction
-    // calculations 
+    // calculations
     //
     // NOTE: This is how FIN-S does it, so we follow for
     // complete consistency.  But, it might make more sense to use
@@ -400,13 +390,13 @@ antioch_constitutive::evaluate (const real_t  e,
     if (Ns>1) {
         // Species eqn source terms
         std::vector<real_t> omega_dot(Ns);
-        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities, 
+        this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities,
                                              h_RT_minus_s_R, omega_dot);
         for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
     } else {
         om[0] = 0.0;
     }
-    
+
     // Species enthalpies (assuming thermal equilibrium)
     for (unsigned int i=0; i<Ns; ++i)
         hs[i] = this->sm_thermo->h_tot(i, T);
@@ -439,7 +429,7 @@ antioch_constitutive::evaluate (const real_t  e,
     // TODO: assert transport props are positive
 }
 
-void 
+void
 antioch_constitutive::evaluate (const real_t    e,
                                 const Vector3r& m,
                                 const real_t    rho,
@@ -475,7 +465,7 @@ antioch_constitutive::evaluate (const real_t    e,
     p = rho*R_mix*T;
 
     // Use CEA thermo to compute h_RT_minus_s_R for reaction
-    // calculations 
+    // calculations
     //
     // NOTE: This is how FIN-S does it, so we follow for
     // complete consistency.  But, it might make more sense to use
@@ -490,12 +480,12 @@ antioch_constitutive::evaluate (const real_t    e,
     // TODO: Set up antioch to avoid this if (i.e., make call to kinetics ok)
     if (Ns>1) {
         // Species eqn source terms
-        this->kinetics->compute_mass_sources(T, rho, R_mix, cs, molar_densities, 
+        this->kinetics->compute_mass_sources(T, rho, R_mix, cs, molar_densities,
                                              h_RT_minus_s_R, om);
     } else {
         om[0] = 0.0;
     }
-    
+
     // Species enthalpies (assuming thermal equilibrium)
     for (unsigned int i=0; i<Ns; ++i)
         hs[i] = this->sm_thermo->h_tot(i, T);
@@ -527,7 +517,7 @@ antioch_constitutive::evaluate (const real_t    e,
     // // TODO: assert transport props are positive
 }
 
-void 
+void
 antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           const Vector3r& m,
                                                           const real_t    rho,
@@ -543,9 +533,9 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           VectorXr& Ds ) const
 {
     const real_t irho = 1.0/rho;
-    
+
     const size_t Ns = this->Ns();
-    
+
     // Compute temperature from internal energy (assuming thermal equilibrium)
     const real_t re_kinetic = 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
     const real_t re_internal = e - re_kinetic;
@@ -554,7 +544,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
     // Pressure
     const real_t R_mix = this->mixture->R(cs);
     p = rho*R_mix*T;
- 
+
     // Ratio of mixture specific heats
     const real_t Cp = this->sm_thermo->cp(T, T, cs);
     const real_t Cv = this->sm_thermo->cv(T, T, cs);
@@ -588,7 +578,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
     // Transport
     mu  = this->wilke_evaluator->mu(T, cs);
     const real_t kap = this->wilke_evaluator->k (T, cs);
-    
+
     kaporCp = kap*irho/Cp;
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
@@ -600,7 +590,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
 }
 
 
-real_t 
+real_t
 antioch_constitutive::e_from_T (const real_t  T,
                                 const std::vector<real_t> mass_fractions) const
 {

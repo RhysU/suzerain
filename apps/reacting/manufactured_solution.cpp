@@ -25,15 +25,12 @@
  * @copydoc manufactured_solution.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "manufactured_solution.hpp"
 
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
+#include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -103,7 +100,7 @@ manufactured_solution::options_description()
 
     // TODO: Check validity of incoming values
     retval.add_options()(name_T_r,
-                         value(&this->T_r)->default_value(273.0), 
+                         value(&this->T_r)->default_value(273.0),
                          desc_T_r);
 
     retval.add_options()(name_mu_r,
@@ -111,7 +108,7 @@ manufactured_solution::options_description()
                          desc_mu_r);
 
     retval.add_options()(name_beta,
-                         value(&this->beta)->default_value(2./3.), 
+                         value(&this->beta)->default_value(2./3.),
                          desc_beta);
 
     return retval;
@@ -122,10 +119,10 @@ manufactured_solution::match(antioch_constitutive& cmods)
 {
     // Check incoming cmods for consistency with available
     // manufactured solution
-    if (cmods.Ns()!=1) 
+    if (cmods.Ns()!=1)
         throw std::invalid_argument("MMS only available for single species!");
 
-    if (cmods.species_names[0]!="CPAir" && cmods.species_names[0]!="CPN2") 
+    if (cmods.species_names[0]!="CPAir" && cmods.species_names[0]!="CPN2")
         throw std::invalid_argument(
             "MMS only available for calorically perfect gas!");
 
@@ -142,7 +139,7 @@ manufactured_solution::match(antioch_constitutive& cmods)
     // fraction input is necessary
     real_t Cv = cmods.sm_thermo->cv(1.0,1.0,trivial_mass_fractions);
     real_t Cp = cmods.sm_thermo->cp(1.0,1.0,trivial_mass_fractions);
-    
+
     real_t Rmix = cmods.mixture->R(trivial_mass_fractions);
 
     this->gamma = Cp/Cv;
@@ -155,14 +152,14 @@ manufactured_solution::match(antioch_constitutive& cmods)
 
     // Viscosity: Make Blottner match power law
     const real_t mu0 = this->mu_r;
-    const real_t beta = this->beta; 
+    const real_t beta = this->beta;
     const real_t Tref = this->T_r;
 
     std::vector<real_t> blottner_coeffs(3);
     // Blottner says: mu = 0.1*exp( a*log(T)^2 + b*log(T) + c).  Thus,
 
     // for a = 0 reduces blottner to power law
-    blottner_coeffs[0] = 0.0; 
+    blottner_coeffs[0] = 0.0;
 
     // with b = power law exponent
     blottner_coeffs[1] = beta;
@@ -374,7 +371,7 @@ void load(const esio_handle h,
 
     // Parameters set to match supplied arguments
     // Match must happen *after* call to antioch_constitutive::init_antioch
-    //msoln->match(cmods); 
+    //msoln->match(cmods);
     msoln->match(grid);
 }
 

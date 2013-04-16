@@ -20,22 +20,18 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
-#ifdef HAVE_ANTIOCH // only makes sense when antioch is available
-
 #include <suzerain/common.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/logging.hpp>
+
+#ifdef SUZERAIN_HAVE_ANTIOCH
 
 #include <antioch/chemical_species.h>
 
 #include "antioch_constitutive.hpp"
 
 
-/*
+/**
  * Initialize minimial test environment: MPI and logging
  */
 void initialize_test_env(int argc, char **argv)
@@ -43,12 +39,12 @@ void initialize_test_env(int argc, char **argv)
     MPI_Init(&argc, &argv);                     // Initialize MPI...
     atexit((void (*) ()) MPI_Finalize);         // ...finalize at exit
     suzerain::support::logging::initialize(     // Initialize logging
-        MPI_COMM_WORLD,    
+        MPI_COMM_WORLD,
         suzerain::support::log4cxx_config_console); // correct???
 
 }
 
-/*
+/**
  * Check antioch_constitutive save/load for internal consistency
  */
 int test_save_load(MPI_Comm comm)
@@ -65,14 +61,14 @@ int test_save_load(MPI_Comm comm)
 
     // Not a real file... only checking name consistency
     std::string chem_input_file("fake_filename.xml");
-        
+
     const real_t Le = 0.7;
     const real_t alpha = 0.5;
 
     antioch_constitutive acl1(species_names, chem_input_file, Le, alpha);
     antioch_constitutive acl2;
 
-    
+
     // Create hdf5 file and save antioch data
     {
         esio_handle h = esio_handle_initialize(comm);
@@ -81,7 +77,7 @@ int test_save_load(MPI_Comm comm)
         esio_file_close(h);
         esio_handle_finalize(h);
     }
-    
+
 
     // Open hdf5 file and read antioch data
     {
@@ -91,7 +87,7 @@ int test_save_load(MPI_Comm comm)
         esio_file_close(h);
         esio_handle_finalize(h);
     }
-    
+
 
     // check consistency
     int nerr=0;
@@ -103,10 +99,10 @@ int test_save_load(MPI_Comm comm)
                       << " where " << Ns << " was expected" << std::endl;
             nerr += 1;
         }
-        
+
         for (unsigned int i=0; i<acl1.species_names.size(); ++i) {
             if( acl1.species_names[i] != species_names[i] ) {
-                std::cerr << "Error: acl1.species_names[" << i << "] = " 
+                std::cerr << "Error: acl1.species_names[" << i << "] = "
                           << acl1.species_names[i] << " but expected"
                           << species_names[i] << std::endl;
                 nerr += 1;
@@ -118,7 +114,7 @@ int test_save_load(MPI_Comm comm)
                       << " where fake_filename.xml was expected" << std::endl;
             nerr += 1;
         }
-        
+
         if (acl1.Le != Le) {
             std::cerr << std::setprecision(20);
             std::cerr << "Error: acl1.Le = " << acl1.Le
@@ -142,10 +138,10 @@ int test_save_load(MPI_Comm comm)
                       << " where " << acl1.species_names.size() << " was expected" << std::endl;
             nerr += 1;
         }
-        
+
         for (unsigned int i=0; i<acl1.species_names.size(); ++i) {
             if( acl2.species_names[i] != acl1.species_names[i] ) {
-                std::cerr << "Error: acl2.species_names[" << i << "] = " 
+                std::cerr << "Error: acl2.species_names[" << i << "] = "
                           << acl2.species_names[i] << " but acl1.species_names["
                           << i << "] = " << acl1.species_names[i] << std::endl;
                 nerr += 1;
@@ -177,12 +173,12 @@ int test_save_load(MPI_Comm comm)
     return nerr;
 }
 
-/*
+/**
  * Check that call to init_antioch puts objects in desired state
  */
 int test_init_antioch(const std::string& chem_xml_file)
 {
-    
+
     using suzerain::reacting::antioch_constitutive;
     using suzerain::real_t;
 
@@ -214,7 +210,7 @@ int test_init_antioch(const std::string& chem_xml_file)
                   << " but should be " << Ns << std::endl;
         nerr += 1;
     }
-        
+
     // ... species name map
     const std::vector<Antioch::Species> species_list = acl1.mixture->species_list();
     for (unsigned int i=0; i<Ns; i++) {
@@ -262,18 +258,18 @@ int test_init_antioch(const std::string& chem_xml_file)
                   << " but should be " << 5 << std::endl;
         nerr += 1;
     }
-    
+
 
     return nerr;
 }
 
 
-/*
+/**
  * Check that call to init_antioch puts objects in desired state
  */
 int test_init_antioch_CPAir()
 {
-    
+
     using suzerain::reacting::antioch_constitutive;
     using suzerain::real_t;
 
@@ -306,7 +302,7 @@ int test_init_antioch_CPAir()
                   << " but should be " << Ns << std::endl;
         nerr += 1;
     }
-        
+
     // ... species name map
     const std::vector<Antioch::Species> species_list = acl1.mixture->species_list();
     for (unsigned int i=0; i<Ns; i++) {
@@ -346,12 +342,12 @@ int test_init_antioch_CPAir()
 }
 
 
-/*
+/**
  * Check that call to antioch_constitutive::evaluate "works"
  */
 int test_evaluate(const std::string& chem_xml_file)
 {
-    
+
     using suzerain::reacting::antioch_constitutive;
     using suzerain::real_t;
 
@@ -380,7 +376,7 @@ int test_evaluate(const std::string& chem_xml_file)
     real_t cs[5]      = {0.5, 0.2, 0.1, 0.1, 0.1};
 
     // Storage for computed quantities
-    real_t T=-1, p=-1, Ds[5], mu, kap, 
+    real_t T=-1, p=-1, Ds[5], mu, kap,
         hs[5], om[5]={1.0, 1.0, 1.0, 1.0, 1.0}, a=-1, Cp=0;
 
     // Eval rxn sources, trans, thermo
@@ -388,7 +384,7 @@ int test_evaluate(const std::string& chem_xml_file)
                   T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
 
 
-    // check that it did something potentially sane 
+    // check that it did something potentially sane
     //
     // FIXME: make these checks stronger once final version of
     // evaluate function is complete
@@ -405,7 +401,7 @@ int test_evaluate(const std::string& chem_xml_file)
         std::cerr << "Error: p = " << p << " <= 0 is not allowed!" << std::endl;
         nerr += 1;
     }
-    
+
     //... source terms sum to zero
     real_t som = 0.0;
     for (unsigned int i=0; i<5; ++i) som += om[i];
@@ -418,12 +414,12 @@ int test_evaluate(const std::string& chem_xml_file)
     return nerr;
 }
 
-/*
+/**
  * Check that call to antioch_constitutive::evaluate "works"
  */
 int test_evaluate_eigen(const std::string& chem_xml_file)
 {
-    
+
     using suzerain::reacting::antioch_constitutive;
     using suzerain::real_t;
     using suzerain::Vector3r;
@@ -468,7 +464,7 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
                   T, p, Ds, mu, kap, hs, om, a, Cp /* output */);
 
 
-    // check that it did something potentially sane 
+    // check that it did something potentially sane
     //
     // FIXME: make these checks stronger once final version of
     // evaluate function is complete
@@ -485,7 +481,7 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
         std::cerr << "Error: p = " << p << " <= 0 is not allowed!" << std::endl;
         nerr += 1;
     }
-    
+
     //... source terms sum to zero
     real_t som = 0.0;
     for (unsigned int i=0; i<Ns; ++i) som += om(i);
@@ -498,12 +494,12 @@ int test_evaluate_eigen(const std::string& chem_xml_file)
     return nerr;
 }
 
-/*
+/**
  * Check that call to evaluate_pressure_derivs_and_trans "works"
  */
 int test_evaluate_pressure_derivs_and_trans(const std::string& chem_xml_file)
 {
-    
+
     using suzerain::reacting::antioch_constitutive;
     using suzerain::real_t;
     using suzerain::Vector3r;
@@ -580,7 +576,7 @@ int main(int argc, char **argv)
     int ierr = test_save_load(MPI_COMM_WORLD); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;
     else std::cout << " passed." << std::endl;
-                     
+
     std::cout << "Running test_init_antioch..." << std::endl;
     ierr = test_init_antioch(chem_xml_file); etot += ierr;
     if (ierr!=0) std::cout << " FAILED." << std::endl;

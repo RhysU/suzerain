@@ -25,10 +25,6 @@
  * @copydoc reacting.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "reacting.hpp"
 
 #include <esio/error.h>
@@ -95,7 +91,7 @@ void add_species_fields( const std::vector<std::string>& species_names,
     // initialize species
     for (size_t i = Nv; i < Nf; ++i) {
         // yes: +1 b/c first in species list is the diluter
-        fields[i].identifier   = "rho_" + species_names[i-Nv+1]; 
+        fields[i].identifier   = "rho_" + species_names[i-Nv+1];
         fields[i].description += "Dimensional ";
         fields[i].description += species_names[i-Nv+1];
         fields[i].description += " density";

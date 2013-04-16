@@ -25,10 +25,6 @@
  * @copydoc filter_definition.hpp
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include "filter_definition.hpp"
 
 #include <suzerain/common.hpp>

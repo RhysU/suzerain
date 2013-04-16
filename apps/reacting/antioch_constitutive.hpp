@@ -29,19 +29,15 @@
  * flow
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
-#ifdef HAVE_ANTIOCH // only makes sense when antioch is available
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 
+#ifdef SUZERAIN_HAVE_ANTIOCH
+
 #include <antioch/vector_utils.h>
-#include <antioch/eigen_utils.h> 
+#include <antioch/eigen_utils.h>
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
@@ -152,10 +148,10 @@ public:
      * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
-     * @param[in] cs      Species mass fractions. 
+     * @param[in] cs      Species mass fractions.
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
-     * @param[out] Ds     Mass diffusivities. 
+     * @param[out] Ds     Mass diffusivities.
      * @param[out] mu     Dynamic viscosity.
      * @param[out] kap    Thermal conductivity.
      * @param[out] hs     Species enthalpies.
@@ -184,10 +180,10 @@ public:
      * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
-     * @param[in] cs      Species mass fractions. 
+     * @param[in] cs      Species mass fractions.
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
-     * @param[out] Ds     Mass diffusivities. 
+     * @param[out] Ds     Mass diffusivities.
      * @param[out] mu     Dynamic viscosity.
      * @param[out] kap    Thermal conductivity.
      * @param[out] hs     Species enthalpies.
@@ -216,7 +212,7 @@ public:
      * @param[in] m       Pointer to momentum components, m[0] = x-momentum, etc.
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
-     * @param[in] cs      Species mass fractions. 
+     * @param[in] cs      Species mass fractions.
      * @param[out] p      Pressure.
      * @param[out] p_rho  Derivative of pressure wrt mixture density
      * @param[out] p_rsum Sum of mass frac(s) * dp/d(rho(s)) for s=2:Ns
@@ -328,7 +324,7 @@ public:
      */
     shared_ptr<Antioch::EuckenThermalConductivity<
                    Antioch::StatMechThermodynamics<real_t> > > mixture_kappa;
-    
+
     /**
      * Antioch::WilkeMixture object, used by Antioch::WilkeEvaluator
      */
@@ -338,7 +334,7 @@ public:
      * Antioch::WilkeMixture object, computes mixture transport
      * properties
      */
-    shared_ptr<Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>, 
+    shared_ptr<Antioch::WilkeEvaluator<Antioch::MixtureViscosity<Antioch::BlottnerViscosity<real_t>, real_t>,
                                        Antioch::EuckenThermalConductivity<Antioch::StatMechThermodynamics<real_t> >,
                                        real_t> > wilke_evaluator;
 

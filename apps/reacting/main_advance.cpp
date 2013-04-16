@@ -25,10 +25,6 @@
  * Application executing \ref suzerain::perfect::driver_advance::run.
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
@@ -142,9 +138,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         restart_chdef.swap(chdef);
         load_restart(h.get(), initial_t);
         restart_chdef.swap(chdef);
-        chdef->populate(*restart_chdef, true); 
+        chdef->populate(*restart_chdef, true);
 
-        // FIXME: filter source 
+        // FIXME: filter source
         //        initialize with info from restart here (?)
 
         // Adjust total energy as necessary to account for any scenario change
@@ -195,7 +191,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
 
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-		    solver_spec, *cmods, *chdef, *grid, *dgrid,
+                    solver_spec, *cmods, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
         // FIXME: Set chi correctly
@@ -204,7 +200,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             tmp_hybrid( new hybrid_residual_operator(chi) );
 
         tmp_hybrid->R.reset(new explicit_nonlinear_operator(
-                                *cmods, *grid, *dgrid, *cop, *b, 
+                                *cmods, *grid, *dgrid, *cop, *b,
                                 common_block, *fsdef, msoln));
 
         tmp_hybrid->L = this->L;
