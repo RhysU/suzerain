@@ -52,9 +52,13 @@ static void parse_positive(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-// FIXME: Add a parse_bounded for species inputs,
-//        maybe "ensure_zero_one"
-
+static void parse_bounded(const std::string& s, real_t *t, real_t lower, 
+    real_t upper, const char *n)
+{
+    const real_t v = exprparse<real_t>(s, n);
+    validation::ensure_bounded(v, lower, upper, true, true, n);
+    *t = v;
+}
 
 isothermal_definition::isothermal_definition()
 {
