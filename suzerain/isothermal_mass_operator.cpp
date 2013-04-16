@@ -52,7 +52,7 @@ isothermal_mass_operator::isothermal_mass_operator(
 }
 
 /**
- * A helper class for implementing isothermal boundary conditions
+ * A helper functor for implementing isothermal boundary conditions
  * per \ref isothermal_specification.
  */
 class isothermal_enforcer
@@ -103,11 +103,10 @@ public:
     {}
 
     /**
-     * Apply the conditions to wave-space zero-zero mode right hand sides.
-     * Constant-valued boundary conditions set constant right hand sides.
-     * Application order followed the expected state sequencing in memory.
+     * Apply the conditions to wave-space mode right hand sides.
+     * Application order follows the expected state sequencing in memory.
      */
-    void zero_zero(complex_t& lower_rho) const
+    void operator()(complex_t& lower_rho) const
     {
         // Locate the upper density relative to the provided lower density
         complex_t& upper_rho = (&lower_rho)[Ny - 1];
@@ -147,50 +146,6 @@ public:
 
     }
 
-    /**
-     * Apply the conditions to wave-space non-zero-zero mode right hand sides.
-     * Constant-valued boundary conditions set zero right hand sides.
-     * Application order followed the expected state sequencing in memory.
-     */
-    void non_zero_zero(complex_t& lower_rho) const
-    {
-        // Locate the upper density relative to the provided lower density
-        complex_t& upper_rho = (&lower_rho)[Ny - 1];
-
-#define LOWER(var) ((&lower_rho)[((var) - ndx::rho)*incf])
-#define UPPER(var) ((&upper_rho)[((var) - ndx::rho)*incf])
-
-        // Set total energy to be density times specific total energy
-        if (flags & ENFORCE_LOWER_E) LOWER(ndx::e) = lower_rho * lower_E;
-        if (flags & ENFORCE_UPPER_E) UPPER(ndx::e) = upper_rho * upper_E;
-
-        // Set streamwise momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_U) LOWER(ndx::mx) = 0;
-        if (flags & ENFORCE_UPPER_U) UPPER(ndx::mx) = 0;
-
-        // Set wall-normal momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_V) LOWER(ndx::my) = 0;
-        if (flags & ENFORCE_UPPER_V) UPPER(ndx::my) = 0;
-
-        // Set spanwise momentum fluctuations to be zero
-        if (flags & ENFORCE_LOWER_W) LOWER(ndx::mz) = 0;
-        if (flags & ENFORCE_UPPER_W) UPPER(ndx::mz) = 0;
-
-        // Do nothing to the density equation
-
-        // Set species partial density fluctuations to be zero
-        assert(spec.lower_cs.size() == spec.upper_cs.size());
-        const std::size_t num_species = spec.lower_cs.size();
-        for (std::size_t s = 1; s < num_species; ++s) {
-            LOWER(ndx::rho_(s)) = 0;
-            UPPER(ndx::rho_(s)) = 0;
-        }
-
-#undef LOWER
-#undef UPPER
-
-    }
-
 };
 
 void isothermal_mass_operator::invert_mass_plus_scaled_operator(
@@ -204,67 +159,35 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
-    const int Ny   = dgrid.global_wave_extent.y();
-    const int Nx   = grid.N.x();
-    const int dNx  = grid.dN.x();
-    const int dkbx = dgrid.local_wave_start.x();
-    const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
-    const int dNz  = grid.dN.z();
-    const int dkbz = dgrid.local_wave_start.z();
-    const int dkez = dgrid.local_wave_end.z();
-
-    // Sidesteps assertions when local rank contains no wavespace information
-    if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
-
     // Prepare functor setting pointwise BCs given lower density locations.
     // Applies these to BOTH lower and upper boundaries given only lower one!
-    isothermal_enforcer enforcer(Ny, state.strides()[0], this->spec,
-                                 this->lower_E(spec.lower_T,
-                                               spec.lower_u,
-                                               spec.lower_v,
-                                               spec.lower_w,
-                                               spec.lower_cs),
-                                 this->upper_E(spec.upper_T,
-                                               spec.upper_u,
-                                               spec.upper_v,
-                                               spec.upper_w,
-                                               spec.upper_cs));
+    const isothermal_enforcer enforcer(state.shape  ()[1], // Ny
+                                       state.strides()[0], // field_stride
+                                       this->spec,
+                                       this->lower_E(spec.lower_T,
+                                                     spec.lower_u,
+                                                     spec.lower_v,
+                                                     spec.lower_w,
+                                                     spec.lower_cs),
+                                       this->upper_E(spec.upper_T,
+                                                     spec.upper_u,
+                                                     spec.upper_v,
+                                                     spec.upper_w,
+                                                     spec.upper_cs));
 
-    // Enforce the boundary conditions for each non-dealiased right hand side.
-    for (int n = dkbz; n < dkez; ++n) {
-        const int wn = inorder::wavenumber(dNz, n);
-        if (std::abs(wn) > inorder::wavenumber_absmin(Nz)) continue;
-
-        for (int m = dkbx; m < dkex; ++m) {
-            const int wm = inorder::wavenumber(dNx, m);
-            if (std::abs(wm) > inorder::wavenumber_absmin(Nx)) continue;
-
-            // Apply everywhere via density in the (.,m,n)-th state pencil
-            if (SUZERAIN_UNLIKELY(wn == 0 && wm == 0)) {
-                enforcer.    zero_zero(state[ndx::rho][0][m - dkbx][n - dkbz]);
-            } else {
-                enforcer.non_zero_zero(state[ndx::rho][0][m - dkbx][n - dkbz]);
-            }
-        }
-    }
+    // Apply the enforcer to the lower boundary densities.
+    typedef boost::multi_array_types::index_range range;
+    multi_array::ref<complex_t,4>::array_view<2>::type state_view
+            = state[boost::indices[ndx::rho][0][range()][range()]];
+    multi_array::for_each(state_view, enforcer);
 
     // Apply zero-zero mode boundary conditions to any requested constraints.
-    // Looping is hideous because of generality behind multi_array indexing.
     if (ic0) {
         SUZERAIN_ENSURE(ic0->shape()[0] == state.shape()[0]);
         SUZERAIN_ENSURE(ic0->shape()[1] == state.shape()[1]);
-        typedef multi_array::ref<complex_t,4>::index index;
-        const index ku = boost::numeric_cast<index>(
-                ic0->index_bases()[2] + ic0->shape()[2]);
-        const index lu = boost::numeric_cast<index>(
-                ic0->index_bases()[3] + ic0->shape()[3]);
-        for (index l = ic0->index_bases()[3]; l < lu; ++l) {
-            for (index k = ic0->index_bases()[2]; k < ku; ++k) {
-                enforcer.zero_zero((*ic0)[ndx::rho][0][k][l]);
-            }
-        }
+        multi_array::ref<complex_t,4>::array_view<2>::type ic0_view
+                = (*ic0)[boost::indices[ndx::rho][0][range()][range()]];
+        multi_array::for_each(ic0_view, enforcer);
     }
 
     // Perform the usual mass_operator solve across all equations
