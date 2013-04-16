@@ -106,6 +106,40 @@ throw(std::invalid_argument)
     SUZERAIN_UNUSED(name);
 }
 
+/**
+ * Throws an \c invalid_argument exception if a value is outside bounds
+ * specified and non NaN.
+ *
+ * @param t    Value to check.
+ * @param name Optional name to use in the exception message
+ */
+template< typename T >
+void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true, 
+    bool upper_inclusive = true, const char * name = NULL)
+throw(std::invalid_argument)
+{
+    // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
+
+    BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
+    if (   (lower_inclusive ? t >= lower : t > lower) 
+        && (upper_inclusive ? t <= upper : t < upper)
+        || (boost::math::isnan)(t)) 
+      return;
+
+    // Otherwise...
+    std::ostringstream msg;
+    if (name) {
+      msg << "Value of " << name << " (" << t << ") not inside "
+          << (lower_inclusive ? '[' : '(') << lower << ", " << upper
+          << (upper_inclusive ? ']' : ')');
+    } else {
+      msg << "Value " << t << " not inside "
+          << (lower_inclusive ? '[' : '(') << lower << ", " << upper
+          << (upper_inclusive ? ']' : ')');
+    }
+    throw std::invalid_argument(msg.str());
+}
+
 } // namespace validation
 
 } // namespace suzerain
