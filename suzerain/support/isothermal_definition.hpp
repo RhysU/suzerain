@@ -25,7 +25,7 @@
 #define SUZERAIN_ISOTHERMAL_DEFINITION_HPP
 
 /** @file
- * Classes handling isothermal flow boundary problem scenario parameters.
+ * Provides \ref isothermal_definition.
  */
 
 #include <esio/esio.h>
@@ -34,18 +34,13 @@
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-/** @file 
- * Provides classes handling problem definition for isothermal
- * boundary flow.
- */
-
 namespace suzerain {
 
 /**
  * Holds parameters defining isothermal boundary cases.
  */
 class isothermal_definition : public support::definition_base
-                             ,public isothermal_specification
+                            , public isothermal_specification
 {
 public:
 

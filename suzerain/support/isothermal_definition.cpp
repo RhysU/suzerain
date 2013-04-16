@@ -36,14 +36,9 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
-/** @file 
- * Provides classes handling problem defintion for isothermal
- * flow, e.g., bulk density and momentum.
- */
-
 namespace suzerain {
 
-  
+
 static void parse(const std::string& s, real_t *t, const char *n)
 {
     const real_t v = exprparse<real_t>(s, n);
@@ -57,13 +52,6 @@ static void parse_positive(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
-{
-    const real_t v = exprparse<real_t>(s, n);
-    validation::ensure_nonnegative(v, n);
-    *t = v;
-}
-
 // FIXME: Add a parse_bounded for species inputs,
 //        maybe "ensure_zero_one"
 
@@ -74,8 +62,8 @@ isothermal_definition::isothermal_definition()
   isothermal_specification();
 }
 
-// FIXME: Declare other constructors according to the 
-//        parameteres passed
+// FIXME: Declare other constructors according to the
+//        parameters passed
 
 
 isothermal_definition::~isothermal_definition()
@@ -109,7 +97,6 @@ static const char desc_upper_v []  = "v-velocity at upper boundary";
 static const char desc_upper_w []  = "w-velocity at upper boundary";
 static const char desc_upper_cs[]  = "Species mass fractions at"
                                      " boundary";
-
 
 boost::program_options::options_description
 isothermal_definition::options_description()
@@ -167,8 +154,8 @@ isothermal_definition::options_description()
     // FIXME: Check validity of incoming values
     // Must be non-negative and sum to 1
     // lower_cs
-    retval.add_options()(name_lower_cs, 
-                         value(&lower_cs), 
+    retval.add_options()(name_lower_cs,
+                         value(&lower_cs),
                          desc_lower_cs);
 
     // upper_T
@@ -206,9 +193,7 @@ isothermal_definition::options_description()
     // FIXME: Check validity of incoming values
     // Must be non-negative and sum to 1
     // upper_cs
-    retval.add_options()(name_upper_cs, 
-                         value(&upper_cs), 
-                         desc_upper_cs);
+    retval.add_options()(name_upper_cs, value(&upper_cs), desc_upper_cs);
 
     return retval;
 }
@@ -229,9 +214,9 @@ isothermal_definition::populate(
     CALL_MAYBE_POPULATE(upper_v);
     CALL_MAYBE_POPULATE(upper_w);
 #undef CALL_MAYBE_POPULATE
-    if (this->lower_cs.size()!=0)
+    if (this->lower_cs.size() != 0)
         this->lower_cs = that.lower_cs;
-    if (this->upper_cs.size()!=0)
+    if (this->upper_cs.size() != 0)
         this->upper_cs = that.upper_cs;
 }
 
@@ -251,9 +236,9 @@ isothermal_definition::override(
     CALL_MAYBE_OVERRIDE(upper_v);
     CALL_MAYBE_OVERRIDE(upper_w);
 #undef CALL_MAYBE_OVERRIDE
-    if (this->lower_cs.size()!=0)
+    if (this->lower_cs.size() != 0)
         this->lower_cs = that.lower_cs;
-    if (this->upper_cs.size()!=0)
+    if (this->upper_cs.size() != 0)
         this->upper_cs = that.upper_cs;
 }
 
@@ -269,24 +254,24 @@ isothermal_definition::save(
 
     // scalars
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-    esio_line_write(h, name_lower_T,   &this->lower_T,   0, desc_lower_T);
-    esio_line_write(h, name_lower_u,   &this->lower_u,   0, desc_lower_u);
-    esio_line_write(h, name_lower_v,   &this->lower_v,   0, desc_lower_v);
-    esio_line_write(h, name_lower_w,   &this->lower_w,   0, desc_lower_w);
-    esio_line_write(h, name_upper_T,   &this->upper_T,   0, desc_upper_T);
-    esio_line_write(h, name_upper_u,   &this->upper_u,   0, desc_upper_u);
-    esio_line_write(h, name_upper_v,   &this->upper_v,   0, desc_upper_v);
-    esio_line_write(h, name_upper_w,   &this->upper_w,   0, desc_upper_w);
+    esio_line_write(h, name_lower_T, &this->lower_T, 0, desc_lower_T);
+    esio_line_write(h, name_lower_u, &this->lower_u, 0, desc_lower_u);
+    esio_line_write(h, name_lower_v, &this->lower_v, 0, desc_lower_v);
+    esio_line_write(h, name_lower_w, &this->lower_w, 0, desc_lower_w);
+    esio_line_write(h, name_upper_T, &this->upper_T, 0, desc_upper_T);
+    esio_line_write(h, name_upper_u, &this->upper_u, 0, desc_upper_u);
+    esio_line_write(h, name_upper_v, &this->upper_v, 0, desc_upper_v);
+    esio_line_write(h, name_upper_w, &this->upper_w, 0, desc_upper_w);
 
-    // mass fractions vector
+    // Lower mass fractions vector
     int Ns = this->lower_cs.size();
     esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
-    esio_line_write(h, name_lower_cs, 
-                    this->lower_cs.data(), 1, 
-                    desc_lower_cs);
-    esio_line_write(h, name_upper_cs, 
-                    this->upper_cs.data(), 1, 
-                    desc_upper_cs);
+    esio_line_write(h, name_lower_cs, this->lower_cs.data(), 1, desc_lower_cs);
+
+    // Upper mass fractions vector (may in general be of different length)
+    Ns = this->upper_cs.size();
+    esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
+    esio_line_write(h, name_upper_cs, this->upper_cs.data(), 1, desc_upper_cs);
 }
 
 void
@@ -302,30 +287,27 @@ isothermal_definition::load(
 
     // Scalars
     esio_line_establish(h, 1, 0, 1);
-    esio_line_read(h, name_lower_T,   &t.lower_T,   0);
-    esio_line_read(h, name_lower_u,   &t.lower_u,   0);
-    esio_line_read(h, name_lower_v,   &t.lower_v,   0);
-    esio_line_read(h, name_lower_w,   &t.lower_w,   0);
-    esio_line_read(h, name_upper_T,   &t.upper_T,   0);
-    esio_line_read(h, name_upper_u,   &t.upper_u,   0);
-    esio_line_read(h, name_upper_v,   &t.upper_v,   0);
-    esio_line_read(h, name_upper_w,   &t.upper_w,   0);
+    esio_line_read(h, name_lower_T, &t.lower_T,   0);
+    esio_line_read(h, name_lower_u, &t.lower_u,   0);
+    esio_line_read(h, name_lower_v, &t.lower_v,   0);
+    esio_line_read(h, name_lower_w, &t.lower_w,   0);
+    esio_line_read(h, name_upper_T, &t.upper_T,   0);
+    esio_line_read(h, name_upper_u, &t.upper_u,   0);
+    esio_line_read(h, name_upper_v, &t.upper_v,   0);
+    esio_line_read(h, name_upper_w, &t.upper_w,   0);
 
-    // Mass fractions vector
+    // Lower mass fractions vector
     int Ns;
     esio_line_size(h, name_lower_cs, &Ns);
     t.lower_cs.resize(Ns);
-
     esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_lower_cs, 
-                   t.lower_cs.data(), 1);
+    esio_line_read(h, name_lower_cs, t.lower_cs.data(), 1);
 
+    // Upper mass fractions vector (may in general be of different length)
     esio_line_size(h, name_upper_cs, &Ns);
     t.upper_cs.resize(Ns);
-
     esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_upper_cs, 
-                   t.upper_cs.data(), 1);
+    esio_line_read(h, name_upper_cs, t.upper_cs.data(), 1);
 
     this->populate(t, verbose);  // Prefer this to incoming
 }
