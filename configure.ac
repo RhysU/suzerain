@@ -23,6 +23,7 @@ AX_CHECK_ENABLE_DEBUG([info])
 AX_AM_MACROS
 AX_AM_JOBSERVER([no])
 AX_ADD_AM_CTAGSFLAGS
+AC_PROG_GREP
 AC_PROG_SED
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
@@ -194,7 +195,6 @@ AC_CACHE_SAVE
 
 dnl ------------------------------------------------
 dnl ESIO requirements and associated HDF5 utilities
-dnl We want to prefer these versions of h5dump, etc.
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 esio_version="esio-hdf5 >= 0.1.6"
@@ -205,9 +205,17 @@ PKG_CHECK_EXISTS(
     [pkg_cv_[]H5PCC=`$PKG_CONFIG --variable=h5pcc "$esio_version" 2>/dev/null`],
     [pkg_cv_[]H5PCC=h5pcc])
 AC_MSG_RESULT($pkg_cv_[]H5PCC)
-AC_PATH_PROG(H5DIFF, [h5diff], [h5diff], [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
-AC_PATH_PROG(H5DUMP, [h5dump], [h5dump], [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
-AC_PATH_PROG(H5LS,   [h5ls],   [h5ls],   [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
+AC_PATH_PROG(H5LS,   [h5ls],   [h5ls],   [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])])
+AC_PATH_PROG(H5DUMP, [h5dump], [h5dump], [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])])
+AC_CACHE_CHECK([for h5diff supporting --exclude-path], [ac_cv_path_H5DIFF], [
+    AC_PATH_PROGS_FEATURE_CHECK([H5DIFF], [h5diff],
+        [[$ac_path_H5DIFF --help | $GREP -q -- --exclude-path && ac_cv_path_H5DIFF=$ac_path_H5DIFF]],
+        [AC_MSG_WARN([could not h5diff supporting --exclude-path])
+         ac_cv_path_H5DIFF=h5diff],
+        [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])]
+    )
+])
+AC_SUBST([H5DIFF], [$ac_cv_path_H5DIFF])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
