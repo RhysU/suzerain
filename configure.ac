@@ -194,7 +194,7 @@ AC_CACHE_SAVE
 
 dnl ------------------------------------------------
 dnl ESIO requirements and associated HDF5 utilities
-dnl We also want the absolute path of h5dump, etc.
+dnl We want to prefer these versions of h5dump, etc.
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
 esio_version="esio-hdf5 >= 0.1.6"
@@ -205,15 +205,9 @@ PKG_CHECK_EXISTS(
     [pkg_cv_[]H5PCC=`$PKG_CONFIG --variable=h5pcc "$esio_version" 2>/dev/null`],
     [pkg_cv_[]H5PCC=h5pcc])
 AC_MSG_RESULT($pkg_cv_[]H5PCC)
-AC_MSG_CHECKING([h5diff path based on h5pcc])
-AC_SUBST([H5DIFF], `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5diff/'`)
-AC_MSG_RESULT($H5DIFF)
-AC_MSG_CHECKING([h5dump path based on h5pcc])
-AC_SUBST([H5DUMP], `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5dump/'`)
-AC_MSG_RESULT($H5DUMP)
-AC_MSG_CHECKING([h5dump path based on h5pcc])
-AC_SUBST([H5LS],   `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5ls/'`  )
-AC_MSG_RESULT($H5LS)
+AC_PATH_PROG(H5DIFF, [h5diff], [h5diff], [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
+AC_PATH_PROG(H5DUMP, [h5dump], [h5dump], [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
+AC_PATH_PROG(H5LS,   [h5ls],   [h5ls],   [AS_DIRNAME([$pkg_cv_[]H5PCC]):$PATH])
 AC_LANG_POP([C])
 AC_CACHE_SAVE
 
