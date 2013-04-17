@@ -953,4 +953,229 @@ need to be reviewed.
 
 
 
+\subsection{Characteristics from quasi-linear equations for free-stream boundary}
+\todo{For reference in case the NSCBC condition are implemented}
+\subsubsection{Development}
+We express the system of equation in terms of primitive variables, 
+$V=(u_n, u_{t_1}, u_{t_2}, P, \rho_1, \ldots, \rho_N)$, where $u$ is velocity,
+$P$ is pressure, $\rho_k$ are species densities, the subindex $n$ represents the
+direction normal to the boundary, and the subindices $t_1, t_2$ represent 
+tangential directions to the boundary, orthogonal to each other.
+
+Following~\citet{Moureau2005Numerical}, the system of equations can be written
+as
+%
+\begin{align}
+  \pp{}{t}V
+  + E_n \pp{}{n}V
+  &= T, \\
+  \pp{}{t}V
+  + d
+  &= T,
+\end{align}
+%
+where $d$ represents the terms with first derivative in the normal direction, 
+and T represent all the other terms. $E_n$ is given by
+\begin{equation}
+E_n =
+\left(
+\begin{array}{ccccccc}
+ u_n & 0 & 0 & \frac{1}{\rho} & 0 & \ldots & 0 \\
+ 0 & u_n & 0 & 0 & 0 & \ldots & 0 \\
+ 0 & 0 & u_n & 0 & 0 & \ldots & 0 \\
+ \rho c^2 & 0 & 0 & u_n & 0 & \ldots & 0 \\
+ \rho_1 & 0 & 0 & 0 & u_n & \ldots & 0 \\
+ \vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots \\
+ \rho_N & 0 & 0 & 0 & 0 & \ldots & u_n
+\end{array}
+\right)
+\end{equation}
+
+We consider now the eigendecomposition of $E_n$,
+\begin{equation}
+E_n = S \Lambda S^{-1},
+\end{equation}
+where $S$ is a square matrix, such that the $j$th column of $S$ corresponds to
+the $r_j$ right eigenvector, and $\Lambda$ is a diagonal matrix where the
+$j$th diagonal element is equal to the eigenvalue $\lambda_j$. This is
+$\Lambda_{ij}=\delta_{ij} \lambda_j$. Therefore, we can write 
+%
+\begin{align}
+  S^{-1} \pp{}{t}V
+  +  \Lambda S^{-1} \pp{}{n}V
+  &= S^{-1} T, \\
+  \pp{}{t}A
+  + \Lambda \pp{}{n}A
+  &= T_A,
+\end{align}
+%
+or, since $\Lambda$ is diagonal,
+%
+\begin{align}
+  \pp{}{t}A_j
+  + \lambda_j \pp{}{n}A_{\underline{j}}
+  &= \left(T_A\right)_j.
+\end{align}
+%
+The variables $A_j$ can be interptered as characteristic wave amplitudes, and
+the eigenvalues $\lambda_j$ their corresponding characteristic speed.
+Expanding the second term of the lhs we get
+%
+% \begin{equation}
+% \left(
+% \begin{array}{c}
+% \mathcal{L}_+   \\
+% \mathcal{L}_-   \\
+% \mathcal{L}_{t_1}\\
+% \mathcal{L}_{t_2}\\
+% \mathcal{L}_k   
+% \end{array}
+% \right)
+% =
+% \left(
+% \begin{array}{c}
+% \lambda_+     \pp{}{n}A_+    \\
+% \lambda_-     \pp{}{n}A_-    \\
+% \lambda_{t_1} \pp{}{n}A_{t_1} \\
+% \lambda_{t_2} \pp{}{n}A_{t_2} \\
+% \lambda_k     \pp{}{n}A_k
+% \end{array}
+% \right)
+% =
+% \left(
+% \begin{array}{c}
+%  (u_n+c) \left(\pp{}{n}u_n +\frac{1}{\rho c} \pp{}{n}P \right) \\
+%  (u_n-c) \left(\pp{}{n}u_n -\frac{1}{\rho c} \pp{}{n}P \right) \\
+%  u_n \left(\pp{}{n}u_{t_1} \right) \\
+%  u_n \left(\pp{}{n}u_{t_2} \right) \\
+%  u_n \left(-\frac{Y_k}{c^2} \pp{}{n}P +\pp{}{n}\rho \right)
+% \end{array}
+% \right)
+% \end{equation}
+%
+\begin{align}
+ \mathcal{L}_+     = \lambda_+     \pp{}{n}A_+    &= (u_n+c) \left(\pp{}{n}u_n +\frac{1}{\rho c} \pp{}{n}P \right) \\
+ \mathcal{L}_-     = \lambda_-     \pp{}{n}A_-    &= (u_n-c) \left(\pp{}{n}u_n -\frac{1}{\rho c} \pp{}{n}P \right) \\
+ \mathcal{L}_{t_1} = \lambda_{t_1} \pp{}{n}A_{t_1} &= u_n \left(\pp{}{n}u_{t_1} \right) \\
+ \mathcal{L}_{t_2} = \lambda_{t_2} \pp{}{n}A_{t_2} &= u_n \left(\pp{}{n}u_{t_2} \right) \\
+ \mathcal{L}_k     = \lambda_k     \pp{}{n}A_k    &= u_n \left(-\frac{Y_k}{c^2} \pp{}{n}P +\pp{}{n}\rho \right)
+\end{align}
+%
+where the $\mathcal{L}$ quantities are defined as wave amplitude variations. The
+normal derivative terms in as a function of the amplitude variations are,
+%
+\begin{align}
+ d_{u_n}     &= \frac{1}{2} \left(\mathcal{L}_+ - \mathcal{L}_- \right) \\
+ d_{u_{t_1}} &= \mathcal{L}_{t_1} \\
+ d_{u_{t_2}} &= \mathcal{L}_{t_2} \\
+ d_P         &= \frac{\rho c}{2}   \left(\mathcal{L}_+ + \mathcal{L}_- \right) \\
+ d_{\rho_k}  &= \frac{\rho_k}{2 c} \left(\mathcal{L}_+ + \mathcal{L}_- \right) + \mathcal{L}_k 
+\end{align}
+%
+
+\subsubsection{Modified equations for boundaries in conservative form}
+Let $U=(\rho, \rho u_n, \rho u_{t_1}, \rho u_{t_2}, \rho E, \rho_1, \ldots,
+\rho_{N-1})$ be the vector of conserved variables. We can write the system of
+equations in matrix form as
+%
+\begin{align}
+  \pp{}{t}U
+  + B_n \pp{}{n}U
+  &= T_U, \\
+  J \pp{}{t}V
+  + B_n J \pp{}{n}V
+  &= T_U, \\
+  \pp{}{t}V
+  + J^{-1} B_n J \pp{}{n}V
+  &= J^{-1} T_U, \\
+\end{align}
+%
+where $J$=$\pp{}{V}U$ is the Jacobian of the transformation between V and U.
+The previous equation was transformed, after the characteristic analysis, into
+%
+\begin{align}
+  \pp{}{t}V
+  + d
+  &= J^{-1} T_U
+\end{align}
+%
+with the $d$ variables given in terms of the wave amplitude variations,
+$\mathcal{L}$.
+
+Now, we pre-multiply by $J$ to transform the equations back to conserved 
+variables, to obtain
+%
+\begin{align}
+  J \pp{}{t}V
+  + J d
+  &= J J^{-1} T_U \\
+  \pp{}{t}U
+  + J d
+  &= T_U
+\label{nscbc_conserved}
+\end{align}
+%
+
+The Jacobian matrix $J$ is given by
+\begin{equation}
+J = \pp{}{V}U =
+\left(
+\begin{array}{cccccccc}
+ 0 & 0 & 0 & 0 & 1 & \ldots & 1 \\
+ \rho & 0 & 0 & 0 & u_n & \ldots & u_n \\
+ 0 & \rho & 0 & 0 & u_{t_1} & \ldots & u_{t_1} \\
+ 0 & 0 & \rho & 0 & u_{t_2} & \ldots & u_{t_2} \\
+ \rho u_n & \rho u_{t_1} & \rho u_{t_2} & \frac{1}{\gamma-1} & \frac{u_i u_i}{2} & \ldots & \frac{u_i u_i}{2}  \\
+ 0 & 0 & 0 & 0 & 1 & \ldots & 0 \\
+ \vdots & \vdots & \vdots & \vdots & \vdots & \ddots & \vdots \\
+ 0 & 0 & 0 & 0 & 0 & \ldots & 1
+\end{array}
+\right)
+\end{equation}
+
+
+\subsubsection{Procedure to impose boundary conditions}
+Following the NSCBC method to generate boundary conditions consistent
+with characteristic analysis, in computing the $d$ vector in terms of
+$\mathcal{L}$, the amplitude variation of the outgoing waves can be computed
+from the interior flowfield, whereas those of the incoming waves can be
+approximated using the so called LODI relations (Local One-Dimensional
+Inviscid).
+
+Then, an evolution equation at the boundary is obtained
+from~\eqref{nscbc_conserved}.  
+
+The type of boundary (inflow or outflow), which is specified by the sign of the
+mean wall normal velocity at the computational boundary, can be determined
+beforehand from RANS simulations. 
+
+(Nonreflecting) Inflow:
+Perturbation of all variables are allowed at the computational boundary, and
+hence no variable can be fixed. All the waves are incoming, except
+$\mathcal{L}_+$, which can be computed from the interior field.  All the other
+incoming amplitudes can be set to 0.
+
+Nonreflecting outflow:
+In a nonreflecting subsonic outflow, no variable is fixed, and hence all of them
+need to be marched in time.  Furthermore, all wave amplitudes are outgoing
+except for $\mathcal{L}_-$. A perfectly nonreflecting condition can be obtained
+by setting $\mathcal{L}_-$=0.  This choice for $\mathcal{L}_-$ may make the
+boundary condition unstable. To stabilize the boundary treatment, Poinsot
+suggest to use a partially reflecting condition of the form 
+%
+\begin{equation}
+\mathcal{L}_- = K (p - p_\infty) 
+\end{equation} 
+%
+where $p_\infty$ is the target value for pressure, and 
+$K$=$\frac{(1-M^2)c}{2 \rho C_p L}$ (NOTE: look into this).
+
+\subsubsection{Possible issues}
+\begin{itemize}
+\item Look into the details of implementation of this method for the hybrid 
+temporal scheme
+\item Possible stability issues may require a combination with sponge-like
+boundary (low-pass filter and source to drive the solution to the target value)
+\end{itemize}
+
 
