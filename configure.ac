@@ -193,6 +193,31 @@ AC_LANG_POP([Fortran])
 AC_CACHE_SAVE
 
 dnl ------------------------------------------------
+dnl ESIO requirements and associated HDF5 utilities
+dnl We also want the absolute path of h5dump, etc.
+dnl ------------------------------------------------
+AC_LANG_PUSH([C])
+esio_version="esio-hdf5 >= 0.1.6"
+PKG_CHECK_MODULES([ESIO], [$esio_version])
+AC_MSG_CHECKING([h5pcc path used to build ESIO])
+PKG_CHECK_EXISTS(
+    [$esio_version],
+    [pkg_cv_[]H5PCC=`$PKG_CONFIG --variable=h5pcc "$esio_version" 2>/dev/null`],
+    [pkg_cv_[]H5PCC=h5pcc])
+AC_MSG_RESULT($pkg_cv_[]H5PCC)
+AC_MSG_CHECKING([h5diff path based on h5pcc])
+AC_SUBST([H5DIFF], `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5diff/'`)
+AC_MSG_RESULT($H5DIFF)
+AC_MSG_CHECKING([h5dump path based on h5pcc])
+AC_SUBST([H5DUMP], `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5dump/'`)
+AC_MSG_RESULT($H5DUMP)
+AC_MSG_CHECKING([h5dump path based on h5pcc])
+AC_SUBST([H5LS],   `echo "$pkg_cv_[]H5PCC" | "$SED" -e 's/h5pcc$/h5ls/'`  )
+AC_MSG_RESULT($H5LS)
+AC_LANG_POP([C])
+AC_CACHE_SAVE
+
+dnl ------------------------------------------------
 dnl C library requirements
 dnl ------------------------------------------------
 AC_LANG_PUSH([C])
@@ -200,7 +225,6 @@ ACX_MKL()
 export GSL_CBLAS_LIB="${MKL_LDFLAGS} ${MKL_LIBS}"
 AX_PATH_GSL(1.14,,AC_MSG_ERROR([Could not find required GSL version.]))
 AX_FFTW3()
-PKG_CHECK_MODULES([ESIO],[esio-hdf5 >= 0.1.6])
 PKG_CHECK_MODULES([GRVY], [grvy >= 0.27.1],[
         AC_DEFINE([HAVE_GRVY],[1],[Defined if GRVY Toolkit found])
     ], [
