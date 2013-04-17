@@ -63,7 +63,7 @@ prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"           
 prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; echo; }
 
 differ() {
-    local h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//')
+    local h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//' -e 's/-patch.*$//')
     local h5diff_version_number=$(echo $h5diff_version_string | sed -e 's/\.//g')
     if test "$h5diff_version_number" -lt 186; then
         alert "Skipping portions of test as h5diff $h5diff_version_string lacks required --exclude-path"
