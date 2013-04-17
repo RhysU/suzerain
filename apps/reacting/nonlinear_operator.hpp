@@ -585,7 +585,54 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
         }
 
-    }
+    } // end traversal (1)
+
+    // // After first traversal, have gathered reference profiles.  So,
+    // // we can complete the viscous filter source calculation by
+    // // multiplying by the appropriate reference quantities.
+
+    // // Suggestion from Rhys in chat
+    // //Map<MatrixXXr>(state[i].data(), Ny, Nx*Nz) *= Map<VectorXr>(ref, Ny).asDiagonal)
+
+    // // Energy
+    // Map<MatrixXXc>(&fsrcw[ndx::e][0][0][0], 
+    //                fsrcw.shape()[1], 
+    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
+    //     Map<VectorXr>(common.ref_korCp().data(), fsrcw.shape()[1]).asDiagonal();
+
+    // // x-momentum
+    // Map<MatrixXXc>(&fsrcw[ndx::mx][0][0][0], 
+    //                fsrcw.shape()[1], 
+    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
+    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+
+    // // y-momentum
+    // Map<MatrixXXc>(&fsrcw[ndx::my][0][0][0], 
+    //                fsrcw.shape()[1], 
+    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
+    //     (cmods.alpha + 4.0/3.0) * 
+    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+
+    // // z-momentum
+    // Map<MatrixXXc>(&fsrcw[ndx::mz][0][0][0], 
+    //                fsrcw.shape()[1], 
+    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
+    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+
+    // // mass
+    // Map<MatrixXXc>(&fsrcw[ndx::rho][0][0][0], 
+    //                fsrcw.shape()[1], 
+    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 0;
+
+    // // species
+    // for (unsigned int s=1; s<Ns; ++s) {
+    //     Map<MatrixXXc>(&fsrcw[ndx::rho+s][0][0][0], 
+    //                    fsrcw.shape()[1], 
+    //                    fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *=
+    //         Map<VectorXr>(common.ref_Ds().data(), fsrcw.shape()[1]).asDiagonal();
+    // }
+    
+    // // Done with filter source
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
