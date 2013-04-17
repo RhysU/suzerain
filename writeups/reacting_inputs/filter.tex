@@ -1,54 +1,3 @@
-%\documentclass[11pt]{article}% insert '[draft]' option to show overfull boxes
-%\usepackage{authblk}
-%
-%\usepackage{fullpage}
-%\usepackage{todonotes}
-%\usepackage{graphicx}
-%\usepackage{color}
-%\usepackage{amsmath,amsfonts}
-%\usepackage{threeparttable}% tables with footnotes
-%\usepackage{dcolumn}% decimal-aligned tabular math columns
-%\usepackage{hyperref}
-%\hypersetup{colorlinks=true,
-%citecolor=red,%
-%filecolor=black,%
-%linkcolor=black,%
-%urlcolor=black}
-%
-%% In conjunction with -shell-escape, automatically convert EPS to PDF
-%\usepackage{epstopdf}
-%\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
-%\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
-%    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
-%}
-%
-%%\newcolumntype{d}{D{.}{.}{-1}}
-%
-%%========================================================================
-%% New Commands
-%%========================================================================
-%%\newcommand{\todo}[1]{ {\color{red} TODO: #1} }
-%
-%%========================================================================
-%% Title Stuff
-%%========================================================================
-%\title{Filtering Formulation for Suzerain}
-%\author{R. D. Moser}
-%%\affil{Center for Predictive Engineering and Computational Sciences,\\
-%%Institute for Computational Engineering and Sciences,\\
-%%The University of Texas at Austin, Austin TX, 78712,\\
-%%{\tt rmoser@ices.utexas.edu}}
-%
-%%
-%
-%%========================================================================
-%% Document starts here
-%%========================================================================
-%\begin{document}
-%
-%\maketitle
-
-
 In the flux formulation, the wall-normal diffusion operator is written
 in the form:
 \begin{equation}
@@ -63,6 +12,8 @@ which is physically incorrect, and numerically problematic. To counter
 this, spatial filtering will be used to eliminate the high wavenumber
 components of the solution state variables.
 
+
+\subsection{Cook and Cabot 8th Order Filter}
 Let $F$ be a filter operator, it will be undesirable to simply apply the
 filter operator to the solution at each time step, as the effect of the
 filtering would then be dependent on the time discretization. To avoid
@@ -83,9 +34,6 @@ wavenumbers, for which the $F$ transfer function is nearly zero, damping
 with time constant $1/\phi$ will be introduced. Making $\phi$
 sufficiently large will effectively kill the high wavenumber content of
 $u$.
-
-
-\subsection{Cook and Cabot 8th Order Filter}
 
 \begin{table}[t]
 \begin{center}
@@ -214,12 +162,62 @@ the resulting operator $\phi(F-I)$ in (\ref{eq:time_filter}) should also
 be evaluated. Victor's experience in Comp regarding this would be useful.
 
 \subsection{Viscous Filter}
-In addition to the Cook and Cabot filter, a filter based on the
+In addition to the Cook and Cabot filter, a filter source based on the
 difference between the ``real'' B-spline second derivative operator
 and repeated application of the first derivative operator will be
-investigated.
+investigated.  The primary goal of this filter choice is to avoid a
+mismatch in the spectrum between the full discrete viscous operator
+and the viscous contribution in the linear operator (see
+\S\ref{sec:discretization} and~\S\ref{sec:implicit} for specification
+of these operators).  This mismatch would make the explicit part of
+the operator anti-diffusive, which can adversely effect the largest
+stable time step if strong enough.  
+\todo{Reference Rhys' analysis of using max vs. mean viscosity for
+  reference profile in implicit operator to back this up.}
 
-\todo{Complete documentation of viscous filter}
+For clarity, we first describe the scheme for the following scalar
+evolution equation:
+%
+\begin{equation*}
+\pp{u}{t} = \pp{G_{visc}}{y},
+\end{equation*}
+% 
+where $G_{visc} = \nu(u) \partial u / \partial y$.  In this case,
+the ``flux-based'' B-spline collocation scheme takes the following
+form
+%
+\begin{equation}
+\label{eqn:flux_form_scalar_nofilter}
+M \pp{U}{t} = D_1 M^{-1} G,
+\end{equation}
+% 
+where $U$ is the vector of B-spline coefficients, $M$ is the mass
+matrix (taking coefficients to collocation point values), $D_1$ is the
+B-spline first derivative operator (taking coefficients to collocation
+point derivative values).  The vector $G$ is the flux
+evaluated at the collocation points, which can be written
+%
+\begin{equation*}
+G = N D_1 U,
+\end{equation*}
+% 
+where $N$ is the diagonal matrix containing the viscosity evaluated
+at the collocation points on its diagonal.
 
+The filter source is given by adding and subtracting different
+discretizations of $\nu^* \partial^2 u / \partial y^2$
+from~\eqref{eqn:flux_form_scalar_nofilter}, where $\nu^*$ is a
+reference profile of the viscosity $\nu$.  Specifically,
+%
+\begin{equation}
+\label{eqn:flux_form_scalar_wfilter}
+M \pp{U}{t} = D_1 M^{-1} G + N^* (D_2 - D_1 M^{-1} D_1) U,
+\end{equation}
+% 
+where $D_2$ is the B-spline second derivative operator and $N^*$ is
+a diagonal matrix with the reference profile of $\nu$ on the diagonal.
 
-%\end{document}
+To get the filter for the full Navier-Stokes equations, this scheme is
+applied to each governing equation individually using the diagonal
+linearized viscous operator derived in \S\ref{sec:implicit}.
+
