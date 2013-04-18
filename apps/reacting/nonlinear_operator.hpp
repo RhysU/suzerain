@@ -202,12 +202,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //     // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
     //     o.bop_apply(1, 1, fsrcw, var);
         
-    //     // 4.) fsrcw <- -D_2 swave + fsrcw
-    //     o.bop_accumulate(2, -1, swave, var, 
-    //                          1, fsrcw, var );
+    //     // 4.) fsrcw <- D_2 swave - fsrcw
+    //     o.bop_accumulate(2,  1, swave, var, 
+    //                         -1, fsrcw, var );
 
     // }
-    // // Now, fsrcw contains -D_2 * swave + D_1 * M \ (D_1 * swave).
+    // // Now, fsrcw contains D_2 * swave - D_1 * M \ (D_1 * swave).
     // //
     // // To complete the filter source, we need to scale it by the
     // // appropriate reference.
@@ -594,42 +594,60 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // // Suggestion from Rhys in chat
     // //Map<MatrixXXr>(state[i].data(), Ny, Nx*Nz) *= Map<VectorXr>(ref, Ny).asDiagonal)
 
+    // const std::size_t Ny = fsrcw.shape()[1];
+    // const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
+
     // // Energy
-    // Map<MatrixXXc>(&fsrcw[ndx::e][0][0][0], 
-    //                fsrcw.shape()[1], 
-    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
-    //     Map<VectorXr>(common.ref_korCp().data(), fsrcw.shape()[1]).asDiagonal();
+    // {
+    //     Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
+    //     const VectorXr& D(common.ref_korCp());
+    //     MatrixXXc tmp(Ny, Nplane);
+    //     tmp = D.asDiagonal()*F;
+    //     F = tmp;
+    // }
 
     // // x-momentum
-    // Map<MatrixXXc>(&fsrcw[ndx::mx][0][0][0], 
-    //                fsrcw.shape()[1], 
-    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
-    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+    // {
+    //     Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
+    //     const VectorXr& D(common.ref_nu());
+    //     MatrixXXc tmp(Ny, Nplane);
+    //     tmp = D.asDiagonal()*F;
+    //     F = tmp;
+    // }
 
     // // y-momentum
-    // Map<MatrixXXc>(&fsrcw[ndx::my][0][0][0], 
-    //                fsrcw.shape()[1], 
-    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
-    //     (cmods.alpha + 4.0/3.0) * 
-    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+    // {
+    //     Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
+    //     const VectorXr& D(common.ref_nu());
+    //     MatrixXXc tmp(Ny, Nplane);
+    //     tmp = (cmods.alpha + 4.0/3.0) * D.asDiagonal()*F;
+    //     F = tmp;
+    // }
 
     // // z-momentum
-    // Map<MatrixXXc>(&fsrcw[ndx::mz][0][0][0], 
-    //                fsrcw.shape()[1], 
-    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 
-    //     Map<VectorXr>(common.ref_nu().data(), fsrcw.shape()[1]).asDiagonal();
+    // {
+    //     Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
+    //     const VectorXr& D(common.ref_nu());
+    //     MatrixXXc tmp(Ny, Nplane);
+    //     tmp = D.asDiagonal()*F;
+    //     F = tmp;
+    // }
 
     // // mass
-    // Map<MatrixXXc>(&fsrcw[ndx::rho][0][0][0], 
-    //                fsrcw.shape()[1], 
-    //                fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *= 0;
+    // {
+    //     Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
+    //     F *= 0;
+    // }
 
     // // species
-    // for (unsigned int s=1; s<Ns; ++s) {
-    //     Map<MatrixXXc>(&fsrcw[ndx::rho+s][0][0][0], 
-    //                    fsrcw.shape()[1], 
-    //                    fsrcw.shape()[2]*fsrcw.shape()[3]).transpose() *=
-    //         Map<VectorXr>(common.ref_Ds().data(), fsrcw.shape()[1]).asDiagonal();
+    // {
+    //     for (unsigned int s=1; s<Ns; ++s) {
+    //         Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
+    //         const VectorXr& D(common.ref_Ds());
+    //         MatrixXXc tmp(Ny, Nplane);
+    //         tmp = D.asDiagonal()*F;
+    //         F = tmp;
+    //     }
     // }
     
     // // Done with filter source
