@@ -40,6 +40,8 @@
 
 namespace suzerain {
 
+namespace support {
+
 static void parse(const std::string& s, real_t *t, const char *n)
 {
     const real_t v = exprparse<real_t>(s, n);
@@ -65,12 +67,10 @@ static void parse_bounded(const std::string& s,
 }
 
 isothermal_definition::isothermal_definition()
+    : isothermal_specification()
 {
-    isothermal_specification();
+    // NOP
 }
-
-// FIXME: Declare other constructors according to the
-//        parameters passed. See isothermal_specification.
 
 isothermal_definition::~isothermal_definition()
 {
@@ -344,5 +344,7 @@ isothermal_definition::load(
 
     this->populate(t, verbose);  // Prefer this to incoming
 }
+
+} // namespace support
 
 } // namespace suzerain

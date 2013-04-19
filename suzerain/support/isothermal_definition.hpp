@@ -36,6 +36,10 @@
 
 namespace suzerain {
 
+namespace support {
+
+// FIXME: Declare other constructors per isothermal_specification.
+
 /**
  * Holds parameters defining isothermal boundary cases.
  */
@@ -50,7 +54,6 @@ public:
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
     isothermal_definition();
-
 
     /** Virtual destructor to permit use as a base class */
     virtual ~isothermal_definition();
@@ -105,6 +108,8 @@ public:
     virtual boost::program_options::options_description options_description();
 
 };
+
+} // namespace support
 
 } // namespace suzerain
 
