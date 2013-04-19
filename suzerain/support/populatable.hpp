@@ -25,8 +25,10 @@
 #define SUZERAIN_SUPPORT_POPULATABLE_HPP
 
 /** @file
- * Provides \ref populatable.
+ * Provides \ref populatable and \ref maybe_populate.
  */
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 
@@ -52,8 +54,42 @@ public:
     virtual void populate(
             const Derived& that,
             const bool verbose = false) = 0;
-
 };
+
+/**@name Helpers for \ref populatable implementations */
+/**@{*/
+
+/**
+ * If \c destination is NaN, populate it with the value from \c source.
+ * When \c verbose, log an informative message using \c name and \c
+ * description.
+ *
+ * @param name        Name to use for any logging.
+ * @param description A short description of \c name to use for logging.
+ *                    If \c NULL, no description will be logged.
+ * @param destination Location to possibly assign from \c source.
+ * @param source      Source data to possibly use.
+ * @param verbose     Should a human-readable message be logged?
+ *
+ * @return \c True whenever \c destination was assigned from \c source.
+ */
+bool maybe_populate(const char*   name,
+                    const char*   description,
+                          real_t& destination,
+                    const real_t& source,
+                    const bool    verbose);
+
+/**
+ * If \c destination is zero, populate it with the value from \c source.
+ * @copydetails maybe_populate(const char*,const char*,real_t&,const real_t&,const bool)
+ */
+bool maybe_populate(const char* name,
+                    const char* description,
+                          int&  destination,
+                    const int&  source,
+                    const bool  verbose);
+
+/**@}*/
 
 } // namespace support
 

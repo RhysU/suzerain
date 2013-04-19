@@ -25,8 +25,10 @@
 #define SUZERAIN_SUPPORT_OVERRIDABLE_HPP
 
 /** @file
- * Provides \ref overridable.
+ * Provides \ref overridable and \ref maybe_override.
  */
+
+#include <suzerain/common.hpp>
 
 namespace suzerain {
 
@@ -54,6 +56,42 @@ public:
             const bool verbose = false) = 0;
 
 };
+
+/**@name Helpers for \ref overridable implementations */
+/**@{*/
+
+/**
+ * If \c source is non-NaN, override \c destination with its value.
+ * When \c verbose, log an informative message using \c name and \c
+ * description.
+ *
+ * @param name        Name to use for any logging.
+ * @param description A short description of \c name to use for logging.
+ *                    If \c NULL, no description will be logged.
+ * @param destination Location to possibly assign from \c source.
+ * @param source      Source data to possibly use.
+ * @param verbose     Should a human-readable message be logged?
+ *
+ * @return \c True whenever \c destination was assigned from \c source.
+ */
+template <typename T>
+bool maybe_override(const char*   name,
+                    const char*   description,
+                          real_t& destination,
+                    const real_t& source,
+                    const bool    verbose);
+
+/**
+ * If \c source is non-zero, override \c destination with its value.
+ * @copydetails maybe_override(const char*,const char*,real_t&,const real_t&,const bool)
+ */
+bool maybe_override(const char* name,
+                    const char* description,
+                          int&  destination,
+                    const int&  source,
+                    const bool  verbose);
+
+/**@}*/
 
 } // namespace support
 
