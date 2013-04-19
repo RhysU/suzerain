@@ -8,7 +8,7 @@
 
 # Check prerequisites and die loudly if the tools we need aren't available
 prereq_status=
-for tool in awk column cut egrep h5diff h5dump h5ls mktemp mpiexec tail
+for tool in column cut mktemp mpiexec tail
 do
     if ! which $tool >/dev/null ; then
         echo "ERROR: Unable to find utility $tool" 1>&2
@@ -63,19 +63,19 @@ prun()   { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@"           
 prunq()  { echo mpiexec -np ${NP:-1} "$@" ; mpiexec -np ${NP:-1} "$@" > /dev/null ; echo; }
 
 differ() {
-    local h5diff_version_string=$(h5diff --version | tr -d '\n' | sed -e 's/^.*ersion  *//' -e 's/-patch.*$//')
+    local h5diff_version_string=$(${H5DIFF} --version | tr -d '\n' | sed -e 's/^.*ersion  *//' -e 's/-patch.*$//')
     local h5diff_version_number=$(echo $h5diff_version_string | sed -e 's/\.//g')
     if test "$h5diff_version_number" -lt 186; then
-        alert "Skipping portions of test as h5diff $h5diff_version_string lacks required --exclude-path"
+        alert "Skipping portions of test as ${H5DIFF} $h5diff_version_string lacks required --exclude-path"
         exit 77 # See http://www.gnu.org/software/automake/manual/html_node/Scripts_002dbased-Testsuites.html
     fi
     local outfile=$(mktemp "$testdir/differ.XXXXXX")
     local prefix="--exclude-path /metadata_generated"
-    echo h5diff --report $prefix "$@" 2>&1 | tee -a $outfile
-    echo                              2>&1 |      >>$outfile
+    echo ${H5DIFF} --report $prefix "$@" 2>&1 | tee -a $outfile
+    echo                                 2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
     # embedded awk script used to add a ratio column and pretty up the output
-    h5diff --report $prefix "$@"      2>&1        >>$outfile || (tail -n +2 $outfile | egrep -v "^0 differences found$" | awk -f <(cat - <<-'HERE'
+    ${H5DIFF} --report $prefix "$@"      2>&1        >>$outfile || (tail -n +2 $outfile | ${GREP} -v "^0 differences found$" | ${AWK} -f <(cat - <<-'HERE'
             BEGIN { OFMT=" %+14.8g"; aligner="column -t" }
             {
                 sub("[[:space:]]*$", "")

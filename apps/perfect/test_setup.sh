@@ -42,7 +42,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
 
     # Build a single h5dump invocation dumping the relevant wavenumbers
     declare -a realmodes=("0,0,0")
-    declare -a cmd=('h5dump')
+    declare -a cmd=("${H5DUMP}")
     [ "$((Nx%2))" -eq 0 ]                && realmodes+=("0,$((Nx/2)),0")
     [ "$((Nz%2))" -eq 0 ]                && realmodes+=("$((Nz/2)),0,0")
     [ "$((Nx%2))" -eq 0 -a "$((Nz%2))" ] && realmodes+=("$((Nz/2)),$((Nx/2)),0")
@@ -71,7 +71,7 @@ banner "Checking zero-zero and Nyquist wavenumbers are strictly real-valued"
 
 
 banner "Building --exclude-paths for filtering samples"
-datasets_bar=$(h5ls -f "$testdir/mms0.h5" | egrep '^/bar_' | cut "-d " -f 1)
+datasets_bar=$(${H5LS} -f "$testdir/mms0.h5" | ${GREP} '^/bar_' | cut "-d " -f 1)
 exclude_datasets_bar=""
 for dset in $datasets_bar
 do
