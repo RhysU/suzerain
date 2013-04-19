@@ -113,4 +113,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_ISOTHERMAL_DEFINITION_HPP
+#endif // SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
