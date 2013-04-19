@@ -35,9 +35,23 @@ namespace support {
 /**
  * Abstract interface indicating details may be overridden from another instance.
  */
+template <typename Derived>
 class overridable
 {
 public:
+
+    /**
+     * Override members in \c this with non-NaN values from \c that.
+     *
+     * Descendants should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when an override occurs?
+     */
+    virtual void override(
+            const Derived& that,
+            const bool verbose = false) = 0;
 
 };
 

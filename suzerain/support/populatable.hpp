@@ -35,9 +35,23 @@ namespace support {
 /**
  * Abstract interface indicating details may be populated from another instance.
  */
+template <class Derived>
 class populatable
 {
 public:
+
+    /**
+     * Populate any NaN members in \c this with values from \c that.
+     *
+     * Descendants should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
+     *
+     * @param that    Instance from which information is taken.
+     * @param verbose Should logging be emitted when a value is retained?
+     */
+    virtual void populate(
+            const Derived& that,
+            const bool verbose = false) = 0;
 
 };
 
