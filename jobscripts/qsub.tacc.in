@@ -60,7 +60,7 @@ case "$JOBDIR" in                                                        #(
     */${JOB_ID}) ln -f -n -s "$JOB_ID" ../last
                  ;;
 esac
-CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $OPTIONS $PLANNING $TMPFILES"
+CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $PLANNING $TMPFILES $OPTIONS"
 
 # Compute threading based on job size and way-ness
 export OMP_NUM_THREADS=$(expr @corespernode@ / \( $NSLOTS / $NHOSTS \) )
