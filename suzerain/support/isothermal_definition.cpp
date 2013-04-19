@@ -40,7 +40,6 @@
 
 namespace suzerain {
 
-
 static void parse(const std::string& s, real_t *t, const char *n)
 {
     const real_t v = exprparse<real_t>(s, n);
@@ -54,8 +53,11 @@ static void parse_positive(const std::string& s, real_t *t, const char *n)
     *t = v;
 }
 
-static void parse_bounded(const std::string& s, real_t *t, real_t lower, 
-    real_t upper, const char *n)
+static void parse_bounded(const std::string& s,
+                          real_t *t,
+                          real_t lower,
+                          real_t upper,
+                          const char *n)
 {
     const real_t v = exprparse<real_t>(s, n);
     validation::ensure_bounded(v, lower, upper, true, true, n);
@@ -64,20 +66,18 @@ static void parse_bounded(const std::string& s, real_t *t, real_t lower,
 
 isothermal_definition::isothermal_definition()
 {
-  // Call isothermal_specification constructor
-  isothermal_specification();
+    isothermal_specification();
 }
 
 // FIXME: Declare other constructors according to the
-//        parameters passed
-
+//        parameters passed. See isothermal_specification.
 
 isothermal_definition::~isothermal_definition()
 {
     // NOP
 }
 
-// Strings used in options_description and populate/override/save/load.
+// Strings used in options_description and populate/override/save/load
 static const char name_lower_T []  = "lower_T";
 static const char name_lower_u []  = "lower_u";
 static const char name_lower_v []  = "lower_v";
@@ -89,20 +89,17 @@ static const char name_upper_v []  = "upper_v";
 static const char name_upper_w []  = "upper_w";
 static const char name_upper_cs[]  = "upper_cs";
 
-
-// Descriptions used in options_description and populate/override/save/load.
+// Descriptions used in options_description and populate/override/save/load
 static const char desc_lower_T []  = "Temperature at lower boundary";
-static const char desc_lower_u []  = "u-velocity at lower boundary";
-static const char desc_lower_v []  = "v-velocity at lower boundary";
-static const char desc_lower_w []  = "w-velocity at lower boundary";
-static const char desc_lower_cs[]  = "Species mass fractions at lower"
-                                     " boundary";
+static const char desc_lower_u []  = "Streamwise velocity at lower boundary";
+static const char desc_lower_v []  = "Wall-normal velocity at lower boundary";
+static const char desc_lower_w []  = "Spanwise velocity at lower boundary";
+static const char desc_lower_cs[]  = "Species mass fractions at lower boundary";
 static const char desc_upper_T []  = "Temperature at upper boundary";
-static const char desc_upper_u []  = "u-velocity at upper boundary";
-static const char desc_upper_v []  = "v-velocity at upper boundary";
-static const char desc_upper_w []  = "w-velocity at upper boundary";
-static const char desc_upper_cs[]  = "Species mass fractions at"
-                                     " boundary";
+static const char desc_upper_u []  = "Streamwise velocity at upper boundary";
+static const char desc_upper_v []  = "Wall-normal velocity at upper boundary";
+static const char desc_upper_w []  = "Spanwise at upper boundary";
+static const char desc_upper_cs[]  = "Species mass fractions at upper boundary";
 
 boost::program_options::options_description
 isothermal_definition::options_description()
@@ -122,8 +119,6 @@ isothermal_definition::options_description()
     // code.  Validation routines used below all silently allow NaNs.
 
     auto_ptr<typed_value<string> > p;
-
-    // FIXME: review which values will be accepted for each input
 
     // lower_T
     p.reset(value<string>());
@@ -157,12 +152,12 @@ isothermal_definition::options_description()
     }
     retval.add_options()(name_lower_w, p.release(), desc_lower_w);
 
-    // FIXME: Check validity of incoming values
-    // Must be non-negative and sum to 1
     // lower_cs
-    retval.add_options()(name_lower_cs,
-                         value(&lower_cs),
-                         desc_lower_cs);
+    // FIXME: suzerain::exprparse and check validity of incoming values
+    // Must be in the range [0, 1] per parse_bounded.
+    // Should sum to one, but floating point makes that tricky to check.
+    (void) parse_bounded;
+    retval.add_options()(name_lower_cs, value(&lower_cs), desc_lower_cs);
 
     // upper_T
     p.reset(value<string>());
@@ -196,9 +191,11 @@ isothermal_definition::options_description()
     }
     retval.add_options()(name_upper_w, p.release(), desc_upper_w);
 
-    // FIXME: Check validity of incoming values
-    // Must be non-negative and sum to 1
     // upper_cs
+    // FIXME: suzerain::exprparse and check validity of incoming values
+    // Must be in the range [0, 1] per parse_bounded.
+    // Should sum to one, but floating point makes that tricky to check.
+    (void) parse_bounded;
     retval.add_options()(name_upper_cs, value(&upper_cs), desc_upper_cs);
 
     return retval;
@@ -215,15 +212,14 @@ isothermal_definition::populate(
     CALL_MAYBE_POPULATE(lower_u);
     CALL_MAYBE_POPULATE(lower_v);
     CALL_MAYBE_POPULATE(lower_w);
+    if (!lower_cs.empty()) lower_cs = that.lower_cs;
+
     CALL_MAYBE_POPULATE(upper_T);
     CALL_MAYBE_POPULATE(upper_u);
     CALL_MAYBE_POPULATE(upper_v);
     CALL_MAYBE_POPULATE(upper_w);
+    if (!upper_cs.empty()) upper_cs = that.upper_cs;
 #undef CALL_MAYBE_POPULATE
-    if (this->lower_cs.size() != 0)
-        this->lower_cs = that.lower_cs;
-    if (this->upper_cs.size() != 0)
-        this->upper_cs = that.upper_cs;
 }
 
 void
@@ -237,15 +233,14 @@ isothermal_definition::override(
     CALL_MAYBE_OVERRIDE(lower_u);
     CALL_MAYBE_OVERRIDE(lower_v);
     CALL_MAYBE_OVERRIDE(lower_w);
+    if (!lower_cs.empty()) lower_cs = that.lower_cs;
+
     CALL_MAYBE_OVERRIDE(upper_T);
     CALL_MAYBE_OVERRIDE(upper_u);
     CALL_MAYBE_OVERRIDE(upper_v);
     CALL_MAYBE_OVERRIDE(upper_w);
+    if (!upper_cs.empty()) upper_cs = that.upper_cs;
 #undef CALL_MAYBE_OVERRIDE
-    if (this->lower_cs.size() != 0)
-        this->lower_cs = that.lower_cs;
-    if (this->upper_cs.size() != 0)
-        this->upper_cs = that.upper_cs;
 }
 
 void
@@ -260,24 +255,27 @@ isothermal_definition::save(
 
     // scalars
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
-    esio_line_write(h, name_lower_T, &this->lower_T, 0, desc_lower_T);
-    esio_line_write(h, name_lower_u, &this->lower_u, 0, desc_lower_u);
-    esio_line_write(h, name_lower_v, &this->lower_v, 0, desc_lower_v);
-    esio_line_write(h, name_lower_w, &this->lower_w, 0, desc_lower_w);
-    esio_line_write(h, name_upper_T, &this->upper_T, 0, desc_upper_T);
-    esio_line_write(h, name_upper_u, &this->upper_u, 0, desc_upper_u);
-    esio_line_write(h, name_upper_v, &this->upper_v, 0, desc_upper_v);
-    esio_line_write(h, name_upper_w, &this->upper_w, 0, desc_upper_w);
+    esio_line_write(h, name_lower_T, &lower_T, 0, desc_lower_T);
+    esio_line_write(h, name_lower_u, &lower_u, 0, desc_lower_u);
+    esio_line_write(h, name_lower_v, &lower_v, 0, desc_lower_v);
+    esio_line_write(h, name_lower_w, &lower_w, 0, desc_lower_w);
+    esio_line_write(h, name_upper_T, &upper_T, 0, desc_upper_T);
+    esio_line_write(h, name_upper_u, &upper_u, 0, desc_upper_u);
+    esio_line_write(h, name_upper_v, &upper_v, 0, desc_upper_v);
+    esio_line_write(h, name_upper_w, &upper_w, 0, desc_upper_w);
 
-    // Lower mass fractions vector
-    int Ns = this->lower_cs.size();
-    esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
-    esio_line_write(h, name_lower_cs, this->lower_cs.data(), 1, desc_lower_cs);
+    // Lower mass fractions vector (only written when non-trivial)
+    int Ns;
+    if ((Ns = lower_cs.size())) {
+        esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
+        esio_line_write(h, name_lower_cs, lower_cs.data(), 1, desc_lower_cs);
+    }
 
-    // Upper mass fractions vector (may in general be of different length)
-    Ns = this->upper_cs.size();
-    esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
-    esio_line_write(h, name_upper_cs, this->upper_cs.data(), 1, desc_upper_cs);
+    // Upper mass fractions vector (ditto, could be of different length)
+    if ((Ns = upper_cs.size())) {
+        esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
+        esio_line_write(h, name_upper_cs, upper_cs.data(), 1, desc_upper_cs);
+    }
 }
 
 void
@@ -295,10 +293,10 @@ isothermal_definition::load(
     esio_line_establish(h, 1, 0, 1);
 
     // Backwards compatibility
-    // The old, unspecifed default for apps/perfect was to use T_wall = 1.
+    // The old, unspecified default for apps/perfect was to use T_wall = 1.
     // The old, apps/reacting code saved lower_T = upper_T = T_wall in "/T_wall".
     // The loading logic honors those two older behaviors in a verbose manner.
-    
+
     // set default boundary temperature
     real_t default_T_wall = 1;
     if (ESIO_NOTFOUND != esio_line_size(h, "T_wall", NULL)) {
@@ -309,93 +307,88 @@ isothermal_definition::load(
     // lower_T
     if (ESIO_NOTFOUND == esio_line_size(h, name_lower_T, NULL)) {
         t.lower_T = default_T_wall;
-        INFO0("Lower boundary temperature data not found, using " 
-            << t.lower_T);
+        INFO0(desc_lower_T << " not found therefore using " << t.lower_T);
     } else {
-        esio_line_read(h, name_lower_T, &t.lower_T,   0);
+        esio_line_read(h, name_lower_T, &t.lower_T, 0);
     }
 
     // upper_T
     if (ESIO_NOTFOUND == esio_line_size(h, name_upper_T, NULL)) {
         t.upper_T = default_T_wall;
-        INFO0("Upper boundary temperature data not found, using " 
-            << t.upper_T);
+        INFO0(desc_upper_T << " not found therefore using " << t.upper_T);
     } else {
-        esio_line_read(h, name_upper_T, &t.upper_T,   0);
+        esio_line_read(h, name_upper_T, &t.upper_T, 0);
     }
 
     // lower_u
     real_t default_u_wall = 0;
     if (ESIO_NOTFOUND == esio_line_size(h, name_lower_u, NULL)) {
         t.lower_u = default_u_wall;
-        INFO0("Lower boundary streamwise velocity data not found, using " 
-            << t.lower_u);
+        INFO0(desc_lower_u << " not found therefore using " << t.lower_u);
     } else {
-        esio_line_read(h, name_lower_u, &t.lower_u,   0);
+        esio_line_read(h, name_lower_u, &t.lower_u, 0);
     }
 
     // upper_u
     if (ESIO_NOTFOUND == esio_line_size(h, name_upper_u, NULL)) {
         t.upper_u = default_u_wall;
-        INFO0("Upper boundary streamwise velocity data not found, using " 
-            << t.upper_u);
+        INFO0(desc_upper_u << " not found therefore using " << t.upper_u);
     } else {
-        esio_line_read(h, name_upper_u, &t.upper_u,   0);
+        esio_line_read(h, name_upper_u, &t.upper_u, 0);
     }
 
     // lower_v
     real_t default_v_wall = 0;
     if (ESIO_NOTFOUND == esio_line_size(h, name_lower_v, NULL)) {
         t.lower_v = default_v_wall;
-        INFO0("Lower boundary wall-normal velocity data not found, using " 
-            << t.lower_v);
+        INFO0(desc_lower_v << " not found therefore using " << t.lower_v);
     } else {
-        esio_line_read(h, name_lower_v, &t.lower_v,   0);
+        esio_line_read(h, name_lower_v, &t.lower_v, 0);
     }
 
     // upper_v
     if (ESIO_NOTFOUND == esio_line_size(h, name_upper_v, NULL)) {
         t.upper_v = default_v_wall;
-        INFO0("Upper boundary wall-normal velocity data not found, using " 
-            << t.upper_v);
+        INFO0(desc_upper_v << " not found therefore using " << t.upper_v);
     } else {
-        esio_line_read(h, name_upper_v, &t.upper_v,   0);
+        esio_line_read(h, name_upper_v, &t.upper_v, 0);
     }
 
     // lower_w
     real_t default_w_wall = 0;
     if (ESIO_NOTFOUND == esio_line_size(h, name_lower_w, NULL)) {
         t.lower_w = default_w_wall;
-        INFO0("Lower boundary spanwise velocity data not found, using " 
-            << t.lower_w);
+        INFO0(desc_lower_w << " not found therefore using " << t.lower_w);
     } else {
-        esio_line_read(h, name_lower_w, &t.lower_w,   0);
+        esio_line_read(h, name_lower_w, &t.lower_w, 0);
     }
 
     // upper_w
     if (ESIO_NOTFOUND == esio_line_size(h, name_upper_w, NULL)) {
         t.upper_w = default_w_wall;
-        INFO0("Upper boundary spanwise velocity data not found, using " 
-            << t.upper_w);
+        INFO0(desc_upper_w << " not found therefore using " << t.upper_w);
     } else {
-        esio_line_read(h, name_upper_w, &t.upper_w,   0);
+        esio_line_read(h, name_upper_w, &t.upper_w, 0);
     }
 
-
-    // TODO On mass fractions
-
-    // Lower mass fractions vector
+    // Lower mass fractions vector (only present when non-trivial)
     int Ns;
-    esio_line_size(h, name_lower_cs, &Ns);
-    t.lower_cs.resize(Ns);
-    esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_lower_cs, t.lower_cs.data(), 1);
+    if (ESIO_NOTFOUND == esio_line_size(h, name_lower_cs, &Ns)) {
+        t.lower_cs.resize(0);
+    } else {
+        t.lower_cs.resize(Ns);
+        esio_line_establish(h, Ns, 0, Ns);
+        esio_line_read(h, name_lower_cs, t.lower_cs.data(), 0);
+    }
 
-    // Upper mass fractions vector (may in general be of different length)
-    esio_line_size(h, name_upper_cs, &Ns);
-    t.upper_cs.resize(Ns);
-    esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_upper_cs, t.upper_cs.data(), 1);
+    // Upper mass fractions vector (ditto, could be be of different length)
+    if (ESIO_NOTFOUND == esio_line_size(h, name_upper_cs, &Ns)) {
+        t.upper_cs.resize(0);
+    } else {
+        t.upper_cs.resize(Ns);
+        esio_line_establish(h, Ns, 0, Ns);
+        esio_line_read(h, name_upper_cs, t.upper_cs.data(), 0);
+    }
 
     this->populate(t, verbose);  // Prefer this to incoming
 }
