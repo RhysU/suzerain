@@ -105,7 +105,9 @@ check_PROGRAMS                     = test_antioch_constitutive
 test_antioch_constitutive_SOURCES  = test_antioch_constitutive.cpp
 test_antioch_constitutive_LDADD    = ./libreacting.la ../../suzerain/libsuzerain.la
 
-TESTS_ENVIRONMENT += ANTIOCH_DATA_DIR=$(abs_top_srcdir)/apps/reacting/data
+# Augment test environment for 'make check'.
+# One may override by manipulating $TESTS_ENVIRONMENT using the command line.
+AM_TESTS_ENVIRONMENT += export ANTIOCH_DATA_DIR="$(abs_top_srcdir)/apps/reacting/data";
 
 # Multispecies restart
 TESTS              += test_restart_multispecies_explicit.sh

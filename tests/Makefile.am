@@ -23,9 +23,10 @@ CC  = @MPICC@
 # Permit building EXTRA_PROGRAMS and check_PROGRAMS without running tests
 extra: $(EXTRA_PROGRAMS) $(check_PROGRAMS)
 
-# Specify test environment for 'make check'
-TESTS_ENVIRONMENT     = TMPDIR=$(abs_builddir)
-TESTS_ENVIRONMENT    += LOG4CXX_CONFIGURATION=$(abs_srcdir)/log4cxx.properties
+# Specify test environment for 'make check'.
+# One may override by manipulating $TESTS_ENVIRONMENT using the command line.
+AM_TESTS_ENVIRONMENT  = export TMPDIR="$(abs_builddir)";
+AM_TESTS_ENVIRONMENT += export LOG4CXX_CONFIGURATION="$(abs_srcdir)/log4cxx.properties";
 AM_TESTS_FD_REDIRECT  = 9>&2 # Use descriptor 9 to get human attention
 
 # Notice that all tests build for 'make all' target to be successful.
