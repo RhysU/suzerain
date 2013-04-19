@@ -114,16 +114,16 @@ throw(std::invalid_argument)
  * @param name Optional name to use in the exception message
  */
 template< typename T >
-void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true, 
+void ensure_bounded(T t, T lower, T upper, bool lower_inclusive = true,
     bool upper_inclusive = true, const char * name = NULL)
 throw(std::invalid_argument)
 {
     // NOTE: t has non-const, non-reference type to avoid std::bind2nd issues
 
     BOOST_STATIC_ASSERT(boost::is_arithmetic<T>::value);
-    if (   (lower_inclusive ? t >= lower : t > lower) 
-        && (upper_inclusive ? t <= upper : t < upper)
-        || (boost::math::isnan)(t)) 
+    if (   (   (lower_inclusive ? t >= lower : t > lower)
+            && (upper_inclusive ? t <= upper : t < upper))
+        || (boost::math::isnan)(t))
       return;
 
     // Otherwise...
