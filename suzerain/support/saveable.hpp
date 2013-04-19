@@ -34,13 +34,13 @@ namespace suzerain {
 
 namespace support {
 
-/** Abstract interface indicating state may be saved into an ESIO handle. */
+/** Abstract interface indicating details may be saved into an ESIO handle. */
 class saveable
 {
 public:
 
     /**
-     * Save state into an ESIO-based file.  Descendants of instances should
+     * Save details into an ESIO-based file.  Descendants of instances should
      * override this method adding any desired functionality either before or
      * after invoking the superclass version.
      *

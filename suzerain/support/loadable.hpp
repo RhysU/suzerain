@@ -34,13 +34,13 @@ namespace suzerain {
 
 namespace support {
 
-/** Abstract interface indicating state may be loaded from an ESIO handle. */
+/** Abstract interface indicating details may be loaded from an ESIO handle. */
 class loadable
 {
 public:
 
     /**
-     * Load state from an ESIO-based file.  Descendants of instances should
+     * Load details from an ESIO-based file.  Descendants of instances should
      * override this method adding any desired functionality either before or
      * after invoking the superclass version.
      *
