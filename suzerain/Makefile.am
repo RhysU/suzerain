@@ -146,7 +146,8 @@ nobase_pkginclude_HEADERS += zgbsv_specification.hpp
 # the most-uncommon prerequisities first in the hope that introduction of
 # any system-wide /usr/lib, /usr/lib64, etc. is delayed as long as possible.
 lib_LTLIBRARIES          += libsuzerain.la
-libsuzerain_la_LDFLAGS    = -release $(PACKAGE_VERSION)
+libsuzerain_la_LDFLAGS    = -rpath $(libdir)
+libsuzerain_la_LDFLAGS   += -release $(PACKAGE_VERSION)
 libsuzerain_la_SOURCES    = version.cpp
 libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
 libsuzerain_la_LIBADD     = libblasetal.la
