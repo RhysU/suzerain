@@ -72,7 +72,7 @@ public:
                        const bool         physical     = false    );
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /**
      * The restart file path to use when saving common restart file

@@ -101,7 +101,7 @@ public:
     manufactured_solution& isothermal_flat_plate();
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
 private:
 

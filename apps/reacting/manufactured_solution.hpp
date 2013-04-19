@@ -98,7 +98,7 @@ public:
     manufactured_solution& isothermal_flat_plate();
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
 private:
 
@@ -113,7 +113,7 @@ private:
  */
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution> & msoln,
-	  const antioch_constitutive& cmods,
+          const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 
@@ -127,7 +127,7 @@ void save(const esio_handle h,
  */
 void load(const esio_handle h,
           shared_ptr<manufactured_solution>& msoln,
-	  const antioch_constitutive& cmods,
+          const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location = "manufactured_solution");
 

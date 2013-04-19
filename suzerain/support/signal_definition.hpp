@@ -63,7 +63,7 @@ public:
             const std::string& specteardown    = "INT,USR1,USR2,TERM");
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /** Signal numbers indicating a status message should be displayed. */
     std::vector<int> status;

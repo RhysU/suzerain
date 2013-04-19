@@ -128,7 +128,7 @@ public:
             const bool verbose = true);
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /**
      * The Reynolds number \f$\mbox{Re}=\frac{\rho_{0} u_{0}

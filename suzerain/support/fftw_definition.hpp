@@ -48,7 +48,7 @@ public:
             const fftw::rigor rigor_mpi = fftw::estimate);
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /**
      * The FFTW rigor flag intended for FFT planning.

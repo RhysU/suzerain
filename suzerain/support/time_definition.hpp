@@ -87,7 +87,7 @@ public:
     explicit time_definition(const real_t evmagfactor);
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /** Maximum amount of physical time to advance the simulation. */
     real_t advance_dt;

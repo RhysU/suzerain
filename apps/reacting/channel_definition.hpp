@@ -114,7 +114,7 @@ public:
             const bool verbose = true);
 
     /** @copydoc support::definition_base::options_description() */
-    boost::program_options::options_description options_description();
+    virtual boost::program_options::options_description options_description();
 
     /**
      * The bulk density used as a target for integral constraints.
