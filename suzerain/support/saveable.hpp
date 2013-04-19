@@ -40,9 +40,10 @@ class saveable
 public:
 
     /**
-     * Save details into an ESIO-based file.  Descendants of instances should
-     * override this method adding any desired functionality either before or
-     * after invoking the superclass version.
+     * Save details into an ESIO-based file.
+     *
+     * Descendants should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
      *
      * @param h Open, writable handle in which details will be saved.
      */

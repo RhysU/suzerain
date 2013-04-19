@@ -40,9 +40,10 @@ class loadable
 public:
 
     /**
-     * Load details from an ESIO-based file.  Descendants of instances should
-     * override this method adding any desired functionality either before or
-     * after invoking the superclass version.
+     * Load details from an ESIO-based file.
+     *
+     * Descendants should override this method adding any desired functionality
+     * either before or after invoking the superclass version.
      *
      * @param h       Open, readable handle from which details will be loaded.
      * @param verbose Should logging be emitted when a value is retained?
