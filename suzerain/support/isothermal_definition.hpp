@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_ISOTHERMAL_DEFINITION_HPP
-#define SUZERAIN_ISOTHERMAL_DEFINITION_HPP
+#ifndef SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
+#define SUZERAIN_SUPPORT_ISOTHERMAL_DEFINITION_HPP
 
 /** @file
  * Provides \ref isothermal_definition.
