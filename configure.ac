@@ -202,18 +202,21 @@ PKG_CHECK_MODULES([ESIO], [$esio_version])
 AC_MSG_CHECKING([h5pcc path used to build ESIO])
 PKG_CHECK_EXISTS(
     [$esio_version],
-    [pkg_cv_[]H5PCC=`$PKG_CONFIG --variable=h5pcc "$esio_version" 2>/dev/null`],
-    [pkg_cv_[]H5PCC=h5pcc])
-AC_MSG_RESULT($pkg_cv_[]H5PCC)
-AC_PATH_PROG(H5LS,   [h5ls],   [h5ls],   [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])])
-AC_PATH_PROG(H5DUMP, [h5dump], [h5dump], [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])])
+    [pkg_cv_H5PCC=`$PKG_CONFIG --variable=h5pcc "$esio_version" 2>/dev/null`],
+    [pkg_cv_H5PCC=h5pcc])
+AC_MSG_RESULT($pkg_cv_H5PCC)
+AC_CACHE_VAL([pkg_cv_H5PCC_path],[pkg_cv_H5PCC_path=`AS_DIRNAME(["$pkg_cv_H5PCC"])`])
+AC_PATH_PROG(H5LS,   [h5ls],   [h5ls],   [$PATH$PATH_SEPARATOR$pkg_cv_H5PCC_path])
+AC_PATH_PROG(H5DUMP, [h5dump], [h5dump], [$PATH$PATH_SEPARATOR$pkg_cv_H5PCC_path])
 AC_CACHE_CHECK([for h5diff supporting --exclude-path], [ac_cv_path_H5DIFF], [
     AC_PATH_PROGS_FEATURE_CHECK([H5DIFF], [h5diff],
-        [[$ac_path_H5DIFF --help | $GREP -q -- --exclude-path && ac_cv_path_H5DIFF=$ac_path_H5DIFF]],
+        [
+         echo "Looking for --exclude-path support in $ac_path_H5DIFF" >&AS_MESSAGE_LOG_FD ; \
+         $ac_path_H5DIFF --help | $GREP -q -- --exclude-path && ac_cv_path_H5DIFF=$ac_path_H5DIFF ac_cv_path_H5DIFF_found=:
+        ],
         [AC_MSG_WARN([could not h5diff supporting --exclude-path])
          ac_cv_path_H5DIFF=h5diff],
-        [$PATH:AS_DIRNAME([$pkg_cv_[]H5PCC])]
-    )
+        [$PATH$PATH_SEPARATOR$pkg_cv_H5PCC_path])
 ])
 AC_SUBST([H5DIFF], [$ac_cv_path_H5DIFF])
 AC_LANG_POP([C])
