@@ -49,7 +49,6 @@
 #include <antioch/wilke_mixture.h>
 #include <antioch/wilke_evaluator.h>
 
-
 namespace suzerain {
 
 namespace reacting {
@@ -58,7 +57,8 @@ namespace reacting {
  * Provides constitutive models for a mixture of ideal gasses
  * leveraging libantioch
  */
-class antioch_constitutive : public support::definition_base
+class antioch_constitutive
+    : public virtual support::definition_base
 {
 public:
 

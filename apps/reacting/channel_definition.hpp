@@ -25,18 +25,14 @@
 #define SUZERAIN_CHANNEL_DEFINITION_HPP
 
 /** @file
- * Classes handling reacting channel flow problem scenario parameters.
+ * Provides classes handling problem definition for channel
+ * flow, e.g., bulk density and momentum.
  */
 
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
-
-/** @file 
- * Provides classes handling problem defintion for channel
- * flow, e.g., bulk density and momentum.
- */
 
 namespace suzerain {
 
@@ -45,7 +41,8 @@ namespace reacting {
 /**
  * Holds parameters defining channel flow case.
  */
-class channel_definition : public support::definition_base
+class channel_definition
+    : public virtual support::definition_base
 {
 public:
 
@@ -62,8 +59,8 @@ public:
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
     channel_definition(const real_t bulk_rho,
-		       const real_t bulk_rho_u,
-		       const real_t T_wall,
+                       const real_t bulk_rho_u,
+                       const real_t T_wall,
                        const std::vector<real_t> wall_mass_fractions);
 
 

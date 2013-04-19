@@ -40,7 +40,9 @@ namespace support {
  * Upgrades a \ref noise_specification with \ref definition_base behavior.
  * This permits using the instance with \ref program_options.
  */
-class noise_definition : public noise_specification, public definition_base
+class noise_definition
+    : public noise_specification
+    , public virtual definition_base
 {
 public:
 

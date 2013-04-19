@@ -42,7 +42,8 @@ namespace support {
  * far the simulation should be advanced as long as how frequently status
  * updates should occur.
  */
-class time_definition : public definition_base
+class time_definition
+    : public virtual definition_base
 {
 public:
     /**

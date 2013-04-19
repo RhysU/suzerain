@@ -40,7 +40,8 @@ namespace support {
  * Includes the sampling rate and particulars around writing and archiving
  * statistics files.
  */
-class statistics_definition : public definition_base
+class statistics_definition
+    : public virtual definition_base
 {
 public:
     /**

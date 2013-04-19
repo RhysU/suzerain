@@ -37,7 +37,8 @@ namespace suzerain {
 namespace support {
 
 /** Holds FFTW-usage parameters, e.g. the planning rigor. */
-class fftw_definition : public definition_base
+class fftw_definition
+    : public virtual definition_base
 {
 public:
 

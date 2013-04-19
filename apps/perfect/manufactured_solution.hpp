@@ -61,8 +61,8 @@ class scenario_definition;
  * match(const grid_specification&).
  */
 class manufactured_solution
-    : public nsctpl_rholut::manufactured_solution<real_t>,
-      public support::definition_base
+    : public virtual support::definition_base
+    , public nsctpl_rholut::manufactured_solution<real_t>
 {
 public:
 

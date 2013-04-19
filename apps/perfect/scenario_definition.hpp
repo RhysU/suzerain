@@ -46,7 +46,8 @@ namespace perfect {
  * well as nondimensional problem geometry.  See the Suzerain model document's
  * nondimensionalization section for more information.
  */
-class scenario_definition : public support::definition_base
+class scenario_definition
+    : public virtual support::definition_base
 {
 public:
 

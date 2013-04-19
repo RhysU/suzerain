@@ -37,7 +37,6 @@
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
 
-//#include "nsctpl_rholut.hpp"
 #include "nsctpl.hpp"
 
 #include "antioch_constitutive.hpp"
@@ -58,12 +57,9 @@ namespace reacting {
  * \ref match() and the later group using \ref
  * match(const grid_specification&).
  */
-// class manufactured_solution
-//     : public nsctpl_rholut::manufactured_solution<real_t>,
-//       public support::definition_base
 class manufactured_solution
-    : public nsctpl::manufactured_solution<real_t>,
-      public support::definition_base
+    : public virtual support::definition_base
+    , public nsctpl::manufactured_solution<real_t>
 {
 public:
 

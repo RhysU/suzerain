@@ -40,7 +40,8 @@ namespace support {
  * Encapsulates flags related to restart file behavior for the simulation.
  * Includes the particulars around writing and archiving restart files.
  */
-class restart_definition : public definition_base
+class restart_definition
+    : public virtual definition_base
 {
 public:
     /**

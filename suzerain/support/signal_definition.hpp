@@ -39,7 +39,8 @@ namespace support {
  * Parses and contains signal processing details to allow a program to take
  * runtime-configurable responses to POSIX signals per \c signal.h.
  */
-class signal_definition : public definition_base
+class signal_definition
+    : public virtual definition_base
 {
 public:
 

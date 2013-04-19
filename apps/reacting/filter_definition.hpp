@@ -25,7 +25,8 @@
 #define SUZERAIN_FILTER_DEFINITION_HPP
 
 /** @file
- * Classes handling filter source parameters.
+ * Provides classes handling problem definition for filter
+ * source term, e.g., strength coefficient.
  */
 
 #include <esio/esio.h>
@@ -37,11 +38,6 @@
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/pencil_grid.hpp>
 
-/** @file
- * Provides classes handling problem definition for filter
- * source term, e.g., strength coefficient.
- */
-
 namespace suzerain {
 
 namespace reacting {
@@ -49,7 +45,8 @@ namespace reacting {
 /**
  * Holds parameters defining filter source.
  */
-class filter_definition : public support::definition_base
+class filter_definition
+    : public virtual support::definition_base
 {
 public:
 

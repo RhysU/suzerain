@@ -39,8 +39,9 @@ namespace suzerain {
 /**
  * Holds parameters defining isothermal boundary cases.
  */
-class isothermal_definition : public support::definition_base
-                            , public isothermal_specification
+class isothermal_definition
+    : public virtual support::definition_base
+    , public isothermal_specification
 {
 public:
 
