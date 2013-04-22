@@ -74,7 +74,6 @@ public:
  *
  * @return \c True whenever \c destination was assigned from \c source.
  */
-template <typename T>
 bool maybe_override(const char*   name,
                     const char*   description,
                           real_t& destination,
