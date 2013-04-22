@@ -74,7 +74,7 @@ public:
      * variables under the same name as those found in this constructor.
      */
     channel_treatment(
-	    const antioch_constitutive& cmods,
+            const antioch_constitutive& cmods,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
