@@ -34,6 +34,10 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/loadable.hpp>
+#include <suzerain/support/overridable.hpp>
+#include <suzerain/support/populatable.hpp>
+#include <suzerain/support/saveable.hpp>
 
 namespace suzerain {
 
@@ -45,6 +49,10 @@ namespace support {
  */
 class grid_definition
     : public virtual definition_base
+    , public virtual loadable
+    , public virtual overridable<grid_specification>
+    , public virtual populatable<grid_specification>
+    , public virtual saveable
     , public grid_specification
 {
 public:
@@ -90,56 +98,26 @@ public:
                     const int    Nz,
                     const real_t DAFz);
 
-    /** Virtual destructor to permit use as a base class */
-    virtual ~grid_definition();
-
-    /**
-     * Populate any NaN members in \c this with values from \c that.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param that    Instance from which information is taken.
-     * @param verbose Should logging be emitted when a value is retained?
-     */
+    /** @copydoc populatable::populate */
     virtual void populate(
-            const grid_definition& that,
+            const grid_specification& that,
             const bool verbose = false);
 
-    /**
-     * Override members in \c this with non-NaN values from \c that.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param that    Instance from which information is taken.
-     * @param verbose Should logging be emitted when an override occurs?
-     */
+    /** @copydoc overridable::override */
     virtual void override(
-            const grid_definition& that,
+            const grid_specification& that,
             const bool verbose = false);
 
-    /**
-     * Save grid details into an ESIO-based file.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param h Open, writable handle in which details will be saved.
-     */
+    /** @copydoc saveable::save */
     virtual void save(
             const esio_handle h) const;
 
-    /**
-     * Populate grid details from an ESIO-based file.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param h       Open, readable handle from which details will be loaded.
-     * @param verbose Should logging be emitted when a value is retained?
-     */
+    /** @copydoc loadable::load */
     virtual void load(
             const esio_handle h,
             const bool verbose = true);
 
-    /** @copydoc support::definition_base::options_description() */
+    /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
 };

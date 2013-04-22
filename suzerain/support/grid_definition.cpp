@@ -89,11 +89,6 @@ grid_definition::grid_definition(const real_t Lx,
 {
 }
 
-grid_definition::~grid_definition()
-{
-    // NOP
-}
-
 // Strings used in options_description and populate/override/save/load.
 static const char name_Lx[]      = "Lx";
 static const char name_Nx[]      = "Nx";
@@ -286,7 +281,7 @@ grid_definition::options_description()
 
 void
 grid_definition::populate(
-        const grid_definition& that,
+        const grid_specification& that,
         const bool verbose)
 {
     maybe_populate(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);
@@ -325,7 +320,7 @@ grid_definition::populate(
 
 void
 grid_definition::override(
-        const grid_definition& that,
+        const grid_specification& that,
         const bool verbose)
 {
     maybe_override(name_Lx, desc_Lx, L.x(), that.L.x(), verbose);

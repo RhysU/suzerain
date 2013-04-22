@@ -885,7 +885,7 @@ driver_base::save_metadata()
 
     // Save known metadata and then invoke subclass extension point
     save_grid_and_operators(esioh);
-    if (timedef) save(esioh, *timedef);
+    if (timedef) timedef->save(esioh);
     save_metadata_hook(esioh);
 
     esio_file_close(esioh);
@@ -903,7 +903,7 @@ driver_base::load_metadata(
     load_grid_and_operators(esioh);
 
     SUZERAIN_ENSURE(timedef);
-    load(esioh, *timedef);
+    timedef->load(esioh);
 
     // Invoke subclass extension point
     load_metadata_hook(esioh);

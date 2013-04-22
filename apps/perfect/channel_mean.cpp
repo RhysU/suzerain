@@ -634,7 +634,7 @@ int main(int argc, char **argv)
                         *b, 0, SUZERAIN_BSPLINEOP_GALERKIN_L2));
             support::save(h.get(), b, cop, gop);
             gop.reset();
-            support::save(h.get(), *timedef);
+            timedef->save(h.get());
 
             // Determine how many time indices and collocation points we have.
             // We'll build a vector of time values to write after iteration.
@@ -736,7 +736,7 @@ static quantity::storage_map_type process(
     support::load_time(h.get(), time);
     scenario.load(h.get());
     grid.load(h.get());
-    support::load(h.get(), timedef);
+    timedef.load(h.get());
     support::load(h.get(), b, cop);
     assert(b->n() == grid.N.y());
 

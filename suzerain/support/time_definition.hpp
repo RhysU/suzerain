@@ -32,6 +32,8 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/loadable.hpp>
+#include <suzerain/support/saveable.hpp>
 
 namespace suzerain {
 
@@ -44,6 +46,8 @@ namespace support {
  */
 class time_definition
     : public virtual definition_base
+    , public virtual loadable
+    , public virtual saveable
 {
 public:
     /**
@@ -86,7 +90,7 @@ public:
      */
     explicit time_definition(const real_t evmagfactor);
 
-    /** @copydoc support::definition_base::options_description() */
+    /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
     /** Maximum amount of physical time to advance the simulation. */
@@ -118,6 +122,15 @@ public:
      */
     real_t evmagfactor;
 
+    /** @copydoc saveable::save */
+    virtual void save(
+            const esio_handle h) const;
+
+    /** @copydoc loadable::load */
+    virtual void load(
+            const esio_handle h,
+            const bool verbose = true);
+
 private:
 
     /**
@@ -132,24 +145,6 @@ private:
      */
     constructor_type constructor;
 };
-
-/**
- * Save a time_definition in an ESIO-based file.
- *
- * @param h       Open, writable handle in which details will be saved.
- * @param timedef Definition to be saved.
- */
-void save(const esio_handle h,
-          const time_definition& timedef);
-
-/**
- * Load a time_definition from an ESIO-based file.
- *
- * @param h       Open, readable handle from which details will be loaded.
- * @param timedef Definition to be saved.
- */
-void load(const esio_handle h,
-          time_definition& timedef);
 
 } // namespace support
 

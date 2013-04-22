@@ -28,6 +28,10 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/loadable.hpp>
+#include <suzerain/support/overridable.hpp>
+#include <suzerain/support/populatable.hpp>
+#include <suzerain/support/saveable.hpp>
 
 // FIXME Break bulk_rho and bulk_rho_u into channel_definition class
 
@@ -48,6 +52,10 @@ namespace perfect {
  */
 class scenario_definition
     : public virtual support::definition_base
+    , public virtual support::loadable
+    , public virtual support::overridable<scenario_definition>
+    , public virtual support::populatable<scenario_definition>
+    , public virtual support::saveable
 {
 public:
 
@@ -81,48 +89,21 @@ public:
     /** Virtual destructor to permit use as a base class */
     virtual ~scenario_definition();
 
-    /**
-     * Populate any NaN members in \c this with values from \c that.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param that    Instance from which information is taken.
-     * @param verbose Should logging be emitted when a value is retained?
-     */
+    /** @copydoc support::populatable::populate */
     virtual void populate(
             const scenario_definition& that,
             const bool verbose = false);
 
-    /**
-     * Override members in \c this with non-NaN values from \c that.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param that    Instance from which information is taken.
-     * @param verbose Should logging be emitted when an override occurs?
-     */
+    /** @copydoc support::overridable::override */
     virtual void override(
             const scenario_definition& that,
             const bool verbose = false);
 
-    /**
-     * Save scenario into an ESIO-based file.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param h Open, writable handle in which details will be saved.
-     */
+    /** @copydoc support::saveable::save */
     virtual void save(
             const esio_handle h) const;
 
-    /**
-     * Populate scenario from an ESIO-based file.
-     * Subclasses should override this method adding any desired functionality
-     * either before or after invoking the superclass version.
-     *
-     * @param h       Open, readable handle from which details will be loaded.
-     * @param verbose Should logging be emitted when a value is retained?
-     */
+    /** @copydoc support::loadable::load */
     virtual void load(
             const esio_handle h,
             const bool verbose = true);

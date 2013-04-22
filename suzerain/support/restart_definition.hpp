@@ -71,7 +71,7 @@ public:
                        const std::size_t  nt           = 0        ,
                        const bool         physical     = false    );
 
-    /** @copydoc support::definition_base::options_description() */
+    /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
     /**

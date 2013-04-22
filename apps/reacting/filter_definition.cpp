@@ -66,11 +66,6 @@ filter_definition::filter_definition(
 {
 }
 
-filter_definition::~filter_definition()
-{
-    // NOP
-}
-
 // Strings used in options_description and populate/override/save/load.
 static const char name_filter_phi[] = "filter_phi";
 
@@ -112,6 +107,7 @@ filter_definition::populate(
         const filter_definition& that,
         const bool verbose)
 {
+    using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(filter_phi);
@@ -123,6 +119,7 @@ filter_definition::override(
         const filter_definition& that,
         const bool verbose)
 {
+    using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(filter_phi);

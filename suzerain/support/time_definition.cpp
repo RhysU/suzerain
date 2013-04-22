@@ -248,10 +248,10 @@ time_definition::options_description()
     return retval;
 }
 
-void save(const esio_handle h,
-          const time_definition& timedef)
+void time_definition::save(
+        const esio_handle h) const
 {
-    DEBUG0("Saving time_definition parameters");
+    DEBUG0("Saving some, but not all, time_definition parameters");
 
     // Only root writes data
     int procid;
@@ -259,25 +259,27 @@ void save(const esio_handle h,
 
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
 
-    esio_line_write(h, "evmagfactor", &timedef.evmagfactor,
-                    0, description_evmagfactor);
+    esio_line_write(h, "evmagfactor", &evmagfactor, 0, description_evmagfactor);
 }
 
-void load(const esio_handle h,
-          time_definition& timedef)
+void time_definition::load(
+        const esio_handle h,
+        const bool verbose)
 {
-    DEBUG0("Loading time_definition parameters");
+    DEBUG0("Loading some, but not all, time_definition parameters");
 
     esio_line_establish(h, 1, 0, 1); // All ranks load
 
     // evmagfactor not present in pre-revision 24043 restart files
-    if (!(boost::math::isnan)(timedef.evmagfactor)) {
-        INFO0("Overriding timedef using evmagfactor = " << timedef.evmagfactor);
+    if (!(boost::math::isnan)(evmagfactor)) {
+        if (verbose)
+            INFO0("Overriding timedef using evmagfactor = " << evmagfactor);
     } else if (ESIO_NOTFOUND == esio_line_size(h, "evmagfactor", NULL)) {
-        timedef.evmagfactor = 0.72;
-        INFO0("Employing default evmagfactor = " << timedef.evmagfactor);
+        evmagfactor = 0.72;
+        if (verbose)
+            INFO0("Employing default evmagfactor = " << evmagfactor);
     } else {
-        esio_line_read(h, "evmagfactor", &timedef.evmagfactor, 0);
+        esio_line_read(h, "evmagfactor", &evmagfactor, 0);
     }
 }
 

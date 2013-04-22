@@ -198,6 +198,7 @@ scenario_definition::populate(
         const scenario_definition& that,
         const bool verbose)
 {
+    using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(Re);
@@ -216,6 +217,7 @@ scenario_definition::override(
         const scenario_definition& that,
         const bool verbose)
 {
+    using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(Re);

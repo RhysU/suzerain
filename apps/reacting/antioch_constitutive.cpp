@@ -78,11 +78,6 @@ antioch_constitutive::antioch_constitutive(
 {
 }
 
-antioch_constitutive::~antioch_constitutive()
-{
-    // NOP
-}
-
 // Strings used in options_description and populate/override/save/load.
 static const char name_species_names[]   = "species";
 static const char name_chem_input_file[] = "chemfile";
@@ -149,6 +144,7 @@ antioch_constitutive::populate(
         const antioch_constitutive& that,
         const bool verbose)
 {
+    using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(Le);
@@ -161,6 +157,7 @@ antioch_constitutive::override(
         const antioch_constitutive& that,
         const bool verbose)
 {
+    using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(Le);

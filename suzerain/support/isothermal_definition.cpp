@@ -72,11 +72,6 @@ isothermal_definition::isothermal_definition()
     // NOP
 }
 
-isothermal_definition::~isothermal_definition()
-{
-    // NOP
-}
-
 // Strings used in options_description and populate/override/save/load
 static const char name_lower_T []  = "lower_T";
 static const char name_lower_u []  = "lower_u";
@@ -203,7 +198,7 @@ isothermal_definition::options_description()
 
 void
 isothermal_definition::populate(
-        const isothermal_definition& that,
+        const isothermal_specification& that,
         const bool verbose)
 {
 #define CALL_MAYBE_POPULATE(mem)                                             \
@@ -224,7 +219,7 @@ isothermal_definition::populate(
 
 void
 isothermal_definition::override(
-        const isothermal_definition& that,
+        const isothermal_specification& that,
         const bool verbose)
 {
 #define CALL_MAYBE_OVERRIDE(mem)                                            \

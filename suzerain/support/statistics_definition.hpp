@@ -64,7 +64,7 @@ public:
             const real_t       dt          = 0        ,
             const std::size_t  nt          = 0        );
 
-    /** @copydoc support::definition_base::options_description() */
+    /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
 
     /**

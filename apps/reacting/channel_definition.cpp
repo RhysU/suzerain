@@ -70,21 +70,16 @@ channel_definition::channel_definition(
 {
 }
 
-channel_definition::~channel_definition()
-{
-    // NOP
-}
-
 // Strings used in options_description and populate/override/save/load.
-static const char name_bulk_rho[]   = "bulk_rho";
-static const char name_bulk_rho_u[] = "bulk_rho_u";
-static const char name_T_wall[]     = "T_wall";
+static const char name_bulk_rho[]            = "bulk_rho";
+static const char name_bulk_rho_u[]          = "bulk_rho_u";
+static const char name_T_wall[]              = "T_wall";
 static const char name_mass_fractions_wall[] = "wall_mass_frac";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_bulk_rho[]   = "Bulk density target";
-static const char desc_bulk_rho_u[] = "Bulk momentum target";
-static const char desc_T_wall[]     = "Wall temperature";
+static const char desc_bulk_rho[]            = "Bulk density target";
+static const char desc_bulk_rho_u[]          = "Bulk momentum target";
+static const char desc_T_wall[]              = "Wall temperature";
 static const char desc_mass_fractions_wall[] = "Wall mass fractions";
 
 boost::program_options::options_description
@@ -132,8 +127,8 @@ channel_definition::options_description()
 
     // FIXME: Check validity of incoming values
     // Must be non-negative and sum to 1
-    retval.add_options()(name_mass_fractions_wall, 
-                         value(&wall_mass_fractions), 
+    retval.add_options()(name_mass_fractions_wall,
+                         value(&wall_mass_fractions),
                          desc_mass_fractions_wall);
 
 
@@ -145,6 +140,7 @@ channel_definition::populate(
         const channel_definition& that,
         const bool verbose)
 {
+    using support::maybe_populate;
 #define CALL_MAYBE_POPULATE(mem)                                             \
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(bulk_rho);
@@ -160,6 +156,7 @@ channel_definition::override(
         const channel_definition& that,
         const bool verbose)
 {
+    using support::maybe_override;
 #define CALL_MAYBE_OVERRIDE(mem)                                            \
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(bulk_rho);
@@ -189,8 +186,8 @@ channel_definition::save(
     // mass fractions vector
     int Ns = this->wall_mass_fractions.size();
     esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
-    esio_line_write(h, name_mass_fractions_wall, 
-                    this->wall_mass_fractions.data(), 1, 
+    esio_line_write(h, name_mass_fractions_wall,
+                    this->wall_mass_fractions.data(), 1,
                     desc_mass_fractions_wall);
 }
 
@@ -217,7 +214,7 @@ channel_definition::load(
     t.wall_mass_fractions.resize(Ns);
 
     esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_mass_fractions_wall, 
+    esio_line_read(h, name_mass_fractions_wall,
                    t.wall_mass_fractions.data(), 1);
 
     this->populate(t, verbose);  // Prefer this to incoming
