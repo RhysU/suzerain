@@ -186,23 +186,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign_from(*state_nonlinear);
     }
 
-    // Prepare spatial operators depending on requested advance options
+    // Prepare spatial operators depending on requested advance options.
+    // For now, all the world's a channel and all the nonlinear_operator's a N.
     common_block.slow_treatment = slowgrowth::none;
+    shared_ptr<channel_treatment> treatment(new channel_treatment(
+                    *scenario, *grid, *dgrid, *cop, *b, common_block));
+    L = treatment;
+    N.reset(new nonlinear_operator(
+                *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
-        L.reset(new channel_treatment<isothermal_mass_operator>(
+        treatment->L.reset(new isothermal_mass_operator(
                     *scenario, isothermal_specification(/*TODO Configure*/1),
                     *grid, *dgrid, *cop, *b, common_block));
-        N.reset(new nonlinear_operator(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
-        L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
+        treatment->L.reset(new isothermal_hybrid_linear_operator(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
-        N.reset(new nonlinear_operator(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     } else {
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
