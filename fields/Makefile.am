@@ -14,8 +14,9 @@ noinst_DATA += coleman3k15.00.h5 coleman3k30.00.h5
 noinst_DATA += coleman5k01.00.h5 coleman5k05.00.h5
 noinst_DATA += coleman5k15.00.h5 coleman5k30.00.h5
 
-# A legacy field for checking backwards-compatibility of restarting
+# Legacy fields for checking backwards-compatibility of restarting
 noinst_DATA += legacy_r22804.h5
+noinst_DATA += legacy_r38808.h5
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
