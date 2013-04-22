@@ -36,7 +36,7 @@
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -50,7 +50,7 @@ class channel_definition
     , public virtual support::loadable
     , public virtual support::overridable<channel_definition>
     , public virtual support::populatable<channel_definition>
-    , public virtual support::saveable
+    , public virtual support::savable
 {
 public:
 
@@ -82,7 +82,7 @@ public:
             const channel_definition& that,
             const bool verbose = false);
 
-    /** @copydoc support::saveable::save */
+    /** @copydoc support::savable::save */
     virtual void save(
             const esio_handle h) const;
 

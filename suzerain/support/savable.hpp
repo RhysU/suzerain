@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_SAVEABLE_HPP
-#define SUZERAIN_SUPPORT_SAVEABLE_HPP
+#ifndef SUZERAIN_SUPPORT_SAVABLE_HPP
+#define SUZERAIN_SUPPORT_SAVABLE_HPP
 
 /** @file
- * Provides \ref saveable.
+ * Provides \ref savable.
  */
 
 #include <esio/esio.h>
@@ -35,7 +35,7 @@ namespace suzerain {
 namespace support {
 
 /** Abstract interface indicating details may be saved into an ESIO handle. */
-class saveable
+class savable
 {
 public:
 
@@ -56,4 +56,4 @@ public:
 
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_SAVEABLE_HPP
+#endif // SUZERAIN_SUPPORT_SAVABLE_HPP

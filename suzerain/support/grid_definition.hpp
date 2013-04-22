@@ -37,7 +37,7 @@
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -52,7 +52,7 @@ class grid_definition
     , public virtual loadable
     , public virtual overridable<grid_specification>
     , public virtual populatable<grid_specification>
-    , public virtual saveable
+    , public virtual savable
     , public grid_specification
 {
 public:
@@ -108,7 +108,7 @@ public:
             const grid_specification& that,
             const bool verbose = false);
 
-    /** @copydoc saveable::save */
+    /** @copydoc savable::save */
     virtual void save(
             const esio_handle h) const;
 

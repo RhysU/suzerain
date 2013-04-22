@@ -36,7 +36,7 @@
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -52,7 +52,7 @@ class isothermal_definition
     , public virtual loadable
     , public virtual overridable<isothermal_specification>
     , public virtual populatable<isothermal_specification>
-    , public virtual saveable
+    , public virtual savable
     , public isothermal_specification
 {
 public:
@@ -73,7 +73,7 @@ public:
             const isothermal_specification& that,
             const bool verbose = false);
 
-    /** @copydoc saveable::save */
+    /** @copydoc savable::save */
     virtual void save(
             const esio_handle h) const;
 

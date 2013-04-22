@@ -36,7 +36,7 @@
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
 
@@ -66,7 +66,7 @@ class antioch_constitutive
     , public virtual support::loadable
     , public virtual support::overridable<antioch_constitutive>
     , public virtual support::populatable<antioch_constitutive>
-    , public virtual support::saveable
+    , public virtual support::savable
 {
 public:
 
@@ -97,7 +97,7 @@ public:
             const antioch_constitutive& that,
             const bool verbose = false);
 
-    /** @copydoc support::saveable::save */
+    /** @copydoc support::savable::save */
     virtual void save(
             const esio_handle h) const;
 

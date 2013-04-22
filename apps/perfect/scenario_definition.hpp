@@ -31,7 +31,7 @@
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 // FIXME Break bulk_rho and bulk_rho_u into channel_definition class
 
@@ -55,7 +55,7 @@ class scenario_definition
     , public virtual support::loadable
     , public virtual support::overridable<scenario_definition>
     , public virtual support::populatable<scenario_definition>
-    , public virtual support::saveable
+    , public virtual support::savable
 {
 public:
 
@@ -99,7 +99,7 @@ public:
             const scenario_definition& that,
             const bool verbose = false);
 
-    /** @copydoc support::saveable::save */
+    /** @copydoc support::savable::save */
     virtual void save(
             const esio_handle h) const;
 

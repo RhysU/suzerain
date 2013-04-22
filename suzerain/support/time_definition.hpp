@@ -33,7 +33,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/loadable.hpp>
-#include <suzerain/support/saveable.hpp>
+#include <suzerain/support/savable.hpp>
 
 namespace suzerain {
 
@@ -47,7 +47,7 @@ namespace support {
 class time_definition
     : public virtual definition_base
     , public virtual loadable
-    , public virtual saveable
+    , public virtual savable
 {
 public:
     /**
@@ -122,7 +122,7 @@ public:
      */
     real_t evmagfactor;
 
-    /** @copydoc saveable::save */
+    /** @copydoc savable::save */
     virtual void save(
             const esio_handle h) const;
 
