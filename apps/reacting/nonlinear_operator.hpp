@@ -79,6 +79,7 @@ namespace suzerain { namespace reacting {
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
+          filter::type Filter,
           class ManufacturedSolution,
           class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(

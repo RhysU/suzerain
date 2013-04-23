@@ -116,6 +116,12 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         common_block.linearization = linearize::none;
     }
 
+    // Select type of filtering to use
+    common_block.filter_treatment = filter::none;
+    
+    // TODO: Allow user to select different filters from command line
+
+
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
         return EXIT_FAILURE;

@@ -165,37 +165,46 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
-    // Dispatch to implementation paying nothing for substep-related ifs
-    switch (common.linearization) {
-    case linearize::none:
-        if (substep_index == 0) {
-            return apply_navier_stokes_spatial_operator<true,  linearize::none>
-                (*this, common, fsdef, msoln, cmods, massluz,
-                 time, swave, evmaxmag_real, evmaxmag_imag);
-        } else {
-            return apply_navier_stokes_spatial_operator<false, linearize::none>
-                (*this, common, fsdef, msoln, cmods, massluz,
-                 time, swave, evmaxmag_real, evmaxmag_imag);
+
+#define ARGUMENTS *this, common, fsdef, msoln, cmods, massluz, \
+                  time, swave, evmaxmag_real, evmaxmag_imag
+
+    // Dispatch to an optimized implementation depending on case:
+    switch (common.filter_treatment) {
+
+    case filter::none:
+
+        switch (common.linearization) {
+        case linearize::none:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::none, filter::none>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::none, filter::none>(ARGUMENTS);
+
+        case linearize::rhome_y:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::rhome_y, filter::none>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::rhome_y, filter::none>(ARGUMENTS);
+
+        default:
+            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+            break;
         }
         break;
 
-    case linearize::rhome_y:
-        if (substep_index == 0) {
-            return apply_navier_stokes_spatial_operator<true,  linearize::rhome_y>
-                (*this, common, fsdef, msoln, cmods, massluz, time,
-                 swave, evmaxmag_real, evmaxmag_imag);
-        } else {
-            return apply_navier_stokes_spatial_operator<false, linearize::rhome_y>
-                (*this, common, fsdef, msoln, cmods, massluz,
-                 time, swave, evmaxmag_real, evmaxmag_imag);
-        }
-        break;
+    // TODO: Add other filter options
 
     default:
         SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
         break;
+
     }
 
+
+#undef ARGUMENTS
 }
 
 } // namespace reacting

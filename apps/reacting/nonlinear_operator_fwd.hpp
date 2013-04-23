@@ -62,6 +62,18 @@ enum type {
 
 } // namespace slowgrowth
 
+/** Provides scoping semantics for filter::type */
+namespace filter {
+
+/** What filter sources are employed? */
+enum type {
+    none,
+    cook,
+    viscous
+};
+
+} // namespace filter
+
 
 /**
  * Storage for holding quantities computed during nonlinear operator
@@ -93,6 +105,11 @@ public:
      * by the paired linear and nonlinear operators.
      */
     slowgrowth::type slow_treatment;
+
+    /**
+     * Determines the filter operator to be used.
+     */
+    filter::type filter_treatment;
 
     /**
      * The mean quantities, stored as collocation point values in \c means,
@@ -397,6 +414,7 @@ private:
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
+          filter::type Filter,
           class ManufacturedSolution,
 	  class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
