@@ -22,10 +22,10 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc channel_treatment.hpp
+ * @copydoc constraint_treatment.hpp
  */
 
-#include "channel_treatment.hpp"
+#include "constraint_treatment.hpp"
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
@@ -40,7 +40,7 @@ namespace suzerain {
 
 namespace perfect {
 
-channel_treatment::channel_treatment(
+constraint_treatment::constraint_treatment(
             const scenario_definition& scenario,
             const grid_specification& grid,
             const pencil_grid& dgrid,
@@ -61,17 +61,17 @@ channel_treatment::channel_treatment(
     bulkcoeff /= grid.L.y();
 }
 
-bool channel_treatment::constrain_bulk_rho_u() const
+bool constraint_treatment::constrain_bulk_rho_u() const
 {
     return !(boost::math::isnan)(scenario.bulk_rho_u);
 }
 
-bool channel_treatment::constrain_bulk_rho() const
+bool constraint_treatment::constrain_bulk_rho() const
 {
     return !(boost::math::isnan)(scenario.bulk_rho);
 }
 
-void channel_treatment::apply_mass_plus_scaled_operator(
+void constraint_treatment::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
         const std::size_t substep_index) const
@@ -80,7 +80,7 @@ void channel_treatment::apply_mass_plus_scaled_operator(
             phi, state, substep_index);
 }
 
-void channel_treatment::accumulate_mass_plus_scaled_operator(
+void constraint_treatment::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -91,7 +91,7 @@ void channel_treatment::accumulate_mass_plus_scaled_operator(
             phi, input, beta, output, substep_index);
 }
 
-void channel_treatment::invert_mass_plus_scaled_operator(
+void constraint_treatment::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4>& state,
         const timestepper::lowstorage::method_interface<complex_t>& method,
@@ -102,7 +102,7 @@ void channel_treatment::invert_mass_plus_scaled_operator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    SUZERAIN_TIMER_SCOPED("channel_treatment");
+    SUZERAIN_TIMER_SCOPED("constraint_treatment");
 
     // Shorthand
     using std::size_t;
@@ -122,7 +122,7 @@ void channel_treatment::invert_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::rho);
 
-    // See channel_treatment writeup (redux) for information on the steps below
+    // See channel_treatment writeup (redux) for information on the steps below.
 
     // Have a tantrum if caller expects us to compute any constraints
     SUZERAIN_ENSURE(ic0 == NULL);

@@ -34,7 +34,7 @@
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "channel_treatment.hpp"
+#include "constraint_treatment.hpp"
 #include "driver.hpp"
 #include "hybrid_operator.hpp"
 #include "isothermal_mass_operator.hpp"
@@ -187,22 +187,23 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Prepare spatial operators depending on requested advance options.
-    // For now, all the world's a channel and all the nonlinear_operator's a N.
+    // Notice that integral constraints are always applied to L
+    // and that the same nonlinear_operator is used pervasively.
     common_block.slow_treatment = slowgrowth::none;
-    shared_ptr<channel_treatment> treatment(new channel_treatment(
+    shared_ptr<constraint_treatment> constrained(new constraint_treatment(
                     *scenario, *grid, *dgrid, *cop, *b, common_block));
-    L = treatment;
+    L = constrained;
     N.reset(new nonlinear_operator(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
-        treatment->L.reset(new isothermal_mass_operator(
+        constrained->L.reset(new isothermal_mass_operator(
                     *scenario, isothermal_specification(/*TODO Configure*/1),
                     *grid, *dgrid, *cop, *b, common_block));
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
-        treatment->L.reset(new isothermal_hybrid_linear_operator(
+        constrained->L.reset(new isothermal_hybrid_linear_operator(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
     } else {

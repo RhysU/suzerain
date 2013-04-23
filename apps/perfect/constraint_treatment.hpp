@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
-#define SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP
+#ifndef SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP
+#define SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP
 
 /** @file
- * Provides \ref channel_treatment.
+ * Provides \ref constraint_treatment.
  */
 
 #include <suzerain/common.hpp>
@@ -49,7 +49,10 @@ class operator_common_block;
 class scenario_definition;
 
 /**
- * A wrapper providing channel problem treatment atop any linear operator.
+ * A wrapper applying integral constraints treatment atop any linear operator.
+ * This class began as a way to provide integral constraints for driving a
+ * Coleman-like channel.
+ *
  * During \ref invert_mass_plus_scaled_operator implicit momentum forcing is
  * applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
@@ -63,7 +66,7 @@ class scenario_definition;
  * /bar_Crhou, \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c
  * /bar_Crhou_dot_u.
  */
-class channel_treatment
+class constraint_treatment
     : public operator_base
     , public timestepper::lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
@@ -76,7 +79,7 @@ public:
      * Constructor.
      * After construction, #L should be provided.
      */
-    channel_treatment(
+    constraint_treatment(
             const scenario_definition& scenario,
             const grid_specification& grid,
             const pencil_grid& dgrid,
@@ -154,4 +157,4 @@ protected:
 
 } // namespace suzerain
 
-#endif /* SUZERAIN_PERFECT_CHANNEL_TREATMENT_HPP */
+#endif /* SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP */

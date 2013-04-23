@@ -8,7 +8,7 @@ include ../Common.am
 
 noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = perfect.hpp               perfect.cpp
-libperfect_la_SOURCES += channel_treatment.hpp     channel_treatment.cpp
+libperfect_la_SOURCES += constraint_treatment.hpp  constraint_treatment.cpp
 libperfect_la_SOURCES += common_block.hpp          common_block.cpp
 libperfect_la_SOURCES += driver.hpp                driver.cpp
 libperfect_la_SOURCES += linearize_type.hpp
