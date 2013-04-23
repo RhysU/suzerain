@@ -59,9 +59,8 @@ main_advance_svnrev.h: $(reacting_advance_SOURCES) $(libreacting_la_SOURCES)
 ## the parallelism available during 'make check'.
 ##
 
-dist_check_SCRIPTS += test_setup.sh # Common initialization...
-dist_check_SCRIPTS += test_setup_multispecies.sh # Common initialization (for multispecies)
-AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
+dist_check_SCRIPTS += test_setup.sh              # Common initialization...
+dist_check_SCRIPTS += test_setup_multispecies.sh # ...including for multispecies
 
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh

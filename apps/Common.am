@@ -35,3 +35,6 @@ AM_TESTS_ENVIRONMENT += export H5DIFF="$(H5DIFF)";
 AM_TESTS_ENVIRONMENT += export H5DUMP="$(H5DUMP)";
 AM_TESTS_ENVIRONMENT += export H5LS="$(H5LS)";
 AM_TESTS_ENVIRONMENT += export TMPDIR="$(abs_builddir)";
+
+# Tests may use file descriptor 9 to get human attention via the console
+AM_TESTS_FD_REDIRECT  = 9>&2

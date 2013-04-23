@@ -64,8 +64,7 @@ channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
 ## the parallelism available during 'make check'.
 ##
 
-dist_check_SCRIPTS += test_setup.sh # Common initialization...
-AM_TESTS_FD_REDIRECT = 9>&2         # ...which uses fd 9 to get human attention
+dist_check_SCRIPTS += test_setup.sh # Common initialization
 
 # Restart handling using coefficient-based restart files
 TESTS              += test_restart_explicit.sh
