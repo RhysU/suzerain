@@ -86,6 +86,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Storage for binary-specific options
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
+    string filter_spec("none");
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
@@ -97,6 +98,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for any implicit solves")
+        ("filter",   boost::program_options::value(&filter_spec)
+                         ->default_value(filter_spec),
+                     "Use the specified type to construct filter source");
     ;
 
     // Initialize application and then process binary-specific options
@@ -116,8 +120,24 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         common_block.linearization = linearize::none;
     }
 
-    // Select type of filtering to use
-    common_block.filter_treatment = filter::none;
+    // Select type of filtering to use (default none)
+    const bool use_filter =  options.variables().count("filter");
+
+    if (use_filter) {
+        boost::algorithm::trim(filter_spec);
+        if (filter_spec == "none") {
+            common_block.filter_treatment = filter::none;
+        } else if (filter_spec == "cook") {
+            common_block.filter_treatment = filter::cook;
+        } else if (filter_spec == "viscous") {
+            common_block.filter_treatment = filter::viscous;
+        } else {
+            FATAL0("Unknown --filter argument:  " << filter_spec);
+            return EXIT_FAILURE;
+        }
+    } else {
+        common_block.filter_treatment = filter::none;
+    }
     
     // TODO: Allow user to select different filters from command line
 

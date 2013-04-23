@@ -195,7 +195,51 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
         }
         break;
 
-    // TODO: Add other filter options
+    case filter::cook:
+
+        switch (common.linearization) {
+        case linearize::none:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::none, filter::cook>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::none, filter::cook>(ARGUMENTS);
+
+        case linearize::rhome_y:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::rhome_y, filter::cook>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::rhome_y, filter::cook>(ARGUMENTS);
+
+        default:
+            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+            break;
+        }
+        break;
+
+    case filter::viscous:
+
+        switch (common.linearization) {
+        case linearize::none:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::none, filter::viscous>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::none, filter::viscous>(ARGUMENTS);
+
+        case linearize::rhome_y:
+            return (substep_index == 0)
+                 ? apply_navier_stokes_spatial_operator<true,
+                        linearize::rhome_y, filter::viscous>(ARGUMENTS)
+                 : apply_navier_stokes_spatial_operator<false,
+                        linearize::rhome_y, filter::viscous>(ARGUMENTS);
+
+        default:
+            SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
+            break;
+        }
+        break;
 
     default:
         SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());

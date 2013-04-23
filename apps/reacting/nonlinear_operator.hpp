@@ -183,36 +183,38 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     real_t &convfluct_z_delta_t   = delta_t_candidates[10];
     real_t &diffusive_z_delta_t   = delta_t_candidates[11];
 
-    // //********************************************************************
-    // // Begin computing viscous filter.  There are five steps.  The
-    // // first four must done here, while the state (swave) is still
-    // // entirely coefficients.  The last step (scaling by reference
-    // // quantities) must be done after the reference quantities are
-    // // computed below (of course).
-    // // 
-    // // Each step is performed independently for each state variable
-    // for (size_t var = ndx::e; var<state_count; ++var) {
+    if (Filter == filter::viscous) {
+        //**************************************************************
+        // Begin computing viscous filter.  There are five steps.  The
+        // first four must done here, while the state (swave) is still
+        // entirely coefficients.  The last step (scaling by reference
+        // quantities) must be done after the reference quantities are
+        // computed below (of course).
+        // 
+        // Each step is performed independently for each state variable
+        for (size_t var = ndx::e; var<state_count; ++var) {
 
-    //     // 1.) Accumulate D_1 swave in to fsrcw
-    //     o.bop_accumulate(1, 1, swave, var, 
-    //                         0, fsrcw, var );
+            // 1.) Accumulate D_1 swave in to fsrcw
+            o.bop_accumulate(1, 1, swave, var, 
+                             0, fsrcw, var );
 
-    //     // 2.) fsrcw <- M \ fsrcw
-    //     o.bop_solve(massluz, fsrcw, var);
+            // 2.) fsrcw <- M \ fsrcw
+            o.bop_solve(massluz, fsrcw, var);
 
-    //     // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
-    //     o.bop_apply(1, 1, fsrcw, var);
+            // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
+            o.bop_apply(1, 1, fsrcw, var);
         
-    //     // 4.) fsrcw <- D_2 swave - fsrcw
-    //     o.bop_accumulate(2,  1, swave, var, 
-    //                         -1, fsrcw, var );
+            // 4.) fsrcw <- D_2 swave - fsrcw
+            o.bop_accumulate(2,  1, swave, var, 
+                             -1, fsrcw, var );
 
-    // }
-    // // Now, fsrcw contains D_2 * swave - D_1 * M \ (D_1 * swave).
-    // //
-    // // To complete the filter source, we need to scale it by the
-    // // appropriate reference.
-    // //********************************************************************
+        }
+        // Now, fsrcw contains D_2 * swave - D_1 * M \ (D_1 * swave).
+        //
+        // To complete the filter source, we need to scale it by the
+        // appropriate reference.
+        //**************************************************************
+    }
 
 
     //********************************************************************
@@ -228,18 +230,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // NOTE: The indexing here *assumes* that the total energy is
     // stored first.
 
-    // FIXME: to start testing, use directly a user defined value;
-    //        to do is to figure out proper coefficients for each variable;
-    //        see if it works to set the coefficient for rho = 0;
-    const complex_double alpha = fsdef.filter_phi;
- 
     // Energy (no derivatives)
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
    
-    // Filter source: compute for energy
-    fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, ndx::e,
-                                             0.,    fsrcw, ndx::e);
+
+    if (Filter == filter::cook) {
+        // FIXME: to start testing, use directly a user defined value;
+        //        to do is to figure out proper coefficients for each variable;
+        //        see if it works to set the coefficient for rho = 0;
+        
+        const complex_t f_phi = fsdef.filter_phi;
+
+        // Filter source: compute for energy
+        fsdef.source_accumulate(o.grid, o.dgrid, f_phi, swave, ndx::e,
+                                                 0.,    fsrcw, ndx::e);
+    }
 
     // Everything else (all spatial derivatives)
     for (size_t var = ndx::mx; var<state_count; ++var) {
@@ -262,9 +268,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       o.diffwave_accumulate(0, 1, 1, swave, var,  
                                   0, auxw , aux::e + dir::count*var + dir::z );
 
-      // Filter source: compute for variable var
-      fsdef.source_accumulate(o.grid, o.dgrid, alpha, swave, var,
-                                               0.,    fsrcw, var);
+      if (Filter == filter::cook) {
+          const complex_t f_phi = fsdef.filter_phi;
+          // Filter source: compute for variable var
+          fsdef.source_accumulate(o.grid, o.dgrid, f_phi, swave, var,
+                                                   0.,    fsrcw, var);
+      }
     }
 
     physical_view<> auxp (o.dgrid, auxw );
@@ -348,13 +357,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // TODO: Combine some of these traversals (e.g., 1 and 2)
 
     // Traversal:
-    // (1) Computing reference quantities and mean velocity OR mean velocity
-    //     (depending on linearization and which substep is being performed).
+    // (1) Computing reference quantities and mean velocity OR mean
+    //     velocity (depending on linearization, filtering, and which
+    //     substep is being performed).
     //
     // Always gather all reference quantities when using implicit solves.
     // Profiling indicates the overhead is tiny and it keeps the code readable.
+    //
+    // Also need reference quantities if we are using the viscous filter option.
     if (    ZerothSubstep
-         && Linearize != linearize::none) {  // References and mean velocity
+        && (Linearize != linearize::none || Filter == filter::viscous) ) {
+
+        // Gather reference profiles and mean velocity
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
 
@@ -515,8 +529,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // NOTE: I'm leaving this block alone w/out really looking at it.
         // TODO: Figure out if/how it must change for reacting.
 
-        // Zero all reference quantities on fully-explicit zeroth substep
-        if (ZerothSubstep && Linearize == linearize::none) {
+        // Zero all reference quantities on fully-explicit zeroth
+        // substep when not using viscous filter
+        if (   ZerothSubstep 
+            && Linearize == linearize::none
+            && Filter    != filter::viscous ) {
             common.refs.setZero();
         }
 
@@ -588,70 +605,69 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     } // end traversal (1)
 
-    // // After first traversal, have gathered reference profiles.  So,
-    // // we can complete the viscous filter source calculation by
-    // // multiplying by the appropriate reference quantities.
+    if (Filter == filter::viscous) {
+        // After first traversal, have gathered reference profiles.  So,
+        // we can complete the viscous filter source calculation by
+        // multiplying by the appropriate reference quantities.
 
-    // // Suggestion from Rhys in chat
-    // //Map<MatrixXXr>(state[i].data(), Ny, Nx*Nz) *= Map<VectorXr>(ref, Ny).asDiagonal)
+        const std::size_t Ny = fsrcw.shape()[1];
+        const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
 
-    // const std::size_t Ny = fsrcw.shape()[1];
-    // const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
+        // Energy
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
+            const VectorXr& D(common.ref_korCp());
+            MatrixXXc tmp(Ny, Nplane);
+            tmp = D.asDiagonal()*F;
+            F = tmp;
+        }
 
-    // // Energy
-    // {
-    //     Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
-    //     const VectorXr& D(common.ref_korCp());
-    //     MatrixXXc tmp(Ny, Nplane);
-    //     tmp = D.asDiagonal()*F;
-    //     F = tmp;
-    // }
+        // x-momentum
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
+            const VectorXr& D(common.ref_nu());
+            MatrixXXc tmp(Ny, Nplane);
+            tmp = D.asDiagonal()*F;
+            F = tmp;
+        }
 
-    // // x-momentum
-    // {
-    //     Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
-    //     const VectorXr& D(common.ref_nu());
-    //     MatrixXXc tmp(Ny, Nplane);
-    //     tmp = D.asDiagonal()*F;
-    //     F = tmp;
-    // }
+        // y-momentum
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
+            const VectorXr& D(common.ref_nu());
+            MatrixXXc tmp(Ny, Nplane);
+            tmp = (cmods.alpha + 4.0/3.0) * D.asDiagonal()*F;
+            F = tmp;
+        }
 
-    // // y-momentum
-    // {
-    //     Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
-    //     const VectorXr& D(common.ref_nu());
-    //     MatrixXXc tmp(Ny, Nplane);
-    //     tmp = (cmods.alpha + 4.0/3.0) * D.asDiagonal()*F;
-    //     F = tmp;
-    // }
+        // z-momentum
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
+            const VectorXr& D(common.ref_nu());
+            MatrixXXc tmp(Ny, Nplane);
+            tmp = D.asDiagonal()*F;
+            F = tmp;
+        }
 
-    // // z-momentum
-    // {
-    //     Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
-    //     const VectorXr& D(common.ref_nu());
-    //     MatrixXXc tmp(Ny, Nplane);
-    //     tmp = D.asDiagonal()*F;
-    //     F = tmp;
-    // }
+        // mass
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            F *= 0;
+        }
 
-    // // mass
-    // {
-    //     Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
-    //     F *= 0;
-    // }
-
-    // // species
-    // {
-    //     for (unsigned int s=1; s<Ns; ++s) {
-    //         Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
-    //         const VectorXr& D(common.ref_Ds());
-    //         MatrixXXc tmp(Ny, Nplane);
-    //         tmp = D.asDiagonal()*F;
-    //         F = tmp;
-    //     }
-    // }
+        // species
+        {
+            for (unsigned int s=1; s<Ns; ++s) {
+                Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
+                const VectorXr& D(common.ref_Ds());
+                MatrixXXc tmp(Ny, Nplane);
+                tmp = D.asDiagonal()*F;
+                F = tmp;
+            }
+        }
     
-    // // Done with filter source
+        // Done with viscous filter source
+    }
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
