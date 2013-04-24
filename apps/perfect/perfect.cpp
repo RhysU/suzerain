@@ -153,7 +153,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
     // Convert state back to wave space coefficients in X, Y, and Z
     // building FFT normalization constant into the mass matrix
     bsplineop_luz massluz(cop);
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    const complex_t scale_factor = 1 / dgrid.chi();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     for (size_t i = 0; i < state_count; ++i) {
@@ -499,7 +499,7 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     //  8) Bring perturbed state information back to wavespace (no rho!)
     // Build FFT normalization constant into Y direction's mass matrix.
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    const complex_t scale_factor = 1 / dgrid.chi();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::e , 0));  // X, Z

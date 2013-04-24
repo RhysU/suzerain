@@ -144,7 +144,7 @@ int main(int argc, char **argv)
         time += MPI_Wtime();
 
         // Wave space normalization uses only dealiased Fourier X and Z extents
-        app.state_nonlinear->scale(1.0/(app.grid->dN.x()*app.grid->dN.z()));
+        app.state_nonlinear->scale(app.dgrid->chi());
 
         // Wave to physical
         SUZERAIN_MPICHKQ(MPI_Barrier(MPI_COMM_WORLD));

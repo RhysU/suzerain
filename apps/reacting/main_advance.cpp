@@ -220,10 +220,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     solver_spec, *cmods, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
-        // FIXME: Set chi correctly
-        const real_t chi = 1.0/(grid->dN.x() * grid->dN.z());
         shared_ptr<suzerain::hybrid_residual_operator>
-            tmp_hybrid( new hybrid_residual_operator(chi) );
+            tmp_hybrid( new hybrid_residual_operator(dgrid->chi()) );
 
         tmp_hybrid->R.reset(new explicit_nonlinear_operator(
                                 *cmods, *grid, *dgrid, *cop, *b,

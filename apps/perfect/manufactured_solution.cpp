@@ -279,7 +279,7 @@ void accumulate_manufactured_solution(
 
     // Prepare factored mass matrix for repeated use
     bsplineop_luz massluz(cop);
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    const complex_t scale_factor = 1 / dgrid.chi();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
 

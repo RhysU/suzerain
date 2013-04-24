@@ -95,7 +95,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_imag)
 {
     SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
-    
+
     const size_t Ns = cmods.Ns();
     assert(Ns>0);
 
@@ -107,7 +107,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::min;
     using std::size_t;
     using std::sqrt;
-    
+
     // State enters method as coefficients in X, Y, and Z directions
 
     // Get total number of conserved state fields
@@ -116,14 +116,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Get total number of fields in aux storage
     const size_t aux_count = (aux::species      +   // everything *except* species derivatives
                               dir::count*(Ns-1) );  // spatial derivatives of species
-    
+
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     scoped_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
                 aux_count, o.dgrid));                               // RAII
     state_type &auxw = *_auxw_ptr;                                  // Brevity
-    
+
     // Auxiliary storage for filter source:
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
@@ -190,12 +190,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // entirely coefficients.  The last step (scaling by reference
         // quantities) must be done after the reference quantities are
         // computed below (of course).
-        // 
+        //
         // Each step is performed independently for each state variable
         for (size_t var = ndx::e; var<state_count; ++var) {
 
             // 1.) Accumulate D_1 swave in to fsrcw
-            o.bop_accumulate(1, 1, swave, var, 
+            o.bop_accumulate(1, 1, swave, var,
                              0, fsrcw, var );
 
             // 2.) fsrcw <- M \ fsrcw
@@ -203,9 +203,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
             o.bop_apply(1, 1, fsrcw, var);
-        
+
             // 4.) fsrcw <- D_2 swave - fsrcw
-            o.bop_accumulate(2,  1, swave, var, 
+            o.bop_accumulate(2,  1, swave, var,
                              -1, fsrcw, var );
 
         }
@@ -233,13 +233,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Energy (no derivatives)
     o.zero_dealiasing_modes(swave, ndx::e);
     o.bop_apply   (0,    1, swave, ndx::e);
-   
+
 
     if (Filter == filter::cook) {
         // FIXME: to start testing, use directly a user defined value;
         //        to do is to figure out proper coefficients for each variable;
         //        see if it works to set the coefficient for rho = 0;
-        
+
         const complex_t f_phi = fsdef.filter_phi;
 
         // Filter source: compute for energy
@@ -257,15 +257,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
       // Compute Y derivatives of variable var at collocation points
       // Zero wavenumbers present only for dealiasing along the way
       o.zero_dealiasing_modes(swave, var);
-      o.bop_accumulate(1,    1, swave, var, 
+      o.bop_accumulate(1,    1, swave, var,
                              0, auxw , aux::e + dir::count*var + dir::y);
       o.bop_apply     (0,    1, swave, var);
 
       // Compute X- and Z- derivatives of variable var at collocation points
       // Zeros wavenumbers present only for dealiasing in the target storage
-      o.diffwave_accumulate(1, 0, 1, swave, var,  
+      o.diffwave_accumulate(1, 0, 1, swave, var,
                                   0, auxw , aux::e + dir::count*var + dir::x );
-      o.diffwave_accumulate(0, 1, 1, swave, var,  
+      o.diffwave_accumulate(0, 1, 1, swave, var,
                                   0, auxw , aux::e + dir::count*var + dir::z );
 
       if (Filter == filter::cook) {
@@ -405,7 +405,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // ... mixture density
                 const real_t   rho         ( sphys(ndx::rho,    offset));
                 const real_t  irho = 1.0/rho;
-                
+
                 // ... momentum
                 const Vector3r m    ( sphys(ndx::mx, offset),
                                       sphys(ndx::my, offset),
@@ -413,25 +413,25 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // ... total energy
                 const real_t e        (sphys(ndx::e,       offset));
-            
+
                 // ... species densities
                 // NOTE: In species vector, idx 0 is the dilluter (the species
                 // that is not explicitly part of the state vector)
                 species(0) = rho;
                 for (unsigned int s=1; s<Ns; ++s) {
                     species(s) = sphys(ndx::species + s - 1, offset);
-                
+
                     // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                     species(0)        -= species(s);
                 }
 
                 // Second, compute required derived quantities...
-            
+
                 // ... mass fractions
                 for (unsigned int s=0; s<Ns; ++s) {
                     cs(s) = irho * species(s);
                 }
-                    
+
                 // ... velocity
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
@@ -441,7 +441,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 cmods.evaluate_pressure_derivs_and_trans(
                     e, m, rho, species, cs,
                     p, p_rho, p_rsum, p_m, p_e, mu, korCp, Ds);
-                               
+
                 real_t H = irho*(e + p);
 
                 // Finally, accumulate reference quantities into running sums...
@@ -470,7 +470,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::nu   ](mu*irho);
                 acc[ref::korCp](korCp);
                 acc[ref::Ds   ](Ds[0]); // Yes, b/c constant Lewis number!
-                
+
             } // end X // end Z
 
 #ifndef NDEBUG
@@ -523,15 +523,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.w() = common.ref_uz();
 
     } else {                                 // Mean velocity profile only
-        
+
         SUZERAIN_TIMER_SCOPED("mean velocity profile");
-        
+
         // NOTE: I'm leaving this block alone w/out really looking at it.
         // TODO: Figure out if/how it must change for reacting.
 
         // Zero all reference quantities on fully-explicit zeroth
         // substep when not using viscous filter
-        if (   ZerothSubstep 
+        if (   ZerothSubstep
             && Linearize == linearize::none
             && Filter    != filter::viscous ) {
             common.refs.setZero();
@@ -665,7 +665,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 F = tmp;
             }
         }
-    
+
         // Done with viscous filter source
     }
 
@@ -675,17 +675,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
-        
+
         // Wall-normal operator eigenvalue estimates depend on location
         const real_t lambda1_y = o.lambda1_y(j);
         const real_t lambda2_y = o.lambda2_y(j);
-        
+
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
                                 * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
-            
+
             // Unpack reference quantities (used in dt calc)
             const Vector3r ref_u              (common.ref_ux        ()[j],
                                                common.ref_uy        ()[j],
@@ -694,17 +694,17 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t ref_nu   (common.ref_nu()   [j]);
             const real_t ref_korCp(common.ref_korCp()[j]);
             const real_t ref_Ds   ( (Ds.size()>1) ? common.ref_Ds()[j] : 0.0);
-                    
+
 
             // Unpack density-related quantities
             const real_t   rho         ( sphys(ndx::rho,    offset));
-            
+
             const real_t  irho = 1.0/rho;
-            
+
             const Vector3r grad_rho    (  auxp(aux::rho+dir::x,  offset),
                                           auxp(aux::rho+dir::y,  offset),
                                           auxp(aux::rho+dir::z,  offset));
-            
+
             // Unpack momentum-related quantities
             const Vector3r m    ( sphys(ndx::mx, offset),
                                   sphys(ndx::my, offset),
@@ -726,7 +726,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Unpack total energy-related quantities
             const real_t e        (sphys(ndx::e,       offset));
-            
+
             // Unpack species variables
             // NOTE: In species vector, idx 0 is the dilluter (the species
             // that is not explicitly part of the state vector)
@@ -735,82 +735,82 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             grad_species(0,0) = grad_rho(0);
             grad_species(1,0) = grad_rho(1);
             grad_species(2,0) = grad_rho(2);
-            
+
             for (unsigned int s=1; s<Ns; ++s) {
                 species(s) = sphys(ndx::species + s - 1, offset);
-                
+
                 grad_species(0,s) = auxp(aux::species + s - 1 + dir::x, offset);
                 grad_species(1,s) = auxp(aux::species + s - 1 + dir::y, offset);
                 grad_species(2,s) = auxp(aux::species + s - 1 + dir::z, offset);
-                
+
                 // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                 species(0)        -= species(s);
-                
+
                 grad_species(0,0) -= grad_species(0,s);
                 grad_species(1,0) -= grad_species(1,s);
                 grad_species(2,0) -= grad_species(2,s);
             }
-            
+
             // Compute mass fractions and mass fraction gradients
             for (unsigned int s=0; s<Ns; ++s) {
-                
+
                 cs(s) = irho * species(s);
-                
+
                 grad_cs(0,s) = irho * (grad_species(0,s) - cs(s) * grad_rho(0));
                 grad_cs(1,s) = irho * (grad_species(1,s) - cs(s) * grad_rho(1));
                 grad_cs(2,s) = irho * (grad_species(2,s) - cs(s) * grad_rho(2));
-                
+
             }
-          
-          
+
+
             // Compute velocity-related quantities
             const Vector3r u     = suzerain::rholut::u(rho, m);
 
-            const real_t div_u   = 
+            const real_t div_u   =
                 suzerain::rholut::div_u(rho, grad_rho, m, div_m);
 
-            const Matrix3r grad_u= 
+            const Matrix3r grad_u=
                 suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
-            
-            
+
+
             // Compute temperature, pressure, mass diffusivities,
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
             real_t T, p, mu, kap, a, Cp;
             cmods.evaluate(e, m, rho, species, cs,
                            T, p, Ds, mu, kap, hs, om, a, Cp);
-            
+
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
-          
+
             // Compute quantities related to the viscous stress tensor
             const Matrix3r tau = suzerain::rholut::tau(mu, lam, div_u, grad_u);
-          
+
             // Place to sum species fluxes from Fick's model
             Vector3r sdifftot (0.0, 0.0, 0.0);
-            
+
             // Compute Fick's model contribution to diffusive fluxes and sum
             for (unsigned int s=0; s<Ns; ++s) {
-                
+
                 sdiff(0,s) = rho * Ds(s) * grad_cs(0,s);
                 sdiff(1,s) = rho * Ds(s) * grad_cs(1,s);
                 sdiff(2,s) = rho * Ds(s) * grad_cs(2,s);
-                
+
                 sdifftot(0) += sdiff(0,s);
                 sdifftot(1) += sdiff(1,s);
                 sdifftot(2) += sdiff(2,s);
-                
+
             }
-            
+
             // Subtract off cs*sdifftot to get SCEBD fluxes
             for (unsigned int s=0; s<Ns; ++s) {
-                
+
                 sdiff(0,s) -= cs(s) * sdifftot(0);
                 sdiff(1,s) -= cs(s) * sdifftot(1);
                 sdiff(2,s) -= cs(s) * sdifftot(2);
-                
+
             }
-          
-          
+
+
             // Source terms get accumulated into state storage
             //
             // NOTE: Sign correct for source appearing on the RHS---i.e.,
@@ -822,27 +822,27 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             sphys(ndx::my , offset) = 0.0;
             sphys(ndx::mz , offset) = 0.0;
             sphys(ndx::rho, offset) = 0.0;
-            
+
             for (unsigned int s=1; s<Ns; ++s) {
                 sphys(ndx::rho+s, offset) = om(s);
             }
-          
-          
+
+
             // Fluxes get accumulated into auxp
             //
             // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
             // U_t + div(F) = S(U).
             //
             // TODO: "Eigenify" these calcs where appropriate
-            
-            Vector3r vwork = tau*u; 
-            
+
+            Vector3r vwork = tau*u;
+
             //----------------------------------------------------------------
             // ENERGY                    = u     * (rho*H) - viscous work ...
             auxp(aux::e +dir::x, offset) = u.x() * (e + p) - vwork.x() ;
             auxp(aux::e +dir::y, offset) = u.y() * (e + p) - vwork.y() ;
             auxp(aux::e +dir::z, offset) = u.z() * (e + p) - vwork.z() ;
-            
+
             // ... - species enthalpy term
             if (Ns>1) {
                 // NOTE: If Ns=1, we should have sdiff(*,0) = 0.0.  Thus,
@@ -855,47 +855,47 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             }
             // NOTE: the heat flux is accumulated below (in traversal 3)
             //----------------------------------------------------------------
-            
+
             //----------------------------------------------------------------
             // MOMENTUM                  = convection     - viscous    +pressure
             auxp(aux::mx+dir::x, offset) = u.x() * m.x()  -  tau(0,0)  +  p ;
             auxp(aux::mx+dir::y, offset) = u.x() * m.y()  -  tau(1,0)       ;
             auxp(aux::mx+dir::z, offset) = u.x() * m.z()  -  tau(2,0)       ;
-            
+
             auxp(aux::my+dir::x, offset) = u.y() * m.x()  -  tau(0,1)       ;
             auxp(aux::my+dir::y, offset) = u.y() * m.y()  -  tau(1,1)  +  p ;
             auxp(aux::my+dir::z, offset) = u.y() * m.z()  -  tau(2,1)       ;
-            
+
             auxp(aux::mz+dir::x, offset) = u.z() * m.x()  -  tau(0,2)       ;
             auxp(aux::mz+dir::y, offset) = u.z() * m.y()  -  tau(1,2)       ;
             auxp(aux::mz+dir::z, offset) = u.z() * m.z()  -  tau(2,2)  +  p ;
             //----------------------------------------------------------------
-          
+
             //----------------------------------------------------------------
             // mass                       = mass flux
             auxp(aux::rho+dir::x, offset) = m.x();
             auxp(aux::rho+dir::y, offset) = m.y();
             auxp(aux::rho+dir::z, offset) = m.z();
             //----------------------------------------------------------------
-            
+
             //----------------------------------------------------------------
             // species
             for (unsigned int s=0; s<Ns-1; ++s) {
                 // NOTE: species(0) is the diluter!
-                
+
                 //                                = convection    - diffusion
                 auxp(aux::species+dir::x, offset) = cs(s+1)*m.x() - sdiff(0,s+1);
                 auxp(aux::species+dir::y, offset) = cs(s+1)*m.y() - sdiff(1,s+1);
                 auxp(aux::species+dir::z, offset) = cs(s+1)*m.z() - sdiff(2,s+1);
-                
+
             }
             //----------------------------------------------------------------------
-            
+
             // Finally, put temperature and thermal conductivity data
             // into auxp for later use
             auxp(aux::kap, offset) = kap;
             auxp(aux::T  , offset) = T;
-            
+
             // Determine the minimum observed stable time step when necessary
             // This logic used to call some canned routines, but additional
             // monitoring requirements forced inlining many of these details.
@@ -919,7 +919,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 default:
                     SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
                     break;
-                    
+
                 // Explicit treatment forces including acoustics
                 // in stability and has a zero reference velocity.
                 case linearize::none:
@@ -930,8 +930,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     fluct_ua_l1_y = ua_l1_y;
                     fluct_ua_l1_z = ua_l1_z;
                     break;
-                    
-                        
+
+
                 // Wall-normal-only implicit acoustics and convection
                 // is nothing but a hybrid of the above two cases.
                 case linearize::rhome_y:
@@ -976,14 +976,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 default:
                     SUZERAIN_ERROR_VAL_UNIMPLEMENTED(std::vector<real_t>());
                     break;
-                    
+
                 // Explicit treatment forces a zero reference diffusivity
                 case linearize::none:
                     // NB: species diffusivities ok b/c constant Le
-                    diffusivity = max(Ds0, 
-                                  max(kd, 
+                    diffusivity = max(Ds0,
+                                  max(kd,
                                   max(real_t(1), cmods.alpha)*nu));
-                    
+
                     diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
                                                    evmaxmag_real
                                                    / diffusivity
@@ -995,15 +995,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     diffusive_z_delta_t   = min   (diffusive_z_delta_t,
                                                    evmaxmag_real / diffusivity / lambda2_z);
                     break;
-                    
+
                 // Implicit diffusion permits removing a reference value.
                 // Antidiffusive (nu - ref_nu) is fine and not computed.
                 case linearize::rhome_y:
                     // Compute sign wrt ref.
                     diffusivity = max(Ds0-ref_Ds,
-                                  max(kd-ref_korCp, 
+                                  max(kd-ref_korCp,
                                   max(real_t(1), cmods.alpha)*(nu-ref_nu)));
-                    
+
                     if (diffusivity <= 0) break;  // NaN => false, proceed
                     //diffusivity *= maxdiffconst;  // Rescale as necessary.
                     diffusive_xyz_delta_t = minnan(diffusive_xyz_delta_t,
@@ -1017,13 +1017,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     diffusive_z_delta_t   = min   (diffusive_z_delta_t,
                                                    evmaxmag_real / diffusivity / lambda2_z);
                     break;
-                    
-                    
+
+
                 } // end switch(Linearize)
             } // end if(ZerothSubstep}
-            
+
         } // end X // end Z
-        
+
     } // end Y
     SUZERAIN_TIMER_END("nonlinear right hand sides (pass 1)");
 
@@ -1041,13 +1041,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // (1a) Temperature from physical to wave space (still collocation in y)
     o.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
-    
+
     // (1b) Apply inverse mass matrix to get to pure coefficient space
     o.bop_solve(massluz, auxw, aux::T);
-    
-    // ... and zero wavenumbers present only for dealiasing 
+
+    // ... and zero wavenumbers present only for dealiasing
     // while simultaneously normalizing FFT
-    o.diffwave_apply(0, 0, 1.0/(o.grid.dN.x() * o.grid.dN.z()), auxw, aux::T);
+    o.diffwave_apply(0, 0, o.dgrid.chi(), auxw, aux::T);
 
     // (2) Get derivatives.
     //
@@ -1084,15 +1084,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 + o.dgrid.local_physical_extent.z()
                                 * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
-            
+
             // Thermal conductivity
             const real_t   kap       ( auxp(aux::kap,   offset));
-            
+
             // Extract grad(T)
             const Vector3r grad_T    ( auxp(aux::gT+dir::x, offset),
                                        auxp(aux::gT+dir::y, offset),
                                        auxp(aux::gT+dir::z, offset));
-            
+
             // Accumulate into energy fluxes
             //
             // NOTE: Sign correct for fluxes appearing on the LHS---i.e.,
@@ -1100,8 +1100,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             auxp(aux::e +dir::x, offset) -= kap*grad_T.x();
             auxp(aux::e +dir::y, offset) -= kap*grad_T.y();
             auxp(aux::e +dir::z, offset) -= kap*grad_T.z();
-            
-            
+
+
         } // end x,z
     } // end y
     SUZERAIN_TIMER_END("nonlinear right hand sides (pass 2)");
@@ -1114,61 +1114,61 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Dereference the msoln smart pointer outside the compute loop
         const ManufacturedSolution &ms = *msoln;
-        
+
         for (int offset = 0, j = o.dgrid.local_physical_start.y();
              j < o.dgrid.local_physical_end.y();
              ++j) {
-            
+
             const real_t y = o.y(j);
 
             for (int k = o.dgrid.local_physical_start.z();
                  k < o.dgrid.local_physical_end.z();
                  ++k) {
-                
+
                 const real_t z = o.z(k);
-                
+
                 for (int i = o.dgrid.local_physical_start.x();
                      i < o.dgrid.local_physical_end.x();
                      ++i, /* NB */ ++offset) {
-                    
+
                     const real_t x = o.x(i);
-                    
+
                     real_t Q_rho, Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E;
-                    
+
                     // Would prefer
                     //   ms.Q_conservative(x, y, z, time, Q_rho,
                     //                     Q_rho_u, Q_rho_v, Q_rho_w, Q_rho_E);
                     // but see MASA ticket #2794
-                    
+
                     Q_rho   = ms.Q_rho (x, y, z, time);
                     Q_rho_u = ms.Q_rhou(x, y, z, time);
                     Q_rho_v = ms.Q_rhov(x, y, z, time);
                     Q_rho_w = ms.Q_rhow(x, y, z, time);
                     Q_rho_E = ms.Q_rhoe(x, y, z, time);
-                    
+
                     sphys(ndx::e,   offset) += Q_rho_E;
                     sphys(ndx::mx,  offset) += Q_rho_u;
                     sphys(ndx::my,  offset) += Q_rho_v;
                     sphys(ndx::mz,  offset) += Q_rho_w;
                     sphys(ndx::rho, offset) += Q_rho;
-                    
+
                 } // end X
-                
+
             } // end Z
-            
+
         } // end Y
-        
+
     } // end msoln
-    
-    
+
+
     // TODO: Anything related to BCs that must be done in physical
     // space.
-    
+
     // At this point we have accumulated sources (into sphys/swave)
     // and fluxes (into auxp/auxw) in physical space.  Now we need to
     // get back to wave space to finish accumulating the RHS.
-    
-    
+
+
     // Collectively convert source to wave space using parallel FFTs
     for (size_t i = 0; i < state_count; ++i) {
         o.dgrid.transform_physical_to_wave(&sphys.coeffRef(i,0));
@@ -1178,52 +1178,51 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     for (size_t i = aux::e; i < aux_count; ++i) {
         o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
     }
-    
-    
+
+
     // Now we have sources and fluxes in wave space.  More
     // specifically, we have X,Z coefficients and Y collocation pts.
     // The last piece is to apply the divergence to the fluxes and
     // accumulate into the sources.
-    
+
     // Note that the divergence is never formed explicitly.  We
     // accumulate the Y, X, and Z derivatives into the source
     // separately.
     {
-        
+
         for (size_t i = 0; i < state_count; ++i) {
-            
+
             // Apply inverse mass matrix to Y flux to get to pure
             // coefficient representation
             o.bop_solve(massluz, auxw, aux::e + dir::count*i + dir::y);
-            
+
             // Accumulate Y derivative of Y flux (at collocation pts in Y
             // and coefficients in X,Z) into source.  Note that alpha = -1
             // b/c we need to subtract divergence from source
             o.bop_accumulate(1,   -1, auxw , aux::e + dir::count*i + dir::y,
                                    1, swave, i );
-            
+
             // Accumulate X and Z derivatives of X and Z fluxes into source
-            
+
             // alpha = -1 b/c we need to subtract divergence from source
             o.diffwave_accumulate(1, 0, -1, auxw , aux::e + dir::count*i + dir::x,
                                          1, swave, i );
-            
+
             // alpha = -1 b/c we need to subtract divergence from source
             o.diffwave_accumulate(0, 1, -1, auxw , aux::e + dir::count*i + dir::z,
                                          1, swave, i );
 
             // Accumulate filter source while simultaneously scaling for FFT
-            // alpha = dNx*dNz to scale for dealiasing
-            o.diffwave_accumulate(0, 0, 
-                o.grid.dN.x() * o.grid.dN.z(), fsrcw, i,
-                1                            , swave, i);
+            // alpha = dNx*dNz = 1 / chi scales for dealiasing
+            o.diffwave_accumulate(0, 0, 1 / o.dgrid.chi(), fsrcw, i,
+                                        1                , swave, i);
 
             // and zero wavenumbers present only for dealiasing to
             // prevent "leakage" of dealiasing modes to other routines.
             o.zero_dealiasing_modes(swave, i);
-            
+
         } // end for
-        
+
     } // end accumulate
 
     // Return the stable time step criteria separately on each rank.  The time

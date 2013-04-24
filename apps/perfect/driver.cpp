@@ -147,13 +147,12 @@ driver::log_linearization_error(
     //   vi) Using diffwave::apply zeros wavenumbers used only for dealiasing
     //       purposes-- this data is unimportant from the perspective of
     //       measuring actual linearization error.
-    const real_t chi = real_t(1) / (grid->dN.x() * grid->dN.z());
     state_nonlinear->assign_from(*state_linear);
     common_block.set_zero(grid->dN.y());  // Defensive
     N->apply_operator(t, *state_nonlinear,
             method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/0);
     L->accumulate_mass_plus_scaled_operator(
-            1, *state_linear, chi,  *state_nonlinear, /*substep*/0);
+            1, *state_linear, dgrid->chi(), *state_nonlinear, /*substep*/0);
     common_block.set_zero(grid->dN.y());  // Zero reference quantities
     L->accumulate_mass_plus_scaled_operator(
             1, *state_linear, -1, *state_nonlinear, /*substep*/0);
@@ -176,7 +175,7 @@ driver::log_linearization_error(
             grid->N.z(), grid->dN.z(),
             dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
     }
-    state_nonlinear->add_scaled(1/chi, *state_linear);
+    state_nonlinear->add_scaled(1/dgrid->chi(), *state_linear);
 
     // When this->L and this->N match perfectly, state_nonlinear should be
     // identically zero.  Seeing more than acceptable (e.g. 1e-10) floating

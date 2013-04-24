@@ -179,7 +179,7 @@ adjust_scenario(contiguous_state<4,complex_t> &swave,
 //     // Convert state back to wave space coefficients in X, Y, and Z
 //     // building FFT normalization constant into the mass matrix
 //     bsplineop_luz massluz(cop);
-//     const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+//     const complex_t scale_factor = 1 / dgrid.chi();
 //     massluz.opform(1, &scale_factor, cop);
 //     massluz.factor();
 //     for (size_t i = 0; i < state_count; ++i) {
@@ -501,14 +501,14 @@ add_noise(contiguous_state<4,complex_t> &state,
                                  p(ndx::my,  offset),
                                  p(ndx::mz,  offset));
                 const real_t rho(p(ndx::rho, offset));
-		// Setting Ma=1 makes this correct for dimensional case
+                // Setting Ma=1 makes this correct for dimensional case
                 const real_t e_int = rholut::energy_internal(1.0, rho, m, e);
 
                 // Perturb momentum and compute updated total energy
                 m.x() += rho * p(state_count + 0, offset);
                 m.y() += rho * p(state_count + 1, offset);
                 m.z() += rho * p(state_count + 2, offset);
-		// Setting Ma=1 makes this correct for dimensional case
+                // Setting Ma=1 makes this correct for dimensional case
                 const real_t e_kin = rholut::energy_kinetic(1.0, rho, m);
                 e = e_int + e_kin;
 
@@ -526,7 +526,7 @@ add_noise(contiguous_state<4,complex_t> &state,
 
     //  8) Bring perturbed state information back to wavespace (no rho!)
     // Build FFT normalization constant into Y direction's mass matrix.
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    const complex_t scale_factor = 1 / dgrid.chi();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     dgrid.transform_physical_to_wave(&p.coeffRef(ndx::e , 0));  // X, Z

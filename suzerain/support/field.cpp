@@ -433,7 +433,7 @@ void load_collocation_values(
     // Collectively convert physical state to wave space coefficients
     // Build FFT normalization constant into Y direction's mass matrix
     bsplineop_luz massluz(cop);
-    const complex_t scale_factor = grid.dN.x() * grid.dN.z();
+    const complex_t scale_factor = 1 / dgrid.chi();
     massluz.opform(1, &scale_factor, cop);
     massluz.factor();
     operator_tools otool(grid, dgrid, cop);
