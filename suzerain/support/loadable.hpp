@@ -52,6 +52,9 @@ public:
             const esio_handle h,
             const bool verbose = true) = 0;
 
+    /** Virtual destructor to permit deleting through subclass. */
+    virtual ~loadable() {}
+
 };
 
 } // namespace support

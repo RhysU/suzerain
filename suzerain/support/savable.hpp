@@ -50,6 +50,9 @@ public:
     virtual void save(
             const esio_handle h) const = 0;
 
+    /** Virtual destructor to permit deleting through subclass. */
+    virtual ~savable() {}
+
 };
 
 } // namespace support

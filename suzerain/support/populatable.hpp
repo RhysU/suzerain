@@ -54,6 +54,10 @@ public:
     virtual void populate(
             const Derived& that,
             const bool verbose = false) = 0;
+
+    /** Virtual destructor to permit deleting through subclass. */
+    virtual ~populatable() {}
+
 };
 
 /**@name Helpers for \ref populatable implementations */
