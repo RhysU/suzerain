@@ -1,5 +1,326 @@
+This section describes the discretization of the conservation laws
+described in \S\ref{sec:gov_eq}.  It draws heavily from the model
+document for the perfect gas case~\cite{?} where appropriate.
+
 \subsection{Spatial discretization}
-\todo{Document flux-based discretization scheme here}
+For generality, write the continuous system of interest as
+%
+\begin{equation*}
+\pp{u}{t} = = \mathscr{L}u + \mathscr{N}\!\left(u\right) \quad \mathrm{for} \,\, (x,y,z) \in \Omega,
+\end{equation*}
+% 
+where $u$ denotes the full state vector---i.e., $u = [\rho_{\alpha},
+  \rho, \rho u_i, \rho E]^T$ for the reacting flow equations presented
+in \S\ref{sec:gov_eq}--- $\mathscr{L}$ and $\mathscr{N}$ denote the
+linear and non-linear parts of the complete right hand side operator,
+and $\Omega = \left[-\frac{L_x}{2},\frac{L_x}{2}\right] \times{}
+[0,L_y] \times{} \left[-\frac{L_z}{2},\frac{L_z}{2}\right]$ is the
+spatial domain of interest.  For brevity, this section suppresses any
+explicit time dependence in the operators.
+
+To begin spatially discretizing the system, its finite dimensional
+analog is introduced
+%
+\begin{align}
+  \frac{\partial}{\partial{}t} u^h
+  &=
+  \mathscr{L}u^h + \mathscr{N}\!\left(u^h\right) + R^h
+  \label{eq:discrete_system_with_residual}
+\end{align}
+where continuous $u = u\!\left(x,y,z,t\right)$ has been replaced by discrete
+$u^h = u^h\!\left(x,y,z,t\right)$ with $N_x\times{}N_y\times{}N_z$ degrees of
+freedom.  Here, $R^h$ is the discretization error that arises because the
+discrete solution cannot satisfy the continuous equations everywhere in space.
+Select Fourier expansions for the periodic $x$ and $z$ directions and a
+B-spline expansion for the non-periodic $y$ direction.  That is,
+\begin{align}
+u^h(x,y,z,t)
+&=
+  \sum_{l=0}^{N_y - 1}
+  \sum_{m=-\frac{N_x}{2}}^{\frac{N_x}{2}-1}
+  \sum_{n=-\frac{N_z}{2}}^{\frac{N_z}{2}-1}
+  \hat{u}_{l m n}(t)
+  B_l\!\left(y\right)
+  e^{\ii\frac{2\pi{}m}{L_x}x}
+  e^{\ii\frac{2\pi{}n}{L_z}z}
+  \\
+&=
+  \sum_{l}\sum_{m}\sum_{n}
+  \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \label{eq:u_h_expansion}
+\end{align}
+where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and $B_l\!\left(y\right)$ are a
+B-spline basis for some order and knot selection.  The precise B-spline basis
+details are deferred until section~\ref{sec:formingoperators}.
+
+Now, within the method of weighted residuals framework, we choose a mixed
+Galerkin/collocation approach (often called a ``pseudospectral'' technique)
+employing the $L_{2}$ inner product and test ``functions'' like
+$\delta(y-y_{l'}) e^{\ii k_{m'} x}e^{\ii k_{n'} z}$ where $l'$, $m'$, and $n'$
+range over the same values as $l$, $m$, and $n$, respectively.  The fixed
+collocation points $y_{l'}$ depend on the B-spline basis details.  Three
+relevant results are
+\begin{align}
+   \int_0^{L_y} \varphi(y) \, \delta(y-y_{l'}) \,d\!y
+&= \varphi(y_{l'}),
+&
+   \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}} e^{\ii k_m x} e^{-\ii k_{m'} x} \,d\!x
+&= L_x \delta_{m m'}, \text{ and}
+&
+   \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}} e^{\ii k_n z} e^{-\ii k_{n'} z} \,d\!z
+&= L_z \delta_{n n'}
+\end{align}
+where the inner product's conjugate operation is accounted for by introducing a
+negative sign into the latter two exponentials.  The weighted residual is
+forced to be zero in the sense that
+\begin{align}
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  R^h\!\left(x,y,z\right) \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+  \,d\!z \,d\!x \,d\!y
+  &=
+  0
+  \label{eq:R_h_weighted_residual_zero}
+\end{align}
+holds for all $l'$, $m'$, and $n'$.  Inserting \eqref{eq:u_h_expansion} into
+\eqref{eq:discrete_system_with_residual}, testing with our test functions,
+applying \eqref{eq:R_h_weighted_residual_zero}, and simplifying each remaining
+term separately one obtains the following:
+\begin{align}
+ \int_0^{L_y}
+ \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+ \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+ \,
+ &\frac{\partial}{\partial{}t}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+  \right)
+  \, dz \, dx \, dy
+\\
+  &=
+  L_x L_z \sum_{l} B_l\!\left(y_{l'}\right)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
+\\
+ \int_0^{L_y}
+ \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+ \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+ \,
+ &\mathscr{L}
+  \left(
+    \sum_{l}\sum_{m}\sum_{n}
+    \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+  \right)
+  \, dz \, dx \, dy
+\\
+  &=
+  L_x L_z
+  \mathscr{L}\left(
+     \sum_{l}
+      B_l\!\left(y_{l'}\right)
+     \hat{u}_{l m n}(t)
+   \right)
+\intertext{} % Allow soft break
+  \int_0^{L_y}
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  &\mathscr{N}\left(
+     \sum_{l}\sum_{m}\sum_{n}
+     \hat{u}_{l m n}(t)B_l\!\left(y\right)e^{\ii k_m x}e^{\ii k_n z}
+   \right)
+   \left(
+     \delta(y-y_{l'}) e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+   \right)
+   \, dz \, dx \, dy
+\\
+  &=
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \mathscr{N}\left(
+    \sum_{m}\sum_{n}
+    \left(
+      \sum_{l} B_l\!\left(y_{l'}\right)
+      \hat{u}_{l m n}(t)
+    \right)
+    e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+  \right)
+  \, dz \, dx
+\intertext{
+  Reequating the terms,
+}
+  L_x L_z
+  \sum_{l} B_l\!\left(y_{l'}\right)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
+  &=
+  L_x L_z
+  \mathscr{L}\left(
+    \sum_{l}
+     B_l\!\left(y_{l'}\right)
+    \hat{u}_{l m n}(t)
+  \right)
+\\
+  &{}+
+  \int_{-\frac{L_x}{2}}^{\frac{L_x}{2}}
+  \int_{-\frac{L_z}{2}}^{\frac{L_z}{2}}
+  \mathscr{N}\left(
+    \sum_{m}\sum_{n}
+    \left(
+      \sum_{l} B_l\!\left(y_{l'}\right)
+      \hat{u}_{l m n}(t)
+    \right)
+    e^{\ii k_m x}e^{\ii k_n z}
+  \right)
+  \left(
+    e^{-\ii k_{m'} x}e^{-\ii k_{n'} z}
+  \right)
+  \, dz \, dx
+  .
+ \end{align}
+
+Finally, approximating the two integrals by discrete sums and dividing
+by $L_x$ and $L_z$ leaves
+\begin{align}
+  \sum_{l} B_l\!\left(y_{l'}\right)
+  \frac{\partial}{\partial{}t} \hat{u}_{l m n}(t)
+  &\approx
+  \mathscr{L}\left(
+    \sum_{l}
+     B_l\!\left(y_{l'}\right)
+    \hat{u}_{l m n}(t)
+  \right)
+\\
+  &{}+
+  \frac{1}{N_x N_z}
+  \sum_{m'} \sum_{n'}
+  \mathscr{N}\left(
+    \sum_{m}
+    \sum_{n}
+    \left(
+      \sum_{l} B_l\!\left(y_{l'}\right)
+      \hat{u}_{l m n}(t)
+    \right)
+    e^{\ii k_m x_{m'}}e^{\ii k_n z_{n'}}
+  \right)
+  \!\!
+  \left(
+    e^{-\ii k_{m'} x_m}e^{-\ii k_{n'} z_n}
+  \right)
+  \label{eq:spatial_discretization}
+\end{align}
+where $x_{m'}=L_x m' / N_x$ and $z_{n'}=L_z n' / N_z$.  This approximation is
+nothing but a quadrature error \citep[see][theorem~19]{Boyd2001}.  With
+knowledge of the nonlinear operator $\mathscr{N}$, such quadrature error can be
+mitigated via an appropriate dealiasing technique \citep[see][]{Canuto2006}.
+Interestingly, our weighted residual \eqref{eq:R_h_weighted_residual_zero} need
+now only be zero in this weaker, discrete sense.  We are left with
+$N_x\times{}N_z$ time-dependent systems containing $N_y$ equations coupled in
+the $x$ and $z$ directions only through discrete Fourier transforms and the
+requirements of the $\mathscr{L}$ and $\mathscr{N}$ operators.
+
+A key issue now is how to evaluate the nonlinear term.  In the perfect
+gas case, Ulerich~\cite{?} takes great care to avoid repeated
+application of the B-spline first derivative operator when evaluating
+second derivatives.  This care is appropriate given the well-known
+fact that repeated application of the first derivative operator leads
+to a spectrum for the second derivative that is dramatically incorrect
+at high wavenumbers.  However, this procedure requires explicit
+calculation of derivatives (e.g., $\nabla \mu$, $\nabla T$, and
+$\nabla^2 T$) in terms of conserved state (see Ulerich~\cite{} chapter
+3, section 3).  While this is possible in the reacting case, it is
+significantly more difficult given the complexity of the constitutive
+laws involved.  Further, given that these constitutive laws are not
+implemented within Suzerain, requiring calculation of these
+derivatives would place a very high burden on the (potentially)
+third-party packages that could be used to provide them.
+
+Thus, here we seek a different formulation that does not require
+explicit differentiation through the constitutive laws.  Specifically,
+we take a ``flux-based'' approach that can be outlined as follows:
+\begin{enumerate}
+\item performing $\mathcal{O}\!\left(m\times{}n\right)$ matrix-vector
+  products like $\sum_{l} B_l\!\left(y_{l'}\right) \hat{u}_{l m
+    n}(t)$ to evaluate the state and state derivatives;
+\item using an inverse fast Fourier transform across the $x$ and $z$
+  directions to convert state and derivative information from wave
+  space to physical space;
+\item form the Navier-Stokes fluxes (omitting the heat flux, which
+  requires spatial derivatives of the temperature), the
+  temperature field, and the reaction source terms in physical space;
+\item using an inverse mass matrix application and forward fast
+  Fourier transform across the $x$ and $z$ directions, convert
+  temperature from physical space to wave space;
+\item compute the temperature gradient and transform from wave to
+  physical space;
+\item evaluate the heat flux vector in physical space and add it to
+  the energy equation flux vector;
+\item using an inverse mass matrix application and forward fast
+  Fourier transform across the $x$ and $z$ directions, convert flux
+  components and reaction terms from physical space to wave space;
+\item accumulate the discrete divergence of the flux vector into the
+  right hand side where the reaction terms are already stored.
+\end{enumerate}
+
+Tables~\ref{tbl:w2p} and~\ref{tbl:p2w} summarize the total number of
+inverse and forward Fourier transforms to accomplish the steps
+described above.
+%
+\begin{table}[ht]
+\caption{Wave to physical.  NOTE: This count is tentative.}
+\begin{tabular}{|c|c|}
+\hline
+Quantity & \# of Fields \\
+\hline
+\hline
+$\rho$ & 1 \\
+$\rho_{\alpha}$ & $N_s - 1$ \\
+$\rho u_i$ & 3 \\
+$\rho E$ & 1 \\
+$\pp{\rho}{x_j}$ & 3 \\
+$\pp{\rho_{\alpha}}{x_j}$ & $3 (N_s - 1)$ \\
+$\pp{\rho u_i}{x_j}$ & 9 \\
+$\pp{T}{x_j}$ & 3 \\
+\hline
+Total & $4(N_s + 4)$\\
+\hline
+\end{tabular}
+\label{tbl:w2p}
+\end{table}
+% 
+%
+\begin{table}[ht]
+\caption{Physical to wave.  NOTE: This count is tentative.}
+\begin{tabular}{|c|c|}
+\hline
+Quantity & \# of Fields \\
+\hline
+\hline
+Sources ($\dot{\omega}_{\alpha}$ \& SG) & $N_s + 4$ \\
+Fluxes & $3 (N_s +4)$ \\
+T & 1 \\
+\hline
+Total & $4(N_s + 4) + 1$\\
+\hline
+\end{tabular}
+\label{tbl:p2w}
+\end{table}
+% 
+
+While this scheme achieves the goal of not requiring Jacobian
+information for quantities like the viscosity, it has the distinct
+drawback that it uses repeated application of the B-spline first
+derivative operator.  Filtering strategies to avoid the damage done by
+this operation are described in \S\ref{sec:filter}.
+
 
 \subsection{Temporal discretization}
 \label{sec:temporal_discretization}

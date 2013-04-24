@@ -130,59 +130,6 @@ These values can by obtained from Antioch.
 \subsubsection{Species Enthalpies}
 Species enthalpies are determined using Antioch.
 
-\subsection{Transforms}
-This section examines trips between wave and physical space.
-
-The wave to physical space transforms are summarized in
-Table~\ref{tbl:w2p}.
-%
-\begin{table}[ht]
-\caption{Wave to physical.  NOTE: This count is tentative.}
-\begin{tabular}{|c|c|}
-\hline
-Quantity & \# of Fields \\
-\hline
-\hline
-$\rho$ & 1 \\
-$\rho_{\alpha}$ & $N_s - 1$ \\
-$\rho u_i$ & 3 \\
-$\rho E$ & 1 \\
-$\pp{\rho}{x_j}$ & 3 \\
-$\pp{\rho_{\alpha}}{x_j}$ & $3 (N_s - 1)$ \\
-$\pp{\rho u_i}{x_j}$ & 9 \\
-$\pp{T}{x_j}$ & 3 \\
-\hline
-Total & $4(N_s + 4)$\\
-\hline
-\end{tabular}
-\label{tbl:w2p}
-\end{table}
-% 
-Note that this does \emph{not} include the energy derivatives
-($\partial \rho E / \partial x_j$).  Need to make sure this is
-correct.
-
-The physical to wave space transforms are summarized in
-Table~\ref{tbl:p2w}.
-%
-\begin{table}[ht]
-\caption{Physical to wave.  NOTE: This count is tentative.}
-\begin{tabular}{|c|c|}
-\hline
-Quantity & \# of Fields \\
-\hline
-\hline
-Sources ($\dot{\omega}_{\alpha}$ \& SG) & $N_s + 4$ \\
-Fluxes & $3 (N_s +4)$ \\
-T & 1 \\
-\hline
-Total & $4(N_s + 4) + 1$\\
-\hline
-\end{tabular}
-\label{tbl:p2w}
-\end{table}
-% 
-
 
 \subsection{Slow growth models}
 \label{sec:slowgrowthmodels}
