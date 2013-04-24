@@ -226,7 +226,7 @@ public:
     /**
      * Report the number of species in the mixture.
      */
-    const std::size_t Ns() const { return species_names.size(); }
+    std::size_t Ns() const { return species_names.size(); }
 
     /**
      * Version of libantioch reported by Antioch::get_antioch_version
