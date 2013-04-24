@@ -527,8 +527,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
                 common.refs.size(), mpi::datatype<real_t>::value,
                 MPI_SUM, MPI_COMM_WORLD));
-        common.refs /= (   o.dgrid.global_physical_extent.x()
-                         * o.dgrid.global_physical_extent.z());
+        common.refs *= o.dgrid.chi();
 
         // Copy mean velocity information into common.{u, v, w}()
         common.u() = common.ref_ux();
@@ -627,8 +626,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     common.means.leftCols<h>().size(),
                     mpi::datatype<real_t>::value,
                     MPI_SUM, MPI_COMM_WORLD));
-        common.means.leftCols<h>() /= (   o.dgrid.global_physical_extent.x()
-                                        * o.dgrid.global_physical_extent.z());
+        common.means.leftCols<h>() *= o.dgrid.chi();
 
     }
 

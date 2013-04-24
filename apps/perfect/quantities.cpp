@@ -580,8 +580,7 @@ quantities sample_quantities(
 
     // Physical space sums, which are at collocation points, need to be
     // divided by the dealiased extents and converted to coefficients.
-    const real_t scale_factor = dgrid.global_physical_extent.x()
-                              * dgrid.global_physical_extent.z();
+    const real_t scale_factor = 1 / dgrid.chi();
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
