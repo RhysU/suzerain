@@ -393,7 +393,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             ++j) {
 
             // Prepare logical indices using a struct for scoping (e.g. ref::ux).
-            struct ref { enum { p, T, a,
+            struct ref { enum { rho, p, T, a,
                                 ux, uy, uz, u2,
                                 uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
                                 nu, nuux, nuuy, nuuz, nuu2,
@@ -425,9 +425,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     alpha, beta, gamma, Ma, rho, m, e, p, T, mu, lambda);
 
                 // Accumulate reference quantities into running sums...
-                acc[ref::p](p);
-                acc[ref::T](T);
-                acc[ref::a](sqrt(T));
+                acc[ref::rho](rho);
+                acc[ref::p  ](p);
+                acc[ref::T  ](T);
+                acc[ref::a  ](sqrt(T));
 
                 // ...including simple velocity-related quantities...
                 const Vector3r u = rholut::u(rho, m);
@@ -485,6 +486,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Store sums into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
+            common.ref_rho       ()[j] = sum(acc[ref::rho       ]);
             common.ref_p         ()[j] = sum(acc[ref::p         ]);
             common.ref_T         ()[j] = sum(acc[ref::T         ]);
             common.ref_a         ()[j] = sum(acc[ref::a         ]);
