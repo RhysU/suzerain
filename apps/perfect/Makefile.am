@@ -7,16 +7,17 @@ include ../Common.am
 ###
 
 noinst_LTLIBRARIES    += libperfect.la
-libperfect_la_SOURCES  = perfect.hpp               perfect.cpp
-libperfect_la_SOURCES += constraint_treatment.hpp  constraint_treatment.cpp
-libperfect_la_SOURCES += common_block.hpp          common_block.cpp
-libperfect_la_SOURCES += driver.hpp                driver.cpp
+libperfect_la_SOURCES  = perfect.hpp                 perfect.cpp
+libperfect_la_SOURCES += constraint_treatment.hpp    constraint_treatment.cpp
+libperfect_la_SOURCES += common_block.hpp            common_block.cpp
+libperfect_la_SOURCES += driver.hpp                  driver.cpp
 libperfect_la_SOURCES += linearize_type.hpp
-libperfect_la_SOURCES += manufactured_solution.hpp manufactured_solution.cpp
-libperfect_la_SOURCES += navier_stokes.hpp         navier_stokes.cpp
-libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp     nsctpl_rholut.hpp
-libperfect_la_SOURCES += quantities.hpp            quantities.cpp
-libperfect_la_SOURCES += scenario_definition.hpp   scenario_definition.cpp
+libperfect_la_SOURCES += manufactured_solution.hpp   manufactured_solution.cpp
+libperfect_la_SOURCES += navier_stokes.hpp           navier_stokes.cpp
+libperfect_la_SOURCES += nonreflecting_treatment.hpp nonreflecting_treatment.cpp
+libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp       nsctpl_rholut.hpp
+libperfect_la_SOURCES += quantities.hpp              quantities.cpp
+libperfect_la_SOURCES += scenario_definition.hpp     scenario_definition.cpp
 libperfect_la_SOURCES += slowgrowth_type.hpp
 
 ##
