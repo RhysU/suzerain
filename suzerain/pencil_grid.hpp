@@ -141,6 +141,28 @@ public:
     Array3i local_wave_extent;
 
     /**
+     * Which single rank within MPI_COMM_WORLD reports has_zero_zero_modes()?
+     *
+     * \warning MPI_COMM_WORLD rank zero will not always report that it
+     * has_zero_zero_modes()!
+     */
+    int rank_zero_zero_modes;
+
+    /**
+     * The inverse of the product of the global physical extents in X and Z.
+     *
+     * This factor shows up repeatedly as a normalization constant.
+     * See the model document's "Spatial discretization" section for
+     * why and it's "Combined space and time discretization" for how
+     * this factor \f$\chi\f$ enters into, e.g., timestepping.
+     */
+    real_t chi() const
+    {
+        return static_cast<real_t>(1) / (   global_physical_extent.x()
+                                          * global_physical_extent.z());
+    }
+
+    /**
      * Does this rank possess the "zero-zero" Fourier modes?
      *
      * More concretely, is <tt>local_wave_start.x() == 0 &&
@@ -154,14 +176,6 @@ public:
                && local_wave_start.z() == 0     // Zero mode in Z?
                && local_wave_extent.prod() > 0; // Nontrivial wave data?
     }
-
-    /**
-     * Which single rank within MPI_COMM_WORLD reports has_zero_zero_modes()?
-     *
-     * \warning MPI_COMM_WORLD rank zero will not always report that it
-     * has_zero_zero_modes()!
-     */
-    int rank_zero_zero_modes;
 
     /**
      * Retrieve the number of contiguous complex scalars required to store a
