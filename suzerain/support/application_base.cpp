@@ -133,7 +133,10 @@ application_base::initialize(int argc, char **argv)
 
     // Record build and invocation for posterity and to aid in debugging
     std::ostringstream os;
-    std::copy(argv, argv+argc, std::ostream_iterator<const char *>(os," "));
+    os << argv[0];
+    for (int i = 1; i < argc; ++i) {
+        os << ' ' << argv[i];
+    }
     INFO0(who, "Invocation: " << os.str());
     INFO0(who, "Build:      " << suzerain::version("", revstr));
 
