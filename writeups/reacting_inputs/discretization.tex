@@ -331,4 +331,26 @@ in Ulerich~\cite{?}.  For brevity, these details are not given here.
 
 \subsection{Time step stability criteria}
 \label{sec:stabilitycriteria}
-\todo{Write this section.  Include anti-diffusion effects as well as species.}
+The time step stability calculations are exactly as described by
+Ulerich~\cite{} except that 1.) the dimensional forms are used and 2.)
+species diffusion is accounted for.  Thus, the following replaces the
+$\max$ in Ulerich, Section 5.2, Equation 25:
+%
+\begin{equation*}
+\max \left(
+        \left|\frac{\kappa}{\rho c_v} - \left( \frac{\kappa}{\rho c_v} \right)_{\mathrm{ref}} \right|,
+        \left|\nu-\nu_{\mathrm{ref}} \right|,
+        \left|\nu_{B}-\nu_{B,\mathrm{ref}}\right|,
+        \left|D_s-D_{s,\mathrm{ref}}\right|
+     \right),
+\end{equation*}
+% 
+where $(\cdot)_{\mathrm{ref}}$ denote the reference quantities used
+to form the linear implicit operator (which are zero when using the
+fully explicit scheme).
+
+Note that stability limits due to the reaction source terms are
+\emph{not} computed.  Preliminary analysis shows that in the target
+problems of interest, these constraints are less restrictive than
+others.
+
