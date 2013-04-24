@@ -198,9 +198,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
         constrained->L.reset(new isothermal_mass_operator(
-                    *scenario, isothermal_specification(/*TODO Configure*/1),
+                    *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
     } else if (use_implicit) {
+        // FIXME Employ isothermal within implicit operator
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
         constrained->L.reset(new isothermal_hybrid_linear_operator(

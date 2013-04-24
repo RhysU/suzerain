@@ -101,6 +101,12 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     scenario->beta       = real_t(2) / 3;
     scenario->gamma      = 1.4;
 
+    // Establish default isothermal boundary conditions
+    isothermal->lower_T = isothermal->upper_T = 1;
+    isothermal->lower_u = isothermal->upper_u = 0;
+    isothermal->lower_v = isothermal->upper_v = 0;
+    isothermal->lower_w = isothermal->upper_w = 0;
+
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
 
@@ -144,6 +150,21 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
+    if (isothermal->lower_T != isothermal->upper_T) {
+        FATAL0("Unable to initialize profile where lower_T != upper_T");
+        return EXIT_FAILURE;
+    }
+    if (isothermal->lower_u || isothermal->upper_u) {
+        FATAL0("Unable to initialize slip streamwise boundary");
+    }
+    if (isothermal->lower_v != isothermal->upper_v) {
+        FATAL0("Unable to initialize profile where lower_v != upper_v");
+        return EXIT_FAILURE;
+    }
+    if (isothermal->lower_w != isothermal->upper_w) {
+        FATAL0("Unable to initialize profile where lower_w != upper_w");
+        return EXIT_FAILURE;
+    }
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -178,9 +199,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
         INFO("Initialization uses constant rho, v, w, and T");
         const real_t rho = scenario->bulk_rho;
-        const real_t v   = 0;
-        const real_t w   = 0;
-        const real_t T   = 1;
+        const real_t v = isothermal->lower_v; assert(v == isothermal->upper_v);
+        const real_t w = isothermal->lower_w; assert(w == isothermal->upper_w);
+        const real_t T = isothermal->lower_T; assert(T == isothermal->upper_T);
 
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization;

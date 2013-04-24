@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/support/driver_base.hpp>
+#include <suzerain/support/isothermal_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
@@ -68,6 +69,9 @@ public:
 
     /** Nondimensional scenario parameters used by physics routines. */
     shared_ptr<scenario_definition> scenario;
+
+    /** Nondimensional isothermal boundary condition parameters. */
+    shared_ptr<support::isothermal_definition> isothermal;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;

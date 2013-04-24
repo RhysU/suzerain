@@ -49,6 +49,7 @@ driver::driver(
                   description,
                   revstr)
     , scenario(make_shared<scenario_definition>())
+    , isothermal(make_shared<support::isothermal_definition>())
     , who("perfect")
 {
     this->fields = default_fields();
@@ -61,6 +62,7 @@ driver::initialize(
 {
     // msoln is not used by all binaries and is therefore not added below
     options.add_definition(*scenario);
+    options.add_definition(*isothermal);
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
@@ -251,6 +253,7 @@ driver::save_metadata_hook(
 {
     super::save_metadata_hook(esioh);
     scenario->save(esioh);
+    isothermal->save(esioh);
     save(esioh, msoln, *scenario, *grid);
     return;
 }
@@ -261,6 +264,7 @@ driver::load_metadata_hook(
 {
     super::load_metadata_hook(esioh);
     scenario->load(esioh);
+    isothermal->load(esioh);
     load(esioh, msoln, *scenario, *grid);
     return;
 }
