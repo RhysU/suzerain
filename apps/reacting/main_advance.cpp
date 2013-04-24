@@ -244,14 +244,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     save_metadata();
     const real_t elapsed_wall_time = advance_controller(); // Negative on error
 
-    // If we advanced by any time steps, log the observed linearization error
-    if (elapsed_wall_time >= 0 && controller->current_nt() > 0) {
-        log_linearization_error(build_timeprefix(controller->current_t(),
-                                                 controller->current_nt()),
-                                controller->current_t(),
-                                controller->current_nt());
-    }
-
     // Report error to the OS iff advance_control reported an error
     return elapsed_wall_time < 0;
 }
