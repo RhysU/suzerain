@@ -69,7 +69,55 @@ static void parse_bounded(const std::string& s,
 isothermal_definition::isothermal_definition()
     : isothermal_specification()
 {
-    // NOP
+}
+
+isothermal_definition::isothermal_definition(
+        real_t wall_T)
+    : isothermal_specification(wall_T)
+{
+}
+
+isothermal_definition::isothermal_definition(
+        real_t wall_T,
+        const std::vector<real_t>& wall_cs)
+    : isothermal_specification(wall_T, wall_cs)
+{
+}
+
+isothermal_definition::isothermal_definition(
+        real_t wall_T,
+        real_t inflow_velocity)
+    : isothermal_specification(wall_T, inflow_velocity)
+{
+}
+
+isothermal_definition::isothermal_definition(
+        real_t wall_T,
+        real_t inflow_velocity,
+        const std::vector<real_t>& wall_cs)
+    : isothermal_specification(wall_T, inflow_velocity, wall_cs)
+{
+}
+
+isothermal_definition::isothermal_definition(
+        real_t lower_T,
+        real_t lower_v,
+        real_t upper_T,
+        real_t upper_v)
+    : isothermal_specification(lower_T, lower_v, upper_T, upper_v)
+{
+}
+
+isothermal_definition::isothermal_definition(
+        real_t lower_T,
+        real_t lower_v,
+        const std::vector<real_t>& lower_cs,
+        real_t upper_T,
+        real_t upper_v,
+        const std::vector<real_t>& upper_cs)
+    : isothermal_specification(lower_T, lower_v, lower_cs,
+                               upper_T, upper_v, upper_cs)
+{
 }
 
 // Strings used in options_description and populate/override/save/load

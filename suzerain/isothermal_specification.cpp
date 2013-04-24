@@ -95,6 +95,23 @@ isothermal_specification::isothermal_specification(
 }
 
 isothermal_specification::isothermal_specification(
+        const real_t wall_T,
+        const real_t inflow_velocity,
+        const std::vector<real_t>& wall_cs)
+    : lower_T (wall_T)
+    , lower_u (0)
+    , lower_v (+inflow_velocity)  // Inflow has positive sign
+    , lower_w (0)
+    , lower_cs(wall_cs)
+    , upper_T (wall_T)
+    , upper_u (0)
+    , upper_v (-inflow_velocity)  // Inflow has negative sign
+    , upper_w (0)
+    , upper_cs(wall_cs)
+{
+}
+
+isothermal_specification::isothermal_specification(
         const real_t lower_T,
         const real_t lower_v,
         const real_t upper_T,
