@@ -169,6 +169,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
     load_grid_and_operators(NULL);
+    log_discretization_quality();
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
 
