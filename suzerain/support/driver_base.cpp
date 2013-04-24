@@ -410,18 +410,6 @@ driver_base::prepare_controller(
     }
 }
 
-void
-driver_base::prepare_controller(
-        const driver_base::time_type initial_t)
-{
-    // Nonlinear scaling factor (N_x N_z)^(-1) from write up section 2.1
-    SUZERAIN_ENSURE(grid);
-    SUZERAIN_ENSURE(grid->dN.x());
-    SUZERAIN_ENSURE(grid->dN.z());
-    return prepare_controller(initial_t,
-                              real_t(1) / (grid->dN.x() * grid->dN.z()));
-}
-
 double
 driver_base::advance_controller(
             const bool final_status,

@@ -240,7 +240,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
     log_discretization_quality();
-    prepare_controller(initial_t);
+    prepare_controller(initial_t, dgrid->chi());
     save_metadata();
     const real_t elapsed_wall_time = advance_controller(); // Negative on error
 

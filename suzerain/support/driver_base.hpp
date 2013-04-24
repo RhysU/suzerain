@@ -208,21 +208,14 @@ public:
      * appropriate periodic callbacks will be prepared.
      *
      * @param initial_t Initial simulation time to use.
+     *                  Often, zero is a perfectly find choice.
      * @param chi       Time-independent scaling factor for #N on each substep.
-     *                  Often used to hide FFT normalization costs.
+     *                  Often, \ref pencil_grid::chi() is used to hide FFT
+     *                  normalization costs.
      */
     virtual void prepare_controller(
             const time_type initial_t,
             const real_t chi);
-
-    /**
-     * Wrapper invoking prepare_controller(time_type,real_t) with
-     * \c chi set for dealiased FFT normalization per #grid.
-     *
-     * @param initial_t Initial simulation time defaulting to zero.
-     */
-    void prepare_controller(
-            const time_type initial_t = 0);
 
     /**
      * Use #controller to advance the simulation per #timedef.
