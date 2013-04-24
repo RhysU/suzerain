@@ -3,21 +3,37 @@
 include ../Common.am
 
 ###
-### Logic common to many different binaries within this subdirectory
+### A convenience library for logic used across this subdirectory
 ###
 
 noinst_LTLIBRARIES    += libperfect.la
-libperfect_la_SOURCES  = perfect.hpp                 perfect.cpp
-libperfect_la_SOURCES += constraint_treatment.hpp    constraint_treatment.cpp
-libperfect_la_SOURCES += common_block.hpp            common_block.cpp
-libperfect_la_SOURCES += driver.hpp                  driver.cpp
+libperfect_la_SOURCES  = common_block.cpp
+libperfect_la_SOURCES += common_block.hpp
+libperfect_la_SOURCES += constraint_treatment.cpp
+libperfect_la_SOURCES += constraint_treatment.hpp
+libperfect_la_SOURCES += driver.cpp
+libperfect_la_SOURCES += driver.hpp
+libperfect_la_SOURCES += hybrid_operator.cpp
+libperfect_la_SOURCES += hybrid_operator.hpp
+libperfect_la_SOURCES += isothermal_mass_operator.cpp
+libperfect_la_SOURCES += isothermal_mass_operator.hpp
 libperfect_la_SOURCES += linearize_type.hpp
-libperfect_la_SOURCES += manufactured_solution.hpp   manufactured_solution.cpp
-libperfect_la_SOURCES += navier_stokes.hpp           navier_stokes.cpp
-libperfect_la_SOURCES += nonreflecting_treatment.hpp nonreflecting_treatment.cpp
-libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp       nsctpl_rholut.hpp
-libperfect_la_SOURCES += quantities.hpp              quantities.cpp
-libperfect_la_SOURCES += scenario_definition.hpp     scenario_definition.cpp
+libperfect_la_SOURCES += manufactured_solution.cpp
+libperfect_la_SOURCES += manufactured_solution.hpp
+libperfect_la_SOURCES += navier_stokes.cpp
+libperfect_la_SOURCES += navier_stokes.hpp
+libperfect_la_SOURCES += nonlinear_operator.cpp
+libperfect_la_SOURCES += nonlinear_operator.hpp
+libperfect_la_SOURCES += nonreflecting_treatment.cpp
+libperfect_la_SOURCES += nonreflecting_treatment.hpp
+libperfect_la_SOURCES += nsctpl_rholut_fwd.hpp
+libperfect_la_SOURCES += nsctpl_rholut.hpp
+libperfect_la_SOURCES += perfect.cpp
+libperfect_la_SOURCES += perfect.hpp
+libperfect_la_SOURCES += quantities.cpp
+libperfect_la_SOURCES += quantities.hpp
+libperfect_la_SOURCES += scenario_definition.cpp
+libperfect_la_SOURCES += scenario_definition.hpp
 libperfect_la_SOURCES += slowgrowth_type.hpp
 
 ##
@@ -34,10 +50,6 @@ main_init_svnrev.h: $(perfect_init_SOURCES) $(libperfect_la_SOURCES)
 
 bin_PROGRAMS            += perfect_advance
 perfect_advance_SOURCES  = main_advance.cpp
-perfect_advance_SOURCES += isothermal_mass_operator.hpp \
-                           isothermal_mass_operator.cpp
-perfect_advance_SOURCES += nonlinear_operator.hpp nonlinear_operator.cpp
-perfect_advance_SOURCES += hybrid_operator.hpp    hybrid_operator.cpp
 perfect_advance_SOURCES += main_advance_svnrev.c
 BUILT_SOURCES           += main_advance_svnrev.h
 perfect_advance_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
