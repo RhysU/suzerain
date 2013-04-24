@@ -70,7 +70,27 @@ public:
             bspline& b,
             operator_common_block& common);
 
-    /** Applies Giles conditions delegating most processing to #N */
+    /**
+     * Applies Giles conditions delegating most processing to #N.
+     * That is, compute
+     * \f[
+     * \underbrace{
+     *   {R^Y}^{-1}
+     *   \left[V^L S\right]^{-1}
+     *   \left(
+     *     \chi^{-1}
+     *     \left( \ii k_x \left[C^G\right] + \ii k_z \left[B^G\right] \right)
+     *     \left[V^L S\right] R^Y M
+     *     \hat{V}
+     *     +
+     *     \left(I - P^G\right)
+     *     \left[V^L S\right] R^Y
+     *     N(\hat{V})
+     *   \right)
+     * }_{N_E^G\left(\hat{V}\right)}
+     * \f]
+     * assuming that #N implements \f$N(\hat{V})\f$.
+     */
     virtual std::vector<real_t> apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
