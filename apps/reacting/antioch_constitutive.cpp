@@ -493,8 +493,7 @@ antioch_constitutive::evaluate (const real_t    e,
     // Used by transport calcs and output
     const real_t Cp = this->sm_thermo->cp(T, T, cs);
 
-    // Is this right?  Copied from FIN-S (and antioch has same) but
-    // looks like inverse of Le to me.
+    // Constant Lewis number diffusivity
     real_t D0 = this->Le*kap*irho/Cp;
 
     for (unsigned int i=0; i<Ns; ++i)
@@ -577,8 +576,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
 
     kaporCv = kap*irho/Cv;
 
-    // Is this right?  Copied from FIN-S (and antioch has same) but
-    // looks like inverse of Le to me.
+    // Constant Lewis number diffusivity
     real_t D0 = this->Le*kap*irho/Cp;
 
     for (unsigned int i=0; i<Ns; ++i)
