@@ -334,7 +334,7 @@ antioch_constitutive::evaluate (const real_t  e,
                                 real_t* hs,
                                 real_t* om,
                                 real_t& a,
-                                real_t& Cp) const
+                                real_t& Cv) const
 {
     //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
@@ -403,7 +403,7 @@ antioch_constitutive::evaluate (const real_t  e,
     kap = this->wilke_evaluator->k (T, Y);
 
     // Used by transport calcs and output
-    Cp = this->sm_thermo->cp(T, T, Y);
+    const real_t Cp = this->sm_thermo->cp(T, T, Y);
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
     // looks like inverse of Le to me.
@@ -414,10 +414,9 @@ antioch_constitutive::evaluate (const real_t  e,
 
 
     // Speed of sound (frozen)
-    real_t Rmix = this->mixture->R(Y);
-    real_t Cv   = this->sm_thermo->cv(T, T, Y);
+    Cv = this->sm_thermo->cv(T, T, Y);
 
-    real_t af2 = (1.0 + Rmix/Cv)*Rmix*T;
+    real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
 
     a = std::sqrt(af2);
 
@@ -440,7 +439,7 @@ antioch_constitutive::evaluate (const real_t    e,
                                 VectorXr& hs,
                                 VectorXr& om,
                                 real_t&   a,
-                                real_t&   Cp) const
+                                real_t&   Cv) const
 {
 
     const real_t irho = 1.0/rho;
@@ -492,7 +491,7 @@ antioch_constitutive::evaluate (const real_t    e,
     kap = this->wilke_evaluator->k (T, cs);
 
     // Used by transport calcs and output
-    Cp = this->sm_thermo->cp(T, T, cs);
+    const real_t Cp = this->sm_thermo->cp(T, T, cs);
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
     // looks like inverse of Le to me.
@@ -503,7 +502,7 @@ antioch_constitutive::evaluate (const real_t    e,
 
 
     // Speed of sound (frozen)
-    real_t Cv   = this->sm_thermo->cv(T, T, cs);
+    Cv   = this->sm_thermo->cv(T, T, cs);
 
     real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
 

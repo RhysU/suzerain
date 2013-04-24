@@ -773,9 +773,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // Compute temperature, pressure, mass diffusivities,
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
-            real_t T, p, mu, kap, a, Cp;
+            real_t T, p, mu, kap, a, Cv;
             cmods.evaluate(e, m, rho, species, cs,
-                           T, p, Ds, mu, kap, hs, om, a, Cp);
+                           T, p, Ds, mu, kap, hs, om, a, Cv);
 
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
 
@@ -965,7 +965,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
                 const real_t nu  = mu  /  rho;
-                const real_t kd  = kap / (rho*Cp); // thermal diffusivity
+                const real_t kd  = kap / (rho*Cv); // thermal diffusivity
                 const real_t Ds0 = ( Ds.size()>1 ? Ds[0] : 0.0 );
 
                 real_t diffusivity;
