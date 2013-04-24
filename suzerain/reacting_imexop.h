@@ -63,7 +63,7 @@ typedef struct {
     double *Ce_rho;
     double *Ce_rv;
     double *nu;
-    double *korCp;
+    double *korCv;
     double *Ds;
 } suzerain_reacting_imexop_ref;
 
@@ -84,7 +84,7 @@ typedef struct {
     int Ce_rho;
     int Ce_rv;
     int nu;
-    int korCp;
+    int korCv;
     int Ds;
 } suzerain_reacting_imexop_refld;
 

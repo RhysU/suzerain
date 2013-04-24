@@ -526,7 +526,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           Vector3r& p_m,
                                                           real_t&   p_e,
                                                           real_t&   mu,
-                                                          real_t&   kaporCp,
+                                                          real_t&   kaporCv,
                                                           VectorXr& Ds ) const
 {
     const real_t irho = 1.0/rho;
@@ -576,7 +576,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
     mu  = this->wilke_evaluator->mu(T, cs);
     const real_t kap = this->wilke_evaluator->k (T, cs);
 
-    kaporCp = kap*irho/Cp;
+    kaporCv = kap*irho/Cv;
 
     // Is this right?  Copied from FIN-S (and antioch has same) but
     // looks like inverse of Le to me.

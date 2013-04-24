@@ -387,7 +387,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 p_ru, p_rw, p_rE,
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
-                                nu, korCp, Ds,
+                                nu, korCv, Ds,
                                 count // Sentry
             }; };
 
@@ -436,11 +436,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
                 // ... pressure-related quantities
-                real_t p, p_rho, p_rsum, p_e, mu, korCp;
+                real_t p, p_rho, p_rsum, p_e, mu, korCv;
                 Vector3r p_m;
                 cmods.evaluate_pressure_derivs_and_trans(
                     e, m, rho, species, cs,
-                    p, p_rho, p_rsum, p_m, p_e, mu, korCp, Ds);
+                    p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds);
 
                 real_t H = irho*(e + p);
 
@@ -468,7 +468,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // ...and viscous-term-related quantities
                 acc[ref::nu   ](mu*irho);
-                acc[ref::korCp](korCp);
+                acc[ref::korCv](korCv);
                 acc[ref::Ds   ](Ds[0]); // Yes, b/c constant Lewis number!
 
             } // end X // end Z
@@ -499,7 +499,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_Ce_rho    ()[j] = sum(acc[ref::Ce_rho    ]);
             common.ref_Ce_rv     ()[j] = sum(acc[ref::Ce_rv     ]);
             common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
-            common.ref_korCp     ()[j] = sum(acc[ref::korCp     ]);
+            common.ref_korCv     ()[j] = sum(acc[ref::korCv     ]);
             common.ref_Ds        ()[j] = sum(acc[ref::Ds        ]);
 
         } // end Y
@@ -613,7 +613,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Energy
         {
             Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
-            const VectorXr& D(common.ref_korCp());
+            const VectorXr& D(common.ref_korCv());
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
             F = tmp;
@@ -689,7 +689,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                                common.ref_uz        ()[j]);
 
             const real_t ref_nu   (common.ref_nu()   [j]);
-            const real_t ref_korCp(common.ref_korCp()[j]);
+            const real_t ref_korCv(common.ref_korCv()[j]);
             const real_t ref_Ds   ( (Ds.size()>1) ? common.ref_Ds()[j] : 0.0);
 
 
@@ -998,7 +998,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 case linearize::rhome_y:
                     // Compute sign wrt ref.
                     diffusivity = max(Ds0-ref_Ds,
-                                  max(kd-ref_korCp,
+                                  max(kd-ref_korCv,
                                   max(real_t(1), cmods.alpha)*(nu-ref_nu)));
 
                     if (diffusivity <= 0) break;  // NaN => false, proceed

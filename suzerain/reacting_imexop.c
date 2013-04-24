@@ -157,7 +157,7 @@ suzerain_reacting_flow_imexop_accumulate(
                 w->D_T[D1], w->ld, IN(rho_E), 1.0, OUT(rho_E));
 
             (*p_gbdmv)(trans, n, w->kl[D2], w->ku[D2],
-                phi,                         REF(korCp),
+                phi,                         REF(korCv),
                 w->D_T[D2], w->ld, IN(rho_E), 1.0, OUT(rho_E));
         }
 

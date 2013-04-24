@@ -263,7 +263,7 @@ public:
     refs_type::RowXpr      ref_Ce_rho()           { return refs.row(12); }
     refs_type::RowXpr      ref_Ce_rv()            { return refs.row(13); }
     refs_type::RowXpr      ref_nu()               { return refs.row(14); }
-    refs_type::RowXpr      ref_korCp()            { return refs.row(15); }
+    refs_type::RowXpr      ref_korCv()            { return refs.row(15); }
     refs_type::RowXpr      ref_Ds()               { return refs.row(16); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
@@ -281,7 +281,7 @@ public:
     refs_type::ConstRowXpr ref_Ce_rho()     const { return refs.row(12); }
     refs_type::ConstRowXpr ref_Ce_rv()      const { return refs.row(13); }
     refs_type::ConstRowXpr ref_nu()         const { return refs.row(14); }
-    refs_type::ConstRowXpr ref_korCp()      const { return refs.row(15); }
+    refs_type::ConstRowXpr ref_korCv()      const { return refs.row(15); }
     refs_type::ConstRowXpr ref_Ds()         const { return refs.row(16); }
     
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
@@ -305,7 +305,7 @@ public:
         ref.Ce_rho     = ref_Ce_rho().data();
         ref.Ce_rv      = ref_Ce_rv().data();
         ref.nu         = ref_nu().data();
-        ref.korCp      = ref_korCp().data();
+        ref.korCv      = ref_korCv().data();
         ref.Ds         = ref_Ds().data();
 
         const int inc = refs.colStride();
@@ -324,7 +324,7 @@ public:
         ld.Ce_rho     = inc;
         ld.Ce_rv      = inc;
         ld.nu         = inc;
-        ld.korCp      = inc;
+        ld.korCv      = inc;
         ld.Ds         = inc;
     }
 

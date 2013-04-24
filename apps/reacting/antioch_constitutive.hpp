@@ -210,7 +210,7 @@ public:
                                              Vector3r& p_m,
                                              real_t&   p_e,
                                              real_t&   mu,
-                                             real_t&   kaporCp,
+                                             real_t&   kaporCv,
                                              VectorXr& Ds ) const;
 
     /**
