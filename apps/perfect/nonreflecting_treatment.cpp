@@ -38,7 +38,37 @@ namespace suzerain {
 
 namespace perfect {
 
-// TODO Implement
+nonreflecting_treatment::nonreflecting_treatment(
+        const scenario_definition &scenario,
+        const grid_specification &grid,
+        const pencil_grid &dgrid,
+        const bsplineop &cop,
+        bspline &b,
+        operator_common_block &common)
+    : operator_base(grid, dgrid, cop, b)
+    , scenario(scenario)
+    , common(common)
+    , who("nonreflecting_treatment")
+{
+    // NOP
+}
+
+std::vector<real_t> nonreflecting_treatment::apply_operator(
+            const real_t time,
+            contiguous_state<4,complex_t> &swave,
+            const real_t evmaxmag_real,
+            const real_t evmaxmag_imag,
+            const std::size_t substep_index) const
+{
+    // State enters method as coefficients in X, Y, and Z directions
+
+    // TODO Implement
+    return N->apply_operator(
+            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
+
+    // State leaves method as coefficients in X and Z directions
+    // State leaves method as collocation point values in Y direction
+}
 
 } // namespace perfect
 
