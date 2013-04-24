@@ -92,8 +92,13 @@ AC_LANG_POP([C++])
 AC_LANG_PUSH([Fortran])
 AC_PROG_FC
 AX_COMPILER_VENDOR
-dnl FIXME Intel ifort barfs on -malign-double (see Ticket #2829)
-dnl AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}])
+dnl ------------------------------------------------------------------------
+dnl Ensure any optimization flags we maintain produce no warnings
+dnl Required because Intel ifort barfs on -malign-double (see Ticket #2829)
+ac_[]_AC_LANG_ABBREV[]_werror_flag=yes;      dnl Push AC_LANG_WERROR
+AX_APPEND_COMPILE_FLAGS([${CFLAGS_MAXOPT}])  dnl Run tests
+ac_[]_AC_LANG_ABBREV[]_werror_flag=;         dnl Pop AC_LANG_WERROR
+dnl ------------------------------------------------------------------------
 AC_FC_LIBRARY_LDFLAGS
 AC_FC_FREEFORM
 AC_FC_WRAPPERS
