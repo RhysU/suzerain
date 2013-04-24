@@ -21,10 +21,6 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/blas_et_al.h>
 
 #include <gsl/gsl_ieee_utils.h>

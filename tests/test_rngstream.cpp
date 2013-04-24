@@ -3,10 +3,6 @@
 //  Modified to use Boost Test for error reporting.
 //  Original authors retain their copyright, of course.
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/rngstream.hpp>
 
 #define BOOST_TEST_MAIN

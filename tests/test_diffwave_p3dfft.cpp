@@ -22,9 +22,6 @@
  *--------------------------------------------------------------------------
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
 #include <suzerain/diffwave.h>
 
 #define BOOST_TEST_MAIN

@@ -33,10 +33,6 @@
         const_cast<void*>(reinterpret_cast<volatile void*>(ptr)), addend);
 #endif
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/allocator.hpp>
 
 #define BOOST_TEST_MAIN

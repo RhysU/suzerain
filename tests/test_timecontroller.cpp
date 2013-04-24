@@ -21,10 +21,6 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/timecontroller.hpp>
 
 #define BOOST_TEST_MAIN

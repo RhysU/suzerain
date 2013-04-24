@@ -10,10 +10,6 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/running_statistics.hpp>
 
 #define BOOST_TEST_MAIN

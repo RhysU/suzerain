@@ -21,10 +21,6 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/gbdddmv.h>
 
 #include <boost/test/parameterized_test.hpp>

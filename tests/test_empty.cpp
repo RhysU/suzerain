@@ -21,10 +21,6 @@
 //
 //--------------------------------------------------------------------------
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
 
