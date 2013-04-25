@@ -63,11 +63,32 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 {
     // State enters method as coefficients in X, Y, and Z directions
 
-    // Retrieve upper boundary reference state from the common block
+    // Prepare the rotation and its inverse that reorders from
+    // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
+    // All remaining matrices/logic within the routine uses the latter order!
+    Matrix5r RY = Matrix5r::Zero();
+    {
+        RY(0, ndx::rho) = 1;
+        RY(1, ndx::my ) = 1;
+        RY(2, ndx::mz ) = 1;
+        RY(3, ndx::mx ) = 1;
+        RY(4, ndx::e  ) = 1;
+    }
+    Matrix5r inv_RY = Matrix5r::Zero();
+    {
+        inv_RY(ndx::e  , 4) = 1;
+        inv_RY(ndx::mx , 3) = 1;
+        inv_RY(ndx::my , 1) = 1;
+        inv_RY(ndx::mz , 2) = 1;
+        inv_RY(ndx::rho, 0) = 1;
+    }
+
+    // Retrieve upper boundary reference state from the common block.
+    // These assignments are odd looking to permit others as documented.
     const real_t rho = common.ref_rho().tail<1>()[0];
-    const real_t u   = common.ref_ux ().tail<1>()[0];
-    const real_t v   = common.ref_uy ().tail<1>()[0];
-    const real_t w   = common.ref_uz ().tail<1>()[0];
+    const real_t u   = common.ref_uy ().tail<1>()[0]; // Ref u = v' per RY
+    const real_t v   = common.ref_uz ().tail<1>()[0]; // Ref v = w' per RY
+    const real_t w   = common.ref_ux ().tail<1>()[0]; // Ref w = u' per RY
           real_t a   = common.ref_a  ().tail<1>()[0];
 
     // Prepare oft-used derived quantities
@@ -90,59 +111,37 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const real_t Ma2        = Ma * Ma;
     const real_t inv_Ma2    = 1 / Ma2;
 
-    // Build the appropriate 5x5 projection matrices:
-    //   1) The documentation lists these as rho, rho_u, rho_v, rho_w, rho_E.
-    //   2) The code uses a different order, so logically access entries.
-    //   3) Form piece parts for readability and then pre-compute products.
-    Matrix5r RY = Matrix5r::Zero();
-    {
-        RY(ndx::e  , ndx::e  ) = 1;
-        RY(ndx::mx , ndx::my ) = 1;
-        RY(ndx::my , ndx::mz ) = 1;
-        RY(ndx::mz , ndx::mx ) = 1;
-        RY(ndx::rho, ndx::rho) = 1;
-    }
-
-    Matrix5r inv_RY = Matrix5r::Zero();
-    {
-        inv_RY(ndx::e  , ndx::e  ) = 1;
-        inv_RY(ndx::mx , ndx::mz ) = 1;
-        inv_RY(ndx::my , ndx::mx ) = 1;
-        inv_RY(ndx::mz , ndx::my ) = 1;
-        inv_RY(ndx::rho, ndx::rho) = 1;
-    }
-
+    // Build the variable transformation matrices
     Matrix5r S = Matrix5r::Zero();
     {
-        S(ndx::e  , ndx::e )  =   gamma1 * inv_Ma2;
-        S(ndx::e  , ndx::mx)  = - gamma1 * u;
-        S(ndx::e  , ndx::my)  = - gamma1 * v;
-        S(ndx::e  , ndx::mz)  = - gamma1 * w;
-        S(ndx::e  , ndx::rho) =   a2 * inv_gamma * inv_Ma2;
-        S(ndx::mx , ndx::mx)  =   inv_rho;
-        S(ndx::mx , ndx::rho) = - u * inv_rho;
-        S(ndx::my , ndx::my)  =   inv_rho;
-        S(ndx::my , ndx::rho) = - v * inv_rho;
-        S(ndx::mz , ndx::mz)  =   inv_rho;
-        S(ndx::mz , ndx::rho) = - w * inv_rho;
-        S(ndx::rho, ndx::rho) =   1;
+        S(0, 0) =   1;
+        S(1, 0) = - u * inv_rho;
+        S(2, 0) = - v * inv_rho;
+        S(3, 0) = - w * inv_rho;
+        S(4, 0) =   a2 * inv_gamma * inv_Ma2;
+        S(1, 1) =   inv_rho;
+        S(4, 1) = - gamma1 * u;
+        S(2, 2) =   inv_rho;
+        S(4, 2) = - gamma1 * v;
+        S(3, 3) =   inv_rho;
+        S(4, 3) = - gamma1 * w;
+        S(4, 4) =   gamma1 * inv_Ma2;
     }
 
     Matrix5r inv_S  = Matrix5r::Zero();
     {
-        inv_S(ndx::e  , ndx::e )  =   Ma2 * inv_gamma1;
-        inv_S(ndx::e  , ndx::mx)  =   Ma2 * rho * u;
-        inv_S(ndx::e  , ndx::my)  =   Ma2 * rho * v;
-        inv_S(ndx::e  , ndx::mz)  =   Ma2 * rho * w;
-        inv_S(ndx::e  , ndx::rho) =   Ma2 * (u2 + v2 + w2)
-                                  +   a2 * inv_gamma * inv_gamma1;
-        inv_S(ndx::mx , ndx::mx)  =   rho;
-        inv_S(ndx::mx , ndx::rho) =   u;
-        inv_S(ndx::my , ndx::my)  =   rho;
-        inv_S(ndx::my , ndx::rho) =   v;
-        inv_S(ndx::mz , ndx::mz)  =   rho;
-        inv_S(ndx::mz , ndx::rho) =   w;
-        inv_S(ndx::rho, ndx::rho) =   1;
+        inv_S(0, 0) =   1;
+        inv_S(1, 0) =   u;
+        inv_S(2, 0) =   v;
+        inv_S(3, 0) =   w;
+        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) + a2 * inv_gamma * inv_gamma1;
+        inv_S(1, 1) =   rho;
+        inv_S(4, 1) =   Ma2 * rho * u;
+        inv_S(2, 2) =   rho;
+        inv_S(4, 2) =   Ma2 * rho * v;
+        inv_S(3, 3) =   rho;
+        inv_S(4, 3) =   Ma2 * rho * w;
+        inv_S(4, 4) =   Ma2 * inv_gamma1;
     }
 
     // Per the model document
@@ -155,38 +154,55 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     a2     *= inv_Ma2;
     inv_a2 *= Ma2;
 
-    // Though not strictly required, equation reordering for the following
-    // matrices is handled identically to those above to reduce the likelihood
-    // of indexing into the wrong row or column.
-
     Matrix5r VL = Matrix5r::Zero();
     {
-        VL(ndx::e  , ndx::e  ) =   1;
-        VL(ndx::e  , ndx::mx ) = - rho * a;
-        VL(ndx::mx , ndx::my ) =   rho * a;
-        VL(ndx::my , ndx::mz ) =   rho * a;
-        VL(ndx::mz , ndx::e  ) =   1;
-        VL(ndx::mz , ndx::mx ) =   rho * a;
-        VL(ndx::rho, ndx::e  ) =   1;
-        VL(ndx::rho, ndx::rho) = - a2;
+        VL(0, 0) = - a2;
+        VL(3, 1) =   rho * a;
+        VL(4, 1) = - rho * a;
+        VL(1, 2) =   rho * a;
+        VL(2, 3) =   rho * a;
+        VL(0, 4) =   1;
+        VL(3, 4) =   1;
+        VL(4, 4) =   1;
     }
 
     Matrix5r inv_VL = Matrix5r::Zero();
     {
-        inv_VL(ndx::e  , ndx::e  ) =   half;
-        inv_VL(ndx::e  , ndx::mz ) =   half;
-        inv_VL(ndx::mx , ndx::e  ) = - half * inv_rho * inv_a;
-        inv_VL(ndx::mx , ndx::mz ) =   half * inv_rho * inv_a;
-        inv_VL(ndx::my , ndx::mx ) =   inv_rho * inv_a;
-        inv_VL(ndx::mz , ndx::my ) =   inv_rho * inv_a;
-        inv_VL(ndx::rho, ndx::e  ) =   half * inv_a2;
-        inv_VL(ndx::rho, ndx::mz ) =   half * inv_a2;
-        inv_VL(ndx::rho, ndx::rho) = - inv_a2;
+        inv_VL(0, 0) = - inv_a2;
+        inv_VL(2, 1) =   inv_rho * inv_a;
+        inv_VL(3, 2) =   inv_rho * inv_a;
+        inv_VL(0, 3) =   half * inv_a2;
+        inv_VL(1, 3) =   half * inv_rho * inv_a;
+        inv_VL(4, 3) =   half;
+        inv_VL(0, 4) =   half * inv_a2;
+        inv_VL(1, 4) = - half * inv_rho * inv_a;
+        inv_VL(4, 4) =   half;
     }
 
-    Matrix5r BG = Matrix5r::Zero();
-    Matrix5r CG = Matrix5r::Zero();
-    Matrix5r PG = Matrix5r::Zero();
+    // The upper boundary is an inflow when the reference velocity is negative.
+    // In the event of v == 0, also treat the boundary like an inflow.
+    const bool inflow = u <= 0;
+
+    Matrix5r PG = Matrix5r::Zero();  // Characteristic-preserving projection
+    if (inflow) {
+        // TODO
+    } else {
+        // TODO
+    }
+
+    Matrix5r BG = Matrix5r::Zero();  // Medida's B^G_1
+    if (inflow) {
+        // TODO
+    } else {
+        // TODO
+    }
+
+    Matrix5r CG = Matrix5r::Zero();  // Medida's C^G_1
+    if (inflow) {
+        // TODO
+    } else {
+        // TODO
+    }
 
     // TODO Implement
     return N->apply_operator(
