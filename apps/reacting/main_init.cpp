@@ -248,7 +248,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         ArrayXr u(grid->N.y());
         for (int j = 0; j < u.size(); ++j) {
             const real_t y_j = b->collocation_point(j);
-            u[j] = chdef->bulk_rho_u
+            u[j] = ( chdef->bulk_rho_u / chdef->bulk_rho )
                  * normalization
                  * pow(y_j * (grid->L.y() - y_j), npower);
         }
@@ -256,6 +256,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         INFO("Preparing specific internal energy using the equation of state");
         ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions)
             + 0.5*(u*u + v*v + w*w);
+
+
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
@@ -282,6 +284,17 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
                     .setConstant(rho_s[s-1]);
             }
         }
+
+        // Compute and print the wall viscosity (known b/c only
+        // depends on T and mass fractions)
+        const real_t wall_visc = 
+            this->cmods->wilke_evaluator->mu(chdef->T_wall,
+                                             chdef->wall_mass_fractions);
+        INFO("The wall (dynamic) viscosity is " << wall_visc);
+
+        // Note: 2 in Re below takes channel height to half-height
+        INFO("So that Re_bulk = " << 
+             chdef->bulk_rho_u * grid->L.y() / (2.0*wall_visc) );
 
     }
 
