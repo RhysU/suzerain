@@ -37,7 +37,6 @@ namespace suzerain {
  */
 namespace math {
 
-
 /**
  * Return the lesser of \c a and \c b favoring <tt>NaN</tt>s over numbers.
  * See <a href="http://en.wikipedia.org/wiki/IEEE_754_revision#min_and_max">
