@@ -203,14 +203,14 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const bool inflow = u < 0;
 
     // Build the in-vs-outflow characteristic-preserving projection
-    DiagonalMatrix<real_t,5> PG(Vector5r::Zero());
+    Matrix5r PG(Matrix5r::Zero());
     if (inflow) {
-        PG.diagonal()(0) = 1;
-        PG.diagonal()(1) = 1;
-        PG.diagonal()(2) = 1;
-        PG.diagonal()(3) = 1;
+        PG(0, 0) = 1;
+        PG(1, 1) = 1;
+        PG(2, 2) = 1;
+        PG(3, 3) = 1;
     } else {
-        PG.diagonal()(4) = 1;
+        PG(4, 4) = 1;
     }
 
     Matrix5r BG(Matrix5r::Zero());  // Medida's B^G_1
@@ -238,6 +238,13 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         CG(4, 2) = u;
         CG(4, 4) = w;
     }
+
+    // Prepare all necessary real-valued products of the above matrices
+    const Matrix5r VL_S_RY           = VL * S * RY;
+    const Matrix5r BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
+    const Matrix5r CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
+    const Matrix5r ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
+    const Matrix5r inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
 
     // State enters method as coefficients in X, Y, and Z directions
 
