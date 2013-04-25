@@ -76,11 +76,38 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
             const std::size_t substep_index) const
 {
     // Implementation approach:
-    //   1) Build the various matrices we need from the reference state.
-    //   2) Preserve the wavenumber-dependent state at the upper boundary
-    //   3) Invoke the wrapped nonlinear operator in the usual fashion
+    //   1) Preserve the wavenumber-dependent state at the upper boundary
+    //   2) Invoke the wrapped nonlinear operator in the usual fashion
+    //   3) Build the various matrices we need from the reference state.
     //   4) Prepare pre-computable products of the various matrices
     //   5) Modify the right hand side in a wave-number dependent fashion.
+
+    // State enters method as coefficients in X, Y, and Z directions
+
+    // Make a local, stride-1 copy of the upper boundary state point values.
+    // Notice that boundary coefficients are 1-1 with boundary point values.
+    // That is, applying the mass matrix to the boundary is an ignorable NOP.
+    Matrix5Xc stash(5, swave.shape()[2] * swave.shape()[3]);
+    {
+        const int ku = boost::numeric_cast<int>(swave.shape()[0]);
+        const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
+        const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+        const int nu = boost::numeric_cast<int>(swave.shape()[3]);
+        for (int k = 0; k < ku; ++k) {
+            for (int n = 0; n < nu; ++n) {
+                for (int m = 0; m < mu; ++m) {
+                    stash(k, m + n * mu) = swave[k][l][m][n];
+                }
+            }
+        }
+    }
+
+    // Invoke the wrapped nonlinear operator (which may compute references!)
+    const std::vector<real_t> retval = N->apply_operator(
+            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
+
+    // State is now coefficients in X and Z directions
+    // State is now collocation point values in Y direction
 
     // Prepare the rotation and its inverse that reorders from
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
@@ -246,26 +273,6 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const Matrix5r ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
     const Matrix5r inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
 
-    // State enters method as coefficients in X, Y, and Z directions
-
-    // Make a local, stride-1 copy of the upper boundary state point values.
-    // Notice that boundary coefficients are 1-1 with boundary point values.
-    // That is, applying the mass matrix to the boundary is an ignorable NOP.
-    Matrix5Xc stash(5, swave.shape()[2] * swave.shape()[3]);
-    {
-        const int ku = boost::numeric_cast<int>(swave.shape()[0]);
-        const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
-        const int mu = boost::numeric_cast<int>(swave.shape()[2]);
-        const int nu = boost::numeric_cast<int>(swave.shape()[3]);
-        for (int k = 0; k < ku; ++k) {
-            for (int n = 0; n < nu; ++n) {
-                for (int m = 0; m < mu; ++m) {
-                    stash(k, m + n * mu) = swave[k][l][m][n];
-                }
-            }
-        }
-    }
-
 ////// Wavenumber traversal modeled after those found in suzerain/diffwave.c
 ////const int Ny   = dgrid.global_wave_extent.y();
 ////const int Nx   = grid.N.x();
@@ -278,7 +285,6 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 ////const int dkez = dgrid.local_wave_end.z();
 ////const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
 ////const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
-
 
 
 ////    for (int n = dkbz; n < dkez; ++n) {
@@ -317,12 +323,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 ////    break;
 
 
-    // TODO Implement
-    return N->apply_operator(
-            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
-
-    // State leaves method as coefficients in X and Z directions
-    // State leaves method as collocation point values in Y direction
+    return retval;
 }
 
 } // namespace perfect
