@@ -39,6 +39,7 @@
 #include "hybrid_operator.hpp"
 #include "isothermal_mass_operator.hpp"
 #include "nonlinear_operator.hpp"
+#include "nonreflecting_treatment.hpp"
 #include "perfect.hpp"
 
 #pragma warning(disable:1419)
@@ -197,6 +198,18 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
         INFO0(who, "Initializing explicit spatial operators");
+        if (grid->one_sided()) {
+            INFO0(who, "Preparing nonreflecting upper boundary treatment");
+            shared_ptr<nonreflecting_treatment> nonreflecting(
+                    new nonreflecting_treatment(
+                        *scenario, *grid, *dgrid, *cop, *b, common_block));
+            nonreflecting->N = N;
+            N = nonreflecting;
+            isothermal->upper_T = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_u = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_v = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_w = numeric_limits<real_t>::quiet_NaN();
+        }
         constrained->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
@@ -204,6 +217,11 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // FIXME Employ isothermal within implicit operator
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
+        if (grid->one_sided()) {
+            FATAL0(who, "Nonreflecting upper boundary treatment"
+                        " not usable with implicit advance");
+            return EXIT_FAILURE;
+        }
         constrained->L.reset(new isothermal_hybrid_linear_operator(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
@@ -211,6 +229,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
     }
+
 
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
