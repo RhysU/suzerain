@@ -185,7 +185,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     // The upper boundary is an inflow when the reference velocity is negative.
-    // In the event of v == 0, treat the boundary like an outflow.
+    // In the event of u == 0, treat the boundary like an outflow.
     const bool inflow = u < 0;
 
     // Build the in-vs-outflow characteristic-preserving projection
