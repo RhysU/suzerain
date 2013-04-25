@@ -262,19 +262,20 @@ using boost::array;         /**< \namespace suzerain */
  */
 
 // Bring common Eigen names into this namespace
-using Eigen::Aligned;      /**< \namespace suzerain */
-using Eigen::Array;        /**< \namespace suzerain */
-using Eigen::ColMajor;     /**< \namespace suzerain */
-using Eigen::Dynamic;      /**< \namespace suzerain */
-using Eigen::InnerStride;  /**< \namespace suzerain */
-using Eigen::Map;          /**< \namespace suzerain */
-using Eigen::Matrix;       /**< \namespace suzerain */
-using Eigen::NoChange;     /**< \namespace suzerain */
-using Eigen::OuterStride;  /**< \namespace suzerain */
-using Eigen::RowMajor;     /**< \namespace suzerain */
-using Eigen::Sequential;   /**< \namespace suzerain */
-using Eigen::Stride;       /**< \namespace suzerain */
-using Eigen::Unaligned;    /**< \namespace suzerain */
+using Eigen::Aligned;        /**< \namespace suzerain */
+using Eigen::Array;          /**< \namespace suzerain */
+using Eigen::ColMajor;       /**< \namespace suzerain */
+using Eigen::DiagonalMatrix; /**< \namespace suzerain */
+using Eigen::Dynamic;        /**< \namespace suzerain */
+using Eigen::InnerStride;    /**< \namespace suzerain */
+using Eigen::Map;            /**< \namespace suzerain */
+using Eigen::Matrix;         /**< \namespace suzerain */
+using Eigen::NoChange;       /**< \namespace suzerain */
+using Eigen::OuterStride;    /**< \namespace suzerain */
+using Eigen::RowMajor;       /**< \namespace suzerain */
+using Eigen::Sequential;     /**< \namespace suzerain */
+using Eigen::Stride;         /**< \namespace suzerain */
+using Eigen::Unaligned;      /**< \namespace suzerain */
 
 /**
  * Typedefs for \ref real_t, column-major <a
