@@ -68,16 +68,19 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const real_t u   = common.ref_ux ().tail<1>()[0];
     const real_t v   = common.ref_uy ().tail<1>()[0];
     const real_t w   = common.ref_uz ().tail<1>()[0];
-    const real_t a   = common.ref_a  ().tail<1>()[0];
+          real_t a   = common.ref_a  ().tail<1>()[0];
 
     // Prepare oft-used derived quantities
     const real_t inv_rho = 1 / rho;
     const real_t u2      = u * u;
     const real_t v2      = v * v;
     const real_t w2      = w * w;
-    const real_t a2      = a * a;
+          real_t inv_a   = 1 / a;
+          real_t a2      = a * a;
+          real_t inv_a2  = 1 / a2;
 
     // Prepare oft-used scenario-related constants
+    const real_t half       = real_t(1) / 2;
     const real_t gamma      = scenario.gamma;
     const real_t inv_gamma  = 1 / gamma;
     const real_t gamma1     = gamma - 1;
@@ -127,22 +130,60 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     Matrix5r inv_S  = Matrix5r::Zero();
     {
-        S(ndx::e  , ndx::e )  =   Ma2 * inv_gamma1;
-        S(ndx::e  , ndx::mx)  =   Ma2 * rho * u;
-        S(ndx::e  , ndx::my)  =   Ma2 * rho * v;
-        S(ndx::e  , ndx::mz)  =   Ma2 * rho * w;
-        S(ndx::e  , ndx::rho) =   Ma2 * (u2 + v2 + w2)
-                              +   a2 * inv_gamma * inv_gamma1;
-        S(ndx::mx , ndx::mx)  =   rho;
-        S(ndx::mx , ndx::rho) =   u;
-        S(ndx::my , ndx::my)  =   rho;
-        S(ndx::my , ndx::rho) =   v;
-        S(ndx::mz , ndx::mz)  =   rho;
-        S(ndx::mz , ndx::rho) =   w;
-        S(ndx::rho, ndx::rho) =   1;
+        inv_S(ndx::e  , ndx::e )  =   Ma2 * inv_gamma1;
+        inv_S(ndx::e  , ndx::mx)  =   Ma2 * rho * u;
+        inv_S(ndx::e  , ndx::my)  =   Ma2 * rho * v;
+        inv_S(ndx::e  , ndx::mz)  =   Ma2 * rho * w;
+        inv_S(ndx::e  , ndx::rho) =   Ma2 * (u2 + v2 + w2)
+                                  +   a2 * inv_gamma * inv_gamma1;
+        inv_S(ndx::mx , ndx::mx)  =   rho;
+        inv_S(ndx::mx , ndx::rho) =   u;
+        inv_S(ndx::my , ndx::my)  =   rho;
+        inv_S(ndx::my , ndx::rho) =   v;
+        inv_S(ndx::mz , ndx::mz)  =   rho;
+        inv_S(ndx::mz , ndx::rho) =   w;
+        inv_S(ndx::rho, ndx::rho) =   1;
     }
 
-    Matrix5r VL = Matrix5r::Zero(), inv_VL = Matrix5r::Zero();
+    // Per the model document
+    //   When reusing [V^L, B^G, and C^G] derived for U ... for V^\ast
+    //   every sound speed must be scaled by 1 / Ma because
+    //   \bar{a} / u_0 = a_0 \bar{a}^\ast / u_0 = \bar{a}^\ast / Ma.
+    // so we now once-and-for-all adjust a and a2 appropriately.
+    a      *= inv_Ma;
+    inv_a  *= Ma;
+    a2     *= inv_Ma2;
+    inv_a2 *= Ma2;
+
+    // Though not strictly required, equation reordering for the following
+    // matrices is handled identically to those above to reduce the likelihood
+    // of indexing into the wrong row or column.
+
+    Matrix5r VL = Matrix5r::Zero();
+    {
+        VL(ndx::e  , ndx::e  ) =   1;
+        VL(ndx::e  , ndx::mx ) = - rho * a;
+        VL(ndx::mx , ndx::my ) =   rho * a;
+        VL(ndx::my , ndx::mz ) =   rho * a;
+        VL(ndx::mz , ndx::e  ) =   1;
+        VL(ndx::mz , ndx::mx ) =   rho * a;
+        VL(ndx::rho, ndx::e  ) =   1;
+        VL(ndx::rho, ndx::rho) = - a2;
+    }
+
+    Matrix5r inv_VL = Matrix5r::Zero();
+    {
+        inv_VL(ndx::e  , ndx::e  ) =   half;
+        inv_VL(ndx::e  , ndx::mz ) =   half;
+        inv_VL(ndx::mx , ndx::e  ) = - half * inv_rho * inv_a;
+        inv_VL(ndx::mx , ndx::mz ) =   half * inv_rho * inv_a;
+        inv_VL(ndx::my , ndx::mx ) =   inv_rho * inv_a;
+        inv_VL(ndx::mz , ndx::my ) =   inv_rho * inv_a;
+        inv_VL(ndx::rho, ndx::e  ) =   half * inv_a2;
+        inv_VL(ndx::rho, ndx::mz ) =   half * inv_a2;
+        inv_VL(ndx::rho, ndx::rho) = - inv_a2;
+    }
+
     Matrix5r BG = Matrix5r::Zero();
     Matrix5r CG = Matrix5r::Zero();
     Matrix5r PG = Matrix5r::Zero();
