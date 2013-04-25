@@ -123,5 +123,12 @@ dist_check_SCRIPTS += test_physical_rhome_y.sh
 TESTS              += test_implicit_solvers.sh
 dist_check_SCRIPTS += test_implicit_solvers.sh
 
+##
+## Miscellaneous manual testing scripts
+##
+
+dist_check_SCRIPTS += scripts/pulse_perfect_init.sh
+dist_check_SCRIPTS += scripts/pulse_perfect.py
+
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
