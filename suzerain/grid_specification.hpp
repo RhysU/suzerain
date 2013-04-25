@@ -178,6 +178,12 @@ public:
      */
     real_t htdelta;
 
+    /** Is two-sided grid stretching via suzerain_htstretch2() in effect? */
+    bool two_sided() const { return htdelta >= 0; }
+
+    /** Is one-sided grid stretching via suzerain_htstretch1() in effect? */
+    bool one_sided() const { return !two_sided(); }
+
     /** @copydoc Nx(int) */
     grid_specification& Nx(const std::string& value);
 
