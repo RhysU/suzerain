@@ -61,12 +61,17 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const
 {
-    // State enters method as coefficients in X, Y, and Z directions
+    // Implementation approach:
+    //   1) Build the various matrices we need from the reference state.
+    //   2) Preserve the wavenumber-dependent state at the upper boundary
+    //   3) Invoke the wrapped nonlinear operator in the usual fashion
+    //   4) Prepare pre-computable products of the various matrices
+    //   5) Modify the right hand side in a wave-number dependent fashion.
 
     // Prepare the rotation and its inverse that reorders from
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
     // All remaining matrices/logic within the routine uses the latter order!
-    Matrix5r RY = Matrix5r::Zero();
+    Matrix5r RY(Matrix5r::Zero());
     {
         RY(0, ndx::rho) = 1;
         RY(1, ndx::my ) = 1;
@@ -74,7 +79,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         RY(3, ndx::mx ) = 1;
         RY(4, ndx::e  ) = 1;
     }
-    Matrix5r inv_RY = Matrix5r::Zero();
+    Matrix5r inv_RY(Matrix5r::Zero());
     {
         inv_RY(ndx::e  , 4) = 1;
         inv_RY(ndx::mx , 3) = 1;
@@ -91,7 +96,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const real_t w   = common.ref_ux ().tail<1>()[0]; // Ref w = u' per RY
           real_t a   = common.ref_a  ().tail<1>()[0];
 
-    // Prepare oft-used derived quantities
+    // Prepare oft-used quantities derived from the reference state
     const real_t inv_rho = 1 / rho;
     const real_t u2      = u * u;
     const real_t v2      = v * v;
@@ -101,7 +106,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
           real_t inv_a2  = 1 / a2;
 
     // Prepare oft-used scenario-related constants
-    const real_t half       = real_t(1) / 2;
+    const real_t chi        = dgrid.chi();
+    const real_t half       = static_cast<real_t>(1) / 2;
     const real_t gamma      = scenario.gamma;
     const real_t inv_gamma  = 1 / gamma;
     const real_t gamma1     = gamma - 1;
@@ -111,8 +117,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const real_t Ma2        = Ma * Ma;
     const real_t inv_Ma2    = 1 / Ma2;
 
-    // Build the variable transformation matrices
-    Matrix5r S = Matrix5r::Zero();
+    // Build the conserved -> primitive transformation and its inverse
+    Matrix5r S(Matrix5r::Zero());
     {
         S(0, 0) =   1;
         S(1, 0) = - u * inv_rho;
@@ -127,8 +133,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         S(4, 3) = - gamma1 * w;
         S(4, 4) =   gamma1 * inv_Ma2;
     }
-
-    Matrix5r inv_S  = Matrix5r::Zero();
+    Matrix5r inv_S(Matrix5r::Zero());
     {
         inv_S(0, 0) =   1;
         inv_S(1, 0) =   u;
@@ -154,7 +159,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     a2     *= inv_Ma2;
     inv_a2 *= Ma2;
 
-    Matrix5r VL = Matrix5r::Zero();
+    // Build the primitive -> characteristic transformation and its inverse
+    Matrix5r VL(Matrix5r::Zero());
     {
         VL(0, 0) = - a2;
         VL(3, 1) =   rho * a;
@@ -165,8 +171,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         VL(3, 4) =   1;
         VL(4, 4) =   1;
     }
-
-    Matrix5r inv_VL = Matrix5r::Zero();
+    Matrix5r inv_VL(Matrix5r::Zero());
     {
         inv_VL(0, 0) = - inv_a2;
         inv_VL(2, 1) =   inv_rho * inv_a;
@@ -180,29 +185,47 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     // The upper boundary is an inflow when the reference velocity is negative.
-    // In the event of v == 0, also treat the boundary like an inflow.
-    const bool inflow = u <= 0;
+    // In the event of v == 0, treat the boundary like an outflow.
+    const bool inflow = u < 0;
 
-    Matrix5r PG = Matrix5r::Zero();  // Characteristic-preserving projection
+    // Build the in-vs-outflow characteristic-preserving projection
+    DiagonalMatrix<real_t,5> PG(Vector5r::Zero());
     if (inflow) {
-        // TODO
+        PG.diagonal()(0) = 1;
+        PG.diagonal()(1) = 1;
+        PG.diagonal()(2) = 1;
+        PG.diagonal()(3) = 1;
     } else {
-        // TODO
+        PG.diagonal()(4) = 1;
     }
 
-    Matrix5r BG = Matrix5r::Zero();  // Medida's B^G_1
+    Matrix5r BG(Matrix5r::Zero());  // Medida's B^G_1
     if (inflow) {
-        // TODO
+        BG(1, 1) = v;
+        BG(3, 1) = half * (a - u);
+        BG(2, 2) = v;
+        BG(1, 3) = half * (a + u);
+        BG(3, 3) = v;
+        BG(1, 4) = half * (a - u);
     } else {
-        // TODO
+        BG(4, 1) = u;
+        BG(4, 4) = v;
     }
 
-    Matrix5r CG = Matrix5r::Zero();  // Medida's C^G_1
+    Matrix5r CG(Matrix5r::Zero());  // Medida's C^G_1
     if (inflow) {
-        // TODO
+        CG(1, 1) = w;
+        CG(2, 2) = w;
+        CG(3, 2) = half * (a - u);
+        CG(2, 3) = half * (a + u);
+        CG(3, 3) = w;
+        CG(2, 4) = half * (a - u);
     } else {
-        // TODO
+        CG(4, 2) = u;
+        CG(4, 4) = w;
     }
+
+    // State enters method as coefficients in X, Y, and Z directions
 
     // TODO Implement
     return N->apply_operator(
