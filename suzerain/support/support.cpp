@@ -257,8 +257,14 @@ real_t create(const int ndof,
     // Compute breakpoint point locations using ndof and htdelta
     ArrayXr breakpoints(ndof - k + 2);
     math::linspace(0.0, 1.0, breakpoints.size(), breakpoints.data());
-    for (int i = 0; i < breakpoints.size(); ++i) {
-        breakpoints[i] = suzerain_htstretch2(htdelta, 1.0, breakpoints[i]);
+    if (htdelta >= 0) {
+        for (int i = 0; i < breakpoints.size(); ++i) {
+            breakpoints[i] = suzerain_htstretch2(+htdelta, 1.0, breakpoints[i]);
+        }
+    } else {
+        for (int i = 0; i < breakpoints.size(); ++i) {
+            breakpoints[i] = suzerain_htstretch1(-htdelta, 1.0, breakpoints[i]);
+        }
     }
     breakpoints = (right - left) * breakpoints + left;
 

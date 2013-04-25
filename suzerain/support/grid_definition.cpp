@@ -41,6 +41,15 @@ namespace suzerain {
 namespace support {
 
 template<typename T>
+static void parse_option(const std::string& s, T* value, const char* name)
+{
+#pragma warning(push,disable:2259)
+    const T t = exprparse<real_t>(s, name);
+#pragma warning(pop)
+    *value = t;
+}
+
+template<typename T>
 static void parse_option(const std::string& s,
                          T* value, void (*validator)(T, const char*),
                          const char* name)
@@ -123,7 +132,9 @@ static const char desc_k[]
         = "Wall-normal B-spline order (4 is piecewise cubic)";
 
 static const char desc_htdelta[]
-        = "Wall-normal breakpoint hyperbolic tangent stretching";
+        = "Wall-normal breakpoint hyperbolic tangent stretching. "
+          "Positive and negative values indicate two- and one-sided "
+          "stretching, respectively.";
 
 static const char desc_Lz[]
         = "Domain length in spanwise Z direction";
@@ -224,8 +235,7 @@ grid_definition::options_description()
 
     // htdelta
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<real_t>, _1, &htdelta,
-                     &ensure_nonnegative<real_t>, name_htdelta));
+    p->notifier(bind(&parse_option<real_t>, _1, &htdelta, name_htdelta));
     if (!(boost::math::isnan)(htdelta)) {
         p->default_value(lexical_cast<string>(htdelta));
     }

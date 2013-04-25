@@ -69,6 +69,8 @@ public:
      *                <tt>default_k == 4</tt>.
      * @param htdelta Hyperbolic tangent stretching parameter
      *                to use when computing breakpoint locations.
+     *                Positive values indicate two-sided stretching.
+     *                Negative values indicate one-sided stretching.
      * @param Lz      Physical domain extent in the Z direction.
      * @param Nz      Logical grid size in the Z direction.
      * @param DAFz    Dealiasing factor in the Z direction.
@@ -168,7 +170,8 @@ public:
 
     /**
      * The hyperbolic tangent stretching parameter to use when computing
-     * breakpoint locations.
+     * breakpoint locations.  Positive values indicate two-sided stretching.
+     * Negative values indicate one-sided stretching.
      *
      * @see suzerain_htstretch1() and suzerain_htstretch2() for examples
      *      of how this parameter is used.
