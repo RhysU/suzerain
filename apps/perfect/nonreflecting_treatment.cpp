@@ -35,6 +35,20 @@
 #include "common_block.hpp"
 #include "scenario_definition.hpp"
 
+#pragma float_control(precise, on)
+#pragma fenv_access(on)
+#pragma float_control(except, on)
+#pragma fp_contract(off)
+static inline
+suzerain::real_t twopiover(const suzerain::real_t L)
+{
+    return 2*M_PI/L;
+}
+#pragma float_control(except, off)
+#pragma fenv_access(off)
+#pragma float_control(precise, off)
+#pragma fp_contract(on)
+
 namespace suzerain {
 
 namespace perfect {
@@ -226,6 +240,75 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     // State enters method as coefficients in X, Y, and Z directions
+
+    // Make a local, stride-1 copy of the upper boundary state point values.
+    // Notice that boundary coefficients are 1-1 with boundary point values.
+    // That is, applying the mass matrix to the boundary is an ignorable NOP.
+    Matrix5Xc stash(5, swave.shape()[2] * swave.shape()[3]);
+    {
+        const int ku = boost::numeric_cast<int>(swave.shape()[0]);
+        const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
+        const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+        const int nu = boost::numeric_cast<int>(swave.shape()[3]);
+        for (int k = 0; k < ku; ++k) {
+            for (int n = 0; n < nu; ++n) {
+                for (int m = 0; m < mu; ++m) {
+                    stash(k, m + n * mu) = swave[k][l][m][n];
+                }
+            }
+        }
+    }
+
+////// Wavenumber traversal modeled after those found in suzerain/diffwave.c
+////const int Ny   = dgrid.global_wave_extent.y();
+////const int Nx   = grid.N.x();
+////const int dNx  = grid.dN.x();
+////const int dkbx = dgrid.local_wave_start.x();
+////const int dkex = dgrid.local_wave_end.x();
+////const int Nz   = grid.N.z();
+////const int dNz  = grid.dN.z();
+////const int dkbz = dgrid.local_wave_start.z();
+////const int dkez = dgrid.local_wave_end.z();
+////const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
+////const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
+
+
+
+////    for (int n = dkbz; n < dkez; ++n) {
+////        const int wn = wavenumber(dNz, n);
+////        if (std::abs(wn) > wavenumber_absmin(Nz)) continue;
+////        const real_t kn = twopioverLz*wn;
+
+////        for (int m = dkbx; m < dkex; ++m) {
+////            const int wm = wavenumber(dNx, m);
+////            if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
+////            const real_t km = twopioverLx*wm;
+
+////            // Get pointer to (.,m,n)-th state pencil
+////            complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+////            // Copy pencil into temporary storage
+////            blas::copy(solver->N, p, 1, tmp.data(), 1);
+
+////            // Accumulate result back into state storage
+////            SUZERAIN_TIMER_SCOPED("suzerain_rholut_imexop_accumulate");
+////            suzerain_rholut_imexop_accumulate(
+////                    phi, km, kn, &s, &ref, &ld, cop.get(),
+////                    tmp.data() + ndx::e   * Ny,
+////                    tmp.data() + ndx::mx  * Ny,
+////                    tmp.data() + ndx::my  * Ny,
+////                    tmp.data() + ndx::mz  * Ny,
+////                    tmp.data() + ndx::rho * Ny,
+////                    0.0,
+////                    p + ndx::e   * Ny,
+////                    p + ndx::mx  * Ny,
+////                    p + ndx::my  * Ny,
+////                    p + ndx::mz  * Ny,
+////                    p + ndx::rho * Ny);
+////        }
+////    }
+////    break;
+
 
     // TODO Implement
     return N->apply_operator(
