@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 ######################################################
-# Python script to replace an existing field with 
+# Python script to replace an existing field with
 # that of a pulse traveling in the +y direction
 # to test boundary conditions
 #
@@ -15,7 +16,7 @@ import math
 
 ######################################################
 # Open all of the files
-f   = h5py.File('pulse_perfect_physical.h5','r+')
+f   = h5py.File(sys.argv[1],'r+')
 
 y   = f['collocation_points_y'].value
 # print y
@@ -28,7 +29,7 @@ Ny     = f['Ny'].value
 # Assume these single species parameters are set
 gamma = 1.4
 R     = 8314.472 / 28.96000
-mu    = 1.7e-5 
+mu    = 1.7e-5
 
 # Mean field parameters
 v0    = 0
@@ -42,14 +43,14 @@ Bc    = 10
 
 # Nondimensional
 u0    = Ac
-Re    = rho0*Ly*u0/mu 
+Re    = rho0*Ly*u0/mu
 Ma    = u0/c0
 #print Ma
 
 # Placeholder for auxiliary computed variables
 vp    = f['rho_u'].value
-pp    = f['rho_u'].value 
-rhop  = f['rho_u'].value 
+pp    = f['rho_u'].value
+rhop  = f['rho_u'].value
 rhoep = f['rho_u'].value
 Tp    = f['rho_u'].value
 
