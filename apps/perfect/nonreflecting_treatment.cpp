@@ -85,11 +85,12 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     // State enters method as coefficients in X, Y, and Z directions
 
-    // Make a local, stride-1 copy of the upper boundary state point values.
+    // Make a local, stride-1 copy of I times upper boundary state point values.
     // Notice that boundary coefficients are 1-1 with boundary point values.
     // That is, applying the mass matrix to the boundary is an ignorable NOP.
-    Matrix5Xc stash(5, swave.shape()[2] * swave.shape()[3]);
+    Matrix5Xc i_stash(5, swave.shape()[2] * swave.shape()[3]);
     {
+        const complex_t imag_unit(0, 1);
         const int ku = boost::numeric_cast<int>(swave.shape()[0]);
         const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
         const int mu = boost::numeric_cast<int>(swave.shape()[2]);
@@ -97,7 +98,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         for (int k = 0; k < ku; ++k) {
             for (int n = 0; n < nu; ++n) {
                 for (int m = 0; m < mu; ++m) {
-                    stash(k, m + n * mu) = swave[k][l][m][n];
+                    i_stash(k, m + n * mu) = imag_unit * swave[k][l][m][n];
                 }
             }
         }
@@ -289,6 +290,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     // Traverse wavenumbers updating the RHS with the Giles boundary condition
     using suzerain::inorder::wavenumber;
+    const int mu = boost::numeric_cast<int>(swave.shape()[2]);
     for (int n = dkbz; n < dkez; ++n) {
         const int wn = wavenumber(dNz, n);
         const real_t kn = twopioverLz*wn;
@@ -303,7 +305,18 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
                 N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
             }
 
-            // TODO Compute
+            // Modify the packed RHS per
+            // "Implementation primarily within the nonlinear explicit operator"
+            // The imaginary unit has already been included within i_stash.
+            Vector5c tmp;
+            tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
+            tmp.noalias() += kn
+                           * BG_VL_S_RY_by_chi.cast<complex_t>()
+                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
+            tmp.noalias() += km
+                           * CG_VL_S_RY_by_chi.cast<complex_t>()
+                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
+            N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
 
             // Pack new upper boundary RHS from the contiguous buffer
             for (int f = 0; f < N.size(); ++f) {
@@ -312,7 +325,6 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
         }
     }
-
 
     return retval;
 }
