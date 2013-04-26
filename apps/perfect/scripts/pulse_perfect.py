@@ -2,7 +2,9 @@
 ######################################################
 # Python script to replace an existing field with
 # that of a pulse traveling in the +y direction
-# to test boundary conditions
+# to test boundary conditions. Pulse field taken from
+# "Accurate Boundary Conditions for Multicomponent Reacting Flows"
+# M. Baum, T. Poinsot, D, Thevenin, J.Comp.Phys. 116, 247-261, 1994
 #
 # Inputs:
 # - The input file name in f (the file will be rewritten)
