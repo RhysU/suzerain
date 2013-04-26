@@ -41,7 +41,10 @@ namespace suzerain {
 namespace support {
 
 template<typename T>
-static void parse_option(const std::string& s, T* value, const char* name)
+static void parse_option(
+        const std::string& s,
+        T* value,
+        const char* name)
 {
 #pragma warning(push,disable:2259)
     const T t = exprparse<real_t>(s, name);
@@ -50,9 +53,11 @@ static void parse_option(const std::string& s, T* value, const char* name)
 }
 
 template<typename T>
-static void parse_option(const std::string& s,
-                         T* value, void (*validator)(T, const char*),
-                         const char* name)
+static void validate_option(
+        const std::string& s,
+        T* value,
+        void (*validator)(T, const char*),
+        const char* name)
 {
 #pragma warning(push,disable:2259)
     const T t = exprparse<real_t>(s, name);
@@ -178,7 +183,7 @@ grid_definition::options_description()
 
     // Lx
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<real_t>, _1, &L.x(),
+    p->notifier(bind(&validate_option<real_t>, _1, &L.x(),
                      &ensure_positive<real_t>, name_Lx));
     if (!(boost::math::isnan)(L.x())) {
         p->default_value(lexical_cast<string>(L.x()));
@@ -205,7 +210,7 @@ grid_definition::options_description()
 
     // Ly
     p.reset(value<string>(NULL));
-    p->notifier(bind(&parse_option<real_t>, _1, &L.y(),
+    p->notifier(bind(&validate_option<real_t>, _1, &L.y(),
                      &ensure_positive<real_t>, name_Ly));
     if (!(boost::math::isnan)(L.y())) {
         p->default_value(lexical_cast<string>(L.y()));
@@ -224,11 +229,11 @@ grid_definition::options_description()
     // k
     p.reset(value<string>());
     if (k) {
-        p->notifier(bind(&parse_option<int>, _1, &k,
+        p->notifier(bind(&validate_option<int>, _1, &k,
                          &ensure_positive<int>, name_k));
         p->default_value(lexical_cast<string>(k));
     } else {
-        p->notifier(bind(&parse_option<int>, _1, &k,
+        p->notifier(bind(&validate_option<int>, _1, &k,
                          &ensure_nonnegative<int>, name_k));
     }
     retval.add_options()(name_k, p.release(), desc_k);
@@ -243,7 +248,7 @@ grid_definition::options_description()
 
     // Lz
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<real_t>, _1, &L.z(),
+    p->notifier(bind(&validate_option<real_t>, _1, &L.z(),
                      &ensure_positive<real_t>, name_Lz));
     if (!(boost::math::isnan)(L.z())) {
         p->default_value(lexical_cast<string>(L.z()));
@@ -270,7 +275,7 @@ grid_definition::options_description()
 
     // Pa
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<int>, _1, &P[0],
+    p->notifier(bind(&validate_option<int>, _1, &P[0],
                      &ensure_nonnegative<int>, name_Pa));
     if (P[0]) {
         p->default_value(lexical_cast<string>(P[0]));
@@ -279,7 +284,7 @@ grid_definition::options_description()
 
     // Pb
     p.reset(value<string>());
-    p->notifier(bind(&parse_option<int>, _1, &P[1],
+    p->notifier(bind(&validate_option<int>, _1, &P[1],
                      &ensure_nonnegative<int>, name_Pb));
     if (P[1]) {
         p->default_value(lexical_cast<string>(P[1]));
