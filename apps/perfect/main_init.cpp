@@ -178,7 +178,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
         INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
-              " due to manufactured solution use");
+                   " due to manufactured solution use");
         scenario->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
 
