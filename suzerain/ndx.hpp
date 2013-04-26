@@ -65,7 +65,7 @@ extern const array<const char *, ndx::rho + 1u> identifier;
 extern const array<const char *, ndx::rho + 1u> description;
 
 /**
- * Compute the index of the (<em>zero-indexed</em) <tt>i</tt>-th species
+ * Compute the index of the (<em>zero-indexed</em>) <tt>i</tt>-th species
  * partial density for <tt>i > 0</tt>.  Because the diluter species partial
  * density if not tracked, <tt>i > 0</tt> is required.  Notice neither
  * \ref identifier nor \ref description is provided for these indices.
