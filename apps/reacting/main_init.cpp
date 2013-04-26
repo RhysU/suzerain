@@ -296,6 +296,17 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         INFO("So that Re_bulk = " << 
              chdef->bulk_rho_u * grid->L.y() / (2.0*wall_visc) );
 
+        // Compute and print the speed of sound (frozen)
+        const real_t R_mix = this->cmods->mixture->R(chdef->wall_mass_fractions);
+        const real_t Cv    = this->cmods->sm_thermo->cv(chdef->T_wall, 
+                                                        chdef->T_wall, 
+                                                        chdef->wall_mass_fractions);
+
+        
+        const real_t a = std::sqrt( (1.0 + R_mix/Cv)*R_mix*chdef->T_wall );
+        
+        INFO("The speed of sound at the wall is " << a);
+        
     }
 
     INFO0(who, "Saving the newly initialized state to disk");
