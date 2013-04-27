@@ -31,9 +31,10 @@ reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
 
 # Explicit dependencies where necessary
 reacting_main.dvi reacting_main.pdf: $(reacting_TEXSOURCES)
-perfectgas.dvi perfectgas.pdf: perfectgas.tex inhomogeneity2.eps
+perfectgas.dvi perfectgas.pdf: perfectgas.tex
+perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
 
-# Notebooks, Images, References, etc.
+# Notebooks, Images, Source Data, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
@@ -44,10 +45,9 @@ EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
 EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
 EXTRA_DIST += notebooks/SMR91_Linearization.nb
-EXTRA_DIST += inhomogeneity2.eps
-EXTRA_DIST += inhomogeneity2.gz
+EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
+EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps
 EXTRA_DIST += references.bib
-
 
 # Build and install writeups
 all-local:      pdf-local
