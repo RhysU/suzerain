@@ -1669,10 +1669,8 @@ $k=5$ through $11$ to within relative errors of [-2.55\%, 1.76\%].  Another
 collection permits fitting retained $C^{(2)}$ observations to within [-11.3\%,
 17.1\%].  While those results are encouraging for the generality of the chosen
 functional forms, they are less than satisfactory for production use.  More
-precise, $k$-specific, coefficients for two-sided stretching appear in
-tables~\ref{tab:C1fit2} and~\ref{tab:C2fit2}.  Similar coefficients for
-one-sided stretching fits appear in tables~\ref{tab:C1fit1}
-and~\ref{tab:C2fit1}.
+precise, $k$-specific, coefficients for both two- and one-sided stretching
+appear in tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.
 
 Unfortunately, using either $C_\text{approx}^{(1)}$ or $C_\text{approx}^{(2)}$
 directly proves to be overly aggressive as measured using a collection of
@@ -1692,10 +1690,9 @@ $C_\text{approx}^{(i)}$.  That is, the code computes
   \right)^{1/2}
 \end{align}
 where the fit-specific, negative-valued lower error bounds appear in
-tables~\ref{tab:C1fit2}, \ref{tab:C2fit2}, \ref{tab:C1fit1},
-and~\ref{tab:C2fit1}.  Adjusting to the empirical fits' lower bounds delivers
-slightly conservative $\lambda_y^{(i)}$ estimates.  These values of $C^{(i)}$
-are plugged into equations~\eqref{eq:lambda1deltay}
+tables~\ref{tab:C1fit} and~\ref{tab:C2fit}.  Adjusting to the empirical fits'
+lower bounds delivers slightly conservative $\lambda_y^{(i)}$ estimates.  These
+values of $C^{(i)}$ are plugged into equations~\eqref{eq:lambda1deltay}
 and~\eqref{eq:lambda2deltay} with those results feeding into
 equations~\eqref{eq:convectivestability} and~\eqref{eq:diffusivestability}.
 Safety factors like 0.70--0.77 continue to be appropriate with these estimates
@@ -1705,15 +1702,20 @@ whenever $N_y > 5k$.
 \centering
 \caption{
     B-spline order-specific curve fits for estimating $C_\text{approx}^{(1)}$
-    for two-sided stretching via equation~\eqref{eq:Cfit} when $\Delta{}y$
-    is the minimum distance between collocation points.
+    via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
+    between collocation points.  The upper half is for two-sided stretching
+    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
+    stretching $f_1$ per~\eqref{eq:htstretch1}.
 }
-\label{tab:C1fit2}
+\label{tab:C1fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
 \begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
  $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
      & \multicolumn{2}{c}{relative error}
 \\ \hline
+%%%%%%%%%%
+% TWOSIDED
+%%%%%%%%%%
 5--11
 &  $\frac{            5054}{            4549}$
 & -$\frac{            3953}{           12175}$
@@ -1893,217 +1895,10 @@ whenever $N_y > 5k$.
 &  $\frac{             811}{            5107}$
 &  $\frac{            1129}{            2714}$
 &  -1.53 &  0.97
-\end{tabular}
-\end{table}
-
-\begin{table}
-\centering
-\caption{
-    B-spline order-specific curve fits for estimating $C_\text{approx}^{(2)}$
-    for two-sided stretching via equation~\eqref{eq:Cfit} when $\Delta{}y$
-    is the minimum distance between collocation points.
-}
-\label{tab:C2fit2}
-\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
-\begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
- $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
-     & \multicolumn{2}{c}{relative error}
 \\ \hline
-5--11
-&  $\frac{            5958}{            6049}$
-&  $\frac{             334}{            5909}$
-& -$\frac{           14563}{            5926}$
-& -$\frac{           35330}{           11929}$
-&  $\frac{            1554}{            3265}$
-&  $\frac{         4042664}{            8379}$
-&  $\frac{             887}{            9011}$
-&  $\frac{            2243}{           13757}$
-&  $\frac{            1066}{            1585}$
-&  -11.30 &  17.11
-\\
-4
-& -$\frac{          132683}{            8121}$
-& -$\frac{               8}{            7617}$
-& -$\frac{         1156372}{            9759}$
-&  $\frac{           78080}{           22333}$
-&  $\frac{               2}{           10139}$
-&  $\frac{              83}{            5144}$
-&  $\frac{             911}{            2744}$
-& -$\frac{            4791}{           13862}$
-&  $\frac{            1479}{            4412}$
-&  -1.86 &  1.81
-\\
-5
-& -$\frac{           96752}{           19419}$
-&  $\frac{              27}{           10108}$
-& -$\frac{          360604}{            4723}$
-&  $\frac{           24551}{            9533}$
-&  $\frac{               1}{            5309}$
-&  $\frac{             277}{            4330}$
-&  $\frac{           13424}{           46671}$
-& -$\frac{            3888}{           10265}$
-&  $\frac{            1289}{            3770}$
-&  -0.50 &  0.32
-\\
-6
-&  $\frac{            2635}{            8541}$
-& -$\frac{             299}{           15112}$
-&  $\frac{          174058}{           24237}$
-& -$\frac{           17342}{           13001}$
-&  $\frac{            2894}{           10471}$
-&  $\frac{          291982}{            9057}$
-&  $\frac{              68}{           17203}$
-&  $\frac{            5579}{           13080}$
-&  $\frac{            6911}{            9355}$
-&  -1.51 &  2.62
-\\
-7
-&  $\frac{            7358}{           11623}$
-& -$\frac{             120}{            6169}$
-&  $\frac{           82091}{           23515}$
-& -$\frac{           10147}{            9621}$
-&  $\frac{            2735}{           11778}$
-&  $\frac{          212175}{            7154}$
-&  $\frac{              10}{            6231}$
-&  $\frac{           10354}{           24479}$
-&  $\frac{            2416}{            3043}$
-&  -1.70 &  3.97
-\\
-8
-&  $\frac{            4751}{            5346}$
-&  $\frac{            2143}{           18802}$
-& -$\frac{           46259}{           19493}$
-& -$\frac{            4506}{            9193}$
-&  $\frac{               4}{            6951}$
-&  $\frac{           49249}{            1482}$
-& -$\frac{              24}{            8359}$
-&  $\frac{             959}{            3662}$
-&  $\frac{            9327}{            7114}$
-&  -4.50 &  6.86
-\\
-9
-&  $\frac{           17841}{           19519}$
-&  $\frac{             553}{            8538}$
-& -$\frac{           20719}{            8083}$
-& -$\frac{            3783}{            7057}$
-&  $\frac{             856}{           10529}$
-&  $\frac{          121124}{            5101}$
-& -$\frac{             115}{           30303}$
-&  $\frac{            2467}{            7116}$
-&  $\frac{            4707}{            4139}$
-&  -3.68 &  7.17
-\\
-10
-&  $\frac{           20122}{            5145}$
-& -$\frac{               5}{            6272}$
-& -$\frac{         1003532}{           10415}$
-& -$\frac{           11287}{           15030}$
-&  $\frac{            3429}{           17696}$
-&  $\frac{          258125}{            9817}$
-&  $\frac{               7}{            7694}$
-&  $\frac{            4286}{            9151}$
-&  $\frac{            8126}{            9217}$
-&  -5.97 &  8.01
-\\
-11
-&  $\frac{           32624}{           11799}$
-&  $\frac{              23}{            3905}$
-& -$\frac{          466211}{            6855}$
-& -$\frac{           14065}{           10992}$
-&  $\frac{            4693}{           11010}$
-&  $\frac{          335615}{            7641}$
-&  $\frac{             187}{            7994}$
-&  $\frac{            4512}{            8461}$
-&  $\frac{            1469}{            2419}$
-&  -6.09 &  6.61
-\\
-12
-&  $\frac{           21510}{           19531}$
-&  $\frac{             407}{            3029}$
-& -$\frac{           40991}{            5317}$
-& -$\frac{           34333}{           13993}$
-&  $\frac{            7253}{            9181}$
-&  $\frac{         1291629}{            5929}$
-&  $\frac{             217}{            3456}$
-&  $\frac{            2659}{            8092}$
-&  $\frac{            4103}{            9334}$
-&  -6.88 &  6.21
-\\
-13
-&  $\frac{            3889}{            5285}$
-&  $\frac{            2389}{           15117}$
-&  $\frac{           52947}{            6029}$
-& -$\frac{           17456}{            5339}$
-&  $\frac{            4061}{            4625}$
-&  $\frac{        11135709}{            8452}$
-&  $\frac{             488}{            7087}$
-&  $\frac{            1474}{            6209}$
-&  $\frac{             383}{             987}$
-&  -6.88 &  5.88
-\\
-14
-&  $\frac{           13010}{           10487}$
-&  $\frac{            1375}{           10628}$
-& -$\frac{          201367}{           12385}$
-& -$\frac{           24232}{            6743}$
-&  $\frac{           11512}{           10801}$
-&  $\frac{         6297203}{            2487}$
-&  $\frac{             428}{            6171}$
-&  $\frac{             648}{            3823}$
-&  $\frac{            4064}{           11831}$
-&  -6.54 &  5.79
-\\
-15
-&  $\frac{           25912}{           21893}$
-&  $\frac{            1831}{           16699}$
-& -$\frac{           58570}{            4063}$
-& -$\frac{           14377}{            4017}$
-&  $\frac{           18889}{           18281}$
-&  $\frac{        16561349}{            4390}$
-&  $\frac{             272}{            4179}$
-&  $\frac{             367}{            2451}$
-&  $\frac{             919}{            2686}$
-&  -6.57 &  5.36
-\\
-16
-&  $\frac{            3826}{            5191}$
-&  $\frac{             800}{           13057}$
-&  $\frac{          213790}{           16397}$
-& -$\frac{           16873}{            4447}$
-&  $\frac{           10559}{            9248}$
-&  $\frac{        84802177}{           11958}$
-&  $\frac{             607}{            9491}$
-&  $\frac{            1313}{           14052}$
-&  $\frac{            2667}{            8263}$
-&  -6.11 &  5.04
-\\
-17
-&  $\frac{            6127}{            6960}$
-& -$\frac{             163}{            9791}$
-&  $\frac{           22545}{            4961}$
-& -$\frac{          115738}{           31923}$
-&  $\frac{           10232}{           10879}$
-&  $\frac{       167869433}{           10467}$
-&  $\frac{             439}{            8114}$
-&  $\frac{           10720}{           81537}$
-&  $\frac{            3302}{           10275}$
-&  -5.35 &  4.96
-\end{tabular}
-\end{table}
-
-\begin{table}
-\centering
-\caption{
-    B-spline order-specific curve fits for estimating $C_\text{approx}^{(1)}$
-    for one-sided stretching via equation~\eqref{eq:Cfit} when $\Delta{}y$
-    is the minimum distance between collocation points.
-}
-\label{tab:C1fit1}
-\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
-\begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
- $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
-     & \multicolumn{2}{c}{relative error}
-\\ \hline
+%%%%%%%%%%
+% ONESIDED
+%%%%%%%%%%
 5--11
 &  $\frac{           12101}{           11060}$
 & -$\frac{           16426}{           49749}$
@@ -2283,6 +2078,7 @@ whenever $N_y > 5k$.
 &  $\frac{             817}{            5544}$
 &  $\frac{            2196}{            6637}$
 &  -2.66 &  1.24
+\\ \hline
 \end{tabular}
 \end{table}
 
@@ -2290,15 +2086,203 @@ whenever $N_y > 5k$.
 \centering
 \caption{
     B-spline order-specific curve fits for estimating $C_\text{approx}^{(2)}$
-    for two-sided stretching via equation~\eqref{eq:Cfit} when $\Delta{}y$
-    is the minimum distance between collocation points.
+    via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
+    between collocation points.  The upper half is for two-sided stretching
+    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
+    stretching $f_1$ per~\eqref{eq:htstretch1}.
 }
-\label{tab:C2fit1}
+\label{tab:C2fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
 \begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
  $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
      & \multicolumn{2}{c}{relative error}
 \\ \hline
+%%%%%%%%%%
+% TWOSIDED
+%%%%%%%%%%
+5--11
+&  $\frac{            5958}{            6049}$
+&  $\frac{             334}{            5909}$
+& -$\frac{           14563}{            5926}$
+& -$\frac{           35330}{           11929}$
+&  $\frac{            1554}{            3265}$
+&  $\frac{         4042664}{            8379}$
+&  $\frac{             887}{            9011}$
+&  $\frac{            2243}{           13757}$
+&  $\frac{            1066}{            1585}$
+&  -11.30 &  17.11
+\\
+4
+& -$\frac{          132683}{            8121}$
+& -$\frac{               8}{            7617}$
+& -$\frac{         1156372}{            9759}$
+&  $\frac{           78080}{           22333}$
+&  $\frac{               2}{           10139}$
+&  $\frac{              83}{            5144}$
+&  $\frac{             911}{            2744}$
+& -$\frac{            4791}{           13862}$
+&  $\frac{            1479}{            4412}$
+&  -1.86 &  1.81
+\\
+5
+& -$\frac{           96752}{           19419}$
+&  $\frac{              27}{           10108}$
+& -$\frac{          360604}{            4723}$
+&  $\frac{           24551}{            9533}$
+&  $\frac{               1}{            5309}$
+&  $\frac{             277}{            4330}$
+&  $\frac{           13424}{           46671}$
+& -$\frac{            3888}{           10265}$
+&  $\frac{            1289}{            3770}$
+&  -0.50 &  0.32
+\\
+6
+&  $\frac{            2635}{            8541}$
+& -$\frac{             299}{           15112}$
+&  $\frac{          174058}{           24237}$
+& -$\frac{           17342}{           13001}$
+&  $\frac{            2894}{           10471}$
+&  $\frac{          291982}{            9057}$
+&  $\frac{              68}{           17203}$
+&  $\frac{            5579}{           13080}$
+&  $\frac{            6911}{            9355}$
+&  -1.51 &  2.62
+\\
+7
+&  $\frac{            7358}{           11623}$
+& -$\frac{             120}{            6169}$
+&  $\frac{           82091}{           23515}$
+& -$\frac{           10147}{            9621}$
+&  $\frac{            2735}{           11778}$
+&  $\frac{          212175}{            7154}$
+&  $\frac{              10}{            6231}$
+&  $\frac{           10354}{           24479}$
+&  $\frac{            2416}{            3043}$
+&  -1.70 &  3.97
+\\
+8
+&  $\frac{            4751}{            5346}$
+&  $\frac{            2143}{           18802}$
+& -$\frac{           46259}{           19493}$
+& -$\frac{            4506}{            9193}$
+&  $\frac{               4}{            6951}$
+&  $\frac{           49249}{            1482}$
+& -$\frac{              24}{            8359}$
+&  $\frac{             959}{            3662}$
+&  $\frac{            9327}{            7114}$
+&  -4.50 &  6.86
+\\
+9
+&  $\frac{           17841}{           19519}$
+&  $\frac{             553}{            8538}$
+& -$\frac{           20719}{            8083}$
+& -$\frac{            3783}{            7057}$
+&  $\frac{             856}{           10529}$
+&  $\frac{          121124}{            5101}$
+& -$\frac{             115}{           30303}$
+&  $\frac{            2467}{            7116}$
+&  $\frac{            4707}{            4139}$
+&  -3.68 &  7.17
+\\
+10
+&  $\frac{           20122}{            5145}$
+& -$\frac{               5}{            6272}$
+& -$\frac{         1003532}{           10415}$
+& -$\frac{           11287}{           15030}$
+&  $\frac{            3429}{           17696}$
+&  $\frac{          258125}{            9817}$
+&  $\frac{               7}{            7694}$
+&  $\frac{            4286}{            9151}$
+&  $\frac{            8126}{            9217}$
+&  -5.97 &  8.01
+\\
+11
+&  $\frac{           32624}{           11799}$
+&  $\frac{              23}{            3905}$
+& -$\frac{          466211}{            6855}$
+& -$\frac{           14065}{           10992}$
+&  $\frac{            4693}{           11010}$
+&  $\frac{          335615}{            7641}$
+&  $\frac{             187}{            7994}$
+&  $\frac{            4512}{            8461}$
+&  $\frac{            1469}{            2419}$
+&  -6.09 &  6.61
+\\
+12
+&  $\frac{           21510}{           19531}$
+&  $\frac{             407}{            3029}$
+& -$\frac{           40991}{            5317}$
+& -$\frac{           34333}{           13993}$
+&  $\frac{            7253}{            9181}$
+&  $\frac{         1291629}{            5929}$
+&  $\frac{             217}{            3456}$
+&  $\frac{            2659}{            8092}$
+&  $\frac{            4103}{            9334}$
+&  -6.88 &  6.21
+\\
+13
+&  $\frac{            3889}{            5285}$
+&  $\frac{            2389}{           15117}$
+&  $\frac{           52947}{            6029}$
+& -$\frac{           17456}{            5339}$
+&  $\frac{            4061}{            4625}$
+&  $\frac{        11135709}{            8452}$
+&  $\frac{             488}{            7087}$
+&  $\frac{            1474}{            6209}$
+&  $\frac{             383}{             987}$
+&  -6.88 &  5.88
+\\
+14
+&  $\frac{           13010}{           10487}$
+&  $\frac{            1375}{           10628}$
+& -$\frac{          201367}{           12385}$
+& -$\frac{           24232}{            6743}$
+&  $\frac{           11512}{           10801}$
+&  $\frac{         6297203}{            2487}$
+&  $\frac{             428}{            6171}$
+&  $\frac{             648}{            3823}$
+&  $\frac{            4064}{           11831}$
+&  -6.54 &  5.79
+\\
+15
+&  $\frac{           25912}{           21893}$
+&  $\frac{            1831}{           16699}$
+& -$\frac{           58570}{            4063}$
+& -$\frac{           14377}{            4017}$
+&  $\frac{           18889}{           18281}$
+&  $\frac{        16561349}{            4390}$
+&  $\frac{             272}{            4179}$
+&  $\frac{             367}{            2451}$
+&  $\frac{             919}{            2686}$
+&  -6.57 &  5.36
+\\
+16
+&  $\frac{            3826}{            5191}$
+&  $\frac{             800}{           13057}$
+&  $\frac{          213790}{           16397}$
+& -$\frac{           16873}{            4447}$
+&  $\frac{           10559}{            9248}$
+&  $\frac{        84802177}{           11958}$
+&  $\frac{             607}{            9491}$
+&  $\frac{            1313}{           14052}$
+&  $\frac{            2667}{            8263}$
+&  -6.11 &  5.04
+\\
+17
+&  $\frac{            6127}{            6960}$
+& -$\frac{             163}{            9791}$
+&  $\frac{           22545}{            4961}$
+& -$\frac{          115738}{           31923}$
+&  $\frac{           10232}{           10879}$
+&  $\frac{       167869433}{           10467}$
+&  $\frac{             439}{            8114}$
+&  $\frac{           10720}{           81537}$
+&  $\frac{            3302}{           10275}$
+&  -5.35 &  4.96
+\\ \hline
+%%%%%%%%%%
+% ONESIDED
+%%%%%%%%%%
 5--11
 &  $\frac{           10951}{           10966}$
 &  $\frac{             692}{           17487}$
@@ -2478,6 +2462,7 @@ whenever $N_y > 5k$.
 &  $\frac{            1049}{           12527}$
 &  $\frac{            1391}{            5436}$
 &  -5.04 &  5.04
+\\ \hline
 \end{tabular}
 \end{table}
 
