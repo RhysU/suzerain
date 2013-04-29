@@ -30,7 +30,6 @@
 #endif
 
 #include <suzerain/operator_base.hpp>
-#include <suzerain/error.h>
 
 namespace suzerain {
 
@@ -69,18 +68,16 @@ operator_base::operator_base(
     // See model document for definitions of C^{(1)} and C^{(2)}.
     real_t C1, Clow1, Chigh1;
     real_t C2, Clow2, Chigh2;
-    if (grid.two_sided()) {
+    if (grid.htdelta >= 0) { // See grid.two_sided(), grid.one_sided()
         suzerain_bspline_htstretch2_evdeltascale(
-                1, b.k(), grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
+                1, b.k(), +grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
         suzerain_bspline_htstretch2_evdeltascale(
-                2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
-    } else if (grid.one_sided()) {
-        suzerain_bspline_htstretch1_evdeltascale(
-                1, b.k(), grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
-        suzerain_bspline_htstretch1_evdeltascale(
-                2, b.k(), grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
+                2, b.k(), +grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
     } else {
-        SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+        suzerain_bspline_htstretch1_evdeltascale(
+                1, b.k(), -grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
+        suzerain_bspline_htstretch1_evdeltascale(
+                2, b.k(), -grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
     }
 
     // In practice, directly using C^{(1)} and C^{(2)} is too aggressive
