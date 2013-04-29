@@ -189,8 +189,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
     // must survive across nonzero substeps while instant profiles must not.
-    if (ZerothSubstep) common.set_zero(/* Ny */ swave.shape()[1]);
-    common.u().setZero();
+    // We do not modify common.implicits as other logic populates its content.
+    if (ZerothSubstep) {
+        common.set_zero(/* Ny */ swave.shape()[1]);
+    } else {
+        common.means.setZero();
+    }
 
     // Maintain stable time step values to return to the caller:
     //
@@ -553,24 +557,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.refs.setZero();
         }
 
-        // Logic below absolutely requires common.{u,v,w}()
-        // and common.{uu,uv,uw,vv,vw,vw}() be housed
-        // in the leftmost nine columns of common.means.  Be sure.
-        enum { h/*owmany*/ = 9 };
-        assert(&common.u ()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.v ()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.w ()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.uu()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.uv()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.uw()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.vv()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.vw()[0] - common.means.data() < h * common.means.rows());
-        assert(&common.ww()[0] - common.means.data() < h * common.means.rows());
-
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t topNotOnRank = o.dgrid.local_physical_start.y();
         if (topNotOnRank) {
-            common.means.leftCols<h>().topRows(topNotOnRank).setZero();
+            common.means.topRows(topNotOnRank).setZero();
         }
 
         // Accumulate velocity moments into common storage as function of y(j)
@@ -615,20 +605,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t bottomNotOnRank = common.means.leftCols<h>().rows()
+        const size_t bottomNotOnRank = common.means.rows()
                                      - o.dgrid.local_physical_end.y();
         if (bottomNotOnRank) {
-            common.means.leftCols<h>().bottomRows(bottomNotOnRank).setZero();
+            common.means.bottomRows(bottomNotOnRank).setZero();
         }
 
         // Allreduce, scale common.{u,v,w}() and common.{uu,uv,uw,vv,vw,ww}()
         // sums to obtain mean on all ranks.
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
-                    common.means.leftCols<h>().data(),
-                    common.means.leftCols<h>().size(),
-                    mpi::datatype<real_t>::value,
-                    MPI_SUM, MPI_COMM_WORLD));
-        common.means.leftCols<h>() *= o.dgrid.chi();
+                    common.means.data(), common.means.size(),
+                    mpi::datatype<real_t>::value, MPI_SUM, MPI_COMM_WORLD));
+        common.means *= o.dgrid.chi();
 
     }
 

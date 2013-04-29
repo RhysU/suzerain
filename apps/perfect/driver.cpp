@@ -202,7 +202,7 @@ driver::compute_statistics(
             *scenario, *grid, *dgrid, *cop, *state_nonlinear, t);
 
     // Obtain mean quantities computed via implicit forcing (when possible)
-    if (common_block.means.rows() == mean.storage.rows()) {
+    if (common_block.implicits.rows() == mean.storage.rows()) {
         mean.f().col(0) = common_block.f();  // Only streamwise momentum...
         mean.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
         mean.f_dot_u()      = common_block.f_dot_u();
