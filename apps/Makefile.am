@@ -17,7 +17,6 @@ bin_PROGRAMS              += pencil_grid_bench
 pencil_grid_bench_LDADD    = ../suzerain/libsuzerain.la
 pencil_grid_bench_SOURCES  = pencil_grid_bench.cpp
 pencil_grid_bench_SOURCES += pencil_grid_bench_svnrev.c
-pencil_grid_bench_SOURCES += pencil_grid_bench_svnrev.h
 
 BUILT_SOURCES += pencil_grid_bench_svnrev.h
 pencil_grid_bench_svnrev.h: $(pencil_grid_bench_SOURCES)
