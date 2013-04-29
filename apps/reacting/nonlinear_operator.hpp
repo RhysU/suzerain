@@ -880,10 +880,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (unsigned int s=0; s<Ns-1; ++s) {
                 // NOTE: species(0) is the diluter!
 
-                //                                = convection    - diffusion
-                auxp(aux::species+dir::x, offset) = cs(s+1)*m.x() - sdiff(0,s+1);
-                auxp(aux::species+dir::y, offset) = cs(s+1)*m.y() - sdiff(1,s+1);
-                auxp(aux::species+dir::z, offset) = cs(s+1)*m.z() - sdiff(2,s+1);
+                unsigned int si = aux::species + s;
+
+                //                      = convection    - diffusion
+                auxp(si+dir::x, offset) = cs(s+1)*m.x() - sdiff(0,s+1);
+                auxp(si+dir::y, offset) = cs(s+1)*m.y() - sdiff(1,s+1);
+                auxp(si+dir::z, offset) = cs(s+1)*m.z() - sdiff(2,s+1);
 
             }
             //----------------------------------------------------------------------
