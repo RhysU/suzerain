@@ -382,9 +382,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
 
-        // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t leftNotOnRank = o.dgrid.local_physical_start.y();
-        if (leftNotOnRank) common.refs.leftCols(leftNotOnRank).setZero();
+        // To avoid accumulating garbage, must zero y(j) not present on rank.
+        // Clearing everything is expected to be a bit more performant.
+        common.refs.setZero();
 
         // Sum reference quantities as a function of y(j) into common.ref_*
         // See writeups/derivation.tex or rholut_imexop.h for definitions
@@ -482,10 +482,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const size_t observed = boost::accumulators::count(acc[k]);
                 assert(expected == observed);
             }
-
-            // Mark j-th positions with NaNs to ensure overwritten just below
-            common.refs.col(j).setConstant(
-                    std::numeric_limits<real_t>::quiet_NaN());
 #endif
 
             // Store sums into common block in preparation for MPI Allreduce
@@ -523,13 +519,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         } // end Y
 
-        // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t rightNotOnRank = common.refs.cols()
-                                    - o.dgrid.local_physical_end.y();
-        if (rightNotOnRank) common.refs.rightCols(rightNotOnRank).setZero();
-
         // Allreduce and scale common.refs sums to obtain means on all ranks
-        // Allreduce mandatory as all ranks need references for linearization
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, common.refs.data(),
                 common.refs.size(), mpi::datatype<real_t>::value,
                 MPI_SUM, MPI_COMM_WORLD));
@@ -552,11 +542,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         SUZERAIN_TIMER_SCOPED("velocity moments");
 
-        // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t topNotOnRank = o.dgrid.local_physical_start.y();
-        if (topNotOnRank) {
-            common.means.topRows(topNotOnRank).setZero();
-        }
+        // To avoid accumulating garbage, must zero y(j) not present on rank.
+        // Clearing everything is expected to be a bit more performant.
+        common.means.setZero();
 
         // Accumulate velocity moments into common storage as function of y(j)
         for (int offset = 0, j = o.dgrid.local_physical_start.y();
@@ -599,15 +587,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         } // end Y
 
-        // Zero y(j) not present on this rank to avoid accumulating garbage
-        const size_t bottomNotOnRank = common.means.rows()
-                                     - o.dgrid.local_physical_end.y();
-        if (bottomNotOnRank) {
-            common.means.bottomRows(bottomNotOnRank).setZero();
-        }
-
-        // Allreduce, scale common.{u,v,w}() and common.{uu,uv,uw,vv,vw,ww}()
-        // sums to obtain mean on all ranks.
+        // Allreduce and scale sums to produce the mean on all ranks
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE,
                     common.means.data(), common.means.size(),
                     mpi::datatype<real_t>::value, MPI_SUM, MPI_COMM_WORLD));
