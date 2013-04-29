@@ -365,8 +365,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // positions x(i), y(j), and z(k) where necessary.
     //
     // Three traversals occur:
-    // (1) Computing reference quantities and mean velocity OR mean quantities
-    //     (depending on linearization and which substep is being performed).
+    // (1) Computing reference quantities and velocity moments OR
+    //     just velocity moments depending on the substep being performed.
     // (2) Computing the nonlinear equation right hand sides.
     // (3) Computing any manufactured solution forcing (when enabled).
     //
@@ -376,13 +376,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // equivalent but lack information on x(i) and z(k).
 
     // Traversal:
-    // (1) Computing reference quantities and mean velocity OR mean velocity
-    //     (depending on linearization and which substep is being performed).
-    //
-    // Always gather all reference quantities when using implicit solves.
-    // Profiling indicates the overhead is tiny and it keeps the code readable.
-    if (    ZerothSubstep
-         && Linearize != linearize::none) {  // References and velocity moments
+    // (1) Computing reference quantities and velocity moments OR
+    //     just velocity moments depending on the substep being performed.
+    if (ZerothSubstep) {  // References and velocity moments
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
 
@@ -396,7 +392,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            // Prepare logical indices using a struct for scoping (e.g. ref::ux).
+            // Prepare logical indices using struct for scoping (e.g. ref::ux).
             struct ref { enum { rho, p, T, a,
                                 ux, uy, uz, u2,
                                 uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
@@ -486,6 +482,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 const size_t observed = boost::accumulators::count(acc[k]);
                 assert(expected == observed);
             }
+
+            // Mark j-th positions with NaNs to ensure overwritten just below
+            common.refs.col(j).setConstant(
+                    std::numeric_limits<real_t>::quiet_NaN());
 #endif
 
             // Store sums into common block in preparation for MPI Allreduce
@@ -551,11 +551,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     } else {                                 // Velocity moments
 
         SUZERAIN_TIMER_SCOPED("velocity moments");
-
-        // Zero all reference quantities on fully-explicit zeroth substep
-        if (ZerothSubstep && Linearize == linearize::none) {
-            common.refs.setZero();
-        }
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
         const size_t topNotOnRank = o.dgrid.local_physical_start.y();
