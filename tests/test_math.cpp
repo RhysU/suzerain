@@ -515,7 +515,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump_scaled, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( bump_shifted, T, test_types )
 {
     using namespace suzerain::math::bump;
-    const T l = 1, r = 3, m = (l + r) / 2, eps = (r - l) / 100;
+    const T l = 1, r = 3, m = (l + r) / 2, eps = (r - l) / 10;
 
     // Three arguments
     BOOST_CHECK_EQUAL(shifted<T>(l-eps, l, r), 0);
@@ -529,4 +529,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump_shifted, T, test_types )
     BOOST_CHECK_GT   (shifted<T>(r-eps, l, r), 0);
     BOOST_CHECK_EQUAL(shifted<T>(r    , l, r), 0);
     BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r), 0);
+
+    // Four arguments
+    BOOST_CHECK_EQUAL(shifted<T>(l-eps, l, r, 2), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(l    , l, r, 2), 0);
+    BOOST_CHECK_GT   (shifted<T>(l+eps, l, r, 2), 0);
+    BOOST_CHECK_GT   (shifted<T>(m-eps, l, r, 2), 0);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2), shifted<T>(m-eps, l, r, 2));
+    BOOST_CHECK_EQUAL(shifted<T>(m    , l, r, 2), 2);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2), shifted<T>(m+eps, l, r, 2));
+    BOOST_CHECK_GT   (shifted<T>(m+eps, l, r, 2), 0);
+    BOOST_CHECK_GT   (shifted<T>(r-eps, l, r, 2), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(r    , l, r, 2), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r, 2), 0);
+
+    // Five arguments
+    BOOST_CHECK_EQUAL(shifted<T>(l-eps, l, r, 2, 1), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(l    , l, r, 2, 1), 1);
+    BOOST_CHECK_GT   (shifted<T>(l+eps, l, r, 2, 1), 1);
+    BOOST_CHECK_GT   (shifted<T>(m-eps, l, r, 2, 1), 1);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2, 1), shifted<T>(m-eps, l, r, 2, 1));
+    BOOST_CHECK_EQUAL(shifted<T>(m    , l, r, 2, 1), 2);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2, 1), shifted<T>(m+eps, l, r, 2, 1));
+    BOOST_CHECK_GT   (shifted<T>(m+eps, l, r, 2, 1), 1);
+    BOOST_CHECK_GT   (shifted<T>(r-eps, l, r, 2, 1), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(r    , l, r, 2, 1), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r, 2, 1), 1);
+
+    // Six arguments
+    BOOST_CHECK_EQUAL(shifted<T>(l-eps, l, r, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(l    , l, r, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (shifted<T>(l+eps, l, r, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (shifted<T>(m-eps, l, r, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2, 1, 2), shifted<T>(m-eps, l, r, 2, 1, 2));
+    BOOST_CHECK_EQUAL(shifted<T>(m    , l, r, 2, 1, 2), 2);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r, 2, 1, 2), shifted<T>(m+eps, l, r, 2, 1, 2));
+    BOOST_CHECK_GT   (shifted<T>(m+eps, l, r, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (shifted<T>(r-eps, l, r, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(r    , l, r, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r, 2, 1, 2), 1);
 }
