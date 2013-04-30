@@ -187,30 +187,22 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         msoln.reset(); // No manufactured solution in use
 
         INFO("Computing mean base field for use in zero-zero modes");
-        ArrayXr rho = ArrayXr::Constant (Ny,
-                                         scenario->bulk_rho);
-        ArrayXr u   = ArrayXr::LinSpaced(Ny,
-                                         isothermal->lower_u,
-                                         isothermal->upper_u);
-        ArrayXr v   = ArrayXr::LinSpaced(Ny,
-                                         isothermal->lower_v,
-                                         isothermal->upper_v);
-        ArrayXr w   = ArrayXr::LinSpaced(Ny,
-                                         isothermal->lower_w,
-                                         isothermal->upper_w);
-        ArrayXr p   = rho
-                    * ArrayXr::LinSpaced(Ny,
-                                         isothermal->lower_T,
-                                         isothermal->upper_T)
-                    / scenario->gamma; // Per suzerain::rholut::p(...)
+        // Computation of pressure per suzerain::rholut::p(...)
+        ArrayXr u = ArrayXr::LinSpaced(Ny, isothermal->lower_u,
+                                           isothermal->upper_u);
+        ArrayXr v = ArrayXr::LinSpaced(Ny, isothermal->lower_v,
+                                           isothermal->upper_v);
+        ArrayXr w = ArrayXr::LinSpaced(Ny, isothermal->lower_w,
+                                           isothermal->upper_w);
+        ArrayXr T = ArrayXr::LinSpaced(Ny, isothermal->lower_T,
+                                           isothermal->upper_T);
+        ArrayXr p = scenario->bulk_rho * T / scenario->gamma;
         INFO("Base field uses constant rho = " << scenario->bulk_rho);
         INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
         INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
         INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
+        INFO("Base field uses T from " << T(0) << " to " << T(Ny - 1));
         INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
-        INFO("Base field uses T from " << isothermal->lower_T
-                                       << " to "
-                                       << isothermal->upper_T);
 
         INFO("Parabolic profile will be added with npower = " << npower);
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
@@ -243,6 +235,10 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                   * normalization
                   * pow(y_j * (Ly - y_j), npower);
         }
+
+        INFO("Computing density from pressure and temperature");
+        ArrayXr rho = scenario->gamma * p / T;
+        T.resize(0); // Mark irrelevant for further use
 
         INFO("Computing total energy and momentum from primitive state");
         ArrayXr rho_E(Ny);
