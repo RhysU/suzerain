@@ -120,8 +120,8 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     // Establish binary-specific options
     std::pointer_to_binary_function<real_t,const char*,void>
         ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);
-    real_t mms    = -1;
-    real_t npower =  1;
+    real_t mms                = -1;
+    real_t npower             =  1;
     options.add_options()
         ("clobber", "Overwrite an existing restart file?")
         ("npower",
@@ -133,6 +133,28 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             ->notifier(std::bind2nd(ensure_real_tnonnegative, "mms")),
             "If given, prepare a manufactured solution at the specified time.")
     ;
+    real_t acoustic_strength  =  0;
+    real_t acoustic_stiffness =  0;
+    real_t acoustic_support   =  0;
+    {
+        boost::program_options::options_description pulse_acoustic(
+                "Add an acoustic pulse similarly to Baum et al. JCP 1994");
+        pulse_acoustic.add_options()
+            // TODO Add
+        ;
+        options.options().add(pulse_acoustic);
+    }
+    real_t entropy_strength  =  0;
+    real_t entropy_stiffness =  0;
+    real_t entropy_support   =  0;
+    {
+        boost::program_options::options_description pulse_entropy(
+                "Add an entropy pulse similarly to Baum et al. JCP 1994");
+        pulse_entropy.add_options()
+            // TODO Add
+        ;
+        options.options().add(pulse_entropy);
+    }
 
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros becomes usable)
