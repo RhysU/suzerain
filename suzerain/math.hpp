@@ -300,6 +300,185 @@ OutputIterator stretchspace(const FPT xbegin,
     return x;
 }
 
+/**
+ * Variants of the bump function \f$ \exp\left(-\frac{1}{1-x^2}\right) \f$.
+ * @see For example, http://en.wikipedia.org/wiki/Bump_function.
+ */
+namespace bump {
+
+/**
+ * Evaluate the classic \f$ \exp\left(-\frac{1}{1-x^2}\right) \f$
+ * with support defined to be only \f$ x \in \left(-1, 1\right) \f$.
+ *
+ * @param x Location at which to evaluate the bump function.
+ */
+template<typename FPT>
+FPT classic(const FPT x)
+{
+    if (x <= -1 || 1 <= x) {
+        return 0;
+    } else {
+        using std::exp;
+        return exp(-1 / (1 - x*x));
+    }
+}
+
+/**
+ * Evaluate a bump function on \f$ x \in \left(-1, 1\right) \f$ rescaled
+ * to give \f$1\f$ when \f$ x = 0 \f$.
+ *
+ * @param x Location at which to evaluate the bump function.
+ */
+template<typename FPT>
+FPT scaled(const FPT x)
+{
+    if (x <= 1 || 1 <= x) {
+        return 0;
+    } else {
+        using std::exp;
+        const FPT x2 = x*x;
+        return exp(x2 / (x2 - 1));
+    }
+}
+
+/**
+ * Evaluate a bump function on \f$ x \in \left(-1, 1\right) \f$ rescaled
+ * to give \f$p\f$ when \f$ x = 0 \f$.
+ *
+ * @param x Location at which to evaluate the bump function.
+ * @param p Value to return when \f$ x = 0 \f$.
+ */
+template<typename FPT>
+FPT scaled(const FPT x, const FPT p)
+{
+    if (x <= 1 || 1 <= x) {
+        return 0;
+    } else {
+        using std::exp;
+        const FPT x2 = x*x;
+        return p * exp(x2 / (x2 - 1));
+    }
+}
+
+/**
+ * @copydoc scaled(const FPT,const FPT)
+ *
+ * @param q Value to return outside \f$ \left(-1, 1\right) \f$.
+ */
+template<typename FPT>
+FPT scaled(const FPT x, const FPT p, const FPT q)
+{
+    if (x <= 1 || 1 <= x) {
+        return q;
+    } else {
+        using std::exp;
+        const FPT x2 = x*x;
+        return (p - q) * exp(x2 / (x2 - 1)) + q;
+    }
+}
+
+/**
+ * @copydoc scaled(const FPT,const FPT,const FPT)
+ *
+ * @param n Evaulate the \f$n\f$th power of the bump function.
+ */
+template<typename FPT>
+FPT scaled(const FPT x, const FPT p, const FPT q, const FPT n)
+{
+    if (x <= 1 || 1 <= x) {
+        return q;
+    } else {
+        using std::exp;
+        const FPT x2 = x*x;
+        return (p - q) * exp(n * (x2 / (x2 - 1))) + q;
+    }
+}
+
+/**
+ * Evaluate a bump function on \f$ x \in \left(l, r\right) \f$ rescaled
+ * to give \f$1\f$ when \f$ x = \frac{l+r}{2} \f$.
+ *
+ * @param x Location at which to evaluate the bump function.
+ * @param l Left boundary, exclusive, of the function's support.
+ * @param r Right boundary, exclusive, of the function's support.
+ */
+template<typename FPT>
+FPT shifted(const FPT x, const FPT l, const FPT r)
+{
+    if (x <= l || r <= x) {
+        return 0;
+    } else {
+        using std::exp;
+        FPT t = l + r - 2 * x;
+        t *= t;
+        t /= 4 * (x - l) * (x - r);
+        return exp(t);
+    }
+}
+
+/**
+ *
+ * Evaluate a bump function on \f$ x \in \left(l, r\right) \f$ rescaled
+ * to give \f$p\f$ when \f$ x = \frac{l+r}{2} \f$.
+ *
+ * @param p Value to return when \f$ x = \frac{l+r}{2} \f$.
+ */
+template<typename FPT>
+FPT shifted(const FPT x, const FPT l, const FPT r, const FPT p)
+{
+    if (x <= l || r <= x) {
+        return 0;
+    } else {
+        using std::exp;
+        FPT t = l + r - 2 * x;
+        t *= t;
+        t /= 4 * (x - l) * (x - r);
+        return p * exp(t);
+    }
+}
+
+/**
+ * @copydoc shifted(const FPT,const FPT,const FPT,const FPT)
+ *
+ * @param q Value to return outside \f$ \left(l, r\right) \f$.
+ */
+template<typename FPT>
+FPT shifted(const FPT x, const FPT l, const FPT r,
+            const FPT p, const FPT q)
+{
+    if (x <= l || r <= x) {
+        return q;
+    } else {
+        using std::exp;
+        FPT t = l + r - 2 * x;
+        t *= t;
+        t /= 4 * (x - l) * (x - r);
+        return (p - q) * exp(t) + q;
+    }
+}
+
+/**
+ * @copydoc shifted(const FPT,const FPT,const FPT,const FPT,const FPT)
+ *
+ * @param n Evaulate the \f$n\f$th power of the bump function.
+ */
+template<typename FPT>
+FPT shifted(const FPT x, const FPT l, const FPT r,
+            const FPT p, const FPT q, const FPT n)
+{
+    if (x <= l || r <= x) {
+        return q;
+    } else {
+        using std::exp;
+        FPT t = l + r - 2 * x;
+        t *= t;
+        t /= 4 * (x - l) * (x - r);
+        return (p - q) * exp(n * t) + q;
+    }
+}
+
+} // namespace bump
+
 } // namespace math
 
 } // namespace suzerain
