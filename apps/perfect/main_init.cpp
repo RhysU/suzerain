@@ -150,21 +150,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
-    if (isothermal->lower_T != isothermal->upper_T) {
-        FATAL0("Unable to initialize profile where lower_T != upper_T");
-        return EXIT_FAILURE;
-    }
-    if (isothermal->lower_u || isothermal->upper_u) {
-        FATAL0("Unable to initialize slip streamwise boundary");
-    }
-    if (isothermal->lower_v != isothermal->upper_v) {
-        FATAL0("Unable to initialize profile where lower_v != upper_v");
-        return EXIT_FAILURE;
-    }
-    if (isothermal->lower_w != isothermal->upper_w) {
-        FATAL0("Unable to initialize profile where lower_w != upper_w");
-        return EXIT_FAILURE;
-    }
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -198,11 +183,20 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         msoln.reset();
         fill(*state_linear, 0);
 
-        INFO("Initialization uses constant rho, v, w, and T");
-        const real_t rho = scenario->bulk_rho;
-        const real_t v = isothermal->lower_v; assert(v == isothermal->upper_v);
-        const real_t w = isothermal->lower_w; assert(w == isothermal->upper_w);
-        const real_t T = isothermal->lower_T; assert(T == isothermal->upper_T);
+        INFO("Base field uses constant rho = " << scenario->bulk_rho);
+        ArrayXr rho = ArrayXr::Constant(grid->N.y(), scenario->bulk_rho);
+        ArrayXr v   = ArrayXr::LinSpaced(grid->N.y(),
+                                         isothermal->lower_v,
+                                         isothermal->upper_v);
+        ArrayXr w   = ArrayXr::LinSpaced(grid->N.y(),
+                                         isothermal->lower_w,
+                                         isothermal->upper_w);
+        ArrayXr T   = ArrayXr::LinSpaced(grid->N.y(),
+                                         isothermal->lower_T,
+                                         isothermal->upper_T);
+        INFO("Base field uses v from " << v[0] << " to " << v.tail<1>()[0]);
+        INFO("Base field uses w from " << w[0] << " to " << w.tail<1>()[0]);
+        INFO("Base field uses T from " << T[0] << " to " << T.tail<1>()[0]);
 
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization = std::numeric_limits<real_t>::quiet_NaN();
@@ -239,24 +233,32 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         ArrayXr E = T / (scenario->gamma*(scenario->gamma - 1))
                   + (scenario->Ma*scenario->Ma/2) * (u*u + v*v + w*w);
 
-        INFO("Converting the u and E profiles to B-spline coefficients");
-        // (By partition of unity property rho, v, and w are so already)
+        INFO("Converting to non-specific, conserved state");
+        E *= rho; // Notice "E" now contains rho_E
+        u *= rho; // Notice "u" now contains rho_u
+        v *= rho; // Notice "v" now contains rho_v
+        w *= rho; // Notice "w" now contains rho_w
+
+        INFO("Converting conserved state to B-spline coefficients");
         suzerain::bsplineop_lu masslu(*cop);
         masslu.factor_mass(*cop);
-        masslu.solve(1, u.data(), 1, u.size());
-        masslu.solve(1, E.data(), 1, E.size());
+        masslu.solve(1, E  .data(), 1, E  .size());
+        masslu.solve(1, u  .data(), 1, u  .size());
+        masslu.solve(1, v  .data(), 1, v  .size());
+        masslu.solve(1, w  .data(), 1, w  .size());
+        masslu.solve(1, rho.data(), 1, rho.size());
 
         INFO("Copying the coefficients directly into the zero-zero modes");
         Map<VectorXc>((*state_linear)[ndx::e  ].origin(), grid->N.y())
-                = (rho * E).cast<complex_t>();
+                = (E  ).cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::mx ].origin(), grid->N.y())
-                = (rho * u).cast<complex_t>();
+                = (u  ).cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::my ].origin(), grid->N.y())
-                .setConstant(rho * v);
+                = (v  ).cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::mz ].origin(), grid->N.y())
-                .setConstant(rho * w);
+                = (w  ).cast<complex_t>();
         Map<VectorXc>((*state_linear)[ndx::rho].origin(), grid->N.y())
-                .setConstant(rho    );
+                = (rho).cast<complex_t>();
 
     }
 
