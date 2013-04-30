@@ -332,7 +332,7 @@ FPT classic(const FPT x)
 template<typename FPT>
 FPT scaled(const FPT x)
 {
-    if (x <= 1 || 1 <= x) {
+    if (x <= -1 || 1 <= x) {
         return 0;
     } else {
         using std::exp;
@@ -351,7 +351,7 @@ FPT scaled(const FPT x)
 template<typename FPT>
 FPT scaled(const FPT x, const FPT p)
 {
-    if (x <= 1 || 1 <= x) {
+    if (x <= -1 || 1 <= x) {
         return 0;
     } else {
         using std::exp;
@@ -368,7 +368,7 @@ FPT scaled(const FPT x, const FPT p)
 template<typename FPT>
 FPT scaled(const FPT x, const FPT p, const FPT q)
 {
-    if (x <= 1 || 1 <= x) {
+    if (x <= -1 || 1 <= x) {
         return q;
     } else {
         using std::exp;
@@ -385,7 +385,7 @@ FPT scaled(const FPT x, const FPT p, const FPT q)
 template<typename FPT>
 FPT scaled(const FPT x, const FPT p, const FPT q, const FPT n)
 {
-    if (x <= 1 || 1 <= x) {
+    if (x <= -1 || 1 <= x) {
         return q;
     } else {
         using std::exp;

@@ -453,4 +453,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump, T, test_types )
     BOOST_CHECK_GT   (classic<T>(+0.9), 0);
     BOOST_CHECK_EQUAL(classic<T>(+1.0), 0);
     BOOST_CHECK_EQUAL(classic<T>(+1.1), 0);
+
+    // Scaled, one argument
+    BOOST_CHECK_EQUAL(scaled<T>(-1.1), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(-1.0), 0);
+    BOOST_CHECK_GT   (scaled<T>(-0.9), 0);
+    BOOST_CHECK_GT   (scaled<T>(-eps), 0);
+    BOOST_CHECK_GT   (scaled<T>( 0.0), scaled<T>(-eps));
+    BOOST_CHECK_EQUAL(scaled<T>( 0.0), 1);
+    BOOST_CHECK_GT   (scaled<T>( 0.0), scaled<T>( eps));
+    BOOST_CHECK_GT   (scaled<T>( eps), 0);
+    BOOST_CHECK_GT   (scaled<T>(+0.9), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.0), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.1), 0);
 }
