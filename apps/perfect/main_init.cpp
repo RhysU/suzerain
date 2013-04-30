@@ -30,6 +30,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
+#include <suzerain/rholut.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
@@ -158,7 +159,12 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     establish_decomposition();
     establish_state_storage(fields.size(), fields.size());
 
+    // Shorthand
+    const real_t Ly = grid->L.y();
+    const int    Ny = grid->N.y();
+
     DEBUG0(who, "Initializing state_linear to contain the data in wave space");
+    fill(*state_linear, 0);
     if (mms >= 0) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
@@ -174,30 +180,39 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     } else if (!dgrid->has_zero_zero_modes()) {
 
         DEBUG("Saving no non-zero information on non-zero-zero rank");
-        msoln.reset();
-        fill(*state_linear, 0);
+        msoln.reset(); // No manufactured solution in use
 
     } else {
 
-        INFO("Parabolic profile will be initialized with npower = " << npower);
-        msoln.reset();
-        fill(*state_linear, 0);
+        msoln.reset(); // No manufactured solution in use
 
-        INFO("Base field uses constant rho = " << scenario->bulk_rho);
-        ArrayXr rho = ArrayXr::Constant(grid->N.y(), scenario->bulk_rho);
-        ArrayXr v   = ArrayXr::LinSpaced(grid->N.y(),
+        INFO("Computing mean base field for use in zero-zero modes");
+        ArrayXr rho = ArrayXr::Constant (Ny,
+                                         scenario->bulk_rho);
+        ArrayXr u   = ArrayXr::LinSpaced(Ny,
+                                         isothermal->lower_u,
+                                         isothermal->upper_u);
+        ArrayXr v   = ArrayXr::LinSpaced(Ny,
                                          isothermal->lower_v,
                                          isothermal->upper_v);
-        ArrayXr w   = ArrayXr::LinSpaced(grid->N.y(),
+        ArrayXr w   = ArrayXr::LinSpaced(Ny,
                                          isothermal->lower_w,
                                          isothermal->upper_w);
-        ArrayXr T   = ArrayXr::LinSpaced(grid->N.y(),
+        ArrayXr p   = rho
+                    * ArrayXr::LinSpaced(Ny,
                                          isothermal->lower_T,
-                                         isothermal->upper_T);
-        INFO("Base field uses v from " << v[0] << " to " << v.tail<1>()[0]);
-        INFO("Base field uses w from " << w[0] << " to " << w.tail<1>()[0]);
-        INFO("Base field uses T from " << T[0] << " to " << T.tail<1>()[0]);
+                                         isothermal->upper_T)
+                    / scenario->gamma; // Per suzerain::rholut::p(...)
+        INFO("Base field uses constant rho = " << scenario->bulk_rho);
+        INFO("Base field uses u from " << u(0) << " to " << u(Ny - 1));
+        INFO("Base field uses v from " << v(0) << " to " << v(Ny - 1));
+        INFO("Base field uses w from " << w(0) << " to " << w(Ny - 1));
+        INFO("Base field uses p from " << p(0) << " to " << p(Ny - 1));
+        INFO("Base field uses T from " << isothermal->lower_T
+                                       << " to "
+                                       << isothermal->upper_T);
 
+        INFO("Parabolic profile will be added with npower = " << npower);
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
         real_t normalization = std::numeric_limits<real_t>::quiet_NaN();
         if (npower == 1) {
@@ -210,55 +225,62 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             const real_t num1   = sin(npower * pi<real_t>());
             const real_t num2   = tgamma(-npower);
             const real_t num3   = tgamma(real_t(3)/2 + npower);
-            const real_t denom1 = pow(           2, -1-2*npower);
-            const real_t denom2 = pow( grid->L.y(),  1+2*npower);
+            const real_t denom1 = pow(2, -1-2*npower);
+            const real_t denom2 = pow(Ly,  1+2*npower);
             const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
-            normalization = - (num1 * num2 * num3 * grid->L.y())
+            normalization = - (num1 * num2 * num3 * Ly)
                           /   (denom1 * denom2 * denom3);
         } else {
-            // Degenerate case
+            // Degenerate npower == 0 case to avoid tgamma(...) domain issues
             normalization = 1;
         }
 
-        INFO("Preparing the wall-normal streamwise velocity profile");
-        ArrayXr u(grid->N.y());
-        for (int j = 0; j < u.size(); ++j) {
+        INFO("Adding the requested parabolic streamwise velocity profile");
+        for (int j = 0; j < Ny; ++j) {
             const real_t y_j = b->collocation_point(j);
-            u[j] = scenario->bulk_rho_u
-                 * normalization
-                 * pow(y_j * (grid->L.y() - y_j), npower);
+            u(j) += (   scenario->bulk_rho_u
+                      - (isothermal->lower_u + isothermal->upper_u)/2)
+                  * normalization
+                  * pow(y_j * (Ly - y_j), npower);
         }
 
-        INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = T / (scenario->gamma*(scenario->gamma - 1))
-                  + (scenario->Ma*scenario->Ma/2) * (u*u + v*v + w*w);
-
-        INFO("Converting to non-specific, conserved state");
-        E *= rho; // Notice "E" now contains rho_E
-        u *= rho; // Notice "u" now contains rho_u
-        v *= rho; // Notice "v" now contains rho_v
-        w *= rho; // Notice "w" now contains rho_w
+        INFO("Computing total energy and momentum from primitive state");
+        ArrayXr rho_E(Ny);
+        for (int j = 0; j < Ny; ++j) {
+            const Vector3r m(rho(j) * u(j),
+                             rho(j) * v(j),
+                             rho(j) * w(j));
+            rho_E(j) = rholut::energy_internal(scenario->gamma, p(j))
+                     + rholut::energy_kinetic (scenario->Ma, rho(j), m);
+        }
+        ArrayXr rho_u = rho * u;
+        ArrayXr rho_v = rho * v;
+        ArrayXr rho_w = rho * w;
+        u.resize(0); // Mark irrelevant for further use
+        v.resize(0); // Mark irrelevant for further use
+        w.resize(0); // Mark irrelevant for further use
+        p.resize(0); // Mark irrelevant for further use
 
         INFO("Converting conserved state to B-spline coefficients");
         suzerain::bsplineop_lu masslu(*cop);
         masslu.factor_mass(*cop);
-        masslu.solve(1, E  .data(), 1, E  .size());
-        masslu.solve(1, u  .data(), 1, u  .size());
-        masslu.solve(1, v  .data(), 1, v  .size());
-        masslu.solve(1, w  .data(), 1, w  .size());
-        masslu.solve(1, rho.data(), 1, rho.size());
+        masslu.solve(1, rho_E.data(), 1, rho_E.size());
+        masslu.solve(1, rho_u.data(), 1, rho_u.size());
+        masslu.solve(1, rho_v.data(), 1, rho_v.size());
+        masslu.solve(1, rho_w.data(), 1, rho_w.size());
+        masslu.solve(1, rho  .data(), 1, rho  .size());
 
         INFO("Copying the coefficients directly into the zero-zero modes");
-        Map<VectorXc>((*state_linear)[ndx::e  ].origin(), grid->N.y())
-                = (E  ).cast<complex_t>();
-        Map<VectorXc>((*state_linear)[ndx::mx ].origin(), grid->N.y())
-                = (u  ).cast<complex_t>();
-        Map<VectorXc>((*state_linear)[ndx::my ].origin(), grid->N.y())
-                = (v  ).cast<complex_t>();
-        Map<VectorXc>((*state_linear)[ndx::mz ].origin(), grid->N.y())
-                = (w  ).cast<complex_t>();
-        Map<VectorXc>((*state_linear)[ndx::rho].origin(), grid->N.y())
-                = (rho).cast<complex_t>();
+        Map<VectorXc>((*state_linear)[ndx::e  ].origin(), Ny)
+                = rho_E.cast<complex_t>();
+        Map<VectorXc>((*state_linear)[ndx::mx ].origin(), Ny)
+                = rho_u.cast<complex_t>();
+        Map<VectorXc>((*state_linear)[ndx::my ].origin(), Ny)
+                = rho_v.cast<complex_t>();
+        Map<VectorXc>((*state_linear)[ndx::mz ].origin(), Ny)
+                = rho_w.cast<complex_t>();
+        Map<VectorXc>((*state_linear)[ndx::rho].origin(), Ny)
+                = rho  .cast<complex_t>();
 
     }
 
