@@ -440,7 +440,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stretchspace, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( bump_classic, T, test_types )
 {
     using namespace suzerain::math::bump;
-    const T close = std::numeric_limits<T>::epsilon();
     const T eps   = std::sqrt(std::numeric_limits<T>::epsilon());
 
     BOOST_CHECK_EQUAL(classic<T>(-1.1), 0);
@@ -458,7 +457,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump_classic, T, test_types )
 BOOST_AUTO_TEST_CASE_TEMPLATE( bump_scaled, T, test_types )
 {
     using namespace suzerain::math::bump;
-    const T close = std::numeric_limits<T>::epsilon();
     const T eps   = std::sqrt(std::numeric_limits<T>::epsilon());
 
     // One argument
@@ -512,4 +510,23 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump_scaled, T, test_types )
     BOOST_CHECK_GT   (scaled<T>(+0.9, 2, 1, 2), 1);
     BOOST_CHECK_EQUAL(scaled<T>(+1.0, 2, 1, 2), 1);
     BOOST_CHECK_EQUAL(scaled<T>(+1.1, 2, 1, 2), 1);
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( bump_shifted, T, test_types )
+{
+    using namespace suzerain::math::bump;
+    const T l = 1, r = 3, m = (l + r) / 2, eps = (r - l) / 100;
+
+    // Three arguments
+    BOOST_CHECK_EQUAL(shifted<T>(l-eps, l, r), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(l    , l, r), 0);
+    BOOST_CHECK_GT   (shifted<T>(l+eps, l, r), 0);
+    BOOST_CHECK_GT   (shifted<T>(m-eps, l, r), 0);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r), shifted<T>(m-eps, l, r));
+    BOOST_CHECK_EQUAL(shifted<T>(m    , l, r), 1);
+    BOOST_CHECK_GT   (shifted<T>(m    , l, r), shifted<T>(m+eps, l, r));
+    BOOST_CHECK_GT   (shifted<T>(m+eps, l, r), 0);
+    BOOST_CHECK_GT   (shifted<T>(r-eps, l, r), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(r    , l, r), 0);
+    BOOST_CHECK_EQUAL(shifted<T>(r+eps, l, r), 0);
 }
