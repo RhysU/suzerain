@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stretchspace, T, test_types )
     }
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE( bump, T, test_types )
+BOOST_AUTO_TEST_CASE_TEMPLATE( bump_classic, T, test_types )
 {
     using namespace suzerain::math::bump;
     const T close = std::numeric_limits<T>::epsilon();
@@ -453,8 +453,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump, T, test_types )
     BOOST_CHECK_GT   (classic<T>(+0.9), 0);
     BOOST_CHECK_EQUAL(classic<T>(+1.0), 0);
     BOOST_CHECK_EQUAL(classic<T>(+1.1), 0);
+}
 
-    // Scaled, one argument
+BOOST_AUTO_TEST_CASE_TEMPLATE( bump_scaled, T, test_types )
+{
+    using namespace suzerain::math::bump;
+    const T close = std::numeric_limits<T>::epsilon();
+    const T eps   = std::sqrt(std::numeric_limits<T>::epsilon());
+
+    // One argument
     BOOST_CHECK_EQUAL(scaled<T>(-1.1), 0);
     BOOST_CHECK_EQUAL(scaled<T>(-1.0), 0);
     BOOST_CHECK_GT   (scaled<T>(-0.9), 0);
@@ -466,4 +473,43 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( bump, T, test_types )
     BOOST_CHECK_GT   (scaled<T>(+0.9), 0);
     BOOST_CHECK_EQUAL(scaled<T>(+1.0), 0);
     BOOST_CHECK_EQUAL(scaled<T>(+1.1), 0);
+
+    // Two arguments
+    BOOST_CHECK_EQUAL(scaled<T>(-1.1, 2), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(-1.0, 2), 0);
+    BOOST_CHECK_GT   (scaled<T>(-0.9, 2), 0);
+    BOOST_CHECK_GT   (scaled<T>(-eps, 2), 0);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2), scaled<T>(-eps, 2));
+    BOOST_CHECK_EQUAL(scaled<T>( 0.0, 2), 2);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2), scaled<T>( eps, 2));
+    BOOST_CHECK_GT   (scaled<T>( eps, 2), 0);
+    BOOST_CHECK_GT   (scaled<T>(+0.9, 2), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.0, 2), 0);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.1, 2), 0);
+
+    // Three arguments
+    BOOST_CHECK_EQUAL(scaled<T>(-1.1, 2, 1), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(-1.0, 2, 1), 1);
+    BOOST_CHECK_GT   (scaled<T>(-0.9, 2, 1), 1);
+    BOOST_CHECK_GT   (scaled<T>(-eps, 2, 1), 1);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2, 1), scaled<T>(-eps, 2, 1));
+    BOOST_CHECK_EQUAL(scaled<T>( 0.0, 2, 1), 2);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2, 1), scaled<T>( eps, 2, 1));
+    BOOST_CHECK_GT   (scaled<T>( eps, 2, 1), 1);
+    BOOST_CHECK_GT   (scaled<T>(+0.9, 2, 1), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.0, 2, 1), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.1, 2, 1), 1);
+
+    // Four arguments
+    BOOST_CHECK_EQUAL(scaled<T>(-1.1, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(-1.0, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (scaled<T>(-0.9, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (scaled<T>(-eps, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2, 1, 2), scaled<T>(-eps, 2, 1, 2));
+    BOOST_CHECK_EQUAL(scaled<T>( 0.0, 2, 1, 2), 2);
+    BOOST_CHECK_GT   (scaled<T>( 0.0, 2, 1, 2), scaled<T>( eps, 2, 1, 2));
+    BOOST_CHECK_GT   (scaled<T>( eps, 2, 1, 2), 1);
+    BOOST_CHECK_GT   (scaled<T>(+0.9, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.0, 2, 1, 2), 1);
+    BOOST_CHECK_EQUAL(scaled<T>(+1.1, 2, 1, 2), 1);
 }
