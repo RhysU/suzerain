@@ -436,3 +436,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( stretchspace, T, test_types )
             (result[N-1]-result[N-2])/(result[1]-result[0]),T(2),close_enough);
     }
 }
+
+BOOST_AUTO_TEST_CASE_TEMPLATE( bump, T, test_types )
+{
+    using namespace suzerain::math::bump;
+    const T close = std::numeric_limits<T>::epsilon();
+    const T eps   = std::sqrt(std::numeric_limits<T>::epsilon());
+
+    BOOST_CHECK_EQUAL(classic<T>(-1.1), 0);
+    BOOST_CHECK_EQUAL(classic<T>(-1.0), 0);
+    BOOST_CHECK_GT   (classic<T>(-0.9), 0);
+    BOOST_CHECK_GT   (classic<T>(-eps), 0);
+    BOOST_CHECK_GT   (classic<T>( 0.0), classic<T>(-eps));
+    BOOST_CHECK_GT   (classic<T>( 0.0), classic<T>( eps));
+    BOOST_CHECK_GT   (classic<T>( eps), 0);
+    BOOST_CHECK_GT   (classic<T>(+0.9), 0);
+    BOOST_CHECK_EQUAL(classic<T>(+1.0), 0);
+    BOOST_CHECK_EQUAL(classic<T>(+1.1), 0);
+}
