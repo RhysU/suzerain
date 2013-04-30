@@ -142,8 +142,8 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     const std::string restart_file = positional[0];
     const bool clobber = options.variables().count("clobber");
-    if (npower <= 0 || npower > 1) {
-        FATAL0("npower in (0,1] required");
+    if (npower < 0 || npower > 1) {
+        FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
     }
     if (grid->k < 4) {
@@ -205,11 +205,11 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         const real_t T = isothermal->lower_T; assert(T == isothermal->upper_T);
 
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
-        real_t normalization;
+        real_t normalization = std::numeric_limits<real_t>::quiet_NaN();
         if (npower == 1) {
             // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
             normalization = 6 / pow(grid->L.y(), 2);
-        } else {
+        } else if (npower > 0) {
             // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
             //      -  (Gamma[-n] Gamma[3/2+n])
             //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
@@ -221,6 +221,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
             normalization = - (num1 * num2 * num3 * grid->L.y())
                           /   (denom1 * denom2 * denom3);
+        } else {
+            // Degenerate case
+            normalization = 1;
         }
 
         INFO("Preparing the wall-normal streamwise velocity profile");
