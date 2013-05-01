@@ -64,9 +64,15 @@ nonreflecting_treatment::nonreflecting_treatment(
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
+    , integcoeff_y(b.n())
     , who("nonreflecting_treatment")
 {
-    // NOP
+    // Precompute coefficients for integrating first derivative in y
+    b.integration_coefficients(1, integcoeff_y.data());
+
+    // Ensure cached mass matrix factorized prior to operator application
+    // Strictly speaking unnecessary, but reduces timing variability
+    this->masslu();
 }
 
 std::vector<real_t> nonreflecting_treatment::apply_operator(
@@ -131,13 +137,46 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         inv_RY(ndx::rho, 0) = 1;
     }
 
-    // Retrieve upper boundary reference state from the common block.
+    // Compute reference state given information in common block.
+    // Reference streamwise and spanwise velocity are taken from mean state.
+    const real_t ref_ux = common.ref_ux()[swave.shape()[1] - 1];
+    const real_t ref_uz = common.ref_uz()[swave.shape()[1] - 1];
+
+    // Reference density, wall-normal velocity, and sound speed are computed
+    // using identities like the divergence theorem to relate upper references
+    // to known good lower boundary state combined with mean behavior inside
+    // the simulation domain.
+    //
+    // Intent is to take a globally-smoothed, continuously correct mean upper
+    // boundary state rather than an instantaneous discrete mean from a single
+    // point as the latter might be polluted by discrete noise due to spurious
+    // reflection.
+    //
+    // The expressions computed are
+    //     quantity_upper = quantity_lower - \int \partial_y quantity dy
+    // starting from reference quantities stored as collocation values.  We
+    // pack the data to permit one solve call and take advantage of the value
+    // at the lower boundary being identical to the lower coefficient.
+    real_t ref_rho, ref_uy, ref_a;
+    {
+        MatrixXXr buf(swave.shape()[1], 3);
+        buf.col(0) = common.ref_rho();
+        buf.col(1) = common.ref_uy ();
+        buf.col(2) = common.ref_a  ();
+        masslu()->solve(buf.cols(), buf.data(),
+                        buf.innerStride(), buf.outerStride());
+        ref_rho = buf(0,0) - integcoeff_y.dot(buf.col(0));
+        ref_uy  = buf(0,1) - integcoeff_y.dot(buf.col(1));
+        ref_a   = buf(0,2) - integcoeff_y.dot(buf.col(2));
+    }
+
+    // Set upper boundary reference state from the computed quantities
     // These assignments are odd looking to permit others as documented.
-    const real_t rho = common.ref_rho().tail<1>()[0];
-    const real_t u   = common.ref_uy ().tail<1>()[0]; // Ref u = v' per RY
-    const real_t v   = common.ref_uz ().tail<1>()[0]; // Ref v = w' per RY
-    const real_t w   = common.ref_ux ().tail<1>()[0]; // Ref w = u' per RY
-          real_t a   = common.ref_a  ().tail<1>()[0];
+    const real_t rho = ref_rho;
+    const real_t u   = ref_uy ; // Ref u = v' per RY
+    const real_t v   = ref_uz ; // Ref v = w' per RY
+    const real_t w   = ref_ux ; // Ref w = u' per RY
+          real_t a   = ref_a  ;
 
     // Prepare oft-used quantities derived from the reference state
     const real_t inv_rho = 1 / rho;
