@@ -42,14 +42,15 @@ mass_operator::mass_operator(
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b)
-    : operator_base(grid, dgrid, cop, b),
-      massluz(cop)
+    : operator_base(grid, dgrid, cop, b)
 {
     SUZERAIN_UNUSED(grid);
     SUZERAIN_UNUSED(dgrid);
     SUZERAIN_UNUSED(b);
 
-    massluz.factor_mass(cop);
+    // Ensure cached mass matrix factorized prior to operator application
+    // Strictly speaking unnecessary, but reduces timing variability
+    this->massluz();
 }
 
 mass_operator::~mass_operator()
@@ -66,7 +67,7 @@ void mass_operator::apply_mass_plus_scaled_operator(
 
     // Verify required assumptions
     SUZERAIN_ENSURE(state.strides()[1] == 1);
-    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
+    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(cop.n()));
     SUZERAIN_ENSURE(multi_array::is_contiguous(state));
 
     // Those assumptions holding, apply operator to each wall-normal pencil.
@@ -131,23 +132,23 @@ void mass_operator::invert_mass_plus_scaled_operator(
 
     // Verify required assumptions
     SUZERAIN_ENSURE(state.strides()[1] == 1);
-    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(massluz.n()));
+    SUZERAIN_ENSURE(state.shape()[1]   == static_cast<unsigned>(cop.n()));
     SUZERAIN_ENSURE(multi_array::is_contiguous(state));
 
     // Those assumptions holding, invert operator on each wall-normal pencil
-    massluz.solve(state.shape()[0]*state.shape()[2]*state.shape()[3],
-                  state.data(), 1, state.shape()[1]);
+    massluz()->solve(state.shape()[0]*state.shape()[2]*state.shape()[3],
+                     state.data(), 1, state.shape()[1]);
 
     if (ic0) {
 
         // Likewise, verify required assumptions
         SUZERAIN_ENSURE(ic0->strides()[1] == 1);
-        SUZERAIN_ENSURE(ic0->shape()[1]   == static_cast<unsigned>(massluz.n()));
+        SUZERAIN_ENSURE(ic0->shape()[1]   == static_cast<unsigned>(cop.n()));
         SUZERAIN_ENSURE(multi_array::is_contiguous(*ic0));
 
         // Likewise, invert operator on each wall-normal pencil
-        massluz.solve(ic0->shape()[0]*ic0->shape()[2]*ic0->shape()[3],
-                      ic0->data(), 1, ic0->shape()[1]);
+        massluz()->solve(ic0->shape()[0]*ic0->shape()[2]*ic0->shape()[3],
+                         ic0->data(), 1, ic0->shape()[1]);
 
     }
 }

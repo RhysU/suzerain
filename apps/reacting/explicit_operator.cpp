@@ -151,11 +151,11 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
     , common(common)
     , msoln(msoln)
     , fsdef(fsdef)
-    , massluz(cop)
     , who("operator.N")
 {
-    // form and factor mass matrix once prior to use in nonlinear operator
-    massluz.factor_mass(cop);
+    // Ensure cached mass matrix factorized prior to first use
+    // Strictly speaking unnecessary, but reduces timing variability
+    this->massluz();
 }
 
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
@@ -166,7 +166,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const std::size_t substep_index) const
 {
 
-#define ARGUMENTS *this, common, fsdef, msoln, cmods, massluz, \
+#define ARGUMENTS *this, common, fsdef, msoln, cmods, *massluz(), \
                   time, swave, evmaxmag_real, evmaxmag_imag
 
     // Dispatch to an optimized implementation depending on case:

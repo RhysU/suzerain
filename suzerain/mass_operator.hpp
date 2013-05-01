@@ -79,11 +79,6 @@ public:
              const std::size_t substep_index,
              multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
-private:
-
-     /** Precomputed mass matrix factorization */
-    bsplineop_luz massluz;
-
 };
 
 } // namespace suzerain

@@ -60,7 +60,7 @@ class explicit_nonlinear_operator
       public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
-    
+
     explicit_nonlinear_operator(
             const antioch_constitutive& cmods,
             const grid_specification &grid,
@@ -91,9 +91,6 @@ protected:
 
     /** The filter source definition */
     const filter_definition &fsdef;
-
-    /** Mass matrix required by apply_operator */
-    suzerain::bsplineop_luz massluz;
 
 private:
 
