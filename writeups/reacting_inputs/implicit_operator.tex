@@ -1,28 +1,28 @@
 This section describes the formulation of the implicit operator
-$\tilde{L}$ in the SMR91 scheme.  See~\ref{sec:temporal_discretization}
-for details of the scheme.
+$\tilde{L}$ in the SMR91 scheme.  See~\cite{?} for details of the
+temporal discretization scheme.
 
 \subsection{Motivating Concerns}
 Given the wall-normal grid stretching required to adequately resolve
 the near-wall features of the solution, it is expected that, in a
 fully explicit treatment, the near-wall, wall-normal acoustic velocity
-and viscous terms would lead to the most constraining time step
-restrictions.  Thus, we pursue a formulation that aims to treat these
-terms in the part of the operator that is treated implicitly.  Of
-course, since the SMR91 scheme requires that the implicit operator be
-linear in the state, we cannot exactly capture the full behavior in
-the linear operator.  Further, to reduce the cost of the required
-implicit solves, we will pursue a formulation that treats only
-wall-normal portions of the Navier-Stokes right hand sides implicitly.
-This choice implies that the linear operator $\tilde{L}$ is
-independence of wave-number, meaning that we require only one matrix
-factorization per Runge-Kutta substep.  Finally, to avoid factorizing
-an $N_y (N_s + 4) \times N_y (N_s + 4)$ matrix, we require that the
-formulation decouples the species equations both from the flow and
-each other.  In this case, the species equations have their own
-solvers, which each require factorization of one $N_y \times N_y$
-matrix per substep.  The flow solver requires factorization of one $5
-N_y \times 5 N_y$ matrix per substep.
+and viscous terms would lead to the most severe time step
+restrictions.  Thus, the goal of this formulation is to bring these
+effects into the implicit operator.  Of course, since the SMR91 scheme
+requires that the implicit operator be linear in the state, we cannot
+exactly capture the full behavior in the linear operator.  Further, to
+reduce the cost of the required implicit solves, we will pursue a
+formulation that treats only wall-normal portions of the Navier-Stokes
+right hand sides implicitly.  This choice implies that the linear
+operator $\tilde{L}$ is independence of wave-number, meaning that we
+require only one matrix factorization per Runge-Kutta step.
+Finally, to avoid factorizing an $N_y (N_s + 4) \times N_y (N_s + 4)$
+matrix, we require that the formulation decouples the species
+equations both from the flow and each other.  In this case, the
+species equations have their own solvers, which each require
+factorization of one $N_y \times N_y$ matrix per step.  The flow
+solver requires factorization of one $5 N_y \times 5 N_y$ matrix per
+step.
 
 For clarity in developing the formulation, the inviscid and viscous
 contributions are discussed separately in
@@ -514,7 +514,7 @@ The wall-normal component of the viscous flux is given by
 \begin{equation*}
 G_{\mathrm{visc}} = \left[ \begin{array}{c}
 \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{y} \\
-0 
+0 \\
 \tau_{21} \\
 \tau_{22} \\
 \tau_{23} \\
