@@ -163,7 +163,7 @@ suzerain_bspline_linear_combination_complex(
     gsl_bspline_deriv_workspace *dw);
 
 /**
- * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code> *
+ * Compute the coefficients \f$ \gamma_{i} \f$ for <code>0 <= i < w->n</code>
  * such that \f$ \vec{\gamma}\cdot\vec{\beta} = \int \sum_{i} \beta_{i}
  * B_{i}^{(\mbox{nderiv})}(x) \, dx\f$.
  *
