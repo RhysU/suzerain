@@ -28,6 +28,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/exprparse.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
@@ -65,20 +66,32 @@ private:
 // Provided by main_init_svnrev.{c,h} so revstr updates are merely relinking
 extern "C" const char revstr[];
 
-/** Instantiate and invoke the application */
+/** Provides parsing and validation of several options. */
+static void
+parse_nonnegative(const std::string& s, suzerain::real_t *t, const char *n)
+{
+    const suzerain::real_t v = suzerain::exprparse<suzerain::real_t>(s, n);
+    suzerain::validation::ensure_nonnegative(v, n);
+    *t = v;
+}
+
+/** Instantiate and invoke the application. */
 int main(int argc, char **argv)
 {
     suzerain::perfect::driver_init app(revstr);
     return app.run(argc, argv);
 }
 
+/** The logic executed by main(). */
 int
 suzerain::perfect::driver_init::run(int argc, char **argv)
 {
     using boost::math::constants::pi;
     using boost::math::tgamma;
+    using std::numeric_limits;
     using std::pow;
     using std::sin;
+    using std::string;
 
     // Establish default grid and domain extents
     grid->L.x()   = 4 * pi<real_t>();
@@ -118,40 +131,77 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     options.add_definition(msoln->isothermal_channel());
 
     // Establish binary-specific options
-    std::pointer_to_binary_function<real_t,const char*,void>
-        ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);
-    real_t mms                = -1;
-    real_t npower             =  1;
+    real_t mms    = numeric_limits<real_t>::quiet_NaN();
+    real_t npower = numeric_limits<real_t>::quiet_NaN();
     options.add_options()
-        ("clobber", "Overwrite an existing restart file?")
+        ("clobber",
+         boost::program_options::bool_switch(),
+         "Overwrite an existing restart file?")
         ("npower",
-            boost::program_options::value(&npower)->default_value(npower),
-            "Power n in (0, 1] used to control the flatness of the"
-            " \"parabolic\" streamwise velocity profile (y*(L-y))^n.")
+         boost::program_options::value<string>()
+         ->default_value("1")
+         ->notifier(boost::bind(&parse_nonnegative, _1, &npower, "npower")),
+         "Power n in [0, 1] used to control the flatness of the"
+         " \"parabolic\" streamwise velocity profile (y*(L-y))^n.")
         ("mms",
-            boost::program_options::value(&mms)
-            ->notifier(std::bind2nd(ensure_real_tnonnegative, "mms")),
-            "If given, prepare a manufactured solution at the specified time.")
+         boost::program_options::value<string>()
+         ->notifier(boost::bind(&parse_nonnegative, _1, &mms, "mms")),
+         "If given, prepare a manufactured solution at the specified time.")
     ;
-    real_t acoustic_strength  =  0.;
-    real_t acoustic_stiffness =  1.;
-    real_t acoustic_support   =  1./5;
+
+    real_t acoustic_strength  = numeric_limits<real_t>::quiet_NaN();
+    real_t acoustic_stiffness = numeric_limits<real_t>::quiet_NaN();
+    real_t acoustic_support   = numeric_limits<real_t>::quiet_NaN();
     {
         boost::program_options::options_description pulse_acoustic(
                 "Add an acoustic pulse similarly to Baum et al. JCP 1994");
         pulse_acoustic.add_options()
-            // TODO Add
+            ("acoustic_strength",
+             boost::program_options::value<string>()
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &acoustic_strength, "acoustic_strength")),
+             "Strength of the acoustic pulse measured in velocity units")
+            ("acoustic_stiffness",
+             // See notebooks/Bump_Function_Power.nb for why 4 is chosen
+             boost::program_options::value<string>()
+             ->default_value("4")
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &acoustic_stiffness, "acoustic_stiffness")),
+             "Stiffness of the acoustic pulse measured by bump function power")
+            ("acoustic_support",
+             boost::program_options::value<string>()
+             ->default_value("1/4")
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &acoustic_support, "acoustic_support")),
+             "Fraction of the domain over which the pulse is supported")
         ;
         options.options().add(pulse_acoustic);
     }
-    real_t entropy_strength  =  0.;
-    real_t entropy_stiffness =  1.;
-    real_t entropy_support   =  1./5;
+    real_t entropy_strength  = numeric_limits<real_t>::quiet_NaN();
+    real_t entropy_stiffness = numeric_limits<real_t>::quiet_NaN();
+    real_t entropy_support   = numeric_limits<real_t>::quiet_NaN();
     {
         boost::program_options::options_description pulse_entropy(
                 "Add an entropy pulse similarly to Baum et al. JCP 1994");
         pulse_entropy.add_options()
-            // TODO Add
+            ("entropy_strength",
+             boost::program_options::value<string>()
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &entropy_strength, "entropy_strength")),
+             "Strength of the entropy pulse measured in temperature units")
+            ("entropy_stiffness",
+             // See notebooks/Bump_Function_Power.nb for why 4 is chosen
+             boost::program_options::value<string>()
+             ->default_value("4")
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &entropy_stiffness, "entropy_stiffness")),
+             "Stiffness of the entropy pulse measured by bump function power")
+            ("entropy_support",
+             boost::program_options::value<string>()
+             ->default_value("1/4")
+             ->notifier(boost::bind(&parse_nonnegative, _1,
+                                    &entropy_support, "entropy_support")),
+             "Fraction of the domain over which the pulse is supported")
         ;
         options.options().add(pulse_entropy);
     }
@@ -164,7 +214,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         return EXIT_FAILURE;
     }
     const std::string restart_file = positional[0];
-    const bool clobber = options.variables().count("clobber");
+    const bool clobber = options.variables()["clobber"].as<bool>();
     if (npower < 0 || npower > 1) {
         FATAL0("npower in [0,1] required");
         return EXIT_FAILURE;
@@ -173,6 +223,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
         return EXIT_FAILURE;
     }
+    options.conflicting_options("acoustic_strength", "mms");
+    options.conflicting_options("entropy_strength",  "mms");
+    options.conflicting_options("acoustic_strength", "entropy_strength");
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -187,13 +240,13 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
     DEBUG0(who, "Initializing state_linear to contain the data in wave space");
     fill(*state_linear, 0);
-    if (mms >= 0) {
+    if (options.variables().count("mms")) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
         INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
                    " due to manufactured solution use");
-        scenario->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
-        scenario->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
+        scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
 
         accumulate_manufactured_solution(
                 1, *msoln, 0, *state_nonlinear, *grid, *dgrid, *cop, *b, mms);
@@ -228,7 +281,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
 
         INFO("Parabolic profile will be added with npower = " << npower);
         INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
-        real_t normalization = std::numeric_limits<real_t>::quiet_NaN();
+        real_t normalization = numeric_limits<real_t>::quiet_NaN();
         if (npower == 1) {
             // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
             normalization = 6 / pow(grid->L.y(), 2);
@@ -256,6 +309,15 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                       - (isothermal->lower_u + isothermal->upper_u)/2)
                   * normalization
                   * pow(y_j * (Ly - y_j), npower);
+        }
+
+        if (options.variables().count("acoustic_strength")) {
+            INFO("Adding acoustic pulse with strength " << acoustic_strength);
+            // TODO
+        }
+        if (options.variables().count("entropy_strength")) {
+            INFO("Adding entropy pulse with strength " << entropy_strength);
+            // TODO
         }
 
         INFO("Computing density from pressure and temperature");
