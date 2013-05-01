@@ -518,6 +518,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           const real_t    rho,
                                                           const VectorXr& species,
                                                           const VectorXr& cs,
+                                                          real_t&   T,
                                                           real_t&   p,
                                                           real_t&   p_rho,
                                                           real_t&   p_rsum,
@@ -525,7 +526,9 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           real_t&   p_e,
                                                           real_t&   mu,
                                                           real_t&   kaporCv,
-                                                          VectorXr& Ds ) const
+                                                          VectorXr& Ds,
+                                                          real_t&   gamma,
+                                                          real_t&   a) const
 {
     const real_t irho = 1.0/rho;
 
@@ -534,7 +537,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
     // Compute temperature from internal energy (assuming thermal equilibrium)
     const real_t re_kinetic = 0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
     const real_t re_internal = e - re_kinetic;
-    const real_t T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs);
+    T = this->sm_thermo->T_from_e_tot(irho*re_internal, cs);
 
     // Pressure
     const real_t R_mix = this->mixture->R(cs);
@@ -545,7 +548,7 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
     const real_t Cv = this->sm_thermo->cv(T, T, cs);
 
     // gamm and gamma-1 for convenience
-    const real_t gamma = Cp/Cv;
+    gamma = Cp/Cv;
     const real_t gmi = gamma-1.0;
 
     // Gas constant and internal energy of the diluter
@@ -581,6 +584,13 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
 
     for (unsigned int i=0; i<Ns; ++i)
         Ds[i] = D0;
+
+    // Speed of sound(frozen)
+    // TODO: Unify computation of speed of sound with that from 
+    //       the evaluate method
+    real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
+    a = std::sqrt(af2);
+
 }
 
 
@@ -589,6 +599,21 @@ antioch_constitutive::e_from_T (const real_t  T,
                                 const std::vector<real_t> mass_fractions) const
 {
     return this->sm_thermo->e_tot(T, mass_fractions);
+}
+
+
+void
+antioch_constitutive::etots_from_T (const real_t    T,
+                                    VectorXr& etots) const
+{
+    const size_t Ns = this->Ns();
+
+    // total specific energy for each species
+    // index 0 is the diluter 
+    for (unsigned int i=0; i<Ns; ++i){
+        etots[i] = this->sm_thermo->e_tot(i, T, T);
+    }
+
 }
 
 

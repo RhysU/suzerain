@@ -537,14 +537,15 @@ int test_evaluate_pressure_derivs_and_trans(const std::string& chem_xml_file)
     species = rho*cs;
 
     // Storage for computed quantities
-    real_t p=-1, p_rho=-1, p_rsum=-1, p_e=-1, mu=0, kap=0;
+    real_t T=-1, p=-1, p_rho=-1, p_rsum=-1, p_e=-1, mu=0, kap=0;
+    real_t gamma=-1, a=-1;
     Vector3r p_m;
     VectorXr Ds(Ns);
 
     // Eval rxn sources, trans, thermo
     acl1.evaluate_pressure_derivs_and_trans(
         e, m, rho, species, cs,   /* input */
-        p, p_rho, p_rsum, p_m, p_e, mu, kap, Ds /* output */);
+        T, p, p_rho, p_rsum, p_m, p_e, mu, kap, Ds, gamma, a /* output */);
 
 
     // TODO: Add a finite difference check against acl1.evaluate
@@ -555,6 +556,57 @@ int test_evaluate_pressure_derivs_and_trans(const std::string& chem_xml_file)
 
     return nerr;
 }
+
+
+/**
+ * Check that call to etots_from_T "works"
+ */
+int test_etots_from_T(const std::string& chem_xml_file)
+{
+
+    using suzerain::reacting::antioch_constitutive;
+    using suzerain::real_t;
+    using suzerain::Vector3r;
+    using suzerain::VectorXr;
+
+    // Prepare input data
+    std::vector<std::string> species_names;
+    const unsigned int Ns=5;
+    species_names.reserve(Ns);
+    species_names.push_back( "N2" );
+    species_names.push_back( "O2" );
+    species_names.push_back( "N" );
+    species_names.push_back( "O" );
+    species_names.push_back( "NO" );
+
+    const real_t Le = 0.7;
+    const real_t alpha = 0.5;
+
+    antioch_constitutive acl1(species_names, chem_xml_file, Le, alpha);
+
+    acl1.init_antioch();
+
+    // Set up temperature
+    real_t T=1000;
+
+    // Storage for computed quantities
+    VectorXr etots(Ns);
+
+    // Eval rxn sources, trans, thermo
+    acl1.etots_from_T(
+        T,   /* input */
+        etots /* output */);
+
+
+    // TODO: Add check
+
+    int nerr=0;
+
+    // FIXME: For now this passes as long as above call doesn't die somehow
+
+    return nerr;
+}
+
 
 
 int main(int argc, char **argv)

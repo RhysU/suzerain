@@ -388,6 +388,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 vp_ru, vp_rw, vp_rE,
                                 Cmy_rho, Ce_rho, Ce_rv,
                                 nu, korCv, Ds,
+                                T, gamma, a,
                                 count // Sentry
             }; };
 
@@ -435,12 +436,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // ... velocity
                 const Vector3r u     = suzerain::rholut::u(rho, m);
 
+                // ... temperature
+                real_t   T;
+
                 // ... pressure-related quantities
                 real_t p, p_rho, p_rsum, p_e, mu, korCv;
+                // ... for nonreflecting (Giles) conditions
+                real_t gamma, a;
                 Vector3r p_m;
                 cmods.evaluate_pressure_derivs_and_trans(
                     e, m, rho, species, cs,
-                    p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds);
+                    T, p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds,
+                    gamma, a);
 
                 real_t H = irho*(e + p);
 
@@ -470,6 +477,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::nu   ](mu*irho);
                 acc[ref::korCv](korCv);
                 acc[ref::Ds   ](Ds[0]); // Yes, b/c constant Lewis number!
+
+                // ...and quantities needed for Giles
+                // FIXME: get density from 00 mode directly
+                acc[ref::T    ](T);
+                acc[ref::gamma](gamma);
+                acc[ref::a    ](a);
 
             } // end X // end Z
 
@@ -501,6 +514,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_nu        ()[j] = sum(acc[ref::nu        ]);
             common.ref_korCv     ()[j] = sum(acc[ref::korCv     ]);
             common.ref_Ds        ()[j] = sum(acc[ref::Ds        ]);
+            common.ref_T         ()[j] = sum(acc[ref::T         ]);
+            common.ref_gamma     ()[j] = sum(acc[ref::gamma     ]);
+            common.ref_a         ()[j] = sum(acc[ref::a         ]);
 
         } // end Y
 

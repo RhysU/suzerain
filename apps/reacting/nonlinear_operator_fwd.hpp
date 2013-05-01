@@ -87,7 +87,7 @@ class operator_common_block
 
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 17, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 20, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -265,6 +265,9 @@ public:
     refs_type::RowXpr      ref_nu()               { return refs.row(14); }
     refs_type::RowXpr      ref_korCv()            { return refs.row(15); }
     refs_type::RowXpr      ref_Ds()               { return refs.row(16); }
+    refs_type::RowXpr      ref_T()                { return refs.row(17); }
+    refs_type::RowXpr      ref_gamma()            { return refs.row(18); }
+    refs_type::RowXpr      ref_a()                { return refs.row(19); }
 
     refs_type::ConstRowXpr ref_ux()         const { return refs.row( 0); }
     refs_type::ConstRowXpr ref_uy()         const { return refs.row( 1); }
@@ -283,7 +286,10 @@ public:
     refs_type::ConstRowXpr ref_nu()         const { return refs.row(14); }
     refs_type::ConstRowXpr ref_korCv()      const { return refs.row(15); }
     refs_type::ConstRowXpr ref_Ds()         const { return refs.row(16); }
-    
+    refs_type::ConstRowXpr ref_T()          const { return refs.row(17); }
+    refs_type::ConstRowXpr ref_gamma()      const { return refs.row(18); }
+    refs_type::ConstRowXpr ref_a()          const { return refs.row(19); }   
+
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
                     suzerain_reacting_imexop_refld &ld)
@@ -307,6 +313,9 @@ public:
         ref.nu         = ref_nu().data();
         ref.korCv      = ref_korCv().data();
         ref.Ds         = ref_Ds().data();
+        ref.T          = ref_T().data();
+        ref.gamma      = ref_gamma().data();
+        ref.a          = ref_a().data();
 
         const int inc = refs.colStride();
         ld.ux         = inc;
@@ -326,6 +335,9 @@ public:
         ld.nu         = inc;
         ld.korCv      = inc;
         ld.Ds         = inc;
+        ld.T          = inc;
+        ld.gamma      = inc;
+        ld.a          = inc;
     }
 
     /** @} */

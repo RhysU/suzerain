@@ -190,6 +190,7 @@ public:
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
      * @param[in] cs      Species mass fractions.
+     * @param[out] T      Temperature.
      * @param[out] p      Pressure.
      * @param[out] p_rho  Derivative of pressure wrt mixture density
      * @param[out] p_rsum Sum of mass frac(s) * dp/d(rho(s)) for s=2:Ns
@@ -198,12 +199,15 @@ public:
      * @param[out] mu     Mixture viscosity
      * @param[out] kap    Mixture thermal conductivity
      * @param[out] Ds     Diffusivities
+     * @param[out] gamma  Mixture heat capacity ratio
+     * @param[out] a      Mixture speed of sound
      */
     void evaluate_pressure_derivs_and_trans (const real_t    e,
                                              const Vector3r& m,
                                              const real_t    rho,
                                              const VectorXr& species,
                                              const VectorXr& cs,
+                                             real_t&   T,
                                              real_t&   p,
                                              real_t&   p_rho,
                                              real_t&   p_rsum,
@@ -211,7 +215,9 @@ public:
                                              real_t&   p_e,
                                              real_t&   mu,
                                              real_t&   kaporCv,
-                                             VectorXr& Ds ) const;
+                                             VectorXr& Ds,
+                                             real_t&   gamma,
+                                             real_t&   a) const;
 
     /**
      * Given temperature and mass fractions, compute internal energy
@@ -222,6 +228,16 @@ public:
      */
     real_t e_from_T (const real_t  T,
                      const std::vector<real_t> mass_fractions) const;
+
+    /**
+     * Given temperature compute specific total energy for each 
+     * species.
+     *
+     * @param[in] T       Temparature.
+     * @param[out] etots  Specific total energies
+     */
+    void etots_from_T (const real_t    T,
+                       VectorXr&       etots) const;
 
     /**
      * Report the number of species in the mixture.
