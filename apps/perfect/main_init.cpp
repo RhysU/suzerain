@@ -133,9 +133,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             ->notifier(std::bind2nd(ensure_real_tnonnegative, "mms")),
             "If given, prepare a manufactured solution at the specified time.")
     ;
-    real_t acoustic_strength  =  0;
-    real_t acoustic_stiffness =  0;
-    real_t acoustic_support   =  0;
+    real_t acoustic_strength  =  0.;
+    real_t acoustic_stiffness =  1.;
+    real_t acoustic_support   =  1./5;
     {
         boost::program_options::options_description pulse_acoustic(
                 "Add an acoustic pulse similarly to Baum et al. JCP 1994");
@@ -144,9 +144,9 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         ;
         options.options().add(pulse_acoustic);
     }
-    real_t entropy_strength  =  0;
-    real_t entropy_stiffness =  0;
-    real_t entropy_support   =  0;
+    real_t entropy_strength  =  0.;
+    real_t entropy_stiffness =  1.;
+    real_t entropy_support   =  1./5;
     {
         boost::program_options::options_description pulse_entropy(
                 "Add an entropy pulse similarly to Baum et al. JCP 1994");
