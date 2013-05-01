@@ -239,7 +239,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     const int    Ny = grid->N.y();
 
     DEBUG0(who, "Initializing state_linear to contain the data in wave space");
-    fill(*state_linear, 0);
+    suzerain::multi_array::fill(*state_linear, 0);
     if (options.variables().count("mms")) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
