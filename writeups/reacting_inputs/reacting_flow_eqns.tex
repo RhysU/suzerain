@@ -54,7 +54,7 @@ Suzerain uses a constant Lewis number model to compute the species
 diffusivities:
 %
 \begin{equation*}
-\mcal{D}_{\alpha} = \frac{Le \kappa}{\rho C_{p,\mathrm{mix}}},
+\mcal{D}_{\alpha} = \frac{Le \, \kappa}{\rho C_{p,\mathrm{mix}}},
 \end{equation*}
 %
 where $Le$ is the Lewis number, $\kappa$ is the mixture thermal
@@ -92,35 +92,47 @@ The source terms $\dot{\omega}_{\alpha}$ in the species equations
 appear due to chemical reactions.  At a given point in space and time,
 these sources depend only on the state at that point in space and
 time.  These terms will be evaluated from reaction mechanisms and
-reaction rate models implemented in Antioch~\cite{?}.  The details of
-these models will not be discussed further here.
+reaction rate models implemented in third-party software.
+Specifically, Suzerain utilizes the Antioch library~\cite{?}.  For
+further discussion of these models, see~\cite{?}.
 
 \subsubsection{Viscous Stress}
 The viscous stress is given by
 %
 \begin{equation*}
-\tau_{ij} =  2 \mu \left[ \frac{1}{2} \left(\pp{u_i}{x_j} + \pp{u_j}{x_i} \right) - \frac{1}{3} \pp{u_k}{x_k} \delta_{ij} \right].
+\tau_{ij} =  2 \mu \left[ \frac{1}{2} \left(\pp{u_i}{x_j} + \pp{u_j}{x_i} \right) - \frac{1}{3} \pp{u_k}{x_k} \delta_{ij} \right],
 \end{equation*}
 % 
-Velocity derivatives are easily computed from the state derivatives,
-and the viscosity $\mu$ is computed via a call to Antioch.
+where $\mu$ is the mixture viscosity. While the velocity derivatives
+can easily be computed from the state derivatives, the mixture
+viscosity is more complex.  Here, each species viscosity is modeled
+with a Blottner curve fit~\cite{?} and the mixture viscosity is
+computed from these species viscosities using Wilke's mixing
+rule~\cite{?}.  As with the chemical reactions, the viscosity is
+computed by Antioch~\cite{}.
 
 \subsubsection{Heat Flux}
 The heat flux is given by
 %
 \begin{equation*}
-q_j = - \kappa \pp{T}{x_j}.
+q_j = - \kappa \pp{T}{x_j},
 \end{equation*}
 % 
-The temperature gradient is not easy to compute from derivatives of
-state because an explicit functional form for the temperature given
-the state is not available.  Thus, we will proceed by computing the
-temperature field in physical space, transforming back to wave space,
-differentiating, and transforming to physical space again.
+where $\kappa$ is the mixture thermal conductivity.  Species thermal
+conductivies are evaluated using the Eucken model~\cite{} and the
+mixture thermal conductivity is computed from Wilke's mixing
+rule~\cite{}.  Like the mixture viscosity, these capabilities are
+provided by Antioch~\cite{}.
 
-The thermal conductivity is computed via a call to Antioch.
+The temperature and temperature gradient are not easy to compute from
+derivatives of state because an explicit functional form for the
+temperature given the state is not available.  Thus, we will proceed
+by computing the temperature field in physical space, transforming
+back to wave space, differentiating, and transforming to physical
+space again.  The temperature calculation is discussed further
+in~\S\ref{sec:PandT}.
 
-\subsubsection{Pressure and Temperature}
+\subsubsection{Pressure and Temperature} \label{sec:PandT}
 The mixture pressure is a sum of the species partial pressures:
 %
 \begin{equation*}
@@ -139,13 +151,31 @@ where $R_{\alpha}$ is the gas constant for the species $\alpha$.  Thus,
 p = \rho R_{\mathrm{mix}} T,
 \end{equation*}
 % 
-where $R_{\mathrm{mix}} = \sum_{s=1}^{N_s} c_s R_s$.  
+where $R_{\mathrm{mix}} = \sum_{s=1}^{N_s} c_s R_s$ is provided by Antioch.
 
-Both $R_{\mathrm{mix}}$ and $T$ are obtained via calls to Antioch.
+Temperature is computed by numerically inverting the following
+equation, which assumes thermal equilibrium:
+%
+\begin{equation*}
+\rho E = \rho e(c_s,T) + \frac{1}{2} \rho (u^2 + v^2 + w^2),
+\end{equation*}
+%
+where the internal energy $e(T)$ is given by
+%
+\begin{equation*}
+e(c_s, T) = e_{tr}(c_s, T) + e_{ve}(c_s, T) + e_{0,mix}(c_s) = \sum_{s=1}^{N_s} c_s \left( e_{tr,s}(T) + e_{ve,s}(T) + e_{0,s} \right),
+\end{equation*}
+%
+where $e_{tr}$ is the mixture translational/rotational energy,
+$e_{ve}$ is the mixture vibrational/electronic energy, $e_0$ is the
+mixture formation enthalpy, $e_{tr,s}$ is the tranlational/rotational
+energy for species $s$, $e_{ve,s}$ is the vibrational/electronic
+energy for species $s$, and $e_{0,s}$ is the formational enthalpy for
+species $s$.  Note that this calculation is also provided by Antioch.
 
 \subsubsection{Species Enthalpies}
-Species enthalpies are determined using Antioch.
-
+Species enthalpies are required to evaluate the energy equation and
+are provided by Antioch.
 
 \subsection{Slow growth models}
 \label{sec:slowgrowthmodels}
