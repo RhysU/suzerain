@@ -143,7 +143,8 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
          ->default_value("1")
          ->notifier(boost::bind(&parse_nonnegative, _1, &npower, "npower")),
          "Power n in [0, 1] used to control the flatness of the"
-         " \"parabolic\" streamwise velocity profile (y*(L-y))^n.")
+         " \"parabolic\" streamwise velocity profile (y*(L-y))^n."
+         " Using zero disables adding an initial streamwise profile.")
         ("mms",
          boost::program_options::value<string>()
          ->notifier(boost::bind(&parse_nonnegative, _1, &mms, "mms")),
@@ -300,7 +301,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                           /   (denom1 * denom2 * denom3);
         } else {
             // Degenerate npower == 0 case to avoid tgamma(...) domain issues
-            normalization = 1;
+            normalization = 0;
         }
 
         INFO("Adding the requested parabolic streamwise velocity profile");
