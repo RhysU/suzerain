@@ -28,6 +28,7 @@
  * Provides combined, timed B-spline and parallel FFT infrastructure routines.
  */
 
+#include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/diffwave.hpp>
 #include <suzerain/grid_specification.hpp>
@@ -229,6 +230,35 @@ public:
 
     /** The B-spline operators with which the operator is used */
     const bsplineop &cop;
+
+    /** Retrieve a, possibly cached, factorized, real-valued mass matrix. */
+    shared_ptr<const bsplineop_lu> masslu() const
+    {
+        if (SUZERAIN_UNLIKELY(!masslu_)) {
+            bsplineop_lu *p = new bsplineop_lu(cop);
+            SUZERAIN_ENSURE(0 == p->factor_mass(cop));
+            masslu_.reset(p);
+        }
+        return masslu_;
+    }
+
+    /** Retrieve a, possibly cached, factorized, complex-valued mass matrix. */
+    shared_ptr<const bsplineop_luz> massluz() const
+    {
+        if (SUZERAIN_UNLIKELY(!massluz_)) {
+            bsplineop_luz *p = new bsplineop_luz(cop);
+            SUZERAIN_ENSURE(0 == p->factor_mass(cop));
+            massluz_.reset(p);
+        }
+        return massluz_;
+    }
+
+private:
+
+    mutable shared_ptr<bsplineop_lu>  masslu_;
+
+    mutable shared_ptr<bsplineop_luz> massluz_;
+
 };
 
 } // namespace suzerain
