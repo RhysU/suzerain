@@ -111,13 +111,6 @@ protected:
     /** Provides reference values used when computing the conditions. */
     operator_common_block &common;
 
-    /**
-     * Precomputed, dot-ready coefficients for finding
-     * \f$\int \partial_y \phi \, \mathrm{d}y \f$.
-     * given expansion coefficients for some \f$\phi\f$.
-     */
-    VectorXr integcoeff_y;
-
 private:
 
     /** Helps to identify from whom logging messages are being emitted. */
