@@ -91,16 +91,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     grid->Nz(1);
     grid->DAFz(1.5);
 
-    // // Establish default scenario parameters
-    // // Cp and Cv computed from R=287 J/(kg*K), gamma=1.4
-    // cmods->Cp = 1.00450000000000e+03; // J/(kg*K)
-    // cmods->Cv = 7.17500000000000e+02; // J/(kg*K)
-    // cmods->Pr = 0.7;
-    // cmods->T0 = 273.0; // K
-    // cmods->mu0 = 1.716e-5; // (N*s)/m^2
-    // cmods->beta = real_t(2) / 3;
-    // cmods->alpha = 0.0;
-
+    // Establish default scenario parameters
     cmods->Le = 0.9;
     cmods->alpha = 0.0;
 
