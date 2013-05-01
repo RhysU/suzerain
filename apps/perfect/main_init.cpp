@@ -29,6 +29,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
+#include <suzerain/math.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
@@ -225,7 +226,6 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     }
     options.conflicting_options("acoustic_strength", "mms");
     options.conflicting_options("entropy_strength",  "mms");
-    options.conflicting_options("acoustic_strength", "entropy_strength");
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -262,6 +262,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         msoln.reset(); // No manufactured solution in use
 
         INFO("Computing mean base field for use in zero-zero modes");
+        // Working in pressure and temperature is convenient for pulses
         // Computation of pressure per suzerain::rholut::p(...)
         ArrayXr u = ArrayXr::LinSpaced(Ny, isothermal->lower_u,
                                            isothermal->upper_u);
@@ -312,12 +313,34 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
         }
 
         if (options.variables().count("acoustic_strength")) {
-            INFO("Adding acoustic pulse with strength " << acoustic_strength);
-            // TODO
+            const real_t left  = (Ly / 2) * (1 - acoustic_support);
+            const real_t right = (Ly / 2) * (1 + acoustic_support);
+            INFO("Adding wall-normal acoustic pulse with strength "
+                 << acoustic_strength
+                 << " on (" << left << ", " << right << ")");
+            for (int j = 0; j < Ny; ++j) {// Baum et al JCP 1994 pp 254-5
+                const real_t v0   = v(j);
+                const real_t rho0 = scenario->gamma * p(j) / T(j);
+                v(j) += math::bump::shifted(b->collocation_point(j),
+                                            left, right, acoustic_strength,
+                                            real_t(0), acoustic_stiffness);
+                p(j) += rho0 * std::sqrt(T(j)) * scenario->Ma * (v(j) - v0);
+                T(j)  = (scenario->gamma * p(j))
+                      / (rho0 + scenario->Ma * (v(j) - v0));
+            }
         }
+
         if (options.variables().count("entropy_strength")) {
-            INFO("Adding entropy pulse with strength " << entropy_strength);
-            // TODO
+            const real_t left  = (Ly / 2) * (1 - entropy_support);
+            const real_t right = (Ly / 2) * (1 + entropy_support);
+            INFO("Adding wall-normal entropy pulse with strength "
+                 << entropy_strength
+                 << " on (" << left << ", " << right << ")");
+            for (int j = 0; j < Ny; ++j) {  // Baum et al JCP 1994 pp 254-5
+                T(j) += math::bump::shifted(b->collocation_point(j),
+                                            left, right, entropy_strength,
+                                            real_t(0), entropy_stiffness);
+            }
         }
 
         INFO("Computing density from pressure and temperature");
