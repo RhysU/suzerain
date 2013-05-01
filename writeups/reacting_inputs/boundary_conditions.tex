@@ -641,17 +641,21 @@ S &=
   & \frac{1}{\bar{\rho}}             % 55
   & 0                                % 56
   \\ \noalign{\medskip}
-    0                                           % 61
-  & \left(\bar{\gamma} - 1\right) \left(\bar{E} - \bar{u}^2 - \bar{v}^2 - \bar{w}^2\right) % 62
+    \left(\bar{\gamma} - 1\right) \left(-\bar{e}_{1,tot}+\bar{e}_{d,tot}\right) % 61
+  & \left(\bar{\gamma} - 1\right) 
+    \left(-\bar{e}_{d,tot} + 
+    0.5 \left(\bar{u}^2 + \bar{v}^2 + \bar{w}^2\right)
+    \right) % 62
   & \left(1 - \bar{\gamma}\right) \bar{u}       % 63
   & \left(1 - \bar{\gamma}\right) \bar{v}       % 64
   & \left(1 - \bar{\gamma}\right) \bar{w}       % 65
   & \bar{\gamma}-1                              % 66
   \\ \noalign{\medskip}
 \end{array}\right]
-.
+,
 \end{align}
 %
+where $\bar{e}_{d,tot}$ is the total specific energy of the diluter species.
 The inverse is
 \begin{align}
 S^{-1} &= \left[\begin{array}{cccccc}
@@ -660,8 +664,8 @@ S^{-1} &= \left[\begin{array}{cccccc}
   \bar{u}   & \bar{u}   & \bar{\rho} & 0            & 0            & 0 \\
   \bar{v}   & \bar{v}   & 0          & \bar{\rho}   & 0            & 0 \\
   \bar{w}   & \bar{w}   & 0          & 0            & \bar{\rho}   & 0 \\
-  \bar{E}
-& \bar{E} 
+  \bar{e}_{1,tot} + 0.5 \left( \bar{u}^2 - \bar{v}^2 - \bar{w}^2\right)
+& \bar{e}_{2,tot} + 0.5 \left( \bar{u}^2 - \bar{v}^2 - \bar{w}^2\right)
 & \bar{\rho} \bar{u} 
 & \bar{\rho} \bar{v} 
 & \bar{\rho} \bar{w} 
