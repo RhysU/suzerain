@@ -269,6 +269,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     // Prepare all necessary real-valued products of the above matrices
+    // TODO These results could be cached for reuse on nonzero substeps
     const Matrix5r VL_S_RY           = VL * S * RY;
     const Matrix5r BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
     const Matrix5r CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
