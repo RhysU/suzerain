@@ -39,6 +39,7 @@ EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
 EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
 EXTRA_DIST += notebooks/Acoustic_WallNormal_EOS_3d.nb
+EXTRA_DIST += notebooks/Bump_Function_Powers.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_1D_Pressure.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_3D.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
