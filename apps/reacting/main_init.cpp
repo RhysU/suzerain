@@ -100,6 +100,12 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     chdef->T_wall     = 1;
     chdef->wall_mass_fractions.push_back(1.0);
 
+    // Establish default isothermal boundary conditions
+    // FIXME: check it these defaults are correct
+    isothermal->lower_T = isothermal->upper_T = 273;
+    isothermal->lower_u = isothermal->upper_u = 0;
+    isothermal->lower_v = isothermal->upper_v = 0;
+    isothermal->lower_w = isothermal->upper_w = 0;
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);

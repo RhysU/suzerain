@@ -32,6 +32,7 @@
 
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/operator_base.hpp>
@@ -75,6 +76,7 @@ public:
      */
     channel_treatment(
             const antioch_constitutive& cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -158,14 +160,15 @@ private:
 
 template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
-	    const antioch_constitutive& cmods,
+            const antioch_constitutive& cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(cmods, chdef, grid, dgrid, cop, b, common),
+    : BaseClass(cmods, isospec, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);

@@ -30,6 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>
+#include <suzerain/support/isothermal_definition.hpp>
 
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
@@ -68,6 +69,9 @@ public:
     virtual std::vector<std::string> initialize(
             int argc,
             char **argv);
+
+    /** Nondimensional isothermal boundary condition parameters. */
+    shared_ptr<support::isothermal_definition> isothermal;
 
     /** Channel definition parameters. */
     shared_ptr<channel_definition> chdef;

@@ -31,7 +31,7 @@
 #include "nonlinear_operator_fwd.hpp"
 
 #include <suzerain/grid_specification.hpp>
-#include <suzerain/mass_operator.hpp>
+#include <suzerain/isothermal_mass_operator.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -107,15 +107,16 @@ private:
  * A mass operator that provides no slip, isothermal walls.  It requires
  * interoperation with explicit_nonlinear_operator via operator_common_block.
  */
-class isothermal_mass_operator : public mass_operator
+class isothermal_mass_operator : public suzerain::isothermal_mass_operator
 {
 
-    typedef mass_operator base;
+    typedef isothermal_mass_operator base;
 
 public:
 
     isothermal_mass_operator(
             const antioch_constitutive& cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -146,6 +147,17 @@ public:
             const std::size_t substep_index,
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
+    virtual real_t lower_E(const real_t lower_T,
+                           const real_t lower_u,
+                           const real_t lower_v,
+                           const real_t lower_w,
+                           const std::vector<real_t> lower_cs) const;
+
+    virtual real_t upper_E(const real_t upper_T,
+                           const real_t upper_u,
+                           const real_t upper_v,
+                           const real_t upper_w,
+                           const std::vector<real_t> upper_cs) const;
 protected:
 
     /** Contains constitutive models and related parameters */

@@ -51,6 +51,7 @@ driver::driver(
     , chdef(make_shared<channel_definition>())
     , cmods(make_shared<antioch_constitutive>())
     , fsdef(make_shared<filter_definition>())
+    , isothermal(make_shared<support::isothermal_definition>())
     , who("reacting")
 {
     // Sets up usual 5 fields.  If necessary, species are added later.
@@ -66,6 +67,7 @@ driver::initialize(
     options.add_definition(*chdef);
     options.add_definition(*cmods);
     options.add_definition(*fsdef);
+    options.add_definition(*isothermal);
 
     // Delegate to superclass initialization
     std::vector<std::string> positional = super::initialize(argc, argv);
@@ -171,6 +173,7 @@ driver::save_metadata_hook(
     cmods->save(esioh);
     fsdef->save(esioh);
     fsdef->save_filteropz(esioh, dgrid->global_wave_extent.y());
+    isothermal->save(esioh);
     save(esioh, msoln, *cmods, *grid);
     return;
 }
@@ -183,6 +186,7 @@ driver::load_metadata_hook(
     chdef->load(esioh);
     cmods->load(esioh);
     fsdef->load(esioh);
+    isothermal->load(esioh);
     
     // After cmods->load, have valid species names, so we can update
     // fields to include species

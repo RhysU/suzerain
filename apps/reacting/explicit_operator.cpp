@@ -73,13 +73,14 @@ public:
 
 isothermal_mass_operator::isothermal_mass_operator(
         const antioch_constitutive& cmods,
+        const isothermal_specification &isospec,
         const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common)
-    : mass_operator(grid, dgrid, cop, b)
+    : suzerain::isothermal_mass_operator(isospec, grid, dgrid, cop, b)
     , cmods(cmods)
     , chdef(chdef)
     , common(common)
@@ -250,6 +251,38 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
 
 #undef ARGUMENTS
 }
+
+real_t isothermal_mass_operator::lower_E(
+        const real_t lower_T,
+        const real_t lower_u,
+        const real_t lower_v,
+        const real_t lower_w,
+        const std::vector<real_t> lower_cs) const
+{
+    // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
+    // FIXME Adapt for multispecies
+    assert(lower_cs.size() == 0);
+    // FIXME Compute total energy properly using antioch
+    const real_t E_internal = 717.5 * lower_T;
+    const real_t E_kinetic  = 0.5 * (  lower_u*lower_u
+                                     + lower_v*lower_v
+                                     + lower_w*lower_w);
+
+    return E_internal + E_kinetic;
+}
+
+real_t isothermal_mass_operator::upper_E(
+        const real_t upper_T,
+        const real_t upper_u,
+        const real_t upper_v,
+        const real_t upper_w,
+        const std::vector<real_t> upper_cs) const
+{
+    // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
+    return lower_E(upper_T, upper_u, upper_v, upper_w, upper_cs);
+}
+
+
 
 } // namespace reacting
 

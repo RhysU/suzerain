@@ -38,6 +38,8 @@
 #include "explicit_operator.hpp"
 
 #include "hybrid_operator.hpp"
+#include "nonreflecting_treatment.hpp"
+
 
 #pragma warning(disable:1419)
 
@@ -207,11 +209,36 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (use_explicit) {
         INFO0(who, "Initializing fully explicit spatial operators");
         L.reset(new channel_treatment<isothermal_mass_operator>(
-                    *cmods, *chdef, *grid, *dgrid, *cop, *b, common_block));
+                    *cmods, *isothermal, *chdef, *grid, *dgrid, *cop, *b, common_block));
         N.reset(new explicit_nonlinear_operator(
                     *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
+
+        // nonreflecting
+        if (grid->one_sided()) {
+            INFO0(who, "Preparing nonreflecting upper boundary treatment");
+            shared_ptr<nonreflecting_treatment> nonreflecting(
+                    new nonreflecting_treatment(
+                        *grid, *dgrid, *cop, *b, common_block));
+            nonreflecting->N = N;
+            N = nonreflecting;
+            chdef->bulk_rho      = numeric_limits<real_t>::quiet_NaN();
+            chdef->bulk_rho_u    = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_T  = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_u  = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_v  = numeric_limits<real_t>::quiet_NaN();
+            isothermal->upper_w  = numeric_limits<real_t>::quiet_NaN();
+        }
+
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
+
+        // nonreflecting
+        if (grid->one_sided()) {
+            FATAL0(who, "Nonreflecting upper boundary treatment"
+                        " not usable with implicit advance");
+            return EXIT_FAILURE;
+        }
+
 
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *cmods, *chdef, *grid, *dgrid,
