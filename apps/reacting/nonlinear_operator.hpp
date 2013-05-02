@@ -537,6 +537,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.v() = common.ref_uy();
         common.w() = common.ref_uz();
 
+        // Compute species specific total energy and store in 
+        // common.etots_upper
+        common.etots_upper.resize(Ns);
+        cmods.etots_from_T(common.ref_T().tail<1>()[0],
+                           common.etots_upper);
+
     } else {                                 // Mean velocity profile only
 
         SUZERAIN_TIMER_SCOPED("mean velocity profile");

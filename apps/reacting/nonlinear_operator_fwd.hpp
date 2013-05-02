@@ -355,6 +355,15 @@ public:
         refs.setZero(refs_type::RowsAtCompileTime, Ny);
     }
 
+
+    /**
+     * Vector with species specific total energy. 
+     */
+    // FIXME: Temporarily placing it here ...
+    // To be used by Giles BCs.
+    // Is this the right place for it?
+    VectorXr etots_upper;
+
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
