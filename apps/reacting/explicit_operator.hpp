@@ -110,7 +110,7 @@ private:
 class isothermal_mass_operator : public suzerain::isothermal_mass_operator
 {
 
-    typedef isothermal_mass_operator base;
+    typedef suzerain::isothermal_mass_operator base;
 
 public:
 
