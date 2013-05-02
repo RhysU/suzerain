@@ -197,7 +197,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     N.reset(new nonlinear_operator(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
-        INFO0(who, "Initializing explicit spatial operators");
+        INFO0(who, "Initializing fully explicit spatial operators");
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             shared_ptr<nonreflecting_treatment> nonreflecting(
