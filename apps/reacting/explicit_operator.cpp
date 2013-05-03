@@ -260,10 +260,22 @@ real_t isothermal_mass_operator::lower_E(
         const std::vector<real_t> lower_cs) const
 {
     // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
-    // FIXME Adapt for multispecies
-    assert(lower_cs.size() == 0);
-    // FIXME Compute total energy properly using antioch
-    const real_t E_internal = 717.5 * lower_T;
+
+    // The diluter mass fraction is not present in lower_cs, 
+    // and it's required by antioch to compute total (internal) energy.
+    // Compute the diluter mass fraction in cs[0]
+    const unsigned int Ns = lower_cs.size()+1;
+    std::vector<real_t>  cs; // species mass fractions
+    cs.resize(Ns);
+    cs[0] = 1.0;
+    for (unsigned int is=1; is<Ns; ++is) {
+        cs[is]  = lower_cs[is-1];
+        cs[0 ] -= cs[is];
+    }
+
+    // compute internal and kinetic energies
+    const real_t E_internal = cmods.e_from_T(lower_T, cs);
+//     std::cout << "E_internal = " << E_internal << ", " << 717.5 * lower_T << std::endl;
     const real_t E_kinetic  = 0.5 * (  lower_u*lower_u
                                      + lower_v*lower_v
                                      + lower_w*lower_w);
