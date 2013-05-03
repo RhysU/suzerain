@@ -35,6 +35,7 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
@@ -70,6 +71,7 @@ namespace reacting {
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
         const antioch_constitutive &cmods,
+        const isothermal_specification &isospec,
         const channel_definition &chdef,
         const grid_specification &grid,
         const pencil_grid &dgrid,
@@ -80,6 +82,7 @@ isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
     , flow_solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
                   5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
                   spec, 1))
+    , isospec(isospec)
     , chdef(chdef)
     , cmods(cmods)
     , common(common)
@@ -642,14 +645,16 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
+    // FIXME: permit upper_T and upper_cs
     IsothermalNoSlipPATPTEnforcer flow_bc_enforcer(
-        *flow_solver, cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions));
+        *flow_solver, cmods.e_from_T(isospec.lower_T, isospec.lower_cs));
 
     shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
     if (species_solver.size()>0) {
+        // FIXME: permit upper_T and upper_cs
         species_bc_enforcer = 
             make_shared<MassFractionPATPTEnforcer>(
-                *(species_solver[0]), chdef.wall_mass_fractions);
+                *(species_solver[0]), isospec.lower_cs);
     }
 
     // Prepare a scratch buffer for packc/packf usage

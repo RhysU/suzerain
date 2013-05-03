@@ -93,6 +93,7 @@ public:
     channel_treatment(
             const zgbsv_specification& spec,
             const antioch_constitutive& cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -178,13 +179,14 @@ template< typename BaseClass >
 channel_treatment<BaseClass>::channel_treatment(
             const zgbsv_specification& spec,
             const antioch_constitutive& cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common)
-    : BaseClass(spec, cmods, chdef, grid, dgrid, cop, b, common),
+    : BaseClass(spec, cmods, isospec, chdef, grid, dgrid, cop, b, common),
       jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     this->finish_construction(grid, dgrid, cop, b);

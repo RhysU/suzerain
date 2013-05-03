@@ -40,6 +40,7 @@ namespace suzerain {
 class bsmbsm_solver;
 class grid_specification;
 class pencil_grid;
+class isothermal_specification;
 class zgbsv_specification;
 
 namespace reacting {
@@ -65,6 +66,7 @@ public:
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const antioch_constitutive &cmods,
+            const isothermal_specification &isospec,
             const channel_definition &chdef,
             const grid_specification &grid,
             const pencil_grid &dgrid,
@@ -105,6 +107,9 @@ protected:
     shared_ptr<bsmbsm_solver> flow_solver;
 
     std::vector<shared_ptr<bsmbsm_solver> > species_solver;
+
+    /** Provides info about isothermal specifications */
+    const isothermal_specification &isospec;
 
     /** Provides info about channel case, e.g., T_wall */
     const channel_definition &chdef;

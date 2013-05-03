@@ -67,10 +67,7 @@ public:
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
     channel_definition(const real_t bulk_rho,
-                       const real_t bulk_rho_u,
-                       const real_t T_wall,
-                       const std::vector<real_t> wall_mass_fractions);
-
+                       const real_t bulk_rho_u);
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
@@ -103,16 +100,6 @@ public:
      * The bulk streamwise momentum used as a target for integral constraints.
      */
     real_t bulk_rho_u;
-
-    /**
-     * The desired wall temperature.
-     */
-    real_t T_wall;
-
-    /**
-     * The desired wall mass fractions
-     */
-    std::vector<real_t> wall_mass_fractions;
 
 };
 

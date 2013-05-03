@@ -97,8 +97,6 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
     chdef->bulk_rho   = 1;
     chdef->bulk_rho_u = 1;
-    chdef->T_wall     = 1;
-    chdef->wall_mass_fractions.push_back(1.0);
 
     // Establish default isothermal boundary conditions
     // FIXME: check it these defaults are correct
@@ -106,6 +104,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     isothermal->lower_u = isothermal->upper_u = 0;
     isothermal->lower_v = isothermal->upper_v = 0;
     isothermal->lower_w = isothermal->upper_w = 0;
+    isothermal->lower_cs.assign(1U, 1.0);
+    isothermal->upper_cs.assign(1U, 1.0);
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
@@ -207,18 +207,22 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         const real_t rho = chdef->bulk_rho;
         const real_t v   = 0;
         const real_t w   = 0;
-        const real_t T   = chdef->T_wall;
+        const real_t T   = isothermal->lower_T;
+        SUZERAIN_ENSURE(isothermal->lower_T == isothermal->upper_T);
 
         std::vector<real_t> rho_s;
         if (cmods->Ns()>1) {
-            // TODO: Assert that number of wall_mass_fractions is correct
+            // TODO: Assert that number of lower_cs is correct
 
-            INFO("Initialization uses constant rho_s equal to bulk_rho*wall_mass_frac");
+            INFO("Initialization uses constant rho_s equal to bulk_rho*lower_cs");
             rho_s.resize(cmods->Ns()-1);
 
-            for (size_t s=0; s<cmods->Ns()-1; ++s) {
+            // ensure for diluter
+            SUZERAIN_ENSURE(isothermal->lower_cs[0] == isothermal->upper_cs[0]);
+            for (size_t s=1; s<cmods->Ns(); ++s) {
                 // yes, +1 b/c first is the diluter
-                rho_s[s] = chdef->bulk_rho*chdef->wall_mass_fractions[s+1];
+                rho_s[s] = chdef->bulk_rho*isothermal->lower_cs[s];
+                SUZERAIN_ENSURE(isothermal->lower_cs[s] == isothermal->upper_cs[s]);
             }
         }
 
@@ -251,7 +255,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         }
 
         INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = cmods->e_from_T(T, chdef->wall_mass_fractions)
+        ArrayXr E = cmods->e_from_T(T, isothermal->lower_cs)
             + 0.5*(u*u + v*v + w*w);
 
 
@@ -285,8 +289,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         // Compute and print the wall viscosity (known b/c only
         // depends on T and mass fractions)
         const real_t wall_visc = 
-            this->cmods->wilke_evaluator->mu(chdef->T_wall,
-                                             chdef->wall_mass_fractions);
+            this->cmods->wilke_evaluator->mu(isothermal->lower_T,
+                                             isothermal->lower_cs);
         INFO("The wall (dynamic) viscosity is " << wall_visc);
 
         // Note: 2 in Re below takes channel height to half-height
@@ -294,13 +298,13 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
              chdef->bulk_rho_u * grid->L.y() / (2.0*wall_visc) );
 
         // Compute and print the speed of sound (frozen)
-        const real_t R_mix = this->cmods->mixture->R(chdef->wall_mass_fractions);
-        const real_t Cv    = this->cmods->sm_thermo->cv(chdef->T_wall, 
-                                                        chdef->T_wall, 
-                                                        chdef->wall_mass_fractions);
+        const real_t R_mix = this->cmods->mixture->R(isothermal->lower_cs);
+        const real_t Cv    = this->cmods->sm_thermo->cv(isothermal->lower_T, 
+                                                        isothermal->lower_T, 
+                                                        isothermal->lower_cs);
 
         
-        const real_t a = std::sqrt( (1.0 + R_mix/Cv)*R_mix*chdef->T_wall );
+        const real_t a = std::sqrt( (1.0 + R_mix/Cv)*R_mix*isothermal->lower_T);
         
         INFO("The speed of sound at the wall is " << a);
         

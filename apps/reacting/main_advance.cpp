@@ -227,6 +227,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             isothermal->upper_u  = numeric_limits<real_t>::quiet_NaN();
             isothermal->upper_v  = numeric_limits<real_t>::quiet_NaN();
             isothermal->upper_w  = numeric_limits<real_t>::quiet_NaN();
+	    // TODO Consider appropriate BC for species in this context
         }
 
     } else if (use_implicit) {
@@ -241,7 +242,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
 
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
-                    solver_spec, *cmods, *chdef, *grid, *dgrid,
+                    solver_spec, *cmods, *isothermal, *chdef, *grid, *dgrid,
                     *cop, *b, common_block));
 
         shared_ptr<suzerain::hybrid_residual_operator>

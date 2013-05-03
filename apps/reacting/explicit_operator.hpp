@@ -110,8 +110,6 @@ private:
 class isothermal_mass_operator : public suzerain::isothermal_mass_operator
 {
 
-    typedef suzerain::isothermal_mass_operator base;
-
 public:
 
     isothermal_mass_operator(
@@ -123,29 +121,6 @@ public:
             const bsplineop &cop,
             bspline &b,
             operator_common_block &common);
-
-    /**
-     * Performs the following steps:
-     * <ul>
-     * <li>
-     *     channel_treatment step (3) performs the operator solve which for
-     *     the implicit treatment must be combined with boundary conditions
-     * </li><li>
-     *     channel_treatment step (8) sets no-slip conditions
-     *     on wall collocation points.
-     * </li><li>
-     * </li>
-     *     channel_treatment step (9) sets isothermal conditions at walls
-     *     using rho_wall = e_wall * gamma * (gamma - 1).
-     * </ul>
-     */
-    virtual void invert_mass_plus_scaled_operator(
-            const complex_t &phi,
-            multi_array::ref<complex_t,4> &state,
-            const timestepper::lowstorage::method_interface<complex_t> &method,
-            const component delta_t,
-            const std::size_t substep_index,
-            multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
     virtual real_t lower_E(const real_t lower_T,
                            const real_t lower_u,

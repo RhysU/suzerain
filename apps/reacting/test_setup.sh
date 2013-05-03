@@ -31,7 +31,8 @@ declare -ir Ny=12
 declare -ir k=6
 declare -ir htdelta=1
 declare -ir Nz=6
-runq ./reacting_init "$testdir/mms0.h5" --mms=0 --species=$spec --T_wall=$T_wall \
+runq ./reacting_init "$testdir/mms0.h5" --mms=0 --species=$spec \
+                     --lower_T=$T_wall --upper_T=$T_wall \
                      --Nx=$Nx --Ny=$Ny --k=$k --htdelta=$htdelta --Nz=$Nz \
                      "--plan_wisdom=$testdir/wisdom.init"
 chmod +r "$testdir/mms0.h5"

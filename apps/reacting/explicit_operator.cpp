@@ -39,38 +39,6 @@ namespace suzerain {
 
 namespace reacting {
 
-// A helper class for implementing isothermal, no-slip boundary conditions
-class IsothermalNoSlipFunctor
-{
-private:
-    const ptrdiff_t field_stride;
-    const real_t    e_tot;
-    const std::vector<real_t>& wall_mass_fractions;
-
-public:
-    IsothermalNoSlipFunctor(ptrdiff_t field_stride,
-                            const real_t e_tot,
-                            const std::vector<real_t>& wall_mass_fractions)
-        : field_stride(field_stride)
-        , e_tot(e_tot)
-        , wall_mass_fractions(wall_mass_fractions)
-    {}
-
-    void operator()(complex_t &rho) const
-    {
-        // TODO Reorder to linearly access e, mx, my, mz, species
-
-        for (size_t s=1; s<wall_mass_fractions.size(); ++s) {
-            (&rho)[s*field_stride] = rho*wall_mass_fractions[s];
-        }
-
-        (&rho)[(ndx::mx - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::my - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::mz - ndx::rho)*field_stride] = 0;
-        (&rho)[(ndx::e  - ndx::rho)*field_stride] = rho*e_tot;
-    }
-};
-
 isothermal_mass_operator::isothermal_mass_operator(
         const antioch_constitutive& cmods,
         const isothermal_specification &isospec,
@@ -87,55 +55,6 @@ isothermal_mass_operator::isothermal_mass_operator(
     , who("operator.L")
 {
     // NOP
-}
-
-void isothermal_mass_operator::invert_mass_plus_scaled_operator(
-        const complex_t &phi,
-        multi_array::ref<complex_t,4> &state,
-        const timestepper::lowstorage::method_interface<complex_t> &method,
-        const component delta_t,
-        const std::size_t substep_index,
-        multi_array::ref<complex_t,4> *ic0) const
-{
-    // State enters method as coefficients in X and Z directions
-    // State enters method as collocation point values in Y direction
-
-    // Shorthand
-    using boost::indices;
-    typedef boost::multi_array_types::index_range range;
-
-    // Indexes only the first and last collocation point
-    const std::size_t Ny         = state.shape()[1];
-    const std::size_t wall_lower = 0;
-    const std::size_t wall_upper = Ny - 1;
-    range walls(wall_lower, wall_upper + 1, wall_upper - wall_lower);
-
-    // Prepare a state view of density locations at lower and upper walls
-    multi_array::ref<complex_t,4>::array_view<3>::type state_view
-            = state[indices[ndx::rho][walls][range()][range()]];
-
-    // Prepare functor setting pointwise BCs given density locations
-    const IsothermalNoSlipFunctor bc_functor(
-        state.strides()[0],
-        cmods.e_from_T(chdef.T_wall, chdef.wall_mass_fractions),
-        chdef.wall_mass_fractions);
-
-    // Apply the functor to all wall-only density locations
-    multi_array::for_each(state_view, bc_functor);
-
-    // Apply boundary conditions to any requested constraint problems
-    if (ic0) {
-        multi_array::ref<complex_t,4>::array_view<3>::type ic0_view
-                = (*ic0)[indices[ndx::rho][walls][range()][range()]];
-        SUZERAIN_ENSURE(state.strides()[0] == ic0->strides()[0]); // NB!
-        multi_array::for_each(ic0_view, bc_functor);
-    }
-
-    // channel_treatment step (3) performs the usual operator solve
-    base::invert_mass_plus_scaled_operator(
-            phi, state, method, delta_t, substep_index, ic0);
-
-    // State leaves method as coefficients in X, Y, and Z directions
 }
 
 explicit_nonlinear_operator::explicit_nonlinear_operator(
@@ -261,21 +180,8 @@ real_t isothermal_mass_operator::lower_E(
 {
     // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
 
-    // The diluter mass fraction is not present in lower_cs, 
-    // and it's required by antioch to compute total (internal) energy.
-    // Compute the diluter mass fraction in cs[0]
-    const unsigned int Ns = lower_cs.size()+1;
-    std::vector<real_t>  cs; // species mass fractions
-    cs.resize(Ns);
-    cs[0] = 1.0;
-    for (unsigned int is=1; is<Ns; ++is) {
-        cs[is]  = lower_cs[is-1];
-        cs[0 ] -= cs[is];
-    }
-
     // compute internal and kinetic energies
-    const real_t E_internal = cmods.e_from_T(lower_T, cs);
-//     std::cout << "E_internal = " << E_internal << ", " << 717.5 * lower_T << std::endl;
+    const real_t E_internal = cmods.e_from_T(lower_T, lower_cs);
     const real_t E_kinetic  = 0.5 * (  lower_u*lower_u
                                      + lower_v*lower_v
                                      + lower_w*lower_w);

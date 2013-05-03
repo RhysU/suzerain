@@ -53,34 +53,24 @@ namespace reacting {
 channel_definition::channel_definition()
     : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
-    , T_wall    (std::numeric_limits<real_t>::quiet_NaN())
-    , wall_mass_fractions()
 {
 }
 
 channel_definition::channel_definition(
         const real_t bulk_rho,
-        const real_t bulk_rho_u,
-        const real_t T_wall,
-        const std::vector<real_t> wall_mass_fractions)
+        const real_t bulk_rho_u)
     : bulk_rho  (bulk_rho  )
     , bulk_rho_u(bulk_rho_u)
-    , T_wall    (T_wall)
-    , wall_mass_fractions(wall_mass_fractions)
 {
 }
 
 // Strings used in options_description and populate/override/save/load.
 static const char name_bulk_rho[]            = "bulk_rho";
 static const char name_bulk_rho_u[]          = "bulk_rho_u";
-static const char name_T_wall[]              = "T_wall";
-static const char name_mass_fractions_wall[] = "wall_mass_frac";
 
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_bulk_rho[]            = "Bulk density target";
 static const char desc_bulk_rho_u[]          = "Bulk momentum target";
-static const char desc_T_wall[]              = "Wall temperature";
-static const char desc_mass_fractions_wall[] = "Wall mass fractions";
 
 boost::program_options::options_description
 channel_definition::options_description()
@@ -117,21 +107,6 @@ channel_definition::options_description()
     }
     retval.add_options()(name_bulk_rho_u, p.release(), desc_bulk_rho_u);
 
-    // T_wall
-    p.reset(value<string>());
-    p->notifier(bind(&parse_positive, _1, &T_wall, name_T_wall));
-    if (!(boost::math::isnan)(T_wall)) {
-        p->default_value(lexical_cast<string>(T_wall));
-    }
-    retval.add_options()(name_T_wall, p.release(), desc_T_wall);
-
-    // FIXME: Check validity of incoming values
-    // Must be non-negative and sum to 1
-    retval.add_options()(name_mass_fractions_wall,
-                         value(&wall_mass_fractions),
-                         desc_mass_fractions_wall);
-
-
     return retval;
 }
 
@@ -145,10 +120,7 @@ channel_definition::populate(
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(bulk_rho);
     CALL_MAYBE_POPULATE(bulk_rho_u);
-    CALL_MAYBE_POPULATE(T_wall);
 #undef CALL_MAYBE_POPULATE
-    if (this->wall_mass_fractions.size()==0)
-        this->wall_mass_fractions = that.wall_mass_fractions;
 }
 
 void
@@ -161,10 +133,7 @@ channel_definition::override(
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(bulk_rho);
     CALL_MAYBE_OVERRIDE(bulk_rho_u);
-    CALL_MAYBE_OVERRIDE(T_wall);
 #undef CALL_MAYBE_OVERRIDE
-    if (this->wall_mass_fractions.size()!=0)
-        this->wall_mass_fractions = that.wall_mass_fractions;
 }
 
 void
@@ -181,14 +150,6 @@ channel_definition::save(
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
     esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
-    esio_line_write(h, name_T_wall,     &this->T_wall,     0, desc_T_wall);
-
-    // mass fractions vector
-    int Ns = this->wall_mass_fractions.size();
-    esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
-    esio_line_write(h, name_mass_fractions_wall,
-                    this->wall_mass_fractions.data(), 1,
-                    desc_mass_fractions_wall);
 }
 
 void
@@ -206,16 +167,6 @@ channel_definition::load(
     esio_line_establish(h, 1, 0, 1);
     esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
     esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
-    esio_line_read(h, name_T_wall,     &t.T_wall,     0);
-
-    // Mass fractions vector
-    int Ns;
-    esio_line_size(h, name_mass_fractions_wall, &Ns);
-    t.wall_mass_fractions.resize(Ns);
-
-    esio_line_establish(h, Ns, 0, Ns);
-    esio_line_read(h, name_mass_fractions_wall,
-                   t.wall_mass_fractions.data(), 1);
 
     this->populate(t, verbose);  // Prefer this to incoming
 }
