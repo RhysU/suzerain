@@ -255,13 +255,13 @@ isothermal_definition::populate(
     CALL_MAYBE_POPULATE(lower_u);
     CALL_MAYBE_POPULATE(lower_v);
     CALL_MAYBE_POPULATE(lower_w);
-    if (!lower_cs.empty()) lower_cs = that.lower_cs;
+    if (lower_cs.empty()) lower_cs = that.lower_cs;
 
     CALL_MAYBE_POPULATE(upper_T);
     CALL_MAYBE_POPULATE(upper_u);
     CALL_MAYBE_POPULATE(upper_v);
     CALL_MAYBE_POPULATE(upper_w);
-    if (!upper_cs.empty()) upper_cs = that.upper_cs;
+    if (upper_cs.empty()) upper_cs = that.upper_cs;
 #undef CALL_MAYBE_POPULATE
 }
 
@@ -276,13 +276,13 @@ isothermal_definition::override(
     CALL_MAYBE_OVERRIDE(lower_u);
     CALL_MAYBE_OVERRIDE(lower_v);
     CALL_MAYBE_OVERRIDE(lower_w);
-    if (!lower_cs.empty()) lower_cs = that.lower_cs;
+    if (!that.lower_cs.empty()) lower_cs = that.lower_cs;
 
     CALL_MAYBE_OVERRIDE(upper_T);
     CALL_MAYBE_OVERRIDE(upper_u);
     CALL_MAYBE_OVERRIDE(upper_v);
     CALL_MAYBE_OVERRIDE(upper_w);
-    if (!upper_cs.empty()) upper_cs = that.upper_cs;
+    if (!that.upper_cs.empty()) upper_cs = that.upper_cs;
 #undef CALL_MAYBE_OVERRIDE
 }
 
