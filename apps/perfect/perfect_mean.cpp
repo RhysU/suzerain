@@ -62,7 +62,7 @@ namespace logging = suzerain::support::logging;
 namespace perfect = suzerain::perfect;
 namespace support = suzerain::support;
 
-// Provided by channel_mean_svnrev.{c,h} to speed recompilation
+// Provided by perfect_mean_svnrev.{c,h} to speed recompilation
 #pragma warning(push,disable:1419)
 extern "C" const char revstr[];
 #pragma warning(pop)
@@ -459,9 +459,9 @@ int main(int argc, char **argv)
                 "Suzerain-based channel mean quantity computations",
                 "RESTART-OR-SAMPLE-HDF5-FILE...",
 "Invocable in three distinct ways:\n"
-"\t1) channel_mean               INFILE.h5 ...\n"
-"\t2) channel_mean -s            INFILE.h5 ...\n"
-"\t3) channel_mean -o OUTFILE.h5 INFILE.h5 ...\n"
+"\t1) perfect_mean               INFILE.h5 ...\n"
+"\t2) perfect_mean -s            INFILE.h5 ...\n"
+"\t3) perfect_mean -o OUTFILE.h5 INFILE.h5 ...\n"
 "\n"
 "The first way processes each INFILE.h5 in turn outputting a corresponding "
 "INFILE.mean containing a comma-separated table of means from the first "

@@ -61,12 +61,12 @@ main_advance_svnrev.h: $(perfect_advance_SOURCES) $(libperfect_la_SOURCES)
 ## TODO Eliminate these as part of closing ticket #2736
 ##
 
-bin_PROGRAMS         += channel_mean
-channel_mean_SOURCES  = channel_mean.cpp
-channel_mean_SOURCES += channel_mean_svnrev.c
-BUILT_SOURCES        += channel_mean_svnrev.h
-channel_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
-channel_mean_svnrev.h: $(channel_mean_SOURCES) $(libperfect_la_SOURCES)
+bin_PROGRAMS         += perfect_mean
+perfect_mean_SOURCES  = perfect_mean.cpp
+perfect_mean_SOURCES += perfect_mean_svnrev.c
+BUILT_SOURCES        += perfect_mean_svnrev.h
+perfect_mean_LDADD    = ./libperfect.la ../../suzerain/libsuzerain.la
+perfect_mean_svnrev.h: $(perfect_mean_SOURCES) $(libperfect_la_SOURCES)
 	$(top_builddir)/build-aux/svnrev -n -o$@ "-f$(PACKAGE_VERSION).#" -i $?
 
 ##
