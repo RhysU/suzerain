@@ -312,12 +312,16 @@ isothermal_definition::save(
     if ((Ns = lower_cs.size())) {
         esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
         esio_line_write(h, name_lower_cs, lower_cs.data(), 1, desc_lower_cs);
+    } else {
+        WARN0("No lower mass fractions saved because lower_cs.size() == 0");
     }
 
     // Upper mass fractions vector (ditto, could be of different length)
     if ((Ns = upper_cs.size())) {
         esio_line_establish(h, Ns, 0, (procid == 0 ? Ns : 0));
         esio_line_write(h, name_upper_cs, upper_cs.data(), 1, desc_upper_cs);
+    } else {
+        WARN0("No upper mass fractions saved because upper_cs.size() == 0");
     }
 }
 
@@ -369,7 +373,8 @@ isothermal_definition::load(
     // Lower mass fractions vector (only present when non-trivial)
     int Ns;
     if (ESIO_NOTFOUND == esio_line_size(h, name_lower_cs, &Ns)) {
-        t.lower_cs.resize(0);
+        INFO0(name_lower_cs << " not found therefore using 1 dilluter species");
+        t.lower_cs.assign(1U, 1.0);
     } else {
         t.lower_cs.resize(Ns);
         esio_line_establish(h, Ns, 0, Ns);
@@ -378,7 +383,8 @@ isothermal_definition::load(
 
     // Upper mass fractions vector (ditto, could be be of different length)
     if (ESIO_NOTFOUND == esio_line_size(h, name_upper_cs, &Ns)) {
-        t.upper_cs.resize(0);
+        INFO0(name_upper_cs << " not found therefore using 1 dilluter species");
+        t.upper_cs.assign(1U, 1.0);
     } else {
         t.upper_cs.resize(Ns);
         esio_line_establish(h, Ns, 0, Ns);

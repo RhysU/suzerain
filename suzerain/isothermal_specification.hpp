@@ -50,14 +50,16 @@ public:
     isothermal_specification();
 
     /**
-     * Specify no-slip walls with given \f$T\f$ at both boundaries.
+     * Specify no-slip walls with given \f$T\f$ at both boundaries
+     * for a single "dilluter" species.
      *
      * @param wall_T \f$T\f$ for both walls.
      */
     isothermal_specification(real_t wall_T);
 
     /**
-     * @copydoc isothermal_specification(real_t)
+     * Specify no-slip walls with given \f$T\f$ at both boundaries.
+     * @copydetails isothermal_specification(real_t)
      * @param wall_cs Mass fractions, one per species, at both walls.
      */
     isothermal_specification(real_t wall_T,
@@ -65,7 +67,7 @@ public:
 
     /**
      * Specify a transpiring wall with given inflow velocity \f$v\f$ and
-     * temperature \f$T\f$ at both boundaries.
+     * temperature \f$T\f$ at both boundaries for a single "diluter" species.
      *
      * @param wall_T          \f$T\f$ for both walls.
      * @param inflow_velocity \f$v\f$ for both walls with positive values
@@ -75,7 +77,9 @@ public:
                              real_t inflow_velocity);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t)
+     * Specify a transpiring wall with given inflow velocity \f$v\f$ and
+     * temperature \f$T\f$ at both boundaries.
+     * @copydetails isothermal_specification(real_t,real_t)
      * @param wall_cs Mass fractions, one per species, at both boundaries.
      */
     isothermal_specification(real_t wall_T,
@@ -83,7 +87,8 @@ public:
                              const std::vector<real_t>& wall_cs);
 
     /**
-     * Specify two different temperatures and wall blowing velocities.
+     * Specify two different temperatures and wall blowing velocities
+     * for a single "diluter" species.
      *
      * @param lower_T \f$T\f$ at \f$y=0\f$
      * @param lower_v \f$v\f$ at \f$y=0\f$
@@ -96,7 +101,8 @@ public:
                              real_t upper_v);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,real_t,real_t)
+     * Specify two different temperatures and wall blowing velocities.
+     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
@@ -110,7 +116,7 @@ public:
 
     /**
      * Specify two different temperatures, wall blowing velocities,
-     * and associated streamwise velocities.
+     * and associated streamwise velocities for a single "diluter" species.
      *
      * <tt>NaN</tt> may be specified for \c lower_v or \c upper_v to indicate
      * that the boundary-normal velocity should be determined by some other
@@ -133,7 +139,9 @@ public:
                              real_t upper_v);
 
     /**
-     * @copydoc isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t)
+     * Specify two different temperatures, wall blowing velocities,
+     * and associated streamwise velocities.
+     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t)
      * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
      * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
      * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
@@ -181,8 +189,9 @@ public:
     real_t lower_w;
 
     /**
-     * Species mass fractions \f$c_s\f$ at \f$y=0\f$.
-     * Though not enforced, these should sum to one for consistency.
+     * Species mass fractions \f$c_s\f$ at \f$y=0\f$ including the "diluter"
+     * species as index zero.  Though not enforced, these should sum to one for
+     * consistency.
      */
     std::vector<real_t> lower_cs;
 
@@ -222,8 +231,9 @@ public:
     real_t upper_w;
 
     /**
-     * Species mass fractions \f$c_s\f$ at \f$y=L_y\f$.
-     * Though not enforced, these should sum to one for consistency.
+     * Species mass fractions \f$c_s\f$ at \f$y=L_y\f$ including the "diluter"
+     * species as index zero.  Though not enforced, these should sum to one for
+     * consistency.
      */
     std::vector<real_t> upper_cs;
 

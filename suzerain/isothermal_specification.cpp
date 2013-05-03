@@ -53,12 +53,12 @@ isothermal_specification::isothermal_specification(
     , lower_u (0)
     , lower_v (0)
     , lower_w (0)
-    , lower_cs(0)
+    , lower_cs(1U, 1.0)
     , upper_T (wall_T)
     , upper_u (0)
     , upper_v (0)
     , upper_w (0)
-    , upper_cs(0)
+    , upper_cs(1U, 1.0)
 {
 }
 
@@ -85,12 +85,12 @@ isothermal_specification::isothermal_specification(
     , lower_u (0)
     , lower_v (+inflow_velocity)  // Inflow has positive sign
     , lower_w (0)
-    , lower_cs(0)
+    , lower_cs(1U, 1.0)
     , upper_T (wall_T)
     , upper_u (0)
     , upper_v (-inflow_velocity)  // Inflow has negative sign
     , upper_w (0)
-    , upper_cs(0)
+    , upper_cs(1U, 1.0)
 {
 }
 
@@ -120,12 +120,12 @@ isothermal_specification::isothermal_specification(
     , lower_u (0)
     , lower_v (lower_v)
     , lower_w (0)
-    , lower_cs(0)
+    , lower_cs(1U, 1.0)
     , upper_T (upper_T)
     , upper_u (0)
     , upper_v (upper_v)
     , upper_w (0)
-    , upper_cs(0)
+    , upper_cs(1U, 1.0)
 {
 }
 
