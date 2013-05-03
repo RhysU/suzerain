@@ -71,11 +71,11 @@ differ() {
     fi
     local outfile=$(mktemp "$testdir/differ.XXXXXX")
     local prefix="--exclude-path /metadata_generated"
-    echo ${H5DIFF} --report $prefix "$@" 2>&1 | tee -a $outfile
-    echo                                 2>&1 |      >>$outfile
+    echo ${H5DIFF} --verbose --report $prefix "$@" 2>&1 | tee -a $outfile
+    echo                                           2>&1 |      >>$outfile
     # tail not cat because h5diff echos its invocation arguments
     # embedded awk script used to add a ratio column and pretty up the output
-    ${H5DIFF} --report $prefix "$@"      2>&1        >>$outfile || (tail -n +2 $outfile | ${GREP} -v "^0 differences found$" | ${AWK} -f <(cat - <<-'HERE'
+    ${H5DIFF} --verbose --report $prefix "$@"      2>&1        >>$outfile || (tail -n +2 $outfile | ${GREP} -v "^0 differences found$" | ${AWK} -f <(cat - <<-'HERE'
             BEGIN { OFMT=" %+14.8g"; aligner="column -t" }
             {
                 sub("[[:space:]]*$", "")
