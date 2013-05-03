@@ -155,9 +155,9 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     MatrixXXr inv_RY(MatrixXXr::Zero(state_count, state_count));
     {
         inv_RY(ndx::e  , irhoE) = 1;
-        inv_RY(ndx::mx , irhoV) = 1;
-        inv_RY(ndx::my , irhoW) = 1;
-        inv_RY(ndx::mz , irhoU) = 1;
+        inv_RY(ndx::mx , irhoW) = 1;
+        inv_RY(ndx::my , irhoU) = 1;
+        inv_RY(ndx::mz , irhoV) = 1;
         inv_RY(ndx::rho, irho ) = 1;
         for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
             RY(ndx::rho+1+is_local, irhos0+is_local) = 1;
@@ -184,10 +184,10 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         rhos(irhos0+Ns-1) = rho;
         for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
             // density of species is_local
-            rhos[irhos0+is_local] = 
+            rhos(irhos0+is_local) = 
                 swave[ndx::rho+1+is_local][Ny-1][0][0].real();
             // substract for diluter density
-            rhos[irhos0+Ns-1] -= rhos[irhos0+is_local]; 
+            rhos(irhos0+Ns-1) -= rhos(irhos0+is_local); 
         }
     }
 
@@ -254,13 +254,13 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
             // FIXME: make things more consistent with the rest of the code
         }
 
-        inv_S(irho,  iu) =   rho;
+        inv_S(irhoU, iu) =   rho;
         inv_S(irhoE, iu) =   rho * u;
 
-        inv_S(irho,  iv) =   rho;
+        inv_S(irhoV, iv) =   rho;
         inv_S(irhoE, iv) =   rho * v;
 
-        inv_S(irho,  iw) =   rho;
+        inv_S(irhoW, iw) =   rho;
         inv_S(irhoE, iw) =   rho * w;
 
         inv_S(irhoE, ip) =   inv_gamma1;
@@ -281,7 +281,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         VL(iv, iw) =   rho * a;
 
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
-            VL(irhos0+is_local, ip) = -rhos[is_local]/rho;
+            VL(irhos0+is_local, ip) = -rhos(is_local)/rho;
         }
         VL(iw, ip) =   1;
         VL(ip, ip) =   1;
@@ -291,11 +291,11 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         // First Ns rows
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
             inv_VL(irhos0+is_local, irhos0+is_local) = 
-                                    - rhos[is_local] * inv_rho * inv_a2;
+                                    - rhos(is_local) * inv_rho * inv_a2;
             inv_VL(irhos0+is_local, Ns+2           ) =   
-                                      half * rhos[is_local] * inv_rho * inv_a2;
+                                      half * rhos(is_local) * inv_rho * inv_a2;
             inv_VL(irhos0+is_local, Ns+3           ) =   
-                                      half * rhos[is_local] * inv_rho * inv_a2;
+                                      half * rhos(is_local) * inv_rho * inv_a2;
         }
 
         // Last 4 rows
