@@ -208,12 +208,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Prepare spatial operators depending on requested advance type
     if (use_explicit) {
         INFO0(who, "Initializing fully explicit spatial operators");
-        L.reset(new channel_treatment<isothermal_mass_operator>(
-                    *cmods, *isothermal, *chdef, *grid, *dgrid, *cop, *b, common_block));
-        N.reset(new explicit_nonlinear_operator(
-                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
 
-        // nonreflecting
+        // Nonreflecting must mutate chdef/isothermal before L.reset, N.reset!
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             shared_ptr<nonreflecting_treatment> nonreflecting(
@@ -229,6 +225,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             isothermal->upper_w  = numeric_limits<real_t>::quiet_NaN();
 	    // TODO Consider appropriate BC for species in this context
         }
+
+        L.reset(new channel_treatment<isothermal_mass_operator>(
+                    *cmods, *isothermal, *chdef, *grid, *dgrid, *cop, *b, common_block));
+        N.reset(new explicit_nonlinear_operator(
+                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
 
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
