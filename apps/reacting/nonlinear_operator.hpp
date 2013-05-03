@@ -366,7 +366,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //
     // Also need reference quantities if we are using the viscous filter option.
     if (    ZerothSubstep
-        && (Linearize != linearize::none || Filter == filter::viscous) ) {
+//         && (Linearize != linearize::none || Filter == filter::viscous) 
+        ) {
 
         // Gather reference profiles and mean velocity
 
