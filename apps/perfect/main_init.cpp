@@ -121,6 +121,8 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     isothermal->lower_u = isothermal->upper_u = 0;
     isothermal->lower_v = isothermal->upper_v = 0;
     isothermal->lower_w = isothermal->upper_w = 0;
+    isothermal->lower_cs.assign(1U, 1.0);
+    isothermal->upper_cs.assign(1U, 1.0);
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
