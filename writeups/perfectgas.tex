@@ -4187,9 +4187,10 @@ In section~4.3 of his thesis, \citet{Guarini1998} proved the linear
 structure of the Euler equations admits a straightforward translation of Giles'
 boundary conditions to another set of state variables $V$ with steady, uniform
 reference state $\bar{V}$ and therefore perturbations
-\[
-  \delta{}V = V - \bar{V}.
-\]
+\begin{align}
+  \label{eq:gilesperturbV}
+  \delta{}V &= V - \bar{V}.
+\end{align}
 The corresponding coordinate transformation Jacobian matrix is
 \[
    S = \frac{\partial{}U}{\partial{}V}
@@ -4446,13 +4447,13 @@ produces the desired nonreflecting $y$ boundary condition,
 \]
 Suppressing the primes and matrix evaluation details makes the above result
 much more wieldy,
-\[
+\begin{align}
 \label{eq:dimeulertransformcharnotYphys}
   \left[V^L S\right]
   R^Y
   \frac{\partial}{\partial{}t}
   \delta{}V
-\approx
+&\approx
   \left[C^G V^L S\right]
   R^Y
   \frac{\partial}{\partial{}x}
@@ -4463,7 +4464,32 @@ much more wieldy,
   \frac{\partial}{\partial{}z}
   \delta{}V
 .
-\]
+\end{align}
+Replacing $\delta{}V$ by $V - \bar{V}$ per~\eqref{eq:gilesperturbV} and
+recalling that by assumption
+$
+    \frac{\partial}{\partial{}t} \bar{V}
+  = \frac{\partial}{\partial{}x} \bar{V}
+  = \frac{\partial}{\partial{}z} \bar{V}
+  = 0
+$,
+\begin{align}
+  \left[V^L S\right]
+  R^Y
+  \frac{\partial}{\partial{}t}
+  V
+&\approx
+  \left[C^G V^L S\right]
+  R^Y
+  \frac{\partial}{\partial{}x}
+  V
+  +
+  \left[B^G V^L S\right]
+  R^Y
+  \frac{\partial}{\partial{}z}
+  V
+.
+\end{align}
 Transforming to Fourier space gives a linear condition almost suitable for
 implicit advance per section~\ref{sec:timediscretization},
 \begin{align}
@@ -4483,12 +4509,10 @@ implicit advance per section~\ref{sec:timediscretization},
   \hat{V}
 .
 \end{align}
-Notice that when
-$k_x=k_z=0$ the relevant characteristics within the mean state are held
-constant in time.
-The previous evolution equation is a pointwise condition suitable when
-$\hat{V}$ contains pointwise state (e.g. collocation point values).  When
-another representation is chosen for state, one should use
+Notice that when $k_x=k_z=0$ the relevant mean characteristics are held
+constant in time.  The previous evolution equation is a pointwise condition
+suitable when $\hat{V}$ contains pointwise state (e.g. collocation point
+values).  When another representation is chosen for state, one should use
 \begin{align}
 \label{eq:dimeulertransformcharnotYwave}
   \left[V^L S\right]
