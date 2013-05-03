@@ -75,7 +75,7 @@ real_t isothermal_mass_operator::lower_E(
         const std::vector<real_t> lower_cs) const
 {
     // FIXME Gather and use instantaneous averages when isnan(lower_[uvw]).
-    assert(lower_cs.size() == 0);
+    SUZERAIN_ENSURE(lower_cs.size() == 1);
     const real_t E_internal = lower_T / (scenario.gamma*(scenario.gamma - 1));
     const real_t E_kinetic  = (scenario.Ma*scenario.Ma) * (  lower_u*lower_u
                                                            + lower_v*lower_v
