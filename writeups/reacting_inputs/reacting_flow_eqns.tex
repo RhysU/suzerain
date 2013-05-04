@@ -3,11 +3,10 @@ solved to simulate reacting flow in Suzerain.
 
 \subsection{Conservation laws}
 This section details the relevant conservation laws for chemically
-  reacting flows.  Following~\cite{Anderson_hypersonics,
-  Kirk_2009_FINS_model_doc,
-  Topalian_2011_temporal_slow_growth_reacting}, the conservation of
-  mass, momentum, and total energy for a compressible fluid composed
-  of $N_s$ constitutive components may be written as
+reacting flows.  Following~\cite{Anderson_hypersonics,
+  Kirk_2009_FINS_model_doc}, the conservation of mass, momentum, and
+total energy for a compressible fluid composed of $N_s$ constitutive
+components may be written as
 %
 \begin{align*}
   \pp{\rho_{\alpha}}{t} & + \pp{}{x_j} (\rho_{\alpha} u_j + \rho_{\alpha} v_{\alpha, j}) = \dot{\omega}_{\alpha}, \\
@@ -109,7 +108,7 @@ viscosity is more complex.  Here, each species viscosity is modeled
 with a Blottner curve fit~\cite{?} and the mixture viscosity is
 computed from these species viscosities using Wilke's mixing
 rule~\cite{?}.  As with the chemical reactions, the viscosity is
-computed by Antioch~\cite{}.
+computed by Antioch~\cite{?}.
 
 \subsubsection{Heat Flux}
 The heat flux is given by
@@ -119,10 +118,10 @@ q_j = - \kappa \pp{T}{x_j},
 \end{equation*}
 % 
 where $\kappa$ is the mixture thermal conductivity.  Species thermal
-conductivies are evaluated using the Eucken model~\cite{} and the
+conductivies are evaluated using the Eucken model~\cite{?} and the
 mixture thermal conductivity is computed from Wilke's mixing
-rule~\cite{}.  Like the mixture viscosity, these capabilities are
-provided by Antioch~\cite{}.
+rule~\cite{?}.  Like the mixture viscosity, these capabilities are
+provided by Antioch~\cite{?}.
 
 The temperature and temperature gradient are not easy to compute from
 derivatives of state because an explicit functional form for the

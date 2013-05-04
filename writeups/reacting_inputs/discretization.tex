@@ -238,13 +238,14 @@ fact that repeated application of the first derivative operator leads
 to a spectrum for the second derivative that is dramatically incorrect
 at high wavenumbers.  However, this procedure requires explicit
 calculation of derivatives (e.g., $\nabla \mu$, $\nabla T$, and
-$\nabla^2 T$) in terms of conserved state (see Ulerich~\cite{} chapter
-3, section 3).  While this is possible in the reacting case, it is
-significantly more difficult given the complexity of the constitutive
-laws involved.  Further, given that these constitutive laws are not
-implemented within Suzerain, requiring calculation of these
-derivatives would place a very high burden on the third-party packages
-that could be used to provide them.
+$\nabla^2 T$) in terms of conserved state (see
+Ulerich~\cite{Ulerich_SZPerfect} chapter 3, section 3).  While this is
+possible in the reacting case, it is significantly more difficult
+given the complexity of the constitutive laws involved.  Further,
+given that these constitutive laws are not implemented within
+Suzerain, requiring calculation of these derivatives would place a
+very high burden on the third-party packages that could be used to
+provide them.
 
 Thus, here we seek a different formulation that does not require
 explicit differentiation through the constitutive laws.  Specifically,
@@ -338,9 +339,9 @@ in Ulerich~\cite{?}.  For brevity, these details are not given here.
 \subsection{Time step stability criteria}
 \label{sec:stabilitycriteria}
 The time step stability calculations are exactly as described by
-Ulerich~\cite{} except that 1.) the dimensional forms are used and 2.)
-species diffusion is accounted for.  Thus, the following replaces the
-$\max$ in Ulerich, Section 5.2, Equation 25:
+Ulerich~\cite{Ulerich_SZPerfect} except that 1.) the dimensional forms
+are used and 2.)  species diffusion is accounted for.  Thus, the
+following replaces the $\max$ in Ulerich, Section 5.2, Equation 25:
 %
 \begin{equation*}
 \max \left(
@@ -358,5 +359,5 @@ fully explicit scheme).
 Note that stability limits due to the reaction source terms are
 \emph{not} computed.  Preliminary analysis shows that in the target
 problems of interest, these constraints are less restrictive than
-others~\cite{}.
+others~\cite{?}. \todo{Nick, is this work documented somewhere?}
 
