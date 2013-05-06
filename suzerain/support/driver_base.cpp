@@ -154,7 +154,10 @@ driver_base::driver_base(
                                         this->signal_received))
     , who("driver")
 {
-    std::fill(signal_received.begin(), signal_received.end(), 0);
+    using std::fill;
+    fill(signal_received.begin(), signal_received.end(), 0);
+    fill(log_status_boundary_state_header_shown.begin(),
+         log_status_boundary_state_header_shown.end(), false);
 }
 
 std::string
@@ -829,9 +832,21 @@ driver_base::log_status_boundary_state(
         // Avoid computational cost when logging is disabled
         if (!DEBUG_ENABLED(nick[l])) continue;
 
+        // Show headers only on first invocation
         std::ostringstream msg;
-        msg << timeprefix;
+        if (!log_status_boundary_state_header_shown[l]) {
+            msg << std::setw(timeprefix.size())
+                << build_timeprefix_description();
+            for (size_t k = 0; k < fields.size(); ++k)
+                msg << ' ' << std::setw(fullprec<>::width)
+                           << fields[k].identifier;
+            DEBUG(nick[l], msg.str());
+            msg.str("");
+            log_status_boundary_state_header_shown[l] = true;
+        }
 
+        // Show mean boundary state on every invocation
+        msg << timeprefix;
         for (size_t k = 0; k < fields.size(); ++k) {
             real_t val = ((*state_linear)[k][bc[l]][0][0]).real();
             msg << ' ' << fullprec<>(val);

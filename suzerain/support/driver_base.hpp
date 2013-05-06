@@ -605,6 +605,14 @@ protected:
      */
     bool log_status_bulk_header_shown;
 
+    /**
+     * Flags used to control whether \ref log_status_boundary_state shows
+     * headers.  Index zero refers to lower boundary state.  Index one refers
+     * to upper boundary state.  The default implementation disables headers
+     * after the first invocation.
+     */
+    array<bool,2> log_status_boundary_state_header_shown;
+
     /** Wall time elapsed during loading of state from the restart file */
     double wtime_load_restart;
 
