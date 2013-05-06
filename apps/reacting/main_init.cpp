@@ -166,11 +166,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         if (grid)  msoln->match(*grid);
     }
 
-
-
     DEBUG0(who, "Add species to fields");
     add_species_fields(cmods->species_names, this->fields);
-
 
     DEBUG0(who, "Establishing runtime parallel infrastructure and resources");
     establish_ieee_mode();
@@ -257,8 +254,6 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         INFO("Preparing specific internal energy using the equation of state");
         ArrayXr E = cmods->e_from_T(T, isothermal->lower_cs)
             + 0.5*(u*u + v*v + w*w);
-
-
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
