@@ -98,25 +98,26 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     // Establish default grid and domain extents
     grid.reset(new support::grid_definition( 4 * pi<real_t>()     // Lx
                                            , 1                    // Nx
-                                           , 1.5                  // DAFx
+                                           , real_t(3) / 2        // DAFx
                                            , 2                    // Ly
                                            , 32                   // Ny
                                            , 8                    // k
                                            , 3                    // htdelta
                                            , 4 * pi<real_t>() / 3 // Lz
                                            , 1                    // Nz
-                                           , 1.5                  // DAFz
-              ));
+                                           , real_t(3) / 2        // DAFz
+            ));
 
     // Establish default scenario parameters
-    scenario->Re         = 100;
-    scenario->Ma         = 1.5;
-    scenario->Pr         = 0.7;
-    scenario->bulk_rho   = 1;
-    scenario->bulk_rho_u = 1;
-    scenario->alpha      = 0;
-    scenario->beta       = real_t(2) / 3;
-    scenario->gamma      = 1.4;
+    scenario.reset(new scenario_definition( 100              // Re
+                                          , real_t(3) / 2    // Ma
+                                          , real_t(7) / 10   // Pr
+                                          , 1                // bulk_rho
+                                          , 1                // bulk_rho_u
+                                          , 0                // alpha
+                                          , real_t(2) / 3    // beta
+                                          , real_t(14) / 10  // gamma
+            ));
 
     // Establish default isothermal boundary conditions
     isothermal->lower_T = isothermal->upper_T = 1;
