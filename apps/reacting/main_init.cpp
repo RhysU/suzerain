@@ -31,6 +31,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/grid_definition.hpp>
 #include <suzerain/validation.hpp>
 
 #include "driver.hpp"
@@ -80,16 +81,17 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     using std::sin;
 
     // Establish default grid and domain extents
-    grid->L.x()   = 4 * pi<real_t>();
-    grid->L.y()   = 2;
-    grid->L.z()   = 4 * pi<real_t>() / 3;
-    grid->Nx(1);
-    grid->DAFx(1.5);
-    grid->Ny(32);
-    grid->k       = 8;
-    grid->htdelta = 3;
-    grid->Nz(1);
-    grid->DAFz(1.5);
+    grid.reset(new support::grid_definition( 4 * pi<real_t>()     // Lx
+                                           , 1                    // Nx
+                                           , real_t(3) / 2        // DAFx
+                                           , 2                    // Ly
+                                           , 32                   // Ny
+                                           , 8                    // k
+                                           , 3                    // htdelta
+                                           , 4 * pi<real_t>() / 3 // Lz
+                                           , 1                    // Nz
+                                           , real_t(3) / 2        // DAFz
+              ));
 
     // Establish default scenario parameters
     cmods->Le = 0.9;
