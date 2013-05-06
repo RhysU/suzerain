@@ -732,7 +732,9 @@ public:
      */
     template< typename FactorType, typename DeltaTType >
     multiplicative_operator(const FactorType& factor, const DeltaTType& delta_t)
-        : factor(factor), delta_t(delta_t) {}
+        : factor(factor)
+        , delta_t(delta_t)
+    {}
 
     /**
      * Construct an instance which scales by \c factor and reports the
@@ -743,8 +745,9 @@ public:
      */
     template< typename FactorType >
     multiplicative_operator(const FactorType& factor)
-        : factor(factor),
-          delta_t(std::numeric_limits<component>::infinity()) {}
+        : factor(factor)
+        , delta_t(std::numeric_limits<component>::infinity())
+    {}
 
     /**
      * Scale \c state by the factor set at construction time.
