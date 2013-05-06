@@ -97,9 +97,9 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // Establish default scenario parameters
     cmods->Le = 0.9;
     cmods->alpha = 0.0;
-
-    chdef->bulk_rho   = 1;
-    chdef->bulk_rho_u = 1;
+    chdef.reset(new channel_definition( 1 // bulk_rho
+                                      , 1 // bulk_rho_u
+            ));
 
     // Establish default isothermal boundary conditions
     // TODO Check the correctness of this default behavior
