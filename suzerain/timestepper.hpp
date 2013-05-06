@@ -392,12 +392,7 @@ struct delta_t_reducer {
 
 /**
  * Provides low-storage Runge-Kutta time integration schemes and the associated
- * operator interfaces.  A hybrid implicit/explicit scheme is available.  The
- * hybrid integrator advances the state vector \f$ u(t) \f$ to
- * \f$u(t+\Delta{}t)\f$ according to \f$ M u_{t} = Lu + N(u) \f$ where \f$M\f$,
- * \f$L\f$, and \f$N\f$ are linear, linear, and nonlinear operators,
- * respectively.  \f$M\f$ is referred to as the mass matrix.  No operator may
- * depend on time.
+ * operator interfaces.
  *
  * @see method_interface for details on this class of timestepping schemes.
  */
