@@ -30,8 +30,9 @@
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>
-#include <suzerain/support/logging.hpp>
 #include <suzerain/support/grid_definition.hpp>
+#include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
 #include "driver.hpp"
@@ -101,13 +102,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     chdef->bulk_rho_u = 1;
 
     // Establish default isothermal boundary conditions
-    // FIXME: check it these defaults are correct
-    isothermal->lower_T = isothermal->upper_T = 273;
-    isothermal->lower_u = isothermal->upper_u = 0;
-    isothermal->lower_v = isothermal->upper_v = 0;
-    isothermal->lower_w = isothermal->upper_w = 0;
-    isothermal->lower_cs.assign(1U, 1.0);
-    isothermal->upper_cs.assign(1U, 1.0);
+    // TODO Check the correctness of this default behavior
+    isothermal.reset(new support::isothermal_definition(/* wall_T */ 273));
 
     // Establish default time step aggressiveness
     timedef = make_shared<support::time_definition>(/* per Venugopal */ 0.72);
