@@ -844,6 +844,7 @@ public:
     }
 
 private:
+
     /** Uniform scale factor to apply as part of operator */
     const element factor;
 
@@ -1388,25 +1389,26 @@ const Integer yang11<Component,Integer>::gamma_numerator[substeps] = {
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
  * a hybrid implicit/explicit scheme to advance the system \f$ M u_t = Lu +
- * \chi N(u,t) \f$.  Because the roles of state locations \c a and \c b are
+ * \chi N(u,t) \f$.  Notice the presence of scaling factor \f$\chi\f$ within
+ * the substep equation. Because the roles of state locations \c a and \c b are
  * swapped after each substep, and in contrast to step(), only a single state
  * type may be supplied to this method.
  *
- * @param m The low storage scheme to use.
- *          For example, \ref method in conjunction with \ref smr91.
- * @param L The linear operator to be treated implicitly.
- * @param chi The factor \f$\chi\f$ used to scale the nonlinear operator.
- * @param N The nonlinear operator to be treated explicitly.
- * @param time The simulation time \f$t\f$ during which the substep occurs.
- * @param a On entry contains \f$u^{i}\f$ and on exit contains
- *          \f$N\left(u^{i}\right)\f$.
- * @param b On entry contains \f$N\left(u^{i-1}\right)\f$ and on exit contains
- *          \f$u^{i+1}\f$.
+ * @param m             The low storage scheme to use.
+ *                      For example, \ref method in conjunction with \ref smr91.
+ * @param L             The linear operator to be treated implicitly.
+ * @param chi           The factor \f$\chi\f$ scaling the nonlinear operator.
+ * @param N             The nonlinear operator to be treated explicitly.
+ * @param time          The simulation time \f$t\f$ at which the substep occurs.
+ * @param a             On entry contains \f$u^{i}\f$ and on exit contains
+ *                      \f$N\left(u^{i}\right)\f$.
+ * @param b             On entry contains \f$N\left(u^{i-1}\right)\f$ and
+ *                      on exit contains \f$u^{i+1}\f$.
  * @param substep_index The substep number to take.
- * @param delta_t The time step \f$\Delta{}t\f$ to take.  The same time step
- *                must be supplied for all substep computations.
- * @return The time step \f$\Delta{}t\f$ taken.
- *         It will always equal \c delta_t.
+ * @param delta_t       The time step \f$\Delta{}t\f$ to take.  The same time
+ *                      step should be supplied for all substep computations
+ *                      throughout a given step.
+ * @return The time step \f$\Delta{}t\f$ taken. It will always equal \c delta_t.
  *
  * @see method_interface for the equation governing time advancement.
  * @see The method step() provides more convenient ways to perform multiple
@@ -1453,17 +1455,18 @@ const typename traits::component<Element>::type substep(
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu +
- * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$, will be based on a stable
- * value computed during the first nonlinear operator application as well as an
- * optional fixed maximum step size.
+ * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu + \chi
+ * N(u,t)\f$.  Notice the presence of scaling factor \f$\chi\f$ within the
+ * substep equation.  The time step taken, \f$\Delta{}t\f$, will be based on a
+ * stable value computed during the first nonlinear operator application as
+ * well as an optional fixed maximum step size.
  *
  * @param m       The low storage scheme to use.
  *                For example, \ref method in conjunction with \ref smr91.
  * @param reducer A stateful functor taking a vector of stable time step
  *                candidates down to a single stable time step.  Users may
- *                employ a custom functor compatible with delta_t_reducer to add
- *                logic for monitoring or manipulating stable step criteria.
+ *                employ a custom functor compatible with delta_t_reducer to
+ *                add logic for monitoring or manipulating stable step criteria.
  * @param L       The linear operator to be treated implicitly.
  * @param chi     The factor \f$\chi\f$ used to scale the nonlinear operator.
  * @param N       The nonlinear operator to be treated explicitly.
@@ -1527,7 +1530,8 @@ const typename traits::component<Element>::type step(
         N.apply_operator(time + delta_t * m.eta(i), b,
                          m.evmaxmag_real(), m.evmaxmag_imag(), i);
         a.add_scaled(chi * delta_t * m.gamma(i), b);
-        L.invert_mass_plus_scaled_operator(-delta_t * m.beta(i), a, m, delta_t, i);
+        L.invert_mass_plus_scaled_operator(-delta_t * m.beta(i),
+                                           a, m, delta_t, i);
     }
 
     return delta_t;
@@ -1536,8 +1540,9 @@ const typename traits::component<Element>::type step(
 /**
  * Using the given method and a linear and nonlinear operator, take substep \c
  * substep_index while advancing from \f$u(t)\f$ to \f$u(t+\Delta{}t)\f$ using
- * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu +
- * N(u,t)\f$.  The time step taken, \f$\Delta{}t\f$, will be based on a stable
+ * a hybrid implicit/explicit scheme using the system \f$ M u_t = Lu + \chi
+ * N(u,t)\f$.  Notice the presence of the factor \f$chi\f$ within the substep
+ * equation.  The time step taken, \f$\Delta{}t\f$, will be based on a stable
  * value computed during the first nonlinear operator application as well as an
  * optional fixed maximum step size.
  *
