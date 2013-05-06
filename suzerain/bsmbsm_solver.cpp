@@ -71,7 +71,7 @@ bsmbsm_solver::bsmbsm_solver(
     , PX(PB.data(), PB.rows(), PB.cols())                              // Alias
     , ipiv(N)
     , fact_(default_fact())
-    , apprx_(0)
+    , apprx_(false)
 {
     // Defensively set NaNs or NaN-like values on debug builds
 #ifndef NDEBUG
@@ -96,8 +96,12 @@ bool
 bsmbsm_solver::apprx(const bool acceptable)
 {
     const bool old = apprx_;
-    if (spec.reuse())
-        apprx_ = acceptable;
+    if (spec.reuse()) {
+        apprx_ = apprx_ && acceptable;
+        if (!apprx_) {
+            fact_ = default_fact();
+        }
+    }
     return old;
 }
 
@@ -368,9 +372,6 @@ bsmbsm_solver_zcgbsvx::solve_hook(
 #endif
 
     // Perform the requested solve processing each right hand side in turn
-    if (!apprx_) {
-        fact_ = default_fact();
-    }
     int info = 0, j = -1;
     while (!info && ++j < nrhs) {
 
