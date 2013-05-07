@@ -31,6 +31,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/driver_base.hpp>
 #include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/largo_definition.hpp>
 
 #include "manufactured_solution.hpp"
 #include "quantities.hpp"
@@ -84,6 +85,9 @@ public:
 
     /** Filter source parameters. */
     shared_ptr<filter_definition> fsdef;
+
+    /** Slow growth parameters. */
+    shared_ptr<support::largo_definition> sgdef;
 
     /**
      * Data sharable between #L and #N to permit computing implicit forcing.
