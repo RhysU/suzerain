@@ -213,7 +213,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing fully explicit spatial operators");
 
         N.reset(new explicit_nonlinear_operator(
-                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, msoln));
+                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, 
+                    *sgdef, msoln));
 
         // Nonreflecting must mutate chdef/isothermal before L.reset, N.reset!
         if (grid->one_sided()) {
@@ -299,7 +300,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         tmp_hybrid->R.reset(new explicit_nonlinear_operator(
                                 *cmods, *grid, *dgrid, *cop, *b,
-                                common_block, *fsdef, msoln));
+                                common_block, *fsdef, *sgdef, msoln));
 
         tmp_hybrid->L = this->L;
 

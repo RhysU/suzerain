@@ -36,6 +36,7 @@
 #include <suzerain/operator_base.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/largo_definition.hpp>
 
 #include "reacting.hpp"
 #include "manufactured_solution.hpp"
@@ -69,6 +70,7 @@ public:
             bspline &b,
             operator_common_block &common,
             const filter_definition &fsdef,
+            const support::largo_definition &sgdef,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -91,6 +93,9 @@ protected:
 
     /** The filter source definition */
     const filter_definition &fsdef;
+
+    /** The slow growth definition */
+    const support::largo_definition &sgdef;
 
 private:
 

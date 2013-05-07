@@ -117,6 +117,8 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // Establish default filter parameters
     fsdef->filter_phi = 0.0;
 
+    // FIXME: Establish default parameters for slow growth
+
     // Establish binary-specific options
     std::pointer_to_binary_function<real_t,const char*,void>
         ensure_real_tnonnegative(validation::ensure_nonnegative<real_t>);

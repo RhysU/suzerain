@@ -65,12 +65,14 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
         bspline &b,
         operator_common_block &common,
         const filter_definition &fsdef,
+        const support::largo_definition &sgdef,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , cmods(cmods)
     , common(common)
     , msoln(msoln)
     , fsdef(fsdef)
+    , sgdef(sgdef)
     , who("operator.N")
 {
     // Ensure cached mass matrix factorized prior to first use
