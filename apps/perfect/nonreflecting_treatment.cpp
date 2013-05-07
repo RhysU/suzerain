@@ -60,16 +60,24 @@ nonreflecting_treatment::nonreflecting_treatment(
         const pencil_grid &dgrid,
         const bsplineop &cop,
         bspline &b,
-        operator_common_block &common)
+        const operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
     , who("nonreflecting_treatment")
 {
-    // NOP
+#ifndef NDEBUG
+    // Defensively NaN working storage to reduce misuse possibility
+    VL_S_RY          .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    BG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    CG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    ImPG_VL_S_RY     .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    inv_VL_S_RY      .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+#endif
 }
 
-std::vector<real_t> nonreflecting_treatment::apply_operator(
+std::vector<real_t>
+nonreflecting_treatment::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
             const real_t evmaxmag_real,
@@ -111,6 +119,79 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     // State is now coefficients in X and Z directions
     // State is now collocation point values in Y direction
 
+    // Prepare the matrices required to implement the boundary condition.
+    // The hideous const_cast is required due to timestepping API.
+    if (substep_index == 0) {
+        const_cast<nonreflecting_treatment*>(this)
+                ->compute_subsonic_matrices(common.ref_rho().tail<1>()[0],
+                                            common.ref_ux ().tail<1>()[0],
+                                            common.ref_uy ().tail<1>()[0],
+                                            common.ref_uz ().tail<1>()[0],
+                                            common.ref_a  ().tail<1>()[0]);
+    }
+
+    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
+    const int Ny   = dgrid.global_wave_extent.y();
+    const int Nx   = grid.N.x();
+    const int dNx  = grid.dN.x();
+    const int dkbx = dgrid.local_wave_start.x();
+    const int dkex = dgrid.local_wave_end.x();
+    const int Nz   = grid.N.z();
+    const int dNz  = grid.dN.z();
+    const int dkbz = dgrid.local_wave_start.z();
+    const int dkez = dgrid.local_wave_end.z();
+    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
+    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
+
+    // Traverse wavenumbers updating the RHS with the Giles boundary condition
+    using suzerain::inorder::wavenumber;
+    const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+    for (int n = dkbz; n < dkez; ++n) {
+        const int wn = wavenumber(dNz, n);
+        const real_t kn = twopioverLz*wn;
+
+        for (int m = dkbx; m < dkex; ++m) {
+            const int wm = wavenumber(dNx, m);
+            const real_t km = twopioverLx*wm;
+
+            // Unpack upper boundary RHS into a contiguous buffer
+            Vector5c N;
+            for (int f = 0; f < N.size(); ++f) {
+                N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
+            }
+
+            // Modify the packed RHS per
+            // "Implementation primarily within the nonlinear explicit operator"
+            // The imaginary unit has already been included within i_stash.
+            Vector5c tmp;
+            tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
+            tmp.noalias() += kn
+                           * BG_VL_S_RY_by_chi.cast<complex_t>()
+                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
+            tmp.noalias() += km
+                           * CG_VL_S_RY_by_chi.cast<complex_t>()
+                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
+            N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
+
+            // Pack new upper boundary RHS from the contiguous buffer
+            for (int f = 0; f < N.size(); ++f) {
+                swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
+            }
+
+        }
+    }
+
+    return retval;
+}
+
+void
+nonreflecting_treatment::compute_subsonic_matrices(
+    const real_t ref_rho,
+    const real_t ref_u,
+    const real_t ref_v,
+    const real_t ref_w,
+    const real_t ref_a)
+{
     // Prepare the rotation and its inverse that reorders from
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
     // All remaining matrices/logic within the routine uses the latter order!
@@ -131,13 +212,12 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         inv_RY(ndx::rho, 0) = 1;
     }
 
-    // Retrieve upper boundary reference state from the common block.
-    // These assignments are odd looking to permit others as documented.
-    const real_t rho = common.ref_rho().tail<1>()[0];
-    const real_t u   = common.ref_uy ().tail<1>()[0]; // Ref u = v' per RY
-    const real_t v   = common.ref_uz ().tail<1>()[0]; // Ref v = w' per RY
-    const real_t w   = common.ref_ux ().tail<1>()[0]; // Ref w = u' per RY
-          real_t a   = common.ref_a  ().tail<1>()[0];
+    // Prepare upper boundary reference state per rotated frame
+    const real_t rho = ref_rho;
+    const real_t u   = ref_v  ; // Ref u = Ref v' per RY
+    const real_t v   = ref_w  ; // Ref v = Ref w' per RY
+    const real_t w   = ref_u  ; // Ref w = Ref u' per RY
+          real_t a   = ref_a  ;
 
     // Prepare oft-used quantities derived from the reference state
     const real_t inv_rho = 1 / rho;
@@ -269,65 +349,11 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     // Prepare all necessary real-valued products of the above matrices
-    // TODO These results could be cached for reuse on nonzero substeps
     VL_S_RY           = VL * S * RY;
     BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
     CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
     ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
     inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
-
-    // Wavenumber traversal modeled after those found in suzerain/diffwave.c
-    const int Ny   = dgrid.global_wave_extent.y();
-    const int Nx   = grid.N.x();
-    const int dNx  = grid.dN.x();
-    const int dkbx = dgrid.local_wave_start.x();
-    const int dkex = dgrid.local_wave_end.x();
-    const int Nz   = grid.N.z();
-    const int dNz  = grid.dN.z();
-    const int dkbz = dgrid.local_wave_start.z();
-    const int dkez = dgrid.local_wave_end.z();
-    const real_t twopioverLx = twopiover(grid.L.x());  // Weird looking...
-    const real_t twopioverLz = twopiover(grid.L.z());  // ...for FP control
-
-    // Traverse wavenumbers updating the RHS with the Giles boundary condition
-    using suzerain::inorder::wavenumber;
-    const int mu = boost::numeric_cast<int>(swave.shape()[2]);
-    for (int n = dkbz; n < dkez; ++n) {
-        const int wn = wavenumber(dNz, n);
-        const real_t kn = twopioverLz*wn;
-
-        for (int m = dkbx; m < dkex; ++m) {
-            const int wm = wavenumber(dNx, m);
-            const real_t km = twopioverLx*wm;
-
-            // Unpack upper boundary RHS into a contiguous buffer
-            Vector5c N;
-            for (int f = 0; f < N.size(); ++f) {
-                N(f) = swave[f][Ny - 1][m - dkbx][n - dkbz];
-            }
-
-            // Modify the packed RHS per
-            // "Implementation primarily within the nonlinear explicit operator"
-            // The imaginary unit has already been included within i_stash.
-            Vector5c tmp;
-            tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
-            tmp.noalias() += kn
-                           * BG_VL_S_RY_by_chi.cast<complex_t>()
-                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
-            tmp.noalias() += km
-                           * CG_VL_S_RY_by_chi.cast<complex_t>()
-                           * i_stash.col((m - dkbx) + mu*(n - dkbz));
-            N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
-
-            // Pack new upper boundary RHS from the contiguous buffer
-            for (int f = 0; f < N.size(); ++f) {
-                swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
-            }
-
-        }
-    }
-
-    return retval;
 }
 
 } // namespace perfect

@@ -71,7 +71,7 @@ public:
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b,
-            operator_common_block& common);
+            const operator_common_block& common);
 
     /**
      * Applies Giles conditions delegating most processing to #N.
@@ -94,7 +94,7 @@ public:
      * \f]
      * assuming that #N implements \f$N(\hat{V})\f$.
      *
-     * Uses, and possibly updates, all of
+     * Uses, and on <tt>substep_index == 0</tt> updates, all of
      * <ol>
      *   <li>#VL_S_RY</li>
      *   <li>#BG_VL_S_RY_by_chi</li>
@@ -111,6 +111,34 @@ public:
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const;
 
+    /**
+     * Compute subsonic nonreflecting boundary condition matrices given
+     * reference state information and the \ref scenario_definition provided at
+     * construction time.  Updates all of
+     * <ol>
+     *   <li>#VL_S_RY</li>
+     *   <li>#BG_VL_S_RY_by_chi</li>
+     *   <li>#CG_VL_S_RY_by_chi</li>
+     *   <li>#ImPG_CG_VL_S_RY</li>
+     *   <li>#invVL_S_RY</li>
+     * </ol>
+     * during invocation.
+     *
+     * @param ref_rho Nondimensional reference density \f$rho\f$.
+     * @param ref_u   Nondimensional reference streamwise velocity \f$u\f$.
+     * @param ref_v   Nondimensional reference boundary-normal velocity \f$v\f$.
+     *                Inflow conditions are used when this velocity is strictly
+     *                negative.  Otherwise, outflow conditions are used.
+     * @param ref_w   Nondimensional reference spanwise velocity \f$w\f$.
+     * @param ref_a   Nondimensional reference sound speed \f$a\f$.
+     */
+    void compute_subsonic_matrices(
+            const real_t ref_rho,
+            const real_t ref_u,
+            const real_t ref_v,
+            const real_t ref_w,
+            const real_t ref_a);
+
     /** The operator whose behavior is modified by this instance. */
     shared_ptr<timestepper::nonlinear_operator<
                 contiguous_state<4,complex_t>
@@ -122,32 +150,42 @@ protected:
     const scenario_definition &scenario;
 
     /** Provides reference values used when computing the conditions. */
-    operator_common_block &common;
+    const operator_common_block &common;
 
     /**
-     * Matrix \f$ \left[V^L S\right] R^Y \f$.
+     * Wavenumber-independent matrix
+     * \f$ \left[V^L S\right] R^Y \f
+     * used by apply_operator().
      */
-    mutable Matrix5r VL_S_RY;
+    Matrix5r VL_S_RY;
 
     /**
-     * Matrix \f$ \chi^{-1} \left[B^G\right] \left[V^L S\right] R^Y \f$.
+     * Wavenumber-independent matrix
+     * \f$ \chi^{-1} \left[B^G\right] \left[V^L S\right] R^Y \f$
+     * used by apply_operator().
      */
-    mutable Matrix5r BG_VL_S_RY_by_chi;
+    Matrix5r BG_VL_S_RY_by_chi;
 
     /**
-     * Matrix \f$ \chi^{-1} \left[C^G\right] \left[V^L S\right] R^Y \f$.
+     * Wavenumber-independent matrix
+     * \f$ \chi^{-1} \left[C^G\right] \left[V^L S\right] R^Y \f$
+     * used by apply_operator().
      */
-    mutable Matrix5r CG_VL_S_RY_by_chi;
+    Matrix5r CG_VL_S_RY_by_chi;
 
     /**
-     * Matrix \f$ \left(I - P^G\right) \left[V^L S\right] R^Y \f$.
+     * Wavenumber-independent matrix
+     * \f$ \left(I - P^G\right) \left[V^L S\right] R^Y \f$
+     * used by apply_operator().
      */
-    mutable Matrix5r ImPG_VL_S_RY;
+    Matrix5r ImPG_VL_S_RY;
 
     /**
-     * Matrix \f$ {R^Y}^{-1} \left[V^L S\right]^{-1} \f$.
+     * Wavenumber-independent matrix
+     * \f$ {R^Y}^{-1} \left[V^L S\right]^{-1} \f$
+     * used by apply_operator().
      */
-    mutable Matrix5r inv_VL_S_RY;
+    Matrix5r inv_VL_S_RY;
 
 private:
 
