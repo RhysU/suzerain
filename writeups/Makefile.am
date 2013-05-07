@@ -17,8 +17,6 @@ TEXSOURCES += smr91.tex
 
 # Reacting doc broken out amongst many srcs.
 reacting_TEXSOURCES  = reacting_main.tex
-reacting_TEXSOURCES += reacting_inputs/acoustic_decision_pt.tex
-reacting_TEXSOURCES += reacting_inputs/acoustic_linearization.tex
 reacting_TEXSOURCES += reacting_inputs/boundary_conditions.tex
 reacting_TEXSOURCES += reacting_inputs/discretization.tex
 reacting_TEXSOURCES += reacting_inputs/filter.tex
@@ -26,7 +24,6 @@ reacting_TEXSOURCES += reacting_inputs/implicit_operator.tex
 reacting_TEXSOURCES += reacting_inputs/reacting_flow_eqns.tex
 reacting_TEXSOURCES += reacting_inputs/reacting_linearization.tex
 reacting_TEXSOURCES += reacting_inputs/statistics.tex
-reacting_TEXSOURCES += reacting_inputs/viscous_linearization.tex
 reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
 
 # Explicit dependencies where necessary
