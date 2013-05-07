@@ -98,6 +98,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     const size_t Ns = cmods.Ns();
     assert(Ns>0);
+    assert(Ns == common.Ns);
 
     // Shorthand
     typedef contiguous_state<4,complex_t> state_type;

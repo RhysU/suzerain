@@ -179,6 +179,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     INFO0(who, "Initializing antioch_constitutive");
     cmods->init_antioch();
 
+    common_block.Ns = cmods->Ns();
+
     // However, if msoln was provided, match its contents to other members
     // Do here b/c cmods doesn't make sense until after init_antioch
     if (msoln) {
