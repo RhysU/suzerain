@@ -133,7 +133,7 @@ public:
     /** What is the storage type for LU-related pivots? */
     typedef Matrix<int, Dynamic, 1> ipiv_type;
 
-    /** Storage for the factorization pivots in conjuntion with #LU */
+    /** Storage for the factorization pivots in conjunction with #LU */
     ipiv_type ipiv;
 
     /**
