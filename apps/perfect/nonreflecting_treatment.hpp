@@ -48,15 +48,18 @@ class operator_common_block;
 class scenario_definition;
 
 /**
- * Provides Giles-like nonreflecting boundary conditions at the upper boundary.
- * Background and notation set within <tt>writeups/perfect_gas.tex</tt> section
- * entitled "Nonreflecting freestream boundary conditions".
+ * Provides Giles-like nonreflecting boundary conditions at the upper \f$y =
+ * L_y\f$ boundary.  Background and notation set within
+ * <tt>writeups/perfect_gas.tex</tt> section entitled "Nonreflecting freestream
+ * boundary conditions".
  */
 class nonreflecting_treatment
     : public operator_base
     , public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
+    // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     /**
      * Constructor.
@@ -90,6 +93,16 @@ public:
      * }_{N_E^G\left(\hat{V}\right)}
      * \f]
      * assuming that #N implements \f$N(\hat{V})\f$.
+     *
+     * Uses, and possibly updates, all of
+     * <ol>
+     *   <li>#VL_S_RY</li>
+     *   <li>#BG_VL_S_RY_by_chi</li>
+     *   <li>#CG_VL_S_RY_by_chi</li>
+     *   <li>#ImPG_CG_VL_S_RY</li>
+     *   <li>#invVL_S_RY</li>
+     * </ol>
+     * during invocation.
      */
     virtual std::vector<real_t> apply_operator(
             const real_t time,
@@ -110,6 +123,31 @@ protected:
 
     /** Provides reference values used when computing the conditions. */
     operator_common_block &common;
+
+    /**
+     * Matrix \f$ \left[V^L S\right] R^Y \f$.
+     */
+    mutable Matrix5r VL_S_RY;
+
+    /**
+     * Matrix \f$ \chi^{-1} \left[B^G\right] \left[V^L S\right] R^Y \f$.
+     */
+    mutable Matrix5r BG_VL_S_RY_by_chi;
+
+    /**
+     * Matrix \f$ \chi^{-1} \left[C^G\right] \left[V^L S\right] R^Y \f$.
+     */
+    mutable Matrix5r CG_VL_S_RY_by_chi;
+
+    /**
+     * Matrix \f$ \left(I - P^G\right) \left[V^L S\right] R^Y \f$.
+     */
+    mutable Matrix5r ImPG_VL_S_RY;
+
+    /**
+     * Matrix \f$ {R^Y}^{-1} \left[V^L S\right]^{-1} \f$.
+     */
+    mutable Matrix5r inv_VL_S_RY;
 
 private:
 

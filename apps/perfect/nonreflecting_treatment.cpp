@@ -270,11 +270,11 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     // Prepare all necessary real-valued products of the above matrices
     // TODO These results could be cached for reuse on nonzero substeps
-    const Matrix5r VL_S_RY           = VL * S * RY;
-    const Matrix5r BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
-    const Matrix5r CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
-    const Matrix5r ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
-    const Matrix5r inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
+    VL_S_RY           = VL * S * RY;
+    BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
+    CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
+    ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
+    inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
     const int Ny   = dgrid.global_wave_extent.y();
