@@ -535,8 +535,8 @@ is the simplest form for applying Medida's $x$ boundary condition matrices to
 alternative state variables.
 
 The particular coordinate transformation Suzerain requires maps the dimensional
-primitive state $U$ satisfying requirements~\eqref{eq:eulerprimnondim} to the
-conserved state $V$ (dimensional) and~\ref{nondim_equations}:
+primitive state $U$ satisfying requirements~\eqref{eq:eulerprim} to the
+conserved state $V$ (dimensional) and~\S\ref{sec:gov_eq}:
 %
 \begin{align}
 \label{eq:multieulerconsdim}
@@ -773,8 +773,9 @@ much more wieldy,
   \delta{}V
 .
 \]
-Transforming to Fourier space gives a linear condition almost suitable for
-implicit advance per section~\ref{sec:timediscretization},
+Transforming to Fourier space gives a linear condition almost suitable
+for implicit advance using the SMR91
+scheme~\cite{spalart_lowstoragerk, Ulerich_SZPerfect}.
 \begin{align}
 \label{eq:dimeulertransformcharnotYwave}
   \left[V^L S\right]
@@ -800,9 +801,11 @@ relevant characteristics within the mean state are held constant in time.
 
 While constraint~\eqref{eq:dimeulertransformcharnotYwave} fixes the
 characteristics arriving from beyond the boundary, it does not evolve the
-remaining ones determined by the simulation domain.  Returning to the time
-discretization of section~\ref{sec:timediscretization},
-equation~\eqref{eq:timediscretization} evolves coefficients more or less like
+remaining ones determined by the simulation domain.  
+%Returning to the time
+%discretization of section~\ref{sec:timediscretization},
+%equation~\eqref{eq:timediscretization} evolves coefficients more or less like
+The temporal discretization used here evolves coefficients more or less like
 \begin{align}
 \label{eq:coeffspaceevolve}
   \frac{\partial}{\partial{}t} \hat{V} &= L \hat{V} + N(\hat{V})
@@ -911,15 +914,16 @@ according to equation~\eqref{eq:dimeulertransformevolve} modified to account
 for any auxiliary constraints (e.g. holding freestream streamwise momentum
 constant at each substep).
 
-Evidently, Giles' conditions can be shoehorned into
-section~\ref{sec:imextreatment}'s IMEX Runge--Kutta framework by modifying the
-action of any existing global operators $L$ and $N$ to obtain the
-boundary-specific $L^G$ and $N^G$ behavior specified by
+Evidently, Giles' conditions can be shoehorned into the IMEX
+Runge--Kutta framework detailed in~\cite{Ulerich_SZPerfect} by
+modifying the action of any existing global operators $L$ and $N$ to
+obtain the boundary-specific $L^G$ and $N^G$ behavior specified by
 equation~\eqref{eq:dimeulertransformevolve}.  Implementing
-$\left(M+\varphi{}L^G\right)\hat{V}$ in an $L$-agnostic way atop an existing
-routine accumulating $\left(M+\varphi{}L\right)\hat{V}$ out-of-place is best
-done by having the latter routine return $\varphi{}L\hat{V}$ so that the
-incremental action of $L^G$ relative to $L$ can be further accumulated:
+$\left(M+\varphi{}L^G\right)\hat{V}$ in an $L$-agnostic way atop an
+existing routine accumulating $\left(M+\varphi{}L\right)\hat{V}$
+out-of-place is best done by having the latter routine return
+$\varphi{}L\hat{V}$ so that the incremental action of $L^G$ relative
+to $L$ can be further accumulated:
 \begin{alignat}{10}
 % Makes no sense to me that I needed to use phantom below...
 % ...instead of being able to just use alignat directly.
