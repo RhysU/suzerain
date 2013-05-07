@@ -202,7 +202,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             shared_ptr<nonreflecting_treatment> nonreflecting(
                     new nonreflecting_treatment(
-                        *scenario, *grid, *dgrid, *cop, *b, common_block));
+                        *scenario, *isothermal,
+                        *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = N;
             N = nonreflecting;
             scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();

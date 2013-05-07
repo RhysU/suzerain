@@ -30,6 +30,7 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 
@@ -56,6 +57,7 @@ namespace perfect {
 
 nonreflecting_treatment::nonreflecting_treatment(
         const scenario_definition &scenario,
+        const isothermal_specification &isothermal,
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
@@ -63,6 +65,7 @@ nonreflecting_treatment::nonreflecting_treatment(
         const operator_common_block &common)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
+    , isothermal(isothermal)
     , common(common)
     , who("nonreflecting_treatment")
 {

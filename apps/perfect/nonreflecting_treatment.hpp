@@ -39,6 +39,7 @@ namespace suzerain {
 class bspline;
 class bsplineop;
 class grid_specification;
+class isothermal_specification;
 class pencil_grid;
 
 namespace perfect {
@@ -67,6 +68,7 @@ public:
      */
     nonreflecting_treatment(
             const scenario_definition& scenario,
+            const isothermal_specification& isothermal,
             const grid_specification& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
@@ -148,6 +150,9 @@ protected:
 
     /** The scenario in which the operator is used. */
     const scenario_definition &scenario;
+
+    /** The lower and upper isothermal boundary specification. */
+    const isothermal_specification &isothermal;
 
     /** Provides reference values used when computing the conditions. */
     const operator_common_block &common;
