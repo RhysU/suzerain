@@ -214,10 +214,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
             // ensure for diluter
             SUZERAIN_ENSURE(isothermal->lower_cs[0] == isothermal->upper_cs[0]);
-            for (size_t s=1; s<cmods->Ns(); ++s) {
+            for (size_t s=0; s<cmods->Ns()-1; ++s) {
                 // yes, +1 b/c first is the diluter
-                rho_s[s] = chdef->bulk_rho*isothermal->lower_cs[s];
-                SUZERAIN_ENSURE(isothermal->lower_cs[s] == isothermal->upper_cs[s]);
+                rho_s[s] = chdef->bulk_rho*isothermal->lower_cs[s+1];
+                SUZERAIN_ENSURE(isothermal->lower_cs[s+1] == isothermal->upper_cs[s+1]);
             }
         }
 
