@@ -240,6 +240,25 @@ public:
                        VectorXr&       etots) const;
 
     /**
+     * Given temperature and species mass fractions compute 
+     * required thermodynamic quantities for the nonreflecting 
+     * boundary
+     *
+     * @param[in] T       Temperature
+     * @param[in] cs      Species mass fractions
+     * @param[out] a      Mixture speed of sound
+     * @param[out] gamma  Mixture heat capacity ratio
+     * @param[out] R_mix  Mixture gas constant
+     * @param[out] etots  Specific total energies
+     */
+    void evaluate_for_nonreflecting (const real_t      T,
+                                     VectorXr&        cs,
+                                     real_t&           a,
+                                     real_t&       gamma,
+                                     real_t&       R_mix,
+                                     VectorXr&     etots) const;
+
+    /**
      * Report the number of species in the mixture.
      */
     std::size_t Ns() const { return species_names.size(); }

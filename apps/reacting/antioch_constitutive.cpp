@@ -602,9 +602,28 @@ antioch_constitutive::e_from_T (const real_t  T,
 }
 
 
+// FIXME: Remove if not needed when the nonreflecting implementation is finished
 void
 antioch_constitutive::etots_from_T (const real_t    T,
                                     VectorXr& etots) const
+{
+     const size_t Ns = this->Ns();
+
+    // total specific energy for each species
+    // index 0 is the diluter 
+    for (unsigned int i=0; i<Ns; ++i){
+         etots[i] = this->sm_thermo->e_tot(i, T, T);
+     }
+}
+ 
+
+void
+antioch_constitutive::evaluate_for_nonreflecting (const real_t      T,
+                                                  VectorXr&        cs,
+                                                  real_t&           a,
+                                                  real_t&       gamma,
+                                                  real_t&       R_mix,
+                                                  VectorXr&     etots) const
 {
     const size_t Ns = this->Ns();
 
@@ -614,6 +633,22 @@ antioch_constitutive::etots_from_T (const real_t    T,
         etots[i] = this->sm_thermo->e_tot(i, T, T);
     }
 
+    // R_mix
+    R_mix = this->mixture->R(cs);
+
+    // Ratio of mixture specific heats
+    const real_t Cp = this->sm_thermo->cp(T, T, cs);
+    const real_t Cv = this->sm_thermo->cv(T, T, cs);
+
+    // gamm and gamma-1 for convenience
+    gamma = Cp/Cv;
+
+    // Gas constant of the diluter
+    const real_t R0 = this->mixture->R(0);
+
+    // Speed of sound(frozen)
+    real_t af2 = (1.0 + R_mix/Cv)*R_mix*T;
+    a = std::sqrt(af2);
 }
 
 

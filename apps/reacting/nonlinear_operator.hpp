@@ -540,6 +540,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Compute species specific total energy and store in 
         // common.etots_upper
+        // FIXME: Remove and/or compute additional needed 
+        // quantities for nonreflecting implementation
         common.etots_upper.resize(Ns);
         cmods.etots_from_T(common.ref_T().tail<1>()[0],
                            common.etots_upper);

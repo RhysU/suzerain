@@ -359,9 +359,21 @@ public:
     /**
      * Vector with species specific total energy. 
      */
-    // FIXME: Temporarily placing it here ...
+    // FIXME: Temporarily placing here variables for reference values
     // To be used by Giles BCs.
     // Is this the right place for it?
+    real_t   P_ref;
+    real_t   T_ref;
+    real_t   u_ref;
+    real_t   v_ref;
+    real_t   w_ref;
+    real_t   rho_ref;
+    real_t   a_ref;
+    real_t   gamma_ref;
+    real_t   R_ref;
+    real_t   Cv_ref;
+    VectorXr cs_ref;
+    VectorXr etots_ref;
     VectorXr etots_upper;
 
 private:

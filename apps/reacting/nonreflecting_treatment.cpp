@@ -96,22 +96,24 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const size_t Ns          = state_count - 4;
 
     // Name indices to make (hopefully) the code more legible
-    // Local indices for primitive variables U=(rho_s(1,...,Ns),u,v,w,p)
-    const int irhos0 = 0;       // indices of species densities start at 0 
-                                // and run through Ns-1
+    // Local indices for primitive variables U=(rho_s(0,...,Ns-1),u,v,w,p)
+    // indices of species densities start at 0 and run through Ns-1
+    // index 0 corresponds to the diluter
+    const int irhos0 = 0;       
     const int iu     = Ns;
     const int iv     = Ns+1;
     const int iw     = Ns+2;
     const int ip     = Ns+3;
 
-    // Local indices for conserved variables V=(rho_s(1,...,Ns-1),rho,rhoU,rhoV,rhoW,rhoE)
-    //const int irhos0 = 0;     // indices of species densities start at 0 
-                                // and run through Ns-2
-    const int irho   = Ns-1;
+    // Local indices for conserved variables V=(rho,rho_s(1,...,Ns-1),rhoU,rhoV,rhoW,rhoE)
+    // indices of species densities start at irho+1 and run through irho+Ns-1
+    const int irho   = 0;
     const int irhoU  = Ns;
     const int irhoV  = Ns+1;
     const int irhoW  = Ns+2;
     const int irhoE  = Ns+3;
+
+    //FIXME: Declare named indices for characteristic variables
 
     MatrixXXc i_stash(state_count, swave.shape()[2] * swave.shape()[3]);
     {
@@ -142,8 +144,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     // FIXME
     MatrixXXr RY(MatrixXXr::Zero(state_count, state_count));
     {
-        for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
-            RY(irhos0+is_local, ndx::rho+1+is_local) = 1;
+        for (unsigned int is_local = 1; is_local < Ns; ++is_local) {
+            RY(irho+is_local, ndx::rho+is_local) = 1;
         }
         RY(irho,  ndx::rho) = 1;
         RY(irhoU, ndx::my ) = 1;
@@ -159,8 +161,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         inv_RY(ndx::my , irhoU) = 1;
         inv_RY(ndx::mz , irhoV) = 1;
         inv_RY(ndx::rho, irho ) = 1;
-        for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
-            RY(ndx::rho+1+is_local, irhos0+is_local) = 1;
+        for (unsigned int is_local = 1; is_local < Ns; ++is_local) {
+            inv_RY(ndx::rho+is_local, irho+is_local) = 1;
         }
     }
 
@@ -169,31 +171,49 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     // Retrieve upper boundary reference state from the common block.
     // These assignments are odd looking to permit others as documented.
-    const real_t rho   = swave[ndx::rho][Ny-1][0][0].real();
-    const real_t u     = 0; // common.ref_uy   ().tail<1>()[0]; // Ref u = v' per RY
-    const real_t v     = 0; // common.ref_uz   ().tail<1>()[0]; // Ref v = w' per RY
-    const real_t w     = 0; // common.ref_ux   ().tail<1>()[0]; // Ref w = u' per RY
-          real_t a     = common.ref_a    ().tail<1>()[0];
-          real_t gamma = common.ref_gamma().tail<1>()[0];
+    const real_t rho   = common.rho_ref;   // swave[ndx::rho][Ny-1][0][0].real(); //FIXME: Check if I get mean(rho) at the upper boundary
+    const real_t u     = common.u_ref;     // common.ref_uy   ().tail<1>()[0]; // Ref u = v' per RY
+    const real_t v     = common.v_ref;     // common.ref_uz   ().tail<1>()[0]; // Ref v = w' per RY
+    const real_t w     = common.w_ref;     // common.ref_ux   ().tail<1>()[0]; // Ref w = u' per RY
+    const real_t a     = common.a_ref;     // common.ref_a    ().tail<1>()[0];
+    const real_t gamma = common.gamma_ref; // common.ref_gamma().tail<1>()[0];
+    const real_t T     = common.T_ref; 
+    const real_t Cv    = common.Cv_ref; 
+
+    VectorXr etots;
+    etots.resize(Ns);
+    etots = common.etots_ref;
 
     // Update mean species densities
     // ... only at initial substep
     if (substep_index == 0 ) {    
         rhos.resize(Ns);
         // Initialize diluter density to total density
-        rhos(irhos0+Ns-1) = rho;
-        for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
-            // density of species is_local
-            rhos(irhos0+is_local) = 
-                swave[ndx::rho+1+is_local][Ny-1][0][0].real();
-            // substract for diluter density
-            rhos(irhos0+Ns-1) -= rhos(irhos0+is_local); 
+        rhos(0) = rho;
+        // FIXME: Fix DEBUG0 lines
+//         DEBUG0(who, "rho     = " << rho );
+        for (unsigned int is_local = 1; is_local < Ns; ++is_local) {
+            // FIXME: Enable if needed, remove otherwise
+            // density of species is_local from 0,0 mode
+//             rhos(irhos0+is_local) = 
+//                 swave[ndx::rho+is_local][Ny-1][0][0].real();
+
+            // density of species from reference flow
+            rhos(is_local) = common.rho_ref * common.cs_ref(is_local);
+//             DEBUG0(who, "rhos(" << is_local <<") = " << rhos(is_local)); 
+
+            // substract to compute diluter density
+            rhos(0) -= rhos(is_local);
         }
+
+        // FIXME: Maybe remove the Bcast, 
+        //        keep if the 0,0 mode enters the computation
+        SUZERAIN_MPICHKR(MPI_Bcast(&rhos, Ns,
+                    mpi::datatype_of(rhos(0)),
+                    dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+//         DEBUG0(who, "rhos(0) = " << rhos(0) );
     }
 
-    SUZERAIN_MPICHKR(MPI_Bcast(&rhos, Ns,
-                mpi::datatype_of(rhos[0]),
-                dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Prepare oft-used quantities derived from the reference state
     const real_t inv_rho = 1 / rho;
@@ -214,18 +234,18 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     // Build the conserved -> primitive transformation and its inverse
     MatrixXXr S(MatrixXXr::Zero(state_count, state_count));
     {
-        for (unsigned int is_local = 0; is_local < Ns-1; ++is_local) {
-            S(irhos0+is_local, irhos0+is_local) =   1;
-            S(irho,            irhos0+is_local) =  -1;
-            S(ip,              irhos0+is_local) =   (-common.etots_upper(is_local+1)
-                                                     +common.etots_upper(0))*gamma1;
-        }
+        S(irhos0, irho) =   1;
+        S(iu,     irho) = - u * inv_rho;
+        S(iv,     irho) = - v * inv_rho;
+        S(iw,     irho) = - w * inv_rho;
+        S(ip,     irho) =   (half*(u2+v2+w2)-etots(0)+Cv*T)*gamma1;
 
-        S(irho, irho) =   1;
-        S(iu,   irho) = - u * inv_rho;
-        S(iv,   irho) = - v * inv_rho;
-        S(iw,   irho) = - w * inv_rho;
-        S(ip,   irho) =   (half*(u2+v2+w2)-common.etots_upper(0))*gamma1;
+        for (unsigned int is_local = 1; is_local < Ns; ++is_local) {
+            S(irhos0+is_local, irho+is_local) =  1;
+            S(irhos0,          irho+is_local) = -1;
+            S(ip,              irho+is_local) =  (-etots(is_local)
+                                                  +etots(0))*gamma1;
+        }
 
         S(iu, irhoU) =   inv_rho;
         S(ip, irhoU) = - gamma1 * u;
@@ -241,29 +261,26 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     MatrixXXr inv_S(MatrixXXr::Zero(state_count, state_count));
     {
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
-            inv_S(irhos0+is_local, irhos0+is_local) = 1;
-            inv_S(irho,            irhos0+is_local) = 1;
-            inv_S(irhoU,           irhos0+is_local) = u ;
-            inv_S(irhoV,           irhos0+is_local) = v ;
-            inv_S(irhoW,           irhos0+is_local) = w ;
-            inv_S(irhoE,           irhos0+is_local) = half * (u2+v2+w2)
-                                       + common.etots_upper((is_local+1)%Ns);
-            // The energy for the diluter is in index 0 in etots, 
-            // and it's index Ns-1 in inv_S.
-            // Use the mod operation to shift indices
-            // FIXME: make things more consistent with the rest of the code
+            inv_S(irho,          irhos0+is_local) = 1;
+            inv_S(irho+is_local, irhos0+is_local) = 1;
+            inv_S(irhoU,         irhos0+is_local) = u ;
+            inv_S(irhoV,         irhos0+is_local) = v ;
+            inv_S(irhoW,         irhos0+is_local) = w ;
+            inv_S(irhoE,         irhos0+is_local) = half * (u2+v2+w2)
+                                       + etots(is_local)
+                                       - Cv * T;
         }
 
-        inv_S(irhoU, iu) =   rho;
-        inv_S(irhoE, iu) =   rho * u;
+        inv_S(irhoU, iu) =  rho;
+        inv_S(irhoE, iu) =  rho * u;
 
-        inv_S(irhoV, iv) =   rho;
-        inv_S(irhoE, iv) =   rho * v;
+        inv_S(irhoV, iv) =  rho;
+        inv_S(irhoE, iv) =  rho * v;
 
-        inv_S(irhoW, iw) =   rho;
-        inv_S(irhoE, iw) =   rho * w;
+        inv_S(irhoW, iw) =  rho;
+        inv_S(irhoE, iw) =  rho * w;
 
-        inv_S(irhoE, ip) =   inv_gamma1;
+        inv_S(irhoE, ip) =  inv_gamma1;
     }
 
     // Build the primitive -> characteristic transformation and its inverse
@@ -281,7 +298,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         VL(iv, iw) =   rho * a;
 
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
-            VL(irhos0+is_local, ip) = -rhos(is_local)/rho;
+            VL(irhos0+is_local, ip) = rhos(is_local) * inv_rho;
         }
         VL(iw, ip) =   1;
         VL(ip, ip) =   1;
@@ -293,9 +310,9 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
             inv_VL(irhos0+is_local, irhos0+is_local) = 
                                     - rhos(is_local) * inv_rho * inv_a2;
             inv_VL(irhos0+is_local, Ns+2           ) =   
-                                      half * rhos(is_local) * inv_rho * inv_a2;
+                               half * rhos(is_local) * inv_rho * inv_a2;
             inv_VL(irhos0+is_local, Ns+3           ) =   
-                                      half * rhos(is_local) * inv_rho * inv_a2;
+                               half * rhos(is_local) * inv_rho * inv_a2;
         }
 
         // Last 4 rows
@@ -328,40 +345,25 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     }
 
     MatrixXXr BG(MatrixXXr::Zero(state_count, state_count));  // Medida's B^G_1
-//     if (inflow) {
-//         BG(1, 1) = v;
-//         BG(3, 1) = half * (a - u);
-//         BG(2, 2) = v;
-//         BG(1, 3) = half * (a + u);
-//         BG(3, 3) = v;
-//         BG(1, 4) = half * (a - u);
-//     } else {
-//         BG(4, 1) = u;
-//         BG(4, 4) = v;
-//     }
+    // Declare this matrix for transverse wave approximation,
+    // see perfect implementation/documentation, and the original 
+    // work of Giles and Medida
 
     MatrixXXr CG(MatrixXXr::Zero(state_count, state_count));  // Medida's C^G_1
-//     if (inflow) {
-//         CG(1, 1) = w;
-//         CG(2, 2) = w;
-//         CG(3, 2) = half * (a - u);
-//         CG(2, 3) = half * (a + u);
-//         CG(3, 3) = w;
-//         CG(2, 4) = half * (a - u);
-//     } else {
-//         CG(4, 2) = u;
-//         CG(4, 4) = w;
-//     }
+    // Declare this matrix for transverse wave approximation,
+    // see perfect implementation/documentation, and the original 
+    // work of Giles and Medida
 
     // Prepare all necessary real-valued products of the above matrices
     const MatrixXXr VL_S_RY           = VL * S * RY;
+    // FIXME: Uncomment if BG, CG are declared
 //     const Matrix5r BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
 //     const Matrix5r CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
     const MatrixXXr ImPG_VL_S_RY      = (MatrixXXr::Identity(state_count, state_count) - PG) * VL_S_RY;
     const MatrixXXr inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
-//     const int Ny   = dgrid.global_wave_extent.y();
+    // Ny previously declared 
     const int Nx   = grid.N.x();
     const int dNx  = grid.dN.x();
     const int dkbx = dgrid.local_wave_start.x();
@@ -395,6 +397,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
             // The imaginary unit has already been included within i_stash.
             VectorXc tmp(state_count);
             tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
+            // FIXME: Uncomment if BG, CG are declared
 //             tmp.noalias() += kn
 //                            * BG_VL_S_RY_by_chi.cast<complex_t>()
 //                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
