@@ -306,6 +306,23 @@ dnl ------------------------------------------------
 dnl None
 
 dnl ----------------------------------------------
+dnl Slow growth library requirements
+dnl ----------------------------------------------
+build_slow_growth=false
+PKG_CHECK_MODULES([LARGO],
+    [largo >= 0.0.0], [
+        AC_DEFINE([HAVE_LARGO],1,[Define if Largo is available])
+        build_slow_growth=true
+    ],[
+       : dnl Do nothing as not finding Largo is not an error
+    ])
+AM_CONDITIONAL([BUILD_SLOW_GROWTH], [test x$build_slow_growth != xfalse])
+if test x$build_slow_growth = xfalse; then
+    AC_MSG_NOTICE([Because no slow growth library was detected, some functionality may not be built.])
+fi
+AC_CACHE_SAVE
+
+dnl ----------------------------------------------
 dnl Chemistry library requirements
 dnl ----------------------------------------------
 build_reacting=false
