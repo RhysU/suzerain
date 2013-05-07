@@ -1,6 +1,7 @@
 This section describes the discretization of the conservation laws
 described in \S\ref{sec:gov_eq}.  It draws heavily from the model
-document for the perfect gas case~\cite{?} where appropriate.
+document for the perfect gas case~\cite{Ulerich_SZPerfect} where
+appropriate.
 
 \subsection{Spatial discretization}
 For generality, write the continuous system of interest as
@@ -54,7 +55,7 @@ u^h(x,y,z,t)
 where $k_m = 2\pi{}m/L_x$, $k_n = 2\pi{}n/L_z$, and
 $B_l\!\left(y\right)$ are a B-spline basis for some order and knot
 selection.  For additional details of the B-spline basis,
-see~\cite{?}.
+see~\cite{Ulerich_SZPerfect}.
 
 Within the method of weighted residuals framework, we choose a mixed
 Galerkin/collocation approach (often called a ``pseudospectral'' technique)
@@ -231,7 +232,7 @@ transforms and the requirements of the $\mathscr{L}$ and $\mathscr{N}$
 operators.
 
 A key issue now is how to evaluate the nonlinear term.  In the perfect
-gas case, Ulerich~\cite{?} takes great care to avoid repeated
+gas case, Ulerich~\cite{Ulerich_SZPerfect} takes great care to avoid repeated
 application of the B-spline first derivative operator when evaluating
 second derivatives.  This care is appropriate given the well-known
 fact that repeated application of the first derivative operator leads
@@ -334,7 +335,8 @@ this operation are described in \S\ref{sec:filter}.
 The temporal discretization is the hybrid implicit-explict scheme
 described by Spalart, Moser, and Rogers~\cite{spalart_lowstoragerk}.
 Details of the scheme and it's implementation in Suzerain can be found
-in Ulerich~\cite{?}.  For brevity, these details are not given here.
+in Ulerich~\cite{Ulerich_SZPerfect}.  For brevity, these details are
+not given here.
 
 \subsection{Time step stability criteria}
 \label{sec:stabilitycriteria}

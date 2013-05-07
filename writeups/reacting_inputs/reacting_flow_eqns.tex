@@ -75,9 +75,9 @@ is not guaranteed to satisfy mass conservation.  That is,
 leading to an extra term in the implied conservation of mass
 equation.
 
-To alleviate this problem, Ramshaw~\cite{?} devised the self-consistent
-effective binary diffusion model.  In this model, each flux is
-corrected as follows:
+To alleviate this problem, Ramshaw~\cite{ramshaw90} devised the
+self-consistent effective binary diffusion model.  In this model, each
+flux is corrected as follows:
 %
 \begin{equation*}
 \rho_{\alpha} v_{\alpha, i} = - \rho \mcal{D}_{\alpha} \pp{c_{\alpha}}{x_i} + c_{\alpha} \sum_{\beta = 1}^{N_s} \rho \mcal{D}_{\beta} \pp{c_{\beta}}{x_i}.
@@ -92,8 +92,8 @@ appear due to chemical reactions.  At a given point in space and time,
 these sources depend only on the state at that point in space and
 time.  These terms will be evaluated from reaction mechanisms and
 reaction rate models implemented in third-party software.
-Specifically, Suzerain utilizes the Antioch library~\cite{?}.  For
-further discussion of these models, see~\cite{?}.
+Specifically, Suzerain utilizes the Antioch library~\cite{antioch}.  For
+further discussion of these models, see~\cite{antioch}.
 
 \subsubsection{Viscous Stress}
 The viscous stress is given by
@@ -105,10 +105,10 @@ The viscous stress is given by
 where $\mu$ is the mixture viscosity. While the velocity derivatives
 can easily be computed from the state derivatives, the mixture
 viscosity is more complex.  Here, each species viscosity is modeled
-with a Blottner curve fit~\cite{?} and the mixture viscosity is
+with a Blottner curve fit~\cite{blottner} and the mixture viscosity is
 computed from these species viscosities using Wilke's mixing
-rule~\cite{?}.  As with the chemical reactions, the viscosity is
-computed by Antioch~\cite{?}.
+rule~\cite{wilke}.  As with the chemical reactions, the viscosity is
+computed by Antioch~\cite{antioch}.
 
 \subsubsection{Heat Flux}
 The heat flux is given by
@@ -120,8 +120,8 @@ q_j = - \kappa \pp{T}{x_j},
 where $\kappa$ is the mixture thermal conductivity.  Species thermal
 conductivies are evaluated using the Eucken model~\cite{?} and the
 mixture thermal conductivity is computed from Wilke's mixing
-rule~\cite{?}.  Like the mixture viscosity, these capabilities are
-provided by Antioch~\cite{?}.
+rule~\cite{wilke}.  Like the mixture viscosity, these capabilities are
+provided by Antioch~\cite{antioch}.
 
 The temperature and temperature gradient are not easy to compute from
 derivatives of state because an explicit functional form for the
