@@ -718,37 +718,73 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // y-momentum
         {
+            // diagonal
             Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
             const VectorXr& D(common.ref_nu());
             MatrixXXc tmp(Ny, Nplane);
-            tmp = (cmods.alpha + 4.0/3.0) * D.asDiagonal()*F;
+            
+            const real_t oneplam = (cmods.alpha + 4.0/3.0);
+
+            tmp = oneplam * D.asDiagonal()*F;
+            
+            // density
+            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            const VectorXr& uy(common.ref_uy());
+            const VectorXr& Drho(D.array()*uy.array()); // cwise
+
+            tmp -= oneplam * Drho.asDiagonal()*Frho;
+
+            // NB: Overwrites
             F = tmp;
         }
 
         // z-momentum
         {
+            // diagonal;
             Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
             const VectorXr& D(common.ref_nu());
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
+
+            // density
+            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            const VectorXr& uz(common.ref_uz());
+            const VectorXr& Drho(D.array()*uz.array()); // cwise
+
+            tmp -= Drho.asDiagonal()*Frho;
+
+            // NB: Overwrites
             F = tmp;
         }
 
-        // mass
-        {
-            Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            F.setZero();
-        }
 
         // species
         {
             for (unsigned int s=1; s<Ns; ++s) {
+                // diagonal
                 Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
                 const VectorXr& D(common.ref_Ds());
                 MatrixXXc tmp(Ny, Nplane);
                 tmp = D.asDiagonal()*F;
+
+                // density
+                Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+                const VectorXr& cs(common.ref_cs(s));
+                const VectorXr& Drho(D.array()*cs.array()); // cwise
+                
+                tmp -= Drho.asDiagonal()*Frho;
+
+                // NB: Overwrites
                 F = tmp;
             }
+        }
+
+        // mass 
+        // NB: Mass must go last because everyone else needs
+        // fsrcw[ndx::rho] before it gets zeroed here
+        {
+            Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            F.setZero();
         }
 
         // Done with viscous filter source
