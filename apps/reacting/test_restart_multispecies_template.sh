@@ -6,7 +6,8 @@ source "`dirname $0`/test_setup_multispecies.sh"
 
 # Shorthand for binary under test for desired operator without statistics
 : ${OPER:=} # E.g. '--explicit' or '--implicit' or unset to use default
-reacting="prun ../reacting_advance -v $OPER --statistics_dt=0 --statistics_nt=0"
+reacting="prun ../reacting_advance -v $OPER --filter=viscous \
+          --statistics_dt=0 --statistics_nt=0"
 
 # These datasets are related to implicit forcing and only are meaningful when
 # using --advance_nt=N for N > 1.  They must be ignored for --advance_nt=0.
