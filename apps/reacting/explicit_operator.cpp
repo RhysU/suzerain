@@ -88,7 +88,7 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const std::size_t substep_index) const
 {
 
-#define ARGUMENTS *this, common, fsdef, msoln, cmods, *massluz(), \
+#define ARGUMENTS *this, common, fsdef, sgdef, msoln, cmods, *massluz(), \
                   time, swave, evmaxmag_real, evmaxmag_imag
 
     // Dispatch to an optimized implementation depending on case:

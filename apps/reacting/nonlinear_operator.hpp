@@ -40,6 +40,7 @@
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
+#include <suzerain/support/largo_definition.hpp>
 #include <suzerain/support/logging.hpp>
 
 #include "reacting.hpp"
@@ -86,6 +87,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
             const filter_definition &fsdef,
+            const support::largo_definition &sgdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
             const suzerain::bsplineop_luz& massluz,
