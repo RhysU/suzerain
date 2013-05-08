@@ -322,6 +322,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     VectorXr hs     (Ns); // species enthalpies
     VectorXr om     (Ns); // reaction source terms
     VectorXr cs     (Ns); // species mass fractions
+    VectorXr etots  (Ns); // species internal energies
 
     Matrix3Xr grad_species (3,Ns); // spatial derivatives of species densities
     Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fractions
@@ -396,7 +397,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // An array of summing_accumulator_type holds all running sums.
             // This gives nicer construction and allows looping over results.
-            summing_accumulator_type acc[ref::count];
+            //summing_accumulator_type acc[ref::count];
+            std::vector<summing_accumulator_type> acc(ref::count+2*Ns);
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -450,6 +452,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     e, m, rho, species, cs,
                     T, p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds,
                     gamma, a);
+                cmods.etots_from_T(T, etots);
 
                 real_t H = irho*(e + p);
 
@@ -485,6 +488,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::T    ](T);
                 acc[ref::gamma](gamma);
                 acc[ref::a    ](a);
+
+                // ... species-dependent quantities
+                for (unsigned int s=0; s<Ns; ++s) {
+                    // mass fractions
+                    acc[ref::count+s](cs[s]);
+
+                    // species internal energy
+                    acc[ref::count+Ns+s](etots[s]);
+                }
 
             } // end X // end Z
 
