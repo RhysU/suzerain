@@ -532,6 +532,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_gamma     ()[j] = sum(acc[ref::gamma     ]);
             common.ref_a         ()[j] = sum(acc[ref::a         ]);
 
+            for (unsigned int s=0; s<Ns; ++s) {
+                common.ref_cs(s)[j] = sum(acc[ref::count+s   ]);
+                common.ref_es(s)[j] = sum(acc[ref::count+Ns+s]);
+            }
+
+
         } // end Y
 
         // Zero y(j) not present on this rank to avoid accumulating garbage
