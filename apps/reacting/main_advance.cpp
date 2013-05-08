@@ -141,7 +141,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     } else {
         common_block.filter_treatment = filter::none;
     }
-    
+
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
         return EXIT_FAILURE;
@@ -213,12 +213,12 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "Initializing fully explicit spatial operators");
 
         N.reset(new explicit_nonlinear_operator(
-                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef, 
+                    *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef,
                     *sgdef, msoln));
 
         // Nonreflecting must mutate chdef/isothermal before L.reset, N.reset!
         if (grid->one_sided()) {
-            // FIXME: Plate implementation in progress. 
+            // FIXME: Plate implementation in progress.
             // Need to set reference value for rho (rho_ref)
             // Comment the error line to play with this implementation
             SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
@@ -233,7 +233,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             // Assign some reference values
             const size_t Ns = cmods->Ns();
 
-            // FIXME: Set rho_ref for testing. 
+            // FIXME: Set rho_ref for testing.
             common_block.rho_ref = 0.001;
             common_block.T_ref = isothermal->upper_T;
             common_block.u_ref = isothermal->upper_u;
@@ -255,9 +255,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                                               common_block.R_ref,
                                               common_block.etots_ref);
 
-            common_block.Cv_ref =  common_block.R_ref 
+            common_block.Cv_ref =  common_block.R_ref
                                 / (common_block.gamma_ref - 1);
-            
+
             // FIXME: Remove this info or make it a debug output option
             INFO0(who, "rho_ref   = " << common_block.rho_ref  );
             INFO0(who, "T_ref     = " << common_block.T_ref    );
@@ -265,16 +265,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             INFO0(who, "gamma_ref = " << common_block.gamma_ref);
             INFO0(who, "R_ref     = " << common_block.R_ref    );
             INFO0(who, "E_ref     = " << cmods->e_from_T(common_block.T_ref,
-                                                mass_fractions));
-           
+                                                         mass_fractions));
+
             // Redefine upper values for boundary conditions
             chdef->bulk_rho      = numeric_limits<real_t>::quiet_NaN();
             chdef->bulk_rho_u    = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_T  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_u  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_v  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_w  = numeric_limits<real_t>::quiet_NaN();
-	    // TODO Consider appropriate BC for species in this context
         }
 
         L.reset(new channel_treatment<isothermal_mass_operator>(

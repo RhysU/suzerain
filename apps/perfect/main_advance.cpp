@@ -208,10 +208,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             N = nonreflecting;
             scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
             scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_T  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_u  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_v  = numeric_limits<real_t>::quiet_NaN();
-            isothermal->upper_w  = numeric_limits<real_t>::quiet_NaN();
         }
         constrained->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,

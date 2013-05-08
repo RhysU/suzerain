@@ -54,7 +54,13 @@ class isothermal_mass_operator : public mass_operator
 
 public:
 
-    /** Construct an instance using the given specification. */
+    /**
+     * Construct an instance using the given specification.
+     *
+     * When <tt>grid.two_sided()</tt> conditions may be enforced at the lower
+     * and upper boundaries.  Otherwise, conditions may only be enforced at the
+     * lower boundary.
+     */
     isothermal_mass_operator(
             const isothermal_specification &spec,
             const grid_specification &grid,
@@ -113,7 +119,7 @@ public:
 private:
 
     /** The lower and upper isothermal boundary specification. */
-    const isothermal_specification spec;
+    const isothermal_specification& spec;
 
 };
 

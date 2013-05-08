@@ -78,6 +78,7 @@ class isothermal_enforcer
     const int enforce_upper_w  : 1;
     const int enforce_lower_cs : 1;
     const int enforce_upper_cs : 1;
+
     /**@}*/
 
 public:
@@ -94,15 +95,19 @@ public:
         , lower_E(lower_E)
         , upper_E(upper_E)
         , enforce_lower_e (!(boost::math::isnan)(lower_E     ))
-        , enforce_upper_e (!(boost::math::isnan)(upper_E     ))
+        , enforce_upper_e (!(boost::math::isnan)(upper_E     )
+                           && grid.two_sided())
         , enforce_lower_u (!(boost::math::isnan)(spec.lower_u))
-        , enforce_upper_u (!(boost::math::isnan)(spec.upper_u))
+        , enforce_upper_u (!(boost::math::isnan)(spec.upper_u)
+                           && grid.two_sided())
         , enforce_lower_v (!(boost::math::isnan)(spec.lower_v))
-        , enforce_upper_v (!(boost::math::isnan)(spec.upper_v))
+        , enforce_upper_v (!(boost::math::isnan)(spec.upper_v)
+                           && grid.two_sided())
         , enforce_lower_w (!(boost::math::isnan)(spec.lower_w))
-        , enforce_upper_w (!(boost::math::isnan)(spec.upper_w))
+        , enforce_upper_w (!(boost::math::isnan)(spec.upper_w)
+                           && grid.two_sided())
         , enforce_lower_cs(true)
-        , enforce_upper_cs(true)
+        , enforce_upper_cs(grid.two_sided())
     {}
 
     /**
