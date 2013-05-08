@@ -657,6 +657,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Energy
         {
 
+            // TODO: Add contributions of viscous work and enthalpy
+            // diffusion terms.
+
             // diagonal
             Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
             const VectorXr& D(common.ref_korCv());
@@ -665,20 +668,35 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             tmp = D.asDiagonal()*F;
 
             // x-momentum
-            // TODO: Implement me
-
+            Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
+            const VectorXr& ux(common.ref_ux());
+            const VectorXr  Dmx(D.array()*ux.array());
+            
+            tmp -= Dmx.asDiagonal()*Fmx;
+            
             // y-momentum
-            // TODO: Implement me
+            Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
+            const VectorXr& uy(common.ref_uy());
+            const VectorXr  Dmy(D.array()*uy.array());
+            
+            tmp -= Dmy.asDiagonal()*Fmy;
 
             // z-momentum
-            // TODO: Implement me
+            Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
+            const VectorXr& uz(common.ref_uz());
+            const VectorXr  Dmz(D.array()*uz.array());
+            
+            tmp -= Dmz.asDiagonal()*Fmz;
             
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& e0 (common.ref_es(0));
-            const VectorXr& Drho(D.array()*e0.array()); // cwise
-            // TODO: Add kinetic energy contribution for heat flux
-            // TODO: Add enthalpy diffusion and visc work contribs
+
+            const VectorXr ke (0.5*(ux.array()*ux.array() +
+                                    uy.array()*uy.array() + 
+                                    uz.array()*uz.array()));
+
+            const VectorXr Drho(D.array()*(e0.array()-ke.array())); // cwise
 
             tmp -= Drho.asDiagonal()*Frho;
 
@@ -686,7 +704,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (std::size_t s=0; s<Ns-1; ++s) {
                 Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
                 const VectorXr& es (common.ref_es(s+1));
-                const VectorXr& Drho_s( D.array()*(e0.array()-es.array()) );
+                const VectorXr  Drho_s( D.array()*(e0.array()-es.array()) );
                 
                 tmp += Drho_s.asDiagonal()*Frho_s;
             }
@@ -708,7 +726,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& ux(common.ref_ux());
-            const VectorXr& Drho(D.array()*ux.array()); // cwise
+            const VectorXr  Drho(D.array()*ux.array()); // cwise
 
             tmp -= Drho.asDiagonal()*Frho;
 
@@ -730,7 +748,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& uy(common.ref_uy());
-            const VectorXr& Drho(D.array()*uy.array()); // cwise
+            const VectorXr  Drho(D.array()*uy.array()); // cwise
 
             tmp -= oneplam * Drho.asDiagonal()*Frho;
 
@@ -749,7 +767,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& uz(common.ref_uz());
-            const VectorXr& Drho(D.array()*uz.array()); // cwise
+            const VectorXr  Drho(D.array()*uz.array()); // cwise
 
             tmp -= Drho.asDiagonal()*Frho;
 
@@ -770,7 +788,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // density
                 Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
                 const VectorXr& cs(common.ref_cs(s));
-                const VectorXr& Drho(D.array()*cs.array()); // cwise
+                const VectorXr  Drho(D.array()*cs.array()); // cwise
                 
                 tmp -= Drho.asDiagonal()*Frho;
 
