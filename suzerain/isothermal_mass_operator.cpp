@@ -61,14 +61,16 @@ class isothermal_enforcer
 
     /** Bitmasks used to precompute and cache which conditions to #flags. */
     enum {
-        ENFORCE_LOWER_E = 1 << 0,
-        ENFORCE_UPPER_E = 1 << 1,
-        ENFORCE_LOWER_U = 1 << 2,
-        ENFORCE_UPPER_U = 1 << 3,
-        ENFORCE_LOWER_V = 1 << 4,
-        ENFORCE_UPPER_V = 1 << 5,
-        ENFORCE_LOWER_W = 1 << 6,
-        ENFORCE_UPPER_W = 1 << 7
+        ENFORCE_LOWER_E  = 1 << 0,
+        ENFORCE_LOWER_U  = 1 << 1,
+        ENFORCE_LOWER_V  = 1 << 2,
+        ENFORCE_LOWER_W  = 1 << 3,
+        ENFORCE_LOWER_CS = 1 << 4,
+        ENFORCE_UPPER_E  = 1 << 5,
+        ENFORCE_UPPER_U  = 1 << 6,
+        ENFORCE_UPPER_V  = 1 << 7,
+        ENFORCE_UPPER_W  = 1 << 8,
+        ENFORCE_UPPER_CS = 1 << 9,
     };
 
     const std::size_t               Ny;       ///< # of points across y
@@ -76,7 +78,7 @@ class isothermal_enforcer
     const isothermal_specification& spec;     ///< Boundary specification
     const real_t                    lower_E;  ///< Specific total energy
     const real_t                    upper_E;  ///< Specific total energy
-    const int                       flags;    ///< What BCs are enforced?
+    const unsigned int              flags;    ///< Which BCs are enforced?
 
 public:
 
@@ -92,14 +94,16 @@ public:
         , lower_E(lower_E)
         , upper_E(upper_E)
         , flags(
-            ENFORCE_LOWER_E * !(boost::math::isnan)(lower_E     )
-          | ENFORCE_UPPER_E * !(boost::math::isnan)(upper_E     )
-          | ENFORCE_LOWER_U * !(boost::math::isnan)(spec.lower_u)
-          | ENFORCE_UPPER_U * !(boost::math::isnan)(spec.upper_u)
-          | ENFORCE_LOWER_V * !(boost::math::isnan)(spec.lower_v)
-          | ENFORCE_UPPER_V * !(boost::math::isnan)(spec.upper_v)
-          | ENFORCE_LOWER_W * !(boost::math::isnan)(spec.lower_w)
-          | ENFORCE_UPPER_W * !(boost::math::isnan)(spec.upper_w)
+            ENFORCE_LOWER_E  * !(boost::math::isnan)(lower_E     )
+          | ENFORCE_LOWER_U  * !(boost::math::isnan)(spec.lower_u)
+          | ENFORCE_LOWER_V  * !(boost::math::isnan)(spec.lower_v)
+          | ENFORCE_LOWER_W  * !(boost::math::isnan)(spec.lower_w)
+          | ENFORCE_LOWER_CS
+          | ENFORCE_UPPER_E  * !(boost::math::isnan)(upper_E     )
+          | ENFORCE_UPPER_U  * !(boost::math::isnan)(spec.upper_u)
+          | ENFORCE_UPPER_V  * !(boost::math::isnan)(spec.upper_v)
+          | ENFORCE_UPPER_W  * !(boost::math::isnan)(spec.upper_w)
+          | ENFORCE_UPPER_CS
           )
     {}
 
@@ -134,13 +138,25 @@ public:
         // Do nothing to the density equation
 
         // Set species partial densities to be density times mixture fraction.
-        // Notice these are always enforced.
-        // FIXME Ticket #2864 permit disabling upper species mass fraction
-        assert(spec.lower_cs.size() == spec.upper_cs.size());
-        const std::size_t num_species = spec.lower_cs.size();
-        for (std::size_t s = 1; s < num_species; ++s) {
-            LOWER(ndx::rho_(s)) = lower_rho * spec.lower_cs[s];
-            UPPER(ndx::rho_(s)) = upper_rho * spec.upper_cs[s];
+        if (flags & (ENFORCE_LOWER_CS | ENFORCE_UPPER_CS)) {
+            assert(spec.lower_cs.size() == spec.upper_cs.size());
+            const std::size_t num_species = spec.lower_cs.size();
+            for (std::size_t s = 1; s < num_species; ++s) {
+                LOWER(ndx::rho_(s)) = lower_rho * spec.lower_cs[s];
+                UPPER(ndx::rho_(s)) = upper_rho * spec.upper_cs[s];
+            }
+        } else if (flags & ENFORCE_LOWER_CS) {
+            const std::size_t num_species = spec.lower_cs.size();
+            for (std::size_t s = 1; s < num_species; ++s) {
+                LOWER(ndx::rho_(s)) = lower_rho * spec.lower_cs[s];
+            }
+        } else if (flags & ENFORCE_UPPER_CS) {
+            const std::size_t num_species = spec.upper_cs.size();
+            for (std::size_t s = 1; s < num_species; ++s) {
+                UPPER(ndx::rho_(s)) = upper_rho * spec.upper_cs[s];
+            }
+        } else {
+            // NOP
         }
 
 #undef LOWER
@@ -164,7 +180,7 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
     // Prepare functor setting pointwise BCs given lower density locations.
     // Applies these to BOTH lower and upper boundaries given only lower one!
     SUZERAIN_ENSURE(state.shape()[1] == (unsigned) grid.N.y());
-    const isothermal_enforcer enforcer(grid,
+    const isothermal_enforcer enforcer(this->grid,
                                        state.strides()[0], // field_stride
                                        this->spec,
                                        this->lower_E(spec.lower_T,
