@@ -45,6 +45,33 @@ namespace suzerain {
 
 namespace support {
 
+std::map<std::string,const largo_formulation*> largo_formulation::by_name;
+
+largo_formulation::largo_formulation(
+        const int v,
+        const char *n,
+        const char *d)
+    : v(v), n(n), d(d)
+{
+    // Register for lookup of instances by name
+    by_name[this->n] = this;
+}
+
+const largo_formulation&
+largo_formulation::lookup(const std::string& name)
+{
+    using namespace std;
+    map<string,const largo_formulation*>::const_iterator i = by_name.find(name);
+    if (i == by_name.end()) {
+        ostringstream oss;
+        oss << "Unknown largo_formulation '" << name << "'";
+        throw invalid_argument(oss.str());
+    } else {
+        return *((*i).second);
+    }
+}
+
+// BEGIN Add known formulations here
 const largo_formulation largo_formulation::disable(
         0, "disable", "No slow growth formulation is in use");
 
@@ -53,9 +80,12 @@ const largo_formulation largo_formulation::temporal(
 
 const largo_formulation largo_formulation::spatial(
         2, "spatial", "Full spatial formulation by Topalian et al.");
+// END Add known formulations here
 
 largo_definition::largo_definition()
+    : formulation(largo_formulation::disable)
 {
+    // NOP
 }
 
 boost::program_options::options_description
@@ -69,13 +99,15 @@ largo_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
+    // TODO
     options_description retval("Largo parameters");
-
 
     auto_ptr<typed_value<string> > p;
 
     return retval;
 }
+
+static const char location[] = "largo";
 
 void
 largo_definition::save(
@@ -83,9 +115,21 @@ largo_definition::save(
 {
     DEBUG0("Storing largo_definition parameters");
 
-    // Only root writes data
+    if (!formulation.enabled()) { return; }  // Shortcircuit on no formulation
+
+    // Write out the "container" holding all other settings
+    const int one = 1;
     int procid;
     esio_handle_comm_rank(h, &procid);
+    esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
+    esio_line_write(h, location, &one, 0,
+            "Is a largo-based slow growth formulation in use?");
+
+    // Write out the formulation name
+    esio_string_set(h, location, "formulation", formulation.name().c_str());
+
+    // TODO Write out any formulation details as attributes on location
+
 }
 
 void
@@ -93,11 +137,29 @@ largo_definition::load(
         const esio_handle h,
         const bool verbose)
 {
+    // Only proceed if a largo definition is active in the restart
+    int in_use = 0;
+    esio_line_establish(h, 1, 0, 1); // All ranks load any data
+    if (ESIO_NOTFOUND != esio_line_size(h, location, NULL)) {
+        esio_line_read(h, location, &in_use, 0);
+    }
+    if (!in_use) {
+        this->formulation = largo_formulation::disable;
+        return;
+    }
+
     DEBUG0("Loading largo_definition parameters");
 
-    largo_definition t;
+    // Load formulation name and look it up in the static instance map
+    {
+        char *name = esio_string_get(h, location, "formulation");
+        this->formulation = largo_formulation::lookup(name);
+        free(name);
+    }
 
-    // All ranks load
+    // TODO All ranks load any formulation-specific details
+    // TODO Add formulation name, grdelta
+
 }
 
 } // namespace support

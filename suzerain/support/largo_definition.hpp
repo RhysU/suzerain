@@ -42,19 +42,18 @@ namespace suzerain {
 namespace support {
 
 class largo_formulation
-    : boost::noncopyable
 {
 private:
 
-    largo_formulation(const int v, const char *n, const char *d)
-        : v(v), n(n), d(d)
-    {
-        // NOP
-    }
+    int         v;  ///< A quickly comparable value
+    std::string n;  ///< A brief, human-readable name
+    std::string d;  ///< A relatively complete description
 
-    const int         v;  ///< A quickly comparable value
-    const std::string n;  ///< A brief, human-readable name
-    const std::string d;  ///< A relatively complete description
+    /** Maintains map from name to pointer-to-static instances. */
+    static std::map<std::string,const largo_formulation*> by_name;
+
+    /** Create a new (static) instance and register it in \c by_name. */
+    largo_formulation(const int v, const char *n, const char *d);
 
 public:
 
@@ -62,11 +61,9 @@ public:
      * The known slow growth formulation types.
      * @{
      */
-
     static const largo_formulation disable;
     static const largo_formulation temporal;
     static const largo_formulation spatial;
-
     /**@}*/
 
     /** Is a slow growth formulation in use? */
@@ -88,6 +85,12 @@ public:
     /** Is \c this a different formulation from \c that? */
     bool operator!=(const largo_formulation& that) const
     { return this->v != that.v; }
+
+    /**
+     * Return an instance with the given formulation name.
+     * @throws std::invalid_argument on unknown name.
+     */
+    static const largo_formulation& lookup(const std::string& name);
 
 };
 
@@ -118,6 +121,9 @@ public:
 
     /** @copydoc definition_base::options_description() */
     virtual boost::program_options::options_description options_description();
+
+    /** Which \ref largo_formulation is in use? */
+    largo_formulation formulation;
 
 };
 
