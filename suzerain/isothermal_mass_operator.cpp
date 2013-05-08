@@ -81,12 +81,12 @@ class isothermal_enforcer
 public:
 
     /** Prepare an instance for the given strides and parameters. */
-    isothermal_enforcer(const std::size_t               Ny,
+    isothermal_enforcer(const grid_specification&       grid,
                         const std::ptrdiff_t            incf,
                         const isothermal_specification& spec,
                         const real_t                    lower_E,
                         const real_t                    upper_E)
-        : Ny(Ny)
+        : Ny(grid.N.y())
         , incf(incf)
         , spec(spec)
         , lower_E(lower_E)
@@ -163,7 +163,8 @@ void isothermal_mass_operator::invert_mass_plus_scaled_operator(
 
     // Prepare functor setting pointwise BCs given lower density locations.
     // Applies these to BOTH lower and upper boundaries given only lower one!
-    const isothermal_enforcer enforcer(state.shape  ()[1], // Ny
+    SUZERAIN_ENSURE(state.shape()[1] == (unsigned) grid.N.y());
+    const isothermal_enforcer enforcer(grid,
                                        state.strides()[0], // field_stride
                                        this->spec,
                                        this->lower_E(spec.lower_T,
