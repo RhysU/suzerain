@@ -656,19 +656,61 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // Energy
         {
+
+            // diagonal
             Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
             const VectorXr& D(common.ref_korCv());
+
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
+
+            // // x-momentum
+            // // TODO: Implement me
+
+            // // y-momentum
+            // // TODO: Implement me
+
+            // // z-momentum
+            // // TODO: Implement me
+            
+            // // density
+            // Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            // const VectorXr& Drho( D.array()*common.ref_es(0).array()); // cwise
+            // // TODO: Add kinetic energy contribution for heat flux
+            // // TODO: Add enthalpy diffusion and visc work contribs
+
+            // tmp -= Drho.asDiagonal()*Frho;
+
+            // // species
+            // for (std::size_t s=0; s<Ns-1; ++s) {
+            //     Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
+            //     const VectorXr& 
+            //         Drho_s( D.array()*(common.ref_es(0).array()-common.ref_es(s+1).array()) );
+                
+            //     tmp += Drho_s.asDiagonal()*Frho_s;
+            // }
+
+            // NB: Overwrites (D2 - D1*(D0\D1))*rhoE.  Okay b/c not
+            // required below here.
             F = tmp;
         }
 
         // x-momentum
         {
+            // diagonal
             Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
             const VectorXr& D(common.ref_nu());
+
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
+
+            // // density
+            // Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            // const VectorXr& Drho( D.array()*common.ref_ux().array()); // cwise
+
+            // tmp -= Drho.asDiagonal()*Frho;
+
+            // NB: Overwrites
             F = tmp;
         }
 
@@ -693,7 +735,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // mass
         {
             Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            F *= 0;
+            F.setZero();
         }
 
         // species
