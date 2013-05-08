@@ -135,7 +135,7 @@ public:
 
         // Set species partial densities to be density times mixture fraction.
         // Notice these are always enforced.
-	// FIXME Ticket #2864 permit disabling upper species mass fraction
+        // FIXME Ticket #2864 permit disabling upper species mass fraction
         assert(spec.lower_cs.size() == spec.upper_cs.size());
         const std::size_t num_species = spec.lower_cs.size();
         for (std::size_t s = 1; s < num_species; ++s) {
