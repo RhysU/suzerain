@@ -664,31 +664,32 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
 
-            // // x-momentum
-            // // TODO: Implement me
+            // x-momentum
+            // TODO: Implement me
 
-            // // y-momentum
-            // // TODO: Implement me
+            // y-momentum
+            // TODO: Implement me
 
-            // // z-momentum
-            // // TODO: Implement me
+            // z-momentum
+            // TODO: Implement me
             
-            // // density
-            // Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            // const VectorXr& Drho( D.array()*common.ref_es(0).array()); // cwise
-            // // TODO: Add kinetic energy contribution for heat flux
-            // // TODO: Add enthalpy diffusion and visc work contribs
+            // density
+            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            const VectorXr& e0 (common.ref_es(0));
+            const VectorXr& Drho(D.array()*e0.array()); // cwise
+            // TODO: Add kinetic energy contribution for heat flux
+            // TODO: Add enthalpy diffusion and visc work contribs
 
-            // tmp -= Drho.asDiagonal()*Frho;
+            tmp -= Drho.asDiagonal()*Frho;
 
-            // // species
-            // for (std::size_t s=0; s<Ns-1; ++s) {
-            //     Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
-            //     const VectorXr& 
-            //         Drho_s( D.array()*(common.ref_es(0).array()-common.ref_es(s+1).array()) );
+            // species
+            for (std::size_t s=0; s<Ns-1; ++s) {
+                Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
+                const VectorXr& es (common.ref_es(s+1));
+                const VectorXr& Drho_s( D.array()*(e0.array()-es.array()) );
                 
-            //     tmp += Drho_s.asDiagonal()*Frho_s;
-            // }
+                tmp += Drho_s.asDiagonal()*Frho_s;
+            }
 
             // NB: Overwrites (D2 - D1*(D0\D1))*rhoE.  Okay b/c not
             // required below here.
@@ -704,11 +705,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
 
-            // // density
-            // Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            // const VectorXr& Drho( D.array()*common.ref_ux().array()); // cwise
+            // density
+            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            const VectorXr& ux(common.ref_ux());
+            const VectorXr& Drho(D.array()*ux.array()); // cwise
 
-            // tmp -= Drho.asDiagonal()*Frho;
+            tmp -= Drho.asDiagonal()*Frho;
 
             // NB: Overwrites
             F = tmp;
