@@ -45,10 +45,18 @@ namespace suzerain {
 
 namespace support {
 
+const largo_formulation largo_formulation::disable(
+        0, "disable", "No slow growth formulation is in use");
+
+const largo_formulation largo_formulation::temporal(
+        1, "temporal", "Original temporal formulation by Topalian et al.");
+
+const largo_formulation largo_formulation::spatial(
+        2, "spatial", "Full spatial formulation by Topalian et al.");
+
 largo_definition::largo_definition()
 {
 }
-
 
 boost::program_options::options_description
 largo_definition::options_description()
@@ -90,7 +98,6 @@ largo_definition::load(
     largo_definition t;
 
     // All ranks load
-
 }
 
 } // namespace support

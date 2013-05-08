@@ -41,7 +41,55 @@ namespace suzerain {
 
 namespace support {
 
-// FIXME: Declare other constructors per largo_specification.
+class largo_formulation
+    : boost::noncopyable
+{
+private:
+
+    largo_formulation(const int v, const char *n, const char *d)
+        : v(v), n(n), d(d)
+    {
+        // NOP
+    }
+
+    const int         v;  ///< A quickly comparable value
+    const std::string n;  ///< A brief, human-readable name
+    const std::string d;  ///< A relatively complete description
+
+public:
+
+    /**
+     * The known slow growth formulation types.
+     * @{
+     */
+
+    static const largo_formulation disable;
+    static const largo_formulation temporal;
+    static const largo_formulation spatial;
+
+    /**@}*/
+
+    /** Is a slow growth formulation in use? */
+    bool enabled() const
+    { return v != 0; }
+
+    /** What is the name of the given formulation? */
+    const std::string& name() const
+    { return n; }
+
+    /** What is the description of the given formulation? */
+    const std::string& description() const
+    { return d; }
+
+    /** Is \c this the same formulation as \c that? */
+    bool operator==(const largo_formulation& that) const
+    { return this->v == that.v; }
+
+    /** Is \c this a different formulation from \c that? */
+    bool operator!=(const largo_formulation& that) const
+    { return this->v != that.v; }
+
+};
 
 /**
  * Holds parameters defining largo boundary cases.
@@ -58,7 +106,6 @@ public:
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
     largo_definition();
-
 
     /** @copydoc savable::save */
     virtual void save(
