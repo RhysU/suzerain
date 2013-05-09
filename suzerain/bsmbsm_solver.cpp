@@ -162,9 +162,27 @@ bsmbsm_solver_zgbsv::solve_hook(
         const int nrhs)
 {
     assert(apprx_ == false);
-    return suzerain_lapackext_zgbsv(&fact_, trans, N, KL, KU, nrhs,
-                                    LU.data(), LU.colStride(), ipiv.data(),
-                                    PB.data(), PB.colStride());
+    // return suzerain_lapackext_zgbsv(&fact_, trans, N, KL, KU, nrhs,
+    //                                 LU.data(), LU.colStride(), ipiv.data(),
+    //                                 PB.data(), PB.colStride());
+
+    // Logic below should be exactly equivalent to above commented out
+    // call to suzerain_lapackext_zgbsv.  Inlined here to enable
+    // separate timing of factorize and backsub steps.
+    int info = 0;
+    if (toupper(fact_) == 'N') {
+        SUZERAIN_TIMER_SCOPED("bsmbsm_solver_zgbsv::suzerain_lapack_zgbtrf");
+        info = suzerain_lapack_zgbtrf(N, N, KL, KU, 
+                                      LU.data(), LU.colStride(), ipiv.data());
+        fact_ = 'F';
+    }
+    if (!info) {
+        SUZERAIN_TIMER_SCOPED("bsmbsm_solver_zgbsv::suzerain_lapack_zgbtrs");
+        info = suzerain_lapack_zgbtrs(trans, N, KL, KU, nrhs, 
+                                      LU.data(), LU.colStride(), ipiv.data(), 
+                                      PB.data(), PB.colStride());
+    }
+    return info;
 }
 
 bsmbsm_solver_zgbsvx::bsmbsm_solver_zgbsvx(
