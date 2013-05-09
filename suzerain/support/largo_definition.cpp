@@ -99,6 +99,7 @@ const largo_formulation largo_formulation::spatial(
 
 largo_definition::largo_definition()
     : formulation(largo_formulation::disable)
+    , grdelta    (std::numeric_limits<real_t>::quiet_NaN())
 {
     // NOP
 }

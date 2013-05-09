@@ -128,6 +128,9 @@ public:
     /** Which \ref largo_formulation is in use? */
     largo_formulation formulation;
 
+    /** Growth rate of reference thickness \f$\Delta\f$ */
+    real_t grdelta;
+
 };
 
 } // namespace support
