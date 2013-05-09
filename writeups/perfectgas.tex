@@ -5596,6 +5596,7 @@ dimensional terms as a nondimensional value multiplied by a reference value
 allows determining any appropriate multiplicative factors.
 
 \section{Sampling logistics}
+\label{sec:sampling}
 
 Statistical quantities are obtained by sampling from a well-resolved,
 stationary simulation.  Mean quantity samples may be computed on-the-fly.
@@ -5834,6 +5835,32 @@ Continuing the ordered sequence of computations:
    - \tilde{\nu} \bar{\rho}^{-1} \overline{\rho\nabla{}T}
 \end{align}
 }
+
+\section{Estimating uncertainty in sampled quantities}
+
+Assuming the improbable triumvirate of an absence of coding/usage errors, a
+fully-converged grid resolution, and a statistically-stationary simulation in
+which ergodicity holds, one wishes to estimate the uncertainty in our computed
+statistics.  For example, in a given scenario, we assume some true mean density
+$\check{\rho}$ exists and that we may approximate it arbitrarily closely by
+repeatedly sampling a perfect simulation which culminates in the estimate
+$\bar{\rho}$.   In the limit of infinite compute time, we presume
+$\bar{\rho}\to\check{\rho}$.
+
+Of course, as resources are limited, the sampling producing $\bar{\rho}$ must
+occur over a finite time horizon and therefore our estimate $\bar{\rho}$ has an
+associated uncertainty.  Assume, for the purposes of this section, that we can
+perfectly estimate the uncertainty in Reynolds-averaged quantities like
+$\bar{\rho}$.  Many quantities derived from $\bar{\rho}$, for instance
+$\tilde{u}$, and their uncertainties are also of interest and require
+estimation.  A sm\"{o}rg\r{a}sbord of such quantities, all of engineering
+interest, are cataloged in section~\ref{sec:nondimfans}.
+
+This section assumes both robust mean and uncertainty-in-the-mean estimates can
+be obtained for Reynolds-averaged quantities.  This section describes how those
+estimates are combined and their corresponding uncertainties propagated into
+derived quantities.  Much of this material is reproduced from
+\citet{Ku1966Notes}.
 
 \section{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}
