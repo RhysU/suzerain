@@ -92,6 +92,9 @@ public:
      */
     static const largo_formulation& lookup(const std::string& name);
 
+    /** Return the set of known formulation names. */
+    static std::set<std::string> names();
+
 };
 
 /**

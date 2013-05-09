@@ -71,6 +71,21 @@ largo_formulation::lookup(const std::string& name)
     }
 }
 
+// This is ugly and wasteful.
+std::set<std::string>
+largo_formulation::names()
+{
+    using namespace std;
+    set<string> retval;
+    map<string,const largo_formulation*>::const_iterator i   = by_name.begin();
+    map<string,const largo_formulation*>::const_iterator end = by_name.end();
+    while (i != end) {
+        retval.insert((*i).first);
+        ++i;
+    }
+    return retval;
+}
+
 // BEGIN Add known formulations here
 const largo_formulation largo_formulation::disable(
         0, "disable", "No slow growth formulation is in use");
@@ -99,10 +114,26 @@ largo_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
-    // TODO
-    options_description retval("Largo parameters");
+    // Build list of known formulations into help message
+    std::set<string> names = largo_formulation::names();
+    std::ostringstream largo_formulation_help;
+    largo_formulation_help
+        << "Which, if any, slow growth forcing should be added during time advance?"
+        << "{ ";
+    copy(names.begin(), names.end(),
+         std::ostream_iterator<string>(largo_formulation_help, " "));
+    largo_formulation_help
+        << "}";
 
-    auto_ptr<typed_value<string> > p;
+    options_description retval("Largo-based slow growth parameters");
+
+    // TODO Add parsing to largo_formulation
+    // TODO Add largo_grdelta
+    retval.add_options()
+    ("largo_formulation",
+     value<string>()->default_value(largo_formulation::disable.name()),
+     largo_formulation_help.str().c_str())
+    ;
 
     return retval;
 }
