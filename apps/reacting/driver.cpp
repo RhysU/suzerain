@@ -191,11 +191,11 @@ driver::load_metadata_hook(
     fsdef->load(esioh);
     isothermal->load(esioh);
     sgdef->load(esioh);
-   
+
     // After cmods->load, have valid species names, so we can update
     // fields to include species
     add_species_fields(cmods->species_names, this->fields);
-    
+
     load(esioh, msoln, *cmods, *grid);
     return;
 }
@@ -206,7 +206,7 @@ driver::save_statistics_hook(
         const driver::time_type t)
 {
     DEBUG0(who, "In driver::save_statistics_hook");
-    
+
     // Should we compute fresh statistics or re-use cached values?
 #pragma warning(push,disable:1572)
     const bool use_cached = controller && (t == mean.t);
