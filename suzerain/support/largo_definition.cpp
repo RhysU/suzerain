@@ -32,11 +32,10 @@
 #include <suzerain/support/largo_definition.hpp>
 
 #include <esio/error.h>
-
-// FIXME: Include only needed headers
-//        Review after basic functionality is implemented
+#include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
@@ -104,6 +103,13 @@ largo_definition::largo_definition()
     // NOP
 }
 
+// Strings used in options_description and populate/override/save/load.
+static const char name_grdelta[]            = "grdelta";
+
+// Descriptions used in options_description and populate/override/save/load.
+static const char desc_grdelta[]            = "Growth rate of reference thickness (Delta)";
+
+
 boost::program_options::options_description
 largo_definition::options_description()
 {
@@ -160,7 +166,16 @@ largo_definition::save(
     // Write out the formulation name
     esio_string_set(h, location, "formulation", formulation.name().c_str());
 
-    // TODO Write out any formulation details as attributes on location
+    // scalars
+    if (formulation == largo_formulation::disable) {
+        // Nothing else to save
+    } else if (formulation == largo_formulation::temporal) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::spatial) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else {
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+    }
 
 }
 
@@ -169,16 +184,17 @@ largo_definition::load(
         const esio_handle h,
         const bool verbose)
 {
+    // Overwrite instance members with a "disable" formulation with all NaNs
+    *this = largo_definition();
+    assert(formulation == largo_formulation::disable);
+
     // Only proceed if a largo definition is active in the restart
     int in_use = 0;
     esio_line_establish(h, 1, 0, 1); // All ranks load any data
     if (ESIO_NOTFOUND != esio_line_size(h, location, NULL)) {
         esio_line_read(h, location, &in_use, 0);
     }
-    if (!in_use) {
-        this->formulation = largo_formulation::disable;
-        return;
-    }
+    if (!in_use) return;
 
     DEBUG0("Loading largo_definition parameters");
 
@@ -189,9 +205,15 @@ largo_definition::load(
         free(name);
     }
 
-    // TODO All ranks load any formulation-specific details
-    // TODO Add formulation name, grdelta
-
+    if (formulation == largo_formulation::disable) {
+        // Nothing else to load
+    } else if (formulation == largo_formulation::temporal) {
+        esio_attribute_read(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::spatial) {
+        esio_attribute_read(h, location, name_grdelta, &grdelta);
+    } else {
+        SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
+    }
 }
 
 } // namespace support
