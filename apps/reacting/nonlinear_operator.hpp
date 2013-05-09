@@ -96,7 +96,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_real,
             const real_t evmaxmag_imag)
 {
-    SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
+    SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
 
     const size_t Ns = cmods.Ns();
     assert(Ns>0);

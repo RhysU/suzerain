@@ -132,7 +132,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t evmaxmag_imag)
 {
     // State enters method as coefficients in X, Y, and Z directions
-    SUZERAIN_TIMER_SCOPED("applyNonlinearOperator");
+    SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
 
     // Shorthand
     typedef contiguous_state<4,complex_t> state_type;
