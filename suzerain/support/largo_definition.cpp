@@ -51,6 +51,11 @@ static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
 
 namespace support {
 
+static void parse_formulation(const std::string& s, largo_formulation *t)
+{
+    *t = largo_formulation::lookup(s);
+}
+
 std::map<std::string,const largo_formulation*> largo_formulation::by_name;
 
 largo_formulation::largo_formulation(
@@ -59,15 +64,16 @@ largo_formulation::largo_formulation(
         const char *d)
     : v(v), n(n), d(d)
 {
-    // Register for lookup of instances by name
-    by_name[this->n] = this;
+    // Register for lookup of instances by whitespace trimmed name
+    by_name[boost::algorithm::trim_copy(std::string(this->n))] = this;
 }
 
 const largo_formulation&
 largo_formulation::lookup(const std::string& name)
 {
     using namespace std;
-    map<string,const largo_formulation*>::const_iterator i = by_name.find(name);
+    using namespace boost::algorithm;
+    map<string,const largo_formulation*>::const_iterator i = by_name.find(trim_copy(name));
     if (i == by_name.end()) {
         ostringstream oss;
         oss << "Unknown largo_formulation '" << name << "'";
@@ -151,7 +157,9 @@ largo_definition::options_description()
     // TODO Add largo_grdelta
     retval.add_options()
     ("largo_formulation",
-     value<string>()->default_value(largo_formulation::disable.name()),
+     value<string>()
+        ->default_value(largo_formulation::disable.name())
+        ->notifier(bind(&parse_formulation, _1, &formulation)),
      largo_formulation_help.str().c_str())
     ;
 

@@ -88,6 +88,7 @@ public:
 
     /**
      * Return an instance with the given formulation name.
+     * Leading and trailing white spaces are ignored.
      * @throws std::invalid_argument on unknown name.
      */
     static const largo_formulation& lookup(const std::string& name);
