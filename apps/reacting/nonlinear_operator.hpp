@@ -659,8 +659,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Energy
         {
 
-            // TODO: Add contributions of viscous work and enthalpy
-            // diffusion terms.
+            // TODO: Add contributions of enthalpy diffusion term.
 
             // diagonal
             Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
@@ -671,22 +670,27 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // x-momentum
             Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
+            const VectorXr& nu(common.ref_nu());
             const VectorXr& ux(common.ref_ux());
-            const VectorXr  Dmx(D.array()*ux.array());
+            const VectorXr  Dmx( D.array()*ux.array() - 
+                                nu.array()*ux.array() );
             
             tmp -= Dmx.asDiagonal()*Fmx;
             
             // y-momentum
             Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
             const VectorXr& uy(common.ref_uy());
-            const VectorXr  Dmy(D.array()*uy.array());
+            const real_t oneplam = (cmods.alpha + 4.0/3.0);
+            const VectorXr  Dmy(         D.array()*uy.array() - 
+                                oneplam*nu.array()*uy.array() );
             
             tmp -= Dmy.asDiagonal()*Fmy;
 
             // z-momentum
             Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
             const VectorXr& uz(common.ref_uz());
-            const VectorXr  Dmz(D.array()*uz.array());
+            const VectorXr  Dmz( D.array()*uz.array() - 
+                                nu.array()*uz.array() );
             
             tmp -= Dmz.asDiagonal()*Fmz;
             
@@ -698,7 +702,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                     uy.array()*uy.array() + 
                                     uz.array()*uz.array()));
 
-            const VectorXr Drho(D.array()*(e0.array()-ke.array())); // cwise
+            const real_t ap13 = (cmods.alpha + 1.0/3.0);
+
+            const VectorXr Drho( D.array()*(e0.array()-ke.array()) +
+                                nu.array()*( 2.0*ke.array() + 
+                                            ap13*uy.array()*uy.array()) );
 
             tmp -= Drho.asDiagonal()*Frho;
 
