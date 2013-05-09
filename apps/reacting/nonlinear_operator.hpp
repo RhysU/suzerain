@@ -677,8 +677,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
             const VectorXr& nu(common.ref_nu());
             const VectorXr& ux(common.ref_ux());
-            const VectorXr  Dmx( D.array()*ux.array() - 
-                                nu.array()*ux.array() );
+            const VectorXr  Dmx( D.array()*ux.array() -  // heat flux
+                                nu.array()*ux.array() ); // visc work
             
             tmp -= Dmx.asDiagonal()*Fmx;
             
@@ -686,16 +686,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
             const VectorXr& uy(common.ref_uy());
             const real_t oneplam = (cmods.alpha + 4.0/3.0);
-            const VectorXr  Dmy(         D.array()*uy.array() - 
-                                oneplam*nu.array()*uy.array() );
+            const VectorXr  Dmy(         D.array()*uy.array() -  // heat flux
+                                oneplam*nu.array()*uy.array() ); // visc work 
             
             tmp -= Dmy.asDiagonal()*Fmy;
 
             // z-momentum
             Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
             const VectorXr& uz(common.ref_uz());
-            const VectorXr  Dmz( D.array()*uz.array() - 
-                                nu.array()*uz.array() );
+            const VectorXr  Dmz( D.array()*uz.array() -  // heat flux
+                                nu.array()*uz.array() ); // visc work
             
             tmp -= Dmz.asDiagonal()*Fmz;
             
@@ -709,9 +709,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             const real_t ap13 = (cmods.alpha + 1.0/3.0);
 
-            const VectorXr Drho( D.array()*(e0.array()-ke.array()) +
-                                nu.array()*( 2.0*ke.array() + 
-                                            ap13*uy.array()*uy.array()) );
+            VectorXr Drho( D.array()*(e0.array()-ke.array()) +  // heat flux
+                          nu.array()*( 2.0*ke.array() +         // visc work
+                                      ap13*uy.array()*uy.array()) );
+
+            // enthalpy diffusion
+            for (std::size_t s=1; s<Ns; ++s) {
+                const VectorXr& h0 (common.ref_hs(0));
+                const VectorXr& hs (common.ref_hs(s));
+                const VectorXr& cs (common.ref_cs(s));
+                const VectorXr& Ds (common.ref_Ds());
+
+                Drho.array() -= cs.array()*Ds.array()*(hs.array() - h0.array());
+            }
 
             tmp -= Drho.asDiagonal()*Frho;
 
@@ -719,7 +729,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (std::size_t s=0; s<Ns-1; ++s) {
                 Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
                 const VectorXr& es (common.ref_es(s+1));
-                const VectorXr  Drho_s( D.array()*(e0.array()-es.array()) );
+                const VectorXr& h0 (common.ref_hs(0  ));
+                const VectorXr& hs (common.ref_hs(s+1));
+                const VectorXr& Ds (common.ref_Ds());
+
+                const VectorXr  Drho_s( // heat flux
+                                        D.array()*(e0.array()-es.array()) +  
+                                        // enthalpy diffusion
+                                        Ds.array()*(h0.array()-hs.array()) );
                 
                 tmp += Drho_s.asDiagonal()*Frho_s;
             }
