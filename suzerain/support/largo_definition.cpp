@@ -42,6 +42,13 @@
 
 namespace suzerain {
 
+static void parse_nonnegative(const std::string& s, real_t *t, const char *n)
+{
+    const real_t v = exprparse<real_t>(s, n);
+    validation::ensure_nonnegative(v, n);
+    *t = v;
+}
+
 namespace support {
 
 std::map<std::string,const largo_formulation*> largo_formulation::by_name;
@@ -121,6 +128,12 @@ largo_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
+    // Complicated add_options() calls done to allow changing the default value
+    // displayed when the default is NaN.  NaN is used as a NOP value by client
+    // code.  Validation routines used below all silently allow NaNs.
+
+    auto_ptr<typed_value<string> > p;
+
     // Build list of known formulations into help message
     std::set<string> names = largo_formulation::names();
     std::ostringstream largo_formulation_help;
@@ -141,6 +154,14 @@ largo_definition::options_description()
      value<string>()->default_value(largo_formulation::disable.name()),
      largo_formulation_help.str().c_str())
     ;
+
+    // grdelta
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &grdelta, "largo_grdelta"));
+    if (!(boost::math::isnan)(grdelta)) {
+        p->default_value(lexical_cast<string>(grdelta));
+    }
+    retval.add_options()("largo_grdelta", p.release(), desc_grdelta);
 
     return retval;
 }
