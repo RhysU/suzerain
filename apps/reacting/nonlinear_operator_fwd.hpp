@@ -253,51 +253,55 @@ public:
     /** Column-major storage housing all mean quantities (one per row). */
     refs_type refs;
 
-    refs_type::RowXpr      ref_ux()               { return refs.row( 0     ); }
-    refs_type::RowXpr      ref_uy()               { return refs.row( 1     ); }
-    refs_type::RowXpr      ref_uz()               { return refs.row( 2     ); }
-    refs_type::RowXpr      ref_uxuy()             { return refs.row( 3     ); }
-    refs_type::RowXpr      ref_uzuy()             { return refs.row( 4     ); }
-    refs_type::RowXpr      ref_p_ru()             { return refs.row( 5     ); }
-    refs_type::RowXpr      ref_p_rw()             { return refs.row( 6     ); }
-    refs_type::RowXpr      ref_p_rE()             { return refs.row( 7     ); }
-    refs_type::RowXpr      ref_vp_ru()            { return refs.row( 8     ); }
-    refs_type::RowXpr      ref_vp_rw()            { return refs.row( 9     ); }
-    refs_type::RowXpr      ref_vp_rE()            { return refs.row(10     ); }
-    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row(11     ); }
-    refs_type::RowXpr      ref_Ce_rho()           { return refs.row(12     ); }
-    refs_type::RowXpr      ref_Ce_rv()            { return refs.row(13     ); }
-    refs_type::RowXpr      ref_nu()               { return refs.row(14     ); }
-    refs_type::RowXpr      ref_korCv()            { return refs.row(15     ); }
-    refs_type::RowXpr      ref_Ds()               { return refs.row(16     ); }
-    refs_type::RowXpr      ref_T()                { return refs.row(17     ); }
-    refs_type::RowXpr      ref_gamma()            { return refs.row(18     ); }
-    refs_type::RowXpr      ref_a()                { return refs.row(19     ); }
-    refs_type::RowXpr      ref_cs(const int s)    { return refs.row(20+s   ); }
-    refs_type::RowXpr      ref_es(const int s)    { return refs.row(20+Ns+s); }
+    refs_type::RowXpr      ref_ux()               { return refs.row( 0       );}
+    refs_type::RowXpr      ref_uy()               { return refs.row( 1       );}
+    refs_type::RowXpr      ref_uz()               { return refs.row( 2       );}
+    refs_type::RowXpr      ref_uxuy()             { return refs.row( 3       );}
+    refs_type::RowXpr      ref_uzuy()             { return refs.row( 4       );}
+    refs_type::RowXpr      ref_p_ru()             { return refs.row( 5       );}
+    refs_type::RowXpr      ref_p_rw()             { return refs.row( 6       );}
+    refs_type::RowXpr      ref_p_rE()             { return refs.row( 7       );}
+    refs_type::RowXpr      ref_vp_ru()            { return refs.row( 8       );}
+    refs_type::RowXpr      ref_vp_rw()            { return refs.row( 9       );}
+    refs_type::RowXpr      ref_vp_rE()            { return refs.row(10       );}
+    refs_type::RowXpr      ref_Cmy_rho()          { return refs.row(11       );}
+    refs_type::RowXpr      ref_Ce_rho()           { return refs.row(12       );}
+    refs_type::RowXpr      ref_Ce_rv()            { return refs.row(13       );}
+    refs_type::RowXpr      ref_nu()               { return refs.row(14       );}
+    refs_type::RowXpr      ref_korCv()            { return refs.row(15       );}
+    refs_type::RowXpr      ref_Ds()               { return refs.row(16       );}
+    refs_type::RowXpr      ref_T()                { return refs.row(17       );}
+    refs_type::RowXpr      ref_gamma()            { return refs.row(18       );}
+    refs_type::RowXpr      ref_a()                { return refs.row(19       );}
+    refs_type::RowXpr      ref_cs(const int s)    { return refs.row(20     +s);}
+    refs_type::RowXpr      ref_es(const int s)    { return refs.row(20+  Ns+s);}
+    refs_type::RowXpr      ref_hs(const int s)    { return refs.row(20+2*Ns+s);}
 
-    refs_type::ConstRowXpr ref_ux()            const {return refs.row( 0     );}
-    refs_type::ConstRowXpr ref_uy()            const {return refs.row( 1     );}
-    refs_type::ConstRowXpr ref_uz()            const {return refs.row( 2     );}
-    refs_type::ConstRowXpr ref_uxuy()          const {return refs.row( 3     );}
-    refs_type::ConstRowXpr ref_uzuy()          const {return refs.row( 4     );}
-    refs_type::ConstRowXpr ref_p_ru()          const {return refs.row( 5     );}
-    refs_type::ConstRowXpr ref_p_rw()          const {return refs.row( 6     );}
-    refs_type::ConstRowXpr ref_p_rE()          const {return refs.row( 7     );}
-    refs_type::ConstRowXpr ref_vp_ru()         const {return refs.row( 8     );}
-    refs_type::ConstRowXpr ref_vp_rw()         const {return refs.row( 9     );}
-    refs_type::ConstRowXpr ref_vp_rE()         const {return refs.row(10     );}
-    refs_type::ConstRowXpr ref_Cmy_rho()       const {return refs.row(11     );}
-    refs_type::ConstRowXpr ref_Ce_rho()        const {return refs.row(12     );}
-    refs_type::ConstRowXpr ref_Ce_rv()         const {return refs.row(13     );}
-    refs_type::ConstRowXpr ref_nu()            const {return refs.row(14     );}
-    refs_type::ConstRowXpr ref_korCv()         const {return refs.row(15     );}
-    refs_type::ConstRowXpr ref_Ds()            const {return refs.row(16     );}
-    refs_type::ConstRowXpr ref_T()             const {return refs.row(17     );}
-    refs_type::ConstRowXpr ref_gamma()         const {return refs.row(18     );}
-    refs_type::ConstRowXpr ref_a()             const {return refs.row(19     );}
-    refs_type::ConstRowXpr ref_cs(const int s) const {return refs.row(20+s   );}
-    refs_type::ConstRowXpr ref_es(const int s) const {return refs.row(20+Ns+s);}
+    refs_type::ConstRowXpr ref_ux()            const {return refs.row( 0       );}
+    refs_type::ConstRowXpr ref_uy()            const {return refs.row( 1       );}
+    refs_type::ConstRowXpr ref_uz()            const {return refs.row( 2       );}
+    refs_type::ConstRowXpr ref_uxuy()          const {return refs.row( 3       );}
+    refs_type::ConstRowXpr ref_uzuy()          const {return refs.row( 4       );}
+    refs_type::ConstRowXpr ref_p_ru()          const {return refs.row( 5       );}
+    refs_type::ConstRowXpr ref_p_rw()          const {return refs.row( 6       );}
+    refs_type::ConstRowXpr ref_p_rE()          const {return refs.row( 7       );}
+    refs_type::ConstRowXpr ref_vp_ru()         const {return refs.row( 8       );}
+    refs_type::ConstRowXpr ref_vp_rw()         const {return refs.row( 9       );}
+    refs_type::ConstRowXpr ref_vp_rE()         const {return refs.row(10       );}
+    refs_type::ConstRowXpr ref_Cmy_rho()       const {return refs.row(11       );}
+    refs_type::ConstRowXpr ref_Ce_rho()        const {return refs.row(12       );}
+    refs_type::ConstRowXpr ref_Ce_rv()         const {return refs.row(13       );}
+    refs_type::ConstRowXpr ref_nu()            const {return refs.row(14       );}
+    refs_type::ConstRowXpr ref_korCv()         const {return refs.row(15       );}
+    refs_type::ConstRowXpr ref_Ds()            const {return refs.row(16       );}
+    refs_type::ConstRowXpr ref_T()             const {return refs.row(17       );}
+    refs_type::ConstRowXpr ref_gamma()         const {return refs.row(18       );}
+    refs_type::ConstRowXpr ref_a()             const {return refs.row(19       );}
+    refs_type::ConstRowXpr ref_cs(const int s) const {return refs.row(20     +s);}
+    refs_type::ConstRowXpr ref_es(const int s) const {return refs.row(20+  Ns+s);}
+    refs_type::ConstRowXpr ref_hs(const int s) const {return refs.row(20+2*Ns+s);}
+
+    std::size_t Nref() { return 20+3*this->Ns; }
 
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
@@ -362,7 +366,7 @@ public:
     {
         means.setZero(Ny, means_type::ColsAtCompileTime);
         //refs.setZero(refs_type::RowsAtCompileTime, Ny);
-        refs.setZero(20+2*this->Ns, Ny);
+        refs.setZero(this->Nref(), Ny);
     }
 
 

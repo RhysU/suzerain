@@ -595,24 +595,34 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
 
 
 real_t
-antioch_constitutive::e_from_T (const real_t  T,
+antioch_constitutive::e_from_T (const real_t T,
                                 const std::vector<real_t> mass_fractions) const
 {
     return this->sm_thermo->e_tot(T, mass_fractions);
 }
 
 
-// FIXME: Remove if not needed when the nonreflecting implementation is finished
 void
-antioch_constitutive::etots_from_T (const real_t    T,
+antioch_constitutive::etots_from_T (const real_t T,
                                     VectorXr& etots) const
 {
-     const size_t Ns = this->Ns();
+    const size_t Ns = this->Ns();
 
     // total specific energy for each species
     // index 0 is the diluter 
     for (unsigned int i=0; i<Ns; ++i){
          etots[i] = this->sm_thermo->e_tot(i, T, T);
+     }
+}
+
+void
+antioch_constitutive::htots_from_T (const real_t T,
+                                    VectorXr& htots) const
+{
+    const size_t Ns = this->Ns();
+
+    for (unsigned int i=0; i<Ns; ++i){
+         htots[i] = this->sm_thermo->h_tot(i, T, T);
      }
 }
  

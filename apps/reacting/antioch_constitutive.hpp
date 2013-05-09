@@ -240,6 +240,16 @@ public:
                        VectorXr&       etots) const;
 
     /**
+     * Given temperature compute specific total enthalpy for each 
+     * species.
+     *
+     * @param[in] T       Temparature.
+     * @param[out] etots  Specific total enthalpies
+     */
+    void htots_from_T (const real_t    T,
+                       VectorXr&       htots) const;
+
+    /**
      * Given temperature and species mass fractions compute 
      * required thermodynamic quantities for the nonreflecting 
      * boundary

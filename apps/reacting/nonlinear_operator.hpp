@@ -400,7 +400,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // An array of summing_accumulator_type holds all running sums.
             // This gives nicer construction and allows looping over results.
             //summing_accumulator_type acc[ref::count];
-            std::vector<summing_accumulator_type> acc(ref::count+2*Ns);
+            std::vector<summing_accumulator_type> acc(common.Nref());
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -455,6 +455,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     T, p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds,
                     gamma, a);
                 cmods.etots_from_T(T, etots);
+                cmods.htots_from_T(T, hs);
 
                 real_t H = irho*(e + p);
 
@@ -498,6 +499,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                     // species internal energy
                     acc[ref::count+Ns+s](etots[s]);
+
+                    // species enthalpies
+                    acc[ref::count+2*Ns+s](hs[s]);
                 }
 
             } // end X // end Z
@@ -535,8 +539,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_a         ()[j] = sum(acc[ref::a         ]);
 
             for (unsigned int s=0; s<Ns; ++s) {
-                common.ref_cs(s)[j] = sum(acc[ref::count+s   ]);
-                common.ref_es(s)[j] = sum(acc[ref::count+Ns+s]);
+                common.ref_cs(s)[j] = sum(acc[ref::count     +s]);
+                common.ref_es(s)[j] = sum(acc[ref::count+  Ns+s]);
+                common.ref_hs(s)[j] = sum(acc[ref::count+2*Ns+s]);
             }
 
 
