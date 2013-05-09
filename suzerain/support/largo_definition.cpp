@@ -134,27 +134,19 @@ largo_definition::options_description()
     using std::auto_ptr;
     using std::string;
 
-    // Complicated add_options() calls done to allow changing the default value
-    // displayed when the default is NaN.  NaN is used as a NOP value by client
-    // code.  Validation routines used below all silently allow NaNs.
+    options_description retval("Largo-based slow growth parameters");
 
-    auto_ptr<typed_value<string> > p;
-
-    // Build list of known formulations into help message
+    // largo_formulation
+    // Build help message so it contains list of known formulations
     std::set<string> names = largo_formulation::names();
     std::ostringstream largo_formulation_help;
     largo_formulation_help
         << "Which, if any, slow growth forcing should be added during time advance?"
-        << "{ ";
+        << " { ";
     copy(names.begin(), names.end(),
          std::ostream_iterator<string>(largo_formulation_help, " "));
     largo_formulation_help
         << "}";
-
-    options_description retval("Largo-based slow growth parameters");
-
-    // TODO Add parsing to largo_formulation
-    // TODO Add largo_grdelta
     retval.add_options()
     ("largo_formulation",
      value<string>()
@@ -162,6 +154,11 @@ largo_definition::options_description()
         ->notifier(bind(&parse_formulation, _1, &formulation)),
      largo_formulation_help.str().c_str())
     ;
+
+    // Complicated add_options() calls done to allow changing the default value
+    // displayed when the default is NaN.  NaN is used as a NOP value by client
+    // code.  Validation routines used below all silently allow NaNs.
+    auto_ptr<typed_value<string> > p;
 
     // grdelta
     p.reset(value<string>());
