@@ -294,7 +294,7 @@ coupling amongst all equations, the time step advance is
 \begin{align}
   \left(M - \Delta{}t\beta_{i}L\right)
   \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i+1}
-  &=
+&=
   \left(M + \Delta{}t\alpha_{i}L\right)
   \begin{bmatrix} e \\ m_x \\ m_y \\ m_z \\ \rho \end{bmatrix}^{i}
   + \Delta{}t\gamma_{i}\chi{}N\left(
@@ -307,14 +307,21 @@ coupling amongst all equations, the time step advance is
   \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
   + \phi_{m_x}
   \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
-  .
+  + \phi_{e}
+  \begin{bmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
 \end{align}
+where an additional bulk total energy constraint enforced through multiplier
+$\phi_{e}$ has been introduced.  Constraining total energy can be thought of as
+adding an automatically controlled heating term $q_b$ to the flow.  It can be
+useful, e.g., to manually move past slow thermal transients prior to
+stationarity.
 
-Let $\Gamma_\rho$ and $\Gamma_{m_x}$ be the target values for $\bar{\rho}$ and
-$\overline{\rho{}u}$, respectively.  Denote by $c_\rho$ the coefficient vector
-that, when dotted against the state vector, will compute $\bar{\rho}$.
-Similarly for $c_{m_x}$.  Again, $A = M - \Delta{}t \beta_i L$ and $\vec{n}$ is
-the intermediate right hand side.
+Let $\Gamma_\rho$, $\Gamma_{m_x}$, and $\Gamma_{e}$ be the target values for
+$\bar{\rho}$, $\overline{\rho{}u}$, and $\overline{\rho{}E}$, respectively.
+Denote by $c_\rho$ the coefficient vector that, when dotted against the state
+vector, will compute $\bar{\rho}$.  Similarly for $c_{m_x}$ and $c_e$.  Again,
+$A = M - \Delta{}t \beta_i L$ and $\vec{n}$ is the intermediate right hand
+side.
 
 It follows that
 \begin{align}
@@ -322,28 +329,45 @@ It follows that
     c_\rho \cdot A^{-1} \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
     &
     c_\rho \cdot A^{-1} \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+    &
+    c_\rho \cdot A^{-1} \begin{bmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
     \\
     c_{m_x} \cdot A^{-1} \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
     &
     c_{m_x} \cdot A^{-1} \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+    &
+    c_{m_x} \cdot A^{-1} \begin{bmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+    \\
+    c_{e} \cdot A^{-1} \begin{bmatrix} 0 \\ 0 \\ 0 \\ 0 \\ 1 \end{bmatrix}
+    &
+    c_{e} \cdot A^{-1} \begin{bmatrix} u \\ 1 \\ 0 \\ 0 \\ 0 \end{bmatrix}
+    &
+    c_{e} \cdot A^{-1} \begin{bmatrix} 1 \\ 0 \\ 0 \\ 0 \\ 0 \end{bmatrix}
   \end{bmatrix}
   \begin{bmatrix}
     \phi_\rho
     \\
     \phi_{m_x}
+    \\
+    \phi_{e}
   \end{bmatrix}
 &=
   \begin{bmatrix}
     \Gamma_\rho - c_\rho \cdot{} A^{-1} \vec{n}
     \\
     \Gamma_{m_x} - c_{m_x} \cdot{} A^{-1} \vec{n}
+    \\
+    \Gamma_{e} - c_{e} \cdot{} A^{-1} \vec{n}
   \end{bmatrix}
 .
 \end{align}
-This system determines the constraint coefficients $\phi_\rho$ and
-$\phi_{m_x}$.  To be robust in the case where one or the other forcing is not
-desired or where the two forcing constraints otherwise become degenerate in
-some fashion, a least squares solution to these constraints may be used.
+This system determines the constraint coefficients $\phi_\rho$, $\phi_{m_x}$,
+and $\phi_{e}$.  To be robust in the case where one or the other forcing is not
+desired or where the forcing constraints otherwise become degenerate in some
+fashion, a least squares solution to these constraints may be used.  Least
+squares is also beneficial from an implementation perspective because it
+permits zeroing the, say, third row and column in the matrix to force no
+heating when it is not desired.
 
 % FIXME May change when wall-transpiration employed as adding
 %       multiple integral constraints could impact no-slip
