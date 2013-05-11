@@ -33,8 +33,6 @@
 #include <suzerain/support/populatable.hpp>
 #include <suzerain/support/savable.hpp>
 
-// FIXME Break bulk_rho and bulk_rho_u into channel_definition class
-
 /** @file
  * Provides classes handling problem scenario parameters which are either
  * reference quantities or nondimensional parameters describing a particular
@@ -73,6 +71,7 @@ public:
      * @param Pr         Prandtl number.
      * @param bulk_rho   Bulk density target.
      * @param bulk_rho_u Bulk streamwise momentum target.
+     * @param bulk_rho_E Bulk streamwise total energy target.
      * @param alpha      Ratio of bulk to dynamic viscosity.
      * @param beta       Temperature power law exponent.
      * @param gamma      Ratio of specific heats.
@@ -82,6 +81,7 @@ public:
                         const real_t Pr,
                         const real_t bulk_rho,
                         const real_t bulk_rho_u,
+                        const real_t bulk_rho_E,
                         const real_t alpha,
                         const real_t beta,
                         const real_t gamma);
@@ -130,13 +130,21 @@ public:
 
     /**
      * The bulk density used as a target for integral constraints.
+     * The value \c NaN implies the constraint should not be enforced.
      */
     real_t bulk_rho;
 
     /**
      * The bulk streamwise momentum used as a target for integral constraints.
+     * The value \c NaN implies the constraint should not be enforced.
      */
     real_t bulk_rho_u;
+
+    /**
+     * The bulk total energy used as a target for integral constraints.
+     * The value \c NaN implies the constraint should not be enforced.
+     */
+    real_t bulk_rho_E;
 
     /**
      * The ratio of bulk viscosity to dynamic viscosity according to \f$

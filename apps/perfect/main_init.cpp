@@ -110,14 +110,16 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
             ));
 
     // Establish default scenario parameters
-    scenario.reset(new scenario_definition( 100              // Re
-                                          , real_t(3) / 2    // Ma
-                                          , real_t(7) / 10   // Pr
-                                          , 1                // bulk_rho
-                                          , 1                // bulk_rho_u
-                                          , 0                // alpha
-                                          , real_t(2) / 3    // beta
-                                          , real_t(14) / 10  // gamma
+    scenario.reset(new scenario_definition(
+                  100                                   // Re
+                , real_t(3) / 2                         // Ma
+                , real_t(7) / 10                        // Pr
+                , 1                                     // bulk_rho
+                , 1                                     // bulk_rho_u
+                , numeric_limits<real_t>::quiet_NaN()   // bulk_rho_E, disabled
+                , 0                                     // alpha
+                , real_t(2) / 3                         // beta
+                , real_t(14) / 10                       // gamma
             ));
 
     // Establish default isothermal boundary conditions

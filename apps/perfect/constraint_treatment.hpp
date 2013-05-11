@@ -87,6 +87,9 @@ public:
             bspline& b,
             operator_common_block& common);
 
+    /** Will bulk total energy be constrained? */
+    bool constrain_bulk_rho_E() const;
+
     /** Will bulk streamwise momentum be constrained? */
     bool constrain_bulk_rho_u() const;
 
@@ -141,16 +144,19 @@ protected:
      *
      * \li cdata.col(0) is for the bulk density constraint.
      * \li cdata.col(1) is for the bulk momentum constraint.
+     * \li cdata.col(2) is for the bulk total energy constraint.
      *
      * Mutable member avoids repeated allocation/deallocation.
      */
-    mutable MatrixX2c cdata;
+    mutable MatrixX3c cdata;
 
     /**
      * Least squares constraint solver.
      * Mutable member avoids repeated allocation/deallocation.
      */
-    mutable Eigen::JacobiSVD<Matrix2r,Eigen::NoQRPreconditioner> jacobiSvd;
+    mutable Eigen::JacobiSVD<
+            MatrixXXr, Eigen::FullPivHouseholderQRPreconditioner
+        > jacobiSvd;
 };
 
 } // namespace perfect

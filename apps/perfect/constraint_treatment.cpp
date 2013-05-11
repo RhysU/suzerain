@@ -50,7 +50,7 @@ constraint_treatment::constraint_treatment(
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
-    , jacobiSvd(2, 2, Eigen::ComputeFullU | Eigen::ComputeFullV)
+    , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
     // Precomputed results only necessary on rank with zero-zero modes
     if (!dgrid.has_zero_zero_modes()) return;
@@ -59,6 +59,11 @@ constraint_treatment::constraint_treatment(
     bulkcoeff.resize(b.n());
     b.integration_coefficients(0, bulkcoeff.data());
     bulkcoeff /= grid.L.y();
+}
+
+bool constraint_treatment::constrain_bulk_rho_E() const
+{
+    return !(boost::math::isnan)(scenario.bulk_rho_E);
 }
 
 bool constraint_treatment::constrain_bulk_rho_u() const
@@ -141,6 +146,7 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
                                                        * scenario.Ma
                                                        * common.u();
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
+        cdata.col(2).segment(ndx::e   * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
         const array<size_t,4> sizes = {{
@@ -163,42 +169,59 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
     // Get an Eigen-friendly map of the zero-zero mode coefficients
     Map<VectorXc> mean(state.origin(), state.shape()[0]*Ny);
 
-    // Assemble the matrix problem for simultaneous integral constraints
-    // Notice Matrix2r::operator<< depicts the matrix in row-major fashion
-    Vector2r crhs;
-    crhs <<    scenario.bulk_rho
-             - bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny).real())
-         ,     scenario.bulk_rho_u
-             - bulkcoeff.dot(mean.segment(ndx::mx  * Ny, Ny).real())
-         ;
-    Matrix2r cmat;
+    // Solve the requested, possibly simultaneous constraint problem.  A fancy
+    // decomposition is used for a simple 3x3 solve or to permit one or more
+    // inactive constraints via least squares.  Least squares also adds
+    // robustness if constraints incompatible.
+    //
+    // 1) Assemble the matrix problem for simultaneous integral constraints
+    // Notice Matrix3r::operator<< depicts the matrix in row-major fashion
+    Matrix3r cmat;
     cmat << bulkcoeff.dot(cdata.col(0).segment(ndx::rho * Ny, Ny).real())
          ,  bulkcoeff.dot(cdata.col(1).segment(ndx::rho * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::rho * Ny, Ny).real())
          ,  bulkcoeff.dot(cdata.col(0).segment(ndx::mx  * Ny, Ny).real())
          ,  bulkcoeff.dot(cdata.col(1).segment(ndx::mx  * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::mx  * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(0).segment(ndx::e   * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::e   * Ny, Ny).real())
+         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::e   * Ny, Ny).real())
          ;
-    Vector2r cphi;
-
-    // Solve the requested, possibly simultaneous constraint problem
-    if (constrain_bulk_rho() && constrain_bulk_rho_u()) {
-        jacobiSvd.compute(cmat);              // Fancy decomposition for
-        cphi = jacobiSvd.solve(crhs);         // a robust 2x2 constraint solve
-    } else if (constrain_bulk_rho()  ) {
-        cphi(0) = crhs(0) / cmat(0,0);        // Solve 1x1 system
-        cphi(1) = 0;                          // bulk_rho_u not applied
-    } else if (constrain_bulk_rho_u()) {
-        cphi(0) = 0;                          // bulk_rho not applied
-        cphi(1) = crhs(1) / cmat(1,1);        // Solve 1x1 system
+    // 2) Prepare initial values relative to desired targets when active.
+    // Otherwise, zero the associated row and column in matrix.
+    Vector3r crhs;
+    if (constrain_bulk_rho()) {
+        crhs[0] = scenario.bulk_rho
+                - bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny).real());
     } else {
-        cphi.setZero();                       // Neither constraint applied
+        crhs[0] = 0;
+        cmat.col(0).setZero();
+        cmat.row(0).setZero();
     }
-
-    // Add scaled constraints to the mean state
-    mean += cphi(0)*cdata.col(0) + cphi(1)*cdata.col(1);
+    if (constrain_bulk_rho_u()) {
+        crhs[1] = scenario.bulk_rho_u
+                - bulkcoeff.dot(mean.segment(ndx::mx  * Ny, Ny).real());
+    } else {
+        crhs[1] = 0;
+        cmat.col(1).setZero();
+        cmat.row(1).setZero();
+    }
+    if (constrain_bulk_rho_E()) {
+        crhs[2] = scenario.bulk_rho_E
+                - bulkcoeff.dot(mean.segment(ndx::e   * Ny, Ny).real());
+    } else {
+        crhs[2] = 0;
+        cmat.col(2).setZero();
+        cmat.row(2).setZero();
+    }
+    // 3) Prepare matrix decomposition and solve using least squares
+    Vector3r cphi = jacobiSvd.compute(cmat).solve(crhs);
+    // 4) Add correctly scaled results to the mean state to satisfy constraints
+    mean += cphi(0)*cdata.col(0) + cphi(1)*cdata.col(1) + cphi(2)*cdata.col(2);
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
-    // the Reynolds averaged equations using method_interface::iota similarly to
+    // the Reynolds averaged equations using method_interface::iota as in
     //
     //    mean += iota * ((sample / delta_t) - mean).
     //
@@ -216,7 +239,10 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
                                 cphi(1) * common.u()
                               - common.f_dot_u()
                             );
-    common.qb()          += iota * (/* zero */ - common.qb());
+    common.qb()          += iota * (
+                                ArrayX1r::Constant(Ny, cphi(2))
+                              - common.qb()
+                            );
     common.CrhoE()       += iota * (/* zero */ - common.CrhoE());
     common.Crhou()       += iota * (/* zero */ - common.Crhou());
     common.Crhov()       += iota * (/* zero */ - common.Crhov());
