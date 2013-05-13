@@ -28,52 +28,87 @@
 #include "constraint_treatment.hpp"
 
 #include <suzerain/bspline.hpp>
+#include <suzerain/error.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
 
 #include "common_block.hpp"
-#include "scenario_definition.hpp"
 
 namespace suzerain {
 
 namespace perfect {
 
 constraint_treatment::constraint_treatment(
-            const scenario_definition& scenario,
+            real_t& Ma,
             const grid_specification& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b,
             operator_common_block& common)
     : operator_base(grid, dgrid, cop, b)
-    , scenario(scenario)
+    , Ma(Ma)
     , common(common)
+    , rho(constraint())
+    , mx(constraint())
+    , e(constraint())
+    , coeff_bulk(b.n())
+    , coeff_rho(b.n())
+    , coeff_mx(b.n())
+    , coeff_e(b.n())
     , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
-    // Precomputed results only necessary on rank with zero-zero modes
-    if (!dgrid.has_zero_zero_modes()) return;
-
     // Precompute operator for finding bulk quantities from coefficients
-    bulkcoeff.resize(b.n());
-    b.integration_coefficients(0, bulkcoeff.data());
-    bulkcoeff /= grid.L.y();
+    b.integration_coefficients(0, coeff_bulk.data());
+    coeff_bulk /= grid.L.y();
 }
 
-bool constraint_treatment::constrain_bulk_rho_E() const
+constraint_treatment&
+constraint_treatment::specify(const constraint& src,
+                                    constraint& dst,
+                                    VectorXr&   dstcoeff)
 {
-    return !(boost::math::isnan)(scenario.bulk_rho_E);
+    dst = src;
+
+    switch (src.what) {
+    case constraint::nothing:
+        dstcoeff.resize(0);
+        break;
+    case constraint::value_lower:
+        dstcoeff.setZero(coeff_bulk.rows());
+        dstcoeff.head<1>()[0] = 1;
+        break;
+    case constraint::value_upper:
+        dstcoeff.setZero(coeff_bulk.rows());
+        dstcoeff.tail<1>()[0] = 1;
+        break;
+    case constraint::value_bulk:
+        dstcoeff = coeff_bulk;
+        break;
+    default:
+        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(*this);
+    }
+
+    return *this;
 }
 
-bool constraint_treatment::constrain_bulk_rho_u() const
+constraint_treatment&
+constraint_treatment::specify_rho(const constraint& src)
 {
-    return !(boost::math::isnan)(scenario.bulk_rho_u);
+    return this->specify(src, rho, coeff_rho);
 }
 
-bool constraint_treatment::constrain_bulk_rho() const
+constraint_treatment&
+constraint_treatment::specify_rho_u(const constraint& src)
 {
-    return !(boost::math::isnan)(scenario.bulk_rho);
+    return this->specify(src, mx, coeff_mx);
+}
+
+constraint_treatment&
+constraint_treatment::specify_rho_E(const constraint& src)
+{
+    return this->specify(src, e, coeff_e);
 }
 
 void constraint_treatment::apply_mass_plus_scaled_operator(
@@ -85,7 +120,8 @@ void constraint_treatment::apply_mass_plus_scaled_operator(
             phi, state, substep_index);
 }
 
-void constraint_treatment::accumulate_mass_plus_scaled_operator(
+void
+constraint_treatment::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
         const multi_array::ref<complex_t,4> &input,
         const complex_t &beta,
@@ -96,7 +132,8 @@ void constraint_treatment::accumulate_mass_plus_scaled_operator(
             phi, input, beta, output, substep_index);
 }
 
-void constraint_treatment::invert_mass_plus_scaled_operator(
+void
+constraint_treatment::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4>& state,
         const timestepper::lowstorage::method_interface<complex_t>& method,
@@ -135,16 +172,14 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
     // On zero-zero rank, re-use ic0 to wrap cdata for BaseClass invocation
     if (dgrid.has_zero_zero_modes()) {
 
-        // Prepare data for bulk density and bulk momentum constraints
+        // Prepare RHS data for density, momentum, and total energy constraints
         //
-        // Notice scaling by Mach^2 to cause bulk_rho_u-related forcing
+        // Notice scaling by Mach^2 to cause mx-related forcing
         //     work to have nondimensional energy "units" because we will
         //     directly add the result to the total energy equation.
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
         cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = scenario.Ma
-                                                       * scenario.Ma
-                                                       * common.u();
+        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = Ma * Ma * common.u();
         cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
         cdata.col(2).segment(ndx::e   * Ny, Ny).setOnes();
 
@@ -177,38 +212,38 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
     // 1) Assemble the matrix problem for simultaneous integral constraints
     // Notice Matrix3r::operator<< depicts the matrix in row-major fashion
     Matrix3r cmat;
-    cmat << bulkcoeff.dot(cdata.col(0).segment(ndx::rho * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::rho * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::rho * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(0).segment(ndx::mx  * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::mx  * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::mx  * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(0).segment(ndx::e   * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(1).segment(ndx::e   * Ny, Ny).real())
-         ,  bulkcoeff.dot(cdata.col(2).segment(ndx::e   * Ny, Ny).real())
+    cmat << coeff_rho.dot(cdata.col(0).segment(ndx::rho * Ny, Ny).real())
+         ,  coeff_rho.dot(cdata.col(1).segment(ndx::rho * Ny, Ny).real())
+         ,  coeff_rho.dot(cdata.col(2).segment(ndx::rho * Ny, Ny).real())
+         ,  coeff_mx .dot(cdata.col(0).segment(ndx::mx  * Ny, Ny).real())
+         ,  coeff_mx .dot(cdata.col(1).segment(ndx::mx  * Ny, Ny).real())
+         ,  coeff_mx .dot(cdata.col(2).segment(ndx::mx  * Ny, Ny).real())
+         ,  coeff_e  .dot(cdata.col(0).segment(ndx::e   * Ny, Ny).real())
+         ,  coeff_e  .dot(cdata.col(1).segment(ndx::e   * Ny, Ny).real())
+         ,  coeff_e  .dot(cdata.col(2).segment(ndx::e   * Ny, Ny).real())
          ;
     // 2) Prepare initial values relative to desired targets when active.
     // Otherwise, zero the associated row and column in matrix.
     Vector3r crhs;
-    if (constrain_bulk_rho()) {
-        crhs[0] = scenario.bulk_rho
-                - bulkcoeff.dot(mean.segment(ndx::rho * Ny, Ny).real());
+    if (rho.enabled()) {
+        crhs[0] = rho.target
+                - coeff_rho.dot(mean.segment(ndx::rho * Ny, Ny).real());
     } else {
         crhs[0] = 0;
         cmat.col(0).setZero();
         cmat.row(0).setZero();
     }
-    if (constrain_bulk_rho_u()) {
-        crhs[1] = scenario.bulk_rho_u
-                - bulkcoeff.dot(mean.segment(ndx::mx  * Ny, Ny).real());
+    if (mx.enabled()) {
+        crhs[1] = mx.target
+                - coeff_mx. dot(mean.segment(ndx::mx  * Ny, Ny).real());
     } else {
         crhs[1] = 0;
         cmat.col(1).setZero();
         cmat.row(1).setZero();
     }
-    if (constrain_bulk_rho_E()) {
-        crhs[2] = scenario.bulk_rho_E
-                - bulkcoeff.dot(mean.segment(ndx::e   * Ny, Ny).real());
+    if (e.enabled()) {
+        crhs[2] = e.target
+                - coeff_e.  dot(mean.segment(ndx::e   * Ny, Ny).real());
     } else {
         crhs[2] = 0;
         cmat.col(2).setZero();
@@ -227,7 +262,7 @@ void constraint_treatment::invert_mass_plus_scaled_operator(
     //
     // The delta_t accounts for step sizes already implicitly included in cphi.
     //
-    // Notice bulk_rho_u-related forcing is NOT scaled by Mach^2 when tracked
+    // Notice mx-related forcing is NOT scaled by Mach^2 when tracked
     // because our post-processing routines will account for Mach^2 factor.
     cphi                 /= delta_t; // Henceforth includes 1/delta_t scaling!
     const real_t iota     = method.iota(substep_index);

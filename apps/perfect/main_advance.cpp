@@ -196,7 +196,22 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // and that the same nonlinear_operator is used pervasively.
     common_block.slow_treatment = slowgrowth::none;
     shared_ptr<constraint_treatment> constrained(new constraint_treatment(
-                    *scenario, *grid, *dgrid, *cop, *b, common_block));
+                    scenario->Ma, *grid, *dgrid, *cop, *b, common_block));
+    if        (grid->two_sided()) { // Constraints for channel geometry
+        constrained->specify_rho  (constraint(constraint::value_bulk,
+                                              scenario->bulk_rho  ));
+        constrained->specify_rho_u(constraint(constraint::value_bulk,
+                                              scenario->bulk_rho_u));
+        constrained->specify_rho_E(constraint(constraint::value_bulk,
+                                              scenario->bulk_rho_E));
+    } else if (grid->one_sided()) { // TODO Constraints for flat plate geometry
+        scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+        scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+    } else {
+        FATAL0(who, "Sanity error in constraint selection");
+        return EXIT_FAILURE;
+    }
     L = constrained;
     N.reset(new nonlinear_operator(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
@@ -210,9 +225,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                         *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = N;
             N = nonreflecting;
-            scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
-            scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
-            scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
         }
         constrained->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,
@@ -233,7 +245,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
     }
-
 
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();

@@ -46,7 +46,6 @@ namespace perfect {
 
 // Forward declarations
 class operator_common_block;
-class scenario_definition;
 
 /**
  * Encapsulates the ways \ref constraint_treatment can constrain a value.
@@ -57,7 +56,7 @@ public:
 
     /** A particular value can be constrained in what ways? */
     enum what_type {
-          nothing = 0 ///< Enforce nothing
+          nothing = 0 ///< Enforce nothing.  That is, no constraint.
         , value_lower ///< Enforce collocation value at \f$y=0\f$
         , value_upper ///< Enforce collocation value at \f$y=L_y\f$
         , value_bulk  ///< Enforce bulk value across \f$y=\left[0,L_y\right]\f$
@@ -80,7 +79,7 @@ public:
 
     /** Is this constraint enforceable as specified? */
     bool enabled() const
-    { return what != nothing; }
+    { return what != nothing && !(boost::math::isnan)(target); }
 
 };
 
@@ -112,25 +111,22 @@ class constraint_treatment
 public:
 
     /**
-     * Constructor.
-     * After construction, #L should be provided.
+     * Constructor.  After construction, #L must be provided.
+     * One or more of #rho, #rho_u, or #rho_E should be called when
+     * constraints are desired.
+     *
+     * @param Ma Nondimensional Mach number for kinetic energy computations.
+     *           In a dimensional setting, this should be one.  Notice that it
+     *           is a \e reference permitting the value to track other
+     *           settings.  For example, those in a \ref scenario_definition.
      */
     constraint_treatment(
-            const scenario_definition& scenario,
+            real_t& Ma,
             const grid_specification& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
             bspline& b,
             operator_common_block& common);
-
-    /** Will bulk total energy be constrained? */
-    bool constrain_bulk_rho_E() const;
-
-    /** Will bulk streamwise momentum be constrained? */
-    bool constrain_bulk_rho_u() const;
-
-    /** Will bulk density be constrained enforced? */
-    bool constrain_bulk_rho() const;
 
     /** Delegates invocation to #L */
     virtual void apply_mass_plus_scaled_operator(
@@ -164,16 +160,51 @@ public:
                 contiguous_state<4,complex_t>
             > > L;
 
+    /** Specify the desired constraint treatment for density \f$\rho\f$. */
+    constraint_treatment& specify_rho(const constraint& c);
+
+    /** Specify the desired constraint treatment for momentum \f$\rho{}u\f$. */
+    constraint_treatment& specify_rho_u(const constraint& c);
+
+    /** Specify the desired constraint treatment for energy \f$\rho{}E\f$. */
+    constraint_treatment& specify_rho_E(const constraint& c);
+
 protected:
 
-    /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    /** Helper used to implement \c specify_XXX methods */
+    constraint_treatment& specify(const constraint& src,
+                                        constraint& dst,
+                                        VectorXr&   coeff);
+
+    /**
+     * What Mach number should be used to scale kinetic
+     * energy contributions to the total energy equation?
+     */
+    real_t &Ma;
 
     /** Houses data additionally required for some linear operators */
     operator_common_block &common;
 
+    /** In what manner should \f$\rho\f$ be constrained? */
+    constraint rho;
+
+    /** In what manner should \f$\rho{}u\f$ be constrained? */
+    constraint mx;
+
+    /** In what manner should \f$\rho{}E\f$ be constrained? */
+    constraint e;
+
     /** Precomputed integration coefficients */
-    VectorXr bulkcoeff;
+    VectorXr coeff_bulk;
+
+    /** Precomputed integration-like coefficients for \c rho constraint */
+    VectorXr coeff_rho;
+
+    /** Precomputed integration-like coefficients for \c rho_u constraint */
+    VectorXr coeff_mx;
+
+    /** Precomputed integration-like coefficients for \c rho_E constraint */
+    VectorXr coeff_e;
 
     /**
      * Constraint data passed to #L.
