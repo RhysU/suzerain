@@ -177,6 +177,10 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             WARN0(who, "Manufactured solution incompatible with bulk_rho_u = "
                   << scenario->bulk_rho_u);
         }
+        if (!(isnan)(scenario->bulk_rho_E)) {
+            WARN0(who, "Manufactured solution incompatible with bulk_rho_E = "
+                  << scenario->bulk_rho_E);
+        }
     }
 
     // If requested, add noise to the momentum fields at startup (expensive).
@@ -208,6 +212,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             N = nonreflecting;
             scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
             scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+            scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
         }
         constrained->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,

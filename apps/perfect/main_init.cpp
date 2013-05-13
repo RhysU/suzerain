@@ -247,10 +247,11 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
     if (options.variables().count("mms")) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
-        INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
+        INFO0(who, "Disabling bulk rho, rho_u, and rho_E constraints"
                    " due to manufactured solution use");
         scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+        scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
 
         accumulate_manufactured_solution(
                 1, *msoln, 0, *state_nonlinear, *grid, *dgrid, *cop, *b, mms);
