@@ -101,7 +101,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
                                            , 1                    // Nx
                                            , real_t(3) / 2        // DAFx
                                            , 2                    // Ly
-                                           , 32                   // Ny
+                                           , 48                   // Ny
                                            , 8                    // k
                                            , 3                    // htdelta
                                            , 4 * pi<real_t>() / 3 // Lz
