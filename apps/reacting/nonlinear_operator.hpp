@@ -775,14 +775,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             
             const real_t oneplam = (cmods.alpha + 4.0/3.0);
 
-            tmp = oneplam * D.asDiagonal()*F;
+            //tmp = oneplam * D.asDiagonal()*F;
+            tmp = D.asDiagonal()*F;
             
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& uy(common.ref_uy());
             const VectorXr  Drho(D.array()*uy.array()); // cwise
 
-            tmp -= oneplam * Drho.asDiagonal()*Frho;
+            //tmp -= oneplam * Drho.asDiagonal()*Frho;
+            tmp -= Drho.asDiagonal()*Frho;
+
+            tmp *= oneplam;
 
             // NB: Overwrites
             F = tmp;
