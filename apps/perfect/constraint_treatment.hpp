@@ -49,7 +49,43 @@ class operator_common_block;
 class scenario_definition;
 
 /**
- * A wrapper applying integral constraints treatment atop any linear operator.
+ * Encapsulates the ways \ref constraint_treatment can constrain a value.
+ */
+class constraint
+{
+public:
+
+    /** A particular value can be constrained in what ways? */
+    enum what_type {
+          nothing = 0 ///< Enforce nothing
+        , value_lower ///< Enforce collocation value at \f$y=0\f$
+        , value_upper ///< Enforce collocation value at \f$y=L_y\f$
+        , value_bulk  ///< Enforce bulk value across \f$y=\left[0,L_y\right]\f$
+    } what;
+
+    /** What numeric value should be targeted? */
+    real_t target;
+
+    /** Default constructor creates an unenforced constraint. */
+    constraint()
+        : what(nothing)
+        , target(std::numeric_limits<real_t>::quiet_NaN())
+    {}
+
+    /** Construct an instance enforcing \c target in \c what manner. */
+    constraint(const what_type what, const real_t target)
+        : what(what)
+        , target(target)
+    {}
+
+    /** Is this constraint enforceable as specified? */
+    bool enabled() const
+    { return what != nothing; }
+
+};
+
+/**
+ * A wrapper applying integral constraint treatment atop any linear operator.
  * This class began as a way to provide integral constraints for driving a
  * Coleman-like channel.
  *
