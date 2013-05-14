@@ -217,7 +217,15 @@ M \pp{U}{t} = D_1 M^{-1} G + N^* (D_2 - D_1 M^{-1} D_1) U,
 where $D_2$ is the B-spline second derivative operator and $N^*$ is
 a diagonal matrix with the reference profile of $\nu$ on the diagonal.
 
-To get the filter for the full Navier-Stokes equations, this scheme is
-applied to each governing equation individually using the diagonal
-linearized viscous operator derived in \S\ref{sec:implicit}.
+To get the filter for the full Navier-Stokes equations, the difference
+between the second derivative and repeated first derivative operators
+is computed for each field.  The filter source is formed by scaling
+the result by a reference profile of the full viscous Jacobian, as
+given in \S\ref{sec:viscous_implicit_operator}.
+\todo{Be more specific/clear about what is happening here.}
+Note that using the full viscous Jacobian here has been found to be
+critical to the stability of the resulting scheme, especially when the
+enthalpy of the formation of the mixture is significant.
+\todo{Add details of investigation from ticket \#2862.}
+
 
