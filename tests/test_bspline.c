@@ -760,7 +760,18 @@ static void test_spacing_breakpoints()
     {
         const int k = 3;
         alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
-        // FIXME Test something
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(0, w),
+                     5.0, GSL_DBL_EPSILON, msg, k, 0);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(1, w),
+                     5.0, GSL_DBL_EPSILON, msg, k, 1);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(2, w),
+                     3.0, GSL_DBL_EPSILON, msg, k, 2);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(3, w),
+                     3.0, GSL_DBL_EPSILON, msg, k, 3);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(4, w),
+                     3.0, GSL_DBL_EPSILON, msg, k, 4);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(5, w),
+                     9.0, GSL_DBL_EPSILON, msg, k, 5);
         free_workspaces(&w, &dw, &scratch);
     }
 }
