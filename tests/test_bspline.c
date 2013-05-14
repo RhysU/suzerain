@@ -734,9 +734,9 @@ static void test_spacing_greville_abscissae()
 
 static void test_spacing_breakpoints()
 {
-    // const char msg[] = "spacing_breakpoints for k=%d, i=%d";
+    const char msg[] = "spacing_breakpoints for k=%d, i=%d";
 
-    const double b[] = { 0.0, 1.0, 2.0, 3.0 };
+    const double b[] = { -3, 2, 9, 12, 21 };
     gsl_bspline_workspace *w;
     gsl_bspline_deriv_workspace *dw;
     gsl_matrix *scratch;
@@ -744,7 +744,16 @@ static void test_spacing_breakpoints()
     {
         const int k = 2;
         alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
-        // FIXME Test something
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(0, w),
+                     5, GSL_DBL_EPSILON, msg, k, 0);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(1, w),
+                     5, GSL_DBL_EPSILON, msg, k, 1);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(2, w),
+                     3, GSL_DBL_EPSILON, msg, k, 2);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(3, w),
+                     3, GSL_DBL_EPSILON, msg, k, 3);
+        gsl_test_rel(suzerain_bspline_spacing_breakpoints(4, w),
+                     9, GSL_DBL_EPSILON, msg, k, 4);
         free_workspaces(&w, &dw, &scratch);
     }
 
