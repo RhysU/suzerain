@@ -42,6 +42,18 @@ base::~base()
     // NOP
 }
 
+real_t
+disabled::target() const
+{
+    return std::numeric_limits<real_t>::quiet_NaN();
+}
+
+bool
+disabled::enabled() const
+{
+    return false;
+}
+
 lower::lower(bspline &b)
     : base()
 {

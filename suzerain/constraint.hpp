@@ -63,6 +63,19 @@ public:
     virtual ~base();
 };
 
+/** A constraint reporting that it is always disabled. */
+class disabled : public virtual base
+{
+public:
+
+    /** Always returns \c NaN. */
+    virtual real_t target() const;
+
+    /** Always returns \c false. */
+    virtual bool enabled() const;
+
+};
+
 /** Constrain the collocation value at \f$y=0\f$. */
 class lower : public virtual base
 {
