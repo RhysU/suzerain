@@ -84,6 +84,25 @@ constant::enabled() const
     return !(boost::math::isnan)(t);
 }
 
+reference::reference(const real_t& target)
+    : base()
+    , t(&target)
+{
+    // NOP
+}
+
+real_t
+reference::target() const
+{
+    return *t;
+}
+
+bool
+reference::enabled() const
+{
+    return !(boost::math::isnan)(*t);
+}
+
 constant_lower::constant_lower(const real_t target, bspline &b)
     : constant(target)
     , lower(b)
@@ -100,6 +119,27 @@ constant_upper::constant_upper(const real_t target, bspline &b)
 
 constant_bulk::constant_bulk(const real_t target, bspline &b)
     : constant(target)
+    , bulk(b)
+{
+    // NOP
+}
+
+reference_lower::reference_lower(const real_t& target, bspline &b)
+    : reference(target)
+    , lower(b)
+{
+    // NOP
+}
+
+reference_upper::reference_upper(const real_t& target, bspline &b)
+    : reference(target)
+    , upper(b)
+{
+    // NOP
+}
+
+reference_bulk::reference_bulk(const real_t& target, bspline &b)
+    : reference(target)
     , bulk(b)
 {
     // NOP

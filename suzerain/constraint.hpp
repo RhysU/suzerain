@@ -109,6 +109,28 @@ private:
 
 };
 
+/** Target some externally maintained reference. */
+class reference : public virtual base
+{
+public:
+
+    /**
+     * Specify the reference to target.
+     * The reference must have lifetime longer than this instance.
+     */
+    explicit reference(const real_t& target);
+
+    virtual real_t target() const;
+
+    virtual bool enabled() const;
+
+private:
+
+    /** Stores a pointer to the referenced value. */
+    const real_t *t;
+
+};
+
 /**
  * Constrain the collocation value at \f$y=0\f$ to be some given constant.
  */
@@ -140,6 +162,40 @@ class constant_bulk : public virtual constant, public virtual bulk
 public:
 
     constant_bulk(const real_t target, bspline &b);
+
+};
+
+/**
+ * Constrain the collocation value at \f$y=0\f$ to be some given reference.
+ */
+class reference_lower : public virtual reference, public virtual lower
+{
+public:
+
+    reference_lower(const real_t& target, bspline &b);
+
+};
+
+/**
+ * Constrain the collocation value at \f$y=L_y\f$ to be some given reference.
+ */
+class reference_upper : public virtual reference, public virtual upper
+{
+public:
+
+    reference_upper(const real_t& target, bspline &b);
+
+};
+
+/**
+ * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to be some
+ * reference.
+ */
+class reference_bulk : public virtual reference, public virtual bulk
+{
+public:
+
+    reference_bulk(const real_t& target, bspline &b);
 
 };
 
