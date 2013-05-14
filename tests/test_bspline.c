@@ -716,7 +716,18 @@ static void test_spacing_greville_abscissae()
     {
         const int k = 3;
         alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
-        // FIXME Test something
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(0, w),
+                     2.5, GSL_DBL_EPSILON, msg, k, 0);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(1, w),
+                     2.5, GSL_DBL_EPSILON, msg, k, 1);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(2, w),
+                     5.0, GSL_DBL_EPSILON, msg, k, 2);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(3, w),
+                     5.0, GSL_DBL_EPSILON, msg, k, 3);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(4, w),
+                     4.5, GSL_DBL_EPSILON, msg, k, 4);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(5, w),
+                     4.5, GSL_DBL_EPSILON, msg, k, 5);
         free_workspaces(&w, &dw, &scratch);
     }
 }
