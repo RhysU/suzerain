@@ -248,7 +248,7 @@ suzerain_bspline_spacing_breakpoints(
 }
 
 int
-suzerain_bspline_htstretch2_evdeltascale(
+suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
     const int nderiv,
     const int k,
     const double htdelta,
@@ -368,7 +368,7 @@ suzerain_bspline_htstretch2_evdeltascale(
 // This routine is mostly copy-n-paste from above but it maintained separately
 // for both readability and to simplify adding new coefficients in the future.
 int
-suzerain_bspline_htstretch1_evdeltascale(
+suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
     const int nderiv,
     const int k,
     const double htdelta,

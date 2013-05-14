@@ -870,7 +870,7 @@ static void test_bspline_htstretch2_evdeltascale()
         double C, Clow, Chigh;
 
         // For C^{(1)} we want...
-        gsl_test(suzerain_bspline_htstretch2_evdeltascale(
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
                         1, k, htdelta, N, &C, &Clow, &Chigh),
                  "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
 
@@ -883,7 +883,7 @@ static void test_bspline_htstretch2_evdeltascale()
                  __FILE__, __LINE__, i, Clow, cc1, Chigh);
 
         // For C^{(2)} we want...
-        gsl_test(suzerain_bspline_htstretch2_evdeltascale(
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
                         2, k, htdelta, N, &C, &Clow, &Chigh),
                  "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
 
@@ -1014,7 +1014,7 @@ static void test_bspline_htstretch1_evdeltascale()
         double C, Clow, Chigh;
 
         // For C^{(1)} we want...
-        gsl_test(suzerain_bspline_htstretch1_evdeltascale(
+        gsl_test(suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
                         1, k, htdelta, N, &C, &Clow, &Chigh),
                  "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
 
@@ -1027,7 +1027,7 @@ static void test_bspline_htstretch1_evdeltascale()
                  __FILE__, __LINE__, i, Clow, cc1, Chigh);
 
         // For C^{(2)} we want...
-        gsl_test(suzerain_bspline_htstretch1_evdeltascale(
+        gsl_test(suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
                         2, k, htdelta, N, &C, &Clow, &Chigh),
                  "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
 

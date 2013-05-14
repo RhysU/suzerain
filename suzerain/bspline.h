@@ -326,7 +326,7 @@ suzerain_bspline_spacing_breakpoints(
  *      returns one of #suzerain_error_status.
  */
 int
-suzerain_bspline_htstretch2_evdeltascale(
+suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
     const int nderiv,
     const int k,
     const double htdelta,
@@ -364,7 +364,7 @@ suzerain_bspline_htstretch2_evdeltascale(
  *      returns one of #suzerain_error_status.
  */
 int
-suzerain_bspline_htstretch1_evdeltascale(
+suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
     const int nderiv,
     const int k,
     const double htdelta,

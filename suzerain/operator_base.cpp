@@ -69,14 +69,14 @@ operator_base::operator_base(
     real_t C1, Clow1, Chigh1;
     real_t C2, Clow2, Chigh2;
     if (grid.htdelta >= 0) { // See grid.two_sided(), grid.one_sided()
-        suzerain_bspline_htstretch2_evdeltascale(
+        suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
                 1, b.k(), +grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
-        suzerain_bspline_htstretch2_evdeltascale(
+        suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
                 2, b.k(), +grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
     } else {
-        suzerain_bspline_htstretch1_evdeltascale(
+        suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
                 1, b.k(), -grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
-        suzerain_bspline_htstretch1_evdeltascale(
+        suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
                 2, b.k(), -grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
     }
 
