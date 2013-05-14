@@ -690,12 +690,59 @@ static void test_linear_combination_complex()
 
 static void test_spacing_greville_abscissae()
 {
-    return; // FIXME Test something
+    const char msg[] = "spacing_greville_abscissae for k=%d, i=%d";
+
+    const double b[] = { -3, 2, 9, 12, 21 };
+    gsl_bspline_workspace *w;
+    gsl_bspline_deriv_workspace *dw;
+    gsl_matrix *scratch;
+
+    {
+        const int k = 2;
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(0, w),
+                     5, GSL_DBL_EPSILON, msg, k, 0);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(1, w),
+                     5, GSL_DBL_EPSILON, msg, k, 1);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(2, w),
+                     3, GSL_DBL_EPSILON, msg, k, 2);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(3, w),
+                     3, GSL_DBL_EPSILON, msg, k, 3);
+        gsl_test_rel(suzerain_bspline_spacing_greville_abscissae(4, w),
+                     9, GSL_DBL_EPSILON, msg, k, 4);
+        free_workspaces(&w, &dw, &scratch);
+    }
+
+    {
+        const int k = 3;
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        // FIXME Test something
+        free_workspaces(&w, &dw, &scratch);
+    }
 }
 
 static void test_spacing_breakpoints()
 {
-    return; // FIXME Test something
+    // const char msg[] = "spacing_breakpoints for k=%d, i=%d";
+
+    const double b[] = { 0.0, 1.0, 2.0, 3.0 };
+    gsl_bspline_workspace *w;
+    gsl_bspline_deriv_workspace *dw;
+    gsl_matrix *scratch;
+
+    {
+        const int k = 2;
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        // FIXME Test something
+        free_workspaces(&w, &dw, &scratch);
+    }
+
+    {
+        const int k = 3;
+        alloc_workspaces(k, sizeof(b)/sizeof(b[0]), b, &w, &dw, &scratch);
+        // FIXME Test something
+        free_workspaces(&w, &dw, &scratch);
+    }
 }
 
 // Test that curve fits reasonably reproduce the source data.
