@@ -37,8 +37,7 @@ namespace suzerain {
  */
 namespace ndx {
 
-// Anonymous enum to declare our state variable storage indices.
-enum {
+enum type {
 
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
     // Force both (e - rho) and (rho - e) to provide usable, signed results.
