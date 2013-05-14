@@ -35,35 +35,76 @@
 
 namespace suzerain {
 
-constraint::constraint()
-    : target(std::numeric_limits<real_t>::quiet_NaN())
+namespace constraint {
+
+base::~base()
 {
     // NOP
 }
 
-constraint::constraint(const value_lower&, const real_t target, bspline &b)
-    : target(target)
-    , coeff(b.n())
+lower::lower(bspline &b)
+    : base()
 {
-    coeff.setZero();
+    coeff.setZero(b.n());
     coeff.head<1>()[0] = 1;
 }
 
-constraint::constraint(const value_upper&, const real_t target, bspline &b)
-    : target(target)
-    , coeff(b.n())
+upper::upper(bspline &b)
+    : base()
 {
-    coeff.setZero();
+    coeff.setZero(b.n());
     coeff.tail<1>()[0] = 1;
 }
 
-constraint::constraint(const value_bulk&, const real_t target, bspline &b)
-    : target(target)
-    , coeff(b.n())
+bulk::bulk(bspline &b)
+    : base()
 {
-    const real_t L = b.breakpoint(b.nbreak()-1) - b.breakpoint(0);
+    coeff.resize(b.n());
     b.integration_coefficients(0, coeff.data());
+    real_t L = b.breakpoint(b.nbreak()-1) - b.breakpoint(0);
     coeff /= L;
 }
+
+constant::constant(const real_t target)
+    : base()
+    , t(target)
+{
+    // NOP
+}
+
+real_t
+constant::target() const
+{
+    return t;
+}
+
+bool
+constant::enabled() const
+{
+    return !(boost::math::isnan)(t);
+}
+
+constant_lower::constant_lower(const real_t target, bspline &b)
+    : constant(target)
+    , lower(b)
+{
+    // NOP
+}
+
+constant_upper::constant_upper(const real_t target, bspline &b)
+    : constant(target)
+    , upper(b)
+{
+    // NOP
+}
+
+constant_bulk::constant_bulk(const real_t target, bspline &b)
+    : constant(target)
+    , bulk(b)
+{
+    // NOP
+}
+
+} // namespace constraint
 
 } // namespace suzerain

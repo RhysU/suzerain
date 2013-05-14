@@ -35,43 +35,14 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 
-/**
- * Encapsulates the ways \ref constraint_treatment can constrain a value.
- */
-class constraint
+namespace constraint {
+
+// TODO The base::coeff API would be better done using Eigen 3.2 Refs
+
+/** Abstract base class for constraints expressible as a functional. */
+class base
 {
 public:
-
-    /**
-     * Tag types marking in which ways a particular value can be constrained.
-     * @{
-     */
-
-    /** Enforce mean collocation value at \f$y=0\f$ */
-    class value_lower {};
-
-    /** Enforce mean collocation value at \f$y=L_y\f$ */
-    class value_upper {};
-
-    /** Enforce bulk value across \f$y=\left[0,L_y\right]\f$ */
-    class value_bulk  {};
-
-    /**@}*/
-
-    /** Default constructor creates an NOP constraint. */
-    constraint();
-
-    /** Construct a \ref value_lower constraint achieving \ref target. */
-    constraint(const value_lower&, const real_t target, bspline &b);
-
-    /** Construct a \ref value_upper constraint achieving \ref target. */
-    constraint(const value_upper&, const real_t target, bspline &b);
-
-    /** Construct a \ref value_bulk constraint achieving \ref target. */
-    constraint(const value_bulk&, const real_t target, bspline &b);
-
-    /** What scalar value should be targeted by the constraint? */
-    real_t target;
 
     /**
      * What functional, when dotted with B-spline coefficients, computes the
@@ -79,11 +50,100 @@ public:
      * */
     VectorXr coeff;
 
+    /**
+     * What scalar value should be targeted by the constraint?  This value may
+     * be nontrivial to compute and should be cached when used repeated.
+     */
+    virtual real_t target() const = 0;
+
     /** Is this constraint computable as specified? */
-    bool enabled() const
-    { return !(boost::math::isnan)(target); }
+    virtual bool enabled() const = 0;
+
+    /** Virtual destructor to permit use as a base class. */
+    virtual ~base();
+};
+
+/** Constrain the collocation value at \f$y=0\f$. */
+class lower : public virtual base
+{
+public:
+
+    explicit lower(bspline &b);
 
 };
+
+/** Constrain the collocation value at \f$y=L_y\f$. */
+class upper : public virtual base
+{
+public:
+
+    explicit upper(bspline &b);
+
+};
+
+/** Constrain the bulk value across \f$y=\left[0,L_y\right]\f$. */
+class bulk : public virtual base
+{
+public:
+
+    explicit bulk(bspline &b);
+
+};
+
+/** Target some constant value. */
+class constant : public virtual base
+{
+public:
+
+    /** Specify the constant value to target. */
+    explicit constant(const real_t target);
+
+    virtual real_t target() const;
+
+    virtual bool enabled() const;
+
+private:
+
+    /** Stores the constant target value. */
+    real_t t;
+
+};
+
+/**
+ * Constrain the collocation value at \f$y=0\f$ to be some given constant.
+ */
+class constant_lower : public virtual constant, public virtual lower
+{
+public:
+
+    constant_lower(const real_t target, bspline &b);
+
+};
+
+/**
+ * Constrain the collocation value at \f$y=L_y\f$ to be some given constant.
+ */
+class constant_upper : public virtual constant, public virtual upper
+{
+public:
+
+    constant_upper(const real_t target, bspline &b);
+
+};
+
+/**
+ * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to be some
+ * constant.
+ */
+class constant_bulk : public virtual constant, public virtual bulk
+{
+public:
+
+    constant_bulk(const real_t target, bspline &b);
+
+};
+
+} // namespace constraint
 
 } // namespace suzerain
 
