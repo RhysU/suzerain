@@ -536,17 +536,25 @@ to $\partial U / \partial y$.  We have
 0 & - \mu \frac{u}{\rho} & \frac{\mu}{\rho} & 0 & 0 & 0 \\
 0 & - \left(\alpha + \frac{4}{3} \right) \mu \frac{v}{\rho} & 0 & \left(\alpha + \frac{4}{3} \right) \frac{\mu}{\rho} & 0 & 0 \\
 0 & - \mu \frac{u}{\rho} & 0 & 0 & \frac{\mu}{\rho} & 0 \\
-* & * & * & * & * & \kappa \pp{T}{\rho E} \\
+K_{\rho E, \rho_{\alpha}} & K_{\rho E, \rho} & K_{\rho E, \rho u} & K_{\rho E, \rho v} & K_{\rho E, \rho w} & \kappa \pp{T}{\rho E} \\
 \end{array} \right],
 \end{equation*}
 % 
-where the $*$ entries are non-zero, but, as will be shown below,
-irrelevant to the current analysis, and
+where the $K_{\rho E, \cdot}$ entries are non-zero.  In the current
+analysis, these entries are irrelevant.  However, they are necessary
+for the filter and thus are given here for completeness.  We have
 %
-\begin{equation*}
-\pp{T}{\rho E} = \frac{1}{\rho C_{v,\text{mix}}}.
-\end{equation*}
-% 
+\begin{align*}
+K_{\rho E, \rho_{\alpha}} & = (\mcal{D}_1 h_1 - \mcal{D}_{\alpha} h_{\alpha}) + \kappa \pp{T}{\rho_{\alpha}}, \\
+K_{\rho E, \rho} & = \sum_{\alpha=2}^{N_s} \left( \mcal{D}_{\alpha} h_{\alpha} - D_1 h_1 \right) c_{\alpha} - \nu \left[ u^2 + \left(\alpha + \frac{4}{3} \right) v^2 + w^2 \right] + \kappa \pp{T}{\rho}, \\
+K_{\rho E, \rho u} & = \nu u + \kappa \pp{T}{\rho u}, \\
+K_{\rho E, \rho v} & = \nu \left( \alpha + \frac{4}{3} \right) v + \kappa \pp{T}{\rho v}, \\
+K_{\rho E, \rho w} & = \nu w + \kappa \pp{T}{\rho w}.
+\end{align*}
+%
+The derivatives of the temperature with respect to the state are given
+in \S\ref{sec:inviscid_implicit_operator}.
+
 It is straightforward but tedious to show that the eigenvalues
 $\lambda_{\mathrm{visc}}$ of this Jacobian matrix satisfy
 %
