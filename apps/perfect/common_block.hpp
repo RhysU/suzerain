@@ -49,7 +49,7 @@ class operator_common_block
     typedef Array<real_t, Dynamic,  9, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all implicit quantities */
-    typedef Array<real_t, Dynamic, 15, ColMajor> implicits_type;
+    typedef Array<real_t, Dynamic, 17, ColMajor> implicits_type;
 
     /** Type of the contiguous storage housing all reference quantities */
     typedef Array<real_t, 30, Dynamic, ColMajor> refs_type;
@@ -143,8 +143,14 @@ public:
      * \li \c Srhou_dot_u The \e nonlinear operator accumulates the
      *     time-step-specific temporal mean of the implicit
      *     \f$\mathscr{S}_{\rho{}u}\cdot{}u\f$ term in the energy equation.
-     * \li \c f The \e linear operator accumulates the time-step-specific
+     * \li \c fx The \e linear operator accumulates the time-step-specific
      *     temporal mean streamwise (x) component of the implicit \f$f\f$
+     *     term in the momentum equation.
+     * \li \c fy The \e linear operator accumulates the time-step-specific
+     *     temporal mean wall-normal (y) component of the implicit \f$f\f$
+     *     term in the momentum equation.
+     * \li \c fz The \e linear operator accumulates the time-step-specific
+     *     temporal mean spanwise (z) component of the implicit \f$f\f$
      *     term in the momentum equation.
      * \li \c f_dot_u The \e linear operator accumulates the
      *     time-step-specific temporal mean of the implicit \f$f\cdot{}u\f$
@@ -192,15 +198,17 @@ public:
     implicits_type::ColXpr      Srhow()             {return implicits.col( 3);}
     implicits_type::ColXpr      Srho()              {return implicits.col( 4);}
     implicits_type::ColXpr      Srhou_dot_u()       {return implicits.col( 5);}
-    implicits_type::ColXpr      f()                 {return implicits.col( 6);}
-    implicits_type::ColXpr      f_dot_u()           {return implicits.col( 7);}
-    implicits_type::ColXpr      qb()                {return implicits.col( 8);}
-    implicits_type::ColXpr      CrhoE()             {return implicits.col( 9);}
-    implicits_type::ColXpr      Crhou()             {return implicits.col(10);}
-    implicits_type::ColXpr      Crhov()             {return implicits.col(11);}
-    implicits_type::ColXpr      Crhow()             {return implicits.col(12);}
-    implicits_type::ColXpr      Crho()              {return implicits.col(13);}
-    implicits_type::ColXpr      Crhou_dot_u()       {return implicits.col(14);}
+    implicits_type::ColXpr      fx()                {return implicits.col( 6);}
+    implicits_type::ColXpr      fy()                {return implicits.col( 7);}
+    implicits_type::ColXpr      fz()                {return implicits.col( 8);}
+    implicits_type::ColXpr      f_dot_u()           {return implicits.col( 9);}
+    implicits_type::ColXpr      qb()                {return implicits.col(10);}
+    implicits_type::ColXpr      CrhoE()             {return implicits.col(11);}
+    implicits_type::ColXpr      Crhou()             {return implicits.col(12);}
+    implicits_type::ColXpr      Crhov()             {return implicits.col(13);}
+    implicits_type::ColXpr      Crhow()             {return implicits.col(14);}
+    implicits_type::ColXpr      Crho()              {return implicits.col(15);}
+    implicits_type::ColXpr      Crhou_dot_u()       {return implicits.col(16);}
 
     implicits_type::ConstColXpr SrhoE()       const {return implicits.col( 0);}
     implicits_type::ConstColXpr Srhou()       const {return implicits.col( 1);}
@@ -208,15 +216,17 @@ public:
     implicits_type::ConstColXpr Srhow()       const {return implicits.col( 3);}
     implicits_type::ConstColXpr Srho()        const {return implicits.col( 4);}
     implicits_type::ConstColXpr Srhou_dot_u() const {return implicits.col( 5);}
-    implicits_type::ConstColXpr f()           const {return implicits.col( 6);}
-    implicits_type::ConstColXpr f_dot_u()     const {return implicits.col( 7);}
-    implicits_type::ConstColXpr qb()          const {return implicits.col( 8);}
-    implicits_type::ConstColXpr CrhoE()       const {return implicits.col( 9);}
-    implicits_type::ConstColXpr Crhou()       const {return implicits.col(10);}
-    implicits_type::ConstColXpr Crhov()       const {return implicits.col(11);}
-    implicits_type::ConstColXpr Crhow()       const {return implicits.col(12);}
-    implicits_type::ConstColXpr Crho()        const {return implicits.col(13);}
-    implicits_type::ConstColXpr Crhou_dot_u() const {return implicits.col(14);}
+    implicits_type::ConstColXpr fx()          const {return implicits.col( 6);}
+    implicits_type::ConstColXpr fy()          const {return implicits.col( 7);}
+    implicits_type::ConstColXpr fz()          const {return implicits.col( 8);}
+    implicits_type::ConstColXpr f_dot_u()     const {return implicits.col( 9);}
+    implicits_type::ConstColXpr qb()          const {return implicits.col(10);}
+    implicits_type::ConstColXpr CrhoE()       const {return implicits.col(11);}
+    implicits_type::ConstColXpr Crhou()       const {return implicits.col(12);}
+    implicits_type::ConstColXpr Crhov()       const {return implicits.col(13);}
+    implicits_type::ConstColXpr Crhow()       const {return implicits.col(14);}
+    implicits_type::ConstColXpr Crho()        const {return implicits.col(15);}
+    implicits_type::ConstColXpr Crhou_dot_u() const {return implicits.col(16);}
 
     /** @} */
 

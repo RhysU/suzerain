@@ -266,10 +266,12 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     // because our post-processing routines will account for Mach^2 factor.
     cphi                 /= delta_t; // Henceforth includes 1/delta_t scaling!
     const real_t iota     = method.iota(substep_index);
-    common.f()           += iota * (
+    common.fx()          += iota * (
                                 ArrayX1r::Constant(Ny, cphi(1))
-                              - common.f()
+                              - common.fx()
                             );
+    common.fy()          += iota * (/* zero */ - common.fy());
+    common.fz()          += iota * (/* zero */ - common.fz());
     common.f_dot_u()     += iota * (
                                 cphi(1) * common.u()
                               - common.f_dot_u()

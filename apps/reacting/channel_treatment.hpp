@@ -327,10 +327,12 @@ void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
     // Notice bulk_rho_u-related forcing is NOT scaled by Mach^2 when tracked
     // because our post-processing routines will account for Mach^2 factor.
     const real_t iota     = method.iota(substep_index);
-    common.f()           += iota * (
+    common.fx()          += iota * (
                                 ArrayX1r::Constant(Ny, cphi(1) / delta_t)
-                              - common.f()
+                              - common.fx()
                             );
+    common.fy()          += iota * (/* zero */ - common.fy());
+    common.fz()          += iota * (/* zero */ - common.fz());
     common.f_dot_u()     += iota * (
                                 (cphi(1) / delta_t) * common.u()
                               - common.f_dot_u()

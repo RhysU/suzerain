@@ -203,8 +203,9 @@ driver::compute_statistics(
 
     // Obtain mean quantities computed via implicit forcing (when possible)
     if (common_block.implicits.rows() == mean.storage.rows()) {
-        mean.f().col(0) = common_block.f();  // Only streamwise momentum...
-        mean.f().rightCols<2>().setZero();   // ...not wall-normal, spanwise
+        mean.f().col(0)     = common_block.fx();
+        mean.f().col(1)     = common_block.fy();
+        mean.f().col(2)     = common_block.fz();
         mean.f_dot_u()      = common_block.f_dot_u();
         mean.qb()           = common_block.qb();
         mean.CrhoE()        = common_block.CrhoE();
