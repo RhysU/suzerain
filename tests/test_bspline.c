@@ -43,6 +43,8 @@ static void free_workspaces(
 static void test_integration_coefficients();
 static void test_linear_combination();
 static void test_linear_combination_complex();
+static void test_spacing_greville_abscissae();
+static void test_spacing_breakpoints();
 static void test_bspline_htstretch2_evdeltascale();
 static void test_bspline_htstretch1_evdeltascale();
 
@@ -57,6 +59,8 @@ main(int argc, char **argv)
     test_integration_coefficients();
     test_linear_combination();
     test_linear_combination_complex();
+    test_spacing_greville_abscissae();
+    test_spacing_breakpoints();
     test_bspline_htstretch2_evdeltascale();
     test_bspline_htstretch1_evdeltascale();
 
@@ -682,6 +686,16 @@ static void test_linear_combination_complex()
 
     gsl_vector_complex_free(coeffs);
     free_workspaces(&w, &dw, &scratch);
+}
+
+static void test_spacing_greville_abscissae()
+{
+    return; // FIXME Test something
+}
+
+static void test_spacing_breakpoints()
+{
+    return; // FIXME Test something
 }
 
 // Test that curve fits reasonably reproduce the source data.
