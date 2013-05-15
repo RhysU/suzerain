@@ -45,8 +45,8 @@ static void test_linear_combination();
 static void test_linear_combination_complex();
 static void test_spacing_greville_abscissae();
 static void test_spacing_breakpoints();
-static void test_bspline_htstretch2_evdeltascale();
-static void test_bspline_htstretch1_evdeltascale();
+static void test_bspline_htstretch2_evdeltascale_greville_abscissae();
+static void test_bspline_htstretch1_evdeltascale_greville_abscissae();
 
 int
 main(int argc, char **argv)
@@ -61,8 +61,8 @@ main(int argc, char **argv)
     test_linear_combination_complex();
     test_spacing_greville_abscissae();
     test_spacing_breakpoints();
-    test_bspline_htstretch2_evdeltascale();
-    test_bspline_htstretch1_evdeltascale();
+    test_bspline_htstretch2_evdeltascale_greville_abscissae();
+    test_bspline_htstretch1_evdeltascale_greville_abscissae();
 
     exit(gsl_test_summary());
 }
@@ -780,7 +780,7 @@ static void test_spacing_breakpoints()
 // Mainly meant as a sanity check on the coded coefficients.
 // Test cases chosen pseudo-randomly from the original fit data.
 // Choice required that we could nail at least one output per k.
-static void test_bspline_htstretch2_evdeltascale()
+static void test_bspline_htstretch2_evdeltascale_greville_abscissae()
 {
     static const double data[][5] = {
         /* 0*/ {4   , 1.25  , 37    , 6.73374  , 3.07899},
@@ -902,7 +902,7 @@ static void test_bspline_htstretch2_evdeltascale()
 // Mainly meant as a sanity check on the coded coefficients.
 // Test cases chosen pseudo-randomly from the original fit data.
 // Choice required that we could nail at least one output per k.
-static void test_bspline_htstretch1_evdeltascale()
+static void test_bspline_htstretch1_evdeltascale_greville_abscissae()
 {
     static const double data[][5] = {
         /*00*/{ 4, 0.00,  523, 5.44153, 2.72074},
