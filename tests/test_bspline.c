@@ -47,6 +47,8 @@ static void test_spacing_greville_abscissae();
 static void test_spacing_breakpoints();
 static void test_bspline_htstretch2_evdeltascale_greville_abscissae();
 static void test_bspline_htstretch1_evdeltascale_greville_abscissae();
+static void test_bspline_htstretch2_evdeltascale_breakpoints();
+static void test_bspline_htstretch1_evdeltascale_breakpoints();
 
 int
 main(int argc, char **argv)
@@ -63,6 +65,8 @@ main(int argc, char **argv)
     test_spacing_breakpoints();
     test_bspline_htstretch2_evdeltascale_greville_abscissae();
     test_bspline_htstretch1_evdeltascale_greville_abscissae();
+    test_bspline_htstretch2_evdeltascale_breakpoints();
+    test_bspline_htstretch1_evdeltascale_breakpoints();
 
     exit(gsl_test_summary());
 }
@@ -1028,6 +1032,104 @@ static void test_bspline_htstretch1_evdeltascale_greville_abscissae()
 
         // For C^{(2)} we want...
         gsl_test(suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
+                        2, k, htdelta, N, &C, &Clow, &Chigh),
+                 "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
+
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
+                 "%s:%d accuracy2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc2, Chigh);
+
+    }
+}
+
+// Test that curve fits reasonably reproduce the source data.
+// Mainly meant as a sanity check on the coded coefficients.
+// Test cases chosen pseudo-randomly from the original fit data.
+// Choice required that we could nail at least one output per k.
+static void test_bspline_htstretch2_evdeltascale_breakpoints()
+{
+    static const double data[][5] = {
+/////////* 0*/ {4   , 1.25  , 37    , 6.73374  , 3.07899},
+    };
+    static const size_t ncases = sizeof(data)/sizeof(data[0]);
+
+    for (size_t i = 0; i < ncases; ++i) {
+        const int k          = (int) data[i][0];
+        const double htdelta =       data[i][1];
+        const int N          = (int) data[i][2];
+        const double cc1     =       data[i][3];
+        const double cc2     =       data[i][4];
+
+        double C, Clow, Chigh;
+
+        // For C^{(1)} we want...
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale_breakpoints(
+                        1, k, htdelta, N, &C, &Clow, &Chigh),
+                 "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
+
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
+                "%s:%d accuracy1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc1, Chigh);
+
+        // For C^{(2)} we want...
+        gsl_test(suzerain_bspline_htstretch2_evdeltascale_breakpoints(
+                        2, k, htdelta, N, &C, &Clow, &Chigh),
+                 "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
+
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
+                 "%s:%d accuracy2 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc2, Chigh);
+
+    }
+}
+
+// Test that curve fits reasonably reproduce the source data.
+// Mainly meant as a sanity check on the coded coefficients.
+// Test cases chosen pseudo-randomly from the original fit data.
+// Choice required that we could nail at least one output per k.
+static void test_bspline_htstretch1_evdeltascale_breakpoints()
+{
+    static const double data[][5] = {
+/////////*00*/{ 4, 0.00,  523, 5.44153, 2.72074},
+    };
+    static const size_t ncases = sizeof(data)/sizeof(data[0]);
+
+    for (size_t i = 0; i < ncases; ++i) {
+        const int k          = (int) data[i][0];
+        const double htdelta =       data[i][1];
+        const int N          = (int) data[i][2];
+        const double cc1     =       data[i][3];
+        const double cc2     =       data[i][4];
+
+        double C, Clow, Chigh;
+
+        // For C^{(1)} we want...
+        gsl_test(suzerain_bspline_htstretch1_evdeltascale_breakpoints(
+                        1, k, htdelta, N, &C, &Clow, &Chigh),
+                 "%s(%d, %d, %g, %d, ...)", __func__, 1, k, htdelta, N);
+
+        gsl_test(!(Clow <= C && C <= Chigh),
+                 "%s:%d self-consistency1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, C, Chigh);
+
+        gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
+                "%s:%d accuracy1 i=%d %g <= %g <= %g",
+                 __FILE__, __LINE__, i, Clow, cc1, Chigh);
+
+        // For C^{(2)} we want...
+        gsl_test(suzerain_bspline_htstretch1_evdeltascale_breakpoints(
                         2, k, htdelta, N, &C, &Clow, &Chigh),
                  "%s(%d, %d, %g, %d, ...)", __func__, 2, k, htdelta, N);
 
