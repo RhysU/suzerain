@@ -36,13 +36,15 @@
 #include <suzerain/diffwave.hpp>
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
-#include <suzerain/ndx.hpp>
 #include <suzerain/operator_tools.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/shared_range.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/support.hpp>
+
+#include "reacting_ndx.hpp"
+
 
 using boost::numeric_cast;
 
@@ -210,14 +212,14 @@ quantities sample_quantities(
         contiguous_state<4,complex_t> &swave,
         const real_t t)
 {
-    // FIXME: This function needs to be refactored to support reacting
+    // FIXME: This function supports reacting in that all calculations
+    // here use appropriate constitutive laws, etc.  However, not all
+    // stats we want, particularly species-related quantities, are
+    // currently computed.
     if (cmods.Ns()>1) {
         WARN0("sample_quantitites",
-              "sample_quantities does not support reacting flow yet!");
+              "sample_quantities does not fully support reacting flow yet!");
     }
-
-    // We are only prepared to handle a fixed number of fields in this routine
-    //enum { state_count = 5 };
 
     const size_t Ns = cmods.Ns();
     const size_t state_count = Ns+4;
@@ -231,20 +233,34 @@ quantities sample_quantities(
 
     // We need auxiliary scalar-field storage.  Prepare logical indices using a
     // struct for scoping (e.g. aux::rho_y).  Ordering will match usage below.
+
+    // Indices for directions
+    struct dir { enum {
+            y,
+            x,
+            z,
+            count
+        }; };
+
+    // Indices for auxiliary storage (just state derivatives)
     struct aux { enum {
-        e_y,   e_x,   e_z,
-        mx_y,  mx_x,  mx_z,
-        my_y,  my_x,  my_z,
-        mz_y,  mz_x,  mz_z,
-        rho_y, rho_x, rho_z,
-        count // Sentry
-    }; };
+            e       = 0,
+            mx      = 1*dir::count,
+            my      = 2*dir::count,
+            mz      = 3*dir::count,
+            rho     = 4*dir::count,
+            species = 5*dir::count
+        }; };
+
+    // Get total number of fields in aux storage
+    const size_t aux_count = (aux::species      + 
+                              dir::count*(Ns-1) );
 
     // Obtain the auxiliary storage (likely from a pool to avoid fragmenting).
     // We assume no garbage values in the memory will impact us (for speed).
     scoped_ptr<state_type> _auxw_ptr(
             support::allocate_padded_state<state_type>(
-                aux::count, dgrid)); // RAII
+                aux_count, dgrid));                                // RAII
     state_type &auxw = *_auxw_ptr;                                 // Shorthand
 
     // Ensure state storage meets this routine's assumptions
@@ -278,77 +294,52 @@ quantities sample_quantities(
     // Obtain access to helper routines for differentiation
     operator_tools otool(grid, dgrid, cop);
 
-    // Compute Y derivatives of total energy at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    otool.zero_dealiasing_modes(   swave, ndx::e);
-    otool.bop_accumulate(1,    1., swave, ndx::e, 0., auxw, aux::e_y);
-    otool.bop_apply     (0,    1., swave, ndx::e);
+    for (size_t var = 0; var<state_count; ++var) {
 
-    // Compute X- and Z- derivatives of total energy at collocation points
-    // Zeros wavenumbers present only for dealiasing in the target storage
-    otool.diffwave_accumulate(1, 0, 1., swave, ndx::e, 0., auxw, aux::e_x);
-    otool.diffwave_accumulate(0, 1, 1., swave, ndx::e, 0., auxw, aux::e_z);
+      // Compute Y derivatives of variable var at collocation points
+      // Zero wavenumbers present only for dealiasing along the way
+      otool.zero_dealiasing_modes(swave, var);
+      otool.bop_accumulate(1,  1, swave, var,
+                               0, auxw , aux::e + dir::count*var + dir::y);
+      otool.bop_apply     (0,  1, swave, var);
 
-    // Compute Y derivatives of X momentum at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    otool.zero_dealiasing_modes(   swave, ndx::mx);
-    otool.bop_accumulate(1,    1., swave, ndx::mx, 0., auxw, aux::mx_y);
-    otool.bop_apply     (0,    1., swave, ndx::mx);
+      // Compute X- and Z- derivatives of variable var at collocation points
+      // Zeros wavenumbers present only for dealiasing in the target storage
+      otool.diffwave_accumulate(1, 0, 1, swave, var,
+                                      0, auxw , aux::e + dir::count*var + dir::x );
+      otool.diffwave_accumulate(0, 1, 1, swave, var,
+                                      0, auxw , aux::e + dir::count*var + dir::z );
 
-    // Compute X- and Z- derivatives of X momentum at collocation points
-    // Zeros wavenumbers present only for dealiasing in the target storage
-    otool.diffwave_accumulate(1, 0, 1., swave, ndx::mx, 0., auxw, aux::mx_x);
-    otool.diffwave_accumulate(0, 1, 1., swave, ndx::mx, 0., auxw, aux::mx_z);
-
-    // Compute Y derivatives of Y momentum at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    otool.zero_dealiasing_modes(   swave, ndx::my);
-    otool.bop_accumulate(1,    1., swave, ndx::my, 0., auxw, aux::my_y);
-    otool.bop_apply     (0,    1., swave, ndx::my);
-
-    // Compute X- and Z- derivatives of Y momentum at collocation points
-    // Zeros wavenumbers present only for dealiasing in the target storage
-    otool.diffwave_accumulate(1, 0, 1., swave, ndx::my, 0., auxw, aux::my_x);
-    otool.diffwave_accumulate(0, 1, 1., swave, ndx::my, 0., auxw, aux::my_z);
-
-    // Compute Y derivatives of Z momentum at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    otool.zero_dealiasing_modes(   swave, ndx::mz);
-    otool.bop_accumulate(1,    1., swave, ndx::mz, 0., auxw, aux::mz_y);
-    otool.bop_apply     (0,    1., swave, ndx::mz);
-
-    // Compute X- and Z- derivatives of Z momentum at collocation points
-    // Zeros wavenumbers present only for dealiasing in the target storage
-    otool.diffwave_accumulate(1, 0, 1., swave, ndx::mz, 0., auxw, aux::mz_x);
-    otool.diffwave_accumulate(0, 1, 1., swave, ndx::mz, 0., auxw, aux::mz_z);
-
-    // Compute Y derivatives of density at collocation points
-    // Zero wavenumbers present only for dealiasing along the way
-    otool.zero_dealiasing_modes(   swave, ndx::rho);
-    otool.bop_accumulate(1,    1., swave, ndx::rho, 0., auxw, aux::rho_y);
-    otool.bop_apply     (0,    1., swave, ndx::rho);
-
-    // Compute X- and Z- derivatives of density at collocation points
-    // Zeros wavenumbers present only for dealiasing in the target storage
-    otool.diffwave_accumulate(1, 0, 1., swave, ndx::rho,  0., auxw, aux::rho_x);
-    otool.diffwave_accumulate(0, 1, 1., swave, ndx::rho,  0., auxw, aux::rho_z);
+    }
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
     // (F, Y, Z, X) with contiguous (Y, Z, X) into a 2D (F, Y*Z*X) layout where
     // we know F a priori.  Reducing the dimensionality encourages linear
     // access and eases indexing overhead.
-    // physical_view<aux::count> auxp(dgrid, auxw);
-    // physical_view<state_count>sphys(dgrid, swave);
-
     physical_view<> auxp(dgrid, auxw);
     physical_view<>sphys(dgrid, swave);
     for (std::size_t i = 0; i < state_count; ++i) {
         dgrid.transform_wave_to_physical(&sphys.coeffRef(i,0));
     }
-    for (std::size_t i = 0; i < aux::count; ++i) {
+    for (std::size_t i = 0; i < aux_count; ++i) {
         dgrid.transform_wave_to_physical(&auxp.coeffRef(i,0));
     }
+
+
+
+    // Before traversal, instantiate Eigen variable length arrays
+    // to store species specific info
+    VectorXr species(Ns); // species densities
+    VectorXr Ds     (Ns); // mass diffusivities
+    VectorXr hs     (Ns); // species enthalpies
+    VectorXr om     (Ns); // reaction source terms
+    VectorXr cs     (Ns); // species mass fractions
+    VectorXr etots  (Ns); // species internal energies
+
+    Matrix3Xr grad_species (3,Ns); // spatial derivatives of species densities
+    Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fracs
+    Matrix3Xr sdiff        (3,Ns); // diffusive fluxes for species equations
 
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
@@ -387,64 +378,95 @@ quantities sample_quantities(
 
                 // Unpack total energy-related quantities
                 const real_t e(sphys(ndx::e, offset));
-                const Vector3r grad_e(auxp(aux::e_x, offset),
-                                      auxp(aux::e_y, offset),
-                                      auxp(aux::e_z, offset));
+                const Vector3r grad_e(auxp(aux::e+dir::x, offset),
+                                      auxp(aux::e+dir::y, offset),
+                                      auxp(aux::e+dir::z, offset));
 
                 // Unpack momentum-related quantities
                 const Vector3r m(sphys(ndx::mx, offset),
                                  sphys(ndx::my, offset),
                                  sphys(ndx::mz, offset));
-                const real_t div_m = auxp(aux::mx_x, offset)
-                                   + auxp(aux::my_y, offset)
-                                   + auxp(aux::mz_z, offset);
+                const real_t div_m = (  auxp(aux::mx+dir::x, offset)
+                                      + auxp(aux::my+dir::y, offset)
+                                      + auxp(aux::mz+dir::z, offset));
+
                 const Matrix3r grad_m;
                 const_cast<Matrix3r&>(grad_m) <<
-                                     auxp(aux::mx_x,  offset),
-                                     auxp(aux::mx_y,  offset),
-                                     auxp(aux::mx_z,  offset),
-                                     auxp(aux::my_x,  offset),
-                                     auxp(aux::my_y,  offset),
-                                     auxp(aux::my_z,  offset),
-                                     auxp(aux::mz_x,  offset),
-                                     auxp(aux::mz_y,  offset),
-                                     auxp(aux::mz_z,  offset);
+                    auxp(aux::mx+dir::x,  offset),
+                    auxp(aux::mx+dir::y,  offset),
+                    auxp(aux::mx+dir::z,  offset),
+                    auxp(aux::my+dir::x,  offset),
+                    auxp(aux::my+dir::y,  offset),
+                    auxp(aux::my+dir::z,  offset),
+                    auxp(aux::mz+dir::x,  offset),
+                    auxp(aux::mz+dir::y,  offset),
+                    auxp(aux::mz+dir::z,  offset);
 
                 // Unpack density-related quantities
-                const real_t rho(sphys(ndx::rho, offset));
-                const Vector3r grad_rho(auxp(aux::rho_x, offset),
-                                        auxp(aux::rho_y, offset),
-                                        auxp(aux::rho_z, offset));
+                const real_t  rho(sphys(ndx::rho, offset));
+                const real_t irho = 1.0/rho;
+                
+                const Vector3r grad_rho(auxp(aux::rho+dir::x, offset),
+                                        auxp(aux::rho+dir::y, offset),
+                                        auxp(aux::rho+dir::z, offset));
+                
+                
+                // Unpack species variables
+                // NOTE: In species vector, idx 0 is the dilluter (the species
+                // that is not explicitly part of the state vector)
+                species(0) = rho;
+                
+                grad_species(0,0) = grad_rho(0);
+                grad_species(1,0) = grad_rho(1);
+                grad_species(2,0) = grad_rho(2);
+                
+                for (unsigned int s=1; s<Ns; ++s) {
+                    species(s) = sphys(ndx::species + s - 1, offset);
+                    
+                    grad_species(0,s) = auxp(aux::species + s - 1 + dir::x, offset);
+                    grad_species(1,s) = auxp(aux::species + s - 1 + dir::y, offset);
+                    grad_species(2,s) = auxp(aux::species + s - 1 + dir::z, offset);
+                    
+                    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                    species(0)        -= species(s);
+                    
+                    grad_species(0,0) -= grad_species(0,s);
+                    grad_species(1,0) -= grad_species(1,s);
+                    grad_species(2,0) -= grad_species(2,s);
+                }
+                
+                // Compute mass fractions and mass fraction gradients
+                for (unsigned int s=0; s<Ns; ++s) {
+                    
+                    cs(s) = irho * species(s);
+                    
+                    grad_cs(0,s) = irho*(grad_species(0,s) - cs(s)*grad_rho(0));
+                    grad_cs(1,s) = irho*(grad_species(1,s) - cs(s)*grad_rho(1));
+                    grad_cs(2,s) = irho*(grad_species(2,s) - cs(s)*grad_rho(2));
+                    
+                }
 
-                // Compute local quantities based upon state.
-                const Vector3r u   = rholut::u(
-                                        rho, m);
-                const real_t div_u = rholut::div_u(
-                                        rho, grad_rho, m, div_m);
-                const Matrix3r grad_u = rholut::grad_u(
-                                        rho, grad_rho, m, grad_m);
-
-                real_t p, T, mu, lambda;
-                Vector3r grad_p, grad_T, grad_mu, grad_lambda;
-                // rholut::p_T_mu_lambda(
-                //     scenario.alpha, scenario.beta, scenario.gamma, scenario.Ma,
-                //     rho, grad_rho, m, grad_m, e, grad_e,
-                //     p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
-                //
-                // FIXME: Using constants below to allow me to remove
-                // scenario_definition dependence w/out breaking
-                // tests.  Will refactor this to use constitutive laws
-                // classes once that functionality exists.
-                //
-                rholut::p_T_mu_lambda(
-                    0.0, real_t(2)/3, 1.4, 1.15,
-                    rho, grad_rho, m, grad_m, e, grad_e,
-                    p, grad_p, T, grad_T, mu, grad_mu, lambda, grad_lambda);
+                // Compute velocity-related quantities
+                const Vector3r u     = suzerain::rholut::u(rho, m);
+                
+                const real_t div_u   =
+                    suzerain::rholut::div_u(rho, grad_rho, m, div_m);
+                
+                const Matrix3r grad_u=
+                    suzerain::rholut::grad_u(rho, grad_rho, m, grad_m);
 
 
-
-                const Matrix3r tau = rholut::tau(
-                                        mu, lambda, div_u, grad_u);
+                // Compute temperature, pressure, mass diffusivities,
+                // viscosity, thermal conductivity, species enthalpies, and
+                // reaction source terms
+                real_t T, p, mu, kap, a, Cv;
+                cmods.evaluate(e, m, rho, species, cs,
+                               T, p, Ds, mu, kap, hs, om, a, Cv);
+                
+                const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
+                
+                // Compute quantities related to the viscous stress tensor
+                const Matrix3r tau = suzerain::rholut::tau(mu, lam, div_u, grad_u);
                 const Vector3r tau_u = tau * u;
 
                 // Accumulate quantities into sum_XXX using function syntax.
@@ -474,13 +496,22 @@ quantities sample_quantities(
                 sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
                 sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
 
-                sum_grad_T[0](grad_T.x());
-                sum_grad_T[1](grad_T.y());
-                sum_grad_T[2](grad_T.z());
+                // sum_grad_T[0](grad_T.x());
+                // sum_grad_T[1](grad_T.y());
+                // sum_grad_T[2](grad_T.z());
 
-                sum_rho_grad_T[0](rho * grad_T.x());
-                sum_rho_grad_T[1](rho * grad_T.y());
-                sum_rho_grad_T[2](rho * grad_T.z());
+                // sum_rho_grad_T[0](rho * grad_T.x());
+                // sum_rho_grad_T[1](rho * grad_T.y());
+                // sum_rho_grad_T[2](rho * grad_T.z());
+
+                // FIXME: Don't have temperature gradient yet
+                sum_grad_T[0](0.0);
+                sum_grad_T[1](0.0);
+                sum_grad_T[2](0.0);
+
+                sum_rho_grad_T[0](0.0);
+                sum_rho_grad_T[1](0.0);
+                sum_rho_grad_T[2](0.0);
 
                 sum_tau_colon_grad_u[0]((tau.transpose()*grad_u).trace());
 
@@ -530,9 +561,15 @@ quantities sample_quantities(
 
                 sum_mu_div_u[0](mu * div_u);
 
-                sum_mu_grad_T[0](mu * grad_T.x());
-                sum_mu_grad_T[1](mu * grad_T.y());
-                sum_mu_grad_T[2](mu * grad_T.z());
+                // sum_mu_grad_T[0](mu * grad_T.x());
+                // sum_mu_grad_T[1](mu * grad_T.y());
+                // sum_mu_grad_T[2](mu * grad_T.z());
+
+                // FIXME: Do not have temperature gradient yet
+                sum_mu_grad_T[0](0.0);
+                sum_mu_grad_T[1](0.0);
+                sum_mu_grad_T[2](0.0);
+
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
 
