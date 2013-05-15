@@ -201,6 +201,7 @@
 #endif
 #include <fcntl.h>
 #include <signal.h>
+#include <strings.h>
 #include <unistd.h>
 
 /* Boost.Preprocessor is useful in either C or C++ mode */
