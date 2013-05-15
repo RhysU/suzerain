@@ -373,6 +373,82 @@ suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
     double * const Clow,
     double * const Chigh);
 
+/**
+ * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
+ * \f$\left(\frac{\pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
+ * eigenvalue for the \f$i\f$th Greville abscissae-based, collocation
+ * derivative operator when using two-sided hyperbolic tangent stretching.
+ * \f$\Delta{}x\f$ must measure the distance between adjacent
+ * <em>breakpoints</em>.  Beware that spectral-like cases, those where <tt>N <=
+ * 5*k</tt>, will likely give untrustworthy results.  See the Suzerain model
+ * document for more details.
+ *
+ * @param[in]  nderiv  The desired derivative order.
+ *                     Currently only the values \c 1 and \c 2 are acceptable.
+ * @param[in]  k       The B-spline order following GSL conventions.
+ *                     For example, <tt>k=4</tt> denotes piecewise cubics.
+ * @param[in]  htdelta The nonnegative, two-sided grid stretching parameter.
+ * @param[in]  N       The number of degrees of freedom in the basis.
+ * @param[out] C       The computed grid spacing scaling factor \f$C^{(i)}\f$.
+ * @param[out] Clow    If not NULL, a lower error bound on \c C.  That is,
+ *                     a reasonable lower bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
+ * @param[out] Chigh   If not NULL, an upper error bound on \c C.  That is,
+ *                     a reasonable upper bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
+ *
+ * @see suzerain_htstretch2() for more information on the grid stretching.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_htstretch2_evdeltascale_breakpoints(
+    const int nderiv,
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh);
+
+/**
+ * Compute the grid spacing scaling factor \f$C^{(i)}\f$ necessary to make
+ * \f$\left(\frac{\pi}{C\Delta{}x}\right)^i\f$ a good estimate of the maximum
+ * eigenvalue for the \f$i\f$th Greville abscissae-based, collocation
+ * derivative operator when using one-sided hyperbolic tangent stretching.
+ * \f$\Delta{}x\f$ must measure the distance between adjacent
+ * <em>breakpoints</em>.  Beware that spectral-like cases, those where <tt>N <=
+ * 5*k</tt>, will likely give untrustworthy results.  See the Suzerain model
+ * document for more details.
+ *
+ * @param[in]  nderiv  The desired derivative order.
+ *                     Currently only the values \c 1 and \c 2 are acceptable.
+ * @param[in]  k       The B-spline order following GSL conventions.
+ *                     For example, <tt>k=4</tt> denotes piecewise cubics.
+ * @param[in]  htdelta The nonnegative, one-sided grid stretching parameter.
+ * @param[in]  N       The number of degrees of freedom in the basis.
+ * @param[out] C       The computed grid spacing scaling factor \f$C^{(i)}\f$.
+ * @param[out] Clow    If not NULL, a lower error bound on \c C.  That is,
+ *                     a reasonable lower bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
+ * @param[out] Chigh   If not NULL, an upper error bound on \c C.  That is,
+ *                     a reasonable upper bound on what \f$C^{(i)}\f$ might
+ *                     truly be.
+ *
+ * @see suzerain_htstretch1() for more information on the grid stretching.
+ * @return ::SUZERAIN_SUCCESS on success.  On error calls suzerain_error() and
+ *      returns one of #suzerain_error_status.
+ */
+int
+suzerain_bspline_htstretch1_evdeltascale_breakpoints(
+    const int nderiv,
+    const int k,
+    const double htdelta,
+    const int N,
+    double * const C,
+    double * const Clow,
+    double * const Chigh);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
