@@ -293,7 +293,7 @@ void antioch_constitutive::init_antioch()
         Antioch::read_reaction_set_data_xml<real_t>(chem_input_file,
                                                     false /* verbose */,
                                                     *reactions);
-        kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions);
+        kinetics = make_shared<Antioch::KineticsEvaluator<real_t> >(*reactions,0);
     }
 
 
