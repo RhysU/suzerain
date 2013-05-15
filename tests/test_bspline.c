@@ -1061,8 +1061,8 @@ static void test_bspline_htstretch2_evdeltascale_breakpoints()
         const int k          = (int) data[i][0];
         const double htdelta =       data[i][1];
         const int N          = (int) data[i][2];
-        const double cc1     =       data[i][3];
-        const double cc2     =       data[i][4];
+        const double bc1     =       data[i][3];
+        const double bc2     =       data[i][4];
 
         double C, Clow, Chigh;
 
@@ -1075,9 +1075,9 @@ static void test_bspline_htstretch2_evdeltascale_breakpoints()
                  "%s:%d self-consistency1 i=%d %g <= %g <= %g",
                  __FILE__, __LINE__, i, Clow, C, Chigh);
 
-        gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
+        gsl_test(!(Clow <= bc1 && bc1 <= Chigh),
                 "%s:%d accuracy1 i=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, i, Clow, cc1, Chigh);
+                 __FILE__, __LINE__, i, Clow, bc1, Chigh);
 
         // For C^{(2)} we want...
         gsl_test(suzerain_bspline_htstretch2_evdeltascale_breakpoints(
@@ -1088,9 +1088,9 @@ static void test_bspline_htstretch2_evdeltascale_breakpoints()
                  "%s:%d self-consistency2 i=%d %g <= %g <= %g",
                  __FILE__, __LINE__, i, Clow, C, Chigh);
 
-        gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
+        gsl_test(!(Clow <= bc2 && bc2 <= Chigh),
                  "%s:%d accuracy2 i=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, i, Clow, cc2, Chigh);
+                 __FILE__, __LINE__, i, Clow, bc2, Chigh);
 
     }
 }
@@ -1110,8 +1110,8 @@ static void test_bspline_htstretch1_evdeltascale_breakpoints()
         const int k          = (int) data[i][0];
         const double htdelta =       data[i][1];
         const int N          = (int) data[i][2];
-        const double cc1     =       data[i][3];
-        const double cc2     =       data[i][4];
+        const double bc1     =       data[i][3];
+        const double bc2     =       data[i][4];
 
         double C, Clow, Chigh;
 
@@ -1124,9 +1124,9 @@ static void test_bspline_htstretch1_evdeltascale_breakpoints()
                  "%s:%d self-consistency1 i=%d %g <= %g <= %g",
                  __FILE__, __LINE__, i, Clow, C, Chigh);
 
-        gsl_test(!(Clow <= cc1 && cc1 <= Chigh),
+        gsl_test(!(Clow <= bc1 && bc1 <= Chigh),
                 "%s:%d accuracy1 i=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, i, Clow, cc1, Chigh);
+                 __FILE__, __LINE__, i, Clow, bc1, Chigh);
 
         // For C^{(2)} we want...
         gsl_test(suzerain_bspline_htstretch1_evdeltascale_breakpoints(
@@ -1137,9 +1137,9 @@ static void test_bspline_htstretch1_evdeltascale_breakpoints()
                  "%s:%d self-consistency2 i=%d %g <= %g <= %g",
                  __FILE__, __LINE__, i, Clow, C, Chigh);
 
-        gsl_test(!(Clow <= cc2 && cc2 <= Chigh),
+        gsl_test(!(Clow <= bc2 && bc2 <= Chigh),
                  "%s:%d accuracy2 i=%d %g <= %g <= %g",
-                 __FILE__, __LINE__, i, Clow, cc2, Chigh);
+                 __FILE__, __LINE__, i, Clow, bc2, Chigh);
 
     }
 }
