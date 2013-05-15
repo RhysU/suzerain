@@ -1703,9 +1703,9 @@ whenever $N_y > 5k$.
 \caption{
     B-spline order-specific curve fits for estimating $C_\text{approx}^{(1)}$
     via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
-    between collocation points.  The upper half is for two-sided stretching
-    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
-    stretching $f_1$ per~\eqref{eq:htstretch1}.
+    between \emph{collocation points}.  The upper half is for two-sided
+    stretching $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for
+    one-sided stretching $f_1$ per~\eqref{eq:htstretch1}.
 }
 \label{tab:C1fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
@@ -2087,9 +2087,9 @@ whenever $N_y > 5k$.
 \caption{
     B-spline order-specific curve fits for estimating $C_\text{approx}^{(2)}$
     via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
-    between collocation points.  The upper half is for two-sided stretching
-    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
-    stretching $f_1$ per~\eqref{eq:htstretch1}.
+    between \emph{collocation points}.  The upper half is for two-sided
+    stretching $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for
+    one-sided stretching $f_1$ per~\eqref{eq:htstretch1}.
 }
 \label{tab:C2fit}
 \renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
@@ -2462,6 +2462,58 @@ whenever $N_y > 5k$.
 &  $\frac{            1049}{           12527}$
 &  $\frac{            1391}{            5436}$
 &  -5.04 &  5.04
+\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{
+    B-spline order-specific curve fits for estimating $C_\text{approx}^{(1)}$
+    via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
+    between \emph{breakpoints}.  The upper half is for two-sided stretching
+    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
+    stretching $f_1$ per~\eqref{eq:htstretch1}.
+}
+\label{tab:C1fitbreak}
+\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
+\begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
+ $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
+     & \multicolumn{2}{c}{relative error}
+\\ \hline
+%%%%%%%%%%
+% TWOSIDED
+%%%%%%%%%%
+\\ \hline
+%%%%%%%%%%
+% ONESIDED
+%%%%%%%%%%
+\\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{
+    B-spline order-specific curve fits for estimating $C_\text{approx}^{(2)}$
+    via equation~\eqref{eq:Cfit} when $\Delta{}y$ is the minimum distance
+    between \emph{breakpoints}.  The upper half is for two-sided stretching
+    $f_2$ per~\eqref{eq:htstretch2} while the bottom half is for one-sided
+    stretching $f_1$ per~\eqref{eq:htstretch1}.
+}
+\label{tab:C2fitbreak}
+\renewcommand{\arraystretch}{1.40}   % Adds whitespace between rows
+\begin{tabular}{r|ccccccccc|c@{ -- }c@{\%}}
+ $k$ & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$ & $h$ & $i$
+     & \multicolumn{2}{c}{relative error}
+\\ \hline
+%%%%%%%%%%
+% TWOSIDED
+%%%%%%%%%%
+\\ \hline
+%%%%%%%%%%
+% ONESIDED
+%%%%%%%%%%
 \\ \hline
 \end{tabular}
 \end{table}
