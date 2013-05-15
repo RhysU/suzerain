@@ -35,10 +35,10 @@
 #include <suzerain/mpi.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
+#include <suzerain/support/logging.hpp>
 
 #include "nonlinear_operator_fwd.hpp"
 #include "reacting.hpp"
-// #include "scenario_definition.hpp"
 
 #pragma float_control(precise, on)
 #pragma fenv_access(on)
@@ -172,9 +172,9 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     // Retrieve upper boundary reference state from the common block.
     // These assignments are odd looking to permit others as documented.
     const real_t rho   = common.rho_ref;   // swave[ndx::rho][Ny-1][0][0].real(); //FIXME: Check if I get mean(rho) at the upper boundary
-    const real_t u     = common.u_ref;     // common.ref_uy   ().tail<1>()[0]; // Ref u = v' per RY
-    const real_t v     = common.v_ref;     // common.ref_uz   ().tail<1>()[0]; // Ref v = w' per RY
-    const real_t w     = common.w_ref;     // common.ref_ux   ().tail<1>()[0]; // Ref w = u' per RY
+    const real_t u     = common.v_ref;     // common.ref_uy   ().tail<1>()[0]; // Ref u = v' per RY
+    const real_t v     = common.w_ref;     // common.ref_uz   ().tail<1>()[0]; // Ref v = w' per RY
+    const real_t w     = common.u_ref;     // common.ref_ux   ().tail<1>()[0]; // Ref w = u' per RY
     const real_t a     = common.a_ref;     // common.ref_a    ().tail<1>()[0];
     const real_t gamma = common.gamma_ref; // common.ref_gamma().tail<1>()[0];
     const real_t T     = common.T_ref; 
@@ -190,28 +190,15 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         rhos.resize(Ns);
         // Initialize diluter density to total density
         rhos(0) = rho;
-        // FIXME: Fix DEBUG0 lines
-//         DEBUG0(who, "rho     = " << rho );
+        DEBUG0(who, "rho     = " << rho );
         for (unsigned int is_local = 1; is_local < Ns; ++is_local) {
-            // FIXME: Enable if needed, remove otherwise
-            // density of species is_local from 0,0 mode
-//             rhos(irhos0+is_local) = 
-//                 swave[ndx::rho+is_local][Ny-1][0][0].real();
-
-            // density of species from reference flow
-            rhos(is_local) = common.rho_ref * common.cs_ref(is_local);
-//             DEBUG0(who, "rhos(" << is_local <<") = " << rhos(is_local)); 
+            rhos(is_local) = rho * common.cs_ref(is_local);
+            DEBUG0(who, "rhos(" << is_local << ") = " << rhos(is_local)); 
 
             // substract to compute diluter density
             rhos(0) -= rhos(is_local);
         }
-
-        // FIXME: Maybe remove the Bcast, 
-        //        keep if the 0,0 mode enters the computation
-        SUZERAIN_MPICHKR(MPI_Bcast(&rhos, Ns,
-                    mpi::datatype_of(rhos(0)),
-                    dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
-//         DEBUG0(who, "rhos(0) = " << rhos(0) );
+        DEBUG0(who, "rhos(0) = " << rhos(0) );
     }
 
 
@@ -307,8 +294,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     {
         // First Ns rows
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
-            inv_VL(irhos0+is_local, irhos0+is_local) = 
-                                    - rhos(is_local) * inv_rho * inv_a2;
+            inv_VL(irhos0+is_local, irhos0+is_local) = -         inv_a2;
             inv_VL(irhos0+is_local, Ns+2           ) =   
                                half * rhos(is_local) * inv_rho * inv_a2;
             inv_VL(irhos0+is_local, Ns+3           ) =   
@@ -332,6 +318,10 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
     const bool inflow = u < 0;
 
     // Build the in-vs-outflow characteristic-preserving projection
+    // FIXME: Incoming waves for inflow or outflow 
+    //        correspond to SUBSONIC UPPER BOUNDARY
+    //        (Generalize implementation for arbitrary application to 
+    //        lower or upper boundary and supersonic flow?)
     MatrixXXr PG(MatrixXXr::Zero(state_count, state_count));
     if (inflow) {
         for (unsigned int is_local = 0; is_local < Ns; ++is_local) {
@@ -339,7 +329,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         }
         PG(Ns,   Ns  ) = 1;
         PG(Ns+1, Ns+1) = 1;
-        PG(Ns+2, Ns+2) = 1;
+        PG(Ns+3, Ns+3) = 1;
     } else {
         PG(Ns+3, Ns+3) = 1;
     }
