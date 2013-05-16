@@ -70,7 +70,7 @@ public:
             bspline &b,
             operator_common_block &common,
             const filter_definition &fsdef,
-            const support::largo_definition &sgdef,
+            support::largo_definition &sgdef,
             const shared_ptr<const manufactured_solution>& msoln);
 
     virtual std::vector<real_t> apply_operator(
@@ -95,7 +95,7 @@ protected:
     const filter_definition &fsdef;
 
     /** The slow growth definition */
-    const support::largo_definition &sgdef;
+    support::largo_definition &sgdef;
 
 private:
 

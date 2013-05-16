@@ -47,6 +47,8 @@
 #include "filter_definition.hpp"
 #include "reacting_ndx.hpp"
 
+#include "largo/largo.h" 
+
 #pragma warning(disable:280 383 1572)
 
 namespace suzerain { namespace reacting {
@@ -87,7 +89,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
             const filter_definition &fsdef,
-            const support::largo_definition &sgdef,
+            support::largo_definition &sgdef,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const ConstitutiveModels& cmods,
             const suzerain::bsplineop_luz& massluz,
@@ -219,6 +221,29 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         //**************************************************************
     }
 
+    //********************************************************************
+    //
+    // Compute mean and dmean for slow growth
+    const std::size_t Ny = fsrcw.shape()[1];
+    MatrixXXr mean_values(Ny, 2*state_count);
+    if (sgdef.formulation.enabled()) {
+        if (o.dgrid.has_zero_zero_modes()) {
+            for (size_t var = 0; var<state_count; ++var) {
+                o.cop.accumulate(0, 1
+                    , 1.0, (real_t *) &swave[var][0][0][0], 2, Ny
+                    , 0.0, &mean_values(0,var), 1, Ny);
+                o.cop.accumulate(1, 1
+                    , 1.0, (real_t *) &swave[var][0][0][0], 2, Ny
+                    , 0.0, &mean_values(0,state_count+var), 1, Ny);
+            }
+        }
+        SUZERAIN_MPICHKR(MPI_Bcast(
+                    mean_values.data(), mean_values.size(),
+                    mpi::datatype<real_t>(),
+                    o.dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+    }
+    //
+    //********************************************************************
 
     //********************************************************************
     //
@@ -938,6 +963,71 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             }
 
 
+            // Compute slow growth prestep values
+            real_t ycoord = o.y(j);
+            real_t mean [Ns+4]; 
+            real_t dmean [Ns+4];
+            if (sgdef.formulation.enabled()) {
+                // FIXME: Need to have available rms and d(rms)dy of 
+                //        state variables for turbulent simulation
+
+                // field
+                real_t field [Ns+4];
+                field[0] = rho;
+                field[1] = m[0];
+                field[2] = m[1];
+                field[3] = m[2];
+                field[4] = e;
+                for (unsigned int s=1; s<Ns; s++){
+                    field[4+s] = species(s);
+                }
+
+                mean[0] = mean_values(j,ndx::rho);
+                mean[1] = mean_values(j,ndx::mx);
+                mean[2] = mean_values(j,ndx::my);
+                mean[3] = mean_values(j,ndx::mz);
+                mean[4] = mean_values(j,ndx::e);
+                for (unsigned int s=1; s<Ns; s++){
+                    mean[4+s] = mean_values(j,ndx::rho+s);
+                }
+
+                // dmean
+                dmean[0] = mean_values(j,state_count+ndx::rho);
+                dmean[1] = mean_values(j,state_count+ndx::mx);
+                dmean[2] = mean_values(j,state_count+ndx::my);
+                dmean[3] = mean_values(j,state_count+ndx::mz);
+                dmean[4] = mean_values(j,state_count+ndx::e);
+                for (unsigned int s=1; s<Ns; s++){
+                    dmean[4+s] = mean_values(j,state_count+ndx::rho+s);
+                }
+
+                // rms
+                real_t rms [Ns+4];
+                rms[0] = 0 ;
+                rms[1] = 0 ;
+                rms[2] = 0 ;
+                rms[3] = 0 ;
+                rms[4] = 0 ; 
+                for (unsigned int s=1; s<Ns; s++){
+                    rms[4+s] = 0;
+                }
+
+                // drms
+                real_t drms[Ns+4];
+                drms[0] = 0;
+                drms[1] = 0;
+                drms[2] = 0;
+                drms[3] = 0;
+                drms[4] = 0;
+                for (unsigned int s=1; s<Ns; s++){
+                    drms[4+s] = 0;
+                }
+
+#ifdef SUZERAIN_HAVE_LARGO
+                largo_bl_temporal_prestep_seta ( ycoord*sgdef.grdelta, field, mean, rms, dmean, drms, sgdef.workspace);
+#endif
+            }
+
             // Compute velocity-related quantities
             const Vector3r u     = suzerain::rholut::u(rho, m);
 
@@ -1002,6 +1092,59 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 sphys(ndx::rho+s, offset) = om(s);
             }
 
+            // Compute and add slow growth sources
+            if (sgdef.formulation.enabled()) {
+                // src
+                real_t src[Ns+4];
+                src[0] = 0;
+                src[1] = 0;
+                src[2] = 0;
+                src[3] = 0;
+                src[4] = 0;
+                for (int s=1; s<Ns; s++){
+                    src[4+1] = 0;
+                }
+
+#ifdef SUZERAIN_HAVE_LARGO
+                // Compute sources from library
+                largo_bl_temporal_continuity_setamean (sgdef.workspace, 0.0, 1.0, &src[0]);
+                largo_bl_temporal_xmomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[1]);
+                largo_bl_temporal_ymomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[2]);
+                largo_bl_temporal_zmomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[3]);
+                largo_bl_temporal_energy_setamean     (sgdef.workspace, 0.0, 1.0, &src[4]);
+                for (int s=1; s < Ns; ++s) {
+                    largo_bl_temporal_ispecies_setamean (sgdef.workspace, 0.0, 1.0, &src[5], s);
+                }
+#else
+                // No slow growth computation if not linked with largo
+                // FIXME: is this the best way to report an error for this case?
+                // NOTE:  you can comment the "unimplemented" line and 
+                //        uncomment the src lines to play with a native
+                //        implementation of the source terms for laminar flow
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+
+                // compute sources locally
+                //             real_t ygrd = ycoord * sgdef.grdelta; 
+                //             src[0] += ygrd * dmean[0];
+                //             src[1] += ygrd * dmean[1];
+                //             src[2] += ygrd * dmean[2];
+                //             src[3] += ygrd * dmean[3];
+                //             src[4] += ygrd * dmean[4];
+                //             for (unsigned int s=1; s<Ns; ++s) {
+                //                 src[4+s] += ygrd * dmean[4+s];
+                //             }
+#endif // SUZERAIN_HAVE_LARGO
+
+                // Add sources
+                sphys(ndx::rho  , offset) += src[0]; 
+                sphys(ndx::mx   , offset) += src[1];
+                sphys(ndx::my   , offset) += src[2];
+                sphys(ndx::mz   , offset) += src[3];
+                sphys(ndx::e    , offset) += src[4];
+                for (unsigned int s=1; s < Ns; ++s) {
+                    sphys(ndx::rho+s  , offset) += src[4+s];
+                }
+            }
 
             // Fluxes get accumulated into auxp
             //
