@@ -77,6 +77,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
 {
     // Ensure cached mass matrix factorized prior to first use
     // Strictly speaking unnecessary, but reduces timing variability
+    this->masslu();
     this->massluz();
 }
 

@@ -48,7 +48,7 @@
 #include "reacting_ndx.hpp"
 
 #ifdef SUZERAIN_HAVE_LARGO
-#include "largo/largo.h"
+#include "largo/largo.h" 
 #endif
 
 #pragma warning(disable:280 383 1572)
@@ -680,6 +680,67 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     } // end traversal (1)
 
+    //****************************************************************
+    //
+    // Compute field rms quantities needed for slow growth
+    MatrixXXr rms_values(Ny, 2*state_count);
+    rms_values.setZero();
+    if (sgdef.formulation.enabled()) {
+        // Zero all relevant common.means
+
+        // Sum velocities as a function of y(j) into common.{u,v,w}()
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
+                j < o.dgrid.local_physical_end.y();
+                ++j) {
+
+            std::vector<summing_accumulator_type> acc(state_count);
+
+            const int last_zxoffset = offset
+                + o.dgrid.local_physical_extent.z()
+                * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+
+                for (int var = 0; var < state_count; ++var) {
+                    acc[ndx::e+var](sphys(ndx::e+var, offset) 
+                                  * sphys(ndx::e+var, offset));
+                }
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Reduce
+            for (int var = 0; var < state_count; ++var) {
+                rms_values(j,ndx::e+var) = boost::accumulators::sum(acc[ndx::e+var]);
+            }
+        } // end Y
+
+        // Allreduce and scale rms_values sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need values to take derivative
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, rms_values.data(),
+                    rms_values.size()/2, mpi::datatype<real_t>(),
+                    MPI_SUM, MPI_COMM_WORLD));
+        rms_values *= o.dgrid.chi();
+
+        // Finish rms computation
+        for (int var = 0; var < state_count; ++var) {
+            for (int j = 0; j < Ny; ++j) {
+                rms_values(j,var) = sqrt(rms_values(j,var) 
+                         - mean_values(j,var) * mean_values(j,var));
+                // Copy the rms to the drms part of the storage in 
+                // preparation to computing the rms derivative
+                rms_values(j,var+state_count) = rms_values(j,var); 
+            }
+        }
+
+        // Each process computes the y-derivative of the rms
+        for (size_t var = ndx::e; var<state_count; ++var) {
+            // Obtain rms in bspline coefficients
+            o.masslu()->solve(1, &rms_values(0,state_count+var),
+                              1, Ny);
+
+            // Compute derivative of rms at collocation points
+            o.cop.apply(1, 1, 1.0, &rms_values(0,state_count+var), 1, Ny);
+        }
+    } // end computation of rms for slow growth
+
     if (Filter == filter::viscous) {
         // After first traversal, have gathered reference profiles.  So,
         // we can complete the viscous filter source calculation by
@@ -1005,24 +1066,24 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // rms
                 real_t rms [Ns+4];
-                rms[0] = 0 ;
-                rms[1] = 0 ;
-                rms[2] = 0 ;
-                rms[3] = 0 ;
-                rms[4] = 0 ; 
+                rms[0] = rms_values(j,ndx::rho);
+                rms[1] = rms_values(j,ndx::mx); 
+                rms[2] = rms_values(j,ndx::my); 
+                rms[3] = rms_values(j,ndx::mz); 
+                rms[4] = rms_values(j,ndx::e);  
                 for (unsigned int s=1; s<Ns; s++){
-                    rms[4+s] = 0;
+                    rms[4+s] = rms_values(j,ndx::rho+s);
                 }
 
                 // drms
                 real_t drms[Ns+4];
-                drms[0] = 0;
-                drms[1] = 0;
-                drms[2] = 0;
-                drms[3] = 0;
-                drms[4] = 0;
+                drms[0] = rms_values(j,state_count+ndx::rho);
+                drms[1] = rms_values(j,state_count+ndx::mx);
+                drms[2] = rms_values(j,state_count+ndx::my);
+                drms[3] = rms_values(j,state_count+ndx::mz);
+                drms[4] = rms_values(j,state_count+ndx::e);
                 for (unsigned int s=1; s<Ns; s++){
-                    drms[4+s] = 0;
+                    drms[4+s] = rms_values(j,state_count+ndx::rho+s);
                 }
 
 #ifdef SUZERAIN_HAVE_LARGO
@@ -1109,14 +1170,36 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 #ifdef SUZERAIN_HAVE_LARGO
                 // Compute sources from library
-                largo_bl_temporal_continuity_setamean (sgdef.workspace, 0.0, 1.0, &src[0]);
-                largo_bl_temporal_xmomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[1]);
-                largo_bl_temporal_ymomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[2]);
-                largo_bl_temporal_zmomentum_setamean  (sgdef.workspace, 0.0, 1.0, &src[3]);
-                largo_bl_temporal_energy_setamean     (sgdef.workspace, 0.0, 1.0, &src[4]);
+                largo_bl_temporal_continuity_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[0]);
+                largo_bl_temporal_xmomentum_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[1]);
+                largo_bl_temporal_ymomentum_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[2]);
+                largo_bl_temporal_zmomentum_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[3]);
+                largo_bl_temporal_energy_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[4]);
                 for (int s=1; s < Ns; ++s) {
-                    largo_bl_temporal_ispecies_setamean (sgdef.workspace, 0.0, 1.0, &src[5], s);
+                    largo_bl_temporal_ispecies_setamean 
+                                      (sgdef.workspace, 0.0, 1.0, &src[5], s);
                 }
+
+                largo_bl_temporal_continuity_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[0]);
+                largo_bl_temporal_xmomentum_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[1]);
+                largo_bl_temporal_ymomentum_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[2]);
+                largo_bl_temporal_zmomentum_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[3]);
+                largo_bl_temporal_energy_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[4]);
+                for (int s=1; s < Ns; ++s) {
+                    largo_bl_temporal_ispecies_setarms 
+                                      (sgdef.workspace, 1.0, 1.0, &src[5], s);
+                }
+
 #else
                 // No slow growth computation if not linked with largo
                 // FIXME: is this the best way to report an error for this case?

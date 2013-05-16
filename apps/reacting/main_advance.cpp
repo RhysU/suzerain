@@ -41,6 +41,9 @@
 #include "hybrid_operator.hpp"
 #include "nonreflecting_treatment.hpp"
 
+#ifdef SUZERAIN_HAVE_LARGO
+#include "largo/largo.h" 
+#endif
 
 #pragma warning(disable:1419)
 
@@ -304,6 +307,15 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
     }
+
+#ifdef SUZERAIN_HAVE_LARGO
+    // Allocate slow growth workspace
+    {
+        int state_count = (int) cmods->Ns()+4;
+        int Ns = (int) cmods->Ns()-1; 
+        largo_bl_temporal_allocate(&sgdef->workspace, state_count, Ns);
+    }
+#endif
 
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
