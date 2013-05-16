@@ -172,6 +172,7 @@ libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
+libsuzerain_la_LIBADD    += $(LARGO_LIBS)
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere
@@ -285,6 +286,7 @@ libsupport_la_LDFLAGS        = # Convenience-only
 libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
 libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
 libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
+libsupport_la_CPPFLAGS      += $(LARGO_CFLAGS)
 libsupport_la_SOURCES        = support/application_base.cpp
 libsupport_la_SOURCES       += support/definition_base.cpp
 libsupport_la_SOURCES       += support/driver_base.cpp
