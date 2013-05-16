@@ -398,7 +398,7 @@ quantities sample_quantities(
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
                 [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
         BOOST_PP_SEQ_FOR_EACH(DECLARE,,
-                SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
+                SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL)
 #undef DECLARE
 
         for (int k = dgrid.local_physical_start.z();
@@ -628,7 +628,7 @@ quantities sample_quantities(
             BOOST_PP_ENUM(BOOST_PP_TUPLE_ELEM(2, 1, tuple),               \
                           EXTRACT_SUM, BOOST_PP_TUPLE_ELEM(2, 0, tuple));
         BOOST_PP_SEQ_FOR_EACH(MOVE_SUM_INTO_TMP,,
-                SUZERAIN_PERFECT_QUANTITIES_PHYSICAL)
+                SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL)
 #undef EXTRACT_SUM
 #undef MOVE_SUM_INTO_TMP
 
@@ -683,7 +683,7 @@ quantities sample_quantities(
 #define FILL(r, data, tuple)                                         \
     ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().fill(std::numeric_limits< \
             quantities::storage_type::Scalar>::quiet_NaN());
-    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_PERFECT_QUANTITIES_IMPLICIT)
+    BOOST_PP_SEQ_FOR_EACH(FILL,,SUZERAIN_REACTING_FLOW_QUANTITIES_IMPLICIT)
 #undef FILL
 
     return ret;
