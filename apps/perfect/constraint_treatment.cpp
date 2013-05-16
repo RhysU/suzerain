@@ -162,7 +162,7 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     for (int j = 0; j < cmat.cols(); ++j) {
         const constraint::base * const cj = operator[](j).get();
         if (cj) {
-            for (int i = 0; i < cmat.rows(); ++i) {
+            for (int i = 0; i < cmat.rows(); ++i) { // Note transpose!
                 cmat(j,i) = cj->coeff.dot(cdata.col(i).segment(j*Ny,Ny).real());
             }
         }
