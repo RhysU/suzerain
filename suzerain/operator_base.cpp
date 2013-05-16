@@ -66,28 +66,29 @@ operator_base::operator_base(
     // Compute the B-spline-dependent correction factor to obtain
     // good maximum eigenvalue estimates given wall-normal inhomogeneity.
     // See model document for definitions of C^{(1)} and C^{(2)}.
-    real_t C1, Clow1, Chigh1;
-    real_t C2, Clow2, Chigh2;
+    real_t C1, Clow1;
+    real_t C2, Clow2;
     if (grid.htdelta >= 0) { // See grid.two_sided(), grid.one_sided()
         suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
-                1, b.k(), +grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
+                1, b.k(), +grid.htdelta, b.n(), &C1, &Clow1, NULL);
         suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
-                2, b.k(), +grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
+                2, b.k(), +grid.htdelta, b.n(), &C2, &Clow2, NULL);
     } else {
         suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
-                1, b.k(), -grid.htdelta, b.n(), &C1, &Clow1, &Chigh1);
+                1, b.k(), -grid.htdelta, b.n(), &C1, &Clow1, NULL);
         suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
-                2, b.k(), -grid.htdelta, b.n(), &C2, &Clow2, &Chigh2);
+                2, b.k(), -grid.htdelta, b.n(), &C2, &Clow2, NULL);
     }
 
     // In practice, directly using C^{(1)} and C^{(2)} is too aggressive
     // as it requires using inconsistent safety factors when computing
     // convectively- or diffusively-limited test problems.  Softening
-    // via taking sqrt(C^{(i)}) seems to permit a single safety factor
+    // in the following manner seems to permit a single safety factor
     // to address both convective and diffusive stability restrictions.
-    using std::sqrt;
-    C1 = sqrt(C1); Clow1 = sqrt(Clow1); Chigh1 = sqrt(Chigh1);
-    C2 = sqrt(C2); Clow2 = sqrt(Clow2); Chigh2 = sqrt(Chigh2);
+    C1     = std::pow(C1,     33 / 64.);
+    Clow1  = std::pow(Clow1,  33 / 64.);
+    C2     = std::pow(C2,     27 / 64.);
+    Clow2  = std::pow(Clow2,  27 / 64.);
 
     // Compute collocation point-based information local to this rank
     for (int j = dgrid.local_physical_start.y();
