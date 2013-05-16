@@ -63,7 +63,7 @@ namespace reacting {
  * been traded for the headache of reading Boost.Preprocessor-based logic.  So
  * it goes.
  */
-class quantities
+class quantities_base
 {
 public:
 
@@ -159,22 +159,25 @@ public:
      * Constructor setting <tt>this->t = NaN</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    quantities();
+    quantities_base();
 
     /**
      * Constructor setting <tt>this->t = t</tt>.
      * Caller will need to resize <tt>this->storage</tt> prior to use.
      */
-    explicit quantities(real_t t);
+    explicit quantities_base(real_t t);
 
     /**
      * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
      * storage containing \c Ny rows.
      */
-    quantities(real_t t, storage_type::Index Ny);
+    quantities_base(real_t t, storage_type::Index Ny);
+
+    /** Virtual destructor as appropriate for abstract base class */
+    virtual ~quantities_base() { /* NOP */ }
 
     /** Save quantities to a restart file. */
-    void save(const esio_handle h) const;
+    virtual void save(const esio_handle h) const;
 
     /**
      * Load quantities from a restart file.  Statistics not present in the
@@ -183,7 +186,7 @@ public:
      *
      * @return True if some quantities could be loaded.  False otherwise.
      */
-    bool load(const esio_handle h);
+    virtual bool load(const esio_handle h);
 
 #define OP(r, data, tuple)                                              \
     BOOST_PP_TUPLE_ELEM(2, 0, tuple) = BOOST_PP_TUPLE_ELEM(2, 1, tuple)
@@ -263,6 +266,57 @@ private:
 
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
+};
+
+
+class quantities : public quantities_base
+{
+
+    /** Provides simple access to the superclass type */
+    typedef quantities_base super;
+
+public:
+
+    /** Type of the contiguous storage used to house all scalars */
+    typedef Eigen::Array<real_t, Eigen::Dynamic, Eigen::Dynamic> species_storage_type;
+
+    /** Contiguous storage used to house species means */
+    species_storage_type species_storage;
+
+    /**
+     * Constructor setting <tt>this->t = NaN</tt>.
+     * Caller will need to resize <tt>this->storage</tt> prior to use.
+     */
+    quantities();
+
+    /**
+     * Constructor setting <tt>this->t = t</tt>.
+     * Caller will need to resize <tt>this->storage</tt> prior to use.
+     */
+    explicit quantities(real_t t);
+
+    /**
+     * Constructor setting <tt>this->t = t</tt> and preparing a zero-filled \c
+     * storage containing \c Ny rows.
+     */
+    quantities(real_t t, species_storage_type::Index Ny, 
+                         species_storage_type::Index Ns);
+
+    /** Virtual destructor as appropriate for abstract base class */
+    virtual ~quantities() { /* NOP */ }
+
+    /** Save quantities to a restart file. */
+    virtual void save(const esio_handle h) const;
+
+    /**
+     * Load quantities from a restart file.  Statistics not present in the
+     * restart file are considered to be all NaNs.  Member #t, which is not
+     * modified by this routine, is presumably set in some other fashion.
+     *
+     * @return True if some quantities could be loaded.  False otherwise.
+     */
+    virtual bool load(const esio_handle h);
+
 };
 
 /**

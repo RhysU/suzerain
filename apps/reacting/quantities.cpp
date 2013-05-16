@@ -54,23 +54,23 @@ namespace reacting {
 
 static const char default_who[] = "quantities";
 
-quantities::quantities()
+quantities_base::quantities_base()
     : t(std::numeric_limits<real_t>::quiet_NaN())
     , who(default_who)
 {
     // NOP
 }
 
-quantities::quantities(real_t )
+quantities_base::quantities_base(real_t t)
     : t(t)
     , who(default_who)
 {
     // NOP
 }
 
-quantities::quantities(
+quantities_base::quantities_base(
         real_t t,
-        quantities::storage_type::Index Ny)
+        quantities_base::storage_type::Index Ny)
     : t(t),
       storage(storage_type::Zero(Ny, storage_type::ColsAtCompileTime))
     , who(default_who)
@@ -78,7 +78,7 @@ quantities::quantities(
     // NOP
 }
 
-// Helper for the quantities::save(...) implementation just below
+// Helper for the quantities_base::save(...) implementation just below
 class quantities_saver
 {
 
@@ -115,7 +115,7 @@ private:
 
 };
 
-void quantities::save(const esio_handle h) const
+void quantities_base::save(const esio_handle h) const
 {
     if (this->storage.size()) {
         quantities_saver f(this->who, h, "bar_");
@@ -126,7 +126,7 @@ void quantities::save(const esio_handle h) const
     }
 }
 
-// Helper for the quantities::load(...) implementation just below
+// Helper for the quantities_base::load(...) implementation just below
 class quantities_loader
 {
 
@@ -176,7 +176,7 @@ private:
 
 };
 
-bool quantities::load(const esio_handle h)
+bool quantities_base::load(const esio_handle h)
 {
     // Were any quantities loaded from file?
     bool success = false;
@@ -197,6 +197,38 @@ bool quantities::load(const esio_handle h)
     }
 
     return success;
+}
+
+quantities::quantities()
+    : quantities_base()
+{
+    // NOP
+}
+
+quantities::quantities(real_t t)
+    : quantities_base(t)
+{
+    // NOP
+}
+
+quantities::quantities(
+        real_t t,
+        quantities::storage_type::Index Ny,
+        quantities::storage_type::Index Ns)
+    : quantities_base(t, Ny)
+{
+    // NOP
+}
+
+
+void quantities::save(const esio_handle h) const
+{
+    super::save(h);
+}
+
+bool quantities::load(const esio_handle h)
+{
+    super::load(h);
 }
 
 
@@ -279,7 +311,8 @@ quantities sample_quantities(
                                auxw.strides() + 1));
 
     // Rank-specific details accumulated in ret to be MPI_Reduce-d later
-    quantities ret(t, Ny);
+    //quantities ret(t, Ny);
+    quantities ret(t, Ny, Ns);
 
     // Obtain samples available in wave-space from mean conserved state.
     // These coefficients are inherently averaged across the X-Z plane.
