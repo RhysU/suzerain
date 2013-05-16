@@ -30,7 +30,7 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/multi_array.hpp>
-#include <suzerain/operator_base.hpp>
+#include <suzerain/ndx.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
 
@@ -38,60 +38,22 @@ namespace suzerain {
 
 // Forward declarations
 class bspline;
-class bsplineop;
-class grid_specification;
 class pencil_grid;
+namespace constraint { class base; }
 
 namespace perfect {
 
 // Forward declarations
 class operator_common_block;
 
-/**
- * Encapsulates the ways \ref constraint_treatment can constrain a value.
- */
-class constraint
-{
-public:
-
-    /** A particular value can be constrained in what ways? */
-    enum what_type {
-          nothing = 0 ///< Enforce nothing.  That is, no constraint.
-        , value_lower ///< Enforce collocation value at \f$y=0\f$
-        , value_upper ///< Enforce collocation value at \f$y=L_y\f$
-        , value_bulk  ///< Enforce bulk value across \f$y=\left[0,L_y\right]\f$
-    } what;
-
-    /** What numeric value should be targeted? */
-    real_t target;
-
-    /** Default constructor creates an unenforced constraint. */
-    constraint()
-        : what(nothing)
-        , target(std::numeric_limits<real_t>::quiet_NaN())
-    {}
-
-    /** Construct an instance enforcing \c target in \c what manner. */
-    constraint(const what_type what, const real_t target)
-        : what(what)
-        , target(target)
-    {}
-
-    /** Is this constraint enforceable as specified? */
-    bool enabled() const
-    { return what != nothing && !(boost::math::isnan)(target); }
-
-};
+// TODO Use Eigen Maps to decouple operator_common_block if sensible
 
 /**
  * A wrapper applying integral constraint treatment atop any linear operator.
- * This class began as a way to provide integral constraints for driving a
- * Coleman-like channel.
- *
  * During \ref invert_mass_plus_scaled_operator implicit momentum forcing is
  * applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
- * information from operator_common_block::u() via an instance provided at
+ * information from \ref operator_common_block via an instance provided at
  * construction time.
  *
  * Means of the implicit momentum and energy forcing coefficients are also
@@ -102,31 +64,40 @@ public:
  * /bar_Crhou_dot_u.
  */
 class constraint_treatment
-    : public operator_base
-    , public timestepper::lowstorage::linear_operator<
+    : public timestepper::lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
           contiguous_state<4,complex_t>
       >
+    , public  boost::noncopyable
+    , private array<shared_ptr<constraint::base>, 5>
 {
+
+    /** Hide the composition-related superclass from client code */
+    typedef array<shared_ptr<constraint::base>, 5> implementation_defined;
+
 public:
 
     /**
-     * Constructor.  After construction, #L must be provided.
-     * One or more of #rho, #rho_u, or #rho_E should be called when
-     * constraints are desired.
+     * Constructor.  After construction, #L must be provided.  One or more
+     * <tt>operator[](ndx::type)</tt> calls should be made to establish
+     * constraints when constraints are desired.
      *
-     * @param Ma Nondimensional Mach number for kinetic energy computations.
-     *           In a dimensional setting, this should be one.  Notice that it
-     *           is a \e reference permitting the value to track other
-     *           settings.  For example, those in a \ref scenario_definition.
+     * @param Ma     Nondimensional Mach number for kinetic energy computations.
+     *               In a dimensional setting, this should be one.  Notice that
+     *               it is a \e reference permitting the value to track another
+     *               setting.  For example, one in a \ref scenario_definition.
+     * @param dgrid  Parallel decomposition details used to determine which
+     *               rank houses the "zero-zero" Fourier modes.
+     * @param common Storage from which mean velocity profiles will be read and
+     *               to which implicit forcing averages will be accumulated.
      */
     constraint_treatment(
-            real_t& Ma,
-            const grid_specification& grid,
+            const real_t& Ma,
             const pencil_grid& dgrid,
-            const bsplineop& cop,
-            bspline& b,
             operator_common_block& common);
+
+    // Permit subscripting to access scalar equation-specific constraints
+    using implementation_defined::operator[];
 
     /** Delegates invocation to #L */
     virtual void apply_mass_plus_scaled_operator(
@@ -160,62 +131,30 @@ public:
                 contiguous_state<4,complex_t>
             > > L;
 
-    /** Specify the desired constraint treatment for density \f$\rho\f$. */
-    constraint_treatment& specify_rho(const constraint& c);
-
-    /** Specify the desired constraint treatment for momentum \f$\rho{}u\f$. */
-    constraint_treatment& specify_rho_u(const constraint& c);
-
-    /** Specify the desired constraint treatment for energy \f$\rho{}E\f$. */
-    constraint_treatment& specify_rho_E(const constraint& c);
-
 protected:
-
-    /** Helper used to implement \c specify_XXX methods */
-    constraint_treatment& specify(const constraint& src,
-                                        constraint& dst,
-                                        VectorXr&   coeff);
 
     /**
      * What Mach number should be used to scale kinetic
      * energy contributions to the total energy equation?
      */
-    real_t &Ma;
-
-    /** Houses data additionally required for some linear operators */
-    operator_common_block &common;
-
-    /** In what manner should \f$\rho\f$ be constrained? */
-    constraint rho;
-
-    /** In what manner should \f$\rho{}u\f$ be constrained? */
-    constraint mx;
-
-    /** In what manner should \f$\rho{}E\f$ be constrained? */
-    constraint e;
-
-    /** Precomputed integration coefficients */
-    VectorXr coeff_bulk;
-
-    /** Precomputed integration-like coefficients for \c rho constraint */
-    VectorXr coeff_rho;
-
-    /** Precomputed integration-like coefficients for \c rho_u constraint */
-    VectorXr coeff_mx;
-
-    /** Precomputed integration-like coefficients for \c rho_E constraint */
-    VectorXr coeff_e;
+    const real_t& Ma;
 
     /**
-     * Constraint data passed to #L.
-     *
-     * \li cdata.col(0) is for the bulk density constraint.
-     * \li cdata.col(1) is for the bulk momentum constraint.
-     * \li cdata.col(2) is for the bulk total energy constraint.
-     *
+     * Used to obtain mean primitive state profiles to compute
+     * implicit forcing work contributions to the total energy equation.
+     */
+    operator_common_block& common;
+
+private:
+
+    /** Does this rank possess the "zero-zero" Fourier modes? */
+    const bool rank_has_zero_zero_modes;
+
+    /**
+     * Constraint data passed to #L indexed by ndx::type.
      * Mutable member avoids repeated allocation/deallocation.
      */
-    mutable MatrixX3c cdata;
+    mutable MatrixX5c cdata;
 
     /**
      * Least squares constraint solver.
@@ -224,6 +163,7 @@ protected:
     mutable Eigen::JacobiSVD<
             MatrixXXr, Eigen::FullPivHouseholderQRPreconditioner
         > jacobiSvd;
+
 };
 
 } // namespace perfect

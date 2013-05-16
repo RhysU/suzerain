@@ -28,8 +28,8 @@
 #include "constraint_treatment.hpp"
 
 #include <suzerain/bspline.hpp>
+#include <suzerain/constraint.hpp>
 #include <suzerain/error.h>
-#include <suzerain/grid_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
@@ -41,74 +41,15 @@ namespace suzerain {
 namespace perfect {
 
 constraint_treatment::constraint_treatment(
-            real_t& Ma,
-            const grid_specification& grid,
+            const real_t& Ma,
             const pencil_grid& dgrid,
-            const bsplineop& cop,
-            bspline& b,
             operator_common_block& common)
-    : operator_base(grid, dgrid, cop, b)
+    : implementation_defined()
     , Ma(Ma)
     , common(common)
-    , rho(constraint())
-    , mx(constraint())
-    , e(constraint())
-    , coeff_bulk(b.n())
-    , coeff_rho(b.n())
-    , coeff_mx(b.n())
-    , coeff_e(b.n())
+    , rank_has_zero_zero_modes(dgrid.has_zero_zero_modes())
     , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
-    // Precompute operator for finding bulk quantities from coefficients
-    b.integration_coefficients(0, coeff_bulk.data());
-    coeff_bulk /= grid.L.y();
-}
-
-constraint_treatment&
-constraint_treatment::specify(const constraint& src,
-                                    constraint& dst,
-                                    VectorXr&   dstcoeff)
-{
-    dst = src;
-
-    switch (src.what) {
-    case constraint::nothing:
-        dstcoeff.resize(0);
-        break;
-    case constraint::value_lower:
-        dstcoeff.setZero(coeff_bulk.rows());
-        dstcoeff.head<1>()[0] = 1;
-        break;
-    case constraint::value_upper:
-        dstcoeff.setZero(coeff_bulk.rows());
-        dstcoeff.tail<1>()[0] = 1;
-        break;
-    case constraint::value_bulk:
-        dstcoeff = coeff_bulk;
-        break;
-    default:
-        SUZERAIN_ERROR_VAL_UNIMPLEMENTED(*this);
-    }
-
-    return *this;
-}
-
-constraint_treatment&
-constraint_treatment::specify_rho(const constraint& src)
-{
-    return this->specify(src, rho, coeff_rho);
-}
-
-constraint_treatment&
-constraint_treatment::specify_rho_u(const constraint& src)
-{
-    return this->specify(src, mx, coeff_mx);
-}
-
-constraint_treatment&
-constraint_treatment::specify_rho_E(const constraint& src)
-{
-    return this->specify(src, e, coeff_e);
 }
 
 void constraint_treatment::apply_mass_plus_scaled_operator(
@@ -146,17 +87,13 @@ constraint_treatment::invert_mass_plus_scaled_operator(
 
     SUZERAIN_TIMER_SCOPED("constraint_treatment");
 
-    // Shorthand
-    using std::size_t;
-    const int Ny = this->dgrid.global_wave_extent.y();
-
     // Sidesteps assertions when local rank contains no wavespace information
-    if (SUZERAIN_UNLIKELY(0U == state.shape()[1])) return;
+    const int Ny = (int) state.shape()[1];
+    if (SUZERAIN_UNLIKELY(0 == Ny)) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
     // Any amount of incoming state is valid so long as there's enough there
-    SUZERAIN_ENSURE(state.shape()  [1] == (unsigned) Ny      );
-    SUZERAIN_ENSURE(state.strides()[1] ==             1      );
+    SUZERAIN_ENSURE(state.strides()[1] ==            1       );
     SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny      );
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::e  );
     SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
@@ -170,20 +107,26 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     SUZERAIN_ENSURE(ic0 == NULL);
 
     // On zero-zero rank, re-use ic0 to wrap cdata for BaseClass invocation
-    if (dgrid.has_zero_zero_modes()) {
+    if (rank_has_zero_zero_modes) {
 
         // Prepare RHS data for density, momentum, and total energy constraints
         //
-        // Notice scaling by Mach^2 to cause mx-related forcing
+        // Notice scaling by Mach^2 to cause mx-, my-, and mz-related forcing
         //     work to have nondimensional energy "units" because we will
         //     directly add the result to the total energy equation.
+        const real_t Ma2 = Ma * Ma;
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
-        cdata.col(0).segment(ndx::rho * Ny, Ny).setOnes();
-        cdata.col(1).segment(ndx::e   * Ny, Ny).real() = Ma * Ma * common.u();
-        cdata.col(1).segment(ndx::mx  * Ny, Ny).setOnes();
-        cdata.col(2).segment(ndx::e   * Ny, Ny).setOnes();
+        cdata.col(ndx::e  ).segment(ndx::e   * Ny, Ny).setOnes();
+        cdata.col(ndx::mx ).segment(ndx::e   * Ny, Ny).real() = Ma2*common.u();
+        cdata.col(ndx::mx ).segment(ndx::mx  * Ny, Ny).setOnes();
+        cdata.col(ndx::my ).segment(ndx::e   * Ny, Ny).real() = Ma2*common.v();
+        cdata.col(ndx::my ).segment(ndx::my  * Ny, Ny).setOnes();
+        cdata.col(ndx::mz ).segment(ndx::e   * Ny, Ny).real() = Ma2*common.w();
+        cdata.col(ndx::mz ).segment(ndx::mz  * Ny, Ny).setOnes();
+        cdata.col(ndx::rho).segment(ndx::rho * Ny, Ny).setOnes();
 
         // Wrap data into appropriately digestible format
+        using std::size_t;
         const array<size_t,4> sizes = {{
                 state.shape()[0], (size_t) Ny, (size_t) cdata.cols(), 1
         }};
@@ -199,60 +142,48 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     delete ic0;
 
     // Only the rank with zero-zero modes proceeds!
-    if (!dgrid.has_zero_zero_modes()) return;
+    if (!rank_has_zero_zero_modes) return;
 
     // Get an Eigen-friendly map of the zero-zero mode coefficients
     Map<VectorXc> mean(state.origin(), state.shape()[0]*Ny);
 
     // Solve the requested, possibly simultaneous constraint problem.  A fancy
-    // decomposition is used for a simple 3x3 solve or to permit one or more
+    // decomposition is used for a simple 5x5 solve or to permit one or more
     // inactive constraints via least squares.  Least squares also adds
-    // robustness if constraints incompatible.
+    // robustness whenever the constraints are somehow incompatible.
     //
     // 1) Assemble the matrix problem for simultaneous integral constraints
-    // Notice Matrix3r::operator<< depicts the matrix in row-major fashion
-    Matrix3r cmat;
-    cmat << coeff_rho.dot(cdata.col(0).segment(ndx::rho * Ny, Ny).real())
-         ,  coeff_rho.dot(cdata.col(1).segment(ndx::rho * Ny, Ny).real())
-         ,  coeff_rho.dot(cdata.col(2).segment(ndx::rho * Ny, Ny).real())
-         ,  coeff_mx .dot(cdata.col(0).segment(ndx::mx  * Ny, Ny).real())
-         ,  coeff_mx .dot(cdata.col(1).segment(ndx::mx  * Ny, Ny).real())
-         ,  coeff_mx .dot(cdata.col(2).segment(ndx::mx  * Ny, Ny).real())
-         ,  coeff_e  .dot(cdata.col(0).segment(ndx::e   * Ny, Ny).real())
-         ,  coeff_e  .dot(cdata.col(1).segment(ndx::e   * Ny, Ny).real())
-         ,  coeff_e  .dot(cdata.col(2).segment(ndx::e   * Ny, Ny).real())
-         ;
+    Matrix5r cmat(Matrix5r::Zero());
+    assert(static_cast<int>(ndx::e  ) < cmat.rows());
+    assert(static_cast<int>(ndx::mx ) < cmat.rows());
+    assert(static_cast<int>(ndx::my ) < cmat.rows());
+    assert(static_cast<int>(ndx::mz ) < cmat.rows());
+    assert(static_cast<int>(ndx::rho) < cmat.rows());
+    for (int j = 0; j < cmat.cols(); ++j) {
+        const constraint::base * const cj = operator[](j).get();
+        if (cj) {
+            for (int i = 0; i < cmat.rows(); ++i) {
+                cmat(i,j) = cj->coeff.dot(cdata.col(i).segment(j*Ny,Ny).real());
+            }
+        }
+    }
     // 2) Prepare initial values relative to desired targets when active.
-    // Otherwise, zero the associated row and column in matrix.
-    Vector3r crhs;
-    if (rho.enabled()) {
-        crhs[0] = rho.target
-                - coeff_rho.dot(mean.segment(ndx::rho * Ny, Ny).real());
-    } else {
-        crhs[0] = 0;
-        cmat.col(0).setZero();
-        cmat.row(0).setZero();
-    }
-    if (mx.enabled()) {
-        crhs[1] = mx.target
-                - coeff_mx. dot(mean.segment(ndx::mx  * Ny, Ny).real());
-    } else {
-        crhs[1] = 0;
-        cmat.col(1).setZero();
-        cmat.row(1).setZero();
-    }
-    if (e.enabled()) {
-        crhs[2] = e.target
-                - coeff_e.  dot(mean.segment(ndx::e   * Ny, Ny).real());
-    } else {
-        crhs[2] = 0;
-        cmat.col(2).setZero();
-        cmat.row(2).setZero();
+    //    Otherwise, zero the associated row and column in matrix.
+    Vector5r crhs(Vector5r::Zero());
+    for (int j = 0; j < crhs.rows(); ++j) {
+        const constraint::base * const cj = operator[](j).get();
+        if (cj && cj->enabled()) {
+            crhs[j] = cj->target()
+                    - cj->coeff.dot(mean.segment(j*Ny,Ny).real());
+        } else {
+            cmat.col(j).setZero();
+            cmat.row(j).setZero();
+        }
     }
     // 3) Prepare matrix decomposition and solve using least squares
-    Vector3r cphi = jacobiSvd.compute(cmat).solve(crhs);
+    Vector5r cphi = jacobiSvd.compute(cmat).solve(crhs);
     // 4) Add correctly scaled results to the mean state to satisfy constraints
-    mean += cphi(0)*cdata.col(0) + cphi(1)*cdata.col(1) + cphi(2)*cdata.col(2);
+    mean += (cdata * cphi.asDiagonal()).rowwise().sum();
 
     // The implicitly applied integral constraints, as coefficients, must be
     // averaged across each substep to permit accounting for their impact on
@@ -267,17 +198,25 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     cphi                 /= delta_t; // Henceforth includes 1/delta_t scaling!
     const real_t iota     = method.iota(substep_index);
     common.fx()          += iota * (
-                                ArrayX1r::Constant(Ny, cphi(1))
+                                ArrayX1r::Constant(Ny, cphi[ndx::mx])
                               - common.fx()
                             );
-    common.fy()          += iota * (/* zero */ - common.fy());
-    common.fz()          += iota * (/* zero */ - common.fz());
+    common.fy()          += iota * (
+                                ArrayX1r::Constant(Ny, cphi[ndx::my])
+                              - common.fy()
+                            );
+    common.fz()          += iota * (
+                                ArrayX1r::Constant(Ny, cphi[ndx::mz])
+                              - common.fz()
+                            );
     common.f_dot_u()     += iota * (
-                                cphi(1) * common.u()
+                                cphi[ndx::mx] * common.u()
+                              + cphi[ndx::my] * common.v()
+                              + cphi[ndx::mz] * common.w()
                               - common.f_dot_u()
                             );
     common.qb()          += iota * (
-                                ArrayX1r::Constant(Ny, cphi(2))
+                                ArrayX1r::Constant(Ny, cphi[ndx::e])
                               - common.qb()
                             );
     common.CrhoE()       += iota * (/* zero */ - common.CrhoE());
@@ -285,7 +224,7 @@ constraint_treatment::invert_mass_plus_scaled_operator(
     common.Crhov()       += iota * (/* zero */ - common.Crhov());
     common.Crhow()       += iota * (/* zero */ - common.Crhow());
     common.Crho()        += iota * (
-                                ArrayX1r::Constant(Ny, cphi(0))
+                                ArrayX1r::Constant(Ny, cphi[ndx::rho])
                               - common.Crho()
                             );
     common.Crhou_dot_u() += iota * (/* zero */ - common.Crhou_dot_u());

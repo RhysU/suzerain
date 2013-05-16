@@ -28,6 +28,7 @@
 #include <esio/esio.h>
 
 #include <suzerain/common.hpp>
+#include <suzerain/constraint.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
@@ -195,15 +196,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Notice that integral constraints are always applied to L
     // and that the same nonlinear_operator is used pervasively.
     common_block.slow_treatment = slowgrowth::none;
-    shared_ptr<constraint_treatment> constrained(new constraint_treatment(
-                    scenario->Ma, *grid, *dgrid, *cop, *b, common_block));
+    shared_ptr<constraint_treatment> constrainer(new constraint_treatment(
+                    scenario->Ma, *dgrid, common_block));
     if        (grid->two_sided()) { // Constraints for channel geometry
-        constrained->specify_rho  (constraint(constraint::value_bulk,
-                                              scenario->bulk_rho  ));
-        constrained->specify_rho_u(constraint(constraint::value_bulk,
-                                              scenario->bulk_rho_u));
-        constrained->specify_rho_E(constraint(constraint::value_bulk,
-                                              scenario->bulk_rho_E));
+        (*constrainer)[ndx::rho].reset(
+                new constraint::reference_bulk(scenario->bulk_rho  , *b));
+        (*constrainer)[ndx::mx ].reset(
+                new constraint::reference_bulk(scenario->bulk_rho_u, *b));
+        (*constrainer)[ndx::e  ].reset(
+                new constraint::reference_bulk(scenario->bulk_rho_E, *b));
     } else if (grid->one_sided()) { // TODO Constraints for flat plate geometry
         scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
@@ -212,7 +213,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         FATAL0(who, "Sanity error in constraint selection");
         return EXIT_FAILURE;
     }
-    L = constrained;
+    L = constrainer;
     N.reset(new nonlinear_operator(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
@@ -226,7 +227,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             nonreflecting->N = N;
             N = nonreflecting;
         }
-        constrained->L.reset(new isothermal_mass_operator(
+        constrainer->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
     } else if (use_implicit) {
@@ -238,7 +239,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                         " not usable with implicit advance");
             return EXIT_FAILURE;
         }
-        constrained->L.reset(new isothermal_hybrid_linear_operator(
+        constrainer->L.reset(new isothermal_hybrid_linear_operator(
                     solver_spec, *scenario, *grid, *dgrid,
                     *cop, *b, common_block));
     } else {
