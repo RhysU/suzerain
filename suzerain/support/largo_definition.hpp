@@ -30,6 +30,10 @@
 
 #include <esio/esio.h>
 
+// #ifdef SUZERAIN_HAVE_LARGO
+// #include <largo/largo.h>
+// #endif
+
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/loadable.hpp>
@@ -131,6 +135,9 @@ public:
 
     /** Growth rate of reference thickness \f$\Delta\f$ */
     real_t grdelta;
+
+    /** Pointer to largo workspace */
+    void * workspace;
 
 };
 
