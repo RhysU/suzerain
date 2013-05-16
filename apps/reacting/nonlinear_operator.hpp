@@ -47,7 +47,9 @@
 #include "filter_definition.hpp"
 #include "reacting_ndx.hpp"
 
-#include "largo/largo.h" 
+#ifdef SUZERAIN_HAVE_LARGO
+#include "largo/largo.h"
+#endif
 
 #pragma warning(disable:280 383 1572)
 
