@@ -139,13 +139,13 @@ static const char desc_lower_T  []  = "Temperature at lower boundary";
 static const char desc_lower_u  []  = "Streamwise velocity at lower boundary";
 static const char desc_lower_v  []  = "Wall-normal velocity at lower boundary";
 static const char desc_lower_w  []  = "Spanwise velocity at lower boundary";
-static const char desc_lower_rho[]  = "Reference density at lower boundary";
+static const char desc_lower_rho[]  = "Density at lower boundary";
 static const char desc_lower_cs []  = "Species mass fractions at lower boundary";
 static const char desc_upper_T  []  = "Temperature at upper boundary";
 static const char desc_upper_u  []  = "Streamwise velocity at upper boundary";
 static const char desc_upper_v  []  = "Wall-normal velocity at upper boundary";
 static const char desc_upper_w  []  = "Spanwise at upper boundary";
-static const char desc_upper_rho[]  = "Reference density at upper boundary";
+static const char desc_upper_rho[]  = "Density at upper boundary";
 static const char desc_upper_cs []  = "Species mass fractions at upper boundary";
 
 boost::program_options::options_description

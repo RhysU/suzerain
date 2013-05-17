@@ -209,8 +209,9 @@ public:
 
     /**
      * Density \f$rho\f$ at \f$y=0\f$.
-     * Currently not enforced for any assigned value.
-     * May serve as a reference value.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * An assigned value may serve as a reference value for
+     * a nonreflecting boundary.
      */
     real_t lower_rho;
 
@@ -259,8 +260,8 @@ public:
     /**
      * Density \f$rho\f$ at \f$y=L_y\f$.
      * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
-     * An assigned value may serve as a reference value for 
-     * the nonreflecting boundary.
+     * An assigned value may serve as a reference value for
+     * a nonreflecting boundary.
      */
     real_t upper_rho;
 
