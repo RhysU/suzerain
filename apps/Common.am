@@ -7,6 +7,12 @@ AM_CPPFLAGS        += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS)
 AM_CPPFLAGS        += $(FFTW3_THREADS_CFLAGS) $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
+
+if BUILD_SLOW_GROWTH
+AM_CPPFLAGS        += $(LARGO_CFLAGS)
+endif
+
+
 bin_PROGRAMS        = # Append elsewhere
 noinst_PROGRAMS     = # Append elsewhere
 dist_check_SCRIPTS  = # Append elsewhere
