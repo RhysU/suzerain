@@ -236,12 +236,18 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             // Assign some reference values
             const size_t Ns = cmods->Ns();
 
-            // FIXME: Set rho_ref for testing.
-            common_block.rho_ref = 0.001;
-            common_block.T_ref = isothermal->upper_T;
-            common_block.u_ref = isothermal->upper_u;
-            common_block.v_ref = isothermal->upper_v;
-            common_block.w_ref = isothermal->upper_w;
+            // SUZERAIN_ENSURE(!(isnan)(isothermal->upper_rho));
+            if ((isnan)(isothermal->upper_rho)) {
+                FATAL0(who, "upper_rho for nonreflecting boundary"
+                            " not specified and not in restart file");
+                return EXIT_FAILURE;
+            }
+
+            common_block.rho_ref = isothermal->upper_rho;
+            common_block.T_ref   = isothermal->upper_T;
+            common_block.u_ref   = isothermal->upper_u;
+            common_block.v_ref   = isothermal->upper_v;
+            common_block.w_ref   = isothermal->upper_w;
 
             common_block.cs_ref.resize(Ns);
             std::vector<real_t> mass_fractions(Ns);

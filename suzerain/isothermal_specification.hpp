@@ -156,6 +156,25 @@ public:
                              const std::vector<real_t>& upper_cs);
 
     /**
+     * Specify two different temperatures, wall blowing velocities,
+     * associated streamwise velocities, and reference densities.
+     * @copydetails isothermal_specification(real_t,real_t,real_t,real_t,real_t,real_t,real_t,real_t)
+     * @param lower_cs Mass fractions, one per species, at \f$y=0\f$ boundary.
+     * @param upper_cs Mass fractions, one per species, at \f$y=L_y\f$ boundary.
+     * @throw invalid_argument if <tt>lower_cs.size() != upper_cs.size()</tt>
+     */
+    isothermal_specification(real_t lower_T,
+                             real_t lower_u,
+                             real_t lower_v,
+                             real_t lower_rho,
+                             const std::vector<real_t>& lower_cs,
+                             real_t upper_T,
+                             real_t upper_u,
+                             real_t upper_v,
+                             real_t upper_rho,
+                             const std::vector<real_t>& upper_cs);
+
+    /**
      * Conditions on the \f$y=0\f$ boundary.
      * @{
      */
@@ -187,6 +206,13 @@ public:
      * This would permit, for example, slip boundaries.
      */
     real_t lower_w;
+
+    /**
+     * Density \f$rho\f$ at \f$y=0\f$.
+     * Currently not enforced for any assigned value.
+     * May serve as a reference value.
+     */
+    real_t lower_rho;
 
     /**
      * Species mass fractions \f$c_s\f$ at \f$y=0\f$ including the "diluter"
@@ -229,6 +255,14 @@ public:
      * This would permit, for example, slip boundaries.
      */
     real_t upper_w;
+
+    /**
+     * Density \f$rho\f$ at \f$y=L_y\f$.
+     * Code may treat <tt>NaN</tt> as a do-not-enforce flag.
+     * An assigned value may serve as a reference value for 
+     * the nonreflecting boundary.
+     */
+    real_t upper_rho;
 
     /**
      * Species mass fractions \f$c_s\f$ at \f$y=L_y\f$ including the "diluter"
