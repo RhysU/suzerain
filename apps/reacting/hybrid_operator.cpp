@@ -591,6 +591,9 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     SUZERAIN_UNUSED(delta_t);
     SUZERAIN_UNUSED(substep_index);
 
+    // number of flow equations
+    enum {Nf=5};
+
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
     assert(static_cast<int>(ndx::e  ) < flow_solver->S);
     assert(static_cast<int>(ndx::mx ) < flow_solver->S);
@@ -710,6 +713,20 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
             flow_bc_enforcer.op(*flow_solver, flow_solver->PAPT.data(),
                                          flow_solver->PAPT.colStride());
         }
+
+        // If one-sided, set 5x5 PAPT block corresponding to
+        // freestream boundary (i.e., the top) to identity matrix
+        if (grid.one_sided()) {
+            const int nr  = flow_solver->KL+flow_solver->KU+1;
+            const int ncb = flow_solver->S*(flow_solver->n-1);
+
+            // zero the whole block
+            flow_solver->PAPT.block(0              , ncb, nr, Nf).setZero();
+
+            // set diagonal to 1
+            flow_solver->PAPT.block(flow_solver->KL, ncb, 1 , Nf).setOnes();
+        }
+
         // Inform the flow_solver about the new, unfactorized operator
         flow_solver->supplied_PAPT();
 
@@ -722,6 +739,22 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
                 species_bc_enforcer->op(*(species_solver[alfa]), 
                                         species_solver[alfa]->PAPT.data(),
                                         species_solver[alfa]->PAPT.colStride());
+            }
+
+            // If one-sided, set 1x1 PAPT block corresponding to
+            // freestream boundary (i.e., the top) to identity matrix
+            if (grid.one_sided()) {
+                const int KL = species_solver[alfa]->KL;
+                const int KU = species_solver[alfa]->KU;
+
+                const int nr  = KL+KU+1;
+                const int ncb = 
+                    species_solver[alfa]->S*(species_solver[alfa]->n-1);
+
+                // zero the whole block
+                species_solver[alfa]->PAPT.block(0 , ncb, nr, 1).setZero();
+                // set diagonal to 1
+                species_solver[alfa]->PAPT.block(KL, ncb, 1 , 1).setOnes();
             }
 
             // Inform species_solver about new, unfactorized operator
