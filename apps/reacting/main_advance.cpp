@@ -211,6 +211,67 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         state_linear->assign_from(*state_nonlinear);
     }
 
+    // Nonreflecting must mutate chdef/isothermal before instantiating
+    // linear operator
+    if (grid->one_sided()) {
+        // FIXME: Plate implementation in progress.
+        // Need to set reference value for rho (rho_ref)
+        
+        INFO0(who, "Preparing nonreflecting upper boundary treatment");
+
+        WARN0(who, "Non-reflecting boundary treatment enabling boundary" 
+                   "layer simulations is still under development.      "
+                   "Proceed at your own risk.");
+
+        
+        // Assign some reference values
+        const size_t Ns = cmods->Ns();
+        
+        // SUZERAIN_ENSURE(!(isnan)(isothermal->upper_rho));
+        if ((isnan)(isothermal->upper_rho)) {
+            FATAL0(who, "upper_rho for nonreflecting boundary"
+                        " not specified and not in restart file");
+            return EXIT_FAILURE;
+        }
+        
+        common_block.rho_ref = isothermal->upper_rho;
+        common_block.T_ref   = isothermal->upper_T;
+        common_block.u_ref   = isothermal->upper_u;
+        common_block.v_ref   = isothermal->upper_v;
+        common_block.w_ref   = isothermal->upper_w;
+        
+        common_block.cs_ref.resize(Ns);
+        std::vector<real_t> mass_fractions(Ns);
+        for (unsigned int s=0; s<Ns; ++s) {
+            common_block.cs_ref(s) = isothermal->upper_cs[s];
+            mass_fractions[s]      = isothermal->upper_cs[s];
+        }
+        
+        common_block.etots_ref.resize(Ns);
+        cmods->evaluate_for_nonreflecting(common_block.T_ref,
+                                          common_block.cs_ref,
+                                          common_block.a_ref,
+                                          common_block.gamma_ref,
+                                          common_block.R_ref,
+                                          common_block.etots_ref);
+        
+        common_block.Cv_ref =  common_block.R_ref
+                            / (common_block.gamma_ref - 1);
+        
+        // FIXME: Remove this info or make it a debug output option
+        INFO0(who, "rho_ref   = " << common_block.rho_ref  );
+        INFO0(who, "T_ref     = " << common_block.T_ref    );
+        INFO0(who, "a_ref     = " << common_block.a_ref    );
+        INFO0(who, "gamma_ref = " << common_block.gamma_ref);
+        INFO0(who, "R_ref     = " << common_block.R_ref    );
+        INFO0(who, "E_ref     = " << cmods->e_from_T(common_block.T_ref,
+                                                     mass_fractions));
+        
+        // Redefine upper values for boundary conditions
+        chdef->bulk_rho      = numeric_limits<real_t>::quiet_NaN();
+        chdef->bulk_rho_u    = numeric_limits<real_t>::quiet_NaN();
+    }
+
     // Prepare spatial operators depending on requested advance type
     if (use_explicit) {
         INFO0(who, "Initializing fully explicit spatial operators");
@@ -219,66 +280,13 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                     *cmods, *grid, *dgrid, *cop, *b, common_block, *fsdef,
                     *sgdef, msoln));
 
-        // Nonreflecting must mutate chdef/isothermal before L.reset, N.reset!
         if (grid->one_sided()) {
-            // FIXME: Plate implementation in progress.
-            // Need to set reference value for rho (rho_ref)
-            // Comment the error line to play with this implementation
-            SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
             shared_ptr<nonreflecting_treatment> nonreflecting(
                     new nonreflecting_treatment(
                         *grid, *dgrid, *cop, *b, common_block));
             nonreflecting->N = N;
             N = nonreflecting;
-
-            // Assign some reference values
-            const size_t Ns = cmods->Ns();
-
-            // SUZERAIN_ENSURE(!(isnan)(isothermal->upper_rho));
-            if ((isnan)(isothermal->upper_rho)) {
-                FATAL0(who, "upper_rho for nonreflecting boundary"
-                            " not specified and not in restart file");
-                return EXIT_FAILURE;
-            }
-
-            common_block.rho_ref = isothermal->upper_rho;
-            common_block.T_ref   = isothermal->upper_T;
-            common_block.u_ref   = isothermal->upper_u;
-            common_block.v_ref   = isothermal->upper_v;
-            common_block.w_ref   = isothermal->upper_w;
-
-            common_block.cs_ref.resize(Ns);
-            std::vector<real_t> mass_fractions(Ns);
-            for (unsigned int s=0; s<Ns; ++s) {
-                common_block.cs_ref(s) = isothermal->upper_cs[s];
-                mass_fractions[s]      = isothermal->upper_cs[s];
-            }
-
-            common_block.etots_ref.resize(Ns);
-            cmods->evaluate_for_nonreflecting(common_block.T_ref,
-                                              common_block.cs_ref,
-                                              common_block.a_ref,
-                                              common_block.gamma_ref,
-                                              common_block.R_ref,
-                                              common_block.etots_ref);
-
-            common_block.Cv_ref =  common_block.R_ref
-                                / (common_block.gamma_ref - 1);
-
-            // FIXME: Remove this info or make it a debug output option
-            INFO0(who, "rho_ref   = " << common_block.rho_ref  );
-            INFO0(who, "T_ref     = " << common_block.T_ref    );
-            INFO0(who, "a_ref     = " << common_block.a_ref    );
-            INFO0(who, "gamma_ref = " << common_block.gamma_ref);
-            INFO0(who, "R_ref     = " << common_block.R_ref    );
-            INFO0(who, "E_ref     = " << cmods->e_from_T(common_block.T_ref,
-                                                         mass_fractions));
-
-            // Redefine upper values for boundary conditions
-            chdef->bulk_rho      = numeric_limits<real_t>::quiet_NaN();
-            chdef->bulk_rho_u    = numeric_limits<real_t>::quiet_NaN();
         }
 
         L.reset(new channel_treatment<isothermal_mass_operator>(
@@ -286,14 +294,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
-
-        // nonreflecting
-        if (grid->one_sided()) {
-            FATAL0(who, "Nonreflecting upper boundary treatment"
-                        " not usable with implicit advance");
-            return EXIT_FAILURE;
-        }
-
 
         L.reset(new channel_treatment<isothermal_hybrid_linear_operator>(
                     solver_spec, *cmods, *isothermal, *chdef, *grid, *dgrid,
@@ -309,6 +309,20 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         tmp_hybrid->L = this->L;
 
         this->N = tmp_hybrid;
+
+        if (grid->one_sided()) {
+            WARN0(who, "Non-reflecting boundary treatment with hybrid       " 
+                       "implicit/explict time marching is very experimental."
+                       "Don't say we didn't warn you.");
+
+            shared_ptr<nonreflecting_treatment> nonreflecting(
+                new nonreflecting_treatment(
+                    *grid, *dgrid, *cop, *b, common_block));
+            nonreflecting->N = this->N;
+            this->N = nonreflecting;
+        }
+
+
     } else {
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
