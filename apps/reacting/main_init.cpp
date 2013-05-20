@@ -136,9 +136,16 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             "If given, prepare a manufactured solution at the specified time.")
     ;
 
+    // TODO: Add maybe tanh option through options.add_option
+    //       as it's done in the perfect initialization.
+    //       I think we'd like to have the parabolic profile by default 
+    //       for a channel grid (htdelta>=0), and the tanh profile 
+    //       by default for a plate case.
+
     // Initialize application and then process binary-specific options
     // (henceforth suzerain::support::logging macros becomes usable)
     std::vector<std::string> positional = initialize(argc, argv);
+
     if (positional.size() != 1) {
         FATAL0("Exactly one restart file name must be specified");
         return EXIT_FAILURE;
@@ -151,6 +158,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     }
     if (grid->k < 4) {
         FATAL0("k >= 4 required for two non-trivial wall-normal derivatives");
+        return EXIT_FAILURE;
+    }
+    if (grid->one_sided() && options.variables().count("mms")) {
+        FATAL0("Manufactured solution not enabled for one-sided grid");
         return EXIT_FAILURE;
     }
 
@@ -196,64 +207,114 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
 
     } else {
 
-        INFO("Parabolic profile will be initialized with npower = " << npower);
-        msoln.reset();
-        fill(*state_linear, 0);
-
-        INFO("Initialization uses constant rho, v, w, and T");
-        const real_t rho = chdef->bulk_rho;
-        const real_t v   = 0;
-        const real_t w   = 0;
-        const real_t T   = isothermal->lower_T;
-        SUZERAIN_ENSURE(isothermal->lower_T == isothermal->upper_T);
-
+        real_t rho;
+        real_t v  ;
+        real_t w  ;
+        real_t T  ;
         std::vector<real_t> rho_s;
-        if (cmods->Ns()>1) {
-            // TODO: Assert that number of lower_cs is correct
-
-            INFO("Initialization uses constant rho_s equal to bulk_rho*lower_cs");
-            rho_s.resize(cmods->Ns()-1);
-
-            // ensure for diluter
-            SUZERAIN_ENSURE(isothermal->lower_cs[0] == isothermal->upper_cs[0]);
-            for (size_t s=0; s<cmods->Ns()-1; ++s) {
-                // yes, +1 b/c first is the diluter
-                rho_s[s] = chdef->bulk_rho*isothermal->lower_cs[s+1];
-                SUZERAIN_ENSURE(isothermal->lower_cs[s+1] == isothermal->upper_cs[s+1]);
-            }
-        }
-
-        INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
-        real_t normalization;
-        if (npower == 1) {
-            // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
-            normalization = 6 / pow(grid->L.y(), 2);
-        } else {
-            // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
-            //      -  (Gamma[-n] Gamma[3/2+n])
-            //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
-            const real_t num1   = sin(npower * pi<real_t>());
-            const real_t num2   = tgamma(-npower);
-            const real_t num3   = tgamma(real_t(3)/2 + npower);
-            const real_t denom1 = pow(           2, -1-2*npower);
-            const real_t denom2 = pow( grid->L.y(),  1+2*npower);
-            const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
-            normalization = - (num1 * num2 * num3 * grid->L.y())
-                          /   (denom1 * denom2 * denom3);
-        }
-
-        INFO("Preparing the wall-normal streamwise velocity profile");
         ArrayXr u(grid->N.y());
-        for (int j = 0; j < u.size(); ++j) {
-            const real_t y_j = b->collocation_point(j);
-            u[j] = ( chdef->bulk_rho_u / chdef->bulk_rho )
-                 * normalization
-                 * pow(y_j * (grid->L.y() - y_j), npower);
-        }
+        ArrayXr E(grid->N.y());
 
-        INFO("Preparing specific internal energy using the equation of state");
-        ArrayXr E = cmods->e_from_T(T, isothermal->lower_cs)
-            + 0.5*(u*u + v*v + w*w);
+        if (!grid->one_sided()) { // Channel profile
+            INFO("Parabolic profile will be initialized with npower = " << npower);
+            msoln.reset();
+            fill(*state_linear, 0);
+
+            INFO("Initialization uses constant rho, v, w, and T");
+            rho = chdef->bulk_rho;
+            v   = 0;
+            w   = 0;
+            const real_t T = isothermal->lower_T;
+            SUZERAIN_ENSURE(isothermal->lower_T == isothermal->upper_T);
+
+            if (cmods->Ns()>1) {
+                // TODO: Assert that number of lower_cs is correct
+
+                INFO("Initialization uses constant rho_s equal to bulk_rho*lower_cs");
+                rho_s.resize(cmods->Ns()-1);
+
+                // ensure for diluter
+                SUZERAIN_ENSURE(isothermal->lower_cs[0] == isothermal->upper_cs[0]);
+                for (size_t s=0; s<cmods->Ns()-1; ++s) {
+                    // yes, +1 b/c first is the diluter
+                    rho_s[s] = chdef->bulk_rho*isothermal->lower_cs[s+1];
+                    SUZERAIN_ENSURE(isothermal->lower_cs[s+1] == isothermal->upper_cs[s+1]);
+                }
+            }
+
+            INFO("Finding normalization so u = (y*(L-y))^npower integrates to 1");
+            real_t normalization;
+            if (npower == 1) {
+                // Mathematica: (Integrate[(x (L-x)),{x,0,L}]/L)^(-1)
+                normalization = 6 / pow(grid->L.y(), 2);
+            } else {
+                // Mathematica: (Integrate[(x (L - x))^n, {x, 0, L}]/L)^(-1)
+                //      -  (Gamma[-n] Gamma[3/2+n])
+                //       / (2^(-1-2 n) L^(1+2 n) \[Pi]^(3/2) Csc[n \[Pi]])
+                const real_t num1   = sin(npower * pi<real_t>());
+                const real_t num2   = tgamma(-npower);
+                const real_t num3   = tgamma(real_t(3)/2 + npower);
+                const real_t denom1 = pow(           2, -1-2*npower);
+                const real_t denom2 = pow( grid->L.y(),  1+2*npower);
+                const real_t denom3 = pow(pi<real_t>(),  real_t(3)/2);
+                normalization = - (num1 * num2 * num3 * grid->L.y())
+                    /   (denom1 * denom2 * denom3);
+            }
+
+            INFO("Preparing the wall-normal streamwise velocity profile");
+            //         ArrayXr u(grid->N.y());
+            for (int j = 0; j < u.size(); ++j) {
+                const real_t y_j = b->collocation_point(j);
+                u[j] = ( chdef->bulk_rho_u / chdef->bulk_rho )
+                    * normalization
+                    * pow(y_j * (grid->L.y() - y_j), npower);
+            }
+
+            INFO("Preparing specific internal energy using the equation of state");
+            E = cmods->e_from_T(T, isothermal->lower_cs)
+                + 0.5*(u*u + v*v + w*w);
+
+        } else {  // the grid is one sided, construct a tanh profile
+
+            INFO("Hyperbolic tangent profile will be initialized");
+            msoln.reset();
+            fill(*state_linear, 0);
+
+            INFO("Initialization uses constant rho, v, w, and cs");
+            // NOTE: Maybe add profile for species concentrations,
+            //       to avoid a jump in the cs concentration at the wall
+            //       in the first time step
+            rho = isothermal->upper_rho;
+            v   = 0;
+            w   = 0;
+            // using isothermal->upper_cs as species concentrations values
+
+            if (cmods->Ns()>1) {
+                // TODO: Assert that number of lower_cs is correct
+
+                INFO("Initialization uses constant rho_s equal to bulk_rho*lower_cs");
+                rho_s.resize(cmods->Ns()-1);
+
+                // ensure for diluter
+                for (size_t s=0; s<cmods->Ns()-1; ++s) {
+                    // yes, +1 b/c first is the diluter
+                    rho_s[s] = isothermal->upper_rho*isothermal->upper_cs[s+1];
+                }
+            }
+
+            INFO("Preparing the wall-normal streamwise velocity profile");
+            for (int j = 0; j < u.size(); ++j) {
+                const real_t y_j = b->collocation_point(j);
+                u[j] = (isothermal->lower_u) 
+                    + (isothermal->upper_u - isothermal->lower_u) 
+                    * tanh(10/grid->L.y() * y_j);
+                T    = (isothermal->lower_T) 
+                    + (isothermal->upper_T - isothermal->lower_T) 
+                    * tanh(10/grid->L.y() * y_j);
+                E[j] = cmods->e_from_T(T, isothermal->upper_cs)
+                    + 0.5*(u[j]*u[j] + v*v + w*w);
+            }
+        }   // end "if (!grid->one_sided())"
 
         INFO("Converting the u and E profiles to B-spline coefficients");
         // (By partition of unity property rho, v, and w are so already)
