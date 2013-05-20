@@ -701,14 +701,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (; offset < last_zxoffset; ++offset) {
 
                 for (int var = 0; var < state_count; ++var) {
-                    acc[ndx::e+var](sphys(ndx::e+var, offset) 
-                                  * sphys(ndx::e+var, offset));
+                    acc[ndx::e+var](
+                      pow((sphys(ndx::e+var, offset) - mean_values(j,var)),2));
                 }
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
             for (int var = 0; var < state_count; ++var) {
-                rms_values(j,ndx::e+var) = boost::accumulators::sum(acc[ndx::e+var]);
+                rms_values(j,ndx::e+var) = 
+                    boost::accumulators::sum(acc[ndx::e+var]);
             }
         } // end Y
 
@@ -722,8 +723,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Finish rms computation
         for (int var = 0; var < state_count; ++var) {
             for (int j = 0; j < Ny; ++j) {
-                rms_values(j,var) = sqrt(rms_values(j,var) 
-                         - mean_values(j,var) * mean_values(j,var));
+                rms_values(j,var) = sqrt(rms_values(j,var)); 
                 // Copy the rms to the drms part of the storage in 
                 // preparation to computing the rms derivative
                 rms_values(j,var+state_count) = rms_values(j,var); 
@@ -1165,7 +1165,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 src[3] = 0;
                 src[4] = 0;
                 for (int s=1; s<Ns; s++){
-                    src[4+1] = 0;
+                    src[4+s] = 0;
                 }
 
 #ifdef SUZERAIN_HAVE_LARGO
@@ -1182,7 +1182,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       (sgdef.workspace, 0.0, 1.0, &src[4]);
                 for (int s=1; s < Ns; ++s) {
                     largo_bl_temporal_ispecies_setamean 
-                                      (sgdef.workspace, 0.0, 1.0, &src[5], s);
+                                      (sgdef.workspace, 0.0, 1.0, &src[4+s], s);
                 }
 
                 largo_bl_temporal_continuity_setarms 
@@ -1197,7 +1197,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       (sgdef.workspace, 1.0, 1.0, &src[4]);
                 for (int s=1; s < Ns; ++s) {
                     largo_bl_temporal_ispecies_setarms 
-                                      (sgdef.workspace, 1.0, 1.0, &src[5], s);
+                                      (sgdef.workspace, 1.0, 1.0, &src[4+s], s);
                 }
 
 #else
