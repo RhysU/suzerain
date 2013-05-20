@@ -182,6 +182,11 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
     suzerain_reacting_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
+    // Vector to save top boundary state in case we need it to
+    // overwrite action of linear operator (for used in boundary layer
+    // case)
+    VectorXc top_state(state.shape()[0]);
+
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
@@ -199,6 +204,11 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
 
                 // Get pointer to (.,m,n)-th state pencil
                 complex_t * const p = &state[0][0][m - dkbx][n - dkbz];
+
+                // if BL, save top state
+                if (grid.one_sided())
+                    for (std::size_t i=0; i<state.shape()[0]; ++i)
+                        top_state[i] = state[i][Ny-1][m - dkbx][n - dkbz];
 
                 // Copy pencil into temporary storage
                 blas::copy(Ntot, p, 1, tmp.data(), 1);
@@ -231,6 +241,11 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
                         0.0,
                         p + (ndx::species+alfa) * Ny);
                 }
+
+                // if BL, replace top state
+                if (grid.one_sided())
+                    for (std::size_t i=0; i<state.shape()[0]; ++i)
+                        state[i][Ny-1][m - dkbx][n - dkbz] = top_state[i];
 
             }
         }
@@ -299,6 +314,12 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
     suzerain_reacting_imexop_refld ld;
     common.imexop_ref(ref, ld);
 
+    // Vector to save top boundary state in case we need it to
+    // overwrite action of linear operator (for used in boundary layer
+    // case)
+    VectorXc top_input (input.shape() [0]);
+    VectorXc top_output(output.shape()[0]);
+
     // Iterate across local wavenumbers and apply operator "in-place"
     // Short circuit "continues" occur for Nyquist and non-dealiased modes...
     // ...where the former will be zeroed during the later invert call.
@@ -313,6 +334,15 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
             for (int m = dkbx; m < dkex; ++m) {
                 const int wm = wavenumber(dNx, m);
                 if (std::abs(wm) > wavenumber_absmin(Nx)) continue;
+
+
+                // if BL, save top state
+                if (grid.one_sided()) {
+                    for (std::size_t i=0; i<input.shape()[0]; ++i) {
+                        top_input[i]  = input [i][Ny-1][m - dkbx][n - dkbz];
+                        top_output[i] = output[i][Ny-1][m - dkbx][n - dkbz];
+                    }
+                }
 
                 // Accumulate result
                 SUZERAIN_TIMER_SCOPED("suzerain_reacting_imexop_accumulate");
@@ -342,6 +372,23 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
                         beta,
                         &output[ndx::species+alfa][0][m - dkbx][n - dkbz]);
                 }
+
+                // if BL, replace top
+                if (grid.one_sided()) {
+                    // protect against 0*NaN = Nan
+                    if (std::norm(beta)==0) {
+                        for (std::size_t i=0; i<input.shape()[0]; ++i) {
+                            output[i][Ny-1][m - dkbx][n - dkbz] = top_input[i];
+                        }
+                    }
+                    else {
+                        for (std::size_t i=0; i<input.shape()[0]; ++i) {
+                            output[i][Ny-1][m - dkbx][n - dkbz] =
+                                top_input[i] + beta*top_output[i];
+                        }
+                    }
+                }
+
 
             }
         }
