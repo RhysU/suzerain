@@ -419,11 +419,15 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
  */
 class IsothermalNoSlipPATPTEnforcer
 {
-    enum { nwalls = 2, nmomentum = 3 };
+    enum { nsides = 2, nmomentum = 3 };
 
     // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
-    int rho[nwalls], noslip[nwalls][nmomentum], e[nwalls];
+    int rho[nsides], noslip[nsides][nmomentum], e[nsides];
+
+    // Number of wall BCs (must be 1 or 2 depending on channel or
+    // boundary layer)
+    int nwalls;
 
     // Precomputed coefficient based on the isothermal equation of state
     real_t e_tot;
@@ -431,8 +435,11 @@ class IsothermalNoSlipPATPTEnforcer
 public:
 
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                                  const real_t &e_tot)
+                                  const real_t &e_tot, 
+                                  const int nwalls)
         : e_tot(e_tot)
+        , nwalls(nwalls)
+         
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -442,11 +449,11 @@ public:
         const int rho0 = static_cast<int>(ndx::rho) * A_T.n;
 
         // Relative to foo0 what is the offset to lower, upper walls
-        const int wall[nwalls] = { 0, A_T.n - 1};
+        const int wall[nsides] = { 0, A_T.n - 1};
 
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
-        for (int i = 0; i < nwalls; ++i) {
+        for (int i = 0; i < nsides; ++i) {
             e     [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, e0   + wall[i]);
             noslip[i][0] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mx0  + wall[i]);
             noslip[i][1] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, my0  + wall[i]);
@@ -456,7 +463,7 @@ public:
     }
 
     /**
-     * Zero RHS of momentum and energy equations at lower, upper walls.
+     * Zero RHS of momentum and energy equations at wall BCs.
      * Must be used in conjunction with op().
      */
     template<typename T>
@@ -526,12 +533,16 @@ public:
  */
 class MassFractionPATPTEnforcer
 {
-    enum { nwalls = 2, nmomentum = 3 };
+    enum { nsides = 2, nmomentum = 3 };
 
     // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
-    int rho_s[nwalls];
+    int rho_s[nsides];
     int Ny;
+
+    // Number of wall BCs (must be 1 or 2 depending on channel or
+    // boundary layer)
+    int nwalls;
 
     // Precomputed coefficient based on the isothermal equation of state
     const std::vector<real_t>& wall_mass_fractions;
@@ -539,19 +550,21 @@ class MassFractionPATPTEnforcer
 public:
 
     MassFractionPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                              const std::vector<real_t>& wall_mass_fractions)
+                              const std::vector<real_t>& wall_mass_fractions,
+                              const int nwalls)
         : Ny(A_T.n)
         , wall_mass_fractions(wall_mass_fractions)
+        , nwalls(nwalls)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int rho_s0 = 0;
 
         // Relative to foo0 what is the offset to lower, upper walls
-        const int wall[nwalls] = { 0, A_T.n - 1};
+        const int wall[nsides] = { 0, A_T.n - 1};
 
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
-        for (int i = 0; i < nwalls; ++i) {
+        for (int i = 0; i < nsides; ++i) {
             rho_s[i] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho_s0 + wall[i]);
         }
     }
@@ -696,15 +709,18 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
     // FIXME: permit upper_T and upper_cs
+    int nwalls=2;
+    if (grid.one_sided()) nwalls=1;
+
     IsothermalNoSlipPATPTEnforcer flow_bc_enforcer(
-        *flow_solver, cmods.e_from_T(isospec.lower_T, isospec.lower_cs));
+        *flow_solver, cmods.e_from_T(isospec.lower_T, isospec.lower_cs), nwalls);
 
     shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
     if (species_solver.size()>0) {
         // FIXME: permit upper_T and upper_cs
         species_bc_enforcer = 
             make_shared<MassFractionPATPTEnforcer>(
-                *(species_solver[0]), isospec.lower_cs);
+                *(species_solver[0]), isospec.lower_cs, nwalls);
     }
 
     // Prepare a scratch buffer for packc/packf usage
