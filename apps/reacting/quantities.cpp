@@ -220,7 +220,7 @@ quantities::quantities(
     : quantities_base(t, Ny)
     , Ns(Ns)
 {
-    species_storage.setZero(Ny, Ns);
+    species_storage.setZero(Ny, 2*Ns);
 }
 
 
@@ -232,6 +232,7 @@ void quantities::save(const esio_handle h) const
     if (this->species_storage.size()) {
         quantities_saver f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
+        f("om_s" , this->om_s (0, Ns));
     } else {
         WARN0("quantities", "No mean quantity samples saved--"
                             " trivial storage needs detected");
@@ -250,7 +251,7 @@ bool quantities::load(const esio_handle h)
     int cglobal, bglobal, aglobal;
     if (ESIO_SUCCESS == esio_field_size(h, "bar_rho_s",
                                         &cglobal, &bglobal, &aglobal)) {
-        this->species_storage.resize(aglobal, bglobal);
+        this->species_storage.resize(aglobal, 2*bglobal);
 
         if (this->Ns==0)
             this->Ns = bglobal;
@@ -259,6 +260,7 @@ bool quantities::load(const esio_handle h)
 
         quantities_loader f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
+        f("om_s" , this->om_s (0, Ns));
         success = true;
     } else {
         WARN0("quantities", "No mean quantity samples loaded--"
@@ -439,8 +441,9 @@ quantities sample_quantities(
                 SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL)
 #undef DECLARE
 
-        // Vector of species density accumulators
+        // Vectors of species quantity accumulators
         std::vector<accumulator_type> sum_rho_s(Ns);
+        std::vector<accumulator_type> sum_om_s (Ns);
 
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
@@ -546,6 +549,7 @@ quantities sample_quantities(
                 // Accumulate quantities into sum_XXX using function syntax.
                 for (unsigned int s=0; s<Ns; ++s) {
                     sum_rho_s[s](species[s]);
+                    sum_om_s [s](om[s]);
                 }
 
                 sum_E[0](e / rho);
@@ -682,6 +686,7 @@ quantities sample_quantities(
         // ... species quantities
         for (unsigned int s=0; s<Ns; ++s) {
             ret.rho_s(s)[j] = acc::sum(sum_rho_s[s]);
+            ret.om_s (s)[j] = acc::sum(sum_om_s[s] );
         }
 
     } // end Y
@@ -754,7 +759,7 @@ quantities sample_quantities(
             ret.storage.innerStride(), ret.storage.outerStride());
 
     // species quantities
-    scaled_mass.solve(Ns, ret.species_storage.data(),
+    scaled_mass.solve(2*Ns, ret.species_storage.data(),
                       ret.species_storage.innerStride(), 
                       ret.species_storage.outerStride());
 
