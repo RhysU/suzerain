@@ -201,12 +201,14 @@ bool quantities_base::load(const esio_handle h)
 
 quantities::quantities()
     : quantities_base()
+    , Ns(0)
 {
     // NOP
 }
 
 quantities::quantities(real_t t)
     : quantities_base(t)
+    , Ns(0)
 {
     // NOP
 }
@@ -216,19 +218,55 @@ quantities::quantities(
         quantities::storage_type::Index Ny,
         quantities::storage_type::Index Ns)
     : quantities_base(t, Ny)
+    , Ns(Ns)
 {
-    // NOP
+    species_storage.setZero(Ny, Ns);
 }
 
 
 void quantities::save(const esio_handle h) const
 {
     super::save(h);
+
+    DEBUG0("Saving species statistics.");
+    if (this->species_storage.size()) {
+        quantities_saver f("quantities", h, "bar_");
+        f("rho_s", this->rho_s(0, Ns));
+    } else {
+        WARN0("quantities", "No mean quantity samples saved--"
+                            " trivial storage needs detected");
+    }
 }
 
 bool quantities::load(const esio_handle h)
 {
-    super::load(h);
+    bool success = super::load(h);
+
+    // Defensively NaN out all storage in the instance prior to load.
+    this->species_storage.fill(std::numeric_limits<real_t>::quiet_NaN());
+
+    DEBUG0("Loading species statistics.");
+
+    int cglobal, bglobal, aglobal;
+    if (ESIO_SUCCESS == esio_field_size(h, "bar_rho_s",
+                                        &cglobal, &bglobal, &aglobal)) {
+        this->species_storage.resize(aglobal, bglobal);
+
+        if (this->Ns==0)
+            this->Ns = bglobal;
+        else
+            assert(this->Ns==bglobal);
+
+        quantities_loader f("quantities", h, "bar_");
+        f("rho_s", this->rho_s(0, Ns));
+        success = true;
+    } else {
+        WARN0("quantities", "No mean quantity samples loaded--"
+                            " unable to anticipate storage needs");
+    }
+
+
+    return success;
 }
 
 
@@ -394,12 +432,15 @@ quantities sample_quantities(
         // Accumulators for each mean quantity computed in physical space.
         // For example, quantity "foo" has accumulator "sum_foo".
         // Declared within Y loop so they are reset on each Y iteration.
-#define DECLARE(r, data, tuple)                                              \
+#define DECLARE(r, data, tuple)                                         \
         accumulator_type BOOST_PP_CAT(sum_,BOOST_PP_TUPLE_ELEM(2, 0, tuple)) \
                 [BOOST_PP_TUPLE_ELEM(2, 1, tuple)];
         BOOST_PP_SEQ_FOR_EACH(DECLARE,,
                 SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL)
 #undef DECLARE
+
+        // Vector of species density accumulators
+        std::vector<accumulator_type> sum_rho_s(Ns);
 
         for (int k = dgrid.local_physical_start.z();
             k < dgrid.local_physical_end.z();
@@ -503,6 +544,10 @@ quantities sample_quantities(
                 const Vector3r tau_u = tau * u;
 
                 // Accumulate quantities into sum_XXX using function syntax.
+                for (unsigned int s=0; s<Ns; ++s) {
+                    sum_rho_s[s](species[s]);
+                }
+
                 sum_E[0](e / rho);
 
                 sum_T[0](T);
@@ -621,7 +666,9 @@ quantities sample_quantities(
         } // end Z
 
         // Move y-specific sums into MPI-reduction-ready storage for y(j) using
-        // Eigen comma initialization syntax.  Yes, this is not stride 1.
+        // Eigen comma initialization syntax.  Yes, this is not stride 1. ...
+
+        // ... flow quantities...
 #define EXTRACT_SUM(z, n, q) acc::sum(sum_##q[n])
 #define MOVE_SUM_INTO_TMP(r, data, tuple)                                 \
         ret.BOOST_PP_TUPLE_ELEM(2, 0, tuple)().row(j) <<                  \
@@ -631,6 +678,11 @@ quantities sample_quantities(
                 SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL)
 #undef EXTRACT_SUM
 #undef MOVE_SUM_INTO_TMP
+
+        // ... species quantities
+        for (unsigned int s=0; s<Ns; ++s) {
+            ret.rho_s(s)[j] = acc::sum(sum_rho_s[s]);
+        }
 
     } // end Y
 
@@ -643,6 +695,12 @@ quantities sample_quantities(
         // Reduce operation requires no additional storage on rank-zero
         SUZERAIN_MPICHKR(MPI_Reduce(
                 MPI_IN_PLACE, ret.storage.data(), ret.storage.size(),
+                mpi::datatype<quantities::storage_type::Scalar>::value,
+                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+
+        SUZERAIN_MPICHKR(MPI_Reduce(
+                MPI_IN_PLACE, ret.species_storage.data(), 
+                              ret.species_storage.size(),
                 mpi::datatype<quantities::storage_type::Scalar>::value,
                 MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
 
@@ -660,6 +718,20 @@ quantities sample_quantities(
         ret.storage.fill(std::numeric_limits<
                 quantities::storage_type::Scalar>::quiet_NaN());
 
+        tmp.resizeLike(ret.species_storage);
+        tmp.setZero();
+        SUZERAIN_MPICHKR(MPI_Reduce(ret.species_storage.data(), 
+                                    tmp.data(), tmp.size(),
+                mpi::datatype<quantities::storage_type::Scalar>::value,
+                MPI_SUM, /* root */ 0, MPI_COMM_WORLD));
+
+        // Force non-zero ranks contain all NaNs to help detect usage errors
+        ret.storage.fill(std::numeric_limits<
+                quantities::storage_type::Scalar>::quiet_NaN());
+
+        ret.species_storage.fill(std::numeric_limits<
+                quantities::storage_type::Scalar>::quiet_NaN());
+
         // Return from all non-zero ranks
         return ret;
 
@@ -674,10 +746,17 @@ quantities sample_quantities(
     bsplineop_lu scaled_mass(cop);
     scaled_mass.opform(1, &scale_factor, cop);
     scaled_mass.factor();
+
+    // flow quantities
     scaled_mass.solve(quantities::nscalars::physical,
             ret.storage.middleCols<quantities::nscalars::physical>(
                 quantities::nscalars::wave).data(),
             ret.storage.innerStride(), ret.storage.outerStride());
+
+    // species quantities
+    scaled_mass.solve(Ns, ret.species_storage.data(),
+                      ret.species_storage.innerStride(), 
+                      ret.species_storage.outerStride());
 
     // Fill with NaNs those samples which were not computed by this method
 #define FILL(r, data, tuple)                                         \
