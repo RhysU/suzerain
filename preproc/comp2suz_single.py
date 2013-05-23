@@ -24,7 +24,7 @@ def interp(c,s, state, field):
     
     flat    = np.array([])
 
-    print 'flatten ', state
+    print 'flatten:       ', state
     for i in xrange(len(field)):
         for j in xrange(len(field[0])):
             for k in xrange(len(field[0][0])):
@@ -100,6 +100,7 @@ grid_y = f['collocation_points_y'].value
 print "To grid size of:            ", len(grid_z),len(grid_y),len(grid_x)
 print len(grho),len(grho[0]),len(grho[0][0])
 
+#
 # CompDNS field stored as: (z,y,x)
 # and
 # Suz field stored as    : (y,z,x)
@@ -148,8 +149,7 @@ for s in st:
     interp_g = interp(cpoints, spoints, s, field)
 
     # save interpolated grid to suz
-    #print stt[ct], len(interp_g)
-    #print interp_g
+    del f[stt[ct]]
     f[stt[ct]] = interp_g
 
     # iterate counter
