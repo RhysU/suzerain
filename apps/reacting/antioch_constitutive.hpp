@@ -40,6 +40,8 @@
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
 
+#include <antioch/vector_utils_decl.h>
+#include <antioch/eigen_utils_decl.h>
 #include <antioch/vector_utils.h>
 #include <antioch/eigen_utils.h>
 #include <antioch/chemical_mixture.h>
