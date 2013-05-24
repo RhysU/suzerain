@@ -60,9 +60,6 @@ def plot(hdf5file):
     rho_E_col = D0*rho_E_coeff
 
 
-    print rho_u_col
-    print rho_u_col[:,0]
-
     # Plots
     pyplot.figure(1)
     rho_key = "bar_rho_" + str(0)
