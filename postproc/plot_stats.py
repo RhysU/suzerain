@@ -40,20 +40,53 @@ def plot(hdf5file):
     rho_coeff = f['bar_rho'].value
     rho_coeff = np.array(rho_coeff).reshape(Ny,1)
 
+
+    # Grab rho_u coefficients
+    rho_u_coeff = f['bar_rho_u'].value
+    rho_u_coeff = np.array(rho_u_coeff).transpose().reshape(Ny,3)
+
+    # Grab rho_E coefficients
+    rho_E_coeff = f['bar_rho_E'].value
+    rho_E_coeff = np.array(rho_E_coeff).reshape(Ny,1)
+
     # Done getting data
     f.close()
     
+    D0 = D0T.transpose()
+
     # Coefficients -> Collocation points
-    rho_col = D0T.transpose()*rho_coeff
-    print rho_col.shape
+    rho_col   = D0*rho_coeff
+    rho_u_col = D0*rho_u_coeff
+    rho_E_col = D0*rho_E_coeff
 
-    rho_key = "bar_rho_" + str(0)
 
-    # Plot
+    print rho_u_col
+    print rho_u_col[:,0]
+
+    # Plots
     pyplot.figure(1)
+    rho_key = "bar_rho_" + str(0)
     pyplot.plot(y, rho_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho.eps', bbox_inches='tight')
+
+    pyplot.figure(2)
+    rho_key = "bar_rho_u" + str(0)
+    pyplot.plot(y, rho_u_col[:,0], linewidth=3, label=rho_key)
+    pyplot.legend(loc=1)
+    pyplot.savefig('bar_rho_u.eps', bbox_inches='tight')
+
+    pyplot.figure(3)
+    rho_key = "bar_rho_v" + str(0)
+    pyplot.plot(y, rho_u_col[:,1], linewidth=3, label=rho_key)
+    pyplot.legend(loc=1)
+    pyplot.savefig('bar_rho_v.eps', bbox_inches='tight')
+
+    pyplot.figure(4)
+    rho_key = "bar_rho_E" + str(0)
+    pyplot.plot(y, rho_E_col, linewidth=3, label=rho_key)
+    pyplot.legend(loc=1)
+    pyplot.savefig('bar_rho_E.eps', bbox_inches='tight')
     
 
 
