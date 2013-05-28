@@ -1286,7 +1286,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (unsigned int s=0; s<Ns-1; ++s) {
                 // NOTE: species(0) is the diluter!
 
-                unsigned int si = aux::species + s;
+                unsigned int si = aux::species + s*dir::count;
 
                 //                      = convection    - diffusion
                 auxp(si+dir::x, offset) = cs(s+1)*m.x() - sdiff(0,s+1);
