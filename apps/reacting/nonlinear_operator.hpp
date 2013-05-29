@@ -943,6 +943,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t lambda1_y = o.lambda1_y(j);
         const real_t lambda2_y = o.lambda2_y(j);
 
+        // Bool, do not compute slow growth source for species
+        // at the top boundary. Only sources from chemical 
+        // reactions are added after the Giles conditions are applied.
+        // NOTE: It is assumed that for slow growth the condition 
+        // is an inflow for characteristics, since the slow growth
+        // term modifies the eigenvalues to (v-y*grDelta), 
+        // with v<<y*grDelta
+        // FIXME: Maybe make a more formal and less obscure implementation
+        bool  sg_compute_top = (j != Ny-1);
+
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
@@ -1227,8 +1237,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 sphys(ndx::my   , offset) += src[2];
                 sphys(ndx::mz   , offset) += src[3];
                 sphys(ndx::e    , offset) += src[4];
-                for (unsigned int s=1; s < Ns; ++s) {
-                    sphys(ndx::rho+s  , offset) += src[4+s];
+
+                // Add species sources 
+                if (sg_compute_top) {
+                    for (unsigned int s=1; s < Ns; ++s) {
+                        sphys(ndx::rho+s  , offset) += src[4+s];
+                    }
                 }
             }
 
@@ -1583,6 +1597,23 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Collectively convert fluxes to wave space using parallel FFTs
     for (size_t i = aux::e; i < aux_count; ++i) {
         o.dgrid.transform_physical_to_wave(&auxp.coeffRef(i,0));
+    }
+
+    // Save chemistry sources to be added after the nonreflecting
+    // condition is imposed
+    // Data arranged in the same way as in i_stash in nonreflecting
+    if (o.grid.one_sided()) {
+        const int ku = Ns-1;
+        const int l  = boost::numeric_cast<int>(swave.shape()[1]) - 1; // Upper
+        const int mu = boost::numeric_cast<int>(swave.shape()[2]);
+        const int nu = boost::numeric_cast<int>(swave.shape()[3]);
+        for (int k = 0; k < ku; ++k) {
+            for (int n = 0; n < nu; ++n) {
+                for (int m = 0; m < mu; ++m) {
+                    common.chemsrcw(k, m + n * mu) = swave[ndx::rho+1+k][l][m][n];
+                }
+            }
+        }
     }
 
 

@@ -401,6 +401,11 @@ public:
     VectorXr etots_ref;
     VectorXr etots_upper;
 
+    /**
+     * Store chemistry sources at the top plane. 
+     */
+     MatrixXXc chemsrcw;
+
 private:
 
     // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
