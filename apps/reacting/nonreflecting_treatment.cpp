@@ -131,6 +131,10 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
         }
     }
 
+    // Prepare storage for chemistry sources to get added later
+    common.chemsrcw.resize(Ns-1, swave.shape()[2] * swave.shape()[3]);
+    common.chemsrcw.setZero();
+
     // Invoke the wrapped nonlinear operator (which may compute references!)
     const std::vector<real_t> retval = N->apply_operator(
             time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
@@ -401,6 +405,15 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
                 swave[f][Ny - 1][m - dkbx][n - dkbz] = N(f);
             }
 
+            // Add chemistry sources if the bc is an inflow
+            // TODO:  
+            if (inflow) {
+                for (int is = 0; is<Ns-1; ++is) {
+                    int f = is + (N.size()-Ns+1);
+                    swave[f][Ny - 1][m - dkbx][n - dkbz] += 
+                        common.chemsrcw(is, (m - dkbx) + mu*(n - dkbz));
+                }
+            }
         }
     }
 
