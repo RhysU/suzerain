@@ -1002,9 +1002,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             for (unsigned int s=1; s<Ns; ++s) {
                 species(s) = sphys(ndx::species + s - 1, offset);
 
-                grad_species(0,s) = auxp(aux::species + s - 1 + dir::x, offset);
-                grad_species(1,s) = auxp(aux::species + s - 1 + dir::y, offset);
-                grad_species(2,s) = auxp(aux::species + s - 1 + dir::z, offset);
+                unsigned int si = aux::species + (s-1)*dir::count;
+                grad_species(0,s) = auxp(si + dir::x, offset);
+                grad_species(1,s) = auxp(si + dir::y, offset);
+                grad_species(2,s) = auxp(si + dir::z, offset);
 
                 // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                 species(0)        -= species(s);
