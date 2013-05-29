@@ -214,6 +214,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         std::vector<real_t> rho_s;
         ArrayXr u(grid->N.y());
         ArrayXr E(grid->N.y());
+        MatrixXXr cs(grid->N.y(),cmods->Ns());
 
         if (!grid->one_sided()) { // Channel profile
             INFO("Parabolic profile will be initialized with npower = " << npower);
@@ -303,6 +304,11 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             }
 
             INFO("Preparing the wall-normal streamwise velocity profile");
+            std::vector<real_t> csj;
+            csj.resize(cmods->Ns());
+            // TODO: Storing species concentrations at each j index in a 
+            // separate container, csj, to be passed to the e_from_T method.
+            // Can this be avoided?
             for (int j = 0; j < u.size(); ++j) {
                 const real_t y_j = b->collocation_point(j);
                 u[j] = (isothermal->lower_u) 
@@ -311,7 +317,13 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
                 T    = (isothermal->lower_T) 
                     + (isothermal->upper_T - isothermal->lower_T) 
                     * tanh(10/grid->L.y() * y_j);
-                E[j] = cmods->e_from_T(T, isothermal->upper_cs)
+                for (size_t s=0; s<cmods->Ns(); ++s) {
+                    csj[s] = isothermal->lower_cs[s] 
+                        + (isothermal->upper_cs[s] - isothermal->lower_cs[s]) 
+                        * tanh(10/grid->L.y() * y_j);
+                    cs(j,s) = csj[s];
+                }
+                E[j] = cmods->e_from_T(T, csj)
                     + 0.5*(u[j]*u[j] + v*v + w*w);
             }
         }   // end "if (!grid->one_sided())"
@@ -335,12 +347,28 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         Map<VectorXc>((*state_linear)[ndx::rho].origin(), grid->N.y())
                 .setConstant(rho    );
 
-        if (cmods->Ns()>1) {
-            for (size_t s=1; s<cmods->Ns(); ++s) {
-                Map<VectorXc>((*state_linear)[ndx::rho+s].origin(), grid->N.y())
-                    .setConstant(rho_s[s-1]);
+        if (!grid->one_sided()) { // Uniform rho_s
+            if (cmods->Ns()>1) {
+                for (size_t s=1; s<cmods->Ns(); ++s) {
+                    Map<VectorXc>((*state_linear)[ndx::rho+s].origin(), grid->N.y())
+                        .setConstant(rho_s[s-1]);
+                }
+            }
+        } else {                 // tanh profile for rho_s
+            if (cmods->Ns()>1) {
+                INFO("Converting species profiles to B-spline coefficients"
+                     " and copying the coefficients directly into the"
+                     " zero-zero modes");
+                for (size_t s=1; s<cmods->Ns(); ++s) {
+                    ArrayXr css(grid->N.y());
+                    css = cs.col(s);
+                    masslu.solve(1, css.data(), 1, css.size());
+                    Map<VectorXc>((*state_linear)[ndx::rho+s].origin(), grid->N.y())
+                        = (rho * css).cast<complex_t>();
+                }
             }
         }
+
 
         // Compute and print the wall viscosity (known b/c only
         // depends on T and mass fractions)
