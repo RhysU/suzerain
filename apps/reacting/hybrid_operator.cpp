@@ -504,6 +504,12 @@ public:
         velw[1] = v_wall;
         velw[2] = w_wall; 
 
+        // To flip sign of v at upper wall for channel case
+        std::vector<real_t> vsgn;
+        vsgn.resize(2);
+        vsgn[0] = 1;
+        vsgn[1] = -1;
+   
         // Attempt made to not unnecessarily disturb matrix conditioning.
 
         for (int wall = 0; wall < nwalls; ++wall) {
@@ -521,7 +527,7 @@ public:
                     if (i == noslip[wall][eqn]) {
                         col[i] = rhocoeff;
                     } else if (i == rho[wall]) {
-                        col[i] = rhocoeff * velw[eqn];
+                        col[i] = - rhocoeff * vsgn[wall] * velw[eqn];
                     } else {
                         col[i] = 0;
                     }
