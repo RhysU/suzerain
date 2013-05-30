@@ -432,11 +432,17 @@ class IsothermalNoSlipPATPTEnforcer
     // Precomputed coefficient based on the isothermal equation of state
     real_t e_tot;
 
-    // Specified wall velocities
-    real_t u_wall;
-    real_t v_wall;
-    real_t w_wall;
+//     // Specified wall velocities
+//     real_t u_wall;
+//     real_t v_wall;
+//     real_t w_wall;
 
+    // Store velocity values in a vector to loop through components
+    std::vector<real_t> velw;
+
+    // To flip sign of v at upper wall for channel case
+    std::vector<real_t> vsgn;
+ 
 public:
 
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
@@ -445,10 +451,8 @@ public:
                                   const real_t &w_wall,                                  
                                   const real_t &e_tot, 
                                   const int nwalls)
-        : u_wall(u_wall)
-        , v_wall(v_wall)
-        , w_wall(w_wall)
-        , e_tot(e_tot)
+        : // Pass internal energy and compute total energy to use in the object
+          e_tot(e_tot+0.5*(u_wall*u_wall + v_wall*v_wall + w_wall*w_wall))
         , nwalls(nwalls)
          
     {
@@ -471,6 +475,17 @@ public:
             noslip[i][2] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mz0  + wall[i]);
             rho   [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
         }
+
+        // Initialize wall velocity vector
+        velw.resize(3);
+        velw[0] = u_wall;
+        velw[1] = v_wall;
+        velw[2] = w_wall;
+        
+        // Initialize sign constant for wall normal velocity 
+        vsgn.resize(nsides);
+        vsgn[0] =  1;
+        vsgn[1] = -1;
     }
 
     /**
@@ -496,20 +511,7 @@ public:
      */
     template<typename T>
     void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
-    {
-        // Store velocity values in a vector to loop through components
-        std::vector<real_t> velw;
-        velw.resize(3);
-        velw[0] = u_wall;
-        velw[1] = v_wall;
-        velw[2] = w_wall; 
-
-        // To flip sign of v at upper wall for channel case
-        std::vector<real_t> vsgn;
-        vsgn.resize(2);
-        vsgn[0] = 1;
-        vsgn[1] = -1;
-   
+    {  
         // Attempt made to not unnecessarily disturb matrix conditioning.
 
         for (int wall = 0; wall < nwalls; ++wall) {
