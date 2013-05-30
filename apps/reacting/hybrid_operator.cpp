@@ -432,12 +432,23 @@ class IsothermalNoSlipPATPTEnforcer
     // Precomputed coefficient based on the isothermal equation of state
     real_t e_tot;
 
+    // Specified wall velocities
+    real_t u_wall;
+    real_t v_wall;
+    real_t w_wall;
+
 public:
 
     IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
+                                  const real_t &u_wall,
+                                  const real_t &v_wall,
+                                  const real_t &w_wall,                                  
                                   const real_t &e_tot, 
                                   const int nwalls)
-        : e_tot(e_tot)
+        : u_wall(u_wall)
+        , v_wall(v_wall)
+        , w_wall(w_wall)
+        , e_tot(e_tot)
         , nwalls(nwalls)
          
     {
@@ -486,6 +497,13 @@ public:
     template<typename T>
     void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
     {
+        // Store velocity values in a vector to loop through components
+        std::vector<real_t> velw;
+        velw.resize(3);
+        velw[0] = u_wall;
+        velw[1] = v_wall;
+        velw[2] = w_wall; 
+
         // Attempt made to not unnecessarily disturb matrix conditioning.
 
         for (int wall = 0; wall < nwalls; ++wall) {
@@ -496,10 +514,18 @@ public:
                 T * const col = (T *) suzerain_gbmatrix_col(
                         A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
                         sizeof(T), noslip[wall][eqn], &begin, &end);
+                // Necessary to ensure constraint possible in degenerate case
+                complex_t &rhocoeff = col[rho[wall]];
+                if (rhocoeff == complex_t(0)) rhocoeff = 1;
                 for (int i = begin; i < end; ++i) {
-                    if (i != noslip[wall][eqn]) {
+                    if (i == noslip[wall][eqn]) {
+                        col[i] = rhocoeff;
+                    } else if (i == rho[wall]) {
+                        col[i] = rhocoeff * velw[eqn];
+                    } else {
                         col[i] = 0;
                     }
+
                 }
             }
 
@@ -708,12 +734,14 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    // FIXME: permit upper_T and upper_cs
+    // FIXME: permit upper_T, upper_cs, and upper_{u,v,w}
     int nwalls=2;
     if (grid.one_sided()) nwalls=1;
 
     IsothermalNoSlipPATPTEnforcer flow_bc_enforcer(
-        *flow_solver, cmods.e_from_T(isospec.lower_T, isospec.lower_cs), nwalls);
+        *flow_solver, 
+        isospec.lower_u, isospec.lower_v, isospec.lower_w, 
+        cmods.e_from_T(isospec.lower_T, isospec.lower_cs), nwalls);
 
     shared_ptr<MassFractionPATPTEnforcer> species_bc_enforcer;
     if (species_solver.size()>0) {
