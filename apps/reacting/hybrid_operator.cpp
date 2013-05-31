@@ -432,11 +432,6 @@ class IsothermalNoSlipPATPTEnforcer
     // Precomputed coefficient based on the isothermal equation of state
     real_t e_tot;
 
-//     // Specified wall velocities
-//     real_t u_wall;
-//     real_t v_wall;
-//     real_t w_wall;
-
     // Store velocity values in a vector to loop through components
     std::vector<real_t> velw;
 
@@ -482,10 +477,21 @@ public:
         velw[1] = v_wall;
         velw[2] = w_wall;
         
-        // Initialize sign constant for wall normal velocity 
-        vsgn.resize(nsides);
+        // Initialize sign constant for velocity components
+        // NOTE: we need to declare the sign for the three components
+        // Indices go by eqn+nmomentum*wall, with 
+        // eqn {u,v,w}       = {1,2,3} and
+        // wall{bottom, top} = {0,1}
+        vsgn.resize(nsides*nmomentum);
+        // u-velocity
         vsgn[0] =  1;
-        vsgn[1] = -1;
+        vsgn[3] =  1;
+        // v-velocity
+        vsgn[1] =  1;
+        vsgn[4] = -1;
+        // w-velocity
+        vsgn[2] =  1;
+        vsgn[5] =  1;
     }
 
     /**
@@ -529,7 +535,7 @@ public:
                     if (i == noslip[wall][eqn]) {
                         col[i] = rhocoeff;
                     } else if (i == rho[wall]) {
-                        col[i] = - rhocoeff * vsgn[wall] * velw[eqn];
+                        col[i] = - rhocoeff * vsgn[eqn+nmomentum*wall] * velw[eqn];
                     } else {
                         col[i] = 0;
                     }
