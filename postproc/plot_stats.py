@@ -8,10 +8,6 @@ Options:
 
 # TODO: Add ability to plot things other than bar_rho.
 
-# TODO: Add ability to take multiple h5files and plot all on same
-# axes.  Note that the main supports this but plot fcn just
-# overwrites.
-
 import sys
 import getopt
 import h5py
@@ -22,7 +18,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot
 
 
-def plot(hdf5file, fileext):
+def plot(hdf5file, fileext, ifile):
     print "Plotting", hdf5file
 
     # Load a stats file
@@ -94,63 +90,63 @@ def plot(hdf5file, fileext):
     figid  = 0
     figid += 1
     pyplot.figure(figid)
-    rho_key = "bar_rho_" + str(0)
+    rho_key = "bar_rho_" + str(ifile)
     pyplot.plot(y, rho_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho.' + fileext, bbox_inches='tight')
 
     figid += 1   
     pyplot.figure(figid)
-    rho_key = "bar_rho_u" + str(0)
+    rho_key = "bar_rho_u" + str(ifile)
     pyplot.plot(y, rho_u_col[:,0], linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho_u.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "bar_rho_v" + str(0)
+    rho_key = "bar_rho_v" + str(ifile)
     pyplot.semilogx(y, rho_u_col[:,1], linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho_v.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "bar_rho_w" + str(0)
+    rho_key = "bar_rho_w" + str(ifile)
     pyplot.plot(y, rho_u_col[:,2], linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho_w.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "bar_rho_E" + str(0)
+    rho_key = "bar_rho_E" + str(ifile)
     pyplot.plot(y, rho_E_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_rho_E.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "bar_T" + str(0)
+    rho_key = "bar_T" + str(ifile)
     pyplot.plot(y, T_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('bar_T.' + fileext, bbox_inches='tight')
    
     figid += 1
     pyplot.figure(figid)
-    rho_key = "R_u_u" + str(0)
+    rho_key = "R_u_u" + str(ifile)
     pyplot.semilogx(y, R_u_u_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('R_u_u.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "R_v_v" + str(0)
+    rho_key = "R_v_v" + str(ifile)
     pyplot.semilogx(y, R_v_v_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('R_v_v.' + fileext, bbox_inches='tight')
 
     figid += 1
     pyplot.figure(figid)
-    rho_key = "R_w_w" + str(0)
+    rho_key = "R_w_w" + str(ifile)
     pyplot.semilogx(y, R_w_w_col, linewidth=3, label=rho_key)
     pyplot.legend(loc=1)
     pyplot.savefig('R_w_w.' + fileext, bbox_inches='tight')
@@ -158,7 +154,7 @@ def plot(hdf5file, fileext):
     for s in xrange(0,Ns):
       figid += 1
       pyplot.figure(figid)
-      rho_key = "rho_" + sname[s] + "_" + str(0)
+      rho_key = "rho_" + sname[s] + "_" + str(ifile)
       pyplot.semilogx(y, rho_s_col[:,s], linewidth=3, label=rho_key)
       pyplot.legend(loc=1)
       rho_file = "rho_" + sname[s] + "." + fileext
@@ -198,13 +194,11 @@ def main(argv=None):
     # Process each file in turn
     hdf5files = args
 
-    # FIXME: Remove when plotting multiple files fully supported
-    if len(hdf5files)>1:
-        print >>sys.stderr, "Only supports 1 file for now.  Sorry."
-        return 2
-        
+    # Plot multiple files   
+    ifile = 0    
     for hdf5file in hdf5files:
-        plot(hdf5file,fileext)
+        plot(hdf5file, fileext, ifile)
+        ifile += 1
 
 if __name__ == "__main__":
     sys.exit(main())
