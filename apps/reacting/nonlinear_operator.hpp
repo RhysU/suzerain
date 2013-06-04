@@ -120,6 +120,196 @@ void vfilt_form_operator_difference(const operator_base& o,
     //**************************************************************
 }
 
+void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
+                                      const real_t& alpha,
+                                      const size_t& Ns,
+                                      contiguous_state<4, complex_t>& fsrcw)
+{
+    // After first traversal, have gathered reference profiles.  So,
+    // we can complete the viscous filter source calculation by
+    // multiplying by the appropriate reference quantities.
+    
+    const std::size_t Ny = fsrcw.shape()[1];
+    const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
+    
+    // Energy
+    {
+        
+        // diagonal
+        Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
+        const VectorXr& D(common.ref_korCv());
+        
+        MatrixXXc tmp(Ny, Nplane);
+        tmp = D.asDiagonal()*F;
+        
+        // x-momentum
+        Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
+        const VectorXr& nu(common.ref_nu());
+        const VectorXr& ux(common.ref_ux());
+        const VectorXr  Dmx( D.array()*ux.array() -  // heat flux
+                             nu.array()*ux.array() ); // visc work
+        
+        tmp -= Dmx.asDiagonal()*Fmx;
+        
+        // y-momentum
+        Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
+        const VectorXr& uy(common.ref_uy());
+        const real_t oneplam = (alpha + 4.0/3.0);
+        const VectorXr  Dmy(         D.array()*uy.array() -  // heat flux
+                            oneplam*nu.array()*uy.array() ); // visc work 
+            
+        tmp -= Dmy.asDiagonal()*Fmy;
+        
+        // z-momentum
+        Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
+        const VectorXr& uz(common.ref_uz());
+        const VectorXr  Dmz( D.array()*uz.array() -  // heat flux
+                            nu.array()*uz.array() ); // visc work
+            
+        tmp -= Dmz.asDiagonal()*Fmz;
+        
+        // density
+        Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+        const VectorXr& e0 (common.ref_es(0));
+        
+        const VectorXr ke (0.5*(ux.array()*ux.array() +
+                                uy.array()*uy.array() + 
+                                uz.array()*uz.array()));
+        
+        const real_t ap13 = (alpha + 1.0/3.0);
+        
+        VectorXr Drho( D.array()*(e0.array()-ke.array()) +  // heat flux
+                      nu.array()*( 2.0*ke.array() +         // visc work
+                                  ap13*uy.array()*uy.array()) );
+        
+        // enthalpy diffusion
+        for (std::size_t s=1; s<Ns; ++s) {
+            const VectorXr& h0 (common.ref_hs(0));
+            const VectorXr& hs (common.ref_hs(s));
+            const VectorXr& cs (common.ref_cs(s));
+            const VectorXr& Ds (common.ref_Ds());
+            
+            Drho.array() -= cs.array()*Ds.array()*(hs.array() - h0.array());
+        }
+        
+        tmp -= Drho.asDiagonal()*Frho;
+        
+        // species
+        for (std::size_t s=0; s<Ns-1; ++s) {
+            Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
+            const VectorXr& es (common.ref_es(s+1));
+            const VectorXr& h0 (common.ref_hs(0  ));
+            const VectorXr& hs (common.ref_hs(s+1));
+            const VectorXr& Ds (common.ref_Ds());
+            
+            const VectorXr  Drho_s( // heat flux
+                                   D.array()*(e0.array()-es.array()) +  
+                                   // enthalpy diffusion
+                                   Ds.array()*(h0.array()-hs.array()) );
+            
+            tmp += Drho_s.asDiagonal()*Frho_s;
+        }
+        
+        // NB: Overwrites (D2 - D1*(D0\D1))*rhoE.  Okay b/c not
+        // required below here.
+        F = tmp;
+    }
+    
+    // x-momentum
+    {
+        // diagonal
+        Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
+        const VectorXr& D(common.ref_nu());
+        
+        MatrixXXc tmp(Ny, Nplane);
+        tmp = D.asDiagonal()*F;
+        
+        // density
+        Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+        const VectorXr& ux(common.ref_ux());
+        const VectorXr  Drho(D.array()*ux.array()); // cwise
+        
+        tmp -= Drho.asDiagonal()*Frho;
+        
+        // NB: Overwrites
+        F = tmp;
+    }
+    
+    // y-momentum
+    {
+        // diagonal
+        Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
+        const VectorXr& D(common.ref_nu());
+        MatrixXXc tmp(Ny, Nplane);
+        
+        const real_t oneplam = (alpha + 4.0/3.0);
+        
+        //tmp = oneplam * D.asDiagonal()*F;
+        tmp = D.asDiagonal()*F;
+        
+        // density
+        Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+        const VectorXr& uy(common.ref_uy());
+        const VectorXr  Drho(D.array()*uy.array()); // cwise
+        
+        //tmp -= oneplam * Drho.asDiagonal()*Frho;
+        tmp -= Drho.asDiagonal()*Frho;
+        
+        tmp *= oneplam;
+        
+        // NB: Overwrites
+        F = tmp;
+    }
+    
+    // z-momentum
+    {
+        // diagonal;
+        Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
+        const VectorXr& D(common.ref_nu());
+        MatrixXXc tmp(Ny, Nplane);
+        tmp = D.asDiagonal()*F;
+        
+        // density
+        Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+        const VectorXr& uz(common.ref_uz());
+        const VectorXr  Drho(D.array()*uz.array()); // cwise
+        
+        tmp -= Drho.asDiagonal()*Frho;
+        
+        // NB: Overwrites
+        F = tmp;
+    }
+    
+    
+    // species
+    {
+        for (unsigned int s=1; s<Ns; ++s) {
+            // diagonal
+            Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
+            const VectorXr& D(common.ref_Ds());
+            MatrixXXc tmp(Ny, Nplane);
+            tmp = D.asDiagonal()*F;
+            
+            // density
+            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
+            const VectorXr& cs(common.ref_cs(s));
+            const VectorXr  Drho(D.array()*cs.array()); // cwise
+            
+            tmp -= Drho.asDiagonal()*Frho;
+            
+            // NB: Overwrites
+            F = tmp;
+        }
+    }
+    
+    // mass 
+    // NB: Mass must go last because everyone else needs
+    // fsrcw[ndx::rho] before it gets zeroed here
+    {
+        Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
+        F.setZero();
+    }
+}
 
 template <bool ZerothSubstep,
           linearize::type Linearize,
@@ -755,190 +945,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // After first traversal, have gathered reference profiles.  So,
         // we can complete the viscous filter source calculation by
         // multiplying by the appropriate reference quantities.
-
-        const std::size_t Ny = fsrcw.shape()[1];
-        const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
-
-        // Energy
-        {
-
-            // TODO: Add contributions of enthalpy diffusion term.
-
-            // diagonal
-            Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
-            const VectorXr& D(common.ref_korCv());
-
-            MatrixXXc tmp(Ny, Nplane);
-            tmp = D.asDiagonal()*F;
-
-            // x-momentum
-            Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
-            const VectorXr& nu(common.ref_nu());
-            const VectorXr& ux(common.ref_ux());
-            const VectorXr  Dmx( D.array()*ux.array() -  // heat flux
-                                nu.array()*ux.array() ); // visc work
-            
-            tmp -= Dmx.asDiagonal()*Fmx;
-            
-            // y-momentum
-            Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
-            const VectorXr& uy(common.ref_uy());
-            const real_t oneplam = (cmods.alpha + 4.0/3.0);
-            const VectorXr  Dmy(         D.array()*uy.array() -  // heat flux
-                                oneplam*nu.array()*uy.array() ); // visc work 
-            
-            tmp -= Dmy.asDiagonal()*Fmy;
-
-            // z-momentum
-            Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
-            const VectorXr& uz(common.ref_uz());
-            const VectorXr  Dmz( D.array()*uz.array() -  // heat flux
-                                nu.array()*uz.array() ); // visc work
-            
-            tmp -= Dmz.asDiagonal()*Fmz;
-            
-            // density
-            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            const VectorXr& e0 (common.ref_es(0));
-
-            const VectorXr ke (0.5*(ux.array()*ux.array() +
-                                    uy.array()*uy.array() + 
-                                    uz.array()*uz.array()));
-
-            const real_t ap13 = (cmods.alpha + 1.0/3.0);
-
-            VectorXr Drho( D.array()*(e0.array()-ke.array()) +  // heat flux
-                          nu.array()*( 2.0*ke.array() +         // visc work
-                                      ap13*uy.array()*uy.array()) );
-
-            // enthalpy diffusion
-            for (std::size_t s=1; s<Ns; ++s) {
-                const VectorXr& h0 (common.ref_hs(0));
-                const VectorXr& hs (common.ref_hs(s));
-                const VectorXr& cs (common.ref_cs(s));
-                const VectorXr& Ds (common.ref_Ds());
-
-                Drho.array() -= cs.array()*Ds.array()*(hs.array() - h0.array());
-            }
-
-            tmp -= Drho.asDiagonal()*Frho;
-
-            // species
-            for (std::size_t s=0; s<Ns-1; ++s) {
-                Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
-                const VectorXr& es (common.ref_es(s+1));
-                const VectorXr& h0 (common.ref_hs(0  ));
-                const VectorXr& hs (common.ref_hs(s+1));
-                const VectorXr& Ds (common.ref_Ds());
-
-                const VectorXr  Drho_s( // heat flux
-                                        D.array()*(e0.array()-es.array()) +  
-                                        // enthalpy diffusion
-                                        Ds.array()*(h0.array()-hs.array()) );
-                
-                tmp += Drho_s.asDiagonal()*Frho_s;
-            }
-
-            // NB: Overwrites (D2 - D1*(D0\D1))*rhoE.  Okay b/c not
-            // required below here.
-            F = tmp;
-        }
-
-        // x-momentum
-        {
-            // diagonal
-            Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
-            const VectorXr& D(common.ref_nu());
-
-            MatrixXXc tmp(Ny, Nplane);
-            tmp = D.asDiagonal()*F;
-
-            // density
-            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            const VectorXr& ux(common.ref_ux());
-            const VectorXr  Drho(D.array()*ux.array()); // cwise
-
-            tmp -= Drho.asDiagonal()*Frho;
-
-            // NB: Overwrites
-            F = tmp;
-        }
-
-        // y-momentum
-        {
-            // diagonal
-            Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
-            const VectorXr& D(common.ref_nu());
-            MatrixXXc tmp(Ny, Nplane);
-            
-            const real_t oneplam = (cmods.alpha + 4.0/3.0);
-
-            //tmp = oneplam * D.asDiagonal()*F;
-            tmp = D.asDiagonal()*F;
-            
-            // density
-            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            const VectorXr& uy(common.ref_uy());
-            const VectorXr  Drho(D.array()*uy.array()); // cwise
-
-            //tmp -= oneplam * Drho.asDiagonal()*Frho;
-            tmp -= Drho.asDiagonal()*Frho;
-
-            tmp *= oneplam;
-
-            // NB: Overwrites
-            F = tmp;
-        }
-
-        // z-momentum
-        {
-            // diagonal;
-            Map<MatrixXXc> F(fsrcw[ndx::mz].origin(), Ny, Nplane);
-            const VectorXr& D(common.ref_nu());
-            MatrixXXc tmp(Ny, Nplane);
-            tmp = D.asDiagonal()*F;
-
-            // density
-            Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            const VectorXr& uz(common.ref_uz());
-            const VectorXr  Drho(D.array()*uz.array()); // cwise
-
-            tmp -= Drho.asDiagonal()*Frho;
-
-            // NB: Overwrites
-            F = tmp;
-        }
-
-
-        // species
-        {
-            for (unsigned int s=1; s<Ns; ++s) {
-                // diagonal
-                Map<MatrixXXc> F(fsrcw[ndx::rho+s].origin(), Ny, Nplane);
-                const VectorXr& D(common.ref_Ds());
-                MatrixXXc tmp(Ny, Nplane);
-                tmp = D.asDiagonal()*F;
-
-                // density
-                Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
-                const VectorXr& cs(common.ref_cs(s));
-                const VectorXr  Drho(D.array()*cs.array()); // cwise
-                
-                tmp -= Drho.asDiagonal()*Frho;
-
-                // NB: Overwrites
-                F = tmp;
-            }
-        }
-
-        // mass 
-        // NB: Mass must go last because everyone else needs
-        // fsrcw[ndx::rho] before it gets zeroed here
-        {
-            Map<MatrixXXc> F(fsrcw[ndx::rho].origin(), Ny, Nplane);
-            F.setZero();
-        }
-
+        vfilt_apply_ref_viscous_operator(common, cmods.alpha, Ns, fsrcw);
         // Done with viscous filter source
     }
 
