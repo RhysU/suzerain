@@ -84,7 +84,8 @@ public:
      *   \left[V^L S\right]^{-1}
      *   \left(
      *     \chi^{-1}
-     *     \left( \ii k_x \left[C^G\right] + \ii k_z \left[B^G\right] \right)
+     *     \left(   \ii k_x \left[P^G C^G\right]
+     *            + \ii k_z \left[P^G B^G\right] \right)
      *     \left[V^L S\right] R^Y M
      *     \hat{V}
      *     +
@@ -99,8 +100,8 @@ public:
      * Uses, and on <tt>substep_index == 0</tt> updates, all of
      * <ol>
      *   <li>#VL_S_RY</li>
-     *   <li>#BG_VL_S_RY_by_chi</li>
-     *   <li>#CG_VL_S_RY_by_chi</li>
+     *   <li>#PG_BG_VL_S_RY_by_chi</li>
+     *   <li>#PG_CG_VL_S_RY_by_chi</li>
      *   <li>#ImPG_CG_VL_S_RY</li>
      *   <li>#invVL_S_RY</li>
      * </ol>
@@ -114,32 +115,36 @@ public:
             const std::size_t substep_index) const;
 
     /**
-     * Compute subsonic nonreflecting boundary condition matrices given
-     * reference state information and the \ref scenario_definition provided at
-     * construction time.  Updates all of
+     * Compute Medida's Giles-like nonreflecting boundary condition matrices
+     * given reference state information and the \ref scenario_definition
+     * provided at construction time.  Inflow vs outflow and subsonic vs
+     * supersonic conditions are determined using \c ref_v and \c normal_sign.
+     * Updates all of
      * <ol>
      *   <li>#VL_S_RY</li>
-     *   <li>#BG_VL_S_RY_by_chi</li>
-     *   <li>#CG_VL_S_RY_by_chi</li>
+     *   <li>#PG_BG_VL_S_RY_by_chi</li>
+     *   <li>#PG_CG_VL_S_RY_by_chi</li>
      *   <li>#ImPG_CG_VL_S_RY</li>
      *   <li>#invVL_S_RY</li>
      * </ol>
      * during invocation.
      *
-     * @param ref_rho Nondimensional reference density \f$rho\f$.
-     * @param ref_u   Nondimensional reference streamwise velocity \f$u\f$.
-     * @param ref_v   Nondimensional reference boundary-normal velocity \f$v\f$.
-     *                Inflow conditions are used when this velocity is strictly
-     *                negative.  Otherwise, outflow conditions are used.
-     * @param ref_w   Nondimensional reference spanwise velocity \f$w\f$.
-     * @param ref_a   Nondimensional reference sound speed \f$a\f$.
+     * @param ref_rho     Nondimensional reference density \f$rho\f$.
+     * @param ref_u       Nondimensional reference streamwise velocity \f$u\f$.
+     * @param ref_v       Nondimensional reference velocity \f$v\f$.
+     * @param ref_w       Nondimensional reference spanwise velocity \f$w\f$.
+     * @param ref_a       Nondimensional reference sound speed \f$a\f$.
+     * @param normal_sign Sign of a boundary-normal vector.
+     *                    For the boundary at \f$y=0\f$ this should be negative.
+     *                    For the boundary at \f$y=L_y\f$, it must be positive.
      */
-    void compute_subsonic_matrices(
+    void compute_giles_matrices(
             const real_t ref_rho,
             const real_t ref_u,
             const real_t ref_v,
             const real_t ref_w,
-            const real_t ref_a);
+            const real_t ref_a,
+            const real_t normal_sign);
 
     /** The operator whose behavior is modified by this instance. */
     shared_ptr<timestepper::nonlinear_operator<
@@ -169,14 +174,14 @@ protected:
      * \f$ \chi^{-1} \left[B^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
-    Matrix5r BG_VL_S_RY_by_chi;
+    Matrix5r PG_BG_VL_S_RY_by_chi;
 
     /**
      * Wavenumber-independent matrix
      * \f$ \chi^{-1} \left[C^G\right] \left[V^L S\right] R^Y \f$
      * used by apply_operator().
      */
-    Matrix5r CG_VL_S_RY_by_chi;
+    Matrix5r PG_CG_VL_S_RY_by_chi;
 
     /**
      * Wavenumber-independent matrix

@@ -71,11 +71,11 @@ nonreflecting_treatment::nonreflecting_treatment(
 {
 #ifndef NDEBUG
     // Defensively NaN working storage to reduce misuse possibility
-    VL_S_RY          .setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    BG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    CG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    ImPG_VL_S_RY     .setConstant(std::numeric_limits<real_t>::quiet_NaN());
-    inv_VL_S_RY      .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    VL_S_RY             .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    PG_BG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    PG_CG_VL_S_RY_by_chi.setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    ImPG_VL_S_RY        .setConstant(std::numeric_limits<real_t>::quiet_NaN());
+    inv_VL_S_RY         .setConstant(std::numeric_limits<real_t>::quiet_NaN());
 #endif
 }
 
@@ -126,11 +126,12 @@ nonreflecting_treatment::apply_operator(
     // The hideous const_cast is required due to timestepping API.
     if (substep_index == 0) {
         const_cast<nonreflecting_treatment*>(this)
-                ->compute_subsonic_matrices(common.ref_rho().tail<1>()[0],
-                                            common.ref_ux ().tail<1>()[0],
-                                            common.ref_uy ().tail<1>()[0],
-                                            common.ref_uz ().tail<1>()[0],
-                                            common.ref_a  ().tail<1>()[0]);
+                ->compute_giles_matrices(common.ref_rho().tail<1>()[0],
+                                         common.ref_ux ().tail<1>()[0],
+                                         common.ref_uy ().tail<1>()[0],
+                                         common.ref_uz ().tail<1>()[0],
+                                         common.ref_a  ().tail<1>()[0],
+                                         1 /* y = L_y has positive normal */);
     }
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
@@ -169,10 +170,10 @@ nonreflecting_treatment::apply_operator(
             Vector5c tmp;
             tmp.noalias()  = ImPG_VL_S_RY.cast<complex_t>() * N;
             tmp.noalias() += kn
-                           * BG_VL_S_RY_by_chi.cast<complex_t>()
+                           * PG_BG_VL_S_RY_by_chi.cast<complex_t>()
                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
             tmp.noalias() += km
-                           * CG_VL_S_RY_by_chi.cast<complex_t>()
+                           * PG_CG_VL_S_RY_by_chi.cast<complex_t>()
                            * i_stash.col((m - dkbx) + mu*(n - dkbz));
             N.noalias()    = inv_VL_S_RY.cast<complex_t>() * tmp;
 
@@ -188,12 +189,13 @@ nonreflecting_treatment::apply_operator(
 }
 
 void
-nonreflecting_treatment::compute_subsonic_matrices(
+nonreflecting_treatment::compute_giles_matrices(
     const real_t ref_rho,
     const real_t ref_u,
     const real_t ref_v,
     const real_t ref_w,
-    const real_t ref_a)
+    const real_t ref_a,
+    const real_t normal_sign)
 {
     // Prepare the rotation and its inverse that reorders from
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
@@ -310,53 +312,43 @@ nonreflecting_treatment::compute_subsonic_matrices(
         inv_VL(4, 4) =   half;
     }
 
-    // The upper boundary is an inflow when the reference velocity is negative.
-    // In the event of u == 0, treat the boundary like an outflow.
-    const bool inflow = u < 0;
-
-    // Build the in-vs-outflow characteristic-preserving projection
-    Matrix5r PG(Matrix5r::Zero());
-    if (inflow) {
-        PG(0, 0) = 1;
-        PG(1, 1) = 1;
-        PG(2, 2) = 1;
-        PG(3, 3) = 1;
-    } else {
-        PG(4, 4) = 1;
-    }
+    // Build the in-vs-outflow characteristic-preserving projection.
+    // Also accounts for sub- versus supersonic boundaries.
+    Vector5r PG;
+    PG(0) = static_cast<real_t>(normal_sign * (u    ) < 0);
+    PG(1) = static_cast<real_t>(normal_sign * (u    ) < 0);
+    PG(2) = static_cast<real_t>(normal_sign * (u    ) < 0);
+    PG(3) = static_cast<real_t>(normal_sign * (u + a) < 0);
+    PG(4) = static_cast<real_t>(normal_sign * (u - a) < 0);
 
     Matrix5r BG(Matrix5r::Zero());  // Medida's B^G_1
-    if (inflow) {
-        BG(1, 1) = v;
-        BG(3, 1) = half * (a - u);
-        BG(2, 2) = v;
-        BG(1, 3) = half * (a + u);
-        BG(3, 3) = v;
-        BG(1, 4) = half * (a - u);
-    } else {
-        BG(4, 1) = u;
-        BG(4, 4) = v;
-    }
+    BG(1, 1) = v;
+    BG(3, 1) = half * (a - u);
+    BG(4, 1) = u;
+    BG(2, 2) = v;
+    BG(1, 3) = half * (a + u);
+    BG(3, 3) = v;
+    BG(1, 4) = half * (a - u);
+    BG(4, 4) = v;
 
     Matrix5r CG(Matrix5r::Zero());  // Medida's C^G_1
-    if (inflow) {
-        CG(1, 1) = w;
-        CG(2, 2) = w;
-        CG(3, 2) = half * (a - u);
-        CG(2, 3) = half * (a + u);
-        CG(3, 3) = w;
-        CG(2, 4) = half * (a - u);
-    } else {
-        CG(4, 2) = u;
-        CG(4, 4) = w;
-    }
+    CG(1, 1) = w;
+    CG(2, 2) = w;
+    CG(3, 2) = half * (a - u);
+    CG(4, 2) = u;
+    CG(2, 3) = half * (a + u);
+    CG(3, 3) = w;
+    CG(2, 4) = half * (a - u);
+    CG(4, 4) = w;
 
     // Prepare all necessary real-valued products of the above matrices
-    VL_S_RY           = VL * S * RY;
-    BG_VL_S_RY_by_chi = BG * VL_S_RY / chi;
-    CG_VL_S_RY_by_chi = CG * VL_S_RY / chi;
-    ImPG_VL_S_RY      = (Matrix5r::Identity() - PG) * VL_S_RY;
-    inv_VL_S_RY       = inv_RY * inv_S * inv_VL;
+    VL_S_RY              = VL * S * RY;
+    PG_BG_VL_S_RY_by_chi = PG.asDiagonal() * BG * VL_S_RY / chi;
+    PG_CG_VL_S_RY_by_chi = PG.asDiagonal() * CG * VL_S_RY / chi;
+    PG -= Vector5r::Ones();
+    PG *= -1;
+    ImPG_VL_S_RY         = PG.asDiagonal() * VL_S_RY;
+    inv_VL_S_RY          = inv_RY * inv_S * inv_VL;
 }
 
 } // namespace perfect
