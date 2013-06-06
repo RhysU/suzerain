@@ -12,6 +12,7 @@ TEXSOURCES += covariance.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex
 TEXSOURCES += perfectgas.tex
+TEXSOURCES += plate_treatment.tex
 TEXSOURCES += skewadjoint.tex
 TEXSOURCES += smr91.tex
 

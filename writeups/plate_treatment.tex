@@ -1,0 +1,117 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{parskip}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
+\usepackage{wrapfig}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        Suzerain isothermal flat plate treatment
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Document-specific commands
+\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
+\newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
+
+\begin{document}
+
+This document describes the treatment of the isothermal freestream boundary for
+a compressible, nondimensional flat plate problem computed using Suzerain.
+
+\section{Mach and Reynolds numbers}
+
+Freestream parameters (denoted with $\infty$ subscripts) may be related
+to nondimensional code parameters (lacking subscripts) as follows:
+
+Freestream Mach number $\Mach[\infty]$ and Reynolds number $\Reynolds[\infty]$
+may be related to Suzerain code parameters $\Mach$ and $\Reynolds$ and
+nondimensional state as follows:
+\begin{align}
+  \Mach[\infty]{}
+  &=         \frac{u_\infty     }{a_\infty     }
+   = \Mach{} \frac{u_\infty^\ast}{a_\infty^\ast}
+&
+  \Reynolds[\infty]{}
+  &=             \frac{\rho_\infty      u_\infty      \delta     }{\mu_\infty     }
+   = \Reynolds{} \frac{\rho_\infty^\ast u_\infty^\ast \delta^\ast}{\mu_\infty^\ast}
+\end{align}
+Here, $\delta$ and $\delta^\ast$ are, respectively, a nondimensional and
+dimensional boundary layer thickness.
+Defining
+\begin{align}
+  \Mach[\infty]{} &= \Mach
+& \Reynolds[\infty]{} &= \Reynolds,
+& \delta^\ast &= 1
+\end{align}
+implies
+\begin{align}
+  u_\infty^\ast   &= a_\infty^\ast,
+& \mu_\infty^\ast &= \rho_\infty^\ast u_\infty^\ast
+.
+\end{align}
+In this nondimensional setting the constitutive laws
+\begin{align}
+  a^\ast &= \sqrt{T^\ast}
+& \mu^\ast &= {T^\ast}^\beta
+\end{align}
+may be combined with the above results to arrive at the following:
+\begin{align}
+  u_\infty^\ast &= \sqrt{T_\infty^\ast}
+\\
+  \rho_\infty^\ast u_\infty^\ast &= {T_\infty^\ast}^\beta
+\\
+  \rho_\infty^\ast &= \frac{\mu_\infty^\ast}{u_\infty^\ast}
+                    = \frac{{T_\infty^\ast}^\beta}{\sqrt{T_\infty^\ast}}
+                    = {T_\infty^\ast}^{\left(\beta-\frac{1}{2}\right)}
+\end{align}
+Enforcing these three nondimensional constraints at the freestream will achieve
+a target $\Mach$ and $\Reynolds$ provided that temperature $T_\infty^\ast$ is
+constrained.
+
+\section{Constraining Freestream Temperature}
+
+TODO
+
+\end{document}
