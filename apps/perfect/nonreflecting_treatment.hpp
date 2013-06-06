@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_NONREFLECTING_TREATMENT_HPP
-#define SUZERAIN_NONREFLECTING_TREATMENT_HPP
+#ifndef SUZERAIN_PERFECT_NONREFLECTING_TREATMENT_HPP
+#define SUZERAIN_PERFECT_NONREFLECTING_TREATMENT_HPP
 
 /** @file
  * A physics-agnostic, low-storage B-spline mass operator
@@ -212,4 +212,4 @@ private:
 
 } // namespace suzerain
 
-#endif  /* SUZERAIN_NONREFLECTING_TREATMENT_HPP */
+#endif  /* SUZERAIN_PERFECT_NONREFLECTING_TREATMENT_HPP */
