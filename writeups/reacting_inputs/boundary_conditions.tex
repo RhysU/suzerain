@@ -542,8 +542,8 @@ conserved state $V$ (dimensional) and~\S\ref{sec:gov_eq}:
 \label{eq:multieulerconsdim}
 V
 = \left\{
-    \rho_\alpha,
     \rho,
+    \rho_\alpha,
   \,\rho u,
   \,\rho v,
   \,\rho w,
@@ -580,8 +580,8 @@ e_{tot}(c_s, T)
 &\approx e_{tot}(c_{s,0}, T_0) 
  + \pp{e_{tot}}{T} (T-T_0) + \sum_{s=1}^{N_s} \pp{e_{tot}}{c_s} (c_s-c_{s,0})\\
 &= e_{tot,0}
- + C_{v,\text{mix},0} (T-T_0) + \sum_{s=1}^{N_s} c_s e_{s,tot,0} - \sum_{s=1}^{N_s}  c_{s,0} e_{s,tot,0} \\
-&= C_{v,\text{mix},0}  T      + \sum_{s=1}^{N_s} c_s e_{s,tot,0} - C_{v,\text{mix},0} T_0  \\
+ + C_{v,\text{mix},0} (T-T_0) + \sum_{s=1}^{N_s} c_s e_{s,tot} - \sum_{s=1}^{N_s}  c_{s,0} e_{s,tot} \\
+&= C_{v,\text{mix},0}  T      + \sum_{s=1}^{N_s} c_s e_{s,tot} - C_{v,\text{mix},0} T_0  \\
 \end{split}
 \end{equation}
 %
@@ -591,12 +591,12 @@ Therefore, an approximate expression for total energy is obtained as
 \begin{split}
 \rho E 
 &\approx \rho C_{v,\text{mix},0} T 
-   + \rho \sum_{s=1}^{N_s} c_s e_{s,tot,0} 
+   + \rho \sum_{s=1}^{N_s} c_s e_{s,tot} 
    - \rho C_{v,\text{mix},0} T_0 
    + \frac{1}{2} \rho \left( u^2 + v^2+ w^2 \right) \\
 &= \frac{P}{\gamma_{\text{mix},0}-1}
-   + \sum_{s=1}^{N_s} \rho_s e_{s,tot,0} 
-   - \frac{P_0}{\gamma_{\text{mix},0}-1}
+   + \sum_{s=1}^{N_s} \rho_s e_{s,tot}
+   - \rho C_{v,\text{mix},0} T_0 
    + \frac{1}{2} \sum_{s=1}^{N_s} \rho_s \left( u^2 + v^2+ w^2 \right)
 \end{split}
 \end{equation}
@@ -607,45 +607,42 @@ The Jacobian is then
 S &= 
 \left[\begin{array}{cccccc}
     1      % 11
-  & 0      % 12
+  & -1     % 12
   & 0      % 13
   & 0      % 14
   & 0      % 15
   & 0      % 16
   \\ \noalign{\medskip}
-   -1      % 21
+    0      % 21
   & 1      % 22
   & 0      % 23
   & 0      % 24
   & 0      % 25
   & 0      % 26
   \\ \noalign{\medskip}
-    0                                % 31
-  & - \frac{\bar{u}}{\bar{\rho}}     % 32
+    - \frac{\bar{u}}{\bar{\rho}}     % 31
+  & 0                                % 32
   & \frac{1}{\bar{\rho}}             % 33
   & 0                                % 34
   & 0                                % 35
   & 0                                % 36
   \\ \noalign{\medskip}
-    0                                % 41
-  & - \frac{\bar{v}}{\bar{\rho}}     % 42
+    - \frac{\bar{v}}{\bar{\rho}}     % 41
+  & 0                                % 42
   & 0                                % 43
   & \frac{1}{\bar{\rho}}             % 44
   & 0                                % 45
   & 0                                % 46
   \\ \noalign{\medskip}
-    0                                % 51
-  & - \frac{\bar{w}}{\bar{\rho}}     % 52
+    - \frac{\bar{w}}{\bar{\rho}}     % 51
+  & 0                                % 52
   & 0                                % 53
   & 0                                % 54
   & \frac{1}{\bar{\rho}}             % 55
   & 0                                % 56
   \\ \noalign{\medskip}
-    \left(\bar{\gamma} - 1\right) \left(-\bar{e}_{1,tot}+\bar{e}_{d,tot}\right) % 61
-  & \left(\bar{\gamma} - 1\right) 
-    \left(-\bar{e}_{d,tot} + 
-    0.5 \left(\bar{u}^2 + \bar{v}^2 + \bar{w}^2\right)
-    \right) % 62
+     S_{P,\rho}                                 % 61
+  &  S_{P,\rho_\alpha}                          % 62
   & \left(1 - \bar{\gamma}\right) \bar{u}       % 63
   & \left(1 - \bar{\gamma}\right) \bar{v}       % 64
   & \left(1 - \bar{\gamma}\right) \bar{w}       % 65
@@ -655,7 +652,17 @@ S &=
 ,
 \end{align}
 %
-where $\bar{e}_{d,tot}$ is the total specific energy of the diluter species.
+with
+\begin{align}
+S_{P,\rho} &= 
+\left(\bar{\gamma} - 1\right) 
+    \left(-\bar{e}_{0,tot} + C_{v,\text{mix},0} T_0 +
+    \frac{1}{2} \left(\bar{u}^2 + \bar{v}^2 + \bar{w}^2\right)
+    \right), \\
+S_{P,\rho_\alpha} &= 
+\left(\bar{\gamma} - 1\right) \left(-\bar{e}_{\alpha,tot}+\bar{e}_{0,tot}\right),
+\end{align}
+and where $\bar{e}_{0,tot}$ is the total specific energy of the diluter species.
 The inverse is
 \begin{align}
 S^{-1} &= \left[\begin{array}{cccccc}
@@ -664,15 +671,24 @@ S^{-1} &= \left[\begin{array}{cccccc}
   \bar{u}   & \bar{u}   & \bar{\rho} & 0            & 0            & 0 \\
   \bar{v}   & \bar{v}   & 0          & \bar{\rho}   & 0            & 0 \\
   \bar{w}   & \bar{w}   & 0          & 0            & \bar{\rho}   & 0 \\
-  \bar{e}_{1,tot} + 0.5 \left( \bar{u}^2 + \bar{v}^2 + \bar{w}^2\right)
-& \bar{e}_{2,tot} + 0.5 \left( \bar{u}^2 + \bar{v}^2 + \bar{w}^2\right)
+  S^{-1}_{\rho_0,\rho E}
+& S^{-1}_{\rho_1,\rho E}
 & \bar{\rho} \bar{u} 
 & \bar{\rho} \bar{v} 
 & \bar{\rho} \bar{w} 
 & \frac{1}{\bar{\gamma}-1}
 \end{array}\right]
-.
+,
 \end{align}
+%
+with
+%
+\begin{equation}
+S^{-1}_{\rho_\alpha, \rho E} = 
+  \bar{e}_{\alpha,tot} - C_{v,\text{mix},0} T_0  
+  + \frac{1}{2} \left( \bar{u}^2 + \bar{v}^2 + \bar{w}^2\right).
+\end{equation}
+
 % Medida's matrices $V^L$, $B^G$, and $C^G$ derived for $U$ remain valid for
 % nondimensional $U^*$ possessing sound speed $a/u_0$.  When reusing these
 % matrices for $V^*$ every sound speed must be scaled by $1/\Mach$ because
