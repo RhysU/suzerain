@@ -7,7 +7,7 @@ set -e
 : ${MMS_DIM_CASE_NPROC:=4}
 
 # Parse incoming parameters
-OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,T_r:,mu_r:,T_wall:,N:,filter_phi:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
+OPTS="k:,Nx:,Ny:,Nz:,htdelta:,np:,tfinal:,alpha:,beta:,T_r:,mu_r:,lower_T:,N:,filter_phi:,no_x,no_xy,no_xz,no_y,no_yz,no_z,no_t"
 ARGS=$(getopt -n "$(basename -- "$0")" -o "h" -l "$OPTS,help" -- "$@")
 if [ $? -ne 0 ]; then exit 1; fi
 eval set -- "$ARGS"
@@ -27,7 +27,7 @@ alpha=0
 beta=
 T_r=
 mu_r=
-T_wall=300
+lower_T=300
 no=()
 while true;
 do
@@ -50,7 +50,7 @@ do
   &--beta&Temperature power law exponent within manufactured solution
   &--T_r&Reference temperature for viscosity power law
   &--mu_r&Reference viscosity for viscosity power law
-  &--T_wall&Wall temperature
+  &--lower_T&Wall temperature
   &--filter_phi&Filter parameter
   &--N&Set Ny as specified and Nx, Nz = 2 Ny / 3
   &--no_x&Disable all X derivatives in the solution
@@ -93,7 +93,7 @@ EOF
         --beta)     beta="$2";     shift 2;;
         --T_r)      T_r="$2";      shift 2;;
         --mu_r)     mu_r="$2";     shift 2;;
-        --T_wall)   T_wall="$2";   shift 2;;
+        --lower_T)  lower_T="$2";   shift 2;;
         --filter_phi) filter_phi="$2"; shift 2;;
         --N)        Nx=$(expr 2 \* "$2" / 3);
                     Ny="$2";
@@ -141,20 +141,20 @@ cd $dir
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
     ${T_r:+--T_r=$T_r} ${mu_r:+--mu_r=$mu_r}             \
-    ${T_wall:+--T_wall=$T_wall}                          \
+    ${lower_T:+--lower_T=$lower_T}                          \
     ${filter_phi:+--filter_phi=$filter_phi}              \
     --mms=0 --species=CPAir "${no[@]}"
 "$MMS_DIM_CASE_INITIAL" final.h5 -v                      \
     --k=$k --Nx=$Nx --Ny=$Ny --Nz=$Nz --htdelta=$htdelta \
     ${alpha:+--alpha=$alpha} ${beta:+--beta=$beta}       \
     ${T_r:+--T_r=$T_r} ${mu_r:+--mu_r=$mu_r}             \
-    ${T_wall:+--T_wall=$T_wall}                          \
+    ${lower_T:+--lower_T=$lower_T}                          \
     --mms=$tfinal --species=CPAir "${no[@]}"
 
 # Advance the initial condition until the final time is reached
 # Notice any unknown arguments from the command line appear here
 ${np+mpiexec -np $np} "$MMS_DIM_CASE_ADVANCE" initial.h5                 \
-    --statistics_nt=0 --statistics_dt=0 --status_nt=1 --status_dt=0 \
+    --statistics_nt=0 --statistics_dt=$tfinal --status_nt=1 --status_dt=0 \
     --advance_nt=0 --advance_dt=$tfinal "$@"
 
 #${np+mpiexec -np $np} "$MMS_DIM_CASE_ADVANCE" initial.h5 -v         \
