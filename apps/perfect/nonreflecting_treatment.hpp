@@ -114,6 +114,13 @@ public:
             const real_t evmaxmag_imag,
             const std::size_t substep_index) const;
 
+    /** The operator whose behavior is modified by this instance. */
+    shared_ptr<timestepper::nonlinear_operator<
+                contiguous_state<4,complex_t>
+            > > N;
+
+protected:
+
     /**
      * Compute Medida's Giles-like nonreflecting boundary condition matrices
      * given reference state information and the \ref scenario_definition
@@ -145,13 +152,6 @@ public:
             const real_t ref_w,
             const real_t ref_a,
             const real_t normal_sign);
-
-    /** The operator whose behavior is modified by this instance. */
-    shared_ptr<timestepper::nonlinear_operator<
-                contiguous_state<4,complex_t>
-            > > N;
-
-protected:
 
     /** The scenario in which the operator is used. */
     const scenario_definition &scenario;
