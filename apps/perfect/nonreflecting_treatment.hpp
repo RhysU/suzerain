@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/timestepper.hpp>
@@ -39,13 +40,11 @@ namespace suzerain {
 class bspline;
 class bsplineop;
 class grid_specification;
-class isothermal_specification;
 class pencil_grid;
 
 namespace perfect {
 
 // Forward declarations
-class operator_common_block;
 class scenario_definition;
 
 /**
@@ -72,8 +71,7 @@ public:
             const grid_specification& grid,
             const pencil_grid& dgrid,
             const bsplineop& cop,
-            bspline& b,
-            const operator_common_block& common);
+            bspline& b);
 
     /**
      * Applies Giles conditions delegating most processing to #N.
@@ -121,46 +119,14 @@ public:
 
 protected:
 
-    /**
-     * Compute Medida's Giles-like nonreflecting boundary condition matrices
-     * given reference state information and the \ref scenario_definition
-     * provided at construction time.  Inflow vs outflow and subsonic vs
-     * supersonic conditions are determined using \c ref_v and \c normal_sign.
-     * Updates all of
-     * <ol>
-     *   <li>#VL_S_RY</li>
-     *   <li>#PG_BG_VL_S_RY_by_chi</li>
-     *   <li>#PG_CG_VL_S_RY_by_chi</li>
-     *   <li>#ImPG_CG_VL_S_RY</li>
-     *   <li>#invVL_S_RY</li>
-     * </ol>
-     * during invocation.
-     *
-     * @param ref_rho     Nondimensional reference density \f$rho\f$.
-     * @param ref_u       Nondimensional reference streamwise velocity \f$u\f$.
-     * @param ref_v       Nondimensional reference velocity \f$v\f$.
-     * @param ref_w       Nondimensional reference spanwise velocity \f$w\f$.
-     * @param ref_a       Nondimensional reference sound speed \f$a\f$.
-     * @param normal_sign Sign of a boundary-normal vector.
-     *                    For the boundary at \f$y=0\f$ this should be negative.
-     *                    For the boundary at \f$y=L_y\f$, it must be positive.
-     */
-    void compute_giles_matrices(
-            const real_t ref_rho,
-            const real_t ref_u,
-            const real_t ref_v,
-            const real_t ref_w,
-            const real_t ref_a,
-            const real_t normal_sign);
-
     /** The scenario in which the operator is used. */
     const scenario_definition &scenario;
 
-    /** The lower and upper isothermal boundary specification. */
+    /**
+     * The lower and upper isothermal boundary specification.
+     * Provides the reference values used for nonreflecting treatment.
+     */
     const isothermal_specification &isothermal;
-
-    /** Provides reference values used when computing the conditions. */
-    const operator_common_block &common;
 
     /**
      * Wavenumber-independent matrix
@@ -196,6 +162,66 @@ protected:
      * used by apply_operator().
      */
     Matrix5r inv_VL_S_RY;
+
+    /**
+     * Compute Medida's Giles-like nonreflecting boundary condition matrices
+     * given reference state information and the \ref scenario_definition
+     * provided at construction time.  Inflow vs outflow and subsonic vs
+     * supersonic conditions are determined using \c ref_v and \c normal_sign.
+     * Updates all of
+     * <ol>
+     *   <li>#VL_S_RY</li>
+     *   <li>#PG_BG_VL_S_RY_by_chi</li>
+     *   <li>#PG_CG_VL_S_RY_by_chi</li>
+     *   <li>#ImPG_CG_VL_S_RY</li>
+     *   <li>#invVL_S_RY</li>
+     * </ol>
+     * during invocation.
+     *
+     * @param ref_rho     Nondimensional reference density \f$rho\f$.
+     * @param ref_u       Nondimensional reference streamwise velocity \f$u\f$.
+     * @param ref_v       Nondimensional reference velocity \f$v\f$.
+     * @param ref_w       Nondimensional reference spanwise velocity \f$w\f$.
+     * @param ref_a       Nondimensional reference sound speed \f$a\f$.
+     * @param normal_sign Sign of a boundary-normal vector.
+     *                    For the boundary at \f$y=0\f$ this should be negative.
+     *                    For the boundary at \f$y=L_y\f$, it must be positive.
+     */
+    void compute_giles_matrices(
+            const real_t ref_rho,
+            const real_t ref_u,
+            const real_t ref_v,
+            const real_t ref_w,
+            const real_t ref_a,
+            const real_t normal_sign);
+
+    /**
+     * Invokes compute_giles_matrices() for lower boundary.
+     * Broken out for brevity and to document reference state choices.
+     */
+    void compute_giles_matrices_lower()
+    {
+        return compute_giles_matrices(isothermal.lower_rho,
+                                      isothermal.lower_u,
+                                      isothermal.lower_v,
+                                      isothermal.lower_w,
+                                      std::sqrt(isothermal.lower_T),
+                                      -1);
+    }
+
+    /**
+     * Invokes compute_giles_matrices() for upper boundary.
+     * Broken out for brevity and to document reference state choices.
+     */
+    void compute_giles_matrices_upper()
+    {
+        return compute_giles_matrices(isothermal.upper_rho,
+                                      isothermal.upper_u,
+                                      isothermal.upper_v,
+                                      isothermal.upper_w,
+                                      std::sqrt(isothermal.upper_T),
+                                      +1);
+    }
 
 private:
 

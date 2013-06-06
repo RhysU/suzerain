@@ -30,11 +30,9 @@
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
-#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 
-#include "common_block.hpp"
 #include "scenario_definition.hpp"
 
 #pragma float_control(precise, on)
@@ -61,12 +59,10 @@ nonreflecting_treatment::nonreflecting_treatment(
         const grid_specification &grid,
         const pencil_grid &dgrid,
         const bsplineop &cop,
-        bspline &b,
-        const operator_common_block &common)
+        bspline &b)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , isothermal(isothermal)
-    , common(common)
     , who("nonreflecting_treatment")
 {
 #ifndef NDEBUG
@@ -126,12 +122,7 @@ nonreflecting_treatment::apply_operator(
     // The hideous const_cast is required due to timestepping API.
     if (substep_index == 0) {
         const_cast<nonreflecting_treatment*>(this)
-                ->compute_giles_matrices(common.ref_rho().tail<1>()[0],
-                                         common.ref_ux ().tail<1>()[0],
-                                         common.ref_uy ().tail<1>()[0],
-                                         common.ref_uz ().tail<1>()[0],
-                                         common.ref_a  ().tail<1>()[0],
-                                         1 /* y = L_y has positive normal */);
+                ->compute_giles_matrices_upper();
     }
 
     // Wavenumber traversal modeled after those found in suzerain/diffwave.c
