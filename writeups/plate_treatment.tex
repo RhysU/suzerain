@@ -62,6 +62,8 @@ a compressible, nondimensional flat plate problem computed using Suzerain.
 
 \section{Mach and Reynolds numbers}
 
+% Based on Rhys' personal notes dated 9 May 2013
+
 Freestream parameters (denoted with $\infty$ subscripts) may be related
 to nondimensional code parameters (lacking subscripts) as follows:
 
@@ -108,10 +110,71 @@ may be combined with the above results to arrive at the following:
 \end{align}
 Enforcing these three nondimensional constraints at the freestream will achieve
 a target $\Mach$ and $\Reynolds$ provided that temperature $T_\infty^\ast$ is
-constrained.
+also constrained.
 
 \section{Constraining Freestream Temperature}
 
-TODO
+% Based on Rhys' personal notes dated 8 May 2013
+
+First, observe
+\begin{align}
+  \overline{xy} &= \overline{xy}
+\\              &= \overline{xy} - \bar{x} \bar{y} + \bar{x} \bar{y}
+\\              &= \operatorname{Cov}\left(x,y\right) + \bar{x} \bar{y}
+.
+\end{align}
+Examining mean state evolution,
+\begin{align}
+  \partial_t \overline{\rho u} &= \partial_t \operatorname{Cov}\left(\rho,u\right)
+                                + \partial_t \bar{\rho} \bar{u}
+\\
+                               &= \partial_t \operatorname{Cov}\left(\rho,u\right)
+                                + \bar{\rho} \partial_t \bar{u}
+                                + \bar{u}    \partial_t \bar{\rho}
+\end{align}
+As $\partial_t \operatorname{Cov}\left(\rho_\infty,u_\infty\right) = 0$
+and $\partial_t \bar{u}_\infty = 0$ for a stationary, constant freestream,
+\begin{align}
+  \partial_t \overline{\rho u}_\infty
+  &\approx \bar{u}_\infty \partial_t \bar{\rho}_\infty
+\end{align}
+Similarly,
+\begin{align}
+  \partial_t \overline{\rho w}_\infty
+  &\approx \bar{w}_\infty \partial_t \bar{\rho}_\infty,
+&
+  \partial_t \overline{\rho E}_\infty
+  &\approx \bar{E}_\infty \partial_t \bar{\rho}_\infty
+  .
+\end{align}
+Now,
+\begin{align}
+  \bar{E}
+  &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
+   + \frac{\Mach^2}{2}\left(\overline{u^2}+\overline{v^2}+\overline{w^2}\right)
+\\
+  &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
+   + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2
+                            +\operatorname{Var}u
+                            +\operatorname{Var}v
+                            +\operatorname{Var}w\right)
+\\
+  &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
+   + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2+2\bar{k}\right)
+\end{align}
+In a non-turbulent freestream, $\bar{k}_\infty\approx{}0$ suggests
+using the approximation
+\begin{align}
+  \partial_t \overline{\rho E}_\infty
+&\approx
+  \left(
+         \frac{\bar{T}_\infty}{\gamma\left( \gamma-1 \right)}
+       + \frac{\Mach^2}{2}\left(\bar{u}_\infty^2+\bar{v}_\infty^2+\bar{w}_\infty^2\right)
+  \right)
+  \partial_t \bar{\rho}_\infty
+\end{align}
+which permits using known $T_\infty$ and only mean velocity information
+to enforce an approximately isothermal freestream condition via the
+total energy equation.
 
 \end{document}
