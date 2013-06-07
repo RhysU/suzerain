@@ -25,14 +25,14 @@
  * @copydoc antioch_constitutive.hpp
  */
 
-#include <suzerain/common.hpp>
-#include <suzerain/exprparse.hpp>
-#include <suzerain/support/logging.hpp>
-#include <suzerain/validation.hpp>
+#include "antioch_constitutive.hpp"
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
 
-#include "antioch_constitutive.hpp"
+#include <suzerain/exprparse.hpp>
+#include <suzerain/support/logging.hpp>
+#include <suzerain/validation.hpp>
+#include <suzerain/timers.h>
 
 #include <antioch/antioch_version.h>
 #include <antioch/read_reaction_set_data_xml.h>
@@ -338,6 +338,8 @@ antioch_constitutive::evaluate (const real_t  e,
 {
     //WARN0("antioch_constitutive::evaluate is not fully functional yet!");
 
+    SUZERAIN_TIMER_SCOPED("antioch evaluate");
+
     const real_t irho = 1.0/rho;
 
     // FIXME: Incoming vectors are currently raw pointers (result of
@@ -530,6 +532,8 @@ antioch_constitutive::evaluate_pressure_derivs_and_trans (const real_t    e,
                                                           real_t&   gamma,
                                                           real_t&   a) const
 {
+    SUZERAIN_TIMER_SCOPED("antioch ref quantities");
+
     const real_t irho = 1.0/rho;
 
     const size_t Ns = this->Ns();
