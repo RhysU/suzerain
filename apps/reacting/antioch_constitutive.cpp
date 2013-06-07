@@ -443,6 +443,7 @@ antioch_constitutive::evaluate (const real_t    e,
                                 real_t&   a,
                                 real_t&   Cv) const
 {
+    SUZERAIN_TIMER_SCOPED("antioch evaluate");
 
     const real_t irho = 1.0/rho;
 
