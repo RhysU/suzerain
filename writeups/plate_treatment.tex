@@ -54,18 +54,17 @@
 % Document-specific commands
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 \newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
+\newcommand{\Cov}[2]{\ensuremath{\operatorname{Cov}\left[{#1},{#2}\right]}}
+\newcommand{\Var}[1]{\ensuremath{\operatorname{Var}\left[{#1}\right]}}
 
 \begin{document}
 
 This document describes the treatment of the isothermal freestream boundary for
 a compressible, nondimensional flat plate problem computed using Suzerain.
 
-\section{Mach and Reynolds numbers}
+\section{The freestream Mach and Reynolds numbers}
 
 % Based on Rhys' personal notes dated 9 May 2013
-
-Freestream parameters (denoted with $\infty$ subscripts) may be related
-to nondimensional code parameters (lacking subscripts) as follows:
 
 Freestream Mach number $\Mach[\infty]$ and Reynolds number $\Reynolds[\infty]$
 may be related to Suzerain code parameters $\Mach$ and $\Reynolds$ and
@@ -76,8 +75,10 @@ nondimensional state as follows:
    = \Mach{} \frac{u_\infty^\ast}{a_\infty^\ast}
 &
   \Reynolds[\infty]{}
-  &=             \frac{\rho_\infty      u_\infty      \delta     }{\mu_\infty     }
-   = \Reynolds{} \frac{\rho_\infty^\ast u_\infty^\ast \delta^\ast}{\mu_\infty^\ast}
+  &=             \frac{\rho_\infty      u_\infty      \delta     }
+                      {\mu_\infty     }
+   = \Reynolds{} \frac{\rho_\infty^\ast u_\infty^\ast \delta^\ast}
+                      {\mu_\infty^\ast}
 \end{align}
 Here, $\delta$ and $\delta^\ast$ are, respectively, a nondimensional and
 dimensional boundary layer thickness.
@@ -90,50 +91,129 @@ Defining
 implies
 \begin{align}
   u_\infty^\ast   &= a_\infty^\ast,
-& \mu_\infty^\ast &= \rho_\infty^\ast u_\infty^\ast
+&
+  \rho_\infty^\ast u_\infty^\ast &= \mu_\infty^\ast
 .
 \end{align}
 In this nondimensional setting the constitutive laws
 \begin{align}
   a^\ast &= \sqrt{T^\ast}
-& \mu^\ast &= {T^\ast}^\beta
+&\mu^\ast &= {T^\ast}^\beta
 \end{align}
-may be combined with the above results to arrive at the following:
+may be combined with the prior expressions to obtain the following:
 \begin{align}
+  \label{eq:u_target}
   u_\infty^\ast &= \sqrt{T_\infty^\ast}
 \\
+  \label{eq:mx_target}
   \rho_\infty^\ast u_\infty^\ast &= {T_\infty^\ast}^\beta
 \\
+  \label{eq:rho_target}
   \rho_\infty^\ast &= \frac{\mu_\infty^\ast}{u_\infty^\ast}
                     = \frac{{T_\infty^\ast}^\beta}{\sqrt{T_\infty^\ast}}
                     = {T_\infty^\ast}^{\left(\beta-\frac{1}{2}\right)}
+\\
+  \label{eq:ke_target}
+  \rho_\infty^\ast {u_\infty^\ast}^2
+&=
+  {T_\infty^\ast}^{\left(\beta + \frac{1}{2}\right)}
 \end{align}
 Enforcing these three nondimensional constraints at the freestream will achieve
 a target $\Mach$ and $\Reynolds$ provided that temperature $T_\infty^\ast$ is
-also constrained.
+somehow constrained.
 
-\section{Constraining Freestream Temperature}
+\section{Obtaining freestream total energy}
+
+Unlike the momentum \eqref{eq:mx_target} and density \eqref{eq:rho_target}
+constraints, there is seemingly no crisp way to obtain a clean, constant target
+value for the total energy which enforces an isothermal-in-the-mean freestream.
+By the \emph{nondimensional} equation of state,
+\begin{align}
+  \rho E &= \frac{p}{\gamma-1}
+          + \frac{\Mach^2}{2}\left(\rho{}u^2 + \rho{}v^2 + \rho{}w^2\right)
+\\
+         &= \frac{\rho T}{\gamma\left(\gamma-1\right)}
+          + \frac{\Mach^2}{2}\left(\rho{}u^2 + \rho{}v^2 + \rho{}w^2\right)
+.
+\end{align}
+Considering the freestream and both using \eqref{eq:rho_target} and
+\eqref{eq:ke_target},
+\begin{align}
+  \left(\rho E\right)_\infty
+         &= \frac{\rho_\infty T_\infty}{\gamma\left(\gamma-1\right)}
+          + \frac{\Mach^2}{2}\left(  \rho_\infty u_\infty^2
+                                   + \rho_\infty v_\infty^2
+                                   + \rho_\infty w_\infty^2\right)
+\\
+         &= \frac{T_\infty^{\left(\beta+\frac{1}{2}\right)}}{\gamma\left(\gamma-1\right)}
+          + \frac{\Mach^2}{2}\left(  T_\infty^{\left(\beta+\frac{1}{2}\right)}
+                                   + \rho_\infty v_\infty^2
+                                   + \rho_\infty w_\infty^2\right)
+\\
+\label{eq:e_target}
+         &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
+                  + \frac{\Mach^2}{2} \right)
+             T_\infty^{\left(\beta+\frac{1}{2}\right)}
+          +
+             T_\infty^{\left(\beta-\frac{1}{2}\right)}
+             \left(v_\infty^2 + w_\infty^2\right)
+.
+\end{align}
+
+\section{Averaging}
+
+Wishing to permit fluctuations about a nominal state, we weaken
+\eqref{eq:rho_target}, \eqref{eq:mx_target}, and \eqref{eq:e_target} to be
+statements only about mean nondimensional state:
+\begin{align}
+   \bar{\rho}_\infty &= \overline{{T_\infty}^{\left(\beta-\frac{1}{2}\right)}}
+\\
+                     &\approx {\bar{T}_\infty}^{\left(\beta-\frac{1}{2}\right)}
+\\
+  \overline{\rho u}_\infty &= \overline{{T_\infty}^\beta}
+\\
+                           &\approx {\bar{T}_\infty}^\beta
+\\
+  \overline{\rho E}_\infty
+         &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
+                  + \frac{\Mach^2}{2} \right)
+             \overline{T_\infty^{\left(\beta+\frac{1}{2}\right)}}
+          + \overline{T_\infty^{\left(\beta-\frac{1}{2}\right)} v_\infty^2}
+          + \overline{T_\infty^{\left(\beta-\frac{1}{2}\right)} w_\infty^2}
+\\
+         &\approx \left(  \frac{1}{\gamma\left(\gamma-1\right)}
+                        + \frac{\Mach^2}{2} \right)
+             \bar{T}_\infty^{\left(\beta+\frac{1}{2}\right)}
+          +
+             \bar{T}_\infty^{\left(\beta-\frac{1}{2}\right)}
+             \left(\bar{v}_\infty^2 + \bar{w}_\infty^2\right)
+\end{align}
+The approximations made in the final statement for $\overline{\rho E}_\infty$
+are appreciably more severe than those in the ones for $\bar{\rho}_\infty$ and
+$\overline{\rho u}_\infty$.
+
+\section{BACKUP: Constraining Freestream Total Energy Evolution}
 
 % Based on Rhys' personal notes dated 8 May 2013
 
-First, observe
+Observe
 \begin{align}
   \overline{xy} &= \overline{xy}
 \\              &= \overline{xy} - \bar{x} \bar{y} + \bar{x} \bar{y}
-\\              &= \operatorname{Cov}\left(x,y\right) + \bar{x} \bar{y}
+\\              &= \Cov{x}{y} + \bar{x} \bar{y}
 .
 \end{align}
-Examining mean state evolution,
+Examining mean \emph{nondimensional} state evolution,
 \begin{align}
-  \partial_t \overline{\rho u} &= \partial_t \operatorname{Cov}\left(\rho,u\right)
+  \partial_t \overline{\rho u} &= \partial_t \Cov{\rho}{u}
                                 + \partial_t \bar{\rho} \bar{u}
 \\
-                               &= \partial_t \operatorname{Cov}\left(\rho,u\right)
+                               &= \partial_t \Cov{\rho}{u}
                                 + \bar{\rho} \partial_t \bar{u}
                                 + \bar{u}    \partial_t \bar{\rho}
 \end{align}
-As $\partial_t \operatorname{Cov}\left(\rho_\infty,u_\infty\right) = 0$
-and $\partial_t \bar{u}_\infty = 0$ for a stationary, constant freestream,
+As $\partial_t \Cov{\rho_\infty}{u_\infty} = 0$ and $\partial_t \bar{u}_\infty
+= 0$ for a stationary, constant freestream,
 \begin{align}
   \partial_t \overline{\rho u}_\infty
   &\approx \bar{u}_\infty \partial_t \bar{\rho}_\infty
@@ -155,9 +235,7 @@ Now,
 \\
   &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
    + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2
-                            +\operatorname{Var}u
-                            +\operatorname{Var}v
-                            +\operatorname{Var}w\right)
+                            +\Var{u} +\Var{v} +\Var{w}\right)
 \\
   &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
    + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2+2\bar{k}\right)
@@ -169,7 +247,9 @@ using the approximation
 &\approx
   \left(
          \frac{\bar{T}_\infty}{\gamma\left( \gamma-1 \right)}
-       + \frac{\Mach^2}{2}\left(\bar{u}_\infty^2+\bar{v}_\infty^2+\bar{w}_\infty^2\right)
+       + \frac{\Mach^2}{2}\left(  \bar{u}_\infty^2
+                                 +\bar{v}_\infty^2
+                                 +\bar{w}_\infty^2\right)
   \right)
   \partial_t \bar{\rho}_\infty
 \end{align}
