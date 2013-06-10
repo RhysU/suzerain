@@ -52,8 +52,8 @@
 \pagestyle{plain}
 
 % Document-specific commands
-\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
-\newcommand{\Reynolds}[1][]{\ensuremath{\mbox{Re}_{#1}}}
+\newcommand{\Mach}[1][]{\mbox{Ma}_{#1}}
+\newcommand{\Reynolds}[1][]{\mbox{Re}_{#1}}
 \newcommand{\Cov}[2]{\ensuremath{\operatorname{Cov}\left[{#1},{#2}\right]}}
 \newcommand{\Var}[1]{\ensuremath{\operatorname{Var}\left[{#1}\right]}}
 
@@ -84,10 +84,10 @@ boundary layer thickness.  The constitutive laws
 &\mu &= {T}^\beta
 \end{align}
 have been used to re-express the sound speed and viscosity using temperature
-because
+because we desire
 \begin{align}
   \label{eq:ideal_T}
-  \overline{T} &= T_\infty
+  \bar{T} &= T_\infty
 \end{align}
 for some given constant $T_\infty$.  Defining and substituting
 \begin{align}
@@ -104,13 +104,122 @@ the scenario definition:
   \label{eq:ideal_rhou}
   1 &= \overline{\rho u T^{-\beta}}
 \end{align}
-Ideally, one would implement an isothermal freestream by strongly enforcing
+Examining $\Mach[\infty]{}^2$ one can likewise obtain
+\begin{align}
+  \label{eq:ideal_u2}
+  1 &= \overline{u^2 T^{-1}}
+\end{align}
+which constraints the streamwise contribution to the kinetic energy.  Ideally,
+one would implement an isothermal freestream by strongly enforcing
 \eqref{eq:ideal_T}, \eqref{eq:ideal_u}, and~\eqref{eq:ideal_rhou}.
 Unfortunately, exactly achieving these three constraints is difficult as the
 spectral nature of Suzerain and its state choices make constraining only
 $\overline{\rho}$, $\overline{\rho{}u}$, and $\overline{\rho{}E}$ simple.
 
 \section{Approximate scenario definition}
+
+All of \eqref{eq:ideal_u}, \eqref{eq:ideal_rhou}, and~\eqref{eq:ideal_u2}
+possess the form $\overline{c T^p}$ for spatially-varying $c$ and constant $p$.
+A second-order expansion about $\bar{c}$ and $\bar{T}$ yields
+\begin{align}
+  c T^p &= \bar{c} \bar{T}^p
+         + \left(c - \bar{c}\right) \bar{T}^p
+         + \left(T - \bar{T}\right) \bar{c} p \bar{T}^{p-1}
+\\      &+ \frac{1}{2} p \bar{T}^{p-1} \left(c - \bar{c}\right)\left(T - \bar{T}\right)
+         + \frac{1}{2} \bar{c} p \left(p-1\right) \bar{T}^{p-2} \left(T - \bar{T}\right)^2
+         + \dots
+\end{align}
+where the $\mathcal{O}\left[c - \bar{c}\right]^2$ does not appear because it
+has leading coefficient zero.  Averaging,
+\begin{align}
+  \overline{c T^p} &= \bar{c} \bar{T}^p
+                    + \frac{1}{2} p \bar{T}^{p-1} \Cov{c}{T}
+                    + \frac{1}{2} \bar{c} p \left(p-1\right) \bar{T}^{p-2} \Var{T}
+                    + \dots
+.
+\end{align}
+Therefore, making the approximation
+\begin{align}
+  \label{eq:damage}
+  \overline{c T^p} &\approx \bar{c} \bar{T}^p
+\end{align}
+does not require $\Var{c} = 0$ but it does force neglecting $\Cov{c}{T}$, $\Var{T}$,
+and all higher moments.
+
+We apply \eqref{eq:damage} followed by~\eqref{eq:ideal_T} to conditions
+\eqref{eq:ideal_u}, \eqref{eq:ideal_rhou}, and~\eqref{eq:ideal_u2} to obtain
+three approximate relationships:
+\begin{align}
+  \label{eq:approx_u}
+  1 &\approx \bar{u} T_\infty^{-1/2}
+  & &\implies
+  & \bar{u}_\infty &\approx \sqrt{T_\infty}
+\\
+  \label{eq:approx_rhou}
+  1 &\approx \overline{\rho u} T_\infty^{-\beta}
+  & &\implies
+  & \overline{\rho u}_\infty &\approx T_\infty^\beta
+\\
+  \label{eq:approx_u2}
+  1 &\approx \overline{u^2} T_\infty^{-1}
+  & &\implies
+  & \overline{u^2}_\infty &\approx T_\infty
+\end{align}
+These statements are not unreasonable as $\Cov{u}{T}$, $\Cov{\rho u}{T}$, and
+$\Var{T}$ should be small at the freestream.
+
+Because~\eqref{eq:approx_u} constrains something other than mean conserved
+state, it is difficult to implement.  Statements $\eqref{eq:approx_u}$ and
+$\eqref{eq:approx_rhou}$ may be combined into an approximate constraint for
+$\bar{\rho}_\infty$:
+\begin{equation}
+  \bar{\rho}_\infty
+  =
+  \frac{\bar{\rho}_\infty \bar{u}_\infty}
+       {\bar{u}_\infty}
+  \approx
+  \frac{\bar{\rho}_\infty \bar{u}_\infty + \Cov{\rho_\infty}{u_\infty}}
+       {\bar{u}_\infty}
+  =
+  \frac{\overline{\rho u}_\infty}
+       {\bar{u}_\infty}
+  \approx
+  \frac{T_\infty^{-1/2}}{T_\infty^{-\beta}}
+  =
+  T_\infty^{\beta-1/2}
+\end{equation}
+Notice the useful identity
+\begin{equation}
+  \overline{xy} = \overline{xy} - \bar{x} \bar{y} + \bar{x} \bar{y}
+                = \Cov{x}{y} + \bar{x} \bar{y}
+\end{equation}
+was employed and $\Cov{\rho_\infty}{u_\infty}$ neglected to produce this
+result.
+
+
+
+
+%%Expanding $c T^p$ in a Taylor series about mean values $\bar{c}$ and
+%%$\bar{T}$,
+%%\begin{align}
+%%  c T^p &= \bar{c} \bar{T}^p
+%%\\      &+ \bar{T}^p \left(c - \bar{c}\right)
+%%         + p \bar{c} \bar{T}^{p-1} \left(T - \bar{T}\right)
+%%\\      &+ \frac{1}{2} p \left(p-1\right) \bar{c} \bar{T}^{p-2} \left(T-\bar{T}\right)^2
+%%\\      &+ p \bar{T}^{p-1} \left(c - \bar{c}\right) \left(T - \bar{T}\right)
+%%\\      &+ \frac{1}{2} p \left(p-1\right)         \bar{T}^{p-2} \left(c - \bar{c}\right) \left(T-\bar{T}\right)^2
+%%\\      &+ \mathcal{O}\left[c-\bar{c}\right]^3
+%%         + \mathcal{O}\left[T-\bar{T}\right]^3
+%%.
+%%\intertext{Averaging, }
+%%  \overline{c T^p} &= \bar{c} \bar{T}^p
+%%\\      &+ \frac{1}{2} p \left(p-1\right) \bar{c} \bar{T}^{p-2} \Var{T}
+%%\\      &+ p \bar{T}^{p-1} \Cov{c}{T}
+%%\\      &+ \frac{1}{2} p \left(p-1\right)         \bar{T}^{p-2} \overline{\left(c - \bar{c}\right) \left(T-\bar{T}\right)^2}
+%%\\      &+ \mathcal{O}\overline{\left[c-\bar{c}\right]}^3
+%%         + \mathcal{O}\overline{\left[T-\bar{T}\right]}^3
+%%.
+%%\end{align}
 
 %% REHASH BELOW HERE
 \section{Rehash below here}
