@@ -105,13 +105,13 @@ may be combined with the prior expressions to obtain the following:
   \label{eq:u_target}
   u_\infty^\ast &= \sqrt{T_\infty^\ast}
 \\
-  \label{eq:mx_target}
-  \rho_\infty^\ast u_\infty^\ast &= {T_\infty^\ast}^\beta
-\\
   \label{eq:rho_target}
   \rho_\infty^\ast &= \frac{\mu_\infty^\ast}{u_\infty^\ast}
                     = \frac{{T_\infty^\ast}^\beta}{\sqrt{T_\infty^\ast}}
                     = {T_\infty^\ast}^{\left(\beta-\frac{1}{2}\right)}
+\\
+  \label{eq:mx_target}
+  \rho_\infty^\ast u_\infty^\ast &= {T_\infty^\ast}^\beta
 \\
   \label{eq:ke_target}
   \rho_\infty^\ast {u_\infty^\ast}^2
@@ -145,18 +145,16 @@ Considering the freestream and both using \eqref{eq:rho_target} and
                                    + \rho_\infty v_\infty^2
                                    + \rho_\infty w_\infty^2\right)
 \\
-         &= \frac{T_\infty^{\left(\beta+\frac{1}{2}\right)}}{\gamma\left(\gamma-1\right)}
-          + \frac{\Mach^2}{2}\left(  T_\infty^{\left(\beta+\frac{1}{2}\right)}
+         &= \frac{T_\infty^{\beta+\frac{1}{2}}}{\gamma\left(\gamma-1\right)}
+          + \frac{\Mach^2}{2}\left(  T_\infty^{\beta+\frac{1}{2}}
                                    + \rho_\infty v_\infty^2
                                    + \rho_\infty w_\infty^2\right)
 \\
 \label{eq:e_target}
          &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
                   + \frac{\Mach^2}{2} \right)
-             T_\infty^{\left(\beta+\frac{1}{2}\right)}
-          +
-             T_\infty^{\left(\beta-\frac{1}{2}\right)}
-             \left(v_\infty^2 + w_\infty^2\right)
+             T_\infty^{\beta+\frac{1}{2}}
+          + T_\infty^{\beta-\frac{1}{2}} \left(v_\infty^2 + w_\infty^2\right)
 .
 \end{align}
 
@@ -164,11 +162,11 @@ Considering the freestream and both using \eqref{eq:rho_target} and
 
 Wishing to permit fluctuations about a nominal state, we weaken
 \eqref{eq:rho_target}, \eqref{eq:mx_target}, and \eqref{eq:e_target} to be
-statements only about mean nondimensional state:
+statements only about mean nondimensional state at the freestream:
 \begin{align}
-   \bar{\rho}_\infty &= \overline{{T_\infty}^{\left(\beta-\frac{1}{2}\right)}}
+   \bar{\rho}_\infty &= \overline{{T_\infty}^{\beta-\frac{1}{2}}}
 \\
-                     &\approx {\bar{T}_\infty}^{\left(\beta-\frac{1}{2}\right)}
+                     &\approx {\bar{T}_\infty}^{\beta-\frac{1}{2}}
 \\
   \overline{\rho u}_\infty &= \overline{{T_\infty}^\beta}
 \\
@@ -177,16 +175,15 @@ statements only about mean nondimensional state:
   \overline{\rho E}_\infty
          &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
                   + \frac{\Mach^2}{2} \right)
-             \overline{T_\infty^{\left(\beta+\frac{1}{2}\right)}}
-          + \overline{T_\infty^{\left(\beta-\frac{1}{2}\right)} v_\infty^2}
-          + \overline{T_\infty^{\left(\beta-\frac{1}{2}\right)} w_\infty^2}
+            \overline{T_\infty^{\beta+\frac{1}{2}}}
+          + \overline{T_\infty^{\beta-\frac{1}{2}} v_\infty^2}
+          + \overline{T_\infty^{\beta-\frac{1}{2}} w_\infty^2}
 \\
          &\approx \left(  \frac{1}{\gamma\left(\gamma-1\right)}
                         + \frac{\Mach^2}{2} \right)
-             \bar{T}_\infty^{\left(\beta+\frac{1}{2}\right)}
-          +
-             \bar{T}_\infty^{\left(\beta-\frac{1}{2}\right)}
-             \left(\bar{v}_\infty^2 + \bar{w}_\infty^2\right)
+            \bar{T}_\infty^{\beta+\frac{1}{2}}
+          + \bar{T}_\infty^{\beta-\frac{1}{2}}
+            \left(\bar{v}_\infty^2 + \bar{w}_\infty^2\right)
 \end{align}
 The approximations made in the final statement for $\overline{\rho E}_\infty$
 are appreciably more severe than those in the ones for $\bar{\rho}_\infty$ and
