@@ -62,7 +62,59 @@
 This document describes the treatment of the isothermal freestream boundary for
 a compressible, nondimensional flat plate problem computed using Suzerain.
 
-\section{The freestream Mach and Reynolds numbers}
+\section{Ideal scenario definition}
+
+The scenario has a mean freestream characterized by a Mach number
+$\Mach[\infty]$ and Reynolds number $\Reynolds[\infty]$:
+\begin{align}
+  \Mach[\infty]{}
+  &= \Mach{} \overline{\,\frac{u}{a}\,}
+   = \Mach{} \overline{\,\frac{u}{\sqrt{T}}\,}
+   = \Mach\, \overline{u T^{-1/2}}
+\\
+  \Reynolds[\infty]{}
+  &= \Reynolds{} \overline{\,\frac{\rho u \delta\,} {\mu}}
+   = \Reynolds{} \overline{\,\frac{\rho u \delta\,} {T^\beta}}
+   = \Reynolds\, \overline{\rho u \delta T^{-\beta}}
+\end{align}
+Here, $\Mach$ and $\Reynolds$ are Suzerain code parameters and $\delta$ is the
+boundary layer thickness.  The constitutive laws
+\begin{align}
+  a &= \sqrt{T}
+&\mu &= {T}^\beta
+\end{align}
+have been used to re-express the sound speed and viscosity using temperature
+because
+\begin{align}
+  \label{eq:ideal_T}
+  \overline{T} &= T_\infty
+\end{align}
+for some given constant $T_\infty$.  Defining and substituting
+\begin{align}
+  \Mach[\infty]{} &= \Mach
+& \Reynolds[\infty]{} &= \Reynolds
+& \delta &= 1
+\end{align}
+produces two statements about mean freestream nondimensional state implied by
+the scenario definition:
+\begin{align}
+  \label{eq:ideal_u}
+  1 &= \overline{u T^{-1/2}}
+\\
+  \label{eq:ideal_rhou}
+  1 &= \overline{\rho u T^{-\beta}}
+\end{align}
+Ideally, one would implement an isothermal freestream by strongly enforcing
+\eqref{eq:ideal_T}, \eqref{eq:ideal_u}, and~\eqref{eq:ideal_rhou}.
+Unfortunately, exactly achieving these three constraints is difficult as the
+spectral nature of Suzerain and its state choices make constraining only
+$\overline{\rho}$, $\overline{\rho{}u}$, and $\overline{\rho{}E}$ simple.
+
+\section{Approximate scenario definition}
+
+%% REHASH BELOW HERE
+\section{Rehash below here}
+
 
 % Based on Rhys' personal notes dated 9 May 2013
 
@@ -80,8 +132,8 @@ nondimensional state as follows:
    = \Reynolds{} \frac{\rho_\infty^\ast u_\infty^\ast \delta^\ast}
                       {\mu_\infty^\ast}
 \end{align}
-Here, $\delta$ and $\delta^\ast$ are, respectively, a nondimensional and
-dimensional boundary layer thickness.
+Here, $\delta$ and $\delta^\ast$ are, respectively, a dimensional and
+nondimensional boundary layer thickness.
 Defining
 \begin{align}
   \Mach[\infty]{} &= \Mach
