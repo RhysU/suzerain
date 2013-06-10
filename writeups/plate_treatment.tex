@@ -43,7 +43,7 @@
     \renewcommand{\headrulewidth}{1.0pt}
     \renewcommand{\footrulewidth}{0pt}
     \lhead{
-        Suzerain isothermal flat plate treatment
+        Nondimensional, perfect gas, isothermal supersonic flat plate treatment
     }
     \rhead{
         Page \thepage{} of \pageref{LastPage}
@@ -104,13 +104,7 @@ the scenario definition:
   \label{eq:ideal_rhou}
   1 &= \overline{\rho u T^{-\beta}}
 \end{align}
-Examining $\Mach[\infty]{}^2$ one can likewise obtain
-\begin{align}
-  \label{eq:ideal_u2}
-  1 &= \overline{u^2 T^{-1}}
-\end{align}
-which constraints the streamwise contribution to the kinetic energy.  Ideally,
-one would implement an isothermal freestream by strongly enforcing
+Ideally, one would implement an isothermal freestream by strongly enforcing
 \eqref{eq:ideal_T}, \eqref{eq:ideal_u}, and~\eqref{eq:ideal_rhou}.
 Unfortunately, exactly achieving these three constraints is difficult as the
 spectral nature of Suzerain and its state choices make constraining only
@@ -118,9 +112,9 @@ $\overline{\rho}$, $\overline{\rho{}u}$, and $\overline{\rho{}E}$ simple.
 
 \section{Approximate scenario definition}
 
-All of \eqref{eq:ideal_u}, \eqref{eq:ideal_rhou}, and~\eqref{eq:ideal_u2}
-possess the form $\overline{c T^p}$ for spatially-varying $c$ and constant $p$.
-A second-order expansion about $\bar{c}$ and $\bar{T}$ yields
+Both \eqref{eq:ideal_u} and \eqref{eq:ideal_rhou} possess the form $\overline{c
+T^p}$ for spatially-varying $c$ and constant $p$.  A second-order expansion
+about $\bar{c}$ and $\bar{T}$ yields
 \begin{align}
   c T^p &= \bar{c} \bar{T}^p
          + \left(c - \bar{c}\right) \bar{T}^p
@@ -147,8 +141,8 @@ does not require $\Var{c} = 0$ but it does force neglecting $\Cov{c}{T}$, $\Var{
 and all higher moments.
 
 We apply \eqref{eq:damage} followed by~\eqref{eq:ideal_T} to conditions
-\eqref{eq:ideal_u}, \eqref{eq:ideal_rhou}, and~\eqref{eq:ideal_u2} to obtain
-three approximate relationships:
+\eqref{eq:ideal_u} and \eqref{eq:ideal_rhou} to obtain two approximate
+relationships:
 \begin{align}
   \label{eq:approx_u}
   1 &\approx \bar{u} T_\infty^{-1/2}
@@ -159,11 +153,6 @@ three approximate relationships:
   1 &\approx \overline{\rho u} T_\infty^{-\beta}
   & &\implies
   & \overline{\rho u}_\infty &\approx T_\infty^\beta
-\\
-  \label{eq:approx_u2}
-  1 &\approx \overline{u^2} T_\infty^{-1}
-  & &\implies
-  & \overline{u^2}_\infty &\approx T_\infty
 \end{align}
 These statements are not unreasonable as $\Cov{u}{T}$, $\Cov{\rho u}{T}$, and
 $\Var{T}$ should be small at the freestream.
@@ -173,6 +162,7 @@ state, it is difficult to implement.  Statements $\eqref{eq:approx_u}$ and
 $\eqref{eq:approx_rhou}$ may be combined into an approximate constraint for
 $\bar{\rho}_\infty$:
 \begin{equation}
+  \label{eq:approx_rho}
   \bar{\rho}_\infty
   =
   \frac{\bar{\rho}_\infty \bar{u}_\infty}
@@ -190,202 +180,19 @@ $\bar{\rho}_\infty$:
 \end{equation}
 Notice the useful identity
 \begin{equation}
+  \label{eq:covxy}
   \overline{xy} = \overline{xy} - \bar{x} \bar{y} + \bar{x} \bar{y}
                 = \Cov{x}{y} + \bar{x} \bar{y}
 \end{equation}
 was employed and $\Cov{\rho_\infty}{u_\infty}$ neglected to produce this
 result.
 
+\section{Isothermal total energy constraint}
 
+It remains to constrain the total energy $\overline{\rho E}_\infty$ to achieve
+$\bar{T}=T_\infty$.
 
-
-%%Expanding $c T^p$ in a Taylor series about mean values $\bar{c}$ and
-%%$\bar{T}$,
-%%\begin{align}
-%%  c T^p &= \bar{c} \bar{T}^p
-%%\\      &+ \bar{T}^p \left(c - \bar{c}\right)
-%%         + p \bar{c} \bar{T}^{p-1} \left(T - \bar{T}\right)
-%%\\      &+ \frac{1}{2} p \left(p-1\right) \bar{c} \bar{T}^{p-2} \left(T-\bar{T}\right)^2
-%%\\      &+ p \bar{T}^{p-1} \left(c - \bar{c}\right) \left(T - \bar{T}\right)
-%%\\      &+ \frac{1}{2} p \left(p-1\right)         \bar{T}^{p-2} \left(c - \bar{c}\right) \left(T-\bar{T}\right)^2
-%%\\      &+ \mathcal{O}\left[c-\bar{c}\right]^3
-%%         + \mathcal{O}\left[T-\bar{T}\right]^3
-%%.
-%%\intertext{Averaging, }
-%%  \overline{c T^p} &= \bar{c} \bar{T}^p
-%%\\      &+ \frac{1}{2} p \left(p-1\right) \bar{c} \bar{T}^{p-2} \Var{T}
-%%\\      &+ p \bar{T}^{p-1} \Cov{c}{T}
-%%\\      &+ \frac{1}{2} p \left(p-1\right)         \bar{T}^{p-2} \overline{\left(c - \bar{c}\right) \left(T-\bar{T}\right)^2}
-%%\\      &+ \mathcal{O}\overline{\left[c-\bar{c}\right]}^3
-%%         + \mathcal{O}\overline{\left[T-\bar{T}\right]}^3
-%%.
-%%\end{align}
-
-%% REHASH BELOW HERE
-\section{Rehash below here}
-
-
-% Based on Rhys' personal notes dated 9 May 2013
-
-Freestream Mach number $\Mach[\infty]$ and Reynolds number $\Reynolds[\infty]$
-may be related to Suzerain code parameters $\Mach$ and $\Reynolds$ and
-nondimensional state as follows:
-\begin{align}
-  \Mach[\infty]{}
-  &=         \frac{u_\infty     }{a_\infty     }
-   = \Mach{} \frac{u_\infty^\ast}{a_\infty^\ast}
-&
-  \Reynolds[\infty]{}
-  &=             \frac{\rho_\infty      u_\infty      \delta     }
-                      {\mu_\infty     }
-   = \Reynolds{} \frac{\rho_\infty^\ast u_\infty^\ast \delta^\ast}
-                      {\mu_\infty^\ast}
-\end{align}
-Here, $\delta$ and $\delta^\ast$ are, respectively, a dimensional and
-nondimensional boundary layer thickness.
-Defining
-\begin{align}
-  \Mach[\infty]{} &= \Mach
-& \Reynolds[\infty]{} &= \Reynolds,
-& \delta^\ast &= 1
-\end{align}
-implies
-\begin{align}
-  u_\infty^\ast   &= a_\infty^\ast,
-&
-  \rho_\infty^\ast u_\infty^\ast &= \mu_\infty^\ast
-.
-\end{align}
-In this nondimensional setting the constitutive laws
-\begin{align}
-  a^\ast &= \sqrt{T^\ast}
-&\mu^\ast &= {T^\ast}^\beta
-\end{align}
-may be combined with the prior expressions to obtain the following:
-\begin{align}
-  \label{eq:u_target}
-  u_\infty^\ast &= \sqrt{T_\infty^\ast}
-\\
-  \label{eq:rho_target}
-  \rho_\infty^\ast &= \frac{\mu_\infty^\ast}{u_\infty^\ast}
-                    = \frac{{T_\infty^\ast}^\beta}{\sqrt{T_\infty^\ast}}
-                    = {T_\infty^\ast}^{\left(\beta-\frac{1}{2}\right)}
-\\
-  \label{eq:mx_target}
-  \rho_\infty^\ast u_\infty^\ast &= {T_\infty^\ast}^\beta
-\\
-  \label{eq:ke_target}
-  \rho_\infty^\ast {u_\infty^\ast}^2
-&=
-  {T_\infty^\ast}^{\left(\beta + \frac{1}{2}\right)}
-\end{align}
-Enforcing these three nondimensional constraints at the freestream will achieve
-a target $\Mach$ and $\Reynolds$ provided that temperature $T_\infty^\ast$ is
-somehow constrained.
-
-\section{Obtaining freestream total energy}
-
-Unlike the momentum \eqref{eq:mx_target} and density \eqref{eq:rho_target}
-constraints, there is seemingly no crisp way to obtain a clean, constant target
-value for the total energy which enforces an isothermal-in-the-mean freestream.
-By the \emph{nondimensional} equation of state,
-\begin{align}
-  \rho E &= \frac{p}{\gamma-1}
-          + \frac{\Mach^2}{2}\left(\rho{}u^2 + \rho{}v^2 + \rho{}w^2\right)
-\\
-         &= \frac{\rho T}{\gamma\left(\gamma-1\right)}
-          + \frac{\Mach^2}{2}\left(\rho{}u^2 + \rho{}v^2 + \rho{}w^2\right)
-.
-\end{align}
-Considering the freestream and both using \eqref{eq:rho_target} and
-\eqref{eq:ke_target},
-\begin{align}
-  \left(\rho E\right)_\infty
-         &= \frac{\rho_\infty T_\infty}{\gamma\left(\gamma-1\right)}
-          + \frac{\Mach^2}{2}\left(  \rho_\infty u_\infty^2
-                                   + \rho_\infty v_\infty^2
-                                   + \rho_\infty w_\infty^2\right)
-\\
-         &= \frac{T_\infty^{\beta+\frac{1}{2}}}{\gamma\left(\gamma-1\right)}
-          + \frac{\Mach^2}{2}\left(  T_\infty^{\beta+\frac{1}{2}}
-                                   + \rho_\infty v_\infty^2
-                                   + \rho_\infty w_\infty^2\right)
-\\
-\label{eq:e_target}
-         &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
-                  + \frac{\Mach^2}{2} \right)
-             T_\infty^{\beta+\frac{1}{2}}
-          + T_\infty^{\beta-\frac{1}{2}} \left(v_\infty^2 + w_\infty^2\right)
-.
-\end{align}
-
-\section{Averaging}
-
-Wishing to permit fluctuations about a nominal state, we weaken
-\eqref{eq:rho_target}, \eqref{eq:mx_target}, and \eqref{eq:e_target} to be
-statements only about mean nondimensional state at the freestream:
-\begin{align}
-   \bar{\rho}_\infty &= \overline{{T_\infty}^{\beta-\frac{1}{2}}}
-\\
-                     &\approx {\bar{T}_\infty}^{\beta-\frac{1}{2}}
-\\
-  \overline{\rho u}_\infty &= \overline{{T_\infty}^\beta}
-\\
-                           &\approx {\bar{T}_\infty}^\beta
-\\
-  \overline{\rho E}_\infty
-         &= \left(  \frac{1}{\gamma\left(\gamma-1\right)}
-                  + \frac{\Mach^2}{2} \right)
-            \overline{T_\infty^{\beta+\frac{1}{2}}}
-          + \overline{T_\infty^{\beta-\frac{1}{2}} v_\infty^2}
-          + \overline{T_\infty^{\beta-\frac{1}{2}} w_\infty^2}
-\\
-         &\approx \left(  \frac{1}{\gamma\left(\gamma-1\right)}
-                        + \frac{\Mach^2}{2} \right)
-            \bar{T}_\infty^{\beta+\frac{1}{2}}
-          + \bar{T}_\infty^{\beta-\frac{1}{2}}
-            \left(\bar{v}_\infty^2 + \bar{w}_\infty^2\right)
-\end{align}
-The approximations made in the final statement for $\overline{\rho E}_\infty$
-are appreciably more severe than those in the ones for $\bar{\rho}_\infty$ and
-$\overline{\rho u}_\infty$.
-
-\section{BACKUP: Constraining Freestream Total Energy Evolution}
-
-% Based on Rhys' personal notes dated 8 May 2013
-
-Observe
-\begin{align}
-  \overline{xy} &= \overline{xy}
-\\              &= \overline{xy} - \bar{x} \bar{y} + \bar{x} \bar{y}
-\\              &= \Cov{x}{y} + \bar{x} \bar{y}
-.
-\end{align}
-Examining mean \emph{nondimensional} state evolution,
-\begin{align}
-  \partial_t \overline{\rho u} &= \partial_t \Cov{\rho}{u}
-                                + \partial_t \bar{\rho} \bar{u}
-\\
-                               &= \partial_t \Cov{\rho}{u}
-                                + \bar{\rho} \partial_t \bar{u}
-                                + \bar{u}    \partial_t \bar{\rho}
-\end{align}
-As $\partial_t \Cov{\rho_\infty}{u_\infty} = 0$ and $\partial_t \bar{u}_\infty
-= 0$ for a stationary, constant freestream,
-\begin{align}
-  \partial_t \overline{\rho u}_\infty
-  &\approx \bar{u}_\infty \partial_t \bar{\rho}_\infty
-\end{align}
-Similarly,
-\begin{align}
-  \partial_t \overline{\rho w}_\infty
-  &\approx \bar{w}_\infty \partial_t \bar{\rho}_\infty,
-&
-  \partial_t \overline{\rho E}_\infty
-  &\approx \bar{E}_\infty \partial_t \bar{\rho}_\infty
-  .
-\end{align}
-Now,
+First, consider the mean specific total energy.  It always holds that
 \begin{align}
   \bar{E}
   &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
@@ -398,21 +205,65 @@ Now,
   &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
    + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2+2\bar{k}\right)
 \end{align}
-In a non-turbulent freestream, $\bar{k}_\infty\approx{}0$ suggests
-using the approximation
+where $\bar{k}$ denotes the mean turbulent kinetic energy.  In a non-turbulent
+freestream $\bar{k}_\infty\approx{}0$ suggests
 \begin{align}
-  \partial_t \overline{\rho E}_\infty
-&\approx
-  \left(
-         \frac{\bar{T}_\infty}{\gamma\left( \gamma-1 \right)}
-       + \frac{\Mach^2}{2}\left(  \bar{u}_\infty^2
-                                 +\bar{v}_\infty^2
-                                 +\bar{w}_\infty^2\right)
-  \right)
-  \partial_t \bar{\rho}_\infty
+  \bar{E}_\infty
+  &\approx
+     \frac{T_\infty}{\gamma\left(\gamma-1 \right)}
+   + \frac{\Mach^2}{2}\left(\bar{u}_\infty^2+\bar{v}_\infty^2+\bar{w}_\infty^2\right)
+\\
+  \label{eq:approx_E}
+  &\approx
+     \frac{T_\infty}{\gamma\left(\gamma-1 \right)}
+   + \frac{\Mach^2}{2}\left(T_\infty+\bar{v}^2+\bar{w}^2\right)
 \end{align}
-which permits using known $T_\infty$ and only mean velocity information
-to enforce an approximately isothermal freestream condition via the
-total energy equation.
+where the second line incorporates \eqref{eq:approx_u}.
+
+Now, using $\eqref{eq:covxy}$, neglecting $\Cov{\rho_\infty}{E_\infty}$, and
+applying \eqref{eq:approx_rho} then \eqref{eq:approx_E} shows
+\begin{align}
+  \overline{\rho E}_\infty
+  &=
+  \bar{\rho}_\infty \bar{E}_\infty + \Cov{\rho_\infty}{E_\infty}
+\\
+  &\approx \bar{\rho}_\infty \bar{E}_\infty
+\\
+  &\approx T_\infty^{\beta-1/2} \bar{E}_\infty
+\\
+  \label{eq:approx_rhoE_vw}
+  &=
+  T_\infty^{\beta-1/2} \left(
+      \frac{T_\infty}{\gamma\left( \gamma-1 \right)}
+    + \frac{\Mach^2}{2}\left(T_\infty+\bar{v}^2_\infty+\bar{w}^2_\infty\right)
+  \right)
+.
+\end{align}
+In any boundary layer lacking spanwise forcing, $\bar{w}_\infty\approx{}0$.  As
+supersonic boundary layers are of primary interest, for simplicity we assume
+$\bar{v}_\infty^2 \ll T_\infty$.  Therefore,
+\begin{align}
+  \label{eq:approx_rhoE}
+  \overline{\rho E}_\infty
+  &\approx
+  T_\infty^{\beta+1/2} \left(
+      \frac{1}{\gamma\left(\gamma-1\right)}
+    + \frac{\Mach^2}{2}
+  \right)
+\end{align}
+is the approximate freestream total energy constraint chosen.  If required by
+appreciable differences between target and observed freestream mean
+temperature, dynamically gathered $\bar{v}_\infty$ and $\bar{w}_\infty$ could
+be used within \eqref{eq:approx_rhoE_vw} at the risk of introducing artificial,
+numerically-dependent feedback.
+
+\section{Summary}
+
+In summary, given $T_\infty$, $\Mach[\infty]{}$, and $\Reynolds[\infty]{}$ and
+setting $\delta=1$, an approximately isothermal-in-the-mean freestream
+condition may be implemented via nothing but the constraints
+\eqref{eq:approx_rho}, \eqref{eq:approx_rhou}, and~\eqref{eq:approx_rhoE}.  As
+many assumptions were required to arrive at these results, the quality of the
+constraints in achieving the desired conditions should be monitored.
 
 \end{document}
