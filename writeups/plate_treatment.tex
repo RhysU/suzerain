@@ -207,10 +207,10 @@ First, consider the mean specific total energy.  It always holds that
                             +\Var{u} +\Var{v} +\Var{w}\right)
 \\
   &= \frac{\bar{T}}{\gamma\left( \gamma-1 \right)}
-   + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2+2\bar{k}\right)
+   + \frac{\Mach^2}{2}\left(\bar{u}^2+\bar{v}^2+\bar{w}^2+2 k\right)
 \end{align}
-where $\bar{k}$ denotes the mean turbulent kinetic energy.  In a non-turbulent
-freestream $\bar{k}_\infty\approx{}0$ suggests
+where $k$ denotes the turbulent kinetic energy.  In a non-turbulent freestream
+$k_\infty\approx{}0$ suggests
 \begin{align}
   \bar{E}_\infty
   &\approx
@@ -301,11 +301,11 @@ longer, equivalent way to reach~\eqref{eq:approx_rhoE_vw} begins
       + \Cov{\rho}{u^2}
       + \Cov{\rho}{v^2}
       + \Cov{\rho}{w^2}
-      + 2 \bar{k}
+      + 2 k
     \right)
 .
 \end{align}
-Assuming $\bar{k}_\infty \approx 0$ as before shows that declaring
+Assuming $k_\infty \approx 0$ as before shows that declaring
 $\Cov{\rho_\infty}{E_\infty} \approx 0$ is equivalent to neglecting all of
 $\Cov{\rho_\infty}{T_\infty}$, $\Cov{\rho_\infty}{u^2_\infty}$, etc.
 
@@ -326,7 +326,7 @@ to \eqref{eq:def_mach} one may incur \eqref{eq:damage} to deduce
   .
 \end{align}
 Therefore assuming only $\Var{v} \approx \Var{w} \approx 0$ in lieu of the
-stronger $2 \bar{k}_\infty = \Var{u} + \Var{v} + \Var{w} \approx 0$ is possible
+stronger $2 k_\infty = \Var{u} + \Var{v} + \Var{w} \approx 0$ is possible
 in the derivation of \eqref{eq:approx_rhoE}.
 
 \section{Summary}
