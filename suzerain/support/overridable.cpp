@@ -31,60 +31,17 @@
 
 #include <suzerain/support/overridable.hpp>
 
-#include <suzerain/support/logging.hpp>
-
 namespace suzerain {
 
 namespace support {
 
 // For maybe_XXX_impl to indicates a \c real_t is a default value
-static bool default_value(const real_t& v)
+static bool default_value_real_t(const real_t& v)
 { return (boost::math::isnan)(v); }
 
 // For maybe_XXX_impl to indicates an \c int is a default value
-static bool default_value(const int& v)
+static bool default_value_int(const int& v)
 { return v == 0; }
-
-// Compare and contrast maybe_populate_impl in populatable.cpp
-// One translation-local template instantiated multiple times below
-template<typename T>
-static bool
-maybe_override_impl(
-        const char* name,
-        const char* description,
-              T&    destination,
-        const T&    source,
-        const bool  verbose)
-{
-    if (!default_value(source)) {
-#pragma warning(push,disable:1572)
-        if (    verbose
-             && source != destination
-             && !default_value(destination)) {
-#pragma warning(pop)
-            // Overriding is value is interesting, hence INFO0
-            if (description) {
-                INFO0("Overriding " << name
-                      << " (" << description << ") to be " << source);
-            } else {
-                INFO0("Overriding " << name << " to be " << source);
-            }
-        }
-        destination = source;
-        return true;
-    }
-
-    if (verbose) {
-        // Retaining an existing setting isn't interesting, hence DEBUG0
-        if (description) {
-            DEBUG0("Retaining " << name
-                   << " (" << description << ") as " << destination);
-        } else {
-            DEBUG0("Retaining " << name << " as " << destination);
-        }
-    }
-    return false;
-}
 
 bool
 maybe_override(const char*   name,
@@ -93,8 +50,9 @@ maybe_override(const char*   name,
                const real_t& source,
                const bool    verbose)
 {
-    return maybe_override_impl(
-            name, description, destination, source, verbose);
+    return internal::maybe_override_impl(
+            name, description, destination, source,
+            verbose, &default_value_real_t);
 }
 
 bool
@@ -104,8 +62,9 @@ maybe_override(const char* name,
                const int&  source,
                const bool  verbose)
 {
-    return maybe_override_impl(
-            name, description, destination, source, verbose);
+    return internal::maybe_override_impl(
+            name, description, destination, source,
+            verbose, &default_value_int);
 }
 
 } // namespace support

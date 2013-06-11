@@ -30,6 +30,8 @@
 
 #include <suzerain/common.hpp>
 
+#include <suzerain/support/logging.hpp>
+
 namespace suzerain {
 
 namespace support {
@@ -94,6 +96,47 @@ bool maybe_populate(const char* name,
                     const bool  verbose);
 
 /**@}*/
+
+namespace internal {
+
+// Compare and contrast maybe_override_impl in overridable.hpp
+template<typename T>
+static bool
+maybe_populate_impl(
+        const char* name,
+        const char* description,
+              T&    destination,
+        const T&    source,
+        const bool  verbose,
+        bool (* const default_value)(const T& v))
+{
+    if (default_value(destination)) {
+        if (verbose) {
+            // Populating a default isn't interesting, hence DEBUG0
+            if (description) {
+                DEBUG0("Populating " << name
+                      << " (" << description << ") to be " << source);
+            } else {
+                DEBUG0("Populating " << name << " to be " << source);
+            }
+        }
+        destination = source;
+        return true;
+    }
+
+    if (verbose) {
+        if (description) {
+            // Retaining an existing setting is interesting, hence INFO0
+            INFO0("Clutching onto " << name
+                   << " (" << description << ") of " << destination);
+        } else {
+            INFO0("Clutching onto " << name << " of " << destination);
+        }
+    }
+    return false;
+}
+
+} // namespace internal
 
 } // namespace support
 

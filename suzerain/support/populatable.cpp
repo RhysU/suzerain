@@ -31,56 +31,17 @@
 
 #include <suzerain/support/populatable.hpp>
 
-#include <suzerain/support/logging.hpp>
-
 namespace suzerain {
 
 namespace support {
 
 // For maybe_XXX_impl to indicates a \c real_t is a default value
-static bool default_value(const real_t& v)
+static bool default_value_real_t(const real_t& v)
 { return (boost::math::isnan)(v); }
 
 // For maybe_XXX_impl to indicates an \c int is a default value
-static bool default_value(const int& v)
+static bool default_value_int(const int& v)
 { return v == 0; }
-
-// Compare and contrast maybe_override_impl in overridable.cpp
-// One translation-local template instantiated multiple times below
-template<typename T>
-static bool
-maybe_populate_impl(
-        const char* name,
-        const char* description,
-              T&    destination,
-        const T&    source,
-        const bool  verbose)
-{
-    if (default_value(destination)) {
-        if (verbose) {
-            // Populating a default isn't interesting, hence DEBUG0
-            if (description) {
-                DEBUG0("Populating " << name
-                      << " (" << description << ") to be " << source);
-            } else {
-                DEBUG0("Populating " << name << " to be " << source);
-            }
-        }
-        destination = source;
-        return true;
-    }
-
-    if (verbose) {
-        if (description) {
-            // Retaining an existing setting is interesting, hence INFO0
-            INFO0("Clutching onto " << name
-                   << " (" << description << ") of " << destination);
-        } else {
-            INFO0("Clutching onto " << name << " of " << destination);
-        }
-    }
-    return false;
-}
 
 bool
 maybe_populate(const char*   name,
@@ -89,8 +50,9 @@ maybe_populate(const char*   name,
                const real_t& source,
                const bool    verbose)
 {
-    return maybe_populate_impl(
-            name, description, destination, source, verbose);
+    return internal::maybe_populate_impl(
+            name, description, destination, source,
+            verbose, &default_value_real_t);
 }
 
 bool
@@ -100,8 +62,9 @@ maybe_populate(const char* name,
                const int&  source,
                const bool  verbose)
 {
-    return maybe_populate_impl(
-            name, description, destination, source, verbose);
+    return internal::maybe_populate_impl(
+            name, description, destination, source,
+            verbose, &default_value_int);
 }
 
 } // namespace support

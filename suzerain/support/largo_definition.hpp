@@ -102,12 +102,22 @@ public:
 
 };
 
+template< typename CharT, typename Traits >
+std::basic_ostream<CharT,Traits>& operator<<(
+        std::basic_ostream<CharT,Traits> &os,
+        const largo_formulation &f)
+{
+    return os << f.name();
+}
+
 /**
  * Holds parameters defining largo boundary cases.
  */
 class largo_definition
     : public virtual definition_base
     , public virtual loadable
+    , public virtual overridable<largo_definition>
+    , public virtual populatable<largo_definition>
     , public virtual savable
 {
 public:
@@ -117,6 +127,16 @@ public:
      * Clients can use NaN as a not-yet-specified or use-the-default value.
      */
     largo_definition();
+
+    /** @copydoc populatable::populate */
+    virtual void populate(
+            const largo_definition& that,
+            const bool verbose = false);
+
+    /** @copydoc overridable::override */
+    virtual void override(
+            const largo_definition& that,
+            const bool verbose = false);
 
     /** @copydoc savable::save */
     virtual void save(

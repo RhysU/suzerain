@@ -117,10 +117,12 @@ largo_definition::largo_definition()
 }
 
 // Strings used in options_description and populate/override/save/load.
+static const char name_formulation[] = "formulation";
 static const char name_grdelta[]            = "grdelta";
 
 // Descriptions used in options_description and populate/override/save/load.
-static const char desc_grdelta[]            = "Growth rate of reference thickness (Delta)";
+static const char desc_formulation[] = "Name of the slow growth formulation";
+static const char desc_grdelta[]     = "Growth rate of reference thickness (Delta)";
 
 
 boost::program_options::options_description
@@ -173,6 +175,58 @@ largo_definition::options_description()
 
 static const char location[] = "largo";
 
+// For maybe_XXX_impl to indicates a \c largo_definition is a default value
+static bool default_value_formulation(const largo_formulation& v)
+{ return !v.enabled(); }
+
+static bool maybe_populate(const char*               name,
+                           const char*               description,
+                                 largo_formulation&  destination,
+                           const largo_formulation&  source,
+                           const bool verbose)
+{
+    return internal::maybe_populate_impl(
+            name, description, destination, source,
+            verbose, &default_value_formulation);
+}
+
+void
+largo_definition::populate(
+        const largo_definition& that,
+        const bool verbose)
+{
+    using support::maybe_populate;
+#define CALL_MAYBE_POPULATE(mem)                                             \
+    maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_POPULATE(formulation);
+    CALL_MAYBE_POPULATE(grdelta);
+#undef CALL_MAYBE_POPULATE
+}
+
+static bool maybe_override(const char*               name,
+                           const char*               description,
+                                 largo_formulation&  destination,
+                           const largo_formulation&  source,
+                           const bool verbose)
+{
+    return internal::maybe_override_impl(
+            name, description, destination, source,
+            verbose, &default_value_formulation);
+}
+
+void
+largo_definition::override(
+        const largo_definition& that,
+        const bool verbose)
+{
+    using support::maybe_override;
+#define CALL_MAYBE_OVERRIDE(mem)                                            \
+    maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
+    CALL_MAYBE_OVERRIDE(formulation);
+    CALL_MAYBE_OVERRIDE(grdelta);
+#undef CALL_MAYBE_OVERRIDE
+}
+
 void
 largo_definition::save(
         const esio_handle h) const
@@ -210,9 +264,9 @@ largo_definition::load(
         const esio_handle h,
         const bool verbose)
 {
-    // Overwrite instance members with a "disable" formulation with all NaNs
-    *this = largo_definition();
-    assert(formulation == largo_formulation::disable);
+
+    largo_definition t;
+    assert(t.formulation == largo_formulation::disable);
 
     // Only proceed if a largo definition is active in the restart
     int in_use = 0;
@@ -227,19 +281,22 @@ largo_definition::load(
     // Load formulation name and look it up in the static instance map
     {
         char *name = esio_string_get(h, location, "formulation");
-        this->formulation = largo_formulation::lookup(name);
+        t.formulation = largo_formulation::lookup(name);
         free(name);
     }
 
-    if (formulation == largo_formulation::disable) {
+    if (t.formulation == largo_formulation::disable) {
         // Nothing else to load
-    } else if (formulation == largo_formulation::temporal) {
-        esio_attribute_read(h, location, name_grdelta, &grdelta);
-    } else if (formulation == largo_formulation::spatial) {
-        esio_attribute_read(h, location, name_grdelta, &grdelta);
+    } else if (t.formulation == largo_formulation::temporal) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
+    } else if (t.formulation == largo_formulation::spatial) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
+
+    this->populate(t, verbose);  // Prefer this to incoming
+
 }
 
 } // namespace support
