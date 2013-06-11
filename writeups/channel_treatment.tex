@@ -75,7 +75,7 @@ total energy $e = \rho{}{E}$ according to
 \end{subequations}
 where $R_{\rho}$, $\vec{R}_{m}$, and $R_{e}$ are the spatial portion of the
 compressible Navier--Stokes operator appropriate for a nondimensionalization
-where $\mbox{Ma}=u_{0}/a_\text{wall}$.  We will determine the space-invariant
+where $\mbox{Ma}=u_{0}/a$.  We will determine the space-invariant
 form of the uniform force $\vec{f}_{m}$ necessary to drive an isothermal
 channel problem similar to Coleman et al.~\cite{Coleman1995Numerical}.
 
@@ -91,6 +91,7 @@ and likewise $\vec{m}\!\left(\cdot,y,\cdot\right) \coloneqq
 We will work with the
 nondimensional equation of state
 \begin{align}
+  \label{eq:eos}
   p  = \frac{\rho{}T}{\gamma}
     &= \left(\gamma-1\right) \left(
           \rho{E} - \mbox{Ma}^2\frac{\vec{m}\cdot\vec{m}}{2\rho}
@@ -125,7 +126,7 @@ at $y = 0,2\delta$ implies that at the wall
   = 0.
 \end{align}
 The condition $T=1$ combined with the no-slip condition is equivalent to fixing
-${E}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands that
+${E}=\frac{1}{\gamma\left(\gamma-1\right)}$.  This demands
 \begin{align}
   \partial_{t} e
   &=  \rho \cancel{\partial_{t} {E}}
@@ -371,6 +372,23 @@ heating when it is not desired.
 
 % FIXME May change when wall-transpiration employed as adding
 %       multiple integral constraints could impact no-slip
+
+\section{Extension to $T_\mathrm{wall}\neq{}1$ with wall transpiration}
+
+For $T_\mathrm{wall}\neq{}1$ and/or constant $\vec{u}_\mathrm{wall}\neq{}0$, a
+minor modification is required to the isothermal relationship between the total
+energy and density equations:
+\begin{align}
+  \partial_{t} e
+  &=  \rho \cancel{\partial_{t} {E}}
+    + {E} \partial_{t} \rho
+  = \left(
+      \frac{T_\mathrm{wall}}{\gamma\left(\gamma-1\right)}
+    + \frac{\mbox{Ma}^2}{2}\vec{u}\cdot\vec{u}
+    \right) \partial_{t} \rho
+\end{align}
+The leading factor simply replaces $\frac{1}{\gamma\left(\gamma-1\right)}$ in
+earlier treatment discussions.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Bibliography %%%%%%%%%%%%%%%%%%%%%%%%%%%
