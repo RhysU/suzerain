@@ -422,11 +422,11 @@ public:
         // FIXME Yell if spec.lower_rho or spec.upper_rho inappropriate
         // Compute/store the isothermal_specification details for later usage
         E_factor[0] = spec.lower_T / (s.gamma * (s.gamma - 1))
-                    + s.Ma * s.Ma / 2 * (  spec.lower_u * spec.lower_u
+                    + s.Ma * s.Ma / 2 * ( spec.lower_u * spec.lower_u
                                         + spec.lower_v * spec.lower_v
                                         + spec.lower_w * spec.lower_w );
         E_factor[1] = spec.upper_T / (s.gamma * (s.gamma - 1))
-                    + s.Ma * s.Ma / 2 * (  spec.upper_u * spec.upper_u
+                    + s.Ma * s.Ma / 2 * ( spec.upper_u * spec.upper_u
                                         + spec.upper_v * spec.upper_v
                                         + spec.upper_w * spec.upper_w );
         vel_factor[0][0] = spec.lower_u;
