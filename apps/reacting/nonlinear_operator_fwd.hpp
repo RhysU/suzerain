@@ -382,7 +382,7 @@ public:
 
 
     /**
-     * Vector with species specific total energy. 
+     * Vector with species specific total energy.
      */
     // FIXME: Temporarily placing here variables for reference values
     // To be used by Giles BCs.
@@ -402,7 +402,7 @@ public:
     VectorXr etots_upper;
 
     /**
-     * Store chemistry sources at the top plane. 
+     * Store chemistry sources at the top plane.
      */
      MatrixXXc chemsrcw;
 
@@ -480,7 +480,7 @@ template <bool ZerothSubstep,
           linearize::type Linearize,
           filter::type Filter,
           class ManufacturedSolution,
-	  class ConstitutiveModels>
+          class ConstitutiveModels>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const operator_base &o,
             operator_common_block &common,
