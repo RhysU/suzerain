@@ -239,8 +239,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
             return EXIT_FAILURE;
         }
         constrainer->L.reset(new isothermal_hybrid_linear_operator(
-                    solver_spec, *scenario, *grid, *dgrid,
-                    *cop, *b, common_block));
+                    solver_spec, *scenario, *isothermal,
+                    *grid, *dgrid, *cop, *b, common_block));
     } else {
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;

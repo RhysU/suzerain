@@ -39,6 +39,7 @@ namespace suzerain {
 // Forward declarations
 class bsmbsm_solver;
 class grid_specification;
+class isothermal_specification;
 class pencil_grid;
 class zgbsv_specification;
 
@@ -63,24 +64,25 @@ public:
 
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
-            const scenario_definition &scenario,
-            const grid_specification &grid,
-            const pencil_grid &dgrid,
-            const bsplineop &cop,
-            bspline &b,
-            operator_common_block &common);
+            const scenario_definition& scenario,
+            const isothermal_specification& isothermal,
+            const grid_specification& grid,
+            const pencil_grid& dgrid,
+            const bsplineop& cop,
+            bspline& b,
+            operator_common_block& common);
 
     ~isothermal_hybrid_linear_operator();
 
     virtual void apply_mass_plus_scaled_operator(
-             const complex_t &phi,
+             const complex_t& phi,
              multi_array::ref<complex_t,4> &state,
              const std::size_t substep_index) const;
 
     virtual void accumulate_mass_plus_scaled_operator(
-            const complex_t &phi,
+            const complex_t& phi,
             const multi_array::ref<complex_t,4> &input,
-            const complex_t &beta,
+            const complex_t& beta,
             contiguous_state<4,complex_t> &output,
             const std::size_t substep_index) const;
 
@@ -90,12 +92,12 @@ public:
      * rho_wall = e_wall * gamma * (gamma - 1).
      */
     virtual void invert_mass_plus_scaled_operator(
-            const complex_t &phi,
+            const complex_t& phi,
             multi_array::ref<complex_t,4> &state,
             const timestepper::lowstorage::method_interface<complex_t> &method,
             const component delta_t,
             const std::size_t substep_index,
-            multi_array::ref<complex_t,4> *ic0 = NULL) const;
+            multi_array::ref<complex_t,4>* ic0 = NULL) const;
 
 protected:
 
@@ -103,10 +105,13 @@ protected:
     shared_ptr<bsmbsm_solver> solver;
 
     /** The scenario in which the operator is used */
-    const scenario_definition &scenario;
+    const scenario_definition& scenario;
+
+    /** The isothermal wall boundary details */
+    const isothermal_specification& isothermal;
 
     /** Houses data required for operator application and inversion */
-    operator_common_block &common;
+    operator_common_block& common;
 
 private:
 

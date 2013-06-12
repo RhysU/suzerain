@@ -35,6 +35,7 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/inorder.hpp>
+#include <suzerain/isothermal_specification.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
@@ -69,17 +70,19 @@ namespace perfect {
 
 isothermal_hybrid_linear_operator::isothermal_hybrid_linear_operator(
         const zgbsv_specification& spec,
-        const scenario_definition &scenario,
-        const grid_specification &grid,
-        const pencil_grid &dgrid,
-        const bsplineop &cop,
-        bspline &b,
-        operator_common_block &common)
+        const scenario_definition& scenario,
+        const isothermal_specification& isothermal,
+        const grid_specification& grid,
+        const pencil_grid& dgrid,
+        const bsplineop& cop,
+        bspline& b,
+        operator_common_block& common)
     : operator_base(grid, dgrid, cop, b)
     , solver(bsmbsm_solver::build(suzerain_bsmbsm_construct(
                 5, dgrid.global_wave_extent.y(), cop.max_kl(), cop.max_ku()),
                 spec, 1))
     , scenario(scenario)
+    , isothermal(isothermal)
     , common(common)
     , who("operator.L")
 {
@@ -98,7 +101,7 @@ isothermal_hybrid_linear_operator::~isothermal_hybrid_linear_operator()
 }
 
 void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
-        const complex_t &phi,
+        const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
         const std::size_t substep_index) const
 {
@@ -232,9 +235,9 @@ void isothermal_hybrid_linear_operator::apply_mass_plus_scaled_operator(
 }
 
 void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
-        const complex_t &phi,
+        const complex_t& phi,
         const multi_array::ref<complex_t,4> &input,
-        const complex_t &beta,
+        const complex_t& beta,
         contiguous_state<4,complex_t> &output,
         const std::size_t substep_index) const
 {
@@ -376,20 +379,24 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
  */
 class IsothermalNoSlipPATPTEnforcer
 {
+    // Loop constants to reduce magic number usage
     enum { nwalls = 2, nmomentum = 3 };
 
     // Indices within PA^TP^T at which to apply boundary conditions
     // Computed once within constructor and then repeatedly used
-    int rho[nwalls], noslip[nwalls][nmomentum], e[nwalls];
+    int rho[nwalls], m[nwalls][nmomentum], e[nwalls];
 
-    // Precomputed coefficient based on the isothermal equation of state
-    real_t gamma_times_one_minus_gamma;
+    // Precomputed coefficients based on the isothermal equation of state
+    real_t E_factor[nwalls];
+
+    // Coefficients used to enforce possibly transpiring walls
+    real_t vel_factor[nwalls][nmomentum];
 
 public:
 
-    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm &A_T,
-                                  const suzerain_rholut_imexop_scenario &s)
-        : gamma_times_one_minus_gamma(s.gamma * (1 - s.gamma))
+    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm& A_T,
+                                  const suzerain_rholut_imexop_scenario& s,
+                                  const isothermal_specification& spec)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -404,12 +411,30 @@ public:
         // Prepare indices within PA^TP^T corresponding to the walls.
         // Uses that {A^T}_{i,j} maps to {PA^TP^T}_{{q^-1}(i),{q^(-1)}(j)}.
         for (int i = 0; i < nwalls; ++i) {
-            e     [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, e0   + wall[i]);
-            noslip[i][0] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mx0  + wall[i]);
-            noslip[i][1] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, my0  + wall[i]);
-            noslip[i][2] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mz0  + wall[i]);
-            rho   [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
+            e  [i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, e0   + wall[i]);
+            m  [i][0] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mx0  + wall[i]);
+            m  [i][1] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, my0  + wall[i]);
+            m  [i][2] = suzerain_bsmbsm_qinv(A_T.S, A_T.n, mz0  + wall[i]);
+            rho[i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
         }
+
+        // FIXME Permit enforcing per grid.two_sided(), grid.one_sided()
+        // FIXME Yell if spec.lower_rho or spec.upper_rho inappropriate
+        // Compute/store the isothermal_specification details for later usage
+        E_factor[0] = spec.lower_T / (s.gamma * (s.gamma - 1))
+                    + s.Ma * s.Ma / 2 * (  spec.lower_u * spec.lower_u
+                                        + spec.lower_v * spec.lower_v
+                                        + spec.lower_w * spec.lower_w );
+        E_factor[1] = spec.upper_T / (s.gamma * (s.gamma - 1))
+                    + s.Ma * s.Ma / 2 * (  spec.upper_u * spec.upper_u
+                                        + spec.upper_v * spec.upper_v
+                                        + spec.upper_w * spec.upper_w );
+        vel_factor[0][0] = spec.lower_u;
+        vel_factor[0][1] = spec.lower_v;
+        vel_factor[0][2] = spec.lower_w;
+        vel_factor[1][0] = spec.upper_u;
+        vel_factor[1][1] = spec.upper_v;
+        vel_factor[1][2] = spec.upper_w;
     }
 
     /**
@@ -421,7 +446,7 @@ public:
     {
         for (int wall = 0; wall < nwalls; ++wall) {
             for (int eqn = 0; eqn < nmomentum; ++eqn) {
-                b[noslip[wall][eqn]] = 0;
+                b[m[wall][eqn]] = 0;
             }
             b[e[wall]] = 0;
         }
@@ -436,38 +461,37 @@ public:
     template<typename T>
     void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
     {
-        // Attempt made to not unnecessarily disturb matrix conditioning.
-
         for (int wall = 0; wall < nwalls; ++wall) {
-            int begin, end;
 
-            // Zero off-diagonals so momentum equations are const*rho{u,v,w}=0.
-            for (size_t eqn = 0; eqn < nmomentum; ++eqn) {
+            // Set constraint \partial_t rhoE - factor*\partial_t rho = 0
+            // by scanning row and adjusting coefficients for constraint.
+            {
+                int begin, end;
                 T * const col = (T *) suzerain_gbmatrix_col(
                         A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
-                        sizeof(T), noslip[wall][eqn], &begin, &end);
+                        sizeof(T), e[wall], &begin, &end);
+                complex_t& scaling = col[e[wall]];         // Preserve scaling
+                if (scaling == complex_t(0)) scaling = 1;  // Avoid degeneracy
                 for (int i = begin; i < end; ++i) {
-                    if (i != noslip[wall][eqn]) {
-                        col[i] = 0;
-                    }
+                    col[i] = i == e  [wall] ? +scaling
+                           : i == rho[wall] ? -scaling*E_factor[wall]
+                           :                  0;
                 }
             }
 
-            // Set constraint const*rho - const*gamma*(gamma-1)*rhoE = 0
-            T * const col = (T *) suzerain_gbmatrix_col(
-                    A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
-                    sizeof(T), e[wall], &begin, &end);
-            // Necessary to ensure constraint possible in degenerate case
-            complex_t &rhocoeff = col[rho[wall]];
-            if (rhocoeff == complex_t(0)) rhocoeff = 1;
-            // Scan row and adjust coefficients for constraint
-            for (int i = begin; i < end; ++i) {
-                if (i == e[wall]) {
-                    col[i] = rhocoeff*gamma_times_one_minus_gamma;
-                } else if (i == rho[wall]) {
-                    // NOP
-                } else {
-                    col[i] = 0;
+            // Set constraint \partial_t rho{u,v,w} - factor*\partial_t rho = 0
+            // by scanning row and adjusting coefficients for constraint.
+            for (size_t eqn = 0; eqn < nmomentum; ++eqn) {
+                int begin, end;
+                T * const col = (T *) suzerain_gbmatrix_col(
+                        A_T.N, A_T.N, A_T.KL, A_T.KU, (void *) patpt, patpt_ld,
+                        sizeof(T), m[wall][eqn], &begin, &end);
+                complex_t& scaling = col[m[wall][eqn]];    // Preserve scaling
+                if (scaling == complex_t(0)) scaling = 1;  // Avoid degeneracy
+                for (int i = begin; i < end; ++i) {
+                    col[i] = i == m[wall][eqn] ? +scaling
+                           : i == rho[wall]    ? -scaling*vel_factor[wall][eqn]
+                           :                     0;
                 }
             }
         }
@@ -475,12 +499,12 @@ public:
 };
 
 void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
-        const complex_t &phi,
+        const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
         const timestepper::lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index,
-        multi_array::ref<complex_t,4> *ic0) const
+        multi_array::ref<complex_t,4>* ic0) const
 {
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
@@ -545,7 +569,7 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s);
+    IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s, isothermal);
 
     // Prepare a scratch buffer for packc/packf usage
     ArrayXXc buf(solver->ld, solver->n);
