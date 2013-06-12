@@ -192,31 +192,44 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign_from(*state_nonlinear);
     }
 
-    // Prepare spatial operators depending on requested advance options.
-    // Notice that integral constraints are always applied to L
-    // and that the same nonlinear_operator is used pervasively.
+    // TODO Initialize any requested slow growth forcing
     common_block.slow_treatment = slowgrowth::none;
+
+    // Prepare any necessary, problem-specific constraints
     shared_ptr<constraint_treatment> constrainer(new constraint_treatment(
                     scenario->Ma, *dgrid, common_block));
-    if        (grid->two_sided()) { // Constraints for channel geometry
+    if        (grid->two_sided()) { // Channel problem
+
+        INFO0(who, "Establishing channel-like bulk state constraints");
         (*constrainer)[ndx::rho].reset(
                 new constraint::reference_bulk(scenario->bulk_rho  , *b));
         (*constrainer)[ndx::mx ].reset(
                 new constraint::reference_bulk(scenario->bulk_rho_u, *b));
         (*constrainer)[ndx::e  ].reset(
                 new constraint::reference_bulk(scenario->bulk_rho_E, *b));
-    } else if (grid->one_sided()) { // TODO Constraints for flat plate geometry
+
+    } else if (grid->one_sided()) { // Flat plate
+
+        DEBUG0(who, "Disabling any channel-like, bulk state constraints");
         scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
         scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+
     } else {
+
         FATAL0(who, "Sanity error in constraint selection");
         return EXIT_FAILURE;
+
     }
+
+    // Prepare spatial operators depending on requested advancement type.
+    // Notice constrainer always wraps the implicit operator
+    // and that the same nonlinear_operator is used pervasively.
     L = constrainer;
     N.reset(new nonlinear_operator(
                 *scenario, *grid, *dgrid, *cop, *b, common_block, msoln));
     if (use_explicit) {
+
         INFO0(who, "Initializing fully explicit spatial operators");
         if (grid->one_sided()) {
             INFO0(who, "Preparing nonreflecting upper boundary treatment");
@@ -229,20 +242,26 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->L.reset(new isothermal_mass_operator(
                     *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
+
     } else if (use_implicit) {
+
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
         if (grid->one_sided()) {
+            INFO0(who, "Preparing nonreflecting upper boundary treatment");
             FATAL0(who, "Nonreflecting upper boundary treatment"
-                        " not usable with implicit advance");
+                        " not currently usable with implicit advance");
             return EXIT_FAILURE;
         }
         constrainer->L.reset(new isothermal_hybrid_linear_operator(
                     solver_spec, *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
+
     } else {
+
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
+
     }
 
     // Perform final housekeeping and then advance time as requested
