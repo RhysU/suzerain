@@ -108,6 +108,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
                      "Use the specified algorithm for --implicit solves")
+        ("undriven", boost::program_options::bool_switch(),
+                     "Disable all constraint-based driving forces")
     ;
 
     // Initialize application and then process binary-specific options
@@ -198,9 +200,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Prepare any necessary, problem-specific constraints
     shared_ptr<constraint_treatment> constrainer(new constraint_treatment(
                     scenario->Ma, *dgrid, common_block));
-    if        (grid->two_sided()) { // Channel problem
+    if        (grid->two_sided()) { // Channel per channel_treatment.tex
 
-        INFO0(who, "Establishing channel-like bulk state constraints");
+        INFO0(who, "Establishing driving, channel-like state constraints");
         (*constrainer)[ndx::rho].reset(
                 new constraint::reference_bulk(scenario->bulk_rho  , *b));
         (*constrainer)[ndx::mx ].reset(
@@ -208,12 +210,47 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         (*constrainer)[ndx::e  ].reset(
                 new constraint::reference_bulk(scenario->bulk_rho_E, *b));
 
-    } else if (grid->one_sided()) { // Flat plate
+    } else if (grid->one_sided()) { // Flat plate per plate_treatment.tex
 
-        DEBUG0(who, "Disabling any channel-like, bulk state constraints");
-        scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
-        scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
-        scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+        INFO0(who, "Computing mean freestream behavior per plate scenario");
+        using namespace std;
+        const real_t T_inf   = isothermal->upper_T;               // Brevity
+        const real_t u_inf   = sqrt(T_inf);                       // Eqn ( 6)
+        const real_t mx_inf  = pow(T_inf, scenario->beta);        // Eqn ( 7)
+        const real_t rho_inf = pow(T_inf, scenario->beta - 0.5);  // Eqn ( 8)
+        const real_t e_inf   = pow(T_inf, scenario->beta + 0.5)   // Eqn (12)
+                             * (
+                                   1 / (scenario->gamma*(scenario->gamma-1))
+                                 + scenario->Ma*scenario->Ma / 2
+                               );
+
+        INFO0(who, "Setting freestream reference state on upper boundary");
+        isothermal->upper_rho = rho_inf;
+        isothermal->upper_u   = u_inf;
+        DEBUG0(who, "Retaining reference upper_v = " << isothermal->upper_v);
+        DEBUG0(who, "Retaining reference upper_w = " << isothermal->upper_w);
+        DEBUG0(who, "Retaining reference upper_T = " << isothermal->upper_T);
+
+        if (scenario->bulk_rho) {
+            WARN0(who, "Removing channel-like bulk_rho setting");
+            scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        }
+        if (scenario->bulk_rho_u) {
+            WARN0(who, "Removing channel-like bulk_rho_u setting");
+            scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+        }
+        if (scenario->bulk_rho_E) {
+            WARN0(who, "Removing channel-like bulk_rho_E setting");
+            scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+        }
+
+        INFO0(who, "Establishing driving, freestream-like state constraints");
+        (*constrainer)[ndx::rho].reset(
+                new constraint::constant_upper(rho_inf, *b));
+        (*constrainer)[ndx::mx ].reset(
+                new constraint::constant_upper(mx_inf,  *b));
+        (*constrainer)[ndx::e  ].reset(
+                new constraint::constant_upper(e_inf,   *b));
 
     } else {
 
@@ -262,6 +299,15 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         FATAL0(who, "Sanity error in operator selection");
         return EXIT_FAILURE;
 
+    }
+
+    // Use --undriven as a testing- and debugging-related tool.
+    // For example, to investigate nonreflecting boundary condition behavior.
+    if (options.variables()["undriven"].as<bool>()) {
+        INFO0(who, "Disabling all established constraints per --undriven flag");
+        for (std::size_t i = 0; i < constrainer->size(); ++i) {
+            (*constrainer)[i].reset(new constraint::disabled());
+        }
     }
 
     // Perform final housekeeping and then advance time as requested

@@ -96,8 +96,9 @@ public:
             const pencil_grid& dgrid,
             operator_common_block& common);
 
-    // Permit subscripting to access scalar equation-specific constraints
+    // Permit subscripting/iterating to access equation-specific constraints
     using implementation_defined::operator[];
+    using implementation_defined::size;
 
     /** Delegates invocation to #L */
     virtual void apply_mass_plus_scaled_operator(
