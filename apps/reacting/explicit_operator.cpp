@@ -88,9 +88,8 @@ std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const std::size_t substep_index) const
 {
 
-// FIXME Ticket #2477 should simply propagate method below
 #define ARGUMENTS *this, common, fsdef, sgdef, msoln, cmods, *massluz(),      \
-                  time, swave, method.evmaxmag_real(), method.evmaxmag_imag()
+                  time, swave, method
 
     // Dispatch to an optimized implementation depending on case:
     switch (common.filter_treatment) {

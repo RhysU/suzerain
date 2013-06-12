@@ -39,9 +39,9 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
-#include <suzerain/support/support.hpp>
 #include <suzerain/support/largo_definition.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 
 #include "reacting.hpp"
 #include "filter_definition.hpp"
@@ -326,8 +326,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const suzerain::bsplineop_luz& massluz,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag)
+            const timestepper::method_interface<complex_t> &method)
 {
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
 
@@ -345,6 +344,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::sqrt;
 
     // State enters method as coefficients in X, Y, and Z directions
+
+    // FIXME Ticket #2477 retrieve linearization-dependent CFL information
+    // Afterwards, change the stable time step computation accordingly
+    // This will require using common.linearization in some fashion
+    const real_t evmaxmag_real = method.evmaxmag_real();
+    const real_t evmaxmag_imag = method.evmaxmag_imag();
 
     // Get total number of conserved state fields
     const size_t state_count = Ns+4; // = (Ns-1) species + 5 (rho, ru, rv, rw, rE)
