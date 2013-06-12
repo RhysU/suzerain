@@ -40,6 +40,7 @@
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
+#include <suzerain/timestepper.hpp>
 
 #include "linearize_type.hpp"
 #include "slowgrowth_type.hpp"
@@ -91,10 +92,8 @@ namespace perfect {
  *        entry, it must be coefficients in the X, Y, and Z directions.
  *        on exit, it must be coefficients in the X and Z directions but
  *        collocation point values in the Y direction.
- * \param evmaxmag_real Maximum real eigenvalue magnitude used for
- *        stable time step computation when <tt>ZerothSubstep == true</tt>.
- * \param evmaxmag_imag Maximum imaginary eigenvalue magnitude used for
- *        stable time step computation when <tt>ZerothSubstep == true</tt>.
+ * \param method Low-storage timestepping scheme used to compute a stable
+ *        time step when <tt>ZerothSubstep == true</tt>.
  *
  * \tparam ZerothSubstep Should one-time activities taking place at the
  *         beginning of a Runge-Kutta step be performed?  Examples include
@@ -128,8 +127,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag)
+            const timestepper::method_interface<complex_t> &method)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
@@ -147,6 +145,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Ensure that someone didn't hand in a mismatched common block.
     SUZERAIN_ENSURE(common.linearization  == Linearize);
     SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
+
+    // FIXME Ticket #2477 retrieve linearization-dependent CFL information
+    // Afterwards, change the stable time step computation accordingly
+    const real_t evmaxmag_real = method.evmaxmag_real();
+    const real_t evmaxmag_imag = method.evmaxmag_imag();
 
     // We are only prepared to handle rho_E, rho_u, rho_v, rho_w, rho!
     enum { swave_count = 5 };

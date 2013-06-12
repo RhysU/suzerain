@@ -67,16 +67,13 @@ std::vector<real_t> nonlinear_operator::apply_operator(
             const timestepper::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
-// FIXME Ticket #2477 should simply propagate method below
-#define ARGUMENTS this->scenario.alpha,              \
-                  this->scenario.beta,               \
-                  this->scenario.gamma,              \
-                  this->scenario.Ma,                 \
-                  this->scenario.Pr,                 \
-                  this->scenario.Re,                 \
-                  *this, common, msoln, time, swave, \
-                  method.evmaxmag_real(),            \
-                  method.evmaxmag_imag()
+#define ARGUMENTS this->scenario.alpha,                     \
+                  this->scenario.beta,                      \
+                  this->scenario.gamma,                     \
+                  this->scenario.Ma,                        \
+                  this->scenario.Pr,                        \
+                  this->scenario.Re,                        \
+                  *this, common, msoln, time, swave, method
 
     // Dispatch to an optimized implementation depending on case:
     switch (common.slow_treatment) {
