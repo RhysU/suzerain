@@ -369,15 +369,19 @@ void isothermal_hybrid_linear_operator::accumulate_mass_plus_scaled_operator(
  * Helps accomplish the following steps:
  * <ul>
  * <li>
- *     channel_treatment step (8) sets no-slip conditions
+ *     channel_treatment step (8) sets no-slip or transpiring conditions
  *     on wall collocation points.
  * </li><li>
  * </li>
  *     channel_treatment step (9) sets isothermal conditions at walls
  *     using rho_wall = e_wall * gamma * (gamma - 1).
  * </ul>
+ *
+ * Extended to permit disabling one or both boundaries to facilitate
+ * reuse for flat plate problems with otherwise-constrained mean free
+ * streams per plate_treatment documentation.
  */
-class IsothermalNoSlipPATPTEnforcer
+class IsothermalPATPTEnforcer
 {
     // Loop constants to reduce magic number usage
     enum { nwalls = 2, nmomentum = 3 };
@@ -392,11 +396,20 @@ class IsothermalNoSlipPATPTEnforcer
     // Coefficients used to enforce possibly transpiring walls
     real_t vel_factor[nwalls][nmomentum];
 
+    // On which wall indices will constraints be enforced?
+    // These control wall loop extents during enforcement
+    const int wall_begin;
+    const int wall_end;
+
 public:
 
-    IsothermalNoSlipPATPTEnforcer(const suzerain_bsmbsm& A_T,
-                                  const suzerain_rholut_imexop_scenario& s,
-                                  const isothermal_specification& spec)
+    IsothermalPATPTEnforcer(const suzerain_bsmbsm& A_T,
+                            const suzerain_rholut_imexop_scenario& s,
+                            const isothermal_specification& spec,
+                            const bool enforce_lower,
+                            const bool enforce_upper)
+        : wall_begin(enforce_lower ? 0 : 1)
+        , wall_end  (enforce_upper ? 2 : 1)
     {
         // Starting offset to named scalars in interleaved_state pencil
         const int e0   = static_cast<int>(ndx::e  ) * A_T.n;
@@ -418,9 +431,8 @@ public:
             rho[i]    = suzerain_bsmbsm_qinv(A_T.S, A_T.n, rho0 + wall[i]);
         }
 
-        // FIXME Permit enforcing per grid.two_sided(), grid.one_sided()
-        // FIXME Yell if spec.lower_rho or spec.upper_rho inappropriate
         // Compute/store the isothermal_specification details for later usage
+        // These are always computed for both walls even if only one enforced
         E_factor[0] = spec.lower_T / (s.gamma * (s.gamma - 1))
                     + s.Ma * s.Ma / 2 * ( spec.lower_u * spec.lower_u
                                         + spec.lower_v * spec.lower_v
@@ -435,6 +447,16 @@ public:
         vel_factor[1][0] = spec.upper_u;
         vel_factor[1][1] = spec.upper_v;
         vel_factor[1][2] = spec.upper_w;
+
+        // Yell if spec.lower_rho or spec.upper_rho inappropriate
+        if (enforce_lower && !(boost::math::isnan)(spec.lower_rho)) {
+            WARN0("Ignoring isothermal_specification lower_rho = "
+                  << spec.lower_rho);
+        }
+        if (enforce_upper && !(boost::math::isnan)(spec.upper_rho)) {
+            WARN0("Ignoring isothermal_specification upper_rho = "
+                  << spec.upper_rho);
+        }
     }
 
     /**
@@ -444,7 +466,7 @@ public:
     template<typename T>
     void rhs(T * const b)
     {
-        for (int wall = 0; wall < nwalls; ++wall) {
+        for (int wall = wall_begin; wall < wall_end; ++wall) {
             b[e[wall]] = 0;
             for (int eqn = 0; eqn < nmomentum; ++eqn) {
                 b[m[wall][eqn]] = 0;
@@ -461,7 +483,7 @@ public:
     template<typename T>
     void op(const suzerain_bsmbsm& A_T, T * const patpt, int patpt_ld)
     {
-        for (int wall = 0; wall < nwalls; ++wall) {
+        for (int wall = wall_begin; wall < wall_end; ++wall) {
 
             // Set constraint \partial_t rhoE - factor*\partial_t rho = 0
             // by scanning row and adjusting coefficients for constraint.
@@ -569,7 +591,9 @@ void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
     common.imexop_ref(ref, ld);
 
     // Prepare an almost functor mutating RHS and PA^TP^T to enforce BCs.
-    IsothermalNoSlipPATPTEnforcer bc_enforcer(*solver, s, isothermal);
+    IsothermalPATPTEnforcer bc_enforcer(*solver, s, isothermal,
+                                        true,            /* enforce_lower */
+                                        grid.two_sided() /* enforce_upper */);
 
     // Prepare a scratch buffer for packc/packf usage
     ArrayXXc buf(solver->ld, solver->n);

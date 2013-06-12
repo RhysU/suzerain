@@ -50,8 +50,9 @@ class operator_common_block;
 class scenario_definition;
 
 /**
- * A hybrid implicit operator that provides no slip, isothermal walls.  It
- * requires interoperation with nonlinear_operator via operator_common_block.
+ * A hybrid implicit operator that provides isothermal wall conditions.
+ * It requires interoperation with nonlinear_operator via
+ * operator_common_block.
  */
 class isothermal_hybrid_linear_operator
   : public operator_base,
@@ -62,6 +63,11 @@ class isothermal_hybrid_linear_operator
 {
 public:
 
+    /**
+     * When grid_specification::two_sided(), both the lower and upper
+     * boundaries are constrained to be isothermal.  When
+     * grid_specification::one_sided(), only the lower boundary is constrained.
+     */
     isothermal_hybrid_linear_operator(
             const zgbsv_specification& spec,
             const scenario_definition& scenario,
