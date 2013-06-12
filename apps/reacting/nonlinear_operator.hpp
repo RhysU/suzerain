@@ -48,7 +48,7 @@
 #include "reacting_ndx.hpp"
 
 #ifdef SUZERAIN_HAVE_LARGO
-#include "largo/largo.h" 
+#include "largo/largo.h"
 #endif
 
 #pragma warning(disable:280 383 1572)
@@ -97,21 +97,21 @@ void vfilt_form_operator_difference(const operator_base& o,
     //
     // Each step is performed independently for each state variable
     for (size_t var = ndx::e; var<state_count; ++var) {
-        
+
         // 1.) Accumulate D_1 swave in to fsrcw
         o.bop_accumulate(1, 1, swave, var,
                             0, fsrcw, var );
-        
+
         // 2.) fsrcw <- M \ fsrcw
         o.bop_solve(massluz, fsrcw, var);
-        
+
         // 3.) fsrcw <- D_1 fsrcw + 0 * fsrcw
         o.bop_apply(1, 1, fsrcw, var);
-        
+
         // 4.) fsrcw <- D_2 swave - fsrcw
         o.bop_accumulate(2,  1, swave, var,
                          -1, fsrcw, var );
-        
+
     }
     // Now, fsrcw contains D_2 * swave - D_1 * M \ (D_1 * swave).
     //
@@ -128,72 +128,72 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
     // After first traversal, have gathered reference profiles.  So,
     // we can complete the viscous filter source calculation by
     // multiplying by the appropriate reference quantities.
-    
+
     const std::size_t Ny = fsrcw.shape()[1];
     const std::size_t Nplane = fsrcw.shape()[2]*fsrcw.shape()[3];
-    
+
     // Energy
     {
-        
+
         // diagonal
         Map<MatrixXXc> F(fsrcw[ndx::e].origin(), Ny, Nplane);
         const VectorXr& D(common.ref_korCv());
-        
+
         MatrixXXc tmp(Ny, Nplane);
         tmp = D.asDiagonal()*F;
-        
+
         // x-momentum
         Map<MatrixXXc> Fmx(fsrcw[ndx::mx].origin(), Ny, Nplane);
         const VectorXr& nu(common.ref_nu());
         const VectorXr& ux(common.ref_ux());
         const VectorXr  Dmx( D.array()*ux.array() -  // heat flux
                              nu.array()*ux.array() ); // visc work
-        
+
         tmp -= Dmx.asDiagonal()*Fmx;
-        
+
         // y-momentum
         Map<MatrixXXc> Fmy(fsrcw[ndx::my].origin(), Ny, Nplane);
         const VectorXr& uy(common.ref_uy());
         const real_t oneplam = (alpha + 4.0/3.0);
         const VectorXr  Dmy(         D.array()*uy.array() -  // heat flux
-                            oneplam*nu.array()*uy.array() ); // visc work 
-            
+                            oneplam*nu.array()*uy.array() ); // visc work
+
         tmp -= Dmy.asDiagonal()*Fmy;
-        
+
         // z-momentum
         Map<MatrixXXc> Fmz(fsrcw[ndx::mz].origin(), Ny, Nplane);
         const VectorXr& uz(common.ref_uz());
         const VectorXr  Dmz( D.array()*uz.array() -  // heat flux
                             nu.array()*uz.array() ); // visc work
-            
+
         tmp -= Dmz.asDiagonal()*Fmz;
-        
+
         // density
         Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
         const VectorXr& e0 (common.ref_es(0));
-        
+
         const VectorXr ke (0.5*(ux.array()*ux.array() +
-                                uy.array()*uy.array() + 
+                                uy.array()*uy.array() +
                                 uz.array()*uz.array()));
-        
+
         const real_t ap13 = (alpha + 1.0/3.0);
-        
+
         VectorXr Drho( D.array()*(e0.array()-ke.array()) +  // heat flux
                       nu.array()*( 2.0*ke.array() +         // visc work
                                   ap13*uy.array()*uy.array()) );
-        
+
         // enthalpy diffusion
         for (std::size_t s=1; s<Ns; ++s) {
             const VectorXr& h0 (common.ref_hs(0));
             const VectorXr& hs (common.ref_hs(s));
             const VectorXr& cs (common.ref_cs(s));
             const VectorXr& Ds (common.ref_Ds());
-            
+
             Drho.array() -= cs.array()*Ds.array()*(hs.array() - h0.array());
         }
-        
+
         tmp -= Drho.asDiagonal()*Frho;
-        
+
         // species
         for (std::size_t s=0; s<Ns-1; ++s) {
             Map<MatrixXXc> Frho_s(fsrcw[ndx::species+s].origin(), Ny, Nplane);
@@ -201,66 +201,66 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
             const VectorXr& h0 (common.ref_hs(0  ));
             const VectorXr& hs (common.ref_hs(s+1));
             const VectorXr& Ds (common.ref_Ds());
-            
+
             const VectorXr  Drho_s( // heat flux
-                                   D.array()*(e0.array()-es.array()) +  
+                                   D.array()*(e0.array()-es.array()) +
                                    // enthalpy diffusion
                                    Ds.array()*(h0.array()-hs.array()) );
-            
+
             tmp += Drho_s.asDiagonal()*Frho_s;
         }
-        
+
         // NB: Overwrites (D2 - D1*(D0\D1))*rhoE.  Okay b/c not
         // required below here.
         F = tmp;
     }
-    
+
     // x-momentum
     {
         // diagonal
         Map<MatrixXXc> F(fsrcw[ndx::mx].origin(), Ny, Nplane);
         const VectorXr& D(common.ref_nu());
-        
+
         MatrixXXc tmp(Ny, Nplane);
         tmp = D.asDiagonal()*F;
-        
+
         // density
         Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
         const VectorXr& ux(common.ref_ux());
         const VectorXr  Drho(D.array()*ux.array()); // cwise
-        
+
         tmp -= Drho.asDiagonal()*Frho;
-        
+
         // NB: Overwrites
         F = tmp;
     }
-    
+
     // y-momentum
     {
         // diagonal
         Map<MatrixXXc> F(fsrcw[ndx::my].origin(), Ny, Nplane);
         const VectorXr& D(common.ref_nu());
         MatrixXXc tmp(Ny, Nplane);
-        
+
         const real_t oneplam = (alpha + 4.0/3.0);
-        
+
         //tmp = oneplam * D.asDiagonal()*F;
         tmp = D.asDiagonal()*F;
-        
+
         // density
         Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
         const VectorXr& uy(common.ref_uy());
         const VectorXr  Drho(D.array()*uy.array()); // cwise
-        
+
         //tmp -= oneplam * Drho.asDiagonal()*Frho;
         tmp -= Drho.asDiagonal()*Frho;
-        
+
         tmp *= oneplam;
-        
+
         // NB: Overwrites
         F = tmp;
     }
-    
+
     // z-momentum
     {
         // diagonal;
@@ -268,19 +268,19 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
         const VectorXr& D(common.ref_nu());
         MatrixXXc tmp(Ny, Nplane);
         tmp = D.asDiagonal()*F;
-        
+
         // density
         Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
         const VectorXr& uz(common.ref_uz());
         const VectorXr  Drho(D.array()*uz.array()); // cwise
-        
+
         tmp -= Drho.asDiagonal()*Frho;
-        
+
         // NB: Overwrites
         F = tmp;
     }
-    
-    
+
+
     // species
     {
         for (unsigned int s=1; s<Ns; ++s) {
@@ -289,20 +289,20 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
             const VectorXr& D(common.ref_Ds());
             MatrixXXc tmp(Ny, Nplane);
             tmp = D.asDiagonal()*F;
-            
+
             // density
             Map<MatrixXXc> Frho(fsrcw[ndx::rho].origin(), Ny, Nplane);
             const VectorXr& cs(common.ref_cs(s));
             const VectorXr  Drho(D.array()*cs.array()); // cwise
-            
+
             tmp -= Drho.asDiagonal()*Frho;
-            
+
             // NB: Overwrites
             F = tmp;
         }
     }
-    
-    // mass 
+
+    // mass
     // NB: Mass must go last because everyone else needs
     // fsrcw[ndx::rho] before it gets zeroed here
     {
@@ -597,7 +597,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //
     // Also need reference quantities if we are using the viscous filter option.
     if (    ZerothSubstep
-//         && (Linearize != linearize::none || Filter == filter::viscous) 
+//         && (Linearize != linearize::none || Filter == filter::viscous)
         ) {
 
         // Gather reference profiles and mean velocity
@@ -791,9 +791,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.v() = common.ref_uy();
         common.w() = common.ref_uz();
 
-        // Compute species specific total energy and store in 
+        // Compute species specific total energy and store in
         // common.etots_upper
-        // FIXME: Remove and/or compute additional needed 
+        // FIXME: Remove and/or compute additional needed
         // quantities for nonreflecting implementation
         common.etots_upper.resize(Ns);
         cmods.etots_from_T(common.ref_T().tail<1>()[0],
@@ -908,7 +908,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Store sum into common block in preparation for MPI Reduce
             for (int var = 0; var < state_count; ++var) {
-                rms_values(j,ndx::e+var) = 
+                rms_values(j,ndx::e+var) =
                     boost::accumulators::sum(acc[ndx::e+var]);
             }
         } // end Y
@@ -923,10 +923,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // Finish rms computation
         for (int var = 0; var < state_count; ++var) {
             for (int j = 0; j < Ny; ++j) {
-                rms_values(j,var) = sqrt(rms_values(j,var)); 
-                // Copy the rms to the drms part of the storage in 
+                rms_values(j,var) = sqrt(rms_values(j,var));
+                // Copy the rms to the drms part of the storage in
                 // preparation to computing the rms derivative
-                rms_values(j,var+state_count) = rms_values(j,var); 
+                rms_values(j,var+state_count) = rms_values(j,var);
             }
         }
 
@@ -961,11 +961,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t lambda2_y = o.lambda2_y(j);
 
         // Bool, do not compute slow growth source for species
-        // at the top boundary. Only sources from chemical 
+        // at the top boundary. Only sources from chemical
         // reactions are added after the Giles conditions are applied.
-        // NOTE: It is assumed that for slow growth the condition 
+        // NOTE: It is assumed that for slow growth the condition
         // is an inflow for characteristics, since the slow growth
-        // term modifies the eigenvalues to (v-y*grDelta), 
+        // term modifies the eigenvalues to (v-y*grDelta),
         // with v<<y*grDelta
         // FIXME: Maybe make a more formal and less obscure implementation
         bool  sg_compute_top = (j != Ny-1);
@@ -1056,10 +1056,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // Compute slow growth prestep values
             real_t ycoord = o.y(j);
-            real_t mean [Ns+4]; 
+            real_t mean [Ns+4];
             real_t dmean [Ns+4];
             if (sgdef.formulation.enabled()) {
-                // FIXME: Need to have available rms and d(rms)dy of 
+                // FIXME: Need to have available rms and d(rms)dy of
                 //        state variables for turbulent simulation
 
                 // field
@@ -1095,10 +1095,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // rms
                 real_t rms [Ns+4];
                 rms[0] = rms_values(j,ndx::rho);
-                rms[1] = rms_values(j,ndx::mx); 
-                rms[2] = rms_values(j,ndx::my); 
-                rms[3] = rms_values(j,ndx::mz); 
-                rms[4] = rms_values(j,ndx::e);  
+                rms[1] = rms_values(j,ndx::mx);
+                rms[2] = rms_values(j,ndx::my);
+                rms[3] = rms_values(j,ndx::mz);
+                rms[4] = rms_values(j,ndx::e);
                 for (unsigned int s=1; s<Ns; s++){
                     rms[4+s] = rms_values(j,ndx::rho+s);
                 }
@@ -1198,46 +1198,46 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 #ifdef SUZERAIN_HAVE_LARGO
                 // Compute sources from library
-                largo_bl_temporal_continuity_setamean 
+                largo_bl_temporal_continuity_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[0]);
-                largo_bl_temporal_xmomentum_setamean 
+                largo_bl_temporal_xmomentum_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[1]);
-                largo_bl_temporal_ymomentum_setamean 
+                largo_bl_temporal_ymomentum_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[2]);
-                largo_bl_temporal_zmomentum_setamean 
+                largo_bl_temporal_zmomentum_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[3]);
-                largo_bl_temporal_energy_setamean 
+                largo_bl_temporal_energy_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[4]);
                 for (int s=1; s < Ns; ++s) {
-                    largo_bl_temporal_ispecies_setamean 
+                    largo_bl_temporal_ispecies_setamean
                                       (sgdef.workspace, 0.0, 1.0, &src[4+s], s);
                 }
 
-                largo_bl_temporal_continuity_setarms 
+                largo_bl_temporal_continuity_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[0]);
-                largo_bl_temporal_xmomentum_setarms 
+                largo_bl_temporal_xmomentum_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[1]);
-                largo_bl_temporal_ymomentum_setarms 
+                largo_bl_temporal_ymomentum_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[2]);
-                largo_bl_temporal_zmomentum_setarms 
+                largo_bl_temporal_zmomentum_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[3]);
-                largo_bl_temporal_energy_setarms 
+                largo_bl_temporal_energy_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[4]);
                 for (int s=1; s < Ns; ++s) {
-                    largo_bl_temporal_ispecies_setarms 
+                    largo_bl_temporal_ispecies_setarms
                                       (sgdef.workspace, 1.0, 1.0, &src[4+s], s);
                 }
 
 #else
                 // No slow growth computation if not linked with largo
                 // FIXME: is this the best way to report an error for this case?
-                // NOTE:  you can comment the "unimplemented" line and 
+                // NOTE:  you can comment the "unimplemented" line and
                 //        uncomment the src lines to play with a native
                 //        implementation of the source terms for laminar flow
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
 
                 // compute sources locally
-                //             real_t ygrd = ycoord * sgdef.grdelta; 
+                //             real_t ygrd = ycoord * sgdef.grdelta;
                 //             src[0] += ygrd * dmean[0];
                 //             src[1] += ygrd * dmean[1];
                 //             src[2] += ygrd * dmean[2];
@@ -1249,13 +1249,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 #endif // SUZERAIN_HAVE_LARGO
 
                 // Add sources
-                sphys(ndx::rho  , offset) += src[0]; 
+                sphys(ndx::rho  , offset) += src[0];
                 sphys(ndx::mx   , offset) += src[1];
                 sphys(ndx::my   , offset) += src[2];
                 sphys(ndx::mz   , offset) += src[3];
                 sphys(ndx::e    , offset) += src[4];
 
-                // Add species sources 
+                // Add species sources
                 if (sg_compute_top) {
                     for (unsigned int s=1; s < Ns; ++s) {
                         sphys(ndx::rho+s  , offset) += src[4+s];
