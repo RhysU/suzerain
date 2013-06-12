@@ -445,10 +445,10 @@ public:
     void rhs(T * const b)
     {
         for (int wall = 0; wall < nwalls; ++wall) {
+            b[e[wall]] = 0;
             for (int eqn = 0; eqn < nmomentum; ++eqn) {
                 b[m[wall][eqn]] = 0;
             }
-            b[e[wall]] = 0;
         }
     }
 
