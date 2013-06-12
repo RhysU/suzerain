@@ -168,7 +168,7 @@ public:
     static signal_definition signaldef;
 
     /** Controls low storage method to be used for time advance. */
-    shared_ptr<timestepper::lowstorage::method_interface<
+    shared_ptr<timestepper::method_interface<
             complex_t
         > > method;
 
@@ -177,7 +177,7 @@ public:
      * #state_linear and #state_nonlinear.  This is the interface to which
      * linear operators should be coded.
      */
-    shared_ptr<timestepper::lowstorage::linear_operator<
+    shared_ptr<timestepper::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 
@@ -195,7 +195,7 @@ public:
 
     /**
      * Ensure #method is valid for use by #controller.  That is, if
-     * <tt>!method</tt> then \ref timestepper::lowstorage::smr91 is used per
+     * <tt>!method</tt> then \ref timestepper::smr91 is used per
      * #timedef.  Otherwise, #method is not modified.
      */
     virtual void prepare_method();

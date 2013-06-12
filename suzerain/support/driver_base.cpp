@@ -278,8 +278,8 @@ driver_base::prepare_method()
     if (!method) {
         INFO0(who, "Preparing SMR91 timestepping scheme using evmagfactor "
               << timedef->evmagfactor);
-        this->method.reset(new timestepper::lowstorage::method<
-                    timestepper::lowstorage::smr91,
+        this->method.reset(new timestepper::method<
+                    timestepper::smr91,
                     state_common_type::element
                 >(timedef->evmagfactor));
     }
@@ -306,7 +306,7 @@ driver_base::prepare_controller(
     SUZERAIN_ENSURE(restartdef);
     SUZERAIN_ENSURE(statsdef);
     SUZERAIN_ENSURE(timedef);
-    controller.reset(make_lowstorage_timecontroller(
+    controller.reset(make_controller(
                 *method, *allreducer, *L, chi, *N,
                 *state_linear, *state_nonlinear,
                 initial_t, timedef->min_dt, timedef->max_dt));

@@ -40,7 +40,7 @@ namespace suzerain {
  * linear_operator.
  *
  * More concretely, suppose one wants to use the hybrid implicit/explicit
- * timestepping schemes defined in \ref timestepper::lowstorage which the state
+ * timestepping schemes defined in \ref timestepper which the state
  * vector \f$ u(t) \f$ is advanced to \f$u(t+\Delta{}t)\f$ according to
  * \f[
  *   M u_{t} = Lu + \chi N(u)
@@ -53,7 +53,7 @@ namespace suzerain {
  *   M u_{t} = \chi R(u).
  * \f]
  * and an implementation of \f$M + \phi L\f$ per \ref
- * timestepper::lowstorage::linear_operator.  To use the low-storage
+ * timestepper::linear_operator.  To use the low-storage
  * implicit-explicit interface you need
  * \f[
  *   N(u) = R(u) - \frac{1}{\chi} Lu.
@@ -101,7 +101,7 @@ public:
      * The hybrid implicit/explicit linear operator which is able to
      * interoperate between #state_linear and #state_nonlinear.
      */
-    shared_ptr<timestepper::lowstorage::linear_operator<
+    shared_ptr<timestepper::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 

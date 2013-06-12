@@ -46,12 +46,12 @@ using suzerain::interleaved_state;
 using suzerain::contiguous_state;
 using suzerain::multi_array::ref;
 using suzerain::timestepper::nonlinear_operator;
-using suzerain::timestepper::lowstorage::linear_operator;
-using suzerain::timestepper::lowstorage::multiplicative_operator;
-using suzerain::timestepper::lowstorage::smr91;
-using suzerain::timestepper::lowstorage::yang11;
-using suzerain::timestepper::lowstorage::method;
-using suzerain::timestepper::lowstorage::lowstorage_timecontroller;
+using suzerain::timestepper::linear_operator;
+using suzerain::timestepper::multiplicative_operator;
+using suzerain::timestepper::smr91;
+using suzerain::timestepper::yang11;
+using suzerain::timestepper::method;
+using suzerain::timestepper::controller;
 
 // Explicit template instantiation to hopefully speed compilation
 template class interleaved_state<3,double>;
@@ -549,7 +549,7 @@ public:
 BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
                                State, state_types )
 {
-    using suzerain::timestepper::lowstorage::substep;
+    using suzerain::timestepper::substep;
     // See test_timestepper.sage for manufactured answers
 
     const double delta_t = 17.0;
@@ -616,7 +616,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
 BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
                                 State, state_types )
 {
-    using suzerain::timestepper::lowstorage::substep;
+    using suzerain::timestepper::substep;
     // See test_timestepper.sage for manufactured answers
 
     const double delta_t = 17.0;
@@ -683,7 +683,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
 BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
                                State, state_types )
 {
-    using suzerain::timestepper::lowstorage::substep;
+    using suzerain::timestepper::substep;
     // See test_timestepper.sage for manufactured answers
 
     const double delta_t = 17.0;
@@ -792,7 +792,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     {
         const mult_op_type nonlinear_op(soln.a);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+            const double delta_t_used = suzerain::timestepper::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     double_NaN, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
@@ -809,7 +809,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     {
         const mult_op_type nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+            const double delta_t_used = suzerain::timestepper::step(
                     m, trivial_linop, 1.0, nonlinear_op, double_NaN, a, b);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
         }
@@ -888,7 +888,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
         const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+            const double delta_t_used = suzerain::timestepper::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
@@ -908,7 +908,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
         const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::lowstorage::step(
+            const double delta_t_used = suzerain::timestepper::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_finer);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
@@ -987,7 +987,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const std::size_t coarse_nsteps = 16;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-        suzerain::timestepper::lowstorage::step(
+        suzerain::timestepper::step(
                 m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/coarse_nsteps);
     }
@@ -999,7 +999,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const std::size_t finer_nsteps = 2*coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
-        suzerain::timestepper::lowstorage::step(
+        suzerain::timestepper::step(
                 m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/finer_nsteps);
     }
@@ -1054,52 +1054,52 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 // Tests for control logic of timecontroller in test_timecontroller.
-// Presumably getting lowstorage_timecontroller to type check is the big deal.
+// Presumably getting timestepper::controller to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
-// lowstorage_timecontroller for interleaved_state
-template class lowstorage_timecontroller<
+// controller for interleaved_state
+template class controller<
         interleaved_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class lowstorage_timecontroller<
+template class controller<
         interleaved_state<3,double>, interleaved_state<3,double>,
         void // Default Reducer behavior
     >;
 
-// lowstorage_timecontroller for contiguous_state
-template class lowstorage_timecontroller<
+// controller for contiguous_state
+template class controller<
         contiguous_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class lowstorage_timecontroller<
+template class controller<
         contiguous_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
-// lowstorage_timecontroller for {Interleaved,Contiguous}State
-template class lowstorage_timecontroller<
+// controller for {Interleaved,Contiguous}State
+template class controller<
         interleaved_state<3,double>, contiguous_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class lowstorage_timecontroller<
+template class controller<
         interleaved_state<3,double>, contiguous_state<3,double>,
         void // Default reducer behavior
     >;
 
-// lowstorage_timecontroller for {Contiguous,Interleaved}State
-template class lowstorage_timecontroller<
+// controller for {Contiguous,Interleaved}State
+template class controller<
         contiguous_state<3,double>, interleaved_state<3,double>,
         suzerain::timestepper::delta_t_reducer
     >;
-template class lowstorage_timecontroller<
+template class controller<
         contiguous_state<3,double>, interleaved_state<3,double>,
         void // Default reducer behavior
     >;
 
-BOOST_AUTO_TEST_SUITE( low_storage_controller_suite )
+BOOST_AUTO_TEST_SUITE( controller_suite )
 
-BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
+BOOST_AUTO_TEST_CASE_TEMPLATE ( invoke_make_controller, StatePair, state_type_pairs )
 {
     typedef typename mpl::at<StatePair,mpl::int_<0> >::type state_a_type;
     typedef typename mpl::at<StatePair,mpl::int_<1> >::type state_b_type;
@@ -1112,7 +1112,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( make_controller, StatePair, state_type_pairs )
 
     // Compilation and instantiation is half the battle.  Go Joe!
     suzerain::scoped_ptr<suzerain::timecontroller<double> > p(
-        make_lowstorage_timecontroller(m, trivial_linop, 1., riccati_op, a, b));
+        make_controller(m, trivial_linop, 1., riccati_op, a, b));
 
     BOOST_REQUIRE(p);
 }

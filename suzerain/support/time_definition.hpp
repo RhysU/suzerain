@@ -118,7 +118,7 @@ public:
      * Factor used to pre-multiply a scheme's pure real and imaginary
      * eigenvalue magnitudes.
      *
-     * @see timestepper::lowstorage::method for details.
+     * @see timestepper::method for details.
      */
     real_t evmagfactor;
 
