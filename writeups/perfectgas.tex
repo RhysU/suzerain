@@ -3731,17 +3731,42 @@ convenience representing triangular back substitution.
 
 \section{Boundary conditions}
 
-\subsection{Isothermal, no slip boundary condition}
+\subsection{Isothermal walls with and without transpiration}
 
-An isothermal wall is characterized by a fixed temperature and zero velocity.
-One thermodynamic quantity must be allowed to vary for this boundary condition
-to be well-posed.  Allowing $\rho$ to vary is simplest given our state choices.
-Then~\eqref{eq:state_pressure} and~\eqref{eq:state_temperature} combined with
-$m=0$ forces $e=\frac{T}{\gamma\left(\gamma-1\right)}$ for some fixed
-temperature $T$.  These conditions may be built into linear operators for
-implicit treatment using how B-spline basis support limits the number of
-nonzero coefficients at the wall as discussed in
-section~\ref{sec:formingoperators}.
+An isothermal boundary requires specifying a constant temperature
+$T_\mathrm{w}$.  Both no-slip and transpiring walls are of interest.  The
+former possess constant wall velocities $u_\mathrm{w} = v_\mathrm{w} =
+w_\mathrm{w} = 0$ while the later permit nonzero-but-constant velocities.  A
+transpiring wall condition is achieved by setting $v_\mathrm{w} > 0$.  One
+thermodynamic quantity must be allowed to vary for such boundary conditions to
+be well-posed.  Allowing $\rho$ to vary in time is simplest given our state
+choices.  Assuming smoothness and combining~\eqref{eq:state_pressure}
+and~\eqref{eq:state_temperature} within the total energy equation yields four
+constraints:
+\begin{align}
+   \partial_t \left(\rho u\right)_\mathrm{w}
+&= u_\mathrm{w} \partial_t \rho_\mathrm{w} + \rho_\mathrm{w} \partial_t u_\mathrm{w}
+ = u_\mathrm{w} \partial_t \rho_\mathrm{w}
+\\
+   \partial_t \left(\rho v\right)_\mathrm{w}
+&= v_\mathrm{w} \partial_t \rho_\mathrm{w} + \rho_\mathrm{w} \partial_t v_\mathrm{w}
+ = v_\mathrm{w} \partial_t \rho_\mathrm{w}
+\\
+   \partial_t \left(\rho u\right)_\mathrm{w}
+&= u_\mathrm{w} \partial_t \rho_\mathrm{w} + \rho_\mathrm{w} \partial_t u_\mathrm{w}
+ = u_\mathrm{w} \partial_t \rho_\mathrm{w}
+\\
+   \partial_t \left(\rho E\right)_\mathrm{w}
+&= E_\mathrm{w} \partial_t \rho_\mathrm{w} + \rho_\mathrm{w} \partial_t E_\mathrm{w}
+ = E_\mathrm{w} \partial_t \rho_\mathrm{w}
+ = \left(
+     \frac{T_\mathrm{w}}{\gamma\left(\gamma-1\right)}
+   + \frac{\Mach^2}{2}\left(u_\mathrm{w}^2+v_\mathrm{w}^2+w_\mathrm{w}^2\right)
+   \right) \partial_{t} \rho
+\end{align}
+These conditions may be strongly enforced by linear implicit operators using
+how B-spline basis support limits the number of nonzero coefficients at the
+wall as discussed in section~\ref{sec:formingoperators}.
 
 \subsection{Nonreflecting freestream boundary conditions}
 \label{sec:nonreflectingbcs}
@@ -4744,13 +4769,6 @@ being treated implicitly because it requires only wavenumber-independent
 modifications to $L$ to produce $L_E^G$.  Quite conveniently, the $N_E^G$ may be
 computed from $N$ using only information available in Fourier space assuming
 that reference state $\bar{V}$ has already been gathered.
-
-\subsection{Isothermal, transpiring wall boundary condition}
-
-TODO  Reuse nonreflecting freestream conditions with pegged inflow momentum and
-total energy?  Possibly dropping the derivative terms to get a ``noisier''
-wall that reflects acoustics but permits purely plane waves to pass into
-the wall?
 
 \section{Imposing a favorable streamwise pressure gradient}
 
