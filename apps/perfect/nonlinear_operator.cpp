@@ -64,11 +64,10 @@ nonlinear_operator::nonlinear_operator(
 std::vector<real_t> nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+            const timestepper::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
-
+// FIXME Ticket #2477 should simply propagate method below
 #define ARGUMENTS this->scenario.alpha,              \
                   this->scenario.beta,               \
                   this->scenario.gamma,              \
@@ -76,7 +75,8 @@ std::vector<real_t> nonlinear_operator::apply_operator(
                   this->scenario.Pr,                 \
                   this->scenario.Re,                 \
                   *this, common, msoln, time, swave, \
-                  evmaxmag_real, evmaxmag_imag
+                  method.evmaxmag_real(),            \
+                  method.evmaxmag_imag()
 
     // Dispatch to an optimized implementation depending on case:
     switch (common.slow_treatment) {

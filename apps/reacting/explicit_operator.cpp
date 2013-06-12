@@ -84,13 +84,13 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+            const timestepper::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
 
-#define ARGUMENTS *this, common, fsdef, sgdef, msoln, cmods, *massluz(), \
-                  time, swave, evmaxmag_real, evmaxmag_imag
+// FIXME Ticket #2477 should simply propagate method below
+#define ARGUMENTS *this, common, fsdef, sgdef, msoln, cmods, *massluz(),      \
+                  time, swave, method.evmaxmag_real(), method.evmaxmag_imag()
 
     // Dispatch to an optimized implementation depending on case:
     switch (common.filter_treatment) {

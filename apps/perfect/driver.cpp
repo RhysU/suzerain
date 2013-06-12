@@ -149,8 +149,7 @@ driver::log_linearization_error(
     //       measuring actual linearization error.
     state_nonlinear->assign_from(*state_linear);
     common_block.set_zero(grid->dN.y());  // Defensive
-    N->apply_operator(t, *state_nonlinear,
-            method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/0);
+    N->apply_operator(t, *state_nonlinear, *method, /*substep*/0);
     L->accumulate_mass_plus_scaled_operator(
             1, *state_linear, dgrid->chi(), *state_nonlinear, /*substep*/0);
     common_block.set_zero(grid->dN.y());  // Zero reference quantities
@@ -165,8 +164,7 @@ driver::log_linearization_error(
             dgrid->local_wave_start.z(), dgrid->local_wave_end.z());
     }
     state_nonlinear->exchange(*state_linear);
-    N->apply_operator(t, *state_nonlinear,
-            method->evmaxmag_real(), method->evmaxmag_imag(), /*substep*/1);
+    N->apply_operator(t, *state_nonlinear, *method, /*substep*/1);
     for (size_t k = 0; k < fields.size(); ++k) {
         diffwave::apply(0, 0, 1, (*state_nonlinear)[k].origin(),
             grid->L.x(), grid->L.z(), dgrid->global_wave_extent.y(),

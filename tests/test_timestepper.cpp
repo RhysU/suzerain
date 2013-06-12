@@ -42,16 +42,17 @@ BOOST_GLOBAL_FIXTURE(BlasCleanupFixture);
 
 // Shorthand
 namespace mpl = boost::mpl;
-using suzerain::interleaved_state;
 using suzerain::contiguous_state;
+using suzerain::interleaved_state;
 using suzerain::multi_array::ref;
-using suzerain::timestepper::nonlinear_operator;
+using suzerain::timestepper::controller;
 using suzerain::timestepper::linear_operator;
+using suzerain::timestepper::method;
+using suzerain::timestepper::method_interface;
 using suzerain::timestepper::multiplicative_operator;
+using suzerain::timestepper::nonlinear_operator;
 using suzerain::timestepper::smr91;
 using suzerain::timestepper::yang11;
-using suzerain::timestepper::method;
-using suzerain::timestepper::controller;
 
 // Explicit template instantiation to hopefully speed compilation
 template class interleaved_state<3,double>;
@@ -102,13 +103,11 @@ public:
     virtual std::vector<double> apply_operator(
             const double time,
             ref<double,3>& state,
-            const double evmaxmag_real,
-            const double evmaxmag_imag,
-            const std::size_t substep_index = 0) const
+            const method_interface<double>& method,
+            const std::size_t substep_index) const
     {
         SUZERAIN_UNUSED(time);
-        SUZERAIN_UNUSED(evmaxmag_real);
-        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(substep_index);
 
         typedef contiguous_state<3,double>::index index;
@@ -178,13 +177,11 @@ public:
 
     virtual std::vector<double> apply_operator(
             const double time,
-            ref<double,3> & state,
-            const double evmaxmag_real,
-            const double evmaxmag_imag,
+            ref<double,3>& state,
+            const method_interface<double>& method,
             const std::size_t substep_index = 0) const
     {
-        SUZERAIN_UNUSED(evmaxmag_real);
-        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(substep_index);
 
         for (std::size_t i = 0; i < state.shape()[0]; ++i) {
@@ -449,6 +446,7 @@ BOOST_AUTO_TEST_SUITE( multiplicative_operator_sanity )
 
 BOOST_AUTO_TEST_CASE( apply_operator )
 {
+    const method<smr91,double> m;
     typedef multiplicative_operator<contiguous_state<3,double> > op_type;
     const double close_enough = std::numeric_limits<double>::epsilon();
 
@@ -456,11 +454,11 @@ BOOST_AUTO_TEST_CASE( apply_operator )
     a[0][0][0] = 1.0;
 
     op_type op(2.0);
-    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, m, 0);
     BOOST_CHECK_CLOSE(a[0][0][0], 2.0, close_enough);
-    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, m, 1);
     BOOST_CHECK_CLOSE(a[0][0][0], 4.0, close_enough);
-    op.apply_operator(double_NaN, a, double_NaN, double_NaN);
+    op.apply_operator(double_NaN, a, m, 2);
     BOOST_CHECK_CLOSE(a[0][0][0], 8.0, close_enough);
 
     // Ensure we can instantiate
@@ -523,14 +521,12 @@ public:
 
     virtual std::vector<double> apply_operator(
             const double time,
-            ref<double,3> & state,
-            const double evmaxmag_real,
-            const double evmaxmag_imag,
+            ref<double,3>& state,
+            const method_interface<double>& method,
             const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(time);
-        SUZERAIN_UNUSED(evmaxmag_real);
-        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(substep_index);
 
         for (std::size_t i = 0; i < state.shape()[0]; ++i) {

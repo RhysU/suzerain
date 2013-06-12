@@ -45,8 +45,7 @@ hybrid_residual_operator::hybrid_residual_operator(
 std::vector<real_t> hybrid_residual_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &state,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+            const timestepper::method_interface<element>& method,
             const std::size_t substep_index) const
 {
     // Allocate (potentially large) extra working storage
@@ -65,7 +64,7 @@ std::vector<real_t> hybrid_residual_operator::apply_operator(
 
     extra.assign_from(state);
     std::vector<real_t> retval = R->apply_operator(
-            time, state, evmaxmag_real, evmaxmag_imag, substep_index);
+            time, state, method, substep_index);
     L->accumulate_mass_plus_scaled_operator(
             0,      extra, -1, state, substep_index);
     L->accumulate_mass_plus_scaled_operator(

@@ -79,8 +79,7 @@ std::vector<real_t>
 nonreflecting_treatment::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+            const timestepper::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
     // Implementation approach:
@@ -113,7 +112,7 @@ nonreflecting_treatment::apply_operator(
 
     // Invoke the wrapped nonlinear operator (which may compute references!)
     const std::vector<real_t> retval = N->apply_operator(
-            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
+            time, swave, method, substep_index);
 
     // State is now coefficients in X and Z directions
     // State is now collocation point values in Y direction

@@ -282,14 +282,9 @@ public:
      * @param time The time at which to apply the operator.
      * @param state The state location to use.  It is expected that certain
      *        implementations will require more specific state types.
-     * @param evmaxmag_real The timestepping scheme's maximum pure real
-     *        eigenvalue magnitude.  When <tt>substep_index == 0</tt>
-     *        the operator should use this information to compute a
-     *        stable time step per its convective criteria.
-     * @param evmaxmag_imag The timestepping scheme's maximum pure imaginary
-     *        eigenvalue magnitude.  When <tt>substep_index == 0</tt>
-     *        the operator should use this information to compute a
-     *        stable time step per its diffusive criteria.
+     * @param method The low storage scheme being used.
+     *        When <tt>substep_index == 0</tt> the operator should use this
+     *        information to compute a stable time step.
      * @param substep_index The (zero-indexed) current time step substep.
      *        If zero the operator should compute and return stable time
      *        steps according to one or more criteria.
@@ -303,8 +298,7 @@ public:
     virtual std::vector<component> apply_operator(
             const component time,
             State& state,
-            const component evmaxmag_real,
-            const component evmaxmag_imag,
+            const method_interface<element>& method,
             const std::size_t substep_index) const = 0;
 
     /** Virtual destructor for peace of mind. */
@@ -745,8 +739,7 @@ public:
      *
      * @param time The time at which to apply the operator (ignored).
      * @param state to scale in place.
-     * @param evmaxmag_real Ignored in this implementation.
-     * @param evmaxmag_imag Ignored in this implementation.
+     * @param method Ignored in this implementation.
      * @param substep_index Ignored in this implementation.
      *
      * @return The \c delta_t provided at construction time.
@@ -754,13 +747,11 @@ public:
     virtual std::vector<component> apply_operator(
             const component time,
             StateB& state,
-            const component evmaxmag_real,
-            const component evmaxmag_imag,
+            const method_interface<element>& method,
             const std::size_t substep_index = 0) const
     {
         SUZERAIN_UNUSED(time);
-        SUZERAIN_UNUSED(evmaxmag_real);
-        SUZERAIN_UNUSED(evmaxmag_imag);
+        SUZERAIN_UNUSED(method);
         SUZERAIN_UNUSED(substep_index);
         state.scale(factor);
         return std::vector<component>(1, delta_t);
@@ -1435,7 +1426,7 @@ const typename traits::component<Element>::type substep(
             chi * delta_t * m.zeta(substep_index),  b,
             substep_index);
     N.apply_operator(time + delta_t * m.eta(substep_index), a,
-                     m.evmaxmag_real(), m.evmaxmag_imag(), substep_index);
+                     m, substep_index);
     b.add_scaled(chi * delta_t * m.gamma(substep_index), a);
     L.invert_mass_plus_scaled_operator(-delta_t * m.beta(substep_index), b,
                                        m, delta_t, substep_index);
@@ -1501,7 +1492,7 @@ const typename traits::component<Element>::type step(
     // First substep handling is special since we need to determine delta_t
     b.assign_from(a);
     const std::vector<component_type> delta_t_candidates
-        = N.apply_operator(time, b, m.evmaxmag_real(), m.evmaxmag_imag(), 0);
+        = N.apply_operator(time, b, m, 0);
     component_type delta_t = reducer(delta_t_candidates);
 
     if (max_delta_t > 0) {
@@ -1519,7 +1510,7 @@ const typename traits::component<Element>::type step(
                 i);
         b.exchange(a); // Note nonlinear storage controls exchange operation
         N.apply_operator(time + delta_t * m.eta(i), b,
-                         m.evmaxmag_real(), m.evmaxmag_imag(), i);
+                         m, i);
         a.add_scaled(chi * delta_t * m.gamma(i), b);
         L.invert_mass_plus_scaled_operator(-delta_t * m.beta(i),
                                            a, m, delta_t, i);

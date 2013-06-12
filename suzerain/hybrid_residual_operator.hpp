@@ -117,8 +117,7 @@ public:
     virtual std::vector<real_t> apply_operator(
             const real_t time,
             state_nonlinear_type &state,
-            const real_t evmaxmag_real,
-            const real_t evmaxmag_imag,
+            const timestepper::method_interface<element>& method,
             const std::size_t substep_index) const;
 
 private:
