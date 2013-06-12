@@ -306,7 +306,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     if (options.variables()["undriven"].as<bool>()) {
         INFO0(who, "Disabling all established constraints per --undriven flag");
         for (std::size_t i = 0; i < constrainer->size(); ++i) {
-            (*constrainer)[i].reset(new constraint::disabled());
+            (*constrainer)[i].reset();
         }
     }
 
