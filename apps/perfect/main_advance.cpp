@@ -230,7 +230,6 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                     *scenario, *isothermal,
                     *grid, *dgrid, *cop, *b, common_block));
     } else if (use_implicit) {
-        // FIXME Employ isothermal within implicit operator
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
         INFO0(who, "Implicit linearization employed: " << implicit);
         if (grid->one_sided()) {
