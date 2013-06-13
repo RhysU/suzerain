@@ -359,7 +359,7 @@ application_base::establish_state_storage(
 void
 application_base::establish_ieee_mode()
 {
-    DEBUG0(who, "Establishing floating point environment from GSL_IEEE_MODE");
+    INFO0(who, "Establishing floating point environment from GSL_IEEE_MODE");
     mpi_gsl_ieee_env_setup(suzerain::mpi::comm_rank(MPI_COMM_WORLD));
 }
 
