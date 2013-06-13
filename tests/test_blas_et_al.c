@@ -26,6 +26,15 @@
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
 #include <gsl/gsl_test.h>
+
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+
+#ifdef HAVE_MKL
+#include <mkl.h>
+#endif
+
 #ifdef SUZERAIN_HAVE_MKL
 #include <mkl_service.h>
 #endif
@@ -3294,7 +3303,11 @@ main(int argc, char **argv)
     test_lapackext_dsgbsvx();
 
 #ifdef SUZERAIN_HAVE_MKL
+#if INTEL_MKL_VERSION < 110002
     MKL_FreeBuffers();
+#else
+    mkl_free_buffers();
+#endif
 #endif
 
     exit(gsl_test_summary());

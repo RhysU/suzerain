@@ -33,6 +33,15 @@
 #include <suzerain/gbmatrix.h>
 #include <suzerain/multi_array.hpp>
 
+#ifdef HAVE_CONFIG_H
+#include <suzerain/config.h>
+#endif
+
+#ifdef HAVE_MKL
+#include <mkl.h>
+#endif
+
+
 #define CHECK_GBMATRIX_CLOSE(                                        \
             e_m, e_n, e_kl, e_ku, e, e_ld,                           \
             r_m, r_n, r_kl, r_ku, r, r_ld,                           \
@@ -887,7 +896,11 @@ class BlasCleanupFixture {
 public:
     BlasCleanupFixture() {
 #ifdef SUZERAIN_HAVE_MKL
+#if INTEL_MKL_VERSION < 110002
         MKL_FreeBuffers();
+#else
+	mkl_free_buffers();
+#endif
 #endif
     }
 };
