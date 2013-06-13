@@ -418,7 +418,7 @@ private:
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
- * <tt>timestepper::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
+ * <tt>lowstorage::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -470,9 +470,9 @@ private:
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per timestepper::nonlinear_operator::apply_operator.
+ *         per lowstorage::nonlinear_operator::apply_operator.
  *
- * @see timestepper::nonlinear_operator for the (slighly different)
+ * @see lowstorage::nonlinear_operator for the (slighly different)
  *      interface that an actual operator would provide.
  */
 template <bool ZerothSubstep,
@@ -489,7 +489,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const ConstitutiveModels& cmods,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const timestepper::method_interface<complex_t> &method);
+            const lowstorage::method_interface<complex_t> &method);
 
 } // namespace reacting
 

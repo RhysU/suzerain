@@ -64,7 +64,7 @@ class operator_common_block;
  * /bar_Crhou_dot_u.
  */
 class constraint_treatment
-    : public timestepper::linear_operator<
+    : public lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
           contiguous_state<4,complex_t>
       >
@@ -121,13 +121,13 @@ public:
     virtual void invert_mass_plus_scaled_operator(
             const complex_t& phi,
             multi_array::ref<complex_t,4>& state,
-            const timestepper::method_interface<complex_t>& method,
+            const lowstorage::method_interface<complex_t>& method,
             const real_t delta_t,
             const std::size_t substep_index,
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
 
     /** The operator whose behavior is modified by this instance. */
-    shared_ptr<timestepper::linear_operator<
+    shared_ptr<lowstorage::linear_operator<
                 multi_array::ref<complex_t,4>,
                 contiguous_state<4,complex_t>
             > > L;

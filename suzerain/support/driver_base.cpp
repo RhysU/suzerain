@@ -278,8 +278,8 @@ driver_base::prepare_method()
     if (!method) {
         INFO0(who, "Preparing SMR91 timestepping scheme using evmagfactor "
               << timedef->evmagfactor);
-        this->method.reset(new timestepper::method<
-                    timestepper::smr91,
+        this->method.reset(new lowstorage::method<
+                    lowstorage::smr91,
                     state_common_type::element
                 >(timedef->evmagfactor));
     }

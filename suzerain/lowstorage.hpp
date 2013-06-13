@@ -42,7 +42,7 @@ namespace suzerain {
  *
  * @see method_interface for details on this class of timestepping schemes.
  */
-namespace timestepper {
+namespace lowstorage {
 
 /**
  * Encapsulates a hybrid implicit/explicit low storage Runge-Kutta method to
@@ -1479,7 +1479,7 @@ const typename traits::component<Element>::type step(
     StateB& b,
     const typename traits::component<Element>::type max_delta_t = 0)
 {
-    SUZERAIN_TIMER_SCOPED("timestepper::step");
+    SUZERAIN_TIMER_SCOPED("lowstorage::step");
 
     using boost::is_same;
     BOOST_STATIC_ASSERT((is_same<Element,typename    LinearA::element>::value));
@@ -1672,7 +1672,7 @@ private:
 
     typename super::time_type stepper(typename super::time_type max_dt)
     {
-        return timestepper::step(
+        return lowstorage::step(
                 m, reducer, L, chi, N, super::current_t(), a, b, max_dt);
     }
 
@@ -1827,7 +1827,7 @@ make_controller(
         >(m, L, chi, N, a, b, initial_t, min_dt, max_dt);
 }
 
-} // namespace timestepper
+} // namespace lowstorage
 
 } // namespace suzerain
 

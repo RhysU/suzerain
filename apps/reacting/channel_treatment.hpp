@@ -50,7 +50,7 @@ namespace reacting {
 /**
  * A mixin providing channel problem treatment atop any
  * <tt>
- *    public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
+ *    public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
  * </tt>.  During \ref invert_mass_plus_scaled_operator implicit momentum forcing
  * is applied following the section of <tt>writeups/channel_treatment.tex</tt>
  * titled "Enforcing a target bulk momentum via the linear operator" and using
@@ -111,7 +111,7 @@ public:
     virtual void invert_mass_plus_scaled_operator(
             const complex_t &phi,
             multi_array::ref<complex_t,4> &state,
-            const timestepper::method_interface<complex_t> &method,
+            const lowstorage::method_interface<complex_t> &method,
             const real_t delta_t,
             const std::size_t substep_index,
             multi_array::ref<complex_t,4> *ic0 = NULL) const;
@@ -214,7 +214,7 @@ template< typename BaseClass >
 void channel_treatment<BaseClass>::invert_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::method_interface<complex_t> &method,
+        const lowstorage::method_interface<complex_t> &method,
         const real_t delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4> *ic0) const

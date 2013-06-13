@@ -55,7 +55,7 @@ namespace perfect {
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
- * <tt>timestepper::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
+ * <tt>lowstorage::nonlinear_operator< contiguous_state<4,complex_t> ></tt>
  * subclasses allowing varying numbers of passive scalars or varying hybrid
  * implicit/explicit treatment.  Such subclasses feature an overwhelming amount
  * of redundancy and are error prone to create.  This implementation allows
@@ -106,9 +106,9 @@ namespace perfect {
  *         provide additional forcing (when enabled)?
  *
  * @return A vector of stable timestep sizes according to different criteria
- *         per timestepper::nonlinear_operator::apply_operator.
+ *         per lowstorage::nonlinear_operator::apply_operator.
  *
- * @see timestepper::nonlinear_operator for the (slightly different)
+ * @see lowstorage::nonlinear_operator for the (slightly different)
  *      interface that an actual operator would provide.
  */
 template <bool ZerothSubstep,
@@ -127,7 +127,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const timestepper::method_interface<complex_t> &method)
+            const lowstorage::method_interface<complex_t> &method)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
@@ -967,7 +967,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 using math::minnan;
                 using math::maxnan;
 
-                // See timestepper::convective_stability_criterion
+                // See lowstorage::convective_stability_criterion
                 const real_t a = sqrt(T) / Ma;  // Because a/u_0 = sqrt(T*)/Ma
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
                 real_t fluct_ua_l1_x, fluct_ua_l1_y, fluct_ua_l1_z;
@@ -1028,7 +1028,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 convfluct_z_delta_t   = min   (convfluct_z_delta_t,
                         evmaxmag_imag / fluct_ua_l1_z);
 
-                // See timestepper::diffusive_stability_criterion
+                // See lowstorage::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statement.
                 //

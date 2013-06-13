@@ -1,8 +1,8 @@
 #!/usr/bin/env sage
-# Symbolic computations for the test cases in test_timestepper.cpp
+# Symbolic computations for the test cases in test_lowstorage.cpp
 #
 # Examining particular results can be done by starting sage
-# from this directory, typing 'attach test_timestepper.sage'.
+# from this directory, typing 'attach test_lowstorage.sage'.
 
 # SMR91 coefficients
 gamma = [8/15, 5/12, 3/4];

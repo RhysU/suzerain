@@ -45,7 +45,7 @@ hybrid_residual_operator::hybrid_residual_operator(
 std::vector<real_t> hybrid_residual_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &state,
-            const timestepper::method_interface<element>& method,
+            const lowstorage::method_interface<element>& method,
             const std::size_t substep_index) const
 {
     // Allocate (potentially large) extra working storage

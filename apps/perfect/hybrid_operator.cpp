@@ -523,7 +523,7 @@ public:
 void isothermal_hybrid_linear_operator::invert_mass_plus_scaled_operator(
         const complex_t& phi,
         multi_array::ref<complex_t,4> &state,
-        const timestepper::method_interface<complex_t> &method,
+        const lowstorage::method_interface<complex_t> &method,
         const component delta_t,
         const std::size_t substep_index,
         multi_array::ref<complex_t,4>* ic0) const

@@ -92,7 +92,7 @@ private:
  * Base class for all of Suzerain's state implementations.  Static polymorphism
  * via the Curiously Recurring Template Pattern is used to look up the
  * appropriate type-specific functionality.  Subclasses are usable with
- * functionality found in \ref timestepper.
+ * functionality found in \ref lowstorage.
  */
 template<class Derived>
 class state_base

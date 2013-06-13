@@ -58,7 +58,7 @@ namespace reacting {
  */
 class explicit_nonlinear_operator
     : public operator_base,
-      public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
+      public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
 
@@ -76,7 +76,7 @@ public:
     virtual std::vector<real_t> apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const timestepper::method_interface<complex_t> &method,
+            const lowstorage::method_interface<complex_t> &method,
             const std::size_t substep_index) const;
 
 protected:

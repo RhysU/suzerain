@@ -168,7 +168,7 @@ public:
     static signal_definition signaldef;
 
     /** Controls low storage method to be used for time advance. */
-    shared_ptr<timestepper::method_interface<
+    shared_ptr<lowstorage::method_interface<
             complex_t
         > > method;
 
@@ -177,7 +177,7 @@ public:
      * #state_linear and #state_nonlinear.  This is the interface to which
      * linear operators should be coded.
      */
-    shared_ptr<timestepper::linear_operator<
+    shared_ptr<lowstorage::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 
@@ -186,7 +186,7 @@ public:
      * #state_nonlinear.  This is the interface to which nonlinear operators
      * should be coded.
      */
-    shared_ptr<timestepper::nonlinear_operator<
+    shared_ptr<lowstorage::nonlinear_operator<
                 state_nonlinear_type
             > > N;
 
@@ -195,7 +195,7 @@ public:
 
     /**
      * Ensure #method is valid for use by #controller.  That is, if
-     * <tt>!method</tt> then \ref timestepper::smr91 is used per
+     * <tt>!method</tt> then \ref lowstorage::smr91 is used per
      * #timedef.  Otherwise, #method is not modified.
      */
     virtual void prepare_method();
@@ -661,10 +661,10 @@ private:
  * stable time step size across all ranks.  The same MPI Allreduce is used to
  * hide the cost of querying \ref signal::global_received across all ranks.
  */
-class delta_t_allreducer : public timestepper::delta_t_reducer
+class delta_t_allreducer : public lowstorage::delta_t_reducer
 {
     /** Provides simple access to the superclass type */
-    typedef timestepper::delta_t_reducer super;
+    typedef lowstorage::delta_t_reducer super;
 
 public:
 

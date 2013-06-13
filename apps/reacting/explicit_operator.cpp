@@ -84,7 +84,7 @@ explicit_nonlinear_operator::explicit_nonlinear_operator(
 std::vector<real_t> explicit_nonlinear_operator::apply_operator(
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const timestepper::method_interface<complex_t> &method,
+            const lowstorage::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
 

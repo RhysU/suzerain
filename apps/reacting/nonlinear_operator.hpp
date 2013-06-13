@@ -326,7 +326,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const suzerain::bsplineop_luz& massluz,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const timestepper::method_interface<complex_t> &method)
+            const lowstorage::method_interface<complex_t> &method)
 {
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
 
@@ -1352,7 +1352,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // is presumably a touch faster and is preferred when possible.
                 using math::minnan;
 
-                // See timestepper::convective_stability_criterion
+                // See lowstorage::convective_stability_criterion
                 //
                 // NOTE: Speed of sound a computed by cmods.evaluate above
                 real_t       ua_l1_x,       ua_l1_y,       ua_l1_z;
@@ -1406,7 +1406,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 convfluct_z_delta_t   = min   (convfluct_z_delta_t,
                         evmaxmag_imag / fluct_ua_l1_z);
 
-                // See timestepper::diffusive_stability_criterion
+                // See lowstorage::diffusive_stability_criterion
                 // Antidiffusive locations might be ignored when linearized.
                 // Hence we compute criteria within the switch statment.
                 const real_t nu  = mu  /  rho;

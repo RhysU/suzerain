@@ -45,14 +45,14 @@ namespace mpl = boost::mpl;
 using suzerain::contiguous_state;
 using suzerain::interleaved_state;
 using suzerain::multi_array::ref;
-using suzerain::timestepper::controller;
-using suzerain::timestepper::linear_operator;
-using suzerain::timestepper::method;
-using suzerain::timestepper::method_interface;
-using suzerain::timestepper::multiplicative_operator;
-using suzerain::timestepper::nonlinear_operator;
-using suzerain::timestepper::smr91;
-using suzerain::timestepper::yang11;
+using suzerain::lowstorage::controller;
+using suzerain::lowstorage::linear_operator;
+using suzerain::lowstorage::method;
+using suzerain::lowstorage::method_interface;
+using suzerain::lowstorage::multiplicative_operator;
+using suzerain::lowstorage::nonlinear_operator;
+using suzerain::lowstorage::smr91;
+using suzerain::lowstorage::yang11;
 
 // Explicit template instantiation to hopefully speed compilation
 template class interleaved_state<3,double>;
@@ -213,7 +213,7 @@ typedef mpl::list< float ,double ,long double > constants_test_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( convective, T, constants_test_types )
 {
-    using suzerain::timestepper::convective_stability_criterion;
+    using suzerain::lowstorage::convective_stability_criterion;
 
     const T pi            = boost::math::constants::pi<T>();
     const T u_x           = - 3;
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( convective, T, constants_test_types )
 
 BOOST_AUTO_TEST_CASE_TEMPLATE( diffusive, T, constants_test_types )
 {
-    using suzerain::timestepper::diffusive_stability_criterion;
+    using suzerain::lowstorage::diffusive_stability_criterion;
 
     const T pi            = boost::math::constants::pi<T>();
     const T delta_x       =  5;
@@ -545,8 +545,8 @@ public:
 BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
                                State, state_types )
 {
-    using suzerain::timestepper::substep;
-    // See test_timestepper.sage for manufactured answers
+    using suzerain::lowstorage::substep;
+    // See test_lowstorage.sage for manufactured answers
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*100;
@@ -612,8 +612,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_independent,
 BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
                                 State, state_types )
 {
-    using suzerain::timestepper::substep;
-    // See test_timestepper.sage for manufactured answers
+    using suzerain::lowstorage::substep;
+    // See test_lowstorage.sage for manufactured answers
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
@@ -679,8 +679,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE ( substep_hybrid_time_independent,
 BOOST_AUTO_TEST_CASE_TEMPLATE( substep_explicit_time_dependent,
                                State, state_types )
 {
-    using suzerain::timestepper::substep;
-    // See test_timestepper.sage for manufactured answers
+    using suzerain::lowstorage::substep;
+    // See test_lowstorage.sage for manufactured answers
 
     const double delta_t = 17.0;
     const double close_enough = std::numeric_limits<double>::epsilon()*500;
@@ -788,7 +788,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     {
         const mult_op_type nonlinear_op(soln.a);
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::step(
+            const double delta_t_used = suzerain::lowstorage::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     double_NaN, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
@@ -805,7 +805,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_independent,
     {
         const mult_op_type nonlinear_op(soln.a, delta_t_finer);
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::step(
+            const double delta_t_used = suzerain::lowstorage::step(
                     m, trivial_linop, 1.0, nonlinear_op, double_NaN, a, b);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
         }
@@ -884,7 +884,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
         const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::step(
+            const double delta_t_used = suzerain::lowstorage::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_coarse);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_coarse);
@@ -904,7 +904,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_explicit_time_dependent,
         const cosine_explicit_operator nonlinear_op(t_final - t_initial);
         double t = t_initial;
         for (std::size_t i = 0; i < finer_nsteps; ++i) {
-            const double delta_t_used = suzerain::timestepper::step(
+            const double delta_t_used = suzerain::lowstorage::step(
                     m, trivial_linop, 1.0, nonlinear_op,
                     t, a, b, delta_t_finer);
             BOOST_CHECK_EQUAL(delta_t_used, delta_t_finer);
@@ -983,7 +983,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const std::size_t coarse_nsteps = 16;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < coarse_nsteps; ++i) {
-        suzerain::timestepper::step(
+        suzerain::lowstorage::step(
                 m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/coarse_nsteps);
     }
@@ -995,7 +995,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE( step_hybrid, StatePair, state_type_pairs )
     const std::size_t finer_nsteps = 2*coarse_nsteps;
     a[0][0][0] = soln(t_initial);
     for (std::size_t i = 0; i < finer_nsteps; ++i) {
-        suzerain::timestepper::step(
+        suzerain::lowstorage::step(
                 m, linear_op, 1.0, nonlinear_op, double_NaN, a, b,
                 (t_final - t_initial)/finer_nsteps);
     }
@@ -1050,13 +1050,13 @@ BOOST_AUTO_TEST_SUITE_END()
 
 
 // Tests for control logic of timecontroller in test_timecontroller.
-// Presumably getting timestepper::controller to type check is the big deal.
+// Presumably getting lowstorage::controller to type check is the big deal.
 // Explicitly instantiate it to ensure the template looks okay.
 
 // controller for interleaved_state
 template class controller<
         interleaved_state<3,double>, interleaved_state<3,double>,
-        suzerain::timestepper::delta_t_reducer
+        suzerain::lowstorage::delta_t_reducer
     >;
 template class controller<
         interleaved_state<3,double>, interleaved_state<3,double>,
@@ -1066,7 +1066,7 @@ template class controller<
 // controller for contiguous_state
 template class controller<
         contiguous_state<3,double>, contiguous_state<3,double>,
-        suzerain::timestepper::delta_t_reducer
+        suzerain::lowstorage::delta_t_reducer
     >;
 template class controller<
         contiguous_state<3,double>, contiguous_state<3,double>,
@@ -1076,7 +1076,7 @@ template class controller<
 // controller for {Interleaved,Contiguous}State
 template class controller<
         interleaved_state<3,double>, contiguous_state<3,double>,
-        suzerain::timestepper::delta_t_reducer
+        suzerain::lowstorage::delta_t_reducer
     >;
 template class controller<
         interleaved_state<3,double>, contiguous_state<3,double>,
@@ -1086,7 +1086,7 @@ template class controller<
 // controller for {Contiguous,Interleaved}State
 template class controller<
         contiguous_state<3,double>, interleaved_state<3,double>,
-        suzerain::timestepper::delta_t_reducer
+        suzerain::lowstorage::delta_t_reducer
     >;
 template class controller<
         contiguous_state<3,double>, interleaved_state<3,double>,

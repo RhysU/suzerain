@@ -40,7 +40,7 @@ namespace suzerain {
  * linear_operator.
  *
  * More concretely, suppose one wants to use the hybrid implicit/explicit
- * timestepping schemes defined in \ref timestepper which the state
+ * timestepping schemes defined in \ref lowstorage which the state
  * vector \f$ u(t) \f$ is advanced to \f$u(t+\Delta{}t)\f$ according to
  * \f[
  *   M u_{t} = Lu + \chi N(u)
@@ -53,7 +53,7 @@ namespace suzerain {
  *   M u_{t} = \chi R(u).
  * \f]
  * and an implementation of \f$M + \phi L\f$ per \ref
- * timestepper::linear_operator.  To use the low-storage
+ * lowstorage::linear_operator.  To use the low-storage
  * implicit-explicit interface you need
  * \f[
  *   N(u) = R(u) - \frac{1}{\chi} Lu.
@@ -69,7 +69,7 @@ namespace suzerain {
  * this adaptor.
  */
 class hybrid_residual_operator
-    : public timestepper::nonlinear_operator< contiguous_state<4,complex_t> >
+    : public lowstorage::nonlinear_operator< contiguous_state<4,complex_t> >
 {
 public:
 
@@ -101,7 +101,7 @@ public:
      * The hybrid implicit/explicit linear operator which is able to
      * interoperate between #state_linear and #state_nonlinear.
      */
-    shared_ptr<timestepper::linear_operator<
+    shared_ptr<lowstorage::linear_operator<
                 state_common_type, state_nonlinear_type
             > > L;
 
@@ -109,7 +109,7 @@ public:
      * The fully-explicit nonlinear operator which operates on
      * #state_nonlinear.
      */
-    shared_ptr<timestepper::nonlinear_operator<
+    shared_ptr<lowstorage::nonlinear_operator<
                 state_nonlinear_type
             > > R;
 
@@ -117,7 +117,7 @@ public:
     virtual std::vector<real_t> apply_operator(
             const real_t time,
             state_nonlinear_type &state,
-            const timestepper::method_interface<element>& method,
+            const lowstorage::method_interface<element>& method,
             const std::size_t substep_index) const;
 
 private:
