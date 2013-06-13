@@ -335,9 +335,7 @@ nonreflecting_treatment::compute_giles_matrices(
     VL_S_RY              = VL * S * RY;
     PG_BG_VL_S_RY_by_chi = PG.asDiagonal() * BG * VL_S_RY / chi;
     PG_CG_VL_S_RY_by_chi = PG.asDiagonal() * CG * VL_S_RY / chi;
-    PG -= Vector5r::Ones();
-    PG *= -1;
-    ImPG_VL_S_RY         = PG.asDiagonal() * VL_S_RY;
+    ImPG_VL_S_RY         = (Vector5r::Ones() - PG).asDiagonal() * VL_S_RY;
     inv_VL_S_RY          = inv_RY * inv_S * inv_VL;
 }
 
