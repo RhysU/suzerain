@@ -95,6 +95,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
     string implicit("rhome_xyz");
+    string undriven;
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
@@ -104,12 +105,14 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         ("implicit", boost::program_options::value(&implicit)
                          ->implicit_value(implicit),
                      "Use hybrid implicit/explicit operators, optionally"
-                     " choosing rhome_xyz or rhome_y linearized treatment")
+                     " choosing 'rhome_xyz' or 'rhome_y' linearized treatment")
         ("solver",   boost::program_options::value(&solver_spec)
                          ->default_value(solver_spec),
-                     "Use the specified algorithm for --implicit solves")
-        ("undriven", boost::program_options::bool_switch(),
-                     "Disable all constraint-based driving forces")
+                     "Use the specified algorithm for any --implicit solves")
+        ("undriven", boost::program_options::value(&undriven)
+                         ->implicit_value("all"),
+                     "Disable all or some constraint-based driving forces"
+                     " by specifying 'all', 'rho', 'rho_u', or 'rho_E'")
     ;
 
     // Initialize application and then process binary-specific options
@@ -303,10 +306,25 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
     // Use --undriven as a testing- and debugging-related tool.
     // For example, to investigate nonreflecting boundary condition behavior.
-    if (options.variables()["undriven"].as<bool>()) {
-        INFO0(who, "Disabling all established constraints per --undriven flag");
-        for (std::size_t i = 0; i < constrainer->size(); ++i) {
-            (*constrainer)[i].reset();
+    if (options.variables().count("undriven")) {
+        boost::algorithm::trim(undriven);
+        if (undriven == "all") {
+            INFO0(who, "Disabling all established constraints per --undriven");
+            for (std::size_t i = 0; i < constrainer->size(); ++i) {
+                (*constrainer)[i].reset();
+            }
+        } else if (undriven == "rho") {
+            INFO0(who, "Disabling any density constraint per --undriven");
+            (*constrainer)[ndx::rho].reset();
+        } else if (undriven == "rho_u") {
+            INFO0(who, "Disabling any momentum constraint per --undriven");
+            (*constrainer)[ndx::mx].reset();
+        } else if (undriven == "rho_E") {
+            INFO0(who, "Disabling any total energy constraint per --undriven");
+            (*constrainer)[ndx::mx].reset();
+        } else {
+            FATAL0("Unknown --undriven argument:  " << undriven);
+            return EXIT_FAILURE;
         }
     }
 
