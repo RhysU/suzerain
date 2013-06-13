@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_TIMESTEPPER_HPP
-#define SUZERAIN_TIMESTEPPER_HPP
+#ifndef SUZERAIN_LOWSTORAGE_HPP
+#define SUZERAIN_LOWSTORAGE_HPP
 
 /** @file
  * Provides time integration-related operator details and advancement schemes.
@@ -1831,4 +1831,4 @@ make_controller(
 
 } // namespace suzerain
 
-#endif // SUZERAIN_TIMESTEPPER_HPP
+#endif // SUZERAIN_LOWSTORAGE_HPP

@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/error.h>
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -40,7 +41,6 @@
 #include <suzerain/state.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
-#include <suzerain/timestepper.hpp>
 
 #include "linearize_type.hpp"
 #include "slowgrowth_type.hpp"

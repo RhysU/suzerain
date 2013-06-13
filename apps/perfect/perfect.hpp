@@ -39,8 +39,8 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/timestepper.hpp>
 
 namespace suzerain {
 

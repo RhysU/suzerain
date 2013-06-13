@@ -28,11 +28,11 @@
  * Hybrid implicit/explicit Navier--Stokes operators.
  */
 
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/rholut_imexop.h>
 #include <suzerain/state_fwd.hpp>
-#include <suzerain/timestepper.hpp>
 
 namespace suzerain {
 

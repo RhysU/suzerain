@@ -29,6 +29,7 @@
  */
 
 #include <suzerain/common.hpp>
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/field.hpp>
 #include <suzerain/support/restart_definition.hpp>
@@ -36,7 +37,6 @@
 #include <suzerain/support/statistics_definition.hpp>
 #include <suzerain/support/time_definition.hpp>
 #include <suzerain/timecontroller.hpp>
-#include <suzerain/timestepper.hpp>
 
 namespace suzerain {
 

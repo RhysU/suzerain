@@ -457,13 +457,14 @@ test_timecontroller_LDADD    = ../suzerain/libsuzerain.la
 test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_timecontroller_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
-TESTS                    += test_timestepper
-EXTRA_PROGRAMS           += test_timestepper
-test_timestepper_SOURCES  = test_timestepper.cpp
-test_timestepper_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_timestepper_LDADD    = ../suzerain/libsuzerain.la
-test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_timestepper_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+TESTS                   += test_lowstorage
+EXTRA_PROGRAMS          += test_lowstorage
+test_lowstorage_SOURCES  = test_lowstorage.cpp
+test_lowstorage_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_lowstorage_LDADD    = ../suzerain/libsuzerain.la
+test_lowstorage_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_lowstorage_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+dist_check_SCRIPTS      += test_lowstorage.sage
 
 TESTS             += test_fftw
 EXTRA_PROGRAMS    += test_fftw

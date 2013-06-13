@@ -22,7 +22,7 @@
  *--------------------------------------------------------------------------
  */
 
-#include <suzerain/timestepper.hpp>
+#include <suzerain/lowstorage.hpp>
 
 #define BOOST_TEST_MAIN
 #include <boost/test/test_case_template.hpp>

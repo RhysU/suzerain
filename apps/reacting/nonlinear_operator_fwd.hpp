@@ -29,12 +29,12 @@
  * implemented within nonlinear_operator.hpp.
  */
 
+#include <suzerain/lowstorage.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/reacting_imexop.h>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/support/largo_definition.hpp>
 #include <suzerain/timers.h>
-#include <suzerain/timestepper.hpp>
 
 #include "reacting.hpp"
 #include "filter_definition.hpp"
