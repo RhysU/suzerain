@@ -173,7 +173,7 @@ protected:
      *   <li>#PG_BG_VL_S_RY_by_chi</li>
      *   <li>#PG_CG_VL_S_RY_by_chi</li>
      *   <li>#ImPG_CG_VL_S_RY</li>
-     *   <li>#invVL_S_RY</li>
+     *   <li>#inv_VL_S_RY</li>
      * </ol>
      * during invocation.
      *
