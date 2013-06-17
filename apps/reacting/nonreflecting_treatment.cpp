@@ -141,7 +141,7 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
     // Invoke the wrapped nonlinear operator (which may compute references!)
     const std::vector<real_t> retval = N->apply_operator(
-            time, swave, evmaxmag_real, evmaxmag_imag, substep_index);
+            time, swave, method, substep_index);
 
     // State is now coefficients in X and Z directions
     // State is now collocation point values in Y direction
