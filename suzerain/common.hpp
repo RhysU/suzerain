@@ -66,6 +66,7 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 
 // Include Eigen functionality used through Suzerain
 #include <Eigen/Core>
+#include <Eigen/LU>
 #include <Eigen/SVD>
 
 // Include Boost functionality used throughout Suzerain
