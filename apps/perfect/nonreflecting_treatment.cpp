@@ -242,7 +242,7 @@ nonreflecting_treatment::compute_giles_matrices(
         S(1, 0) = - u * inv_rho;
         S(2, 0) = - v * inv_rho;
         S(3, 0) = - w * inv_rho;
-        S(4, 0) =   a2 * inv_gamma * inv_Ma2;
+        S(4, 0) =   gamma1 * (u2 + v2 + w2) / 2;
         S(1, 1) =   inv_rho;
         S(4, 1) = - gamma1 * u;
         S(2, 2) =   inv_rho;
@@ -257,7 +257,7 @@ nonreflecting_treatment::compute_giles_matrices(
         inv_S(1, 0) =   u;
         inv_S(2, 0) =   v;
         inv_S(3, 0) =   w;
-        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) - a2 * inv_gamma * inv_gamma1;
+        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) / 2;
         inv_S(1, 1) =   rho;
         inv_S(4, 1) =   Ma2 * rho * u;
         inv_S(2, 2) =   rho;
