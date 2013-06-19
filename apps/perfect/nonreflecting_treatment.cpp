@@ -187,7 +187,7 @@ nonreflecting_treatment::compute_giles_matrices(
     const real_t ref_a,
     const real_t normal_sign)
 {
-    // Prepare the rotation that reorders from
+    // Prepare the rotation and its inverse that reorders from
     // ndx::{e, mx, my, mz, rho} to {rho = 0, my = 1, mz = 2, mx = 3, e = 4}.
     // All remaining matrices/logic within the routine uses the latter order!
     Matrix5r RY(Matrix5r::Zero());
@@ -197,6 +197,14 @@ nonreflecting_treatment::compute_giles_matrices(
         RY(2, ndx::mz ) = 1;
         RY(3, ndx::mx ) = 1;
         RY(4, ndx::e  ) = 1;
+    }
+    Matrix5r inv_RY(Matrix5r::Zero());
+    {
+        inv_RY(ndx::e  , 4) = 1;
+        inv_RY(ndx::mx , 3) = 1;
+        inv_RY(ndx::my , 1) = 1;
+        inv_RY(ndx::mz , 2) = 1;
+        inv_RY(ndx::rho, 0) = 1;
     }
 
     // Prepare upper boundary reference state per rotated frame
@@ -243,6 +251,21 @@ nonreflecting_treatment::compute_giles_matrices(
         S(4, 3) = - gamma1 * w;
         S(4, 4) =   gamma1 * inv_Ma2;
     }
+    Matrix5r inv_S(Matrix5r::Zero());
+    {
+        inv_S(0, 0) =   1;
+        inv_S(1, 0) =   u;
+        inv_S(2, 0) =   v;
+        inv_S(3, 0) =   w;
+        inv_S(4, 0) =   Ma2 * (u2 + v2 + w2) / 2;
+        inv_S(1, 1) =   rho;
+        inv_S(4, 1) =   Ma2 * rho * u;
+        inv_S(2, 2) =   rho;
+        inv_S(4, 2) =   Ma2 * rho * v;
+        inv_S(3, 3) =   rho;
+        inv_S(4, 3) =   Ma2 * rho * w;
+        inv_S(4, 4) =   Ma2 * inv_gamma1;
+    }
 
     // Per the model document
     //   When reusing [V^L, B^G, and C^G] derived for U ... for V^\ast
@@ -265,6 +288,18 @@ nonreflecting_treatment::compute_giles_matrices(
         VL(0, 4) =   1;
         VL(3, 4) =   1;
         VL(4, 4) =   1;
+    }
+    Matrix5r inv_VL(Matrix5r::Zero());
+    {
+        inv_VL(0, 0) = - inv_a2;
+        inv_VL(2, 1) =   inv_rho * inv_a;
+        inv_VL(3, 2) =   inv_rho * inv_a;
+        inv_VL(0, 3) =   half * inv_a2;
+        inv_VL(1, 3) =   half * inv_rho * inv_a;
+        inv_VL(4, 3) =   half;
+        inv_VL(0, 4) =   half * inv_a2;
+        inv_VL(1, 4) = - half * inv_rho * inv_a;
+        inv_VL(4, 4) =   half;
     }
 
     // Build the in-vs-outflow characteristic-preserving projection.
@@ -297,12 +332,11 @@ nonreflecting_treatment::compute_giles_matrices(
     CG(4, 4) = w;
 
     // Prepare all necessary real-valued products of the above matrices
-    // Life is too short to explicitly maintain seldom-computed 5-by-5 inverses.
     VL_S_RY              = VL * S * RY;
     PG_BG_VL_S_RY_by_chi = PG.asDiagonal() * BG * VL_S_RY / chi;
     PG_CG_VL_S_RY_by_chi = PG.asDiagonal() * CG * VL_S_RY / chi;
     ImPG_VL_S_RY         = (Vector5r::Ones() - PG).asDiagonal() * VL_S_RY;
-    inv_VL_S_RY          = VL_S_RY.inverse();
+    inv_VL_S_RY          = inv_RY * inv_S * inv_VL;
 }
 
 } // namespace perfect
