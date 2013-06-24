@@ -45,10 +45,6 @@ namespace constraint {
 // Forward declarations
 class base; 
 
-namespace treatment {
-
-//// Forward declarations
-//class operator_common_block;
 //// TODO? Use Eigen Maps to decouple operator_common_block if sensible
 
 /**
@@ -67,13 +63,12 @@ namespace treatment {
  * /bar_Crhou_dot_u.
  */
 template< typename CommonBlock>
-class constraint_treatment
+class treatment
     : public lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
           contiguous_state<4,complex_t>
       >
     , public  boost::noncopyable
-    , public  CommonBlock
     , private array<shared_ptr<constraint::base>, 5>
 {
 
@@ -96,7 +91,7 @@ public:
      * @param common Storage from which mean velocity profiles will be read and
      *               to which implicit forcing averages will be accumulated.
      */
-    constraint_treatment(
+    treatment(
             const real_t& Ma,
             const pencil_grid& dgrid,
             CommonBlock& common);
@@ -171,8 +166,6 @@ private:
         > jacobiSvd;
 
 };
-
-} // namespace treatment
 
 } // namespace constraint
 
