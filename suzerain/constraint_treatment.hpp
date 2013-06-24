@@ -21,8 +21,8 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP
-#define SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP
+#ifndef SUZERAIN_CONSTRAINT_TREATMENT_HPP
+#define SUZERAIN_CONSTRAINT_TREATMENT_HPP
 
 /** @file
  * Provides \ref constraint_treatment.
@@ -39,14 +39,17 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 class pencil_grid;
-namespace constraint { class base; }
 
-namespace perfect {
+namespace constraint { 
 
 // Forward declarations
-class operator_common_block;
+class base; 
 
-// TODO Use Eigen Maps to decouple operator_common_block if sensible
+namespace treatment {
+
+//// Forward declarations
+//class operator_common_block;
+//// TODO? Use Eigen Maps to decouple operator_common_block if sensible
 
 /**
  * A wrapper applying integral constraint treatment atop any linear operator.
@@ -63,12 +66,14 @@ class operator_common_block;
  * /bar_Crhou, \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c
  * /bar_Crhou_dot_u.
  */
+template< typename CommonBlock>
 class constraint_treatment
     : public lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
           contiguous_state<4,complex_t>
       >
     , public  boost::noncopyable
+    , public  CommonBlock
     , private array<shared_ptr<constraint::base>, 5>
 {
 
@@ -94,7 +99,7 @@ public:
     constraint_treatment(
             const real_t& Ma,
             const pencil_grid& dgrid,
-            operator_common_block& common);
+            CommonBlock& common);
 
     // Permit subscripting/iterating to access equation-specific constraints
     using implementation_defined::operator[];
@@ -144,7 +149,7 @@ protected:
      * Used to obtain mean primitive state profiles to compute
      * implicit forcing work contributions to the total energy equation.
      */
-    operator_common_block& common;
+    CommonBlock& common;
 
 private:
 
@@ -167,8 +172,10 @@ private:
 
 };
 
-} // namespace perfect
+} // namespace treatment
+
+} // namespace constraint
 
 } // namespace suzerain
 
-#endif /* SUZERAIN_PERFECT_CONSTRAINT_TREATMENT_HPP */
+#endif /* SUZERAIN_CONSTRAINT_TREATMENT_HPP */
