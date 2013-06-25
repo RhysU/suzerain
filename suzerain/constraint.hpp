@@ -35,6 +35,7 @@ namespace suzerain {
 // Forward declarations
 class bspline;
 
+/** Provide logic for constraining mean state in some fashion. */
 namespace constraint {
 
 // TODO The base::coeff API would be better done using Eigen 3.2 Refs
