@@ -225,9 +225,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                 new constraint::reference_bulk(chdef->bulk_rho  , *b));
         (*constrainer)[ndx::mx ].reset(
                 new constraint::reference_bulk(chdef->bulk_rho_u, *b));
-        // FIXME: add bulk_rho_E constraint
-//         (*constrainer)[ndx::e  ].reset(
-//                 new constraint::reference_bulk(chdef->bulk_rho_E, *b));
+        (*constrainer)[ndx::e  ].reset(
+                new constraint::reference_bulk(chdef->bulk_rho_E, *b));
 
     } else if (grid->one_sided()) { // Flat plate
 

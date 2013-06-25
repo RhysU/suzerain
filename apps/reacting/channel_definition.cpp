@@ -53,24 +53,29 @@ namespace reacting {
 channel_definition::channel_definition()
     : bulk_rho  (std::numeric_limits<real_t>::quiet_NaN())
     , bulk_rho_u(std::numeric_limits<real_t>::quiet_NaN())
+    , bulk_rho_E(std::numeric_limits<real_t>::quiet_NaN())
 {
 }
 
 channel_definition::channel_definition(
         const real_t bulk_rho,
-        const real_t bulk_rho_u)
+        const real_t bulk_rho_u,
+        const real_t bulk_rho_E)
     : bulk_rho  (bulk_rho  )
     , bulk_rho_u(bulk_rho_u)
+    , bulk_rho_E(bulk_rho_E)
 {
 }
 
 // Strings used in options_description and populate/override/save/load.
 static const char name_bulk_rho[]            = "bulk_rho";
 static const char name_bulk_rho_u[]          = "bulk_rho_u";
+static const char name_bulk_rho_E[]          = "bulk_rho_E";
 
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_bulk_rho[]            = "Bulk density target";
 static const char desc_bulk_rho_u[]          = "Bulk momentum target";
+static const char desc_bulk_rho_E[]          = "Bulk total energy target";
 
 boost::program_options::options_description
 channel_definition::options_description()
@@ -107,6 +112,14 @@ channel_definition::options_description()
     }
     retval.add_options()(name_bulk_rho_u, p.release(), desc_bulk_rho_u);
 
+    // bulk_rho_E
+    p.reset(value<string>());
+    p->notifier(bind(&parse_nonnegative, _1, &bulk_rho_E, name_bulk_rho_E));
+    if (!(boost::math::isnan)(bulk_rho_E)) {
+        p->default_value(lexical_cast<string>(bulk_rho_E));
+    }
+    retval.add_options()(name_bulk_rho_E, p.release(), desc_bulk_rho_E);
+
     return retval;
 }
 
@@ -120,6 +133,7 @@ channel_definition::populate(
     maybe_populate(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_POPULATE(bulk_rho);
     CALL_MAYBE_POPULATE(bulk_rho_u);
+    CALL_MAYBE_POPULATE(bulk_rho_E);
 #undef CALL_MAYBE_POPULATE
 }
 
@@ -133,6 +147,7 @@ channel_definition::override(
     maybe_override(name_ ## mem, desc_ ## mem, this->mem, that.mem, verbose)
     CALL_MAYBE_OVERRIDE(bulk_rho);
     CALL_MAYBE_OVERRIDE(bulk_rho_u);
+    CALL_MAYBE_OVERRIDE(bulk_rho_E);
 #undef CALL_MAYBE_OVERRIDE
 }
 
@@ -150,6 +165,7 @@ channel_definition::save(
     esio_line_establish(h, 1, 0, (procid == 0 ? 1 : 0));
     esio_line_write(h, name_bulk_rho,   &this->bulk_rho,   0, desc_bulk_rho);
     esio_line_write(h, name_bulk_rho_u, &this->bulk_rho_u, 0, desc_bulk_rho_u);
+    esio_line_write(h, name_bulk_rho_E, &this->bulk_rho_E, 0, desc_bulk_rho_E);
 }
 
 void
@@ -167,6 +183,7 @@ channel_definition::load(
     esio_line_establish(h, 1, 0, 1);
     esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
     esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
+    esio_line_read(h, name_bulk_rho_E, &t.bulk_rho_E, 0);
 
     this->populate(t, verbose);  // Prefer this to incoming
 }

@@ -67,7 +67,8 @@ public:
      * @param bulk_rho_u Bulk streamwise momentum target.
      */
     channel_definition(const real_t bulk_rho,
-                       const real_t bulk_rho_u);
+                       const real_t bulk_rho_u,
+                       const real_t bulk_rho_E);
 
     /** @copydoc support::populatable::populate */
     virtual void populate(
@@ -100,6 +101,11 @@ public:
      * The bulk streamwise momentum used as a target for integral constraints.
      */
     real_t bulk_rho_u;
+
+    /**
+     * The bulk total energy used as a target for integral constraints.
+     */
+    real_t bulk_rho_E;
 
 };
 

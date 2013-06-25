@@ -97,8 +97,10 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     // Establish default scenario parameters
     cmods->Le = 0.9;
     cmods->alpha = 0.0;
-    chdef.reset(new channel_definition( 1 // bulk_rho
-                                      , 1 // bulk_rho_u
+    chdef.reset(new channel_definition( 
+              1                                        // bulk_rho
+            , 1                                        // bulk_rho_u
+            , std::numeric_limits<real_t>::quiet_NaN() // bulk_rho_E
             ));
 
     // Establish default isothermal boundary conditions
@@ -190,10 +192,11 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
     if (mms >= 0) {
 
         INFO0(who, "Manufactured solution will be initialized at t = " << mms);
-        INFO0(who, "Disabling bulk_rho and bulk_rho_u constraints"
+        INFO0(who, "Disabling bulk_rho, bulk_rho_u, and bulk_rho_E constraints"
               " due to manufactured solution use");
         chdef->bulk_rho   = std::numeric_limits<real_t>::quiet_NaN();
         chdef->bulk_rho_u = std::numeric_limits<real_t>::quiet_NaN();
+        chdef->bulk_rho_E = std::numeric_limits<real_t>::quiet_NaN();
 
         accumulate_manufactured_solution(
                 1, *msoln, 0, *state_nonlinear, *grid, *dgrid, *cop, *b, mms);
@@ -217,6 +220,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
         MatrixXXr cs(grid->N.y(),cmods->Ns());
 
         if (!grid->one_sided()) { // Channel profile
+            // TODO: Account for bulk_rho_E in initialization
             INFO("Parabolic profile will be initialized with npower = " << npower);
             msoln.reset();
             fill(*state_linear, 0);
