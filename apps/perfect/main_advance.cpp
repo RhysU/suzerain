@@ -29,13 +29,13 @@
 
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
+#include <suzerain/constraint_treatment.hpp>
 #include <suzerain/isothermal_specification.hpp>
 #include <suzerain/state.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 
-#include "constraint_treatment.hpp"
 #include "driver.hpp"
 #include "hybrid_operator.hpp"
 #include "isothermal_mass_operator.hpp"
@@ -201,7 +201,8 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     common_block.slow_treatment = slowgrowth::none;
 
     // Prepare any necessary, problem-specific constraints
-    shared_ptr<constraint_treatment> constrainer(new constraint_treatment(
+    shared_ptr<constraint::treatment<operator_common_block> > constrainer(
+            new constraint::treatment<operator_common_block>(
                     scenario->Ma, *dgrid, common_block));
     if        (grid->two_sided()) { // Channel per channel_treatment.tex
 

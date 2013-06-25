@@ -9,8 +9,6 @@ include ../Common.am
 noinst_LTLIBRARIES    += libperfect.la
 libperfect_la_SOURCES  = common_block.cpp
 libperfect_la_SOURCES += common_block.hpp
-libperfect_la_SOURCES += constraint_treatment.cpp
-libperfect_la_SOURCES += constraint_treatment.hpp
 libperfect_la_SOURCES += driver.cpp
 libperfect_la_SOURCES += driver.hpp
 libperfect_la_SOURCES += hybrid_operator.cpp
