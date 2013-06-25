@@ -231,36 +231,36 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     } else if (grid->one_sided()) { // Flat plate
 
-       // FIXME: implement constraints for flat plate scenario
-//         INFO0(who, "Computing mean freestream behavior per plate scenario");
-//         using namespace std;
-//         const real_t T_inf   = isothermal->upper_T;  
-//         const real_t u_inf   = isothermal->upper_u;
-//         const real_t rho_inf = isothermal->upper_rho;
-//         const real_t mx_inf  = u_inf * rho_inf;
+       // FIXME: implement constraints for temperature through rho_E
+        INFO0(who, "Computing mean freestream behavior per plate scenario");
+        using namespace std;
+        const real_t T_inf   = isothermal->upper_T;  
+        const real_t u_inf   = isothermal->upper_u;
+        const real_t rho_inf = isothermal->upper_rho;
+        const real_t mx_inf  = u_inf * rho_inf;
 //         const real_t e_inf   = ;
-// 
-//         INFO0(who, "Setting constraints using freestream reference state"
-//                    " on upper boundary");
-// 
-//         if (scenario->bulk_rho) {
-//             WARN0(who, "Removing channel-like bulk_rho setting");
-//             scenario->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
-//         }
-//         if (scenario->bulk_rho_u) {
-//             WARN0(who, "Removing channel-like bulk_rho_u setting");
-//             scenario->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
-//         }
+
+        INFO0(who, "Setting constraints using freestream reference state"
+                   " on upper boundary");
+
+        if (chdef->bulk_rho) {
+            WARN0(who, "Removing channel-like bulk_rho setting");
+            chdef->bulk_rho   = numeric_limits<real_t>::quiet_NaN();
+        }
+        if (chdef->bulk_rho_u) {
+            WARN0(who, "Removing channel-like bulk_rho_u setting");
+            chdef->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
+        }
 //         if (scenario->bulk_rho_E) {
 //             WARN0(who, "Removing channel-like bulk_rho_E setting");
 //             scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
 //         }
-// 
-//         INFO0(who, "Establishing driving, freestream-like state constraints");
-//         (*constrainer)[ndx::rho].reset(
-//                 new constraint::constant_upper(rho_inf, *b));
-//         (*constrainer)[ndx::mx ].reset(
-//                 new constraint::constant_upper(mx_inf,  *b));
+
+        INFO0(who, "Establishing driving, freestream-like state constraints");
+        (*constrainer)[ndx::rho].reset(
+                new constraint::constant_upper(rho_inf, *b));
+        (*constrainer)[ndx::mx ].reset(
+                new constraint::constant_upper(mx_inf,  *b));
 //         (*constrainer)[ndx::e  ].reset(
 //                 new constraint::constant_upper(e_inf,   *b));
 
