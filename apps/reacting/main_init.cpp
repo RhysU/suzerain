@@ -286,7 +286,7 @@ suzerain::reacting::driver_init::run(int argc, char **argv)
             //       to avoid a jump in the cs concentration at the wall
             //       in the first time step
             rho = isothermal->upper_rho;
-            v   = 0;
+            v   = isothermal->lower_v;
             w   = 0;
             // using isothermal->upper_cs as species concentrations values
 
