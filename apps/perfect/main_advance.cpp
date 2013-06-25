@@ -218,14 +218,17 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
 
         INFO0(who, "Computing mean freestream behavior per plate scenario");
         using namespace std;
-        const real_t T_inf   = isothermal->upper_T;               // Brevity
-        const real_t u_inf   = sqrt(T_inf);                       // Eqn ( 6)
-        const real_t mx_inf  = pow(T_inf, scenario->beta);        // Eqn ( 7)
-        const real_t rho_inf = pow(T_inf, scenario->beta - 0.5);  // Eqn ( 8)
-        const real_t e_inf   = pow(T_inf, scenario->beta + 0.5)   // Eqn (12)
-                             * (
-                                   1 / (scenario->gamma*(scenario->gamma-1))
-                                 + scenario->Ma*scenario->Ma / 2
+        const real_t T_inf   = isothermal->upper_T;                 // Brevity
+        const real_t u_inf   = sqrt(T_inf);                         // Eqn ( 6)
+        const real_t mx_inf  = pow(T_inf, scenario->beta);          // Eqn ( 7)
+        const real_t rho_inf = pow(T_inf, scenario->beta - 0.5);    // Eqn ( 8)
+        const real_t e_inf   = pow(T_inf, scenario->beta - 0.5) * ( // Eqn (11)
+                                   T_inf/(scenario->gamma*(scenario->gamma-1))
+                                 + pow(scenario->Ma, 2) / 2 * (
+                                       T_inf
+                                     + pow(isothermal->upper_v, 2)
+                                     + pow(isothermal->upper_w, 2)
+                                   )
                                );
 
         INFO0(who, "Setting freestream reference state on upper boundary");

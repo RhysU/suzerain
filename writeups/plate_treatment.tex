@@ -235,7 +235,7 @@ applying \eqref{eq:approx_rho} then \eqref{eq:approx_E} shows
 \\
   &\approx T_\infty^{\beta-1/2} \bar{E}_\infty
 \\
-  \label{eq:approx_rhoE_vw}
+  \label{eq:approx_rhoE}
   &=
   T_\infty^{\beta-1/2} \left(
       \frac{T_\infty}{\gamma\left( \gamma-1 \right)}
@@ -243,24 +243,12 @@ applying \eqref{eq:approx_rho} then \eqref{eq:approx_E} shows
   \right)
 .
 \end{align}
-In any boundary layer lacking spanwise forcing, $\bar{w}_\infty\approx{}0$.  As
-supersonic boundary layers are of primary interest, for simplicity we assume
-$\bar{v}_\infty^2 \ll T_\infty$.  Consequently,
-\begin{align}
-  \label{eq:approx_rhoE}
-  \overline{\rho E}_\infty
-  &\approx
-  T_\infty^{\beta+1/2} \left(
-      \frac{1}{\gamma\left(\gamma-1\right)}
-    + \frac{\Mach^2}{2}
-  \right)
-\end{align}
-is the approximate freestream total energy constraint chosen.
+This last result is the desired approximate freestream total energy constraint.
 
 \section{Comments on the isothermal total energy constraint}
 
 Declaring $\Cov{\rho_\infty}{E_\infty} \approx 0$ may seem heavy-handed.  A
-longer, equivalent way to reach~\eqref{eq:approx_rhoE_vw} begins
+longer, equivalent way to reach~\eqref{eq:approx_rhoE} begins
 \begin{align}
   \overline{\rho E}
 &=
@@ -311,7 +299,7 @@ $\Cov{\rho_\infty}{T_\infty}$, $\Cov{\rho_\infty}{u^2_\infty}$, etc.
 
 If required by appreciable differences between target and observed freestream
 mean temperature, dynamically gathered $\bar{v}_\infty$ and $\bar{w}_\infty$
-could be used within \eqref{eq:approx_rhoE_vw} at the risk of introducing
+could be used within \eqref{eq:approx_rhoE} at the risk of introducing
 artificial, numerically-dependent feedback.
 
 Lastly, from the definition of $\Mach[\infty]{}^2$ at the freestream, similarly
