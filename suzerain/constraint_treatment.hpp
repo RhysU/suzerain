@@ -39,7 +39,7 @@
 
 namespace suzerain {
 
-namespace constraint { 
+namespace constraint {
 
 //// TODO? Use Eigen Maps to decouple operator_common_block if sensible
 
@@ -212,7 +212,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // State enters method as coefficients in X and Z directions
     // State enters method as collocation point values in Y direction
 
-    SUZERAIN_TIMER_SCOPED("constraint_treatment");
+    SUZERAIN_TIMER_SCOPED("constraint::treatment");
 
     // Sidesteps assertions when local rank contains no wavespace information
     const int Ny = (int) state.shape()[1];
