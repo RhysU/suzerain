@@ -235,14 +235,26 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     } else if (grid->one_sided()) { // Flat plate
 
-       // FIXME: implement constraints for temperature through rho_E
         INFO0(who, "Computing mean freestream behavior per plate scenario");
         using namespace std;
         const real_t T_inf   = isothermal->upper_T;  
         const real_t u_inf   = isothermal->upper_u;
         const real_t rho_inf = isothermal->upper_rho;
         const real_t mx_inf  = u_inf * rho_inf;
-//         const real_t e_inf   = ;
+
+        // Compute total energy at infinity based on input upper values
+        // Neglect contribution of wall-normal velocity to kinetic energy,
+        // and assume that species concentrations are at equilibrium
+        // FIXME: adjust the value of target rho_E dynamically
+        //        to account for wall-normal velocity and variations in
+        //        species mass fractions
+        const size_t Ns = cmods->Ns();
+        std::vector<real_t> mass_fractions(Ns);
+        for (unsigned int s=0; s<Ns; ++s) {
+            mass_fractions[s]      = isothermal->upper_cs[s];
+        }
+        const real_t e_inf   = (cmods->e_from_T(T_inf, mass_fractions)
+                                + 0.5 * (u_inf * u_inf)) * rho_inf;
 
         INFO0(who, "Setting constraints using freestream reference state"
                    " on upper boundary");
@@ -255,18 +267,18 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
             WARN0(who, "Removing channel-like bulk_rho_u setting");
             chdef->bulk_rho_u = numeric_limits<real_t>::quiet_NaN();
         }
-//         if (scenario->bulk_rho_E) {
-//             WARN0(who, "Removing channel-like bulk_rho_E setting");
-//             scenario->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
-//         }
+        if (chdef->bulk_rho_E) {
+            WARN0(who, "Removing channel-like bulk_rho_E setting");
+            chdef->bulk_rho_E = numeric_limits<real_t>::quiet_NaN();
+        }
 
         INFO0(who, "Establishing driving, freestream-like state constraints");
         (*constrainer)[ndx::rho].reset(
                 new constraint::constant_upper(rho_inf, *b));
         (*constrainer)[ndx::mx ].reset(
                 new constraint::constant_upper(mx_inf,  *b));
-//         (*constrainer)[ndx::e  ].reset(
-//                 new constraint::constant_upper(e_inf,   *b));
+        (*constrainer)[ndx::e  ].reset(
+                new constraint::constant_upper(e_inf,   *b));
 
     } else {
 
@@ -274,7 +286,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         return EXIT_FAILURE;
 
     }
-
 
 
     // Nonreflecting must mutate chdef/isothermal before instantiating
@@ -332,10 +343,6 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "R_ref     = " << common_block.R_ref    );
         INFO0(who, "E_ref     = " << cmods->e_from_T(common_block.T_ref,
                                                      mass_fractions));
-        
-        // Redefine upper values for boundary conditions
-        chdef->bulk_rho      = numeric_limits<real_t>::quiet_NaN();
-        chdef->bulk_rho_u    = numeric_limits<real_t>::quiet_NaN();
     }
 
     // Prepare spatial operators depending on requested advance type
