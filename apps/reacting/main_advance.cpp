@@ -95,6 +95,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     const support::noise_definition noisedef;
     string solver_spec(static_cast<string>(suzerain::zgbsv_specification()));
     string filter_spec("none");
+    string undriven;
 
     // Register binary-specific options
     options.add_definition(const_cast<support::noise_definition&>(noisedef));
@@ -108,7 +109,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                      "Use the specified algorithm for any implicit solves")
         ("filter",   boost::program_options::value(&filter_spec)
                          ->default_value(filter_spec),
-                     "Use the specified type to construct filter source");
+                     "Use the specified type to construct filter source")
+        ("undriven", boost::program_options::value(&undriven)
+                         ->implicit_value("all"),
+                         "Disable all or some constraint-based driving forces"
+                         " by specifying 'all', 'rho', 'rho_u', or 'rho_E'");
     ;
 
     // Initialize application and then process binary-specific options
@@ -401,6 +406,30 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         largo_bl_temporal_allocate(&sgdef->workspace, state_count, Ns);
     }
 #endif
+
+    // Use --undriven as a testing- and debugging-related tool.
+    // For example, to investigate nonreflecting boundary condition behavior.
+    if (options.variables().count("undriven")) {
+        boost::algorithm::trim(undriven);
+        if (undriven == "all") {
+            INFO0(who, "Disabling all established constraints per --undriven");
+            for (std::size_t i = 0; i < constrainer->size(); ++i) {
+                (*constrainer)[i].reset();
+            }
+        } else if (undriven == "rho") {
+            INFO0(who, "Disabling any density constraint per --undriven");
+            (*constrainer)[ndx::rho].reset();
+        } else if (undriven == "rho_u") {
+            INFO0(who, "Disabling any momentum constraint per --undriven");
+            (*constrainer)[ndx::mx].reset();
+        } else if (undriven == "rho_E") {
+            INFO0(who, "Disabling any total energy constraint per --undriven");
+            (*constrainer)[ndx::mx].reset();
+        } else {
+            FATAL0("Unknown --undriven argument:  " << undriven);
+            return EXIT_FAILURE;
+        }
+    }
 
     // Perform final housekeeping and then advance time as requested
     establish_ieee_mode();
