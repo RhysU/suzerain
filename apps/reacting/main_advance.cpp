@@ -44,7 +44,7 @@
 #include "nonreflecting_treatment.hpp"
 
 #ifdef SUZERAIN_HAVE_LARGO
-#include "largo/largo.h" 
+#include "largo/largo.h"
 #endif
 
 #pragma warning(disable:1419)
@@ -237,7 +237,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         INFO0(who, "Computing mean freestream behavior per plate scenario");
         using namespace std;
-        const real_t T_inf   = isothermal->upper_T;  
+        const real_t T_inf   = isothermal->upper_T;
         const real_t u_inf   = isothermal->upper_u;
         const real_t rho_inf = isothermal->upper_rho;
         const real_t mx_inf  = u_inf * rho_inf;
@@ -293,37 +293,37 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (grid->one_sided()) {
         // FIXME: Plate implementation in progress.
         // Need to set reference value for rho (rho_ref)
-        
+
         INFO0(who, "Preparing nonreflecting upper boundary treatment");
 
-        WARN0(who, "Non-reflecting boundary treatment enabling boundary" 
+        WARN0(who, "Non-reflecting boundary treatment enabling boundary"
                    "layer simulations is still under development.      "
                    "Proceed at your own risk.");
 
-        
+
         // Assign some reference values
         const size_t Ns = cmods->Ns();
-        
+
         // SUZERAIN_ENSURE(!(isnan)(isothermal->upper_rho));
         if ((isnan)(isothermal->upper_rho)) {
             FATAL0(who, "upper_rho for nonreflecting boundary"
                         " not specified and not in restart file");
             return EXIT_FAILURE;
         }
-        
+
         common_block.rho_ref = isothermal->upper_rho;
         common_block.T_ref   = isothermal->upper_T;
         common_block.u_ref   = isothermal->upper_u;
         common_block.v_ref   = isothermal->upper_v;
         common_block.w_ref   = isothermal->upper_w;
-        
+
         common_block.cs_ref.resize(Ns);
         std::vector<real_t> mass_fractions(Ns);
         for (unsigned int s=0; s<Ns; ++s) {
             common_block.cs_ref(s) = isothermal->upper_cs[s];
             mass_fractions[s]      = isothermal->upper_cs[s];
         }
-        
+
         common_block.etots_ref.resize(Ns);
         cmods->evaluate_for_nonreflecting(common_block.T_ref,
                                           common_block.cs_ref,
@@ -331,10 +331,10 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                                           common_block.gamma_ref,
                                           common_block.R_ref,
                                           common_block.etots_ref);
-        
+
         common_block.Cv_ref =  common_block.R_ref
                             / (common_block.gamma_ref - 1);
-        
+
         // FIXME: Remove this info or make it a debug output option
         INFO0(who, "rho_ref   = " << common_block.rho_ref  );
         INFO0(who, "T_ref     = " << common_block.T_ref    );
@@ -366,9 +366,9 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         }
 
         constrainer->L.reset(new isothermal_mass_operator(
-                    *cmods, *isothermal, 
+                    *cmods, *isothermal,
                     *chdef, *grid, *dgrid, *cop, *b, common_block));
-                   
+
     } else if (use_implicit) {
         INFO0(who, "Initializing hybrid implicit/explicit spatial operators");
 
@@ -388,7 +388,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         this->N = tmp_hybrid;
 
         if (grid->one_sided()) {
-            WARN0(who, "Non-reflecting boundary treatment with hybrid       " 
+            WARN0(who, "Non-reflecting boundary treatment with hybrid       "
                        "implicit/explict time marching is very experimental."
                        "Don't say we didn't warn you.");
 
@@ -409,7 +409,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // Allocate slow growth workspace
     {
         int state_count = (int) cmods->Ns()+4;
-        int Ns = (int) cmods->Ns()-1; 
+        int Ns = (int) cmods->Ns()-1;
         largo_bl_temporal_allocate(&sgdef->workspace, state_count, Ns);
     }
 #endif
