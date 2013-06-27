@@ -94,7 +94,6 @@ public:
 
     // Permit subscripting/iterating to access equation-specific constraints
     using implementation_defined::operator[];
-    using implementation_defined::size;
 
     /** Delegates invocation to #L */
     virtual void apply_mass_plus_scaled_operator(

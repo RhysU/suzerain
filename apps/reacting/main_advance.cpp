@@ -420,18 +420,20 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         boost::algorithm::trim(undriven);
         if (undriven == "all") {
             INFO0(who, "Disabling all established constraints per --undriven");
-            for (std::size_t i = 0; i < constrainer->size(); ++i) {
-                (*constrainer)[i].reset();
-            }
+            (*constrainer)[ndx::e  ].reset();
+            (*constrainer)[ndx::mx ].reset();
+            (*constrainer)[ndx::my ].reset();
+            (*constrainer)[ndx::mz ].reset();
+            (*constrainer)[ndx::rho].reset();
         } else if (undriven == "rho") {
             INFO0(who, "Disabling any density constraint per --undriven");
             (*constrainer)[ndx::rho].reset();
         } else if (undriven == "rho_u") {
             INFO0(who, "Disabling any momentum constraint per --undriven");
-            (*constrainer)[ndx::mx].reset();
+            (*constrainer)[ndx::mx ].reset();
         } else if (undriven == "rho_E") {
             INFO0(who, "Disabling any total energy constraint per --undriven");
-            (*constrainer)[ndx::mx].reset();
+            (*constrainer)[ndx::e  ].reset();
         } else {
             FATAL0("Unknown --undriven argument:  " << undriven);
             return EXIT_FAILURE;
