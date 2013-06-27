@@ -203,7 +203,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Prepare any necessary, problem-specific constraints
     shared_ptr<constraint::treatment<operator_common_block> > constrainer(
             new constraint::treatment<operator_common_block>(
-                    scenario->Ma, *dgrid, common_block));
+                    scenario->Ma, *dgrid, *b, common_block));
     if        (grid->two_sided()) { // Channel per channel_treatment.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");
@@ -312,22 +312,23 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // For example, to investigate nonreflecting boundary condition behavior.
     if (options.variables().count("undriven")) {
         boost::algorithm::trim(undriven);
+        shared_ptr<constraint::base> disabled(new constraint::disabled(*b));
         if (undriven == "all") {
             INFO0(who, "Disabling all established constraints per --undriven");
-            (*constrainer)[ndx::e  ].reset();
-            (*constrainer)[ndx::mx ].reset();
-            (*constrainer)[ndx::my ].reset();
-            (*constrainer)[ndx::mz ].reset();
-            (*constrainer)[ndx::rho].reset();
+            (*constrainer)[ndx::e  ] = disabled;
+            (*constrainer)[ndx::mx ] = disabled;
+            (*constrainer)[ndx::my ] = disabled;
+            (*constrainer)[ndx::mz ] = disabled;
+            (*constrainer)[ndx::rho] = disabled;
         } else if (undriven == "rho") {
             INFO0(who, "Disabling any density constraint per --undriven");
-            (*constrainer)[ndx::rho].reset();
+            (*constrainer)[ndx::rho] = disabled;
         } else if (undriven == "rho_u") {
             INFO0(who, "Disabling any momentum constraint per --undriven");
-            (*constrainer)[ndx::mx ].reset();
+            (*constrainer)[ndx::mx ] = disabled;
         } else if (undriven == "rho_E") {
             INFO0(who, "Disabling any total energy constraint per --undriven");
-            (*constrainer)[ndx::e  ].reset();
+            (*constrainer)[ndx::e  ] = disabled;
         } else {
             FATAL0("Unknown --undriven argument:  " << undriven);
             return EXIT_FAILURE;

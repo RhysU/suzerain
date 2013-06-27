@@ -42,6 +42,12 @@ base::~base()
     // NOP
 }
 
+disabled::disabled(bspline &b)
+    : base()
+{
+    SUZERAIN_UNUSED(b);
+}
+
 real_t
 disabled::target() const
 {

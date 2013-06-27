@@ -90,6 +90,7 @@ public:
     treatment(
             const real_t& Ma,
             const pencil_grid& dgrid,
+            bspline& b,
             CommonBlock& common);
 
     // Permit subscripting/iterating to access equation-specific constraints
@@ -166,6 +167,7 @@ template < typename CommonBlock >
 treatment<CommonBlock>::treatment(
             const real_t& Ma,
             const pencil_grid& dgrid,
+            bspline& b,
             CommonBlock& common)
     : implementation_defined()
     , Ma(Ma)
@@ -173,6 +175,8 @@ treatment<CommonBlock>::treatment(
     , rank_has_zero_zero_modes(dgrid.has_zero_zero_modes())
     , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
+    shared_ptr<constraint::base> d(new constraint::disabled(b));
+    std::fill(this->begin(), this->end(), d);
 }
 
 template < typename CommonBlock >
@@ -287,7 +291,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     assert(static_cast<int>(ndx::rho) < cmat.rows());
     for (int j = 0; j < cmat.cols(); ++j) {
         const constraint::base * const cj = operator[](j).get();
-        if (cj) {
+        if (cj->enabled()) {
             for (int i = 0; i < cmat.rows(); ++i) { // Note transpose!
                 cmat(j,i) = cj->coeff.dot(cdata.col(i).segment(j*Ny,Ny).real());
             }
@@ -298,7 +302,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     Vector5r crhs(Vector5r::Zero());
     for (int j = 0; j < crhs.rows(); ++j) {
         const constraint::base * const cj = operator[](j).get();
-        if (cj && cj->enabled()) {
+        if (cj->enabled()) {
             crhs[j] = cj->target()
                     - cj->coeff.dot(mean.segment(j*Ny,Ny).real());
         } else {

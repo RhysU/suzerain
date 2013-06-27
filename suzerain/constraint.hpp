@@ -69,6 +69,8 @@ class disabled : public virtual base
 {
 public:
 
+    explicit disabled(bspline &b);
+
     /** Always returns \c NaN. */
     virtual real_t target() const;
 
