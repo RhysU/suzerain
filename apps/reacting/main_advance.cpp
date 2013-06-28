@@ -37,7 +37,6 @@
 #include <suzerain/hybrid_residual_operator.hpp>
 
 #include "driver.hpp"
-//#include "channel_treatment.hpp"
 #include "explicit_operator.hpp"
 
 #include "hybrid_operator.hpp"
