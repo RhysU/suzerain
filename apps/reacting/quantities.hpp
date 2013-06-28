@@ -83,6 +83,7 @@ public:
 #define SUZERAIN_REACTING_FLOW_QUANTITIES_PHYSICAL         \
     ((E,                 1))  /* scalar           */ \
     ((T,                 1))  /* scalar           */ \
+    ((p,                 1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
