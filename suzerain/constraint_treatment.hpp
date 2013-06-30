@@ -50,13 +50,6 @@ namespace constraint {
  * titled "Enforcing a target bulk momentum via the linear operator" and using
  * information from \ref operator_common_block via an instance provided at
  * construction time.
- *
- * Means of the implicit momentum and energy forcing coefficients are also
- * maintained across each individual time step for sampling the statistics \c
- * /bar_f, \c /bar_f_dot_u, \c and /bar_qb using operator_common_block.
- * Integral constraint means are also tracked for sampling \c /bar_Crho, \c
- * /bar_Crhou, \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c
- * /bar_Crhou_dot_u.
  */
 template<typename CommonBlock>
 class treatment
@@ -121,20 +114,31 @@ public:
                 contiguous_state<4,complex_t>
             > > L;
 
-    /** Type of member #physical */
-    typedef array<shared_ptr<constraint::base>, 5> physical_type;
-
     /**
-     * Catalog of physically-oriented constraints to be indexed by
-     * equation number ndx::e, ndx::mx, ndx::my, ndx::mz, or ndx::rho.
-     * These are constraints which interpretable as physics-related
-     * source terms which may include contributions to multiple
-     * equations.  For example, a ndx::mx momentum constraint will
-     * also contribute forcing work terms to the ndx::e total energy.
+     * Catalog of physically-oriented constraints to be indexed by equation
+     * number ndx::e, ndx::mx, ndx::my, ndx::mz, or ndx::rho.  These are
+     * constraints which interpretable as physics-related source terms which
+     * may include contributions to multiple equations.  For example, a ndx::mx
+     * momentum constraint will also contribute forcing work terms to the
+     * ndx::e total energy.
+     *
+     * \warning The ndx::rho entry is not treated "physically" in the sense
+     * that density added by the constraint updates neither the momentum nor
+     * total energy equations.  Therefore, when the physical[ndx::rho]
+     * constraint modifies the density it also adjusts the velocity and
+     * specific total energy.
+     *
+     * Means of the implicit ndx::mx, ndx::my, ndx::mz, and ndx::e forcing are
+     * maintained across each individual time step for sampling the statistics
+     * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using #common.  Means of the
+     * implicit ndx::rho forcing is maintained within \c /bar_Crho.
      */
-    physical_type physical;
+    array<shared_ptr<constraint::base>, 5> physical;
 
 ////TODO Implement
+////// Integral constraint means are also tracked for sampling \c /bar_Crho,
+////// \c /bar_Crhou, \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c
+////// /bar_Crhou_dot_u.
 ////array<shared_ptr<constraint::base>, 5> numerical;
 
     /** An appropriately-size, do-nothing constraint usable by callers. */
