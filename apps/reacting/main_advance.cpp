@@ -85,10 +85,8 @@ int main(int argc, char **argv)
 int
 suzerain::reacting::driver_advance::run(int argc, char **argv)
 {
+    using namespace std;
     using boost::math::isnan;
-    using std::numeric_limits;
-    using std::string;
-    using std::vector;
 
     // Storage for binary-specific options
     const support::noise_definition noisedef;
@@ -111,8 +109,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
                      "Use the specified type to construct filter source")
         ("undriven", boost::program_options::value(&undriven)
                          ->implicit_value("all"),
-                         "Disable all or some constraint-based driving forces"
-                         " by specifying 'all', 'rho', 'rho_u', or 'rho_E'");
+                     "Disable all or some physics-related driving forces"
+                     " by specifying 'all' or 'rho', 'rho_u', etc.")
     ;
 
     // Initialize application and then process binary-specific options
@@ -225,17 +223,16 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if        (grid->two_sided()) { // Channel per channel_treatment.tex
 
         INFO0(who, "Establishing driving, channel-like state constraints");
-        (*constrainer)[ndx::rho].reset(
+        constrainer->physical[ndx::rho].reset(
                 new constraint::reference_bulk(chdef->bulk_rho  , *b));
-        (*constrainer)[ndx::mx ].reset(
+        constrainer->physical[ndx::mx ].reset(
                 new constraint::reference_bulk(chdef->bulk_rho_u, *b));
-        (*constrainer)[ndx::e  ].reset(
+        constrainer->physical[ndx::e  ].reset(
                 new constraint::reference_bulk(chdef->bulk_rho_E, *b));
 
     } else if (grid->one_sided()) { // Flat plate
 
         INFO0(who, "Computing mean freestream behavior per plate scenario");
-        using namespace std;
         const real_t T_inf   = isothermal->upper_T;
         const real_t u_inf   = isothermal->upper_u;
         const real_t rho_inf = isothermal->upper_rho;
@@ -248,7 +245,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         //        to account for wall-normal velocity and variations in
         //        species mass fractions
         const size_t Ns = cmods->Ns();
-        std::vector<real_t> mass_fractions(Ns);
+        vector<real_t> mass_fractions(Ns);
         for (unsigned int s=0; s<Ns; ++s) {
             mass_fractions[s]      = isothermal->upper_cs[s];
         }
@@ -272,12 +269,12 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         }
 
         INFO0(who, "Establishing driving, freestream-like state constraints");
-        (*constrainer)[ndx::rho].reset(
-                new constraint::constant_upper(rho_inf, *b));
-        (*constrainer)[ndx::mx ].reset(
-                new constraint::constant_upper(mx_inf,  *b));
-        (*constrainer)[ndx::e  ].reset(
+        constrainer->physical[ndx::e  ].reset(
                 new constraint::constant_upper(e_inf,   *b));
+        constrainer->physical[ndx::mx ].reset(
+                new constraint::constant_upper(mx_inf,  *b));
+        constrainer->physical[ndx::rho].reset(
+                new constraint::constant_upper(rho_inf, *b));
 
     } else {
 
@@ -317,7 +314,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         common_block.w_ref   = isothermal->upper_w;
 
         common_block.cs_ref.resize(Ns);
-        std::vector<real_t> mass_fractions(Ns);
+        vector<real_t> mass_fractions(Ns);
         for (unsigned int s=0; s<Ns; ++s) {
             common_block.cs_ref(s) = isothermal->upper_cs[s];
             mass_fractions[s]      = isothermal->upper_cs[s];
@@ -417,23 +414,17 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     // For example, to investigate nonreflecting boundary condition behavior.
     if (options.variables().count("undriven")) {
         boost::algorithm::trim(undriven);
-        shared_ptr<constraint::base> disabled(new constraint::disabled(*b));
-        if (undriven == "all") {
-            INFO0(who, "Disabling all established constraints per --undriven");
-            (*constrainer)[ndx::e  ] = disabled;
-            (*constrainer)[ndx::mx ] = disabled;
-            (*constrainer)[ndx::my ] = disabled;
-            (*constrainer)[ndx::mz ] = disabled;
-            (*constrainer)[ndx::rho] = disabled;
-        } else if (undriven == "rho") {
-            INFO0(who, "Disabling any density constraint per --undriven");
-            (*constrainer)[ndx::rho] = disabled;
-        } else if (undriven == "rho_u") {
-            INFO0(who, "Disabling any momentum constraint per --undriven");
-            (*constrainer)[ndx::mx ] = disabled;
-        } else if (undriven == "rho_E") {
-            INFO0(who, "Disabling any total energy constraint per --undriven");
-            (*constrainer)[ndx::e  ] = disabled;
+        const size_t j = distance(
+                find(ndx::identifier.begin(), ndx::identifier.end(), undriven),
+                ndx::identifier.end());
+        if (j < ndx::identifier.static_size) {
+            INFO0(who, "Disabling any " << ndx::description[j]
+                       << " physical constraint per --undriven");
+            constrainer->physical[j] = constrainer->none;
+        } else if (undriven == "all") {
+            INFO0(who, "Disabling all physical constraints per --undriven");
+            fill(constrainer->physical.begin(), constrainer->physical.end(),
+                 constrainer->none);
         } else {
             FATAL0("Unknown --undriven argument:  " << undriven);
             return EXIT_FAILURE;

@@ -58,25 +58,21 @@ namespace constraint {
  * /bar_Crhou, \c /bar_Crhov, \c /bar_Crhow, \c /bar_CrhoE, and \c
  * /bar_Crhou_dot_u.
  */
-template< typename CommonBlock>
+template<typename CommonBlock>
 class treatment
     : public lowstorage::linear_operator<
           multi_array::ref<complex_t,4>,
           contiguous_state<4,complex_t>
       >
-    , public  boost::noncopyable
-    , private array<shared_ptr<constraint::base>, 5>
+    , public boost::noncopyable
 {
-
-    /** Hide the composition-related superclass from client code */
-    typedef array<shared_ptr<constraint::base>, 5> implementation_defined;
 
 public:
 
     /**
-     * Constructor.  After construction, #L must be provided.  One or more
-     * <tt>operator[](ndx::type)</tt> calls should be made to establish
-     * constraints when constraints are desired.
+     * Constructor.
+     * After construction, #L must be provided.
+     * Generally, one or more constraints will be supplied before usage.
      *
      * @param Ma     Nondimensional Mach number for kinetic energy computations.
      *               In a dimensional setting, this should be one.  Notice that
@@ -92,9 +88,6 @@ public:
             const pencil_grid& dgrid,
             bspline& b,
             CommonBlock& common);
-
-    // Permit subscripting/iterating to access equation-specific constraints
-    using implementation_defined::operator[];
 
     /** Delegates invocation to #L */
     virtual void apply_mass_plus_scaled_operator(
@@ -128,6 +121,25 @@ public:
                 contiguous_state<4,complex_t>
             > > L;
 
+    /** Type of member #physical */
+    typedef array<shared_ptr<constraint::base>, 5> physical_type;
+
+    /**
+     * Catalog of physically-oriented constraints to be indexed by
+     * equation number ndx::e, ndx::mx, ndx::my, ndx::mz, or ndx::rho.
+     * These are constraints which interpretable as physics-related
+     * source terms which may include contributions to multiple
+     * equations.  For example, a ndx::mx momentum constraint will
+     * also contribute forcing work terms to the ndx::e total energy.
+     */
+    physical_type physical;
+
+////TODO Implement
+////array<shared_ptr<constraint::base>, 5> numerical;
+
+    /** An appropriately-size, do-nothing constraint usable by callers. */
+    const shared_ptr<constraint::disabled> none;
+
 protected:
 
     /**
@@ -135,6 +147,9 @@ protected:
      * energy contributions to the total energy equation?
      */
     const real_t& Ma;
+
+    /** Does this rank possess the "zero-zero" Fourier modes? */
+    const bool rank_has_zero_zero_modes;
 
     /**
      * Used to obtain mean primitive state profiles to compute
@@ -144,9 +159,7 @@ protected:
 
 private:
 
-    /** Does this rank possess the "zero-zero" Fourier modes? */
-    const bool rank_has_zero_zero_modes;
-
+    // TODO Use physical::static_size
     /**
      * Constraint data passed to #L indexed by ndx::type.
      * Mutable member avoids repeated allocation/deallocation.
@@ -169,14 +182,14 @@ treatment<CommonBlock>::treatment(
             const pencil_grid& dgrid,
             bspline& b,
             CommonBlock& common)
-    : implementation_defined()
+    : none(new constraint::disabled(b))
     , Ma(Ma)
-    , common(common)
     , rank_has_zero_zero_modes(dgrid.has_zero_zero_modes())
+    , common(common)
     , jacobiSvd(0, 0, Eigen::ComputeFullU | Eigen::ComputeFullV)
 {
-    shared_ptr<constraint::base> d(new constraint::disabled(b));
-    std::fill(this->begin(), this->end(), d);
+    using std::fill;
+    fill(physical.begin(), physical.end(), none);
 }
 
 template < typename CommonBlock >
@@ -277,6 +290,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // Get an Eigen-friendly map of the zero-zero mode coefficients
     Map<VectorXc> mean(state.origin(), state.shape()[0]*Ny);
 
+    // TODO Use static sizes and Eigen typedef's when available
     // Solve the requested, possibly simultaneous constraint problem.  A fancy
     // decomposition is used for a simple 5x5 solve or to permit one or more
     // inactive constraints via least squares.  Least squares also adds
@@ -290,10 +304,10 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     assert(static_cast<int>(ndx::mz ) < cmat.rows());
     assert(static_cast<int>(ndx::rho) < cmat.rows());
     for (int j = 0; j < cmat.cols(); ++j) {
-        const constraint::base * const cj = operator[](j).get();
-        if (cj->enabled()) {
+        if (physical[j]->enabled()) {
             for (int i = 0; i < cmat.rows(); ++i) { // Note transpose!
-                cmat(j,i) = cj->coeff.dot(cdata.col(i).segment(j*Ny,Ny).real());
+                cmat(j,i) = physical[j]->coeff.dot(
+                        cdata.col(i).segment(j*Ny,Ny).real());
             }
         }
     }
@@ -301,10 +315,9 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     //    Otherwise, zero the associated row and column in matrix.
     Vector5r crhs(Vector5r::Zero());
     for (int j = 0; j < crhs.rows(); ++j) {
-        const constraint::base * const cj = operator[](j).get();
-        if (cj->enabled()) {
-            crhs[j] = cj->target()
-                    - cj->coeff.dot(mean.segment(j*Ny,Ny).real());
+        if (physical[j]->enabled()) {
+            crhs[j] = physical[j]->target()
+                    - physical[j]->coeff.dot(mean.segment(j*Ny,Ny).real());
         } else {
             cmat.col(j).setZero();
             cmat.row(j).setZero();
