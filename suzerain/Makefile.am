@@ -54,6 +54,7 @@ nobase_pkginclude_HEADERS += common.hpp
 nobase_pkginclude_HEADERS += complex.h
 nobase_pkginclude_HEADERS += complex.hpp
 nobase_pkginclude_HEADERS += constraint.hpp
+nobase_pkginclude_HEADERS += constraint_treatment.hpp
 nobase_pkginclude_HEADERS += contiguous_memory.hpp
 nobase_pkginclude_HEADERS += countof.h
 nobase_pkginclude_HEADERS += diffwave.h
