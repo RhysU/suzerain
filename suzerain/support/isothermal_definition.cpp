@@ -120,6 +120,20 @@ isothermal_definition::isothermal_definition(
 {
 }
 
+isothermal_definition::isothermal_definition(
+        real_t lower_T,
+        real_t lower_v,
+        real_t lower_rho,
+        const std::vector<real_t>& lower_cs,
+        real_t upper_T,
+        real_t upper_v,
+        real_t upper_rho,
+        const std::vector<real_t>& upper_cs)
+    : isothermal_specification(lower_T, lower_v, lower_rho, lower_cs,
+                               upper_T, upper_v, upper_rho, upper_cs)
+{
+}
+
 // Strings used in options_description and populate/override/save/load
 static const char name_lower_T  []  = "lower_T";
 static const char name_lower_u  []  = "lower_u";
@@ -394,7 +408,7 @@ isothermal_definition::load(
     LOAD_OR_DEFAULT(upper_u,                0);
     LOAD_OR_DEFAULT(upper_v,                0);
     LOAD_OR_DEFAULT(upper_w,                0);
-    LOAD_OR_DEFAULT(upper_rho, std::numeric_limits<real_t>::quiet_NaN());
+    LOAD_OR_DEFAULT(upper_rho, 1);
 
 #undef LOAD_OR_DEFAULT
 

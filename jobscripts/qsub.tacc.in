@@ -36,6 +36,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 : ${PLANNING=--plan_wisdom=$HOME/.wisdom --rigor_fft=patient}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
 : ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
+: ${CHEMFILE:=}
 
 # Make job directory, canonicalize paths, and build command
 mkdir -p "$JOBDIR"
@@ -43,6 +44,7 @@ function canonpath() { echo $(cd $(dirname $1); pwd -P)/$(basename $1) ; }
 BINARY=$(canonpath "$BINARY")
 INPUT=$(canonpath "$INPUT")
 JOBDIR=$(canonpath "$JOBDIR")
+CHEMDIR=$(canonpath "$CHEMFILE")
 cd "$JOBDIR"
 # Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
 # Expensive for large fields but users should not be keeping those in $HOME

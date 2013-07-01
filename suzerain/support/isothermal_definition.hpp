@@ -105,6 +105,18 @@ public:
                           real_t upper_v,
                           const std::vector<real_t>& upper_cs);
 
+    /**
+     * @copydoc isothermal_specification(real_t,real_t,real_t,const std::vector<real_t>&,real_t,real_t,real_t,const std::vector<real_t>&)
+     */
+    isothermal_definition(real_t lower_T,
+                          real_t lower_v,
+                          real_t lower_rho,
+                          const std::vector<real_t>& lower_cs,
+                          real_t upper_T,
+                          real_t upper_v,
+                          real_t upper_rho,
+                          const std::vector<real_t>& upper_cs);
+
     /** @copydoc populatable::populate */
     virtual void populate(
             const isothermal_specification& that,
