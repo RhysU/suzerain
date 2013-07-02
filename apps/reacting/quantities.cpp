@@ -499,10 +499,11 @@ quantities sample_quantities(
                 
                 for (unsigned int s=1; s<Ns; ++s) {
                     species(s) = sphys(ndx::species + s - 1, offset);
-                    
-                    grad_species(0,s) = auxp(aux::species + s - 1 + dir::x, offset);
-                    grad_species(1,s) = auxp(aux::species + s - 1 + dir::y, offset);
-                    grad_species(2,s) = auxp(aux::species + s - 1 + dir::z, offset);
+                   
+                    unsigned int si = aux::species + (s-1)*dir::count; 
+                    grad_species(0,s) = auxp(si + dir::x, offset);
+                    grad_species(1,s) = auxp(si + dir::y, offset);
+                    grad_species(2,s) = auxp(si + dir::z, offset);
                     
                     // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
                     species(0)        -= species(s);
@@ -558,9 +559,17 @@ quantities sample_quantities(
 
                 sum_p[0](p);
 
+                sum_a[0](a);
+
                 sum_mu[0](mu);
 
                 sum_nu[0](mu / rho);
+
+                sum_kappa[0](kap);
+
+                // NOTE: D0 is meaningful alone only in the case of 
+                // constant Lewis number
+                sum_D0[0](Ds[0]);
 
                 sum_u[0](u.x());
                 sum_u[1](u.y());

@@ -84,8 +84,11 @@ public:
     ((E,                 1))  /* scalar           */ \
     ((T,                 1))  /* scalar           */ \
     ((p,                 1))  /* scalar           */ \
+    ((a,                 1))  /* scalar           */ \
     ((mu,                1))  /* scalar           */ \
     ((nu,                1))  /* scalar           */ \
+    ((kappa,             1))  /* scalar           */ \
+    ((D0,                1))  /* scalar           */ \
     ((u,                 3))  /* vector           */ \
     ((sym_grad_u,        6))  /* symmetric tensor */ \
     ((sym_rho_grad_u,    6))  /* symmetric tensor */ \
