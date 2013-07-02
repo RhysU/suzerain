@@ -541,6 +541,7 @@ quantities sample_quantities(
                 real_t T, p, mu, kap, a, Cv;
                 cmods.evaluate(e, m, rho, species, cs, Tguess,
                                T, p, Ds, mu, kap, hs, om, a, Cv);
+                Tguess = T;
                 
                 const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
                 
