@@ -180,7 +180,7 @@ private:
 
 };
 
-template < typename CommonBlock >
+template <typename CommonBlock>
 treatment<CommonBlock>::treatment(
             const real_t& Ma,
             const pencil_grid& dgrid,
@@ -196,7 +196,7 @@ treatment<CommonBlock>::treatment(
     fill(physical.begin(), physical.end(), none);
 }
 
-template < typename CommonBlock >
+template <typename CommonBlock>
 void treatment<CommonBlock>::apply_mass_plus_scaled_operator(
         const complex_t &phi,
         multi_array::ref<complex_t,4> &state,
@@ -206,7 +206,7 @@ void treatment<CommonBlock>::apply_mass_plus_scaled_operator(
             phi, state, substep_index);
 }
 
-template < typename CommonBlock >
+template <typename CommonBlock>
 void
 treatment<CommonBlock>::accumulate_mass_plus_scaled_operator(
         const complex_t &phi,
@@ -219,7 +219,7 @@ treatment<CommonBlock>::accumulate_mass_plus_scaled_operator(
             phi, input, beta, output, substep_index);
 }
 
-template < typename CommonBlock >
+template <typename CommonBlock>
 void
 treatment<CommonBlock>::invert_mass_plus_scaled_operator(
         const complex_t& phi,
