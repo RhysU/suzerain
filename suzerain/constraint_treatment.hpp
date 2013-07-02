@@ -133,7 +133,7 @@ public:
      * \c /bar_f, \c /bar_f_dot_u, and \c /bar_qb using #common.  Means of the
      * implicit ndx::rho forcing is maintained within \c /bar_Crho.
      */
-    array<shared_ptr<constraint::base>, 5> physical;
+    array<shared_ptr<const constraint::base>, 5> physical;
 
 ////TODO Implement
 ////// Integral constraint means are also tracked for sampling \c /bar_Crho,
@@ -142,7 +142,7 @@ public:
 ////array<shared_ptr<constraint::base>, 5> numerical;
 
     /** An appropriately-size, do-nothing constraint usable by callers. */
-    const shared_ptr<constraint::disabled> none;
+    const shared_ptr<const constraint::disabled> none;
 
 protected:
 
