@@ -234,19 +234,26 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
 
     SUZERAIN_TIMER_SCOPED("constraint::treatment");
 
+    // Shorthand
+    using ndx::e;
+    using ndx::mx;
+    using ndx::my;
+    using ndx::mz;
+    using ndx::rho;
+
     // Sidesteps assertions when local rank contains no wavespace information
     const int Ny = (int) state.shape()[1];
     if (SUZERAIN_UNLIKELY(0 == Ny)) return;
 
     // Incoming state has wall-normal pencils of interleaved state scalars?
     // Any amount of incoming state is valid so long as there's enough there
-    SUZERAIN_ENSURE(state.strides()[1] ==            1       );
-    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny      );
-    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::e  );
-    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
-    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
-    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::mx );
-    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) ndx::rho);
+    SUZERAIN_ENSURE(state.strides()[1] ==            1  );
+    SUZERAIN_ENSURE(state.strides()[0] == (unsigned) Ny );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) e  );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) mx );
+    SUZERAIN_ENSURE(state.shape()  [0] >  (unsigned) rho);
 
     // See channel_treatment writeup (redux) for information on steps below.
 
@@ -263,24 +270,20 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
         //     directly add the result to the total energy equation.
         //
         // Notice ndx::rho constraint ignores other equations BY DESIGN.
+        // This choice is reflected in the later update of common.Crho.
         const real_t Ma2 = Ma * Ma;
         cdata.setZero(state.shape()[0]*Ny, cdata.cols());
-        cdata.col(ndx::e  ).segment(ndx::e   * Ny, Ny).real()   // qb
-                = physical[ndx::e  ]->shape;
-        cdata.col(ndx::mx ).segment(ndx::e   * Ny, Ny).real()   // fx * u
-                = physical[ndx::mx ]->shape * common.u() * Ma2;
-        cdata.col(ndx::mx ).segment(ndx::mx  * Ny, Ny).real()   // fx
-                = physical[ndx::mx ]->shape;
-        cdata.col(ndx::my ).segment(ndx::e   * Ny, Ny).real()   // fy * v
-                = physical[ndx::my ]->shape * common.v() * Ma2;
-        cdata.col(ndx::my ).segment(ndx::my  * Ny, Ny).real()   // fy
-                = physical[ndx::my ]->shape;
-        cdata.col(ndx::mz ).segment(ndx::e   * Ny, Ny).real()   // fz * w
-                = physical[ndx::mz ]->shape * common.w() * Ma2;
-        cdata.col(ndx::mz ).segment(ndx::mz  * Ny, Ny).real()   // fz
-                = physical[ndx::mz ]->shape;
-        cdata.col(ndx::rho).segment(ndx::rho * Ny, Ny).real()   // Crho
-                = physical[ndx::rho]->shape;
+        cdata.col(e  ).segment(e   * Ny, Ny).real() = physical[e  ]->shape;
+        cdata.col(mx ).segment(e   * Ny, Ny).real() = physical[mx ]->shape
+                                                    * common.u() * Ma2;
+        cdata.col(mx ).segment(mx  * Ny, Ny).real() = physical[mx ]->shape;
+        cdata.col(my ).segment(e   * Ny, Ny).real() = physical[my ]->shape
+                                                    * common.v() * Ma2;
+        cdata.col(my ).segment(my  * Ny, Ny).real() = physical[my ]->shape;
+        cdata.col(mz ).segment(e   * Ny, Ny).real() = physical[mz ]->shape
+                                                    * common.w() * Ma2;
+        cdata.col(mz ).segment(mz  * Ny, Ny).real() = physical[mz ]->shape;
+        cdata.col(rho).segment(rho * Ny, Ny).real() = physical[rho]->shape;
 
         // Wrap data into appropriately digestible format
         using std::size_t;
@@ -312,11 +315,11 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     //
     // 1) Assemble the matrix problem for simultaneous integral constraints
     Matrix5r cmat(Matrix5r::Zero());
-    assert(static_cast<int>(ndx::e  ) < cmat.rows());
-    assert(static_cast<int>(ndx::mx ) < cmat.rows());
-    assert(static_cast<int>(ndx::my ) < cmat.rows());
-    assert(static_cast<int>(ndx::mz ) < cmat.rows());
-    assert(static_cast<int>(ndx::rho) < cmat.rows());
+    assert(static_cast<int>(e  ) < cmat.rows());
+    assert(static_cast<int>(mx ) < cmat.rows());
+    assert(static_cast<int>(my ) < cmat.rows());
+    assert(static_cast<int>(mz ) < cmat.rows());
+    assert(static_cast<int>(rho) < cmat.rows());
     for (int j = 0; j < cmat.cols(); ++j) {
         if (physical[j]->enabled()) {
             for (int i = 0; i < cmat.rows(); ++i) { // Note transpose!
@@ -353,29 +356,29 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // Notice mx-related forcing is NOT scaled by Mach^2 when tracked
     // because our post-processing routines will account for Mach^2 factor.
     //
-    // Notice physical[ndx::rho] constraint ignores other equations BY DESIGN.
+    // Notice physical[ndx::rho] constraint lumped into Crho BY DESIGN.
     cphi                 /= delta_t; // Henceforth includes 1/delta_t scaling!
     const real_t iota     = method.iota(substep_index);
     common.fx()          += iota * (
-                                cphi[ndx::mx] * physical[ndx::mx]->shape
+                                cphi[mx] * physical[mx]->shape
                               - common.fx()
                             );
     common.fy()          += iota * (
-                                cphi[ndx::my] * physical[ndx::my]->shape
+                                cphi[my] * physical[my]->shape
                               - common.fy()
                             );
     common.fz()          += iota * (
-                                cphi[ndx::mz] * physical[ndx::mz]->shape
+                                cphi[mz] * physical[mz]->shape
                               - common.fz()
                             );
     common.f_dot_u()     += iota * (
-                                cphi[ndx::mx] * physical[ndx::mx]->shape * common.u()
-                              + cphi[ndx::my] * physical[ndx::my]->shape * common.v()
-                              + cphi[ndx::mz] * physical[ndx::mz]->shape * common.w()
+                                cphi[mx] * physical[mx]->shape * common.u()
+                              + cphi[my] * physical[my]->shape * common.v()
+                              + cphi[mz] * physical[mz]->shape * common.w()
                               - common.f_dot_u()
                             );
     common.qb()          += iota * (
-                                cphi[ndx::e] * physical[ndx::e]->shape
+                                cphi[e] * physical[e]->shape
                               - common.qb()
                             );
     common.CrhoE()       += iota * (/* zero */ - common.CrhoE());
@@ -383,7 +386,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     common.Crhov()       += iota * (/* zero */ - common.Crhov());
     common.Crhow()       += iota * (/* zero */ - common.Crhow());
     common.Crho()        += iota * (
-                                cphi[ndx::rho] * physical[ndx::rho]->shape
+                                cphi[rho] * physical[rho]->shape
                               - common.Crho()
                             );
     common.Crhou_dot_u() += iota * (/* zero */ - common.Crhou_dot_u());
