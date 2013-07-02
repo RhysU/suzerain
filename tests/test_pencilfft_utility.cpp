@@ -40,7 +40,7 @@ using namespace suzerain;
 
 BOOST_AUTO_TEST_SUITE( increment )
 
-using pencilfft::detail::increment;
+using pencilfft::internal::increment;
 
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( decrement )
 
-using pencilfft::detail::decrement;
+using pencilfft::internal::decrement;
 
 BOOST_AUTO_TEST_CASE( decrement_1d_degenerate )
 {
@@ -674,7 +674,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( crement )
 
-using pencilfft::detail::crement;
+using pencilfft::internal::crement;
 
 BOOST_AUTO_TEST_CASE( increment_1d_degenerate )
 {
@@ -1578,8 +1578,8 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( indexed_element_magnitude_comparator )
 
-using pencilfft::detail::indexed_element_magnitude_comparator;
-using pencilfft::detail::make_indexed_element_magnitude_comparator;
+using pencilfft::internal::indexed_element_magnitude_comparator;
+using pencilfft::internal::make_indexed_element_magnitude_comparator;
 
 BOOST_AUTO_TEST_CASE( indexed_element_magnitude_comparator_operator_positive )
 {

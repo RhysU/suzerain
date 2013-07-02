@@ -72,7 +72,7 @@ void symmetry_1D_complex_forward(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
@@ -149,7 +149,7 @@ void check_1D_forward_r2c(RealMultiArray &in, ComplexMultiArray &out)
 {
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
@@ -189,7 +189,7 @@ void compare_1D_complex_forward(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray1::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
@@ -261,7 +261,7 @@ void symmetry_1D_complex_backward(ComplexMultiArray1 &in, ComplexMultiArray2 &ou
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray2::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
@@ -333,7 +333,7 @@ void check_1D_backward_c2r(ComplexMultiArray &in, RealMultiArray &out)
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray::dimensionality == 1);
     BOOST_STATIC_ASSERT(RealMultiArray::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray::element>::real_type real_type;
     const int NC = in.shape()[0];
     const int NR = out.shape()[0];
@@ -442,7 +442,7 @@ void differentiate_on_forward_1D_c2c(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];
@@ -493,7 +493,7 @@ void differentiate_on_backward_1D_c2c(ComplexMultiArray1 &in,
 {
     BOOST_STATIC_ASSERT(ComplexMultiArray1::dimensionality == 1);
     BOOST_STATIC_ASSERT(ComplexMultiArray2::dimensionality == 1);
-    typedef typename pencilfft::detail::transform_traits<
+    typedef typename pencilfft::internal::transform_traits<
         typename ComplexMultiArray1::element>::real_type real_type;
     const int NR = in.shape()[0];
     const int NC = out.shape()[0];

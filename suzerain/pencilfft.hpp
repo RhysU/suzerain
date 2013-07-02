@@ -54,7 +54,7 @@ namespace pencilfft {
  * Implementation details underneath suzerain::pencilfft
  * @internal
  */
-namespace detail {
+namespace internal {
 
 /**
  * Increment the next appropriate index in \c indices according to
@@ -1026,7 +1026,7 @@ void transform_c2c(
     for (size_type1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
     std::sort(
         increment_order.begin(), increment_order.end(),
-        detail::make_indexed_element_magnitude_comparator(in.strides()));
+        internal::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -1037,20 +1037,20 @@ void transform_c2c(
 
         // Copy input into transform buffer performing any needed scaling, etc.
         if (fftw_sign == FFTW_BACKWARD && derivative != 0) {
-            detail::c2c_fullbuffer_process(
+            internal::c2c_fullbuffer_process(
                 buffer.get(), transform_n, index1(1),
                 &in(dereference_index1),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
-                detail::complex_copy_differentiate<fftw_complex_type>(
+                internal::complex_copy_differentiate<fftw_complex_type>(
                     derivative, domain_length));
         } else {
-            detail::c2c_fullbuffer_process(
+            internal::c2c_fullbuffer_process(
                 buffer.get(), transform_n, index1(1),
                 &in(dereference_index1),
                 shape_in_transform_dim,
                 stride_in_transform_dim,
-                detail::complex_copy());
+                internal::complex_copy());
         }
 
         // Pull the string!  Pull the string!
@@ -1064,39 +1064,39 @@ void transform_c2c(
         // Copy transform buffer into output performing any needed scaling, etc.
         if (fftw_sign == FFTW_FORWARD) {
             typedef typename
-                detail::transform_traits<element2>::real_type real_type;
+                internal::transform_traits<element2>::real_type real_type;
             const real_type normalization = real_type(1)/transform_n;
             if (derivative == 0) {
-                detail::c2c_fullbuffer_process(
+                internal::c2c_fullbuffer_process(
                     &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index2(1),
-                    detail::complex_copy_scale<element2>(normalization));
+                    internal::complex_copy_scale<element2>(normalization));
             } else {
-                detail::c2c_fullbuffer_process(
+                internal::c2c_fullbuffer_process(
                     &out(dereference_index2),
                     shape_out_transform_dim,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index2(1),
-                    detail::complex_copy_scale_differentiate<element2>(
+                    internal::complex_copy_scale_differentiate<element2>(
                         normalization, derivative, domain_length));
             }
         } else {
-            detail::c2c_fullbuffer_process(
+            internal::c2c_fullbuffer_process(
                 &out(dereference_index2),
                 shape_out_transform_dim,
                 stride_out_transform_dim,
                 buffer.get(), transform_n, index2(1),
-                detail::complex_copy());
+                internal::complex_copy());
         }
 
-    } while (detail::increment<dimensionality>(loop_index.begin(),
-                                               loop_shape.begin(),
-                                               increment_order.begin()));
+    } while (internal::increment<dimensionality>(loop_index.begin(),
+                                                 loop_shape.begin(),
+                                                 increment_order.begin()));
 } /* transform_c2c */
 
-} // namespace detail
+} // namespace internal
 
 /**
  * Perform a forward complex-to-complex FFT on each 1D "pencil" of \c in
@@ -1118,7 +1118,7 @@ void transform_c2c(
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
- * @see detail::c2c_transform for more details on the transform process.
+ * @see internal::c2c_transform for more details on the transform process.
  */
 template<class ComplexMultiArray1,
          class ComplexMultiArray2>
@@ -1126,18 +1126,18 @@ void forward_c2c(
     const size_t transform_dim,
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
-    const typename detail::transform_traits<
+    const typename internal::transform_traits<
             typename ComplexMultiArray2::element         // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative = 0,
     const unsigned fftw_flags = 0)
 {
-    return detail::transform_c2c<
+    return internal::transform_c2c<
             // Transform traits based on physical space types
-            detail::transform_traits<typename ComplexMultiArray1::element>,
+            internal::transform_traits<typename ComplexMultiArray1::element>,
             ComplexMultiArray1,
             ComplexMultiArray2,
-            typename detail::transform_traits<
+            typename internal::transform_traits<
                     typename ComplexMultiArray2::element // wave space scalar
                 >::real_type
         >(
@@ -1171,7 +1171,7 @@ void forward_c2c(
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
- * @see detail::c2c_transform for more details on the transform process.
+ * @see internal::c2c_transform for more details on the transform process.
  */
 template<class ComplexMultiArray1,
          class ComplexMultiArray2>
@@ -1179,18 +1179,18 @@ void backward_c2c(
     const size_t transform_dim,
     const ComplexMultiArray1 &in,
     ComplexMultiArray2 &out,
-    const typename detail::transform_traits<
+    const typename internal::transform_traits<
             typename ComplexMultiArray1::element         // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative = 0,
     const unsigned fftw_flags = 0)
 {
-    return detail::transform_c2c<
+    return internal::transform_c2c<
             // Transform traits based on physical space types
-            detail::transform_traits<typename ComplexMultiArray2::element>,
+            internal::transform_traits<typename ComplexMultiArray2::element>,
             ComplexMultiArray1,
             ComplexMultiArray2,
-            typename detail::transform_traits<
+            typename internal::transform_traits<
                     typename ComplexMultiArray1::element // wave space scalar
                 >::real_type
         >(
@@ -1226,7 +1226,7 @@ void backward_c2c(
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
- * @see detail::c2c_transform for more details on the transform process.
+ * @see internal::c2c_transform for more details on the transform process.
  */
 template<class RealMultiArray,
          class ComplexMultiArray>
@@ -1234,7 +1234,7 @@ void forward_r2c(
     const size_t transform_dim,
     const RealMultiArray &in,
     ComplexMultiArray &out,
-    const typename detail::transform_traits<
+    const typename internal::transform_traits<
             typename ComplexMultiArray::element          // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative      = 0,
@@ -1243,7 +1243,7 @@ void forward_r2c(
     using suzerain::is_nonnegative;
 
     // TransformTraits fixed by the wave space type
-    typedef detail::transform_traits<
+    typedef internal::transform_traits<
             typename ComplexMultiArray::element> transform_traits;
 
     // Typedefs fixed separately by MultiArray template parameters
@@ -1343,7 +1343,7 @@ void forward_r2c(
     for (size_type1 n = 0; n < dimensionality; ++n) { decrement_order[n] = n; }
     std::sort(
         decrement_order.begin(), decrement_order.end(),
-        detail::make_indexed_element_magnitude_comparator(in.strides()));
+        internal::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -1377,29 +1377,29 @@ void forward_r2c(
         // Copy complex buffer into output performing any needed scaling, etc.
         {
             typedef typename
-                detail::transform_traits<element2>::real_type real_type;
+                internal::transform_traits<element2>::real_type real_type;
             const real_type normalization = real_type(1)/transform_n;
             if (derivative == 0) {
-                detail::c2c_halfbuffer_process(
+                internal::c2c_halfbuffer_process(
                     &out(dereference_index2),
                     (shape_out_transform_dim - 1)*2 /* logical */,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index2(1),
-                    detail::complex_copy_scale<element2>(normalization));
+                    internal::complex_copy_scale<element2>(normalization));
             } else {
-                detail::c2c_halfbuffer_process(
+                internal::c2c_halfbuffer_process(
                     &out(dereference_index2),
                     (shape_out_transform_dim - 1)*2 /* logical */,
                     stride_out_transform_dim,
                     buffer.get(), transform_n, index2(1),
-                    detail::complex_copy_scale_differentiate<element2>(
+                    internal::complex_copy_scale_differentiate<element2>(
                         normalization, derivative, domain_length));
             }
         }
 
-    } while (detail::decrement<dimensionality>(loop_index.begin(),
-                                               loop_shape.begin(),
-                                               decrement_order.begin()));
+    } while (internal::decrement<dimensionality>(loop_index.begin(),
+                                                 loop_shape.begin(),
+                                                 decrement_order.begin()));
 } /* forward_r2c */
 
 /**
@@ -1423,7 +1423,7 @@ void forward_r2c(
  * @param fftw_flags FFTW planner flags to use when computing the transform.
  *                   For example, \c FFTW_MEASURE or \c FFTW_PATIENT.
  *
- * @see detail::c2c_transform for more details on the transform process.
+ * @see internal::c2c_transform for more details on the transform process.
  */
 template<class ComplexMultiArray,
          class RealMultiArray>
@@ -1431,7 +1431,7 @@ void backward_c2r(
     const size_t transform_dim,
     const ComplexMultiArray &in,
     RealMultiArray &out,
-    const typename detail::transform_traits<
+    const typename internal::transform_traits<
             typename ComplexMultiArray::element          // wave space scalar
         >::real_type domain_length = 2.0*M_PI,
     const int derivative      = 0,
@@ -1440,7 +1440,7 @@ void backward_c2r(
     using suzerain::is_nonnegative;
 
     // TransformTraits fixed by the wave space type
-    typedef detail::transform_traits<
+    typedef internal::transform_traits<
             typename ComplexMultiArray::element> transform_traits;
 
     // Typedefs fixed separately by MultiArray template parameters
@@ -1541,7 +1541,7 @@ void backward_c2r(
     for (size_type1 n = 0; n < dimensionality; ++n) { increment_order[n] = n; }
     std::sort(
         increment_order.begin(), increment_order.end(),
-        detail::make_indexed_element_magnitude_comparator(in.strides()));
+        internal::make_indexed_element_magnitude_comparator(in.strides()));
 
     // Process each of the transform_dim pencils in turn
     do {
@@ -1553,19 +1553,19 @@ void backward_c2r(
         // Copy complex input into buffer performing any needed differentiation
         {
             if (derivative == 0) {
-                detail::c2c_halfbuffer_process(
+                internal::c2c_halfbuffer_process(
                     buffer.get(), transform_n, index1(1),
                     &in(dereference_index1),
                     (shape_in_transform_dim - 1)*2 /* logical */,
                     stride_in_transform_dim,
-                    detail::complex_copy());
+                    internal::complex_copy());
             } else {
-                detail::c2c_halfbuffer_process(
+                internal::c2c_halfbuffer_process(
                     buffer.get(), transform_n, index1(1),
                     &in(dereference_index1),
                     (shape_in_transform_dim - 1)*2 /* logical */,
                     stride_in_transform_dim,
-                    detail::complex_copy_differentiate<fftw_complex_type>(
+                    internal::complex_copy_differentiate<fftw_complex_type>(
                         derivative, domain_length));
             }
         }
@@ -1591,9 +1591,9 @@ void backward_c2r(
             }
         }
 
-    } while (detail::increment<dimensionality>(loop_index.begin(),
-                                               loop_shape.begin(),
-                                               increment_order.begin()));
+    } while (internal::increment<dimensionality>(loop_index.begin(),
+                                                 loop_shape.begin(),
+                                                 increment_order.begin()));
 } /* backward_c2r */
 
 } /* pencilfft */ } /* suzerain */
