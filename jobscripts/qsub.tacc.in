@@ -27,16 +27,16 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 # Provide defaults for environment variables used to build CMD (see below).
 # Rather than editing this job submission script, modify your environment!
 # Even after job submission, 'qalter -v' can modify a job's environment.
-: ${BINARY:=@bindir@/perfect_advance}
-: ${INPUT:=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
-: ${ADVANCE:=}
+: ${BINARY=@bindir@/perfect_advance}
+: ${INPUT=@pkgdatadir@/fields/laminar_k08.h5}  # Use SCRATCH or WORK
+: ${ADVANCE=}
 : ${STATUS=--status_nt=100}
 : ${DECOMP=--Pa=$(expr $NSLOTS / $NHOSTS)}
 : ${OPTIONS=}
 : ${PLANNING=--plan_wisdom=$HOME/.wisdom --rigor_fft=patient}
+: ${CHEMFILE=}
 : ${TMPFILES=--metadata=metadata.h5.$JOB_ID --uncommitted=uncommitted.h5.$JOB_ID}
-: ${JOBDIR:=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
-: ${CHEMFILE:=}
+: ${JOBDIR=$SCRATCH/jobs/$JOB_NAME/$JOB_ID}
 
 # Make job directory, canonicalize paths, and build command
 mkdir -p "$JOBDIR"
@@ -44,7 +44,7 @@ function canonpath() { echo $(cd $(dirname "$1"); pwd -P)/$(basename "$1") ; }
 BINARY=$(canonpath "$BINARY")
 INPUT=$(canonpath "$INPUT")
 JOBDIR=$(canonpath "$JOBDIR")
-CHEMFILE=$(canonpath "$CHEMFILE")
+test -n "$CHEMFILE" && CHEMFILE=$(canonpath "$CHEMFILE")
 cd "$JOBDIR"
 # Copy any non-{SCRATCH,WORK} INPUT to JOBDIR to employ parallel filesystem
 # Expensive for large fields but users should not be keeping those in $HOME
@@ -62,6 +62,16 @@ case "$JOBDIR" in                                                        #(
     */${JOB_ID}) ln -f -n -s "$JOB_ID" ../last
                  ;;
 esac
+# If supplied, copy CHEMFILE to JOBDIR and modify OPTIONS to provide it
+if test -n "$CHEMFILE"; then
+    if test -f "$CHEMFILE"; then
+        MSGS="${MSGS-}Added copy of CHEMFILE to OPTIONS$(echo)"
+        MSGS="${MSGS-}$(cp -v "$CHEMFILE" .)$(echo)"
+        OPTIONS="$OPTIONS --chemfile=$(basename "$CHEMFILE")"
+    else
+        MSGS="${MSGS-}WARN: CHEMFILE unused as it is a non-file path$(echo)"
+    fi
+fi
 CMD="\"$BINARY\" \"$INPUT\" $ADVANCE --advance_wt=$S_RT $STATUS $DECOMP $PLANNING $TMPFILES $OPTIONS"
 
 # Compute threading based on job size and way-ness
@@ -95,6 +105,7 @@ STATUS:   $STATUS
 DECOMP:   $DECOMP
 OPTIONS:  $OPTIONS
 PLANNING: $PLANNING
+CHEMFILE: $CHEMFILE
 TMPFILES: $TMPFILES
 
 ${MSGS:-}${MSGS:+
