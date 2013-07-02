@@ -45,7 +45,7 @@ base::~base()
 disabled::disabled(bspline &b)
     : base()
 {
-    SUZERAIN_UNUSED(b);
+    shape.setOnes(b.n());
 }
 
 real_t
@@ -65,6 +65,7 @@ lower::lower(bspline &b)
 {
     coeff.setZero(b.n());
     coeff.head<1>()[0] = 1;
+    shape.setOnes(b.n());
 }
 
 upper::upper(bspline &b)
@@ -72,6 +73,7 @@ upper::upper(bspline &b)
 {
     coeff.setZero(b.n());
     coeff.tail<1>()[0] = 1;
+    shape.setOnes(b.n());
 }
 
 bulk::bulk(bspline &b)
@@ -81,6 +83,7 @@ bulk::bulk(bspline &b)
     b.integration_coefficients(0, coeff.data());
     real_t L = b.breakpoint(b.nbreak()-1) - b.breakpoint(0);
     coeff /= L;
+    shape.setOnes(b.n());
 }
 
 constant::constant(const real_t target)

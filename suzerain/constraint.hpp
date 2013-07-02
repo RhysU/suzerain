@@ -47,9 +47,19 @@ public:
 
     /**
      * What functional, when dotted with B-spline coefficients, computes the
-     * quantity of interest?
+     * quantity of interest?  This member should only be used when enabled()
+     * returns \c true.
      * */
     VectorXr coeff;
+
+    /**
+     * What shape, stored as relative magnitudes at collocation points, express
+     * the wall-normal forcing profile to use when enforcing constraints?  For
+     * example, a uniform profile would be expressed using all ones.  A point
+     * source would be all zeros with the exception of a single one.  Unlike
+     * #coeff, this member must be usable even when enabled() returns \c false.
+     */
+    ArrayXr shape;
 
     /**
      * What scalar value should be targeted by the constraint?  This value may
@@ -64,7 +74,10 @@ public:
     virtual ~base();
 };
 
-/** A constraint reporting that it is always disabled. */
+/**
+ * A constraint reporting that it is always disabled.
+ * The forcing #shape is uniform.
+ */
 class disabled : public virtual base
 {
 public:
@@ -79,7 +92,10 @@ public:
 
 };
 
-/** Constrain the collocation value at \f$y=0\f$. */
+/**
+ * Constrain the collocation value at \f$y=0\f$
+ * with a uniform forcing #shape.
+ */
 class lower : public virtual base
 {
 public:
@@ -88,7 +104,10 @@ public:
 
 };
 
-/** Constrain the collocation value at \f$y=L_y\f$. */
+/**
+ * Constrain the collocation value at \f$y=L_y\f$
+ * with a uniform forcing #shape.
+ */
 class upper : public virtual base
 {
 public:
@@ -97,7 +116,10 @@ public:
 
 };
 
-/** Constrain the bulk value across \f$y=\left[0,L_y\right]\f$. */
+/**
+ * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$
+ * with a uniform forcing #shape.
+ */
 class bulk : public virtual base
 {
 public:
