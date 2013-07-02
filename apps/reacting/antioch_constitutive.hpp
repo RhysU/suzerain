@@ -128,6 +128,7 @@ public:
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
      * @param[in] cs      Species mass fractions.
+     * @param[in] Tinit  Initial guess for temperature.
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
      * @param[out] Ds     Mass diffusivities.
@@ -141,6 +142,7 @@ public:
                    const real_t  rho,
                    const real_t* species,
                    const real_t* cs,
+                   const real_t  Tinit,
                    real_t& T,
                    real_t& p,
                    real_t* Ds,
@@ -160,6 +162,7 @@ public:
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
      * @param[in] cs      Species mass fractions.
+     * @param[in] Tinit  Initial guess for temperature.
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
      * @param[out] Ds     Mass diffusivities.
@@ -173,6 +176,7 @@ public:
                    const real_t    rho,
                    const VectorXr& species,
                    const VectorXr& cs,
+                   const real_t    Tinit,
                    real_t&   T,
                    real_t&   p,
                    VectorXr& Ds,
@@ -192,6 +196,7 @@ public:
      * @param[in] rho     Mixture density.
      * @param[in] species Species densities.
      * @param[in] cs      Species mass fractions.
+     * @param[in] Tinit  Initial guess for temperature.
      * @param[out] T      Temperature.
      * @param[out] p      Pressure.
      * @param[out] p_rho  Derivative of pressure wrt mixture density
@@ -209,6 +214,7 @@ public:
                                              const real_t    rho,
                                              const VectorXr& species,
                                              const VectorXr& cs,
+                                             const real_t    Tinit,
                                              real_t&   T,
                                              real_t&   p,
                                              real_t&   p_rho,

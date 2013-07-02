@@ -417,6 +417,7 @@ quantities sample_quantities(
     // Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
+    real_t Tguess = -1;
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
@@ -538,7 +539,7 @@ quantities sample_quantities(
                 // viscosity, thermal conductivity, species enthalpies, and
                 // reaction source terms
                 real_t T, p, mu, kap, a, Cv;
-                cmods.evaluate(e, m, rho, species, cs,
+                cmods.evaluate(e, m, rho, species, cs, Tguess,
                                T, p, Ds, mu, kap, hs, om, a, Cv);
                 
                 const real_t lam = (cmods.alpha - 2.0/3.0)*mu;

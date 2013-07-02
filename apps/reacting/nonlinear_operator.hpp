@@ -592,6 +592,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     //
     // TODO: Combine some of these traversals (e.g., 1 and 2)
 
+    // Set initial guess for temperature
+    real_t Tguess = -1;
+
     // Traversal:
     // (1) Computing reference quantities and mean velocity OR mean
     //     velocity (depending on linearization, filtering, and which
@@ -683,9 +686,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 real_t gamma, a;
                 Vector3r p_m;
                 cmods.evaluate_pressure_derivs_and_trans(
-                    e, m, rho, species, cs,
+                    e, m, rho, species, cs, Tguess,
                     T, p, p_rho, p_rsum, p_m, p_e, mu, korCv, Ds,
                     gamma, a);
+                Tguess = T;
                 cmods.etots_from_T(T, etots);
                 cmods.htots_from_T(T, hs);
 
@@ -1138,8 +1142,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             // viscosity, thermal conductivity, species enthalpies, and
             // reaction source terms
             real_t T, p, mu, kap, a, Cv;
-            cmods.evaluate(e, m, rho, species, cs,
+            cmods.evaluate(e, m, rho, species, cs, Tguess,
                            T, p, Ds, mu, kap, hs, om, a, Cv);
+            Tguess = T;
 
             const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
 
