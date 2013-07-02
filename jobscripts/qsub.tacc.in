@@ -40,7 +40,7 @@ test "${S_RT:=0}" -lt 0 && S_RT=0
 
 # Make job directory, canonicalize paths, and build command
 mkdir -p "$JOBDIR"
-function canonpath() { echo $(cd $(dirname $1); pwd -P)/$(basename $1) ; }
+function canonpath() { echo $(cd $(dirname "$1"); pwd -P)/$(basename "$1") ; }
 BINARY=$(canonpath "$BINARY")
 INPUT=$(canonpath "$INPUT")
 JOBDIR=$(canonpath "$JOBDIR")
