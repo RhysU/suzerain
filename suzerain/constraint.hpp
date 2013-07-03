@@ -34,6 +34,7 @@ namespace suzerain {
 
 // Forward declarations
 class bspline;
+class bsplineop;
 
 /** Provide logic for constraining mean state in some fashion. */
 namespace constraint {
@@ -80,22 +81,26 @@ public:
 struct uniform : virtual base
 {
     explicit uniform(bspline &b);
+
+    explicit uniform(const bsplineop &bop);
 };
 
 /**
- * A building block to constrain the collocation value at \f$y=0\f$.
+ * A building block to constrain the <tt>nderiv</tt>-th function derivative at
+ * location \f$y=0\f$.
  */
 struct lower : virtual base
 {
-    explicit lower(bspline &b);
+    explicit lower(const bsplineop& bop, const int nderiv);
 };
 
 /**
- * A building block to constrain the collocation value at \f$y=L_y\f$.
+ * A building block to constrain the <tt>nderiv</tt>-th function derivative at
+ * location \f$y=L_y\f$.
  */
 struct upper : virtual base
 {
-    explicit upper(bspline &b);
+    explicit upper(const bsplineop& bop, const int nderiv);
 };
 
 /**
@@ -163,21 +168,25 @@ struct disabled : uniform
 };
 
 /**
- * Constrain the collocation value at \f$y=0\f$ to be some given constant
- * using a uniform forcing profile.
+ * Constrain the <tt>nderiv</tt>-th derivative at \f$y=0\f$ to be some given
+ * constant using a uniform forcing profile.
  */
 struct constant_lower : constant, lower, uniform
 {
-    constant_lower(const real_t target, bspline &b);
+    constant_lower(const real_t target,
+                   const bsplineop &bop,
+                   const int nderiv = 0);
 };
 
 /**
- * Constrain the collocation value at \f$y=L_y\f$ to be some given constant
- * using a uniform forcing profile.
+ * Constrain the <tt>nderiv</tt>-th derivative at \f$y=L_y\f$ to be some given
+ * constant using a uniform forcing profile.
  */
 struct constant_upper : constant, upper, uniform
 {
-    constant_upper(const real_t target, bspline &b);
+    constant_upper(const real_t target,
+                   const bsplineop &bop,
+                   const int nderiv = 0);
 };
 
 /**
@@ -190,26 +199,30 @@ struct constant_bulk : constant, bulk, uniform
 };
 
 /**
- * Constrain the collocation value at \f$y=0\f$ to be some given reference
- * using a uniform forcing profile.
+ * Constrain the <tt>nderiv</tt>-th derivative at \f$y=0\f$ to be some given
+ * reference using a uniform forcing profile.
  */
 struct reference_lower : reference, lower, uniform
 {
-    reference_lower(const real_t& target, bspline &b);
+    reference_lower(const real_t target,
+                    const bsplineop &bop,
+                    const int nderiv = 0);
 };
 
 /**
- * Constrain the collocation value at \f$y=L_y\f$ to be some given reference
- * using a uniform forcing profile.
+ * Constrain the <tt>nderiv</tt>-th derivative at \f$y=L_y\f$ to track some
+ * referenced value using a uniform forcing profile.
  */
 struct reference_upper : reference, upper, uniform
 {
-    reference_upper(const real_t& target, bspline &b);
+    reference_upper(const real_t target,
+                    const bsplineop &bop,
+                    const int nderiv = 0);
 };
 
 /**
- * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to be some
- * reference using a uniform forcing profile.
+ * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to track some
+ * referenced value using a uniform forcing profile.
  */
 struct reference_bulk : reference, bulk, uniform
 {

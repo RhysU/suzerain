@@ -32,6 +32,7 @@
 #include <suzerain/constraint.hpp>
 
 #include <suzerain/bspline.hpp>
+#include <suzerain/gbmatrix.h>
 
 namespace suzerain {
 
@@ -47,16 +48,39 @@ uniform::uniform(bspline &b)
     shape.setOnes(b.n());
 }
 
-lower::lower(bspline &b)
+uniform::uniform(const bsplineop &bop)
 {
-    coeff.setZero(b.n());
-    coeff.head<1>()[0] = 1;
+    shape.setOnes(bop.n());
 }
 
-upper::upper(bspline &b)
+lower::lower(const bsplineop &bop, const int nderiv)
 {
-    coeff.setZero(b.n());
-    coeff.tail<1>()[0] = 1;
+    // Reconstructing the first row of D^{(nderiv)} in coeff
+    // requires working with the first column of D_T
+    coeff.setZero(bop.n());
+    int il, iu;
+    real_t * const col = (real_t *) suzerain_gbmatrix_col(
+            bop.n(), bop.n(), bop.kl(nderiv), bop.ku(nderiv),
+            (void *) bop.D_T(nderiv), bop.ld(), sizeof(real_t),
+            /*first*/0, &il, &iu);
+    for (int i = il; i < iu; ++i) {
+        coeff[i] = col[i];
+    }
+}
+
+upper::upper(const bsplineop &bop, const int nderiv)
+{
+    // Reconstructing the last row of D^{(nderiv)} in coeff
+    // requires working with the last column of D_T
+    coeff.setZero(bop.n());
+    int il, iu;
+    real_t * const col = (real_t *) suzerain_gbmatrix_col(
+            bop.n(), bop.n(), bop.kl(nderiv), bop.ku(nderiv),
+            (void *) bop.D_T(nderiv), bop.ld(), sizeof(real_t),
+            /*last*/bop.n()-1, &il, &iu);
+    for (int i = il; i < iu; ++i) {
+        coeff[i] = col[i];
+    }
 }
 
 bulk::bulk(bspline &b)
@@ -121,18 +145,24 @@ disabled::enabled() const
     return false;
 }
 
-constant_lower::constant_lower(const real_t target, bspline &b)
+constant_lower::constant_lower(
+        const real_t target,
+        const bsplineop &bop,
+        const int nderiv)
     : constant(target)
-    , lower(b)
-    , uniform(b)
+    , lower(bop, nderiv)
+    , uniform(bop)
 {
     // NOP
 }
 
-constant_upper::constant_upper(const real_t target, bspline &b)
+constant_upper::constant_upper(
+        const real_t target,
+        const bsplineop &bop,
+        const int nderiv)
     : constant(target)
-    , upper(b)
-    , uniform(b)
+    , upper(bop, nderiv)
+    , uniform(bop)
 {
     // NOP
 }
@@ -145,18 +175,24 @@ constant_bulk::constant_bulk(const real_t target, bspline &b)
     // NOP
 }
 
-reference_lower::reference_lower(const real_t& target, bspline &b)
+reference_lower::reference_lower(
+        const real_t target,
+        const bsplineop &bop,
+        const int nderiv)
     : reference(target)
-    , lower(b)
-    , uniform(b)
+    , lower(bop, nderiv)
+    , uniform(bop)
 {
     // NOP
 }
 
-reference_upper::reference_upper(const real_t& target, bspline &b)
+reference_upper::reference_upper(
+        const real_t target,
+        const bsplineop &bop,
+        const int nderiv)
     : reference(target)
-    , upper(b)
-    , uniform(b)
+    , upper(bop, nderiv)
+    , uniform(bop)
 {
     // NOP
 }

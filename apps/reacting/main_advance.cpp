@@ -270,11 +270,11 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         INFO0(who, "Establishing driving, freestream-like state constraints");
         constrainer->physical[ndx::e  ].reset(
-                new constraint::constant_upper(e_inf,   *b));
+                new constraint::constant_upper(e_inf,   *cop, 0));
         constrainer->physical[ndx::mx ].reset(
-                new constraint::constant_upper(mx_inf,  *b));
+                new constraint::constant_upper(mx_inf,  *cop, 0));
         constrainer->physical[ndx::rho].reset(
-                new constraint::constant_upper(rho_inf, *b));
+                new constraint::constant_upper(rho_inf, *cop, 0));
 
     } else {
 
