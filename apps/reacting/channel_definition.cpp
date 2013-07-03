@@ -183,7 +183,12 @@ channel_definition::load(
     esio_line_establish(h, 1, 0, 1);
     esio_line_read(h, name_bulk_rho,   &t.bulk_rho,   0);
     esio_line_read(h, name_bulk_rho_u, &t.bulk_rho_u, 0);
-    esio_line_read(h, name_bulk_rho_E, &t.bulk_rho_E, 0);
+    if (ESIO_NOTFOUND != esio_line_size(h, name_bulk_rho_E, NULL)) {
+        esio_line_read(h, name_bulk_rho_E, &t.bulk_rho_E, 0);
+    } else {
+        INFO0(desc_bulk_rho_E << " not found; defaulting to disabled");
+        t.bulk_rho_E = std::numeric_limits<real_t>::quiet_NaN();
+    }
 
     this->populate(t, verbose);  // Prefer this to incoming
 }

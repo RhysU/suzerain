@@ -254,9 +254,9 @@ bool quantities::load(const esio_handle h)
         this->species_storage.resize(aglobal, 2*bglobal);
 
         if (this->Ns==0)
-            this->Ns = bglobal;
+            { this->Ns = bglobal; }
         else
-            assert(this->Ns==bglobal);
+            { assert(this->Ns==bglobal); }
 
         quantities_loader f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
