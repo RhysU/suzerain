@@ -32,6 +32,8 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
 
+#include <esio/error.h>
+
 namespace suzerain {
 
 static void parse_positive(const std::string& s, real_t *t, const char *n)
