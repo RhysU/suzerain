@@ -86,6 +86,15 @@ struct uniform : virtual base
 };
 
 /**
+ * A building block preparing a forcing profile in #shape targeting the
+ * <tt>i</tt>-th B-spline coefficient.
+ */
+struct coefficient : virtual base
+{
+    explicit coefficient(const bsplineop &bop, const int i);
+};
+
+/**
  * A building block to constrain the <tt>nderiv</tt>-th function derivative at
  * location \f$y=0\f$.
  */

@@ -53,6 +53,14 @@ uniform::uniform(const bsplineop &bop)
     shape.setOnes(bop.n());
 }
 
+coefficient::coefficient(const bsplineop &bop, const int i)
+{
+    // Apply the mass matrix to express coefficient i via collocation points
+    coeff.setZero(bop.n());
+    coeff[i] = 1;
+    bop.apply(0, 1.0, coeff.data(), coeff.innerStride());
+}
+
 lower::lower(const bsplineop &bop, const int nderiv)
 {
     // Reconstructing the first row of D^{(nderiv)} in coeff
