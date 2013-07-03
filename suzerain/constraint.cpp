@@ -42,53 +42,33 @@ base::~base()
     // NOP
 }
 
-disabled::disabled(bspline &b)
-    : base()
+uniform::uniform(bspline &b)
 {
     shape.setOnes(b.n());
-}
-
-real_t
-disabled::target() const
-{
-    return std::numeric_limits<real_t>::quiet_NaN();
-}
-
-bool
-disabled::enabled() const
-{
-    return false;
 }
 
 lower::lower(bspline &b)
-    : base()
 {
     coeff.setZero(b.n());
     coeff.head<1>()[0] = 1;
-    shape.setOnes(b.n());
 }
 
 upper::upper(bspline &b)
-    : base()
 {
     coeff.setZero(b.n());
     coeff.tail<1>()[0] = 1;
-    shape.setOnes(b.n());
 }
 
 bulk::bulk(bspline &b)
-    : base()
 {
     coeff.resize(b.n());
     b.integration_coefficients(0, coeff.data());
     real_t L = b.breakpoint(b.nbreak()-1) - b.breakpoint(0);
     coeff /= L;
-    shape.setOnes(b.n());
 }
 
 constant::constant(const real_t target)
-    : base()
-    , t(target)
+    : t(target)
 {
     // NOP
 }
@@ -106,8 +86,7 @@ constant::enabled() const
 }
 
 reference::reference(const real_t& target)
-    : base()
-    , t(&target)
+    : t(&target)
 {
     // NOP
 }
@@ -124,9 +103,28 @@ reference::enabled() const
     return !(boost::math::isnan)(*t);
 }
 
+disabled::disabled(bspline &b)
+    : uniform(b)
+{
+    // NOP
+}
+
+real_t
+disabled::target() const
+{
+    return std::numeric_limits<real_t>::quiet_NaN();
+}
+
+bool
+disabled::enabled() const
+{
+    return false;
+}
+
 constant_lower::constant_lower(const real_t target, bspline &b)
     : constant(target)
     , lower(b)
+    , uniform(b)
 {
     // NOP
 }
@@ -134,6 +132,7 @@ constant_lower::constant_lower(const real_t target, bspline &b)
 constant_upper::constant_upper(const real_t target, bspline &b)
     : constant(target)
     , upper(b)
+    , uniform(b)
 {
     // NOP
 }
@@ -141,6 +140,7 @@ constant_upper::constant_upper(const real_t target, bspline &b)
 constant_bulk::constant_bulk(const real_t target, bspline &b)
     : constant(target)
     , bulk(b)
+    , uniform(b)
 {
     // NOP
 }
@@ -148,6 +148,7 @@ constant_bulk::constant_bulk(const real_t target, bspline &b)
 reference_lower::reference_lower(const real_t& target, bspline &b)
     : reference(target)
     , lower(b)
+    , uniform(b)
 {
     // NOP
 }
@@ -155,6 +156,7 @@ reference_lower::reference_lower(const real_t& target, bspline &b)
 reference_upper::reference_upper(const real_t& target, bspline &b)
     : reference(target)
     , upper(b)
+    , uniform(b)
 {
     // NOP
 }
@@ -162,6 +164,7 @@ reference_upper::reference_upper(const real_t& target, bspline &b)
 reference_bulk::reference_bulk(const real_t& target, bspline &b)
     : reference(target)
     , bulk(b)
+    , uniform(b)
 {
     // NOP
 }

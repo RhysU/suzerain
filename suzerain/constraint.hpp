@@ -75,60 +75,39 @@ public:
 };
 
 /**
- * A constraint reporting that it is always disabled.
- * The forcing #shape is uniform.
+ * A building block preparing a uniform forcing profile in #shape.
  */
-class disabled : public virtual base
+struct uniform : virtual base
 {
-public:
-
-    explicit disabled(bspline &b);
-
-    /** Always returns \c NaN. */
-    virtual real_t target() const;
-
-    /** Always returns \c false. */
-    virtual bool enabled() const;
-
+    explicit uniform(bspline &b);
 };
 
 /**
- * Constrain the collocation value at \f$y=0\f$
- * with a uniform forcing #shape.
+ * A building block to constrain the collocation value at \f$y=0\f$.
  */
-class lower : public virtual base
+struct lower : virtual base
 {
-public:
-
     explicit lower(bspline &b);
-
 };
 
 /**
- * Constrain the collocation value at \f$y=L_y\f$
- * with a uniform forcing #shape.
+ * A building block to constrain the collocation value at \f$y=L_y\f$.
  */
-class upper : public virtual base
+struct upper : virtual base
 {
-public:
-
     explicit upper(bspline &b);
-
 };
 
 /**
- * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$
- * with a uniform forcing #shape.
+ * A building block to constrain the bulk value across
+ * \f$y=\left[0,L_y\right]\f$.
  */
-class bulk : public virtual base
+struct bulk : virtual base
 {
-public:
-
     explicit bulk(bspline &b);
-
 };
 
-/** Target some constant value. */
+/** A building block to target some constant value. */
 class constant : public virtual base
 {
 public:
@@ -147,7 +126,7 @@ private:
 
 };
 
-/** Target some externally maintained reference. */
+/** A building block to target some externally maintained reference. */
 class reference : public virtual base
 {
 public:
@@ -170,71 +149,71 @@ private:
 };
 
 /**
- * Constrain the collocation value at \f$y=0\f$ to be some given constant.
+ * A constraint reporting that it is always disabled.
  */
-class constant_lower : public virtual constant, public virtual lower
+struct disabled : uniform
 {
-public:
+    explicit disabled(bspline &b);
 
+    /** Always returns \c NaN. */
+    virtual real_t target() const;
+
+    /** Always returns \c false. */
+    virtual bool enabled() const;
+};
+
+/**
+ * Constrain the collocation value at \f$y=0\f$ to be some given constant
+ * using a uniform forcing profile.
+ */
+struct constant_lower : constant, lower, uniform
+{
     constant_lower(const real_t target, bspline &b);
-
 };
 
 /**
- * Constrain the collocation value at \f$y=L_y\f$ to be some given constant.
+ * Constrain the collocation value at \f$y=L_y\f$ to be some given constant
+ * using a uniform forcing profile.
  */
-class constant_upper : public virtual constant, public virtual upper
+struct constant_upper : constant, upper, uniform
 {
-public:
-
     constant_upper(const real_t target, bspline &b);
-
 };
 
 /**
  * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to be some
- * constant.
+ * constant using a uniform forcing profile.
  */
-class constant_bulk : public virtual constant, public virtual bulk
+struct constant_bulk : constant, bulk, uniform
 {
-public:
-
     constant_bulk(const real_t target, bspline &b);
-
 };
 
 /**
- * Constrain the collocation value at \f$y=0\f$ to be some given reference.
+ * Constrain the collocation value at \f$y=0\f$ to be some given reference
+ * using a uniform forcing profile.
  */
-class reference_lower : public virtual reference, public virtual lower
+struct reference_lower : reference, lower, uniform
 {
-public:
-
     reference_lower(const real_t& target, bspline &b);
-
 };
 
 /**
- * Constrain the collocation value at \f$y=L_y\f$ to be some given reference.
+ * Constrain the collocation value at \f$y=L_y\f$ to be some given reference
+ * using a uniform forcing profile.
  */
-class reference_upper : public virtual reference, public virtual upper
+struct reference_upper : reference, upper, uniform
 {
-public:
-
     reference_upper(const real_t& target, bspline &b);
-
 };
 
 /**
  * Constrain the bulk value across \f$y=\left[0,L_y\right]\f$ to be some
- * reference.
+ * reference using a uniform forcing profile.
  */
-class reference_bulk : public virtual reference, public virtual bulk
+struct reference_bulk : reference, bulk, uniform
 {
-public:
-
     reference_bulk(const real_t& target, bspline &b);
-
 };
 
 } // namespace constraint
