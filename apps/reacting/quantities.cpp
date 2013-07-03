@@ -314,14 +314,17 @@ quantities sample_quantities(
             count
         }; };
 
-    // Indices for auxiliary storage (just state derivatives)
+    // Indices for auxiliary storage for state derivatives
+    // and heat flux related quantities
     struct aux { enum {
-            e       = 0,
-            mx      = 1*dir::count,
-            my      = 2*dir::count,
-            mz      = 3*dir::count,
-            rho     = 4*dir::count,
-            species = 5*dir::count
+            T       = 0,
+            gT      = 1,
+            e       = 1 + 1*dir::count,
+            mx      = 1 + 2*dir::count,
+            my      = 1 + 3*dir::count,
+            mz      = 1 + 4*dir::count,
+            rho     = 1 + 5*dir::count,
+            species = 1 + 6*dir::count
         }; };
 
     // Get total number of fields in aux storage
@@ -414,10 +417,115 @@ quantities sample_quantities(
     Matrix3Xr grad_cs      (3,Ns); // spatial derivatives of species mass fracs
     Matrix3Xr sdiff        (3,Ns); // diffusive fluxes for species equations
 
-    // Physical space is traversed linearly using a single offset 'offset'.
+
+    //------------------------------------------------------------------
+    // Adapted from nonlinear, to get temperature gradient and heat flux
+    //------------------------------------------------------------------
+    //
+    // (1) Compute temperature and store the field
+    // (2) Take temperature from physical to wave space.
+    // (3) Differentiate temperature in wave space and bring grad(T)
+    //     back to physical space.
+    // (4) (After going back to wave space with T and back down the
+    //      grad(T)), Compute heat flux along wit all the other 
+    //      variables for sampling.
+
+    // (1) Traversal to compute temperature
+    real_t Tguess = -1;
+    for (int offset = 0, j = dgrid.local_physical_start.y();
+         j < dgrid.local_physical_end.y();
+         ++j) {
+
+        real_t T = -1;
+        for (int k = dgrid.local_physical_start.z();
+            k < dgrid.local_physical_end.z();
+            ++k) {
+
+            for (int i = dgrid.local_physical_start.x();
+                i < dgrid.local_physical_end.x();
+                ++i, /* NB */ ++offset) {
+
+                // Unpack total energy, momentum, and density
+                const real_t   e  (sphys(ndx::e,   offset));
+                const Vector3r m  (sphys(ndx::mx,  offset),
+                        sphys(ndx::my,  offset),
+                        sphys(ndx::mz,  offset));
+                const real_t   rho(sphys(ndx::rho, offset));
+
+                const real_t irho = 1.0/rho;
+
+                // Unpack species variables
+                // NOTE: In species vector, idx 0 is the dilluter (the species
+                // that is not explicitly part of the state vector)
+                // Compute mass fractions
+                species(0) = rho;
+                for (unsigned int s=1; s<Ns; ++s) {
+                    species(s) = sphys(ndx::species + s - 1, offset);
+                    cs(s) = irho * species(s);
+
+                    // dilluter density = rho_0 = rho - sum_{s=1}^{Ns-1} rho_s
+                    species(0)        -= species(s);
+                }
+                cs(0) = irho * species(0);
+
+                // Compute temperature from internal energy
+                // (assuming thermal equilibrium)
+                const real_t re_internal = e - 
+                    0.5*irho*(m[0]*m[0] + m[1]*m[1] + m[2]*m[2]);
+                T = cmods.sm_thermo->T_from_e_tot(irho*re_internal, cs, Tguess);
+                Tguess = T;
+
+                auxp(aux::T  , offset) = T;
+            } // end x
+        } // end z
+    } // end y
+
+    // Prepare factored mass matrix for repeated use
+    bsplineop_luz massluz(cop);
+    const complex_t c_scale_factor = 1 / dgrid.chi();
+    massluz.opform(1, &c_scale_factor, cop);
+    massluz.factor();
+
+    // (2a) Temperature from physical to wave space (still collocation in y)
+    otool.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
+
+    // (2b) Apply inverse mass matrix to get to pure coefficient space
+    otool.bop_solve(massluz, auxw, aux::T);
+
+    // ... and zero wavenumbers present only for dealiasing
+    // while simultaneously normalizing FFT
+    otool.diffwave_apply(0, 0, otool.dgrid.chi(), auxw, aux::T);
+
+    // (3) Get derivatives.
+    //
+    // Compute Y derivatives of variable var at collocation points
+    otool.bop_accumulate(1,    1, auxw, aux::T, 0, auxw, aux::gT + dir::y);
+
+    // Get to collocation points in preparation for computing x and z
+    // derivatives
+    otool.bop_apply     (0,    1, auxw, aux::T);
+
+    // Compute X- and Z- derivatives of variable var at collocation points
+    // Zeros wavenumbers present only for dealiasing in the target storage
+    otool.diffwave_accumulate(1, 0, 1, auxw, aux::T, 0, auxw, aux::gT+dir::x);
+    otool.diffwave_accumulate(0, 1, 1, auxw, aux::T, 0, auxw, aux::gT+dir::z);
+
+    // FFTs to get to physical space
+    otool.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::y,0));
+    otool.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::x,0));
+    otool.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::gT+dir::z,0));
+
+    // Bring T to physical space as well to use the exact value as guess
+    // I'm not sure if doing this is less expensive though ...
+    otool.dgrid.transform_wave_to_physical(&auxp.coeffRef(aux::T,0));
+
+    // Now have temperature gradient at collocation points.
+    //-----------------------------------------------------------------
+
+
+    // (4) Physical space is traversed linearly using a single offset 'offset'.
     // The three loop structure is present to provide the global absolute
     // positions x(i), y(j), and z(k) where necessary.
-    real_t Tguess = -1;
     for (int offset = 0, j = dgrid.local_physical_start.y();
          j < dgrid.local_physical_end.y();
          ++j) {
@@ -539,10 +647,15 @@ quantities sample_quantities(
                 // viscosity, thermal conductivity, species enthalpies, and
                 // reaction source terms
                 real_t T, p, mu, kap, a, Cv;
+                Tguess = auxp(aux::T, offset);
                 cmods.evaluate(e, m, rho, species, cs, Tguess,
                                T, p, Ds, mu, kap, hs, om, a, Cv);
-                Tguess = T;
-                
+               
+                // Extract grad(T)
+                const Vector3r grad_T ( auxp(aux::gT+dir::x, offset),
+                                        auxp(aux::gT+dir::y, offset),
+                                        auxp(aux::gT+dir::z, offset));
+
                 const real_t lam = (cmods.alpha - 2.0/3.0)*mu;
                 
                 // Compute quantities related to the viscous stress tensor
@@ -591,22 +704,13 @@ quantities sample_quantities(
                 sum_sym_rho_grad_u[4](rho * (grad_u(1,2) + grad_u(2,1)) / 2);
                 sum_sym_rho_grad_u[5](rho *  grad_u(2,2)                   );
 
-                // sum_grad_T[0](grad_T.x());
-                // sum_grad_T[1](grad_T.y());
-                // sum_grad_T[2](grad_T.z());
+                sum_grad_T[0](grad_T.x());
+                sum_grad_T[1](grad_T.y());
+                sum_grad_T[2](grad_T.z());
 
-                // sum_rho_grad_T[0](rho * grad_T.x());
-                // sum_rho_grad_T[1](rho * grad_T.y());
-                // sum_rho_grad_T[2](rho * grad_T.z());
-
-                // FIXME: Don't have temperature gradient yet
-                sum_grad_T[0](0.0);
-                sum_grad_T[1](0.0);
-                sum_grad_T[2](0.0);
-
-                sum_rho_grad_T[0](0.0);
-                sum_rho_grad_T[1](0.0);
-                sum_rho_grad_T[2](0.0);
+                sum_rho_grad_T[0](rho * grad_T.x());
+                sum_rho_grad_T[1](rho * grad_T.y());
+                sum_rho_grad_T[2](rho * grad_T.z());
 
                 sum_tau_colon_grad_u[0]((tau.transpose()*grad_u).trace());
 
@@ -656,14 +760,9 @@ quantities sample_quantities(
 
                 sum_mu_div_u[0](mu * div_u);
 
-                // sum_mu_grad_T[0](mu * grad_T.x());
-                // sum_mu_grad_T[1](mu * grad_T.y());
-                // sum_mu_grad_T[2](mu * grad_T.z());
-
-                // FIXME: Do not have temperature gradient yet
-                sum_mu_grad_T[0](0.0);
-                sum_mu_grad_T[1](0.0);
-                sum_mu_grad_T[2](0.0);
+                sum_kappa_grad_T[0](kap * grad_T.x());
+                sum_kappa_grad_T[1](kap * grad_T.y());
+                sum_kappa_grad_T[2](kap * grad_T.z());
 
 
                 // TODO Sum mean slow growth forcing contributions (Redmine #2496)
