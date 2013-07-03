@@ -213,6 +213,17 @@ reference_bulk::reference_bulk(const real_t& target, bspline &b)
     // NOP
 }
 
+constant_upper_derivative::constant_upper_derivative(
+        const real_t target,
+        const bsplineop &bop,
+        const int nderiv)
+    : constant(target)
+    , upper(bop, nderiv)
+    , coefficient(bop, nderiv)
+{
+    // NOP
+}
+
 } // namespace constraint
 
 } // namespace suzerain

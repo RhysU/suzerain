@@ -238,6 +238,20 @@ struct reference_bulk : reference, bulk, uniform
     reference_bulk(const real_t& target, bspline &b);
 };
 
+/**
+ * Constrain the <tt>nderiv</tt>-th derivative at \f$y=L_y\f$ to be some target
+ * value by manipulating the <tt>(nderiv+1)</tt>-th B-spline basis coefficient.
+ * This approach modifies the <tt>nderiv</tt>-th and higher derivatives but
+ * does not change the behavior of lower ones.
+ */
+struct constant_upper_derivative : constant, upper, coefficient
+{
+    constant_upper_derivative(
+            const real_t target,
+            const bsplineop &bop,
+            const int nderiv);
+};
+
 } // namespace constraint
 
 } // namespace suzerain
