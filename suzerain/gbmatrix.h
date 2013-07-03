@@ -94,7 +94,7 @@ int suzerain_gbmatrix_in_band(int kl, int ku, int i, int j) {
  * @param[out] il First nonzero entry's row index \c i in column \c j.
  * @param[out] iu Last plus one nonzero entry's row index \c i in column \c j.
  *
- * @return A pointer which, after been cast to match \c s, may be
+ * @return A pointer which, after being cast to match \c s, may be
  *         dereferenced to access entries in column \c j of \c a.
  */
 static inline
@@ -136,7 +136,7 @@ void *suzerain_gbmatrix_col(int m, int n, int kl, int ku,
  * @param[out] ju  Last plus one nonzero entry's column index \c j in row \c i.
  * @param[out] inc Increment between entries in row \c i.
  *
- * @return A pointer which, after been cast to match \c s, may be
+ * @return A pointer which, after being cast to match \c s, may be
  *         dereferenced to access entries in row \c i of \c a.
  */
 static inline
