@@ -373,7 +373,7 @@ treatment<CommonBlock>::invert_mass_plus_scaled_operator(
     // 4) Add correctly scaled results to the mean state to satisfy constraints
     mean += (cdata * cphi.asDiagonal()).rowwise().sum();
 
-    // The implicitly applied integral constraints, as coefficients, must be
+    // The implicitly applied integral constraints, as point values, must be
     // averaged across each substep to permit accounting for their impact on
     // the Reynolds averaged equations using method_interface::iota as in
     //
