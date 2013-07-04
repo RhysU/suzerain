@@ -56,9 +56,9 @@ uniform::uniform(const bsplineop &bop)
 coefficient::coefficient(const bsplineop &bop, const int i)
 {
     // Apply the mass matrix to express coefficient i via collocation points
-    coeff.setZero(bop.n());
-    coeff[i] = 1;
-    bop.apply(0, 1.0, coeff.data(), coeff.innerStride());
+    shape.setZero(bop.n());
+    shape[i] = 1;
+    bop.apply(0, 1.0, shape.data(), shape.innerStride());
 }
 
 lower::lower(const bsplineop &bop, const int nderiv)
