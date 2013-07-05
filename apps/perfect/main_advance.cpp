@@ -256,21 +256,22 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         constrainer->physical[ndx::rho].reset(
                 new constraint::constant_upper(rho_inf, *cop, 0));
 
-        // Effectively disables some viscous terms to provide stable operation
-        // following Chapter 4 of Giles' thesis and Tables III and IV of
-        // Poinsot and Lele JCP 1992.  Necessary for subsonic outflows in Table
-        // IV and some subsonic inflows in Table IV.  Though not necessary for
-        // "SI 1", it is nonetheless enforced for consistency.  See Redmine
-        // ticket #2399 updates 22 and 23 for details and also personal notes
-        // dated 26 June 2013.
-        INFO0(who, "Constraining freestream mean state "
-                   " second derivatives to be zero");
-        constrainer->numerical[ndx::e  ].reset(
-                new constraint::constant_upper_derivative(0, *cop, 2));
-        constrainer->numerical[ndx::mx ] = constrainer->numerical[ndx::e];
-        constrainer->numerical[ndx::my ] = constrainer->numerical[ndx::e];
-        constrainer->numerical[ndx::mz ] = constrainer->numerical[ndx::e];
-        constrainer->numerical[ndx::rho] = constrainer->numerical[ndx::e];
+        // Approximately disables some viscous terms to provide stable
+        // operation following Chapter 4 of Giles' thesis and Tables III and IV
+        // of Poinsot and Lele JCP 1992.  Necessary for subsonic outflows in
+        // Table IV and some subsonic inflows in Table IV but notice case "SI
+        // 1" does not require it.  See Redmine ticket #2399 updates 22 and 23
+        // for details and also personal notes dated 26 June 2013.
+        if (isothermal->upper_v > 0) {
+            INFO0(who, "Constraining outflow freestream mean state "
+                       " second derivatives to be zero");
+            constrainer->numerical[ndx::e  ].reset(
+                    new constraint::constant_upper_derivative(0, *cop, 2));
+            constrainer->numerical[ndx::mx ] = constrainer->numerical[ndx::e];
+            constrainer->numerical[ndx::my ] = constrainer->numerical[ndx::e];
+            constrainer->numerical[ndx::mz ] = constrainer->numerical[ndx::e];
+            constrainer->numerical[ndx::rho] = constrainer->numerical[ndx::e];
+        }
 
     } else {
 
