@@ -78,7 +78,7 @@ def main(argv=None):
 
     # Default values
     nskip = 20
-    fileext = 'jpg'
+    fileext = 'eps'
 
     # Parse and check incoming command line arguments
     try:
