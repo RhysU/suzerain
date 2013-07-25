@@ -124,6 +124,7 @@ def getblparam(hdf5file):
     V_wall     =  bar_u_coeff[0,1]
     U_inf      =  bar_u_coeff[Ny-1,0]
     V_inf      =  bar_u_coeff[Ny-1,1]
+    W_inf      =  bar_u_coeff[Ny-1,2]
 
     # Grid parameters
     y1         =  y[1] 
@@ -166,25 +167,27 @@ def getblparam(hdf5file):
         theta += rho_u_col[j,0] / rhoU_edge * (1 - bar_u_col[j,0] / U_edge) * i_weights[j,0] 
 
     # Computed parameters
-    Re_delta_star = rho_edge * U_edge * delta_star / mu_edge
-    Re_theta      = rho_edge * U_edge * theta      / mu_edge
-    H1            = delta_star / theta
-    H2            = delta      / theta
-    tau_wall      = mu_wall * dudy_wall
-    u_tau         = np.sqrt(tau_wall / rho_wall)
-    delta_nu      = mu_wall / rho_wall / u_tau
-    Re_tau        = rho_wall * u_tau * delta / mu_wall
-    turnover_time = delta / u_tau
+    Re_delta_star    = rho_edge * U_edge * delta_star / mu_edge
+    Re_theta         = rho_edge * U_edge * theta      / mu_edge
+    Re_delta         = rho_edge * U_edge * delta      / mu_edge
+    H1               = delta_star / theta
+    H2               = delta      / theta
+    tau_wall         = mu_wall * dudy_wall
+    u_tau            = np.sqrt(tau_wall / rho_wall)
+    delta_nu         = mu_wall / rho_wall / u_tau
+    Re_tau           = rho_wall * u_tau * delta / mu_wall
+    turnover_time    = delta / u_tau
+    flowthrough_time = Lx / U_edge
 
-    Lx_over_delta = Lx / delta
-    Ly_over_delta = Ly / delta
-    Lz_over_delta = Lz / delta
-    y1_plus       = y1 / delta_nu
-    y1b_plus      = y1b / delta_nu
-    Dx            = Lx / Nx
-    Dz            = Lz / Nz
-    Dx_plus       = Dx / delta_nu
-    Dz_plus       = Dz / delta_nu
+    Lx_over_delta    = Lx / delta
+    Ly_over_delta    = Ly / delta
+    Lz_over_delta    = Lz / delta
+    y1_plus          = y1 / delta_nu
+    y1b_plus         = y1b / delta_nu
+    Dx               = Lx / Nx
+    Dz               = Lz / Nz
+    Dx_plus          = Dx / delta_nu
+    Dz_plus          = Dz / delta_nu
 
     # Resolution in y, collocation
     Ny_below_5plus  = 0
@@ -232,31 +235,37 @@ def getblparam(hdf5file):
 
     # Put parameters in an array
     prms = np.empty([0,1])
-    prms = np.append(prms, [t              ])
-    prms = np.append(prms, [rho_wall       ])
-    prms = np.append(prms, [mu_wall        ])
-    prms = np.append(prms, [mu_inf         ])
-    prms = np.append(prms, [delta_star     ])
-    prms = np.append(prms, [theta          ])
-    prms = np.append(prms, [delta          ])
-    prms = np.append(prms, [H1             ])
-    prms = np.append(prms, [H2             ])
-    prms = np.append(prms, [dudy_wall      ])
-    prms = np.append(prms, [tau_wall       ])
-    prms = np.append(prms, [u_tau          ])
-    prms = np.append(prms, [delta_nu       ]) 
-    prms = np.append(prms, [Re_tau         ])
-    prms = np.append(prms, [y1b_plus       ])
-    prms = np.append(prms, [U_edge         ])
-    prms = np.append(prms, [V_inf          ])
-    prms = np.append(prms, [T_inf          ])
-    prms = np.append(prms, [rho_inf        ])
-    prms = np.append(prms, [Dx_plus        ])
-    prms = np.append(prms, [Dz_plus        ])
-    prms = np.append(prms, [Lx_over_delta  ])
-    prms = np.append(prms, [Ly_over_delta  ])
-    prms = np.append(prms, [Lz_over_delta  ])
-                                    
+    prms = np.append(prms, [t                 ])
+    prms = np.append(prms, [rho_wall          ])
+    prms = np.append(prms, [mu_wall           ])
+    prms = np.append(prms, [mu_inf            ])
+    prms = np.append(prms, [delta_star        ])
+    prms = np.append(prms, [theta             ])
+    prms = np.append(prms, [delta             ])
+    prms = np.append(prms, [H1                ])
+    prms = np.append(prms, [H2                ])
+    prms = np.append(prms, [dudy_wall         ])
+    prms = np.append(prms, [tau_wall          ])
+    prms = np.append(prms, [u_tau             ])
+    prms = np.append(prms, [delta_nu          ]) 
+    prms = np.append(prms, [y1b_plus          ])
+    prms = np.append(prms, [Re_tau            ])
+    prms = np.append(prms, [Re_delta_star     ])
+    prms = np.append(prms, [Re_theta          ])
+    prms = np.append(prms, [Re_delta          ])
+    prms = np.append(prms, [U_edge            ])
+    prms = np.append(prms, [V_inf             ])
+    prms = np.append(prms, [W_inf             ])
+    prms = np.append(prms, [T_inf             ])
+    prms = np.append(prms, [rho_inf           ])
+    prms = np.append(prms, [Dx_plus           ])
+    prms = np.append(prms, [Dz_plus           ])
+    prms = np.append(prms, [Lx_over_delta     ])
+    prms = np.append(prms, [Ly_over_delta     ])
+    prms = np.append(prms, [Lz_over_delta     ])
+    prms = np.append(prms, [turnover_time     ])
+    prms = np.append(prms, [flowthrough_time  ])
+                                  
     return prms
 
 
@@ -308,10 +317,14 @@ def main(argv=None):
     head_table = np.append(head_table, ["tau_wall                "])
     head_table = np.append(head_table, ["u_tau                   "])
     head_table = np.append(head_table, ["delta_nu                "]) 
-    head_table = np.append(head_table, ["Re_tau                  "])
     head_table = np.append(head_table, ["y1b_plus                "])
+    head_table = np.append(head_table, ["Re_tau                  "])
+    head_table = np.append(head_table, ["Re_delta_star           "])
+    head_table = np.append(head_table, ["Re_theta                "])
+    head_table = np.append(head_table, ["Re_delta                "])
     head_table = np.append(head_table, ["U_inf                   "])
     head_table = np.append(head_table, ["V_inf                   "])
+    head_table = np.append(head_table, ["W_inf                   "])
     head_table = np.append(head_table, ["T_inf                   "])
     head_table = np.append(head_table, ["rho_inf                 "])
     head_table = np.append(head_table, ["Dx_plus                 "])
@@ -319,6 +332,8 @@ def main(argv=None):
     head_table = np.append(head_table, ["Lx_over_delta           "])
     head_table = np.append(head_table, ["Ly_over_delta           "])
     head_table = np.append(head_table, ["Lz_over_delta           "])
+    head_table = np.append(head_table, ["turnover_time           "])
+    head_table = np.append(head_table, ["flowthrough_time        "])
     nprms      = head_table.shape[0]
     head_table = np.array(head_table).reshape(1, nprms)
     np.savetxt(outfile, head_table, delimiter=' ', fmt='%s')
