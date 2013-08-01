@@ -90,6 +90,7 @@
 \DeclareMathOperator{\trace}{tr}
 \newcommand{\Ssd}{\ensuremath{\mathcal{S}}} % source term from slow derivative
 \newcommand{\Cs}{\ensuremath{\mathcal{C}}}  % source term from integral constraints
+\newcommand{\expect}[1]{\operatorname{\mathbb{E}}\left[#1\right]}
 
 \begin{document}
 
@@ -5842,8 +5843,141 @@ interest, are cataloged in section~\ref{sec:nondimfans}.
 This section assumes both robust mean and uncertainty-in-the-mean estimates can
 be obtained for Reynolds-averaged quantities.  This section describes how those
 estimates are combined and their corresponding uncertainties propagated into
-derived quantities.  Much of this material is reproduced from
-\citet{Ku1966Notes}.
+derived quantities.  This material draws on both \citet{Ku1966Notes} and the
+Taylor Series Method expanded upon in \citet{Coleman2009Experimentation}.
+
+Consider one observation $\vec{d}$  of some deterministic truth $\vec{x}$
+obscured by bias error $\vec{\beta}$ as well as measurement error
+$\vec{\epsilon}$. That is,
+\begin{align*}
+  \vec{d} &= \vec{x} - \vec{\beta} - \vec{\epsilon}
+\end{align*}
+Assume $\vec{\beta}$ is small and independent of $\vec{\epsilon}$.  Assume also
+that $\vec{\epsilon} \sim \mathcal{N}(\vec{0}, \Sigma)$ for some known or
+estimatable covariance matrix $\Sigma$ containing scalar components
+$\sigma_{ij}$.
+
+Given some physically-relevant functional $f = f\left(\vec{x}\right)$,
+computing the quantities $\expect{f\left(\vec{x}\right)}$ and
+$\operatorname{var} f\left(\vec{x}\right) $ naturally becomes of interest.
+Expanding $f$ about $\vec{d}$ up to $k^\mathrm{th}$ order and evaluating at the
+unknown truth $\vec{x}$,
+\begin{align*}
+  f(\vec{x})
+&\approx
+  \sum_{|\alpha| \le k} \left( \vec{x} - \vec{d} \right)^\alpha
+  \frac{\left(D^\alpha f\right)\left(\vec{d}\right)}{\alpha!}
+.
+\end{align*}
+Choosing $k=2$, expanding the notation, and using the definition of $\vec{d}$,
+\begin{align*}
+  f\left(\vec{x}\right)
+&\approx
+    f\left(\vec{d}\right)
+  + \sum_i \left(x_i-d_i\right) \partial_{x_i} f\left(\vec{d}\right)
+  + \frac{1}{2} \sum_{i,j}
+                \left(x_i-d_i\right)\left(x_j-d_j\right)
+                \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+\\
+&=
+    f\left(\vec{d}\right)
+  + \sum_i \left(\beta_i+\epsilon_i\right)
+           \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+  + \frac{1}{2} \sum_{i,j}
+                \left(\beta_i+\epsilon_i\right)
+                \left(\beta_j+\epsilon_j\right)
+                \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+.
+\end{align*}
+Taking the expectation, boldly claiming $\expect{\beta_i}\left(\partial_{x_i}
+f\right)\left(\vec{d}\right)$ is negligible, and less courageously dropping
+terms containing $\expect{\beta_i \beta_j}$ yields
+\begin{align*}
+  \expect{f\left(\vec{x}\right)}
+&\approx
+    f\left(\vec{d}\right)
+  + \frac{1}{2} \sum_{i,j}
+                \sigma_{ij}
+                \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+.
+\end{align*}
+Revisiting the expansion and retaining only up to the $k=1$ terms,
+\begin{align*}
+  f\left(\vec{x}\right)
+&\approx
+    f\left(\vec{d}\right)
+  + \sum_i \left(\beta_i+\epsilon_i\right)
+           \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+.
+\end{align*}
+Squaring and expanding products of sums,
+% \begin{align*}
+%   f^2(\vec{x}) \approx f^2(\vec{d})
+%  &+   \left(\sum_i \beta_i    (\partial_{x_i} f)(\vec{d})\right)^2
+% \\
+%  &+   \left(\sum_i \epsilon_i (\partial_{x_i} f)(\vec{d})\right)^2
+% \\
+%  &+ 2 f(\vec{d}) \sum_i \left(\beta_i+\epsilon_i\right)
+%                         (\partial_{x_i} f)(\vec{d})
+% \\
+%  &+ 2 \left(\sum_i \beta_i    (\partial_{x_i} f)(\vec{d})\right)
+%       \left(\sum_i \epsilon_i (\partial_{x_i} f)(\vec{d})\right)
+% .
+% \end{align*}
+\begin{align*}
+  f^2\left(\vec{x}\right) \approx f^2\left(\vec{d}\right)
+ &+   \sum_i \beta_i^2
+             \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
+  +  2\sum_{i<j} \beta_i \beta_j
+                 \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+                 \left(\partial_{x_j} f\right)\left(\vec{d}\right)
+\\
+ &+   \sum_i \epsilon_i^2  \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
+  +  2\sum_{i<j} \epsilon_i \epsilon_j
+                 \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+                 \left(\partial_{x_j} f\right)\left(\vec{d}\right)
+\\
+ &+ 2 f\left(\vec{d}\right) \sum_i
+                            \left(\beta_i+\epsilon_i\right)
+                            \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+  + 2 \sum_{i,j} \beta_i \epsilon_j
+                 \left(\partial_{x_i} f\right)\left(\vec{d}\right)
+                 \left(\partial_{x_j} f\right)\left(\vec{d}\right)
+.
+\end{align*}
+Averaging and again neglecting $\expect{\beta_i}\left(\partial_{x_i}
+f\right)\left(\vec{d}\right)$ and terms involving $\expect{\beta_i \beta_j}$
+gives
+\begin{align*}
+  \expect{f^2\left(\vec{x}\right)}
+&\approx
+    f^2\left(\vec{d}\right)
+  +  \sum_i \sigma_{ii}     \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
+  + 2\sum_{i<j} \sigma_{ij} \left(\partial_{x_i} f\right)  \left(\vec{d}\right)
+                            \left(\partial_{x_j} f\right)  \left(\vec{d}\right)
+.
+\end{align*}
+Subtracting the square of $\expect{f\left(\vec{x}\right)}$ from
+$\expect{f^2\left(\vec{x}\right)}$ one arrives at
+\begin{align*}
+  \operatorname{var} f\left(\vec{x}\right)
+&\approx
+     \sum_i \sigma_{ii}     \left(\partial_{x_i} f\right)^2\left(\vec{d}\right)
+  + 2\sum_{i<j} \sigma_{ij} \left(\partial_{x_i} f\right)  \left(\vec{d}\right)
+                            \left(\partial_{x_j} f\right)  \left(\vec{d}\right)
+\\
+ &- f\left(\vec{d}\right)
+    \sum_{i,j} \sigma_{ij}
+    \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+  - \frac{1}{4} \left(
+      \sum_{i,j} \sigma_{ij}
+      \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+    \right)^2
+.
+\end{align*}
+As expected, having neglected bias error contributions, $\operatorname{var}
+f\left(\vec{x}\right)$ is controlled wholly by the functional form of $f$ as
+well as the measurement error covariances $\sigma_{ij}$.
 
 \section{Quantifying statistical quantity convergence}
 \label{sec:quantconvergence}

@@ -4,6 +4,7 @@
 /*.blg
 /*.dvi
 /*.fdb_latexmk
+/*.fls
 /*.log
 /Makefile
 /Makefile.in
