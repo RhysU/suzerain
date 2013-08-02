@@ -86,6 +86,14 @@ def getblparam(hdf5file):
     bar_mu_coeff = f['bar_mu'].value
     bar_mu_coeff = np.array(bar_mu_coeff).transpose().reshape(Ny,1)
 
+    # Grab p coefficients
+    p_coeff = f['bar_p'].value
+    p_coeff = np.array(p_coeff).reshape(Ny,1)
+
+    # Grab a coefficients
+    a_coeff = f['bar_a'].value
+    a_coeff = np.array(a_coeff).reshape(Ny,1)
+
     # Grid delta y, collocation
     dy = np.diff(y)
     dy = np.append(dy,dy[Ny-2])
@@ -114,6 +122,8 @@ def getblparam(hdf5file):
     rho_u_col   = D0*rho_u_coeff
     rho_E_col   = D0*rho_E_coeff
     T_col       = D0*T_coeff
+    p_col       = D0*p_coeff
+    a_col       = D0*a_coeff
     rho_s_col   = D0*rho_s_coeff
     bar_u_col   = D0*bar_u_coeff
     bar_du_col  = D1*bar_u_coeff
@@ -131,6 +141,10 @@ def getblparam(hdf5file):
     y1b        =  yb[1] 
 
     # Raw parameters
+    p_wall     =  p_coeff[0,0]
+    p_inf      =  p_coeff[Ny-1,0]
+    a_wall     =  a_coeff[0,0]
+    a_inf      =  a_coeff[Ny-1,0]
     rho_wall   =  rho_coeff[0,0]
     mu_wall    =  bar_mu_coeff[0,0]
     rho_inf    =  rho_coeff[Ny-1,0]
@@ -237,6 +251,8 @@ def getblparam(hdf5file):
     prms = np.empty([0,1])
     prms = np.append(prms, [t                 ])
     prms = np.append(prms, [rho_wall          ])
+    prms = np.append(prms, [p_wall            ])
+    prms = np.append(prms, [a_wall            ])
     prms = np.append(prms, [mu_wall           ])
     prms = np.append(prms, [mu_inf            ])
     prms = np.append(prms, [delta_star        ])
@@ -258,6 +274,8 @@ def getblparam(hdf5file):
     prms = np.append(prms, [W_inf             ])
     prms = np.append(prms, [T_inf             ])
     prms = np.append(prms, [rho_inf           ])
+    prms = np.append(prms, [p_inf             ])
+    prms = np.append(prms, [a_inf             ])
     prms = np.append(prms, [Dx_plus           ])
     prms = np.append(prms, [Dz_plus           ])
     prms = np.append(prms, [Lx_over_delta     ])
@@ -306,6 +324,8 @@ def main(argv=None):
     head_table = np.empty([0])
     head_table = np.append(head_table, ["t                       "])
     head_table = np.append(head_table, ["rho_wall                "])
+    head_table = np.append(head_table, ["p_wall                  "])
+    head_table = np.append(head_table, ["a_wall                  "])
     head_table = np.append(head_table, ["mu_wall                 "])
     head_table = np.append(head_table, ["mu_inf                  "])
     head_table = np.append(head_table, ["delta_star              "])
@@ -327,6 +347,8 @@ def main(argv=None):
     head_table = np.append(head_table, ["W_inf                   "])
     head_table = np.append(head_table, ["T_inf                   "])
     head_table = np.append(head_table, ["rho_inf                 "])
+    head_table = np.append(head_table, ["p_inf                   "])
+    head_table = np.append(head_table, ["a_inf                   "])
     head_table = np.append(head_table, ["Dx_plus                 "])
     head_table = np.append(head_table, ["Dz_plus                 "])
     head_table = np.append(head_table, ["Lx_over_delta           "])

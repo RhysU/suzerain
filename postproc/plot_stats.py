@@ -73,6 +73,14 @@ def plot(hdf5file, fileext, ifile):
     om_s_coeff = f['bar_om_s'].value
     om_s_coeff = np.array(om_s_coeff).transpose().reshape(Ny,Ns)
 
+    # Grab p coefficients
+    p_coeff = f['bar_p'].value
+    p_coeff = np.array(p_coeff).reshape(Ny,1)
+
+    # Grab a coefficients
+    a_coeff = f['bar_a'].value
+    a_coeff = np.array(a_coeff).reshape(Ny,1)
+
     # Grid delta y, colocation points
     dy = np.diff(y)
     dy = np.append(dy,dy[Ny-2])
@@ -109,6 +117,9 @@ def plot(hdf5file, fileext, ifile):
     om_s_col    = D0*om_s_coeff
     mu_col      = D0*mu_coeff
     nu_col      = D0*nu_coeff
+    p_col       = D0*p_coeff
+    a_col       = D0*a_coeff
+
 
     # Computed quantities
     # - Favre averages
@@ -185,7 +196,21 @@ def plot(hdf5file, fileext, ifile):
     pyplot.semilogx(y, T_col, linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('bar_T.' + fileext, bbox_inches='tight')
-   
+  
+    figid += 1
+    pyplot.figure(figid)
+    key = "bar_p" + str(ifile)
+    pyplot.semilogx(y, p_col, linewidth=3, label=key)
+    pyplot.legend(loc=0)
+    pyplot.savefig('bar_p.' + fileext, bbox_inches='tight')
+
+    figid += 1
+    pyplot.figure(figid)
+    key = "bar_a" + str(ifile)
+    pyplot.semilogx(y, a_col, linewidth=3, label=key)
+    pyplot.legend(loc=0)
+    pyplot.savefig('bar_a.' + fileext, bbox_inches='tight')
+
     figid += 1
     pyplot.figure(figid)
     key = "R_u_u" + str(ifile)
