@@ -7,7 +7,8 @@
 # LaTeX and BiBTeX source files
 
 # Standalone LaTeX documents
-TEXSOURCES  = channel_treatment.tex
+TEXSOURCES  = baseflow.tex
+TEXSOURCES += channel_treatment.tex
 TEXSOURCES += covariance.tex
 TEXSOURCES += L2.tex
 TEXSOURCES += lssdimex.tex

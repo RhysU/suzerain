@@ -1,0 +1,80 @@
+\documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+
+% Packages
+\usepackage{accents}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{cancel}
+\usepackage{enumerate}
+\usepackage{fancyhdr}
+\usepackage{fullpage}
+\usepackage{ifthen}
+\usepackage{lastpage}
+\usepackage{latexsym}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{parskip}
+\usepackage{pstricks}
+\usepackage{setspace}
+\usepackage{txfonts}
+\usepackage{units}
+\usepackage{varioref}
+\usepackage{wrapfig}
+
+% Hyperref package must be last otherwise the contents are jumbled
+% hypertexnames disabled to fix links pointing to incorrect locations
+\usepackage[hypertexnames=false,final]{hyperref}
+
+\mathtoolsset{showonlyrefs,showmanualtags}
+\allowdisplaybreaks[1] % Allow grouped equations to be split across pages
+
+% Line Spacing
+\singlespacing
+
+% Set appropriate header/footer information on each page
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \renewcommand{\headheight}{2.0em}
+    \renewcommand{\headsep}{0.75em}
+    \renewcommand{\headrulewidth}{1.0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \lhead{
+        Favorable pressure gradient base flow computations
+    }
+    \rhead{
+        Page \thepage{} of \pageref{LastPage}
+    }
+}
+\pagestyle{plain}
+
+% Document-specific commands
+
+\begin{document}
+
+This document discusses how a favorable pressure gradient base flow is obtained
+for use within the temporally homogenized boundary layer formulation.  First, a
+compressible potential flow subproblem is formulated for an axisymmetric source
+or sink flow.  The boundary conditions for this subproblem are taken to match
+some freestream state of interest.  Next, the resulting one-dimensional problem
+is numerically solved using \citet{chebfunv4} and the solution transformed into
+conserved variables.  Finally, the conserved state is mapped onto the first
+quadrant of a Cartesian domain with state and derivatives collected from rays
+oriented in the positive $y$ direction.
+
+\section{The compressible potential flow equations}
+
+Here we recall section II.A of \citet{Saad2011Coordinate} which derives a
+coordinate independent velocity potential formulation of the compressible
+potential flow equations.
+
+TODO
+
+\newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
