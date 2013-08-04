@@ -65,18 +65,18 @@ solution transformed into conserved variables.  Finally, the conserved state is
 mapped onto the first quadrant of a Cartesian domain with state and derivatives
 collected from rays oriented in the positive $y$ direction.
 
-\section{The compressible potential flow equations}
+\section{The axisymmetric compressible potential flow equations}
 
 A particularly crisp derivation the coordinate-independent, velocity-potential
 formulation for the compressible potential flow equations appears in section
 II.A of \citet{Saad2011Coordinate}.  Begin by decomposing the dimensional
-velocity $\vec{u}$ into a scalar and vector potential and then assume 
+velocity $\vec{u}$ into a scalar and vector potential and then assume
 that the flow is irrotational, \emph{viz.}
 \begin{align}
   \vec{u} &= \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} =  \vec{\nabla}\phi
 .
 \end{align}
-Substituting the scalar potential into the continuity equation and employing
+Inserting the scalar potential into the continuity equation and employing
 smoothness,
 \begin{align}
   0 &= \vec{\nabla}\cdot\rho\vec{u}
@@ -92,13 +92,27 @@ From the definition of the speed of sound $a$ notice
     \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
 .
 \end{align}
-Rearranging the first statement followed by applying the second shows
+In a steady, inviscid, irrotational context the momentum equation yields
+\begin{align}
+    \vec{\nabla}p
+    &= -\rho \vec{u}\cdot\vec{\nabla}\vec{u}
+     = -\rho \left(   \frac{1}{2}\vec{\nabla}\vec{u}^2
+                    - \vec{u}\times\vec{\nabla}\times\vec{u}
+        \right)
+     = - \frac{1}{2} \rho \vec{\nabla}\vec{u}^2
+.
+\end{align}
+Rearranging the continuity result followed by two straightforward substitutions shows
 \begin{align}
     \vec{\nabla}^2\phi
     &= -\vec{\nabla}\phi\cdot\frac{1}{\rho}\vec{\nabla}\rho
      = -\vec{\nabla}\phi\cdot\frac{1}{\rho{}a^2}\vec{\nabla}p
+     =  \vec{\nabla}\phi\cdot\frac{1}{2a^2} \vec{\nabla}\vec{u}^2
 .
 \end{align}
+As expected, this is nothing but the Laplace equation for incompressible,
+irrotational flow whenever $\vec{\nabla}\rho = 0$.
+
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
