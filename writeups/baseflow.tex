@@ -67,7 +67,7 @@ collected from rays oriented in the positive $y$ direction.
 
 \section{The axisymmetric compressible potential flow equations}
 
-A particularly crisp derivation the coordinate-independent, velocity-potential
+A particularly crisp derivation of the coordinate-independent, velocity-potential
 formulation for the compressible potential flow equations appears in section
 II.A of \citet{Saad2011Coordinate}.  Begin by decomposing the dimensional
 velocity $\vec{u}$ into a scalar and vector potential and then assume
@@ -76,7 +76,7 @@ that the flow is irrotational, \emph{viz.}
   \vec{u} &= \vec{\nabla}\phi + \vec{\nabla}\times\vec{A} =  \vec{\nabla}\phi
 .
 \end{align}
-Inserting the scalar potential into the continuity equation and employing
+Inserting the scalar potential into the continuity equation and assuming
 smoothness,
 \begin{align}
   0 &= \vec{\nabla}\cdot\rho\vec{u}
@@ -110,8 +110,19 @@ Rearranging the continuity result followed by two straightforward substitutions 
      =  \vec{\nabla}\phi\cdot\frac{1}{2a^2} \vec{\nabla}\vec{u}^2
 .
 \end{align}
-As expected, this is nothing but the Laplace equation for incompressible,
-irrotational flow whenever $\vec{\nabla}\rho = 0$.
+As expected, one obtains the Laplace equation for incompressible, irrotational
+flow on taking $a \to \infty$.  Moving the denominator to the left
+hand side and inserting the scalar potential,
+\begin{align}
+    2 a^2 \vec{\nabla}^2\phi
+    &= \vec{\nabla}\phi\cdot \vec{\nabla}\vec{u}^2
+     = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+.
+\end{align}
+
+Next, \citeauthor{Saad2011Coordinate} employ that stagnation energy stays
+constant throughout such a flow to connect the local speed of sound to
+reference parameters and the local velocity.  That is, TODO
 
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
