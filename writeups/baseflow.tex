@@ -14,6 +14,7 @@
 \usepackage{ifthen}
 \usepackage{lastpage}
 \usepackage{latexsym}
+\usepackage{listings}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
@@ -58,15 +59,15 @@
 
 This document discusses how a favorable pressure gradient base flow is obtained
 for use within the temporally homogenized boundary layer formulation.  First, a
-compressible potential flow subproblem is formulated for an axisymmetric source
-or sink flow.  The boundary conditions for this subproblem are taken to match
-some freestream state of interest.  Next, the resulting one-dimensional problem
-is numerically solved using \texttt{Chebfun} by \citet{chebfunv4} and the
-solution transformed into conserved variables.  Finally, the conserved state is
-mapped onto the first quadrant of a Cartesian domain with state and derivatives
-collected from rays oriented in the positive $y$ direction.
+compressible potential flow subproblem is formulated for a radially-symmetric
+source or sink flow.  The boundary conditions for this subproblem are taken to
+match some freestream state of interest.  Next, the resulting one-dimensional
+problem is numerically solved using \texttt{Chebfun} by \citet{chebfunv4} and
+the solution transformed into conserved variables.  Finally, the conserved
+state is mapped onto the first quadrant of a Cartesian domain with state and
+derivatives collected from rays oriented in the positive $y$ direction.
 
-\section{The nondimensional, axisymmetric compressible potential flow equations}
+\section{The nondimensional, radially-symmetric compressible potential flow equations}
 
 A particularly crisp derivation of the coordinate-independent, velocity-potential
 formulation for the compressible potential flow equations appears in section
@@ -112,8 +113,6 @@ shows
      =  \vec{\nabla}\phi\cdot\frac{1}{2a^2} \vec{\nabla}\vec{u}^2
 .
 \end{align}
-% As expected, one obtains the Laplace equation for incompressible,
-% irrotational flow on taking $a \to \infty$.
 Moving the denominator to the left hand side and inserting the scalar
 potential,
 \begin{align}
@@ -209,7 +208,7 @@ Moving the $\Mach^2$ term to the right hand side, rescaling, and distributing,
 \end{align}
 As \citeauthor{Saad2011Coordinate} implicitly concluded, this formulation is
 most useful when $\gamma$ is known or when it can be connected to $\phi$ in
-some manner.  Adding a constant $\gamma=\gamma_0$ assumption one arrives at
+some manner.  Adding a constant $\gamma=\gamma_0$ assumption, one arrives at
 \begin{align}
        {\vec{\nabla}}^2\phi
     &=   \frac{1}{2}\Mach^2
@@ -220,9 +219,47 @@ some manner.  Adding a constant $\gamma=\gamma_0$ assumption one arrives at
          {\vec{\nabla}}^2\phi
 \label{eq:cpfgibbs_nondim}
 \end{align}
-which is an awfully nondimensional but pleasantly univariate result.
+which is an awfully nonlinear but pleasantly univariate result.
 
-To put~\eqref{eq:cpfgibbs_nondim} into an axisymmetric setting\dots TODO
+Assume a radially-symmetric geometry where
+$\phi=\operatorname{\phi}\left(r\right)$.  \emph{Mathematica}\textregistered{}
+can translate~\eqref{eq:cpfgibbs_nondim} to this setting
+\begin{lstlisting}[language=Mathematica,
+                   columns=flexible,basicstyle={\sffamily},frame={lines}]
+    Needs["VectorAnalysis`"];
+    SetCoordinates[Cylindrical];
+    With[{f=phi[Rr]},
+        With[{gf=Simplify[Grad[f]],lf=Simplify[Laplacian[f]]},
+            With[{gf2 = Simplify[DotProduct[gf,gf]]},
+                lf-(Ma^2/2) DotProduct[gf,Grad[gf2]]-(gamma0-1)(Ma^2/2)(gf2-1)lf
+            ]
+        ]
+    ];
+    Collect[%,{phi''[Rr],phi'[Rr],phi[Rr]}];
+    Map[Simplify,%]
+\end{lstlisting}
+producing output equivalent to
+\begin{align}
+    \frac{2+\Mach^2\left(\gamma_0-1\right)}{2 r}\phi^\prime
+   -\frac{  \Mach^2\left(\gamma_0-1\right)}{2 r}{\phi^\prime}^3
+   +\frac{1}{2}\left(2+\Mach^2\left(\gamma_0-1\right)
+                      -\Mach^2\left(\gamma_0+1\right){\phi^\prime}^2\right)
+               \phi^{\prime\prime}
+   &= 0
+.
+\end{align}
+Multiplying through by $r$ is acceptable as $r$ is nonzero away from the origin,
+\begin{align}
+    \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) \phi^\prime
+   -        \Mach^2\frac{\gamma_0-1}{2}       {\phi^\prime}^3
+   +r\left(1+\Mach^2\frac{\gamma_0-1}{2}
+            -\Mach^2\frac{\gamma_0+1}{2}{\phi^\prime}^2\right)
+    \phi^{\prime\prime}
+   &= 0
+.
+\end{align}
+As expected, one recovers $r$ times the Laplace equation for incompressible
+flow on taking $\Mach\to{}0$.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
