@@ -112,9 +112,10 @@ shows
      =  \vec{\nabla}\phi\cdot\frac{1}{2a^2} \vec{\nabla}\vec{u}^2
 .
 \end{align}
-As expected, one obtains the Laplace equation for incompressible, irrotational
-flow on taking $a \to \infty$.  Moving the denominator to the left
-hand side and inserting the scalar potential,
+% As expected, one obtains the Laplace equation for incompressible,
+% irrotational flow on taking $a \to \infty$.
+Moving the denominator to the left hand side and inserting the scalar
+potential,
 \begin{align}
     2 a^2 \vec{\nabla}^2\phi
     &= \vec{\nabla}\phi\cdot \vec{\nabla}\vec{u}^2
@@ -182,10 +183,46 @@ Multiplying through by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach =
     \right] {\vec{\nabla}}^2\phi
      =       \Mach^2 \vec{\nabla}\phi
        \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
-\label{eq:cpfgibbs_nondim}
 .
 \end{align}
+Moving the $\Mach^2$ term to the right hand side, rescaling, and distributing,
+\begin{align}
+       {\vec{\nabla}}^2\phi
+    &= \frac{\Mach^2}{2}\frac{\gamma_0-1}{\gamma-1} \left(
+         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+       +
+       \left[
+             \left(\gamma-1\right)
+             \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
+       \right] {\vec{\nabla}}^2\phi
+       \right)
+\\  &= \frac{\Mach^2}{2} \left(
+         \frac{\gamma_0-1}{\gamma-1}
+         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+       +
+       \left[
+             \left(\gamma_0-1\right)
+             \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
+       \right] {\vec{\nabla}}^2\phi
+       \right)
+.
+\end{align}
+As \citeauthor{Saad2011Coordinate} implicitly concluded, this formulation is
+most useful when $\gamma$ is known or when it can be connected to $\phi$ in
+some manner.  Adding a constant $\gamma=\gamma_0$ assumption one arrives at
+\begin{align}
+       {\vec{\nabla}}^2\phi
+    &=   \frac{1}{2}\Mach^2
+         \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+       +
+         \frac{\gamma_0-1}{2}\Mach^2
+         \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
+         {\vec{\nabla}}^2\phi
+\label{eq:cpfgibbs_nondim}
+\end{align}
+which is an awfully nondimensional but pleasantly univariate result.
 
+To put~\eqref{eq:cpfgibbs_nondim} into an axisymmetric setting\dots TODO
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
