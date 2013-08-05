@@ -52,6 +52,7 @@
 \pagestyle{plain}
 
 % Document-specific commands
+\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 
 \begin{document}
 
@@ -65,7 +66,7 @@ solution transformed into conserved variables.  Finally, the conserved state is
 mapped onto the first quadrant of a Cartesian domain with state and derivatives
 collected from rays oriented in the positive $y$ direction.
 
-\section{The axisymmetric compressible potential flow equations}
+\section{The nondimensional, axisymmetric compressible potential flow equations}
 
 A particularly crisp derivation of the coordinate-independent, velocity-potential
 formulation for the compressible potential flow equations appears in section
@@ -102,7 +103,8 @@ In a steady, inviscid, irrotational context the momentum equation yields
      = - \frac{1}{2} \rho \vec{\nabla}\vec{u}^2
 .
 \end{align}
-Rearranging the continuity result followed by two straightforward substitutions shows
+Rearranging the continuity result followed by two straightforward substitutions
+shows
 \begin{align}
     \vec{\nabla}^2\phi
     &= -\vec{\nabla}\phi\cdot\frac{1}{\rho}\vec{\nabla}\rho
@@ -117,6 +119,7 @@ hand side and inserting the scalar potential,
     2 a^2 \vec{\nabla}^2\phi
     &= \vec{\nabla}\phi\cdot \vec{\nabla}\vec{u}^2
      = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+\label{eq:cpfgibbs_nothermo_dim}
 .
 \end{align}
 
@@ -136,7 +139,7 @@ holds everywhere. From this energy constraint
         + \left(\gamma-1\right)\vec{u}_0^2
         - \left(\gamma-1\right)\vec{u}^2
 \end{align}
-may be used to produce
+may be used within~\eqref{eq:cpfgibbs_nothermo_dim} to produce the
 \begin{align}
     \left[
           2a_0^2 \frac{\gamma-1}{\gamma_0-1}
@@ -144,6 +147,42 @@ may be used to produce
           \left(\vec{u}_0^2 - \left(\vec{\nabla}\phi\right)^2\right)
     \right] \vec{\nabla}^2\phi
      = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+\label{eq:cpfgibbs_dim}
+.
+\end{align}
+
+To nondimensionalize, chose some reference length $l_0$ and declare
+\begin{align}
+    x     &= x^\ast l_0
+&   u     &= u^\ast u_0
+&   a     &= a^\ast a_0
+&   \phi  &= \phi^\ast u_0 l_0
+&   \rho  &= \rho^\ast \rho_0
+&   p     &= p^\ast \rho_0 a_0^2
+\end{align}
+where starred quantities are dimensionless.  Inserting these definitions
+into~\eqref{eq:cpfgibbs_dim},
+\begin{align}
+    \left[
+          2a_0^2 \frac{\gamma-1}{\gamma_0-1}
+        + u_0^2 \left(\gamma-1\right)
+          \left(1 - \left(\vec{\nabla}^\ast\phi^\ast\right)^2\right)
+    \right] \frac{u_0}{l_0} {\vec{\nabla}^\ast}^2\phi^\ast
+     =       \frac{u_0^3}{l_0} \vec{\nabla}^\ast\phi^\ast
+       \cdot \vec{\nabla}^\ast\left(\vec{\nabla}^\ast\phi^\ast\right)^2
+.
+\end{align}
+Multiplying through by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach =
+\frac{u_0}{a_0}$, and dropping the star notation,
+\begin{align}
+    \left[
+          2 \frac{\gamma-1}{\gamma_0-1}
+        + \Mach^2 \left(\gamma-1\right)
+          \left(1 - \left(\vec{\nabla}\phi\right)^2\right)
+    \right] {\vec{\nabla}}^2\phi
+     =       \Mach^2 \vec{\nabla}\phi
+       \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+\label{eq:cpfgibbs_nondim}
 .
 \end{align}
 
