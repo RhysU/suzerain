@@ -122,7 +122,33 @@ hand side and inserting the scalar potential,
 
 Next, \citeauthor{Saad2011Coordinate} employ that stagnation energy stays
 constant throughout such a flow to connect the local speed of sound to
-reference parameters and the local velocity.  That is, TODO
+reference parameters and the local velocity.  That is, for flow enthalpy $h =
+a^2 / \left(\gamma-1\right)$, reference enthalpy $h_0 = a_0^2 /
+\left(\gamma_0-1\right)$, and reference velocity $\vec{u}_0$
+\begin{align}
+        \frac{a^2  }{\gamma  -1} + \frac{1}{2} \vec{u}^2
+     &= \frac{a_0^2}{\gamma_0-1} + \frac{1}{2} \vec{u}_0^2
+\end{align}
+holds everywhere. Then
+\begin{align}
+        2a^2
+     &=   2a_0^2 \frac{\gamma-1}{\gamma_0-1}
+        + \left(\gamma-1\right)\vec{u}_0^2
+        - \left(\gamma-1\right)\vec{u}^2
+      =   2a_0^2 \frac{\gamma-1}{\gamma_0-1}
+        + \left(\gamma-1\right)
+          \left(\vec{u}_0^2 - \left(\vec{\nabla}\phi\right)^2\right)
+\end{align}
+may be used to produce
+\begin{align}
+    \left[
+          2a_0^2 \frac{\gamma-1}{\gamma_0-1}
+        + \left(\gamma-1\right)
+          \left(\vec{u}_0^2 - \left(\vec{\nabla}\phi\right)^2\right)
+    \right] \vec{\nabla}^2\phi
+     = \vec{\nabla}\phi\cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
+.
+\end{align}
 
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
