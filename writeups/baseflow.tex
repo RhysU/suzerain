@@ -61,7 +61,7 @@ transformed into conserved variables.  Finally, the conserved state is mapped
 onto the first quadrant of a Cartesian domain with state and derivatives
 collected from rays oriented in the positive $y$ direction.
 
-\section{The nondimensional, radially-symmetric compressible potential flow problem}
+\section{The nondimensional, radially-symmetric compressible potential flow equation}
 
 A particularly crisp derivation of the coordinate-independent,
 velocity-potential formulation for the compressible potential flow equations
@@ -215,7 +215,7 @@ some manner.  Adding a constant $\gamma=\gamma_0$ assumption, one arrives at
 \end{align}
 which is an awfully nonlinear but pleasantly univariate result.
 
-On a radially-symmetric geometry $\phi=\operatorname{\phi}\left(r\right)$ only.
+On a radially-symmetric geometry $\phi=\phi\left(r\right)$ only.
 \emph{Mathematica}\textregistered{} can translate~\eqref{eq:cpfgibbs_nondim}
 into this setting
 \begin{lstlisting}[language=Mathematica,
@@ -242,8 +242,8 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Defining $u = \operatorname{u}(r) = \operatorname{\phi}^\prime(r)$ and
-multiplying through by $r$ as the origin will not be of interest,
+Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$ as the
+origin will not be of interest,
 \begin{align}
     \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
    -        \Mach^2\frac{\gamma_0-1}{2}        u^3
