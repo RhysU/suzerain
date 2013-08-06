@@ -31,6 +31,10 @@
 
 #include "nonlinear_operator_fwd.hpp"
 
+#ifdef SUZERAIN_HAVE_LARGO
+#include <largo/largo.h>
+#endif
+
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -46,10 +50,6 @@
 #include "reacting.hpp"
 #include "filter_definition.hpp"
 #include "reacting_ndx.hpp"
-
-#ifdef SUZERAIN_HAVE_LARGO
-#include "largo/largo.h"
-#endif
 
 #pragma warning(disable:280 383 1572)
 
@@ -1082,6 +1082,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     field[4+s] = species(s);
                 }
 
+                // mean
                 mean[0] = mean_values(j,ndx::rho);
                 mean[1] = mean_values(j,ndx::mx);
                 mean[2] = mean_values(j,ndx::my);
@@ -1123,8 +1124,30 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     drms[4+s] = rms_values(j,state_count+ndx::rho+s);
                 }
 
+                // mean_rqq
+                real_t mean_rqq [Ns+4];
+                mean_rqq[0] = 0;
+                mean_rqq[1] = 0;
+                mean_rqq[2] = 0;
+                mean_rqq[3] = 0;
+                mean_rqq[4] = 0;
+                for (unsigned int s=1; s<Ns; s++){
+                    mean_rqq[4+s] = 0;
+                }
+
+                // dmean_rqq
+                real_t dmean_rqq [Ns+4];
+                dmean_rqq[0] = 0;
+                dmean_rqq[1] = 0;
+                dmean_rqq[2] = 0;
+                dmean_rqq[3] = 0;
+                dmean_rqq[4] = 0;
+                for (unsigned int s=1; s<Ns; s++){
+                    dmean_rqq[4+s] = 0;
+                }
+
 #ifdef SUZERAIN_HAVE_LARGO
-                largo_bl_temporal_prestep_seta ( ycoord*sgdef.grdelta, field, mean, rms, dmean, drms, sgdef.workspace);
+                largo_prestep_seta (sgdef.workspace, ycoord*sgdef.grdelta, field, mean, rms, mean_rqq, dmean, drms, dmean_rqq);
 #endif
             }
 
@@ -1208,35 +1231,31 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 #ifdef SUZERAIN_HAVE_LARGO
                 // Compute sources from library
-                largo_bl_temporal_continuity_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[0]);
-                largo_bl_temporal_xmomentum_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[1]);
-                largo_bl_temporal_ymomentum_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[2]);
-                largo_bl_temporal_zmomentum_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[3]);
-                largo_bl_temporal_energy_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[4]);
-                for (int s=1; s < Ns; ++s) {
-                    largo_bl_temporal_ispecies_setamean
-                                      (sgdef.workspace, 0.0, 1.0, &src[4+s], s);
-                }
+                largo_continuity_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[0]);
+                largo_xmomentum_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[1]);
+                largo_ymomentum_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[2]);
+                largo_zmomentum_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[3]);
+                largo_energy_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[4]);
+                largo_species_setamean
+                          (sgdef.workspace, 0.0, 1.0, &src[5]);
 
-                largo_bl_temporal_continuity_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[0]);
-                largo_bl_temporal_xmomentum_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[1]);
-                largo_bl_temporal_ymomentum_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[2]);
-                largo_bl_temporal_zmomentum_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[3]);
-                largo_bl_temporal_energy_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[4]);
-                for (int s=1; s < Ns; ++s) {
-                    largo_bl_temporal_ispecies_setarms
-                                      (sgdef.workspace, 1.0, 1.0, &src[4+s], s);
-                }
+                largo_continuity_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[0]);
+                largo_xmomentum_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[1]);
+                largo_ymomentum_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[2]);
+                largo_zmomentum_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[3]);
+                largo_energy_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[4]);
+                largo_species_setarms
+                          (sgdef.workspace, 1.0, 1.0, &src[5]);
 
 #else
                 // No slow growth computation if not linked with largo

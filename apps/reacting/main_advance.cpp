@@ -406,7 +406,14 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     {
         int state_count = (int) cmods->Ns()+4;
         int Ns = (int) cmods->Ns()-1;
-        largo_bl_temporal_allocate(&sgdef->workspace, state_count, Ns);
+        const std::string largo_name = sgdef->formulation.name();
+        int largo_imodel;
+
+        // Map model name to model index
+        // FIXME: switch to model name when ready on the largo side
+        if (largo_name=="temporal") {largo_imodel = 1;}
+       
+        largo_allocate(&sgdef->workspace, state_count, Ns, largo_imodel);
     }
 #endif
 
