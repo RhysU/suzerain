@@ -257,20 +257,30 @@ Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$,
 \end{align}
 
 Equation~\eqref{eq:cpfradial_nondim} may be used to find solutions to sub- and
-supersonic nozzle and diffuser problems.  Many books, e.g.  section 9.4 of
-\citet{White1999Fluid}, cover this class of problems in some detail.  In
+supersonic radial nozzle and diffuser problems.  Many books, e.g.  section 9.4
+of \citet{White1999Fluid}, cover this class of problems in some detail.  In
 particular, obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing the boundary
 conditions for sub- and supersonic nozzles.
-
-A subsonic nozzle may be posed on $\left[1, R\right]$ by setting $-\Mach^{-1} <
-u(R) < 0$ which implies the dimensional condition $-a_0 < u < 0$.  For these
-solutions $u$ increases and $p$ decreases when traversing the domain from $R$
-to $1$.
-
-A supersonic nozzle may be posed on $\left[1, R\right]$ by setting $u(1) >
-\Mach^{-1} > 0$ corresponding to the dimensional condition $u(1) > a_0 > 0$.
-For these solutions $u$ increases and $p$ decreases when traversing the domain
+%
+A subsonic nozzle may be posed on $\left[1, R\right]$ by setting
+\begin{align}
+    -\Mach^{-1} < u(R) < 0
+    &\implies
+    -a_0 < u(R) u_0 < 0
+.
+\end{align}
+With this condition, $u$ increases and $p$ decreases when traversing the domain
+from $R$ to $1$.
+%
+A supersonic nozzle may be posed on $\left[1, R\right]$ by setting
+\begin{align}
+    u(1) > \Mach^{-1} > 0
+    &\implies
+    u(1) u_0 > a_0 > 0
+.
+\end{align}
+In this situation, $u$ increases and $p$ decreases when traversing the domain
 from $1$ to $R$.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
