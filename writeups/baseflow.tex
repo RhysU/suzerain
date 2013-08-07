@@ -223,46 +223,36 @@ assumption, one arrives at
 \end{align}
 which is an awfully nonlinear but pleasantly univariate result.
 
-\section{Computing nondimensional density and pressure given a velocity potential}
+\section{Computing thermodynamic state from a velocity potential solution}
 
-Having hypothetically a obtained $\vec{u}=\vec{\nabla}\phi$
-satisfying~\eqref{eq:cpfgibbs_nondim}, one often wants information about $\rho$
-and $p$.  Combining dimensional~\eqref{eq:gradrho_gradp_relationship}
-and~\eqref{eq:momentum} and then substituting~\eqref{eq:stagnation_sound},
+Having hypothetically obtained some $\vec{u}=\vec{\nabla}\phi$
+satisfying~\eqref{eq:cpfgibbs_nondim}, $a$, $\rho$, and $p$ are often of
+interest.  Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct
+computation of $a$ from
+\begin{align}
+  a^2 &= \frac{\gamma-1}{\gamma_0-1}
+       + \Mach^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
+.
+\end{align}
+Combining dimensional~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum},
 \begin{align}
   \frac{\vec{\nabla}\rho}{\rho}
   &=
   - \frac{\vec{\nabla}\vec{u}^2}{2a^2}
-  =
-  - \frac{\vec{\nabla}\vec{u}^2}{
-       2a_0^2 \frac{\gamma-1}{\gamma_0-1}
-     + \left(\gamma-1\right)\vec{u}_0^2
-     - \left(\gamma-1\right)\vec{u}^2
-  }
 .
 \end{align}
-Applying~\eqref{eq:nondimensionalization}, multiplying by $l_0$, employing
-$a_0^2 = u_0^2/\Mach^2$, and simplifying to get an analogous nondimensional
-statement:
+Nondimensionalizing, multiplying by $l_0$, and simplifying
 \begin{align}
   \vec{\nabla}\log\rho
-  =
-  - \frac{\vec{\nabla}\vec{u}^2}{
-       \frac{2}{\Mach^2}\cdot\frac{\gamma-1}{\gamma_0-1}
-     + \left(\gamma-1\right)\left(1-\vec{u}^2\right)
-  }
+  &=
+  -\frac{\Mach^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
 .
 \end{align}
 Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem,
 \begin{align}
   \oint_{\partial\Omega} \log\rho \, \mathrm{d}S
   =
-  - \int_{\Omega}
-  \frac{\vec{\nabla}\vec{u}^2}{
-       \frac{2}{\Mach^2}\cdot\frac{\gamma-1}{\gamma_0-1}
-     + \left(\gamma-1\right)\left(1-\vec{u}^2\right)
-  }
-  \, \mathrm{d}V
+  - \frac{\Mach^2}{2}\int_{\Omega} \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}V
 .
 \end{align}
 
