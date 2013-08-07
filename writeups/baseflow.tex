@@ -223,15 +223,14 @@ assumption, one arrives at
 \end{align}
 which is an awfully nonlinear but pleasantly univariate result.
 
-\section{Computing thermodynamic state from a velocity potential solution}
-
-Having hypothetically obtained some $\vec{u}=\vec{\nabla}\phi$
-satisfying~\eqref{eq:cpfgibbs_nondim}, $a$, $\rho$, and $p$ are often of
-interest.  Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct
-computation of $a$ from
+With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
+hand, computing local $\rho$ and $p$ is often of interest.
+Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
+$a$ from
 \begin{align}
   a^2 &= \frac{\gamma-1}{\gamma_0-1}
        + \Mach^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
+\label{eq:stagnation_sound_nondim}
 .
 \end{align}
 Combining~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum} to form
@@ -248,6 +247,7 @@ Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem
   \oint_{\partial\Omega} \log\rho \, \mathrm{d}S
   =
   - \frac{\Mach^2}{2}\int_{\Omega} \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}V
+\label{eq:logrho_nondim}
 .
 \end{align}
 After computing $\vec{\nabla}\rho$ from $\log\rho$, rearranging the
@@ -256,6 +256,7 @@ already-nondimensional \eqref{eq:gradrho_gradp_relationship} grants pressure:
   \oint_{\partial\Omega} p \, \mathrm{d}S
   &=
   \int_{\Omega} a^2 \vec{\nabla}\rho \, \mathrm{d}V
+\label{eq:p_nondim}
 \end{align}
 
 \section{The radially-symmetric, sub- and supersonic nozzle problems}
@@ -298,9 +299,21 @@ Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$,
 \label{eq:cpfradial_nondim}
 .
 \end{align}
-Equation~\eqref{eq:cpfradial_nondim} may be used to find solutions to sub- and
-supersonic radial nozzle and diffuser problems.  Many texts, e.g.  section 9.4
-of \citet{White1999Fluid}, cover this class of problems in some detail.
+%
+Equation~\eqref{eq:stagnation_sound_nondim} may be used directly.
+Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} in 2D gives the
+following:
+\begin{align}
+  \left(\log\rho\right)\left(R_2\right)
+  &=
+  FIXME STARTHERE
+  \int_{R_1}^{R_2}
+  \, \mathrm{d}r
+\end{align}
+%
+These equations may be used to find solutions to sub- and supersonic radial
+nozzle and diffuser problems.  Many texts, e.g.  section 9.4 of
+\citet{White1999Fluid}, cover this class of problems in some detail.
 
 In particular, obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
