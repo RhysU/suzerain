@@ -61,7 +61,7 @@ transformed into conserved variables.  Finally, the conserved state is mapped
 onto the first quadrant of a Cartesian domain with state and derivatives
 collected from rays oriented in the positive $y$ direction.
 
-\section{The nondimensional, radially-symmetric compressible potential flow equation}
+\section{The nondimensional, compressible potential flow equation}
 
 A particularly crisp derivation of the coordinate-independent,
 velocity-potential formulation for the compressible potential flow equations
@@ -215,9 +215,11 @@ some manner.  Adding a constant $\gamma=\gamma_0$ assumption, one arrives at
 \end{align}
 which is an awfully nonlinear but pleasantly univariate result.
 
-On a radially-symmetric geometry $\phi=\phi\left(r\right)$ only.
-\emph{Mathematica}\textregistered{} can translate~\eqref{eq:cpfgibbs_nondim}
-into this setting
+\section{The sub- and supersonic radially-symmetric nozzle problems}
+
+On a radially-symmetric domain $\phi=\phi\left(r\right)$.
+\emph{Mathematica}\textregistered{} eases
+translating~\eqref{eq:cpfgibbs_nondim} into this setting
 \begin{lstlisting}[language=Mathematica,
                    columns=flexible,basicstyle={\sffamily},frame={lines}]
     Needs["VectorAnalysis`"];
@@ -242,8 +244,7 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$ as the
-origin will not be of interest,
+Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$,
 \begin{align}
     \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
    -        \Mach^2\frac{\gamma_0-1}{2}        u^3
@@ -251,8 +252,26 @@ origin will not be of interest,
             -\Mach^2\frac{\gamma_0+1}{2}u^2\right)
     u^\prime
    &= 0
+\label{eq:cpfradial_nondim}
 .
 \end{align}
+
+Equation~\eqref{eq:cpfradial_nondim} may be used to find solutions to sub- and
+supersonic nozzle and diffuser problems.  Many books, e.g.  section 9.4 of
+\citet{White1999Fluid}, cover this class of problems in some detail.  In
+particular, obtaining a favorable pressure gradient, i.e. one where
+$\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing the boundary
+conditions for sub- and supersonic nozzles.
+
+A subsonic nozzle may be posed on $\left[1, R\right]$ by setting $-\Mach^{-1} <
+u(R) < 0$ which implies the dimensional condition $-a_0 < u < 0$.  For these
+solutions $u$ increases and $p$ decreases when traversing the domain from $R$
+to $1$.
+
+A supersonic nozzle may be posed on $\left[1, R\right]$ by setting $u(1) >
+\Mach^{-1} > 0$ corresponding to the dimensional condition $u(1) > a_0 > 0$.
+For these solutions $u$ increases and $p$ decreases when traversing the domain
+from $1$ to $R$.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
