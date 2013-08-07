@@ -270,12 +270,12 @@ inflow
     which implies
     $-a_0 < u(R_{2}) u_0 < 0$.
 With this condition, $-u$ increases and $p$ decreases when traversing the
-domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes incredibly stiff
-whenever choking occurs.  Instead, specifying a nearly choked outflow via
+domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
+approaches sonic.  Instead, specifying a nearly sonic outflow via
 \begin{align}
-    -u(1) = \Mach^{-1} \left(1 + \epsilon\right)^{-1}
+    -u(1) = -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
     &\implies
-    -u_0 u(1) \left(1 + \epsilon \right) = - a_0
+    -\left(1 + \epsilon \right) u_0 u(1) = - a_0
 \label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
 for small $\epsilon$ is done in conjunction with taking $R_{2}$ large enough to
@@ -292,7 +292,7 @@ inflow
 \end{align}
 In this situation, $u$ increases and $p$ decreases when traversing the domain
 from~$R_{1}$ to~$R_{2}$.
-%
+
 Working with boundary conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
 and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$
 suggests recasting~\eqref{eq:cpfradial_nondim} into
@@ -314,7 +314,11 @@ suggests recasting~\eqref{eq:cpfradial_nondim} into
 ,
 \end{align}
 a form making these initial value problems readily solvable by commodity ODE
-integrators.
+integrators.  For example, to use~\eqref{eq:cpfradial_nondim_ode}
+\texttt{Octave}\citep{Eaton2008GNU} requires only the following:
+\lstinputlisting[language=Octave,
+                 columns=fixed,basicstyle={\small\sffamily},frame={lines}]
+                {notebooks/FPG_BaseFlow_Problem.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
