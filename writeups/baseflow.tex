@@ -260,24 +260,30 @@ Equation~\eqref{eq:cpfradial_nondim} may be used to find solutions to sub- and
 supersonic radial nozzle and diffuser problems.  Many books, e.g.  section 9.4
 of \citet{White1999Fluid}, cover this class of problems in some detail.  In
 particular, obtaining a favorable pressure gradient, i.e. one where
-$\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing the boundary
-conditions for sub- and supersonic nozzles.
+$\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
+for sub- and supersonic nozzles.
 %
 A subsonic nozzle may be posed on $\left[1, R\right]$ by setting
+inflow
+    $-\Mach^{-1} < u(R) < 0$
+    which implies
+    $-a_0 < u(R) u_0 < 0$.
+With this condition, $-u$ increases and $p$ decreases when traversing the
+domain from $R$ to $1$.  However, the problem becomes incredibly stiff
+whenever choking occurs.  Instead, specifying a nearly choked outflow via
 \begin{align}
-    -\Mach^{-1} < u(R) < 0
+    -u(1) = \Mach^{-1} \left(1 + \epsilon\right)^{-1}
     &\implies
-    -a_0 < u(R) u_0 < 0
-.
+    -u_0 u(1) \left(1 + \epsilon \right) = - a_0
 \end{align}
-With this condition, $-u$ increases  and $p$ decreases when traversing the
-domain from $R$ to $1$.
+for small $\epsilon$ is done in conjunction with taking $R$ large enough to
+obtain the desired $u(R)$ inflow condition.
 %
-A supersonic nozzle may be posed on $\left[1, R\right]$ by setting
+A supersonic nozzle may be posed on $\left[1, R\right]$ by setting inflow
 \begin{align}
     u(1) > \Mach^{-1} > 0
     &\implies
-    u(1) u_0 > a_0 > 0
+    u_0 u(1) > a_0 > 0
 .
 \end{align}
 In this situation, $u$ increases and $p$ decreases when traversing the domain
