@@ -87,6 +87,7 @@ From the definition of the speed of sound $a$ notice
     \frac{\mathrm{d}p}{\mathrm{d}\rho} = a^2
     &\implies
     \vec{\nabla}\rho = \frac{1}{a^2} \vec{\nabla} p
+\label{eq:gradrho_gradp_relationship}
 .
 \end{align}
 In a steady, inviscid, irrotational context the momentum equation yields
@@ -155,8 +156,11 @@ To nondimensionalize, chose some reference length $l_0$ and declare
 &   \rho  &= \rho^\ast \rho_0
 &   p     &= p^\ast \rho_0 a_0^2
 \end{align}
-where starred quantities are dimensionless.  Inserting these definitions
-into~\eqref{eq:cpfgibbs_dim},
+where starred quantities are dimensionless.
+% The reference density and pressure choices
+% cause~\eqref{eq:gradrho_gradp_relationship} to hold both dimensionally and
+% nondimensionally.
+Inserting these definitions into~\eqref{eq:cpfgibbs_dim},
 \begin{align}
     \left[
           2a_0^2 \frac{\gamma-1}{\gamma_0-1}
@@ -314,8 +318,8 @@ suggests recasting~\eqref{eq:cpfradial_nondim} into
 ,
 \end{align}
 a form making these initial value problems readily solvable by commodity ODE
-integrators.  For example, to use~\eqref{eq:cpfradial_nondim_ode}
-\texttt{Octave}\citep{Eaton2008GNU} requires only the following:
+integrators.  For example, \texttt{Octave}\citep{Eaton2008GNU} requires only
+the following to make use~\eqref{eq:cpfradial_nondim_ode}:
 \lstinputlisting[language=Octave,
                  columns=fixed,basicstyle={\small\sffamily},frame={lines}]
                 {notebooks/FPG_BaseFlow_Problem.m}
