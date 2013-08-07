@@ -234,14 +234,9 @@ computation of $a$ from
        + \Mach^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
 .
 \end{align}
-Combining dimensional~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum},
-\begin{align}
-  \frac{\vec{\nabla}\rho}{\rho}
-  &=
-  - \frac{\vec{\nabla}\vec{u}^2}{2a^2}
-.
-\end{align}
-Nondimensionalizing, multiplying by $l_0$, and simplifying
+Combining~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum} to form
+$\vec{\nabla}\rho / \rho$, nondimensionalizing, multiplying by $l_0$, and
+simplifying
 \begin{align}
   \vec{\nabla}\log\rho
   &=
@@ -254,6 +249,13 @@ Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem
   =
   - \frac{\Mach^2}{2}\int_{\Omega} \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}V
 .
+\end{align}
+After computing $\vec{\nabla}\rho$ from $\log\rho$, rearranging the
+already-nondimensional \eqref{eq:gradrho_gradp_relationship} grants pressure:
+\begin{align}
+  \oint_{\partial\Omega} p \, \mathrm{d}S
+  &=
+  \int_{\Omega} a^2 \vec{\nabla}\rho \, \mathrm{d}V
 \end{align}
 
 \section{The radially-symmetric, sub- and supersonic nozzle problems}
