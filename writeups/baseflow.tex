@@ -221,7 +221,7 @@ assumption, one arrives at
 which is an awfully nonlinear but pleasantly univariate result.
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
-hand, computing local $\rho$ and $\vec{\nabla}p$ is often of interest.
+hand, computing local $\rho$ and $p$ is often of interest.
 Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
 $a$ from
 \begin{align}
@@ -232,29 +232,34 @@ $a$ from
 \end{align}
 Combining~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum} to form
 $\vec{\nabla}\rho / \rho$, nondimensionalizing, multiplying by $l_0$, and
-simplifying
+simplifying,
 \begin{align}
   \vec{\nabla}\log\rho
   &=
   -\frac{\Mach^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
 .
 \end{align}
-Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem,
-\begin{align}
-  \int_{\partial\Omega} \log\rho \, \mathrm{d}S
-  =
-  - \frac{\Mach^2}{2}\int_{\Omega}
-    \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}x
-\label{eq:logrho_nondim}
-.
-\end{align}
 Nondimensionalizing the momentum result~\eqref{eq:momentum} and then scaling by
 $\frac{l_0}{\rho_0 a_0^2}$,
 \begin{align}
   \vec{\nabla} p &= - \frac{1}{2}\Mach^2 \rho \vec{\nabla}\vec{u}^2
-\label{eq:p_nondim}
 .
 \end{align}
+Both of the previous two local statements can be made global by integrating
+over some domain $\Omega$ and applying a corollary of Gauss' theorem:
+\begin{align}
+  \int_{\partial\Omega} \log\rho \, \mathrm{d}S
+  &=
+  - \frac{\Mach^2}{2}\int_{\Omega}
+    \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}x
+\label{eq:logrho_nondim}
+\\
+  \int_{\partial\Omega} p \, \mathrm{d}S
+  &=
+  - \frac{\Mach^2}{2}\int_{\Omega} \rho \vec{\nabla}\vec{u}^2 \, \mathrm{d}x
+\label{eq:p_nondim}
+\end{align}
+
 
 \section{Reduction to the radially-symmetric, two-dimensional case}
 
@@ -319,7 +324,7 @@ Recasting into a direct statement about $u'$,
 With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
 equation~\eqref{eq:cpfradial_nondim_ode} allows solving for $u$.
 
-Given some $u$ one also wants to be able to compute local thermodynamics state.
+Given some $u$ one also wants to be able to compute local thermodynamic state.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.  The $\phi=\phi(r)$
 assumption causes~\eqref{eq:logrho_nondim} to become
 \begin{align}
@@ -335,22 +340,29 @@ assumption causes~\eqref{eq:logrho_nondim} to become
   &=
   \rho\!\left(R_1\right) \exp\left[
     - 2\pi\Mach^2 \int_{R_1}^{R_2}
-        \frac{r u u'}{a^2}
-      \, \mathrm{d}r
+        \frac{u u'}{a^2}
+      \, r \, \mathrm{d}r
   \right]
 \label{eq:cpfradial_nondim_rho}
 .
 \end{align}
-Finally~\eqref{eq:p_nondim} simplifies to
+Likewise~\eqref{eq:p_nondim} simplifies to
 \begin{align}
-  p'
+  p\!\left(R_2\right)
   &=
-  \Mach^2 \rho{} u u'
+    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \left( \int_{R_1}^{R_2}
+        \rho \left(u'\right)^2
+      \, r \, \mathrm{d}r \right) \, \mathrm{d}\theta
+    + p\!\left(R_1\right)
+\\
+  &=
+    -2\pi\Mach^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
+      + p\!\left(R_1\right)
 \label{eq:cpfradial_nondim_p}
 .
 \end{align}
-Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies local $u'$ for the
-computation of both $\rho$ and $p'$.
+Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
+of both $\rho$ and $p'$.
 
 \section{The radially-symmetric sub- and supersonic nozzle problems}
 
@@ -394,7 +406,7 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents an initial value
 problem amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} can easily solve such problems:
 \lstinputlisting[language=Octave,
-                 columns=fixed,basicstyle={\small\sffamily},frame={lines}]
+                 columns=fixed,basicstyle={\footnotesize\sffamily},frame={lines}]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
