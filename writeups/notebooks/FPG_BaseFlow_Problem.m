@@ -26,7 +26,7 @@ sup_a2  = a2 (sup_u,                 Ma, g0   );
 sup_rho = rho(sup_r, sup_u, sup_a2,  Ma, g0, 1);
 sup_p   = p  (sup_r, sup_u, sup_rho, Ma, g0, 1);
 figure();
-plot(sup_r, sup_u, 'r-', sub_r, sup_rho, 'b-', sup_r, sup_p, 'g-');
+plot(sup_r, sup_u, 'r-', sup_r, sup_rho, 'b-', sup_r, sup_p, 'g-');
 legend('velocity', 'density', 'pressure', 'location', 'northwest');
 title('Supersonic nozzle: inflow -> outflow')
 xlabel('radius');
