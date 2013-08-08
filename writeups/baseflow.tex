@@ -160,9 +160,6 @@ To nondimensionalize, chose some reference length $l_0$ and declare
 \label{eq:nondimensionalization}
 \end{align}
 where starred quantities are dimensionless.
-% The reference density and pressure choices
-% cause~\eqref{eq:gradrho_gradp_relationship} to hold both dimensionally and
-% nondimensionally.
 Inserting these definitions into~\eqref{eq:cpfgibbs_dim},
 \begin{align}
     \left[
@@ -224,7 +221,7 @@ assumption, one arrives at
 which is an awfully nonlinear but pleasantly univariate result.
 
 With some $\vec{u}=\vec{\nabla}\phi$ satisfying~\eqref{eq:cpfgibbs_nondim} in
-hand, computing local $\rho$ and $p$ is often of interest.
+hand, computing local $\rho$ and $\vec{\nabla}p$ is often of interest.
 Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
 $a$ from
 \begin{align}
@@ -251,13 +248,12 @@ Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem
 \label{eq:logrho_nondim}
 .
 \end{align}
-After computing $\vec{\nabla}\rho$ from $\log\rho$, rearranging the
-already-nondimensional \eqref{eq:gradrho_gradp_relationship} grants pressure:
+Nondimensionalizing the momentum result~\eqref{eq:momentum} and then scaling by
+$\frac{l_0}{\rho_0 a_0^2}$,
 \begin{align}
-  \int_{\partial\Omega} p \, \mathrm{d}S
-  &=
-  \int_{\Omega} a^2 \vec{\nabla}\rho \, \mathrm{d}x
+  \vec{\nabla} p &= - \frac{1}{2}\Mach^2 \rho \vec{\nabla}\vec{u}^2
 \label{eq:p_nondim}
+.
 \end{align}
 
 \section{Reduction to the radially-symmetric, two-dimensional case}
@@ -323,9 +319,9 @@ Recasting into a direct statement about $u'$,
 With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
 equation~\eqref{eq:cpfradial_nondim_ode} allows solving for $u$.
 
-Given some $u$, equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.
-Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} under the
-assumption $\phi=\phi(r)$:
+Given some $u$ one also wants to be able to compute local thermodynamics state.
+Equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.  The $\phi=\phi(r)$
+assumption causes~\eqref{eq:logrho_nondim} to become
 \begin{align}
   \rho\!\left(R_2\right)
   &=
@@ -343,21 +339,22 @@ assumption $\phi=\phi(r)$:
       \, \mathrm{d}r
   \right]
 \label{eq:cpfradial_nondim_rho}
-\\
-  p\!\left(R_2\right)
-  &=
-  2\pi \int_{R_1}^{R_2}
-      r a^2 \rho'
-    \, \mathrm{d}r
-  + p\!\left(R_1\right)
-\label{eq:cpfradial_nondim_p}
+.
 \end{align}
-Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
-of $\rho\!\left(R_2\right)$.
+Finally~\eqref{eq:p_nondim} simplifies to
+\begin{align}
+  p'
+  &=
+  \Mach^2 \rho{} u u'
+\label{eq:cpfradial_nondim_p}
+.
+\end{align}
+Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies local $u'$ for the
+computation of both $\rho$ and $p'$.
 
 \section{The radially-symmetric sub- and supersonic nozzle problems}
 
-Equation~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
+Equations~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
 and~\eqref{eq:cpfradial_nondim_p} may be used to find solutions to idealized
 sub- and supersonic radial nozzle and diffuser problems.  Many texts, e.g.
 section 9.4 of \citet{White1999Fluid}, cover this class of problems in some
