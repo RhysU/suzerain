@@ -174,7 +174,7 @@ Inserting these definitions into~\eqref{eq:cpfgibbs_dim},
        \cdot \vec{\nabla}^\ast\left(\vec{\nabla}^\ast\phi^\ast\right)^2
 .
 \end{align}
-Multiplying through by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach =
+Multiplying by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach =
 \frac{u_0}{a_0}$, and dropping the star notation,
 \begin{align}
     \left[
@@ -260,9 +260,9 @@ already-nondimensional \eqref{eq:gradrho_gradp_relationship} grants pressure:
 \label{eq:p_nondim}
 \end{align}
 
-\section{The radially-symmetric, sub- and supersonic nozzle problems}
+\section{Reduction to the radially-symmetric, two-dimensional case}
 
-On a radially-symmetric domain $\phi=\phi\left(r\right)$.
+Suppose radially-symmetry where $\phi=\phi\left(r\right)$.
 \emph{Mathematica}\textregistered{} eases
 translating~\eqref{eq:cpfgibbs_nondim} into this setting
 \begin{lstlisting}[language=Mathematica,
@@ -289,7 +289,7 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$
+Rewriting using $u = \phi^\prime(r)$ and multiplying by $r$
 as the origin will not be of interest,
 \begin{align}
     \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
@@ -302,7 +302,28 @@ as the origin will not be of interest,
 .
 \end{align}
 %
-Given $u$, equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.
+Recasting into a direct statement about $u'$,
+\begin{align}
+   u^\prime
+   &=
+   -\frac{u}{r}
+   \cdot
+   \frac{
+      2
+    + \Mach^2\left(\gamma_0-1\right)
+    - \Mach^2\left(\gamma_0-1\right) u^2
+   }{
+      2
+    + \Mach^2\left(\gamma_0-1\right)
+    - \Mach^2\left(\gamma_0+1\right) u^2
+   }
+\label{eq:cpfradial_nondim_ode}
+.
+\end{align}
+With appropriate boundary conditions, equation~\eqref{eq:cpfradial_nondim_ode}
+allows solving for $u$ directly.
+
+Given some $u$, equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.
 Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} under the
 assumption $\phi=\phi(r)$:
 \begin{align}
@@ -321,6 +342,7 @@ assumption $\phi=\phi(r)$:
         \frac{r u u'}{a^2}
       \, \mathrm{d}r
   \right]
+\label{eq:cpfradial_nondim_rho}
 \\
   p\!\left(R_2\right)
   &=
@@ -328,16 +350,21 @@ assumption $\phi=\phi(r)$:
       r a^2 \rho'
     \, \mathrm{d}r
   + p\!\left(R_1\right)
+\label{eq:cpfradial_nondim_p}
 \end{align}
-%
-These equations may be used to find solutions to sub- and supersonic radial
-nozzle and diffuser problems.  Many texts, e.g.  section 9.4 of
-\citet{White1999Fluid}, cover this class of problems in some detail.
+Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
+of $\rho\!\left(R_2\right)$.
 
-In particular, obtaining a favorable pressure gradient, i.e. one where
+\section{The radially-symmetric sub- and supersonic nozzle problems}
+
+Equation~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
+and~\eqref{eq:cpfradial_nondim_p} may be used to find solutions to idealized
+sub- and supersonic radial nozzle and diffuser problems.  Many texts, e.g.
+section 9.4 of \citet{White1999Fluid}, cover this class of problems in some
+detail.  In particular, obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.
-%
+
 A subsonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting inflow
 $-a_0 < u(R_{2}) u_0 < 0$ which implies $-\Mach^{-1} < u(R_{2}) < 0$.  With
 this condition, $-u$ increases and $p$ decreases when traversing the domain
@@ -351,7 +378,7 @@ approaches sonic.  Instead, specifying at most a nearly sonic outflow via
 \end{align}
 for small $\epsilon$ is done in conjunction with taking $R_{2}$ large enough to
 obtain the desired $u(R_{2})$ inflow condition.
-%
+
 A supersonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting
 inflow
 \begin{align}
@@ -365,28 +392,10 @@ In this situation, $u$ increases and $p$ decreases when traversing the domain
 from~$R_{1}$ to~$R_{2}$.
 
 Working with boundary conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
-and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$
-suggests recasting~\eqref{eq:cpfradial_nondim} into
-\begin{align}
-   u^\prime
-   &=
-   -\frac{u}{r}
-   \cdot
-   \frac{
-      2
-    + \Mach^2\left(\gamma_0-1\right)
-    - \Mach^2\left(\gamma_0-1\right) u^2
-   }{
-      2
-    + \Mach^2\left(\gamma_0-1\right)
-    - \Mach^2\left(\gamma_0+1\right) u^2
-   }
-\label{eq:cpfradial_nondim_ode}
-,
-\end{align}
-a form making these initial value problems readily solvable by commodity ODE
-integrators.  For example, \texttt{Octave}\citep{Eaton2008GNU} requires only
-the following to use~\eqref{eq:cpfradial_nondim_ode}:
+and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
+conjunction with~\eqref{eq:cpfradial_nondim_ode} presents an initial value
+problem amenable to solution by numerical ODE integrators.  For example,
+\texttt{Octave}\citep{Eaton2008GNU} can easily solve such problems:
 \lstinputlisting[language=Octave,
                  columns=fixed,basicstyle={\small\sffamily},frame={lines}]
                 {notebooks/FPG_BaseFlow_Problem.m}
