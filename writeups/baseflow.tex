@@ -320,8 +320,8 @@ Recasting into a direct statement about $u'$,
 \label{eq:cpfradial_nondim_ode}
 .
 \end{align}
-With appropriate boundary conditions, equation~\eqref{eq:cpfradial_nondim_ode}
-allows solving for $u$ directly.
+With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
+equation~\eqref{eq:cpfradial_nondim_ode} allows solving for $u$.
 
 Given some $u$, equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.
 Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} under the
@@ -330,9 +330,9 @@ assumption $\phi=\phi(r)$:
   \rho\!\left(R_2\right)
   &=
   \exp\left[
-    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \int_{R_1}^{R_2}
+    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \left( \int_{R_1}^{R_2}
         \frac{\left(u^2\right)'}{a^2}
-      \, r \, \mathrm{d}r \, \mathrm{d}\theta
+      \, r \, \mathrm{d}r \right) \, \mathrm{d}\theta
     + \log\rho\!\left(R_1\right)
   \right]
 \\
