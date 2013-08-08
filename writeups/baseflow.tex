@@ -244,18 +244,19 @@ simplifying
 \end{align}
 Integrating over some domain $\Omega$ and applying a corollary of Gauss' theorem,
 \begin{align}
-  \oint_{\partial\Omega} \log\rho \, \mathrm{d}S
+  \int_{\partial\Omega} \log\rho \, \mathrm{d}S
   =
-  - \frac{\Mach^2}{2}\int_{\Omega} \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}V
+  - \frac{\Mach^2}{2}\int_{\Omega}
+    \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}x
 \label{eq:logrho_nondim}
 .
 \end{align}
 After computing $\vec{\nabla}\rho$ from $\log\rho$, rearranging the
 already-nondimensional \eqref{eq:gradrho_gradp_relationship} grants pressure:
 \begin{align}
-  \oint_{\partial\Omega} p \, \mathrm{d}S
+  \int_{\partial\Omega} p \, \mathrm{d}S
   &=
-  \int_{\Omega} a^2 \vec{\nabla}\rho \, \mathrm{d}V
+  \int_{\Omega} a^2 \vec{\nabla}\rho \, \mathrm{d}x
 \label{eq:p_nondim}
 \end{align}
 
@@ -288,7 +289,8 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$,
+Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$
+as the origin will not be of interest,
 \begin{align}
     \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
    -        \Mach^2\frac{\gamma_0-1}{2}        u^3
@@ -300,15 +302,32 @@ Rewriting using $u = \phi^\prime(r)$ and multiplying through by $r$,
 .
 \end{align}
 %
-Equation~\eqref{eq:stagnation_sound_nondim} may be used directly.
-Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} in 2D gives the
-following:
+Given $u$, equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.
+Translating~\eqref{eq:logrho_nondim} and~\eqref{eq:p_nondim} under the
+assumption $\phi=\phi(r)$:
 \begin{align}
-  \left(\log\rho\right)\left(R_2\right)
+  \rho\!\left(R_2\right)
   &=
-  FIXME STARTHERE
-  \int_{R_1}^{R_2}
-  \, \mathrm{d}r
+  \exp\left[
+    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \int_{R_1}^{R_2}
+        \frac{\left(u^2\right)'}{a^2}
+      \, r \, \mathrm{d}r \, \mathrm{d}\theta
+    + \log\rho\!\left(R_1\right)
+  \right]
+\\
+  &=
+  \rho\!\left(R_1\right) \exp\left[
+    - 2\pi\Mach^2 \int_{R_1}^{R_2}
+        \frac{r u u'}{a^2}
+      \, \mathrm{d}r
+  \right]
+\\
+  p\!\left(R_2\right)
+  &=
+  2\pi \int_{R_1}^{R_2}
+      r a^2 \rho'
+    \, \mathrm{d}r
+  + p\!\left(R_1\right)
 \end{align}
 %
 These equations may be used to find solutions to sub- and supersonic radial
@@ -319,18 +338,15 @@ In particular, obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.
 %
-A subsonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting
-inflow
-    $-\Mach^{-1} < u(R_{2}) < 0$
-    which implies
-    $-a_0 < u(R_{2}) u_0 < 0$.
-With this condition, $-u$ increases and $p$ decreases when traversing the
-domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
-approaches sonic.  Instead, specifying a nearly sonic outflow via
+A subsonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting inflow
+$-a_0 < u(R_{2}) u_0 < 0$ which implies $-\Mach^{-1} < u(R_{2}) < 0$.  With
+this condition, $-u$ increases and $p$ decreases when traversing the domain
+from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
+approaches sonic.  Instead, specifying at most a nearly sonic outflow via
 \begin{align}
-    -u(1) = -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
+    -\left(1 + \epsilon \right) u_0 u(1) < - a_0
     &\implies
-    -\left(1 + \epsilon \right) u_0 u(1) = - a_0
+    -u(1) < -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
 \label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
 for small $\epsilon$ is done in conjunction with taking $R_{2}$ large enough to
@@ -339,9 +355,9 @@ obtain the desired $u(R_{2})$ inflow condition.
 A supersonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting
 inflow
 \begin{align}
-    u\left(R_{1}\right) > \Mach^{-1} > 0
-    &\implies
     u_0 u\left(R_{1}\right) > a_0 > 0
+    &\implies
+    u\left(R_{1}\right) > \Mach^{-1} > 0
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
