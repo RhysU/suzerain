@@ -55,12 +55,13 @@ This document discusses how to obtain a favorable pressure gradient base flow
 for use within temporally-homogenized boundary layer simulations.  First, a
 compressible potential flow problem is formulated for a radially-symmetric
 source or sink flow.  The boundary conditions are taken to match some
-freestream state of interest.  Next, the resulting one-dimensional problem is
-cast into a form commodity ODE integrators can solve to obtain velocity as a
-function of radius.  The solution is then transformed into conserved variables.
-Finally, the conserved state is mapped onto the first quadrant of a Cartesian
-domain with state and derivatives collected from rays oriented in the positive
-$y$ direction.
+freestream state of interest.  Next, this one-dimensional problem is cast into
+a form commodity ODE integrators can solve to obtain velocity as a function of
+radius.  Such a solution may be transformed into conserved variables and then
+mapped from $\left(r,\theta\right)$ into $\left(x,y\right)$ coordinates.  Then
+conserved state and its derivatives may be collected from some constant $y$
+line.  Curve fits are created from that data and supplied as base flow
+coefficients within simulation restart files.
 
 \section{The nondimensional, compressible potential flow equation}
 
@@ -417,6 +418,14 @@ easily solve such problems:
 \lstinputlisting[language=Octave,columns=fixed,firstline=4,
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.65\textwidth]{notebooks/nozzle_subsonic}
+  \\
+  \includegraphics[width=0.65\textwidth]{notebooks/nozzle_supersonic}
+  \caption{Solutions produced with the sample \texttt{Octave} code}
+\end{figure}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

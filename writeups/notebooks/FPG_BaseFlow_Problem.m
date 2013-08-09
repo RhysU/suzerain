@@ -21,8 +21,8 @@ function [r, u, a2, rho, p] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1)
   if 0 == nargout
     figure();
     plot(r, u, 'r-', r, rho, 'b-', r, p, 'g-');
-    legend('velocity', 'density', 'pressure', 'location', 'northwest');
-    xlabel('radius');
+    legend('Velocity', 'Density', 'Pressure', 'location', 'northwest');
+    xlabel('Radius');
   end
 
 endfunction
@@ -30,17 +30,17 @@ endfunction
 %% Define parameters for nozzle cases of interest
 Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
 
-%% Solve supersonic nozzle (specifying inflow) and plot to file
-nozzle(Ma, gam0, Rinner, Router,  1/Ma+sqrt(eps), 1, 1);
-title('Supersonic nozzle: inflow -> outflow');
-print('nozzle_supersonic.eps', '-depsc2');
-close();
-
 %% Solve subsonic nozzle (specifying inflow) and plot to file
-nozzle(Ma, gam0, Router, Rinner, -1/4, 1, 1);  % Breaks for -1/3
+nozzle(Ma, gam0, Router, Rinner, -2/7, 1, 1);  % Breaks for -1/3
 title('Subsonic nozzle: outflow <- inflow');
-print('nozzle_subsonic.eps',   '-depsc2');
+print('nozzle_subsonic.eps', '-depsc2', '-S512,384', '-F:8');
 close();
 
 %% Subsonic nozzles may (more robustly) be defined with nearly sonic outflows
 % nozzle(Ma, gam0, Rinner, Router, -1/Ma+sqrt(eps), 1, 1);
+
+%% Solve supersonic nozzle (specifying inflow) and plot to file
+nozzle(Ma, gam0, Rinner, Router,  1/Ma+sqrt(eps), 1, 1);
+title('Supersonic nozzle: inflow -> outflow');
+print('nozzle_supersonic.eps', '-depsc2', '-S512,384', '-F:8');
+close();
