@@ -266,8 +266,8 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 Suppose radially-symmetry where $\phi=\phi\left(r\right)$.
 \emph{Mathematica}\textregistered{} eases
 translating~\eqref{eq:cpfgibbs_nondim} into this setting
-\begin{lstlisting}[language=Mathematica,
-                   columns=flexible,basicstyle={\sffamily},frame={lines}]
+\begin{lstlisting}[language=Mathematica,columns=flexible,
+                   basicstyle={\scriptsize\sffamily},frame=single]
     Needs["VectorAnalysis`"];
     SetCoordinates[Cylindrical];
     With[{f=phi[Rr]},
@@ -375,25 +375,26 @@ $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.
 
 A subsonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting inflow
-$-a_0 < u(R_{2}) u_0 < 0$ which implies $-\Mach^{-1} < u(R_{2}) < 0$.  With
-this condition, $-u$ increases and $p$ decreases when traversing the domain
-from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
-approaches sonic.  Instead, specifying at most a nearly sonic outflow via
+$-a_0 < u\!\left(R_{2}\right) u_0 < 0$ which implies $-\Mach^{-1} <
+u\!\left(R_{2}\right) < 0$.  With this condition, $-u$ increases and $p$
+decreases when traversing the domain from~$R_{2}$ to~$R_{1}$.  However, the
+problem becomes stiff as the flow approaches sonic.  Instead, specifying at
+most a nearly sonic outflow via
 \begin{align}
-    -\left(1 + \epsilon \right) u_0 u(1) < - a_0
+    -\left(1 + \epsilon \right) u_0 u\!\left(1\right) < -a_0
     &\implies
-    -u(1) < -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
+    -u\!\left(1\right) < -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
 \label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
 for small $\epsilon$ is done in conjunction with taking $R_{2}$ large enough to
-obtain the desired $u(R_{2})$ inflow condition.
+obtain the desired $u\!\left(R_{2}\right)$ inflow condition.
 
 A supersonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting
 inflow
 \begin{align}
-    u_0 u\left(R_{1}\right) > a_0 > 0
+    u_0 u\!\left(R_{1}\right) > a_0 > 0
     &\implies
-    u\left(R_{1}\right) > \Mach^{-1} > 0
+    u\!\left(R_{1}\right) > \Mach^{-1} > 0
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
@@ -405,8 +406,8 @@ and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents an initial value
 problem amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} can easily solve such problems:
-\lstinputlisting[language=Octave,
-                 columns=fixed,basicstyle={\footnotesize\sffamily},frame={lines}]
+\lstinputlisting[language=Octave,columns=fixed,
+                 basicstyle={\scriptsize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
