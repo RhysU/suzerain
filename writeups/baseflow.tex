@@ -375,19 +375,25 @@ $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.
 
 A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
-setting inflow $-a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0$ which implies
-$-\Mach^{-1} < u\!\left(R_{2}\right) < 0$.  With this condition, $-u$ increases
-and $p$ decreases when traversing the domain from~$R_{2}$ to~$R_{1}$.  However,
-the problem becomes stiff as the flow approaches sonic.  Instead, specifying at
-most a sonic outflow via
+setting inflow per
+\begin{align}
+    -a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0
+    &\implies
+    u\!\left(R_{2}\right) \in \left(-\Mach^{-1}, 0\right)
+\label{eq:cpfradial_nozzle_subsonic_bc}
+.
+\end{align}
+With this condition, $-u$ increases and $p$ decreases when traversing the
+domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
+approaches sonic.  A workaround is specifying at most a sonic outflow via
 \begin{align}
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
     u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
-\label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
-is done in conjunction with taking $R_{2}$ large enough to obtain the desired
-$u\!\left(R_{2}\right)$ inflow condition.
+in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
+$u\!\left(R_{2}\right)$ condition.  Caveat numerical errors, specifying either
+the inflow or outflow condition is equivalent as the physics are frictionless.
 
 A supersonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$
 by setting inflow
@@ -399,14 +405,16 @@ by setting inflow
 .
 \end{align}
 In this situation, $u$ increases and $p$ decreases when traversing the domain
-from~$R_{1}$ to~$R_{2}$.
+from~$R_{1}$ to~$R_{2}$.  As above, a supersonic outflow could instead be
+specified at $R_{2}$.
 
 Working with boundary conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
 and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
-conjunction with~\eqref{eq:cpfradial_nondim_ode} presents an initial value
-problem amenable to solution by numerical ODE integrators.  For example,
-\texttt{Octave}\citep{Eaton2008GNU} can easily solve such problems:
-\lstinputlisting[language=Octave,columns=fixed,
+conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
+problems amenable to solution by numerical ODE integrators.  For example,
+\texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
+easily solve such problems:
+\lstinputlisting[language=Octave,columns=fixed,firstline=4,
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 

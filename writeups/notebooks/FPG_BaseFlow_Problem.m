@@ -1,4 +1,4 @@
-% Script file loading any packages necessary when using Octave
+% Script file loading necessary packages for use within Octave
 1; if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
 
 % Solve nozzle initial value problem for u(r) on [R1, R2] given u1(R1)
@@ -19,25 +19,28 @@ function [r, u, a2, rho, p] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1)
   p      = p1 - 2*pi*Ma2 * cumtrapz(r, r.*rho.*u.*up);
 
   if 0 == nargout
-    fig = figure();
+    figure();
     plot(r, u, 'r-', r, rho, 'b-', r, p, 'g-');
-    legend('velocity', 'density', 'pressure');
+    legend('velocity', 'density', 'pressure', 'location', 'northwest');
     xlabel('radius');
   end
 
 endfunction
 
-% Define parameters for nozzle cases of interest
-Ma = 1; gam0 = 1.4; R1 = 1; R2 = 2;
+%% Define parameters for nozzle cases of interest
+Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
 
-% Solve supersonic nozzle and plot solution to file
-nozzle(Ma, gam0, R1, R2,  1/Ma+sqrt(eps), 1, 1);
+%% Solve supersonic nozzle (specifying inflow) and plot to file
+nozzle(Ma, gam0, Rinner, Router,  1/Ma+sqrt(eps), 1, 1);
 title('Supersonic nozzle: inflow -> outflow');
 print('nozzle_supersonic.eps', '-depsc2');
 close();
 
-% Solve subsonic nozzle and plot solution to file REVERSING X
-nozzle(Ma, gam0, R1, R2, -1/Ma+sqrt(eps), 1, 1);
+%% Solve subsonic nozzle (specifying inflow) and plot to file
+nozzle(Ma, gam0, Router, Rinner, -1/4, 1, 1);  % Breaks for -1/3
 title('Subsonic nozzle: outflow <- inflow');
-print('nozzle_subsonic.eps', '-depsc2');
-close(fig);
+print('nozzle_subsonic.eps',   '-depsc2');
+close();
+
+%% Subsonic nozzles may (more robustly) be defined with nearly sonic outflows
+% nozzle(Ma, gam0, Rinner, Router, -1/Ma+sqrt(eps), 1, 1);
