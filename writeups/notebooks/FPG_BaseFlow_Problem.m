@@ -31,13 +31,13 @@ endfunction
 Ma = 1; gam0 = 1.4; R1 = 1; R2 = 2;
 
 % Solve supersonic nozzle and plot solution to file
-nozzle(Ma, gam0, R1, R2, 1/Ma + sqrt(eps), 1, 1);
+nozzle(Ma, gam0, R1, R2,  1/Ma+sqrt(eps), 1, 1);
 title('Supersonic nozzle: inflow -> outflow');
 print('nozzle_supersonic.eps', '-depsc2');
 close();
 
 % Solve subsonic nozzle and plot solution to file REVERSING X
-nozzle(Ma, gam0, R1, R2, -1/Ma/(1+sqrt(eps)), 1, 1);
+nozzle(Ma, gam0, R1, R2, -1/Ma+sqrt(eps), 1, 1);
 title('Subsonic nozzle: outflow <- inflow');
 print('nozzle_subsonic.eps', '-depsc2');
 close(fig);

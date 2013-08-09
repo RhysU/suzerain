@@ -374,27 +374,27 @@ detail.  In particular, obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.
 
-A subsonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting inflow
-$-a_0 < u\!\left(R_{2}\right) u_0 < 0$ which implies $-\Mach^{-1} <
-u\!\left(R_{2}\right) < 0$.  With this condition, $-u$ increases and $p$
-decreases when traversing the domain from~$R_{2}$ to~$R_{1}$.  However, the
-problem becomes stiff as the flow approaches sonic.  Instead, specifying at
-most a nearly sonic outflow via
+A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
+setting inflow $-a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0$ which implies
+$-\Mach^{-1} < u\!\left(R_{2}\right) < 0$.  With this condition, $-u$ increases
+and $p$ decreases when traversing the domain from~$R_{2}$ to~$R_{1}$.  However,
+the problem becomes stiff as the flow approaches sonic.  Instead, specifying at
+most a sonic outflow via
 \begin{align}
-    -\left(1 + \epsilon \right) u_0 u\!\left(1\right) < -a_0
+    -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
-    -u\!\left(1\right) < -\Mach^{-1} \left(1 + \epsilon\right)^{-1}
+    u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
 \label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
-for small $\epsilon$ is done in conjunction with taking $R_{2}$ large enough to
-obtain the desired $u\!\left(R_{2}\right)$ inflow condition.
+is done in conjunction with taking $R_{2}$ large enough to obtain the desired
+$u\!\left(R_{2}\right)$ inflow condition.
 
-A supersonic nozzle may be posed on~$\left[R_{1}, R_{2}\right]$ by setting
-inflow
+A supersonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$
+by setting inflow
 \begin{align}
-    u_0 u\!\left(R_{1}\right) > a_0 > 0
+    u_0 u\!\left(l_0 R_{1}\right) > a_0 > 0
     &\implies
-    u\!\left(R_{1}\right) > \Mach^{-1} > 0
+    u\!\left(R_{1}\right) \in \left(\Mach^{-1}, \infty\right)
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
