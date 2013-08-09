@@ -63,7 +63,7 @@ a form commodity ODE integrators can solve to obtain velocity as a function of
 radius.  \textcolor{red}{TODO:} Such a solution may be transformed into
 conserved variables and then mapped from $\left(r,\theta\right)$ into
 $\left(x,y\right)$ coordinates.  Then conserved state and its derivatives may
-be collected from some constant $y$ line.  Curve fits are created from that
+be collected from some constant $x$ line.  Curve fits are created from that
 data and supplied as base flow coefficients within simulation restart files.
 
 \section{The nondimensional, compressible potential flow equation}
@@ -378,10 +378,9 @@ obtaining a favorable pressure gradient, i.e. one where
 $\frac{\mathrm{d}p}{\mathrm{d}r} < 0$, requires imposing boundary conditions
 for sub- and supersonic nozzles.  Many texts, e.g.
 \citet[\textsection{}9.4]{White1999Fluid} and
-\citet[\textsection{}97]{Landau2004Fluid}, the simpler case when the area
+\citet[\textsection{}97]{Landau2004Fluid}, cover the simpler case when the area
 changes slowly as one progresses downstream in the device.  In contrast, this
-treatment permits geometries violating that requirement.
-
+treatment produces geometries violating that requirement.
 
 A subsonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$ by
 setting inflow per
