@@ -421,12 +421,27 @@ and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
-solve such problems.  Sample solutions based on code in
-Listing~\ref{lst:octave_nozzle} appear in Figure~\ref{fig:sample_solns}.
-Problem stiffness can be mitigated by computing the analytic Jacobian $u''$
-from~\eqref{eq:cpfradial_nondim_ode} and integrating with the
-\texttt{LSODE}\citep{Hindmarsh1980LSODE} functionality available within
-\texttt{Octave}.
+solve such problems.  Stiffness can be mitigated with implicit integrators
+which can benefit the analytic Jacobian $u''$ obtained
+from~\eqref{eq:cpfradial_nondim_ode},
+\begin{multline}
+  u''
+  =
+  \frac{2-\Mach^2\left(u^2-1\right)\left(\gamma_0-1\right)}
+       {r^2\left(2-\Mach^2\left(1+u^2\right)
+                  -\Mach^2\gamma_0\left(u^2-1\right)\right)^3}
+  \cdot
+  2u\Bigl[
+        \left(2-\Mach^2\right)\left(2+\Mach^2\left(u^2-1\right)\right)
+\\
+       +\Mach^2\gamma_0\left(4-4u^2-\Mach^2\left(2-3u^2-u^4\right)
+                                   +\Mach^2\gamma_0\left(u^2-1\right)^2\right)
+  \Bigr]
+.
+\end{multline}
+Here smoothness has been invoked to eliminate the appearance of $u'$.  Sample
+solutions based on code in Listing~\ref{lst:octave_nozzle} appear in
+Figure~\ref{fig:sample_solns}.
 
 \lstinputlisting[language=Octave,columns=fixed,firstline=4,float,
                  caption={\label{lst:octave_nozzle}},

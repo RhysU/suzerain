@@ -6,17 +6,20 @@
 % Afterward, compute sound speed squared, density, and pressure from r, u.
 function [r, u, a2, rho, p] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1)
 
-  Ma2    = Ma*Ma;
-  up     = @(r,u) -(u./r) .* (2 + Ma2*(gam0 - 1) - Ma2*(gam0 - 1)*u.**2) ...
-                          ./ (2 + Ma2*(gam0 - 1) - Ma2*(gam0 + 1)*u.**2);
-  tol    = sqrt(eps);
-  vopt   = odeset('RelTol',      tol, 'AbsTol',  tol, ...
-                  'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
-  [r, u] = ode45(up, [R1 R2], u1, vopt);
-  up     = up(r, u); % Shadow
-  a2     = 1 + 0.5*Ma2*(gam0 - 1)*(1 - u.**2);
-  rho    = rho1 * exp(-2*pi*Ma2 * cumtrapz(r, r.*u.*up ./ a2));
-  p      = p1 - 2*pi*Ma2 * cumtrapz(r, r.*rho.*u.*up);
+  Ma2   = Ma*Ma;
+  up    = @(r,u) -(u./r) .* (2 + Ma2*(gam0 - 1) - Ma2*(gam0 - 1)*u.**2) ...
+                         ./ (2 + Ma2*(gam0 - 1) - Ma2*(gam0 + 1)*u.**2);
+  upp   = @(r,u) 2*u.*((2-Ma2)*(2+Ma2*(u.**2-1))+Ma2*gam0*(4-4*u.**2-Ma2*(2 ...
+                 -3*u.**2-u.**4)+Ma2*gam0*(u.**2-1).**2))*(2-Ma2*(u.**2-1)* ...
+                 (gam0-1))./(r.**2*(2-Ma2*(1+u.**2)-Ma2*gam0*(u.**2-1)).**3);
+  tol   = sqrt(eps);
+  vopt  = odeset('RelTol', tol, 'AbsTol', tol, 'Jacobian', upp, ...
+                 'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
+  [r,u] = ode23s(up, [R1 R2], u1, vopt);
+  up    = up(r, u); % Shadow
+  a2    = 1 + 0.5*Ma2*(gam0 - 1)*(1 - u.**2);
+  rho   = rho1 * exp(-2*pi*Ma2 * cumtrapz(r, r.*u.*up ./ a2));
+  p     = p1 - 2*pi*Ma2 * cumtrapz(r, r.*rho.*u.*up);
 
   if 0 == nargout
     figure();
