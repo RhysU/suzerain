@@ -11,7 +11,7 @@ p   = @(r,u,rho,Ma,g0,p1) ...
       p1 - 2*pi*Ma**2 * cumtrapz(r, r.*rho.*u.*up(r,u,Ma,g0));
 
 % Establish tolerances, integration options, domain size, and parameters
-pkg load odepkg;
+if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
 tol = sqrt(eps);
 vopt = odeset('RelTol',      tol, 'AbsTol',  tol, ...
               'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
@@ -40,6 +40,6 @@ sub_rho = rho(sub_r, sub_u, sub_a2,  Ma, g0, 1);
 sub_p   = p  (sub_r, sub_u, sub_rho, Ma, g0, 1);
 figure();
 plot(sub_r, -1*sub_u, 'r-', sub_r, sub_rho, 'b-', sub_r, sub_p, 'g-');
-legend('velocity', 'density', 'pressure', 'location', 'northeast');
+legend('-velocity', 'density', 'pressure', 'location', 'northeast');
 title('Subsonic nozzle: inflow -> outflow')
 xlabel('radius'); set(gca,'XDir','Reverse')
