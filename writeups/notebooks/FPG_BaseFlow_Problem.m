@@ -1,47 +1,42 @@
-% ODE integrator-ready implementation of velocity derivative u'(r, u)
-up = @(r,u,Ma,g0) -(u./r) .* (2 + Ma**2*(g0-1) - Ma**2*(g0-1)*u.**2) ...
-                          ./ (2 + Ma**2*(g0-1) - Ma**2*(g0+1)*u.**2);
+% Script file loading any packages necessary when using Octave
+1; if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
 
-% Functions for sound speed squared, density, and pressure given r, u
-a2  = @(u,Ma,g0) ...
-      1 + Ma**2 * (g0 - 1) * (1 - u.**2) / 2;
-rho = @(r,u,a2,Ma,g0,rho1) ...
-      rho1 * exp(-2*pi*Ma**2 * cumtrapz(r, r.*u.*up(r,u,Ma,g0) ./ a2));
-p   = @(r,u,rho,Ma,g0,p1) ...
-      p1 - 2*pi*Ma**2 * cumtrapz(r, r.*rho.*u.*up(r,u,Ma,g0));
+% Solve nozzle initial value problem for u(r) on [R1, R2] given u1(R1)
+% via an ODE integrator-ready implementation of velocity derivative u'(r, u).
+% Afterward, compute sound speed squared, density, and pressure from r, u
+function [r, u, a2, rho, p] = nozzle(Ma, gamma, R1, R2, u1, rho1, p1)
 
-% Establish tolerances, integration options, domain size, and parameters
-if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
-tol = sqrt(eps);
-vopt = odeset('RelTol',      tol, 'AbsTol',  tol, ...
-              'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
-R1 = 1; R2 = 2;
-Ma = 1; g0 = 1.4;
+  Ma2    = Ma*Ma;
+  up     = @(r,u) -(u./r) .* (2 + Ma2*(gamma - 1) - Ma2*(gamma - 1)*u.**2) ...
+                          ./ (2 + Ma2*(gamma - 1) - Ma2*(gamma + 1)*u.**2);
+  tol    = sqrt(eps);
+  vopt   = odeset('RelTol',      tol, 'AbsTol',  tol, ...
+                  'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
+  [r, u] = ode45(up, [R1 R2], u1, vopt);
+  up     = up(r, u); % Shadow
+  a2     = 1 + 0.5*Ma2*(gamma - 1)*(1 - u.**2);
+  rho    = rho1 * exp(-2*pi*Ma2 * cumtrapz(r, r.*u.*up ./ a2));
+  p      = p1 - 2*pi*Ma2 * cumtrapz(r, r.*rho.*u.*up);
 
-% Solve initial value problem for supersonic nozzle
-[sup_r, sup_u] = ode45(up, [R1 R2], 1/Ma + tol,    vopt, Ma, g0);
+endfunction
 
-% Postprocess to obtain thermodynamic state and then plot
-sup_a2  = a2 (sup_u,                 Ma, g0   );
-sup_rho = rho(sup_r, sup_u, sup_a2,  Ma, g0, 1);
-sup_p   = p  (sup_r, sup_u, sup_rho, Ma, g0, 1);
+% Define parameters for nozzle cases of interest
+Ma = 1; gamma0 = 1.4; R1 = 1; R2 = 2;
+
+% Solve supersonic nozzle and plot solution to file
+[r, u, a2, rho, p] = nozzle(Ma, gamma0, R1, R2, 1/Ma + sqrt(eps), 1, 1);
 fig = figure(); set(fig, "visible", "off");
-plot(sup_r, sup_u, 'r-', sup_r, sup_rho, 'b-', sup_r, sup_p, 'g-');
+plot(r, u, 'r-', r, rho, 'b-', r, p, 'g-');
 legend('velocity', 'density', 'pressure', 'location', 'northwest');
 title('Supersonic nozzle: inflow -> outflow');
 xlabel('radius');
 print('nozzle_supersonic.eps', '-depsc2');
 close(fig);
 
-% Solve initial value problem for subsonic nozzle
-[sub_r, sub_u] = ode45(up, [R1 R2], -1/Ma/(1+tol), vopt, Ma, g0);
-
-% Postprocess to obtain thermodynamic state and then plot REVERSING X
-sub_a2  = a2 (sub_u,                 Ma, g0   );
-sub_rho = rho(sub_r, sub_u, sub_a2,  Ma, g0, 1);
-sub_p   = p  (sub_r, sub_u, sub_rho, Ma, g0, 1);
+% Solve subsonic nozzle and plot solution to file REVERSING X
+[r, u, a2, rho, p] = nozzle(Ma, gamma0, R1, R2, -1/Ma/(1+sqrt(eps)), 1, 1);
 fig = figure(); set(fig, "visible", "off");
-plot(sub_r, -1*sub_u, 'r-', sub_r, sub_rho, 'b-', sub_r, sub_p, 'g-');
+plot(r, -1*u, 'r-', r, rho, 'b-', r, p, 'g-');
 legend('-velocity', 'density', 'pressure', 'location', 'northeast');
 title('Subsonic nozzle: inflow -> outflow');
 xlabel('radius'); set(gca,'XDir','Reverse');

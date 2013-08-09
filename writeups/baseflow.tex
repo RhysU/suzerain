@@ -267,7 +267,7 @@ Suppose radially-symmetry where $\phi=\phi\left(r\right)$.
 \emph{Mathematica}\textregistered{} eases
 translating~\eqref{eq:cpfgibbs_nondim} into this setting
 \begin{lstlisting}[language=Mathematica,columns=flexible,
-                   basicstyle={\scriptsize\sffamily},frame=single]
+                   basicstyle={\footnotesize\sffamily},frame=single]
     Needs["VectorAnalysis`"];
     SetCoordinates[Cylindrical];
     With[{f=phi[Rr]},
@@ -407,7 +407,7 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents an initial value
 problem amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} can easily solve such problems:
 \lstinputlisting[language=Octave,columns=fixed,
-                 basicstyle={\scriptsize\sffamily},frame=single]
+                 basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
