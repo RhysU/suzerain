@@ -2,23 +2,25 @@
 
 % Packages
 \usepackage{accents}
-\usepackage{amsfonts}
-\usepackage{amsmath}
-\usepackage{amssymb}
 \usepackage{cancel}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
+\usepackage[final]{graphicx}
 \usepackage{fullpage}
-\usepackage{ifthen}
 \usepackage{lastpage}
-\usepackage{latexsym}
 \usepackage{listings}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
-\usepackage{pstricks}
 \usepackage{setspace}
+
+% In conjunction with -shell-escape, automatically convert EPS to PDF
+\usepackage{epstopdf}
+\epstopdfsetup{outdir=./,suffix=-generated,update,verbose}
+\epstopdfDeclareGraphicsRule{.eps}{pdf}{.pdf}{%
+    epstopdf --outfile=\OutputFile \space `kpsewhich \space "\SourceFile"`
+}
 
 % Hyperref package must be last otherwise the contents are jumbled
 % hypertexnames disabled to fix links pointing to incorrect locations
@@ -421,9 +423,9 @@ easily solve such problems:
 
 \begin{figure}
   \centering
-  \includegraphics[width=0.65\textwidth]{notebooks/nozzle_subsonic}
+  \includegraphics[width=0.65\textwidth]{nozzle_subsonic}
   \\
-  \includegraphics[width=0.65\textwidth]{notebooks/nozzle_supersonic}
+  \includegraphics[width=0.65\textwidth]{nozzle_supersonic}
   \caption{Solutions produced with the sample \texttt{Octave} code}
 \end{figure}
 

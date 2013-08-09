@@ -32,6 +32,7 @@ reacting_TEXSOURCES += reacting_inputs/transfer_function.eps
 reacting_main.dvi reacting_main.pdf: $(reacting_TEXSOURCES)
 perfectgas.dvi perfectgas.pdf: perfectgas.tex
 perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
+baseflow.dvi   baseflow.pdf:   nozzle_subsonic.eps nozzle_supersonic.eps
 
 # Notebooks, Images, Source Data, References, etc.
 EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
@@ -47,10 +48,9 @@ EXTRA_DIST += notebooks/FPG_BaseFlow_Problem.m
 EXTRA_DIST += notebooks/FPG_BaseFlow_Problem.nb
 EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
 EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
-EXTRA_DIST += notebooks/nozzle_subsonic.eps
-EXTRA_DIST += notebooks/nozzle_supersonic.eps
 EXTRA_DIST += notebooks/SMR91_Linearization.nb
 EXTRA_DIST += notebooks/Verification_Giles_Reacting.nb
+EXTRA_DIST += nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps
 EXTRA_DIST += references.bib
