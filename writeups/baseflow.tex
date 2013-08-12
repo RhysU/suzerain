@@ -440,15 +440,24 @@ solve such problems.
 %.
 %\end{multline}
 %Here smoothness has been invoked to eliminate the appearance of $u'$.
-Sample solutions computed by the code shown in Listing~\ref{lst:octave_nozzle}
-appear in Figure~\ref{fig:sample_solns}.
+One possible implementation appears in Listing~\ref{lst:octave_nozzle}.
+Listing~\ref{lst:octave_nozzle_usecase} demonstrates using that implementation
+to solve concrete problems.  The solutions are depicted in
+Figure~\ref{fig:sample_solns}.
 
-\lstinputlisting[language=Octave,columns=fixed,firstline=4,float=p,
-                 caption={\label{lst:octave_nozzle}},
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={One possible implementation for a
+                 radially-symmetric nozzle solver\label{lst:octave_nozzle}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/nozzle.m}
+
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={Using the sample nozzle solver
+                 implementation\label{lst:octave_nozzle}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
-\begin{figure}[p]
+\begin{figure}
   \centering
   \includegraphics[width=0.75\textwidth]{nozzle_subsonic}
   \\
