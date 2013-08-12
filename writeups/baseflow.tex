@@ -58,19 +58,12 @@ for use within temporally-homogenized boundary layer simulations.  First, a
 compressible potential flow problem is formulated for a radially-symmetric
 source or sink flow.  This one-dimensional problem is cast into a form
 commodity ODE integrators can solve to obtain primitive state as a function of
-radius.  \textcolor{red}{TODO} The solution is then mapped from
-$\left(r,\theta\right)$ into $\left(x,y\right)$ coordinates and a base flow
-profile taken from some constant $x$ line segment.  The segment chosen, as well
-as the radial problem boundary conditions used, are taken to match some
-boundary layer edge state of interest.  After matching, conserved state and its
-derivatives are computed from the primitive results.  Curve fits are created
-from that data and supplied as base flow coefficients within simulation restart
-files.
-
-\vspace{\parskip}
-\renewcommand{\contentsname}{}
-\tableofcontents
-\addtocontents{toc}{~\hfill\textbf{Page}\par}
+radius.  The solution is then mapped from $\left(r,\theta\right)$ into
+$\left(x,y\right)$ coordinates and a base flow profile taken from some constant
+$x$ line segment.  The segment chosen, as well as the radial problem boundary
+conditions used, are taken to match some boundary layer edge state of interest.
+Curve fits are created from that data and supplied as base flow coefficients
+within simulation restart files.
 
 \section{The nondimensional, compressible potential flow equation}
 
@@ -394,7 +387,6 @@ setting inflow per
     -a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0
     &\implies
     u\!\left(R_{2}\right) \in \left(-\Mach^{-1}, 0\right)
-\label{eq:cpfradial_nozzle_subsonic_bc}
 .
 \end{align}
 With this condition, $-u$ increases and $p$ decreases when traversing the
@@ -404,6 +396,7 @@ approaches sonic.  A workaround is specifying at most a sonic outflow via
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
     u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
+\label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
 in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
 $u\!\left(R_{2}\right)$ condition.  Caveat numerical errors, specifying either
@@ -468,7 +461,7 @@ appear in Figure~\ref{fig:sample_solns}.
 
 \clearpage
 
-\section{Mapping radial solution and matching conditions of interest}
+\section{Mapping solution to Cartesian domain and matching conditions of interest}
 
 \begin{figure}[h]
   \centering
@@ -486,34 +479,61 @@ $u\!\left(R\right)$ with $p\!\left(R\right)$ and $a\!\left(R\right)$ is valid
 for $R\in\left[R_1,R_2\right]$.  In particular, for some $R_0$ satisfying $R_0
 \leq R_2 - L_y$, the line segment between Cartesian points $\left(R_0,0\right)$
 and $\left(R_0,L_y\right)$ is inside the domain.  At some height of interest
-within the profile, say $\delta^\ast$, one can evaluate
+within the profile, say an edge distance $\delta^\ast$, one can evaluate
+edge conditions
 \begin{align}
-    u\cdot\hat{x}
-  \bigr|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  \Mach[e]{}
   &=
-  \frac{R_0}{\sqrt{R_0^2+{\delta^\ast}^2}}
-  u\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
-\\
+  \left.
+    \frac{u_0 u\cdot\hat{x}}{a_0 a}
+  \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  =
+  \frac{\Mach R_0 \, u\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)}
+       {\sqrt{R_0^2+{\delta^\ast}^2} \, a\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)}
+\end{align}
+\begin{align}
+  \left.
+    \frac{\mathrm{d}p}{\mathrm{d}x}
+  \right|_e
+  &=
   \left.
     \frac{\mathrm{d}p}{\mathrm{d}x}
   \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
 % = \left.
 %   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
 % \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
-  &=
+  =
   \frac{\sqrt{R_0^2+{\delta^\ast}^2}}{R_0}
   p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
-\\
+\end{align}
+to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$.  One
+may also, in the special case of a thermally and calorically perfect gas
+evaluate the edge temperature from
+\begin{align}
+  T_e
+  &=
     T
   \bigr|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
-  &=
+  =
   a^2\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
 \end{align}
-to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$.  The
-temperature result relies on that, in the special case of a thermally and
-calorically perfect gas with dimensional equation of state $p = \rho R T$,
-choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
-nondimensionally.
+because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
+nondimensionally in that context.
+
+For fixed $L_y$, $\delta^\ast$, and $\gamma_0$ a nonlinear optimization problem
+may be formulated over $R_0$, $R_1$, $R_2$, $\Mach$, and $\rho_1$ using the
+above equations to match some target $\Mach[e]{}$,
+$\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$, and $T_e$.  Notice that
+boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
+which reduces the search space by one dimension.  As posed, $R_0$ is only
+available at the discrete values chosen by the ODE integrator when implemented
+as shown in Listing~\ref{lst:octave_nozzle}.  One workaround is performing
+spline interpolation on $u$, $p'$, etc.  with a local order appropriate for the
+integrator scheme.  The difference between sub- versus supersonic
+conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
+and~\eqref{eq:cpfradial_nozzle_subsonic_bc} will require flipping the sign when
+computing $\Mach[e]{}$ and $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$ for
+the subsonic case as the streamwise velocity is negative in that case.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
