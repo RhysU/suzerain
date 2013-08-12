@@ -50,6 +50,7 @@ EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
 EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
 EXTRA_DIST += notebooks/SMR91_Linearization.nb
 EXTRA_DIST += notebooks/Verification_Giles_Reacting.nb
+EXTRA_DIST += baseflow_schematic.eps
 EXTRA_DIST += nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps

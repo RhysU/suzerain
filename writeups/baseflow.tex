@@ -441,22 +441,30 @@ solve such problems.
 %.
 %\end{multline}
 %Here smoothness has been invoked to eliminate the appearance of $u'$.
-Sample solutions based on code in Listing~\ref{lst:octave_nozzle} appear in
-Figure~\ref{fig:sample_solns}.
+Sample solutions computed by the code shown in Listing~\ref{lst:octave_nozzle}
+appear in Figure~\ref{fig:sample_solns}.
 
-\lstinputlisting[language=Octave,columns=fixed,firstline=4,float,
+\lstinputlisting[language=Octave,columns=fixed,firstline=4,float=p,
                  caption={\label{lst:octave_nozzle}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
-\begin{figure}
+\begin{figure}[p]
   \centering
   \includegraphics[width=0.75\textwidth]{nozzle_subsonic}
   \\
   \includegraphics[width=0.75\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Solutions produced with the sample \texttt{Octave} code
+      Solutions produced by the sample \texttt{Octave} code
+  }
+\end{figure}
+
+\begin{figure}[tbh]
+  \centering
+  \includegraphics[width=0.35\textwidth]{baseflow_schematic}
+  \caption{
+      \textcolor{red}{TODO}
   }
 \end{figure}
 
