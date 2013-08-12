@@ -2,7 +2,6 @@
 
 % Packages
 \usepackage{accents}
-\usepackage{cancel}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage[final]{graphicx}
@@ -57,14 +56,21 @@
 This document discusses how to obtain a favorable pressure gradient base flow
 for use within temporally-homogenized boundary layer simulations.  First, a
 compressible potential flow problem is formulated for a radially-symmetric
-source or sink flow.  The boundary conditions are taken to match some
-freestream state of interest.  Next, this one-dimensional problem is cast into
-a form commodity ODE integrators can solve to obtain velocity as a function of
-radius.  \textcolor{red}{TODO:} Such a solution may be transformed into
-conserved variables and then mapped from $\left(r,\theta\right)$ into
-$\left(x,y\right)$ coordinates.  Then conserved state and its derivatives may
-be collected from some constant $x$ line.  Curve fits are created from that
-data and supplied as base flow coefficients within simulation restart files.
+source or sink flow.  This one-dimensional problem is cast into a form
+commodity ODE integrators can solve to obtain primitive state as a function of
+radius.  \textcolor{red}{TODO} The solution is then mapped from
+$\left(r,\theta\right)$ into $\left(x,y\right)$ coordinates and a base flow
+profile taken from some constant $x$ line segment.  The segment chosen, as well
+as the radial problem boundary conditions used, are taken to match some
+boundary layer edge state of interest.  After matching, conserved state and its
+derivatives are computed from the primitive results.  Curve fits are created
+from that data and supplied as base flow coefficients within simulation restart
+files.
+
+\vspace{\parskip}
+\renewcommand{\contentsname}{}
+\tableofcontents
+\addtocontents{toc}{~\hfill\textbf{Page}\par}
 
 \section{The nondimensional, compressible potential flow equation}
 
@@ -163,8 +169,8 @@ To nondimensionalize, chose some reference length $l_0$ and declare
 &   p     &= p^\ast \rho_0 a_0^2
 \label{eq:nondimensionalization}
 \end{align}
-where starred quantities are dimensionless.
-Inserting these definitions into~\eqref{eq:cpfgibbs_dim},
+where starred quantities are dimensionless.  Inserting the definitions
+into~\eqref{eq:cpfgibbs_dim},
 \begin{align}
     \left[
           2a_0^2 \frac{\gamma-1}{\gamma_0-1}
@@ -460,13 +466,54 @@ appear in Figure~\ref{fig:sample_solns}.
   }
 \end{figure}
 
-\begin{figure}[tbh]
+\clearpage
+
+\section{Mapping radial solution and matching conditions of interest}
+
+\begin{figure}[h]
   \centering
-  \includegraphics[width=0.35\textwidth]{baseflow_schematic}
+  \includegraphics[width=0.30\textwidth]{baseflow_schematic}
   \caption{
-      \textcolor{red}{TODO}
+      \label{fig:mapping_geometry}
+      The geometry used in the coordinate mapping process
   }
 \end{figure}
+
+The favorable pressure gradient base flow profile of height $L_y$ is taken from
+a constant $x$ line segment obtained from the radially-varying solution.
+Referring to Figure~\eqref{fig:mapping_geometry}, the solution
+$u\!\left(R\right)$ with $p\!\left(R\right)$ and $a\!\left(R\right)$ is valid
+for $R\in\left[R_1,R_2\right]$.  In particular, for some $R_0$ satisfying $R_0
+\leq R_2 - L_y$, the line segment between Cartesian points $\left(R_0,0\right)$
+and $\left(R_0,L_y\right)$ is inside the domain.  At some height of interest
+within the profile, say $\delta^\ast$, one can evaluate
+\begin{align}
+    u\cdot\hat{x}
+  \bigr|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  &=
+  \frac{R_0}{\sqrt{R_0^2+{\delta^\ast}^2}}
+  u\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
+\\
+  \left.
+    \frac{\mathrm{d}p}{\mathrm{d}x}
+  \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+% = \left.
+%   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
+% \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  &=
+  \frac{\sqrt{R_0^2+{\delta^\ast}^2}}{R_0}
+  p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
+\\
+    T
+  \bigr|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  &=
+  a^2\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
+\end{align}
+to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$.  The
+temperature result relies on that, in the special case of a thermally and
+calorically perfect gas with dimensional equation of state $p = \rho R T$,
+choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
+nondimensionally.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
