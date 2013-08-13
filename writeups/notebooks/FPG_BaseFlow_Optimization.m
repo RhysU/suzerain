@@ -56,8 +56,8 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
   % Run the sequential quadratic programming algorithm provided by Octave
   % a returned struct.  On success, s.info == 101.
   s = struct('x0', x);
-  [s.x, s.obj, s.info, s.iter, s.nf]                                   ...
-        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u, 1); % FIXME maxiter
+  [s.x, s.obj, s.info, s.iter, s.nf, s.lambda]                         ...
+        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u);
   [s.dp_e,s.dstar,s.gam0,s.Ma,s.Ma_e,s.p1,s.R0,s.R1,s.rho1,s.T_e,s.u1] ...
         = num2cell(s.x){:};
   s.R2 = sqrt(s.R0**2 + s.dstar**2);
