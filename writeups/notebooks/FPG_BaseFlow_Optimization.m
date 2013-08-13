@@ -17,14 +17,14 @@ end
 
 function phi = baseflow_phi(x)
 % Compute nonlinear functional for use by baseflow_sqp.  See baseflow_sqp.
-% Compute phi(x) returning regularized squared mismatch in dp_e, Ma_e, T_e.
+% Compute phi(x) returning squared mismatch in dp_e, Ma_e, T_e.
 % The radial problem is solved by nozzle(...) on the smallest possible domain.
   [dp_e, dstar, gam0, Ma, Ma_e, p1, R0, R1, rho1, T_e, u1] = num2cell(x){:};
   R2 = sqrt(R0**2 + dstar**2);
   [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1);
-  phi = 1e-0*(Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
-      + 1e-2*(T_e  - a2(end)                                   )**2 ...
-      + 1e-4*(dp_e + R2*abs(pp(end)) / R0                      )**2
+  phi = (Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
+      + (dp_e + R2*abs(pp(end)) / R0                      )**2 ...
+      + (T_e  - a2(end)                                   )**2
 end
 
 function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e, maxiter, tol)
