@@ -490,22 +490,21 @@ line segment between Cartesian points $\left(R_0,0\right)$ and
 $\left(R_0,L_y\right)$.  Clearly, setting $R_2 = \sqrt{R_0^2 + L_y^2}$ produces
 a minimal domain possessing a solution along the entire segment.
 
-At some height of interest
-within the profile, say an edge distance $\delta^\ast$, one can evaluate
-edge conditions
+At some height of interest within the profile, say an edge distance
+$\delta^\ast$, one can evaluate edge conditions
 \begin{align}
   \Mach[e]{}
   &=
   \left.
-    \frac{u_0 u\cdot\hat{x}}{a_0 a}
+    \frac{u_0 u\cdot\hat{\xi}}{a_0 a}
   \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
   =
-  \frac{\Mach R_0 \, u\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)}
+  \frac{\Mach R_0 \, \left|u\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)\right|}
        {\sqrt{R_0^2+{\delta^\ast}^2} \, a\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)}
 \end{align}
 \begin{align}
   \left.
-    \frac{\mathrm{d}p}{\mathrm{d}x}
+    \frac{\mathrm{d}p}{\mathrm{d}\xi}
   \right|_e
   &=
   \left.
@@ -515,10 +514,13 @@ edge conditions
 %   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
 % \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
   =
-  \frac{\sqrt{R_0^2+{\delta^\ast}^2}}{R_0}
-  p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
+  -\frac{\sqrt{R_0^2+{\delta^\ast}^2}}{R_0}
+  \left|p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)\right|
 \end{align}
-to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$.  One
+to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$ where
+$\hat{\xi}$ denotes the streamwise direction.  The absolute values and negative
+sign appear to adjust for the sub- versus supersonic flow direction and to, in
+both cases, recover the physically-present streamwise pressure gradient.  One
 may also, in the special case of a thermally and calorically perfect gas
 evaluate the edge temperature from
 \begin{align}
@@ -535,7 +537,7 @@ nondimensionally in that context.
 For fixed $L_y$, $\delta^\ast$, and $\gamma_0$ a nonlinear optimization problem
 may be formulated over $R_0$, $R_1$, $\Mach$, and $\rho_1$ using the above
 equations to match some target $\Mach[e]{}$,
-$\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$, and $T_e$.  Notice that
+$\left.\frac{\mathrm{d}p}{\mathrm{d}\xi}\right|_e$, and $T_e$.  Notice that
 boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
 which reduces the search space by one dimension.  The difference between sub-
 versus supersonic conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
