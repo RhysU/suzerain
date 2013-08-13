@@ -17,14 +17,14 @@ end
 
 function phi = baseflow_phi(x)
 % Compute nonlinear functional for use by baseflow_sqp.  See baseflow_sqp.
-% Compute phi(x) returning the l_1 of the absolute mismatch in dp_e, Ma_e, T_e.
+% Compute phi(x) returning the l_2^2 of the mismatch in dp_e, Ma_e, T_e.
 % The radial problem is solved by nozzle(...) on the smallest possible domain.
   [dp_e, dstar, gam0, Ma, Ma_e, p1, R0, R1, rho1, T_e, u1] = num2cell(x){:};
   R2 = sqrt(R0**2 + dstar**2);
   [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1);
-  phi = abs(Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end)))) ...
-      + abs(dp_e + R2*abs(pp(end)) / R0                      ) ...
-      + abs(T_e  - a2(end)                                   );
+  phi = (Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
+      + (dp_e + R2*abs(pp(end)) / R0                      )**2 ...
+      + (T_e  - a2(end)                                   )**2;
 end
 
 function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
@@ -57,8 +57,8 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
   % placing results into a struct.  On success, s.info == 101 and s.nozzle is
   % curried so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly).
   s = struct('x0', x);
-  [s.x, s.obj, s.info, s.iter, s.nf, s.lambda]                         ...
-        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u, 1);
+  [s.x, s.obj, s.info, s.iter, s.nf]                                   ...
+        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u);
   [s.dp_e,s.dstar,s.gam0,s.Ma,s.Ma_e,s.p1,s.R0,s.R1,s.rho1,s.T_e,s.u1] ...
         = num2cell(s.x){:};
   s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R1,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,s.p1);
