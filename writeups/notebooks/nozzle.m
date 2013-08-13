@@ -10,12 +10,12 @@ function [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1)
   tol   = sqrt(eps);
   vopt  = odeset('RelTol',      tol, 'AbsTol',  tol, ...
                  'InitialStep', tol, 'MaxStep', sqrt(sqrt(tol)));
-  [r,u] = ode45(up, [R1 R2], u1, vopt);
-  up    = up(r, u); % Shadow
-  a2    = 1 + 0.5*Ma2*(gam0 - 1)*(1 - u.**2);
-  rho   = rho1 * exp(-2*pi*Ma2 * cumtrapz(r, r.*u.*up ./ a2));
-  pp    = - Ma2 * rho.*u.*up;
-  p     = p1 + 2*pi * cumtrapz(r, r.*pp);
+  [r,u] = ode45(up, [R1 R2], u1, vopt);                           % Full order
+  up    = up(r, u);                                               % Shadow 'up'
+  a2    = 1 + 0.5*Ma2*(gam0 - 1)*(1 - u.**2);                     % Full order
+  rho   = rho1 * exp(-2*pi*Ma2 * cumtrapz(r, r.*u.*up ./ a2));    % Lower order
+  pp    = - Ma2 * rho.*u.*up;                                     % Lower order
+  p     = p1 + 2*pi * cumtrapz(r, r.*pp);                         % Lower order
 
   if 0 == nargout
     figure();

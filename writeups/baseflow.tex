@@ -537,19 +537,18 @@ may be formulated over $R_0$, $R_1$, $\Mach$, and $\rho_1$ using the above
 equations to match some target $\Mach[e]{}$,
 $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$, and $T_e$.  Notice that
 boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
-which reduces the search space by one dimension.  As posed, $R_0$ is only
-available at the discrete values chosen by the ODE integrator when implemented
-as shown in Listing~\ref{lst:octave_nozzle}.  One workaround is performing
-spline interpolation on $u$, $p'$, etc.  with a local order appropriate for the
-integrator scheme.  The difference between sub- versus supersonic
-conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
+which reduces the search space by one dimension.  The difference between sub-
+versus supersonic conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
 and~\eqref{eq:cpfradial_nozzle_subsonic_bc} will require flipping the sign when
 computing $\Mach[e]{}$ and $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$ for
 the subsonic case as the streamwise velocity is negative in that case.
 Finally, when performing the optimization the domain may be reduced to $R_2 =
-\sqrt{R_0^2 + {\delta^\ast}^2}$ until a solution is find.  With the minimal
-parameters, the length $L_y$ line segment requiring $R_2 = \sqrt{R_0^2 +
-L_y^2}$ can then be produced.
+\sqrt{R_0^2 + {\delta^\ast}^2}$ until a solution is found.  This has the added
+benefit that the ODE integrator-based implementation shown in
+Listing~\ref{lst:octave_nozzle} will automatically produce solution data for
+$\left(R_0,\delta^\ast\right)$.  With the optimal parameters in hand, the full
+profile solution requiring $R_2 = \sqrt{R_0^2 + L_y^2}$ can then be produced.
+An integrator capable of producing dense output is ideal for this purpose.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

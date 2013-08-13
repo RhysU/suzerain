@@ -45,6 +45,7 @@ EXTRA_DIST += notebooks/Euler_Eigensystem_3D.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_3D_PerfectGas.nb
 EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
 EXTRA_DIST += notebooks/FPG_BaseFlow_Problem.m notebooks/nozzle.m
+EXTRA_DIST += notebooks/FPG_BaseFlow_Optimization.m
 EXTRA_DIST += notebooks/FPG_BaseFlow_Problem.nb
 EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
 EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
