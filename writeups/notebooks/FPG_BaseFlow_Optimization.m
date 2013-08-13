@@ -17,17 +17,17 @@ end
 
 function phi = baseflow_phi(x)
 % Compute nonlinear functional for use by baseflow_sqp.  See baseflow_sqp.
-% Compute phi(x) returning the l_2^2 of the mismatch in dp_e, Ma_e, T_e.
+% Compute phi(x) returning regularized squared mismatch in dp_e, Ma_e, T_e.
 % The radial problem is solved by nozzle(...) on the smallest possible domain.
   [dp_e, dstar, gam0, Ma, Ma_e, p1, R0, R1, rho1, T_e, u1] = num2cell(x){:};
   R2 = sqrt(R0**2 + dstar**2);
   [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1);
-  phi = (Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
-      + (dp_e + R2*abs(pp(end)) / R0                      )**2 ...
-      + (T_e  - a2(end)                                   )**2;
+  phi = 1e-0*(Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
+      + 1e-2*(T_e  - a2(end)                                   )**2 ...
+      + 1e-4*(dp_e + R2*abs(pp(end)) / R0                      )**2
 end
 
-function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
+function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e, maxiter, tol)
 % Driver for achieving target dp_e, Ma_e, and T_e quantities at (R0, dstar).
 % Establish a sequential quadratic programming problem and solve with sqp:
 %    minimize phi(x) subject to g(x) = 0, h(x) >= 0, l <= x <= u
@@ -58,7 +58,7 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
   % curried so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly).
   s = struct('x0', x);
   [s.x, s.obj, s.info, s.iter, s.nf]                                   ...
-        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u);
+        = sqp(x, @baseflow_phi, [], @baseflow_h, l, u, maxiter, tol);
   [s.dp_e,s.dstar,s.gam0,s.Ma,s.Ma_e,s.p1,s.R0,s.R1,s.rho1,s.T_e,s.u1] ...
         = num2cell(s.x){:};
   s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R1,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,s.p1);
@@ -66,4 +66,4 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
 end
 
 % A sample invocation in the spirit of 4m leeward of the stagnation point
-% s = baseflow_sqp(-8.75, 1, 1.4, 1.1, 4.2)
+% s = baseflow_sqp(-8.75, 1, 1.4, 1.1, 4.2, 100, sqrt(eps))
