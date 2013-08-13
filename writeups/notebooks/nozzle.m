@@ -24,4 +24,4 @@ function [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1)
     xlabel('Radius');
   end
 
-end % function
+end
