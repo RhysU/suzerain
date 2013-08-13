@@ -11,7 +11,7 @@ function h = baseflow_h(x)
   if Ma_e < 1
       h = [R0-R1; 1/Ma-u1-eps; u1-eps];
   else
-      h = [R0-R1; u1-1/Ma-eps])
+      h = [R0-R1; u1-1/Ma-eps];
   end
 end
 
@@ -30,10 +30,10 @@ end
 function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
 % Driver for achieving target dp_e, Ma_e, and T_e quantities at (R0, dstar).
 % Establish a sequential quadratic programming problem and solve with sqp:
-%    minimize phi(x) subject to g(x) = 0, h(x) >= 0, lb <= x <= ub
+%    minimize phi(x) subject to g(x) = 0, h(x) >= 0, l <= x <= u
 % where x is the (alphabetically-ordered) vector which may be unpacked with
 %    [dp_e, dstar, gam0, Ma, Ma_e, p1, R0, R1, rho1, T_e, u1] = x;
-% and lb, ub are used to hold some parameters fixed.  See documentation for
+% and l, u are used to hold some parameters fixed.  See documentation for
 % http://www.gnu.org/software/octave/doc/interpreter/Nonlinear-Programming.html.
 
   % Establish initial guess, lower bounds, and upper bounds for each parameter
