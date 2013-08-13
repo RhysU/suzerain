@@ -60,6 +60,7 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e)
         = sqp(x, @baseflow_phi, [], @baseflow_h, l, u, 1); % FIXME maxiter
   [s.dp_e,s.dstar,s.gam0,s.Ma,s.Ma_e,s.p1,s.R0,s.R1,s.rho1,s.T_e,s.u1] ...
         = num2cell(s.x){:};
+  s.R2 = sqrt(s.R0**2 + s.dstar**2);
 
 end
 
