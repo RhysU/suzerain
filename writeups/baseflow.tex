@@ -482,12 +482,15 @@ Figure~\ref{fig:sample_solns}.
 \end{figure}
 
 The favorable pressure gradient base flow profile of height $L_y$ is taken from
-a constant $x$ line segment obtained from the radially-varying solution.
-Referring to Figure~\eqref{fig:mapping_geometry}, the solution
-$u\!\left(R\right)$ with $p\!\left(R\right)$ and $a\!\left(R\right)$ is valid
-for $R\in\left[R_1,R_2\right]$.  In particular, for some $R_0$ satisfying $R_0
-\leq R_2 - L_y$, the line segment between Cartesian points $\left(R_0,0\right)$
-and $\left(R_0,L_y\right)$ is inside the domain.  At some height of interest
+a constant $x$ line segment obtained from a radially-varying solution.
+Referring to Figure~\eqref{fig:mapping_geometry}, the solution comprised of
+$u\!\left(R\right)$, $p'\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
+$R\in\left[R_1,R_2\right]$.  For some $R_0$, a profile is gathered from the
+line segment between Cartesian points $\left(R_0,0\right)$ and
+$\left(R_0,L_y\right)$.  Clearly, setting $R_2 = \sqrt{R_0^2 + L_y^2}$ produces
+a minimal domain possessing a solution along the entire segment.
+
+At some height of interest
 within the profile, say an edge distance $\delta^\ast$, one can evaluate
 edge conditions
 \begin{align}
@@ -530,8 +533,8 @@ because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
 nondimensionally in that context.
 
 For fixed $L_y$, $\delta^\ast$, and $\gamma_0$ a nonlinear optimization problem
-may be formulated over $R_0$, $R_1$, $R_2$, $\Mach$, and $\rho_1$ using the
-above equations to match some target $\Mach[e]{}$,
+may be formulated over $R_0$, $R_1$, $\Mach$, and $\rho_1$ using the above
+equations to match some target $\Mach[e]{}$,
 $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$, and $T_e$.  Notice that
 boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
 which reduces the search space by one dimension.  As posed, $R_0$ is only
@@ -543,6 +546,10 @@ conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
 and~\eqref{eq:cpfradial_nozzle_subsonic_bc} will require flipping the sign when
 computing $\Mach[e]{}$ and $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$ for
 the subsonic case as the streamwise velocity is negative in that case.
+Finally, when performing the optimization the domain may be reduced to $R_2 =
+\sqrt{R_0^2 + {\delta^\ast}^2}$ until a solution is find.  With the minimal
+parameters, the length $L_y$ line segment requiring $R_2 = \sqrt{R_0^2 +
+L_y^2}$ can then be produced.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
