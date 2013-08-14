@@ -47,10 +47,14 @@ end
 
 function phi = baseflow_phi(dstar, gam0, Ma_e, p_exi, T_e, x)
 % Compute phi(x) returning squared norm of mismatch in Ma_e, p_exi, T_e.
-  Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4); x
+  Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   R1 = R0; R2 = sqrt(R0**2 + dstar**2);
-  [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, 1);
-  phi = (Ma_e  - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
-      + (p_exi + R2*abs(pp(end)) / (R0*Ma*Ma)              )**2 ...
-      + (T_e   - a2(end)                                   )**2
+  try
+    [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, 1);
+    phi = (Ma_e  - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
+        + (p_exi + R2*abs(pp(end)) / (R0*Ma*Ma)              )**2 ...
+        + (T_e   - a2(end)                                   )**2
+  catch
+    phi = realmax;
+  end
 end
