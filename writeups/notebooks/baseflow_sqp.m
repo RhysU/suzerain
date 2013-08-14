@@ -7,11 +7,11 @@
 % where x may be unpacked using
 %    Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
 % Solution and access to the sqp solver behavior are returned.
-% See 'help sqp'.  If not supplied, maxiter and tol default to sqp defaults.
+% See 'help sqp'.  If not supplied, maxiter = 100 and tol defaults to eps
 function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
-  if nargin < 6; maxiter = 100;       end
-  if nargin < 7; tol     = sqrt(eps); end
+  if nargin < 6; maxiter = 100; end
+  if nargin < 7; tol     = eps; end
 
   % Establish initial guess, lower bounds, and upper bounds for each parameter
   x   =zeros(4, 1); lb   =zeros(size(x)); ub   =zeros(size(x));
