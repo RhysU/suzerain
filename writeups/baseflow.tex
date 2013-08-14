@@ -160,6 +160,7 @@ To nondimensionalize, chose some reference length $l_0$ and declare
 &   \phi  &= \phi^\ast u_0 l_0
 &   \rho  &= \rho^\ast \rho_0
 &   p     &= p^\ast \rho_0 a_0^2
+&   t_0   &= l_0 / u_0
 \label{eq:nondimensionalization}
 \end{align}
 where starred quantities are dimensionless.  Inserting the definitions
@@ -453,7 +454,7 @@ Figure~\ref{fig:sample_solns}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={Using the sample nozzle solver
-                 implementation\label{lst:octave_nozzle}},
+                 implementation\label{lst:octave_nozzle_usecase}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
@@ -477,7 +478,7 @@ Figure~\ref{fig:sample_solns}.
   \includegraphics[width=0.30\textwidth]{baseflow_schematic}
   \caption{
       \label{fig:mapping_geometry}
-      The geometry used in the coordinate mapping process
+      The geometry used when extracting base flow profiles
   }
 \end{figure}
 
@@ -493,13 +494,13 @@ $\left(R_0,L_y\right)$.  Clearly, selecting
 &
   R_2 &= \sqrt{R_0^2 + L_y^2}
 \end{align}
-produces a minimal domain possessing a solution along this entire segment.
+produces the smallest domain possessing a solution along this entire segment.
 
 At some height of interest within the profile, say an edge distance
-$\delta^\ast$, one can evaluate edge conditions
+$\delta^\ast$, one can evaluate
 \begin{align}
   \Mach[e]{}
-  &=
+  &\equiv
   \left.
     \frac{u_0 u\cdot\hat{\xi}}{a_0 a}
   \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
@@ -508,54 +509,50 @@ $\delta^\ast$, one can evaluate edge conditions
        {\sqrt{R_0^2+{\delta^\ast}^2} \, a\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)}
 \end{align}
 \begin{align}
+  p_{e,\xi}
+  &\equiv
+  \frac{t_0}{\rho_0 u_0}
   \left.
-    \frac{\mathrm{d}p}{\mathrm{d}\xi}
+    \frac{\mathrm{d}\left(p_0 p\right)}{\mathrm{d}\left(l_0 \xi\right)}
   \right|_e
-  &=
-  \left.
-    \frac{\mathrm{d}p}{\mathrm{d}x}
-  \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
+  =
+  - \frac{1}{\Mach^2} \left|\left.
+      \frac{\mathrm{d}p}{\mathrm{d}x}
+    \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}\right|
 % = \left.
 %   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
 % \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
   =
-  -\frac{\sqrt{R_0^2+{\delta^\ast}^2}}{R_0}
+  -\frac{\sqrt{R_0^2+{\delta^\ast}^2}}{\Mach^2 R_0}
   \left|p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)\right|
 \end{align}
-to interrogate the solution's nature at $\left(R_0, \delta^\ast\right)$ where
-$\hat{\xi}$ denotes the streamwise direction.  The absolute values and negative
-sign appear to adjust for the sub- versus supersonic flow direction and to, in
-both cases, recover the physically-present streamwise pressure gradient.  One
-may also, in the special case of a thermally and calorically perfect gas
-evaluate the edge temperature from
+to interrogate the solution's nondimensional nature at $\left(R_0,
+\delta^\ast\right)$.  Here, $\hat{\xi}$ denotes $\hat{x}$ with the streamwise
+direction defined to be positive for both sub- and supersonic problems.  The
+negation and absolute values accomplish this correctly for nozzle problems in
+both flow regimes.  One may also, in the special case of a thermally and
+calorically perfect gas, evaluate the edge temperature from
 \begin{align}
   T_e
-  &=
+  &\equiv
     T
   \bigr|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
   =
   a^2\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
 \end{align}
-because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
-nondimensionally in that context.
+because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
+particular context.
 
-For fixed $L_y$, $\delta^\ast$, and $\gamma_0$ a nonlinear optimization problem
-may be formulated over $R_0$, $\Mach$, and $\rho_1$ using the above equations
-to match some target $\Mach[e]{}$,
-$\left.\frac{\mathrm{d}p}{\mathrm{d}\xi}\right|_e$, and $T_e$.  Notice that
-boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
-which reduces the search space by one dimension.  The difference between sub-
-versus supersonic problem statements~\eqref{eq:cpfradial_nozzle_subsonic_bc}
-and~\eqref{eq:cpfradial_nozzle_supersonic_bc} requires a sign adjustment when
-computing $\Mach[e]{}$ and $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$ for
-the subsonic case as the streamwise velocity is negative in that case.
-Finally, when performing the optimization the domain may be reduced to $R_2 =
-\sqrt{R_0^2 + {\delta^\ast}^2}$ until a solution is found.  This has the added
-benefit that the ODE integrator-based implementation shown in
-Listing~\ref{lst:octave_nozzle} will automatically produce solution data at
-$\left(R_0,\delta^\ast\right)$.  With the optimal parameters in hand, the full
-profile solution requiring $R_2 = \sqrt{R_0^2 + L_y^2}$ can then be produced.
-An integrator capable of producing dense output is ideal for this purpose.
+A nonlinear optimization problem may be formulated over $R_0$, $\Mach$, and
+$\rho_1$ to match some target $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed
+$L_y$, $\delta^\ast$, and $\gamma_0$.  The free parameter $p\!\left(R_1\right)$
+does not impact these three target quantities and so it is not of interest.
+The optimization inner loop may be sped up by using a smaller $R_2 =
+\sqrt{R_0^2 + {\delta^\ast}^2}$ which has the added benefit that the ODE
+integrator-based implementation shown in Listing~\ref{lst:octave_nozzle} will
+automatically produce solution data at $\left(R_0,\delta^\ast\right)$.  After
+optimization completes, the full profile requiring taking $R_2 = \sqrt{R_0^2 +
+L_y^2}$ can be produced.
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

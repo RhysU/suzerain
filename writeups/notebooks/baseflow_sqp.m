@@ -1,18 +1,18 @@
-function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e, maxiter, tol)
-% Driver aspiring to target dp_e, Ma_e, and T_e quantities at (R0, dstar).
+function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
+% Driver aspiring to target p_exi, Ma_e, and T_e quantities at (R0, dstar).
 % A sample invocation in the spirit of 4m leeward of the stagnation point:
-%   s = baseflow_sqp(-8.75, 1, 1.4, 1.1, 4.2, 100, sqrt(eps))
+%   s = baseflow_sqp(-0.05, 1, 1.4, 1.1, 4.2, 100, sqrt(eps))
 %
 % Establishes a sequential quadratic programming problem and solve with sqp:
 %    minimize phi(x) subject to h(x) >= 0, lb <= x <= ub
 % where x is the (alphabetically-ordered) vector which may be unpacked with
-%    [dp_e, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
+%    [p_exi, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
 % and lb, ub are used to hold some parameters fixed.  See 'help sqp'.
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
 
   % Establish initial guess, lower bounds, and upper bounds for each parameter
   x   =zeros(11, 1); lb   =zeros(size(x)); ub   =zeros(size(x));
-  x(1)=dp_e;         lb(1)=dp_e;           ub(1)=dp_e;     % dp_e  constant
+  x(1)=p_exi;        lb(1)=p_exi;          ub(1)=p_exi;    % p_exi  constant
   x(2)=dstar;        lb(2)=dstar;          ub(2)=dstar;    % dstar constant
   x(3)=gam0;         lb(3)=gam0;           ub(3)=gam0;     % gam0  constant
   x(4)=1;            lb(4)=eps;            ub(4)=realmax;  % Ma    positive
@@ -29,7 +29,7 @@ function s = baseflow_sqp(dp_e, dstar, gam0, Ma_e, T_e, maxiter, tol)
   s = struct('h', @(x) baseflow_h(x), 'phi', @(x) baseflow_phi(x));  % Expose
   [s.x, s.obj, s.info, s.iter, s.nf]                               ...
         = sqp(x, @baseflow_phi, [], @baseflow_h, lb, ub, maxiter, tol);
-  [s.dp_e,s.dstar,s.gam0,s.Ma,s.Ma_e,s.R0,s.rho1,s.T_e,s.u1]       ...
+  [s.p_exi,s.dstar,s.gam0,s.Ma,s.Ma_e,s.R0,s.rho1,s.T_e,s.u1]       ...
         = num2cell(s.x){:};
 
   % Curry so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly)
@@ -40,16 +40,16 @@ function h = baseflow_h(x)
 % Specify h(x) >= 0 constraints using eps to accomplish h(x) > 0 where needed.
 % For subsonic, -1/Ma < u1 < 0 achieves at most nearly sonic outflow.
 % For supersonic, u1 > 1/Ma achieves at least nearly sonic inflow.
-  [dp_e, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
+  [p_exi, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
   h = merge(Ma_e < 1, [1/Ma-u1-eps; u1-eps], [u1-1/Ma-eps]);
 end
 
 function phi = baseflow_phi(x)
-% Compute phi(x) on smallest domain returning mismatch in dp_e, Ma_e, T_e.
-  [dp_e, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
+% Compute phi(x) on smallest domain returning mismatch in p_exi, Ma_e, T_e.
+  [p_exi, dstar, gam0, Ma, Ma_e, R0, rho1, T_e, u1] = num2cell(x){:};
   R2 = sqrt(R0**2 + dstar**2);
   [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R0, R2, u1, rho1, 1);
-  phi = (Ma_e - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
-      + (dp_e + R2*abs(pp(end)) / R0                      )**2 ...
-      + (T_e  - a2(end)                                   )**2
+  phi = (Ma_e  - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
+      + (p_exi + R2*abs(pp(end)) / (R0*Ma*Ma)              )**2 ...
+      + (T_e   - a2(end)                                   )**2
 end
