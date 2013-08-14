@@ -487,8 +487,13 @@ Referring to Figure~\eqref{fig:mapping_geometry}, the solution comprised of
 $u\!\left(R\right)$, $p'\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
 $R\in\left[R_1,R_2\right]$.  For some $R_0$, a profile is gathered from the
 line segment between Cartesian points $\left(R_0,0\right)$ and
-$\left(R_0,L_y\right)$.  Clearly, setting $R_2 = \sqrt{R_0^2 + L_y^2}$ produces
-a minimal domain possessing a solution along the entire segment.
+$\left(R_0,L_y\right)$.  Clearly, selecting
+\begin{align}
+  R_1 &= R_0
+&
+  R_2 &= \sqrt{R_0^2 + L_y^2}
+\end{align}
+produces a minimal domain possessing a solution along this entire segment.
 
 At some height of interest within the profile, say an edge distance
 $\delta^\ast$, one can evaluate edge conditions
@@ -535,19 +540,19 @@ because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds
 nondimensionally in that context.
 
 For fixed $L_y$, $\delta^\ast$, and $\gamma_0$ a nonlinear optimization problem
-may be formulated over $R_0$, $R_1$, $\Mach$, and $\rho_1$ using the above
-equations to match some target $\Mach[e]{}$,
+may be formulated over $R_0$, $\Mach$, and $\rho_1$ using the above equations
+to match some target $\Mach[e]{}$,
 $\left.\frac{\mathrm{d}p}{\mathrm{d}\xi}\right|_e$, and $T_e$.  Notice that
 boundary behavior $p\!\left(R_1\right)$ impacts none of these target quantities
 which reduces the search space by one dimension.  The difference between sub-
-versus supersonic conditions~\eqref{eq:cpfradial_nozzle_supersonic_bc}
-and~\eqref{eq:cpfradial_nozzle_subsonic_bc} will require flipping the sign when
+versus supersonic problem statements~\eqref{eq:cpfradial_nozzle_subsonic_bc}
+and~\eqref{eq:cpfradial_nozzle_supersonic_bc} requires a sign adjustment when
 computing $\Mach[e]{}$ and $\left.\frac{\mathrm{d}p}{\mathrm{d}x}\right|_e$ for
 the subsonic case as the streamwise velocity is negative in that case.
 Finally, when performing the optimization the domain may be reduced to $R_2 =
 \sqrt{R_0^2 + {\delta^\ast}^2}$ until a solution is found.  This has the added
 benefit that the ODE integrator-based implementation shown in
-Listing~\ref{lst:octave_nozzle} will automatically produce solution data for
+Listing~\ref{lst:octave_nozzle} will automatically produce solution data at
 $\left(R_0,\delta^\ast\right)$.  With the optimal parameters in hand, the full
 profile solution requiring $R_2 = \sqrt{R_0^2 + L_y^2}$ can then be produced.
 An integrator capable of producing dense output is ideal for this purpose.
