@@ -1,4 +1,3 @@
-function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
 % Driver aspiring to target p_exi, Ma_e, and T_e quantities at (R0, dstar).
 % A sample invocation in the spirit of 4m leeward of the stagnation point:
 %   s = baseflow_sqp(-0.05, 1, 1.4, 1.1, 4.2)
@@ -9,6 +8,7 @@ function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
 %    Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
 % Solution and access to the sqp solver behavior are returned.
 % See 'help sqp'.  If not supplied, maxiter and tol default to sqp defaults.
+function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
   if nargin < 6; maxiter = 100;       end
   if nargin < 7; tol     = sqrt(eps); end
@@ -37,16 +37,16 @@ function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
   s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,1);
 end
 
-function h = baseflow_h(dstar, gam0, Ma_e, p_exi, T_e, x)
 % Specify h(x) >= 0 constraints using eps to accomplish h(x) > 0 where needed.
 % For subsonic, -1/Ma < u1 < 0 achieves at most nearly sonic outflow.
 % For supersonic, u1 > 1/Ma achieves at least nearly sonic inflow.
+function h = baseflow_h(dstar, gam0, Ma_e, p_exi, T_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   h = merge(Ma_e < 1, [1/Ma-u1-eps; u1-eps], [u1-1/Ma-eps]);
 end
 
-function phi = baseflow_phi(dstar, gam0, Ma_e, p_exi, T_e, x)
 % Compute phi(x) returning squared norm of mismatch in Ma_e, p_exi, T_e.
+function phi = baseflow_phi(dstar, gam0, Ma_e, p_exi, T_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   R1 = R0; R2 = sqrt(R0**2 + dstar**2);
   try
