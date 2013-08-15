@@ -46,9 +46,10 @@ function h = baseflow_h(dstar, gam0, Ma_e, p_exi, T_e, x)
 end
 
 % Compute phi(x) returning squared norm of mismatch in Ma_e, p_exi, T_e.
+% Defends against R0 == eps as BFGS seemingly ignores lb <= x <= ub.
 function phi = baseflow_phi(dstar, gam0, Ma_e, p_exi, T_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
-  R1 = R0; R2 = sqrt(R0**2 + dstar**2);
+  R1 = max(eps, R0); R2 = sqrt(R0**2 + dstar**2);
   try
     [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, 1);
     phi = (Ma_e  - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
