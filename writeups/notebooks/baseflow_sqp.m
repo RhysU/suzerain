@@ -1,14 +1,11 @@
-% Driver aspiring to target p_exi, Ma_e, and T_e quantities at (R0, dstar).
-% A sample invocation in the spirit of 4m leeward of the stagnation point:
-%   s = baseflow_sqp(-0.05, 1, 1.4, 1.1, 4.2)
-%
-% Establishes a sequential quadratic programming problem and solve with sqp:
-%    minimize phi(x) subject to h(x) >= 0, lb <= x <= ub
-% where x may be unpacked using
-%    Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
-% Solution and access to the sqp solver behavior are returned.
-% See 'help sqp'.  If not supplied, maxiter = 100 and tol defaults to eps
-function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
+% Driver aspiring to target Ma_e, p_exi, and T_e quantities at (R0, dstar).
+% The invocation
+%   s = baseflow_sqp(1, 1.4, 1.1, -0.01, 4.2)
+% produces parameters s.Ma, s.R0, s.rho1, and s.u1 with observed behaviors
+% s.obs.Ma_e, s.obs.p_exi, and s.obs.T_e.  The SQP solver results appear in
+% s.x, s.obj, s.info, s.iter, and s.nf.  See 'help sqp' for solver details.
+% When not supplied, maxiter = 100 and tol = eps.
+function s = baseflow_sqp(dstar, gam0, Ma_e, p_exi, T_e, maxiter, tol)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
   if nargin < 6; maxiter = 100; end
   if nargin < 7; tol     = eps; end
@@ -23,7 +20,8 @@ function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
   % Guess for u1 = x(end) must be consistent with sub- vs supersonic Ma_e
   x(end) = sign(Ma_e - 1) * Ma_e + eps;
 
-  % Run sequential quadratic programming collecting results into a struct
+  % Run sequential quadratic programming collecting results into a struct:
+  % That is, minimize phi(x) subject to h(x) >= 0, lb <= x <= ub
   % Curries baseflow_h and baseflow_phi to expose them as h(x) and phi(x)
   s = struct('dstar', dstar, 'gam0',  gam0,
              'Ma_e',  Ma_e, 'p_exi', p_exi, 'T_e', T_e,
@@ -35,6 +33,9 @@ function s = baseflow_sqp(p_exi, dstar, gam0, Ma_e, T_e, maxiter, tol)
 
   % Curry so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly)
   s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,1);
+
+  % Finally, compute the observed edge quantities at dstar
+  s.obs = struct(); [s.obs.phi,s.obs.Ma_e,s.obs.p_exi,s.obs.T_e] = s.phi(s.x);
 end
 
 % Specify h(x) >= 0 constraints using eps to accomplish h(x) > 0 where needed.
@@ -45,17 +46,18 @@ function h = baseflow_h(dstar, gam0, Ma_e, p_exi, T_e, x)
   h = merge(Ma_e < 1, [1/Ma-u1-eps; u1-eps], [u1-1/Ma-eps]);
 end
 
-% Compute phi(x) returning squared norm of mismatch in Ma_e, p_exi, T_e.
+% Compute phi(x) returning squared norm of mismatch vs tMa_e, tp_exi, tT_e.
 % Defends against R0 == eps as BFGS seemingly ignores lb <= x <= ub.
-function phi = baseflow_phi(dstar, gam0, Ma_e, p_exi, T_e, x)
+function [phi, Ma_e, p_exi, T_e] = baseflow_phi(dstar, gam0, tMa_e, tp_exi, tT_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   R1 = max(eps, R0); R2 = sqrt(R0**2 + dstar**2);
   try
     [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, 1);
-    phi = (Ma_e  - Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end))))**2 ...
-        + (p_exi + R2*abs(pp(end)) / (R0*Ma*Ma)              )**2 ...
-        + (T_e   - a2(end)                                   )**2
+    Ma_e  =   Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end)));
+    p_exi = - R2*abs(pp(end)) / (R0*Ma*Ma);
+    T_e   =   a2(end);
+    phi = (tMa_e - Ma_e)**2 + (tp_exi - p_exi)**2 + (tT_e - T_e)**2
   catch
-    phi = realmax;
+    phi = realmax; Ma_e = p_exi = T_e = NaN;
   end
 end
