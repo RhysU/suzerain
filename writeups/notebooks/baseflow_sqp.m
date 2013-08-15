@@ -40,7 +40,7 @@ end
 % For supersonic, u1 > 1/Ma achieves at least nearly sonic inflow.
 function h = baseflow_h(dstar, gam0, Ma_e, p_exi, T_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
-  h = merge(Ma_e < 1, [1/Ma-u1-eps; u1-eps], [u1-1/Ma-eps]);
+  h = merge(Ma_e < 1, [1/Ma-u1-eps; -u1-eps], [u1-1/Ma-eps]);
 end
 
 % Compute phi(x) returning squared norm of mismatch vs tMa_e, tp_exi, tT_e.
