@@ -159,6 +159,33 @@ public:
     /** Pointer to largo workspace */
     void * workspace;
 
+    /** Get baseflow field and derivatives from coefficients*/
+    void get_baseflow(
+         const real_t    y, 
+         real_t *     base, 
+         real_t *   dybase, 
+         real_t *   dxbase);
+
+    /** Get baseflow pressure and derivatives from coefficients*/
+    void get_baseflow_pressure(
+         const real_t    y, 
+         real_t &    Pbase, 
+         real_t &  dyPbase, 
+         real_t &  dxPbase);
+
+private:
+    /** Baseflow coefficients for the field*/
+    MatrixXXr x;
+
+    /** Baseflow coefficient base */
+    std::string x_base;
+
+    /** Baseflow coefficients for the field derivative*/
+    MatrixXXr dx;
+
+    /** Baseflow derivative coefficient base */
+    std::string dx_base;
+
 };
 
 } // namespace support

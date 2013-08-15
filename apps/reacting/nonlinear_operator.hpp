@@ -1147,7 +1147,95 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 }
 
 #ifdef SUZERAIN_HAVE_LARGO
-                largo_prestep_seta (sgdef.workspace, ycoord*sgdef.grdelta, field, mean, rms, mean_rqq, dmean, drms, dmean_rqq);
+                // baseflow arrays
+                real_t    grDA [Ns+4];
+                real_t    base [Ns+4];
+                real_t  dybase [Ns+4];
+                real_t  dxbase [Ns+4];
+                real_t  dtbase [Ns+4];
+                real_t srcbase [Ns+4];
+                real_t    wall [Ns+4];
+                real_t  dywall [Ns+4];
+                real_t  dxwall [Ns+4];
+                for (unsigned int ivar=0; ivar<Ns+4; ivar++){
+                       grDA[ivar] = 0;
+                       base[ivar] = 0;
+                     dybase[ivar] = 0;
+                     dxbase[ivar] = 0;
+                     dtbase[ivar] = 0;
+                    srcbase[ivar] = 0;
+                       wall[ivar] = 0;
+                     dywall[ivar] = 0;
+                     dxwall[ivar] = 0;
+                }
+
+                // baseflow arrays, pressure
+                real_t    Pbase = 0;
+                real_t  dyPbase = 0;
+                real_t  dxPbase = 0;
+                real_t  dtPbase = 0;
+
+                // Compute baseflow from coefficients
+                sgdef.get_baseflow(ycoord, &base[0], &dybase[0], &dxbase[0]);
+                sgdef.get_baseflow_pressure(ycoord, Pbase, dyPbase, dxPbase);
+
+                if (base[0]>0) {
+                    // growth rate of ru:
+                    sgdef.get_baseflow(0.0, &wall[0], &dywall[0], &dxwall[0]);
+                    real_t wall_u     =   wall[1] / wall[0];
+                    real_t wall_drudx = dxwall[1];
+                    grDA[1] = - wall_u * wall_drudx / (0.0 - wall_u);
+
+                    // Auxiliary computations
+                    real_t   base_u     =   base[1] /    base[0];
+                    real_t   base_v     =   base[2] /    base[0];
+                    real_t   base_w     =   base[3] /    base[0];
+                    real_t   base_rH    =   base[4] +   Pbase   ;
+                    real_t   base_H     =   base_rH /    base[0];
+                    real_t dybase_rH    = dybase[4] + dyPbase   ;
+
+                    // time derivative base flow
+                    for (unsigned int ivar=0; ivar<Ns+4; ivar++){
+                         dtbase[ivar] = wall_u * dxbase[ivar];
+                    }
+
+                    // sources from baseflow
+                    // rho
+                    srcbase[0]  = dtbase[0];
+                    srcbase[0] += dybase[2];
+
+                    // rho_u
+                    srcbase[1]  = dtbase[1];
+                    srcbase[1] += base_u * dybase[2] + base_v * dybase[1] - base_v * base_u * dybase[0];
+                   
+                    // rho_v
+                    srcbase[2]  = dtbase[2];
+                    srcbase[2] += base_v * dybase[2] + base_v * dybase[2] - base_v * base_v * dybase[0] + dyPbase;
+
+                    // rho_w
+                    srcbase[3]  = dtbase[3];
+                    srcbase[3] += base_w * dybase[2] + base_v * dybase[3] - base_v * base_w * dybase[0];
+
+                    // rho_E
+                    srcbase[4]  = dtbase[4];
+                    srcbase[4] += base_H * dybase[2] + base_v * dybase_rH - base_v * base_H * dybase[0];
+
+                    // rho_s
+                    for (unsigned int ivar=1; ivar<Ns; ivar++){
+                        real_t   base_cs =   base[4+ivar] /  base[0];
+                        srcbase[4+ivar]  = dtbase[4+ivar];
+                        srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
+                    }
+                }
+               
+                // Init
+                largo_init (sgdef.workspace, sgdef.grdelta, grDA);
+
+                // Basefow prestep
+                largo_prestep_baseflow (sgdef.workspace, base, dybase, dtbase, dxbase, srcbase);
+
+                // Flow stats prestep
+                largo_prestep_seta (sgdef.workspace, ycoord, field, mean, rms, mean_rqq, dmean, drms, dmean_rqq);
 #endif
             }
 

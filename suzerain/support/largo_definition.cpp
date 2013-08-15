@@ -34,6 +34,8 @@
 #include <esio/error.h>
 #include <esio/esio.h>
 
+#include <gsl/gsl_poly.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/error.h>
 #include <suzerain/exprparse.hpp>
@@ -113,7 +115,9 @@ largo_definition::largo_definition()
     : formulation(largo_formulation::disable)
     , grdelta    (std::numeric_limits<real_t>::quiet_NaN())
 {
-    // NOP
+    (this->workspace) = NULL;
+    (this->x).resize(0,0);
+    (this->dx).resize(0,0);
 }
 
 // Strings used in options_description and populate/override/save/load.
@@ -173,7 +177,9 @@ largo_definition::options_description()
     return retval;
 }
 
-static const char location[] = "largo";
+static const char location[]            = "largo";
+static const char location_baseflow[]   = "largo_baseflow";
+static const char location_baseflow_d[] = "largo_baseflow_derivative";
 
 // For maybe_XXX_impl to indicates a \c largo_definition is a default value
 static bool default_value_formulation(const largo_formulation& v)
@@ -257,6 +263,32 @@ largo_definition::save(
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
 
+    // Write baseflow field coefficients (only master process)
+    if (this->x.outerSize() > 0) {
+    esio_plane_establish(h, 
+        this->x.outerSize(), 0, procid == 0 ?  this->x.outerSize() : 0,
+        this->x.innerSize(), 0, procid == 0 ?  this->x.innerSize() : 0);
+    esio_plane_write(h, location_baseflow, this->x.data(),
+        this->x.outerStride(), this->x.innerStride(), 
+        "Baseflow field coefficients");
+
+    // Write out the baseflow coefficient base
+    esio_string_set(h, location_baseflow, "coefficient_base", this->x_base.c_str());
+    }
+
+    // Write baseflow derivative coefficients (only master process)
+    if (this->dx.outerSize() > 0) {
+    esio_plane_establish(h, 
+        this->dx.outerSize(), 0, procid == 0 ?  this->dx.outerSize() : 0,
+        this->dx.innerSize(), 0, procid == 0 ?  this->dx.innerSize() : 0);
+    esio_plane_write(h, location_baseflow_d, this->dx.data(),
+        this->dx.outerStride(), this->dx.innerStride(), 
+        "Baseflow derivative coefficients");
+
+    // Write out the baseflow coefficient base
+    esio_string_set(h, location_baseflow_d, "coefficient_base", this->dx_base.c_str());
+
+    }
 }
 
 void
@@ -297,6 +329,142 @@ largo_definition::load(
 
     this->populate(t, verbose);  // Prefer this to incoming
 
+    // Load baseflow coefficients
+    // Only proceed if largo_baseflow is present in the restart
+    int neqns, ncoeffs;
+    INFO0("Looking for baseflow coefficients");
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow, 
+                                           &neqns, &ncoeffs)) {
+        // Load baseflow coefficients
+        x.resize(ncoeffs, neqns); //Using column-major storage
+        std::cout << "ncoeffs = " << ncoeffs << std::endl;
+        std::cout << "neqns   = " << neqns   << std::endl;
+
+        esio_plane_establish(h, 
+            this->x.outerSize(), 0, this->x.outerSize(),
+            this->x.innerSize(), 0, this->x.innerSize());
+        esio_plane_read(h, location_baseflow, this->x.data(),
+            this->x.outerStride(), this->x.innerStride());
+
+        // Load baseflow coefficient base
+//         char *name  = esio_string_get(h, location_baseflow_d, "coefficient_base");
+//         this->dx_base = name;
+//         free(name);
+
+        WARN0("Assuming baseflow coefficients are for a polynomial base");
+        this->x_base = "polynomial";
+        std::cout << "x_base  = " << this->x_base << std::endl;
+    }
+
+    // Load baseflow derivative coefficients
+    // Only proceed if largo_baseflow is present in the restart
+    INFO0("Looking for baseflow derivative coefficients");
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_d, 
+                                           &neqns, &ncoeffs)) {
+        // Load baseflow coefficients
+        dx.resize(ncoeffs, neqns); //Using column-major storage
+        std::cout << "ncoeffs = " << ncoeffs << std::endl;
+        std::cout << "neqns   = " << neqns   << std::endl;
+
+        esio_plane_establish(h, 
+            this->dx.outerSize(), 0, this->dx.outerSize(),
+            this->dx.innerSize(), 0, this->dx.innerSize());
+        esio_plane_read(h, location_baseflow_d, this->dx.data(),
+            this->dx.outerStride(), this->dx.innerStride());
+
+        // Load baseflow coefficient base
+//         char *name  = esio_string_get(h, location_baseflow_d, "coefficient_base");
+//         this->dx_base = name;
+//         free(name);
+
+        WARN0("Assuming baseflow derivative coefficients are for a polynomial base");
+        this->dx_base = "polynomial";
+        std::cout << "dx_base  = " << this->dx_base << std::endl;
+    }
+    return;
+}
+
+void
+largo_definition::get_baseflow(
+        const real_t      y,
+        real_t *       base,
+        real_t *     dybase,
+        real_t *     dhbase)
+{
+   if (x.rows()) {
+      real_t res[2];
+      for (int j=0; j<x.cols()-1; j++){
+          // Compute baseflow and y-derivative
+          int resval = gsl_poly_eval_derivs 
+             (x.col(j).data(), 
+              x.rows(),
+              y, 
+              &res[0],
+              2);
+          base  [j] = res[0];
+          dybase[j] = res[1];
+      }
+   } else {
+       // Do nothing
+       // Assume that baseflow arrays are initialized to zero
+   }
+
+   // Compute x-derivative of baseflow
+   if (dx.rows()) {
+      for (int j=0; j<dx.cols()-1; j++){
+          // Compute x-derivative of baseflow
+          int resval = gsl_poly_eval_derivs 
+             (dx.col(j).data(),
+              dx.rows(),
+              y, 
+              &dhbase[j],
+              1);
+      }
+   } else {
+       // Do nothing
+       // Assume that baseflow arrays are initialized to zero
+   }
+}
+
+
+void
+largo_definition::get_baseflow_pressure(
+        const real_t      y,
+        real_t &      Pbase,
+        real_t &    dyPbase,
+        real_t &    dhPbase)
+{
+   if (x.rows()) {
+      real_t res[2];
+      int j = x.cols()-1;
+      // Compute baseflow and y-derivative
+      int resval = gsl_poly_eval_derivs 
+         (x.col(j).data(), 
+          x.rows(),
+          y, 
+          &res[0],
+          2);
+      Pbase   = res[0];
+      dyPbase = res[1];
+   } else {
+       // Do nothing
+       // Assume that baseflow arrays are initialized to zero
+   }
+
+   // Compute x-derivative of baseflow
+   if (dx.rows()) {
+      int j = x.cols()-1;
+      // Compute x-derivative of baseflow
+      int resval = gsl_poly_eval_derivs 
+         (dx.col(j).data(),
+          dx.rows(),
+          y, 
+          &dhPbase,
+          1);
+   } else {
+       // Do nothing
+       // Assume that baseflow arrays are initialized to zero
+   }
 }
 
 } // namespace support
