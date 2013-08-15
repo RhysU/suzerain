@@ -1,10 +1,11 @@
 % Driver aspiring to target Ma_e, p_exi, and T_e quantities at (R0, dstar).
-function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e, debug = 0)
+function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e, ...
+                               tol = sqrt(eps), maxiter = 100, debug = 0)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg optim; end
 
-  % Compute residuals between targets and observations for [Ma, R0, rho1, u1]
+  % Relative residuals of observations against targets for [Ma, R0, rho1, u1]
   target = [Ma_e; p_exi; T_e];
-  f = @(x) baseflow_f(dstar, gam0, x(1), x(2), x(3), x(4)) - target;
+  f = @(x) (baseflow_f(dstar, gam0, x(1), x(2), x(3), x(4)) - target)./target;
 
   % Establish guess, lower/upper bounds, and nonlinear inequality constraints
   % Guess for u1 = x(end) must be consistent with sub- vs supersonic Ma_e
@@ -13,11 +14,11 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e, debug = 0)
                  'ubound', [realmax; realmax; realmax; +realmax             ],
                  'inequc', { zeros(4), ones(4,1), ... % NOP linear constraint
                              @(x) baseflow_h(Ma_e, x(1), x(2), x(3), x(4))  },
-                 'debug', debug, 'TolFun', sqrt(eps), 'MaxIter', 100);
+                 'TolFun', tol, 'MaxIter', maxiter, 'debug', debug);
 
-  % Solve the problem and convert residuals into optimization results
+  % Solve the problem and convert relative residuals into optimization results
   [p, res, cvg, outp] = nonlin_residmin(f, pin, opt);
-  res += target;
+  res .*= target; res += target;
 
   % Pack the problem specification, solution, and behavior into a struct
   s = struct('dstar', dstar, 'gam0', gam0,
@@ -26,7 +27,7 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e, debug = 0)
              'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'T_e', res(3)),
              'cvg', cvg, 'niter', outp.niter);
 
-  % Finally, curry so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly)
+  % Curry so that s.nozzle(Ly) provides data on (R0,0) to (R0,Ly)
   s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,1);
 
 end
