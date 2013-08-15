@@ -447,8 +447,8 @@ to solve concrete problems.  The solutions are depicted in
 Figure~\ref{fig:sample_solns}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={One possible implementation for a
-                 radially-symmetric nozzle solver\label{lst:octave_nozzle}},
+                 caption={\texttt{nozzle.m}: A radially-symmetric nozzle solver
+                 implementation\label{lst:octave_nozzle}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle.m}
 
@@ -550,9 +550,17 @@ does not impact these three target quantities and so it is not of interest.
 The optimization inner loop may be sped up by using a smaller $R_2 =
 \sqrt{R_0^2 + {\delta^\ast}^2}$ which has the added benefit that the ODE
 integrator-based implementation shown in Listing~\ref{lst:octave_nozzle} will
-automatically produce solution data at $\left(R_0,\delta^\ast\right)$.  After
-optimization completes, the full profile requiring taking $R_2 = \sqrt{R_0^2 +
-L_y^2}$ can be produced.
+automatically produce solution data at $\left(R_0,\delta^\ast\right)$.  An
+implementation of this inner solve appears in
+Listing~\ref{lst:octave_nozzle_edge}.  After optimization completes, the full
+profile requiring taking $R_2 = \sqrt{R_0^2 + L_y^2}$ can be computed by
+Listing~\ref{lst:octave_nozzle}.
+
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={\texttt{nozzle\_edge.m}: A driver computing edge
+                 quantities of interest\label{lst:octave_nozzle_edge}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/nozzle_edge.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

@@ -54,7 +54,7 @@ function [phi, Ma_e, p_exi, T_e] = baseflow_phi(dstar, gam0, tMa_e, ...
     Ma_e  =   Ma*r(end)*abs(u(end)) / (R2*sqrt(a2(end)));
     p_exi = - R2*abs(pp(end)) / (R0*Ma*Ma);
     T_e   =   a2(end);
-    phi = (tMa_e - Ma_e)**2 + (tp_exi - p_exi)**2 + (tT_e - T_e)**2
+    phi = (tMa_e - Ma_e)**2 + (tp_exi - p_exi)**2  + (tT_e - T_e)**2
   catch
     phi = realmax; Ma_e = p_exi = T_e = NaN;
   end
