@@ -5,10 +5,9 @@
 % s.obs.Ma_e, s.obs.p_exi, and s.obs.T_e.  The SQP solver results appear in
 % s.x, s.obj, s.info, s.iter, and s.nf.  See 'help sqp' for solver details.
 % When not supplied, maxiter = 100 and tol = eps.
-function s = baseflow_sqp(dstar, gam0, Ma_e, p_exi, T_e, maxiter, tol)
+function s = baseflow_sqp(dstar, gam0, Ma_e, p_exi, T_e, ...
+                          maxiter = 100, tol = eps)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg; end
-  if nargin < 6; maxiter = 100; end
-  if nargin < 7; tol     = eps; end
 
   % Establish initial guess, lower bounds, and upper bounds for parameters
   %    Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
