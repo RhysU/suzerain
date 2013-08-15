@@ -35,7 +35,7 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e,              ...
              'maxiter', maxiter, 'niter', outp.niter);
 
   % Curry so that s.nozzle(Ly) computes results on segment (R0,0) to (R0,Ly)
-  s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,NaN);
+  s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,0);
 
 end
 
