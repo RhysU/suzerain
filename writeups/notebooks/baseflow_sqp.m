@@ -10,15 +10,12 @@ function s = baseflow_sqp(dstar, gam0, Ma_e, p_exi, T_e, maxiter, tol)
   if nargin < 6; maxiter = 100; end
   if nargin < 7; tol     = eps; end
 
-  % Establish initial guess, lower bounds, and upper bounds for each parameter
-  x   =zeros(4, 1); lb   =zeros(size(x)); ub   =zeros(size(x));
-  x(1)=1;           lb(1)= eps;           ub(1)=realmax;  % Ma   positive
-  x(2)=1;           lb(2)= eps;           ub(2)=realmax;  % R0   positive
-  x(3)=1;           lb(3)= eps;           ub(3)=realmax;  % rho1 positive
-  x(4)=NaN;         lb(4)=-realmax;       ub(4)=realmax;  % u1   unleashd
-
+  % Establish initial guess, lower bounds, and upper bounds for parameters
+  %    Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   % Guess for u1 = x(end) must be consistent with sub- vs supersonic Ma_e
-  x(end) = sign(Ma_e - 1) * Ma_e + eps;
+  x  = [1,       1,       1,       sign(Ma_e-1)*Ma_e+eps];
+  lb = [eps,     eps,     eps,     -realmax             ];
+  ub = [realmax, realmax, realmax, realmax              ];
 
   % Run sequential quadratic programming collecting results into a struct:
   % That is, minimize phi(x) subject to h(x) >= 0, lb <= x <= ub
@@ -48,7 +45,8 @@ end
 
 % Compute phi(x) returning squared norm of mismatch vs tMa_e, tp_exi, tT_e.
 % Defends against R0 == eps as BFGS seemingly ignores lb <= x <= ub.
-function [phi, Ma_e, p_exi, T_e] = baseflow_phi(dstar, gam0, tMa_e, tp_exi, tT_e, x)
+function [phi, Ma_e, p_exi, T_e] = baseflow_phi(dstar, gam0, tMa_e, ...
+                                                tp_exi, tT_e, x)
   Ma = x(1); R0 = x(2); rho1 = x(3); u1 = x(4);
   R1 = max(eps, R0); R2 = sqrt(R0**2 + dstar**2);
   try
