@@ -12,8 +12,6 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e,             ...
   pin =                    [1;       1;       1;       sign(Ma_e-1)*Ma_e+eps];
   opt = optimset('lbound', [eps;     eps;     eps;     -realmax             ],
                  'ubound', [realmax; realmax; realmax; +realmax             ],
-                 'inequc', { zeros(4), ones(4,1), ... % NOP linear constraint
-                             @(x) baseflow_h(Ma_e, x(1), x(2), x(3), x(4))  },
                  'TolFun', tol, 'MaxIter', maxiter, 'debug', debug);
 
   % Solve the problem and convert relative residuals into optimization results
