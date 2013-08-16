@@ -450,6 +450,13 @@ Listing~\ref{lst:octave_nozzle}.
   }
 \end{figure}
 
+\lstinputlisting[language=Octave,columns=fixed,float=p,
+                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
+                 radial nozzle solver
+                 implementation\label{lst:octave_nozzle}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/nozzle.m}
+
 \clearpage
 
 \section{Mapping solution to Cartesian domain and matching conditions of interest}
@@ -536,13 +543,6 @@ implementation of this inner solve appears in
 Listing~\ref{lst:octave_nozzle_edge}.  After optimization completes, the full
 profile requiring taking $R_2 = \sqrt{R_0^2 + L_y^2}$ can be computed by
 Listing~\ref{lst:octave_nozzle}.
-
-\lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
-                 radial nozzle solver
-                 implementation\label{lst:octave_nozzle}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/nozzle.m}
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle\_edge.m}: A kernel computing edge

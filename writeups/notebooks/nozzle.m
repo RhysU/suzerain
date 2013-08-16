@@ -37,3 +37,17 @@ function [up, a2] = nozzle_upa2(r, u, Ma2, gam0m1)
                ./ (2 + Ma2*gam0m1 - Ma2*(gam0m1+2)*u.**2);
   a2 = 1 + 0.5*Ma2*gam0m1*(1 - u.**2);
 end
+
+%!demo
+%! % Used identically to nozzle1 but produces more accurate solutions
+%! pkg load odepkg; Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
+%! nozzle(Ma, gam0, Rinner, Router, -1/Ma+sqrt(eps), 1, 1);
+
+%!test
+%! % Subsonic code-to-code verification against simpler nozzle1 logic
+%! pkg load odepkg; Ma = 2; gam0 = 1.4; Rinner = 1.5; Router = 2;
+%! [r, u, rho, p, a2, up, pp] = nozzle1(Ma, gam0, Router, Rinner, -2/7, 0.9, 1.1);
+%! expected = [r(end), u(end), rho(end), p(end), a2(end), up(end), pp(end)];
+%! [r, u, rho, p, a2, up, pp] = nozzle (Ma, gam0, Router, Rinner, -2/7, 0.9, 1.1);
+%! observed = [r(end), u(end), rho(end), p(end), a2(end), up(end), pp(end)];
+%! assert(norm(expected - observed) / norm(expected) < sqrt(sqrt(eps)))
