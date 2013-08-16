@@ -6,7 +6,7 @@ function [Ma_e, p_exi, T_e] = nozzle_edge(dstar, gam0, Ma, R0, rho1, u1)
   Ma_e = p_exi = T_e = NaN;      % Produce NaNs if nozzle(...) ODE solver fails
   p1   = NaN;                    % Absolute pressure is irrelevant to results
   try
-    [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1);
+    [r, u, rho, p, a2, up, pp] = nozzle1(Ma, gam0, R1, R2, u1, rho1, p1);
     Ma_e  =   Ma * r(end) * abs(u(end)) / (R2 * sqrt(a2(end)));
     p_exi = - R2 * abs(pp(end)) / (R0*Ma*Ma);
     T_e   =   a2(end);

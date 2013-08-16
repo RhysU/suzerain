@@ -1,5 +1,5 @@
 % Solve nozzle IVP for [u; rho; p] on [R1, R2] given [u1; rho1; p1]
-% via a coupled ODE-based approach.  Plots results when no values requested.
+% via a coupled ODE-based approach.  Plot results when no values requested.
 function [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1, ...
                                              reltol=sqrt(eps), abstol=sqrt(eps))
 
@@ -14,8 +14,9 @@ function [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1, ...
 
   if 0 == nargout
     figure();
-    plot(r, u, 'r-', r, rho, 'b-', r, p, 'g-');
-    legend('Velocity', 'Density', 'Pressure', 'location', 'northwest');
+    plot(r, u, '-', r, sqrt(a2), '-', r, rho, '-', r, p, 'g-');
+    legend('Velocity', 'Sound speed', 'Density', 'Pressure', ...
+           'location', 'north', 'orientation', 'horizontal');
     xlabel('Radius');
   end
 
@@ -25,8 +26,8 @@ end
 function f = nozzle_f(r, x, Ma2, gam0m1)
   u = x(1); rho = exp(x(2)); p = x(3);       % Unpack
   [up, a2] = nozzle_upa2(r, u, Ma2, gam0m1); % Compute
-  logrhop  = -2*pi*Ma2 * r*u*up / a2;
-  pp       = -2*pi     * r*rho*u*up;
+  logrhop  = -Ma2*r*u*up / a2;
+  pp       = -r*rho*u*up;
   f = [up; logrhop; pp];                     % Pack
 end
 

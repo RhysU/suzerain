@@ -308,7 +308,6 @@ Jacobian-scaled polar integrand:
 .
 \end{align}
 %
-\textcolor{red}{TODO Did I hose $2\pi$ factor?}
 Recasting into a direct statement about $u'$,
 \begin{align}
    u^\prime
@@ -337,15 +336,15 @@ assumption causes~\eqref{eq:logrho_nondim} to become
   \rho\!\left(R_2\right)
   &=
   \exp\left[
-    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \left( \int_{R_1}^{R_2}
+    - \frac{\Mach^2}{2} \int_{R_1}^{R_2}
         \frac{\left(u^2\right)'}{a^2}
-      \, r \, \mathrm{d}r \right) \, \mathrm{d}\theta
+      \, r \, \mathrm{d}r
     + \log\rho\!\left(R_1\right)
   \right]
 \\
   &=
   \rho\!\left(R_1\right) \exp\left[
-    - 2\pi\Mach^2 \int_{R_1}^{R_2}
+    - \Mach^2 \int_{R_1}^{R_2}
         \frac{u u'}{a^2}
       \, r \, \mathrm{d}r
   \right]
@@ -356,13 +355,13 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 \begin{align}
   p\!\left(R_2\right)
   &=
-    - \frac{\Mach^2}{2} \int_{0}^{2\pi} \left( \int_{R_1}^{R_2}
+    - \frac{\Mach^2}{2} \int_{R_1}^{R_2}
         \rho \left(u'\right)^2
-      \, r \, \mathrm{d}r \right) \, \mathrm{d}\theta
+      \, r \, \mathrm{d}r
     + p\!\left(R_1\right)
 \\
   &=
-    -2\pi\Mach^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
+    -\Mach^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
       + p\!\left(R_1\right)
 \label{eq:cpfradial_nondim_p}
 .
@@ -451,14 +450,16 @@ producing the solutions depicted in Figure~\ref{fig:sample_solns}.
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
-\begin{figure}
+\begin{figure}[p]
   \centering
-  \includegraphics[width=0.75\textwidth]{nozzle_subsonic}
-  \\
-  \includegraphics[width=0.75\textwidth]{nozzle_supersonic}
+  \includegraphics[width=0.80\textwidth]{nozzle_subsonic}
+  \vfill
+  \includegraphics[width=0.80\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Solutions produced by the sample \texttt{nozzle.m} code
+      Sample radial nozzle solutions.  The subsonic solution
+      flows from right-to-left while the supersonic one flows from
+      left-to-right.
   }
 \end{figure}
 
