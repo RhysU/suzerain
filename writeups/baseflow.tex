@@ -504,22 +504,22 @@ $\delta^\ast$, one can evaluate
     \frac{\mathrm{d}\left(p_0 p\right)}{\mathrm{d}\left(l_0 \xi\right)}
   \right|_e
   =
-  - \frac{1}{\Mach^2} \left|\left.
+    \frac{\operatorname{sgn}(u)}{\Mach^2} \left.
       \frac{\mathrm{d}p}{\mathrm{d}x}
-    \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}\right|
+    \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
 % = \left.
 %   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
 % \right|_{\sqrt{R_0^2 + {\delta^\ast}^2}}
   =
-  -\frac{\sqrt{R_0^2+{\delta^\ast}^2}}{\Mach^2 R_0}
-  \left|p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)\right|
+  \frac{\operatorname{sgn}(u)\sqrt{R_0^2+{\delta^\ast}^2}}{\Mach^2 R_0}
+  \,
+  p'\!\left(\sqrt{R_0^2 + {\delta^\ast}^2}\right)
 \end{align}
 to interrogate the solution's nondimensional nature at $\left(R_0,
 \delta^\ast\right)$.  Here, $\hat{\xi}$ denotes $\hat{x}$ with the streamwise
-direction defined to be positive for both sub- and supersonic problems.  The
-negation and absolute values accomplish this correctly for nozzle problems in
-both flow regimes.  One may also, in the special case of a thermally and
-calorically perfect gas, evaluate the edge temperature from
+direction defined to be positive for both sub- and supersonic problems.  One
+may also, in the special case of a thermally and calorically perfect gas,
+evaluate the edge temperature from
 \begin{align}
   T_e
   &\equiv
@@ -533,10 +533,10 @@ particular context.
 
 A nonlinear optimization problem may be formulated over $R_0$, $\Mach$, and
 $\rho_1$ to match some target $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed
-$L_y$, $\delta^\ast$, and $\gamma_0$.  The free parameter $p\!\left(R_1\right)$
-does not impact these three target quantities and so it is not of interest.
-The optimization inner loop may be sped up by using a smaller $R_2 =
-\sqrt{R_0^2 + {\delta^\ast}^2}$ which has the added benefit that the ODE
+$L_y$, $\delta^\ast$, and $\gamma_0$.  Parameter $p\!\left(R_1\right)$ is
+degenerate and may be taken fixed as it does not impact these three target
+quantities.  The optimization inner loop may be sped up by using a smaller $R_2
+= \sqrt{R_0^2 + {\delta^\ast}^2}$ which has the added benefit that the ODE
 integrator-based implementation shown in Listing~\ref{lst:octave_nozzle} will
 automatically produce solution data at $\left(R_0,\delta^\ast\right)$.  An
 implementation of this inner solve appears in

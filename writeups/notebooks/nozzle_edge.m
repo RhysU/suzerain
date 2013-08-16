@@ -7,9 +7,9 @@ function [Ma_e, p_exi, T_e] = nozzle_edge(dstar, gam0, Ma, R0, rho1, u1)
   p1   = 0;                      % Absolute pressure is irrelevant to results
   try
     [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1);
-    Ma_e  =   Ma * r(end) * abs(u(end)) / (R2 * sqrt(a2(end)));
-    p_exi = - R2 * abs(pp(end)) / (R0*Ma*Ma);
-    T_e   =   a2(end);
+    Ma_e  = Ma * r(end) * abs(u(end)) / (R2 * sqrt(a2(end)));
+    p_exi = sign(u(end)) * R2 * pp(end) / (R0 * Ma * Ma);
+    T_e   = a2(end);
   catch
     warning('nozzle_edge(%g, %g, %g, %g, %g, %g) NaNs', ...
             dstar, gam0, Ma, R0, rho1, u1);
