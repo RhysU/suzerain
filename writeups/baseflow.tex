@@ -463,7 +463,7 @@ Listing~\ref{lst:octave_nozzle}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.30\textwidth]{baseflow_schematic}
+  \includegraphics[width=0.28\textwidth]{baseflow_schematic}
   \caption{
       \label{fig:mapping_geometry}
       The geometry used when extracting base flow profiles
@@ -535,14 +535,15 @@ A nonlinear optimization problem may be formulated over $R_0$, $\Mach$, and
 $\rho_1$ to match some target $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed
 $L_y$, $\delta^\ast$, and $\gamma_0$.  Parameter $p\!\left(R_1\right)$ is
 degenerate and may be taken fixed as it does not impact these three target
-quantities.  The optimization inner loop may be sped up by using a smaller $R_2
-= \sqrt{R_0^2 + {\delta^\ast}^2}$ which has the added benefit that the ODE
-integrator-based implementation shown in Listing~\ref{lst:octave_nozzle} will
-automatically produce solution data at $\left(R_0,\delta^\ast\right)$.  An
-implementation of this inner solve appears in
-Listing~\ref{lst:octave_nozzle_edge}.  After optimization completes, the full
-profile requiring taking $R_2 = \sqrt{R_0^2 + L_y^2}$ can be computed by
-Listing~\ref{lst:octave_nozzle}.
+quantities.  A forward kernel to compute observed edge quantities given
+parametric inputs appears in Listing~\ref{lst:octave_nozzle_edge}.  The kernel
+is sped up by taking $R_2 = \sqrt{R_0^2 + {\delta^\ast}^2}$ which causes the
+implementation shown in Listing~\ref{lst:octave_nozzle} to automatically
+produce data at $\left(R_0,\delta^\ast\right)$.  The \texttt{nonlim\_resid}
+method from \texttt{Octave}'s \texttt{optim} package may be used to drive the
+kernel as shown in Listing~\ref{lst:octave_nozzle_baseflow}.  After
+optimization completes, the full profile may be computed by supplying $R_2 =
+\sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle\_edge.m}: A kernel computing edge
@@ -550,14 +551,11 @@ Listing~\ref{lst:octave_nozzle}.
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle_edge.m}
 
-\textcolor{red}{TODO Refer to and discuss
-Listing~\ref{lst:octave_baseflow_residmin}.}
-
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{baseflow\_residmin.m}: A driver targeting
-                 quantities of interest\label{lst:octave_baseflow_residmin}},
+                 caption={\texttt{nozzle\_baseflow.m}: A driver targeting
+                 quantities of interest\label{lst:octave_nozzle_baseflow}},
                  basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/baseflow_residmin.m}
+                {notebooks/nozzle_baseflow.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

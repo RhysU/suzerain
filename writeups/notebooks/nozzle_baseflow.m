@@ -1,6 +1,6 @@
 % Driver aspiring to target Ma_e, p_exi, and T_e quantities at (R0, dstar).
-function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e,             ...
-                               tol = sqrt(eps), maxiter = 100, debug = 0)
+function s = nozzle_baseflow(dstar, gam0, Ma_e, p_exi, T_e,             ...
+                             tol = sqrt(eps), maxiter = 100, debug = 0)
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg optim; end
 
   % Relative residuals of observations against targets for [Ma, R0, rho1, u1]
@@ -25,8 +25,10 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e,             ...
              'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'T_e', res(3)),
              'cvg', cvg, 'tol', tol, 'maxiter', maxiter, 'niter', outp.niter);
 
-  % Curry so that s.nozzle(Ly) computes results on segment (R0,0) to (R0,Ly)
-  s.nozzle=@(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,0);
+  % Curry so s.nozzle(Ly) computes results on segment (R0,0) to (R0,Ly)
+  % and so that s.edge(Ly) computes edge quantities at (R0,Ly)
+  s.nozzle = @(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,0);
+  s.edge   = @(Ly) nozzle_edge(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1);
 
 end
 
@@ -38,12 +40,12 @@ end
 
 %!demo
 %! % Find [Ma, R0, rho1, u1] producing given supersonic conditions at (R0,1)
-%! tic(), s = baseflow_residmin(1, 1.4, 1.4, -0.02, 4.2), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 1.4, -0.02, 4.2), toc()
 %! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
 %! s.nozzle(2);
 
 %!demo
 %! % Find [Ma, R0, rho1, u1] producing given subsonic conditions at (R0,1)
-%! tic(), s = baseflow_residmin(1, 1.4, 0.4, -0.02, 4.2), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 4.2), toc()
 %! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
 %! s.nozzle(2);
