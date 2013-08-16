@@ -426,10 +426,10 @@ solve such problems.  An implementation handling each equation in turn appears
 in Listing~\ref{lst:octave_nozzle1}.  Listing~\ref{lst:octave_nozzle_usecase}
 demonstrates solving concrete problems producing the solutions depicted in
 Figure~\ref{fig:sample_solns}.  While Listing~\ref{lst:octave_nozzle1} is
-succinct, the discrete $\rho$ and $p$ solution accuracies are not controlled in
-the same manner as those for $u$.  By coupling $u'$, $\left(\log\rho\right)'$,
-and $p'$ one may achieve higher order behavior across all three scalars as
-shown in Listing~\ref{lst:octave_nozzle}.
+succinct, its $\rho$ and $p$ solution accuracies are not controlled in the same
+manner its $u$ accuracy.  By coupling $u'$, $\left(\log\rho\right)'$, and $p'$
+one may achieve higher order behavior across all three scalars as shown in
+Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
@@ -443,13 +443,6 @@ shown in Listing~\ref{lst:octave_nozzle}.
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/FPG_BaseFlow_Problem.m}
 
-\lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
-                 radial nozzle solver
-                 implementation\label{lst:octave_nozzle}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/nozzle.m}
-
 \begin{figure}[p]
   \centering
   \includegraphics[width=0.80\textwidth]{nozzle_subsonic}
@@ -457,9 +450,9 @@ shown in Listing~\ref{lst:octave_nozzle}.
   \includegraphics[width=0.80\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Sample radial nozzle solutions.  The subsonic solution
-      flows from right-to-left while the supersonic one flows from
-      left-to-right.
+      Sample radial nozzle solutions produced by \texttt{nozzle1.m}.  The
+      subsonic solution flows from right-to-left while the supersonic one flows
+      from left-to-right.
   }
 \end{figure}
 
@@ -549,6 +542,13 @@ implementation of this inner solve appears in
 Listing~\ref{lst:octave_nozzle_edge}.  After optimization completes, the full
 profile requiring taking $R_2 = \sqrt{R_0^2 + L_y^2}$ can be computed by
 Listing~\ref{lst:octave_nozzle}.
+
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
+                 radial nozzle solver
+                 implementation\label{lst:octave_nozzle}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/nozzle.m}
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle\_edge.m}: A kernel computing edge

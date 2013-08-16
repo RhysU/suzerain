@@ -27,7 +27,7 @@ function f = nozzle_f(r, x, Ma2, gam0m1)
   u = x(1); rho = exp(x(2)); p = x(3);       % Unpack
   [up, a2] = nozzle_upa2(r, u, Ma2, gam0m1); % Compute
   logrhop  = -Ma2*r*u*up / a2;
-  pp       = -r*rho*u*up;
+  pp       = -Ma2*r*rho*u*up;
   f = [up; logrhop; pp];                     % Pack
 end
 
