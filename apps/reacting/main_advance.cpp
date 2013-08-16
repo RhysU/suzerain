@@ -411,8 +411,14 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
         // Map model name to model index
         // FIXME: switch to model name when ready on the largo side
-        if (largo_name=="temporal") {largo_imodel = 1;}
-       
+        if (largo_name=="temporal") {
+            largo_imodel = 1;
+        } else if (largo_name=="temporal_tensor_consistent") {
+            largo_imodel = 3;
+        } else {
+            SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+        }
+      
         largo_allocate(&sgdef->workspace, state_count, Ns, largo_imodel);
     }
 #endif

@@ -109,6 +109,10 @@ const largo_formulation largo_formulation::temporal(
 
 const largo_formulation largo_formulation::spatial(
         2, "spatial", "Full spatial formulation by Topalian et al.");
+
+const largo_formulation largo_formulation::temporal_tensor_consistent(
+        3, "temporal_tensor_consistent", 
+           "Temporal tensor-consistent formulation by Topalian et al.");
 // END Add known formulations here
 
 largo_definition::largo_definition()
@@ -259,6 +263,8 @@ largo_definition::save(
         esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else if (formulation == largo_formulation::spatial) {
         esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::temporal_tensor_consistent) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
@@ -323,6 +329,8 @@ largo_definition::load(
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else if (t.formulation == largo_formulation::spatial) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
+    } else if (t.formulation == largo_formulation::temporal_tensor_consistent) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
@@ -337,8 +345,6 @@ largo_definition::load(
                                            &neqns, &ncoeffs)) {
         // Load baseflow coefficients
         x.resize(ncoeffs, neqns); //Using column-major storage
-        std::cout << "ncoeffs = " << ncoeffs << std::endl;
-        std::cout << "neqns   = " << neqns   << std::endl;
 
         esio_plane_establish(h, 
             this->x.outerSize(), 0, this->x.outerSize(),
@@ -353,7 +359,6 @@ largo_definition::load(
 
         WARN0("Assuming baseflow coefficients are for a polynomial base");
         this->x_base = "polynomial";
-        std::cout << "x_base  = " << this->x_base << std::endl;
     }
 
     // Load baseflow derivative coefficients
@@ -363,8 +368,6 @@ largo_definition::load(
                                            &neqns, &ncoeffs)) {
         // Load baseflow coefficients
         dx.resize(ncoeffs, neqns); //Using column-major storage
-        std::cout << "ncoeffs = " << ncoeffs << std::endl;
-        std::cout << "neqns   = " << neqns   << std::endl;
 
         esio_plane_establish(h, 
             this->dx.outerSize(), 0, this->dx.outerSize(),
@@ -379,7 +382,6 @@ largo_definition::load(
 
         WARN0("Assuming baseflow derivative coefficients are for a polynomial base");
         this->dx_base = "polynomial";
-        std::cout << "dx_base  = " << this->dx_base << std::endl;
     }
     return;
 }

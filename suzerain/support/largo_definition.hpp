@@ -68,6 +68,7 @@ public:
     static const largo_formulation disable;
     static const largo_formulation temporal;
     static const largo_formulation spatial;
+    static const largo_formulation temporal_tensor_consistent;
     /**@}*/
 
     /** Is a slow growth formulation in use? */

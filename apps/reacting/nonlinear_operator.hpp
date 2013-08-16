@@ -950,6 +950,65 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
     } // end computation of rms for slow growth
 
+    // Compute statistics for tensor-consistent slow growth
+    MatrixXXr rqq_values(Ny, 2*state_count);
+    rqq_values.setZero();
+    if (sgdef.formulation.enabled()) {
+        // Zero all relevant common.means
+
+        // Sum velocities as a function of y(j) into common.{u,v,w}()
+        for (int offset = 0, j = o.dgrid.local_physical_start.y();
+                j < o.dgrid.local_physical_end.y();
+                ++j) {
+
+            std::vector<summing_accumulator_type> acc(state_count);
+
+            const int last_zxoffset = offset
+                + o.dgrid.local_physical_extent.z()
+                * o.dgrid.local_physical_extent.x();
+            for (; offset < last_zxoffset; ++offset) {
+
+                for (int var = 0; var < state_count; ++var) {
+                    acc[ndx::e+var](
+                      pow(sphys(ndx::e+var, offset),2)
+                        / sphys(ndx::rho,   offset)) ;
+                }
+            } // end X // end Z
+
+            // Store sum into common block in preparation for MPI Reduce
+            for (int var = 0; var < state_count; ++var) {
+                rqq_values(j,ndx::e+var) =
+                    boost::accumulators::sum(acc[ndx::e+var]);
+            }
+        } // end Y
+
+        // Allreduce and scale rqq_values sums to obtain means on all ranks
+        // Allreduce mandatory as all ranks need values to take derivative
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, rqq_values.data(),
+                    rqq_values.size()/2, mpi::datatype<real_t>(),
+                    MPI_SUM, MPI_COMM_WORLD));
+        rqq_values *= o.dgrid.chi();
+
+        // Finish rqq computation
+        for (int var = 0; var < state_count; ++var) {
+            for (int j = 0; j < Ny; ++j) {
+                // Copy the rqq to the drqq part of the storage in
+                // preparation to computing the rqq derivative
+                rqq_values(j,var+state_count) = rqq_values(j,var);
+            }
+        }
+
+        // Each process computes the y-derivative of the rqq
+        for (size_t var = ndx::e; var<state_count; ++var) {
+            // Obtain rqq in bspline coefficients
+            o.masslu()->solve(1, &rqq_values(0,state_count+var),
+                              1, Ny);
+
+            // Compute derivative of rqq at collocation points
+            o.cop.apply(1, 1, 1.0, &rqq_values(0,state_count+var), 1, Ny);
+        }
+    } // end computation of tensor-consistent stats for slow growth
+
     if (Filter == filter::viscous) {
         // After first traversal, have gathered reference profiles.  So,
         // we can complete the viscous filter source calculation by
@@ -1127,10 +1186,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // mean_rqq
                 real_t mean_rqq [Ns+4];
                 mean_rqq[0] = 0;
-                mean_rqq[1] = 0;
-                mean_rqq[2] = 0;
-                mean_rqq[3] = 0;
-                mean_rqq[4] = 0;
+                mean_rqq[1] = rqq_values(j,ndx::mx);
+                mean_rqq[2] = rqq_values(j,ndx::my);
+                mean_rqq[3] = rqq_values(j,ndx::mz);
+                mean_rqq[4] = rqq_values(j,ndx::e); 
                 for (unsigned int s=1; s<Ns; s++){
                     mean_rqq[4+s] = 0;
                 }
@@ -1138,10 +1197,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // dmean_rqq
                 real_t dmean_rqq [Ns+4];
                 dmean_rqq[0] = 0;
-                dmean_rqq[1] = 0;
-                dmean_rqq[2] = 0;
-                dmean_rqq[3] = 0;
-                dmean_rqq[4] = 0;
+                dmean_rqq[1] = rqq_values(j,state_count+ndx::mx);
+                dmean_rqq[2] = rqq_values(j,state_count+ndx::my);
+                dmean_rqq[3] = rqq_values(j,state_count+ndx::mz);
+                dmean_rqq[4] = rqq_values(j,state_count+ndx::e); 
                 for (unsigned int s=1; s<Ns; s++){
                     dmean_rqq[4+s] = 0;
                 }
