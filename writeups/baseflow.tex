@@ -295,8 +295,8 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ and multiplying by $r$
-as the origin will not be of interest,
+Rewriting using $u = \phi^\prime(r)$ and multiplying by $r$ to obtain a
+Jacobian-scaled polar integrand:
 \begin{align}
     \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
    -        \Mach^2\frac{\gamma_0-1}{2}        u^3
@@ -308,6 +308,7 @@ as the origin will not be of interest,
 .
 \end{align}
 %
+\textcolor{red}{TODO Did I hose $2\pi$ factor?}
 Recasting into a direct statement about $u'$,
 \begin{align}
    u^\prime
@@ -421,13 +422,24 @@ and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
-solve such problems.  One possible implementation appears in
-Listing~\ref{lst:octave_nozzle}.  Listing~\ref{lst:octave_nozzle_usecase}
-demonstrates using that implementation to solve concrete problems.  The
-solutions are depicted in Figure~\ref{fig:sample_solns}.
+solve such problems.  An implementation handling each equation in turn appears
+in Listing~\ref{lst:octave_nozzle1}.  While crisp, it is apparent that the
+discrete solutions for $\rho$ and $p$ do not enjoy the same accuracy guarantees
+as the velocity $u$.  By coupling $u'$, $\left(\log\rho\right)'$, and $p'$ one
+may most easily achieve desired tolerances across all three scalars.
+Listing~\ref{lst:octave_nozzle_usecase} demonstrates using that implementation
+to solve concrete problems.  The solutions are depicted in
+Figure~\ref{fig:sample_solns}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle.m}: A radially-symmetric nozzle solver
+                 caption={\texttt{nozzle1.m}: An equation-by-equation radial
+                 nozzle solver implementation\label{lst:octave_nozzle1}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/nozzle1.m}
+
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={\texttt{nozzle.m}: A higher-order, ``coupled''
+                 radial nozzle solver
                  implementation\label{lst:octave_nozzle}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle.m}
@@ -537,10 +549,19 @@ profile requiring taking $R_2 = \sqrt{R_0^2 + L_y^2}$ can be computed by
 Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle\_edge.m}: A driver computing edge
+                 caption={\texttt{nozzle\_edge.m}: A kernel computing edge
                  quantities of interest\label{lst:octave_nozzle_edge}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle_edge.m}
+
+\textcolor{red}{TODO Refer to and discuss
+Listing~\ref{lst:octave_baseflow_residmin}.}
+
+\lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={\texttt{baseflow\_residmin.m}: A driver targeting
+                 quantities of interest\label{lst:octave_baseflow_residmin}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/baseflow_residmin.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}

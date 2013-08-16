@@ -7,7 +7,7 @@ function s = baseflow_residmin(dstar, gam0, Ma_e, p_exi, T_e,             ...
   target = [Ma_e; p_exi; T_e];
   f = @(x) (baseflow_f(dstar, gam0, x(1), x(2), x(3), x(4)) - target)./target;
 
-  % Establish guess, bounds, and OPTIONALLY nonlinear inequality constraints
+  % Establish initial guess as well as lower and upper bounds.
   % Guess for u1 = x(end) should be consistent with sub- vs supersonic Ma_e
   pin =                    [1;       1;       1;       sign(Ma_e-1)*Ma_e+eps];
   opt = optimset('lbound', [eps;     eps;     eps;     -realmax             ],
