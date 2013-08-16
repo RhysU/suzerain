@@ -295,20 +295,7 @@ producing output equivalent to
    &= 0
 .
 \end{align}
-Rewriting using $u = \phi^\prime(r)$ and multiplying by $r$ to obtain a
-Jacobian-scaled polar integrand:
-\begin{align}
-    \left(1+\Mach^2\frac{\gamma_0-1}{2}\right) u
-   -        \Mach^2\frac{\gamma_0-1}{2}        u^3
-   +r\left(1+\Mach^2\frac{\gamma_0-1}{2}
-            -\Mach^2\frac{\gamma_0+1}{2}u^2\right)
-    u^\prime
-   &= 0
-\label{eq:cpfradial_nondim}
-.
-\end{align}
-%
-Recasting into a direct statement about $u'$,
+Rewriting using $u = \phi^\prime(r)$ followed by solving for $u'$,
 \begin{align}
    u^\prime
    &=
@@ -327,7 +314,7 @@ Recasting into a direct statement about $u'$,
 .
 \end{align}
 With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
-equation~\eqref{eq:cpfradial_nondim_ode} allows solving for $u$.
+equation~\eqref{eq:cpfradial_nondim_ode} allows integrating for $u$.
 
 Given some $u$ one also wants to be able to compute local thermodynamic state.
 Equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.  The $\phi=\phi(r)$
