@@ -393,7 +393,8 @@ setting inflow per
 \end{align}
 With this condition, $-u$ increases and $p$ decreases when traversing the
 domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
-approaches sonic.  A workaround is specifying at most a sonic outflow via
+approaches sonic conditions.  A workaround is specifying at most a sonic
+outflow via
 \begin{align}
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
@@ -426,13 +427,13 @@ solve such problems.  An implementation handling each equation in turn appears
 in Listing~\ref{lst:octave_nozzle1}.  While crisp, it is apparent that the
 discrete solutions for $\rho$ and $p$ do not enjoy the same accuracy guarantees
 as the velocity $u$.  By coupling $u'$, $\left(\log\rho\right)'$, and $p'$ one
-may most easily achieve desired tolerances across all three scalars.
-Listing~\ref{lst:octave_nozzle_usecase} demonstrates using that implementation
-to solve concrete problems.  The solutions are depicted in
-Figure~\ref{fig:sample_solns}.
+may easily achieve higher order behavior across all three scalars as shown in
+Listing~\ref{lst:octave_nozzle}.  Listing~\ref{lst:octave_nozzle_usecase}
+demonstrates using this higher order implementation to solve concrete problems
+producing the solutions depicted in Figure~\ref{fig:sample_solns}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle1.m}: An equation-by-equation radial
+                 caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
                  nozzle solver implementation\label{lst:octave_nozzle1}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle1.m}
