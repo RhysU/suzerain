@@ -423,13 +423,13 @@ conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
 solve such problems.  An implementation handling each equation in turn appears
-in Listing~\ref{lst:octave_nozzle1}.  While crisp, it is apparent that the
-discrete solutions for $\rho$ and $p$ do not enjoy the same accuracy guarantees
-as the velocity $u$.  By coupling $u'$, $\left(\log\rho\right)'$, and $p'$ one
-may easily achieve higher order behavior across all three scalars as shown in
-Listing~\ref{lst:octave_nozzle}.  Listing~\ref{lst:octave_nozzle_usecase}
-demonstrates using this higher order implementation to solve concrete problems
-producing the solutions depicted in Figure~\ref{fig:sample_solns}.
+in Listing~\ref{lst:octave_nozzle1}.  Listing~\ref{lst:octave_nozzle_usecase}
+demonstrates solving concrete problems producing the solutions depicted in
+Figure~\ref{fig:sample_solns}.  While Listing~\ref{lst:octave_nozzle1} is
+succinct, the discrete $\rho$ and $p$ solution accuracies are not controlled in
+the same manner as those for $u$.  By coupling $u'$, $\left(\log\rho\right)'$,
+and $p'$ one may achieve higher order behavior across all three scalars as
+shown in Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
@@ -438,17 +438,17 @@ producing the solutions depicted in Figure~\ref{fig:sample_solns}.
                 {notebooks/nozzle1.m}
 
 \lstinputlisting[language=Octave,columns=fixed,float,
+                 caption={Using the sample nozzle solver
+                 implementation\label{lst:octave_nozzle_usecase}},
+                 basicstyle={\footnotesize\sffamily},frame=single]
+                {notebooks/FPG_BaseFlow_Problem.m}
+
+\lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle.m}: A higher-order, ``coupled''
                  radial nozzle solver
                  implementation\label{lst:octave_nozzle}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle.m}
-
-\lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={Using the sample nozzle solver
-                 implementation\label{lst:octave_nozzle_usecase}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/FPG_BaseFlow_Problem.m}
 
 \begin{figure}[p]
   \centering
