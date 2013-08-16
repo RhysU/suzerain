@@ -35,3 +35,15 @@ function f = baseflow_f(dstar, gam0, Ma, R0, rho1, u1)
   [Ma_e, p_exi, T_e] = nozzle_edge(dstar, gam0, Ma, R0, rho1, u1);
   f = [Ma_e; p_exi; T_e];
 end
+
+%!demo
+%! % Find [Ma, R0, rho1, u1] producing given supersonic conditions at (R0,1)
+%! tic(), s = baseflow_residmin(1, 1.4, 1.4, -0.02, 4.2), toc()
+%! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
+%! s.nozzle(2);
+
+%!demo
+%! % Find [Ma, R0, rho1, u1] producing given subsonic conditions at (R0,1)
+%! tic(), s = baseflow_residmin(1, 1.4, 0.4, -0.02, 4.2), toc()
+%! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
+%! s.nozzle(2);
