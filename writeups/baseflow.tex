@@ -160,7 +160,6 @@ To nondimensionalize, chose some reference length $l_0$ and declare
 &   \phi  &= \phi^\ast u_0 l_0
 &   \rho  &= \rho^\ast \rho_0
 &   p     &= p^\ast \rho_0 a_0^2
-&   t_0   &= l_0 / u_0
 \label{eq:nondimensionalization}
 \end{align}
 where starred quantities are dimensionless.  Inserting the definitions
@@ -486,7 +485,7 @@ $\delta$, one can evaluate
 \begin{align}
   p_{e,\xi}
   &\equiv
-  \frac{t_0}{\rho_0 u_0}
+  \frac{l_0}{\rho_0 u_0^2}
   \left.
     \frac{\mathrm{d}\left(p_0 p\right)}{\mathrm{d}\left(l_0 \xi\right)}
   \right|_e
@@ -494,9 +493,6 @@ $\delta$, one can evaluate
     \frac{\operatorname{sgn}(u)}{\Mach^2} \left.
       \frac{\mathrm{d}p}{\mathrm{d}x}
     \right|_{\sqrt{R_0^2 + \delta^2}}
-% = \left.
-%   \frac{\partial{}p}{\partial{}R}\frac{\partial{}R}{\partial{}x}
-% \right|_{\sqrt{R_0^2 + \delta^2}}
   =
   \frac{\operatorname{sgn}(u)\sqrt{R_0^2+\delta^2}}{\Mach^2 R_0}
   \,
