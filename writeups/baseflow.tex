@@ -422,26 +422,20 @@ and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
 \texttt{Octave}\citep{Eaton2008GNU} armed with the \texttt{odepkg} package can
-solve such problems.  An implementation handling each equation in turn appears
-in Listing~\ref{lst:octave_nozzle1}.  Listing~\ref{lst:octave_nozzle_usecase}
-demonstrates solving concrete problems producing the solutions depicted in
-Figure~\ref{fig:sample_solns}.  While Listing~\ref{lst:octave_nozzle1} is
-succinct, its $\rho$ and $p$ solution accuracies are not controlled in the same
-manner its $u$ accuracy.  By coupling $u'$, $\left(\log\rho\right)'$, and $p'$
-one may achieve higher order behavior across all three scalars as shown in
+solve such problems.  A straightforward implementation appears in
+Listing~\ref{lst:octave_nozzle1} with demo logic producing the solutions
+depicted in Figure~\ref{fig:sample_solns}.  While
+Listing~\ref{lst:octave_nozzle1} is succinct, its $\rho$ and $p$ solution
+accuracies are not controlled in the same manner its $u$ accuracy.  By coupling
+the integration of $u'$, $\left(\log\rho\right)'$, and $p'$ one may achieve
+higher order behavior with an implementation like
 Listing~\ref{lst:octave_nozzle}.
 
-\lstinputlisting[language=Octave,columns=fixed,float,
+\lstinputlisting[language=Octave,columns=fixed,float=p,
                  caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
                  nozzle solver implementation\label{lst:octave_nozzle1}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle1.m}
-
-\lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={Using the sample nozzle solver
-                 implementation\label{lst:octave_nozzle_usecase}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/FPG_BaseFlow_Problem.m}
 
 \begin{figure}[p]
   \centering
@@ -450,8 +444,8 @@ Listing~\ref{lst:octave_nozzle}.
   \includegraphics[width=0.80\textwidth]{nozzle_supersonic}
   \caption{
       \label{fig:sample_solns}
-      Sample radial nozzle solutions produced by \texttt{nozzle1.m}.  The
-      subsonic solution flows from right-to-left while the supersonic one flows
+      Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
+      subsonic case flows from right-to-left while the supersonic one flows
       from left-to-right.
   }
 \end{figure}

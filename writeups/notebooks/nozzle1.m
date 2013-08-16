@@ -25,3 +25,24 @@ function [r, u, rho, p, a2, up, pp] = nozzle1(Ma, gam0, R1, R2, u1, rho1, p1, ..
   end
 
 end
+
+%!demo
+%! % Solve subsonic nozzle (specifying inflow) and plot to file
+%! pkg load odepkg; Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
+%! nozzle1(Ma, gam0, Router, Rinner, -2/7, 1, 1);  % Breaks for u1 = -1/3
+%! title('Subsonic nozzle');
+%! print('nozzle_subsonic.eps', '-depsc2', '-S512,384', '-F:8');
+%! close();
+
+%!demo
+%! % Subsonic cases may (more robustly) have nearly sonic outflows prescribed
+%! pkg load odepkg; Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
+%! nozzle1(Ma, gam0, Rinner, Router, -1/Ma+sqrt(eps), 1, 1);
+
+%!demo
+%! % Solve supersonic nozzle (specifying inflow) and plot to file
+%! pkg load odepkg; Ma = 1; gam0 = 1.4; Rinner = 1; Router = 2;
+%! nozzle1(Ma, gam0, Rinner, Router,  1/Ma+sqrt(eps), 1, 1);
+%! title('Supersonic nozzle');
+%! print('nozzle_supersonic.eps', '-depsc2', '-S512,384', '-F:8');
+%! close();
