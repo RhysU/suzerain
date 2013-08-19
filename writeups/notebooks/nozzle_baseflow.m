@@ -1,6 +1,10 @@
 % Driver aspiring to target Ma_e, p_exi, and T_e quantities at (R0, delta).
+% Returns struct s with parameters s.Ma, s.R0, r.rho1, and s.u1 creating
+% a flow producing observed values s.obs.Ma_e, s.obs.p_exi, and s.obs.T_e.
+% Parameter 'pin' may be used to provide an initial guess [Ma; R0; rho1; u1].
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,             ...
-                             tol = sqrt(eps), maxiter = 100, debug = 0)
+                             tol = sqrt(eps), maxiter = 100, debug = 0, ...
+                             pin = [])
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg optim; end
 
   % Relative residuals of observations against targets for [Ma, R0, rho1, u1]
@@ -9,7 +13,7 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,             ...
 
   % Establish initial guess as well as lower and upper bounds.
   % Guess for u1 = x(end) should be consistent with sub- vs supersonic Ma_e
-  pin =                    [1;       1;       1;       sign(Ma_e-1)*Ma_e+eps];
+  if isempty(pin); pin =   [1;       1;       1;       sign(Ma_e-1)*Ma_e+eps]; end
   opt = optimset('lbound', [eps;     eps;     eps;     -realmax             ],
                  'ubound', [realmax; realmax; realmax; +realmax             ],
                  'TolFun', tol, 'MaxIter', maxiter, 'debug', debug);
