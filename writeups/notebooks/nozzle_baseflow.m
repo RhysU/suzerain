@@ -30,15 +30,15 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,             ...
              'cvg', cvg, 'tol', tol, 'maxiter', maxiter, 'niter', outp.niter);
 
   % Curry so s.nozzle(Ly) computes results on segment (R0,0) to (R0,Ly)
-  % and so that s.edge(Ly) computes edge quantities at (R0,Ly)
+  % and so that s.qoi(Ly) computes quantities of interest on that segment
   s.nozzle = @(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,0);
-  s.edge   = @(Ly) nozzle_edge(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1);
+  s.qoi    = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1);
 
 end
 
-% Repackage nozzle_edge multiple return values into a column vector.
+% Repackage nozzle_qoi multiple return values into a column vector.
 function f = baseflow_f(delta, gam0, Ma, R0, rho1, u1)
-  [Ma_e, p_exi, T_e] = nozzle_edge(delta, gam0, Ma, R0, rho1, u1);
+  [Ma_e, p_exi, T_e] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1);
   f = [Ma_e; p_exi; T_e];
 end
 

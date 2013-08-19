@@ -1,5 +1,5 @@
 % Solve a minimal nozzle problem computing Ma_e, p_exi, T_e at (R0, delta).
-function [Ma_e, p_exi, T_e] = nozzle_edge(delta, gam0, Ma, R0, rho1, u1)
+function [Ma_e, p_exi, T_e] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1)
 
   R1   = max(eps, R0);           % Defensive as BFGS algorithm may try R0 == 0
   R2   = sqrt(R0**2 + delta**2); % Minimal domain with edge as final result
@@ -11,7 +11,7 @@ function [Ma_e, p_exi, T_e] = nozzle_edge(delta, gam0, Ma, R0, rho1, u1)
     p_exi = sign(u(end)) * R2 * pp(end) / (R0 * Ma * Ma);
     T_e   = a2(end);
   catch
-    warning('nozzle_edge(%g, %g, %g, %g, %g, %g) NaNs', ...
+    warning('nozzle_qoi(%g, %g, %g, %g, %g, %g) NaNs', ...
             delta, gam0, Ma, R0, rho1, u1);
   end
 

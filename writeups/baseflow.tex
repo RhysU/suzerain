@@ -502,7 +502,7 @@ to interrogate the solution's nondimensional nature at $\left(R_0,
 \delta\right)$.  Here, $\hat{\xi}$ denotes $\hat{x}$ with the streamwise
 direction defined to be positive for both sub- and supersonic problems.  One
 may also, in the special case of a thermally and calorically perfect gas,
-evaluate the edge temperature from
+evaluate the edge and wall temperature from
 \begin{align}
   T_e
   &\equiv
@@ -510,6 +510,13 @@ evaluate the edge temperature from
   \bigr|_{\sqrt{R_0^2 + \delta^2}}
   =
   a^2\!\left(\sqrt{R_0^2 + \delta^2}\right)
+&
+  T_w
+  &\equiv
+    T
+  \bigr|_{R_0}
+  =
+  a^2\!\left(R_0\right)
 \end{align}
 because choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
 particular context.
@@ -519,7 +526,7 @@ $\rho_1$ to match some target $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed
 $L_y$, $\delta$, and $\gamma_0$.  Parameter $p\!\left(R_1\right)$ is
 degenerate and may be taken fixed as it does not impact these three target
 quantities.  A forward kernel to compute observed edge quantities given
-parametric inputs appears in Listing~\ref{lst:octave_nozzle_edge}.  The kernel
+parametric inputs appears in Listing~\ref{lst:octave_nozzle_qoi}.  The kernel
 is sped up by taking $R_2 = \sqrt{R_0^2 + \delta^2}$ which causes the
 implementation shown in Listing~\ref{lst:octave_nozzle} to automatically
 produce data at $\left(R_0,\delta\right)$.  The \texttt{nonlim\_resid}
@@ -529,10 +536,10 @@ optimization completes, the full profile may be computed by supplying $R_2 =
 \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle\_edge.m}: A kernel computing edge
-                 quantities of interest\label{lst:octave_nozzle_edge}},
+                 caption={\texttt{nozzle\_qoi.m}: A kernel computing edge
+                 quantities of interest\label{lst:octave_nozzle_qoi}},
                  basicstyle={\footnotesize\sffamily},frame=single]
-                {notebooks/nozzle_edge.m}
+                {notebooks/nozzle_qoi.m}
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle\_baseflow.m}: A driver targeting
