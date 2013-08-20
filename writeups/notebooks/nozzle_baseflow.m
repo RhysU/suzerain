@@ -20,11 +20,11 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,             ...
 
   % Solve the problem and convert relative residuals into optimization results
   [p, res, cvg, outp] = nonlin_residmin(f, pin, opt);
-  res .*= target; res += target;
+  res2 = norm(res, 2); res .*= target; res += target;
 
   % Pack problem specification, solution, and runtime behavior into a struct
   s = struct('delta', delta, 'gam0', gam0,
-             'Ma', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4),
+             'Ma', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4), 'res2', res2,
              'req', struct('Ma_e', Ma_e,   'p_exi', p_exi,  'a2_e', a2_e   ),
              'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3)),
              'cvg', cvg, 'tol', tol, 'maxiter', maxiter, 'niter', outp.niter);
@@ -45,11 +45,9 @@ end
 %!demo
 %! % Find [Ma, R0, rho1, u1] producing given supersonic conditions at (R0,1)
 %! tic(), s = nozzle_baseflow(1, 1.4, 1.4, -0.02, 4.2), toc()
-%! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
-%! s.nozzle(2);
+%! % Now s.nozzle(2) computes baseflow suitable for use from (R0,0) to (R0,2)
 
 %!demo
 %! % Find [Ma, R0, rho1, u1] producing given subsonic conditions at (R0,1)
 %! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 4.2), toc()
-%! % Compute corresponding baseflow suitable for use from (R0,0) to (R0,2)
-%! s.nozzle(2);
+%! % Now s.nozzle(2) computes baseflow suitable for use from (R0,0) to (R0,2)
