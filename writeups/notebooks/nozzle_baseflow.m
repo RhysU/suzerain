@@ -4,9 +4,9 @@
 %
 % Parameter 'opt' supplies options to nonlin_residmin per optimset.
 % Useful options include TolFun, MaxIter, debug, and weights.
-% Parameter 'pin' optionally provides an initial guess [Ma; R0; rho1; u1].
+% When not empty, 'pin' provides an initial guess [Ma; R0; rho1; u1].
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
-                             opt = optimset('MaxIter', 50), pin = [])
+                             pin = [], opt = optimset('MaxIter', 50))
   pkg load odepkg optim;
 
   % Residuals of observations against targets for [Ma, R0, rho1, u1]
@@ -53,4 +53,4 @@ end
 %!demo
 %! % Find [Ma, R0, rho1, u1] producing given subsonic conditions at (R0,1)
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
-%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 4.2, opt), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 4.2, [], opt), toc()

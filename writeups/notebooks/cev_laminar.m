@@ -6,7 +6,9 @@ for i = 1:rows(d)
     tic
     try
         s(i) = nozzle_baseflow(d(i,2), d(i,3), d(i,4), d(i,5), d(i,6),
-                             eps, 100, 0, guess);
+                               guess, optimset('MaxIter', 50,
+                                               'debug', 1,
+                                               'weights', [1;1;1]));
         guess = [s(i).Ma; s(i).R0; s(i).rho1; s(i).u1];
         s(end)
     catch
