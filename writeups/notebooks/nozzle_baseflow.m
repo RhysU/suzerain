@@ -1,14 +1,14 @@
-% Driver aspiring to target Ma_e, p_exi, and T_e quantities at (R0, delta).
+% Driver aspiring to target Ma_e, p_exi, and a2_e quantities at (R0, delta).
 % Returns struct s with parameters s.Ma, s.R0, r.rho1, and s.u1 creating
-% a flow producing observed values s.obs.Ma_e, s.obs.p_exi, and s.obs.T_e.
+% a flow producing observed values s.obs.Ma_e, s.obs.p_exi, and s.obs.a2_e.
 % Parameter 'pin' may be used to provide an initial guess [Ma; R0; rho1; u1].
-function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,             ...
+function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,             ...
                              tol = sqrt(eps), maxiter = 100, debug = 0, ...
                              pin = [])
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg optim; end
 
   % Relative residuals of observations against targets for [Ma, R0, rho1, u1]
-  target = [Ma_e; p_exi; T_e];
+  target = [Ma_e; p_exi; a2_e];
   f = @(x) (baseflow_f(delta, gam0, x(1), x(2), x(3), x(4)) - target)./target;
 
   % Establish initial guess as well as lower and upper bounds.
@@ -25,8 +25,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, T_e,             ...
   % Pack problem specification, solution, and runtime behavior into a struct
   s = struct('delta', delta, 'gam0', gam0,
              'Ma', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4),
-             'req', struct('Ma_e', Ma_e,   'p_exi', p_exi,  'T_e', T_e   ),
-             'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'T_e', res(3)),
+             'req', struct('Ma_e', Ma_e,   'p_exi', p_exi,  'a2_e', a2_e   ),
+             'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3)),
              'cvg', cvg, 'tol', tol, 'maxiter', maxiter, 'niter', outp.niter);
 
   % Curry so s.nozzle(Ly) computes results on segment (R0,0) to (R0,Ly)
@@ -38,8 +38,8 @@ end
 
 % Repackage nozzle_qoi multiple return values into a column vector.
 function f = baseflow_f(delta, gam0, Ma, R0, rho1, u1)
-  [Ma_e, p_exi, T_e] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1);
-  f = [Ma_e; p_exi; T_e];
+  [Ma_e, p_exi, a2_e] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1);
+  f = [Ma_e; p_exi; a2_e];
 end
 
 %!demo
