@@ -1378,31 +1378,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
 #ifdef SUZERAIN_HAVE_LARGO
                 // Compute sources from library
-                largo_continuity_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[0]);
-                largo_xmomentum_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[1]);
-                largo_ymomentum_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[2]);
-                largo_zmomentum_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[3]);
-                largo_energy_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[4]);
-                largo_species_setamean
-                          (sgdef.workspace, 0.0, 1.0, &src[5]);
-
-                largo_continuity_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[0]);
-                largo_xmomentum_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[1]);
-                largo_ymomentum_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[2]);
-                largo_zmomentum_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[3]);
-                largo_energy_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[4]);
-                largo_species_setarms
-                          (sgdef.workspace, 1.0, 1.0, &src[5]);
+                largo_seta   (sgdef.workspace, 0.0, 1.0, &src[0]);
 
 #else
                 // No slow growth computation if not linked with largo
