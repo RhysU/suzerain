@@ -7,7 +7,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,             ...
                              pin = [])
   if exist('OCTAVE_VERSION') ~= 0; pkg load odepkg optim; end
 
-  % Relative residuals of observations against targets for [Ma, R0, rho1, u1]
+  % Residuals of observations against targets for [Ma, R0, rho1, u1]
+  % Relative (instead of absolute) residuals used otherwise Ma_e swamps p_exi!
   target = [Ma_e; p_exi; a2_e];
   f = @(x) (baseflow_f(delta, gam0, x(1), x(2), x(3), x(4)) - target)./target;
 
