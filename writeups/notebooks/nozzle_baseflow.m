@@ -46,8 +46,8 @@ function f = baseflow_f(delta, gam0, Ma, R0, rho1, u1, p1)
 end
 
 %!demo
-%! tic(), s = nozzle_baseflow(1, 1.4, 1.4, -0.02, 4.2), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 1.4, -0.02, 1.2), toc()
 
 %!demo
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
-%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 4.2, [], opt), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, [], opt), toc()
