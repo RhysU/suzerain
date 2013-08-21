@@ -1,4 +1,4 @@
-% Find [Ma, R0, rho1, u1, p1] producing given conditions at (R0, delta).
+% Seek [Ma, R0, rho1, u1, p1] producing requested conditions at (R0, delta).
 % Returns struct s with s.Ma, s.R0, r.rho1, s.u1, and s.p1 producing a flow
 % with observed values s.obs.Ma_e, s.obs.p_exi, and s.obs.a2_e.  Curried
 % functions s.noz(Ly) and s.qoi(Ly) compute the flow on (R0, 0) to (R0, Ly)
@@ -34,7 +34,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
              'req', struct('Ma_e', Ma_e,   'p_exi', p_exi,  'a2_e', a2_e   ),
              'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3)),
              'res2', res2, 'cvg', cvg, 'niter', outp.niter);
-  s.noz = @(Ly) nozzle(s.Ma,s.gam0,s.R0,sqrt(s.R0**2+Ly**2),s.u1,s.rho1,s.p1);
+  s.noz = @(Ly) nozzle    (s.Ma, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
+                           s.u1, s.rho1, s.p1);
   s.qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1, s.p1);
 
 end
