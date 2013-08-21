@@ -470,38 +470,40 @@ $\left(R_0,L_y\right)$.  Clearly, selecting
 \end{align}
 produces the smallest domain possessing a solution along this entire segment.
 
-At some height of interest within the profile, say an edge distance
-$\delta$, one can evaluate
+At some height of interest, say an edge distance $\delta$ from the $x$-axis,
+one can evaluate
 \begin{align}
   \Mach[e]{}
   &\equiv
-  \left.
-    \frac{u_0 u\cdot\hat{\xi}}{a_0 a}
-  \right|_{\sqrt{R_0^2 + \delta^2}}
+  \left. \frac{u_0 u\cdot\hat{\xi}}{a_0 a} \right|_{\left(R_0,\delta\right)}
   =
-  \frac{\Mach R_0 \, \left|u\!\left(\sqrt{R_0^2 + \delta^2}\right)\right|}
-       {\sqrt{R_0^2+\delta^2} \, a\!\left(\sqrt{R_0^2 + \delta^2}\right)}
+  \left.
+    \frac{\Mach R_0}{R}
+    \frac{\left|u\!\left(R\right)\right|}
+         {      a\!\left(R\right)       }
+  \right|_{R = \sqrt{R_0^2 + \delta^2}}
 \end{align}
 \begin{align}
   p_{e,\xi}
   &\equiv
-  \frac{l_0}{\rho_0 u_0^2}
   \left.
+  \frac{l_0 \delta}{\rho_0 \rho \, u_0^2 u^2}
     \frac{\mathrm{d}\left(p_0 p\right)}{\mathrm{d}\left(l_0 \xi\right)}
-  \right|_e
+  \right|_{\left(R_0,\delta\right)}
   =
-    \frac{\operatorname{sgn}(u)}{\Mach^2} \left.
+  \left.
+    \frac{\operatorname{sgn}(u) \, \delta}{\Mach^2 \rho u^2}
       \frac{\mathrm{d}p}{\mathrm{d}x}
-    \right|_{\sqrt{R_0^2 + \delta^2}}
+  \right|_{\left(R_0,\delta\right)}
   =
-  \frac{\operatorname{sgn}(u)\sqrt{R_0^2+\delta^2}}{\Mach^2 R_0}
-  \,
-  p'\!\left(\sqrt{R_0^2 + \delta^2}\right)
+  \left.
+    \frac{\operatorname{sgn}(u) R \, \delta \, p'\!\left(R\right)}
+         {\Mach^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
+  \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
-to interrogate the solution's nondimensional nature at $\left(R_0,
-\delta\right)$.  Here, $\hat{\xi}$ denotes $\hat{x}$ with the streamwise
-direction defined to be positive for both sub- and supersonic problems.
-The sound speed squared at $y=\delta$ and $y=0$ is given by
+to interrogate the local solution nature at $\left(R_0, \delta\right)$.  Here,
+$\hat{\xi}$ denotes $\hat{x}$ with the streamwise direction defined to be
+positive.  The squared sound speed at $y=\delta$ and $y=0$ is
 \begin{align}
   a^2_e
   &\equiv
