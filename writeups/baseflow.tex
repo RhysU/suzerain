@@ -449,7 +449,7 @@ Listing~\ref{lst:octave_nozzle}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.28\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.30\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       The geometry used when extracting base flow profiles
@@ -518,27 +518,42 @@ positive.  The squared sound speed at $y=\delta$ and $y=0$ is
 In the special case of a thermally and calorically perfect gas, these are
 nothing but temperatures $T_e$ and $T_w$ because
 choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
-particular context.
-
-A nonlinear optimization problem may be formulated over $R_0$, $\Mach$, and
-$\rho_1$ to match some target $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed
-$L_y$, $\delta$, and $\gamma_0$.  Parameter $p\!\left(R_1\right)$
-may be arbitrarily fixed as it does not impact these three target
-quantities.  A forward kernel to compute observed edge quantities given
-parametric inputs appears in Listing~\ref{lst:octave_nozzle_qoi}.  The kernel
-is sped up by taking $R_2 = \sqrt{R_0^2 + \delta^2}$ which causes the
-implementation shown in Listing~\ref{lst:octave_nozzle} to automatically
-produce data at $\left(R_0,\delta\right)$.  The \texttt{nonlim\_resid}
-method from \texttt{Octave}'s \texttt{optim} package may be used to drive the
-kernel as shown in Listing~\ref{lst:octave_nozzle_baseflow}.  After
-optimization completes, the full profile may be computed by supplying $R_2 =
-\sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
+particular context.  A kernel building atop Listing~\ref{lst:octave_nozzle}.
+to compute these quantities of interest appears in
+Listing~\ref{lst:octave_nozzle_qoi}.  The kernel takes $R_2 = \sqrt{R_0^2 +
+\delta^2}$ to speed the computation and to causes the ODE integrator to
+automatically produce full-order results at $\left(R_0,\delta\right)$ without
+requiring dense output capabilities.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
-                 caption={\texttt{nozzle\_qoi.m}: A kernel computing nozzle
-                 quantities of interest\label{lst:octave_nozzle_qoi}},
+                 caption={\texttt{nozzle\_qoi.m}: A kernel computing several
+                 nozzle quantities of interest\label{lst:octave_nozzle_qoi}},
                  basicstyle={\footnotesize\sffamily},frame=single]
                 {notebooks/nozzle_qoi.m}
+
+A nonlinear optimization problem may be formulated over $\Mach$, $R_0$,
+$\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
+$\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
+Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
+these particular target quantities.  One possible implementation, written using
+the \texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim}
+package, is given in Listing~\ref{lst:octave_nozzle_baseflow}.  Several choices
+are worth noting:
+\begin{enumerate}
+  \item The relative residuals are minimized rather than the absolute residuals
+    as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
+    producing undesirable results.
+  \item To combat the impact of a poor initial guess, optimization proceeds in
+    two phases with the first phase treating only $R_0$ and
+    $u\!\left(R_1\right)$ as free parameters.
+  \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
+    it to have appreciable impact on the optimization results, the parameter
+    often take physically unsatisfying values for an order-one nondimensional
+    quantity.
+\end{enumerate}
+After optimization completes, the full base flow profile may be computed by
+supplying $R_2 = \sqrt{R_0^2 + L_y^2}$ to the routine in
+Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,columns=fixed,float,
                  caption={\texttt{nozzle\_baseflow.m}: A driver targeting
