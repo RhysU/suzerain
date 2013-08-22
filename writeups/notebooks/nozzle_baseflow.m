@@ -4,7 +4,7 @@
 % functions s.noz(Ly) and s.qoi(Ly) compute the flow on (R0, 0) to (R0, Ly) and
 % quantities of interest at (R0, Ly), respectively.
 %
-% When not empty, 'p' provides an initial guess [Ma; R0; rho1; u1; p1].
+% When not empty, 'pin' provides an initial guess [Ma; R0; rho1; u1; p1].
 % Parameter 'opt' may supply options to nonlin_residmin via optimset.
 % Useful options include TolFun, MaxIter, debug, and weights.
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
