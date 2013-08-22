@@ -5,8 +5,7 @@
 % quantities of interest at (R0, Ly), respectively.
 %
 % When not empty, 'pin' provides an initial guess [Ma; R0; rho1; u1; p1].
-% Parameter 'opt' may supply options to nonlin_residmin via optimset.
-% Useful options include TolFun, MaxIter, debug, and weights.
+% Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
                              pin = [], opt = optimset('TolFun', eps))
 
@@ -15,7 +14,7 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
 
   % Establish initial guess, feasible bounds, and fix order one density/pressure
-  % Guess for u1 = x(end) should be consistent with sub- vs supersonic Ma_e
+  % Poor initial guess for u1 is made consistently with sub- vs supersonic Ma_e
   if isempty(pin); pin =        [  1;   1;   1;  sign(Ma_e-1)*Ma_e+eps;   1]; end
   opt = optimset(opt, 'lbound', [eps; eps; eps; -inf                  ; eps],
                       'ubound', [inf; inf; inf;  inf                  ; inf]);
@@ -47,8 +46,23 @@ function f = obs_vector(delta, gam0, Ma, R0, rho1, u1, p1)
 end
 
 %!demo
-%! tic(), s = nozzle_baseflow(1, 1.4, 1.4, -0.02, 1.2), toc()
-
-%!demo
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
 %! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, [], opt), toc()
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40799, 0.98245, -0.00987, 4.29524).res2 < 1e-3);
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40827, 1.10937, -0.00974, 4.32052).res2 < 1e-3);
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40807, 1.04816, -0.00973, 4.31344).res2 < 1e-3);
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40830, 0.74099, -0.01157, 4.20355).res2 < 1e-3);
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40906, 0.41120, -0.01793, 4.12912).res2 < 1e-3);
+
+%!test
+%! assert(nozzle_baseflow(1, 1.40948, 0.12174, -0.09581, 3.96700).res2 < 1e-3);
