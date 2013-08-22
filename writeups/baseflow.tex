@@ -151,6 +151,13 @@ may be used within~\eqref{eq:cpfgibbs_nothermo_dim} to produce
 \label{eq:cpfgibbs_dim}
 .
 \end{align}
+Realizability requires $a^2>0$ causing constraint~\eqref{eq:stagnation_sound}
+to imply that globally
+\begin{align}
+  u^2 &< \frac{2 a_0^2}{\gamma_0 - 1} + u_0^2
+\label{eq:stagnation_sound_realizability}
+.
+\end{align}
 
 To nondimensionalize, chose some reference length $l_0$ and declare
 \begin{align}
@@ -231,7 +238,13 @@ $a$ from
   a^2 &= \frac{\gamma-1}{\gamma_0-1}
        + \Mach^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
+\end{align}
+where the nondimensional analogue of
+inequality~\eqref{eq:stagnation_sound_realizability} is
+\begin{align}
+  u^2 &< \frac{2}{\Mach^2\left(\gamma_0-1\right)} +1
 .
+\label{eq:stagnation_sound_realizability_nondim}
 \end{align}
 Combining~\eqref{eq:gradrho_gradp_relationship} and~\eqref{eq:momentum} to form
 $\vec{\nabla}\rho / \rho$, nondimensionalizing, multiplying by $l_0$, and
