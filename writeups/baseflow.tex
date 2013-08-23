@@ -51,6 +51,24 @@
 % Document-specific commands
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
 
+% Configure inline code listings
+\lstset{
+  basicstyle=\footnotesize\sffamily,
+  breakatwhitespace=false,
+  columns=fixed,
+  commentstyle=\color{blue},
+  firstnumber=1,
+  frame=single,
+  keepspaces=true,
+  numberfirstline=true,
+  numbersep=7pt,
+  numbers=left,
+  numberstyle=\tiny\color{darkgray},
+  showstringspaces=false,
+  showtabs=false,
+  stepnumber=5
+}
+
 \begin{document}
 
 This document discusses how to obtain a favorable pressure gradient base flow
@@ -284,7 +302,7 @@ Suppose radial symmetry in which $\phi=\phi\left(r\right)$.  \emph{Mathematica}
 eases translating~\eqref{eq:cpfgibbs_nondim} into this setting
 \\\begin{minipage}{\textwidth} % BEGIN Avoids page break
 \begin{lstlisting}[language=Mathematica,columns=flexible,
-                   basicstyle={\footnotesize\sffamily},frame=single]
+                   basicstyle={\footnotesize\sffamily}]
     Needs["VectorAnalysis`"];
     SetCoordinates[Cylindrical];
     With[{f=phi[Rr]},
@@ -431,10 +449,9 @@ the integration of $u'$, $\left(\log\rho\right)'$, and $p'$ one may achieve
 higher order behavior with an implementation like
 Listing~\ref{lst:octave_nozzle}.
 
-\lstinputlisting[language=Octave,columns=fixed,float=p,showstringspaces=false,
+\lstinputlisting[language=Octave,float=p,
                  caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
-                 nozzle solver implementation\label{lst:octave_nozzle1}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
+                 nozzle solver implementation\label{lst:octave_nozzle1}}]
                 {notebooks/nozzle1.m}
 
 \begin{figure}[p]
@@ -450,11 +467,9 @@ Listing~\ref{lst:octave_nozzle}.
   }
 \end{figure}
 
-\lstinputlisting[language=Octave,columns=fixed,float=p,showstringspaces=false,
+\lstinputlisting[language=Octave,float=p,
                  caption={\texttt{nozzle.m}: A higher-order, ``coupled''
-                 radial nozzle solver
-                 implementation\label{lst:octave_nozzle}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
+                 radial nozzle solver implementation\label{lst:octave_nozzle}}]
                 {notebooks/nozzle.m}
 
 \clearpage
@@ -539,10 +554,9 @@ Listing~\ref{lst:octave_nozzle_qoi}.  The kernel takes $R_2 = \sqrt{R_0^2 +
 automatically produce full-order results at $\left(R_0,\delta\right)$ without
 requiring dense output capabilities.
 
-\lstinputlisting[language=Octave,columns=fixed,float,showstringspaces=false,
+\lstinputlisting[language=Octave,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
-                 nozzle quantities of interest\label{lst:octave_nozzle_qoi}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
+                 nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
 
 A nonlinear optimization problem may be formulated over $\Mach$, $R_0$,
@@ -569,10 +583,9 @@ After optimization completes, the full base flow profile may be computed by
 supplying $R_2 = \sqrt{R_0^2 + L_y^2}$ to the routine in
 Listing~\ref{lst:octave_nozzle}.
 
-\lstinputlisting[language=Octave,columns=fixed,showstringspaces=false,%NO float,
+\lstinputlisting[language=Octave,%NO float,
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
-                 quantities of interest\label{lst:octave_nozzle_baseflow}},
-                 basicstyle={\footnotesize\sffamily},frame=single]
+                 quantities of interest\label{lst:octave_nozzle_baseflow}}]
                 {notebooks/nozzle_baseflow.m}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
