@@ -571,8 +571,24 @@ are worth noting:
   \item The relative residuals are minimized rather than the absolute residuals
     as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
     producing undesirable results.
-  \item To combat the impact of a poor initial guess, optimization proceeds in
-    two phases with the first phase treating only $R_0$ and
+  \item A poor initial guess satisfying realizability is made by fixing
+    $\Mach{}=1$ and
+    investigating~\eqref{eq:stagnation_sound_realizability_nondim} in
+    conjunction with either~\eqref{eq:cpfradial_nozzle_subsonic_bc}
+    or~\eqref{eq:cpfradial_nozzle_supersonic_bc} depending on $\Mach[e]{}$.
+    For the subsonic case,
+    \[
+       \max\left(-\sqrt{\frac{\gamma_0+1}{\gamma_0-1}},-1\right)
+       = -1 < u\!\left(R_1\right) < 0
+       .
+    \]
+    In the supersonic case,
+    \[
+       1 < u\!\left(R_1\right) < \sqrt{\frac{\gamma_0+1}{\gamma_0-1}}
+       .
+    \]
+  \item To combat the impact of this poor initial guess, optimization proceeds
+    in two phases with the first phase treating only $R_0$ and
     $u\!\left(R_1\right)$ as free parameters.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
