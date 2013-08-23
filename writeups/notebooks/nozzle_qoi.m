@@ -8,8 +8,8 @@ function [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1, p
     a2_e  = a2(end);
     a2_w  = a2(1);
   catch
-    warning('nozzle_qoi(%g, %g, %g, %g, %g, %g, %g) fails', ...
-            delta, gam0, Ma, R0, rho1, u1, p1);
+    warning('nozzle_qoi(%g, %g, %g, %g, %g, %g, %g) fails: %s', ...
+            delta, gam0, Ma, R0, rho1, u1, p1, lasterror.message);
     Ma_e = p_exi = a2_e = a2_w = NaN;
   end
 end
