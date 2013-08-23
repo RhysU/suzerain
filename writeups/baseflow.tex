@@ -576,17 +576,18 @@ are worth noting:
     investigating~\eqref{eq:stagnation_sound_realizability_nondim} in
     conjunction with either~\eqref{eq:cpfradial_nozzle_subsonic_bc}
     or~\eqref{eq:cpfradial_nozzle_supersonic_bc} depending on $\Mach[e]{}$.
-    For the subsonic case,
+    For subsonic $\Mach[e]{}$ one finds
     \[
        \max\left(-\sqrt{\frac{\gamma_0+1}{\gamma_0-1}},-1\right)
        = -1 < u\!\left(R_1\right) < 0
-       .
     \]
-    In the supersonic case,
+    is required implying $u\!\left(R_1\right)=-\Mach[e]{}$ is a suitable guess.
+    When $\Mach[e]{}$ is supersonic it turns out that
     \[
        1 < u\!\left(R_1\right) < \sqrt{\frac{\gamma_0+1}{\gamma_0-1}}
-       .
     \]
+    is necessary and that selecting $u\left(R_1\right)=\min\left(\Mach[e]{},
+    \sqrt{\frac{\gamma_0+1}{\gamma_0-1}}\right)$ is acceptable.
   \item To combat the impact of this poor initial guess, optimization proceeds
     in two phases with the first phase treating only $R_0$ and
     $u\!\left(R_1\right)$ as free parameters.

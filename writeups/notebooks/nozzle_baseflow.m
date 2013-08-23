@@ -14,16 +14,16 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
 
   % Establish initial guess, feasible bounds, and fix order one density/pressure
-  % Guess constructs u1 satisfying realizability given both Ma_e and Ma=1
+  % Guess fixes Ma=1 and produces u1 satisfying realizability Ma_e magnitude
   if isempty(pin)
-    if Ma_e < 1; pin =       [  1;   1;   1; mean([-1, 0])             ;   1];
-    else;        pin =       [  1;   1;   1; mean([+1, sqrt((gam0+1)...
-                                                           /(gam0-1))]);   1]; end
+    if Ma_e < 1; pin =       [  1;   1;   1; -Ma_e             ;          1];
+    else;        pin =       [  1;   1;   1; min(Ma_e, sqrt((gam0+1)...
+                                                           /(gam0-1)));   1]; end
   end
-  o  = optimset(o, 'lbound', [eps; eps; eps; -inf                      ; eps],
-                   'ubound', [inf; inf; inf;  inf                      ; inf]);
-  o1 = optimset(o, 'fixed',  [  1;   0;   1;  0                        ;   1]);
-  o2 = optimset(o, 'fixed',  [  0;   0;   1;  0                        ;   1]);
+  o  = optimset(o, 'lbound', [eps; eps; eps; -inf                     ; eps],
+                   'ubound', [inf; inf; inf;  inf                     ; inf]);
+  o1 = optimset(o, 'fixed',  [  1;   0;   1;  0                       ;   1]);
+  o2 = optimset(o, 'fixed',  [  0;   0;   1;  0                       ;   1]);
 
   % Solve the problem and convert relative residuals into optimization results
   pkg load odepkg optim;
@@ -50,7 +50,6 @@ function f = obs_vector(delta, gam0, Ma, R0, rho1, u1, p1)
 end
 
 %!demo
-%! % FIXME
 %! o = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
 %! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, [], o), toc()
 
@@ -62,9 +61,6 @@ end
 
 %!test
 %! assert(nozzle_baseflow(1, 1.40807, 1.04816, -0.00973, 4.31344).res2 < 1e-2);
-
-%!test
-%! assert(nozzle_baseflow(1, 1.40830, 0.74099, -0.01157, 4.20355).res2 < 1e-2);
 
 %!test
 %! assert(nozzle_baseflow(1, 1.40906, 0.41120, -0.01793, 4.12912).res2 < 1e-2);
