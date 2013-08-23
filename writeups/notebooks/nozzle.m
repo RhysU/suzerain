@@ -3,6 +3,8 @@
 function [r, u, rho, p, a2, up, pp] = nozzle(Ma, gam0, R1, R2, u1, rho1, p1, ...
                                              reltol=sqrt(eps), abstol=sqrt(eps))
 
+  assert(u1**2 < 2 / Ma**2 / (gam0-1) + 1,
+         'Ma=%g, gam0=%g, u1=%g imply a**2 <= 0', Ma, gam0, u1);
   vopt     = odeset('RelTol',      reltol,       'AbsTol',  abstol,
                     'InitialStep', sqrt(abstol), 'MaxStep', sqrt(sqrt(abstol)));
   [r, x]   = ode45(@nozzle_f, [R1 R2], [u1 log(rho1) p1], vopt, Ma**2, gam0-1);

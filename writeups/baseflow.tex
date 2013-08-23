@@ -431,7 +431,7 @@ the integration of $u'$, $\left(\log\rho\right)'$, and $p'$ one may achieve
 higher order behavior with an implementation like
 Listing~\ref{lst:octave_nozzle}.
 
-\lstinputlisting[language=Octave,columns=fixed,float=p,
+\lstinputlisting[language=Octave,columns=fixed,float=p,showstringspaces=false,
                  caption={\texttt{nozzle1.m}: A scalar-by-scalar radial
                  nozzle solver implementation\label{lst:octave_nozzle1}},
                  basicstyle={\footnotesize\sffamily},frame=single]
@@ -450,7 +450,7 @@ Listing~\ref{lst:octave_nozzle}.
   }
 \end{figure}
 
-\lstinputlisting[language=Octave,columns=fixed,float=p,
+\lstinputlisting[language=Octave,columns=fixed,float=p,showstringspaces=false,
                  caption={\texttt{nozzle.m}: A higher-order, ``coupled''
                  radial nozzle solver
                  implementation\label{lst:octave_nozzle}},
@@ -539,7 +539,7 @@ Listing~\ref{lst:octave_nozzle_qoi}.  The kernel takes $R_2 = \sqrt{R_0^2 +
 automatically produce full-order results at $\left(R_0,\delta\right)$ without
 requiring dense output capabilities.
 
-\lstinputlisting[language=Octave,columns=fixed,float,
+\lstinputlisting[language=Octave,columns=fixed,float,showstringspaces=false,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  nozzle quantities of interest\label{lst:octave_nozzle_qoi}},
                  basicstyle={\footnotesize\sffamily},frame=single]
@@ -569,7 +569,7 @@ After optimization completes, the full base flow profile may be computed by
 supplying $R_2 = \sqrt{R_0^2 + L_y^2}$ to the routine in
 Listing~\ref{lst:octave_nozzle}.
 
-\lstinputlisting[language=Octave,columns=fixed,%NO float,
+\lstinputlisting[language=Octave,columns=fixed,showstringspaces=false,%NO float,
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
                  quantities of interest\label{lst:octave_nozzle_baseflow}},
                  basicstyle={\footnotesize\sffamily},frame=single]
