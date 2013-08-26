@@ -37,8 +37,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,                ...
   % Solve the problem converting relative residual vector into absolute results
   % Fixes density and pressure and solves for the remainder in multiple phases
   pkg load odepkg optim;
-  phase(1) = optimset(opt, 'fixed',  [ 1; 0; 1; 0; 1]);
-  phase(2) = optimset(opt, 'fixed',  [ 0; 0; 1; 0; 1]);
+  phase(1) = optimset(opt, 'fixed', [ 1; 0; 1; 0; 1]);
+  phase(2) = optimset(opt, 'fixed', [ 0; 0; 1; 0; 1]);
   [p, res, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter  = outp.niter;
   [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
   res2 = norm(res.*optimget(phase(end), 'weights', ones(size(tgt))), 2);
