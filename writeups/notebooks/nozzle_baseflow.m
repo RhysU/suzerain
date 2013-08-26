@@ -5,9 +5,9 @@
 % quantities of interest at (R0, Ly), respectively.
 %
 % Parameter 'opt' may supply additional nonlin_residmin options using optimset.
-function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,                ...
-                             opt = optimset('TolFun', eps, 'MaxIter', 100), ...
-                             inequc = 1)
+% However, options 'MaxIter' and 'fixed' will be ignored.
+function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
+                             opt = optimset('Algorithm', 'lm_svd_feasible'))
 
   % Relative residuals of observations vs targets for [Ma; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
@@ -24,21 +24,19 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,                ...
   end
 
   % Constrain x(1) = Ma and x(2) = R0 per to permit desired a2_e behavior
-  if inequc
-    rliz = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
-    if a2_e <= 1
-      inequc = @(x) [ rliz(x);  Ma_e*realsqrt(x(2)**2+delta**2) / x(2) - x(1) ];
-    else
-      inequc = @(x) [ rliz(x); -Ma_e*realsqrt(x(2)**2+delta**2) / x(2) + x(1) ];
-    end
-    opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), inequc });
+  rliz = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
+  if a2_e <= 1
+    inequc = @(x) [ rliz(x);  Ma_e*realsqrt(x(2)**2+delta**2) / x(2) - x(1) ];
+  else
+    inequc = @(x) [ rliz(x); -Ma_e*realsqrt(x(2)**2+delta**2) / x(2) + x(1) ];
   end
+  opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), inequc });
 
   % Solve the problem converting relative residual vector into absolute results
   % Fixes density and pressure and solves for the remainder in multiple phases
   pkg load odepkg optim;
-  phase(1) = optimset(opt, 'fixed', [ 1; 0; 1; 0; 1]);
-  phase(2) = optimset(opt, 'fixed', [ 0; 0; 1; 0; 1]);
+  phase(1) = optimset(opt, 'fixed', [ 1; 0; 1; 0; 1], 'MaxIter', 10 );
+  phase(2) = optimset(opt, 'fixed', [ 0; 0; 1; 0; 1], 'MaxIter', 100);
   [p, res, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter  = outp.niter;
   [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
   res2 = norm(res.*optimget(phase(end), 'weights', ones(size(tgt))), 2);
@@ -62,31 +60,31 @@ function f = obs_vector(delta, gam0, Ma, R0, rho1, u1, p1)
 end
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case A
+%! opt = optimset('debug', 1);  % Case A
 %! tic(), s = nozzle_baseflow(1, 1.4000, 0.4000, -0.0200, 1.2000, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case B
+%! opt = optimset('debug', 1);  % Case B
 %! tic(), s = nozzle_baseflow(1, 1.4080, 0.9825, -0.0099, 4.2952, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case C
+%! opt = optimset('debug', 1);  % Case C
 %! tic(), s = nozzle_baseflow(1, 1.4083, 1.1094, -0.0097, 4.3205, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case D
+%! opt = optimset('debug', 1);  % Case D
 %! tic(), s = nozzle_baseflow(1, 1.4081, 1.0482, -0.0097, 4.3134, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case E
+%! opt = optimset('debug', 1);  % Case E
 %! tic(), s = nozzle_baseflow(1, 1.4091, 0.4112, -0.0179, 4.1291, opt), toc()
 %! assert(s.res2 < sqrt(eps));
 
 %!test
-%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case F
+%! opt = optimset('debug', 1);  % Case F
 %! tic(), s = nozzle_baseflow(1, 1.4095, 0.1217, -0.0958, 3.9670, opt), toc()
 %! assert(s.res2 < sqrt(eps));
