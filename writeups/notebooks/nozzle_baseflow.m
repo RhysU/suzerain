@@ -16,9 +16,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,                ...
   % Establish bounds for [Ma; R0; rho1; u1; p1] and a reasonable initial guess
   opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
                       'ubound', [inf; inf; inf;  inf; inf]);
-  p = [NaN; 1; 1; NaN; 1];                   % Guess for R0, rho1, p1
-  p(1) = realsqrt(p(2)**2+delta**2) / p(2);  % Feasible guess for Ma per a2_e
-  if Ma_e < 1;                               % Feasible guess for u1 per Ma_e
+  p = [Ma_e; 1; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
+  if Ma_e < 1;               % Guess for u1 per Ma_e
     p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));  % FIXME
   else
     p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]); % FIXME
@@ -65,29 +64,29 @@ end
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case A
 %! tic(), s = nozzle_baseflow(1, 1.4000, 0.4000, -0.0200, 1.2000, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
 
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case B
 %! tic(), s = nozzle_baseflow(1, 1.4080, 0.9825, -0.0099, 4.2952, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
 
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case C
 %! tic(), s = nozzle_baseflow(1, 1.4083, 1.1094, -0.0097, 4.3205, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
 
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case D
 %! tic(), s = nozzle_baseflow(1, 1.4081, 1.0482, -0.0097, 4.3134, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
 
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case E
 %! tic(), s = nozzle_baseflow(1, 1.4091, 0.4112, -0.0179, 4.1291, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
 
 %!test
 %! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);  % Case F
 %! tic(), s = nozzle_baseflow(1, 1.4095, 0.1217, -0.0958, 3.9670, opt), toc()
-%! assert(s.res2 < 1e-2);
+%! assert(s.res2 < sqrt(eps));
