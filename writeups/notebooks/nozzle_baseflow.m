@@ -16,8 +16,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   % Establish bounds for [Ma; R0; rho1; u1; p1] and a reasonable initial guess
   opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
                       'ubound', [inf; inf; inf;  inf; inf]);
-  p = [Ma_e; 1; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
-  if Ma_e < 1;               % Guess for u1 per Ma_e
+  p = [Ma_e; 10*delta; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
+  if Ma_e < 1;                      % Guess for u1 per Ma_e
     p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));  % FIXME
   else
     p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]); % FIXME
