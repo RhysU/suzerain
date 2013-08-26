@@ -13,7 +13,7 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   tgt = [Ma_e; p_exi; a2_e];
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
 
-  % Establish bounds for [Ma; R0; rho1; u1; p1] and a reasonable initial guess
+  % Establish bounds for [Ma; R0; rho1; u1; p1], a guess, and constraint(s)
   opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
                       'ubound', [inf; inf; inf;  inf; inf]);
   p = [Ma_e; 10*delta; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
@@ -22,15 +22,8 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   else
     p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]); % FIXME
   end
-
-  % Constrain x(1) = Ma and x(2) = R0 per to permit desired a2_e behavior
-  rliz = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
-  if a2_e <= 1
-    inequc = @(x) [ rliz(x);  Ma_e*realsqrt(x(2)**2+delta**2) / x(2) - x(1) ];
-  else
-    inequc = @(x) [ rliz(x); -Ma_e*realsqrt(x(2)**2+delta**2) / x(2) + x(1) ];
-  end
-  opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), inequc });
+  realizable = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
+  opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), realizable });
 
   % Solve the problem converting relative residual vector into absolute results
   % Fixes density and pressure and solves for the remainder in multiple phases
