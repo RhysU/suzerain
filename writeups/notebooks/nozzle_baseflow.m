@@ -4,10 +4,9 @@
 % functions s.noz(Ly) and s.qoi(Ly) compute the flow on (R0, 0) to (R0, Ly) and
 % quantities of interest at (R0, Ly), respectively.
 %
-% When not empty, 'pin' provides an initial guess [Ma; R0; rho1; u1; p1].
 % Parameter 'o' may supply additional nonlin_residmin options using optimset.
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
-                             pin = [], o = optimset('TolFun', eps))
+                             o = optimset('TolFun', eps))
 
   % Relative residuals of observations against targets for [Ma, R0, rho1, u1, p1]
   tgt = [Ma_e; p_exi; a2_e];
@@ -15,20 +14,20 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
 
   % Establish initial guess, feasible bounds, and fix order one density/pressure
   % Guess fixes Ma=1 and produces u1 satisfying realizability Ma_e magnitude
-  if isempty(pin)
-    if Ma_e < 1; pin =       [  1;   1;   1; -Ma_e             ;          1];
-    else;        pin =       [  1;   1;   1; min(Ma_e, sqrt((gam0+1)...
-                                                           /(gam0-1)));   1]; end
+  if Ma_e < 1;
+    p = [1; 1; 1; -Ma_e                             ; 1];
+  else
+    p = [1; 1; 1; min(Ma_e, sqrt((gam0+1)/(gam0-1))); 1];
   end
-  o  = optimset(o, 'lbound', [eps; eps; eps; -inf                     ; eps],
-                   'ubound', [inf; inf; inf;  inf                     ; inf]);
-  o1 = optimset(o, 'fixed',  [  1;   0;   1;  0                       ;   1]);
-  o2 = optimset(o, 'fixed',  [  0;   0;   1;  0                       ;   1]);
+  o  = optimset(o, 'lbound', [eps; eps; eps; -inf; eps],
+                   'ubound', [inf; inf; inf;  inf; inf]);
+  o1 = optimset(o, 'fixed',  [  1;   0;   1;    0;   1]);
+  o2 = optimset(o, 'fixed',  [  0;   0;   1;    0;   1]);
 
   % Solve the problem and convert relative residuals into optimization results
   pkg load odepkg optim;
-  [p, res, cvg, outp] = nonlin_residmin(f, pin, o1); niter  = outp.niter;
-  [p, res, cvg, outp] = nonlin_residmin(f, p,   o2); niter += outp.niter;
+  [p, res, cvg, outp] = nonlin_residmin(f, p, o1); niter  = outp.niter;
+  [p, res, cvg, outp] = nonlin_residmin(f, p, o2); niter += outp.niter;
   res2 = norm(res.*optimget(o, 'weights', ones(size(tgt))), 2);
   res  = res.*tgt + tgt;
 
@@ -51,7 +50,7 @@ end
 
 %!demo
 %! o = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
-%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, [], o), toc()
+%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, o), toc()
 
 %!test
 %! assert(nozzle_baseflow(1, 1.40799, 0.98245, -0.00987, 4.29524).res2 < 1e-2);
