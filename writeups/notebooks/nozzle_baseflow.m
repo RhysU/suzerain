@@ -4,31 +4,41 @@
 % functions s.noz(Ly) and s.qoi(Ly) compute the flow on (R0, 0) to (R0, Ly) and
 % quantities of interest at (R0, Ly), respectively.
 %
-% Parameter 'o' may supply additional nonlin_residmin options using optimset.
+% Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
-                             o = optimset('TolFun', eps))
+                             opt = optimset('TolFun', eps, 'MaxIter', 100))
 
-  % Relative residuals of observations against targets for [Ma, R0, rho1, u1, p1]
+  % Relative residuals of observations vs targets for [Ma; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
 
-  % Establish initial guess, feasible bounds, and fix order one density/pressure
-  % Guess fixes Ma=1 and produces u1 satisfying realizability Ma_e magnitude
-  if Ma_e < 1;
-    p = [1; 1; 1; -Ma_e                             ; 1];
+  % Establish bounds for [Ma; R0; rho1; u1; p1] and a reasonable initial guess
+  opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
+                      'ubound', [inf; inf; inf;  inf; inf]);
+  p = ones(5,1);                             % Guess 1 for R0, rho1, p1
+  p(1) = realsqrt(p(2)**2+delta**2) / p(2);  % Feasible guess for Ma per a2_e
+  if Ma_e < 1;                               % Feasible guess for u1 per Ma_e
+    p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));  % FIXME
   else
-    p = [1; 1; 1; min(Ma_e, sqrt((gam0+1)/(gam0-1))); 1];
+    p(4) = mean([1/p(1); -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]); % FIXME
   end
-  o  = optimset(o, 'lbound', [eps; eps; eps; -inf; eps],
-                   'ubound', [inf; inf; inf;  inf; inf]);
-  o1 = optimset(o, 'fixed',  [  1;   0;   1;    0;   1]);
-  o2 = optimset(o, 'fixed',  [  0;   0;   1;    0;   1]);
 
-  % Solve the problem and convert relative residuals into optimization results
+  % Constrain x(1) = Ma and x(2) = R0 per to permit desired a2_e behavior
+  if a2_e <= 1
+    inequc = @(x)  [Ma_e * realsqrt(x(2)**2+delta**2) / x(2) - x(1)];
+  else
+    inequc = @(x) -[Ma_e * realsqrt(x(2)**2+delta**2) / x(2) - x(1)];
+  end
+  opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), inequc });
+
+  % Solve the problem converting relative residual vector into absolute results
+  % Fixes density and pressure and solves for the remainder in phases
   pkg load odepkg optim;
-  [p, res, cvg, outp] = nonlin_residmin(f, p, o1); niter  = outp.niter;
-  [p, res, cvg, outp] = nonlin_residmin(f, p, o2); niter += outp.niter;
-  res2 = norm(res.*optimget(o, 'weights', ones(size(tgt))), 2);
+  phase(1) = optimset(opt, 'fixed',  [ 1; 0; 1; 0; 1]);
+  phase(2) = optimset(opt, 'fixed',  [ 0; 0; 1; 0; 1]);
+  [p, res, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter  = outp.niter;
+  [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
+  res2 = norm(res.*optimget(phase(end), 'weights', ones(size(tgt))), 2);
   res  = res.*tgt + tgt;
 
   % Package up problem specification, solution, results, and runtime behavior
@@ -49,20 +59,20 @@ function f = obs_vector(delta, gam0, Ma, R0, rho1, u1, p1)
 end
 
 %!demo
-%! o = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
-%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, o), toc()
+%! opt = optimset('TolFun', eps, 'MaxIter', 100, 'debug', 1);
+%! tic(), s = nozzle_baseflow(1, 1.4, 0.4, -0.02, 1.2, opt), toc()
 
 %!test
-%! assert(nozzle_baseflow(1, 1.40799, 0.98245, -0.00987, 4.29524).res2 < 1e-2);
+%! s=nozzle_baseflow(1, 1.4080, 0.9825, -0.0099, 4.2952), assert(s.res2 < 1e-2);
 
 %!test
-%! assert(nozzle_baseflow(1, 1.40827, 1.10937, -0.00974, 4.32052).res2 < 1e-2);
+%! s=nozzle_baseflow(1, 1.4083, 1.1094, -0.0097, 4.3205), assert(s.res2 < 1e-2);
 
 %!test
-%! assert(nozzle_baseflow(1, 1.40807, 1.04816, -0.00973, 4.31344).res2 < 1e-2);
+%! s=nozzle_baseflow(1, 1.4081, 1.0482, -0.0097, 4.3134), assert(s.res2 < 1e-2);
 
 %!test
-%! assert(nozzle_baseflow(1, 1.40906, 0.41120, -0.01793, 4.12912).res2 < 1e-2);
+%! s=nozzle_baseflow(1, 1.4091, 0.4112, -0.0179, 4.1291), assert(s.res2 < 1e-2);
 
 %!test
-%! assert(nozzle_baseflow(1, 1.40948, 0.12174, -0.09581, 3.96700).res2 < 1e-2);
+%! s=nozzle_baseflow(1, 1.4095, 0.1217, -0.0958, 3.9670), assert(s.res2 < 1e-2);
