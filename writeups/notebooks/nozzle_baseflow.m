@@ -1,13 +1,14 @@
 % Seek [Ma, R0, rho1, u1, p1] producing requested conditions at (R0, delta).
 % Returns struct s with fields s.Ma, s.R0, s.rho1, s.u1, and s.p1 producing a
-% flow with observed values s.obs.Ma_e, s.obs.p_exi, and s.obs.a2_e.  Curried
-% functions s.noz(Ly) and s.qoi(Ly) compute the flow on (R0, 0) to (R0, Ly) and
-% quantities of interest at (R0, Ly), respectively.
+% flow with observed values s.Ma_e, s.p_exi, and s.a2_e.
+% Curried function results noz(Ly) and qoi(Ly) compute the flow on (R0, 0) to
+% (R0, Ly) and quantities of interest at (R0, Ly), respectively.
 %
 % Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 % However, options 'MaxIter' and 'fixed' will be ignored.
-function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
-                             opt = optimset('Algorithm', 'lm_svd_feasible'))
+function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
+                                         opt = optimset('Algorithm',     ...
+                                                        'lm_svd_feasible'))
 
   % Relative residuals of observations vs targets for [Ma; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
@@ -23,28 +24,34 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
     p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]);
   end
   realizable = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
-  opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), realizable });
+  opt = optimset(opt, 'inequc', {zeros(length(p)), ones(size(p)), realizable});
 
   % Solve the problem converting relative residual vector into absolute results
-  % Fixes density and pressure and solves for the remainder in multiple phases
+  % Fixes density and pressure and solves for other parameters in two phases
   % Freezing Ma for some small number of iterates has been crucial in practice
   pkg load odepkg optim;
   phase(1) = optimset(opt, 'fixed', [ 1; 0; 1; 0; 1], 'MaxIter', 10 );
   phase(2) = optimset(opt, 'fixed', [ 0; 0; 1; 0; 1], 'MaxIter', 250);
-  [p, res, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter  = outp.niter;
-  [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
+  try
+    niter = 0; res = nan(3,1);
+    [p, ans, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter += outp.niter;
+    [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
+  catch
+    warning('nozzle_baseflow(%g, %g, %g, %g, %g) fails: %s', ...
+            delta, gam0, Ma_e, p_exi, a2_e, lasterror.message);
+    cvg = 0; p = nan(5,1);
+  end
   res2 = norm(res.*optimget(phase(end), 'weights', ones(size(tgt))), 2);
   res  = res.*tgt + tgt;
 
   % Package up problem specification, solution, results, and runtime behavior
   s = struct('delta', delta, 'gam0', gam0,
              'Ma', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4), 'p1', p(5),
-             'tgt', struct('Ma_e', Ma_e,   'p_exi', p_exi,  'a2_e', a2_e  ),
-             'obs', struct('Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3)),
+             'Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3),
              'res2', res2, 'cvg', cvg, 'niter', niter);
-  s.noz = @(Ly) nozzle    (s.Ma, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
-                           s.u1, s.rho1, s.p1);
-  s.qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1, s.p1);
+  noz = @(Ly) nozzle    (s.Ma, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
+                         s.u1, s.rho1, s.p1);
+  qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1, s.p1);
 end
 
 % Repackage nozzle_qoi multiple return values into a vector of observations.

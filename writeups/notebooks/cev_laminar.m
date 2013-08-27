@@ -1,18 +1,17 @@
 #!/usr/bin/env octave
-d = dlmread('cev_laminar.csv', ',', 1, 0);
-clear s;
-for i = 1:rows(d)
-    tic
-    try
-        s(i) = nozzle_baseflow(1.0, d(i,3), d(i,4), d(i,5), d(i,6),
-                               optimset('MaxIter', 100,
-                                        'TolFun', sqrt(eps),
-                                        'weights', [1;1;1]));
-        s(end)
-    catch
-        s(i).cvg = 0
-        warning('nozzle_baseflow(%g, %g, %g, %g, %g) fails', ...
-                d(i,2), d(i,3), d(i,4), d(i,5), d(i,6));
-    end
-    toc
-end
+
+% Load a collection of problems from disk using Octave-Forge dataframe
+pkg load dataframe
+d = dataframe('cev_laminar.csv');
+
+% Process problems in parallel solving with delta fixed to be one
+pkg load general
+tic()
+s = parcellfun(max(1, nproc()-1), @nozzle_baseflow,      ...
+               num2cell(ones(rows(d),1)),                ...
+               num2cell(d.gamma_e), num2cell(d.Ma_edge), ...
+               num2cell(d.p_exi), num2cell(d.T_ratio));
+toc()
+
+% Convert the returned results into a dataframe
+s = dataframe(struct2cell(s).', 'colnames', fieldnames(s));
