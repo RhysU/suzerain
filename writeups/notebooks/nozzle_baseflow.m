@@ -18,9 +18,9 @@ function s = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
                       'ubound', [inf; inf; inf;  inf; inf]);
   p = [Ma_e; 10*delta; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
   if Ma_e < 1;                      % Guess for u1 per Ma_e
-    p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));  % FIXME
+    p(4) = max (-1/p(1), -realsqrt(2 / p(1)**2 / (gam0 - 1) + 1));
   else
-    p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]); % FIXME
+    p(4) = mean([1/p(1); +realsqrt(2 / p(1)**2 / (gam0 - 1) + 1)]);
   end
   realizable = @(x) 2 / p(1)**2 / (gam0 - 1) + 1 - p(4)**2;
   opt = optimset(opt, 'inequc', { zeros(length(p)), ones(size(p)), realizable });
