@@ -2,18 +2,24 @@
 
 % Packages
 \usepackage{accents}
+\usepackage{array}
+\usepackage{booktabs}
 \usepackage{enumerate}
 \usepackage{fancyhdr}
 \usepackage[final]{graphicx}
 \usepackage{fullpage}
 \usepackage{lastpage}
 \usepackage{listings}
+\usepackage{longtable}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
 \usepackage{setspace}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
+% Avoids xcolor options clashes
+\usepackage{pgfplotstable}
 
 % In conjunction with -shell-escape, automatically convert EPS to PDF
 \usepackage{epstopdf}
@@ -624,10 +630,31 @@ for convergence to $\sqrt{\epsilon}$-like residuals.  After optimization
 completes, the full base flow profile may be computed by supplying $R_2 =
 \sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
 
+\pagebreak[4]
 \lstinputlisting[language=Octave,%NO float
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
                  quantities of interest\label{lst:octave_nozzle_baseflow}}]
                 {notebooks/nozzle_baseflow.m}
+
+\section{Example: producing base flows matching laminar CEV heat shield conditions}
+
+\begin{centering}
+\pgfplotstabletypeset[
+  col sep=comma, clear infinite,
+  begin table=\begin{longtable},
+  end table=\end{longtable},
+  every head row/.style={after row=\midrule\endhead},
+  columns={dstag,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
+  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column name=Location $(m)$},
+  columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column name=$\Mach[e]{}$},
+  columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column name=$p_{e,\xi}$},
+  columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column name=$a^2_e$},
+  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$\Mach{}$},
+  columns/R0/.style=     {fixed,fixed zerofill,precision=2,dec sep align,column name=$R_0$},
+  columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$u\!\left(R_1\right)$},
+  columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column name=Residual}
+]{notebooks/cev_laminar.out}
+\end{centering}
 
 \newcommand*{\doi}[1]{\href{http://dx.doi.org/\detokenize{#1}}{doi: #1}}
 \bibliographystyle{plainnat}
