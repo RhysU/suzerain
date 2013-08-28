@@ -85,10 +85,8 @@ radius.  The solution is then mapped from $\left(r,\theta\right)$ into
 $\left(x,y\right)$ coordinates and a base flow profile taken from some constant
 $x$ line segment.  The segment chosen, as well as the radial problem boundary
 conditions used, are taken to match some boundary layer edge state of interest
-using a numerical optimization procedure.
-% TODO
-% Curve fits are created from that data and supplied as base flow coefficients
-% within simulation restart files.
+using a numerical optimization procedure.  Finally, this procedure is used
+to produce base flows in the spirit of laminar CEV heat shield conditions.
 
 \section{The nondimensional, compressible potential flow equation}
 
@@ -638,6 +636,30 @@ completes, the full base flow profile may be computed by supplying $R_2 =
 
 \section{Example: producing base flows matching laminar CEV heat shield conditions}
 
+\begin{figure}[p]
+  \centering
+  \includegraphics[]{cev_summary1}
+%%\caption{
+%%    \label{fig:sample_solns}
+%%    Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
+%%    subsonic case flows from right-to-left while the supersonic one flows
+%%    from left-to-right.
+%%}
+\end{figure}
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[]{cev_summary_fpg}
+%%\caption{
+%%    \label{fig:sample_solns}
+%%    Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
+%%    subsonic case flows from right-to-left while the supersonic one flows
+%%    from left-to-right.
+%%}
+\end{figure}
+
+\clearpage
+
 \begin{centering}
 \pgfplotstabletypeset[
   col sep=comma, clear infinite,
@@ -645,14 +667,14 @@ completes, the full base flow profile may be computed by supplying $R_2 =
   end table=\end{longtable},
   every head row/.style={after row=\midrule\endhead},
   columns={dstag,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
-  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column name=Location $(m)$},
-  columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column name=$\Mach[e]{}$},
-  columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column name=$p_{e,\xi}$},
-  columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column name=$a^2_e$},
-  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$\Mach{}$},
-  columns/R0/.style=     {fixed,fixed zerofill,precision=2,dec sep align,column name=$R_0$},
-  columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column name=$u\!\left(R_1\right)$},
-  columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column name=Residual}
+  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arclength $(m)$},
+  columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
+  columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
+  columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},
+  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach{}$},
+  columns/R0/.style=     {fixed,fixed zerofill,precision=2,dec sep align,column type/.add={}{},column name=$R_0$},
+  columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{|},column name=$u\!\left(R_1\right)$},
+  columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column type/.add={}{},column name=Residual}
 ]{notebooks/cev_laminar.out}
 \end{centering}
 
