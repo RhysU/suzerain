@@ -54,7 +54,6 @@
 % Configure inline code listings
 \lstset{
   basicstyle=\footnotesize\sffamily,
-  breakatwhitespace=false,
   columns=fixed,
   commentstyle=\color{blue},
   firstnumber=1,
@@ -79,9 +78,11 @@ commodity ODE integrators can solve to obtain primitive state as a function of
 radius.  The solution is then mapped from $\left(r,\theta\right)$ into
 $\left(x,y\right)$ coordinates and a base flow profile taken from some constant
 $x$ line segment.  The segment chosen, as well as the radial problem boundary
-conditions used, are taken to match some boundary layer edge state of interest.
-Curve fits are created from that data and supplied as base flow coefficients
-within simulation restart files.
+conditions used, are taken to match some boundary layer edge state of interest
+using a numerical optimization procedure.
+% TODO
+% Curve fits are created from that data and supplied as base flow coefficients
+% within simulation restart files.
 
 \section{The nondimensional, compressible potential flow equation}
 
@@ -416,18 +417,34 @@ outflow via
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
     u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
-\label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
 in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
-$u\!\left(R_{2}\right)$ condition.  Caveat numerical errors, specifying either
-the inflow or outflow condition is equivalent as the physics are frictionless.
+$u\!\left(R_{2}\right)$ condition.  Incorporating
+realizability~\eqref{eq:stagnation_sound_realizability_nondim} taking care to
+use the negative square root of $u^2$,
+\begin{align}
+  \max\left(
+    -\frac{1}{\Mach}, -\sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
+  \right) < &u\!\left(R_1\right) < 0
+\label{eq:cpfradial_nozzle_subsonic_bc}
+.
+\end{align}
+Caveat numerical errors, specifying either the inflow or outflow condition is
+equivalent as the physics are frictionless.
 
 A supersonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$
 by setting inflow
 \begin{align}
-    u_0 u\!\left(l_0 R_{1}\right) > a_0 > 0
-    &\implies
-    u\!\left(R_{1}\right) \in \left(\Mach^{-1}, \infty\right)
+   u_0 u\!\left(l_0 R_{1}\right) > a_0 > 0
+   &\implies
+   u\!\left(R_{1}\right) \in \left(\Mach^{-1}, \infty\right)
+.
+\end{align}
+Incorporating realizability~\eqref{eq:stagnation_sound_realizability_nondim}
+and using the positive square root of $u^2$,
+\begin{align}
+  \frac{1}{\Mach} < &u\!\left(R_1\right)
+  < \sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
@@ -435,7 +452,7 @@ In this situation, $u$ increases and $p$ decreases when traversing the domain
 from~$R_{1}$ to~$R_{2}$.  As above, a supersonic outflow could instead be
 specified at $R_{2}$.
 
-Working with boundary conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
+Working with conditions~\eqref{eq:cpfradial_nozzle_subsonic_bc}
 and~\eqref{eq:cpfradial_nozzle_supersonic_bc} on $\left[R_1, R_2\right]$ in
 conjunction with~\eqref{eq:cpfradial_nondim_ode} presents initial value
 problems amenable to solution by numerical ODE integrators.  For example,
@@ -474,14 +491,14 @@ Listing~\ref{lst:octave_nozzle}.
 
 \clearpage
 
-\section{Mapping solution to Cartesian domain and matching conditions of interest}
+\section{Computing quantities of interest for a Cartesian base flow}
 
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.30\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
-      The geometry used when extracting base flow profiles
+      A Cartesian setting overlaid on the radially-symmetric domain
   }
 \end{figure}
 
@@ -552,12 +569,14 @@ to compute these quantities of interest appears in
 Listing~\ref{lst:octave_nozzle_qoi}.  The kernel takes $R_2 = \sqrt{R_0^2 +
 \delta^2}$ to speed the computation and to causes the ODE integrator to
 automatically produce full-order results at $\left(R_0,\delta\right)$ without
-requiring dense output capabilities.
+requiring integrator dense output capabilities.
 
 \lstinputlisting[language=Octave,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
+
+\section{Producing base flows matching given quantities of interest}
 
 A nonlinear optimization problem may be formulated over $\Mach$, $R_0$,
 $\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
@@ -565,42 +584,47 @@ $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
 Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
 these particular target quantities.  One possible implementation, written using
 the \texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim}
-package, is given in Listing~\ref{lst:octave_nozzle_baseflow}.  Several choices
-are worth noting:
+package, is given in Listing~\ref{lst:octave_nozzle_baseflow}.
+
+Several details took considerable effort to refine are therefore worth noting:
 \begin{enumerate}
   \item The relative residuals are minimized rather than the absolute residuals
     as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
     producing undesirable results.
-  \item A poor initial guess satisfying realizability is made by fixing
-    $\Mach{}=1$ and
-    investigating~\eqref{eq:stagnation_sound_realizability_nondim} in
-    conjunction with either~\eqref{eq:cpfradial_nozzle_subsonic_bc}
-    or~\eqref{eq:cpfradial_nozzle_supersonic_bc} depending on $\Mach[e]{}$.
-    For subsonic $\Mach[e]{}$ one finds
-    \[
-       \max\left(-\sqrt{\frac{\gamma_0+1}{\gamma_0-1}},-1\right)
-       = -1 < u\!\left(R_1\right) < 0
-    \]
-    is required implying $u\!\left(R_1\right)=-\Mach[e]{}$ is a suitable guess.
-    When $\Mach[e]{}$ is supersonic it turns out that
-    \[
-       1 < u\!\left(R_1\right) < \sqrt{\frac{\gamma_0+1}{\gamma_0-1}}
-    \]
-    is necessary and that selecting $u\left(R_1\right)=\min\left(\Mach[e]{},
-    \sqrt{\frac{\gamma_0+1}{\gamma_0-1}}\right)$ is acceptable.
+  \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
+    $\Mach{}=\Mach[e]{}$.  Choosing $\Mach{}=\Mach[e]{}$ appears to be critical
+    for obtaining a range of $a_e^2$ behavior.  This particular value stems
+    from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
+    produce the necessarily positive $\Mach^2$ when the flow is either locally
+    sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
+    $u_1\!\left(R_1\right)$ according
+    to~\eqref{eq:cpfradial_nozzle_subsonic_bc} is chosen.  For supersonic
+    $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
+    to~\eqref{eq:cpfradial_nozzle_supersonic_bc} is selected.
   \item To combat the impact of this poor initial guess, optimization proceeds
     in two phases with the first phase treating only $R_0$ and
-    $u\!\left(R_1\right)$ as free parameters.
+    $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
+    briefly as otherwise the optimizer finds a woefully suboptimal local
+    minimum.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
     often take physically unsatisfying values for an order-one nondimensional
     quantity.
 \end{enumerate}
-After optimization completes, the full base flow profile may be computed by
-supplying $R_2 = \sqrt{R_0^2 + L_y^2}$ to the routine in
-Listing~\ref{lst:octave_nozzle}.
+All of these choices were required to pass test cases A--F appearing at the end
+of Listing~\ref{lst:octave_nozzle_baseflow}.
 
-\lstinputlisting[language=Octave,%NO float,
+Not surprisingly, matching $\Mach[e]{}\approx{}1$ appears to most tax this
+implementation.  Though a realizability constraint is implemented, in practice
+it seems not to be encountered by the chosen optimizer with this particular
+initialization procedure.  The second \texttt{nonlin\_residmin} invocation
+permits many iterations as pre-asymptotic convergence has been quite slow on
+one test (not shown).  Generally, fewer than 50 total iterations are required
+for convergence to $\sqrt{\epsilon}$-like residuals.  After optimization
+completes, the full base flow profile may be computed by supplying $R_2 =
+\sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
+
+\lstinputlisting[language=Octave,%NO float
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
                  quantities of interest\label{lst:octave_nozzle_baseflow}}]
                 {notebooks/nozzle_baseflow.m}

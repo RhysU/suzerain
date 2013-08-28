@@ -30,18 +30,18 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   % Fixes density and pressure and solves for other parameters in two phases
   % Freezing Ma for some small number of iterates has been crucial in practice
   pkg load odepkg optim;
-  phase(1) = optimset(opt, 'fixed', [ 1; 0; 1; 0; 1], 'MaxIter', 10 );
-  phase(2) = optimset(opt, 'fixed', [ 0; 0; 1; 0; 1], 'MaxIter', 250);
+  phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter',   10);
+  phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter', 5000);
   try
     niter = 0; res = nan(3,1);
-    [p, ans, cvg, outp] = nonlin_residmin(f, p, phase(1)); niter += outp.niter;
-    [p, res, cvg, outp] = nonlin_residmin(f, p, phase(2)); niter += outp.niter;
+    [p, ans, cvg, outp] = nonlin_residmin(f, p, phase1); niter += outp.niter;
+    [p, res, cvg, outp] = nonlin_residmin(f, p, phase2); niter += outp.niter;
   catch
     warning('nozzle_baseflow(%g, %g, %g, %g, %g) fails: %s', ...
             delta, gam0, Ma_e, p_exi, a2_e, lasterror.message);
     cvg = 0; p = nan(5,1);
   end
-  res2 = norm(res.*optimget(phase(end), 'weights', ones(size(tgt))), 2);
+  res2 = norm(res.*optimget(phase2, 'weights', ones(size(tgt))), 2);
   res  = res.*tgt + tgt;
 
   % Package up problem specification, solution, results, and runtime behavior
