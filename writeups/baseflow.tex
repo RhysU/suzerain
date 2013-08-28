@@ -634,28 +634,47 @@ completes, the full base flow profile may be computed by supplying $R_2 =
                  quantities of interest\label{lst:octave_nozzle_baseflow}}]
                 {notebooks/nozzle_baseflow.m}
 
-\section{Example: producing base flows matching laminar CEV heat shield conditions}
+\section{Producing base flows matching laminar CEV heat shield conditions}
+
+International Space Station return, fully-laminar Crew Exploration Vehicle
+(CEV) heat shield simulations were performed by Paul Bauman of The Center for
+Predictive Engineering and Computational Science using the FIN-S hypersonic
+flow code.  Scenario information was gathered along surface-normal rays on the
+symmetry plane which are marked with light lines in
+Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
+quantified as a function of leeward arc length from the stagnation region
+measured in meters.  The general flow nature is plotted in
+Figure~\ref{fig:cev_summary1} with details on the observed favorable pressure
+gradient magnitude appearing in Figure~\ref{fig:cev_summary_fpg}.
+
+\textcolor{red}{STARTHERE}
+
+\begin{figure}[p]
+  \centering
+  \includegraphics[width=0.9\textwidth]{symplanenorm}
+  \caption{
+      \label{fig:cev_symplane}
+      The velocity magnitude on the symmetry plane for the fully-laminar
+      CEV simulation of interest.
+  }
+\end{figure}
 
 \begin{figure}[p]
   \centering
   \includegraphics[]{cev_summary1}
-%%\caption{
-%%    \label{fig:sample_solns}
-%%    Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
-%%    subsonic case flows from right-to-left while the supersonic one flows
-%%    from left-to-right.
-%%}
+  \caption{
+    \label{fig:cev_summary1}
+    \textcolor{red}{TODO Caption}
+  }
 \end{figure}
 
 \begin{figure}[p]
   \centering
   \includegraphics[]{cev_summary_fpg}
-%%\caption{
-%%    \label{fig:sample_solns}
-%%    Sample solutions saved by the demo logic in \texttt{nozzle1.m}.  The
-%%    subsonic case flows from right-to-left while the supersonic one flows
-%%    from left-to-right.
-%%}
+  \caption{
+    \label{fig:cev_summary_fpg}
+    \textcolor{red}{TODO Caption}
+  }
 \end{figure}
 
 \clearpage
@@ -667,7 +686,7 @@ completes, the full base flow profile may be computed by supplying $R_2 =
   end table=\end{longtable},
   every head row/.style={after row=\midrule\endhead},
   columns={dstag,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
-  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arclength $(m)$},
+  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length $(m)$},
   columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
   columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
   columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},

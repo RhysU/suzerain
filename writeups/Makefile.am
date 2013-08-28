@@ -60,6 +60,7 @@ EXTRA_DIST += cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
 EXTRA_DIST += nozzle_schematic.eps nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
 EXTRA_DIST += inhomogeneity2.gz inhomogeneity2.eps
+EXTRA_DIST += symplanenorm.eps
 EXTRA_DIST += references.bib
 
 
