@@ -643,28 +643,33 @@ flow code.  Scenario information was gathered along surface-normal rays on the
 symmetry plane which are marked with light lines in
 Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
 quantified as a function of leeward arc length from the stagnation region
-measured in meters.  The general flow nature is plotted in
-Figure~\ref{fig:cev_summary1} with details on the observed favorable pressure
-gradient magnitude appearing in Figure~\ref{fig:cev_summary_fpg}.
-
-\textcolor{red}{STARTHERE}
+measured in meters.
 
 \begin{figure}[p]
   \centering
   \includegraphics[width=0.9\textwidth]{symplanenorm}
   \caption{
-      \label{fig:cev_symplane}
-      The velocity magnitude on the symmetry plane for the fully-laminar
-      CEV simulation of interest.
+    \label{fig:cev_symplane}
+    The velocity magnitude on the symmetry plane for the fully-laminar
+    CEV simulation of interest.
   }
 \end{figure}
+
+General boundary layer quantities are plotted in Figure~\ref{fig:cev_summary1}.
+Only a few of the plotted quantities are relevant to finding a matching
+inviscid base flow.  The ratio of specific heats $\gamma$ and edge Mach number
+$\Mach[e]{}$ are taken from the boundary layer edge a distance $\delta$ from
+the heat shield surface.  The edge-to-wall temperature $T_e/T_w$ is relevant as
+it captures the local speed of sound.  For a perfect gas equation of state
+nondimensionalized by $a_0^2=\gamma{}RT_0$, this ratio can be taken to define
+$a_e^2$ when $a_w^2=T_w=1$ is used to fix an isothermal wall condition.
 
 \begin{figure}[p]
   \centering
   \includegraphics[]{cev_summary1}
   \caption{
     \label{fig:cev_summary1}
-    \textcolor{red}{TODO Caption}
+    Boundary layer conditions from the fully-laminar CEV symmetry plane
   }
 \end{figure}
 
@@ -673,9 +678,17 @@ gradient magnitude appearing in Figure~\ref{fig:cev_summary_fpg}.
   \includegraphics[]{cev_summary_fpg}
   \caption{
     \label{fig:cev_summary_fpg}
-    \textcolor{red}{TODO Caption}
+    Pressure gradient conditions from the fully-laminar CEV symmetry plane.
+    Numerical differentiation artifacts are problematic in quantities $\Lambda$
+    and $K_s$.
   }
 \end{figure}
+
+The observed favorable pressure gradient nature is shown in
+Figure~\ref{fig:cev_summary_fpg} quantified in a variety of ways.  Of all of
+these values from a viscous CEV simulation, $p_{e,\xi}$ is the only quantity
+with a direct inviscid analog once a thickness length scale $\delta$ is
+supplied.
 
 \clearpage
 
