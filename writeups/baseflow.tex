@@ -695,21 +695,45 @@ $\tau_w$ or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
   }
 \end{figure}
 
+Conditions $\Mach[e]{}$, $p_{e,\xi}$, and $a^2_e = T_e/T_w$ taken from the
+surface-normal rays of Figure~\ref{fig:cev_symplane} were fed into
+Listing~\ref{lst:octave_nozzle_baseflow} to produce a family of inviscid base
+flow solutions.  Local edge conditions from the chemically-reacting CEV flow
+provided $\gamma$.  The specific values used, rounded to a space-restricted
+number of digits, appear below.  As these base flows are intended to be used in
+a simulation with roughly nondimensional unit thickness, $\delta=1$ was
+specified for all cases.
+
+The resulting solutions are also tabulated below.  Parameters
+$\rho\!\left(R_1\right) = 1$ and $p\!\left(R_1\right) = 1$ were fixed with the
+remaining $\Mach$, $R_0$, and $u\!\left(R_1\right)$ comprising the problem
+space.  Generally, Listing~\ref{lst:octave_nozzle_baseflow} with exactly the
+shown initial conditions did a good job of producing solutions with residual
+sum of square results less than $\sqrt{\epsilon}$.  However, at arc length
+3.586 it is apparent that the solver encountered trouble as the problem space
+approached $\Mach[e]{}\approx{}1$.  For reasons unknown, the
+\texttt{nonlin\_residmin}-based solver ran afoul of NaNs at arc length 3.287
+despite the surrounding cases being well-behaved.  Finally, results from arc
+lengths 0.217 to -0.176 are unsatisfying with the hypothesis being that the
+strength of the pressure gradient requested as one approached the stagnation
+point being the culprit.
+
 \clearpage
 
 \begin{centering}
 \pgfplotstabletypeset[
-  col sep=comma, clear infinite,
+  col sep=comma, header=true, clear infinite,
   begin table=\begin{longtable},
   end table=\end{longtable},
   every head row/.style={after row=\midrule\endhead},
-  columns={dstag,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
-  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length $(m)$},
+  columns={dstag,gamma_e,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
+  columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length},
+  columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column type/.add={}{},column name=$\gamma$},
   columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
   columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
   columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},
   columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach{}$},
-  columns/R0/.style=     {fixed,fixed zerofill,precision=2,dec sep align,column type/.add={}{},column name=$R_0$},
+  columns/R0/.style=     {fixed,fixed zerofill,precision=1,dec sep align,column type/.add={}{},column name=$R_0$},
   columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{|},column name=$u\!\left(R_1\right)$},
   columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column type/.add={}{},column name=Residual}
 ]{notebooks/cev_laminar.out}
