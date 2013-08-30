@@ -69,7 +69,7 @@ compressible potential flow problem is formulated for a radially-symmetric
 source or sink flow.  This one-dimensional problem is cast into a form
 commodity ODE integrators can solve to obtain primitive state as a function of
 radius.  The solution is then mapped from $\left(r,\theta\right)$ into
-$\left(x,y\right)$ coordinates and a base flow profile taken from some constant
+$\left(x,y\right)$ coordinates and a base flow profile along some constant
 $x$ line segment.  The segment chosen, as well as the radial problem boundary
 conditions used, are taken to match some boundary layer edge state of interest
 using a numerical optimization procedure.  Finally, this procedure is used
@@ -349,8 +349,8 @@ With appropriate boundary conditions on some $\left[R_1, R_2\right]$,
 equation~\eqref{eq:cpfradial_nondim_ode} allows integrating for $u$.
 
 Given some $u$ one also wants to be able to compute local thermodynamic state.
-Equation~\eqref{eq:stagnation_sound_nondim} fixes $a$.  The $\phi=\phi(r)$
-assumption causes~\eqref{eq:logrho_nondim} to become
+Equation~\eqref{eq:stagnation_sound_nondim} fixes~$a$.  The $\phi=\phi(r)$
+assumption causes~\eqref{eq:logrho_nondim} to reduce to
 \begin{align}
   \rho\!\left(R_2\right)
   &=
@@ -368,8 +368,8 @@ assumption causes~\eqref{eq:logrho_nondim} to become
       \, r \, \mathrm{d}r
   \right]
 \label{eq:cpfradial_nondim_rho}
-.
 \end{align}
+where the $2\pi$ factors arising from integrating cancel each other.
 Likewise~\eqref{eq:p_nondim} simplifies to
 \begin{align}
   p\!\left(R_2\right)
@@ -412,27 +412,26 @@ setting inflow per
 .
 \end{align}
 With this condition, $-u$ increases and $p$ decreases when traversing the
-domain from~$R_{2}$ to~$R_{1}$.  However, the problem becomes stiff as the flow
-approaches sonic conditions.  A workaround is specifying at most a sonic
-outflow via
+domain from~$R_{2}$ to~$R_{1}$.  However, not surprisingly, the problem becomes
+incredibly stiff as the flow accelerates towards sonic conditions.  A
+workaround is specifying at most a sonic outflow via
 \begin{align}
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
     u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
 \end{align}
 in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
-$u\!\left(R_{2}\right)$ condition.  Incorporating
+$u\!\left(R_{2}\right)$ condition.  Further incorporating
 realizability~\eqref{eq:stagnation_sound_realizability_nondim} taking care to
-use the negative square root of $u^2$,
+use the negative square root of $u^2$ shows
 \begin{align}
   \max\left(
     -\frac{1}{\Mach}, -\sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
   \right) < &u\!\left(R_1\right) < 0
 \label{eq:cpfradial_nozzle_subsonic_bc}
-.
 \end{align}
-Caveat numerical errors, specifying either the inflow or outflow condition is
-equivalent as the physics are frictionless.
+is required.  Caveat numerical errors, specifying either the inflow or outflow
+condition is equivalent as the physics are frictionless.
 
 A supersonic nozzle may be posed on nondimensional~$\left[R_{1}, R_{2}\right]$
 by setting inflow
@@ -442,8 +441,9 @@ by setting inflow
    u\!\left(R_{1}\right) \in \left(\Mach^{-1}, \infty\right)
 .
 \end{align}
-Incorporating realizability~\eqref{eq:stagnation_sound_realizability_nondim}
-and using the positive square root of $u^2$,
+Again incorporating
+realizability~\eqref{eq:stagnation_sound_realizability_nondim} via the positive
+square root of $u^2$,
 \begin{align}
   \frac{1}{\Mach} < &u\!\left(R_1\right)
   < \sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
@@ -465,7 +465,7 @@ depicted in Figure~\ref{fig:sample_solns}.  While
 Listing~\ref{lst:octave_nozzle1} is succinct, its $\rho$ and $p$ solution
 accuracies are not controlled in the same manner its $u$ accuracy.  By coupling
 the integration of $u'$, $\left(\log\rho\right)'$, and $p'$ one may achieve
-higher order behavior with an implementation like
+more accurate non-$u$ behavior with an implementation like
 Listing~\ref{lst:octave_nozzle}.
 
 \lstinputlisting[language=Octave,float=p,
@@ -568,12 +568,13 @@ positive.  The squared sound speed at $y=\delta$ and $y=0$ is
 In the special case of a thermally and calorically perfect gas, these are
 nothing but temperatures $T_e$ and $T_w$ because
 choices~\eqref{eq:nondimensionalization} imply $a^2 = T$ holds in that
-particular context.  A kernel building atop Listing~\ref{lst:octave_nozzle}.
-to compute these quantities of interest appears in
-Listing~\ref{lst:octave_nozzle_qoi}.  The kernel takes $R_2 = \sqrt{R_0^2 +
-\delta^2}$ to speed the computation and to causes the ODE integrator to
-automatically produce full-order results at $\left(R_0,\delta\right)$ without
-requiring integrator dense output capabilities.
+particular context.  A kernel building atop Listing~\ref{lst:octave_nozzle}
+that computes these quantities of interest appears in
+Listing~\ref{lst:octave_nozzle_qoi}.  By solving to boundary $R_2 = \sqrt{R_0^2
++ \delta^2}$ the kernel both solves the cheapest possible problem and also
+causes the ODE integrator to automatically produce full-order results at
+$\left(R_0,\delta\right)$ without requiring the integrator to possess dense
+output capabilities.
 
 \lstinputlisting[language=Octave,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
@@ -596,7 +597,7 @@ Several details took considerable effort to refine are therefore worth noting:
 \begin{enumerate}
   \item The relative residuals are minimized rather than the absolute residuals
     as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
-    producing undesirable results.
+    yielding undesirable results.
   \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
     $\Mach{}=\Mach[e]{}$.  Choosing $\Mach{}=\Mach[e]{}$ appears to be critical
     for obtaining a range of $a_e^2$ behavior.  This particular value stems
@@ -611,11 +612,12 @@ Several details took considerable effort to refine are therefore worth noting:
     in two phases with the first phase treating only $R_0$ and
     $u\!\left(R_1\right)$ as free parameters.  This first phase is run only
     briefly as otherwise the optimizer finds a woefully suboptimal local
-    minimum.
+    minimum.  The robustness of the demonstration code can be quite sensitive
+    to this ``burn in'' detail.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
-    often take physically unsatisfying values for an order-one nondimensional
-    quantity.
+    often take physically-unbecoming values for what should be an order-one
+    nondimensional quantity.
 \end{enumerate}
 All of these choices were required to pass test cases A--F appearing at the end
 of Listing~\ref{lst:octave_nozzle_baseflow}.
@@ -626,9 +628,10 @@ it seems not to be encountered by the chosen optimizer with this particular
 initialization procedure.  The second \texttt{nonlin\_residmin} invocation
 permits many iterations as pre-asymptotic convergence has been quite slow on
 one test (not shown).  Generally, fewer than 50 total iterations are required
-for convergence to $\sqrt{\epsilon}$-like residuals.  After optimization
-completes, the full base flow profile may be computed by supplying $R_2 =
-\sqrt{R_0^2 + L_y^2}$ to Listing~\ref{lst:octave_nozzle}.
+for convergence to $\sqrt{\epsilon}$-like sum-of-squared mismatch residuals.
+After optimization completes, the full base flow profile may be computed by
+supplying the results along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to
+Listing~\ref{lst:octave_nozzle}.
 
 \pagebreak[4]
 \lstinputlisting[language=Octave,%NO float
@@ -645,7 +648,7 @@ performed at peak heating conditions from an International Space Station return
 trajectory by Paul Bauman of The Center for Predictive Engineering and
 Computational Science using the FIN-S hypersonic flow code.  Scenario
 information was gathered along surface-normal rays on the symmetry plane which
-are marked with light lines in Figure~\ref{fig:cev_symplane}.  The laminar
+are marked with faint lines in Figure~\ref{fig:cev_symplane}.  The laminar
 boundary layer character was quantified as a function of leeward arc length
 from the stagnation region measured in meters.
 
@@ -664,11 +667,11 @@ Only a few of the plotted quantities are relevant to finding a matching
 inviscid base flow.  The ratio of specific heats $\gamma$ and edge Mach number
 $\Mach[e]{}$ are taken from the boundary layer edge at distance $\delta$ from
 the heat shield surface.  The edge-to-wall temperature $T_e/T_w$ is relevant as
-it captures the local speed of sound.  For a perfect gas equation of state
-nondimensionalized by $a_0^2=\gamma{}RT_0$, this ratio can be taken to define
+it captures the local speed of sound.  Specifically, for a perfect gas equation
+of state nondimensionalized by $a_0^2=\gamma_{0}RT_0$, this ratio defines
 nondimensional $a_e^2$ when $a_w^2=T_w=1$ is prescribed as an isothermal wall
-condition.  Though shown and present in the CEV simulations, heat shield
-curvature is neglected.
+condition.  Though present in the CEV simulations and depicted here, heat
+shield curvature is neglected.
 
 \begin{figure}[p]
   \centering
@@ -679,14 +682,15 @@ curvature is neglected.
   }
 \end{figure}
 
-The observed favorable pressure gradient nature is shown in
-Figure~\ref{fig:cev_summary_fpg} quantified in a variety of ways.  Of all of
-these nondimensional results, $p_{e,\xi}$ is the only quantity with a
-directly-computable inviscid analog when a viscous boundary layer thickness
-$\delta$ is supplied.  The other parameters, discussed by many authors
-including \citet{Sreenivasan1982Laminarescent}, were not chosen for matching
-purposes as they require viscous-only information like $\delta^\ast$ and
-$\tau_w$ or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
+The observed favorable pressure gradient boundary layer nature is quantified in
+Figure~\ref{fig:cev_summary_fpg} in a variety of ways.  Of all of these
+nondimensional results, $p_{e,\xi}$ is the only quantity with a
+directly-computable inviscid analog when a target viscous boundary layer
+thickness $\delta$ is supplied.  The other parameters, discussed by many
+authors including \citet{Sreenivasan1982Laminarescent}, were not adopted for
+matching purposes as they require more-complicated flow descriptors like
+$\delta^\ast$ and $\tau_w$ or the numerically-noisy
+$\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
@@ -699,14 +703,13 @@ $\tau_w$ or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
   }
 \end{figure}
 
-Conditions $\Mach[e]{}$, $p_{e,\xi}$, and $a^2_e = T_e/T_w$ taken from the
-surface-normal rays of Figure~\ref{fig:cev_symplane} were fed into
+Conditions $\gamma_e$, $\Mach[e]{}$, $p_{e,\xi}$, and $a^2_e = T_e/T_w$ taken
+from the surface-normal rays of Figure~\ref{fig:cev_symplane} were fed into
 Listing~\ref{lst:octave_nozzle_baseflow} to produce a family of inviscid base
-flow solutions.  Local edge conditions from the chemically-reacting CEV flow
-provided $\gamma$.  The specific values used, rounded to a space-restricted
-number of digits, appear below.  As these base flows are intended to be used in
-a simulation with roughly nondimensional unit thickness, $\delta=1$ was
-specified for all cases.
+flow solutions.  The specific values used, rounded to a space-restricted number
+of digits, appear below.  As these base flows are intended to be used in a
+simulation with roughly nondimensional unit thickness, $\delta=1$ was specified
+for all cases.
 
 The resulting solutions are also tabulated below.  Parameters
 $\rho\!\left(R_1\right) = 1$ and $p\!\left(R_1\right) = 1$ were fixed with the
@@ -716,9 +719,9 @@ shown initial conditions did a good job of producing solutions with residual
 sum of square results less than $\sqrt{\epsilon}$.  However, at arc length
 3.586 it is apparent that the solver encountered trouble as the problem space
 approached $\Mach[e]{}\approx{}1$.  For reasons unknown, the
-\texttt{nonlin\_residmin}-based solver ran afoul of NaNs at arc length 3.287
-despite the surrounding cases being well-behaved.  Finally, results from arc
-lengths 0.217 to -0.176 are unsatisfying with the hypothesis being that the
+\texttt{nonlin\_residmin}-based solver ran afoul of \texttt{NaN}s at arc length
+3.287 despite the surrounding cases being well-behaved.  Finally, results from
+arc lengths 0.217 to -0.176 are unsatisfying with the hypothesis being that the
 strength of the pressure gradient requested as one approached the stagnation
 point being the culprit.
 
@@ -726,13 +729,13 @@ point being the culprit.
 
 \begin{centering}
 \pgfplotstabletypeset[
-  col sep=comma, header=true, clear infinite,
+  col sep=comma, header=true, %clear infinite,
   begin table=\begin{longtable},
   end table=\end{longtable},
   every head row/.style={after row=\midrule\endhead},
   columns={dstag,gamma_e,Ma_edge,p_exi,T_ratio,Ma,R0,u1,res2},
   columns/dstag/.style=  {fixed,fixed zerofill,precision=3,dec sep align,column type/.add={}{|},column name=Arc length},
-  columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column type/.add={}{},column name=$\gamma$},
+  columns/gamma_e/.style={fixed,fixed zerofill,precision=4,dec sep align,column type/.add={}{},column name=$\gamma_e$},
   columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
   columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
   columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},

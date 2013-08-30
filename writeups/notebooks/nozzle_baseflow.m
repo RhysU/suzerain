@@ -6,9 +6,10 @@
 %
 % Parameter 'opt' may supply additional nonlin_residmin options using optimset.
 % However, options 'MaxIter' and 'fixed' will be ignored.
-function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
-                                         opt = optimset('Algorithm',     ...
-                                                        'lm_svd_feasible'))
+function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
+                                         opt = optimset('Algorithm',        ...
+                                                        'lm_svd_feasible'), ...
+                                         burn_in_iterations = 10)
 
   % Relative residuals of observations vs targets for [Ma; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
@@ -30,8 +31,8 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e, ...
   % Fixes density and pressure and solves for other parameters in two phases
   % Freezing Ma for some small number of iterates has been crucial in practice
   pkg load odepkg optim;
-  phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter',   10);
-  phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter', 5000);
+  phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter', burn_in_iterations);
+  phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter',               5000);
   try
     niter = 0; res = nan(3,1);
     [p, ans, cvg, outp] = nonlin_residmin(f, p, phase1); niter += outp.niter;
