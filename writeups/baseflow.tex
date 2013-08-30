@@ -636,18 +636,18 @@ completes, the full base flow profile may be computed by supplying $R_2 =
 
 \section{Producing base flows matching laminar CEV heat shield conditions}
 
-International Space Station return, fully-laminar Crew Exploration Vehicle
-(CEV) heat shield simulations were performed by Paul Bauman of The Center for
-Predictive Engineering and Computational Science using the FIN-S hypersonic
-flow code.  Scenario information was gathered along surface-normal rays on the
-symmetry plane which are marked with light lines in
-Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
-quantified as a function of leeward arc length from the stagnation region
-measured in meters.
+A fully-laminar Crew Exploration Vehicle (CEV) heat shield simulation was
+performed at peak heating conditions from an International Space Station return
+trajectory by Paul Bauman of The Center for Predictive Engineering and
+Computational Science using the FIN-S hypersonic flow code.  Scenario
+information was gathered along surface-normal rays on the symmetry plane which
+are marked with light lines in Figure~\ref{fig:cev_symplane}.  The laminar
+boundary layer character was quantified as a function of leeward arc length
+from the stagnation region measured in meters.
 
-\begin{figure}[p]
+\begin{figure}
   \centering
-  \includegraphics[width=0.9\textwidth]{symplanenorm}
+  \includegraphics[height=0.5\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully-laminar
@@ -658,11 +658,13 @@ measured in meters.
 General boundary layer quantities are plotted in Figure~\ref{fig:cev_summary1}.
 Only a few of the plotted quantities are relevant to finding a matching
 inviscid base flow.  The ratio of specific heats $\gamma$ and edge Mach number
-$\Mach[e]{}$ are taken from the boundary layer edge a distance $\delta$ from
+$\Mach[e]{}$ are taken from the boundary layer edge at distance $\delta$ from
 the heat shield surface.  The edge-to-wall temperature $T_e/T_w$ is relevant as
 it captures the local speed of sound.  For a perfect gas equation of state
 nondimensionalized by $a_0^2=\gamma{}RT_0$, this ratio can be taken to define
-$a_e^2$ when $a_w^2=T_w=1$ is used to fix an isothermal wall condition.
+nondimensional $a_e^2$ when $a_w^2=T_w=1$ is prescribed as an isothermal wall
+condition.  Though shown and present in the CEV simulations, heat shield
+curvature is neglected.
 
 \begin{figure}[p]
   \centering
@@ -672,6 +674,15 @@ $a_e^2$ when $a_w^2=T_w=1$ is used to fix an isothermal wall condition.
     Boundary layer conditions from the fully-laminar CEV symmetry plane
   }
 \end{figure}
+
+The observed favorable pressure gradient nature is shown in
+Figure~\ref{fig:cev_summary_fpg} quantified in a variety of ways.  Of all of
+these nondimensional results, $p_{e,\xi}$ is the only quantity with a
+directly-computable inviscid analog when a viscous boundary layer thickness
+$\delta$ is supplied.  The other parameters, discussed by many authors
+including \citet{Sreenivasan1982Laminarescent}, were not chosen for matching
+purposes as they require viscous-only information like $\delta^\ast$ and
+$\tau_w$ or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
@@ -683,12 +694,6 @@ $a_e^2$ when $a_w^2=T_w=1$ is used to fix an isothermal wall condition.
     and $K_s$.
   }
 \end{figure}
-
-The observed favorable pressure gradient nature is shown in
-Figure~\ref{fig:cev_summary_fpg} quantified in a variety of ways.  Of all of
-these values from a viscous CEV simulation, $p_{e,\xi}$ is the only quantity
-with a direct inviscid analog once a thickness length scale $\delta$ is
-supplied.
 
 \clearpage
 
