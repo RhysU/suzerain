@@ -1,4 +1,5 @@
 \documentclass[letterpaper,11pt,nointlimits,reqno]{amsart}
+\pagestyle{headings}
 
 % Packages
 \usepackage{accents}
@@ -15,8 +16,8 @@
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage{parskip}
-\usepackage{setspace}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
+
 
 % Avoids xcolor options clashes
 \usepackage{pgfplotstable}
@@ -34,25 +35,6 @@
 
 \mathtoolsset{showonlyrefs,showmanualtags}
 % \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
-
-% Line Spacing
-\singlespacing
-
-% Set appropriate header/footer information on each page
-\fancypagestyle{plain}{
-    \fancyhf{}
-    \renewcommand{\headheight}{2.0em}
-    \renewcommand{\headsep}{0.75em}
-    \renewcommand{\headrulewidth}{1.0pt}
-    \renewcommand{\footrulewidth}{0pt}
-    \lhead{
-        Favorable pressure gradient base flow computations
-    }
-    \rhead{
-        Page \thepage{} of \pageref{LastPage}
-    }
-}
-\pagestyle{plain}
 
 % Document-specific commands
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
@@ -76,6 +58,11 @@
 
 \begin{document}
 
+\title{Favorable pressure gradient base flow computations}
+\author{Rhys Ulerich}
+\email{rhys@ices.utexas.edu}
+
+\begin{abstract}
 This document discusses how to obtain a favorable pressure gradient base flow
 for use within temporally-homogenized boundary layer simulations.  First, a
 compressible potential flow problem is formulated for a radially-symmetric
@@ -87,8 +74,16 @@ $x$ line segment.  The segment chosen, as well as the radial problem boundary
 conditions used, are taken to match some boundary layer edge state of interest
 using a numerical optimization procedure.  Finally, this procedure is used
 to produce base flows in the spirit of laminar CEV heat shield conditions.
+\end{abstract}
 
+\maketitle
+
+\renewcommand{\contentsname}{}
+\tableofcontents
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The nondimensional, compressible potential flow equation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A particularly crisp derivation of the coordinate-independent,
 velocity-potential formulation for the compressible potential flow equations
@@ -300,8 +295,9 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \label{eq:p_nondim}
 \end{align}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Reduction to the radially-symmetric, two-dimensional case}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Suppose radial symmetry in which $\phi=\phi\left(r\right)$.  \emph{Mathematica}
 eases translating~\eqref{eq:cpfgibbs_nondim} into this setting
@@ -392,7 +388,9 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
 of both $\rho$ and $p'$.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The radially-symmetric sub- and supersonic nozzle problems}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Equations~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
 and~\eqref{eq:cpfradial_nondim_p} may be used to find solutions to idealized
@@ -495,7 +493,9 @@ Listing~\ref{lst:octave_nozzle}.
 
 \clearpage
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Computing quantities of interest for a Cartesian base flow}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{figure}[h]
   \centering
@@ -580,7 +580,9 @@ requiring integrator dense output capabilities.
                  nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Producing base flows matching given quantities of interest}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A nonlinear optimization problem may be formulated over $\Mach$, $R_0$,
 $\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
@@ -634,7 +636,9 @@ completes, the full base flow profile may be computed by supplying $R_2 =
                  quantities of interest\label{lst:octave_nozzle_baseflow}}]
                 {notebooks/nozzle_baseflow.m}
 
-\section{Producing base flows matching laminar CEV heat shield conditions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Example: matching laminar CEV heat shield conditions}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 A fully-laminar Crew Exploration Vehicle (CEV) heat shield simulation was
 performed at peak heating conditions from an International Space Station return
