@@ -68,7 +68,7 @@ compressible potential flow problem is formulated for a radially-symmetric
 source or sink flow.  This one-dimensional problem is cast into a form
 commodity ODE integrators can solve to obtain primitive state as a function of
 radius.  The solution is then mapped from $\left(r,\theta\right)$ into
-$\left(x,y\right)$ coordinates and a base flow profile along some constant
+$\left(x,y\right)$ coordinates and a base flow profile extracted from some constant
 $x$ line segment.  The segment chosen, as well as the radial problem boundary
 conditions used, are taken to match some boundary layer edge state of interest
 using a numerical optimization procedure.  Finally, this procedure is used
@@ -385,7 +385,7 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 .
 \end{align}
 Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
-of both $\rho$ and $p'$.
+of both $\rho$ and $p$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The radially-symmetric sub- and supersonic nozzle problems}
@@ -572,8 +572,7 @@ that computes these quantities of interest appears in
 Listing~\ref{lst:octave_nozzle_qoi}.  By solving to boundary $R_2 = \sqrt{R_0^2
 + \delta^2}$ the kernel both solves the cheapest possible problem and also
 causes the ODE integrator to automatically produce full-order results at
-$\left(R_0,\delta\right)$ without requiring the integrator to possess dense
-output capabilities.
+$\left(R_0,\delta\right)$ without requiring dense output capabilities.
 
 \lstinputlisting[language=Octave,float,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
@@ -621,8 +620,8 @@ Several details took considerable effort to refine are therefore worth noting:
 All of these choices were required to pass test cases A--F appearing at the end
 of Listing~\ref{lst:octave_nozzle_baseflow}.
 
-Not surprisingly, matching $\Mach[e]{}\approx{}1$ appears to most tax this
-implementation.  Though a realizability constraint is implemented, in practice
+Not surprisingly, matching $\Mach[e]{}\approx{}1$ taxes this formulation as
+implemented here.  Though a realizability constraint is implemented, in practice
 it seems not to be encountered by the chosen optimizer with this particular
 initialization procedure.  The second \texttt{nonlin\_residmin} invocation
 permits many iterations as pre-asymptotic convergence has been quite slow on
@@ -642,15 +641,15 @@ Listing~\ref{lst:octave_nozzle}.
 \section{Example: matching laminar CEV heat shield conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A fully-laminar Crew Exploration Vehicle (CEV) heat shield simulation was
-performed at peak heating conditions from an International Space Station return
-trajectory by Paul Bauman of The Center for Predictive Engineering and
+A fully-laminar Crew Exploration Vehicle (CEV) heat shield problem for peak
+heating conditions from an International Space Station return trajectory was
+simulated by Paul Bauman of The Center for Predictive Engineering and
 Computational Science using the FIN-S hypersonic flow
 code\citep{KirkModeling2013}.  Scenario information was gathered along
 surface-normal rays on the symmetry plane which are marked with faint lines in
 Figure~\ref{fig:cev_symplane}.  The laminar boundary layer character was
-quantified as a function of leeward arc length from the stagnation region
-measured in meters.
+quantified as a function of leeward arc length, measured in meters, from the
+stagnation region.
 
 \begin{figure}
   \centering
@@ -686,11 +685,11 @@ The observed favorable pressure gradient boundary layer nature is quantified in
 Figure~\ref{fig:cev_summary_fpg} in a variety of ways.  Of all of these
 nondimensional results, $p_{e,\xi}$ is the only quantity with a
 directly-computable inviscid analog when a target viscous boundary layer
-thickness $\delta$ is supplied.  The other parameters, discussed by many
-authors including \citet{Sreenivasan1982Laminarescent}, were not adopted for
-matching purposes as they require more-complicated flow descriptors like
-$\delta^\ast$ and $\tau_w$ or the numerically-noisy
-$\frac{\partial\delta}{\partial\xi}$.
+thickness $\delta$ is supplied.  The other nondimensional pressure gradient
+parameters, discussed by many authors including
+\citet{Sreenivasan1982Laminarescent}, were not adopted for matching purposes as
+they require more-complicated flow descriptors like $\delta^\ast$ and $\tau_w$
+or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
