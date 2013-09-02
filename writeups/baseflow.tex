@@ -15,7 +15,6 @@
 \usepackage{mathrsfs}
 \usepackage{mathtools}
 \usepackage[numbers,sort&compress]{natbib}
-\usepackage{parskip}
 \usepackage[usenames,dvipsnames,svgnames,table]{xcolor}
 
 
@@ -38,6 +37,12 @@
 
 % Document-specific commands
 \newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
+
+% From how-to-prevent-a-page-break-before-an-itemize-list
+% http://tex.stackexchange.com/questions/2644
+\makeatletter
+\newcommand\mynobreakpar{\par\nobreak\@afterheading}
+\makeatother
 
 % Configure inline code listings
 \lstset{
@@ -77,7 +82,6 @@ to produce base flows in the spirit of laminar CEV heat shield conditions.
 
 \maketitle
 
-\renewcommand{\contentsname}{}
 \tableofcontents
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -498,7 +502,7 @@ Listing~\ref{lst:octave_nozzle}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.30\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.40\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       A Cartesian setting overlaid on the radially-symmetric domain
@@ -591,7 +595,8 @@ these particular target quantities.  One possible implementation, written using
 the \texttt{nonlim\_resid} method from \texttt{Octave}'s \texttt{optim}
 package, is given in Listing~\ref{lst:octave_nozzle_baseflow}.
 
-Several details took considerable effort to refine are therefore worth noting:
+Several details took considerable effort to refine are therefore worth
+noting:\mynobreakpar
 \begin{enumerate}
   \item The relative residuals are minimized rather than the absolute residuals
     as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
@@ -653,7 +658,7 @@ stagnation region.
 
 \begin{figure}
   \centering
-  \includegraphics[height=0.5\textheight]{symplanenorm}
+  \includegraphics[height=0.55\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
     The velocity magnitude on the symmetry plane for the fully-laminar
