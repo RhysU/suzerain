@@ -502,7 +502,7 @@ Listing~\ref{lst:octave_nozzle}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.40\textwidth]{nozzle_schematic}
+  \includegraphics[width=0.38\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
       A Cartesian setting overlaid on the radially-symmetric domain
@@ -511,20 +511,70 @@ Listing~\ref{lst:octave_nozzle}.
 
 The favorable pressure gradient base flow profile of height $L_y$ is taken from
 a constant $x$ line segment obtained from a radially-varying solution.
-Referring to Figure~\eqref{fig:mapping_geometry}, the solution comprised of
-$u\!\left(R\right)$, $p'\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
-$R\in\left[R_1,R_2\right]$.  For some $R_0$, a profile is gathered from the
-line segment between Cartesian points $\left(R_0,0\right)$ and
-$\left(R_0,L_y\right)$.  Clearly, selecting
+Referring to Figure~\eqref{fig:mapping_geometry}, the solution
+$u\!\left(R\right)$ with accompanying $\rho\!\left(R\right)$,
+$p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
+$R\in\left[R_1,R_2\right]$.  For a valid, first quadrant coordinate
+$\left(x,y\right)$ with corresponding $R=\sqrt{x^2+y^2}$ one may compute the
+following:
+%
+\begin{align}
+    \rho \!\left(x, y\right) &= \rho\!\left(R\right)
+\\  u_\xi\!\left(x, y\right) &= \left|u\!\left(R\right)\right| \frac{x}{R}
+\\  u_y  \!\left(x, y\right) &=       u\!\left(R\right)        \frac{y}{R}
+\\  p    \!\left(x, y; \Mach\right) &= \frac{\Mach[0]^2}{\Mach^2} \, p\!\left(R\right)
+\end{align}
+%
+Here, $\xi$ denotes the $x$ direction taken so that streamwise flow is always
+positive (i.e. $x$ when $u\geq{}0$, otherwise $-x$).  The $\Mach[0]^2/\Mach^2$
+factor permits translating pressure into a nondimensionalization potentially
+using some other Mach number $\Mach$ under the assumption that $p_0 = \rho_0
+a_0^2$ still holds in that setting and further that identical choices have been
+made for $\rho_0$ and $u_0$.
+%
+Streamwise differentiation uses $\frac{\partial}{\partial\xi} =
+\operatorname{sgn}(u) \frac{\partial}{\partial{}x}$ and yields:
+%
+\begin{align}
+  \frac{\partial}{\partial\xi} \rho \!\left(x, y\right)
+&=
+  \frac{x\operatorname{sgn}(u)}{R} \rho^\prime\!\left(R\right)
+\\
+  \frac{\partial}{\partial\xi} u_\xi\!\left(x, y\right)
+&=
+  \operatorname{sgn}(u) \left(
+      \frac{x^2 u^\prime\!\left(R\right)}{R^2}
+    + \frac{y^2 u       \!\left(R\right)}{R^3}
+  \right)
+\\
+  \frac{\partial}{\partial\xi} u_y  \!\left(x, y\right)
+&=
+  x y \operatorname{sgn}(u) \left(
+      \frac{u^\prime\!\left(R\right)}{R^2}
+    - \frac{u       \!\left(R\right)}{R^3}
+  \right)
+\\
+  \frac{\partial}{\partial\xi} p    \!\left(x, y; \Mach\right)
+&=
+  \frac{x\operatorname{sgn}(u)}{R}
+  \frac{\Mach[0]^2}{\Mach^2}
+  \,
+  p^\prime\!\left(R\right)
+\end{align}
+%
+A Cartesian flow profile can be extracted from radial solution on the line
+segment spanning points $\left(R_0,0\right)$ and $\left(R_0,L_y\right)$ using
+these results.  Clearly, selecting
 \begin{align}
   R_1 &= R_0
-&
+\\
   R_2 &= \sqrt{R_0^2 + L_y^2}
 \end{align}
-produces the smallest domain possessing a solution along this entire segment.
+produces the smallest radial domain possessing a solution along this entire
+segment.
 
-At some height of interest, say an edge distance $\delta$ from the $x$-axis,
-one can evaluate
+At some height of interest with such a profile, say an edge distance $\delta$
+from the $x$-axis, one may also compute
 \begin{align}
   \Mach[e]{}
   &\equiv
@@ -541,12 +591,12 @@ one can evaluate
   &\equiv
   \left.
   \frac{l_0 \delta}{\rho_0 \rho \, u_0^2 u^2}
-    \frac{\mathrm{d}\left(p_0 p\right)}{\mathrm{d}\left(l_0 \xi\right)}
+    \frac{\partial\left(p_0 p\right)}{\partial\left(l_0 \xi\right)}
   \right|_{\left(R_0,\delta\right)}
   =
   \left.
     \frac{\operatorname{sgn}(u) \, \delta}{\Mach[0]^2 \rho u^2}
-      \frac{\mathrm{d}p}{\mathrm{d}x}
+      \frac{\partial{}p}{\partial{}x}
   \right|_{\left(R_0,\delta\right)}
   =
   \left.
@@ -554,9 +604,8 @@ one can evaluate
          {\Mach[0]^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
-to interrogate the local solution nature at $\left(R_0, \delta\right)$.  Here,
-$\hat{\xi}$ denotes $\hat{x}$ with the streamwise direction defined to be
-positive.  The squared sound speed at $y=\delta$ and $y=0$ is
+to interrogate the solution's nature at $\left(R_0, \delta\right)$.  The squared
+sound speed at $y=\delta$ and $y=0$ is
 \begin{align}
   a^2_e
   &\equiv
@@ -578,10 +627,12 @@ Listing~\ref{lst:octave_nozzle_qoi}.  By solving to boundary $R_2 = \sqrt{R_0^2
 causes the ODE integrator to automatically produce full-order results at
 $\left(R_0,\delta\right)$ without requiring dense output capabilities.
 
-\lstinputlisting[language=Octave,float,
+\lstinputlisting[language=Octave,float=bp,
                  caption={\texttt{nozzle\_qoi.m}: A kernel computing several
                  nozzle quantities of interest\label{lst:octave_nozzle_qoi}}]
                 {notebooks/nozzle_qoi.m}
+
+\pagebreak[4]{}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Producing base flows matching given quantities of interest}
@@ -636,11 +687,18 @@ After optimization completes, the full base flow profile may be computed by
 supplying the results along with $R_2 = \sqrt{R_0^2 + L_y^2}$ to
 Listing~\ref{lst:octave_nozzle}.
 
-\pagebreak[4]
-\lstinputlisting[language=Octave,%NO float
+\lstinputlisting[language=Octave,float=p,
                  caption={\texttt{nozzle\_baseflow.m}: A driver for targeting
-                 quantities of interest\label{lst:octave_nozzle_baseflow}}]
+                 quantities of interest\label{lst:octave_nozzle_baseflow}},
+                 lastline=57]
                 {notebooks/nozzle_baseflow.m}
+
+\lstinputlisting[language=Octave,float=p,
+                 caption={\texttt{nozzle\_baseflow.m}: Continued},
+                 firstline=58,firstnumber=58]
+                {notebooks/nozzle_baseflow.m}
+
+\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Matching laminar CEV heat shield conditions}
