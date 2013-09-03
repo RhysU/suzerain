@@ -36,7 +36,7 @@
 % \allowdisplaybreaks[1] % Allow grouped equations to be split across pages
 
 % Document-specific commands
-\newcommand{\Mach}[1][]{\ensuremath{\mbox{Ma}_{#1}}}
+\newcommand{\Mach}[1][]{\mbox{Ma}_{#1}}
 
 % From how-to-prevent-a-page-break-before-an-itemize-list
 % http://tex.stackexchange.com/questions/2644
@@ -202,22 +202,22 @@ into~\eqref{eq:cpfgibbs_dim},
        \cdot \vec{\nabla}^\ast\left(\vec{\nabla}^\ast\phi^\ast\right)^2
 .
 \end{align}
-Multiplying by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach =
+Multiplying by $\frac{l_0}{a_0^2 u_0}$, identifying $\Mach[0] \equiv
 \frac{u_0}{a_0}$, and dropping the star notation,
 \begin{align}
     \left[
           2 \frac{\gamma-1}{\gamma_0-1}
-        + \Mach^2 \left(\gamma-1\right)
+        + \Mach[0]^2 \left(\gamma-1\right)
           \left(1 - \left(\vec{\nabla}\phi\right)^2\right)
     \right] {\vec{\nabla}}^2\phi
-     =       \Mach^2 \vec{\nabla}\phi
+     =       \Mach[0]^2 \vec{\nabla}\phi
        \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
 .
 \end{align}
-Moving the $\Mach^2$ term to the right hand side, rescaling, and distributing,
+Moving the $\Mach[0]^2$ term to the right hand side, rescaling, and distributing,
 \begin{align}
        {\vec{\nabla}}^2\phi
-    &= \frac{\Mach^2}{2}\frac{\gamma_0-1}{\gamma-1} \left(
+    &= \frac{\Mach[0]^2}{2}\frac{\gamma_0-1}{\gamma-1} \left(
          \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
        +
        \left[
@@ -225,7 +225,7 @@ Moving the $\Mach^2$ term to the right hand side, rescaling, and distributing,
              \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
        \right] {\vec{\nabla}}^2\phi
        \right)
-\\  &= \frac{\Mach^2}{2} \left(
+\\  &= \frac{\Mach[0]^2}{2} \left(
          \frac{\gamma_0-1}{\gamma-1}
          \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
        +
@@ -241,10 +241,10 @@ connected to $\phi$ in some manner.  Adding a constant $\gamma=\gamma_0$
 assumption, one arrives at
 \begin{align}
        {\vec{\nabla}}^2\phi
-    &=   \frac{1}{2}\Mach^2
+    &=   \frac{1}{2}\Mach[0]^2
          \vec{\nabla}\phi \cdot \vec{\nabla}\left(\vec{\nabla}\phi\right)^2
        +
-         \frac{\gamma_0-1}{2}\Mach^2
+         \frac{\gamma_0-1}{2}\Mach[0]^2
          \left(\left(\vec{\nabla}\phi\right)^2 - 1\right)
          {\vec{\nabla}}^2\phi
 \label{eq:cpfgibbs_nondim}
@@ -257,14 +257,14 @@ Nondimensionalizing~\eqref{eq:stagnation_sound} permits direct computation of
 $a$ from
 \begin{align}
   a^2 &= \frac{\gamma-1}{\gamma_0-1}
-       + \Mach^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
+       + \Mach[0]^2\frac{\gamma-1}{2}\left(1-\vec{u}^2\right)
 \label{eq:stagnation_sound_nondim}
 .
 \end{align}
 The nondimensional analogue of
 inequality~\eqref{eq:stagnation_sound_realizability} becomes
 \begin{align}
-  u^2 &< \frac{2}{\Mach^2\left(\gamma_0-1\right)} + 1
+  u^2 &< \frac{2}{\Mach[0]^2\left(\gamma_0-1\right)} + 1
 .
 \label{eq:stagnation_sound_realizability_nondim}
 \end{align}
@@ -274,13 +274,13 @@ simplifying,
 \begin{align}
   \vec{\nabla}\log\rho
   &=
-  -\frac{\Mach^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
+  -\frac{\Mach[0]^2}{2}\frac{\vec{\nabla}\vec{u}^2}{a^2}
 .
 \end{align}
 Nondimensionalizing the momentum result~\eqref{eq:momentum} and then scaling by
 $\frac{l_0}{\rho_0 a_0^2}$,
 \begin{align}
-  \vec{\nabla} p &= - \frac{1}{2}\Mach^2 \rho \vec{\nabla}\vec{u}^2
+  \vec{\nabla} p &= - \frac{1}{2}\Mach[0]^2 \rho \vec{\nabla}\vec{u}^2
 .
 \end{align}
 Both of the previous two local statements can be made global by integrating
@@ -288,13 +288,13 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \begin{align}
   \int_{\partial\Omega} \log\rho \, \mathrm{d}S
   &=
-  - \frac{\Mach^2}{2}\int_{\Omega}
+  - \frac{\Mach[0]^2}{2}\int_{\Omega}
     \frac{\vec{\nabla}\vec{u}^2}{a^2} \, \mathrm{d}x
 \label{eq:logrho_nondim}
 \\
   \int_{\partial\Omega} p \, \mathrm{d}S
   &=
-  - \frac{\Mach^2}{2}\int_{\Omega} \rho \vec{\nabla}\vec{u}^2 \, \mathrm{d}x
+  - \frac{\Mach[0]^2}{2}\int_{\Omega} \rho \vec{\nabla}\vec{u}^2 \, \mathrm{d}x
 \label{eq:p_nondim}
 \end{align}
 
@@ -312,7 +312,7 @@ eases translating~\eqref{eq:cpfgibbs_nondim} into this setting
     With[{f=phi[Rr]},
         With[{gf=Simplify[Grad[f]],lf=Simplify[Laplacian[f]]},
             With[{gf2 = Simplify[DotProduct[gf,gf]]},
-                lf-(Ma^2/2) DotProduct[gf,Grad[gf2]]-(gamma0-1)(Ma^2/2)(gf2-1)lf
+                lf-(Ma0^2/2) DotProduct[gf,Grad[gf2]]-(gamma0-1)(Ma0^2/2)(gf2-1)lf
             ]
         ]
     ];
@@ -322,10 +322,10 @@ eases translating~\eqref{eq:cpfgibbs_nondim} into this setting
 \end{minipage}                 % END   Avoids page break
 producing output equivalent to
 \begin{align}
-    \frac{2+\Mach^2\left(\gamma_0-1\right)}{2 r}\phi^\prime
-   -\frac{  \Mach^2\left(\gamma_0-1\right)}{2 r}{\phi^\prime}^3
-   +\frac{1}{2}\left(2+\Mach^2\left(\gamma_0-1\right)
-                      -\Mach^2\left(\gamma_0+1\right){\phi^\prime}^2\right)
+    \frac{2+\Mach[0]^2\left(\gamma_0-1\right)}{2 r}\phi^\prime
+   -\frac{  \Mach[0]^2\left(\gamma_0-1\right)}{2 r}{\phi^\prime}^3
+   +\frac{1}{2}\left(2+\Mach[0]^2\left(\gamma_0-1\right)
+                      -\Mach[0]^2\left(\gamma_0+1\right){\phi^\prime}^2\right)
                \phi^{\prime\prime}
    &= 0
 .
@@ -338,12 +338,12 @@ Rewriting using $u = \phi^\prime(r)$ followed by solving for $u'$,
    \cdot
    \frac{
       2
-    + \Mach^2\left(\gamma_0-1\right)
-    - \Mach^2\left(\gamma_0-1\right) u^2
+    + \Mach[0]^2\left(\gamma_0-1\right)
+    - \Mach[0]^2\left(\gamma_0-1\right) u^2
    }{
       2
-    + \Mach^2\left(\gamma_0-1\right)
-    - \Mach^2\left(\gamma_0+1\right) u^2
+    + \Mach[0]^2\left(\gamma_0-1\right)
+    - \Mach[0]^2\left(\gamma_0+1\right) u^2
    }
 \label{eq:cpfradial_nondim_ode}
 .
@@ -358,7 +358,7 @@ assumption causes~\eqref{eq:logrho_nondim} to reduce to
   \rho\!\left(R_2\right)
   &=
   \exp\left[
-    - \frac{\Mach^2}{2} \int_{R_1}^{R_2}
+    - \frac{\Mach[0]^2}{2} \int_{R_1}^{R_2}
         \frac{\left(u^2\right)'}{a^2}
       \, r \, \mathrm{d}r
     + \log\rho\!\left(R_1\right)
@@ -366,7 +366,7 @@ assumption causes~\eqref{eq:logrho_nondim} to reduce to
 \\
   &=
   \rho\!\left(R_1\right) \exp\left[
-    - \Mach^2 \int_{R_1}^{R_2}
+    - \Mach[0]^2 \int_{R_1}^{R_2}
         \frac{u u'}{a^2}
       \, r \, \mathrm{d}r
   \right]
@@ -377,13 +377,13 @@ Likewise~\eqref{eq:p_nondim} simplifies to
 \begin{align}
   p\!\left(R_2\right)
   &=
-    - \frac{\Mach^2}{2} \int_{R_1}^{R_2}
+    - \frac{\Mach[0]^2}{2} \int_{R_1}^{R_2}
         \rho \left(u'\right)^2
       \, r \, \mathrm{d}r
     + p\!\left(R_1\right)
 \\
   &=
-    -\Mach^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
+    -\Mach[0]^2 \int_{R_1}^{R_2} \rho u u' \, r \, \mathrm{d}r
       + p\!\left(R_1\right)
 \label{eq:cpfradial_nondim_p}
 .
@@ -411,7 +411,7 @@ setting inflow per
 \begin{align}
     -a_0 < u\!\left(l_0 R_{2}\right) u_0 < 0
     &\implies
-    u\!\left(R_{2}\right) \in \left(-\Mach^{-1}, 0\right)
+    u\!\left(R_{2}\right) \in \left(-\Mach[0]^{-1}, 0\right)
 .
 \end{align}
 With this condition, $-u$ increases and $p$ decreases when traversing the
@@ -421,7 +421,7 @@ workaround is specifying at most a sonic outflow via
 \begin{align}
     -a_0 < u_0 u\!\left(l_0 R_1\right) < 0
     &\implies
-    u\!\left(R_1\right) \in \left(-\Mach^{-1}, 0\right)
+    u\!\left(R_1\right) \in \left(-\Mach[0]^{-1}, 0\right)
 \end{align}
 in conjunction with taking $R_{2}$ large enough to obtain the desired upstream
 $u\!\left(R_{2}\right)$ condition.  Further incorporating
@@ -429,7 +429,7 @@ realizability~\eqref{eq:stagnation_sound_realizability_nondim} taking care to
 use the negative square root of $u^2$ shows
 \begin{align}
   \max\left(
-    -\frac{1}{\Mach}, -\sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
+    -\frac{1}{\Mach[0]}, -\sqrt{\frac{2}{\Mach[0]^2\left(\gamma_0-1\right)}+1}
   \right) < &u\!\left(R_1\right) < 0
 \label{eq:cpfradial_nozzle_subsonic_bc}
 \end{align}
@@ -441,15 +441,15 @@ by setting inflow
 \begin{align}
    u_0 u\!\left(l_0 R_{1}\right) > a_0 > 0
    &\implies
-   u\!\left(R_{1}\right) \in \left(\Mach^{-1}, \infty\right)
+   u\!\left(R_{1}\right) \in \left(\Mach[0]^{-1}, \infty\right)
 .
 \end{align}
 Again incorporating
 realizability~\eqref{eq:stagnation_sound_realizability_nondim} via the positive
 square root of $u^2$,
 \begin{align}
-  \frac{1}{\Mach} < &u\!\left(R_1\right)
-  < \sqrt{\frac{2}{\Mach^2\left(\gamma_0-1\right)}+1}
+  \frac{1}{\Mach[0]} < &u\!\left(R_1\right)
+  < \sqrt{\frac{2}{\Mach[0]^2\left(\gamma_0-1\right)}+1}
 \label{eq:cpfradial_nozzle_supersonic_bc}
 .
 \end{align}
@@ -531,7 +531,7 @@ one can evaluate
   \left. \frac{u_0 u\cdot\hat{\xi}}{a_0 a} \right|_{\left(R_0,\delta\right)}
   =
   \left.
-    \frac{\Mach R_0}{R}
+    \frac{\Mach[0]{} R_0}{R}
     \frac{\left|u\!\left(R\right)\right|}
          {      a\!\left(R\right)       }
   \right|_{R = \sqrt{R_0^2 + \delta^2}}
@@ -545,13 +545,13 @@ one can evaluate
   \right|_{\left(R_0,\delta\right)}
   =
   \left.
-    \frac{\operatorname{sgn}(u) \, \delta}{\Mach^2 \rho u^2}
+    \frac{\operatorname{sgn}(u) \, \delta}{\Mach[0]^2 \rho u^2}
       \frac{\mathrm{d}p}{\mathrm{d}x}
   \right|_{\left(R_0,\delta\right)}
   =
   \left.
     \frac{\operatorname{sgn}(u) R \, \delta \, p'\!\left(R\right)}
-         {\Mach^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
+         {\Mach[0]^2 R_0 \, \rho\!\left(R\right) u^2\!\left(R\right)}
   \right|_{R=\sqrt{R_0^2 + \delta^2}}
 \end{align}
 to interrogate the local solution nature at $\left(R_0, \delta\right)$.  Here,
@@ -587,7 +587,7 @@ $\left(R_0,\delta\right)$ without requiring dense output capabilities.
 \section{Producing base flows matching given quantities of interest}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A nonlinear optimization problem may be formulated over $\Mach$, $R_0$,
+A nonlinear optimization problem may be formulated over $\Mach[0]$, $R_0$,
 $\rho\!\left(R_1\right)$, and $u\!\left(R_1\right)$ to match some target
 $\Mach[e]{}$, $p_{e,\xi}$, and $T_e$ given fixed $\delta$ and $\gamma_0$.
 Parameter $p\!\left(R_1\right)$ may be arbitrarily fixed as it does not impact
@@ -602,11 +602,11 @@ noting:\mynobreakpar
     as otherwise the larger magnitudes of $\Mach[e]{}$ swamp $p_{e,\xi}$
     yielding undesirable results.
   \item A poor initial guess is taken by selecting $R_0 = 10\delta$ and
-    $\Mach{}=\Mach[e]{}$.  Choosing $\Mach{}=\Mach[e]{}$ appears to be critical
-    for obtaining a range of $a_e^2$ behavior.  This particular value stems
-    from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
-    produce the necessarily positive $\Mach^2$ when the flow is either locally
-    sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
+    $\Mach[0]{}=\Mach[e]{}$.  Choosing $\Mach[0]{}=\Mach[e]{}$ appears to be
+    critical for obtaining a range of $a_e^2$ behavior.  This particular value
+    stems from investigating what permits~\eqref{eq:stagnation_sound_nondim} to
+    produce the necessarily positive $\Mach[0]^2$ when the flow is either
+    locally sub- or supersonic.  For subsonic $\Mach[e]{}$ the minimum possible
     $u_1\!\left(R_1\right)$ according
     to~\eqref{eq:cpfradial_nozzle_subsonic_bc} is chosen.  For supersonic
     $\Mach[e]{}$ the mean possible $u_1\!\left(R_1\right)$ according
@@ -717,7 +717,7 @@ for all cases.
 
 The resulting solutions are also tabulated below.  Parameters
 $\rho\!\left(R_1\right) = 1$ and $p\!\left(R_1\right) = 1$ were fixed with the
-remaining $\Mach$, $R_0$, and $u\!\left(R_1\right)$ comprising the problem
+remaining $\Mach[0]$, $R_0$, and $u\!\left(R_1\right)$ comprising the problem
 space.  Generally, Listing~\ref{lst:octave_nozzle_baseflow} with exactly the
 shown initial conditions did a good job of producing solutions with residual
 sum of square results less than $\sqrt{\epsilon}$.  However, at arc length
@@ -743,7 +743,7 @@ point being the culprit.
   columns/Ma_edge/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$\Mach[e]{}$},
   columns/p_exi/.style=  {fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{},column name=$p_{e,\xi}$},
   columns/T_ratio/.style={fixed,fixed zerofill,precision=6,dec sep align,column type/.add={}{|},column name=$a^2_e$},
-  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach{}$},
+  columns/Ma/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{},column name=$\Mach[0]{}$},
   columns/R0/.style=     {fixed,fixed zerofill,precision=1,dec sep align,column type/.add={}{},column name=$R_0$},
   columns/u1/.style=     {fixed,fixed zerofill,precision=5,dec sep align,column type/.add={}{|},column name=$u\!\left(R_1\right)$},
   columns/res2/.style=   {sci,  sci   zerofill,precision=0,dec sep align,column type/.add={}{},column name=Residual}

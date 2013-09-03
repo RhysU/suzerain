@@ -1,5 +1,5 @@
-% Seek [Ma, R0, rho1, u1, p1] producing requested conditions at (R0, delta).
-% Returns struct s with fields s.Ma, s.R0, s.rho1, s.u1, and s.p1 producing a
+% Seek [Ma0, R0, rho1, u1, p1] producing requested conditions at (R0, delta).
+% Returns struct s with fields s.Ma0, s.R0, s.rho1, s.u1, and s.p1 producing a
 % flow with observed values s.Ma_e, s.p_exi, and s.a2_e.
 % Curried function results noz(Ly) and qoi(Ly) compute the flow on (R0, 0) to
 % (R0, Ly) and quantities of interest at (R0, Ly), respectively.
@@ -11,11 +11,11 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
                                                         'lm_svd_feasible'), ...
                                          burn_in_iterations = 10)
 
-  % Relative residuals of observations vs targets for [Ma; R0; rho1; u1; p1]
+  % Relative residuals of observations vs targets for [Ma0; R0; rho1; u1; p1]
   tgt = [Ma_e; p_exi; a2_e];
   f   = @(x) (obs_vector(delta, gam0, x(1), x(2), x(3), x(4), x(5)) - tgt)./tgt;
 
-  % Establish bounds for [Ma; R0; rho1; u1; p1], a guess, and constraint(s)
+  % Establish bounds for [Ma0; R0; rho1; u1; p1], a guess, and constraint(s)
   opt = optimset(opt, 'lbound', [eps; eps; eps; -inf; eps],
                       'ubound', [inf; inf; inf;  inf; inf]);
   p = [Ma_e; 10*delta; 1; NaN; 1];  % Guess for Ma_e, R0, rho1, p1
@@ -29,7 +29,7 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
 
   % Solve the problem converting relative residual vector into absolute results
   % Fixes density and pressure and solves for other parameters in two phases
-  % Freezing Ma for some small number of iterates has been crucial in practice
+  % Freezing Ma0 for some small number of iterates has been crucial in practice
   pkg load odepkg optim;
   phase1 = optimset(opt, 'fixed', [1;0;1;0;1], 'MaxIter', burn_in_iterations);
   phase2 = optimset(opt, 'fixed', [0;0;1;0;1], 'MaxIter',               5000);
@@ -47,17 +47,17 @@ function [s, noz, qoi] = nozzle_baseflow(delta, gam0, Ma_e, p_exi, a2_e,    ...
 
   % Package up problem specification, solution, results, and runtime behavior
   s = struct('delta', delta, 'gam0', gam0,
-             'Ma', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4), 'p1', p(5),
+             'Ma0', p(1), 'R0', p(2), 'rho1', p(3), 'u1', p(4), 'p1', p(5),
              'Ma_e', res(1), 'p_exi', res(2), 'a2_e', res(3),
              'res2', res2, 'cvg', cvg, 'niter', niter);
-  noz = @(Ly) nozzle    (s.Ma, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
+  noz = @(Ly) nozzle    (s.Ma0, s.gam0, s.R0, realsqrt(s.R0**2+Ly**2), ...
                          s.u1, s.rho1, s.p1);
-  qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma, s.R0, s.rho1, s.u1, s.p1);
+  qoi = @(Ly) nozzle_qoi(Ly, s.gam0, s.Ma0, s.R0, s.rho1, s.u1, s.p1);
 end
 
 % Repackage nozzle_qoi multiple return values into a vector of observations.
-function f = obs_vector(delta, gam0, Ma, R0, rho1, u1, p1)
-  [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma, R0, rho1, u1, p1);
+function f = obs_vector(delta, gam0, Ma0, R0, rho1, u1, p1)
+  [Ma_e, p_exi, a2_e, a2_w] = nozzle_qoi(delta, gam0, Ma0, R0, rho1, u1, p1);
   f = [Ma_e; p_exi; a2_e];  % Ignore a2_w
 end
 
