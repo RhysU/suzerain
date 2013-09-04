@@ -37,8 +37,6 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_odeiv2.h>
-#include <gsl/gsl_sf_exp.h>
-#include <gsl/gsl_sf_log.h>
 
 // Compute u' and a^2 given r, u, Ma02 = Ma0**2, and gam0m1 = gam0 - 1
 // Compare nozzle_upa2 function source within writeups/notebooks/nozzle.m
@@ -73,9 +71,9 @@ nozzle_f(double R,
     // Unpack
     const double Ma02   = ((params_type *)params)->Ma02;
     const double gam0m1 = ((params_type *)params)->gam0m1;
-    const double u      =            y[0];
-    const double rho    = gsl_sf_exp(y[1]);
-    const double p      =            y[2];
+    const double u      =     y[0];
+    const double rho    = exp(y[1]);
+    const double p      =     y[2];
     SUZERAIN_UNUSED(p);
 
     // Compute
@@ -125,7 +123,7 @@ suzerain_radial_nozzle_solver(
 
     // Use GNU Scientific Library ODE integrator on [u; log rho; p]' system
     double current_R = R[0];
-    double y[3] = { u1, gsl_sf_log(rho1), p1 };
+    double y[3] = { u1, log(rho1), p1 };
     params_type params = { Ma0*Ma0, gam0 - 1 };
     gsl_odeiv2_system sys = { &nozzle_f, NULL, sizeof(y)/sizeof(y[0]), &params};
     const double abstol = GSL_SQRT_DBL_EPSILON;
@@ -140,9 +138,9 @@ suzerain_radial_nozzle_solver(
     for (size_t i = 1; i < size && !error; ++i) { // Advance state to R[i]
         error = gsl_odeiv2_driver_apply(driver, &current_R, R[i], y);
         s->state[i].R   = current_R;
-        s->state[i].u   =            y[0];
-        s->state[i].rho = gsl_sf_exp(y[1]); // (log rho) -> (rho)
-        s->state[i].p   =            y[2];
+        s->state[i].u   =     y[0];
+        s->state[i].rho = exp(y[1]); // (log rho) -> (rho)
+        s->state[i].p   =     y[2];
     }
     gsl_odeiv2_driver_free(driver);
     if (error) {
