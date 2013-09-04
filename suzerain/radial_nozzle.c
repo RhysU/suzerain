@@ -41,6 +41,7 @@
 #include <gsl/gsl_sf_log.h>
 
 // Compute u' and a^2 given r, u, Ma02 = Ma0**2, and gam0m1 = gam0 - 1
+// Compare nozzle_upa2 function source within writeups/notebooks/nozzle.m
 static inline
 void nozzle_upa2(const double R,
                  const double u,
@@ -61,6 +62,7 @@ typedef struct params_type {
 } params_type;
 
 // Find [u; log rho; p]' given r, x=[u; log rho; p], Ma02=Ma0**2, gam0m1=gam0-1
+// Compare nozzle_f function source within writeups/notebooks/nozzle.m
 static
 int
 nozzle_f(double R,
@@ -90,6 +92,7 @@ nozzle_f(double R,
     return GSL_SUCCESS;
 }
 
+// Compare nozzle function source within writeups/notebooks/nozzle.m
 suzerain_radial_nozzle_solution *
 suzerain_radial_nozzle_solver(
     const double         Ma0,
