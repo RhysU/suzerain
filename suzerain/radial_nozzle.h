@@ -43,12 +43,12 @@ extern "C" {
  */
 typedef struct suzerain_radial_nozzle_state {
     double R;       /**< Radius                     \f$R              \f$ */
-    double rho;     /**< Density                    \f$\rho           \f$ */
     double u;       /**< Radial velocity            \f$u              \f$ */
+    double rho;     /**< Density                    \f$\rho           \f$ */
     double p;       /**< Pressure                   \f$p              \f$ */
     double a2;      /**< Sound speed squared        \f$a^2            \f$ */
-    double rhop;    /**< Density derivative         \f$\partial_R \rho\f$ */
     double up;      /**< Radial velocity derivative \f$\partial_R u   \f$ */
+    double rhop;    /**< Density derivative         \f$\partial_R \rho\f$ */
     double pp;      /**< Pressure derivative        \f$\partial_R p   \f$ */
 } suzerain_radial_nozzle_state;
 
