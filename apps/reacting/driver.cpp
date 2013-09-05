@@ -48,10 +48,10 @@ driver::driver(
                   argument_synopsis,
                   description,
                   revstr)
+    , isothermal(make_shared<support::isothermal_definition>())
     , chdef(make_shared<channel_definition>())
     , cmods(make_shared<antioch_constitutive>())
     , fsdef(make_shared<filter_definition>())
-    , isothermal(make_shared<support::isothermal_definition>())
     , sgdef(make_shared<support::largo_definition>())
     , who("reacting")
 {
