@@ -191,6 +191,7 @@ suzerain_radial_nozzle_qoi_Mae(
     const suzerain_radial_nozzle_solution * s,
     const size_t i)
 {
+    assert(i < s->size);
     return  (s->Ma0 * s->state[0].R * fabs(s->state[i].u) )
           / (         s->state[i].R * sqrt(s->state[i].a2));
 }
@@ -200,6 +201,7 @@ suzerain_radial_nozzle_qoi_pexi(
     const suzerain_radial_nozzle_solution * s,
     const size_t i)
 {
+    assert(i < s->size);
     const double sgn_u = s->state[i].u >= 0 ? 1 : -1;
     const double delta = suzerain_radial_nozzle_delta(s, i);
     return (sgn_u * s->state[i].R * delta * s->state[i].pp)
