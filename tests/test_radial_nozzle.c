@@ -25,7 +25,6 @@
 
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
-#include <gsl/gsl_math.h>
 #include <gsl/gsl_test.h>
 
 #include <suzerain/common.h>
@@ -36,7 +35,7 @@
 static
 void test_subsonic()
 {
-    const double R[]  = {1., 1.1, 1.3, 1.4, 1.5, 1.6, M_SQRT3, 1.9, 2.};
+    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.0;
     const double gam0 = 1.4;
@@ -72,9 +71,11 @@ void test_subsonic()
     gsl_test_rel(fin.pp,   0.0983873794154783, tol, "%s final pp  ", __func__);
 
     // Test edge Mach and pressure gradient parameter computations
-    gsl_test_abs(s->state[6].R, M_SQRT3, GSL_DBL_EPSILON, "%s sanity ", __func__);
-    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, 6);
-    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, 6);
+    // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
+    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
+    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
+    gsl_test_rel(Mae,   0.152951916589060, tol, "%s qoi_Mae ", __func__);
+    gsl_test_rel(pexi, -1.91086402711018,  tol, "%s qoi_pexi", __func__);
 
     free(s);
 }
@@ -84,7 +85,7 @@ void test_subsonic()
 static
 void test_supersonic()
 {
-    const double R[]  = {1., 1.1, 1.3, 1.4, 1.5, 1.6, M_SQRT3, 1.9, 2.};
+    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.0;
     const double gam0 = 1.4;
@@ -120,10 +121,11 @@ void test_supersonic()
     gsl_test_rel(fin.pp,   -0.0727253956159634, tol, "%s final pp  ", __func__);
 
     // Test edge Mach and pressure gradient parameter computations
-    gsl_test_abs(s->state[6].R, M_SQRT3, GSL_DBL_EPSILON, "%s sanity ", __func__);
-    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, 6);
-    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, 6);
-    // TODO Assert things
+    // Expected results by writeups/notebooks/nozzle_qoi.m for delta = sqrt(3)
+    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, s->size-1);
+    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, s->size-1);
+    gsl_test_rel(Mae,   1.09859906253134,  tol, "%s qoi_Mae ", __func__);
+    gsl_test_rel(pexi, -0.452506737297551, tol, "%s qoi_pexi", __func__);
 
     free(s);
 }
