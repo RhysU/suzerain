@@ -27,16 +27,20 @@
 
 #include "antioch_constitutive.hpp"
 
-#ifdef SUZERAIN_HAVE_ANTIOCH
-
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
-#include <suzerain/validation.hpp>
 #include <suzerain/timers.h>
+#include <suzerain/validation.hpp>
 
-#include <antioch/antioch_version.h>
+#ifdef SUZERAIN_HAVE_ANTIOCH
+
 #include <antioch/read_reaction_set_data_xml.h>
 #include <antioch/blottner_parsing.h>
+
+// Usability hack submitted https://github.com/libantioch/antioch/pull/17
+#ifndef ANTIOCH_VERSION_AT_LEAST
+#define ANTIOCH_VERSION_AT_LEAST(major, minor, micro) (ANTIOCH_MAJOR_VERSION > (major) || (ANTIOCH_MAJOR_VERSION == (major) && (ANTIOCH_MINOR_VERSION > (minor) || (ANTIOCH_MINOR_VERSION == (minor) && ANTIOCH_MICRO_VERSION > (micro)))))
+#endif
 
 namespace suzerain {
 
@@ -390,8 +394,13 @@ antioch_constitutive::evaluate (const real_t  e,
     if (Ns>1) {
         // Species eqn source terms
         std::vector<real_t> omega_dot(Ns);
+#if ANTIOCH_VERSION_AT_LEAST(0,0,4)
+        this->kinetics->compute_mass_sources(T, molar_densities,
+                                             h_RT_minus_s_R, omega_dot);
+#else
         this->kinetics->compute_mass_sources(T, rho, R_mix, Y, molar_densities,
                                              h_RT_minus_s_R, omega_dot);
+#endif
         for (size_t i=0; i<Ns; ++i) om[i] = omega_dot[i];
     } else {
         om[0] = 0.0;
@@ -481,8 +490,13 @@ antioch_constitutive::evaluate (const real_t    e,
     // TODO: Set up antioch to avoid this if (i.e., make call to kinetics ok)
     if (Ns>1) {
         // Species eqn source terms
+#if ANTIOCH_VERSION_AT_LEAST(0,0,4)
+        this->kinetics->compute_mass_sources(T, molar_densities,
+                                             h_RT_minus_s_R, om);
+#else
         this->kinetics->compute_mass_sources(T, rho, R_mix, cs, molar_densities,
                                              h_RT_minus_s_R, om);
+#endif
     } else {
         om[0] = 0.0;
     }

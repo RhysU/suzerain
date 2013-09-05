@@ -26,10 +26,7 @@
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
 
-#include <antioch/chemical_species.h>
-
 #include "antioch_constitutive.hpp"
-
 
 /**
  * Initialize minimial test environment: MPI and logging

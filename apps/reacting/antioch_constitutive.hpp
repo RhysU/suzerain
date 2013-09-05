@@ -40,10 +40,28 @@
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
 
+#include <antioch/antioch_version.h>
+
+// As of Antioch 0.0.7-ish the compiler-agnostic installation #defines details
+// from its test environment.  If the compiler used to build this application
+// does not enable C++11 support but the Antioch installation did, we can run
+// afoul of decltype not being supported.  What follows is a grotesque
+// workaround to permit a C++11 Antioch but a non-C++11 application build...
+#if __cplusplus <= 199711L
+# warning "Undef-ing ANTIOCH_HAVE_CXX11 as compiler does not claim C++11 conformance!"
+# include <antioch_config.h>
+# ifdef ANTIOCH_HAVE_CXX11
+#  undef ANTIOCH_HAVE_CXX11
+# endif
+#endif
+
+SUZERAIN_GCC_DIAG_OFF(sign-compare);
+
 #include <antioch/vector_utils_decl.h>
 #include <antioch/eigen_utils_decl.h>
 #include <antioch/vector_utils.h>
 #include <antioch/eigen_utils.h>
+#include <antioch/chemical_species.h>
 #include <antioch/chemical_mixture.h>
 #include <antioch/reaction_set.h>
 #include <antioch/cea_thermo.h>
@@ -54,6 +72,8 @@
 #include <antioch/eucken_thermal_conductivity.h>
 #include <antioch/wilke_mixture.h>
 #include <antioch/wilke_evaluator.h>
+
+SUZERAIN_GCC_DIAG_ON(sign-compare);
 
 namespace suzerain {
 
