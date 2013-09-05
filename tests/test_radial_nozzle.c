@@ -25,6 +25,7 @@
 
 #include <gsl/gsl_ieee_utils.h>
 #include <gsl/gsl_machine.h>
+#include <gsl/gsl_math.h>
 #include <gsl/gsl_test.h>
 
 #include <suzerain/common.h>
@@ -33,9 +34,9 @@
 // Second subsonic test from writeups/notebooks/nozzle1.m
 // Beware the slightly different argument order relative to that code
 static
-void test_solver_subsonic()
+void test_subsonic()
 {
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
+    const double R[]  = {1., 1.1, 1.3, 1.4, 1.5, 1.6, M_SQRT3, 1.9, 2.};
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.0;
     const double gam0 = 1.4;
@@ -70,15 +71,20 @@ void test_solver_subsonic()
     gsl_test_rel(fin.rhop, 0.0835239513576762, tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   0.0983873794154783, tol, "%s final pp  ", __func__);
 
+    // Test edge Mach and pressure gradient parameter computations
+    gsl_test_abs(s->state[6].R, M_SQRT3, GSL_DBL_EPSILON, "%s sanity ", __func__);
+    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, 6);
+    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, 6);
+
     free(s);
 }
 
 // Supersonic test from writeups/notebooks/nozzle1.m
 // Beware the slightly different argument order relative to that code
 static
-void test_solver_supersonic()
+void test_supersonic()
 {
-    const double R[]  = {1., 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.};
+    const double R[]  = {1., 1.1, 1.3, 1.4, 1.5, 1.6, M_SQRT3, 1.9, 2.};
     const size_t N    = sizeof(R)/sizeof(R[0]);
     const double Ma0  = 1.0;
     const double gam0 = 1.4;
@@ -113,6 +119,12 @@ void test_solver_supersonic()
     gsl_test_rel(fin.rhop, -0.119120314492264,  tol, "%s final rhop", __func__);
     gsl_test_rel(fin.pp,   -0.0727253956159634, tol, "%s final pp  ", __func__);
 
+    // Test edge Mach and pressure gradient parameter computations
+    gsl_test_abs(s->state[6].R, M_SQRT3, GSL_DBL_EPSILON, "%s sanity ", __func__);
+    const double Mae  = suzerain_radial_nozzle_qoi_Mae (s, 6);
+    const double pexi = suzerain_radial_nozzle_qoi_pexi(s, 6);
+    // TODO Assert things
+
     free(s);
 }
 
@@ -126,8 +138,8 @@ int main(int argc, char **argv)
         gsl_test_verbose(1);
     }
 
-    test_solver_subsonic();
-    test_solver_supersonic();
+    test_subsonic();
+    test_supersonic();
 
     exit(gsl_test_summary());
 }
