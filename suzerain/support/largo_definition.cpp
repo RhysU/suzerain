@@ -111,7 +111,7 @@ const largo_formulation largo_formulation::spatial(
         2, "spatial", "Full spatial formulation by Topalian et al.");
 
 const largo_formulation largo_formulation::temporal_tensor_consistent(
-        3, "temporal_tensor_consistent", 
+        3, "temporal_tensor_consistent",
            "Temporal tensor-consistent formulation by Topalian et al.");
 // END Add known formulations here
 
@@ -271,29 +271,30 @@ largo_definition::save(
 
     // Write baseflow field coefficients (only master process)
     if (this->x.outerSize() > 0) {
-    esio_plane_establish(h, 
-        this->x.outerSize(), 0, procid == 0 ?  this->x.outerSize() : 0,
-        this->x.innerSize(), 0, procid == 0 ?  this->x.innerSize() : 0);
-    esio_plane_write(h, location_baseflow, this->x.data(),
-        this->x.outerStride(), this->x.innerStride(), 
-        "Baseflow field coefficients");
+        esio_plane_establish(h,
+            this->x.outerSize(), 0, procid == 0 ?  this->x.outerSize() : 0,
+            this->x.innerSize(), 0, procid == 0 ?  this->x.innerSize() : 0);
+        esio_plane_write(h, location_baseflow, this->x.data(),
+            this->x.outerStride(), this->x.innerStride(),
+            "Baseflow field coefficients");
 
-    // Write out the baseflow coefficient base
-    esio_string_set(h, location_baseflow, "coefficient_base", this->x_base.c_str());
+        // Write out the baseflow coefficient base
+        esio_string_set(h, location_baseflow, "coefficient_base",
+                        this->x_base.c_str());
     }
 
     // Write baseflow derivative coefficients (only master process)
     if (this->dx.outerSize() > 0) {
-    esio_plane_establish(h, 
-        this->dx.outerSize(), 0, procid == 0 ?  this->dx.outerSize() : 0,
-        this->dx.innerSize(), 0, procid == 0 ?  this->dx.innerSize() : 0);
-    esio_plane_write(h, location_baseflow_d, this->dx.data(),
-        this->dx.outerStride(), this->dx.innerStride(), 
-        "Baseflow derivative coefficients");
+        esio_plane_establish(h,
+            this->dx.outerSize(), 0, procid == 0 ?  this->dx.outerSize() : 0,
+            this->dx.innerSize(), 0, procid == 0 ?  this->dx.innerSize() : 0);
+        esio_plane_write(h, location_baseflow_d, this->dx.data(),
+            this->dx.outerStride(), this->dx.innerStride(),
+            "Baseflow derivative coefficients");
 
-    // Write out the baseflow coefficient base
-    esio_string_set(h, location_baseflow_d, "coefficient_base", this->dx_base.c_str());
-
+        // Write out the baseflow coefficient base
+        esio_string_set(h, location_baseflow_d, "coefficient_base",
+                        this->dx_base.c_str());
     }
 }
 
@@ -341,12 +342,12 @@ largo_definition::load(
     // Only proceed if largo_baseflow is present in the restart
     int neqns, ncoeffs;
     INFO0("Looking for baseflow coefficients");
-    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow, 
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow,
                                            &neqns, &ncoeffs)) {
         // Load baseflow coefficients
         x.resize(ncoeffs, neqns); //Using column-major storage
 
-        esio_plane_establish(h, 
+        esio_plane_establish(h,
             this->x.outerSize(), 0, this->x.outerSize(),
             this->x.innerSize(), 0, this->x.innerSize());
         esio_plane_read(h, location_baseflow, this->x.data(),
@@ -364,12 +365,12 @@ largo_definition::load(
     // Load baseflow derivative coefficients
     // Only proceed if largo_baseflow is present in the restart
     INFO0("Looking for baseflow derivative coefficients");
-    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_d, 
+    if (ESIO_SUCCESS == esio_plane_size(h, location_baseflow_d,
                                            &neqns, &ncoeffs)) {
         // Load baseflow coefficients
         dx.resize(ncoeffs, neqns); //Using column-major storage
 
-        esio_plane_establish(h, 
+        esio_plane_establish(h,
             this->dx.outerSize(), 0, this->dx.outerSize(),
             this->dx.innerSize(), 0, this->dx.innerSize());
         esio_plane_read(h, location_baseflow_d, this->dx.data(),
@@ -397,10 +398,10 @@ largo_definition::get_baseflow(
       real_t res[2];
       for (int j=0; j<x.cols()-1; j++){
           // Compute baseflow and y-derivative
-          int resval = gsl_poly_eval_derivs 
-             (x.col(j).data(), 
+          int resval = gsl_poly_eval_derivs
+             (x.col(j).data(),
               x.rows(),
-              y, 
+              y,
               &res[0],
               2);
           base  [j] = res[0];
@@ -415,10 +416,10 @@ largo_definition::get_baseflow(
    if (dx.rows()) {
       for (int j=0; j<dx.cols()-1; j++){
           // Compute x-derivative of baseflow
-          int resval = gsl_poly_eval_derivs 
+          int resval = gsl_poly_eval_derivs
              (dx.col(j).data(),
               dx.rows(),
-              y, 
+              y,
               &dhbase[j],
               1);
       }
@@ -440,10 +441,10 @@ largo_definition::get_baseflow_pressure(
       real_t res[2];
       int j = x.cols()-1;
       // Compute baseflow and y-derivative
-      int resval = gsl_poly_eval_derivs 
-         (x.col(j).data(), 
+      int resval = gsl_poly_eval_derivs
+         (x.col(j).data(),
           x.rows(),
-          y, 
+          y,
           &res[0],
           2);
       Pbase   = res[0];
@@ -457,10 +458,10 @@ largo_definition::get_baseflow_pressure(
    if (dx.rows()) {
       int j = x.cols()-1;
       // Compute x-derivative of baseflow
-      int resval = gsl_poly_eval_derivs 
+      int resval = gsl_poly_eval_derivs
          (dx.col(j).data(),
           dx.rows(),
-          y, 
+          y,
           &dhPbase,
           1);
    } else {
