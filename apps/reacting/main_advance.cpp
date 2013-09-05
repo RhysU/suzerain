@@ -403,7 +403,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
 #ifdef SUZERAIN_HAVE_LARGO
     // Allocate slow growth workspace
-    {
+     if (sgdef->formulation.enabled()) {
+
         int state_count = (int) cmods->Ns()+4;
         int Ns = (int) cmods->Ns()-1;
         const std::string largo_name = sgdef->formulation.name();
