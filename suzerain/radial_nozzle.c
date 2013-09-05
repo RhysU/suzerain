@@ -206,5 +206,5 @@ suzerain_radial_nozzle_qoi_pexi(
     const double delta = suzerain_radial_nozzle_delta(s, i);
     return (sgn_u * s->state[i].R * delta * s->state[i].pp)
          / (   gsl_pow_2(s->Ma0) * s->state[0].R
-             * s->state[i].rho + gsl_pow_2(s->state[i].u));
+             * s->state[i].rho * gsl_pow_2(s->state[i].u));
 }
