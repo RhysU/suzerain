@@ -208,3 +208,37 @@ suzerain_radial_nozzle_qoi_pexi(
          / (   gsl_pow_2(s->Ma0) * s->state[0].R
              * s->state[i].rho * gsl_pow_2(s->state[i].u));
 }
+
+void
+suzerain_radial_nozzle_cartesian(
+    const suzerain_radial_nozzle_solution * s,
+    const size_t i,
+    const double Ma,
+    double *rho,
+    double *u,
+    double *v,
+    double *p,
+    double *rhop,
+    double *up,
+    double *vp,
+    double *pp)
+{
+    assert(i < s->size);
+    const double x       = s->state[0].R;
+    const double y       = suzerain_radial_nozzle_delta(s, i);
+    const double inv_R   = 1 / s->state[i].R;
+    const double sgn_u   = s->state[i].u >= 0 ? 1 : -1;
+    const double Ma02Ma2 = gsl_pow_2(s->Ma0) / gsl_pow_2(Ma);
+
+    const suzerain_radial_nozzle_state * const t = &s->state[i];
+    *rho  = t->rho;
+    *u    = fabs(t->u) * x * inv_R;
+    *v    =      t->u  * y * inv_R;
+    *p    = Ma02Ma2 * t->p;
+    *rhop = x * sgn_u * t->rhop * inv_R;
+    *up   = sgn_u * gsl_pow_2(inv_R) * (   gsl_pow_2(x) * t->up
+                                         + gsl_pow_2(y) * t->u  * inv_R);
+    *vp   = x * y * sgn_u * gsl_pow_2(inv_R) * (   t->up
+                                                 - t->u  * inv_R);
+    *pp   = x * sgn_u * Ma02Ma2 * t->pp * inv_R;
+}

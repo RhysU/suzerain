@@ -288,7 +288,7 @@ suzerain_radial_nozzle_qoi_pexi(
  *
  * @see Model documentation in <tt>writeups/baseflow.tex</tt> for details.
  */
-double
+void
 suzerain_radial_nozzle_cartesian(
     const suzerain_radial_nozzle_solution * s,
     const size_t i,
