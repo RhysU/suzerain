@@ -56,7 +56,7 @@ void test_subsonic()
     gsl_test_abs(ini.rho, rho1, GSL_DBL_EPSILON, "%s init rho ", __func__);
     gsl_test_abs(ini.p,   p1,   GSL_DBL_EPSILON, "%s init p   ", __func__);
 
-    // Expected results computed by writeups/notebooks/nozzle1.m using Octave
+    // Expected results computed by writeups/notebooks/nozzle.m using Octave
     double tol = GSL_SQRT_DBL_EPSILON;
     suzerain_radial_nozzle_state fin = s->state[N-1];
     gsl_test_rel(fin.R,    R[N-1],             tol, "%s final R   ", __func__);
@@ -64,11 +64,11 @@ void test_subsonic()
     gsl_test_rel(fin.a2,   1.17795408162849,   tol, "%s final a2  ", __func__);
     gsl_test_rel(fin.up,   0.183142130216718,  tol, "%s final up  ", __func__);
     // Octave and GSL RKF45 adaptive control differs, hence lower tolerances...
-    tol = sqrt(sqrt(tol));  // ...though this is admittedly a bit silly.
-    gsl_test_rel(fin.rho,  1.61933117083039,   tol, "%s final rho ", __func__);
-    gsl_test_rel(fin.p,    1.68254700209343,   tol, "%s final p   ", __func__);
-    gsl_test_rel(fin.rhop, 0.0835881427057738, tol, "%s final rhop", __func__);
-    gsl_test_rel(fin.pp,   0.0984629938760109, tol, "%s final pp  ", __func__);
+    tol = sqrt(tol);
+    gsl_test_rel(fin.rho,  1.61808760864002,   tol, "%s final rho ", __func__);
+    gsl_test_rel(fin.p,    1.68133559416742,   tol, "%s final p   ", __func__);
+    gsl_test_rel(fin.rhop, 0.0835239513576762, tol, "%s final rhop", __func__);
+    gsl_test_rel(fin.pp,   0.0983873794154783, tol, "%s final pp  ", __func__);
 
     free(s);
 }
