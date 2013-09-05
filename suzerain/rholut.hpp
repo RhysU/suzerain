@@ -752,6 +752,22 @@ Scalar energy_internal(
 }
 
 /**
+ * Compute the gradient of the internal energy from the pressure gradient.
+ *
+ * @param[in] gamma  \f$\gamma\f$
+ * @param[in] grad_p \f$\vec{\nabla}p\f$
+ */
+template<typename Scalar,
+         typename Vector>
+inline
+Vector energy_internal_gradient(
+        const Scalar &gamma,
+        const Vector &grad_p)
+{
+    return grad_p / (gamma - 1);
+}
+
+/**
  * Compute the kinetic energy.
  *
  * @param[in] Ma \f$\mbox{Ma}\f$
@@ -767,6 +783,33 @@ Scalar energy_kinetic(
         const Vector &m)
 {
     return Ma*Ma*m.squaredNorm()/rho/2;
+}
+
+/**
+ * Compute the gradient of the kinetic energy.
+ *
+ * @param[in] Ma       \f$\mbox{Ma}\f$
+ * @param[in] rho      \f$\rho\f$
+ * @param[in] grad_rho \f$\vec{\nabla}\rho\f$
+ * @param[in] m        \f$\vec{m}\f$
+ * @param[in] grad_m   \f$\vec{\nabla}\vec{m}\f$
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor  >
+inline
+Vector energy_kinetic_gradient(
+        const Scalar &Ma,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Vector &m,
+        const Tensor &grad_m)
+{
+    const Scalar rho_inverse  = 1/rho;
+    return rho_inverse*Ma*Ma*(
+               grad_m.transpose()*m
+             - rho_inverse/2*m.squaredNorm()*grad_rho
+           );
 }
 
 /**

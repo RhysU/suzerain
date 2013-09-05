@@ -222,6 +222,13 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
     BOOST_CHECK_CLOSE(grad_lambda(1), grad_lambda_ans(1), close_enough);
     BOOST_CHECK_CLOSE(grad_lambda(2), grad_lambda_ans(2), close_enough);
 
+    /* Check computation of grad_e from gradient of internal, kinetic */
+    const Vector3r alt_grad_e
+        = suzerain::rholt::energy_internal_gradient(gamma, grad_p)
+        + suzerain::rholt::energy_kinetic_gradient(rho, grad_rho, m, grad_m);
+    BOOST_CHECK_CLOSE(grad_e(0), alt_grad_e(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_e(1), alt_grad_e(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_e(2), alt_grad_e(2), close_enough);
 
     /* Variant that does not provide derivatives */
     p = T = mu = lambda = 555;
