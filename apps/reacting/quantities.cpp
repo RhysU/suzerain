@@ -256,7 +256,7 @@ bool quantities::load(const esio_handle h)
         if (this->Ns==0)
             { this->Ns = bglobal; }
         else
-            { assert(this->Ns==bglobal); }
+            { assert(static_cast<int>(this->Ns)==bglobal); }
 
         quantities_loader f("quantities", h, "bar_");
         f("rho_s", this->rho_s(0, Ns));
