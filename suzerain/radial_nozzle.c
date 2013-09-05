@@ -176,11 +176,13 @@ suzerain_radial_nozzle_solver(
     return s;
 }
 
+inline // Permits inlining by functions appearing later in this file
 double
 suzerain_radial_nozzle_delta(
     const suzerain_radial_nozzle_solution * s,
     const size_t i)
 {
+    assert(i < s->size);
     return sqrt(gsl_pow_2(s->state[i].R) - gsl_pow_2(s->state[0].R));
 }
 
