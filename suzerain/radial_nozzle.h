@@ -61,19 +61,63 @@ typedef struct suzerain_radial_nozzle_solution {
     double Ma0;     /**< Reference Mach number         \f$\mbox{Ma}_0\f$ */
     double gam0;    /**< Reference specific heat ratio \f$\gamma_0   \f$ */
     size_t size;    /**< Number of entries in flexible member \c state */
-    suzerain_radial_nozzle_state state[0]; /**< Pointwise solution details */
+
+    /** Pointwise solution details indexable per the struct hack. */
+    suzerain_radial_nozzle_state state[0];
 } suzerain_radial_nozzle_solution;
 
 /**
  * Solve the requested radial nozzle problem.
+ * That is, advance the system
+ * \f{align}{
+ *     u^\prime
+ *   &=
+ *     -\frac{u}{r}
+ *     \cdot
+ *     \frac{
+ *        2
+ *      + \mbox{Ma}_{0}^2\left(\gamma_0-1\right)
+ *      - \mbox{Ma}_{0}^2\left(\gamma_0-1\right) u^2
+ *     }{
+ *        2
+ *      + \mbox{Ma}_{0}^2\left(\gamma_0-1\right)
+ *      - \mbox{Ma}_{0}^2\left(\gamma_0+1\right) u^2
+ *     }
+ *   \\
+ *     \left(\log\rho\right)^\prime
+ *   &=
+ *     -\frac{\mbox{Ma}_{0}^2}{2}\frac{\left(u^2\right)^\prime}{a^2}
+ *   \\
+ *     p^\prime
+ *   &=
+ *     - \frac{1}{2}\mbox{Ma}_{0}^2 \, \rho\left(u^2\right)^\prime
+ * \f}
+ * employing the equation of state
+ * \f{align}{
+ *     a^2
+ *   &=
+ *       \frac{\gamma-1}{\gamma_0-1}
+ *     + \mbox{Ma}_{0}^2\frac{\gamma-1}{2}\left(1-u^2\right)
+ * \f}
+ * to solve for the quantities in \ref suzerain_radial_nozzle_state as a
+ * function of \f$R\f$ given initial conditions \f$\rho\left(r_1\right)\f$,
+ * \f$u\left(r_1\right)\f$, and \f$p\left(r_1\right)\f$ satisfying the
+ * realizability constraint
+ * \f{align}{
+ *     u^2
+ *   &<
+ *     \frac{2}{\mbox{Ma}_{0}^2\left(\gamma_0-1\right)} + 1
+ * .
+ * \f}
  *
  * @param Ma0   Reference Mach number         \f$\mbox{Ma}_0\f$
  * @param gam0  Reference specific heat ratio \f$\gamma_0   \f$
- * @param rho1  Initial density               \f$\rho\!\left(R_1\right)\f$
- * @param u1    Initial radial velocity       \f$u   \!\left(R_1\right)\f$
- * @param p1    Initial pressure              \f$p   \!\left(R_1\right)\f$
- * @param R     Radii of interest with $R_1$ taken from \c R[0].
+ * @param rho1  Initial density               \f$\rho\left(r_1\right)\f$
+ * @param u1    Initial radial velocity       \f$u   \left(r_1\right)\f$
+ * @param p1    Initial pressure              \f$p   \left(r_1\right)\f$
+ * @param R     Radii of interest with \f$R_1\f$ taken from \c R[0].
  *              Must be a contiguous array of length \c size.
+ *              Entries must be strictly increasing.
  * @param size  Number of radii within \c R.
  *
  * @return On success returns a \ref suzerain_radial_nozzle_solution
