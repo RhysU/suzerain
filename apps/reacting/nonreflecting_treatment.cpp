@@ -411,7 +411,8 @@ std::vector<real_t> nonreflecting_treatment::apply_operator(
 
             // Add chemistry sources if the bc is an inflow
             if (inflow) {
-                for (int is = 0; is<Ns-1; ++is) {
+                assert(Ns >= 1);
+                for (unsigned int is = 0; is<Ns-1; ++is) {
                     int f = is + (N.size()-Ns+1);
                     swave[f][Ny - 1][m - dkbx][n - dkbz] +=
                         common.chemsrcw(is, (m - dkbx) + mu*(n - dkbz));
