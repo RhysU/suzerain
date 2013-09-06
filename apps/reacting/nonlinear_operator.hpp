@@ -1189,7 +1189,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 mean_rqq[1] = rqq_values(j,ndx::mx);
                 mean_rqq[2] = rqq_values(j,ndx::my);
                 mean_rqq[3] = rqq_values(j,ndx::mz);
-                mean_rqq[4] = rqq_values(j,ndx::e); 
+                mean_rqq[4] = rqq_values(j,ndx::e);
                 for (unsigned int s=1; s<Ns; s++){
                     mean_rqq[4+s] = 0;
                 }
@@ -1200,7 +1200,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 dmean_rqq[1] = rqq_values(j,state_count+ndx::mx);
                 dmean_rqq[2] = rqq_values(j,state_count+ndx::my);
                 dmean_rqq[3] = rqq_values(j,state_count+ndx::mz);
-                dmean_rqq[4] = rqq_values(j,state_count+ndx::e); 
+                dmean_rqq[4] = rqq_values(j,state_count+ndx::e);
                 for (unsigned int s=1; s<Ns; s++){
                     dmean_rqq[4+s] = 0;
                 }
@@ -1266,7 +1266,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     // rho_u
                     srcbase[1]  = dtbase[1];
                     srcbase[1] += base_u * dybase[2] + base_v * dybase[1] - base_v * base_u * dybase[0];
-                   
+
                     // rho_v
                     srcbase[2]  = dtbase[2];
                     srcbase[2] += base_v * dybase[2] + base_v * dybase[2] - base_v * base_v * dybase[0] + dyPbase;
@@ -1286,7 +1286,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                         srcbase[4+ivar] += base_cs * dybase[2] + base_v * dybase[4+ivar] - base_v * base_cs * dybase[0];
                     }
                 }
-               
+
                 // Init
                 largo_init (sgdef.workspace, sgdef.grdelta, grDA);
 
