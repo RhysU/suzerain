@@ -325,7 +325,7 @@ public:
     const_ref_type ref_es(const int s) const {return refs.row(20+  Ns+s);}
     const_ref_type ref_hs(const int s) const {return refs.row(20+2*Ns+s);}
 
-    std::size_t Nref() { return 20+3*this->Ns; }
+    std::size_t Nref() const { return 20+3*this->Ns; }
 
     /** Prepare data for use by implicit operator API in reacting_imexop.h. */
     void imexop_ref(suzerain_reacting_imexop_ref   &ref,
