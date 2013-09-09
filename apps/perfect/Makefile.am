@@ -125,8 +125,9 @@ dist_check_SCRIPTS += test_implicit_solvers.sh
 ## Miscellaneous manual testing scripts
 ##
 
-dist_check_SCRIPTS += scripts/pulse_perfect_init.sh
-dist_check_SCRIPTS += scripts/pulse_perfect.py
+dist_check_SCRIPTS += manual.nrbc/pulse_perfect_init.sh
+dist_check_SCRIPTS += manual.nrbc/pulse_perfect.py
+dist_check_SCRIPTS += manual.nrbc/ticket2399.sh
 
 # Required for AX_AM_MACROS
 @INC_AMINCLUDE@
