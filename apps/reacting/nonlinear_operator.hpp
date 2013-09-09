@@ -220,7 +220,7 @@ void vfilt_apply_ref_viscous_operator(const operator_common_block &common,
 
         // diagonal
         const_ref_type& D(common.ref_nu());
-        tmp.noalias() = D.matrix().asDiagonal()*F;
+        tmp.noalias() = ((alpha + 4/3.)*D).matrix().asDiagonal()*F;
 
         // density
         const_ref_type& uy(common.ref_uy());
