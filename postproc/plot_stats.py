@@ -127,6 +127,8 @@ def plot(hdf5file, fileext, ifile):
     fav_v       = np.array(rho_u_col[:,1]/rho_col[:,0]).reshape(Ny,1)
     fav_w       = np.array(rho_u_col[:,2]/rho_col[:,0]).reshape(Ny,1)
 
+    fav_H       = np.array((rho_E_col[:,0] + p_col[:,0])/rho_col[:,0]).reshape(Ny,1)
+
     # - Bar rho_upp
     # rho_upp     = np.array(np.ravel(rho_col) * np.ravel(fav_u)).reshape(Ny,1)
     rho_upp     = rho_u_col[:,0] - np.array(np.ravel(rho_col) * np.ravel(fav_u)).reshape(Ny,1)
@@ -298,6 +300,13 @@ def plot(hdf5file, fileext, ifile):
     pyplot.plot(y, fav_u[:,0], linewidth=3, label=key)
     pyplot.legend(loc=0)
     pyplot.savefig('fav_u.' + fileext, bbox_inches='tight')
+
+    figid += 1   
+    pyplot.figure(figid)
+    key = "fav_H" + str(ifile)
+    pyplot.plot(y, fav_H[:,0], linewidth=3, label=key)
+    pyplot.legend(loc=0)
+    pyplot.savefig('fav_H.' + fileext, bbox_inches='tight')
 
 
 def main(argv=None):
