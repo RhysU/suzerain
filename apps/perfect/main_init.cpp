@@ -175,7 +175,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
              "Stiffness of the acoustic pulse measured by bump function power")
             ("acoustic_support",
              boost::program_options::value<string>()
-             ->default_value("1/4")
+             ->default_value("1/8")
              ->notifier(boost::bind(&parse_nonnegative, _1,
                                     &acoustic_support, "acoustic_support")),
              "Fraction of the domain over which the pulse is supported")
@@ -203,7 +203,7 @@ suzerain::perfect::driver_init::run(int argc, char **argv)
              "Stiffness of the entropy pulse measured by bump function power")
             ("entropy_support",
              boost::program_options::value<string>()
-             ->default_value("1/4")
+             ->default_value("1/8")
              ->notifier(boost::bind(&parse_nonnegative, _1,
                                     &entropy_support, "entropy_support")),
              "Fraction of the domain over which the pulse is supported")
