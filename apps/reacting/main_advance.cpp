@@ -427,14 +427,15 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
     if (options.variables().count("undriven")) {
         boost::algorithm::trim(undriven);
         const size_t j = distance(
-                find(ndx::identifier.begin(), ndx::identifier.end(), undriven),
-                ndx::identifier.end());
+                ndx::identifier.begin(),
+                find(ndx::identifier.begin(), ndx::identifier.end(), undriven));
         if (j < ndx::identifier.static_size) {
             INFO0(who, "Disabling any " << ndx::description[j]
-                       << " physical constraint per --undriven");
+                       << " physical constraint per --undriven=" << undriven);
             constrainer->physical[j] = constrainer->none;
         } else if (undriven == "all") {
-            INFO0(who, "Disabling all physical constraints per --undriven");
+            INFO0(who, "Disabling all physical constraints per --undriven="
+                       << undriven);
             fill(constrainer->physical.begin(), constrainer->physical.end(),
                  constrainer->none);
         } else {
