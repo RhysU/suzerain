@@ -29,7 +29,7 @@ perfect_advance=(
     -v
     --explicit
 #   --undriven=all         # FIXME To increase coverage
-    --advance_dt=100       # TODO  Increase above 1
+    --advance_dt=5         # TODO  Increase above 1
     --status_dt=0.005
     --statistics_dt=0.05
 )
@@ -93,6 +93,50 @@ echo '######################################################'
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=-0.005 --upper_v=-0.01 --upper_w=-0.005
         run_case
     ) || echo 'v, w < 0' >> $FAILURES
+    run_postproc
+) &
+
+echo 'Pulse: outflow upper boundary'
+echo '######################################################'
+(
+    rmmkcd ticket2399/acoustic_pos_v
+    (
+        ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
+                           --acoustic_strength=0.01
+        run_case
+    ) || echo 'v > 0' >> $FAILURES
+    run_postproc
+) &
+
+(
+    rmmkcd ticket2399/entropy_pos_v
+    (
+        ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
+                           --entropy_strength=0.01
+        run_case
+    ) || echo 'v > 0' >> $FAILURES
+    run_postproc
+) &
+
+echo 'Pulse: inflow upper boundary'
+echo '######################################################'
+(
+    rmmkcd ticket2399/acoustic_neg_v
+    (
+        ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
+                           --acoustic_strength=0.01
+        run_case
+    ) || echo 'v < 0' >> $FAILURES
+    run_postproc
+) &
+
+(
+    rmmkcd ticket2399/entropy_neg_v
+    (
+        ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
+                           --entropy_strength=0.01
+        run_case
+    ) || echo 'v < 0' >> $FAILURES
     run_postproc
 ) &
 
