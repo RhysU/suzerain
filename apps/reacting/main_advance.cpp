@@ -293,8 +293,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0(who, "Preparing nonreflecting upper boundary treatment");
 
         WARN0(who, "Non-reflecting boundary treatment enabling boundary"
-                   "layer simulations is still under development.      "
-                   "Proceed at your own risk.");
+                   " layer simulations is still under development.");
 
 
         // Assign some reference values
@@ -384,9 +383,8 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         this->N = tmp_hybrid;
 
         if (grid->one_sided()) {
-            WARN0(who, "Non-reflecting boundary treatment with hybrid       "
-                       "implicit/explict time marching is very experimental."
-                       "Don't say we didn't warn you.");
+            WARN0(who, "Non-reflecting boundary treatment with hybrid"
+                       " implicit/explicit time marching is experimental.");
 
             shared_ptr<nonreflecting_treatment> nonreflecting(
                 new nonreflecting_treatment(
@@ -419,7 +417,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         } else {
             SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
         }
-      
+
         largo_allocate(&sgdef->workspace, state_count, Ns, largo_imodel);
     }
 #endif
