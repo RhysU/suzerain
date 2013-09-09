@@ -9,37 +9,38 @@ perfect_init=(
     $(readlink -f perfect_init)
     initial.h5
     -v
+    --restart_physical     # Simplifies any required IC debugging
     --Ny=64
-    --htdelta=-1/2   # Flat plate case
-    --Ly=1/2         # Shortens wall-normal traversal times
-    --bulk_rho=1     # Constant density to any power is one
-    --npower=0       # Provides linear velocity profile...
-    --bulk_rho_u=0   # ...in conjunction with this setting
+    --htdelta=-1/2         # Flat plate case
+    --Ly=1/2               # Shortens wall-normal traversal times
+    --bulk_rho=1           # Constant density to any power is one
+    --npower=0             # Provides linear velocity profile...
+    --bulk_rho_u=0         # ...in conjunction with this setting
     --lower_T=1
     --upper_T=1
     --lower_u=1
     --upper_u=1
-    --Ma=1.5         # From upper_u/sqrt(upper_T)
-    --Re=1000        # Larger reduces undesirable viscous impact
-                     # Try --Re=inf for an Eulerian good time
+    --Ma=1.5               # From upper_u/sqrt(upper_T)
+    --Re=1000              # Larger reduces undesirable viscous impact
+                           # Try --Re=inf for an Eulerian good time
 )
 perfect_advance=(
     $(readlink -f perfect_advance)
     initial.h5
     -v
-    --explicit
-#   --undriven=all         # FIXME To increase coverage
-    --advance_dt=5         # TODO  Increase above 1
-    --status_dt=0.005
-    --statistics_dt=0.05
+    --explicit             # TODO Eventually use ${OPER:=}
+    --undriven=all         # TODO Disabling increases coverage
 )
 perfect_mean=(
     $(readlink -f perfect_mean)
 )
 
-# Common case execution logic
+# Common case execution running $1 time units defaulting to some duration
 run_case() {
-    ${perfect_advance[*]}
+    dt=${1:-3}
+    ${perfect_advance[*]} "--advance_dt=${dt}"        \
+                          "--status_dt=${dt}/1000"    \
+                          "--statistics_dt=${dt}/100"
 }
 
 # Common case post-processing logic
@@ -103,7 +104,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
                            --acoustic_strength=0.01
-        run_case
+        run_case 1
     ) || echo 'v > 0' >> $FAILURES
     run_postproc
 ) &
@@ -113,7 +114,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
                            --entropy_strength=0.01
-        run_case
+        run_case 1
     ) || echo 'v > 0' >> $FAILURES
     run_postproc
 ) &
@@ -125,7 +126,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
                            --acoustic_strength=0.01
-        run_case
+        run_case 1
     ) || echo 'v < 0' >> $FAILURES
     run_postproc
 ) &
@@ -135,7 +136,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
                            --entropy_strength=0.01
-        run_case
+        run_case 1
     ) || echo 'v < 0' >> $FAILURES
     run_postproc
 ) &
