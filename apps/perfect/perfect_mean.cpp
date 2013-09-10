@@ -450,29 +450,37 @@ int main(int argc, char **argv)
 
     // Process incoming arguments
     std::vector<std::string> restart_files;
-    std::string outfile;
+    std::string datfile;
+    std::string hdffile;
     bool use_stdout = false;
+    bool use_dat    = false;
     bool use_hdf5   = false;
     bool describe   = false;
     {
         suzerain::support::program_options options(
                 "Suzerain-based channel mean quantity computations",
                 "RESTART-OR-SAMPLE-HDF5-FILE...",
-"Invocable in three distinct ways:\n"
-"\t1) perfect_mean               INFILE.h5 ...\n"
-"\t2) perfect_mean -s            INFILE.h5 ...\n"
-"\t3) perfect_mean -o OUTFILE.h5 INFILE.h5 ...\n"
+"Invocable in four distinct ways:\n"
+"\t1) perfect_mean                INFILE.h5 ...\n"
+"\t2) perfect_mean -s             INFILE.h5 ...\n"
+"\t3) perfect_mean -f OUTFILE.dat INFILE.h5 ...\n"
+"\t4) perfect_mean -o OUTFILE.h5  INFILE.h5 ...\n"
 "\n"
-"The first way processes each INFILE.h5 in turn outputting a corresponding "
-"INFILE.mean containing a comma-separated table of means from the first "
-"sample collection in the file.  The second way sends the data from all "
-"sample collections to standard output sorted according to the simulation "
-"time with a blank line separating adjacent times.  The third way outputs "
-"a single HDF5 file called OUTFILE.h5 containing all sample collections. "
+"The first way processes each INFILE.h5 in turn outputting a corresponding\n"
+"INFILE.mean containing a comma-separated table of means from the first\n"
+"sample collection in the file.  The second way (-s) sends the data from all\n "
+"sample collections to standard output sorted according to the simulation\n "
+"time with a blank line separating adjacent times.  The third way (-f)\n"
+"is identical to the second except the output is automatically sent to the\n"
+"file named OUTFILE.dat.  The fourth way (-o) outputs a single HDF5 file\n"
+"called OUTFILE.h5 containing all sample collections. Options -s, -f,  and\n"
+"-o may be specified simultaneously.\n"
                 , revstr);
         options.add_options()
             ("stdout,s",   "Write results to standard output?")
-            ("outfile,o",   boost::program_options::value(&outfile),
+            ("datfile,f",   boost::program_options::value(&datfile),
+                           "Write results to a textual output file")
+            ("hdffile,o",   boost::program_options::value(&hdffile),
                            "Write results to an HDF5 output file")
             ("describe,d", "Dump all quantity details to standard output")
             ;
@@ -488,7 +496,8 @@ int main(int argc, char **argv)
             default: TRACE_ENABLE();  break;
         }
         use_stdout = options.variables().count("stdout");
-        use_hdf5   = options.variables().count("outfile");
+        use_hdf5   = options.variables().count("datfile");
+        use_hdf5   = options.variables().count("hdffile");
         describe   = options.variables().count("describe");
     }
 
@@ -532,7 +541,7 @@ int main(int argc, char **argv)
 
     // Processing differs slightly when done file-by-file versus
     // aggregated across multiple files...
-    if (!use_hdf5 && !use_stdout) {
+    if (!use_stdout && !use_dat && !use_hdf5) {
 
         BOOST_FOREACH(const std::string& filename, restart_files) {
 
@@ -617,6 +626,16 @@ int main(int argc, char **argv)
             }
         }
 
+        if (use_dat) {
+            // Write header followed by data values separated by blanks
+            std::ofstream outf(datfile.c_str());
+            quantity::write_names(outf);
+            BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
+                outf << i->second->format(quantity::iofmt) << std::endl
+                     << std::endl;
+            }
+        }
+
         if (use_hdf5) {
             // Create a file-specific ESIO handle using RAII
             shared_ptr<boost::remove_pointer<esio_handle>::type> h(
@@ -624,8 +643,8 @@ int main(int argc, char **argv)
                     esio_handle_finalize);
 
             // Create output file
-            DEBUG("Creating file " << outfile);
-            esio_file_create(h.get(), outfile.c_str(), 1 /* overwrite */);
+            DEBUG("Creating file " << hdffile);
+            esio_file_create(h.get(), hdffile.c_str(), 1 /* overwrite */);
 
             // Store the scenario and numerics metadata
             scenario->save(h.get());
