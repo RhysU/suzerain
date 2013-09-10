@@ -2,6 +2,7 @@
 
 postprocdir       = $(pkgdatadir)/postproc
 postproc_SCRIPTS  = channel.m gplot orderest remove_hdf5.py rename_hdf5.py
+postproc_SCRIPTS += plan_suzerain.py
 postproc_SCRIPTS += plot_blparam.py
 postproc_SCRIPTS += plot_stats.py
 postproc_SCRIPTS += plot_status.py
