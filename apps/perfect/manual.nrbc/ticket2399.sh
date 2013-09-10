@@ -81,20 +81,22 @@ trap 'rm -f $FAILURES' EXIT
 echo 'Quiet base flow suite one: outflow upper boundary'
 echo '######################################################'
 (
-    rmmkcd ticket2399/quiet_pos_v
+    case="quiet_pos_v"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0
         run_case
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 (
-    rmmkcd ticket2399/quiet_pos_vw
+    case="quiet_pos_vw"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0.005 --upper_v=0.01 --upper_w=0.005
         run_case
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
@@ -102,60 +104,66 @@ echo '######################################################'
 echo 'Quiet base flow suite two: inflow upper boundary'
 echo '######################################################'
 (
-    rmmkcd ticket2399/quiet_neg_v
+    case="quiet_neg_v"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0
         run_case
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 (
-    rmmkcd ticket2399/quiet_neg_vw
+    case="quiet_neg_vw"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=-0.005 --upper_v=-0.01 --upper_w=-0.005
         run_case
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 echo 'Pulse: outflow upper boundary'
 echo '######################################################'
 (
-    rmmkcd ticket2399/acoustic_pos_v
+    case="acoustic_pos_v"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
                            --acoustic_strength=0.1
         run_case 1
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 (
-    rmmkcd ticket2399/entropy_pos_v
+    case="entropy_pos_v"
+    rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=1.0 --lower_w=0 --upper_v=1.0 --upper_w=0 \
+        ${perfect_init[*]} --lower_v=0.5 --lower_w=0 --upper_v=0.5 --upper_w=0 \
                            --entropy_strength=0.01
         run_case 1
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 echo 'Pulse: inflow upper boundary'
 echo '######################################################'
 (
-    rmmkcd ticket2399/acoustic_neg_v
+    case="acoustic_neg_v"
+    rmmkcd "ticket2399/$case"
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
                            --acoustic_strength=0.1
         run_case 1
-    ) || basename `pwd` >> $FAILURES
+    ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
 (
-    # rmmkcd ticket2399/entropy_neg_v
     # Entropy waves do not hit the upper boundary for negative v
+    case=entropy_neg_v
+    :
 ) &
 
 # Attach a plot of some it-bounces-back-and-forth measurement as a baseline, or some other diagnostic procedure that I'll repeat. Make this scriptable so that I may re-run these cases quickly after any code changes.
