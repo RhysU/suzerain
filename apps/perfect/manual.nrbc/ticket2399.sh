@@ -84,7 +84,7 @@ echo '######################################################'
     case="quiet_pos_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0
+        ${perfect_init[*]} --lower_v=0.1 --lower_w=0 --upper_v=0.1 --upper_w=0
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -94,7 +94,7 @@ echo '######################################################'
     case="quiet_pos_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.01 --lower_w=0.005 --upper_v=0.01 --upper_w=0.005
+        ${perfect_init[*]} --lower_v=0.1 --lower_w=0.05 --upper_v=0.1 --upper_w=0.05
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -107,7 +107,7 @@ echo '######################################################'
     case="quiet_neg_v"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0
+        ${perfect_init[*]} --lower_v=-0.1 --lower_w=0 --upper_v=-0.1 --upper_w=0
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
@@ -117,7 +117,7 @@ echo '######################################################'
     case="quiet_neg_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=-0.01 --lower_w=-0.005 --upper_v=-0.01 --upper_w=-0.005
+        ${perfect_init[*]} --lower_v=-0.1 --lower_w=-0.05 --upper_v=-0.1 --upper_w=-0.05
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
