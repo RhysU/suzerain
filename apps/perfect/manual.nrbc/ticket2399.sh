@@ -48,7 +48,8 @@ run_postproc() {
     grep bc.upper log.dat > upper.dat
     grep bc.lower log.dat > lower.dat
     shopt -s nullglob
-    ${perfect_mean[*]} -o summary.h5 sample*.h5 initial.h5 restart*.h5
+    ${perfect_mean[*]} -f summary.dat -o summary.h5 \
+                       sample*.h5 initial.h5 restart*.h5
 }
 
 # Used to build and report failed cases
