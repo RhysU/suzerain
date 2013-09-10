@@ -496,7 +496,7 @@ int main(int argc, char **argv)
             default: TRACE_ENABLE();  break;
         }
         use_stdout = options.variables().count("stdout");
-        use_hdf5   = options.variables().count("datfile");
+        use_dat    = options.variables().count("datfile");
         use_hdf5   = options.variables().count("hdffile");
         describe   = options.variables().count("describe");
     }
@@ -627,7 +627,7 @@ int main(int argc, char **argv)
         }
 
         if (use_dat) {
-            // Write header followed by data values separated by blanks
+            INFO("Writing file " << datfile);
             std::ofstream outf(datfile.c_str());
             quantity::write_names(outf);
             BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
