@@ -146,13 +146,8 @@ echo '######################################################'
 ) &
 
 (
-    rmmkcd ticket2399/entropy_neg_v
-    (
-        ${perfect_init[*]} --lower_v=-1.0 --lower_w=0 --upper_v=-1.0 --upper_w=0 \
-                           --entropy_strength=0.01
-        run_case 1
-    ) || basename `pwd` >> $FAILURES
-    run_postproc
+    # rmmkcd ticket2399/entropy_neg_v
+    # Entropy waves do not hit the upper boundary for negative v
 ) &
 
 # Attach a plot of some it-bounces-back-and-forth measurement as a baseline, or some other diagnostic procedure that I'll repeat. Make this scriptable so that I may re-run these cases quickly after any code changes.
