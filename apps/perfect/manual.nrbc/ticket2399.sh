@@ -50,6 +50,13 @@ run_postproc() {
     shopt -s nullglob
     ${perfect_mean[*]} -f summary.dat -o summary.h5 \
                        sample*.h5 initial.h5 restart*.h5
+
+    # Display (hopefully) logarithmic decay of signal versus simulation time
+    if hash gplot 2>/dev/null; then
+        gplot -p L2.mean.png -lc -f i=6:10 -x t -y L2 L2.mean.dat using 4:i with lines
+    fi
+
+    # Summarize the overall field behavior in a manner that aids visual debugging
     if hash gplot 2>/dev/null; then
         gplot -3M -p bar_p.png   -t bar_p   -x t -y y summary.dat using '"t":"y":"bar_p"'
         gplot -3M -p bar_rho.png -t bar_rho -x t -y y summary.dat using '"t":"y":"bar_rho"'
@@ -70,7 +77,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0
         run_case
-    ) || echo 'v > 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
@@ -79,7 +86,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0.005 --upper_v=0.01 --upper_w=0.005
         run_case
-    ) || echo 'v, w > 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
@@ -91,7 +98,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0
         run_case
-    ) || echo 'v < 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
@@ -100,7 +107,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=-0.005 --upper_v=-0.01 --upper_w=-0.005
         run_case
-    ) || echo 'v, w < 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
@@ -110,19 +117,19 @@ echo '######################################################'
     rmmkcd ticket2399/acoustic_pos_v
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
-                           --acoustic_strength=0.01
+                           --acoustic_strength=0.1
         run_case 1
-    ) || echo 'v > 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
 (
     rmmkcd ticket2399/entropy_pos_v
     (
-        ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
+        ${perfect_init[*]} --lower_v=1.0 --lower_w=0 --upper_v=1.0 --upper_w=0 \
                            --entropy_strength=0.01
         run_case 1
-    ) || echo 'v > 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
@@ -132,19 +139,19 @@ echo '######################################################'
     rmmkcd ticket2399/acoustic_neg_v
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
-                           --acoustic_strength=0.01
+                           --acoustic_strength=0.1
         run_case 1
-    ) || echo 'v < 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
 (
     rmmkcd ticket2399/entropy_neg_v
     (
-        ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
+        ${perfect_init[*]} --lower_v=-1.0 --lower_w=0 --upper_v=-1.0 --upper_w=0 \
                            --entropy_strength=0.01
         run_case 1
-    ) || echo 'v < 0' >> $FAILURES
+    ) || basename `pwd` >> $FAILURES
     run_postproc
 ) &
 
