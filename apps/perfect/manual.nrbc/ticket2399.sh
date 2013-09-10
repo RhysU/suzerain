@@ -45,8 +45,16 @@ run_case() {
 
 # Common case post-processing logic
 run_postproc() {
-    grep bc.upper log.dat > upper.dat
-    grep bc.lower log.dat > lower.dat
+
+    # Extract 0th, 1st, and 2nd derivatives of conserved state at the boundaries
+    grep bc.lower.d0 log.dat > lower.d0
+    grep bc.lower.d1 log.dat > lower.d1
+    grep bc.lower.d2 log.dat > lower.d2
+    grep bc.upper.d0 log.dat > upper.d0
+    grep bc.upper.d1 log.dat > upper.d1
+    grep bc.upper.d2 log.dat > upper.d2
+
+    # Post-process the entire collection of sample and restart files
     shopt -s nullglob
     ${perfect_mean[*]} -f summary.dat -o summary.h5 \
                        sample*.h5 initial.h5 restart*.h5

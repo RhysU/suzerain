@@ -820,38 +820,74 @@ driver_base::log_status_boundary_state(
     // Only continue on the rank housing the zero-zero modes.
     if (!dgrid->has_zero_zero_modes()) return;
 
-    logging::logger_type nick[2] = { logging::get_logger("bc.lower"),
-                                     logging::get_logger("bc.upper")  };
+    // Named loggers for lower/upper state at the 0th, 1st, and 2nd derivatives
+    logging::logger_type nick[2][3] = {
+        {
+            logging::get_logger("bc.lower.d0"),
+            logging::get_logger("bc.lower.d1"),
+            logging::get_logger("bc.lower.d2"),
+        },
+        {
+            logging::get_logger("bc.upper.d0"),
+            logging::get_logger("bc.upper.d1"),
+            logging::get_logger("bc.upper.d2"),
+        }
+    };
 
-    // Indices at the lower and upper walls.  Use that bc collocation point
-    // values are nothing but the first and last B-spline coefficient values.
+    // Indices at the lower and upper walls
     size_t bc[2] = { 0, state_linear->shape()[1] - 1 };
+    assert(SUZERAIN_COUNTOF(bc) == SUZERAIN_COUNTOF(nick));
+
+    // Buffer for state evaluation and derivatives (but allocation delayed)
+    Array3Xc values;                                     // Complex!
+    assert(values.rows() == SUZERAIN_COUNTOF(nick[0]));  // Consistency
 
     for (size_t l = 0; l < SUZERAIN_COUNTOF(bc); ++l) {
 
         // Avoid computational cost when logging is disabled
-        if (!DEBUG_ENABLED(nick[l])) continue;
+        bool necessary = false;
+        for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
+            necessary |= DEBUG_ENABLED(nick[l][m]);
+        }
+        if (!necessary) continue;
+
+        // Ensure value buffer is adequately-sized and evaluate the 0th, 1st,
+        // and 2nd derivatives of all state.  B-spline recursion used instead
+        // of matrix operators because of locality of reference.
+        values.resize(values.rows(), fields.size());
+        SUZERAIN_ENSURE((unsigned) state_linear->strides()[1] == 1u);
+        for (size_t k = 0; k < fields.size(); ++k) {
+            const real_t point = b->collocation_point(bc[l]);
+            b->linear_combination(values.rows() - 1,
+                                  (*state_linear)[k].origin(),
+                                  1u, &point, values.col(k).data(), 1u);
+        }
 
         // Show headers only on first invocation
         std::ostringstream msg;
         if (!log_status_boundary_state_header_shown[l]) {
             msg << std::setw(timeprefix.size())
                 << build_timeprefix_description();
-            for (size_t k = 0; k < fields.size(); ++k)
+            for (size_t k = 0; k < fields.size(); ++k) {
                 msg << ' ' << std::setw(fullprec<>::width)
                            << fields[k].identifier;
-            DEBUG(nick[l], msg.str());
-            msg.str("");
+            }
+            for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
+                DEBUG(nick[l][m], msg.str());
+            }
             log_status_boundary_state_header_shown[l] = true;
         }
 
         // Show mean boundary state on every invocation
-        msg << timeprefix;
-        for (size_t k = 0; k < fields.size(); ++k) {
-            real_t val = ((*state_linear)[k][bc[l]][0][0]).real();
-            msg << ' ' << fullprec<>(val);
+        for (size_t m = 0; m < (unsigned) values.rows(); ++m) {
+            msg.str("");
+            msg << timeprefix;
+            for (size_t k = 0; k < fields.size(); ++k) {
+                using std::abs;
+                msg << ' ' << fullprec<>(abs(values(m,k)));
+            }
+            DEBUG(nick[l][m], msg.str());
         }
-        DEBUG(nick[l], msg.str());
     }
 }
 
