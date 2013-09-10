@@ -6,6 +6,7 @@ postproc_SCRIPTS += plan_suzerain.py
 postproc_SCRIPTS += plot_blparam.py
 postproc_SCRIPTS += plot_stats.py
 postproc_SCRIPTS += plot_status.py
+postproc_SCRIPTS += sgr2suz.py
 noinst_SCRIPTS    = prerequisites.py
 postproc_DATA     = gb2ge.m
 postproc_DATA    += gb.py
