@@ -37,7 +37,7 @@ perfect_mean=(
 
 # Common case execution running $1 time units defaulting to some duration
 run_case() {
-    dt=${1:-3}
+    dt=${1:-2.5}
     ${perfect_advance[*]} "--advance_dt=${dt}"        \
                           "--status_dt=${dt}/1000"    \
                           "--statistics_dt=${dt}/100"
@@ -50,6 +50,12 @@ run_postproc() {
     shopt -s nullglob
     ${perfect_mean[*]} -f summary.dat -o summary.h5 \
                        sample*.h5 initial.h5 restart*.h5
+    if hash gplot 2>/dev/null; then
+        gplot -3M -p bar_p.png   -t bar_p   -x t -y y summary.dat using '"t":"y":"bar_p"'
+        gplot -3M -p bar_rho.png -t bar_rho -x t -y y summary.dat using '"t":"y":"bar_rho"'
+        gplot -3M -p bar_T.png   -t bar_T   -x t -y y summary.dat using '"t":"y":"bar_T"'
+        gplot -3M -p bar_v.png   -t bar_v   -x t -y y summary.dat using '"t":"y":"bar_v"'
+    fi
 }
 
 # Used to build and report failed cases
