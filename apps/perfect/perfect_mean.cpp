@@ -627,7 +627,7 @@ int main(int argc, char **argv)
         }
 
         if (use_dat) {
-            INFO("Writing file " << datfile);
+            INFO0("Writing file " << datfile);
             std::ofstream outf(datfile.c_str());
             quantity::write_names(outf);
             BOOST_FOREACH(quantity::storage_map_type::value_type i, pool) {
