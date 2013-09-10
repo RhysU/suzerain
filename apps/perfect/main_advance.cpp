@@ -264,7 +264,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         // for details and also personal notes dated 26 June 2013.
         if (isothermal->upper_v > 0) {
             INFO0(who, "Constraining outflow freestream mean state "
-                       " second derivatives to be zero");
+                       "second derivatives to be zero");
             constrainer->numerical[ndx::e  ].reset(
                     new constraint::constant_upper_derivative(0, *cop, 2));
             constrainer->numerical[ndx::mx ] = constrainer->numerical[ndx::e];
