@@ -480,17 +480,11 @@ quantities sample_quantities(
         } // end z
     } // end y
 
-    // Prepare factored mass matrix for repeated use
-    bsplineop_luz massluz(cop);
-    const complex_t c_scale_factor = 1 / dgrid.chi();
-    massluz.opform(1, &c_scale_factor, cop);
-    massluz.factor();
-
     // (2a) Temperature from physical to wave space (still collocation in y)
     otool.dgrid.transform_physical_to_wave(&auxp.coeffRef(aux::T,0));
 
     // (2b) Apply inverse mass matrix to get to pure coefficient space
-    otool.bop_solve(massluz, auxw, aux::T);
+    otool.bop_solve(*otool.massluz(), auxw, aux::T);
 
     // ... and zero wavenumbers present only for dealiasing
     // while simultaneously normalizing FFT
