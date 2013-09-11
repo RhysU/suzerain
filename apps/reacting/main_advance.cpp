@@ -399,28 +399,36 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-#ifdef SUZERAIN_HAVE_LARGO
     // Allocate slow growth workspace
-     if (sgdef->formulation.enabled()) {
-
+    if (sgdef->formulation.enabled()) {
+        const std::string& largo_name = sgdef->formulation.name();
+#ifndef SUZERAIN_HAVE_LARGO
+        WARN0("Largo model " << largo_name
+              << " requested but Largo not available");
+#else
         int state_count = (int) cmods->Ns()+4;
         int Ns = (int) cmods->Ns()-1;
-        const std::string largo_name = sgdef->formulation.name();
-        int largo_imodel;
 
-        // Map model name to model index
-        // FIXME: switch to model name when ready on the largo side
-        if (largo_name=="temporal") {
+# ifdef LARGO_VERSION
+        INFO0("Allocating Largo model named " << largo_name);
+        largo_allocate(&sgdef->workspace, state_count, Ns, largo_name);
+# else
+# warning "FIXME: Out-of-date Largo in use; mapping model name to model index."
+        // FIXME Remove else clause and LARGO_VERSION once r41426 everywhere
+        int largo_imodel;
+        if (largo_name == "temporal") {
             largo_imodel = 1;
-        } else if (largo_name=="temporal_tensor_consistent") {
+        } else if (largo_name == "temporal_tensor_consistent") {
             largo_imodel = 3;
         } else {
+            FATAL0("Unknown Largo model name: " << largo_name);
             SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
         }
-
         largo_allocate(&sgdef->workspace, state_count, Ns, largo_imodel);
+# endif /* LARGO_VERSION */
+
+#endif /* SUZERAIN_HAVE_LARGO */
     }
-#endif
 
     // Use --undriven as a testing- and debugging-related tool.
     // For example, to investigate nonreflecting boundary condition behavior.
