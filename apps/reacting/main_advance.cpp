@@ -401,30 +401,28 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
 
     // Allocate slow growth workspace
     if (sgdef->formulation.enabled()) {
-        const std::string& largo_name = sgdef->formulation.name();
+        const int state_count   = static_cast<int>(cmods->Ns()) + 4;
+        const int Ns            = static_cast<int>(cmods->Ns()) - 1;
+        const std::string& name = sgdef->formulation.name();
+        INFO0("Allocating Largo model \"" << name
+              << "\" for state count " << state_count
+              << " with " << Ns << " species");
 #ifndef SUZERAIN_HAVE_LARGO
-        WARN0("Largo model " << largo_name
-              << " requested but Largo not available");
+        WARN0("Largo model \"" << name << "\" requested but Largo not available");
 #else
-        int state_count = (int) cmods->Ns()+4;
-        int Ns = (int) cmods->Ns()-1;
-
 # ifdef LARGO_VERSION
-        INFO0("Allocating Largo model named " << largo_name);
-        largo_allocate(&sgdef->workspace, state_count, Ns, largo_name);
+        largo_allocate(&sgdef->workspace, state_count, Ns, name.c_str());
 # else
 # warning "FIXME: Out-of-date Largo in use; mapping model name to model index."
         // FIXME Remove else clause and LARGO_VERSION once r41426 everywhere
-        int largo_imodel;
-        if (largo_name == "temporal") {
-            largo_imodel = 1;
-        } else if (largo_name == "temporal_tensor_consistent") {
-            largo_imodel = 3;
-        } else {
-            FATAL0("Unknown Largo model name: " << largo_name);
+        const int imodel = (name == "temporal"                  ) ? 1
+                         : (name == "temporal_tensor_consistent") ? 3
+                         : -1;
+        if (imodel < 0) {
+            FATAL0("Unknown Largo model \"" << name << "\"");
             SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
         }
-        largo_allocate(&sgdef->workspace, state_count, Ns, largo_imodel);
+        largo_allocate(&sgdef->workspace, state_count, Ns, imodel);
 # endif /* LARGO_VERSION */
 
 #endif /* SUZERAIN_HAVE_LARGO */
