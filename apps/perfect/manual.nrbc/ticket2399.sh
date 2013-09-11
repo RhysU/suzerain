@@ -1,6 +1,47 @@
 #!/bin/bash
 set -eu
 
+## A testing script for semi-automated investigation of non-reflecting boundary
+## conditions.  See discussion within Redmine tickets #2399 and #2957.
+
+## Somewhat or entirely unresolved details (with commentary):
+#    1) Attach a plot of some it-bounces-back-and-forth measurement as a
+#       baseline, or some other diagnostic procedure that I'll repeat. Make
+#       this scriptable so that I may re-run these cases quickly after changes.
+#
+#       (Function run_postproc outputs a plot of L2 for all variables.)
+#       (This script is the repeatable mechanism.)
+#
+#    2) What about for v_inflow > 0, v_outflow > 0?
+#    3) What about for v_inflow < 0, v_outflow < 0?
+#    4) Does my acoustic pulse in perfect_init do what I expect in 1D with the
+#       upper NRBC?
+#
+#       (Yes, yes, and yes.)
+#
+#    5) For constant reference v_inflow > 0, v_outflow > 0?
+#    6) For constant reference v_inflow < 0, v_outflow < 0?
+#
+#       (Yes and yes.)
+#
+#    7) For variable reference v_inflow > 0, v_outflow > 0?
+#    8) For variable reference v_inflow < 0, v_outflow < 0?
+#
+#       (No and no.  Dropping variable NRBC reference ideas for now.)
+#
+#    9) Can I retain this behavior while adding driving forcing to the
+#       freestream?
+#
+#       (Seemingly so, but a true test requires more wavenumbers and
+#        a pulse riding on the non-zero-zero wavenumber content.
+#        Punting for now.)
+#
+#   10) Repeat for the entropy pulse, working through a new copy of whatever
+#       this final list becomes.
+#
+#       (Entropy pulses have been problematic.  Punting on testing for now.)
+#
+
 # Shorthand used within the individual cases
 rmmkcd() {
     rm -rfv "$1" && mkdir -vp "$1" && cd "$1";
@@ -10,9 +51,9 @@ perfect_init=(
     initial.h5
     -v
     --restart_physical     # Simplifies any required IC debugging
-    --Ny=96
+    --Ny=64
     --htdelta=-1           # Flat plate case
-    --Ly=1/2               # Shortens wall-normal traversal times
+    --Ly=1/4               # Shortens wall-normal traversal times
     --bulk_rho=1           # Constant density to any power is one
     --npower=0             # Provides linear velocity profile...
     --bulk_rho_u=0         # ...in conjunction with this setting
@@ -28,6 +69,7 @@ perfect_advance=(
     $(readlink -f perfect_advance)
     initial.h5
     -v
+    --undriven=all         # Driving forces interfere with wall-normal pulses
     --explicit             # TODO Eventually use ${OPER:=}
 )
 perfect_mean=(
@@ -39,7 +81,8 @@ run_case() {
     dt=${1:-1}
     ${perfect_advance[*]} "--advance_dt=${dt}"        \
                           "--status_dt=${dt}/1000"    \
-                          "--statistics_dt=${dt}/100"
+                          "--statistics_dt=${dt}/100" \
+                          "$@"
 }
 
 # Common case post-processing logic
@@ -122,7 +165,7 @@ echo '######################################################'
     run_postproc
 ) &
 
-echo 'Pulse: outflow upper boundary'
+echo 'Acoustic pulse: outflow upper boundary'
 echo '######################################################'
 (
     case="acoustic_pos_v"
@@ -136,17 +179,17 @@ echo '######################################################'
 ) &
 
 (
-    case="entropy_pos_v"
+    case="acoustic_pos_vw"
     rmmkcd "ticket2399/$case"
     (
-        ${perfect_init[*]} --lower_v=0.5 --lower_w=0 --upper_v=0.5 --upper_w=0 \
-                           --entropy_strength=0.01
+        ${perfect_init[*]} --lower_v=0.1 --lower_w=0.05 --upper_v=0.1 --upper_w=0.05 \
+                           --acoustic_strength=0.1
         run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
 
-echo 'Pulse: inflow upper boundary'
+echo 'Acoustic pulse: inflow upper boundary'
 echo '######################################################'
 (
     case="acoustic_neg_v"
@@ -160,21 +203,26 @@ echo '######################################################'
 ) &
 
 (
-    # Entropy waves do not hit the upper boundary for negative v
-    case=entropy_neg_v
-    :
+    case="acoustic_neg_vw"
+    rmmkcd "ticket2399/$case"
+    (
+        ${perfect_init[*]} --lower_v=-0.1 --lower_w=-0.05 --upper_v=-0.1 --upper_w=-0.05 \
+                           --acoustic_strength=0.1
+        run_case
+    ) || echo "$case" >> $FAILURES
+    run_postproc
 ) &
 
-# Attach a plot of some it-bounces-back-and-forth measurement as a baseline, or some other diagnostic procedure that I'll repeat. Make this scriptable so that I may re-run these cases quickly after any code changes.
-# What about for v_inflow > 0, v_outflow > 0?
-# What about for v_inflow < 0, v_outflow < 0?
-# Does my acoustic pulse in perfect_init do what I expect in 1D with the upper NRBC?
-# For constant reference v_inflow > 0, v_outflow > 0?
-# For constant reference v_inflow < 0, v_outflow < 0?
-# For variable reference v_inflow > 0, v_outflow > 0?
-# For variable reference v_inflow < 0, v_outflow < 0?
-# Can I retain this behavior while adding driving forcing to the freestream?
-# Repeat for the entropy pulse, working through a new copy of whatever this final list becomes.
+## TODO See item 10 above
+#
+# echo 'Entropy pulse: outflow upper boundary'
+# echo '######################################################'
+
+## An entropy pulse makes no sense for an inflow upper boundary
+## as convection does not drive it towards the boundary in question.
+#
+# echo 'Entropy pulse: inflow upper boundary'
+# echo '######################################################'
 
 # Wait for all subshells to finish
 wait
