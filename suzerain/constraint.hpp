@@ -54,11 +54,12 @@ public:
     VectorXr coeff;
 
     /**
-     * What shape, stored as relative magnitudes at collocation points, express
-     * the wall-normal forcing profile to use when enforcing constraints?  For
-     * example, a uniform profile would be expressed using all ones.  A point
-     * source would be all zeros with the exception of a single one.  Unlike
-     * #coeff, this member must be usable even when enabled() returns \c false.
+     * What shape, stored as relative magnitudes at collocation points,
+     * expresses the wall-normal forcing profile to use when enforcing
+     * constraints?  For example, a uniform profile would be expressed using
+     * all ones.  A point source would be all zeros with the exception of a
+     * single one.  Unlike #coeff, this member must be usable even when
+     * enabled() returns \c false.
      */
     ArrayXr shape;
 
