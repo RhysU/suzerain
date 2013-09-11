@@ -43,13 +43,15 @@ base::~base()
     // NOP
 }
 
-uniform::uniform(bspline &b)
+uniform::uniform(const bspline &b)
 {
+    // Relies on any B-spline basis being a partition of unity
     shape.setOnes(b.n());
 }
 
 uniform::uniform(const bsplineop &bop)
 {
+    // Relies on any B-spline basis being a partition of unity
     shape.setOnes(bop.n());
 }
 

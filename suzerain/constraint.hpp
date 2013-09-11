@@ -81,7 +81,7 @@ public:
  */
 struct uniform : virtual base
 {
-    explicit uniform(bspline &b);
+    explicit uniform(const bspline &b);
 
     explicit uniform(const bsplineop &bop);
 };
