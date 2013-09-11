@@ -10,8 +10,8 @@ perfect_init=(
     initial.h5
     -v
     --restart_physical     # Simplifies any required IC debugging
-    --Ny=64
-    --htdelta=-1/2         # Flat plate case
+    --Ny=96
+    --htdelta=-1           # Flat plate case
     --Ly=1/2               # Shortens wall-normal traversal times
     --bulk_rho=1           # Constant density to any power is one
     --npower=0             # Provides linear velocity profile...
@@ -21,7 +21,7 @@ perfect_init=(
     --lower_u=1
     --upper_u=1
     --Ma=1.5               # From upper_u/sqrt(upper_T)
-    --Re=1000              # Larger reduces undesirable viscous impact
+    --Re=500               # Larger reduces undesirable viscous impact
                            # Try --Re=inf for an Eulerian good time
 )
 perfect_advance=(
@@ -29,7 +29,6 @@ perfect_advance=(
     initial.h5
     -v
     --explicit             # TODO Eventually use ${OPER:=}
-    --undriven=all         # TODO Disabling increases coverage
 )
 perfect_mean=(
     $(readlink -f perfect_mean)
@@ -37,7 +36,7 @@ perfect_mean=(
 
 # Common case execution running $1 time units defaulting to some duration
 run_case() {
-    dt=${1:-2.5}
+    dt=${1:-1}
     ${perfect_advance[*]} "--advance_dt=${dt}"        \
                           "--status_dt=${dt}/1000"    \
                           "--statistics_dt=${dt}/100"
@@ -131,7 +130,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.01 --lower_w=0 --upper_v=0.01 --upper_w=0 \
                            --acoustic_strength=0.1
-        run_case 1
+        run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
@@ -142,7 +141,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=0.5 --lower_w=0 --upper_v=0.5 --upper_w=0 \
                            --entropy_strength=0.01
-        run_case 1
+        run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
@@ -155,7 +154,7 @@ echo '######################################################'
     (
         ${perfect_init[*]} --lower_v=-0.01 --lower_w=0 --upper_v=-0.01 --upper_w=0 \
                            --acoustic_strength=0.1
-        run_case 1
+        run_case
     ) || echo "$case" >> $FAILURES
     run_postproc
 ) &
