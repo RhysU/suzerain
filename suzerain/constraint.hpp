@@ -87,6 +87,17 @@ struct uniform : virtual base
 };
 
 /**
+ * A building block preparing a linear forcing profile in #shape.
+ *
+ * The profile takes value \c lower at the 0th collocation point
+ * and value \c upper at the last collocation point.
+ */
+struct linear : virtual base
+{
+    linear(const bspline &b, const real_t lower, const real_t upper);
+};
+
+/**
  * A building block preparing a forcing profile in #shape targeting the
  * <tt>i</tt>-th B-spline coefficient.
  */

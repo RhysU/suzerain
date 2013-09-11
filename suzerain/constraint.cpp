@@ -55,6 +55,22 @@ uniform::uniform(const bsplineop &bop)
     shape.setOnes(bop.n());
 }
 
+linear::linear(const bspline &b, const real_t lower, const real_t upper)
+{
+    const int n = b.n();
+    shape.resize(n);
+
+    // Pedantically, http://wikipedia.org/wiki/Linear_equation#Two-point_form
+    const real_t x1 = lower, y1 = b.collocation_point(0);
+    const real_t x2 = upper, y2 = b.collocation_point(n-1);
+    const real_t m  = (y2 - y1)/(x2 - x1);
+    for (int i = 0; i < n; ++i) {
+        const real_t x = b.collocation_point(i);
+        const real_t y = y1 + m*(x - x1);
+        shape[i] = y;
+    }
+}
+
 coefficient::coefficient(const bsplineop &bop, const int i)
 {
     // Apply the mass matrix to express coefficient i via collocation points
