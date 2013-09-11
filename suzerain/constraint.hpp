@@ -196,7 +196,7 @@ struct constant_lower : constant, lower, uniform
 {
     constant_lower(const real_t target,
                    const bsplineop &bop,
-                   const int nderiv = 0);
+                   const int nderiv);
 };
 
 /**
@@ -207,7 +207,7 @@ struct constant_upper : constant, upper, uniform
 {
     constant_upper(const real_t target,
                    const bsplineop &bop,
-                   const int nderiv = 0);
+                   const int nderiv);
 };
 
 /**
