@@ -57,7 +57,7 @@ suzerain_bspline_linear_combination(
     gsl_bspline_deriv_workspace *dw)
 {
     /* Parameter sanity checks */
-    if (ldvalues && ldvalues < npoints) {
+    if (SUZERAIN_UNLIKELY(ldvalues && ldvalues < npoints)) {
         SUZERAIN_ERROR("ldvalues too small for npoints", SUZERAIN_EINVAL);
     }
 
@@ -97,7 +97,7 @@ suzerain_bspline_linear_combination_complex(
     gsl_bspline_deriv_workspace *dw)
 {
     /* Parameter sanity checks */
-    if (ldvalues && ldvalues < npoints) {
+    if (SUZERAIN_UNLIKELY(ldvalues && ldvalues < npoints)) {
         SUZERAIN_ERROR("ldvalues too small for npoints", SUZERAIN_EINVAL);
     }
 
@@ -138,7 +138,7 @@ suzerain_bspline_integration_coefficients(
     /* Obtain an appropriate order Gauss-Legendre integration rule */
     gsl_integration_glfixed_table * const tbl
         = gsl_integration_glfixed_table_alloc((w->k - nderiv + 1)/2);
-    if (tbl == NULL) {
+    if (SUZERAIN_UNLIKELY(tbl == NULL)) {
         SUZERAIN_ERROR("failed to obtain Gauss-Legendre rule from GSL",
                        SUZERAIN_ESANITY);
     }
@@ -258,16 +258,16 @@ suzerain_bspline_htstretch2_evdeltascale_greville_abscissae(
     double * const Chigh)
 {
     /* Parameter sanity checks */
-    if (nderiv < 0) {
+    if (SUZERAIN_UNLIKELY(nderiv < 0)) {
         SUZERAIN_ERROR("Requested derivative nderiv must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (k < 1) {
+    } else if (SUZERAIN_UNLIKELY(k < 1)) {
         SUZERAIN_ERROR("B-spline order k must be strictly positive",
                        SUZERAIN_EINVAL);
-    } else if (htdelta < 0) {
+    } else if (SUZERAIN_UNLIKELY(htdelta < 0)) {
         SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (N < k) {
+    } else if (SUZERAIN_UNLIKELY(N < k)) {
         SUZERAIN_ERROR("Number of degrees of freedom N < B-spline order k",
                        SUZERAIN_EINVAL);
     }
@@ -378,16 +378,16 @@ suzerain_bspline_htstretch1_evdeltascale_greville_abscissae(
     double * const Chigh)
 {
     /* Parameter sanity checks */
-    if (nderiv < 0) {
+    if (SUZERAIN_UNLIKELY(nderiv < 0)) {
         SUZERAIN_ERROR("Requested derivative nderiv must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (k < 1) {
+    } else if (SUZERAIN_UNLIKELY(k < 1)) {
         SUZERAIN_ERROR("B-spline order k must be strictly positive",
                        SUZERAIN_EINVAL);
-    } else if (htdelta < 0) {
+    } else if (SUZERAIN_UNLIKELY(htdelta < 0)) {
         SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (N < k) {
+    } else if (SUZERAIN_UNLIKELY(N < k)) {
         SUZERAIN_ERROR("Number of degrees of freedom N < B-spline order k",
                        SUZERAIN_EINVAL);
     }
@@ -496,16 +496,16 @@ suzerain_bspline_htstretch2_evdeltascale_breakpoints(
     double * const Chigh)
 {
     /* Parameter sanity checks */
-    if (nderiv < 0) {
+    if (SUZERAIN_UNLIKELY(nderiv < 0)) {
         SUZERAIN_ERROR("Requested derivative nderiv must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (k < 1) {
+    } else if (SUZERAIN_UNLIKELY(k < 1)) {
         SUZERAIN_ERROR("B-spline order k must be strictly positive",
                        SUZERAIN_EINVAL);
-    } else if (htdelta < 0) {
+    } else if (SUZERAIN_UNLIKELY(htdelta < 0)) {
         SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (N < k) {
+    } else if (SUZERAIN_UNLIKELY(N < k)) {
         SUZERAIN_ERROR("Number of degrees of freedom N < B-spline order k",
                        SUZERAIN_EINVAL);
     }
@@ -616,16 +616,16 @@ suzerain_bspline_htstretch1_evdeltascale_breakpoints(
     double * const Chigh)
 {
     /* Parameter sanity checks */
-    if (nderiv < 0) {
+    if (SUZERAIN_UNLIKELY(nderiv < 0)) {
         SUZERAIN_ERROR("Requested derivative nderiv must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (k < 1) {
+    } else if (SUZERAIN_UNLIKELY(k < 1)) {
         SUZERAIN_ERROR("B-spline order k must be strictly positive",
                        SUZERAIN_EINVAL);
-    } else if (htdelta < 0) {
+    } else if (SUZERAIN_UNLIKELY(htdelta < 0)) {
         SUZERAIN_ERROR("Stretching parameter htdelta must be nonnegative",
                        SUZERAIN_EINVAL);
-    } else if (N < k) {
+    } else if (SUZERAIN_UNLIKELY(N < k)) {
         SUZERAIN_ERROR("Number of degrees of freedom N < B-spline order k",
                        SUZERAIN_EINVAL);
     }
