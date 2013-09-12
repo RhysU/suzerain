@@ -36,7 +36,7 @@
 
 namespace suzerain {
 
-/** Holds information on the \f$L^2\f$ norm of a scalar field */
+/** Holds information on the \f$L^2\f$ norm of a scalar field. */
 struct field_L2 {
     real_t mean2;
     real_t fluctuating2;
