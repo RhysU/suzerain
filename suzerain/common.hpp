@@ -64,7 +64,7 @@ SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
 SUZERAIN_GCC_DIAG_OFF(unused-parameter);
 SUZERAIN_GCC_DIAG_OFF(unused-variable);
 
-// Include Eigen functionality used through Suzerain
+// Include Eigen functionality used throughout Suzerain
 #include <Eigen/Core>
 #include <Eigen/LU>
 #include <Eigen/SVD>
@@ -117,12 +117,12 @@ SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include <boost/utility.hpp>
 
 // If possible, stop suppressing warnings from Eigen and Boost headers
-SUZERAIN_GCC_DIAG_OFF(unused-variable);
-SUZERAIN_GCC_DIAG_OFF(unused-parameter);
-SUZERAIN_GCC_DIAG_OFF(suggest-attribute=pure);
-SUZERAIN_GCC_DIAG_OFF(suggest-attribute=noreturn);
-SUZERAIN_GCC_DIAG_OFF(suggest-attribute=const);
-SUZERAIN_GCC_DIAG_OFF(ignored-qualifiers);
+SUZERAIN_GCC_DIAG_ON(unused-variable);
+SUZERAIN_GCC_DIAG_ON(unused-parameter);
+SUZERAIN_GCC_DIAG_ON(suggest-attribute=pure);
+SUZERAIN_GCC_DIAG_ON(suggest-attribute=noreturn);
+SUZERAIN_GCC_DIAG_ON(suggest-attribute=const);
+SUZERAIN_GCC_DIAG_ON(ignored-qualifiers);
 
 /**
  * Ensure that \c expr evaluates to boolean \c true at runtime.  If \c expr
