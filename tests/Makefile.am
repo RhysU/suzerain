@@ -527,6 +527,14 @@ test_inorder_LDADD    = ../suzerain/libsuzerain.la
 test_inorder_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_inorder_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
+TESTS              += test_constraint_treatment
+EXTRA_PROGRAMS     += test_constraint_treatment
+test_constraint_treatment_SOURCES  = test_constraint_treatment.cpp
+test_constraint_treatment_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_constraint_treatment_LDADD    = ../suzerain/libsuzerain.la
+test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS                 += test_diffwave
 EXTRA_PROGRAMS        += test_diffwave
 test_diffwave_SOURCES  = test_diffwave.cpp
@@ -545,14 +553,6 @@ test_diffwave_p3dfft_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TES
 test_diffwave_p3dfft_LDADD    = ../suzerain/libsuzerain.la
 test_diffwave_p3dfft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_diffwave_p3dfft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS              += test_constraint_treatment
-EXTRA_PROGRAMS     += test_constraint_treatment
-test_constraint_treatment_SOURCES  = test_constraint_treatment.cpp
-test_constraint_treatment_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_constraint_treatment_LDADD    = ../suzerain/libsuzerain.la
-test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_constraint_treatment_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
