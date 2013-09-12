@@ -196,6 +196,36 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     operator MPI_Datatype () const { return value; }
 };
 
+/** Provides MPI_Datatype lookup for <tt>std::complex<float></tt>s */
+template<typename T>
+struct datatype<T, typename boost::enable_if<boost::is_same<
+    typename boost::remove_cv<T>::type,
+    std::complex<float>
+> >::type> {
+    static const MPI_Datatype value = MPI_C_FLOAT_COMPLEX;
+    operator MPI_Datatype () const { return value; }
+};
+
+/** Provides MPI_Datatype lookup for <tt>std::complex<double></tt>s */
+template<typename T>
+struct datatype<T, typename boost::enable_if<boost::is_same<
+    typename boost::remove_cv<T>::type,
+    std::complex<double>
+> >::type> {
+    static const MPI_Datatype value = MPI_C_DOUBLE_COMPLEX;
+    operator MPI_Datatype () const { return value; }
+};
+
+/** Provides MPI_Datatype lookup for <tt>std::complex<long double></tt>s */
+template<typename T>
+struct datatype<T, typename boost::enable_if<boost::is_same<
+    typename boost::remove_cv<T>::type,
+    std::complex<long double>
+> >::type> {
+    static const MPI_Datatype value = MPI_C_LONG_DOUBLE_COMPLEX;
+    operator MPI_Datatype () const { return value; }
+};
+
 /** Provides MPI_Datatype lookup for <tt>wchar_t</tt>s */
 template<typename T>
 struct datatype<T, typename boost::enable_if<boost::is_same<
