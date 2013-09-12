@@ -81,6 +81,10 @@ compute_field_L2xyz(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Temporary storage for inner product computations
+    //
+    // Though u^H M u is always real for SPD M, floating point errors may
+    // produce a slightly non-SPD M so we permit complex intermediate results
+    // up until the return structure is packed.
     VectorXc tmp;
     tmp.setZero(grid.N.y());
 
