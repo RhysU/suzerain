@@ -41,12 +41,15 @@ namespace suzerain {
  * or inner product of two scalar fields.
  */
 struct field_L2xyz {
+
     real_t mean2;
     real_t fluctuating2;
-    real_t total2()      const { return mean2 + fluctuating2;    };
-    real_t total()       const { return std::sqrt(total2());     };
-    real_t mean()        const { return std::sqrt(mean2);        };
-    real_t fluctuating() const { return std::sqrt(fluctuating2); };
+
+    real_t total2()      const { return mean2 + fluctuating2;    }
+    real_t total()       const { return std::sqrt(total2());     }
+    real_t mean()        const { return std::sqrt(mean2);        }
+    real_t fluctuating() const { return std::sqrt(fluctuating2); }
+
 };
 
 /**
@@ -59,6 +62,60 @@ compute_field_L2xyz(
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& gop);
+
+/**
+ * Holds information on the \f$L^2_{xz}\f$ norm of a scalar field or inner
+ * product of two scalar fields.  Provides both coefficient-wise and vectorized
+ * access to quantities of interest.
+ */
+struct field_L2xz {
+
+    ArrayXr mean2;
+    ArrayXr fluctuating2;
+
+    real_t total2     (const int i) const { return mean2[i] + fluctuating2[i]; }
+    real_t total      (const int i) const { return std::sqrt(total2(i));       }
+    real_t mean       (const int i) const { return std::sqrt(mean2[i]);        }
+    real_t fluctuating(const int i) const { return std::sqrt(fluctuating2[i]); }
+
+    template <typename Derived>
+    void total2(const DenseBase<Derived>& out) const
+    {
+        const_cast<DenseBase<Derived>&>(out) = mean2 + fluctuating2;
+
+    }
+
+    template <typename Derived>
+    void total(const DenseBase<Derived>& out) const
+    {
+        const_cast<DenseBase<Derived>&>(out) = (mean2 + fluctuating2).sqrt();
+    }
+
+    template <typename Derived>
+    void mean(const DenseBase<Derived>& out) const
+    {
+        const_cast<DenseBase<Derived>&>(out) = mean2.sqrt();
+    }
+
+    template <typename Derived>
+    void fluctuating(const DenseBase<Derived>& out) const
+    {
+        const_cast<DenseBase<Derived>&>(out) = fluctuating2.sqrt();
+    }
+
+};
+
+/**
+ * Compute the \f$L^2_{xz}\f$ norm of all given scalar fields
+ * at the collocation points defining the mass operator in \c cop.
+ * See writeup/L2.tex for full details.
+ */
+std::vector<field_L2xz>
+compute_field_L2xz(
+        const contiguous_state<4,complex_t> &state,
+        const grid_specification& grid,
+        const pencil_grid& dgrid,
+        const bsplineop& cop);
 
 } // end namespace suzerain
 

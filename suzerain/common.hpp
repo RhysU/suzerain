@@ -266,6 +266,7 @@ using boost::array;         /**< \namespace suzerain */
 using Eigen::Aligned;        /**< \namespace suzerain */
 using Eigen::Array;          /**< \namespace suzerain */
 using Eigen::ColMajor;       /**< \namespace suzerain */
+using Eigen::DenseBase;      /**< \namespace suzerain */
 using Eigen::DiagonalMatrix; /**< \namespace suzerain */
 using Eigen::Dynamic;        /**< \namespace suzerain */
 using Eigen::InnerStride;    /**< \namespace suzerain */
