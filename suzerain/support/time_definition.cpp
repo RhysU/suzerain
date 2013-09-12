@@ -31,6 +31,7 @@
 
 #include <suzerain/support/time_definition.hpp>
 
+#include <esio/esio.h>
 #include <esio/error.h>
 
 #include <suzerain/exprparse.hpp>

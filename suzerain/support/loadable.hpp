@@ -28,7 +28,7 @@
  * Provides \ref loadable.
  */
 
-#include <esio/esio.h>
+#include <suzerain/support/esio_fwd.hpp>
 
 namespace suzerain {
 

@@ -31,6 +31,8 @@
 
 #include <suzerain/support/grid_definition.hpp>
 
+#include <esio/esio.h>
+
 #include <suzerain/diffwave.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>

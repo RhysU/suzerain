@@ -24,10 +24,9 @@
 #ifndef SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
 #define SUZERAIN_PERFECT_SCENARIO_DEFINITION_HPP
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>

@@ -31,6 +31,8 @@
 
 #include <suzerain/support/application_base.hpp>
 
+#include <esio/esio.h>
+#include <esio/error.h>
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>

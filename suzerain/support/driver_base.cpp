@@ -31,6 +31,9 @@
 
 #include <suzerain/support/driver_base.hpp>
 
+#include <esio/esio.h>
+#include <esio/error.h>
+
 #include <suzerain/countof.h>
 #include <suzerain/error.h>
 #include <suzerain/format.hpp>

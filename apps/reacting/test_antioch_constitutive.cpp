@@ -20,13 +20,15 @@
 //
 //--------------------------------------------------------------------------
 
+#include "antioch_constitutive.hpp"
+
+#include <esio/esio.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/support/logging.hpp>
 
 #ifdef SUZERAIN_HAVE_ANTIOCH
-
-#include "antioch_constitutive.hpp"
 
 /**
  * Initialize minimial test environment: MPI and logging

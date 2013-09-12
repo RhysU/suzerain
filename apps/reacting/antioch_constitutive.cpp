@@ -27,6 +27,8 @@
 
 #include "antioch_constitutive.hpp"
 
+#include <esio/esio.h>
+
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/timers.h>

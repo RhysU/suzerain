@@ -31,6 +31,7 @@
 
 #include <suzerain/support/field.hpp>
 
+#include <esio/esio.h>
 #include <esio/error.h>
 
 #include <suzerain/common.hpp>

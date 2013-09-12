@@ -28,11 +28,10 @@
  * Sampling logistics for mean quantity profiles.
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 
 namespace suzerain {
 

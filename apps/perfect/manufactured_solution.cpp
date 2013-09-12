@@ -27,6 +27,7 @@
 
 #include "manufactured_solution.hpp"
 
+#include <esio/esio.h>
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>

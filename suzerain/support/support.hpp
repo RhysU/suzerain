@@ -28,7 +28,6 @@
  * Support logic with complex prerequisites spanning multiple applications
  */
 
-#include <esio/esio.h>
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>
@@ -42,6 +41,7 @@
 #include <suzerain/exprparse.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 
 namespace suzerain {
 

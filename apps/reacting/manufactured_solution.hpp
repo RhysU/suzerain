@@ -28,14 +28,13 @@
  * Method of manufactured solution details for the reacting flow application.
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/grid_specification.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 
 #include "nsctpl.hpp"
 

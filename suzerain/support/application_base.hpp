@@ -28,14 +28,12 @@
  * Building blocks for basic Suzerain-based applications.
  */
 
-#include <esio/esio.h>
-#include <esio/error.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/multi_array.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state_fwd.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/fftw_definition.hpp>
 #include <suzerain/support/grid_definition.hpp>
 #include <suzerain/support/program_options.hpp>

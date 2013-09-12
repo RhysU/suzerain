@@ -27,6 +27,7 @@
 
 #include "manufactured_solution.hpp"
 
+#include <esio/esio.h>
 #include <esio/error.h>
 
 #include <suzerain/blas_et_al.hpp>
@@ -269,7 +270,7 @@ attribute_storer(const esio_handle &h,
 
 void save(const esio_handle h,
           const shared_ptr<manufactured_solution>& msoln,
-	  const antioch_constitutive& cmods,
+          const antioch_constitutive& cmods,
           const grid_specification& grid,
           const char *location)
 {

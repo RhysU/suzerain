@@ -28,12 +28,11 @@
  * Method of manufactured solution details for the perfect gas application.
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/state_fwd.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 
 #include "nsctpl_rholut.hpp"
 

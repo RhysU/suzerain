@@ -30,6 +30,7 @@
 #endif
 #include <suzerain/support/support.hpp>
 
+#include <esio/esio.h>
 #include <esio/error.h>
 #include <gsl/gsl_errno.h>
 #include <sys/file.h>

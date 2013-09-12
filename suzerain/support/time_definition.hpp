@@ -28,10 +28,9 @@
  * Classes handling time advancement settings.
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
+#include <suzerain/support/esio_fwd.hpp>
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/savable.hpp>
 

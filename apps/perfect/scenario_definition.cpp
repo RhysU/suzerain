@@ -27,12 +27,13 @@
 
 #include "scenario_definition.hpp"
 
+#include <esio/esio.h>
+#include <esio/error.h>
+
 #include <suzerain/common.hpp>
 #include <suzerain/exprparse.hpp>
 #include <suzerain/support/logging.hpp>
 #include <suzerain/validation.hpp>
-
-#include <esio/error.h>
 
 namespace suzerain {
 
