@@ -25,8 +25,6 @@
  * Application executing \ref suzerain::reacting::driver_init::run.
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/ndx.hpp>
 #include <suzerain/physical_view.hpp>

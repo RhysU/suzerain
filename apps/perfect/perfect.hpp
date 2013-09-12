@@ -28,7 +28,6 @@
  * Support logic for the perfect gas application.
  */
 
-#include <esio/esio.h>
 #ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>

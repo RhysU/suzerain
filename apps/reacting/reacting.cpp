@@ -27,7 +27,6 @@
 
 #include "reacting.hpp"
 
-#include <esio/error.h>
 #include <gsl/gsl_errno.h>
 #include <sys/file.h>
 
