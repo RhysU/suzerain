@@ -54,7 +54,7 @@ compute_field_L2xyz(
     assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
 
     // Ensure we were handed Galerkin field_L2xyz operator matrices
-    assert(gop.get()->method == SUZERAIN_BSPLINEOP_GALERKIN_L2);
+    SUZERAIN_ENSURE(gop.get()->method==SUZERAIN_BSPLINEOP_GALERKIN_L2);
 
     // Only want non-dealiased X-direction modes to contribute to L2
     // Compute wavenumber translation logistics for X direction
@@ -89,7 +89,7 @@ compute_field_L2xyz(
     Map<VectorXc> total2(buf.data() + 0,                state.shape()[0]);
     Map<VectorXc> mean2 (buf.data() + state.shape()[0], state.shape()[0]);
 
-    // Compute the local L2 contribution towards each L^2 norm squared
+    // Compute the local L2 contribution towards each L^2_xyz norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
     // more-or-less recursive summation using large partitioning factors.
     total2.setZero();
