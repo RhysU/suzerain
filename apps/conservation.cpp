@@ -25,8 +25,6 @@
  * Compute discrete conservation error for given basis
  */
 
-#include <esio/esio.h>
-
 #include <suzerain/common.hpp>
 #include <suzerain/bspline.hpp>
 #include <suzerain/math.hpp>
