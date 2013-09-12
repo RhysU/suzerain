@@ -30,6 +30,7 @@
 
 #include <suzerain/support/driver_base.hpp>
 #include <suzerain/support/isothermal_definition.hpp>
+#include <suzerain/support/largo_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
@@ -72,6 +73,9 @@ public:
 
     /** Nondimensional isothermal boundary condition parameters. */
     shared_ptr<support::isothermal_definition> isothermal;
+
+    /** Slow growth parameters for use with the Largo library. */
+    shared_ptr<support::largo_definition> sgdef;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
