@@ -39,7 +39,7 @@ namespace ndx {
 
 enum type {
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
     // Force both (e - rho) and (rho - e) to provide usable, signed results.
     ensure_values_are_signed_to_permit_arbitrary_relative_offsets = -1,
 #endif

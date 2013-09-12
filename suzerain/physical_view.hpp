@@ -96,7 +96,7 @@ struct physical_view : Map<Array<real_t, Dynamic, Dynamic, RowMajor>,
                            physical_view_map_options,
                            OuterStride<Dynamic> >
 {
-#ifdef DOXYGEN_SHOULD_SKIP_THIS
+#ifdef SUZERAIN_PARSED_BY_DOXYGEN
     BOOST_STATIC_ASSERT(NFields >= 0);
 #endif
 

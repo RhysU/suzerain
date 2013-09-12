@@ -274,7 +274,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
 #define SUZERAIN_ERROR_REPORT_UNIMPLEMENTED() \
         SUZERAIN_ERROR_REPORT("Unimplemented logic!", SUZERAIN_EUNIMPL)
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
 /* Internal helper macro for implementing SUZERAIN_MPICHKx macros */
 #define SUZERAIN_MPICHKx_TEMPLATE(suzerain_error_macro,stmt) \
     do { \
@@ -292,7 +292,7 @@ FILE * suzerain_set_stream(FILE * new_stream);
             suzerain_error_macro(_chk_reason, SUZERAIN_EFAILED); \
         } \
     } while(0)
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
 /**
  * Executes \c stmt once handling any resulting MPI error per \c

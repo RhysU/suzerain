@@ -45,7 +45,7 @@
     0*sizeof(::suzerain::BAD_ARGUMENT_TO_COUNTOF::check_type((x), &(x))     ) + \
     sizeof(x)/sizeof((x)[0])   )
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
 namespace suzerain {
 
 class BAD_ARGUMENT_TO_COUNTOF
@@ -59,7 +59,7 @@ public:
 };
 
 }
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
 #endif /* __cplusplus */
 

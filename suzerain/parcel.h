@@ -109,7 +109,7 @@
          BOOST_PP_COMMA() 0                                                        \
          BOOST_PP_COMMA()), decl_seq))
 
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
 
 #define SUZERAIN_PARCEL_APPLY(macro, tuple_args) macro tuple_args
 
@@ -162,6 +162,6 @@
     ((((uintptr_t)(prev + prevcount)+BOOST_PP_CAT(_PARCEL_pad_,varname))           \
       & BOOST_PP_CAT(_PARCEL_mask_,varname)))
 
-#endif // DOXYGEN_SHOULD_SKIP_THIS
+#endif // SUZERAIN_PARSED_BY_DOXYGEN
 
 #endif // SUZERAIN_PARCEL_H

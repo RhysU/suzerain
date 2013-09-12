@@ -210,7 +210,7 @@ suzerain_bspline_distance(
 extern const double suzerain_bspline_distance_distinct;
 
 // FIXME Implement per Redmine ticket #1591
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
 /**
  * Construct a general banded matrix \f$A\f$ that computes the vector
  * \f$\frac{d^k}{dx^k} \alpha_{i} f(x_{i})\f$ (no summation implied) when it
@@ -263,7 +263,7 @@ suzerain_bspline_linear_combination_matrix(
     gsl_matrix *dB,
     gsl_bspline_workspace *w,
     gsl_bspline_deriv_workspace dw);
-#endif /* DOXYGEN_SHOULD_SKIP_THIS */
+#endif /* SUZERAIN_PARSED_BY_DOXYGEN */
 
 /**
  * Find the minimum distance to Greville abscissae <tt>i-1</tt> and

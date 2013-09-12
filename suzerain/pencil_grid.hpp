@@ -61,7 +61,7 @@ typedef pencil_grid_underling pencil_grid_default;
 class pencil_grid : public boost::noncopyable
 {
 public:
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
+#ifndef SUZERAIN_PARSED_BY_DOXYGEN
     // See http://eigen.tuxfamily.org/dox/TopicStructHavingEigenMembers.html
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 #endif
