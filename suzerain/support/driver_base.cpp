@@ -753,10 +753,10 @@ driver_base::log_status_L2(
         log_status_L2_header_shown = true;
     }
 
-    // Collective computation of the L_2 norms
+    // Collective computation of the $L^2_{xyz}$ norms
     state_nonlinear->assign_from(*state_linear);
-    const std::vector<field_L2> result
-        = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
+    const std::vector<field_L2xyz> result
+        = compute_field_L2xyz(*state_nonlinear, *grid, *dgrid, *gop);
 
     // Build and log L2 of mean conserved state
     msg << timeprefix;

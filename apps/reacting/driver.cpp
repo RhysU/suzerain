@@ -93,13 +93,13 @@ driver::log_manufactured_solution_absolute_error(
             = support::logging::get_logger("mms.abserr");
     if (!INFO0_ENABLED(mms_abserr)) return;
 
-    // Compute L2 of error of state against manufactured solution
+    // Compute $L^2_{xyz}$ of error of state against manufactured solution
     state_nonlinear->assign_from(*state_linear);
     accumulate_manufactured_solution(
             1, *msoln, -1, *state_nonlinear,
             *grid, *dgrid, *cop, *b, t);
-    const std::vector<field_L2> L2
-        = compute_field_L2(*state_nonlinear, *grid, *dgrid, *gop);
+    const std::vector<field_L2xyz> L2
+        = compute_field_L2xyz(*state_nonlinear, *grid, *dgrid, *gop);
 
     // Output absolute global errors for each field
     std::ostringstream msg;

@@ -36,8 +36,11 @@
 
 namespace suzerain {
 
-/** Holds information on the \f$L^2_{xyz}\f$ norm of a scalar field. */
-struct field_L2 {
+/**
+ * Holds information on the \f$L^2_{xyz}\f$ norm of a scalar field
+ * or inner product of two scalar fields.
+ */
+struct field_L2xyz {
     real_t mean2;
     real_t fluctuating2;
     real_t total2()      const { return mean2 + fluctuating2;    };
@@ -50,8 +53,8 @@ struct field_L2 {
  * Compute the \f$L^2_{xyz}\f$ norm of all given scalar fields.
  * See writeup/L2.tex for full details.
  */
-std::vector<field_L2>
-compute_field_L2(
+std::vector<field_L2xyz>
+compute_field_L2xyz(
         const contiguous_state<4,complex_t> &state,
         const grid_specification& grid,
         const pencil_grid& dgrid,
