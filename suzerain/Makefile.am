@@ -119,6 +119,7 @@ nobase_pkginclude_HEADERS += storage.hpp
 nobase_pkginclude_HEADERS += support/application_base.hpp
 nobase_pkginclude_HEADERS += support/definition_base.hpp
 nobase_pkginclude_HEADERS += support/driver_base.hpp
+nobase_pkginclude_HEADERS += support/esio_fwd.hpp
 nobase_pkginclude_HEADERS += support/fftw_definition.hpp
 nobase_pkginclude_HEADERS += support/field.hpp
 nobase_pkginclude_HEADERS += support/grid_definition.hpp
