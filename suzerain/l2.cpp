@@ -121,9 +121,8 @@ compute_field_L2xyz(
 
     // Reduce total2 sum onto processor housing the zero-zero mode using
     // mean2 as a scratch buffer to simulate MPI_IN_PLACE
-    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(),
-            mean2.data(), state.shape()[0]*sizeof(complex_t)/sizeof(real_t),
-            mpi::datatype<real_t>(),
+    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
+            total2.size(), mpi::datatype<complex_t>(),
             MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
@@ -138,9 +137,8 @@ compute_field_L2xyz(
     }
 
     // Broadcast total2 and mean2 values to all processors
-    SUZERAIN_MPICHKR(MPI_Bcast(
-            buf.data(), buf.size() * sizeof(complex_t)/sizeof(real_t),
-            mpi::datatype<real_t>(),
+    SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
+            buf.size(), mpi::datatype<complex_t>(),
             dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
