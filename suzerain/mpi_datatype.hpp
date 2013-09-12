@@ -196,7 +196,7 @@ struct datatype<T, typename boost::enable_if<boost::is_same<
     operator MPI_Datatype () const { return value; }
 };
 
-/** Provides MPI_Datatype lookup for <tt>long double</tt>s */
+/** Provides MPI_Datatype lookup for <tt>wchar_t</tt>s */
 template<typename T>
 struct datatype<T, typename boost::enable_if<boost::is_same<
     typename boost::remove_cv<T>::type,
