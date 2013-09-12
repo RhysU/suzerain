@@ -489,6 +489,63 @@ BOOST_AUTO_TEST_CASE( datatype_long_double )
     BOOST_CHECK(e == datatype<long double volatile const>());
 }
 
+BOOST_AUTO_TEST_CASE( datatype_complex_float )
+{
+    const MPI_Datatype e = MPI_C_FLOAT_COMPLEX;
+    typedef std::complex<float> complex_type;
+    BOOST_CHECK(e == datatype< complex_type >());
+    BOOST_CHECK(e == datatype< complex_type *>());
+    BOOST_CHECK(e == datatype< complex_type &>());
+    BOOST_CHECK(e == datatype< complex_type [3]>());
+    BOOST_CHECK(e == datatype< complex_type  const>());
+    BOOST_CHECK(e == datatype< complex_type  const*>());
+    BOOST_CHECK(e == datatype< complex_type  const&>());
+    BOOST_CHECK(e == datatype< complex_type  const[4]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile>());
+    BOOST_CHECK(e == datatype< complex_type  volatile*>());
+    BOOST_CHECK(e == datatype< complex_type  volatile&>());
+    BOOST_CHECK(e == datatype< complex_type  volatile[]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile const>());
+}
+
+BOOST_AUTO_TEST_CASE( datatype_complex_double )
+{
+    const MPI_Datatype e = MPI_C_DOUBLE_COMPLEX;
+    typedef std::complex<double> complex_type;
+    BOOST_CHECK(e == datatype< complex_type >());
+    BOOST_CHECK(e == datatype< complex_type *>());
+    BOOST_CHECK(e == datatype< complex_type &>());
+    BOOST_CHECK(e == datatype< complex_type [3]>());
+    BOOST_CHECK(e == datatype< complex_type  const>());
+    BOOST_CHECK(e == datatype< complex_type  const*>());
+    BOOST_CHECK(e == datatype< complex_type  const&>());
+    BOOST_CHECK(e == datatype< complex_type  const[4]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile>());
+    BOOST_CHECK(e == datatype< complex_type  volatile*>());
+    BOOST_CHECK(e == datatype< complex_type  volatile&>());
+    BOOST_CHECK(e == datatype< complex_type  volatile[]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile const>());
+}
+
+BOOST_AUTO_TEST_CASE( datatype_complex_long_double )
+{
+    const MPI_Datatype e = MPI_C_LONG_DOUBLE_COMPLEX;
+    typedef std::complex<long double> complex_type;
+    BOOST_CHECK(e == datatype< complex_type >());
+    BOOST_CHECK(e == datatype< complex_type *>());
+    BOOST_CHECK(e == datatype< complex_type &>());
+    BOOST_CHECK(e == datatype< complex_type [3]>());
+    BOOST_CHECK(e == datatype< complex_type  const>());
+    BOOST_CHECK(e == datatype< complex_type  const*>());
+    BOOST_CHECK(e == datatype< complex_type  const&>());
+    BOOST_CHECK(e == datatype< complex_type  const[4]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile>());
+    BOOST_CHECK(e == datatype< complex_type  volatile*>());
+    BOOST_CHECK(e == datatype< complex_type  volatile&>());
+    BOOST_CHECK(e == datatype< complex_type  volatile[]>());
+    BOOST_CHECK(e == datatype< complex_type  volatile const>());
+}
+
 BOOST_AUTO_TEST_CASE( datatype_wchar_t )
 {
     const MPI_Datatype e = MPI_WCHAR;
