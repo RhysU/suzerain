@@ -36,7 +36,7 @@
 
 namespace suzerain {
 
-/** Holds information on the \f$L^2\f$ norm of a scalar field. */
+/** Holds information on the \f$L^2_{xyz}\f$ norm of a scalar field. */
 struct field_L2 {
     real_t mean2;
     real_t fluctuating2;
@@ -47,7 +47,7 @@ struct field_L2 {
 };
 
 /**
- * Compute the \f$L^2\f$ norm of all given scalar fields.
+ * Compute the \f$L^2_{xyz}\f$ norm of all given scalar fields.
  * See writeup/L2.tex for full details.
  */
 std::vector<field_L2>
