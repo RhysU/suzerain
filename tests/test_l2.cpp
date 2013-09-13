@@ -28,6 +28,7 @@
 #include <suzerain/l2.hpp>
 
 #include <suzerain/common.hpp>
+#include <suzerain/format.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/support/application_base.hpp>
@@ -41,12 +42,17 @@ struct test : public support::application_base
 {
     test()
         : support::application_base("Tests suzerain::compute_field_L2xz")
+        , who("test")
     {}
 
     std::string log4cxx_config() { return support::log4cxx_config_console; }
 
     // Invoked from main(...) and implemented below.
     int run(int argc, char **argv);
+
+private:
+
+    std::string who;
 };
 
 // One dimensional test function suggested by S. Johnson.  Magically has mean
@@ -109,7 +115,7 @@ int test::run(int argc, char **argv)
     // Initialize the parallel decomposition and state storage
     std::vector<std::string> positional = initialize(argc, argv);
     if (positional.size() != 0) {
-        FATAL0("No positional arguments accepted");
+        FATAL0(who, "No positional arguments accepted");
         return EXIT_FAILURE;
     }
     establish_ieee_mode();
@@ -118,8 +124,8 @@ int test::run(int argc, char **argv)
     establish_state_storage(/* linear state is wave-only        */ 0,
                             /* nonlinear state is transformable */ nfields);
 
-    // Initialize physical-space manufactured field using operator_base.
-    // p is a 2D, real-valued view of (NFIELDS, X*Z*Y) leftmost fastest
+
+    INFO0(who, "Initializing test field in physical space");
     physical_view<> p(*dgrid, *state_nonlinear);
     suzerain::operator_base o(*grid, *dgrid, *cop, *b);
     for (int offset = 0, j = dgrid->local_physical_start.y();      // Y
@@ -147,18 +153,38 @@ int test::run(int argc, char **argv)
         }
     }
 
-    // Convert the physical space values to wave space
+    INFO0(who, "Convert the physical space values to wave space");
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(0, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, 0);
         o.bop_solve(*o.massluz(), *state_nonlinear, 0);        // Y
     }
 
-    // Compute the L^2 norm over the X and Z directions at collocation points
+    INFO0(who, "Compute L^2_{xz} at each collocation point");
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
             *state_nonlinear, *grid, *dgrid, *cop);
 
-    // TODO Output results
+    INFO0(who, "Mean RMS for each collocation point and each field:");
+    for (int j = 0; j < grid->N.y(); ++j) {
+        std::ostringstream msg;
+        msg << fullprec<>(o.y(j));
+        for (std::size_t f = 0; f < nfields; ++f) {
+            msg << ' ' << fullprec<>(   L2xz[f].mean(j)
+                                      / (grid->L.x() * grid->L.z()));
+        }
+        INFO0(who, msg.str());
+    }
+
+    INFO0(who, "Fluctuating RMS for each collocation point at each field:");
+    for (int j = 0; j < grid->N.y(); ++j) {
+        std::ostringstream msg;
+        msg << fullprec<>(o.y(j));
+        for (std::size_t f = 0; f < nfields; ++f) {
+            msg << ' ' << fullprec<>(   L2xz[f].fluctuating(j)
+                                      / (grid->L.x() * grid->L.z()));
+        }
+        INFO0(who, msg.str());
+    }
 
     // Stop processing if correctness checking not requested
     if (!check) return EXIT_SUCCESS;
