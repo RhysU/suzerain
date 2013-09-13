@@ -32,20 +32,21 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/logging.hpp>
+#include <suzerain/support/support.hpp>
 
 using namespace suzerain;
 
-/**
- * Test application using suzerain::support framework.
- * Logic appears within test::run appearing later in this file.
- */
+/** Test application using suzerain::support framework. */
 struct test : public support::application_base
 {
     test()
         : support::application_base("Tests suzerain::compute_field_L2xz")
     {}
 
-    int run(int argc, char **argv);  // Invoked from main(...)
+    std::string log4cxx_config() { return support::log4cxx_config_console; }
+
+    // Invoked from main(...) and implemented below.
+    int run(int argc, char **argv);
 };
 
 // One dimensional test function suggested by S. Johnson.  Magically has mean
