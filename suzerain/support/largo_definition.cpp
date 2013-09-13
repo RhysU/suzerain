@@ -414,12 +414,7 @@ largo_definition::get_baseflow(
       real_t res[2];
       for (int j=0; j<x.cols()-1; j++){
           // Compute baseflow and y-derivative
-          int resval = gsl_poly_eval_derivs
-             (x.col(j).data(),
-              x.rows(),
-              y,
-              &res[0],
-              2);
+          gsl_poly_eval_derivs(x.col(j).data(), x.rows(), y, &res[0], 2);
           base  [j] = res[0];
           dybase[j] = res[1];
       }
@@ -432,12 +427,7 @@ largo_definition::get_baseflow(
    if (dx.rows()) {
       for (int j=0; j<dx.cols()-1; j++){
           // Compute x-derivative of baseflow
-          int resval = gsl_poly_eval_derivs
-             (dx.col(j).data(),
-              dx.rows(),
-              y,
-              &dhbase[j],
-              1);
+          gsl_poly_eval_derivs(dx.col(j).data(), dx.rows(), y, &dhbase[j], 1);
       }
    } else {
        // Do nothing
@@ -457,12 +447,7 @@ largo_definition::get_baseflow_pressure(
       real_t res[2];
       int j = x.cols()-1;
       // Compute baseflow and y-derivative
-      int resval = gsl_poly_eval_derivs
-         (x.col(j).data(),
-          x.rows(),
-          y,
-          &res[0],
-          2);
+      gsl_poly_eval_derivs(x.col(j).data(), x.rows(), y, &res[0], 2);
       Pbase   = res[0];
       dyPbase = res[1];
    } else {
@@ -474,12 +459,7 @@ largo_definition::get_baseflow_pressure(
    if (dx.rows()) {
       int j = x.cols()-1;
       // Compute x-derivative of baseflow
-      int resval = gsl_poly_eval_derivs
-         (dx.col(j).data(),
-          dx.rows(),
-          y,
-          &dhPbase,
-          1);
+      gsl_poly_eval_derivs(dx.col(j).data(), dx.rows(), y, &dhPbase, 1);
    } else {
        // Do nothing
        // Assume that baseflow arrays are initialized to zero
