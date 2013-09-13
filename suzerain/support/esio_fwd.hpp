@@ -29,7 +29,6 @@
  */
 
 #ifndef SUZERAIN_PARSED_BY_DOXYGEN
-struct esio_handle_s;
 typedef struct esio_handle_s* esio_handle;
 #endif
 
