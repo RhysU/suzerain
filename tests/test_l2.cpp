@@ -28,11 +28,25 @@
 #include <suzerain/l2.hpp>
 
 #include <suzerain/common.hpp>
-#include <suzerain/error.h>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
 #include <suzerain/support/application_base.hpp>
 #include <suzerain/support/logging.hpp>
+
+using namespace suzerain;
+
+/**
+ * Test application using suzerain::support framework.
+ * Logic appears within test::run appearing later in this file.
+ */
+struct test : public support::application_base
+{
+    test()
+        : support::application_base("Tests suzerain::compute_field_L2xz")
+    {}
+
+    int run(int argc, char **argv);  // Invoked from main(...)
+};
 
 // One dimensional test function suggested by S. Johnson.  Magically has mean
 // zero, total RMS 1/Sqrt(2), but no closed Fourier representation.  See
@@ -41,8 +55,9 @@ template< typename Scalar >
 static inline
 Scalar sample_data(const Scalar& x, const Scalar& L)
 {
+    using boost::math::constants::pi;
     using std::cos;
-    const Scalar twopi_L = 2*boost::math::constants::pi<Scalar>()/L;
+    const Scalar twopi_L = 2*pi<Scalar>()/L;
     return cos(twopi_L*(x + 2*cos(twopi_L*3*x)));
 }
 
@@ -56,28 +71,32 @@ Scalar sample_data(const Scalar& x, const Scalar& Lx,
     return sample_data(x, Lx) * sample_data(z, Lz);
 }
 
-using namespace suzerain;
-
 int main(int argc, char **argv)
 {
-    // Instantiate application_base instance and set desired defaults.
-    // Defaults designed to increase test coverage by tickling edge cases.
-    support::application_base app("Tests suzerain::compute_field_L2xz");
-    app.grid->htdelta = 0.5;
-    app.grid->k       = 4;
-    app.grid->L.x()   = 8 * boost::math::constants::pi<real_t>();
-    app.grid->L.y()   = 2;
-    app.grid->L.z()   = 4 * boost::math::constants::pi<real_t>();
-    app.grid->Nx(32);
-    app.grid->Ny(16);
-    app.grid->Nz(64);
-    app.grid->DAFx(1.5);
-    app.grid->DAFz(2.0);
+    test t;
+    return t.run(argc, argv);
+}
+
+int test::run(int argc, char **argv)
+{
+    // Establish default grid and domain extents
+    using boost::math::constants::pi;
+    grid.reset(new support::grid_definition( 5 * pi<real_t>()     // Lx
+                                           , 32                   // Nx
+                                           , 2                    // DAFx
+                                           , 2                    // Ly
+                                           , 16                   // Ny
+                                           , 8                    // k
+                                           , 0.5                  // htdelta
+                                           , 7 * pi<real_t>() / 3 // Lz
+                                           , 64                   // Nz
+                                           , real_t(3) / 2        // DAFz
+            ));
 
     // Add additional command line options
     std::size_t nfields = 3;
     bool check          = true;
-    app.options.add_options()
+    options.add_options()
         ("nfields,n", boost::program_options::value(&nfields)
          ->default_value(nfields),
          "Number of independent scalar fields")
@@ -86,58 +105,57 @@ int main(int argc, char **argv)
          "Check results against expected values")
     ;
 
-    // Initialize the parallel decomposition
-    app.initialize(argc, argv);
-    app.establish_ieee_mode();
-    app.load_grid_and_operators(NULL);
-    app.establish_decomposition();
-
-    // Allocate necessary storage and prepare physical space view
-    app.establish_state_storage(/* linear state is wave-only        */ 0,
-                                /* nonlinear state is transformable */ nfields);
-    physical_view<> p(*app.dgrid, *app.state_nonlinear);
+    // Initialize the parallel decomposition and state storage
+    std::vector<std::string> positional = initialize(argc, argv);
+    if (positional.size() != 0) {
+        FATAL0("No positional arguments accepted");
+        return EXIT_FAILURE;
+    }
+    establish_ieee_mode();
+    load_grid_and_operators(NULL);
+    establish_decomposition();
+    establish_state_storage(/* linear state is wave-only        */ 0,
+                            /* nonlinear state is transformable */ nfields);
 
     // Initialize physical-space manufactured field using operator_base.
     // p is a 2D, real-valued view of (NFIELDS, X*Z*Y) leftmost fastest
-    // We need x_i, y_j, z_k positions making structure below more complicated
-    suzerain::operator_base o(*app.grid, *app.dgrid, *app.cop, *app.b);
-    for (int offset = 0, j = app.dgrid->local_physical_start.y();  // Y
-         j < app.dgrid->local_physical_end.y();
+    physical_view<> p(*dgrid, *state_nonlinear);
+    suzerain::operator_base o(*grid, *dgrid, *cop, *b);
+    for (int offset = 0, j = dgrid->local_physical_start.y();      // Y
+         j < dgrid->local_physical_end.y();
          ++j) {
         const real_t y = o.y(j);
 
-        for (int k = app.dgrid->local_physical_start.z();          // Z
-             k < app.dgrid->local_physical_end.z();
+        for (int k = dgrid->local_physical_start.z();              // Z
+             k < dgrid->local_physical_end.z();
              ++k) {
             const real_t z = o.z(k);
 
-            for (int i = app.dgrid->local_physical_start.x();      // X
-                 i < app.dgrid->local_physical_end.x();
+            for (int i = dgrid->local_physical_start.x();          // X
+                 i < dgrid->local_physical_end.x();
                  ++i, /* NB */ ++offset) {
                 const real_t x = o.x(i);
 
-                const real_t data = y * sample_data(x, app.grid->L.x(),
-                                                    z, app.grid->L.z());
+                // Notice scaling by wall-normal coordinate and field index
+                const real_t data = y * sample_data(x, grid->L.x(),
+                                                    z, grid->L.z());
                 for (std::size_t f = 0; f < nfields; ++f) {        // Fields
                     p(f, offset) = (f + 1)*data;
                 }
-
             }
-
         }
-
     }
 
     // Convert the physical space values to wave space
     for (std::size_t f = 0; f < nfields; ++f) {
-        app.dgrid->transform_physical_to_wave(&p.coeffRef(0, 0));  // X, Z
-        o.zero_dealiasing_modes(*app.state_nonlinear, 0);
-        o.bop_solve(*o.massluz(), *app.state_nonlinear, 0);        // Y
+        dgrid->transform_physical_to_wave(&p.coeffRef(0, 0));  // X, Z
+        o.zero_dealiasing_modes(*state_nonlinear, 0);
+        o.bop_solve(*o.massluz(), *state_nonlinear, 0);        // Y
     }
 
     // Compute the L^2 norm over the X and Z directions at collocation points
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
-            *app.state_nonlinear, *app.grid, *app.dgrid, *app.cop);
+            *state_nonlinear, *grid, *dgrid, *cop);
 
     // TODO Output results
 
