@@ -54,6 +54,17 @@ private:
     /** Create a new (static) instance and register it in \c by_name. */
     largo_formulation(const int v, const char *n, const char *d);
 
+    /**
+     * Create a new (static) instance and register it in \c by_name.
+     *
+     * Register \c aliases in \c by_name as well to permit lookup
+     * by any of the \c aliases.
+     */
+    largo_formulation(const int v,
+                      const char *n,
+                      const char *d,
+                      const std::vector<std::string>& aliases);
+
 public:
 
     /**
