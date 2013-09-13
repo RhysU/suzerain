@@ -31,6 +31,8 @@
 
 #include <suzerain/support/largo_definition.hpp>
 
+#include <boost/assign/list_of.hpp>
+
 #include <esio/error.h>
 #include <esio/esio.h>
 
@@ -121,14 +123,22 @@ const largo_formulation largo_formulation::disable(
         0, "disable", "No slow growth formulation is in use");
 
 const largo_formulation largo_formulation::temporal(
-        1, "temporal", "Original temporal formulation by Topalian et al.");
+        1, "bl_temporal", "Original temporal formulation by Topalian et al.",
+        boost::assign::list_of("temporal")
+            .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::spatial(
-        2, "spatial", "Full spatial formulation by Topalian et al.");
+        2, "bl_spatial", "Full spatial formulation by Topalian et al.",
+        boost::assign::list_of("spatial")
+            .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::temporal_tensor_consistent(
-        3, "temporal_tensor_consistent",
-           "Temporal tensor-consistent formulation by Topalian et al.");
+        3, "bl_temporal_tensor-consistent",
+           "Temporal tensor-consistent formulation by Topalian et al.",
+        boost::assign::list_of("bl_temporal_tensor_consistent")
+                              ("temporal_tensor_consistent")
+                              ("temporal_tensor-consistent")
+            .convert_to_container<std::vector<std::string> >());
 // END Add known formulations here
 
 largo_definition::largo_definition()
