@@ -76,15 +76,15 @@ largo_formulation::largo_formulation(
         const int v,
         const char *n,
         const char *d,
-        const std::vector<std::string>& aliases)
+        const std::vector<std::string>& misspellings)
     : v(v), n(n), d(d)
 {
     // Register for lookup of instances by whitespace trimmed name
     by_name[boost::algorithm::trim_copy(std::string(this->n))] = this;
 
-    // Register aliases to permit lookup by them as well
-    for (std::size_t i = 0; i < aliases.size(); ++i) {
-         by_name[boost::algorithm::trim_copy(aliases[i])] = this;
+    // Register misspellings to permit lookup by them as well
+    for (std::size_t i = 0; i < misspellings.size(); ++i) {
+         by_name[boost::algorithm::trim_copy(misspellings[i])] = this;
     }
 }
 
