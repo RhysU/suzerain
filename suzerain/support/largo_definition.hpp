@@ -51,11 +51,15 @@ private:
     /** Maintains map from name to pointer-to-static instances. */
     static std::map<std::string,const largo_formulation*> by_name;
 
-    /** Create a new (static) instance and register it in \c by_name. */
+    /** Register names within \c by_name. */
+    static void register_name(const std::string& name,
+                              const largo_formulation* instance);
+
+    /** Create a new (static) instance and register it. */
     largo_formulation(const int v, const char *n, const char *d);
 
     /**
-     * Create a new (static) instance and register it in \c by_name.
+     * Create a new (static) instance and register it.
      *
      * Register \c misspellings in \c by_name as well to permit lookup
      * by any of them in addition to \c n.

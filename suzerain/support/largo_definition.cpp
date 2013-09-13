@@ -62,14 +62,25 @@ static void parse_formulation(const std::string& s, largo_formulation *t)
 
 std::map<std::string,const largo_formulation*> largo_formulation::by_name;
 
+void
+largo_formulation::register_name(const std::string& name,
+                                 const largo_formulation* instance)
+{
+    const std::string& trimmed = boost::algorithm::trim_copy(name);
+    if (by_name.find(trimmed) != by_name.end()) {
+        throw std::logic_error(std::string("Name collision on '")
+            + trimmed + "' when registering with largo_formulation::by_name");
+    }
+    by_name[trimmed] = instance;
+}
+
 largo_formulation::largo_formulation(
         const int v,
         const char *n,
         const char *d)
     : v(v), n(n), d(d)
 {
-    // Register for lookup of instances by whitespace trimmed name
-    by_name[boost::algorithm::trim_copy(std::string(this->n))] = this;
+    register_name(this->n, this);
 }
 
 largo_formulation::largo_formulation(
@@ -79,12 +90,10 @@ largo_formulation::largo_formulation(
         const std::vector<std::string>& misspellings)
     : v(v), n(n), d(d)
 {
-    // Register for lookup of instances by whitespace trimmed name
-    by_name[boost::algorithm::trim_copy(std::string(this->n))] = this;
+    register_name(this->n, this);
 
-    // Register misspellings to permit lookup by them as well
     for (std::size_t i = 0; i < misspellings.size(); ++i) {
-         by_name[boost::algorithm::trim_copy(misspellings[i])] = this;
+        register_name(misspellings[i], this);
     }
 }
 
