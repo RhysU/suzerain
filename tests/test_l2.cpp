@@ -155,9 +155,9 @@ int test::run(int argc, char **argv)
 
     INFO0(who, "Convert the physical space values to wave space");
     for (std::size_t f = 0; f < nfields; ++f) {
-        dgrid->transform_physical_to_wave(&p.coeffRef(0, 0));  // X, Z
-        o.zero_dealiasing_modes(*state_nonlinear, 0);
-        o.bop_solve(*o.massluz(), *state_nonlinear, 0);        // Y
+        dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
+        o.zero_dealiasing_modes(*state_nonlinear, f);
+        o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
     }
 
     INFO0(who, "Compute L^2_{xz} at each collocation point");
