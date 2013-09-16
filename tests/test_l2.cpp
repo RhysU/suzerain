@@ -60,7 +60,7 @@ private:
 // http://sci.tech-archive.net/Archive/sci.math/2008-05/msg00401.html
 template< typename Scalar >
 static inline
-Scalar sample_data(const Scalar& x, const Scalar& L)
+Scalar varying_data(const Scalar& x, const Scalar& L)
 {
     using boost::math::constants::pi;
     using std::cos;
@@ -72,10 +72,10 @@ Scalar sample_data(const Scalar& x, const Scalar& L)
 // Again, zero mean but now total RMS 1/2.
 template< typename Scalar >
 static inline
-Scalar sample_data(const Scalar& x, const Scalar& Lx,
+Scalar varying_data(const Scalar& x, const Scalar& Lx,
                    const Scalar& z, const Scalar& Lz)
 {
-    return sample_data(x, Lx) * sample_data(z, Lz);
+    return varying_data(x, Lx) * varying_data(z, Lz);
 }
 
 int main(int argc, char **argv)
@@ -155,8 +155,8 @@ int test::run(int argc, char **argv)
                     const real_t x = o.x(i);
 
                     // Notice scaling by wall-normal coordinate and field index
-                    const real_t data = y * sample_data(x, grid->L.x(),
-                                                        z, grid->L.z());
+                    const real_t data = y * varying_data(x, grid->L.x(),
+                                                         z, grid->L.z());
                     for (std::size_t f = 0; f < nfields; ++f) {       // Fields
                         p(f, offset) = (f + 1)*data;
                     }
@@ -178,27 +178,50 @@ int test::run(int argc, char **argv)
     // Coefficient to convert L^2_xz results into RMS results per l2.hpp
     const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
+    // Track statistics on the errors versus expected values
+    typedef boost::accumulators::stats<
+                boost::accumulators::tag::min,
+                boost::accumulators::tag::mean,
+                boost::accumulators::tag::max
+            > to_be_tracked;
+
     INFO0(who, "Mean RMS for each field at every collocation point:");
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> track_mean;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(rms_adjust * L2xz[f].mean(j));
+            const real_t expected = constant ? (f + 1) : 0;
+            const real_t observed = rms_adjust * L2xz[f].mean(j);
+            track_mean(std::abs(observed - expected));
+            msg << ' ' << fullprec<>(observed);
         }
         INFO0(who, msg.str());
     }
+    INFO0(who, "Mean RMS min/mean/max errors: "
+               << boost::accumulators::min (track_mean) << '/'
+               << boost::accumulators::mean(track_mean) << '/'
+               << boost::accumulators::max (track_mean));
 
     INFO0(who, "Fluctuating RMS for each field at every collocation point:");
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> track_fluct;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(rms_adjust * L2xz[f].fluctuating(j));
+            const real_t expected = (f + 1)*(constant ? 0 : o.y(j)/2);
+            const real_t observed = rms_adjust * L2xz[f].fluctuating(j);
+            track_fluct(std::abs(observed - expected));
+            msg << ' ' << fullprec<>(observed);
         }
         INFO0(who, msg.str());
     }
+    INFO0(who, "Fluctuating RMS min/mean/max errors: "
+               << boost::accumulators::min (track_fluct) << '/'
+               << boost::accumulators::mean(track_fluct) << '/'
+               << boost::accumulators::max (track_fluct));
 
-    // TODO Check and report error status if results not good to some tolerance
+    // TODO Report error status if results not good to some tolerance
     int status = EXIT_SUCCESS;
     if (!check) return status;
 
