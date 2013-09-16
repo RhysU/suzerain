@@ -178,7 +178,7 @@ int test::run(int argc, char **argv)
     // Coefficient to convert L^2_xz results into RMS results per l2.hpp
     const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
-    INFO0(who, "Mean RMS for each collocation point and each field:");
+    INFO0(who, "Mean RMS for each field as a function of collocation point:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
@@ -188,7 +188,8 @@ int test::run(int argc, char **argv)
         INFO0(who, msg.str());
     }
 
-    INFO0(who, "Fluctuating RMS for each collocation point at each field:");
+    INFO0(who,
+          "Fluctuating RMS for each field as a function of collocation point:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
