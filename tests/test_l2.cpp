@@ -164,12 +164,15 @@ int test::run(int argc, char **argv)
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
             *state_nonlinear, *grid, *dgrid, *cop);
 
+    // Coefficient to convert L^2_xz results into RMS results
+    const real_t rms_coeff = 1 / std::sqrt(grid->L.x() * grid->L.z());
+
     INFO0(who, "Mean RMS for each collocation point and each field:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(   L2xz[f].mean(j)
+            msg << ' ' << fullprec<>(   rms_coeff * L2xz[f].mean(j)
                                       / (grid->L.x() * grid->L.z()));
         }
         INFO0(who, msg.str());
@@ -180,7 +183,7 @@ int test::run(int argc, char **argv)
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(   L2xz[f].fluctuating(j)
+            msg << ' ' << fullprec<>(   rms_coeff * L2xz[f].fluctuating(j)
                                       / (grid->L.x() * grid->L.z()));
         }
         INFO0(who, msg.str());
