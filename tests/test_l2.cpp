@@ -159,6 +159,7 @@ int test::run(int argc, char **argv)
         o.zero_dealiasing_modes(*state_nonlinear, f);
         o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
     }
+    p *= dgrid->chi();
 
     INFO0(who, "Compute L^2_{xz} at each collocation point");
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
