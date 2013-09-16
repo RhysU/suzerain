@@ -21,11 +21,11 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SUZERAIN_SUPPORT_LARGO_FORMULATION_HPP
-#define SUZERAIN_SUPPORT_LARGO_FORMULATION_HPP
+#ifndef SUZERAIN_LARGO_FORMULATION_HPP
+#define SUZERAIN_LARGO_FORMULATION_HPP
 
 /** @file
- * Provides \ref largo_definition.
+ * Provides \ref largo_formulation.
  */
 
 #include <suzerain/common.hpp>
@@ -37,8 +37,6 @@
 #include <suzerain/support/savable.hpp>
 
 namespace suzerain {
-
-namespace support {
 
 class largo_formulation
 {
@@ -122,8 +120,6 @@ std::basic_ostream<CharT,Traits>& operator<<(
     return os << f.name();
 }
 
-} // namespace support
-
 } // namespace suzerain
 
-#endif // SUZERAIN_SUPPORT_LARGO_FORMULATION_HPP
+#endif // SUZERAIN_LARGO_FORMULATION_HPP

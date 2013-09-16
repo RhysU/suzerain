@@ -22,22 +22,20 @@
 //--------------------------------------------------------------------------
 
 /** @file
- * @copydoc largo_definition.hpp
+ * @copydoc largo_formulation.hpp
  */
 
 #ifdef HAVE_CONFIG_H
 #include <suzerain/config.h>
 #endif
 
-#include <suzerain/support/largo_formulation.hpp>
+#include <suzerain/largo_formulation.hpp>
 
 #include <boost/assign/list_of.hpp>
 
 #include <suzerain/common.hpp>
 
 namespace suzerain {
-
-namespace support {
 
 // BEGIN Add known Largo formulations here
 const largo_formulation largo_formulation::disable(
@@ -128,7 +126,5 @@ largo_formulation::names()
     }
     return retval;
 }
-
-} // namespace support
 
 } // namespace suzerain
