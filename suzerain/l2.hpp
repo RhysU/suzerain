@@ -40,9 +40,10 @@ namespace suzerain {
  * Holds information on the \f$L^2_{xyz}\f$ norm of a scalar field
  * or inner product of two scalar fields.
  *
- * To compute root-mean-square values instead of L2 quantities, divide #mean2,
- * #fluctuating2, and #total2 by \f$L_x L_z L_y\f$.  For #mean, #fluctuating,
- * and #total, divide by the square root of that product.
+ * To compute root-mean-square (RMS) values instead of \f$L^2\f$ quantities,
+ * divide #mean2, #fluctuating2, and #total2 by \f$L_x L_y L_z\f$.  To obtain
+ * RMS values from #mean, #fluctuating, and #total, divide each of them by
+ * \f$\sqrt{L_x L_y L_z}\f$.
  */
 struct field_L2xyz {
 
@@ -72,9 +73,10 @@ compute_field_L2xyz(
  * product of two scalar fields.  Provides both coefficient-wise and vectorized
  * access to quantities of interest.
  *
- * To compute root-mean-square values instead of L2 quantities, divide #mean2,
- * #fluctuating2, and #total2 by \f$L_x L_y\f$.  For #mean, #fluctuating, and
- * #total, divide by the square root of that product.
+ * To compute root-mean-square (RMS) values instead of \f$L^2\f$ quantities,
+ * divide #mean2, #fluctuating2, and #total2 by \f$L_x L_z\f$.  To obtain RMS
+ * values from #mean, #fluctuating, and #total, divide each of them by
+ * \f$\sqrt{L_x L_z}\f$.
  */
 struct field_L2xz {
 
