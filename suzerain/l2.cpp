@@ -147,7 +147,7 @@ compute_field_L2xyz(
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xyz> retval(state.shape()[0]);
-    for (size_t k = 0; k < state.shape()[0]; ++k) {
+    for (size_t k = 0; k < retval.size(); ++k) {
         retval[k].mean2        = std::abs(mean2[k]);
         retval[k].fluctuating2 = std::abs(total2[k] - mean2[k]);
     }
@@ -208,11 +208,8 @@ compute_field_L2xz(
     // Fast columns store wall-normal swaths of data.
     // Real-valued since cwiseAbs2 always produces real-valued results.
     MatrixXXr buf(grid.N.y(), 2*state.shape()[0]);
-    Map<MatrixXXr> total2(buf.col(0).data(),
-                          grid.N.y(), state.shape()[0]);
-    Map<MatrixXXr> mean2 (buf.col(state.shape()[0]).data(),
-                          grid.N.y(), state.shape()[0]);
-    assert(buf.size() == total2.size() + mean2.size());
+    MatrixXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
+    MatrixXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
 
     // Compute the local L2 contribution towards each L^2_xz norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
@@ -269,7 +266,7 @@ compute_field_L2xz(
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xz> retval(state.shape()[0]);
-    for (size_t k = 0; k < state.shape()[0]; ++k) {
+    for (size_t k = 0; k < retval.size(); ++k) {
         retval[k].mean2        = mean2.col(k);
         retval[k].fluctuating2 = total2.col(k) - mean2.col(k);
     }
