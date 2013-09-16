@@ -212,6 +212,7 @@ compute_field_L2xz(
                           grid.N.y(), state.shape()[0]);
     Map<MatrixXXr> mean2 (buf.col(state.shape()[0]).data(),
                           grid.N.y(), state.shape()[0]);
+    assert(buf.size() == total2.size() + mean2.size());
 
     // Compute the local L2 contribution towards each L^2_xz norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
@@ -247,7 +248,7 @@ compute_field_L2xz(
     // Reduce total2 sum onto processor housing the zero-zero mode using
     // mean2 as a scratch buffer to simulate MPI_IN_PLACE
     SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
-            total2.size(), mpi::datatype<real_t>(), // NB real_t
+            total2.size(), mpi::datatype<real_t>(),
             MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
     total2 = mean2;
 
@@ -263,7 +264,7 @@ compute_field_L2xz(
 
     // Broadcast total2 and mean2 values to all processors
     SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
-            buf.size(), mpi::datatype<real_t>(), // NB real_t
+            buf.size(), mpi::datatype<real_t>(),
             dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
 
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
