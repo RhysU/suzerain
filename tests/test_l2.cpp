@@ -28,7 +28,6 @@
 #include <suzerain/l2.hpp>
 
 #include <suzerain/common.hpp>
-#include <suzerain/bspline.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
@@ -165,19 +164,12 @@ int test::run(int argc, char **argv)
             }
         }
     }
-    // BEGIN FIXME
-    bsplineop_luz massluz(*cop);
-    const complex_t scale_factor = 1 / dgrid->chi();
-    massluz.opform(1, &scale_factor, *cop);
-    massluz.factor();
-    // END FIXME
+    p *= dgrid->chi();
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, f);
-//FIXMEo.bop_solve(o.massluz(), *state_nonlinear, f);        // Y
-        o.bop_solve(massluz, *state_nonlinear, f);        // Y
+        o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
     }
-//     p *= dgrid->chi();
 
     INFO0(who, "Compute L^2_{xz} at each collocation point");
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
@@ -186,7 +178,7 @@ int test::run(int argc, char **argv)
     // Coefficient to convert L^2_xz results into RMS results per l2.hpp
     const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
-    INFO0(who, "Mean RMS for each field as a function of collocation point:");
+    INFO0(who, "Mean RMS for each field at every collocation point:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
@@ -196,8 +188,7 @@ int test::run(int argc, char **argv)
         INFO0(who, msg.str());
     }
 
-    INFO0(who,
-          "Fluctuating RMS for each field as a function of collocation point:");
+    INFO0(who, "Fluctuating RMS for each field at every collocation point:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
@@ -207,10 +198,9 @@ int test::run(int argc, char **argv)
         INFO0(who, msg.str());
     }
 
-    // Stop processing if correctness checking not requested
-    if (!check) return EXIT_SUCCESS;
+    // TODO Check and report error status if results not good to some tolerance
+    int status = EXIT_SUCCESS;
+    if (!check) return status;
 
-    // TODO Error if results not good to some tolerance
-
-    return EXIT_SUCCESS;
+    return status;
 }
