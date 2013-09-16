@@ -102,6 +102,7 @@ int test::run(int argc, char **argv)
     // Add additional command line options
     std::size_t nfields = 3;
     bool check          = true;
+    bool constant       = false;
     options.add_options()
         ("nfields,n", boost::program_options::value(&nfields)
          ->default_value(nfields),
@@ -109,9 +110,12 @@ int test::run(int argc, char **argv)
         ("check,c", boost::program_options::value(&check)
          ->default_value(check)->zero_tokens(),
          "Check results against expected values")
+        ("constant,C", boost::program_options::value(&constant)
+         ->default_value(constant)->zero_tokens(),
+         "Employ simpler constant-valued scalar manufactured fields")
     ;
 
-    // Initialize the parallel decomposition and state storage
+    // Initialize the parallel decomposition, state storage, and operators
     std::vector<std::string> positional = initialize(argc, argv);
     if (positional.size() != 0) {
         FATAL0(who, "No positional arguments accepted");
@@ -120,39 +124,46 @@ int test::run(int argc, char **argv)
     establish_ieee_mode();
     load_grid_and_operators(NULL);
     establish_decomposition();
+    suzerain::operator_base o(*grid, *dgrid, *cop, *b);
     establish_state_storage(/* linear state is wave-only        */ 0,
                             /* nonlinear state is transformable */ nfields);
-
-
-    INFO0(who, "Initializing test field in physical space");
     physical_view<> p(*dgrid, *state_nonlinear);
-    suzerain::operator_base o(*grid, *dgrid, *cop, *b);
-    for (int offset = 0, j = dgrid->local_physical_start.y();      // Y
-         j < dgrid->local_physical_end.y();
-         ++j) {
-        const real_t y = o.y(j);
+    p.setConstant(std::numeric_limits<real_t>::quiet_NaN());  // ++paranoia
 
-        for (int k = dgrid->local_physical_start.z();              // Z
-             k < dgrid->local_physical_end.z();
-             ++k) {
-            const real_t z = o.z(k);
+    // Either constant-valued or spatially-varying fields may be initialized.
+    // The former is good for checking grid-, dealiasing-, and normalization.
+    // The latter is good for checking fluctuating magnitude computations.
+    if (constant) {
+        INFO0(who, "Initializing constant-valued scalar fields");
+        for (std::size_t f = 0; f < nfields; ++f)
+            p.row(f).setConstant(f + 1);
+    } else {
+        INFO0(who, "Initializing spatially-varying scalar fields");
+        for (int offset = 0, j = dgrid->local_physical_start.y();     // Y
+             j < dgrid->local_physical_end.y();
+             ++j) {
+            const real_t y = o.y(j);
 
-            for (int i = dgrid->local_physical_start.x();          // X
-                 i < dgrid->local_physical_end.x();
-                 ++i, /* NB */ ++offset) {
-                const real_t x = o.x(i);
+            for (int k = dgrid->local_physical_start.z();             // Z
+                 k < dgrid->local_physical_end.z();
+                 ++k) {
+                const real_t z = o.z(k);
 
-                // Notice scaling by wall-normal coordinate and field index
-                const real_t data = y * sample_data(x, grid->L.x(),
-                                                    z, grid->L.z());
-                for (std::size_t f = 0; f < nfields; ++f) {        // Fields
-                    p(f, offset) = (f + 1)*data;
+                for (int i = dgrid->local_physical_start.x();         // X
+                     i < dgrid->local_physical_end.x();
+                     ++i, /* NB */ ++offset) {
+                    const real_t x = o.x(i);
+
+                    // Notice scaling by wall-normal coordinate and field index
+                    const real_t data = y * sample_data(x, grid->L.x(),
+                                                        z, grid->L.z());
+                    for (std::size_t f = 0; f < nfields; ++f) {       // Fields
+                        p(f, offset) = (f + 1)*data;
+                    }
                 }
             }
         }
     }
-
-    INFO0(who, "Convert the physical space values to wave space");
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, f);
@@ -164,16 +175,15 @@ int test::run(int argc, char **argv)
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
             *state_nonlinear, *grid, *dgrid, *cop);
 
-    // Coefficient to convert L^2_xz results into RMS results
-    const real_t rms_coeff = 1 / std::sqrt(grid->L.x() * grid->L.z());
+    // Coefficient to convert L^2_xz results into RMS results per l2.hpp
+    const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
     INFO0(who, "Mean RMS for each collocation point and each field:");
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(   rms_coeff * L2xz[f].mean(j)
-                                      / (grid->L.x() * grid->L.z()));
+            msg << ' ' << fullprec<>(rms_adjust * L2xz[f].mean(j));
         }
         INFO0(who, msg.str());
     }
@@ -183,8 +193,7 @@ int test::run(int argc, char **argv)
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            msg << ' ' << fullprec<>(   rms_coeff * L2xz[f].fluctuating(j)
-                                      / (grid->L.x() * grid->L.z()));
+            msg << ' ' << fullprec<>(rms_adjust * L2xz[f].fluctuating(j));
         }
         INFO0(who, msg.str());
     }
