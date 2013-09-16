@@ -28,6 +28,7 @@
 #include <suzerain/l2.hpp>
 
 #include <suzerain/common.hpp>
+#include <suzerain/bspline.hpp>
 #include <suzerain/format.hpp>
 #include <suzerain/operator_base.hpp>
 #include <suzerain/physical_view.hpp>
@@ -164,12 +165,19 @@ int test::run(int argc, char **argv)
             }
         }
     }
+    // BEGIN FIXME
+    bsplineop_luz massluz(*cop);
+    const complex_t scale_factor = 1 / dgrid->chi();
+    massluz.opform(1, &scale_factor, *cop);
+    massluz.factor();
+    // END FIXME
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, f);
-        o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
+//FIXMEo.bop_solve(o.massluz(), *state_nonlinear, f);        // Y
+        o.bop_solve(massluz, *state_nonlinear, f);        // Y
     }
-    p *= dgrid->chi();
+//     p *= dgrid->chi();
 
     INFO0(who, "Compute L^2_{xz} at each collocation point");
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
