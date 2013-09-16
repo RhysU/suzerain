@@ -37,6 +37,9 @@
 
 namespace suzerain {
 
+// Must be constructed before any static instances are constructed
+std::map<std::string,const largo_formulation*> largo_formulation::by_name;
+
 // BEGIN Add known Largo formulations here
 const largo_formulation largo_formulation::disable(
         0, "disable", "No slow growth formulation is in use");
@@ -59,20 +62,6 @@ const largo_formulation largo_formulation::temporal_tensor_consistent(
                               ("temporal_tensor-consistent")
             .convert_to_container<std::vector<std::string> >());
 // END Add known Largo formulations here
-
-std::map<std::string,const largo_formulation*> largo_formulation::by_name;
-
-void
-largo_formulation::register_name(const std::string& name,
-                                 const largo_formulation* instance)
-{
-    const std::string& trimmed = boost::algorithm::trim_copy(name);
-    if (by_name.find(trimmed) != by_name.end()) {
-        throw std::logic_error(std::string("Name collision on '")
-            + trimmed + "' when registering with largo_formulation::by_name");
-    }
-    by_name[trimmed] = instance;
-}
 
 largo_formulation::largo_formulation(
         const int v,
@@ -97,6 +86,18 @@ largo_formulation::largo_formulation(
     }
 }
 
+void
+largo_formulation::register_name(const std::string& name,
+                                 const largo_formulation* instance)
+{
+    const std::string& trimmed = boost::algorithm::trim_copy(name);
+    if (by_name.find(trimmed) != by_name.end()) {
+        throw std::logic_error(std::string("Name collision on '")
+            + trimmed + "' when registering with largo_formulation::by_name");
+    }
+    by_name[trimmed] = instance;
+}
+
 const largo_formulation&
 largo_formulation::lookup(const std::string& name)
 {
@@ -112,7 +113,8 @@ largo_formulation::lookup(const std::string& name)
     }
 }
 
-// This is ugly and wasteful.
+// Map by_name potentially contains multiple spellings of each formulation.
+// Use name() member with set behavior to return only official spellings.
 std::set<std::string>
 largo_formulation::names()
 {
@@ -121,7 +123,7 @@ largo_formulation::names()
     map<string,const largo_formulation*>::const_iterator i   = by_name.begin();
     map<string,const largo_formulation*>::const_iterator end = by_name.end();
     while (i != end) {
-        retval.insert((*i).first);
+        retval.insert((*i).second->name());
         ++i;
     }
     return retval;
