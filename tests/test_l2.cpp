@@ -87,17 +87,16 @@ int main(int argc, char **argv)
 int test::run(int argc, char **argv)
 {
     // Establish default grid and domain extents
-    using boost::math::constants::pi;
-    grid.reset(new support::grid_definition( 5 * pi<real_t>()     // Lx
-                                           , 32                   // Nx
-                                           , 2                    // DAFx
-                                           , 2                    // Ly
-                                           , 16                   // Ny
-                                           , 8                    // k
-                                           , 0.5                  // htdelta
-                                           , 7 * pi<real_t>() / 3 // Lz
-                                           , 64                   // Nz
-                                           , real_t(3) / 2        // DAFz
+    grid.reset(new support::grid_definition( 5              // Lx
+                                           , 32             // Nx
+                                           , 2              // DAFx
+                                           , 2              // Ly
+                                           , 9              // Ny
+                                           , 4              // k
+                                           , 0.5            // htdelta
+                                           , 7              // Lz
+                                           , 64             // Nz
+                                           , real_t(3) / 2  // DAFz
             ));
 
     // Add additional command line options
