@@ -31,8 +31,6 @@
 
 #include <suzerain/support/largo_definition.hpp>
 
-#include <boost/assign/list_of.hpp>
-
 #include <esio/error.h>
 #include <esio/esio.h>
 
@@ -60,96 +58,6 @@ static void parse_formulation(const std::string& s, largo_formulation *t)
     *t = largo_formulation::lookup(s);
 }
 
-std::map<std::string,const largo_formulation*> largo_formulation::by_name;
-
-void
-largo_formulation::register_name(const std::string& name,
-                                 const largo_formulation* instance)
-{
-    const std::string& trimmed = boost::algorithm::trim_copy(name);
-    if (by_name.find(trimmed) != by_name.end()) {
-        throw std::logic_error(std::string("Name collision on '")
-            + trimmed + "' when registering with largo_formulation::by_name");
-    }
-    by_name[trimmed] = instance;
-}
-
-largo_formulation::largo_formulation(
-        const int v,
-        const char *n,
-        const char *d)
-    : v(v), n(n), d(d)
-{
-    register_name(this->n, this);
-}
-
-largo_formulation::largo_formulation(
-        const int v,
-        const char *n,
-        const char *d,
-        const std::vector<std::string>& misspellings)
-    : v(v), n(n), d(d)
-{
-    register_name(this->n, this);
-
-    for (std::size_t i = 0; i < misspellings.size(); ++i) {
-        register_name(misspellings[i], this);
-    }
-}
-
-const largo_formulation&
-largo_formulation::lookup(const std::string& name)
-{
-    using namespace std;
-    using namespace boost::algorithm;
-    map<string,const largo_formulation*>::const_iterator i = by_name.find(trim_copy(name));
-    if (i == by_name.end()) {
-        ostringstream oss;
-        oss << "Unknown largo_formulation '" << name << "'";
-        throw invalid_argument(oss.str());
-    } else {
-        return *((*i).second);
-    }
-}
-
-// This is ugly and wasteful.
-std::set<std::string>
-largo_formulation::names()
-{
-    using namespace std;
-    set<string> retval;
-    map<string,const largo_formulation*>::const_iterator i   = by_name.begin();
-    map<string,const largo_formulation*>::const_iterator end = by_name.end();
-    while (i != end) {
-        retval.insert((*i).first);
-        ++i;
-    }
-    return retval;
-}
-
-// BEGIN Add known formulations here
-const largo_formulation largo_formulation::disable(
-        0, "disable", "No slow growth formulation is in use");
-
-const largo_formulation largo_formulation::temporal(
-        1, "bl_temporal", "Original temporal formulation by Topalian et al.",
-        boost::assign::list_of("temporal")
-            .convert_to_container<std::vector<std::string> >());
-
-const largo_formulation largo_formulation::spatial(
-        2, "bl_spatial", "Full spatial formulation by Topalian et al.",
-        boost::assign::list_of("spatial")
-            .convert_to_container<std::vector<std::string> >());
-
-const largo_formulation largo_formulation::temporal_tensor_consistent(
-        3, "bl_temporal_tensor-consistent",
-           "Temporal tensor-consistent formulation by Topalian et al.",
-        boost::assign::list_of("bl_temporal_tensor_consistent")
-                              ("temporal_tensor_consistent")
-                              ("temporal_tensor-consistent")
-            .convert_to_container<std::vector<std::string> >());
-// END Add known formulations here
-
 largo_definition::largo_definition()
     : formulation(largo_formulation::disable)
     , grdelta    (std::numeric_limits<real_t>::quiet_NaN())
@@ -166,7 +74,6 @@ static const char name_grdelta[]            = "grdelta";
 // Descriptions used in options_description and populate/override/save/load.
 static const char desc_formulation[] = "Name of the slow growth formulation";
 static const char desc_grdelta[]     = "Growth rate of reference thickness (Delta)";
-
 
 boost::program_options::options_description
 largo_definition::options_description()
@@ -453,7 +360,6 @@ largo_definition::get_baseflow(
        // Assume that baseflow arrays are initialized to zero
    }
 }
-
 
 void
 largo_definition::get_baseflow_pressure(

@@ -31,6 +31,7 @@
 #include <suzerain/common.hpp>
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
+#include <suzerain/support/largo_formulation.hpp>
 #include <suzerain/support/loadable.hpp>
 #include <suzerain/support/overridable.hpp>
 #include <suzerain/support/populatable.hpp>
@@ -39,87 +40,6 @@
 namespace suzerain {
 
 namespace support {
-
-class largo_formulation
-{
-private:
-
-    int         v;  ///< A quickly comparable value
-    std::string n;  ///< A brief, human-readable name
-    std::string d;  ///< A relatively complete description
-
-    /** Maintains map from name to pointer-to-static instances. */
-    static std::map<std::string,const largo_formulation*> by_name;
-
-    /** Register names within \c by_name. */
-    static void register_name(const std::string& name,
-                              const largo_formulation* instance);
-
-    /** Create a new (static) instance and register it. */
-    largo_formulation(const int v, const char *n, const char *d);
-
-    /**
-     * Create a new (static) instance and register it.
-     *
-     * Register \c misspellings in \c by_name as well to permit lookup
-     * by any of them in addition to \c n.
-     */
-    largo_formulation(const int v,
-                      const char *n,
-                      const char *d,
-                      const std::vector<std::string>& misspellings);
-
-public:
-
-    /**
-     * The known slow growth formulation types.
-     * @{
-     */
-    static const largo_formulation disable;
-    static const largo_formulation temporal;
-    static const largo_formulation spatial;
-    static const largo_formulation temporal_tensor_consistent;
-    /**@}*/
-
-    /** Is a slow growth formulation in use? */
-    bool enabled() const
-    { return v != 0; }
-
-    /** What is the name of the given formulation? */
-    const std::string& name() const
-    { return n; }
-
-    /** What is the description of the given formulation? */
-    const std::string& description() const
-    { return d; }
-
-    /** Is \c this the same formulation as \c that? */
-    bool operator==(const largo_formulation& that) const
-    { return this->v == that.v; }
-
-    /** Is \c this a different formulation from \c that? */
-    bool operator!=(const largo_formulation& that) const
-    { return this->v != that.v; }
-
-    /**
-     * Return an instance with the given formulation name.
-     * Leading and trailing white spaces are ignored.
-     * @throws std::invalid_argument on unknown name.
-     */
-    static const largo_formulation& lookup(const std::string& name);
-
-    /** Return the set of known formulation names. */
-    static std::set<std::string> names();
-
-};
-
-template< typename CharT, typename Traits >
-std::basic_ostream<CharT,Traits>& operator<<(
-        std::basic_ostream<CharT,Traits> &os,
-        const largo_formulation &f)
-{
-    return os << f.name();
-}
 
 /**
  * Holds parameters defining largo boundary cases.
