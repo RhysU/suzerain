@@ -39,6 +39,29 @@ namespace suzerain {
 
 namespace support {
 
+// BEGIN Add known Largo formulations here
+const largo_formulation largo_formulation::disable(
+        0, "disable", "No slow growth formulation is in use");
+
+const largo_formulation largo_formulation::temporal(
+        1, "bl_temporal", "Original temporal formulation by Topalian et al.",
+        boost::assign::list_of("temporal")
+            .convert_to_container<std::vector<std::string> >());
+
+const largo_formulation largo_formulation::spatial(
+        2, "bl_spatial", "Full spatial formulation by Topalian et al.",
+        boost::assign::list_of("spatial")
+            .convert_to_container<std::vector<std::string> >());
+
+const largo_formulation largo_formulation::temporal_tensor_consistent(
+        3, "bl_temporal_tensor-consistent",
+           "Temporal tensor-consistent formulation by Topalian et al.",
+        boost::assign::list_of("bl_temporal_tensor_consistent")
+                              ("temporal_tensor_consistent")
+                              ("temporal_tensor-consistent")
+            .convert_to_container<std::vector<std::string> >());
+// END Add known Largo formulations here
+
 std::map<std::string,const largo_formulation*> largo_formulation::by_name;
 
 void
@@ -105,29 +128,6 @@ largo_formulation::names()
     }
     return retval;
 }
-
-// BEGIN Add known formulations here
-const largo_formulation largo_formulation::disable(
-        0, "disable", "No slow growth formulation is in use");
-
-const largo_formulation largo_formulation::temporal(
-        1, "bl_temporal", "Original temporal formulation by Topalian et al.",
-        boost::assign::list_of("temporal")
-            .convert_to_container<std::vector<std::string> >());
-
-const largo_formulation largo_formulation::spatial(
-        2, "bl_spatial", "Full spatial formulation by Topalian et al.",
-        boost::assign::list_of("spatial")
-            .convert_to_container<std::vector<std::string> >());
-
-const largo_formulation largo_formulation::temporal_tensor_consistent(
-        3, "bl_temporal_tensor-consistent",
-           "Temporal tensor-consistent formulation by Topalian et al.",
-        boost::assign::list_of("bl_temporal_tensor_consistent")
-                              ("temporal_tensor_consistent")
-                              ("temporal_tensor-consistent")
-            .convert_to_container<std::vector<std::string> >());
-// END Add known formulations here
 
 } // namespace support
 
