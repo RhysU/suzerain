@@ -90,7 +90,7 @@ int test::run(int argc, char **argv)
     grid.reset(new support::grid_definition( 5              // Lx
                                            , 32             // Nx
                                            , 2              // DAFx
-                                           , 2              // Ly
+                                           , 3              // Ly
                                            , 9              // Ny
                                            , 4              // k
                                            , 0.5            // htdelta
