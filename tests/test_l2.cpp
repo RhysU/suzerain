@@ -91,7 +91,7 @@ int test::run(int argc, char **argv)
                                            , 32             // Nx
                                            , 2              // DAFx
                                            , 3              // Ly
-                                           , 9              // Ny
+                                           , 6              // Ny
                                            , 4              // k
                                            , 0.5            // htdelta
                                            , 7              // Lz
