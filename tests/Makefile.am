@@ -556,11 +556,11 @@ test_diffwave_p3dfft_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 # Filed under check_PROGRAMS so binary is built before test is executed
 # There must be a better way to express this dependency, but this works
-#  TESTS                        += test_l2.sh # FIXME Driver
-#  dist_check_SCRIPTS           += test_l2.sh # FIXME Driver
-check_PROGRAMS         += test_l2
-test_l2_SOURCES   = test_l2.cpp
-test_l2_LDADD     = ../suzerain/libsuzerain.la
+TESTS              += test_l2xz.sh
+dist_check_SCRIPTS += test_l2xz.sh
+check_PROGRAMS     += test_l2xz
+test_l2xz_SOURCES   = test_l2xz.cpp
+test_l2xz_LDADD     = ../suzerain/libsuzerain.la
 
 # Clean up from Intel Compiler's -prof-gen output
 CLEANFILES += pgopti.spi pgopti.spl *.dyn *.dpi
