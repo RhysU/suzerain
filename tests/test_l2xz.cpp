@@ -86,6 +86,9 @@ int main(int argc, char **argv)
 
 int test::run(int argc, char **argv)
 {
+    const real_t sqrteps = std::sqrt(std::numeric_limits<real_t>::epsilon());
+    int retval           = EXIT_SUCCESS;
+
     // Establish default grid and domain extents
     // Sizes chosen to be both a good test case and satisfy default abstol
     grid.reset(new support::grid_definition( 5              // Lx
@@ -102,7 +105,7 @@ int test::run(int argc, char **argv)
 
     // Add additional command line options
     std::size_t nfields = 3;
-    real_t abstol       = 5*std::sqrt(std::numeric_limits<real_t>::epsilon());
+    real_t abstol       = 5*sqrteps;
     bool constant       = false;
     options.add_options()
         ("nfields,n", boost::program_options::value(&nfields)
@@ -169,23 +172,21 @@ int test::run(int argc, char **argv)
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, f);
-        o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
     }
 
-    INFO0(who, "Computing L^2_{xz} for all fields at each collocation point");
-    std::vector<field_L2xz> L2xz = compute_field_L2xz(
-            *state_nonlinear, *grid, *dgrid, *cop);
-
-    // Coefficient to convert L^2_xz results into RMS results per l2.hpp
-    const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
+    INFO0(who, "Computing L^2_{xz} for all fields from Y collocation points");
+    std::vector<field_L2xz> L2xz1 = compute_field_L2xz(
+            *state_nonlinear, *grid, *dgrid);
 
     // Track statistics on the errors versus expected values
-    int status = EXIT_SUCCESS;
     typedef boost::accumulators::stats<
                 boost::accumulators::tag::min,
                 boost::accumulators::tag::mean,
                 boost::accumulators::tag::max
             > to_be_tracked;
+
+    // Coefficient to convert L^2_xz results into RMS results per l2.hpp
+    const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
     INFO0(who, "Mean RMS for each field at every collocation point:");
     boost::accumulators::accumulator_set<real_t, to_be_tracked> abserr_mean;
@@ -194,7 +195,7 @@ int test::run(int argc, char **argv)
         msg << fullprec<>(b->collocation_point(j));
         for (std::size_t f = 0; f < nfields; ++f) {
             const real_t expected = constant ? (f + 1) : 0;
-            const real_t observed = rms_adjust * L2xz[f].mean(j);
+            const real_t observed = rms_adjust * L2xz1[f].mean(j);
             abserr_mean(std::abs(observed - expected));
             msg << ' ' << fullprec<>(observed);
         }
@@ -206,7 +207,7 @@ int test::run(int argc, char **argv)
                << boost::accumulators::max (abserr_mean));
     if (boost::accumulators::max(abserr_mean) > abstol) {
         WARN0(who, "Maximum absolute error greater than tolerance " << abstol);
-        status |= EXIT_FAILURE;
+        retval |= EXIT_FAILURE;
     }
 
     INFO0(who, "Fluctuating RMS for each field at every collocation point:");
@@ -217,7 +218,7 @@ int test::run(int argc, char **argv)
         for (std::size_t f = 0; f < nfields; ++f) {
             const real_t expected = (f + 1)
                                   * (constant ? 0 : b->collocation_point(j)/2);
-            const real_t observed = rms_adjust * L2xz[f].fluctuating(j);
+            const real_t observed = rms_adjust * L2xz1[f].fluctuating(j);
             abserr_fluct(std::abs(observed - expected));
             msg << ' ' << fullprec<>(observed);
         }
@@ -229,8 +230,42 @@ int test::run(int argc, char **argv)
                << boost::accumulators::max (abserr_fluct));
     if (boost::accumulators::max(abserr_fluct) > abstol) {
         WARN0(who, "Maximum absolute error greater than tolerance " << abstol);
-        status |= EXIT_FAILURE;
+        retval |= EXIT_FAILURE;
     }
 
-    return status;
+    INFO0(who, "Computing L^2_{xz} for all fields from B-spline coefficients");
+    for (std::size_t f = 0; f < nfields; ++f) {
+        o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
+    }
+    std::vector<field_L2xz> L2xz2 = compute_field_L2xz(
+            *state_nonlinear, *grid, *dgrid, *cop);
+
+    INFO0(who, "Checking collocation points vs coefficients L^2 consistency");
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> consist_mean;
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> consist_fluct;
+    for (std::size_t f = 0; f < nfields; ++f) {
+        for (int j = 0; j < grid->N.y(); ++j) {
+            using std::abs;
+            consist_mean (abs(L2xz1[f].mean(j)        - L2xz2[f].mean(j)       ));
+            consist_fluct(abs(L2xz1[f].fluctuating(j) - L2xz2[f].fluctuating(j)));
+        }
+    }
+    INFO0(who, "Mean RMS min/mean/max L^2 consistency errors: "
+               << boost::accumulators::min (consist_mean) << '/'
+               << boost::accumulators::mean(consist_mean) << '/'
+               << boost::accumulators::max (consist_mean));
+    if (boost::accumulators::max(consist_mean) > sqrteps) {
+        WARN0(who, "Maximum absolute error greater than sqrt(eps) " << sqrteps);
+        retval |= EXIT_FAILURE;
+    }
+    INFO0(who, "Fluctuating RMS min/mean/max L^2 consistency errors: "
+               << boost::accumulators::min (consist_fluct) << '/'
+               << boost::accumulators::mean(consist_fluct) << '/'
+               << boost::accumulators::max (consist_fluct));
+    if (boost::accumulators::max(consist_fluct) > sqrteps) {
+        WARN0(who, "Maximum absolute error greater than sqrt(eps) " << sqrteps);
+        retval |= EXIT_FAILURE;
+    }
+
+    return retval;
 }
