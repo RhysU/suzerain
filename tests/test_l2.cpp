@@ -87,8 +87,9 @@ int main(int argc, char **argv)
 int test::run(int argc, char **argv)
 {
     // Establish default grid and domain extents
+    // Sizes chosen to be both a good test case and satisfy default abstol
     grid.reset(new support::grid_definition( 5              // Lx
-                                           , 32             // Nx
+                                           , 48             // Nx
                                            , 2              // DAFx
                                            , 3              // Ly
                                            , 6              // Ny
@@ -101,15 +102,15 @@ int test::run(int argc, char **argv)
 
     // Add additional command line options
     std::size_t nfields = 3;
-    bool check          = true;
+    real_t abstol       = 5*std::sqrt(std::numeric_limits<real_t>::epsilon());
     bool constant       = false;
     options.add_options()
         ("nfields,n", boost::program_options::value(&nfields)
          ->default_value(nfields),
          "Number of independent scalar fields")
-        ("check,c", boost::program_options::value(&check)
-         ->default_value(check)->zero_tokens(),
-         "Check results against expected values")
+        ("abstol,a", boost::program_options::value(&abstol)
+         ->default_value(abstol),
+         "Results checked against expected values to given absolute tolerance")
         ("constant,C", boost::program_options::value(&constant)
          ->default_value(constant)->zero_tokens(),
          "Employ simpler constant-valued scalar manufactured fields")
@@ -171,7 +172,7 @@ int test::run(int argc, char **argv)
         o.bop_solve(*o.massluz(), *state_nonlinear, f);        // Y
     }
 
-    INFO0(who, "Compute L^2_{xz} at each collocation point");
+    INFO0(who, "Computing L^2_{xz} for all fields at each collocation point");
     std::vector<field_L2xz> L2xz = compute_field_L2xz(
             *state_nonlinear, *grid, *dgrid, *cop);
 
@@ -179,6 +180,7 @@ int test::run(int argc, char **argv)
     const real_t rms_adjust = 1 / std::sqrt(grid->L.x() * grid->L.z());
 
     // Track statistics on the errors versus expected values
+    int status = EXIT_SUCCESS;
     typedef boost::accumulators::stats<
                 boost::accumulators::tag::min,
                 boost::accumulators::tag::mean,
@@ -186,44 +188,48 @@ int test::run(int argc, char **argv)
             > to_be_tracked;
 
     INFO0(who, "Mean RMS for each field at every collocation point:");
-    boost::accumulators::accumulator_set<real_t, to_be_tracked> track_mean;
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> abserr_mean;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
             const real_t expected = constant ? (f + 1) : 0;
             const real_t observed = rms_adjust * L2xz[f].mean(j);
-            track_mean(std::abs(observed - expected));
+            abserr_mean(std::abs(observed - expected));
             msg << ' ' << fullprec<>(observed);
         }
         INFO0(who, msg.str());
     }
-    INFO0(who, "Mean RMS min/mean/max errors: "
-               << boost::accumulators::min (track_mean) << '/'
-               << boost::accumulators::mean(track_mean) << '/'
-               << boost::accumulators::max (track_mean));
+    INFO0(who, "Mean RMS min/mean/max absolute errors: "
+               << boost::accumulators::min (abserr_mean) << '/'
+               << boost::accumulators::mean(abserr_mean) << '/'
+               << boost::accumulators::max (abserr_mean));
+    if (boost::accumulators::max(abserr_mean) > abstol) {
+        WARN0(who, "Maximum absolute error greater than tolerance " << abstol);
+        status |= EXIT_FAILURE;
+    }
 
     INFO0(who, "Fluctuating RMS for each field at every collocation point:");
-    boost::accumulators::accumulator_set<real_t, to_be_tracked> track_fluct;
+    boost::accumulators::accumulator_set<real_t, to_be_tracked> abserr_fluct;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
         msg << fullprec<>(o.y(j));
         for (std::size_t f = 0; f < nfields; ++f) {
             const real_t expected = (f + 1)*(constant ? 0 : o.y(j)/2);
             const real_t observed = rms_adjust * L2xz[f].fluctuating(j);
-            track_fluct(std::abs(observed - expected));
+            abserr_fluct(std::abs(observed - expected));
             msg << ' ' << fullprec<>(observed);
         }
         INFO0(who, msg.str());
     }
-    INFO0(who, "Fluctuating RMS min/mean/max errors: "
-               << boost::accumulators::min (track_fluct) << '/'
-               << boost::accumulators::mean(track_fluct) << '/'
-               << boost::accumulators::max (track_fluct));
-
-    // TODO Report error status if results not good to some tolerance
-    int status = EXIT_SUCCESS;
-    if (!check) return status;
+    INFO0(who, "Fluctuating RMS min/mean/max absolute errors: "
+               << boost::accumulators::min (abserr_fluct) << '/'
+               << boost::accumulators::mean(abserr_fluct) << '/'
+               << boost::accumulators::max (abserr_fluct));
+    if (boost::accumulators::max(abserr_fluct) > abstol) {
+        WARN0(who, "Maximum absolute error greater than tolerance " << abstol);
+        status |= EXIT_FAILURE;
+    }
 
     return status;
 }
