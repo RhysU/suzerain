@@ -32,7 +32,6 @@ libperfect_la_SOURCES += quantities.cpp
 libperfect_la_SOURCES += quantities.hpp
 libperfect_la_SOURCES += scenario_definition.cpp
 libperfect_la_SOURCES += scenario_definition.hpp
-libperfect_la_SOURCES += slowgrowth_type.hpp
 
 ##
 ## Applications

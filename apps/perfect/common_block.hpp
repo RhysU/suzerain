@@ -32,7 +32,6 @@
 #include <suzerain/rholut_imexop.h>
 
 #include "linearize_type.hpp"
-#include "slowgrowth_type.hpp"
 
 namespace suzerain {
 
@@ -64,12 +63,6 @@ public:
      * by the paired linear and nonlinear operators.
      */
     linearize::type linearization;
-
-    /**
-     * Determines the extent of the slow growth treatment
-     * by the paired linear and nonlinear operators.
-     */
-    slowgrowth::type slow_treatment;
 
     /**
      * The mean quantities, stored as collocation point values in \c means,

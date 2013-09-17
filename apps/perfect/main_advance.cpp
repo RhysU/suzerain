@@ -195,8 +195,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
         state_linear->assign_from(*state_nonlinear);
     }
 
-    // TODO Initialize any requested slow growth forcing
-    common_block.slow_treatment = slowgrowth::none;
+    // TODO Initialize any requested slow growth forcing (Redmine #2493)
 
     // Prepare any necessary, problem-specific constraints
     shared_ptr<constraint::treatment<operator_common_block> > constrainer(

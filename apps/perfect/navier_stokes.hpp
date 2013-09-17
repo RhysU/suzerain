@@ -43,7 +43,6 @@
 #include <suzerain/timers.h>
 
 #include "linearize_type.hpp"
-#include "slowgrowth_type.hpp"
 #include "common_block.hpp"
 
 #pragma warning(push, disable:280 383 1572)
@@ -101,7 +100,6 @@ namespace perfect {
  *         quantities for linearization.
  * \tparam Linearize What type of hybrid implicit/explicit linearization
  *         is employed?
- * \tparam SlowTreatment What type of slow growth forcing should be applied?
  * \tparam ManufacturedSolution What manufactured solution should be used to
  *         provide additional forcing (when enabled)?
  *
@@ -113,7 +111,6 @@ namespace perfect {
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
-          slowgrowth::type SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t alpha,
@@ -144,7 +141,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Compile-time template parameters are used to reduce jumps at runtime.
     // Ensure that someone didn't hand in a mismatched common block.
     SUZERAIN_ENSURE(common.linearization  == Linearize);
-    SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
     // Afterwards, change the stable time step computation accordingly
