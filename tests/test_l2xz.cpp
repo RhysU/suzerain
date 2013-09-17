@@ -191,7 +191,7 @@ int test::run(int argc, char **argv)
     boost::accumulators::accumulator_set<real_t, to_be_tracked> abserr_mean;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
-        msg << fullprec<>(o.y(j));
+        msg << fullprec<>(b->collocation_point(j));
         for (std::size_t f = 0; f < nfields; ++f) {
             const real_t expected = constant ? (f + 1) : 0;
             const real_t observed = rms_adjust * L2xz[f].mean(j);
@@ -213,9 +213,10 @@ int test::run(int argc, char **argv)
     boost::accumulators::accumulator_set<real_t, to_be_tracked> abserr_fluct;
     for (int j = 0; j < grid->N.y(); ++j) {
         std::ostringstream msg;
-        msg << fullprec<>(o.y(j));
+        msg << fullprec<>(b->collocation_point(j));
         for (std::size_t f = 0; f < nfields; ++f) {
-            const real_t expected = (f + 1)*(constant ? 0 : o.y(j)/2);
+            const real_t expected = (f + 1)
+                                  * (constant ? 0 : b->collocation_point(j)/2);
             const real_t observed = rms_adjust * L2xz[f].fluctuating(j);
             abserr_fluct(std::abs(observed - expected));
             msg << ' ' << fullprec<>(observed);
