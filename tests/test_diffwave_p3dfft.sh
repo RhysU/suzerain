@@ -14,4 +14,9 @@ if ! which mpiexec > /dev/null ; then
     exit 0
 fi
 
+set -e # Fail on first error
 mpiexec -np 1 ./test_diffwave_p3dfft
+echo
+mpiexec -np 2 ./test_diffwave_p3dfft
+echo
+mpiexec -np 4 ./test_diffwave_p3dfft
