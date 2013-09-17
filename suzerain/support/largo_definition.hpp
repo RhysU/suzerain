@@ -95,14 +95,14 @@ public:
          const real_t    y,
          real_t *     base,
          real_t *   dybase,
-         real_t *   dxbase);
+         real_t *   dxbase) const;
 
     /** Get baseflow pressure and derivatives from coefficients*/
     void get_baseflow_pressure(
          const real_t    y,
          real_t &    Pbase,
          real_t &  dyPbase,
-         real_t &  dxPbase);
+         real_t &  dxPbase) const;
 
 private:
     /** Baseflow coefficients for the field*/

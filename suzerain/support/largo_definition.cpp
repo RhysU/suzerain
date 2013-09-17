@@ -334,7 +334,7 @@ largo_definition::get_baseflow(
         const real_t      y,
         real_t *       base,
         real_t *     dybase,
-        real_t *     dhbase)
+        real_t *     dhbase) const
 {
    if (x.rows()) {
       real_t res[2];
@@ -366,7 +366,7 @@ largo_definition::get_baseflow_pressure(
         const real_t      y,
         real_t &      Pbase,
         real_t &    dyPbase,
-        real_t &    dhPbase)
+        real_t &    dhPbase) const
 {
    if (x.rows()) {
       real_t res[2];
