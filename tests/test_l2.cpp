@@ -165,7 +165,7 @@ int test::run(int argc, char **argv)
             }
         }
     }
-    p *= dgrid->chi();
+    p *= dgrid->chi();                                         // Normalize
     for (std::size_t f = 0; f < nfields; ++f) {
         dgrid->transform_physical_to_wave(&p.coeffRef(f, 0));  // X, Z
         o.zero_dealiasing_modes(*state_nonlinear, f);
