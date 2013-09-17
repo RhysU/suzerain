@@ -32,6 +32,7 @@
 #include <suzerain/ndx.hpp>
 #include <suzerain/pencil_grid.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/largo_definition.hpp>
 
 #include "common_block.hpp"
 #include "manufactured_solution.hpp"
@@ -51,10 +52,12 @@ nonlinear_operator::nonlinear_operator(
         const bsplineop &cop,
         bspline &b,
         operator_common_block &common,
+        support::largo_definition& sg,
         const shared_ptr<const manufactured_solution>& msoln)
     : operator_base(grid, dgrid, cop, b)
     , scenario(scenario)
     , common(common)
+    , sg(sg)
     , msoln(msoln)
     , who("operator.N")
 {
@@ -67,13 +70,13 @@ std::vector<real_t> nonlinear_operator::apply_operator(
             const lowstorage::method_interface<complex_t> &method,
             const std::size_t substep_index) const
 {
-#define ARGUMENTS this->scenario.alpha,                     \
-                  this->scenario.beta,                      \
-                  this->scenario.gamma,                     \
-                  this->scenario.Ma,                        \
-                  this->scenario.Pr,                        \
-                  this->scenario.Re,                        \
-                  *this, common, msoln, time, swave, method
+#define ARGUMENTS this->scenario.alpha,                         \
+                  this->scenario.beta,                          \
+                  this->scenario.gamma,                         \
+                  this->scenario.Ma,                            \
+                  this->scenario.Pr,                            \
+                  this->scenario.Re,                            \
+                  *this, common, sg, msoln, time, swave, method
 
     // Dispatch to an optimized right hand side per substep/linearization:
     switch (common.linearization) {

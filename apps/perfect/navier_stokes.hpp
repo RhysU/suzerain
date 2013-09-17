@@ -39,6 +39,7 @@
 #include <suzerain/physical_view.hpp>
 #include <suzerain/rholut.hpp>
 #include <suzerain/state.hpp>
+#include <suzerain/support/largo_definition.hpp>
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
 
@@ -83,6 +84,7 @@ namespace perfect {
  *        operational details.
  * \param common Shared storage for interaction with an linear_operator
  *        implementation providing forcing and boundary conditions.
+ * \param sg Slow growth forcing to be applied via the Largo library.
  * \param msoln If \c msoln evaluates to \c true in a boolean context,
  *        then it will be used to provide manufactured forcing terms.
  * \param time Simulation time at which the operator should be applied.
@@ -121,6 +123,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t Re,
             const operator_base &o,
             operator_common_block &common,
+            support::largo_definition& sg,
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
@@ -141,6 +144,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Compile-time template parameters are used to reduce jumps at runtime.
     // Ensure that someone didn't hand in a mismatched common block.
     SUZERAIN_ENSURE(common.linearization  == Linearize);
+
+    SUZERAIN_ENSURE(!sg.formulation.enabled()); // FIXME Redmine #2493
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
     // Afterwards, change the stable time step computation accordingly

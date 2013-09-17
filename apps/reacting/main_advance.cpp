@@ -36,15 +36,15 @@
 #include <suzerain/zgbsv_specification.hpp>
 #include <suzerain/hybrid_residual_operator.hpp>
 
+#ifdef SUZERAIN_HAVE_LARGO
+#include <largo/largo.h>
+#endif
+
 #include "driver.hpp"
 #include "explicit_operator.hpp"
 
 #include "hybrid_operator.hpp"
 #include "nonreflecting_treatment.hpp"
-
-#ifdef SUZERAIN_HAVE_LARGO
-#include "largo/largo.h"
-#endif
 
 #pragma warning(disable:1419)
 

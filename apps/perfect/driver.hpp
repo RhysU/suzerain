@@ -75,7 +75,7 @@ public:
     shared_ptr<support::isothermal_definition> isothermal;
 
     /** Slow growth parameters for use with the Largo library. */
-    shared_ptr<support::largo_definition> sgdef;
+    shared_ptr<support::largo_definition> sg;
 
     /** Nondimensional manufactured solution optionally used by applications. */
     shared_ptr<manufactured_solution> msoln;
