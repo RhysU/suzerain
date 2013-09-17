@@ -117,9 +117,9 @@ struct field_L2xz {
 
 /**
  * Compute the \f$L^2_{xz}\f$ norm of all given scalar fields from \c state
- * represented as Fourier coefficients in $x$ and $z$ and B-spline coefficients
- * in $y$ at the B-spline collocation points defining the mass operator in \c
- * cop.  See writeup/L2.tex for full details.
+ * represented as Fourier coefficients in $x$ and $z$ \e and B-spline
+ * coefficients in $y$ at the B-spline collocation points defining the mass
+ * operator in \c cop.  See writeup/L2.tex for full details.
  */
 std::vector<field_L2xz>
 compute_field_L2xz(
@@ -127,6 +127,17 @@ compute_field_L2xz(
         const grid_specification& grid,
         const pencil_grid& dgrid,
         const bsplineop& cop);
+
+/**
+ * Compute the \f$L^2_{xz}\f$ norm of all given scalar fields from \c state
+ * represented as Fourier coefficients in $x$ and $z$ \e but collocation point
+ * values in $y$.  See writeup/L2.tex for full details.
+ */
+std::vector<field_L2xz>
+compute_field_L2xz(
+        const contiguous_state<4,complex_t> &state,
+        const grid_specification& grid,
+        const pencil_grid& dgrid);
 
 } // end namespace suzerain
 

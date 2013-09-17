@@ -274,4 +274,113 @@ compute_field_L2xz(
     return retval;
 }
 
+//
+// Implementation very much resembles previous compute_field_L2xz
+// with this routine assuming B-spline mass matrix already applied
+//
+std::vector<field_L2xz>
+compute_field_L2xz(
+        const contiguous_state<4,complex_t> &state,
+        const grid_specification& grid,
+        const pencil_grid& dgrid)
+{
+    // Ensure state storage meets this routine's assumptions
+    // Notice state.shape()[0] may be any value
+    using boost::numeric_cast;
+    assert(numeric_cast<int>(state.shape()[1]) == dgrid.local_wave_extent.y());
+    assert(numeric_cast<int>(state.shape()[2]) == dgrid.local_wave_extent.x());
+    assert(numeric_cast<int>(state.shape()[3]) == dgrid.local_wave_extent.z());
+
+    // Only want non-dealiased X-direction modes to contribute to L2
+    // Compute wavenumber translation logistics for X direction
+    int fxb[2], fxe[2], mxb[2], mxe[2];
+    inorder::wavenumber_translate(grid.N.x(),
+                                  grid.dN.x(),
+                                  dgrid.local_wave_start.x(),
+                                  dgrid.local_wave_end.x(),
+                                  fxb[0], fxe[0], fxb[1], fxe[1],
+                                  mxb[0], mxe[0], mxb[1], mxe[1]);
+    // X contains only positive wavenumbers => second range must be empty
+    assert(fxb[1] == fxe[1]);
+    assert(mxb[1] == mxe[1]);
+
+    // Only want non-dealiased Z-direction modes to contribute to L2
+    // Compute wavenumber translation logistics for Z direction
+    // One or both ranges may be empty
+    int fzb[2], fze[2], mzb[2], mze[2];
+    inorder::wavenumber_translate(grid.N.z(),
+                                  grid.dN.z(),
+                                  dgrid.local_wave_start.z(),
+                                  dgrid.local_wave_end.z(),
+                                  fzb[0], fze[0], fzb[1], fze[1],
+                                  mzb[0], mze[0], mzb[1], mze[1]);
+
+    // Contiguous temporary storage for accumulating and broadcasting results
+    // Fast columns store wall-normal swaths of data.
+    // Real-valued since cwiseAbs2 always produces real-valued results.
+    MatrixXXr buf(grid.N.y(), 2*state.shape()[0]);
+    MatrixXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
+    MatrixXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
+
+    // Compute the local L2 contribution towards each L^2_xz norm squared
+    // Computation uses partial sums at each loop to reduce swamping which is
+    // more-or-less recursive summation using large partitioning factors.
+    VectorXr jsum, nsum, msum;
+    total2.setZero();
+    for (size_t k = 0; k < state.shape()[0]; ++k) {
+        jsum.setZero(grid.N.y());
+        for (int j = 0; j < 2; ++j) {
+            nsum.setZero(grid.N.y());
+            for (int n = mzb[j]; n < mze[j]; ++n) {
+                msum.setZero(grid.N.y());
+                for (int m = mxb[0]; m < mxe[0]; ++m) {
+                    Map<const VectorXc> u_mn(
+                            &state[k][0][m - dgrid.local_wave_start.x()]
+                                        [n - dgrid.local_wave_start.z()],
+                            grid.N.y());
+                    if (m > 0 && m < grid.dN.x()/2) { // Conjugate symmetry
+                        msum += 2*u_mn.cwiseAbs2();
+                    } else {
+                        msum +=   u_mn.cwiseAbs2();
+                    }
+                }
+                nsum += msum;
+            }
+            jsum += nsum;
+        }
+        total2.col(k) += jsum;
+    }
+    total2 *= grid.L.x() * grid.L.z();
+
+    // Reduce total2 sum onto processor housing the zero-zero mode using
+    // mean2 as a scratch buffer to simulate MPI_IN_PLACE
+    SUZERAIN_MPICHKR(MPI_Reduce(total2.data(), mean2.data(),
+            total2.size(), mpi::datatype<real_t>(),
+            MPI_SUM, dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+    total2 = mean2;
+
+    // Compute the mean-only L^2 squared for each field using zero-zero modes
+    if (dgrid.has_zero_zero_modes()) {
+        for (size_t k = 0; k < state.shape()[0]; ++k) {
+            Map<const VectorXc> u_mn(&state[k][0][0][0], grid.N.y());
+            mean2.col(k) = u_mn.cwiseAbs2();
+        }
+        mean2 *= grid.L.x() * grid.L.z();
+    }
+
+    // Broadcast total2 and mean2 values to all processors
+    SUZERAIN_MPICHKR(MPI_Bcast(buf.data(),
+            buf.size(), mpi::datatype<real_t>(),
+            dgrid.rank_zero_zero_modes, MPI_COMM_WORLD));
+
+    // Obtain fluctuating2 = total2 - mean2 and pack the return structure
+    std::vector<field_L2xz> retval(state.shape()[0]);
+    for (size_t k = 0; k < retval.size(); ++k) {
+        retval[k].mean2        = mean2.col(k);
+        retval[k].fluctuating2 = total2.col(k) - mean2.col(k);
+    }
+
+    return retval;
+}
+
 } // end namespace channel
