@@ -68,8 +68,8 @@
 
 \begin{abstract}
 This document discusses how to obtain a favorable pressure gradient base flow
-for use within temporally-homogenized boundary layer simulations.  First, a
-compressible potential flow problem is formulated for a radially-symmetric
+for use within temporally homogenized boundary layer simulations.  First, a
+compressible potential flow problem is formulated for a radially symmetric
 source or sink flow.  This one-dimensional problem is cast into a form
 commodity ODE integrators can solve to obtain primitive state as a function of
 radius.  The solution is then mapped from $\left(r,\theta\right)$ into
@@ -299,7 +299,7 @@ over some domain $\Omega$ and applying a corollary of Gauss' theorem:
 \end{align}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Reduction to the radially-symmetric, two-dimensional case}
+\section{Reduction to the radially symmetric, two-dimensional case}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Suppose radial symmetry in which $\phi=\phi\left(r\right)$.  \emph{Mathematica}
@@ -392,7 +392,7 @@ Notice~\eqref{eq:cpfradial_nondim_ode} easily supplies $u'$ for the computation
 of both $\rho$ and $p$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The radially-symmetric sub- and supersonic nozzle problems}
+\section{The radially symmetric sub- and supersonic nozzle problems}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Equations~\eqref{eq:cpfradial_nondim_ode}, \eqref{eq:cpfradial_nondim_rho}
@@ -505,12 +505,12 @@ Listing~\ref{lst:octave_nozzle}.
   \includegraphics[width=0.38\textwidth]{nozzle_schematic}
   \caption{
       \label{fig:mapping_geometry}
-      A Cartesian setting overlaid on the radially-symmetric domain
+      A Cartesian setting overlaid on the radially symmetric domain
   }
 \end{figure}
 
 The favorable pressure gradient base flow profile of height $L_y$ is taken from
-a constant $x$ line segment obtained from a radially-varying solution.
+a constant $x$ line segment obtained from a radially varying solution.
 Referring to Figure~\eqref{fig:mapping_geometry}, the solution
 $u\!\left(R\right)$ with accompanying $\rho\!\left(R\right)$,
 $p\!\left(R\right)$, and $a\!\left(R\right)$ is valid for
@@ -670,7 +670,7 @@ noting:\mynobreakpar
     to this ``burn in'' detail.
   \item As shown, $\rho\!\left(R_1\right)$ is taken fixed because because, for
     it to have appreciable impact on the optimization results, the parameter
-    often take physically-unbecoming values for what should be an order-one
+    often take physically unbecoming values for what should be an order-one
     nondimensional quantity.
 \end{enumerate}
 All of these choices were required to pass test cases A--F appearing at the end
@@ -704,7 +704,7 @@ Listing~\ref{lst:octave_nozzle}.
 \section{Example: Matching laminar CEV heat shield conditions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-A fully-laminar Crew Exploration Vehicle (CEV) heat shield problem for peak
+A fully laminar Crew Exploration Vehicle (CEV) heat shield problem for peak
 heating conditions from an International Space Station return trajectory was
 simulated by Paul Bauman of The Center for Predictive Engineering and
 Computational Science using the FIN-S hypersonic flow
@@ -719,7 +719,7 @@ stagnation region.
   \includegraphics[height=0.55\textheight]{symplanenorm}
   \caption{
     \label{fig:cev_symplane}
-    The velocity magnitude on the symmetry plane for the fully-laminar
+    The velocity magnitude on the symmetry plane for the fully laminar
     CEV simulation of interest.
   }
 \end{figure}
@@ -740,26 +740,26 @@ shield curvature is neglected.
   \includegraphics[]{cev_summary1}
   \caption{
     \label{fig:cev_summary1}
-    Boundary layer conditions from the fully-laminar CEV symmetry plane
+    Boundary layer conditions from the fully laminar CEV symmetry plane
   }
 \end{figure}
 
 The observed favorable pressure gradient boundary layer nature is quantified in
 Figure~\ref{fig:cev_summary_fpg} in a variety of ways.  Of all of these
 nondimensional results, $p_{e,\xi}$ is the only quantity with a
-directly-computable inviscid analog when a target viscous boundary layer
+directly computable inviscid analog when a target viscous boundary layer
 thickness $\delta$ is supplied.  The other nondimensional pressure gradient
 parameters, discussed by many authors including
 \citet{Sreenivasan1982Laminarescent}, were not adopted for matching purposes as
 they require more-complicated flow descriptors like $\delta^\ast$ and $\tau_w$
-or the numerically-noisy $\frac{\partial\delta}{\partial\xi}$.
+or the numerically noisy $\frac{\partial\delta}{\partial\xi}$.
 
 \begin{figure}[p]
   \centering
   \includegraphics[]{cev_summary_fpg}
   \caption{
     \label{fig:cev_summary_fpg}
-    Pressure gradient conditions from the fully-laminar CEV symmetry plane.
+    Pressure gradient conditions from the fully laminar CEV symmetry plane.
     Numerical differentiation artifacts are problematic in quantities $\Lambda$
     and $K_s$.
   }
