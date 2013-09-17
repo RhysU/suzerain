@@ -116,9 +116,10 @@ struct field_L2xz {
 };
 
 /**
- * Compute the \f$L^2_{xz}\f$ norm of all given scalar fields
- * at the collocation points defining the mass operator in \c cop.
- * See writeup/L2.tex for full details.
+ * Compute the \f$L^2_{xz}\f$ norm of all given scalar fields from \c state
+ * represented as Fourier coefficients in $x$ and $z$ and B-spline coefficients
+ * in $y$ at the B-spline collocation points defining the mass operator in \c
+ * cop.  See writeup/L2.tex for full details.
  */
 std::vector<field_L2xz>
 compute_field_L2xz(
