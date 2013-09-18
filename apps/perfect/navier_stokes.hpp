@@ -30,6 +30,7 @@
 
 #include <suzerain/error.h>
 #include <suzerain/lowstorage.hpp>
+#include <suzerain/l2.hpp>
 #include <suzerain/math.hpp>
 #include <suzerain/mpi_datatype.hpp>
 #include <suzerain/mpi.hpp>
@@ -316,6 +317,20 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     o.diffwave_accumulate(0, 2, 1, swave, ndx::rho,   0, auxw, aux::rho_zz);
     o.diffwave_accumulate(1, 0, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_xy);
     o.diffwave_accumulate(0, 1, 1, auxw,  aux::rho_y, 0, auxw, aux::rho_yz);
+
+    // Now that conserved state is Fourier in X and Z but collocation in Y,
+    // if slow growth forcing is active...
+    std::vector<field_L2xz> rms(0);
+    if (sg.formulation.enabled()) {
+        // ...collectively compute L^2_{xz} of state at each collocation point
+        rms = compute_field_L2xz(swave, o.grid, o.dgrid);
+        // ...rescale this result to convert to root-mean-square (RMS) values
+        const real_t rms2_adjustment = 1 / (o.grid.L.x() * o.grid.L.z());
+        for (size_t i = 0; i < swave_count; ++i) {
+            rms[i].mean2        *= rms2_adjustment;
+            rms[i].fluctuating2 *= rms2_adjustment;
+        }
+    }
 
     // Collectively convert swave and auxw to physical space using parallel
     // FFTs. In physical space, we'll employ views to reshape the 4D row-major
