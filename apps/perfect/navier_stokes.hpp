@@ -322,6 +322,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // if slow growth forcing is active...
     std::vector<field_L2xz> rms(0);
     if (sg.formulation.enabled()) {
+        SUZERAIN_TIMER_SCOPED("root-mean-square of state");
         // ...collectively compute L^2_{xz} of state at each collocation point
         rms = compute_field_L2xz(swave, o.grid, o.dgrid);
         // ...rescale this result to convert to root-mean-square (RMS) values
