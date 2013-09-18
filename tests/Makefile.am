@@ -32,6 +32,15 @@ AM_TESTS_FD_REDIRECT  = 9>&2 # Use descriptor 9 to get human attention
 # Notice that all tests build for 'make all' target to be successful.
 # Much of the C++ functionality is header-only; this ensures it builds.
 
+# Suspect a problem similar to test_running_statistics if Intel complains
+TESTS                  += test_exprparse
+EXTRA_PROGRAMS         += test_exprparse
+test_exprparse_SOURCES  = test_exprparse.cpp
+test_exprparse_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_exprparse_LDADD    = ../suzerain/libexprparse.la
+test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 TESTS              += test_empty
 EXTRA_PROGRAMS     += test_empty
 test_empty_SOURCES  = test_empty.cpp
@@ -273,14 +282,6 @@ test_coalescing_pool_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TES
 test_coalescing_pool_LDADD    = ../suzerain/libsuzerain.la
 test_coalescing_pool_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
 test_coalescing_pool_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
-
-TESTS                  += test_exprparse
-EXTRA_PROGRAMS         += test_exprparse
-test_exprparse_SOURCES  = test_exprparse.cpp
-test_exprparse_CPPFLAGS = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
-test_exprparse_LDADD    = ../suzerain/libsuzerain.la
-test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
-test_exprparse_LDADD   += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
 
 TESTS                += test_bspline
 EXTRA_PROGRAMS       += test_bspline
