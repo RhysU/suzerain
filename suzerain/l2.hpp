@@ -80,38 +80,13 @@ compute_field_L2xyz(
  */
 struct field_L2xz {
 
-    ArrayXr mean2;
-    ArrayXr fluctuating2;
+    ArrayXr mean;         /**< \f$L^2\f$ of mean state.          */
+    ArrayXr fluctuating;  /**< \f$L^2\f$ of state less the mean. */
 
-    real_t total2     (const int i) const { return mean2[i] + fluctuating2[i]; }
-    real_t total      (const int i) const { return std::sqrt(total2(i));       }
-    real_t mean       (const int i) const { return std::sqrt(mean2[i]);        }
-    real_t fluctuating(const int i) const { return std::sqrt(fluctuating2[i]); }
-
-    template <typename Derived>
-    void total2(const DenseBase<Derived>& out) const
-    {
-        const_cast<DenseBase<Derived>&>(out) = mean2 + fluctuating2;
-
-    }
-
-    template <typename Derived>
-    void total(const DenseBase<Derived>& out) const
-    {
-        const_cast<DenseBase<Derived>&>(out) = (mean2 + fluctuating2).sqrt();
-    }
-
-    template <typename Derived>
-    void mean(const DenseBase<Derived>& out) const
-    {
-        const_cast<DenseBase<Derived>&>(out) = mean2.sqrt();
-    }
-
-    template <typename Derived>
-    void fluctuating(const DenseBase<Derived>& out) const
-    {
-        const_cast<DenseBase<Derived>&>(out) = fluctuating2.sqrt();
-    }
+    real_t mean2       (int i) const { return mean       [i]*mean       [i]; }
+    real_t fluctuating2(int i) const { return fluctuating[i]*fluctuating[i]; }
+    real_t total2      (int i) const { return mean2(i) + fluctuating2(i);    }
+    real_t total       (int i) const { return std::sqrt(total2(i));          }
 
 };
 

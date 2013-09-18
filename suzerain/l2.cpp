@@ -201,20 +201,20 @@ compute_field_L2xz(
                                   mzb[0], mze[0], mzb[1], mze[1]);
 
     // Temporary complex-valued storage for matrix-vector products
-    VectorXc tmp;
+    ArrayXc tmp;
     tmp.setZero(grid.N.y());
 
     // Contiguous temporary storage for accumulating and broadcasting results
     // Fast columns store wall-normal swaths of data.
     // Real-valued since cwiseAbs2 always produces real-valued results.
-    MatrixXXr buf(grid.N.y(), 2*state.shape()[0]);
-    MatrixXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
-    MatrixXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
+    ArrayXXr buf(grid.N.y(), 2*state.shape()[0]);
+    ArrayXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
+    ArrayXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
 
     // Compute the local L2 contribution towards each L^2_xz norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
     // more-or-less recursive summation using large partitioning factors.
-    VectorXr jsum, nsum, msum;
+    ArrayXr jsum, nsum, msum;
     total2.setZero();
     for (size_t k = 0; k < state.shape()[0]; ++k) {
         jsum.setZero(grid.N.y());
@@ -232,7 +232,7 @@ compute_field_L2xz(
                     } else {
                         cop.accumulate(0, 1.0,     u_mn, 1, 0., tmp.data(), 1);
                     }
-                    msum += tmp.cwiseAbs2();
+                    msum += tmp.abs2();
                 }
                 nsum += msum;
             }
@@ -267,8 +267,8 @@ compute_field_L2xz(
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xz> retval(state.shape()[0]);
     for (size_t k = 0; k < retval.size(); ++k) {
-        retval[k].mean2        = mean2.col(k);
-        retval[k].fluctuating2 = total2.col(k) - mean2.col(k);
+        retval[k].mean        = mean2.col(k).sqrt();
+        retval[k].fluctuating = (total2.col(k) - mean2.col(k)).sqrt();
     }
 
     return retval;
@@ -318,14 +318,14 @@ compute_field_L2xz(
     // Contiguous temporary storage for accumulating and broadcasting results
     // Fast columns store wall-normal swaths of data.
     // Real-valued since cwiseAbs2 always produces real-valued results.
-    MatrixXXr buf(grid.N.y(), 2*state.shape()[0]);
-    MatrixXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
-    MatrixXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
+    ArrayXXr buf(grid.N.y(), 2*state.shape()[0]);
+    ArrayXXr::ColsBlockXpr total2 = buf.leftCols (state.shape()[0]);
+    ArrayXXr::ColsBlockXpr mean2  = buf.rightCols(state.shape()[0]);
 
     // Compute the local L2 contribution towards each L^2_xz norm squared
     // Computation uses partial sums at each loop to reduce swamping which is
     // more-or-less recursive summation using large partitioning factors.
-    VectorXr jsum, nsum, msum;
+    ArrayXr jsum, nsum, msum;
     total2.setZero();
     for (size_t k = 0; k < state.shape()[0]; ++k) {
         jsum.setZero(grid.N.y());
@@ -334,14 +334,14 @@ compute_field_L2xz(
             for (int n = mzb[j]; n < mze[j]; ++n) {
                 msum.setZero(grid.N.y());
                 for (int m = mxb[0]; m < mxe[0]; ++m) {
-                    Map<const VectorXc> u_mn(
+                    Map<const ArrayXc> u_mn(
                             &state[k][0][m - dgrid.local_wave_start.x()]
                                         [n - dgrid.local_wave_start.z()],
                             grid.N.y());
                     if (m > 0 && m < grid.dN.x()/2) { // Conjugate symmetry
-                        msum += 2*u_mn.cwiseAbs2();
+                        msum += 2*u_mn.abs2();
                     } else {
-                        msum +=   u_mn.cwiseAbs2();
+                        msum +=   u_mn.abs2();
                     }
                 }
                 nsum += msum;
@@ -362,7 +362,7 @@ compute_field_L2xz(
     // Compute the mean-only L^2 squared for each field using zero-zero modes
     if (dgrid.has_zero_zero_modes()) {
         for (size_t k = 0; k < state.shape()[0]; ++k) {
-            Map<const VectorXc> u_mn(&state[k][0][0][0], grid.N.y());
+            Map<const ArrayXc> u_mn(&state[k][0][0][0], grid.N.y());
             mean2.col(k) = u_mn.cwiseAbs2();
         }
         mean2 *= grid.L.x() * grid.L.z();
@@ -376,8 +376,8 @@ compute_field_L2xz(
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xz> retval(state.shape()[0]);
     for (size_t k = 0; k < retval.size(); ++k) {
-        retval[k].mean2        = mean2.col(k);
-        retval[k].fluctuating2 = total2.col(k) - mean2.col(k);
+        retval[k].mean        = mean2.col(k).sqrt();
+        retval[k].fluctuating = (total2.col(k) - mean2.col(k)).sqrt();
     }
 
     return retval;
