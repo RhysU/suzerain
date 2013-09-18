@@ -1,9 +1,5 @@
 ## Process this file with automake to produce Makefile.in
 
-# Building writeups in parallel tends to break LaTeX-related scripting
-# http://www.gnu.org/software/automake/manual/make/Special-Targets.html
-.NOTPARALLEL:
-
 # LaTeX and BiBTeX source files
 TEXSOURCES  = skewadjoint.tex
 EXTRA_DIST  = references.bib
