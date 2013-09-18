@@ -58,12 +58,3 @@ EOF
 if test $? -gt 1; then
     exit 1
 fi
-
-if test -d "largo"; then
-    echo
-    echo ------------------------------------------
-    echo Bootstrapping Largo in subdirectory largo/
-    echo ------------------------------------------
-    echo
-    (cd largo && ./bootstrap) || exit 1
-fi
