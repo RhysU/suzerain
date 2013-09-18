@@ -369,8 +369,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // positions x(i), y(j), and z(k) where necessary.
     //
     // Three traversals occur:
-    // (1) Computing reference quantities and velocity moments OR
-    //     just velocity moments depending on the substep being performed.
+    // (1) Computing reference quantities and miscellaneous moments OR
+    //     just reduced moments depending on the substep being performed.
     // (2) Computing the nonlinear equation right hand sides.
     // (3) Computing any manufactured solution forcing (when enabled).
     //
@@ -380,9 +380,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // equivalent but lack information on x(i) and z(k).
 
     // Traversal:
-    // (1) Computing reference quantities and velocity moments OR
-    //     just velocity moments depending on the substep being performed.
-    if (ZerothSubstep) {  // References and velocity moments
+    // (1) Computing reference quantities and miscellaneous moments OR
+    //     just reduced moments depending on the substep being performed.
+    if (ZerothSubstep) {
 
         SUZERAIN_TIMER_SCOPED("reference quantities");
 
@@ -404,6 +404,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 nuuxux, nuuxuy, nuuxuz, nuuyuy, nuuyuz, nuuzuz,
                                 ex_gradrho, ey_gradrho, ez_gradrho,
                                 e_divm, e_deltarho,
+                                rhouxux, rhouyuy, rhouzuz, rhoEE,
                                 count // Sentry
             }; };
 
@@ -461,7 +462,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::nuuyuz](nu*u.y()*u.z());
                 acc[ref::nuuzuz](nu*u.z()*u.z());
 
-                // ...and other, more complicated expressions.
+                // ...other, more complicated expressions...
                 const Vector3r e_gradrho
                         = rholut::explicit_div_e_plus_p_u_refcoeff_grad_rho(
                                 gamma, rho, m, e, p);
@@ -476,6 +477,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 acc[ref::e_deltarho](
                         rholut::explicit_mu_div_grad_T_refcoeff_div_grad_rho(
                             gamma, mu, rho, e, p));
+
+                // ...and, lastly, details needed for slow growth forcing.
+                acc[ref::rhouxux](m.x()* m.x() / rho);
+                acc[ref::rhouyuy](m.y()* m.y() / rho);
+                acc[ref::rhouzuz](m.z()* m.z() / rho);
+                acc[ref::rhoEE  ](e    * e     / rho);
 
             } // end X // end Z
 
@@ -520,6 +527,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.ref_ez_gradrho()[j] = sum(acc[ref::ez_gradrho]);
             common.ref_e_divm    ()[j] = sum(acc[ref::e_divm    ]);
             common.ref_e_deltarho()[j] = sum(acc[ref::e_deltarho]);
+            common.ref_rhouxux   ()[j] = sum(acc[ref::rhouxux   ]);
+            common.ref_rhouyuy   ()[j] = sum(acc[ref::rhouyuy   ]);
+            common.ref_rhouzuz   ()[j] = sum(acc[ref::rhouzuz   ]);
+            common.ref_rhoEE     ()[j] = sum(acc[ref::rhoEE     ]);
 
         } // end Y
 
@@ -542,9 +553,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.vw() = common.ref_uyuz();
         common.ww() = common.ref_uzuz();
 
-    } else {                                 // Velocity moments
+        // Copy mean information additionally required for slow growth forcing
+        common.rho  () = common.ref_rho    ();
+        common.rhouu() = common.ref_rhouxux();
+        common.rhovv() = common.ref_rhouyuy();
+        common.rhoww() = common.ref_rhouzuz();
+        common.rhoEE() = common.ref_rhoEE  ();
 
-        SUZERAIN_TIMER_SCOPED("velocity moments");
+    } else {
+
+        SUZERAIN_TIMER_SCOPED("instantaneous moments");
 
         // To avoid accumulating garbage, must zero y(j) not present on rank.
         // Clearing everything is expected to be a bit more performant.
@@ -558,36 +576,50 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             summing_accumulator_type acc_u,  acc_v,  acc_w;
             summing_accumulator_type acc_uu, acc_uv, acc_uw;
             summing_accumulator_type acc_vv, acc_vw, acc_ww;
+            summing_accumulator_type acc_rho;
+            summing_accumulator_type acc_rhouu, acc_rhovv, acc_rhoww;
+            summing_accumulator_type acc_rhoEE;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
                                     * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
-                const real_t inv_rho = 1 / sphys(ndx::rho, offset);
-                const real_t u = inv_rho * sphys(ndx::mx,  offset);
-                const real_t v = inv_rho * sphys(ndx::my,  offset);
-                const real_t w = inv_rho * sphys(ndx::mz,  offset);
-                acc_u(u);
-                acc_v(v);
-                acc_w(w);
-                acc_uu(u * u);
-                acc_uv(u * v);
-                acc_uw(u * w);
-                acc_vv(v * v);
-                acc_vw(v * w);
-                acc_ww(w * w);
+                const real_t rho = sphys(ndx::rho, offset);
+                const real_t u   = sphys(ndx::mx,  offset) / rho;
+                const real_t v   = sphys(ndx::my,  offset) / rho;
+                const real_t w   = sphys(ndx::mz,  offset) / rho;
+                const real_t E   = sphys(ndx::e,   offset) / rho;
+                acc_u    (u);
+                acc_v    (v);
+                acc_w    (w);
+                acc_uu   (u * u);
+                acc_uv   (u * v);
+                acc_uw   (u * w);
+                acc_vv   (v * v);
+                acc_vw   (v * w);
+                acc_ww   (w * w);
+                acc_rho  (rho        );
+                acc_rhouu(rho * u * u);
+                acc_rhovv(rho * v * v);
+                acc_rhoww(rho * w * w);
+                acc_rhoEE(rho * E * E);
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
-            common.u ()[j] = boost::accumulators::sum(acc_u );
-            common.v ()[j] = boost::accumulators::sum(acc_v );
-            common.w ()[j] = boost::accumulators::sum(acc_w );
-            common.uu()[j] = boost::accumulators::sum(acc_uu);
-            common.uv()[j] = boost::accumulators::sum(acc_uv);
-            common.uw()[j] = boost::accumulators::sum(acc_uw);
-            common.vv()[j] = boost::accumulators::sum(acc_vv);
-            common.vw()[j] = boost::accumulators::sum(acc_vw);
-            common.ww()[j] = boost::accumulators::sum(acc_ww);
+            common.u    ()[j] = boost::accumulators::sum(acc_u    );
+            common.v    ()[j] = boost::accumulators::sum(acc_v    );
+            common.w    ()[j] = boost::accumulators::sum(acc_w    );
+            common.uu   ()[j] = boost::accumulators::sum(acc_uu   );
+            common.uv   ()[j] = boost::accumulators::sum(acc_uv   );
+            common.uw   ()[j] = boost::accumulators::sum(acc_uw   );
+            common.vv   ()[j] = boost::accumulators::sum(acc_vv   );
+            common.vw   ()[j] = boost::accumulators::sum(acc_vw   );
+            common.ww   ()[j] = boost::accumulators::sum(acc_ww   );
+            common.rho  ()[j] = boost::accumulators::sum(acc_rho  );
+            common.rhouu()[j] = boost::accumulators::sum(acc_rhouu);
+            common.rhovv()[j] = boost::accumulators::sum(acc_rhovv);
+            common.rhoww()[j] = boost::accumulators::sum(acc_rhoww);
+            common.rhoEE()[j] = boost::accumulators::sum(acc_rhoEE);
 
         } // end Y
 

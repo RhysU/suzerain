@@ -45,13 +45,13 @@ namespace perfect {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic,  9, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 14, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all implicit quantities */
     typedef Array<real_t, Dynamic, 17, ColMajor> implicits_type;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 30, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 34, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -95,28 +95,38 @@ public:
     /** Type returned by the non-const mean quantity accessors. */
     typedef means_type::ColXpr mean_type;
 
-    mean_type       u()        { return means.col( 0); }
-    mean_type       v()        { return means.col( 1); }
-    mean_type       w()        { return means.col( 2); }
-    mean_type       uu()       { return means.col( 3); }
-    mean_type       uv()       { return means.col( 4); }
-    mean_type       uw()       { return means.col( 5); }
-    mean_type       vv()       { return means.col( 6); }
-    mean_type       vw()       { return means.col( 7); }
-    mean_type       ww()       { return means.col( 8); }
+    mean_type       u()           { return means.col( 0); }
+    mean_type       v()           { return means.col( 1); }
+    mean_type       w()           { return means.col( 2); }
+    mean_type       uu()          { return means.col( 3); }
+    mean_type       uv()          { return means.col( 4); }
+    mean_type       uw()          { return means.col( 5); }
+    mean_type       vv()          { return means.col( 6); }
+    mean_type       vw()          { return means.col( 7); }
+    mean_type       ww()          { return means.col( 8); }
+    mean_type       rho()         { return means.col( 9); }
+    mean_type       rhouu()       { return means.col(10); }
+    mean_type       rhovv()       { return means.col(11); }
+    mean_type       rhoww()       { return means.col(12); }
+    mean_type       rhoEE()       { return means.col(13); }
 
     /** Type returned by the const mean quantity accessors. */
     typedef means_type::ConstColXpr const_mean_type;
 
-    const_mean_type u()  const { return means.col( 0); }
-    const_mean_type v()  const { return means.col( 1); }
-    const_mean_type w()  const { return means.col( 2); }
-    const_mean_type uu() const { return means.col( 3); }
-    const_mean_type uv() const { return means.col( 4); }
-    const_mean_type uw() const { return means.col( 5); }
-    const_mean_type vv() const { return means.col( 6); }
-    const_mean_type vw() const { return means.col( 7); }
-    const_mean_type ww() const { return means.col( 8); }
+    const_mean_type u()     const { return means.col( 0); }
+    const_mean_type v()     const { return means.col( 1); }
+    const_mean_type w()     const { return means.col( 2); }
+    const_mean_type uu()    const { return means.col( 3); }
+    const_mean_type uv()    const { return means.col( 4); }
+    const_mean_type uw()    const { return means.col( 5); }
+    const_mean_type vv()    const { return means.col( 6); }
+    const_mean_type vw()    const { return means.col( 7); }
+    const_mean_type ww()    const { return means.col( 8); }
+    const_mean_type rho()   const { return means.col( 9); }
+    const_mean_type rhouu() const { return means.col(10); }
+    const_mean_type rhovv() const { return means.col(11); }
+    const_mean_type rhoww() const { return means.col(12); }
+    const_mean_type rhoEE() const { return means.col(13); }
 
     /** @} */
 
@@ -267,6 +277,14 @@ public:
      * \li \c ref_e_divm     Reference \f$C^{e}_{\nabla\cdot{}m}\f$
      * \li \c ref_e_deltarho Reference \f$C^{e}_{\Delta\rho}    \f$
      *
+     * The following quantities are also stored, though they are not
+     * used for linearization purposes:
+     * \li \c ref_rhouxux    Quantity \f$\rho u_x u_x\f$
+     * \li \c ref_rhouyuy    Quantity \f$\rho u_y u_y\f$
+     * \li \c ref_rhouzuz    Quantity \f$\rho u_z u_z\f$
+     * \li \c ref_rhoEE      Quantity \f$\rho E   E  \f$
+     * Here, \f$E\f$ denotes \f$e/\rho\f$.
+     *
      * Each reference quantity is a single row within \c refs.  This
      * facilitates a stride one operation loading or writing all reference
      * quantities for a single wall-normal location.
@@ -313,6 +331,10 @@ public:
     ref_type       ref_ez_gradrho()       { return refs.row(27); }
     ref_type       ref_e_divm()           { return refs.row(28); }
     ref_type       ref_e_deltarho()       { return refs.row(29); }
+    ref_type       ref_rhouxux()          { return refs.row(30); }
+    ref_type       ref_rhouyuy()          { return refs.row(31); }
+    ref_type       ref_rhouzuz()          { return refs.row(32); }
+    ref_type       ref_rhoEE()            { return refs.row(33); }
 
     /** Type returned by the const reference quantity accessors. */
     typedef refs_type::ConstRowXpr const_ref_type;
@@ -347,6 +369,10 @@ public:
     const_ref_type ref_ez_gradrho() const { return refs.row(27); }
     const_ref_type ref_e_divm()     const { return refs.row(28); }
     const_ref_type ref_e_deltarho() const { return refs.row(29); }
+    const_ref_type ref_rhouxux()    const { return refs.row(30); }
+    const_ref_type ref_rhouyuy()    const { return refs.row(31); }
+    const_ref_type ref_rhouzuz()    const { return refs.row(32); }
+    const_ref_type ref_rhoEE()      const { return refs.row(33); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,
