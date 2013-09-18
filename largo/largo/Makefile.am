@@ -12,6 +12,9 @@ noinst_HEADERS     = # Append below
 noinst_LTLIBRARIES = # Append below
 moduledir          = @libdir@
 
+# Fortran compilers tend to be brittle wrt module file output
+.NOTPARALLEL:
+
 # Public largo Fortran library and module files
 lib_LTLIBRARIES           += liblargof.la
 liblargof_la_LDFLAGS       = -release $(PACKAGE_VERSION)
