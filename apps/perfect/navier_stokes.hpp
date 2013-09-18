@@ -320,16 +320,38 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Now that conserved state is Fourier in X and Z but collocation in Y,
     // if slow growth forcing is active...
-    std::vector<field_L2xz> rms(0);
+    std::vector<field_L2xz> rms  (0);
+    std::vector<field_L2xz> rms_y(0);
     if (sg.formulation.enabled()) {
         SUZERAIN_TIMER_SCOPED("root-mean-square of state");
         // ...collectively compute L^2_{xz} of state at each collocation point
         rms = compute_field_L2xz(swave, o.grid, o.dgrid);
-        // ...rescale this result to convert to root-mean-square (RMS) values
+
+        // ...allocate space to additionally house wall-normal derivatives
+        rms_y.resize(rms.size());
+
+        // ...rescale results to convert to root-mean-square (RMS) values,
+        // and use the B-spline basis to compute wall-normal derivatives.
         const real_t rms2_adjustment = 1 / (o.grid.L.x() * o.grid.L.z());
+        ArrayXr tmp;
         for (size_t i = 0; i < rms.size(); ++i) {
-            rms[i].mean2        *= rms2_adjustment;
-            rms[i].fluctuating2 *= rms2_adjustment;
+            // Mean processing
+            rms[i].mean2 *= rms2_adjustment;
+            tmp = rms[i].mean2.sqrt();
+            o.masslu()->solve(1, tmp.data(), 1, tmp.size());
+            rms_y[i].mean2.resizeLike(tmp);
+            o.cop.accumulate(1, 1, tmp.data(), 1,
+                                0, rms_y[i].mean2.data(), 1);
+            rms_y[i].mean2 *= rms_y[i].mean2;
+
+            // Fluctuating processing
+            rms[i].mean2 *= rms2_adjustment;
+            tmp = rms[i].mean2.sqrt();
+            o.masslu()->solve(1, tmp.data(), 1, tmp.size());
+            rms_y[i].mean2.resizeLike(tmp);
+            o.cop.accumulate(1, 1, tmp.data(), 1,
+                                0, rms_y[i].mean2.data(), 1);
+            rms_y[i].mean2 *= rms_y[i].mean2;
         }
     }
 
