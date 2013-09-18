@@ -12,10 +12,12 @@
 
 #include <suzerain/exprparse.hpp>
 
+#include <cmath>
+#include <limits>
+
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
-
-#include <suzerain/common.hpp>
+#include <boost/math/constants/constants.hpp>
 
 #pragma warning(disable:1572)
 
