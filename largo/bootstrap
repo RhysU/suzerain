@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # $Id$
 
 autoreconf -v -i || exit 1
