@@ -326,7 +326,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         rms = compute_field_L2xz(swave, o.grid, o.dgrid);
         // ...rescale this result to convert to root-mean-square (RMS) values
         const real_t rms2_adjustment = 1 / (o.grid.L.x() * o.grid.L.z());
-        for (size_t i = 0; i < swave_count; ++i) {
+        for (size_t i = 0; i < rms.size(); ++i) {
             rms[i].mean2        *= rms2_adjustment;
             rms[i].fluctuating2 *= rms2_adjustment;
         }
