@@ -764,7 +764,7 @@ driver_base::log_status_L2(
     // Build and log L2 of mean conserved state
     msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
-        msg << ' ' << fullprec<>(result[k].mean());
+        msg << ' ' << fullprec<>(result[k].mean);
     }
     INFO0(log_L2, msg.str());
 
@@ -774,7 +774,7 @@ driver_base::log_status_L2(
     msg.str("");
     msg << timeprefix;
     for (size_t k = 0; k < result.size(); ++k) {
-        msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating());
+        msg << ' ' << fullprec<>(rms_coeff*result[k].fluctuating);
     }
     INFO0(log_rms, msg.str());
 }

@@ -148,8 +148,8 @@ compute_field_L2xyz(
     // Obtain fluctuating2 = total2 - mean2 and pack the return structure
     std::vector<field_L2xyz> retval(state.shape()[0]);
     for (size_t k = 0; k < retval.size(); ++k) {
-        retval[k].mean2        = std::abs(mean2[k]);
-        retval[k].fluctuating2 = std::abs(total2[k] - mean2[k]);
+        retval[k].mean        = std::sqrt(std::abs(mean2[k]            ));
+        retval[k].fluctuating = std::sqrt(std::abs(total2[k] - mean2[k]));
     }
 
     return retval;

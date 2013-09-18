@@ -47,13 +47,13 @@ namespace suzerain {
  */
 struct field_L2xyz {
 
-    real_t mean2;
-    real_t fluctuating2;
+    real_t mean;         /**< \f$L^2\f$ of mean state.          */
+    real_t fluctuating;  /**< \f$L^2\f$ of state less the mean. */
 
-    real_t total2()      const { return mean2 + fluctuating2;    }
-    real_t total()       const { return std::sqrt(total2());     }
-    real_t mean()        const { return std::sqrt(mean2);        }
-    real_t fluctuating() const { return std::sqrt(fluctuating2); }
+    real_t mean2       () const { return mean       *mean;         }
+    real_t fluctuating2() const { return fluctuating*fluctuating;  }
+    real_t total2      () const { return mean2() + fluctuating2(); }
+    real_t total       () const { return std::sqrt(total2());      }
 
 };
 
