@@ -21,7 +21,7 @@
 // Boston, MA  02110-1301  USA
 //
 //-----------------------------------------------------------------------el-
-// $Id: largo.h 26068 2011-12-13 21:58:40Z rhys $
+// $Id$
 
 #ifndef LARGO_LARGO_BL_temporal_tconsistent_H
 #define LARGO_LARGO_BL_temporal_tconsistent_H
