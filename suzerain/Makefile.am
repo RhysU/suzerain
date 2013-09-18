@@ -163,6 +163,7 @@ libsuzerain_la_CPPFLAGS   = $(AM_CPPFLAGS)
 libsuzerain_la_LIBADD     = libblasetal.la
 libsuzerain_la_LIBADD    += libbspline.la
 libsuzerain_la_LIBADD    += libbase.la
+libsuzerain_la_LIBADD    += libexprparse.la
 libsuzerain_la_LIBADD    += libprecise.la
 libsuzerain_la_LIBADD    += libsupport.la
 libsuzerain_la_LIBADD    += $(ESIO_LIBS)
@@ -234,6 +235,16 @@ EXTRA_libbspline_la_SOURCES += reacting_imexop.def
 EXTRA_libbspline_la_SOURCES += rholut_imexop.def
 EXTRA_libbspline_la_SOURCES += rholut_imexop00.def
 
+# Arithmetic expression parsing functionality written as an outgrowth of
+# http://agentzlerich.blogspot.com/2011/06/using-boost-spirit-21-to-evaluate.html
+noinst_LTLIBRARIES       += libexprparse.la
+libexprparse_la_LDFLAGS   = # Convenience-only
+libexprparse_la_CPPFLAGS  = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
+libexprparse_la_SOURCES   = exprparse_dchar.cpp
+libexprparse_la_SOURCES  += exprparse_dstr.cpp
+libexprparse_la_SOURCES  += exprparse_fchar.cpp
+libexprparse_la_SOURCES  += exprparse_fstr.cpp
+
 # Logic with more extensive external dependencies, in particular
 # depending on parallel decomposition details.
 #
@@ -249,10 +260,6 @@ libbase_la_CPPFLAGS      += $(GRVY_CFLAGS)
 libbase_la_SOURCES        = bsmbsm_solver.cpp
 libbase_la_SOURCES       += constraint.cpp
 libbase_la_SOURCES       += diffwave.c
-libbase_la_SOURCES       += exprparse_dchar.cpp
-libbase_la_SOURCES       += exprparse_dstr.cpp
-libbase_la_SOURCES       += exprparse_fchar.cpp
-libbase_la_SOURCES       += exprparse_fstr.cpp
 libbase_la_SOURCES       += fftw.cpp
 libbase_la_SOURCES       += grid_specification.cpp
 libbase_la_SOURCES       += hybrid_residual_operator.cpp
