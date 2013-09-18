@@ -240,10 +240,13 @@ EXTRA_libbspline_la_SOURCES += rholut_imexop00.def
 noinst_LTLIBRARIES       += libexprparse.la
 libexprparse_la_LDFLAGS   = # Convenience-only
 libexprparse_la_CPPFLAGS  = $(AM_CPPFLAGS) $(BOOST_CPPFLAGS)
-libexprparse_la_SOURCES   = exprparse_dchar.cpp
+libexprparse_la_SOURCES   = exprgrammar.hpp
+libexprparse_la_SOURCES  += exprparse_dchar.cpp
 libexprparse_la_SOURCES  += exprparse_dstr.cpp
 libexprparse_la_SOURCES  += exprparse_fchar.cpp
 libexprparse_la_SOURCES  += exprparse_fstr.cpp
+libexprparse_la_SOURCES  += exprparse.hpp
+libexprparse_la_SOURCES  += exprparse_impl.hpp
 
 # Logic with more extensive external dependencies, in particular
 # depending on parallel decomposition details.
@@ -280,7 +283,6 @@ libbase_la_SOURCES       += richardson.c
 libbase_la_SOURCES       += rngstream.cpp
 libbase_la_SOURCES       += svehla.c
 libbase_la_SOURCES       += zgbsv_specification.cpp
-EXTRA_libbase_la_SOURCES  = exprparse_impl.hpp
 
 # Sources requiring IEEE-faithful floating point behavior
 # Built separately to utilize separate optimization settings
