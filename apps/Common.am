@@ -7,7 +7,7 @@ AM_CPPFLAGS        += $(UNDERLING_CFLAGS) $(P3DFFT_CFLAGS)
 AM_CPPFLAGS        += $(FFTW3_THREADS_CFLAGS) $(MKL_CFLAGS) $(GSL_CFLAGS)
 AM_CPPFLAGS        += $(LOG4CXX_CFLAGS) $(BOOST_CPPFLAGS)
 AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
-AM_CPPFLAGS        += $(LARGO_CFLAGS)
+AM_CPPFLAGS        += -I$(top_builddir)/largo -I$(top_srcdir)/largo
 
 bin_PROGRAMS        = # Append elsewhere
 noinst_PROGRAMS     = # Append elsewhere

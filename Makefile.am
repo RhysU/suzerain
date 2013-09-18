@@ -14,11 +14,11 @@ endif
 if BUILD_TESTS
     MAYBE_TESTS_SUBDIR = tests
 endif
-SUBDIRS = lib build-aux suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
+SUBDIRS = lib largo build-aux suzerain $(MAYBE_TESTS_SUBDIR) fields apps \
           $(MAYBE_WRITEUPS_SUBDIR) jobscripts postproc
 
 # Distribute these directories:
-DIST_SUBDIRS = lib build-aux suzerain tests fields apps \
+DIST_SUBDIRS = lib largo build-aux suzerain tests fields apps \
                writeups jobscripts postproc
 EXTRA_DIST   = AUTHORS astylerc bootstrap COPYING $(DX_CONFIG)
 

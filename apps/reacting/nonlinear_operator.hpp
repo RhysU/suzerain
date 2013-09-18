@@ -31,9 +31,7 @@
 
 #include "nonlinear_operator_fwd.hpp"
 
-#ifdef SUZERAIN_HAVE_LARGO
 #include <largo/largo.h>
-#endif
 
 #include <suzerain/error.h>
 #include <suzerain/mpi_datatype.hpp>
@@ -1165,7 +1163,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     dmean_rqq[4+s] = 0;
                 }
 
-#ifdef SUZERAIN_HAVE_LARGO
                 // baseflow arrays
                 real_t    grDA [Ns+4];
                 real_t    base [Ns+4];
@@ -1255,7 +1252,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // Flow stats prestep
                 largo_prestep_seta (sgdef.workspace, ycoord, field, mean, rms, mean_rqq, dmean, drms, dmean_rqq);
-#endif
             }
 
             // Compute velocity-related quantities
@@ -1336,29 +1332,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     src[4+s] = 0;
                 }
 
-#ifdef SUZERAIN_HAVE_LARGO
                 // Compute sources from library
                 largo_seta   (sgdef.workspace, 0.0, 1.0, &src[0]);
-
-#else
-                // No slow growth computation if not linked with largo
-                // FIXME: is this the best way to report an error for this case?
-                // NOTE:  you can comment the "unimplemented" line and
-                //        uncomment the src lines to play with a native
-                //        implementation of the source terms for laminar flow
-                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-
-                // compute sources locally
-                //             real_t ygrd = ycoord * sgdef.grdelta;
-                //             src[0] += ygrd * dmean[0];
-                //             src[1] += ygrd * dmean[1];
-                //             src[2] += ygrd * dmean[2];
-                //             src[3] += ygrd * dmean[3];
-                //             src[4] += ygrd * dmean[4];
-                //             for (unsigned int s=1; s<Ns; ++s) {
-                //                 src[4+s] += ygrd * dmean[4+s];
-                //             }
-#endif // SUZERAIN_HAVE_LARGO
 
                 // Add sources
                 sphys(ndx::rho  , offset) += src[0];

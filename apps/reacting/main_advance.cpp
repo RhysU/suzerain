@@ -26,6 +26,7 @@
  */
 
 #include <esio/esio.h>
+#include <largo/largo.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
@@ -35,10 +36,6 @@
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
 #include <suzerain/hybrid_residual_operator.hpp>
-
-#ifdef SUZERAIN_HAVE_LARGO
-#include <largo/largo.h>
-#endif
 
 #include "driver.hpp"
 #include "explicit_operator.hpp"
@@ -407,25 +404,7 @@ suzerain::reacting::driver_advance::run(int argc, char **argv)
         INFO0("Allocating Largo model \"" << name
               << "\" for state count " << state_count
               << " with " << Ns << " species");
-#ifndef SUZERAIN_HAVE_LARGO
-        WARN0("Largo model \"" << name << "\" requested but Largo not available");
-#else
-# ifdef LARGO_VERSION
         largo_allocate(&sgdef->workspace, state_count, Ns, name.c_str());
-# else
-# warning "FIXME: Out-of-date Largo in use; mapping model name to model index."
-        // FIXME Remove else clause and LARGO_VERSION once r41426 everywhere
-        const int imodel = (name == "temporal"                  ) ? 1
-                         : (name == "temporal_tensor_consistent") ? 3
-                         : -1;
-        if (imodel < 0) {
-            FATAL0("Unknown Largo model \"" << name << "\"");
-            SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
-        }
-        largo_allocate(&sgdef->workspace, state_count, Ns, imodel);
-# endif /* LARGO_VERSION */
-
-#endif /* SUZERAIN_HAVE_LARGO */
     }
 
     // Use --undriven as a testing- and debugging-related tool.

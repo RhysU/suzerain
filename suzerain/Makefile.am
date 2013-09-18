@@ -168,7 +168,9 @@ libsuzerain_la_LIBADD    += libprecise.la
 libsuzerain_la_LIBADD    += libsupport.la
 libsuzerain_la_LIBADD    += $(ESIO_LIBS)
 libsuzerain_la_LIBADD    += $(UNDERLING_LIBS)
-libsuzerain_la_LIBADD    += ../lib/suzerain-p3dfft/libsuzerain-p3dfft.la $(FCLIBS)
+libsuzerain_la_LIBADD    += $(top_builddir)/lib/suzerain-p3dfft/libsuzerain-p3dfft.la
+libsuzerain_la_LIBADD    += $(top_builddir)/largo/largo/liblargo.la
+libsuzerain_la_LIBADD    += $(FCLIBS)   # Should be after libsuzerain-p3dfft and largo
 libsuzerain_la_LIBADD    += $(FFTW3_MPI_THREADS_LIBS)
 libsuzerain_la_LIBADD    += $(GRVY_LIBS)
 libsuzerain_la_LIBADD    += $(BOOST_IOSTREAMS_LDFLAGS)
@@ -177,7 +179,6 @@ libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LDFLAGS)
 libsuzerain_la_LIBADD    += $(BOOST_PROGRAM_OPTIONS_LIBS)
 libsuzerain_la_LIBADD    += $(GSL_LIBS)  # Includes MKL via BLAS hooks
 libsuzerain_la_LIBADD    += $(LOG4CXX_LIBS)
-libsuzerain_la_LIBADD    += $(LARGO_LIBS)
 
 # BLAS and LAPACK wrappers, including custom BLAS- and LAPACK-like kernels.
 # These routines ("BLAS et. al.") should be directly usable elsewhere
@@ -301,7 +302,7 @@ libsupport_la_LDFLAGS        = # Convenience-only
 libsupport_la_CPPFLAGS       = $(libbase_la_CPPFLAGS) # Append!
 libsupport_la_CPPFLAGS      += $(ESIO_CFLAGS)
 libsupport_la_CPPFLAGS      += $(LOG4CXX_CFLAGS)
-libsupport_la_CPPFLAGS      += $(LARGO_CFLAGS)
+libsupport_la_CPPFLAGS      += -I$(top_builddir)/largo -I$(top_srcdir)/largo
 libsupport_la_SOURCES        = support/application_base.cpp
 libsupport_la_SOURCES       += support/definition_base.cpp
 libsupport_la_SOURCES       += support/driver_base.cpp

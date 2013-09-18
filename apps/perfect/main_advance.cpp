@@ -26,6 +26,7 @@
  */
 
 #include <esio/esio.h>
+#include <largo/largo.h>
 
 #include <suzerain/common.hpp>
 #include <suzerain/constraint.hpp>
@@ -35,10 +36,6 @@
 #include <suzerain/support/logging.hpp>
 #include <suzerain/support/noise_definition.hpp>
 #include <suzerain/zgbsv_specification.hpp>
-
-#ifdef SUZERAIN_HAVE_LARGO
-#include <largo/largo.h>
-#endif
 
 #include "driver.hpp"
 #include "hybrid_operator.hpp"
@@ -202,15 +199,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     // Initialize any requested slow growth forcing workspace
     if (sg->formulation.enabled()) {
         const std::string& model_name = sg->formulation.name();
-#ifdef SUZERAIN_HAVE_LARGO
         INFO0("Allocating Largo model \"" << model_name
               << "\" for 5 state variables");
         largo_allocate(&sg->workspace, 5, 0, model_name.c_str());
-#else
-        FATAL0("Largo model \"" << model_name
-              << "\" requested but Largo not available");
-        return EXIT_FAILURE;
-#endif /* SUZERAIN_HAVE_LARGO */
     }
 
     // Prepare any necessary, problem-specific constraints
