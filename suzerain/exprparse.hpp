@@ -33,8 +33,9 @@ namespace suzerain {
  * functions (<tt>abs</tt> <tt>acos</tt> <tt>asin</tt> <tt>atan</tt>
  * <tt>ceil</tt> <tt>cos</tt> <tt>cosh</tt> <tt>exp</tt> <tt>floor</tt>
  * <tt>log</tt> <tt>log10</tt> <tt>sin</tt> <tt>sinh</tt> <tt>sqrt</tt>
- * <tt>tan</tt> <tt>tanh</tt>), binary functions (<tt>pow</tt> <tt>atan2</tt>),
- * and constants (<tt>pi</tt> <tt>inf</tt> <tt>nan</tt>).
+ * <tt>tan</tt> <tt>tanh</tt>), binary functions (<tt>atan2</tt> <tt>max</tt>
+ * <tt>min</tt> <tt>pow</tt>), and constants (<tt>digits</tt> <tt>digits10</tt>
+ * <tt>e</tt> <tt>pi</tt> <tt>inf</tt> <tt>nan</tt>).
  *
  * @param[in]  s    Constant arithmetic expression to be parsed.
  * @param[out] v    Floating point value found from evaluating \c s.
