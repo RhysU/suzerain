@@ -1,0 +1,51 @@
+/*! \mainpage The ESIO Library
+
+<!-- FIXME Build information disabled   -->
+<!-- <b>Version \version</b>            -->
+<!-- , Build Date: \builddate           -->
+<!-- Built by: \builduser on \buildhost -->
+<!-- <hr> -->
+
+\section overview Overview
+
+
+Largo provides slow growth formulation implementations for turbulence
+simulations.
+
+The library's manual is divided into the following subsections:
+
+<ul>
+  <li> \subpage installation </li>
+  <li> \subpage linkage</li>
+  <li> \subpage concepts</li>
+  <li> TODO \ref someheader.f90 "Fortran API"</li>
+  <li> TODO \ref someheader.h   "C API"</li>
+  <li> <a href="http://buildbot.ices.utexas.edu/docs/buildbot/esio/build/docs/html/lcov/">Buildbot test coverage</a> </li>
+</ul>
+
+Thank you for your interest in largo.
+
+\section bugs Reporting Bugs
+
+Bugs in the code and errors or omissions in the documentation can be
+reported to topalian@ices.utexas.edu.  Requests and contributions are
+welcome at the same e-mail address.  All bug reports should include:
+<ul>
+  <li>the version number of the largo library,</li>
+  <li>the hardware and operating system,</li>
+  <li>the local compiler version number,</li>
+  <li>a description of the bug behavior, and ideally, </li>
+  <li>a short program which reproduces the bug.</li>
+</ul>
+
+\section licence License
+Copyright (C) 2011 The PECOS Development Team
+\copydoc License
+
+\section acknowledgements Acknowledgments
+\copydoc Acknowledgments
+
+\section pecos-center More Information about PECOS
+\copydoc About
+
+*/

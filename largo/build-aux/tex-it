@@ -1,0 +1,205 @@
+#!/bin/bash
+# tex-it v1.3 by Joachim Schrod
+# Modified by Rhys Ulerich to stop eagerly on errors, and to allow
+# file parameter to not be in the current directory
+# Taken from the cweb-latex package distribution at
+# http://www.ctan.org/tex-archive/help/Catalogue/entries/cweb-latex.html
+#----------------------------------------------------------------------
+
+#
+# tex-it  ---  transform a TeX document to a final DVI file
+#
+# (history at end)
+
+# SYNOPSIS
+#
+#   tex-it [-bi] tex-cmd file
+#
+# tex-it runs 'tex-cmd' on 'file' as often as necessary to produce a
+# DVI file where all cross references are resolved. That convergence
+# is reached by analyzing auxiliary files:
+#  -- If file.toc has changed, the table of contents is not up to date.
+#  -- If file.idx has changed, the index is not up to date.
+#     MakeIndex is assumed to be used for creating the index.
+#  -- If file.aux has changed, cross references are not up to date.
+#  -- If file.aux contains a "\bibdata" tag and if the set of
+#     "\citation" tags have changed, then BibTeX is run.
+#
+# No other auxiliary files are handled. No subdocuments (via
+# "\include") are supported.
+#
+# 'tex-cmd' may be more than one word.
+#
+#
+# OPTIONS
+#   `-b'    skip test for BibTeX
+#   `-i'    skip test for MakeIndex
+
+# NOTE: On HP-UX this script is not functional, you have to substitute
+# /bin/sh by /bin/ksh in the first line. (/bin/sh doesn't have the
+# getopts builtin.)
+
+
+cmd=`basename $0`
+usage()
+{
+    echo "usage: $cmd [-bi] tex-cmd file" >&2
+    exit 1
+}
+
+
+# Normalize and check arguments.
+
+do_bibtex=true
+do_makeindex=true
+while getopts 'bi' option
+   do   case "$option" in
+        b)  do_bibtex=''
+        ;;
+        i)  do_makeindex=''
+        ;;
+        *)  usage
+        ;;
+    esac
+   done
+
+shift `expr $OPTIND - 1`
+test $# -gt 0  ||  usage
+
+
+# Get file name (last argument), discard extension if necessary.
+file=${!#}                              # Last argument provided
+filebase=`basename $file .tex`
+filedir=`dirname $file`
+file="${filedir}/${filebase}"           # Has path prefix, no suffix
+
+# Force BIBINPUTS and BSTINPUTS to include $filedir
+# Allows proper bibtex operation in VPATH environment
+export BIBINPUTS=${filedir}:${BIBINPUTS-}
+export BSTINPUTS=${filedir}:${BSTINPUTS-}
+
+# Create temporary directory for auxiliary files to compare. Discard
+# that directory if the script is terminated. Note that trap handler
+# for 0 is executed at the end of the trap handler for the other
+# signals.
+tmp=/tmp/tex$$
+trap "/bin/rm -rf $tmp" 0
+trap "exit 4" 1 2 3 15
+mkdir $tmp
+
+
+# ------------------------------------------------------------
+# Set up functions that save auxiliary information and check if they
+# have changed. Save functions are called `save_<type>', check
+# functions are called `check_<type>'. Check functions set $run_tex to
+# "true" if TeX must be run anew. Check functions may run programs to
+# create other auxiliary files.
+
+
+# aux: table of contents & cross references
+#
+# We don't check for *.toc files. LaTeX stores the information in the
+# AUX file anyhow, and plain-based macros typically produce the table
+# of contents at the end of the document, when it's guaranteed to be
+# OK.
+save_aux()
+{
+    if [ -f "$filebase.aux" ]
+       then cp "$filebase.aux" "$tmp/${file//\//_}.aux"
+       else touch "$tmp/${file//\//_}.aux"
+    fi
+}
+
+check_aux()
+{
+    test -f "$filebase.aux"  ||  return 0
+    cmp -s "$filebase.aux" "$tmp/${file//\//_}.aux"  ||  run_tex=true
+}
+
+
+# bibtex: Citations
+save_bibtex()
+{
+    if [ -f "$filebase.aux" ]
+       then egrep '^\\(citation|bibdata)' "$filebase.aux"  |
+            sort >"$tmp/${file//\//_}.bib"
+       else touch "$tmp/${file//\//_}.bib"
+    fi
+}
+
+check_bibtex()
+{
+    test "$do_bibtex" -a -f "$filebase.aux"  ||  return 0
+    egrep '^\\(citation|bibdata)' "$filebase.aux"  |  sort >$tmp/bib.new
+    if grep '^\\bibdata' $tmp/bib.new >/dev/null
+    then if cmp -s "$tmp/${file//\//_}.bib" $tmp/bib.new
+           then : do nothing
+           else bibtex "$filebase"
+            run_tex=true
+        fi
+    fi
+}
+
+
+# idx: raw index data
+save_idx()
+{
+    if [ -f "$filebase.idx" ]
+       then cp "$filebase.idx" "$tmp/${file//\//_}.idx"
+       else touch "$tmp/${file//\//_}.idx"
+    fi
+}
+
+check_idx()
+{
+    test "$do_makeindex" -a -f "$filebase.idx"  ||  return 0
+    if cmp -s "$filebase.idx" "$tmp/${file//\//_}.idx"
+       then : do nothing
+       else makeindex "$file"
+        run_tex=true
+    fi
+}
+
+
+# Two functions that collect the functions above.
+save_aux_info()
+{
+    save_aux
+    save_bibtex
+    save_idx
+}
+
+check_aux_info()
+{
+    check_aux
+    check_bibtex
+    check_idx
+}
+
+
+# Process the document by TeX. Determine if TeX must be run anew by
+# the functions realized above.
+
+# On first pass, eagerly abort if the underlying command exits with an error.
+# Provide echo X to LaTeX/TeX to get force it to quit quickly on error.
+save_aux_info
+if echo X | "$@"; then
+    # Always run bibtex at least once if used in the tex source
+    if test "$do_bibtex" -a -f "$filebase.aux"; then
+        if grep '^\\bibdata' "$filebase.aux" >/dev/null ; then
+            bibtex "$filebase"
+        fi
+    fi
+    run_tex=''
+    check_aux_info # See if we should continue
+else
+    exit
+fi
+
+while [ "$run_tex" ]
+   do
+     save_aux_info
+     "$@"
+     run_tex=''
+     check_aux_info
+   done

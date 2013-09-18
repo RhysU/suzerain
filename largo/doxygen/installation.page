@@ -1,0 +1,72 @@
+/*! \page installation Installation
+
+Largo uses the GNU autotools suite (autoconf, automake, and libtool) for its
+development build system.  This system is popular among the Linux development
+community and provides a familiar build environment for end users.
+
+To build Largo starting from a release distribution, untar the distribution and
+enter the top-level directory.
+
+\code
+ > tar xvfz largo-$(VERSION).tar.gz
+ > cd largo-$(VERSION)/
+\endcode
+
+<h2>Configuration Requirements</h2>
+
+<dl>
+  <dt>GNU Make</dt>
+  <dd>You must have <a href="http://www.gnu.org/software/make/">GNU
+      Make</a> installed as largo's build system relies on many GNU
+      extensions.
+  </dd>
+  <dt>Compilers</dt>
+  <dd>You must have a working C and Fortran 90 compiler from the
+      same vendor.  Currently the GNU (<tt>gcc</tt>/<tt>gfortran</tt>)
+      and Intel (<tt>icc</tt>/<tt>ifort</tt>) compilers are supported. If
+      largo's configure script cannot automatically detect the correct
+      compiler location, try setting \$CC and \$FC environment
+      variables prior to running configure.
+  </dd>
+</dl>
+
+To configure largo, within the largo-$(VERSION) directory issue
+\code
+ > ./configure
+\endcode
+where you should add any additional configure options at the end of
+the command.  One very useful option is the <code>--prefix=DIR</code>
+which sets your desired top-level installation directory for largo.
+
+By default, largo builds both a shared and static library (for example,
+<tt>liblargo.so</tt> and <tt>liblargo.a</tt>, respectively).
+
+<h2> Library Build </h2>
+
+Once configured, issue a <tt>make</tt> to build the software. If successful,
+this will build the largo library (static and dynamic versions), several
+examples, and some additional largo-related utilities.
+
+\code > make \endcode
+
+If you see error messages regarding <tt>-fPIC</tt>, see the above configuration
+hints regarding building shared versus static versions of largo.
+
+<h2> Build Verification (Optional) </h2>
+
+To optionally verify that the software is working properly, a check target is
+provided to run a suite of functionality tests against the local build.  To run
+these tests, issue
+
+\code > make check \endcode
+
+<h2> Installation </h2>
+
+After the build is complete, issue
+
+\code > make install \endcode
+
+to install the library.  The installation will consist of three top-level
+directories housing largo's include files, compiled libraries, and utilities.
+
+*/

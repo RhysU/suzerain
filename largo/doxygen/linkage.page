@@ -1,0 +1,38 @@
+/*! \page linkage Linking applications
+
+<h2>Compiling and linking a C/C++ application against largo</h2>
+
+To compile and link a C or C++ application against your largo installation, the
+installation's \c include directory and \c lib directory must be added to your
+C/C++ compiler's include and library search paths, respectively.  You will need
+to supply flags to link against largo.
+
+This tutorial assumes that at largo configuration time you specified
+<tt>--prefix=$HOME</tt> to install largo under your home directory (It may be
+necessary to include your home directory under in \code LD_LIBRARY_PATH
+\endcode). In this case, compiling and linking an application consisting of a
+single source file named <tt>app.c</tt> might look as follows:
+
+\code > $(CC) -I$HOME/include app.c -L$HOME/lib -llargo \endcode
+
+<h2>Compiling and linking a Fortran application against largo</h2>
+
+To compile and link a Fortran 90 application against your largo installation,
+the installation's \c lib directory must be added to both your Fortran
+compiler's include and library search paths.  In particular, if you do not
+provide \c lib within the search path you will see error messages stating that
+<tt>largo.mod</tt> is missing.  You will need to supply flags to link against
+largo's Fortran library (<tt>largof</tt>).
+
+Assuming the same installation detailed in the C/C++ examples just above, you
+would compile and link a Fortran MPI application consisting of a single source
+file named <tt>app.f90</tt> as follows:
+
+\code > $(FC) -I$HOME/lib app.f90 -L$HOME/lib -llargof \endcode
+
+<b>Important Note:</b> F90 module file formats are not consistent across
+multiple compilers. Therefore, a Fortran application and the largo F90
+interface \em must be built with the same Fortran compiler family to ensure
+compatibility.
+
+*/

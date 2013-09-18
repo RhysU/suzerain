@@ -1,0 +1,292 @@
+@book{LiepmannRoshko2002,
+    address = {New York},
+    author = {Liepmann, H. W. and Roshko, A},
+    publisher = {Dover},
+    title = {Elements of Gasdynamics},
+    year = {2002}
+}
+
+@techreport{NASA-TR-R-132,
+    author = {Svehla, R. A.},
+    howpublished = {Nasa Technical Report},
+    institution = {Glenn Research Center},
+    journal = {NASA Technical Report},
+    month = {January},
+    number = {R-132},
+    organization = {Nasa},
+    title = {Estimated Viscosities and Thermal Conductivities of Gases at High Temperatures},
+    url = {http://ntrs.nasa.gov/search.jsp?R=1020958&#38;id=6&#38;qs=Ntt%3DSvhela%26Ntk%3DAuthorList%26Ntx%3Dmode%2520matchall%26N%3D0%26Ns%3DHarvestDate%257c1},
+    year = {1962}
+}
+
+@article{Zang1991Rotation,
+    abstract = {A variety of numerical simulations of transition and turbulence in incompressible flow are presented to compare the commonly used rotation form with the skew-symmetric (and other) forms of the nonlinear terms. The results indicate that the rotation form is much less accurate than the other forms for spectral algorithms which include aliasing errors. For de-aliased methods the difference is minimal.},
+    address = {Amsterdam, The Netherlands, The Netherlands},
+    author = {Zang, Thomas A.},
+    citeulike-article-id = {5730787},
+    citeulike-linkout-0 = {http://dx.doi.org/http://dx.doi.org/10.1016/0168-9274(91)90102-6},
+    doi = {http://dx.doi.org/10.1016/0168-9274(91)90102-6},
+    journal = {Appl. Numer. Math.},
+    keywords = {nonlinear\_terms, numerical\_simulations, spectral\_algorithms, turbulence},
+    number = {1},
+    pages = {27--40},
+    posted-at = {2009-09-07 05:06:06},
+    priority = {5},
+    publisher = {Elsevier Science Publishers B. V.},
+    title = {On the rotation and skew-symmetric forms for incompressible flow simulations},
+    url = {http://dx.doi.org/http://dx.doi.org/10.1016/0168-9274(91)90102-6},
+    volume = {7},
+    year = {1991}
+}
+
+@article{Kwok2001,
+    abstract = {Resolution properties of B-spline and compact finite difference
+schemes are compared using Fourier analysis in periodic domains, and tests
+based on solution of the wave and heat equations in finite domains, with
+uniform and nonuniform grids. Results show that compact finite difference
+schemes have a higher convergence rate and in some cases better resolution.
+However, B-spline schemes have a more straightforward and robust formulation,
+particularly near boundaries on nonuniform meshes.},
+    author = {Kwok, Wai Y. and Moser, Robert D. and Jim\'{e}nez, Javier},
+    doi = {10.1006/jcph.2001.6919},
+    journal = {Journal of Computational Physics},
+    month = {December},
+    number = {2},
+    pages = {510--551},
+    title = {A Critical Evaluation of the Resolution Properties of B-Spline and Compact Finite Difference Methods},
+    url = {http://dx.doi.org/10.1006/jcph.2001.6919},
+    volume = {174},
+    year = {2001}
+}
+
+@phdthesis{Kwok2002,
+    abstract = {Turbulent mixing layers exhibit striking compressibility
+effects. In particular, at modest Mach numbers, the growth rate of compressible
+mixing layers is significantly reduced from that of incompressible mixing
+layers. In this research, the relationship of this growth rate reduction to the
+commonly observed large-scale structures in the mixing layer is investigated.
+This goal is accomplished by performing direct numerical simulations of
+compressible time-developing mixing layers. Two fields from the fully developed
+incompressible mixing-layer simulations of Rogers and Moser are used to
+construct initial conditions, one from the natural (unforced) simulation and
+one from the 'strongly forced' simulation, which has much more prominent
+two-dimensional mixing-layer structures. Cases were run at convective Mach
+numbers of 0.4, 0.8, and 1.2. It is found that significant compressible growth
+rate reductions occur only in the cases in which two-dimensional flow
+structures are prevalent. Flow visualization reveals that large spanwise
+vortices are stretched and pairing is suppressed, leading to a reduction in
+mixing layer growth. Structural change of large-scale structures induces a
+decrease in cross-stream velocity fluctuations, Reynolds shear stress, and
+magnitude of pressure fluctuations, consistent with the growth suppression
+mechanism proposed by Vreman et al. and Freund et al. Direct numerical
+simulations of turbulent flows require numerical schemes with high resolution
+and grid flexibility. Resolution properties of B-spline and compact
+finite-difference schemes are evaluated using Fourier analysis in periodic
+domains, and tests based on solution of the wave and heat equations in finite
+domains, with uniform and non-uniform grids. Results show that compact
+finite-difference schemes have a higher convergence rate and in some cases
+better resolution on uniform grids. However, B-spline schemes have more
+consistent behavior on non-uniform grids, and a more straightforward and robust
+formulation.},
+    author = {Kwok, Wai Y.},
+    location = {United States -- Illinois},
+    school = {University of Illinois at Urbana-Champaign},
+    title = {Growth suppression in simulated compressible turbulent mixing layers},
+    url = {http://proquest.umi.com/pqdweb?did=726393681\&\#38;Fmt=7\&\#38;clientId=48776\&\#38;RQT=309\&\#38;VName=PQD},
+    year = {2002}
+}
+
+@phdthesis{Guarini1998,
+    abstract = {The objectives of this research were to develop a method by
+which the spatially developing compressible turbulent boundary layer could be
+simulated using a temporally developing numerical simulation and to study the
+physics of the compressible turbulent boundary layer. We take advantage of the
+technique developed by Spalart (1987, 1988) for the incompressible case. In
+this technique, it is recognized that the boundary layer exhibits slow growth
+in the streamwise direction, so the turbulence can be treated as approximately
+homogeneous in this direction. The slow growth is accounted for with a
+coordinate transformation and a multiple scale analysis. The result is a
+modified system of equations (Navier-Stokes plus some extra terms, which we
+call "slow growth terms") that are homogeneous in both the streamwise and
+spanwise directions and represent the state of the boundary layer at a given
+streamwise location (or, equivalently, a given thickness). The compressible
+Navier-Stokes equations are solved using a mixed Fourier and B-spline
+"spectral" method. The dependent variables are expanded in terms of a Fourier
+representation in the horizontal directions and a B-spline representation in
+the wall-normal direction. In the wall-normal direction non-reflecting boundary
+conditions are used at the freestream boundary, and zero-heat-flux no-slip
+boundary conditions are used at the wall. This combination of splines and
+Fourier methods produces a very accurate numerical method. Mixed
+implicit/explicit time discretization is used. Results are presented for a case
+with a Mach number of 2.5, and a Reynolds number, based on momentum integral
+thickness and wall viscosity, of \\\\$R\\\\sb{\\\\theta\\\\sp\\\\prime}\\\\$ =
+840. The results show that the van Driest transformed velocity satisfies the
+incompressible scalings and a narrow logarithmic region is obtained. The
+results for the turbulence intensities compare well with the incompressible
+simulations of Spalart. Pressure fluctuations are found to be higher than in
+incompressible flow. Morkovin's strong Reynolds analogy does not agree with the
+results of the simulation, however, an analogy is found between the rate of
+turbulent heat transfer and the rate of turbulent momentum transfer. Reynolds
+stress and turbulent kinetic energy budgets are computed and compared with the
+budgets from Spalart's incompressible simulations.},
+    author = {Guarini, Stephen},
+    location = {United States -- California},
+    school = {Stanford University},
+    title = {Direct numerical simulation of supersonic turbulent boundary layers},
+    url = {http://proquest.umi.com/pqdweb?did=732826501\&\#38;Fmt=7\&\#38;clientId=48776\&\#38;RQT=309\&\#38;VName=PQD},
+    year = {1998}
+}
+
+@phdthesis{Venugopal2003,
+    abstract = {Core flow in a solid propellant rocket motor is often modeled
+as the injection driven flow in a chamber closed at the head end. However, it
+becomes expensive to conduct direct numerical simulations in this configuration
+at moderately high Reynolds numbers. In the current study, a simplified model
+for the core flow in a solid rocket motor has been devised that allows direct
+numerical simulations to be conducted at a reasonable cost. In the simplified
+model problem, the streamwise direction has been asymptotically homogenized by
+assuming that at large distances from the head end of the rocket motor, both
+the mean and {RMS} of turbulent fluctuations evolve slowly in the streamwise
+direction. The {Navier-Stokes} equations are then modified to account for this
+slow growth. Using the simplified model, a separate direct numerical simulation
+can now be conducted at each streamwise location in the rocket motor. A direct
+numerical simulation of compressible turbulent flow in the model rocket has
+been conducted at a streamwise location situated 40 channel half-widths from
+the head end of the rocket motor and at an injection Reynolds number of
+approximately 190. The simulation reveals that turbulence results in increased
+near wall gradients for streamwise velocity, density and temperature due to the
+presence of the Reynolds stress term. The turbulence in the model rocket is
+found to be only weakly compressible, although significant compressibility
+existed in the mean flow. Streaks, streamwise vortices and inclined shear
+layers are observed in the near wall region. The vorticity vector shows a
+preference to be inclined at (39°-49°) to the wall, similar to observations
+made in non-transpired channel flows. The direct numerical simulation database
+is also used to make a priori estimates of the relative magnitudes of subgrid
+terms in the filtered evolution equations. It is found that in the equations
+for mean momentum and resolved scale Reynolds stress, the dominant subgrid
+terms are the subgrid stress terms. The contribution of subgrid stress to wall
+normal transport and dissipation in the resolved scale turbulent kinetic energy
+equation are similar to those observed in turbulent channel flows.},
+    author = {Venugopal, Prem},
+    location = {United States -- Illinois},
+    school = {University of Illinois at Urbana-Champaign},
+    title = {Direct numerical simulation of turbulence in a model solid rocket motor},
+    url = {http://proquest.umi.com/pqdweb?did=765141941\&\#38;Fmt=7\&\#38;clientId=48776\&\#38;RQT=309\&\#38;VName=PQD},
+    year = {2003}
+}
+
+@article{GadelHak1995,
+    author = {Mohamed Gad el Hak},
+    journal = {Journal of Fluids Engineering},
+    number = {1},
+    pages = {3--5},
+    publisher = {ASME},
+    title = {Questions in Fluid Mechanics: {S}tokes' Hypothesis for a {N}ewtonian, Isotropic Fluid},
+    url = {http://scitation.aip.org/getabs/servlet/GetabsServlet?prog=normal&id=JFEGA4000117000001000003000001&idtype=cvips&gifs=yes},
+    volume = {117},
+    year = {1995}
+}
+
+@book{Canuto2006,
+    author = {Canuto, C. and Hussaini, M. Y. and Quarteroni, A. and Zang, T. A.},
+    howpublished = {Hardcover},
+    isbn = {3540307257},
+    publisher = {Springer-Verlag},
+    series = {Scientific Computation},
+    title = {Spectral Methods: Fundamentals in Single Domains},
+    year = {2006}
+}
+
+@book{Boyd2001,
+    author = {Boyd, J. P.},
+    publisher = {Dover},
+    title = {{Chebyshev and Fourier spectral methods}},
+    year = {2001}
+}
+
+@inbook{Boyd2001Page213,
+    author = {Boyd, J. P.},
+    chapter = {11},
+    pages = {213--214},
+    publisher = {Dover},
+    title = {{Chebyshev and Fourier spectral methods}},
+    year = {2001}
+}
+
+@article{spalart_lowstoragerk,
+    abstract = {Two numerical methods were designed to solve the time-dependent, three-dimensional, incompressible Naveir-Stokes equations in boundary layers (method A, semi-infinite domain) and mixing layers or wakes (method B, fully-infinite domain). Their originality lies in the use of rapidly-decaying spectral basis functions to approximated the vertical dependence of the solutions, combined with one method A) or two (method B) slowly-decaying "extra functions" for each wave-vector that exactly represent the irrotational componetnt of the solution at large distances. Both methods eliminate the pressure term as part of the formulation, thus avoiding fractional-step time integration. They yield rapid convergence and are free of spurious modes in the Orr-Sommerfeld spectra. They are also efficient, although the operation count is of order N^2 (N is the number of modes in the infinite direction). These methods have been used for extensive direct numerical simulations of transition and turbulence. A new time-integration scheme, with low storage requirements and good stability properties, is also described.},
+    author = {Spalart, Philippe R. and Moser, Robert D. and Rogers, Michael M.},
+    doi = {http://dx.doi.org/10.1016/0021-9991(91)90238-G},
+    journal = {J. Comput. Phys.},
+    number = {2},
+    pages = {297--324},
+    publisher = {Academic Press Professional, Inc.},
+    title = {Spectral methods for the Navier-Stokes equations with one infinite and two periodic directions},
+    url = {http://dx.doi.org/http://dx.doi.org/10.1016/0021-9991(91)90238-G},
+    volume = {96},
+    year = {1991}
+}
+
+@article{Coleman1995Numerical,
+    abstract = {{A study of compressible supersonic turbulent flow in a plane channel with isothermal walls has been performed using direct numerical simulation. Mach numbers, based on the bulk velocity and sound speed at the walls, of 1.5 and 3 are considered; Reynolds numbers, defined in terms of the centreline velocity and channel half-width, are of the order of 3000. Because of the relatively low Reynolds number, all of the relevant scales of motion can be captured, and no subgrid-scale or turbulence model is needed. The isothermal boundary conditions give rise to a flow that is strongly influenced by wall-normal gradients of mean density and temperature. These gradients are found to cause an enhanced streamwise coherence of the near-wall streaks, but not to seriously invalidate Morkovin\&apos;s hypothesis : the magnitude of fluctuations of total temperature and especially pressure are much less than their mean values, and consequently the dominant compressibility effect is that due to mean property variations. The Van Driest transformation is found to be very successful at both Mach numbers, and when properly scaled, statistics are found to agree well with data from incompressible channel flow results.}},
+    author = {Coleman, G. N. and Kim, J. and Moser, R. D.},
+    doi = {10.1017/S0022112095004587},
+    journal = {Journal of Fluid Mechanics Digital Archive},
+    keywords = {381paper, vegasposter},
+    pages = {159--183},
+    title = {{A numerical study of turbulent supersonic isothermal-wall channel flow}},
+    url = {http://dx.doi.org/10.1017/S0022112095004587},
+    volume = {305},
+    year = {1995}
+}
+
+@phdthesis{ShanYang2011,
+    author  = {Shan Yang},
+    title   = {A shape {H}essian based analysis of roughness effects on fluid flows},
+    school  = {University of Texas at Austin},
+    year    = {2011}
+}
+
+@TECHREPORT{OliverFANSModels2011,
+  AUTHOR =        {Todd A. Oliver},
+  TITLE =         {{F}avre-Averaged {N}avier--{S}tokes and Turbulence Model Equation Documentation},
+  INSTITUTION =   {Predictive Engineering and Computational Sciences, University of Texas at Austin},
+  ABSTRACT =      {The purpose of this document is to detail the Favre-averaged
+                   Navier--Stokes (FANS) equations and some popular turbulence
+                   models used to close the FANS equations.},
+  MONTH =         {October},
+  YEAR  =         {2011},
+  AUTHOR1_URL =   {http://pecos.ices.utexas.edu/},
+  AUTHOR1_EMAIL = {oliver@ices.utexas.edu},
+  CONTACT =       {oliver@ices.utexas.edu}
+}
+
+@book{Chassaing2010,
+    author = {Chassaing, P. and Antonia, R. A. and Anselmet, L. Joly and Sarker, S.},
+    isbn = {9789048160402},
+    publisher = {Kluwer Academic Publishers},
+    title = {{Variable density fluid turbulence}},
+    url = {http://www.worldcat.org/isbn/9789048160402},
+    year = {2010}
+}
+
+@book{SmitsDussauge2005,
+    author = {Smits, A. J. and Dussauge, J. P.},
+    citeulike-article-id = {6429306},
+    publisher = {Springer Verlag},
+    title = {{Turbulent shear layers in supersonic flow}},
+    year = {2005}
+}
+
+@article{Lele1994Compressibility,
+    author = {Lele, Sanjiva K.},
+    doi = {10.1146/annurev.fl.26.010194.001235},
+    journal = {Annual Review of Fluid Mechanics},
+    keywords = {381paper, vegasposter},
+    number = {1},
+    pages = {211--254},
+    title = {{Compressibility Effects on Turbulence}},
+    url = {http://dx.doi.org/10.1146/annurev.fl.26.010194.001235},
+    volume = {26},
+    year = {1994}
+}

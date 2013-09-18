@@ -1,0 +1,13 @@
+/aclocal.m4
+/aminclude.am
+/autom4te.cache
+/config.log
+/_configs.sed
+/config.status
+/configure
+/docs
+/libtool
+/LICENSE
+/Makefile
+/Makefile.in
+/*.pc
