@@ -17,7 +17,15 @@
  * Implementation logic built using the grammar in exprgrammar.hpp.
  */
 
-#include <suzerain/common.hpp>
+#include <algorithm>
+#include <cassert>
+#include <iterator>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+#include <boost/algorithm/string.hpp>
+
 #include <suzerain/exprgrammar.hpp>
 
 namespace suzerain {

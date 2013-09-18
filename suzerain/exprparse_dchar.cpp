@@ -14,10 +14,6 @@
  * Arithmetic expression evaluation for \c double, <tt>const char *</tt>
  */
 
-#ifdef HAVE_CONFIG_H
-#include <suzerain/config.h>
-#endif
-
 #include <suzerain/exprparse.hpp>
 
 #include "exprparse_impl.hpp"
