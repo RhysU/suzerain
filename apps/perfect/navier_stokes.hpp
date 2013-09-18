@@ -335,22 +335,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t rms_adjust = 1 / std::sqrt(o.grid.L.x() * o.grid.L.z());
         ArrayXr tmp;
         for (size_t i = 0; i < rms.size(); ++i) {
-            // Mean processing
             rms[i].mean *= rms_adjust;
             tmp = rms[i].mean;
             o.masslu()->solve(1, tmp.data(), 1, tmp.size());
             rms_y[i].mean.resizeLike(tmp);
-            o.cop.accumulate(1, 1, tmp.data(), 1,
+            o.cop.accumulate(1, 1, tmp.data(),           1,
                                 0, rms_y[i].mean.data(), 1);
 
-            // Fluctuating processing
             rms[i].fluctuating *= rms_adjust;
             tmp = rms[i].fluctuating;
             o.masslu()->solve(1, tmp.data(), 1, tmp.size());
             rms_y[i].fluctuating.resizeLike(tmp);
-            o.cop.accumulate(1, 1, tmp.data(), 1,
+            o.cop.accumulate(1, 1, tmp.data(),                  1,
                                 0, rms_y[i].fluctuating.data(), 1);
-
         }
     }
 
