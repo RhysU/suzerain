@@ -46,8 +46,8 @@
 /test_state
 /test_storage
 /test_timecontroller
-/test_lowstorage
-/test_lowstorage.py
+/test_timestepper
+/test_timestepper.py
 /test_traits
 /test_utility
 /test_gbdddddmv
