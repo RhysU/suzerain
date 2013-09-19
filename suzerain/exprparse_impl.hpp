@@ -120,9 +120,10 @@ template<typename T>
 void exprparse_range_impl(const std::string& s,
                           T *valmin, T *valmax,
                           const T defaultmin, const T defaultmax,
-                          const T absmin, const T absmax,
+                          const T absmin,     const T absmax,
                           const char *name)
 {
+    using namespace std;
     if (!name) name = "exprparse_range input";
     assert(absmin <= defaultmin);
     assert(defaultmin <= defaultmax);
@@ -130,18 +131,18 @@ void exprparse_range_impl(const std::string& s,
 
     // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
     const size_t colonpos = s.find_first_of(':');
-    if (colonpos == std::string::npos) {
-        throw std::invalid_argument(std::string(name)
+    if (colonpos == string::npos) {
+        throw invalid_argument(string(name)
             + " not in format \"low:high\", \"[low]:high\", or low:[high].");
     }
-    std::string s_min(s, 0, colonpos);
-    std::string s_max(s, colonpos + 1);
+    string s_min(s, 0, colonpos);
+    string s_max(s, colonpos + 1);
     boost::algorithm::trim(s_min);
     boost::algorithm::trim(s_max);
 
     // Parse recognized formats into valmin and valmax
     if (s_min.length() == 0 && s_max.length() == 0) {
-        throw std::invalid_argument(std::string(name)
+        throw invalid_argument(string(name)
             + " not in format \"low:high\", \"[low]:high\", or low:[high].");
     } else if (s_min.length() == 0) {
         *valmin = defaultmin;
@@ -155,14 +156,14 @@ void exprparse_range_impl(const std::string& s,
     }
 
     // Ensure valmin <= valmax
-    if (*valmin > *valmax) std::swap(*valmin, *valmax);
+    if (*valmin > *valmax) swap(*valmin, *valmax);
 
     // Validate range is within [absmin, absmax]
     if (*valmin < absmin || absmax < *valmax) {
-        std::ostringstream oss;
-        oss << name << " value [" << *valmin << ":" << *valmax
-            << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
-        throw std::invalid_argument(oss.str());
+        ostringstream m;
+        m << name << " value [" << *valmin << ":" << *valmax
+          << "] is outside valid range [" << absmin << ":" << absmax <<  "]";
+        throw invalid_argument(m.str());
     }
 }
 
