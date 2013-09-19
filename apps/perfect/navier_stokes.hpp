@@ -86,6 +86,10 @@ union largo_state
     double v() const { return my / rho; } /**< Computes \f$v\f$ */
     double w() const { return mz / rho; } /**< Computes \f$w\f$ */
     double E() const { return e  / rho; } /**< Computes \f$E\f$ */
+
+#pragma warning(push,disable:1572)
+    bool trivial() const { return rho == 0; } /**< Is the base flow quiet? */
+#pragma warning(pop)
 };
 
 // Ensure largo_state incurs no padding as that would break its usefulness
@@ -706,13 +710,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     }
 
     // If necessary, perform globally-relevant initialization calls to Largo
+    largo_state basewall;
     if (sg.formulation.enabled()) {
-        largo_state wall, dy, dx;
-        sg.get_baseflow(0.0, wall.state, dy.state, dx.state);
+        largo_state dy, dx;
+        sg.get_baseflow(0.0, basewall.state, dy.state, dx.state);
 
         largo_state grDA;
-        if (wall.rho != 0) {
-            grDA.mx = - wall.u() * dx.mx / (0.0 - wall.u());
+        if (!basewall.trivial()) {
+            grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
         }
 
         largo_init(sg.workspace, sg.grdelta, grDA.state);
@@ -764,6 +769,46 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                            common.ref_ez_gradrho()[j]);
         const real_t   ref_e_divm         (common.ref_e_divm    ()[j]);
         const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
+
+        // If necessary, perform Largo base flow and Y-dependent invocations
+        if (sg.formulation.enabled()) {
+            largo_state base, dy, dx;
+            sg.get_baseflow(o.y(j), base.state, dy.state, dx.state);
+
+            // When a nontrivial inviscid base flow is present, compute
+            // Euler residual so that it might be eradicated.  The base
+            // flow is intended to be stationary so any residual it is
+            // a numerical artifact and not part of the intended problem.
+            largo_state dt, src;
+            if (!base.trivial()) {
+
+                // Compute time derivative of base flow using wall information
+                dt.rho = basewall.u() * dx.rho;
+                dt.mx  = basewall.u() * dx.mx;
+                dt.my  = basewall.u() * dx.my;
+                dt.mz  = basewall.u() * dx.mz;
+                dt.e   = basewall.u() * dx.e;
+
+                // Compute pressure-related quantities
+                real_t P, dyP, dxP;
+                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP);
+
+                // Compute inviscid base flow residual from Euler equations
+                const double u = base.u();
+                const double v = base.v();
+                const double w = base.w();
+                const double H = (base.e + P) / base.rho;
+                src.rho = dt.rho + dy.my;
+                src.mx  = dt.mx  + u*dy.my + v*dy.mx - v*u*dy.rho;
+                src.my  = dt.my  + v*dy.my + v*dy.my - v*v*dy.rho + dyP;
+                src.mz  = dt.mz  + w*dy.my + v*dy.mz - v*w*dy.rho;
+                src.e   = dt.e   + H*dy.my + v*(dy.e + dyP) - v*H*dy.rho;
+
+            }
+
+            largo_prestep_baseflow(sg.workspace, base.state, dy.state,
+                                   dt.state, dx.state, src.state);
+        }
 
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
