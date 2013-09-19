@@ -28,6 +28,8 @@
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
 
+#include <largo/largo.h>
+
 #include <suzerain/error.h>
 #include <suzerain/lowstorage.hpp>
 #include <suzerain/l2.hpp>
@@ -61,13 +63,13 @@ namespace { // anonymous
  * in that order.  Largo-based slow growth computations require conserved state
  * packed in this fashion.
  */
-union sgstate_type
+union largo_state
 {
     /** Initialize with zeros. */
-    sgstate_type() { std::memset(this, 0, sizeof(sgstate_type)); }
+    largo_state() { std::memset(this, 0, sizeof(largo_state)); }
 
     /** Initialize with argument order following suzerain::ndx::type. */
-    sgstate_type(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
+    largo_state(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
         : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
 
     // Storage accessible as this->state[i] or this->rho, etc
@@ -86,8 +88,8 @@ union sgstate_type
     double E() const { return e  / rho; } /**< Computes \f$E\f$ */
 };
 
-// Ensure sgstate_type incurs no padding as that would break its usefulness
-BOOST_STATIC_ASSERT(sizeof(sgstate_type) == 5*sizeof(double));
+// Ensure largo_state incurs no padding as that would break its usefulness
+BOOST_STATIC_ASSERT(sizeof(largo_state) == 5*sizeof(double));
 
 } // end anonymous namespace
 
@@ -701,6 +703,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                     mpi::datatype<real_t>::value, MPI_SUM, MPI_COMM_WORLD));
         common.means *= o.dgrid.chi();
 
+    }
+
+    // If necessary, perform globally-relevant initialization calls to Largo
+    if (sg.formulation.enabled()) {
+        largo_state wall, dy, dx;
+        sg.get_baseflow(0.0, wall.state, dy.state, dx.state);
+
+        largo_state grDA;
+        if (wall.rho != 0) {
+            grDA.mx = - wall.u() * dx.mx / (0.0 - wall.u());
+        }
+
+        largo_init(sg.workspace, sg.grdelta, grDA.state);
     }
 
     // Traversal:
