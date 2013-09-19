@@ -665,6 +665,29 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
+    // Largo use requires double-valued buffers containing rho, mx, my, mz, e
+    // The following is a simple type to simplify manipulating such data
+    union sgstate_type
+    {
+        // Fill with zeros
+        sgstate_type() { std::memset(this, 0, sizeof(sgstate_type)); }
+
+        // Initialize with argument order following suzerain::ndx::type
+        sgstate_type(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
+            : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
+
+        // Storage accessible as this->state[i] or this->rho, etc
+        struct { double rho, mx, my, mz, e; };
+        double state[5];
+
+        // Convenience methods for velocity and specific energy
+        double u() const { return mx / rho; }
+        double v() const { return my / rho; }
+        double w() const { return mz / rho; }
+        double E() const { return e  / rho; }
+    };
+    BOOST_STATIC_ASSERT(sizeof(sgstate_type)==5*sizeof(double));  // No padding!
+
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
