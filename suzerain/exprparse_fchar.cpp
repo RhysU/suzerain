@@ -14,8 +14,7 @@
  * Arithmetic expression evaluation for \c float, <tt>const char *</tt>
  */
 
-#include <suzerain/exprparse.hpp>
-
+#include "exprparse.hpp"
 #include "exprparse_impl.hpp"
 
 // To mitigate long compilation times associated with Boost Spirit.Qi parsers,
