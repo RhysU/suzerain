@@ -18,7 +18,6 @@
  */
 
 #include <algorithm>
-#include <cassert>
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
@@ -123,11 +122,15 @@ void exprparse_range_impl(const std::string& s,
                           const T absmin,     const T absmax,
                           const char *name)
 {
+    // Sanity check incoming arguments and provide default name behavior
     using namespace std;
+    if (!(absmin     <= defaultmin))
+        throw invalid_argument("!(absmin <= defaultmin)");
+    if (!(defaultmin <= defaultmax))
+        throw invalid_argument("!(defaultmin <= defaultmax)");
+    if (!(defaultmax <= absmax    ))
+        throw invalid_argument("!(defaultmax <= absmax)");
     if (!name) name = "exprparse_range input";
-    assert(absmin <= defaultmin);
-    assert(defaultmin <= defaultmax);
-    assert(defaultmax <= absmax);
 
     // Split s on a mandatory colon into whitespace-trimmed s_{min,max}
     const size_t colonpos = s.find_first_of(':');
