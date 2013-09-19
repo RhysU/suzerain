@@ -25,7 +25,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include <suzerain/exprgrammar.hpp>
+#include "exprgrammar.hpp"
 
 namespace suzerain {
 
