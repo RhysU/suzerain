@@ -53,6 +53,44 @@ namespace suzerain {
 
 namespace perfect {
 
+namespace { // anonymous
+
+/**
+ * Convenience union for manipulating double-valued buffers containing
+ * \f$\rho\f$, \f$\rho{}u\f$, \f$\rho{}v\f$, \f$\rho{}w\f$, and \f$\rho{}E\f$
+ * in that order.  Largo-based slow growth computations require conserved state
+ * packed in this fashion.
+ */
+union sgstate_type
+{
+    /** Initialize with zeros. */
+    sgstate_type() { std::memset(this, 0, sizeof(sgstate_type)); }
+
+    /** Initialize with argument order following suzerain::ndx::type. */
+    sgstate_type(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
+        : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
+
+    // Storage accessible as this->state[i] or this->rho, etc
+    struct {
+        double rho;   /**< \f$\rho   \f$ */
+        double mx;    /**< \f$\rho{}u\f$ */
+        double my;    /**< \f$\rho{}v\f$ */
+        double mz;    /**< \f$\rho{}w\f$ */
+        double e;     /**< \f$\rho{}E\f$ */
+    };
+    double state[5];  /**< Typesafe array accessing packed data */
+
+    double u() const { return mx / rho; } /**< Computes \f$u\f$ */
+    double v() const { return my / rho; } /**< Computes \f$v\f$ */
+    double w() const { return mz / rho; } /**< Computes \f$w\f$ */
+    double E() const { return e  / rho; } /**< Computes \f$E\f$ */
+};
+
+// Ensure sgstate_type incurs no padding as that would break its usefulness
+BOOST_STATIC_ASSERT(sizeof(sgstate_type) == 5*sizeof(double));
+
+} // end anonymous namespace
+
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
@@ -664,29 +702,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.means *= o.dgrid.chi();
 
     }
-
-    // Largo use requires double-valued buffers containing rho, mx, my, mz, e
-    // The following is a simple type to simplify manipulating such data
-    union sgstate_type
-    {
-        // Fill with zeros
-        sgstate_type() { std::memset(this, 0, sizeof(sgstate_type)); }
-
-        // Initialize with argument order following suzerain::ndx::type
-        sgstate_type(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
-            : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
-
-        // Storage accessible as this->state[i] or this->rho, etc
-        struct { double rho, mx, my, mz, e; };
-        double state[5];
-
-        // Convenience methods for velocity and specific energy
-        double u() const { return mx / rho; }
-        double v() const { return my / rho; }
-        double w() const { return mz / rho; }
-        double E() const { return e  / rho; }
-    };
-    BOOST_STATIC_ASSERT(sizeof(sgstate_type)==5*sizeof(double));  // No padding!
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
