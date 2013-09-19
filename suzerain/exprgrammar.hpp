@@ -39,7 +39,7 @@ namespace suzerain {
  *
  * This code is expensive to compile and a little bit tricky when it comes to
  * handling errors.  Most users will find the pre-compiled function overloads
- * \ref exprparse() declared in exprparse.hpp to be sufficient and easier
+ * \ref exprparse() declared in exprparse.hpp to be sufficient and much easier
  * to use.
  */
 namespace exprgrammar {
