@@ -800,11 +800,29 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
             }
 
-            largo_prestep_baseflow(sg.workspace, base.rescale(inv_Ma2),
-                                   dy.rescale(inv_Ma2), dt.rescale(inv_Ma2),
-                                   dx.rescale(inv_Ma2), src.rescale(inv_Ma2));
+            largo_prestep_baseflow(sg.workspace,
+                                   base.rescale(inv_Ma2),
+                                   dy  .rescale(inv_Ma2),
+                                   dt  .rescale(inv_Ma2),
+                                   dx  .rescale(inv_Ma2),
+                                   src .rescale(inv_Ma2));
 
-            // FIXME #2495 innery
+            // FIXME #2495 Complete innery computations
+            largo_state mean;
+            largo_state rms;
+            largo_state mean_rqq;
+            largo_state ddy_mean;
+            largo_state ddy_rms;
+            largo_state ddy_mean_rqq;
+
+            largo_prestep_seta_innery(sg.workspace,
+                                      o.y(j),
+                                      mean        .rescale(inv_Ma2),
+                                      rms         .rescale(inv_Ma2),
+                                      mean_rqq    .rescale(inv_Ma2),
+                                      ddy_mean    .rescale(inv_Ma2),
+                                      ddy_rms     .rescale(inv_Ma2),
+                                      ddy_mean_rqq.rescale(inv_Ma2));
         }
 
         // Iterate across the j-th ZX plane
