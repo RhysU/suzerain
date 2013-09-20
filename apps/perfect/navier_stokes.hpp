@@ -614,13 +614,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             j < o.dgrid.local_physical_end.y();
             ++j) {
 
-            summing_accumulator_type acc_u,  acc_v,  acc_w;
-            summing_accumulator_type acc_uu, acc_uv, acc_uw;
-            summing_accumulator_type acc_vv, acc_vw, acc_ww;
-            summing_accumulator_type acc_rho;
-            summing_accumulator_type acc_rhouu, acc_rhovv, acc_rhoww;
-            summing_accumulator_type acc_rhoEE;
-            summing_accumulator_type acc_p, acc_p2;
+            // Prepare logical indices using struct for scoping (e.g. q::u).
+            struct q { enum { u,  v,  w, uu, uv, uw, vv, vw, ww,
+                              rho, rhouu, rhovv, rhoww, rhoEE, p, p2,
+                              count // Sentry
+            }; };
+
+            // An array of summing_accumulator_type holds all running sums.
+            // This gives nicer construction and allows looping over results.
+            summing_accumulator_type acc[q::count];
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -640,42 +642,52 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 rholut::p(alpha, beta, gamma, Ma, rho, m, e, p);
 
                 // Accumulate pointwise information
-                acc_u    (u.x());
-                acc_v    (u.y());
-                acc_w    (u.z());
-                acc_uu   (u.x() * u.x());
-                acc_uv   (u.x() * u.y());
-                acc_uw   (u.x() * u.z());
-                acc_vv   (u.y() * u.y());
-                acc_vw   (u.y() * u.z());
-                acc_ww   (u.z() * u.z());
-                acc_rho  (rho);
-                acc_rhouu(u.x() * u.x() * rho);
-                acc_rhovv(u.y() * u.y() * rho);
-                acc_rhoww(u.z() * u.z() * rho);
-                acc_rhoEE(e     * e     / rho);
-                acc_p    (p);
-                acc_p2   (p * p);
+                acc[q::u    ](u.x());
+                acc[q::v    ](u.y());
+                acc[q::w    ](u.z());
+                acc[q::uu   ](u.x() * u.x());
+                acc[q::uv   ](u.x() * u.y());
+                acc[q::uw   ](u.x() * u.z());
+                acc[q::vv   ](u.y() * u.y());
+                acc[q::vw   ](u.y() * u.z());
+                acc[q::ww   ](u.z() * u.z());
+                acc[q::rho  ](rho);
+                acc[q::rhouu](u.x() * u.x() * rho);
+                acc[q::rhovv](u.y() * u.y() * rho);
+                acc[q::rhoww](u.z() * u.z() * rho);
+                acc[q::rhoEE](e     * e     / rho);
+                acc[q::p    ](p);
+                acc[q::p2   ](p * p);
 
             } // end X // end Z
 
-            // Store sum into common block in preparation for MPI Reduce
-            common.u    ()[j] = boost::accumulators::sum(acc_u    );
-            common.v    ()[j] = boost::accumulators::sum(acc_v    );
-            common.w    ()[j] = boost::accumulators::sum(acc_w    );
-            common.uu   ()[j] = boost::accumulators::sum(acc_uu   );
-            common.uv   ()[j] = boost::accumulators::sum(acc_uv   );
-            common.uw   ()[j] = boost::accumulators::sum(acc_uw   );
-            common.vv   ()[j] = boost::accumulators::sum(acc_vv   );
-            common.vw   ()[j] = boost::accumulators::sum(acc_vw   );
-            common.ww   ()[j] = boost::accumulators::sum(acc_ww   );
-            common.rho  ()[j] = boost::accumulators::sum(acc_rho  );
-            common.rhouu()[j] = boost::accumulators::sum(acc_rhouu);
-            common.rhovv()[j] = boost::accumulators::sum(acc_rhovv);
-            common.rhoww()[j] = boost::accumulators::sum(acc_rhoww);
-            common.rhoEE()[j] = boost::accumulators::sum(acc_rhoEE);
-            common.p    ()[j] = boost::accumulators::sum(acc_p    );
-            common.p2   ()[j] = boost::accumulators::sum(acc_p2   );
+#ifndef NDEBUG
+            // Ensure that all accumulators saw a consistent number of samples
+            const size_t expected = boost::accumulators::count(acc[0]);
+            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
+                const size_t observed = boost::accumulators::count(acc[k]);
+                assert(expected == observed);
+            }
+#endif
+
+            // Store sum into common block in preparation for MPI Allreduce
+            using boost::accumulators::sum;
+            common.u    ()[j] = sum(acc[q::u    ]);
+            common.v    ()[j] = sum(acc[q::v    ]);
+            common.w    ()[j] = sum(acc[q::w    ]);
+            common.uu   ()[j] = sum(acc[q::uu   ]);
+            common.uv   ()[j] = sum(acc[q::uv   ]);
+            common.uw   ()[j] = sum(acc[q::uw   ]);
+            common.vv   ()[j] = sum(acc[q::vv   ]);
+            common.vw   ()[j] = sum(acc[q::vw   ]);
+            common.ww   ()[j] = sum(acc[q::ww   ]);
+            common.rho  ()[j] = sum(acc[q::rho  ]);
+            common.rhouu()[j] = sum(acc[q::rhouu]);
+            common.rhovv()[j] = sum(acc[q::rhovv]);
+            common.rhoww()[j] = sum(acc[q::rhoww]);
+            common.rhoEE()[j] = sum(acc[q::rhoEE]);
+            common.p    ()[j] = sum(acc[q::p    ]);
+            common.p2   ()[j] = sum(acc[q::p2   ]);
 
         } // end Y
 
