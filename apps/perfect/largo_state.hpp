@@ -36,9 +36,11 @@ namespace perfect {
 
 /**
  * A Largo-related convenience class for manipulating double-valued buffers
- * containing \f$\rho\f$, \f$\rho{}u\f$, \f$\rho{}v\f$, \f$\rho{}w\f$, and
- * \f$\rho{}E\f$ in that order.  Largo-based slow growth computations require
- * conserved state packed in this fashion.
+ * containing \f$\rho\f$, \f$\rho{}u\f$, \f$\rho{}v\f$, \f$\rho{}w\f$,
+ * \f$\rho{}E\f$, and \f$p\f$ in that order.  Largo-based slow growth
+ * computations require conserved state packed in this fashion.  Pressure
+ * \f$p\f$ is wholly redundant but Largo requires it for certain slow growth
+ * forcing models.
  */
 union largo_state
 {
@@ -47,38 +49,39 @@ public:
     /** Initialize with all zeros such that \ref trivial() holds. */
     largo_state() { std::memset(this, 0, sizeof(largo_state)); }
 
-    /** Initialize with argument order following suzerain::ndx::type. */
-    largo_state(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
-        : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
+    /** Initialize with scalars per order of suzerain:ndx::type. */
+    largo_state(double e, double mx, double my, double mz, double rho, double p)
+        : rho(rho), mx(mx), my(my), mz(mz), e(e), p(p) {}
 
     // Storage directly accessible through public members
     struct {
-        double rho;   /**< \f$\rho   \f$ */
-        double mx;    /**< \f$\rho{}u\f$ */
-        double my;    /**< \f$\rho{}v\f$ */
-        double mz;    /**< \f$\rho{}w\f$ */
-        double e;     /**< \f$\rho{}E\f$ */
+        double rho;   /**< Density              \f$\rho   \f$ */
+        double mx;    /**< Streamwise momentum  \f$\rho{}u\f$ */
+        double my;    /**< Wall-normal momentum \f$\rho{}v\f$ */
+        double mz;    /**< Spanwise momentum    \f$\rho{}w\f$ */
+        double e;     /**< Total energy         \f$\rho{}E\f$ */
+        double p;     /**< Pressure             \f$p      \f$ */
     };
 
 private:
 
     /** Access to the packed data gated through rescale() or as_is() below. */
-    double state[5];
+    double state[6];
 
 public:
 
     // Helpers for computing commonly-accessed results
-    double u() const { return mx / rho; } /**< Computes \f$u\f$ */
-    double v() const { return my / rho; } /**< Computes \f$v\f$ */
-    double w() const { return mz / rho; } /**< Computes \f$w\f$ */
-    double E() const { return e  / rho; } /**< Computes \f$E\f$ */
+    double u() const { return mx / rho; } /**< Computes \f$u = m_x/\rho \f$ */
+    double v() const { return my / rho; } /**< Computes \f$v = m_y/\rho \f$ */
+    double w() const { return mz / rho; } /**< Computes \f$w = m_z/\rho \f$ */
+    double E() const { return e  / rho; } /**< Computes \f$E = e  /\rho \f$ */
 
     /** Is the state uniformly zero? */
     bool trivial() const
     {
         using namespace std;
 #pragma warning(push,disable:1572)
-        return 0 == abs(rho) + abs(mx) + abs(my) + abs(mz) + abs(e);
+        return 0 == abs(rho) + abs(mx) + abs(my) + abs(mz) + abs(e) + abs(p);
 #pragma warning(pop)
     }
 
@@ -92,22 +95,28 @@ public:
      * total energy and pressure must be scaled by \f$\mbox{Ma}^{-2}\f$
      * when calling Largo and scaled by \f$\mbox{Ma}^2\f$ on return.
      *
-     * The following is a helper class for performing that conversion.
-     * The constructor scales <tt>p->e</tt> by some constant \c C
-     * and the destructor undoes that scaling factor.  The implicit
-     * conversion to <tt>double*</tt> permits passing \c helper instances
-     * directly to Largo API calls.  This crazy concoction being useful
-     * relies heavily on C++ temporary object lifetime semantics.
+     * The following is a helper class for performing that conversion.  The
+     * constructor scales <tt>s->e</tt> and <tt>s->p</tt> by some constant \c C
+     * and the destructor undoes that scaling factor.  The implicit conversion
+     * to <tt>double*</tt> permits passing \c helper instances directly to
+     * Largo API calls.  This crazy concoction being useful relies heavily on
+     * C++ temporary object lifetime semantics.
      */
     class rescaler
     {
     public:
-        rescaler (largo_state *p, double C) : p(p), C(C) { p->e *= C; }
-        ~rescaler()                                      { p->e /= C; }
-        operator double*() { return p->state; }
+        rescaler (largo_state *s, double C)
+            : s(s), C(C)
+        { s->e *= C; s->p *= C; }
+
+        ~rescaler()
+        { s->e /= C; s->p /= C; }
+
+        operator double*()
+        { return s->state; }
 
     private:
-        largo_state *p;
+        largo_state *s;
         double C;
     };
 

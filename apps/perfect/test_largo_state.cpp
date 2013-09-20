@@ -30,7 +30,7 @@ using suzerain::perfect::largo_state;
 
 BOOST_AUTO_TEST_CASE( size )
 {
-    BOOST_REQUIRE_EQUAL(sizeof(largo_state), 5*sizeof(double));
+    BOOST_REQUIRE_EQUAL(sizeof(largo_state), 6*sizeof(double));
 }
 
 BOOST_AUTO_TEST_CASE( default_construct_produces_trivial_state )
@@ -41,6 +41,7 @@ BOOST_AUTO_TEST_CASE( default_construct_produces_trivial_state )
     BOOST_CHECK_EQUAL(s.mx,  0);
     BOOST_CHECK_EQUAL(s.mx,  0);
     BOOST_CHECK_EQUAL(s.e,   0);
+    BOOST_CHECK_EQUAL(s.p,   0);
     BOOST_CHECK(s.trivial());
 }
 
@@ -52,18 +53,19 @@ static void some_library_call_for_as_is(double *d)
     BOOST_CHECK_EQUAL(d[2], 2); d[2] += 1;
     BOOST_CHECK_EQUAL(d[3], 3); d[3] += 1;
     BOOST_CHECK_EQUAL(d[4], 4); d[4] += 1;
+    BOOST_CHECK_EQUAL(d[5], 5); d[5] += 1;
 }
 
 BOOST_AUTO_TEST_CASE( as_is )
 {
-    largo_state s(4, 1, 2, 3, 0);
+    largo_state s;
+    s.rho = 0;
+    s.mx  = 1;
+    s.my  = 2;
+    s.mz  = 3;
+    s.e   = 4;
+    s.p   = 5;
     BOOST_CHECK(!s.trivial());
-
-    BOOST_REQUIRE_EQUAL(s.rho, 0);
-    BOOST_REQUIRE_EQUAL(s.mx,  1);
-    BOOST_REQUIRE_EQUAL(s.my,  2);
-    BOOST_REQUIRE_EQUAL(s.mz,  3);
-    BOOST_REQUIRE_EQUAL(s.e,   4);
 
     some_library_call_for_as_is(s.as_is());
 
@@ -72,18 +74,18 @@ BOOST_AUTO_TEST_CASE( as_is )
     BOOST_CHECK_EQUAL(s.my,  3);
     BOOST_CHECK_EQUAL(s.mz,  4);
     BOOST_CHECK_EQUAL(s.e,   5);
+    BOOST_CHECK_EQUAL(s.p,   6);
 }
 
 BOOST_AUTO_TEST_CASE( rescale_one )
 {
-    largo_state s(4, 1, 2, 3, 0);
-    BOOST_CHECK(!s.trivial());
-
+    largo_state s(4, 1, 2, 3, 0, 5);
     BOOST_REQUIRE_EQUAL(s.rho, 0);
     BOOST_REQUIRE_EQUAL(s.mx,  1);
     BOOST_REQUIRE_EQUAL(s.my,  2);
     BOOST_REQUIRE_EQUAL(s.mz,  3);
     BOOST_REQUIRE_EQUAL(s.e,   4);
+    BOOST_REQUIRE_EQUAL(s.p,   5);
 
     some_library_call_for_as_is(s.rescale(1));
 
@@ -92,28 +94,31 @@ BOOST_AUTO_TEST_CASE( rescale_one )
     BOOST_CHECK_EQUAL(s.my,  3);
     BOOST_CHECK_EQUAL(s.mz,  4);
     BOOST_CHECK_EQUAL(s.e,   5);
+    BOOST_CHECK_EQUAL(s.p,   6);
 }
 
 // Used for rescale_two test case, just below
 static void some_library_call_for_rescale_two(double *d)
 {
-    BOOST_CHECK_EQUAL(d[0], 0); d[0] += 1;
-    BOOST_CHECK_EQUAL(d[1], 1); d[1] += 1;
-    BOOST_CHECK_EQUAL(d[2], 2); d[2] += 1;
-    BOOST_CHECK_EQUAL(d[3], 3); d[3] += 1;
-    BOOST_CHECK_EQUAL(d[4], 8); d[4] += 1; // Note factor of two
+    BOOST_CHECK_EQUAL(d[0],  0); d[0] += 1;
+    BOOST_CHECK_EQUAL(d[1],  1); d[1] += 1;
+    BOOST_CHECK_EQUAL(d[2],  2); d[2] += 1;
+    BOOST_CHECK_EQUAL(d[3],  3); d[3] += 1;
+    BOOST_CHECK_EQUAL(d[4],  8); d[4] += 1; // Note factor of two
+    BOOST_CHECK_EQUAL(d[5], 10); d[5] += 1; // Note factor of two
 }
 
 BOOST_AUTO_TEST_CASE( rescale_two )
 {
-    largo_state s(4, 1, 2, 3, 0);
-    BOOST_CHECK(!s.trivial());
+    largo_state s(4, 1, 2, 3, 0, 5);
 
     BOOST_REQUIRE_EQUAL(s.rho, 0);
     BOOST_REQUIRE_EQUAL(s.mx,  1);
     BOOST_REQUIRE_EQUAL(s.my,  2);
     BOOST_REQUIRE_EQUAL(s.mz,  3);
     BOOST_REQUIRE_EQUAL(s.e,   4);
+    BOOST_REQUIRE_EQUAL(s.p,   5);
+    BOOST_CHECK(!s.trivial());
 
     some_library_call_for_rescale_two(s.rescale(2.0));
 
@@ -122,4 +127,5 @@ BOOST_AUTO_TEST_CASE( rescale_two )
     BOOST_CHECK_EQUAL(s.my,  3  );
     BOOST_CHECK_EQUAL(s.mz,  4  );
     BOOST_CHECK_EQUAL(s.e,   4.5);         // Note factor of two
+    BOOST_CHECK_EQUAL(s.p,   5.5);         // Note factor of two
 }
