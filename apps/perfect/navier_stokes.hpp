@@ -352,6 +352,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             o.cop.accumulate(1, 1, tmp.data(),                  1,
                                 0, rms_y[i].fluctuating.data(), 1);
         }
+
+        // Notice that mean pressure and RMS of pressure fluctuations are
+        // available via common.p() and sqrt(common.p2() - common.p()**2).
     }
 
     // Collectively convert swave and auxw to physical space using parallel
