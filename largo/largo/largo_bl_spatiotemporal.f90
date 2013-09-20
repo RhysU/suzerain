@@ -1,4 +1,4 @@
-module largo_BL_temporal
+module largo_BL_spatiotemporal
 
 ! Use ISO_C_BINDING to expose C-friendly API
   use, intrinsic :: iso_c_binding, only: c_associated,   &
@@ -14,7 +14,7 @@ module largo_BL_temporal
   private
 
   ! largo workspace type declaration
-  type :: largo_BL_temporal_workspace_type
+  type :: largo_BL_spatiotemporal_workspace_type
 
     real(WP) :: gr_delta   = 1.0_WP
 
@@ -98,7 +98,7 @@ module largo_BL_temporal
     real(WP), allocatable, dimension(:) :: gr_DA_rhos
     real(WP), allocatable, dimension(:) :: gr_DA_rms_rhos
 
-  end type largo_BL_temporal_workspace_type
+  end type largo_BL_spatiotemporal_workspace_type
 
   ! Indices
   integer(c_int), parameter :: irho  = 1
@@ -116,51 +116,51 @@ module largo_BL_temporal
   ! Tolerance to consider rms = 0
   real(WP), parameter :: eps = 1.0E-10_WP
 
-  public  :: largo_BL_temporal_allocate
-  public  :: largo_BL_temporal_deallocate
-  public  :: largo_BL_temporal_init
-  public  :: largo_BL_temporal_preStep_sEta
-  public  :: largo_BL_temporal_preStep_sEta_innery
-  public  :: largo_BL_temporal_preStep_sEta_innerxz
-  public  :: largo_BL_temporal_preStep_sEtaMean
-  public  :: largo_BL_temporal_continuity_sEtaMean
-  public  :: largo_BL_temporal_xMomentum_sEtaMean
-  public  :: largo_BL_temporal_yMomentum_sEtaMean
-  public  :: largo_BL_temporal_zMomentum_sEtaMean
-  public  :: largo_BL_temporal_energy_sEtaMean
-  public  :: largo_BL_temporal_ispecies_sEtaMean
-  public  :: largo_BL_temporal_species_sEtaMean
-  public  :: largo_BL_temporal_continuity_sEtaRms
-  public  :: largo_BL_temporal_xMomentum_sEtaRms
-  public  :: largo_BL_temporal_yMomentum_sEtaRms
-  public  :: largo_BL_temporal_zMomentum_sEtaRms
-  public  :: largo_BL_temporal_energy_sEtaRms
-  public  :: largo_BL_temporal_ispecies_sEtaRms
-  public  :: largo_BL_temporal_species_sEtaRms
+  public  :: largo_BL_spatiotemporal_allocate
+  public  :: largo_BL_spatiotemporal_deallocate
+  public  :: largo_BL_spatiotemporal_init
+  public  :: largo_BL_spatiotemporal_preStep_sEta
+  public  :: largo_BL_spatiotemporal_preStep_sEta_innery
+  public  :: largo_BL_spatiotemporal_preStep_sEta_innerxz
+  public  :: largo_BL_spatiotemporal_preStep_sEtaMean
+  public  :: largo_BL_spatiotemporal_continuity_sEtaMean
+  public  :: largo_BL_spatiotemporal_xMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_yMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_zMomentum_sEtaMean
+  public  :: largo_BL_spatiotemporal_energy_sEtaMean
+  public  :: largo_BL_spatiotemporal_ispecies_sEtaMean
+  public  :: largo_BL_spatiotemporal_species_sEtaMean
+  public  :: largo_BL_spatiotemporal_continuity_sEtaRms
+  public  :: largo_BL_spatiotemporal_xMomentum_sEtaRms
+  public  :: largo_BL_spatiotemporal_yMomentum_sEtaRms
+  public  :: largo_BL_spatiotemporal_zMomentum_sEtaRms
+  public  :: largo_BL_spatiotemporal_energy_sEtaRms
+  public  :: largo_BL_spatiotemporal_ispecies_sEtaRms
+  public  :: largo_BL_spatiotemporal_species_sEtaRms
 
-  private :: largo_BL_temporal_preStep_sEtaRms
+  private :: largo_BL_spatiotemporal_preStep_sEtaRms
 
-  public  :: largo_BL_temporal_continuity_sEta
-  public  :: largo_BL_temporal_xMomentum_sEta
-  public  :: largo_BL_temporal_yMomentum_sEta
-  public  :: largo_BL_temporal_zMomentum_sEta
-  public  :: largo_BL_temporal_energy_sEta
-  public  :: largo_BL_temporal_species_sEta
+  public  :: largo_BL_spatiotemporal_continuity_sEta
+  public  :: largo_BL_spatiotemporal_xMomentum_sEta
+  public  :: largo_BL_spatiotemporal_yMomentum_sEta
+  public  :: largo_BL_spatiotemporal_zMomentum_sEta
+  public  :: largo_BL_spatiotemporal_energy_sEta
+  public  :: largo_BL_spatiotemporal_species_sEta
 
-  public  :: largo_BL_temporal_sEtaMean
-  public  :: largo_BL_temporal_sEta
+  public  :: largo_BL_spatiotemporal_sEtaMean
+  public  :: largo_BL_spatiotemporal_sEta
 
-  public  :: largo_BL_temporal_preStep_baseflow
+  public  :: largo_BL_spatiotemporal_preStep_baseflow
 
 contains
 
-  subroutine largo_BL_temporal_allocate(cp, neq, ns)
+  subroutine largo_BL_spatiotemporal_allocate(cp, neq, ns)
 
     type(largo_workspace_ptr), intent(out) :: cp
     ! neq=number of equations, might be needed later
     integer(c_int), intent(in)   :: neq
     integer(c_int), intent(in)   :: ns    ! number of species
-    type(largo_BL_temporal_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer :: auxp
 
     ! Allocate derived type variable
     allocate(auxp)
@@ -195,13 +195,13 @@ contains
     ! Get C pointer from Fortran pointer
     cp = c_loc(auxp)
 
-  end subroutine largo_BL_temporal_allocate
+  end subroutine largo_BL_spatiotemporal_allocate
 
 
-  subroutine largo_BL_temporal_deallocate(cp)
+  subroutine largo_BL_spatiotemporal_deallocate(cp)
 
     type(largo_workspace_ptr), intent(inout)  :: cp
-    type(largo_BL_temporal_workspace_type), pointer :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer :: auxp
 
     call c_f_pointer(cp, auxp)
 
@@ -225,17 +225,17 @@ contains
     ! Nullify C pointer
     cp = c_null_ptr
 
-  end subroutine largo_BL_temporal_deallocate
+  end subroutine largo_BL_spatiotemporal_deallocate
 
 
-  subroutine largo_BL_temporal_init(cp, gr_delta, gr_DA, gr_DA_rms)
+  subroutine largo_BL_spatiotemporal_init(cp, gr_delta, gr_DA, gr_DA_rms)
 
     real(WP), intent(in)                  :: gr_delta
     real(WP), dimension(*), intent(in)    :: gr_DA
     real(WP), dimension(*), intent(in)    :: gr_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -260,10 +260,10 @@ contains
       auxp%gr_DA_rms_rhos(is) = gr_DA_rms(5+is)
     end do
 
-  end subroutine largo_BL_temporal_init
+  end subroutine largo_BL_spatiotemporal_init
 
 
-  subroutine largo_BL_temporal_preStep_baseflow(cp,     base, ddy_base, &
+  subroutine largo_BL_spatiotemporal_preStep_baseflow(cp,     base, ddy_base, &
                                           ddt_base, ddx_base, src_base)
 
     real(WP), dimension(*), intent(in)    :: base
@@ -273,7 +273,7 @@ contains
     real(WP), dimension(*), intent(in)    :: src_base
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -310,17 +310,17 @@ contains
       auxp%src_base_rhos(is) = src_base(5+is)
     end do
 
-  end subroutine largo_BL_temporal_preStep_baseflow
+  end subroutine largo_BL_spatiotemporal_preStep_baseflow
 
 
-  subroutine largo_BL_temporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
+  subroutine largo_BL_spatiotemporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in)    :: mean
     real(WP), dimension(*), intent(in)    :: ddy_mean
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -344,17 +344,17 @@ contains
       auxp%dts_rhos(is)  = - auxp%ddt_base_rhos(is)  - auxp%gr_DA_rhos(is)  * (mean(5+is)-auxp%base_rhos(is)) + y * auxp%gr_delta * (ddy_mean(5+is) - auxp%ddy_base_rhos(is)) + auxp%src_base_rhos(is)
     end do
 
-  end subroutine largo_BL_temporal_preStep_sEtaMean
+  end subroutine largo_BL_spatiotemporal_preStep_sEtaMean
 
 
-  subroutine largo_BL_temporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
+  subroutine largo_BL_spatiotemporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
 
     real(WP), intent(in)                  :: y
     real(WP), dimension(*), intent(in)    :: rms
     real(WP), dimension(*), intent(in)    :: ddy_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -386,15 +386,15 @@ contains
          auxp%ygrms_rhos(is) = y * auxp%gr_delta * ddy_rms(5+is)/(rms(5+is))
     end do
 
-  end subroutine largo_BL_temporal_preStep_sEtaRms
+  end subroutine largo_BL_spatiotemporal_preStep_sEtaRms
 
 
-  subroutine largo_BL_temporal_preStep_sEta_innerxz(cp, qflow)
+  subroutine largo_BL_spatiotemporal_preStep_sEta_innerxz(cp, qflow)
 
     real(WP), dimension(*), intent(in)    :: qflow
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
-    type(largo_BL_temporal_workspace_type), pointer   :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
 
     ! Get Fortran pointer from C pointer
     call c_f_pointer(cp, auxp)
@@ -416,10 +416,10 @@ contains
       auxp%dtsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%gr_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
     end do
 
-  end subroutine largo_BL_temporal_preStep_sEta_innerxz
+  end subroutine largo_BL_spatiotemporal_preStep_sEta_innerxz
 
 
-  subroutine largo_BL_temporal_preStep_sEta_innery(cp, y,                  &
+  subroutine largo_BL_spatiotemporal_preStep_sEta_innery(cp, y,                  &
                                               mean,     rms,     mean_rqq, &
                                           ddy_mean, ddy_rms, ddy_mean_rqq)
 
@@ -432,13 +432,13 @@ contains
     real(WP), dimension(*), intent(in)    :: ddy_mean_rqq    ! not used
     type(largo_workspace_ptr), intent(in) :: cp
 
-    call largo_BL_temporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
+    call largo_BL_spatiotemporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_spatiotemporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
 
-  end subroutine largo_BL_temporal_preStep_sEta_innery
+  end subroutine largo_BL_spatiotemporal_preStep_sEta_innery
 
 
-  subroutine largo_BL_temporal_preStep_sEta(cp, y, qflow,                    &
+  subroutine largo_BL_spatiotemporal_preStep_sEta(cp, y, qflow,                    &
                                                 mean,     rms,     mean_rqq, &
                                             ddy_mean, ddy_rms, ddy_mean_rqq)
 
@@ -453,207 +453,207 @@ contains
     type(largo_workspace_ptr), intent(in) :: cp
 
 
-    call largo_BL_temporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
-    call largo_BL_temporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
-    call largo_BL_temporal_preStep_sEta_innerxz(cp, qflow)
+    call largo_BL_spatiotemporal_preStep_sEtaMean(cp, y, mean, ddy_mean)
+    call largo_BL_spatiotemporal_preStep_sEtaRms(cp, y, rms, ddy_rms)
+    call largo_BL_spatiotemporal_preStep_sEta_innerxz(cp, qflow)
 
-  end subroutine largo_BL_temporal_preStep_sEta
+  end subroutine largo_BL_spatiotemporal_preStep_sEta
 
 
 #define DECLARE_SUBROUTINE(token)token (cp, A, B, src);\
   type(largo_workspace_ptr), intent(in)  :: cp;\
   real(WP)       , intent(in)            :: A, B;\
   real(WP)       , intent(inout)         :: src;\
-  type(largo_BL_temporal_workspace_type), pointer    :: auxp;\
+  type(largo_BL_spatiotemporal_workspace_type), pointer    :: auxp;\
   call c_f_pointer(cp, auxp);\
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEtaMean)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_continuity_sEtaMean)
     src = A * src + B * auxp%dts_rho
-  end subroutine largo_BL_temporal_continuity_sEtaMean
+  end subroutine largo_BL_spatiotemporal_continuity_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_xMomentum_sEtaMean)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_xMomentum_sEtaMean)
     src = A * src + B * auxp%dts_rhoU
-  end subroutine largo_BL_temporal_xMomentum_sEtaMean
+  end subroutine largo_BL_spatiotemporal_xMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_yMomentum_sEtaMean)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_yMomentum_sEtaMean)
     src = A * src + B * auxp%dts_rhoV
-  end subroutine largo_BL_temporal_yMomentum_sEtaMean
+  end subroutine largo_BL_spatiotemporal_yMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_zMomentum_sEtaMean)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_zMomentum_sEtaMean)
     src = A * src + B * auxp%dts_rhoW
-  end subroutine largo_BL_temporal_zMomentum_sEtaMean
+  end subroutine largo_BL_spatiotemporal_zMomentum_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_energy_sEtaMean)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_energy_sEtaMean)
     src = A * src + B * auxp%dts_rhoE
-  end subroutine largo_BL_temporal_energy_sEtaMean
+  end subroutine largo_BL_spatiotemporal_energy_sEtaMean
 
 
-  subroutine largo_BL_temporal_ispecies_sEtaMean (cp, A, B, src, is)
+  subroutine largo_BL_spatiotemporal_ispecies_sEtaMean (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)   :: cp
     real(WP)       , intent(in)             :: A, B
     real(WP)       , intent(inout)          :: src
-    type(largo_BL_temporal_workspace_type), pointer     :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer     :: auxp
     integer(c_int), intent(in)              :: is
 
     call c_f_pointer(cp, auxp)
     src = A * src + B * auxp%dts_rhos(is)
-  end subroutine largo_BL_temporal_ispecies_sEtaMean
+  end subroutine largo_BL_spatiotemporal_ispecies_sEtaMean
 
 
-  subroutine largo_BL_temporal_species_sEtaMean (cp, A, B, srcvec)
+  subroutine largo_BL_spatiotemporal_species_sEtaMean (cp, A, B, srcvec)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = ns_
     integer(c_int)                            :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaMean (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_species_sEtaMean
+  end subroutine largo_BL_spatiotemporal_species_sEtaMean
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEtaRms)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_continuity_sEtaRms)
     src = A * src + B * auxp%dtsRms_rho
-  end subroutine largo_BL_temporal_continuity_sEtaRms
+  end subroutine largo_BL_spatiotemporal_continuity_sEtaRms
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_xMomentum_sEtaRms)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_xMomentum_sEtaRms)
     src = A * src + B * auxp%dtsRms_rhoU
-  end subroutine largo_BL_temporal_xMomentum_sEtaRms
+  end subroutine largo_BL_spatiotemporal_xMomentum_sEtaRms
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_yMomentum_sEtaRms)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_yMomentum_sEtaRms)
     src = A * src + B * auxp%dtsRms_rhoV
-  end subroutine largo_BL_temporal_yMomentum_sEtaRms
+  end subroutine largo_BL_spatiotemporal_yMomentum_sEtaRms
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_zMomentum_sEtaRms)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_zMomentum_sEtaRms)
     src = A * src + B * auxp%dtsRms_rhoW
-  end subroutine largo_BL_temporal_zMomentum_sEtaRms
+  end subroutine largo_BL_spatiotemporal_zMomentum_sEtaRms
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_energy_sEtaRms)
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_energy_sEtaRms)
     src = A * src + B * auxp%dtsRms_rhoE
-  end subroutine largo_BL_temporal_energy_sEtaRms
+  end subroutine largo_BL_spatiotemporal_energy_sEtaRms
 
 
-  subroutine largo_BL_temporal_ispecies_sEtaRms (cp, A, B, src, is)
+  subroutine largo_BL_spatiotemporal_ispecies_sEtaRms (cp, A, B, src, is)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP)       , intent(inout)            :: src
-    type(largo_BL_temporal_workspace_type), pointer       :: auxp
+    type(largo_BL_spatiotemporal_workspace_type), pointer       :: auxp
     integer(c_int), intent(in)                :: is
 
     call c_f_pointer(cp, auxp)
     src = A * src + B * auxp%dtsRms_rhos(is)
-  end subroutine largo_BL_temporal_ispecies_sEtaRms
+  end subroutine largo_BL_spatiotemporal_ispecies_sEtaRms
 
 
-  subroutine largo_BL_temporal_species_sEtaRms (cp, A, B, srcvec) bind(C)
+  subroutine largo_BL_spatiotemporal_species_sEtaRms (cp, A, B, srcvec) bind(C)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = ns_
     integer(c_int)                            :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_ispecies_sEtaRms (cp, A, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaRms (cp, A, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_species_sEtaRms
+  end subroutine largo_BL_spatiotemporal_species_sEtaRms
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_continuity_sEta)
-    call largo_BL_temporal_continuity_sEtaMean (cp,      A, B, src)
-    call largo_BL_temporal_continuity_sEtaRms  (cp, 1.0_WP, B, src)
-  end subroutine largo_BL_temporal_continuity_sEta
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_continuity_sEta)
+    call largo_BL_spatiotemporal_continuity_sEtaMean (cp,      A, B, src)
+    call largo_BL_spatiotemporal_continuity_sEtaRms  (cp, 1.0_WP, B, src)
+  end subroutine largo_BL_spatiotemporal_continuity_sEta
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_xMomentum_sEta)
-    call largo_BL_temporal_xMomentum_sEtaMean (cp,      A, B, src)
-    call largo_BL_temporal_xMomentum_sEtaRms  (cp, 1.0_WP, B, src)
-  end subroutine largo_BL_temporal_xMomentum_sEta
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_xMomentum_sEta)
+    call largo_BL_spatiotemporal_xMomentum_sEtaMean (cp,      A, B, src)
+    call largo_BL_spatiotemporal_xMomentum_sEtaRms  (cp, 1.0_WP, B, src)
+  end subroutine largo_BL_spatiotemporal_xMomentum_sEta
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_yMomentum_sEta)
-    call largo_BL_temporal_yMomentum_sEtaMean (cp,      A, B, src)
-    call largo_BL_temporal_yMomentum_sEtaRms  (cp, 1.0_WP, B, src)
-  end subroutine largo_BL_temporal_yMomentum_sEta
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_yMomentum_sEta)
+    call largo_BL_spatiotemporal_yMomentum_sEtaMean (cp,      A, B, src)
+    call largo_BL_spatiotemporal_yMomentum_sEtaRms  (cp, 1.0_WP, B, src)
+  end subroutine largo_BL_spatiotemporal_yMomentum_sEta
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_zMomentum_sEta)
-    call largo_BL_temporal_zMomentum_sEtaMean (cp,      A, B, src)
-    call largo_BL_temporal_zMomentum_sEtaRms  (cp, 1.0_WP, B, src)
-  end subroutine largo_BL_temporal_zMomentum_sEta
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_zMomentum_sEta)
+    call largo_BL_spatiotemporal_zMomentum_sEtaMean (cp,      A, B, src)
+    call largo_BL_spatiotemporal_zMomentum_sEtaRms  (cp, 1.0_WP, B, src)
+  end subroutine largo_BL_spatiotemporal_zMomentum_sEta
 
 
-  subroutine DECLARE_SUBROUTINE(largo_BL_temporal_energy_sEta)
-    call largo_BL_temporal_energy_sEtaMean (cp,      A, B, src)
-    call largo_BL_temporal_energy_sEtaRms  (cp, 1.0_WP, B, src)
-  end subroutine largo_BL_temporal_energy_sEta
+  subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_energy_sEta)
+    call largo_BL_spatiotemporal_energy_sEtaMean (cp,      A, B, src)
+    call largo_BL_spatiotemporal_energy_sEtaRms  (cp, 1.0_WP, B, src)
+  end subroutine largo_BL_spatiotemporal_energy_sEta
 
 
-  subroutine largo_BL_temporal_species_sEta (cp, A, B, srcvec) bind(C)
+  subroutine largo_BL_spatiotemporal_species_sEta (cp, A, B, srcvec) bind(C)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = ns_
     integer(c_int)                            :: is
 
     do is = 1, ns_
-      call largo_BL_temporal_ispecies_sEtaMean (cp,      A, B, srcvec(is), is)
-      call largo_BL_temporal_ispecies_sEtaRms  (cp, 1.0_WP, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaMean (cp,      A, B, srcvec(is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaRms  (cp, 1.0_WP, B, srcvec(is), is)
     end do
-  end subroutine largo_BL_temporal_species_sEta
+  end subroutine largo_BL_spatiotemporal_species_sEta
 
 
-  subroutine largo_BL_temporal_sEtaMean (cp, A, B, srcvec) bind(C)
+  subroutine largo_BL_spatiotemporal_sEtaMean (cp, A, B, srcvec) bind(C)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = 5+ns_
     integer(c_int)                            :: is
 
-    call largo_BL_temporal_continuity_sEtaMean (cp,      A, B, srcvec(irho ))
-    call largo_BL_temporal_xMomentum_sEtaMean  (cp,      A, B, srcvec(irhou))
-    call largo_BL_temporal_yMomentum_sEtaMean  (cp,      A, B, srcvec(irhov))
-    call largo_BL_temporal_zMomentum_sEtaMean  (cp,      A, B, srcvec(irhow))
-    call largo_BL_temporal_energy_sEtaMean     (cp,      A, B, srcvec(irhoE))
+    call largo_BL_spatiotemporal_continuity_sEtaMean (cp,      A, B, srcvec(irho ))
+    call largo_BL_spatiotemporal_xMomentum_sEtaMean  (cp,      A, B, srcvec(irhou))
+    call largo_BL_spatiotemporal_yMomentum_sEtaMean  (cp,      A, B, srcvec(irhov))
+    call largo_BL_spatiotemporal_zMomentum_sEtaMean  (cp,      A, B, srcvec(irhow))
+    call largo_BL_spatiotemporal_energy_sEtaMean     (cp,      A, B, srcvec(irhoE))
 
     do is = 1, ns_
-      call largo_BL_temporal_ispecies_sEtaMean (cp,      A, B, srcvec(5+is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaMean (cp,      A, B, srcvec(5+is), is)
     end do
 
-  end subroutine largo_BL_temporal_sEtaMean
+  end subroutine largo_BL_spatiotemporal_sEtaMean
 
 
-  subroutine largo_BL_temporal_sEta (cp, A, B, srcvec) bind(C)
+  subroutine largo_BL_spatiotemporal_sEta (cp, A, B, srcvec) bind(C)
     type(largo_workspace_ptr), intent(in)     :: cp
     real(WP)       , intent(in)               :: A, B
     real(WP), dimension(*), intent(inout)     :: srcvec ! "*" = 5+ns_
     integer(c_int)                            :: is
 
-    call largo_BL_temporal_continuity_sEtaMean (cp,      A, B, srcvec(irho ))
-    call largo_BL_temporal_continuity_sEtaRms  (cp, 1.0_WP, B, srcvec(irho ))
+    call largo_BL_spatiotemporal_continuity_sEtaMean (cp,      A, B, srcvec(irho ))
+    call largo_BL_spatiotemporal_continuity_sEtaRms  (cp, 1.0_WP, B, srcvec(irho ))
 
-    call largo_BL_temporal_xMomentum_sEtaMean  (cp,      A, B, srcvec(irhou))
-    call largo_BL_temporal_xMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhou))
+    call largo_BL_spatiotemporal_xMomentum_sEtaMean  (cp,      A, B, srcvec(irhou))
+    call largo_BL_spatiotemporal_xMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhou))
 
-    call largo_BL_temporal_yMomentum_sEtaMean  (cp,      A, B, srcvec(irhov))
-    call largo_BL_temporal_yMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhov))
+    call largo_BL_spatiotemporal_yMomentum_sEtaMean  (cp,      A, B, srcvec(irhov))
+    call largo_BL_spatiotemporal_yMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhov))
 
-    call largo_BL_temporal_zMomentum_sEtaMean  (cp,      A, B, srcvec(irhow))
-    call largo_BL_temporal_zMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhow))
+    call largo_BL_spatiotemporal_zMomentum_sEtaMean  (cp,      A, B, srcvec(irhow))
+    call largo_BL_spatiotemporal_zMomentum_sEtaRms   (cp, 1.0_WP, B, srcvec(irhow))
 
-    call largo_BL_temporal_energy_sEtaMean     (cp,      A, B, srcvec(irhoE))
-    call largo_BL_temporal_energy_sEtaRms      (cp, 1.0_WP, B, srcvec(irhoE))
+    call largo_BL_spatiotemporal_energy_sEtaMean     (cp,      A, B, srcvec(irhoE))
+    call largo_BL_spatiotemporal_energy_sEtaRms      (cp, 1.0_WP, B, srcvec(irhoE))
 
     do is = 1, ns_
-      call largo_BL_temporal_ispecies_sEtaMean (cp,      A, B, srcvec(5+is), is)
-      call largo_BL_temporal_ispecies_sEtaRms  (cp, 1.0_WP, B, srcvec(5+is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaMean (cp,      A, B, srcvec(5+is), is)
+      call largo_BL_spatiotemporal_ispecies_sEtaRms  (cp, 1.0_WP, B, srcvec(5+is), is)
     end do
 
-  end subroutine largo_BL_temporal_sEta
+  end subroutine largo_BL_spatiotemporal_sEta
 
-end module largo_BL_temporal
+end module largo_BL_spatiotemporal
