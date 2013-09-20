@@ -28,6 +28,8 @@
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
 
+#include <gsl/gsl_math.h>
+
 #include <largo/largo.h>
 
 #include <suzerain/error.h>
@@ -808,17 +810,27 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                    src .rescale(inv_Ma2));
 
             // FIXME #2495 Complete innery computations
-            largo_state mean;
-            largo_state rms;
-            largo_state mean_rqq;
-            largo_state ddy_mean;
-            largo_state ddy_rms;
-            largo_state ddy_mean_rqq;
+            largo_state mean(rms[ndx::e  ].mean[j],
+                             rms[ndx::mx ].mean[j],
+                             rms[ndx::my ].mean[j],
+                             rms[ndx::mz ].mean[j],
+                             rms[ndx::rho].mean[j],
+                             common.p()        [j]);
+            largo_state rms_(rms[ndx::e  ].fluctuating[j], // Sorry for name...
+                             rms[ndx::mx ].fluctuating[j],
+                             rms[ndx::my ].fluctuating[j],
+                             rms[ndx::mz ].fluctuating[j],
+                             rms[ndx::rho].fluctuating[j],
+                             std::sqrt(common.p2()[j]-gsl_pow_2(common.p()[j])));
+            largo_state mean_rqq;     // FIXME Populate
+            largo_state ddy_mean;     // FIXME Populate
+            largo_state ddy_rms;      // FIXME Populate
+            largo_state ddy_mean_rqq; // FIXME Populate
 
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
                                       mean        .rescale(inv_Ma2),
-                                      rms         .rescale(inv_Ma2),
+                                      rms_        .rescale(inv_Ma2),
                                       mean_rqq    .rescale(inv_Ma2),
                                       ddy_mean    .rescale(inv_Ma2),
                                       ddy_rms     .rescale(inv_Ma2),
