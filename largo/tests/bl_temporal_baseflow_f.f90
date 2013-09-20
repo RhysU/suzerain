@@ -116,14 +116,14 @@ program bl_temporal_baseflow_f
       /)
 
     real(WP), dimension(neq), parameter :: &
-      grDArms = (/                 &
-      &       1.0_WP/  100.0_WP,   & 
-      &       5.0_WP/  100.0_WP,   &
-      &       5.0_WP/ 1000.0_WP,   &
-      &       2.0_WP/  100.0_WP,   &
-      &       1.0_WP/  100.0_WP,   &
-      &       1.0_WP/10000.0_WP,   & 
-      &       2.0_WP/10000.0_WP    & 
+      grDArms = (/                  &
+      &       1.0_WP/  1000.0_WP,   & 
+      &       5.0_WP/  1000.0_WP,   &
+      &       5.0_WP/ 10000.0_WP,   &
+      &       2.0_WP/  1000.0_WP,   &
+      &       1.0_WP/  1000.0_WP,   &
+      &       1.0_WP/100000.0_WP,   & 
+      &       2.0_WP/100000.0_WP    & 
       /)
 
     real(WP), dimension(neq), parameter :: &
@@ -189,14 +189,14 @@ program bl_temporal_baseflow_f
       /)
 
     real(WP), dimension(neq), parameter :: &
-      srcrms_good  = (/               &
-      &       21.0_WP/  40000.0_WP,   &
-      &       21.0_WP/   1250.0_WP,   &
-      &    10149.0_WP/1000000.0_WP,   &
-      &        3.0_WP/    200.0_WP,   &
-      &       16.0_WP             ,   &
-      &     -369.0_WP/ 400000.0_WP,   &
-      &     -369.0_WP/ 800000.0_WP    &
+      srcrms_good  = (/                 &
+      &      131.0_WP/   250000.0_WP,   &
+      &      301.0_WP/    20000.0_WP,   &
+      &    20099.0_WP/  2000000.0_WP,   &
+      &       29.0_WP/     2000.0_WP,   &
+      &      157.0_WP/       10.0_WP,   &
+      &  -461241.0_WP/500000000.0_WP,   &
+      &   -28827.0_WP/ 62500000.0_WP    &
       /)
 
     real(WP), dimension(neq)            :: &
