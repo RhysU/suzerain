@@ -224,10 +224,11 @@ contains
   end subroutine largo_BL_temporal_tconsistent_deallocate
 
 
-  subroutine largo_BL_temporal_tconsistent_init(cp, gr_delta, gr_DA)
+  subroutine largo_BL_temporal_tconsistent_init(cp, gr_delta, gr_DA, gr_DA_rms)
 
     real(WP), intent(in)                  :: gr_delta
     real(WP), dimension(*), intent(in)    :: gr_DA
+    real(WP), dimension(*), intent(in)    :: gr_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_temporal_tconsistent_workspace_type), pointer   :: auxp

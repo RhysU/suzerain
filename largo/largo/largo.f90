@@ -230,16 +230,18 @@ contains
 
 
   ! Generic interface prestep subroutine
-  subroutine largo_init(lcp, grDelta, grDA) bind(C)
+  subroutine largo_init(lcp, grDelta, grDA, grDArms) bind(C)
 
     real(WP), intent(in), value         :: grDelta
     real(WP), dimension(*), intent(in)  :: grDA
+    real(WP), dimension(*), intent(in)  :: grDArms
     type(largo_ptr), value              :: lcp
     type(largo_type), pointer           :: lauxp
 
     call c_f_pointer(lcp, lauxp)
-    call lauxp%largo_init(lauxp%cp, grDelta,              &
-                                    grDA  (1:lauxp%neq))
+    call lauxp%largo_init(lauxp%cp, grDelta,                 &
+                                    grDA     (1:lauxp%neq),  &
+                                    grDArms  (1:lauxp%neq))
 
   end subroutine largo_init
 

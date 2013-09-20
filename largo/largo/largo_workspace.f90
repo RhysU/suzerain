@@ -11,10 +11,11 @@ module largo_workspace
 
 
   abstract interface
-    subroutine init(cp, grDelta, grDA)
+    subroutine init(cp, grDelta, grDA, grDArms)
       import
       real(WP), intent(in)                  :: grDelta
       real(WP), dimension(*), intent(in)    :: grDA
+      real(WP), dimension(*), intent(in)    :: grDArms
       type(largo_workspace_ptr), intent(in) :: cp
     end subroutine init
   end interface

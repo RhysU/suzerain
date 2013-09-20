@@ -39,7 +39,8 @@ void  largo_allocate (void * generic_workspace,
 
 void  largo_init ( void * generic_workspace,
                    double grDelta,
-                   double * grDA);
+                   double * grDA,
+                   double * grDArms);
 
 void  largo_prestep_baseflow ( void * generic_workspace,
                                double *     base,

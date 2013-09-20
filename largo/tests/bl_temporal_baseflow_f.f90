@@ -116,6 +116,17 @@ program bl_temporal_baseflow_f
       /)
 
     real(WP), dimension(neq), parameter :: &
+      grDArms = (/                 &
+      &       1.0_WP/  100.0_WP,   & 
+      &       5.0_WP/  100.0_WP,   &
+      &       5.0_WP/ 1000.0_WP,   &
+      &       2.0_WP/  100.0_WP,   &
+      &       1.0_WP/  100.0_WP,   &
+      &       1.0_WP/10000.0_WP,   & 
+      &       2.0_WP/10000.0_WP    & 
+      /)
+
+    real(WP), dimension(neq), parameter :: &
       base    = (/                  &
       &         5.0_WP/ 1000.0_WP,  &
       &        25.0_WP/   10.0_WP,  &
@@ -162,7 +173,6 @@ program bl_temporal_baseflow_f
       &         1.0_WP/10000.0_WP   &
       /)
 
-
     real(WP), dimension(neq)            :: srcmean
     real(WP), dimension(neq)            :: srcrms
     real(WP), dimension(neq)            :: srcall
@@ -207,7 +217,7 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
-    call largo_BL_temporal_init  (workspace, grDelta, grDA)
+    call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &
@@ -270,7 +280,7 @@ program bl_temporal_baseflow_f
     call largo_BL_temporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
-    call largo_BL_temporal_init  (workspace, grDelta, grDA)
+    call largo_BL_temporal_init  (workspace, grDelta, grDA, grDArms)
 
     ! Compute prestep values
     call largo_BL_temporal_preStep_baseflow  (workspace,   base,  dybase,  &

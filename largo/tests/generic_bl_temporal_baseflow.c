@@ -141,6 +141,16 @@ FCT_BGN()
                2.0/  1000.0
           };
 
+          double grDArms[] = \
+          {    1.0/  1000.0, \
+               5.0/  1000.0, \
+               5.0/ 10000.0, \
+               2.0/  1000.0, \
+               1.0/  1000.0, \
+               1.0/100000.0, \
+               2.0/100000.0
+          };
+
           double base   [] = \
           {    5.0/  1000.0, \
               25.0/    10.0, \
@@ -207,13 +217,13 @@ FCT_BGN()
           };
 
           double srcrms_good  [] = \
-          {    21.0/  40000.0,     \
-               21.0/   1250.0,     \
-            10149.0/1000000.0,     \
-                3.0/    200.0,     \
-               16.0          ,     \
-             -369.0/ 400000.0,     \
-             -369.0/ 800000.0      \
+          {     131.0/   250000.0, \
+                301.0/    20000.0, \
+              20099.0/  2000000.0, \
+                 29.0/     2000.0, \
+                157.0/       10.0, \
+            -461241.0/500000000.0, \
+             -28827.0/ 62500000.0  \
           };
 
           double srcall_good  [] = \
@@ -232,7 +242,7 @@ FCT_BGN()
 
 
           // Init growth rates
-          largo_init     (generic_workspace, grDelta, grDA);
+          largo_init     (generic_workspace, grDelta, grDA, grDArms);
 
           // Compute prestep values;
           largo_prestep_baseflow  (generic_workspace,   base,  dybase,
@@ -290,7 +300,7 @@ FCT_BGN()
           fct_chk_eq_dbl(srcrms[5-1]/100., srcrms_good[5-1]/100.);
           for (unsigned int is=0; is < ns; ++is)
           {
-            fct_chk_eq_dbl(srcrms[5+is]      , srcrms_good[5+is]);
+            fct_chk_eq_dbl(srcrms[5+is]  , srcrms_good[5+is]);
           }
 
 
@@ -299,7 +309,7 @@ FCT_BGN()
           largo_allocate (&generic_workspace, neq, ns, model);
 
           // Init growth rates
-          largo_init     (generic_workspace, grDelta, grDA);
+          largo_init     (generic_workspace, grDelta, grDA, grDArms);
 
           // Compute prestep values;
           largo_prestep_baseflow  (generic_workspace,   base,  dybase,
@@ -320,7 +330,7 @@ FCT_BGN()
           fct_chk_eq_dbl(srcall[5-1]/10000., srcall_good[5-1]/10000.);
           for (unsigned int is=0; is < ns; ++is)
           {
-            fct_chk_eq_dbl(srcall[5+is]      , srcall_good[5+is]);
+            fct_chk_eq_dbl(srcall[5+is]    , srcall_good[5+is]);
           }
 
         }

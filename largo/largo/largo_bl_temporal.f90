@@ -85,11 +85,18 @@ module largo_BL_temporal
     real(WP) :: gr_DA_rhoW    = 0.0_WP
     real(WP) :: gr_DA_rhoE    = 0.0_WP
 
+    real(WP) :: gr_DA_rms_rho  = 0.0_WP
+    real(WP) :: gr_DA_rms_rhoU = 0.0_WP
+    real(WP) :: gr_DA_rms_rhoV = 0.0_WP
+    real(WP) :: gr_DA_rms_rhoW = 0.0_WP
+    real(WP) :: gr_DA_rms_rhoE = 0.0_WP
+
     real(WP), allocatable, dimension(:) :: base_rhos
     real(WP), allocatable, dimension(:) :: ddy_base_rhos
     real(WP), allocatable, dimension(:) :: ddt_base_rhos
     real(WP), allocatable, dimension(:) :: src_base_rhos
     real(WP), allocatable, dimension(:) :: gr_DA_rhos
+    real(WP), allocatable, dimension(:) :: gr_DA_rms_rhos
 
   end type largo_BL_temporal_workspace_type
 
@@ -175,12 +182,14 @@ contains
       allocate(auxp%ddt_base_rhos (1:ns_))
       allocate(auxp%src_base_rhos (1:ns_))
       allocate(auxp%gr_DA_rhos    (1:ns_))
+      allocate(auxp%gr_DA_rms_rhos(1:ns_))
 
       auxp%base_rhos     = 0.0_WP
       auxp%ddy_base_rhos = 0.0_WP
       auxp%ddt_base_rhos = 0.0_WP
       auxp%src_base_rhos = 0.0_WP
       auxp%gr_DA_rhos    = 0.0_WP
+      auxp%gr_DA_rms_rhos= 0.0_WP
     end if
 
     ! Get C pointer from Fortran pointer
@@ -208,6 +217,7 @@ contains
     if (allocated(auxp%ddt_base_rhos ))  deallocate(auxp%ddt_base_rhos )
     if (allocated(auxp%src_base_rhos ))  deallocate(auxp%src_base_rhos )
     if (allocated(auxp%gr_DA_rhos    ))  deallocate(auxp%gr_DA_rhos    )
+    if (allocated(auxp%gr_DA_rms_rhos))  deallocate(auxp%gr_DA_rms_rhos)
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -218,10 +228,11 @@ contains
   end subroutine largo_BL_temporal_deallocate
 
 
-  subroutine largo_BL_temporal_init(cp, gr_delta, gr_DA)
+  subroutine largo_BL_temporal_init(cp, gr_delta, gr_DA, gr_DA_rms)
 
     real(WP), intent(in)                  :: gr_delta
     real(WP), dimension(*), intent(in)    :: gr_DA
+    real(WP), dimension(*), intent(in)    :: gr_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_temporal_workspace_type), pointer   :: auxp
@@ -238,8 +249,15 @@ contains
     auxp%gr_DA_rhoW = gr_DA(irhoW)
     auxp%gr_DA_rhoE = gr_DA(irhoE)
 
+    auxp%gr_DA_rms_rho  = gr_DA_rms(irho )
+    auxp%gr_DA_rms_rhoU = gr_DA_rms(irhoU)
+    auxp%gr_DA_rms_rhoV = gr_DA_rms(irhoV)
+    auxp%gr_DA_rms_rhoW = gr_DA_rms(irhoW)
+    auxp%gr_DA_rms_rhoE = gr_DA_rms(irhoE)
+
     do is=1, ns_
-      auxp%gr_DA_rhos(is) = gr_DA(5+is)
+      auxp%gr_DA_rhos    (is) = gr_DA    (5+is)
+      auxp%gr_DA_rms_rhos(is) = gr_DA_rms(5+is)
     end do
 
   end subroutine largo_BL_temporal_init
@@ -387,15 +405,15 @@ contains
     auxp%fluc_rhoW = qflow(irhoW) - auxp%mean_rhoW
     auxp%fluc_rhoE = qflow(irhoE) - auxp%mean_rhoE
 
-    auxp%dtsRms_rho  = auxp%fluc_rho  * auxp%ygrms_rho
-    auxp%dtsRms_rhoU = auxp%fluc_rhoU * auxp%ygrms_rhoU
-    auxp%dtsRms_rhoV = auxp%fluc_rhoV * auxp%ygrms_rhoV
-    auxp%dtsRms_rhoW = auxp%fluc_rhoW * auxp%ygrms_rhoW
-    auxp%dtsRms_rhoE = auxp%fluc_rhoE * auxp%ygrms_rhoE
+    auxp%dtsRms_rho  = auxp%fluc_rho  * (- auxp%gr_DA_rms_rho  + auxp%ygrms_rho ) 
+    auxp%dtsRms_rhoU = auxp%fluc_rhoU * (- auxp%gr_DA_rms_rhoU + auxp%ygrms_rhoU)
+    auxp%dtsRms_rhoV = auxp%fluc_rhoV * (- auxp%gr_DA_rms_rhoV + auxp%ygrms_rhoV)
+    auxp%dtsRms_rhoW = auxp%fluc_rhoW * (- auxp%gr_DA_rms_rhoW + auxp%ygrms_rhoW)
+    auxp%dtsRms_rhoE = auxp%fluc_rhoE * (- auxp%gr_DA_rms_rhoE + auxp%ygrms_rhoE)
 
     do is=1, ns_
       auxp%fluc_rhos(is)  = qflow(5+is) - auxp%mean_rhos(is)
-      auxp%dtsRms_rhos(is) = auxp%fluc_rhos(is) * auxp%ygrms_rhos(is)
+      auxp%dtsRms_rhos(is) = auxp%fluc_rhos(is) * (- auxp%gr_DA_rms_rhos(is) + auxp%ygrms_rhos(is))
     end do
 
   end subroutine largo_BL_temporal_preStep_sEta_innerxz

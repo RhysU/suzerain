@@ -148,7 +148,8 @@ program bl_temporal_f
     call largo_BL_temporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
-    call largo_BL_temporal_init  (workspace, grDelta,                    &
+    call largo_BL_temporal_init  (workspace, grDelta,                      &
+             (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /), &
              (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /))
 
     ! Compute prestep values

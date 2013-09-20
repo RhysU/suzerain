@@ -173,6 +173,9 @@ FCT_BGN()
           double grDA [] = \
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
+          double grDArms [] = \
+          { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
           const double tolerance = 1.0E-7;
 
           const char model[] = "bl_temporal_tensor-consistent";
@@ -234,7 +237,7 @@ FCT_BGN()
           largo_allocate (&generic_workspace, neq, ns, model);
 
           // Init growth rates
-          largo_init     (generic_workspace, grDelta, grDA);
+          largo_init     (generic_workspace, grDelta, grDA, grDArms);
 
           // Compute prestep values;
           largo_prestep_seta (generic_workspace, y, field,

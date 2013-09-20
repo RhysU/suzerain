@@ -148,6 +148,7 @@ program generic_bl_temporal_f
 
     ! Init growth rates
     call largo_init     (generic_workspace, grDelta, & 
+                     (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /), &
                      (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP /))
 
     ! Compute prestep values
