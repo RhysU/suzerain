@@ -10,13 +10,14 @@ AM_CPPFLAGS        += $(EIGEN_CFLAGS) $(GRVY_CFLAGS) $(ESIO_CFLAGS)
 AM_CPPFLAGS        += -I$(top_builddir)/largo -I$(top_srcdir)/largo
 
 bin_PROGRAMS        = # Append elsewhere
-noinst_PROGRAMS     = # Append elsewhere
-dist_check_SCRIPTS  = # Append elsewhere
+BUILT_SOURCES       = # Append elsewhere
 CLEANFILES          = # Append elsewhere
-TESTS               = # Append elsewhere
+dist_check_SCRIPTS  = # Append elsewhere
+EXTRA_PROGRAMS      = # Append elsewhere
 lib_LTLIBRARIES     = # Append elsewhere
 noinst_LTLIBRARIES  = # Append elsewhere
-BUILT_SOURCES       = # Append elsewhere
+noinst_PROGRAMS     = # Append elsewhere
+TESTS               = # Append elsewhere
 
 # MPI-based compilation and linking
 CXX = @MPICXX@

@@ -46,103 +46,15 @@
 #include <suzerain/support/support.hpp>
 #include <suzerain/timers.h>
 
-#include "linearize_type.hpp"
 #include "common_block.hpp"
+#include "largo_state.hpp"
+#include "linearize_type.hpp"
 
 #pragma warning(push, disable:280 383 1572)
 
 namespace suzerain {
 
 namespace perfect {
-
-namespace { // anonymous
-
-/**
- * Convenience union for manipulating double-valued buffers containing
- * \f$\rho\f$, \f$\rho{}u\f$, \f$\rho{}v\f$, \f$\rho{}w\f$, and \f$\rho{}E\f$
- * in that order.  Largo-based slow growth computations require conserved state
- * packed in this fashion.
- */
-union largo_state
-{
-public:
-
-    /** Initialize with zeros. */
-    largo_state() { std::memset(this, 0, sizeof(largo_state)); }
-
-    /** Initialize with argument order following suzerain::ndx::type. */
-    largo_state(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
-        : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
-
-    // Storage directly accessible through public members
-    struct {
-        double rho;   /**< \f$\rho   \f$ */
-        double mx;    /**< \f$\rho{}u\f$ */
-        double my;    /**< \f$\rho{}v\f$ */
-        double mz;    /**< \f$\rho{}w\f$ */
-        double e;     /**< \f$\rho{}E\f$ */
-    };
-
-private:
-
-    /** Access to the packed data gated through rescale() or as_is() below. */
-    double state[5];
-
-public:
-
-    // Helpers for computing commonly-accessed results
-    double u() const { return mx / rho; } /**< Computes \f$u\f$ */
-    double v() const { return my / rho; } /**< Computes \f$v\f$ */
-    double w() const { return mz / rho; } /**< Computes \f$w\f$ */
-    double E() const { return e  / rho; } /**< Computes \f$E\f$ */
-
-#pragma warning(push,disable:1572)
-    bool trivial() const { return rho == 0; } /**< Is the base flow quiet? */
-#pragma warning(pop)
-
-    /**
-     * Largo is assumed to work correctly when the Euler equations are
-     * nondimensionalized using \f$l_0\f$, \f$u_0 = a_0\f$, and \f$p_0 =
-     * \rho_0 u_u^2\f$ as that produces nondimensional equations with the
-     * same form as the dimensional ones.
-     *
-     * When \f$ a_0 \ne u_0 \f$ one has non-unit \f$\mbox{Ma}\f$ and both
-     * total energy and pressure must be scaled by \f$\mbox{Ma}^{-2}\f$
-     * when calling Largo and scaled by \f$\mbox{Ma}^2\f$ on return.
-     *
-     * The following is a helper class for performing that conversion.
-     * The constructor scales <tt>p->e</tt> by some constant \c C
-     * and the destructor undoes that scaling factor.  The implicit
-     * conversion to <tt>double*</tt> permits passing \c helper instances
-     * directly to Largo API calls.  This crazy concoction being useful
-     * relies heavily on C++ temporary object lifetime semantics.
-     */
-    class rescaler
-    {
-    public:
-        rescaler (largo_state *p, double C) : p(p), C(C) { p->e *= C; }
-        ~rescaler()                                      { p->e /= C; }
-        operator double*() { return p->state; }
-
-    private:
-        largo_state *p;
-        double C;
-    };
-
-    friend class rescaler;
-
-    /** Use this method when state needs to be passed to/from Largo. */
-    rescaler rescale(double inv_Ma2) { return rescaler(this, inv_Ma2); }
-
-    /** Use this method when state needs does not go to/from Largo. */
-    double * as_is() { return this->state; }
-
-};
-
-// Ensure largo_state incurs no padding as that would break its usefulness
-BOOST_STATIC_ASSERT(sizeof(largo_state) == 5*sizeof(double));
-
-} // end anonymous namespace
 
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The

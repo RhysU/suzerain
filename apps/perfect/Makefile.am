@@ -120,6 +120,16 @@ dist_check_SCRIPTS += test_physical_rhome_y.sh
 TESTS              += test_implicit_solvers.sh
 dist_check_SCRIPTS += test_implicit_solvers.sh
 
+# Debugging issues around the tricks in largo_state will be awful
+# in the larger context of a flow solver.  Beat on it specifically.
+TESTS                     += test_largo_state
+EXTRA_PROGRAMS            += test_largo_state
+test_largo_state_SOURCES   = test_largo_state.cpp
+test_largo_state_CPPFLAGS  = $(AM_CPPFLAGS) -DBOOST_TEST_DYN_LINK -DBOOST_TEST_NO_LIB
+test_largo_state_LDADD     = ../../suzerain/libsuzerain.la
+test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LDFLAGS)
+test_largo_state_LDADD    += $(BOOST_UNIT_TEST_FRAMEWORK_LIBS)
+
 ##
 ## Miscellaneous manual testing scripts
 ##
