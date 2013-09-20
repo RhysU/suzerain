@@ -413,8 +413,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
     const real_t alpha43          = alpha + real_t(4)/real_t(3);
     const real_t inv_Re           = 1 / Re;
-    const real_t inv_Ma2          = 1 / (Ma * Ma);
-    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
+    const real_t Ma2              = Ma * Ma;
+    const real_t inv_Ma2          = 1 / Ma2;
+    const real_t Ma2_over_Re      = Ma2 / Re;
     const real_t gamma1           = gamma - 1;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * gamma1);
     const real_t gamma_over_Pr    = gamma / Pr;
@@ -809,6 +810,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             largo_prestep_baseflow(sg.workspace, base.state, dy.state,
                                    dt.state, dx.state, src.state);
+
+            // FIXME #2495 innery
         }
 
         // Iterate across the j-th ZX plane
