@@ -720,7 +720,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
         }
 
-        largo_init(sg.workspace, sg.grdelta, grDA.state);
+        largo_state grDArms;
+        largo_init(sg.workspace, sg.grdelta, grDA.state, grDArms.state);
     }
 
     // Traversal:

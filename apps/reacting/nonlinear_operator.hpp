@@ -1164,17 +1164,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 }
 
                 // baseflow arrays
-                real_t    grDA [Ns+4];
-                real_t    base [Ns+4];
-                real_t  dybase [Ns+4];
-                real_t  dxbase [Ns+4];
-                real_t  dtbase [Ns+4];
-                real_t srcbase [Ns+4];
-                real_t    wall [Ns+4];
-                real_t  dywall [Ns+4];
-                real_t  dxwall [Ns+4];
+                real_t    grDA    [Ns+4];
+                real_t    grDArms [Ns+4];
+                real_t    base    [Ns+4];
+                real_t  dybase    [Ns+4];
+                real_t  dxbase    [Ns+4];
+                real_t  dtbase    [Ns+4];
+                real_t srcbase    [Ns+4];
+                real_t    wall    [Ns+4];
+                real_t  dywall    [Ns+4];
+                real_t  dxwall    [Ns+4];
                 for (unsigned int ivar=0; ivar<Ns+4; ivar++){
                        grDA[ivar] = 0;
+                    grDArms[ivar] = 0;
                        base[ivar] = 0;
                      dybase[ivar] = 0;
                      dxbase[ivar] = 0;
@@ -1245,7 +1247,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 }
 
                 // Init
-                largo_init (sgdef.workspace, sgdef.grdelta, grDA);
+                largo_init (sgdef.workspace, sgdef.grdelta, grDA, grDArms);
 
                 // Basefow prestep
                 largo_prestep_baseflow (sgdef.workspace, base, dybase, dtbase, dxbase, srcbase);
