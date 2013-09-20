@@ -751,20 +751,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // Compute pressure-related quantities
                 real_t P, dyP, dxP;
-                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP);
+                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP); // as_is()
 
                 // Compute inviscid base flow residual from Euler equations
-                // FIXME #2495 Wrong scaling factors
+                // Residual permits only non-trivial wall-normal derivatives
                 const double u = base.u();
                 const double v = base.v();
                 const double w = base.w();
                 const double H = (base.e + P) / base.rho;
                 src.rho = dt.rho + dy.my;
-                src.mx  = dt.mx  + u*dy.my + v*dy.mx - v*u*dy.rho;
-                src.my  = dt.my  + v*dy.my + v*dy.my - v*v*dy.rho + dyP;
-                src.mz  = dt.mz  + w*dy.my + v*dy.mz - v*w*dy.rho;
-                src.e   = dt.e   + H*dy.my + v*(dy.e + dyP) - v*H*dy.rho;
-
+                src.mx  = dt.mx  + v*(dy.mx - u*dy.rho) + u*dy.my;
+                src.my  = dt.my  + v*(dy.my - v*dy.rho) + v*dy.my + inv_Ma2*dyP;
+                src.mz  = dt.mz  + v*(dy.mz - w*dy.rho) + w*dy.my;
+                src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
             }
 
             largo_prestep_baseflow(sg.workspace, base.rescale(inv_Ma2),
