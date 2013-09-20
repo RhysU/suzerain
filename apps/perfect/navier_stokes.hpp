@@ -65,6 +65,8 @@ namespace { // anonymous
  */
 union largo_state
 {
+public:
+
     /** Initialize with zeros. */
     largo_state() { std::memset(this, 0, sizeof(largo_state)); }
 
@@ -72,7 +74,7 @@ union largo_state
     largo_state(real_t e, real_t mx, real_t my, real_t mz, real_t rho)
         : rho(rho), mx(mx), my(my), mz(mz), e(e) {}
 
-    // Storage accessible as this->state[i] or this->rho, etc
+    // Storage directly accessible through public members
     struct {
         double rho;   /**< \f$\rho   \f$ */
         double mx;    /**< \f$\rho{}u\f$ */
@@ -80,8 +82,15 @@ union largo_state
         double mz;    /**< \f$\rho{}w\f$ */
         double e;     /**< \f$\rho{}E\f$ */
     };
-    double state[5];  /**< Typesafe array accessing packed data */
 
+private:
+
+    /** Access to the packed data gated through rescale() or as_is() below. */
+    double state[5];
+
+public:
+
+    // Helpers for computing commonly-accessed results
     double u() const { return mx / rho; } /**< Computes \f$u\f$ */
     double v() const { return my / rho; } /**< Computes \f$v\f$ */
     double w() const { return mz / rho; } /**< Computes \f$w\f$ */
@@ -90,6 +99,57 @@ union largo_state
 #pragma warning(push,disable:1572)
     bool trivial() const { return rho == 0; } /**< Is the base flow quiet? */
 #pragma warning(pop)
+
+    /**
+     * Largo is assumed to work correctly when the Euler equations are
+     * nondimensionalized using \f$l_0\f$, \f$u_0 = a_0\f$, and \f$p_0 =
+     * \rho_0 u_u^2\f$ as that produces nondimensional equations with the
+     * same form as the dimensional ones.
+     *
+     * When \f$ a_0 \ne u_0 \f$ one has non-unit \f$\mbox{Ma}\f$ and both
+     * total energy and pressure must be scaled by \f$\mbox{Ma}^{-2}\f$
+     * when calling Largo and scaled by \f$\mbox{Ma}^2\f$ on return.
+     *
+     * The following is a helper class for performing that conversion.
+     * The constructor scales <tt>p->e</tt> by some constant \c C
+     * and the destructor undoes that scaling factor.  The implicit
+     * conversion to <tt>double*</tt> permits passing \c helper instances
+     * directly to Largo API calls.  This crazy concoction being useful
+     * relies heavily on C++ temporary object lifetime semantics.
+     */
+    class rescaler
+    {
+    public:
+        rescaler (largo_state *p, double C) : p(p), C(C) { p->e *= C; }
+        ~rescaler()                                      { p->e /= C; }
+        operator double*() { return p->state; }
+
+    private:
+        largo_state *p;
+        double C;
+    };
+
+    friend class rescaler;
+
+    /** Use this method when state needs to be passed to/from Largo. */
+    rescaler rescale(double inv_Ma2) { return rescaler(this, inv_Ma2); }
+
+    /** When no rescaling is necessary, here's an analogous helper class. */
+    class asiser
+    {
+    public:
+        asiser (largo_state *p) : p(p) {}
+        operator double*() { return p->state; }
+
+    private:
+        largo_state *p;
+    };
+
+    friend class asiser;
+
+    /** Use this method when state needs does not go to/from Largo. */
+    asiser as_is() { return asiser(this); }
+
 };
 
 // Ensure largo_state incurs no padding as that would break its usefulness
@@ -413,9 +473,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t alpha13          = alpha + real_t(1)/real_t(3);
     const real_t alpha43          = alpha + real_t(4)/real_t(3);
     const real_t inv_Re           = 1 / Re;
-    const real_t Ma2              = Ma * Ma;
-    const real_t inv_Ma2          = 1 / Ma2;
-    const real_t Ma2_over_Re      = Ma2 / Re;
+    const real_t inv_Ma2          = 1 / (Ma * Ma);
+    const real_t Ma2_over_Re      = (Ma * Ma) / Re;
     const real_t gamma1           = gamma - 1;
     const real_t inv_Re_Pr_gamma1 = 1 / (Re * Pr * gamma1);
     const real_t gamma_over_Pr    = gamma / Pr;
@@ -710,19 +769,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
-    // If necessary, perform globally-relevant initialization calls to Largo
+    // If necessary, perform globally-relevant initialization calls to Largo.
     largo_state basewall;
     if (sg.formulation.enabled()) {
         largo_state dy, dx;
-        sg.get_baseflow(0.0, basewall.state, dy.state, dx.state);
+        sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
 
-        largo_state grDA;
+        largo_state grDA, grDArms;
         if (!basewall.trivial()) {
             grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
         }
 
-        largo_state grDArms;
-        largo_init(sg.workspace, sg.grdelta, grDA.state, grDArms.state);
+        largo_init(sg.workspace, sg.grdelta,
+                   grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
     }
 
     // Traversal:
@@ -775,7 +834,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         // If necessary, perform Largo base flow and Y-dependent invocations
         if (sg.formulation.enabled()) {
             largo_state base, dy, dx;
-            sg.get_baseflow(o.y(j), base.state, dy.state, dx.state);
+            sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
 
             // When a nontrivial inviscid base flow is present, compute
             // Euler residual so that it might be eradicated.  The base
@@ -796,6 +855,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 sg.get_baseflow_pressure(o.y(j), P, dyP, dxP);
 
                 // Compute inviscid base flow residual from Euler equations
+                // FIXME #2495 Wrong scaling factors
                 const double u = base.u();
                 const double v = base.v();
                 const double w = base.w();
@@ -808,8 +868,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             }
 
-            largo_prestep_baseflow(sg.workspace, base.state, dy.state,
-                                   dt.state, dx.state, src.state);
+            largo_prestep_baseflow(sg.workspace, base.rescale(inv_Ma2),
+                                   dy.rescale(inv_Ma2), dt.rescale(inv_Ma2),
+                                   dx.rescale(inv_Ma2), src.rescale(inv_Ma2));
 
             // FIXME #2495 innery
         }
