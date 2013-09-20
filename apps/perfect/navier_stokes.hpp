@@ -134,21 +134,8 @@ public:
     /** Use this method when state needs to be passed to/from Largo. */
     rescaler rescale(double inv_Ma2) { return rescaler(this, inv_Ma2); }
 
-    /** When no rescaling is necessary, here's an analogous helper class. */
-    class asiser
-    {
-    public:
-        asiser (largo_state *p) : p(p) {}
-        operator double*() { return p->state; }
-
-    private:
-        largo_state *p;
-    };
-
-    friend class asiser;
-
     /** Use this method when state needs does not go to/from Largo. */
-    asiser as_is() { return asiser(this); }
+    double * as_is() { return this->state; }
 
 };
 
