@@ -45,13 +45,13 @@ namespace perfect {
 class operator_common_block
 {
     /** Type of the contiguous storage housing all mean quantities */
-    typedef Array<real_t, Dynamic, 14, ColMajor> means_type;
+    typedef Array<real_t, Dynamic, 16, ColMajor> means_type;
 
     /** Type of the contiguous storage housing all implicit quantities */
     typedef Array<real_t, Dynamic, 17, ColMajor> implicits_type;
 
     /** Type of the contiguous storage housing all reference quantities */
-    typedef Array<real_t, 34, Dynamic, ColMajor> refs_type;
+    typedef Array<real_t, 35, Dynamic, ColMajor> refs_type;
 
 public:
 
@@ -109,6 +109,8 @@ public:
     mean_type       rhovv()       { return means.col(11); }
     mean_type       rhoww()       { return means.col(12); }
     mean_type       rhoEE()       { return means.col(13); }
+    mean_type       p()           { return means.col(14); }
+    mean_type       p2()          { return means.col(15); }
 
     /** Type returned by the const mean quantity accessors. */
     typedef means_type::ConstColXpr const_mean_type;
@@ -127,6 +129,8 @@ public:
     const_mean_type rhovv() const { return means.col(11); }
     const_mean_type rhoww() const { return means.col(12); }
     const_mean_type rhoEE() const { return means.col(13); }
+    const_mean_type p()     const { return means.col(14); }
+    const_mean_type p2()    const { return means.col(15); }
 
     /** @} */
 
@@ -279,6 +283,7 @@ public:
      *
      * The following quantities are also stored, though they are not
      * used for linearization purposes:
+     * \li \c ref_p2         Quantity \f$p^2         \f$
      * \li \c ref_rhouxux    Quantity \f$\rho u_x u_x\f$
      * \li \c ref_rhouyuy    Quantity \f$\rho u_y u_y\f$
      * \li \c ref_rhouzuz    Quantity \f$\rho u_z u_z\f$
@@ -303,76 +308,78 @@ public:
 
     ref_type       ref_rho()              { return refs.row( 0); }
     ref_type       ref_p()                { return refs.row( 1); }
-    ref_type       ref_T()                { return refs.row( 2); }
-    ref_type       ref_a()                { return refs.row( 3); }
-    ref_type       ref_ux()               { return refs.row( 4); }
-    ref_type       ref_uy()               { return refs.row( 5); }
-    ref_type       ref_uz()               { return refs.row( 6); }
-    ref_type       ref_u2()               { return refs.row( 7); }
-    ref_type       ref_uxux()             { return refs.row( 8); }
-    ref_type       ref_uxuy()             { return refs.row( 9); }
-    ref_type       ref_uxuz()             { return refs.row(10); }
-    ref_type       ref_uyuy()             { return refs.row(11); }
-    ref_type       ref_uyuz()             { return refs.row(12); }
-    ref_type       ref_uzuz()             { return refs.row(13); }
-    ref_type       ref_nu()               { return refs.row(14); }
-    ref_type       ref_nuux()             { return refs.row(15); }
-    ref_type       ref_nuuy()             { return refs.row(16); }
-    ref_type       ref_nuuz()             { return refs.row(17); }
-    ref_type       ref_nuu2()             { return refs.row(18); }
-    ref_type       ref_nuuxux()           { return refs.row(19); }
-    ref_type       ref_nuuxuy()           { return refs.row(20); }
-    ref_type       ref_nuuxuz()           { return refs.row(21); }
-    ref_type       ref_nuuyuy()           { return refs.row(22); }
-    ref_type       ref_nuuyuz()           { return refs.row(23); }
-    ref_type       ref_nuuzuz()           { return refs.row(24); }
-    ref_type       ref_ex_gradrho()       { return refs.row(25); }
-    ref_type       ref_ey_gradrho()       { return refs.row(26); }
-    ref_type       ref_ez_gradrho()       { return refs.row(27); }
-    ref_type       ref_e_divm()           { return refs.row(28); }
-    ref_type       ref_e_deltarho()       { return refs.row(29); }
-    ref_type       ref_rhouxux()          { return refs.row(30); }
-    ref_type       ref_rhouyuy()          { return refs.row(31); }
-    ref_type       ref_rhouzuz()          { return refs.row(32); }
-    ref_type       ref_rhoEE()            { return refs.row(33); }
+    ref_type       ref_p2()               { return refs.row( 2); }
+    ref_type       ref_T()                { return refs.row( 3); }
+    ref_type       ref_a()                { return refs.row( 4); }
+    ref_type       ref_ux()               { return refs.row( 5); }
+    ref_type       ref_uy()               { return refs.row( 6); }
+    ref_type       ref_uz()               { return refs.row( 7); }
+    ref_type       ref_u2()               { return refs.row( 8); }
+    ref_type       ref_uxux()             { return refs.row( 9); }
+    ref_type       ref_uxuy()             { return refs.row(10); }
+    ref_type       ref_uxuz()             { return refs.row(11); }
+    ref_type       ref_uyuy()             { return refs.row(12); }
+    ref_type       ref_uyuz()             { return refs.row(13); }
+    ref_type       ref_uzuz()             { return refs.row(14); }
+    ref_type       ref_nu()               { return refs.row(15); }
+    ref_type       ref_nuux()             { return refs.row(16); }
+    ref_type       ref_nuuy()             { return refs.row(17); }
+    ref_type       ref_nuuz()             { return refs.row(18); }
+    ref_type       ref_nuu2()             { return refs.row(19); }
+    ref_type       ref_nuuxux()           { return refs.row(20); }
+    ref_type       ref_nuuxuy()           { return refs.row(21); }
+    ref_type       ref_nuuxuz()           { return refs.row(22); }
+    ref_type       ref_nuuyuy()           { return refs.row(23); }
+    ref_type       ref_nuuyuz()           { return refs.row(24); }
+    ref_type       ref_nuuzuz()           { return refs.row(25); }
+    ref_type       ref_ex_gradrho()       { return refs.row(26); }
+    ref_type       ref_ey_gradrho()       { return refs.row(27); }
+    ref_type       ref_ez_gradrho()       { return refs.row(28); }
+    ref_type       ref_e_divm()           { return refs.row(29); }
+    ref_type       ref_e_deltarho()       { return refs.row(30); }
+    ref_type       ref_rhouxux()          { return refs.row(31); }
+    ref_type       ref_rhouyuy()          { return refs.row(32); }
+    ref_type       ref_rhouzuz()          { return refs.row(33); }
+    ref_type       ref_rhoEE()            { return refs.row(34); }
 
     /** Type returned by the const reference quantity accessors. */
     typedef refs_type::ConstRowXpr const_ref_type;
 
     const_ref_type ref_rho()        const { return refs.row( 0); }
     const_ref_type ref_p()          const { return refs.row( 1); }
-    const_ref_type ref_T()          const { return refs.row( 2); }
-    const_ref_type ref_a()          const { return refs.row( 3); }
-    const_ref_type ref_ux()         const { return refs.row( 4); }
-    const_ref_type ref_uy()         const { return refs.row( 5); }
-    const_ref_type ref_uz()         const { return refs.row( 6); }
-    const_ref_type ref_u2()         const { return refs.row( 7); }
-    const_ref_type ref_uxux()       const { return refs.row( 8); }
-    const_ref_type ref_uxuy()       const { return refs.row( 9); }
-    const_ref_type ref_uxuz()       const { return refs.row(10); }
-    const_ref_type ref_uyuy()       const { return refs.row(11); }
-    const_ref_type ref_uyuz()       const { return refs.row(12); }
-    const_ref_type ref_uzuz()       const { return refs.row(13); }
-    const_ref_type ref_nu()         const { return refs.row(14); }
-    const_ref_type ref_nuux()       const { return refs.row(15); }
-    const_ref_type ref_nuuy()       const { return refs.row(16); }
-    const_ref_type ref_nuuz()       const { return refs.row(17); }
-    const_ref_type ref_nuu2()       const { return refs.row(18); }
-    const_ref_type ref_nuuxux()     const { return refs.row(19); }
-    const_ref_type ref_nuuxuy()     const { return refs.row(20); }
-    const_ref_type ref_nuuxuz()     const { return refs.row(21); }
-    const_ref_type ref_nuuyuy()     const { return refs.row(22); }
-    const_ref_type ref_nuuyuz()     const { return refs.row(23); }
-    const_ref_type ref_nuuzuz()     const { return refs.row(24); }
-    const_ref_type ref_ex_gradrho() const { return refs.row(25); }
-    const_ref_type ref_ey_gradrho() const { return refs.row(26); }
-    const_ref_type ref_ez_gradrho() const { return refs.row(27); }
-    const_ref_type ref_e_divm()     const { return refs.row(28); }
-    const_ref_type ref_e_deltarho() const { return refs.row(29); }
-    const_ref_type ref_rhouxux()    const { return refs.row(30); }
-    const_ref_type ref_rhouyuy()    const { return refs.row(31); }
-    const_ref_type ref_rhouzuz()    const { return refs.row(32); }
-    const_ref_type ref_rhoEE()      const { return refs.row(33); }
+    const_ref_type ref_p2()         const { return refs.row( 2); }
+    const_ref_type ref_T()          const { return refs.row( 3); }
+    const_ref_type ref_a()          const { return refs.row( 4); }
+    const_ref_type ref_ux()         const { return refs.row( 5); }
+    const_ref_type ref_uy()         const { return refs.row( 6); }
+    const_ref_type ref_uz()         const { return refs.row( 7); }
+    const_ref_type ref_u2()         const { return refs.row( 8); }
+    const_ref_type ref_uxux()       const { return refs.row( 9); }
+    const_ref_type ref_uxuy()       const { return refs.row(10); }
+    const_ref_type ref_uxuz()       const { return refs.row(11); }
+    const_ref_type ref_uyuy()       const { return refs.row(12); }
+    const_ref_type ref_uyuz()       const { return refs.row(13); }
+    const_ref_type ref_uzuz()       const { return refs.row(14); }
+    const_ref_type ref_nu()         const { return refs.row(15); }
+    const_ref_type ref_nuux()       const { return refs.row(16); }
+    const_ref_type ref_nuuy()       const { return refs.row(17); }
+    const_ref_type ref_nuuz()       const { return refs.row(18); }
+    const_ref_type ref_nuu2()       const { return refs.row(19); }
+    const_ref_type ref_nuuxux()     const { return refs.row(20); }
+    const_ref_type ref_nuuxuy()     const { return refs.row(21); }
+    const_ref_type ref_nuuxuz()     const { return refs.row(22); }
+    const_ref_type ref_nuuyuy()     const { return refs.row(23); }
+    const_ref_type ref_nuuyuz()     const { return refs.row(24); }
+    const_ref_type ref_nuuzuz()     const { return refs.row(25); }
+    const_ref_type ref_ex_gradrho() const { return refs.row(26); }
+    const_ref_type ref_ey_gradrho() const { return refs.row(27); }
+    const_ref_type ref_ez_gradrho() const { return refs.row(28); }
+    const_ref_type ref_e_divm()     const { return refs.row(29); }
+    const_ref_type ref_e_deltarho() const { return refs.row(30); }
+    const_ref_type ref_rhouxux()    const { return refs.row(31); }
+    const_ref_type ref_rhouyuy()    const { return refs.row(32); }
+    const_ref_type ref_rhouzuz()    const { return refs.row(33); }
+    const_ref_type ref_rhoEE()      const { return refs.row(34); }
 
     /** Prepare data for use by implicit operator API in rholut_imexop.h. */
     void imexop_ref(suzerain_rholut_imexop_ref   &ref,

@@ -149,7 +149,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Ensure that someone didn't hand in a mismatched common block.
     SUZERAIN_ENSURE(common.linearization  == Linearize);
 
-    SUZERAIN_ENSURE(!sg.formulation.enabled()); // FIXME Redmine #2493
+    SUZERAIN_ENSURE(!sg.formulation.enabled()); // FIXME Redmine #2495
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
     // Afterwards, change the stable time step computation accordingly
@@ -434,7 +434,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             ++j) {
 
             // Prepare logical indices using struct for scoping (e.g. ref::ux).
-            struct ref { enum { rho, p, T, a,
+            struct ref { enum { rho, p, p2, T, a,
                                 ux, uy, uz, u2,
                                 uxux, uxuy, uxuz, uyuy, uyuz, uzuz,
                                 nu, nuux, nuuy, nuuz, nuu2,
@@ -469,6 +469,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 // Accumulate reference quantities into running sums...
                 acc[ref::rho](rho);
                 acc[ref::p  ](p);
+                acc[ref::p2 ](p*p);
                 acc[ref::T  ](T);
                 acc[ref::a  ](sqrt(T));
 
@@ -536,6 +537,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             using boost::accumulators::sum;
             common.ref_rho       ()[j] = sum(acc[ref::rho       ]);
             common.ref_p         ()[j] = sum(acc[ref::p         ]);
+            common.ref_p2        ()[j] = sum(acc[ref::p2        ]);
             common.ref_T         ()[j] = sum(acc[ref::T         ]);
             common.ref_a         ()[j] = sum(acc[ref::a         ]);
             common.ref_ux        ()[j] = sum(acc[ref::ux        ]);
@@ -596,6 +598,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         common.rhovv() = common.ref_rhouyuy();
         common.rhoww() = common.ref_rhouzuz();
         common.rhoEE() = common.ref_rhoEE  ();
+        common.p    () = common.ref_p      ();
+        common.p2   () = common.ref_p2     ();
 
     } else {
 
@@ -616,30 +620,43 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             summing_accumulator_type acc_rho;
             summing_accumulator_type acc_rhouu, acc_rhovv, acc_rhoww;
             summing_accumulator_type acc_rhoEE;
+            summing_accumulator_type acc_p, acc_p2;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
                                     * o.dgrid.local_physical_extent.x();
             for (; offset < last_zxoffset; ++offset) {
-                const real_t rho = sphys(ndx::rho, offset);
-                const real_t u   = sphys(ndx::mx,  offset) / rho;
-                const real_t v   = sphys(ndx::my,  offset) / rho;
-                const real_t w   = sphys(ndx::mz,  offset) / rho;
-                const real_t E   = sphys(ndx::e,   offset) / rho;
-                acc_u    (u);
-                acc_v    (v);
-                acc_w    (w);
-                acc_uu   (u * u);
-                acc_uv   (u * v);
-                acc_uw   (u * w);
-                acc_vv   (v * v);
-                acc_vw   (v * w);
-                acc_ww   (w * w);
-                acc_rho  (rho        );
-                acc_rhouu(rho * u * u);
-                acc_rhovv(rho * v * v);
-                acc_rhoww(rho * w * w);
-                acc_rhoEE(rho * E * E);
+
+                // Unpack conserved state
+                const real_t   e  (sphys(ndx::e,   offset));
+                const Vector3r m  (sphys(ndx::mx,  offset),
+                                   sphys(ndx::my,  offset),
+                                   sphys(ndx::mz,  offset));
+                const real_t   rho(sphys(ndx::rho, offset));
+
+                // Compute derived quantities
+                const Vector3r u  (m / rho);
+                real_t p;
+                rholut::p(alpha, beta, gamma, Ma, rho, m, e, p);
+
+                // Accumulate pointwise information
+                acc_u    (u.x());
+                acc_v    (u.y());
+                acc_w    (u.z());
+                acc_uu   (u.x() * u.x());
+                acc_uv   (u.x() * u.y());
+                acc_uw   (u.x() * u.z());
+                acc_vv   (u.y() * u.y());
+                acc_vw   (u.y() * u.z());
+                acc_ww   (u.z() * u.z());
+                acc_rho  (rho);
+                acc_rhouu(u.x() * u.x() * rho);
+                acc_rhovv(u.y() * u.y() * rho);
+                acc_rhoww(u.z() * u.z() * rho);
+                acc_rhoEE(e     * e     / rho);
+                acc_p    (p);
+                acc_p2   (p * p);
+
             } // end X // end Z
 
             // Store sum into common block in preparation for MPI Reduce
@@ -657,6 +674,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             common.rhovv()[j] = boost::accumulators::sum(acc_rhovv);
             common.rhoww()[j] = boost::accumulators::sum(acc_rhoww);
             common.rhoEE()[j] = boost::accumulators::sum(acc_rhoEE);
+            common.p    ()[j] = boost::accumulators::sum(acc_p    );
+            common.p2   ()[j] = boost::accumulators::sum(acc_p2   );
 
         } // end Y
 
