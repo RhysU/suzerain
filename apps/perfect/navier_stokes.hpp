@@ -822,7 +822,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                              rms[ndx::mz ].fluctuating[j],
                              rms[ndx::rho].fluctuating[j],
                              std::sqrt(common.p2()[j]-gsl_pow_2(common.p()[j])));
-            largo_state mean_rqq;     // FIXME Populate
+            largo_state mean_rqq(common.rhoEE()[j],        // Notice pressure
+                                 common.rhouu()[j],        // entry is NaN as
+                                 common.rhovv()[j],        // it is allegedly
+                                 common.rhoww()[j],        // unused.  This
+                                 common.rho()[j],          // NaN makes sure.
+                                 std::numeric_limits<real_t>::quiet_NaN());
             largo_state ddy_mean;     // FIXME Populate
             largo_state ddy_rms;      // FIXME Populate
             largo_state ddy_mean_rqq; // FIXME Populate
