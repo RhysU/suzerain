@@ -44,6 +44,7 @@ module largo
   use largo_bl_spatial
   use largo_bl_spatial_first_order
   use largo_bl_spatial_mixed
+  use largo_bl_spatiotemporal
   use largo_bl_temporal_chemistry
   use largo_bl_temporal
   use largo_bl_temporal_tconsistent
