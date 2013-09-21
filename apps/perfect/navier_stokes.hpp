@@ -723,7 +723,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         for (/*just above*/; src != end; ++src, ++dst) {
             tmp.col(0) = (*src).mean;
             tmp.col(1) = (*src).fluctuating;
-            o.masslu()->solve(2, tmp.data(), 1, tmp.outerStride());
+            o.masslu()->solve(tmp.cols(), tmp.data(),
+                              tmp.innerStride(), tmp.outerStride());
             (*dst).mean       .resizeLike(tmp.col(0));
             (*dst).fluctuating.resizeLike(tmp.col(1));
             // Notice evil ldy trick in accumulating two products at once
