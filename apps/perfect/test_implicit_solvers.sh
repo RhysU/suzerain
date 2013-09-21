@@ -39,11 +39,11 @@ banner "Similarity of solver specification ${SPECIFICATION:+ ($SPECIFICATION)}"
     differ --use-system-epsilon --nan a0.h5 b0.h5 /t
 
     # Only worry about differences in state, not other derived quantities
-    differ --delta=5e-15 --nan a0.h5 b0.h5 /rho
-    differ --delta=5e-15 --nan a0.h5 b0.h5 /rho_u
-    differ --delta=5e-15 --nan a0.h5 b0.h5 /rho_v
-    differ --delta=5e-15 --nan a0.h5 b0.h5 /rho_w
-    differ --delta=5e-15 --nan a0.h5 b0.h5 /rho_E
+    differ --delta=6e-15 --nan a0.h5 b0.h5 /rho
+    differ --delta=6e-15 --nan a0.h5 b0.h5 /rho_u
+    differ --delta=6e-15 --nan a0.h5 b0.h5 /rho_v
+    differ --delta=6e-15 --nan a0.h5 b0.h5 /rho_w
+    differ --delta=6e-15 --nan a0.h5 b0.h5 /rho_E
 )
 
 done
