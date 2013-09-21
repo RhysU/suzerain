@@ -24,6 +24,8 @@
 #ifndef SUZERAIN_PERFECT_NAVIER_STOKES_HPP
 #define SUZERAIN_PERFECT_NAVIER_STOKES_HPP
 
+// FIXME Add SlowGrowthEnabled template parameter and use it
+
 /** @file
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
@@ -325,38 +327,19 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Now that conserved state is Fourier in X and Z but collocation in Y,
     // if slow growth forcing is active...
-    std::vector<field_L2xz> rms  (0);
-    std::vector<field_L2xz> rms_y(0);
+    std::vector<field_L2xz> rms(0);
     if (sg.formulation.enabled()) {
         SUZERAIN_TIMER_SCOPED("root-mean-square of state");
+
         // ...collectively compute L^2_{xz} of state at each collocation point
         rms = compute_field_L2xz(swave, o.grid, o.dgrid);
 
-        // ...allocate space to additionally house wall-normal derivatives
-        rms_y.resize(rms.size());
-
-        // ...rescale results to convert to root-mean-square (RMS) values,
-        // and use the B-spline basis to compute wall-normal derivatives.
+        // ...and rescale results to convert to root-mean-square (RMS) values.
         const real_t rms_adjust = 1 / std::sqrt(o.grid.L.x() * o.grid.L.z());
-        ArrayXr tmp;
         for (size_t i = 0; i < rms.size(); ++i) {
-            rms[i].mean *= rms_adjust;
-            tmp = rms[i].mean;
-            o.masslu()->solve(1, tmp.data(), 1, tmp.size());
-            rms_y[i].mean.resizeLike(tmp);
-            o.cop.accumulate(1, 1, tmp.data(),           1,
-                                0, rms_y[i].mean.data(), 1);
-
+            rms[i].mean        *= rms_adjust;
             rms[i].fluctuating *= rms_adjust;
-            tmp = rms[i].fluctuating;
-            o.masslu()->solve(1, tmp.data(), 1, tmp.size());
-            rms_y[i].fluctuating.resizeLike(tmp);
-            o.cop.accumulate(1, 1, tmp.data(),                  1,
-                                0, rms_y[i].fluctuating.data(), 1);
         }
-
-        // Notice that mean pressure and RMS of pressure fluctuations are
-        // available via common.p() and sqrt(common.p2() - common.p()**2).
     }
 
     // Collectively convert swave and auxw to physical space using parallel
@@ -387,6 +370,22 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     const real_t maxdiffconst     = inv_Re*max(gamma/Pr, max(real_t(1), alpha));
     const real_t md_lambda2_x     = maxdiffconst * o.lambda2_x;
     const real_t md_lambda2_z     = maxdiffconst * o.lambda2_z;
+
+    // If necessary, perform globally-relevant initialization calls to Largo.
+    // Required only once but done every ZerothSubstep for robustness.
+    largo_state basewall;
+    if (ZerothSubstep && sg.formulation.enabled()) {
+        largo_state dy, dx;
+        sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
+
+        largo_state grDA, grDArms;
+        if (!basewall.trivial()) {
+            grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
+        }
+
+        largo_init(sg.workspace, sg.grdelta,
+                   grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
+    }
 
     // Type of Boost.Accumulator to use for summation processes.
     // Kahan summation preferred when available as incremental cost is small
@@ -704,19 +703,34 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
-    // If necessary, perform globally-relevant initialization calls to Largo.
-    largo_state basewall;
+    // Slow growth requires mean pressure and pressure fluctuation details.
+    // Abuse vector 'rms' to store the information after conserved state.
+    // This RMS of fluctuating pressure computation can be numerically noisy.
     if (sg.formulation.enabled()) {
-        largo_state dy, dx;
-        sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
+        rms.resize(rms.size() + 1);
+        rms.back().mean        = common.p();
+        rms.back().fluctuating = (common.p2() - common.p().square()).sqrt();
+    }
 
-        largo_state grDA, grDArms;
-        if (!basewall.trivial()) {
-            grDA.mx = - basewall.u() * dx.mx / (0.0 - basewall.u());
+    // Slow growth requires wall-normal derivative of every RMS quantity
+    std::vector<field_L2xz> rms_y(rms.size());
+    if (sg.formulation.enabled()) {
+        SUZERAIN_TIMER_SCOPED("root-mean-square state derivatives");
+        ArrayX2r tmp(/* Ny */ swave.shape()[1], 2);
+        std::vector<field_L2xz>::const_iterator src = rms.begin();
+        std::vector<field_L2xz>::const_iterator end = rms.end();
+        std::vector<field_L2xz>::      iterator dst = rms_y.begin();
+        for (/*just above*/; src != end; ++src, ++dst) {
+            tmp.col(0) = (*src).mean;
+            tmp.col(1) = (*src).fluctuating;
+            o.masslu()->solve(2, tmp.data(), 1, tmp.outerStride());
+            (*dst).mean       .resizeLike(tmp.col(0));
+            (*dst).fluctuating.resizeLike(tmp.col(1));
+            // Notice evil ldy trick in accumulating two products at once
+            o.cop.accumulate(1, 2, 1.0, tmp.data(), tmp.innerStride(),
+                             tmp.outerStride(), 0.0, (*dst).mean.data(),
+                             1, (*dst).fluctuating.data() - (*dst).mean.data());
         }
-
-        largo_init(sg.workspace, sg.grdelta,
-                   grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
     }
 
     // Traversal:
@@ -810,26 +824,37 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                    src .rescale(inv_Ma2));
 
             // FIXME #2495 Complete innery computations
+            assert(rms.size() == swave_count + 1); // State plus pressure
             largo_state mean(rms[ndx::e  ].mean[j],
                              rms[ndx::mx ].mean[j],
                              rms[ndx::my ].mean[j],
                              rms[ndx::mz ].mean[j],
                              rms[ndx::rho].mean[j],
-                             common.p()        [j]);
+                             rms.back()   .mean[j]);
             largo_state rms_(rms[ndx::e  ].fluctuating[j], // Sorry for name...
-                             rms[ndx::mx ].fluctuating[j],
+                             rms[ndx::mx ].fluctuating[j], // ... 'rms' taken.
                              rms[ndx::my ].fluctuating[j],
                              rms[ndx::mz ].fluctuating[j],
                              rms[ndx::rho].fluctuating[j],
-                             std::sqrt(common.p2()[j]-gsl_pow_2(common.p()[j])));
+                             rms.back()   .fluctuating[j]);
             largo_state mean_rqq(common.rhoEE()[j],        // Notice pressure
                                  common.rhouu()[j],        // entry is NaN as
                                  common.rhovv()[j],        // it is allegedly
                                  common.rhoww()[j],        // unused.  This
-                                 common.rho()[j],          // NaN makes sure.
+                                 common.rho()  [j],        // NaN makes sure.
                                  std::numeric_limits<real_t>::quiet_NaN());
-            largo_state ddy_mean;     // FIXME Populate
-            largo_state ddy_rms;      // FIXME Populate
+            largo_state ddy_mean(rms_y[ndx::e  ].mean[j],
+                                 rms_y[ndx::mx ].mean[j],
+                                 rms_y[ndx::my ].mean[j],
+                                 rms_y[ndx::mz ].mean[j],
+                                 rms_y[ndx::rho].mean[j],
+                                 rms_y.back()   .mean[j]);
+            largo_state ddy_rms_(rms_y[ndx::e  ].fluctuating[j],
+                                 rms_y[ndx::mx ].fluctuating[j],
+                                 rms_y[ndx::my ].fluctuating[j],
+                                 rms_y[ndx::mz ].fluctuating[j],
+                                 rms_y[ndx::rho].fluctuating[j],
+                                 rms_y.back()   .fluctuating[j]);
             largo_state ddy_mean_rqq; // FIXME Populate
 
             largo_prestep_seta_innery(sg.workspace,
@@ -838,7 +863,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       rms_        .rescale(inv_Ma2),
                                       mean_rqq    .rescale(inv_Ma2),
                                       ddy_mean    .rescale(inv_Ma2),
-                                      ddy_rms     .rescale(inv_Ma2),
+                                      ddy_rms_    .rescale(inv_Ma2),
                                       ddy_mean_rqq.rescale(inv_Ma2));
         }
 
