@@ -97,6 +97,9 @@ contains
     ! Initialize number of species
     lauxp%ns = ns
 
+    ! Initialize number of variables
+    lauxp%nvar = neq + 1
+
     ! Initialize according to model index
     ! FIXME: enumerate models
     select case (trim(fmodel))
@@ -280,8 +283,8 @@ contains
 
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_init(lauxp%cp, grDelta,                 &
-                                    grDA     (1:lauxp%neq),  &
-                                    grDArms  (1:lauxp%neq))
+                                    grDA     (1:lauxp%nvar), &
+                                    grDArms  (1:lauxp%nvar))
 
   end subroutine largo_init
 
@@ -297,8 +300,8 @@ contains
 
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_prestep_mean(lauxp%cp, y, &
-                             mean         (1:lauxp%neq),  &
-                             ddy_mean     (1:lauxp%neq))
+                             mean         (1:lauxp%nvar),  &
+                             ddy_mean     (1:lauxp%nvar))
 
   end subroutine largo_preStep_sEtaMean
 
@@ -320,12 +323,12 @@ contains
 
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_prestep_innery(lauxp%cp, y, &
-                             mean         (1:lauxp%neq),  &
-                             rms          (1:lauxp%neq),  &
-                             mean_rqq     (1:lauxp%neq),  &
-                             ddy_mean     (1:lauxp%neq),  &
-                             ddy_rms      (1:lauxp%neq),  &
-                             ddy_mean_rqq (1:lauxp%neq))
+                             mean         (1:lauxp%nvar), &
+                             rms          (1:lauxp%nvar), &
+                             mean_rqq     (1:lauxp%nvar), &
+                             ddy_mean     (1:lauxp%nvar), &
+                             ddy_rms      (1:lauxp%nvar), &
+                             ddy_mean_rqq (1:lauxp%nvar))
 
   end subroutine largo_preStep_sEta_innery
 
@@ -339,7 +342,7 @@ contains
 
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_prestep_innerxz(lauxp%cp,   &
-                             qflow    (1:lauxp%neq))
+                             qflow    (1:lauxp%nvar))
 
   end subroutine largo_preStep_sEta_innerxz
 
@@ -362,13 +365,13 @@ contains
 
     call c_f_pointer(lcp, lauxp)
     call lauxp%largo_prestep(lauxp%cp, y,       &
-                             qflow        (1:lauxp%neq), &
-                             mean         (1:lauxp%neq), &
-                             rms          (1:lauxp%neq), &
-                             mean_rqq     (1:lauxp%neq), &
-                             ddy_mean     (1:lauxp%neq), &
-                             ddy_rms      (1:lauxp%neq), &
-                             ddy_mean_rqq (1:lauxp%neq))
+                             qflow        (1:lauxp%nvar), &
+                             mean         (1:lauxp%nvar), &
+                             rms          (1:lauxp%nvar), &
+                             mean_rqq     (1:lauxp%nvar), &
+                             ddy_mean     (1:lauxp%nvar), &
+                             ddy_rms      (1:lauxp%nvar), &
+                             ddy_mean_rqq (1:lauxp%nvar))
 
   end subroutine largo_preStep_sEta
 
@@ -389,10 +392,10 @@ contains
     call c_f_pointer(lcp, lauxp)
     if (associated(lauxp%largo_prestep_baseflow)) then
       call lauxp%largo_prestep_baseflow(lauxp%cp,               &
-                                            base (1:lauxp%neq), &
-                                        ddy_base (1:lauxp%neq), &
-                                        ddt_base (1:lauxp%neq), &
-                                        ddx_base (1:lauxp%neq), &
+                                            base (1:lauxp%nvar), &
+                                        ddy_base (1:lauxp%nvar), &
+                                        ddt_base (1:lauxp%nvar), &
+                                        ddx_base (1:lauxp%nvar), &
                                         src_base (1:lauxp%neq))
     end if
 
@@ -415,10 +418,10 @@ contains
     call c_f_pointer(lcp, lauxp)
     if (associated(lauxp%largo_init_wall_baseflow)) then
       call lauxp%largo_init_wall_baseflow(lauxp%cp,               &
-                                            wall_base (1:lauxp%neq), &
-                                        wall_ddy_base (1:lauxp%neq), &
-                                        wall_ddt_base (1:lauxp%neq), &
-                                        wall_ddx_base (1:lauxp%neq), &
+                                            wall_base (1:lauxp%nvar), &
+                                        wall_ddy_base (1:lauxp%nvar), &
+                                        wall_ddt_base (1:lauxp%nvar), &
+                                        wall_ddx_base (1:lauxp%nvar), &
                                         wall_src_base (1:lauxp%neq))
     end if
 

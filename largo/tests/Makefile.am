@@ -71,6 +71,12 @@ check_PROGRAMS                          += generic_bl_temporal_tconsistent
 generic_bl_temporal_tconsistent_SOURCES  = generic_bl_temporal_tconsistent.c
 generic_bl_temporal_tconsistent_LDADD    = ../largo/liblargo.la
 
+## Generic interface, spatiotemporal boundary layer, baseflow, c
+TESTS                                        += generic_bl_spatiotemporal_baseflow
+check_PROGRAMS                               += generic_bl_spatiotemporal_baseflow
+generic_bl_spatiotemporal_baseflow_SOURCES    = generic_bl_spatiotemporal_baseflow.c
+generic_bl_spatiotemporal_baseflow_LDADD      = ../largo/liblargo.la
+
 ## Generic interface, temporal boundary layer, fortran
 TESTS                         += generic_bl_temporal_f
 check_PROGRAMS                += generic_bl_temporal_f
@@ -88,6 +94,12 @@ TESTS                                     += generic_bl_temporal_tconsistent_f
 check_PROGRAMS                            += generic_bl_temporal_tconsistent_f
 generic_bl_temporal_tconsistent_f_SOURCES  = generic_bl_temporal_tconsistent_f.f90 testframework.f90
 generic_bl_temporal_tconsistent_f_LDADD    = ../largo/liblargof.la
+
+## Generic interface, spatiotemporal boundary layer, baseflow, fortran
+TESTS                                        += generic_bl_spatiotemporal_baseflow_f
+check_PROGRAMS                               += generic_bl_spatiotemporal_baseflow_f
+generic_bl_spatiotemporal_baseflow_f_SOURCES  = generic_bl_spatiotemporal_baseflow_f.f90 testframework.f90
+generic_bl_spatiotemporal_baseflow_f_LDADD    = ../largo/liblargof.la
 
 #############################################################################
 ### MISCELLANEOUS MISCELLANEOUS MISCELLANEOUS MISCELLANEOUS MISCELLANEOUS ###

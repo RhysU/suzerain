@@ -175,6 +175,9 @@ module largo_workspace
     ! Number of species
     integer(c_int) :: ns  = 0
 
+    ! Number of variables (includes pressure if relevant)
+    integer(c_int) :: nvar = 0
+
   end type largo_type
 
 contains
