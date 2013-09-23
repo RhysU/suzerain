@@ -752,7 +752,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         rqq_y.col(ndx::rho) = common.rho  ();
 
         ArrayXr tmp;
-        for (size_t i = 0; i < rqq_y.cols(); ++i) {
+        for (int i = 0; i < rqq_y.cols(); ++i) {
             tmp = rqq_y.col(i);
             o.masslu()->solve(tmp.cols(), tmp.data(),
                               tmp.innerStride(), tmp.outerStride());
