@@ -738,12 +738,135 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
     }
 
+    // Tensorially-consistent slow growth requires derivatives of "rqq" values
+    ArrayX5r rqq_y;
+    assert(rqq_y.cols() == swave_count);
+    if (SlowTreatment == slowgrowth::largo) {
+        SUZERAIN_TIMER_SCOPED("derivatives of rqq quantities");
+        rqq_y.resize(/* Ny */ swave.shape()[1], NoChange);
+
+        rqq_y.col(ndx::e  ) = common.rhoEE();  // TODO Unpleasant access order
+        rqq_y.col(ndx::mx ) = common.rhouu();  // stemming from common_block
+        rqq_y.col(ndx::my ) = common.rhovv();  // ordering vs state storage.
+        rqq_y.col(ndx::mz ) = common.rhoww();
+        rqq_y.col(ndx::rho) = common.rho  ();
+
+        ArrayXr tmp;
+        for (size_t i = 0; i < rqq_y.cols(); ++i) {
+            tmp = rqq_y.col(i);
+            o.masslu()->solve(tmp.cols(), tmp.data(),
+                              tmp.innerStride(), tmp.outerStride());
+            o.cop.accumulate(0, 1.0, tmp.data(), tmp.innerStride(),
+                                0.0, rqq_y.col(i).data(), 1);
+        }
+    }
+
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
     for (int offset = 0, j = o.dgrid.local_physical_start.y();
          j < o.dgrid.local_physical_end.y();
          ++j) {
+
+        // If necessary, Largo performs base flow computations prior to X-Z
+        if (SlowTreatment == slowgrowth::largo) {
+            largo_state base, dy, dx;
+            sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
+
+            // When a nontrivial inviscid base flow is present, compute
+            // Euler residual so that it might be eradicated.  The base
+            // flow is intended to be stationary so any residual it is
+            // a numerical artifact and not part of the intended problem.
+            largo_state dt, src;
+            if (!base.trivial()) {
+
+                // Compute time derivative of base flow using wall information
+                dt.rho = basewall.u() * dx.rho;
+                dt.mx  = basewall.u() * dx.mx;
+                dt.my  = basewall.u() * dx.my;
+                dt.mz  = basewall.u() * dx.mz;
+                dt.e   = basewall.u() * dx.e;
+
+                // Compute pressure-related quantities
+                real_t P, dyP, dxP;
+                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP); // as_is()
+
+                // Compute inviscid base flow residual from Euler equations
+                // Residual permits only non-trivial wall-normal derivatives
+                const double u = base.u();
+                const double v = base.v();
+                const double w = base.w();
+                const double H = (base.e + P) / base.rho;
+                src.rho = dt.rho + dy.my;
+                src.mx  = dt.mx  + v*(dy.mx - u*dy.rho) + u*dy.my;
+                src.my  = dt.my  + v*(dy.my - v*dy.rho) + v*dy.my + inv_Ma2*dyP;
+                src.mz  = dt.mz  + v*(dy.mz - w*dy.rho) + w*dy.my;
+                src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
+            }
+
+            // Call Largo logic rescaling by 1/Ma^2 to account for non-unit Ma
+            largo_prestep_baseflow(sg.workspace,
+                                   base.rescale(inv_Ma2),
+                                   dy  .rescale(inv_Ma2),
+                                   dt  .rescale(inv_Ma2),
+                                   dx  .rescale(inv_Ma2),
+                                   src .rescale(inv_Ma2));
+        }
+
+        // If necessary, Largo performs Y-dependent computations prior to X-Z
+        if (SlowTreatment == slowgrowth::largo) {
+
+            // Repack Y-dependent mean profiles into a form consumable by Largo
+            assert(rms.size() == swave_count + 1); // State plus pressure
+            largo_state mean(rms[ndx::e  ].mean[j],
+                             rms[ndx::mx ].mean[j],
+                             rms[ndx::my ].mean[j],
+                             rms[ndx::mz ].mean[j],
+                             rms[ndx::rho].mean[j],
+                             rms.back()   .mean[j]);
+            largo_state rms_(rms[ndx::e  ].fluctuating[j], // Sorry for name...
+                             rms[ndx::mx ].fluctuating[j], // ... 'rms' taken.
+                             rms[ndx::my ].fluctuating[j],
+                             rms[ndx::mz ].fluctuating[j],
+                             rms[ndx::rho].fluctuating[j],
+                             rms.back()   .fluctuating[j]);
+            largo_state ddy_mean(rms_y[ndx::e  ].mean[j],
+                                 rms_y[ndx::mx ].mean[j],
+                                 rms_y[ndx::my ].mean[j],
+                                 rms_y[ndx::mz ].mean[j],
+                                 rms_y[ndx::rho].mean[j],
+                                 rms_y.back()   .mean[j]);
+            largo_state ddy_rms_(rms_y[ndx::e  ].fluctuating[j],
+                                 rms_y[ndx::mx ].fluctuating[j],
+                                 rms_y[ndx::my ].fluctuating[j],
+                                 rms_y[ndx::mz ].fluctuating[j],
+                                 rms_y[ndx::rho].fluctuating[j],
+                                 rms_y.back()   .fluctuating[j]);
+
+            // The remaining bits are accessed differently from RMS details
+            largo_state mean_rqq(common.rhoEE()[j],        // Notice pressure
+                                 common.rhouu()[j],        // entry is NaN as
+                                 common.rhovv()[j],        // it is allegedly
+                                 common.rhoww()[j],        // unused.  This
+                                 common.rho()  [j],        // NaN makes sure.
+                                 numeric_limits<real_t>::quiet_NaN());
+            largo_state ddy_mean_rqq(rqq_y(j, ndx::e  ),   // Ditto re: NaN
+                                     rqq_y(j, ndx::mx ),
+                                     rqq_y(j, ndx::my ),
+                                     rqq_y(j, ndx::mz ),
+                                     rqq_y(j, ndx::rho),
+                                     numeric_limits<real_t>::quiet_NaN());
+
+            // Call Largo logic rescaling by 1/Ma^2 to account for non-unit Ma
+            largo_prestep_seta_innery(sg.workspace,
+                                      o.y(j),
+                                      mean        .rescale(inv_Ma2),
+                                      rms_        .rescale(inv_Ma2),
+                                      mean_rqq    .rescale(inv_Ma2),
+                                      ddy_mean    .rescale(inv_Ma2),
+                                      ddy_rms_    .rescale(inv_Ma2),
+                                      ddy_mean_rqq.rescale(inv_Ma2));
+        }
 
         // Wall-normal operator eigenvalue estimates depend on location
         const real_t lambda1_y    = o.lambda1_y(j);
@@ -784,93 +907,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                            common.ref_ez_gradrho()[j]);
         const real_t   ref_e_divm         (common.ref_e_divm    ()[j]);
         const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
-
-        // If necessary, perform Largo base flow and Y-dependent invocations
-        if (SlowTreatment == slowgrowth::largo) {
-            largo_state base, dy, dx;
-            sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
-
-            // When a nontrivial inviscid base flow is present, compute
-            // Euler residual so that it might be eradicated.  The base
-            // flow is intended to be stationary so any residual it is
-            // a numerical artifact and not part of the intended problem.
-            largo_state dt, src;
-            if (!base.trivial()) {
-
-                // Compute time derivative of base flow using wall information
-                dt.rho = basewall.u() * dx.rho;
-                dt.mx  = basewall.u() * dx.mx;
-                dt.my  = basewall.u() * dx.my;
-                dt.mz  = basewall.u() * dx.mz;
-                dt.e   = basewall.u() * dx.e;
-
-                // Compute pressure-related quantities
-                real_t P, dyP, dxP;
-                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP); // as_is()
-
-                // Compute inviscid base flow residual from Euler equations
-                // Residual permits only non-trivial wall-normal derivatives
-                const double u = base.u();
-                const double v = base.v();
-                const double w = base.w();
-                const double H = (base.e + P) / base.rho;
-                src.rho = dt.rho + dy.my;
-                src.mx  = dt.mx  + v*(dy.mx - u*dy.rho) + u*dy.my;
-                src.my  = dt.my  + v*(dy.my - v*dy.rho) + v*dy.my + inv_Ma2*dyP;
-                src.mz  = dt.mz  + v*(dy.mz - w*dy.rho) + w*dy.my;
-                src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
-            }
-
-            largo_prestep_baseflow(sg.workspace,
-                                   base.rescale(inv_Ma2),
-                                   dy  .rescale(inv_Ma2),
-                                   dt  .rescale(inv_Ma2),
-                                   dx  .rescale(inv_Ma2),
-                                   src .rescale(inv_Ma2));
-
-            // FIXME #2495 Complete innery computations
-            assert(rms.size() == swave_count + 1); // State plus pressure
-            largo_state mean(rms[ndx::e  ].mean[j],
-                             rms[ndx::mx ].mean[j],
-                             rms[ndx::my ].mean[j],
-                             rms[ndx::mz ].mean[j],
-                             rms[ndx::rho].mean[j],
-                             rms.back()   .mean[j]);
-            largo_state rms_(rms[ndx::e  ].fluctuating[j], // Sorry for name...
-                             rms[ndx::mx ].fluctuating[j], // ... 'rms' taken.
-                             rms[ndx::my ].fluctuating[j],
-                             rms[ndx::mz ].fluctuating[j],
-                             rms[ndx::rho].fluctuating[j],
-                             rms.back()   .fluctuating[j]);
-            largo_state mean_rqq(common.rhoEE()[j],        // Notice pressure
-                                 common.rhouu()[j],        // entry is NaN as
-                                 common.rhovv()[j],        // it is allegedly
-                                 common.rhoww()[j],        // unused.  This
-                                 common.rho()  [j],        // NaN makes sure.
-                                 numeric_limits<real_t>::quiet_NaN());
-            largo_state ddy_mean(rms_y[ndx::e  ].mean[j],
-                                 rms_y[ndx::mx ].mean[j],
-                                 rms_y[ndx::my ].mean[j],
-                                 rms_y[ndx::mz ].mean[j],
-                                 rms_y[ndx::rho].mean[j],
-                                 rms_y.back()   .mean[j]);
-            largo_state ddy_rms_(rms_y[ndx::e  ].fluctuating[j],
-                                 rms_y[ndx::mx ].fluctuating[j],
-                                 rms_y[ndx::my ].fluctuating[j],
-                                 rms_y[ndx::mz ].fluctuating[j],
-                                 rms_y[ndx::rho].fluctuating[j],
-                                 rms_y.back()   .fluctuating[j]);
-            largo_state ddy_mean_rqq; // FIXME Populate
-
-            largo_prestep_seta_innery(sg.workspace,
-                                      o.y(j),
-                                      mean        .rescale(inv_Ma2),
-                                      rms_        .rescale(inv_Ma2),
-                                      mean_rqq    .rescale(inv_Ma2),
-                                      ddy_mean    .rescale(inv_Ma2),
-                                      ddy_rms_    .rescale(inv_Ma2),
-                                      ddy_mean_rqq.rescale(inv_Ma2));
-        }
 
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
