@@ -730,10 +730,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                               tmp.innerStride(), tmp.outerStride());
             (*dst).mean       .resizeLike(tmp.col(0));
             (*dst).fluctuating.resizeLike(tmp.col(1));
-            // Notice evil ldy trick in accumulating two products at once
-            o.cop.accumulate(1, 2, 1.0, tmp.data(), tmp.innerStride(),
-                             tmp.outerStride(), 0.0, (*dst).mean.data(),
-                             1, (*dst).fluctuating.data() - (*dst).mean.data());
+            o.cop.accumulate(1, 1.0, tmp.col(0).data(), tmp.innerStride(),
+                                0.0, (*dst).mean.data(), 1);
+            o.cop.accumulate(1, 1.0, tmp.col(1).data(), tmp.innerStride(),
+                                0.0, (*dst).fluctuating.data(), 1);
         }
     }
 
