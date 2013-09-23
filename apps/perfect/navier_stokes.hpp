@@ -770,6 +770,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // If necessary, Largo performs base flow computations prior to X-Z
         if (SlowTreatment == slowgrowth::largo) {
+            SUZERAIN_TIMER_SCOPED("calling largo_prestep_baseflow");
             largo_state base, dy, dx;
             sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
 
@@ -815,6 +816,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         // If necessary, Largo performs Y-dependent computations prior to X-Z
         if (SlowTreatment == slowgrowth::largo) {
+            SUZERAIN_TIMER_SCOPED("calling largo_prestep_seta_innery");
 
             // Repack Y-dependent mean profiles into a form consumable by Largo
             assert(rms.size() == swave_count + 1); // State plus pressure
