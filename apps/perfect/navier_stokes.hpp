@@ -147,6 +147,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::equal;
     using std::max;
     using std::min;
+    using std::numeric_limits;
     using std::size_t;
     using std::sqrt;
 
@@ -228,7 +229,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Results reported by the code are reported in this order.
     array<real_t, 12> delta_t_candidates;
     std::fill(delta_t_candidates.begin(), delta_t_candidates.end(),
-              std::numeric_limits<real_t>::max());
+              numeric_limits<real_t>::max());
     real_t &convtotal_xyz_delta_t = delta_t_candidates[ 0];
     real_t &convfluct_xyz_delta_t = delta_t_candidates[ 1];
     real_t &diffusive_xyz_delta_t = delta_t_candidates[ 2];
@@ -338,7 +339,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         rms = compute_field_L2xz(swave, o.grid, o.dgrid);
 
         // ...and rescale results to convert to root-mean-square (RMS) values.
-        const real_t rms_adjust = 1 / std::sqrt(o.grid.L.x() * o.grid.L.z());
+        const real_t rms_adjust = 1 / sqrt(o.grid.L.x() * o.grid.L.z());
         for (size_t i = 0; i < rms.size(); ++i) {
             rms[i].mean        *= rms_adjust;
             rms[i].fluctuating *= rms_adjust;
@@ -846,7 +847,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                  common.rhovv()[j],        // it is allegedly
                                  common.rhoww()[j],        // unused.  This
                                  common.rho()  [j],        // NaN makes sure.
-                                 std::numeric_limits<real_t>::quiet_NaN());
+                                 numeric_limits<real_t>::quiet_NaN());
             largo_state ddy_mean(rms_y[ndx::e  ].mean[j],
                                  rms_y[ndx::mx ].mean[j],
                                  rms_y[ndx::my ].mean[j],
