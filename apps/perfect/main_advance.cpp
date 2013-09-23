@@ -197,6 +197,7 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Initialize any requested slow growth forcing workspace
+    sg->workspace = NULL; // Defensive
     common_block.slow_treatment = slowgrowth::none;
     if (sg->formulation.enabled()) {
         common_block.slow_treatment = slowgrowth::largo;
@@ -367,6 +368,14 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
                                                  controller->current_nt()),
                                 controller->current_t(),
                                 controller->current_nt());
+    }
+
+    // Deallocate any slow growth forcing workspace
+    if (sg->formulation.enabled()) {
+        if (sg->workspace) {
+            largo_deallocate(&sg->workspace);
+        }
+        sg->workspace = NULL; // Defensive
     }
 
     // Report error to the OS iff advance_control reported an error
