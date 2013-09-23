@@ -163,7 +163,8 @@ module largo_workspace
     procedure(sourcevec),        pointer, nopass :: largo_all_sources       => NULL()
 
     ! Baseflow
-    procedure(prestep_baseflow), pointer, nopass :: largo_prestep_baseflow  => NULL()
+    procedure(prestep_baseflow), pointer, nopass :: largo_prestep_baseflow    => NULL()
+    procedure(prestep_baseflow), pointer, nopass :: largo_init_wall_baseflow  => NULL()
 
     ! Pointer to largo field-related data (workspace)
     type(largo_workspace_ptr) :: cp

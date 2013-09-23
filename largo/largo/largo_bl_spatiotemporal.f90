@@ -303,12 +303,14 @@ contains
 
 
   subroutine largo_BL_spatiotemporal_init_wall_baseflow(cp,  &   
-               wall_base, wall_ddy_base, wall_ddt_base, wall_ddx_base)
+               wall_base, wall_ddy_base, wall_ddt_base,      &
+                          wall_ddx_base, wall_src_base)
 
     real(WP), dimension(*), intent(in)   :: wall_base
     real(WP), dimension(*), intent(in)   :: wall_ddy_base
     real(WP), dimension(*), intent(in)   :: wall_ddt_base
     real(WP), dimension(*), intent(in)   :: wall_ddx_base
+    real(WP), dimension(*), intent(in)   :: wall_src_base
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp

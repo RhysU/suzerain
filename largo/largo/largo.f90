@@ -163,6 +163,43 @@ contains
 
       lauxp%largo_prestep_baseflow => largo_BL_temporal_tconsistent_preStep_baseflow
 
+    case ("bl_spatiotemporal")
+      call largo_BL_spatiotemporal_allocate (lauxp%cp, lauxp%neq, lauxp%ns)
+      lauxp%largo_init            => largo_BL_spatiotemporal_init
+      lauxp%largo_finalize        => largo_BL_spatiotemporal_deallocate
+      lauxp%largo_prestep_mean    => largo_BL_spatiotemporal_preStep_sEtaMean
+      lauxp%largo_prestep_innerxz => largo_BL_spatiotemporal_preStep_sEta_innerxz
+      lauxp%largo_prestep_innery  => largo_BL_spatiotemporal_preStep_sEta_innery
+      lauxp%largo_prestep         => largo_BL_spatiotemporal_preStep_sEta
+
+      lauxp%largo_continuity_mean => largo_BL_spatiotemporal_continuity_sEtaMean
+      lauxp%largo_xmomentum_mean  => largo_BL_spatiotemporal_xMomentum_sEtaMean
+      lauxp%largo_ymomentum_mean  => largo_BL_spatiotemporal_yMomentum_sEtaMean
+      lauxp%largo_zmomentum_mean  => largo_BL_spatiotemporal_zMomentum_sEtaMean
+      lauxp%largo_energy_mean     => largo_BL_spatiotemporal_energy_sEtaMean
+      lauxp%largo_species_mean    => largo_BL_spatiotemporal_species_sEtaMean
+      lauxp%largo_ispecies_mean   => largo_BL_spatiotemporal_ispecies_sEtaMean
+      lauxp%largo_continuity_rms  => largo_BL_spatiotemporal_continuity_sEtaRms
+      lauxp%largo_xmomentum_rms   => largo_BL_spatiotemporal_xMomentum_sEtaRms
+      lauxp%largo_ymomentum_rms   => largo_BL_spatiotemporal_yMomentum_sEtaRms
+      lauxp%largo_zmomentum_rms   => largo_BL_spatiotemporal_zMomentum_sEtaRms
+      lauxp%largo_energy_rms      => largo_BL_spatiotemporal_energy_sEtaRms
+      lauxp%largo_species_rms     => largo_BL_spatiotemporal_species_sEtaRms
+      lauxp%largo_ispecies_rms    => largo_BL_spatiotemporal_ispecies_sEtaRms
+
+      lauxp%largo_continuity      => largo_BL_spatiotemporal_continuity_sEta
+      lauxp%largo_xmomentum       => largo_BL_spatiotemporal_xMomentum_sEta
+      lauxp%largo_ymomentum       => largo_BL_spatiotemporal_yMomentum_sEta
+      lauxp%largo_zmomentum       => largo_BL_spatiotemporal_zMomentum_sEta
+      lauxp%largo_energy          => largo_BL_spatiotemporal_energy_sEta
+      lauxp%largo_species         => largo_BL_spatiotemporal_species_sEta
+
+      lauxp%largo_all_sources_mean => largo_BL_spatiotemporal_sEtaMean
+      lauxp%largo_all_sources      => largo_BL_spatiotemporal_sEta
+
+      lauxp%largo_init_wall_baseflow => largo_BL_spatiotemporal_init_wall_baseflow
+      lauxp%largo_prestep_baseflow   => largo_BL_spatiotemporal_preStep_baseflow
+
     case default
       ! FIXME: throw an error, model not declared
     end select
@@ -220,6 +257,8 @@ contains
     if (associated(lauxp%largo_all_sources     )) nullify(lauxp%largo_all_sources     )
 
     if (associated(lauxp%largo_prestep_baseflow)) nullify(lauxp%largo_prestep_baseflow)
+    if (associated(lauxp%largo_init_wall_baseflow)) &
+                                                  nullify(lauxp%largo_init_wall_baseflow)
 
     ! Deallocate derived type variable
     deallocate(lauxp)
@@ -358,6 +397,32 @@ contains
     end if
 
   end subroutine largo_preStep_baseflow
+
+
+  ! Generic interface prestep subroutine
+  subroutine largo_init_wall_baseflow(lcp, wall_base, wall_ddy_base, &
+                                           wall_ddt_base, wall_ddx_base, &
+                                           wall_src_base) bind(C)
+
+    real(WP), dimension(*), intent(in)  ::     wall_base
+    real(WP), dimension(*), intent(in)  :: wall_ddy_base
+    real(WP), dimension(*), intent(in)  :: wall_ddt_base
+    real(WP), dimension(*), intent(in)  :: wall_ddx_base
+    real(WP), dimension(*), intent(in)  :: wall_src_base
+    type(largo_ptr), value              :: lcp
+    type(largo_type), pointer           :: lauxp
+
+    call c_f_pointer(lcp, lauxp)
+    if (associated(lauxp%largo_init_wall_baseflow)) then
+      call lauxp%largo_init_wall_baseflow(lauxp%cp,               &
+                                            wall_base (1:lauxp%neq), &
+                                        wall_ddy_base (1:lauxp%neq), &
+                                        wall_ddt_base (1:lauxp%neq), &
+                                        wall_ddx_base (1:lauxp%neq), &
+                                        wall_src_base (1:lauxp%neq))
+    end if
+
+  end subroutine largo_init_wall_baseflow
 
 
 #define DECLARE_GENERIC_SUBROUTINE(token)token (lcp, A, B, src) bind(C);\
