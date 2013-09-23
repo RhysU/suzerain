@@ -1025,12 +1025,29 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
 
-            // If necessary, Largo performs state-dependent local computations
+            // If necessary, Largo performs any final pointwise computations
             if (SlowTreatment == slowgrowth::largo) {
                 largo_state qflow(e, m.x(), m.y(), m.z(), rho, p);
                 largo_prestep_seta_innerxz(sg.workspace,
                                            qflow.rescale(inv_Ma2));
             }
+
+            // COMPUTE ANY SLOW GROWTH FORCING APPLIED TO THE FLOW
+            //
+            // Accumulation into each scalar right hand side is delayed
+            // to improve striding when accessing sphys buffers below.
+            largo_state slowgrowth_f;
+            switch (SlowTreatment) {
+            case slowgrowth::none:
+                assert(slowgrowth_f.trivial()); // NOP, but verify
+                break;
+            case slowgrowth::largo:
+                largo_seta(sg.workspace, 0., 1., slowgrowth_f.rescale(inv_Ma2));
+                break;
+            default:
+                SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+            }
+            // FIXME Track statistics regarding forcing (Redmine #2495)
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
@@ -1127,6 +1144,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             default:
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
+            sphys(ndx::e, offset) += slowgrowth_f.e;
 
             // FORM MOMENTUM EQUATION RIGHT HAND SIDE
             Vector3r momentum_rhs =
@@ -1196,15 +1214,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             default:
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
-            sphys(ndx::mx, offset) = momentum_rhs.x();
-            sphys(ndx::my, offset) = momentum_rhs.y();
-            sphys(ndx::mz, offset) = momentum_rhs.z();
+            sphys(ndx::mx, offset) = momentum_rhs.x() + slowgrowth_f.mx;
+            sphys(ndx::my, offset) = momentum_rhs.y() + slowgrowth_f.my;
+            sphys(ndx::mz, offset) = momentum_rhs.z() + slowgrowth_f.mz;
 
             // FORM CONTINUITY EQUATION RIGHT HAND SIDE
             //
             // Implicit continuity equation handling requires zeroing RHS in
-            // anticipation of possible manufactured solution forcing.  See
-            // subsequent transform_physical_to_wave if you monkey around here.
+            // anticipation of possible manufactured solution forcing and/or
+            // slow growth forcing.  See subsequent transform_physical_to_wave
+            // if you monkey around here.
             switch (Linearize) {
             case linearize::rhome_xyz:    // Fully implicit convection
                 sphys(ndx::rho, offset) = 0;
@@ -1221,6 +1240,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             default:
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
+            sphys(ndx::rho, offset) += slowgrowth_f.rho;
 
             // Determine the minimum observed stable time step when necessary
             // This logic used to call some canned routines, but additional
@@ -1415,11 +1435,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Collectively convert state to wave space using parallel FFTs
     for (size_t i = 0; i < swave_count; ++i) {
 
-        if (Linearize == linearize::rhome_xyz && i == ndx::rho && !msoln) {
+        if (   Linearize == linearize::rhome_xyz  // Fully implicit density
+            && i == ndx::rho                      // Looking at density RHS
+            && SlowTreatment == slowgrowth::none  // No slow growth forcing
+            && !msoln) {                          // No manufactured solution
 
-            // When density equation is handled fully implicitly AND no
-            // manufactured solution is employed, save some communications by
-            // using that the density right hand side is identically zero.
+            // When the above conditions are all met, save some communications
+            // by using that the density right hand side is identically zero.
             assert(multi_array::is_contiguous(swave[i]));
             std::memset(swave[i].origin(), 0,
                     sizeof(complex_t)*o.dgrid.local_wave_extent.prod());
