@@ -794,6 +794,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
                 // Compute inviscid base flow residual from Euler equations
                 // Residual permits only non-trivial wall-normal derivatives
+                // FIXME Remove dt from src and add streamwise derivatives
                 const double u = base.u();
                 const double v = base.v();
                 const double w = base.w();
