@@ -39,9 +39,9 @@ program bl_spatiotemporal_baseflow_f
     integer(c_int), parameter :: ns  = 2
 
     type(largo_workspace_ptr)         :: workspace
-    real(WP), parameter               :: y       = 1.0_WP/ 10.0_WP
-    real(WP), parameter               :: grDelta = 5.0_WP/100.0_WP
-    real(WP), parameter               :: uIw     = 460.0_WP
+    real(WP), parameter               :: y        = 1.0_WP/ 10.0_WP
+    real(WP), parameter               :: grtDelta = 5.0_WP/100.0_WP
+    real(WP), parameter               :: uIw      = 460.0_WP
 
     real(WP), dimension(neq+1), parameter :: &
       field   = (/                  &
@@ -107,21 +107,8 @@ program bl_spatiotemporal_baseflow_f
     real(WP), dimension(neq+1)            :: &
     dmean_rqq = (/ 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP, 0.0_WP  /)
 
-
-!!$     real(WP), dimension(neq), parameter :: &
-!!$       grDA    = (/                 &
-!!$       &       2.0_WP/  100.0_WP,   & 
-!!$       &       1.0_WP/   10.0_WP,   &
-!!$       &       1.0_WP/  100.0_WP,   &
-!!$       &       3.0_WP/  100.0_WP,   &
-!!$       &       4.0_WP/  100.0_WP,   &
-!!$       &       1.0_WP/ 1000.0_WP,   & 
-!!$       &       2.0_WP/ 1000.0_WP,   &
-!!$       &       1.0_WP/  100.0_WP    &
-!!$       /)
-
     real(WP), dimension(neq+1), parameter :: &
-      grDA    = (/                  &
+      grxDA    = (/             &
       &       1.0_WP/ 23000.0_WP,   &
       &       1.0_WP/  4600.0_WP,   &
       &       1.0_WP/ 46000.0_WP,   &
@@ -133,7 +120,7 @@ program bl_spatiotemporal_baseflow_f
       /)
 
     real(WP), dimension(neq), parameter :: &
-      grDArms = (/             &
+      grtDArms = (/             &
       &       1.0_WP/  1000.0_WP,   &
       &       5.0_WP/  1000.0_WP,   &
       &       5.0_WP/ 10000.0_WP,   &
@@ -247,7 +234,7 @@ program bl_spatiotemporal_baseflow_f
     call largo_BL_spatiotemporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
-    call largo_BL_spatiotemporal_init  (workspace, grDelta, grDA, grDArms)
+    call largo_BL_spatiotemporal_init  (workspace, grtDelta, grxDA, grtDArms)
 
     ! Init wall baseflow
     call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &  
@@ -318,7 +305,7 @@ program bl_spatiotemporal_baseflow_f
     call largo_BL_spatiotemporal_allocate (workspace, neq, ns)
 
     ! Init growth rates
-    call largo_BL_spatiotemporal_init  (workspace, grDelta, grDA, grDArms)
+    call largo_BL_spatiotemporal_init  (workspace, grtDelta, grxDA, grtDArms)
 
     ! Init wall baseflow
     call largo_BL_spatiotemporal_init_wall_baseflow(workspace   &  
