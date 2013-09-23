@@ -805,7 +805,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
             }
 
-            // Call Largo logic rescaling by 1/Ma^2 to account for non-unit Ma
             largo_prestep_baseflow(sg.workspace,
                                    base.rescale(inv_Ma2),
                                    dy  .rescale(inv_Ma2),
@@ -859,7 +858,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                      rqq_y(j, ndx::rho),
                                      numeric_limits<real_t>::quiet_NaN());
 
-            // Call Largo logic rescaling by 1/Ma^2 to account for non-unit Ma
             largo_prestep_seta_innery(sg.workspace,
                                       o.y(j),
                                       mean        .rescale(inv_Ma2),
@@ -1026,6 +1024,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                         mu, grad_mu, lambda, grad_lambda,
                                         div_u, grad_u, div_grad_u,
                                         grad_div_u);
+
+            // If necessary, Largo performs state-dependent local computations
+            if (SlowTreatment == slowgrowth::largo) {
+                largo_state qflow(e, m.x(), m.y(), m.z(), rho, p);
+                largo_prestep_seta_innerxz(sg.workspace,
+                                           qflow.rescale(inv_Ma2));
+            }
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
