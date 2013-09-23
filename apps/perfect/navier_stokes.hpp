@@ -389,6 +389,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         largo_init(sg.workspace, sg.grdelta,
                    grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
+
+        // FIXME Call largo_init_wall_baseflow here
+        // Should look like baseflow_prestep with dt == 0, src == 0.
     }
 
     // Type of Boost.Accumulator to use for summation processes.
