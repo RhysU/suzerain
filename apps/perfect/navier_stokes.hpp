@@ -24,8 +24,6 @@
 #ifndef SUZERAIN_PERFECT_NAVIER_STOKES_HPP
 #define SUZERAIN_PERFECT_NAVIER_STOKES_HPP
 
-// FIXME Add SlowGrowthEnabled template parameter and use it
-
 /** @file
  * Implementation of nonlinear Navier--Stokes spatial operators.
  */
@@ -53,6 +51,7 @@
 #include "common_block.hpp"
 #include "largo_state.hpp"
 #include "linearize_type.hpp"
+#include "slowgrowth_type.hpp"
 
 #pragma warning(push, disable:280 383 1572)
 
@@ -110,6 +109,7 @@ namespace perfect {
  *         quantities for linearization.
  * \tparam Linearize What type of hybrid implicit/explicit linearization
  *         is employed?
+ * \tparam SlowTreatment What type of slow growth forcing should be applied?
  * \tparam ManufacturedSolution What manufactured solution should be used to
  *         provide additional forcing (when enabled)?
  *
@@ -121,6 +121,7 @@ namespace perfect {
  */
 template <bool ZerothSubstep,
           linearize::type Linearize,
+          slowgrowth::type SlowTreatment,
           class ManufacturedSolution>
 std::vector<real_t> apply_navier_stokes_spatial_operator(
             const real_t alpha,
@@ -150,10 +151,12 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::sqrt;
 
     // Compile-time template parameters are used to reduce jumps at runtime.
-    // Ensure that someone didn't hand in a mismatched common block.
+    // Ensure someone didn't hand in a mismatched common block or sg instance.
     SUZERAIN_ENSURE(common.linearization  == Linearize);
-
-    SUZERAIN_ENSURE(!sg.formulation.enabled()); // FIXME Redmine #2495
+    SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
+    if (sg.formulation.enabled()) {
+        SUZERAIN_ENSURE(SlowTreatment == slowgrowth::largo);
+    }
 
     // FIXME Ticket #2477 retrieve linearization-dependent CFL information
     // Afterwards, change the stable time step computation accordingly
@@ -328,7 +331,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Now that conserved state is Fourier in X and Z but collocation in Y,
     // if slow growth forcing is active...
     std::vector<field_L2xz> rms(0);
-    if (sg.formulation.enabled()) {
+    if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("root-mean-square of state");
 
         // ...collectively compute L^2_{xz} of state at each collocation point
@@ -374,7 +377,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // If necessary, perform globally-relevant initialization calls to Largo.
     // Required only once but done every ZerothSubstep for robustness.
     largo_state basewall;
-    if (ZerothSubstep && sg.formulation.enabled()) {
+    if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
         largo_state dy, dx;
         sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
 
@@ -706,7 +709,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // Slow growth requires mean pressure and pressure fluctuation details.
     // Abuse vector 'rms' to store the information after conserved state.
     // This RMS of fluctuating pressure computation can be numerically noisy.
-    if (sg.formulation.enabled()) {
+    if (SlowTreatment == slowgrowth::largo) {
         rms.resize(rms.size() + 1);
         rms.back().mean        = common.p();
         rms.back().fluctuating = (common.p2() - common.p().square()).sqrt();
@@ -714,7 +717,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     // Slow growth requires wall-normal derivative of every RMS quantity
     std::vector<field_L2xz> rms_y(rms.size());
-    if (sg.formulation.enabled()) {
+    if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("root-mean-square state derivatives");
         ArrayX2r tmp(/* Ny */ swave.shape()[1], 2);
         std::vector<field_L2xz>::const_iterator src = rms.begin();
@@ -782,7 +785,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
 
         // If necessary, perform Largo base flow and Y-dependent invocations
-        if (sg.formulation.enabled()) {
+        if (SlowTreatment == slowgrowth::largo) {
             largo_state base, dy, dx;
             sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
 

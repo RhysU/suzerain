@@ -197,7 +197,9 @@ suzerain::perfect::driver_advance::run(int argc, char **argv)
     }
 
     // Initialize any requested slow growth forcing workspace
+    common_block.slow_treatment = slowgrowth::none;
     if (sg->formulation.enabled()) {
+        common_block.slow_treatment = slowgrowth::largo;
         const std::string& model_name = sg->formulation.name();
         INFO0("Allocating Largo model \"" << model_name
               << "\" for 5 state variables");
