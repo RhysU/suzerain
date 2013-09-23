@@ -916,18 +916,21 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                 * o.dgrid.local_physical_extent.x();
         for (; offset < last_zxoffset; ++offset) {
 
-            // Unpack total energy-related quantities
-            const real_t e        (sphys(ndx::e,          offset));
-            const Vector3r grad_e ( auxp(aux::e_x,        offset),
+            // Unpack local conserved state
+            const real_t   e      (sphys(ndx::e,   offset));
+            const Vector3r m      (sphys(ndx::mx,  offset),
+                                   sphys(ndx::my,  offset),
+                                   sphys(ndx::mz,  offset));
+            const real_t   rho    (sphys(ndx::rho, offset));
+
+            // Unpack total energy-related derivatives
+            const Vector3r grad_e  (auxp(aux::e_x,        offset),
                                     auxp(aux::e_y,        offset),
                                     auxp(aux::e_z,        offset));
             const real_t e_yy      (auxp(aux::e_yy,       offset));
             const real_t div_grad_e(auxp(aux::div_grad_e, offset));
 
-            // Unpack momentum-related quantities
-            const Vector3r m    ( sphys(ndx::mx,   offset),
-                                  sphys(ndx::my,   offset),
-                                  sphys(ndx::mz,   offset));
+            // Unpack momentum-related derivatives
             const real_t   div_m(  auxp(aux::mx_x, offset)
                                  + auxp(aux::my_y, offset)
                                  + auxp(aux::mz_z, offset));
@@ -964,8 +967,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                                       + auxp(aux::my_yz, offset)
                                       + auxp(aux::mz_zz, offset));
 
-            // Unpack density-related quantities
-            const real_t   rho         ( sphys(ndx::rho,    offset));
+            // Unpack density-related derivatives
             const Vector3r grad_rho    (  auxp(aux::rho_x,  offset),
                                           auxp(aux::rho_y,  offset),
                                           auxp(aux::rho_z,  offset));
