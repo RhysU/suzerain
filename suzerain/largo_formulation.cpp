@@ -42,47 +42,53 @@ std::map<std::string,const largo_formulation*> largo_formulation::by_name;
 
 // BEGIN Add known Largo formulations here
 const largo_formulation largo_formulation::disable(
-        0, "disable", "No slow growth formulation is in use");
+        0, "disable", false,
+        "No slow growth formulation is in use");
 
 const largo_formulation largo_formulation::temporal(
-        1, "bl_temporal", "Original temporal formulation by Topalian et al.",
+        1, "bl_temporal", true,
+        "Original temporal formulation by Topalian et al.",
         boost::assign::list_of("temporal")
             .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::spatial(
-        2, "bl_spatial", "Full spatial formulation by Topalian et al.",
+        2, "bl_spatial", false,
+        "Full spatial formulation by Topalian et al.",
         boost::assign::list_of("spatial")
             .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::temporal_tensor_consistent(
-        3, "bl_temporal_tensor-consistent",
-           "Temporal tensor-consistent formulation by Topalian et al.",
+        3, "bl_temporal_tensor-consistent", true,
+        "Temporal tensor-consistent formulation by Topalian et al.",
         boost::assign::list_of("bl_temporal_tensor_consistent")
                               ("temporal_tensor_consistent")
                               ("temporal_tensor-consistent")
             .convert_to_container<std::vector<std::string> >());
 
 const largo_formulation largo_formulation::spatiotemporal(
-        4, "bl_spatiotemporal", "Spatiotemporal formulation by Topalian et al.",
+        4, "bl_spatiotemporal", false,
+        "Spatiotemporal formulation by Topalian et al.",
         boost::assign::list_of("spatiotemporal")
             .convert_to_container<std::vector<std::string> >());
 // END Add known Largo formulations here
 
 largo_formulation::largo_formulation(
-        const int v,
+        const int   v,
         const char *n,
+        const bool  t,
         const char *d)
-    : v(v), n(n), d(d)
+    : v(v), n(n), t(t), d(d)
 {
     register_name(this->n, this);
 }
 
 largo_formulation::largo_formulation(
-        const int v,
+        const int   v,
         const char *n,
+        const bool  t,
         const char *d,
         const std::vector<std::string>& misspellings)
-    : v(v), n(n), d(d)
+    : v(v), n(n), t(t), d(d)
 {
     register_name(this->n, this);
 

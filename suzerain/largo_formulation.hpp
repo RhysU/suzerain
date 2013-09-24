@@ -62,6 +62,13 @@ public:
     const std::string& name() const
     { return n; }
 
+    /**
+     * Is the given formulation strictly-temporal?
+     * That is, is spatial homogenization totally absent?
+     */
+    bool is_strictly_temporal() const
+    { return t; }
+
     /** What is the description of the given formulation? */
     const std::string& description() const
     { return d; }
@@ -86,8 +93,9 @@ public:
 
 private:
 
-    int         v;  ///< A quickly comparable value
+    int         v;  ///< A quickly-comparable, unique value
     std::string n;  ///< A brief, human-readable name
+    bool        t;  ///< Is the formulation strictly-temporal?
     std::string d;  ///< A relatively complete description
 
     /** Maintains map from name to pointer-to-static instances. */
@@ -98,7 +106,10 @@ private:
                               const largo_formulation* instance);
 
     /** Create a new (static) instance and register it. */
-    largo_formulation(const int v, const char *n, const char *d);
+    largo_formulation(const int   v,
+                      const char *n,
+                      const bool  t,
+                      const char *d);
 
     /**
      * Create a new (static) instance and register it.
@@ -106,8 +117,9 @@ private:
      * Register \c misspellings in \c by_name as well to permit lookup
      * by any of them in addition to \c n.
      */
-    largo_formulation(const int v,
+    largo_formulation(const int   v,
                       const char *n,
+                      const bool  t,
                       const char *d,
                       const std::vector<std::string>& misspellings);
 
