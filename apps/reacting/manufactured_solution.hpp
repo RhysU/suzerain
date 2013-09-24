@@ -36,7 +36,11 @@
 #include <suzerain/support/definition_base.hpp>
 #include <suzerain/support/esio_fwd.hpp>
 
+SUZERAIN_GCC_DIAG_OFF(unused-parameter);
+SUZERAIN_GCC_DIAG_OFF(unused-variable);
 #include "nsctpl.hpp"
+SUZERAIN_GCC_DIAG_ON(unused-variable);
+SUZERAIN_GCC_DIAG_ON(unused-parameter);
 
 #include "antioch_constitutive.hpp"
 
