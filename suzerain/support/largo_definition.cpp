@@ -207,6 +207,8 @@ largo_definition::save(
         esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else if (formulation == largo_formulation::temporal_tensor_consistent) {
         esio_attribute_write(h, location, name_grdelta, &grdelta);
+    } else if (formulation == largo_formulation::spatiotemporal) {
+        esio_attribute_write(h, location, name_grdelta, &grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();
     }
@@ -273,6 +275,8 @@ largo_definition::load(
     } else if (t.formulation == largo_formulation::spatial) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else if (t.formulation == largo_formulation::temporal_tensor_consistent) {
+        esio_attribute_read(h, location, name_grdelta, &t.grdelta);
+    } else if (t.formulation == largo_formulation::spatiotemporal) {
         esio_attribute_read(h, location, name_grdelta, &t.grdelta);
     } else {
         SUZERAIN_ERROR_VOID_UNIMPLEMENTED();

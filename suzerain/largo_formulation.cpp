@@ -61,6 +61,11 @@ const largo_formulation largo_formulation::temporal_tensor_consistent(
                               ("temporal_tensor_consistent")
                               ("temporal_tensor-consistent")
             .convert_to_container<std::vector<std::string> >());
+
+const largo_formulation largo_formulation::spatiotemporal(
+        4, "bl_spatiotemporal", "Spatiotemporal formulation by Topalian et al.",
+        boost::assign::list_of("spatiotemporal")
+            .convert_to_container<std::vector<std::string> >());
 // END Add known Largo formulations here
 
 largo_formulation::largo_formulation(
