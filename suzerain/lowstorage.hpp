@@ -202,7 +202,7 @@ public:
     virtual component iota(std::size_t substep) const = 0;
 
     /**
-     * Compute the scheme's derived \f$\iota_alpha_i\f$ coefficient, which is
+     * Compute the scheme's derived \f$\iota_{\alpha,i}\f$ coefficient, which is
      * used to accumulate a running time-averaged value across substeps.
      *
      * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
@@ -212,7 +212,7 @@ public:
     virtual component iota_alpha(std::size_t substep) const = 0;
 
     /**
-     * Compute the scheme's derived \f$\iota_beta_i\f$ coefficient, which is
+     * Compute the scheme's derived \f$\iota_{\beta,i}\f$ coefficient, which is
      * used to accumulate a running time-averaged value across substeps.
      *
      * @param substep A substep number \f$i\f$ within <tt>[0,substeps())</tt>.
