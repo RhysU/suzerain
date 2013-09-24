@@ -1626,6 +1626,128 @@ Scalar explicit_mu_div_grad_T(
 }
 
 /**
+ * Compute \f$p\f$ using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+inline
+void p(const Scalar &alpha,
+       const Scalar &beta,
+       const Scalar &gamma,
+       const Scalar &rho,
+       const Vector &m,
+       const Scalar &e,
+       Scalar &p)
+{
+    SUZERAIN_UNUSED(alpha);
+    SUZERAIN_UNUSED(beta);
+
+    // Compute scalar quantities
+    p = (gamma - 1)*(e - m.squaredNorm()/2/rho);
+}
+
+/**
+ * Compute \f$p\f$ using the equation of state.
+ *
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho   \f$\rho\f$
+ * @param[in]  T     \f$T\f$
+ * @param[out] p     \f$p\f$
+ */
+template<typename Scalar>
+inline
+void p(const Scalar &gamma,
+       const Scalar &rho,
+       const Scalar &T,
+       Scalar &p)
+{
+    p = rho*T/gamma;
+}
+
+/**
+ * Compute \f$p\f$ and \f$T\f$ using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+inline
+void p_T(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e,
+        Scalar &p,
+        Scalar &T)
+{
+    SUZERAIN_UNUSED(alpha);
+    SUZERAIN_UNUSED(beta);
+
+    const Scalar rho_inverse = 1/rho;
+
+    // Compute scalar quantities
+    p = (gamma - 1)*(e - rho_inverse*m.squaredNorm()/2);
+    T = gamma * p * rho_inverse;
+}
+
+/**
+ * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$
+ * using the equation of state.
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] T \f$T\f$
+ * @param[out] mu \f$\mu\f$
+ * @param[out] lambda \f$\lambda\f$
+ */
+template<typename Scalar,
+         typename Vector  >
+inline
+void p_T_mu_lambda(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &m,
+        const Scalar &e,
+        Scalar &p,
+        Scalar &T,
+        Scalar &mu,
+        Scalar &lambda)
+{
+    using std::pow;
+    const Scalar rho_inverse = 1/rho;
+
+    // Compute scalar quantities
+    p      = (gamma - 1)*(e - rho_inverse*m.squaredNorm()/2);
+    T      = gamma * p * rho_inverse;
+    mu     = pow(T, beta);
+    lambda = (alpha - Scalar(2)/3)*mu;
+}
+
+/**
  * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$ and their gradients
  * using the equation of state.  The gradients are computed using these
  * expansions:
@@ -1711,129 +1833,6 @@ void p_T_mu_lambda(
     grad_T      = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);
     grad_mu     = (beta * T_to_beta1)*grad_T;
     grad_lambda = alpha23*grad_mu;
-}
-
-/**
- * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$
- * using the equation of state.
- *
- * @param[in]  alpha \f$\alpha\f$
- * @param[in]  beta \f$\beta\f$
- * @param[in]  gamma \f$\gamma\f$
- * @param[in]  rho \f$\rho\f$
- * @param[in]  m \f$\vec{m}\f$
- * @param[in]  e \f$e\f$
- * @param[out] p \f$p\f$
- * @param[out] T \f$T\f$
- * @param[out] mu \f$\mu\f$
- * @param[out] lambda \f$\lambda\f$
- */
-template<typename Scalar,
-         typename Vector  >
-inline
-void p_T_mu_lambda(
-        const Scalar &alpha,
-        const Scalar &beta,
-        const Scalar &gamma,
-        const Scalar &rho,
-        const Vector &m,
-        const Scalar &e,
-        Scalar &p,
-        Scalar &T,
-        Scalar &mu,
-        Scalar &lambda)
-{
-    using std::pow;
-    const Scalar rho_inverse = 1/rho;
-
-    // Compute scalar quantities
-    p      = (gamma - 1)*(e - rho_inverse*m.squaredNorm()/2);
-    T      = gamma * p * rho_inverse;
-    mu     = pow(T, beta);
-    lambda = (alpha - Scalar(2)/3)*mu;
-}
-
-/**
- * Compute \f$p\f$ and \f$T\f$ using the equation of state.
- *
- * @param[in]  alpha \f$\alpha\f$
- * @param[in]  beta \f$\beta\f$
- * @param[in]  gamma \f$\gamma\f$
- * @param[in]  rho \f$\rho\f$
- * @param[in]  m \f$\vec{m}\f$
- * @param[in]  e \f$e\f$
- * @param[out] p \f$p\f$
- * @param[out] T \f$T\f$
- */
-template<typename Scalar,
-         typename Vector  >
-inline
-void p_T(
-        const Scalar &alpha,
-        const Scalar &beta,
-        const Scalar &gamma,
-        const Scalar &rho,
-        const Vector &m,
-        const Scalar &e,
-        Scalar &p,
-        Scalar &T)
-{
-    SUZERAIN_UNUSED(alpha);
-    SUZERAIN_UNUSED(beta);
-
-    const Scalar rho_inverse = 1/rho;
-
-    // Compute scalar quantities
-    p = (gamma - 1)*(e - rho_inverse*m.squaredNorm()/2);
-    T = gamma * p * rho_inverse;
-}
-
-/**
- * Compute \f$p\f$ using the equation of state.
- *
- * @param[in]  alpha \f$\alpha\f$
- * @param[in]  beta \f$\beta\f$
- * @param[in]  gamma \f$\gamma\f$
- * @param[in]  rho \f$\rho\f$
- * @param[in]  m \f$\vec{m}\f$
- * @param[in]  e \f$e\f$
- * @param[out] p \f$p\f$
- */
-template<typename Scalar,
-         typename Vector  >
-inline
-void p(const Scalar &alpha,
-       const Scalar &beta,
-       const Scalar &gamma,
-       const Scalar &rho,
-       const Vector &m,
-       const Scalar &e,
-       Scalar &p)
-{
-    SUZERAIN_UNUSED(alpha);
-    SUZERAIN_UNUSED(beta);
-
-    // Compute scalar quantities
-    p = (gamma - 1)*(e - m.squaredNorm()/2/rho);
-}
-
-
-/**
- * Compute \f$p\f$ using the equation of state.
- *
- * @param[in]  gamma \f$\gamma\f$
- * @param[in]  rho   \f$\rho\f$
- * @param[in]  T     \f$T\f$
- * @param[out] p     \f$p\f$
- */
-template<typename Scalar>
-inline
-void p(const Scalar &gamma,
-       const Scalar &rho,
-       const Scalar &T,
-       Scalar &p)
-{
-    p = rho*T/gamma;
 }
 
 /**
