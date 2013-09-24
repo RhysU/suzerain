@@ -774,6 +774,15 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
     }
 
+    // To track mean slow-growth forcing for Favre-averaged equation residuals,
+    // we need to accumulate pointwise mean computations a la the gathering of
+    // instantaneous moments just above.  This requires gathering, Allreducing,
+    // rescaling, and then accounting for variable substep length.
+    // Unfortunately, it must be spread throughout the remainder of this method
+    // and no clean way to hide the communication costs comes to mind.
+    //
+    // FIXME Implement tracking statistics regarding forcing (Redmine #2495)
+
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
     SUZERAIN_TIMER_BEGIN("nonlinear right hand sides");
@@ -1101,7 +1110,6 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             default:
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
             }
-            // FIXME Track statistics regarding forcing (Redmine #2495)
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
             sphys(ndx::e, offset) =
