@@ -50,6 +50,7 @@ dnl ---------------------
 dnl Manipulate C settings
 dnl ---------------------
 AX_CHECK_ENABLE_DEBUG([info])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_CC
 AC_LANG_PUSH([C])
 if test "x$ax_enable_debug" != "xno"; then

@@ -20,13 +20,14 @@ AM_INIT_AUTOMAKE(1.11 nostdinc no-define tar-ustar color-tests silent-rules para
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_PREREQ([2.68])
 AX_CHECK_ENABLE_DEBUG([info])
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AX_AM_MACROS
 AX_AM_JOBSERVER([no])
 AX_ADD_AM_CTAGSFLAGS
 AC_PROG_AWK
 AC_PROG_GREP
 AC_PROG_SED
-m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
+AC_CACHE_SAVE
 
 dnl ------------------------------------------------
 dnl LaTeX capabilities (not required but suggested)
