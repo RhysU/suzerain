@@ -1708,6 +1708,75 @@ void p_T(
 }
 
 /**
+ * Compute \f$p\f$, \f$T\f$, and their gradients using the equation of state.
+ * The gradients are computed using these expansions:
+ * \f{align*}
+ *      \vec{\nabla}p &= (\gamma-1)\left[
+ *            \vec{\nabla}e
+ *          + \frac{1}{2}\rho^{-2}\left(\vec{m}\cdot\vec{m}\right)
+ *            \vec{\nabla}\rho
+ *          - \rho^{-1} \left(\vec{\nabla}\vec{m}\right)^{\mathsf{T}}\vec{m}
+ *      \right]
+ *      \\
+ *      \vec{\nabla}T &= \gamma\rho^{-1}\vec{\nabla}p
+ *                     - \gamma\rho^{-2} p \vec{\nabla}\rho
+ * \f}
+ *
+ * @param[in]  alpha \f$\alpha\f$
+ * @param[in]  beta \f$\beta\f$
+ * @param[in]  gamma \f$\gamma\f$
+ * @param[in]  rho \f$\rho\f$
+ * @param[in]  grad_rho \f$\vec{\nabla}\rho\f$
+ * @param[in]  m \f$\vec{m}\f$
+ * @param[in]  grad_m \f$\vec{\nabla}\vec{m}\f$
+ * @param[in]  e \f$e\f$
+ * @param[in]  grad_e \f$\vec{\nabla}e\f$
+ * @param[out] p \f$p\f$
+ * @param[out] grad_p \f$\vec{\nabla}p\f$
+ * @param[out] T \f$T\f$
+ * @param[out] grad_T \f$\vec{\nabla}T\f$
+ */
+template<typename Scalar,
+         typename Vector,
+         typename Tensor >
+inline
+void p_T(
+        const Scalar &alpha,
+        const Scalar &beta,
+        const Scalar &gamma,
+        const Scalar &rho,
+        const Vector &grad_rho,
+        const Vector &m,
+        const Tensor &grad_m,
+        const Scalar &e,
+        const Vector &grad_e,
+        Scalar &p,
+        Vector &grad_p,
+        Scalar &T,
+        Vector &grad_T)
+{
+    SUZERAIN_UNUSED(alpha);  // Present for API consistency
+    SUZERAIN_UNUSED(beta);   // Present for API consistency
+
+    const Scalar rho_inverse      = 1/rho;
+    const Scalar half_rho_inverse = rho_inverse/2;
+    const Scalar gamma1           = gamma - 1;
+
+    // Compute scalar quantities
+    p = gamma1*(e - half_rho_inverse*m.squaredNorm());
+    T = gamma * p * rho_inverse;
+
+    // Compute vector quantities
+    grad_p = gamma1*(
+                grad_e + rho_inverse*(
+                      (half_rho_inverse*m.squaredNorm())*grad_rho
+                    - grad_m.transpose()*m
+                )
+             );
+    grad_T = gamma*rho_inverse*(grad_p - rho_inverse*p*grad_rho);
+}
+
+/**
  * Compute \f$p\f$, \f$T\f$, \f$\mu\f$, and \f$\lambda\f$
  * using the equation of state.
  *

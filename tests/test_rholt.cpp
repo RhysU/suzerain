@@ -259,6 +259,25 @@ BOOST_AUTO_TEST_CASE( rholt_p_T_mu_lambda )
             45.894160174865327745154451372557681424834241757231579516748L,
             close_enough);
 
+    /* Variant that does not provide viscosities but does derivatives */
+    p = T = 555; grad_p.setConstant(555); grad_T.setConstant(555);
+    suzerain::rholt::p_T(
+            alpha, beta, gamma, rho, grad_rho, m, grad_m, e, grad_e,
+            p, grad_p, T, grad_T);
+
+    BOOST_CHECK_CLOSE(p,
+            4523.8529315224394491652244924378285975908038303556842666509L,
+            close_enough);
+    BOOST_CHECK_CLOSE(grad_p(0), grad_p_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_p(1), grad_p_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_p(2), grad_p_ans(2), close_enough);
+    BOOST_CHECK_CLOSE(T,
+            45.894160174865327745154451372557681424834241757231579516748L,
+            close_enough);
+    BOOST_CHECK_CLOSE(grad_T(0), grad_T_ans(0), close_enough);
+    BOOST_CHECK_CLOSE(grad_T(1), grad_T_ans(1), close_enough);
+    BOOST_CHECK_CLOSE(grad_T(2), grad_T_ans(2), close_enough);
+
     /* Variant computing pressure from density and temperature */
     p = 555;
     suzerain::rholt::p(gamma, rho, T, p);
