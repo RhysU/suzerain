@@ -381,6 +381,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     if (ZerothSubstep && SlowTreatment == slowgrowth::largo) {
         largo_state dy, dx;
         sg.get_baseflow(0.0, basewall.as_is(), dy.as_is(), dx.as_is());
+        sg.get_baseflow_pressure(0.0, basewall.p, dy.p, dx.p); // as_is()
 
         largo_state grDA, grDArms;
         if (!basewall.trivial()) {
@@ -390,8 +391,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         largo_init(sg.workspace, sg.grdelta,
                    grDA.rescale(inv_Ma2), grDArms.rescale(inv_Ma2));
 
-        // FIXME Call largo_init_wall_baseflow here
-        // Should look like baseflow_prestep with dt == 0, src == 0.
+        largo_state dt, src;
+        largo_init_wall_baseflow(sg.workspace,
+                                 basewall.rescale(inv_Ma2),
+                                 dy      .rescale(inv_Ma2),
+                                 dt      .rescale(inv_Ma2),
+                                 dx      .rescale(inv_Ma2),
+                                 src     .rescale(inv_Ma2));
     }
 
     // Type of Boost.Accumulator to use for summation processes.
