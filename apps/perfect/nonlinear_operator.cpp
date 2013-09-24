@@ -76,7 +76,8 @@ std::vector<real_t> nonlinear_operator::apply_operator(
                   this->scenario.Ma,                            \
                   this->scenario.Pr,                            \
                   this->scenario.Re,                            \
-                  *this, common, sg, msoln, time, swave, method
+                  *this, common, sg, msoln, time, swave,        \
+                  method, substep_index
 
     // Dispatch to an optimized implementation depending on runtime settings.
     // Done since the compiler can theoretically hammer out much savings when

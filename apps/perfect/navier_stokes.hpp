@@ -102,6 +102,7 @@ namespace perfect {
  *        collocation point values in the Y direction.
  * \param method Low-storage timestepping scheme used to compute a stable
  *        time step when <tt>ZerothSubstep == true</tt>.
+ * \param substep_index The index of the current substep being taken.
  *
  * \tparam ZerothSubstep Should one-time activities taking place at the
  *         beginning of a Runge-Kutta step be performed?  Examples include
@@ -136,7 +137,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             const shared_ptr<const ManufacturedSolution>& msoln,
             const real_t time,
             contiguous_state<4,complex_t> &swave,
-            const lowstorage::method_interface<complex_t> &method)
+            const lowstorage::method_interface<complex_t> &method,
+            const std::size_t substep_index)
 {
     // State enters method as coefficients in X, Y, and Z directions
     SUZERAIN_TIMER_SCOPED("apply_navier_stokes_spatial_operator");
@@ -152,7 +154,9 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     using std::sqrt;
 
     // Compile-time template parameters are used to reduce jumps at runtime.
-    // Ensure someone didn't hand in a mismatched common block or sg instance.
+    // Ensure someone didn't hand in a mismatched step, common block or sg.
+    if (ZerothSubstep)      SUZERAIN_ENSURE(substep_index == 0);
+    if (substep_index == 0) SUZERAIN_ENSURE(ZerothSubstep);
     SUZERAIN_ENSURE(common.linearization  == Linearize);
     SUZERAIN_ENSURE(common.slow_treatment == SlowTreatment);
     if (sg.formulation.enabled()) {
