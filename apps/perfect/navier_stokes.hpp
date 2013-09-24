@@ -776,37 +776,77 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
             SUZERAIN_TIMER_SCOPED("calling largo_prestep_baseflow");
             largo_state base, dy, dx;
             sg.get_baseflow(o.y(j), base.as_is(), dy.as_is(), dx.as_is());
+            sg.get_baseflow_pressure(o.y(j), base.p, dy.p, dx.p); // as_is()
 
             // When a nontrivial inviscid base flow is present, compute
-            // Euler residual so that it might be eradicated.  The base
-            // flow is intended to be stationary so any residual it is
-            // a numerical artifact and not part of the intended problem.
+            // model-appropriate residual so that it might be eradicated.  The
+            // base flow is intended to be stationary so any residual it is a
+            // numerical artifact and not part of the intended problem.
             largo_state dt, src;
             if (!base.trivial()) {
 
-                // Compute time derivative of base flow using wall information
-                dt.rho = basewall.u() * dx.rho;
-                dt.mx  = basewall.u() * dx.mx;
-                dt.my  = basewall.u() * dx.my;
-                dt.mz  = basewall.u() * dx.mz;
-                dt.e   = basewall.u() * dx.e;
+                // TODO Reference relevant equations from Largo model document
+                //
+                // The largo_prestep_baseflow(..., srcbase) parameter
+                // requires semi-trivial, model-specific computations.
+                // The differences lie in the treatment of slow derivatives.
+                Vector3r grad_rho, grad_e, grad_p;
+                Matrix3r grad_m;
+                if (sg.formulation.is_strictly_temporal()) {
 
-                // Compute pressure-related quantities
-                real_t P, dyP, dxP;
-                sg.get_baseflow_pressure(o.y(j), P, dyP, dxP); // as_is()
+                    dt.rho = basewall.u() * dx.rho; // Modeled slow time
+                    dt.mx  = basewall.u() * dx.mx;  // derivative uses
+                    dt.my  = basewall.u() * dx.my;  // wall base flow
+                    dt.mz  = basewall.u() * dx.mz;
+                    dt.e   = basewall.u() * dx.e;
 
-                // Compute inviscid base flow residual from Euler equations
-                // Residual permits only non-trivial wall-normal derivatives
-                // FIXME Remove dt from src and add streamwise derivatives
-                const double u = base.u();
-                const double v = base.v();
-                const double w = base.w();
-                const double H = (base.e + P) / base.rho;
-                src.rho = dt.rho + dy.my;
-                src.mx  = dt.mx  + v*(dy.mx - u*dy.rho) + u*dy.my;
-                src.my  = dt.my  + v*(dy.my - v*dy.rho) + v*dy.my + inv_Ma2*dyP;
-                src.mz  = dt.mz  + v*(dy.mz - w*dy.rho) + w*dy.my;
-                src.e   = dt.e   + H*(dy.my - v*dy.rho) + v*(dy.e + dyP);
+                    grad_rho << 0, dy.rho, 0;       // Only account for
+                    grad_m   << 0, dy.mx,  0,       // wall-normal variation
+                                0, dy.my,  0,       // Euler residual below.
+                                0, dy.mz,  0;       // Notice spanwise trivial.
+                    grad_e   << 0, dy.e,   0;
+                    grad_p   << 0, dy.p,   0;
+
+                } else {
+
+                    dt.rho = 0;                     // Trivial slow time
+                    dt.mx  = 0;                     // derivative inherent
+                    dt.my  = 0;                     // to formulation
+                    dt.mz  = 0;
+                    dt.e   = 0;
+
+                    grad_rho << dx.rho, dy.rho, 0;  // Account for wall-normal
+                    grad_m   << dx.mx,  dy.mx,  0,  // and slow streamwise
+                                dx.my,  dy.my,  0,  // variation in Euler
+                                dx.mz,  dy.mz,  0;  // residual below.
+                    grad_e   << dx.e,   dy.e,   0;  // Notice spanwise trivial.
+                    grad_p   << dx.p,   dy.p,   0;
+
+                }
+
+                // Compute spatial right hand side for inviscid Euler equations
+                // agnostic of model-appropriate derivatives supplied above.
+                // Base flow state from local variable "base" inlined below.
+                const Vector3r m           (base.mx, base.my, base.mz);
+                const real_t   div_m   =   grad_m.trace();
+                const real_t   rhs_rho = - div_m;
+                const Vector3r u       =   rholut::u(base.rho, m);
+                const real_t   div_u   =   rholut::div_u(base.rho, grad_rho,
+                                                         m,        div_m);
+                const Vector3r rhs_m   = - rholut::div_u_outer_m(m, grad_m,
+                                                                 u, div_u)
+                                         - inv_Ma2 * grad_p;
+                const real_t   rhs_e   = - rholut::div_e_u(base.e, grad_e,
+                                                           u,      div_u)
+                                         - rholut::div_p_u(base.p, grad_p,
+                                                           u,      div_u);
+
+                // Compute largo_prestep_baseflow..., srcbase) for Largo
+                src.rho = dt.rho - rhs_rho;
+                src.mx  = dt.mx  - rhs_m.x();
+                src.my  = dt.my  - rhs_m.y();
+                src.mz  = dt.mz  - rhs_m.z();
+                src.e   = dt.e   - rhs_e;
             }
 
             largo_prestep_baseflow(sg.workspace,
