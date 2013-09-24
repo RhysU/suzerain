@@ -42,6 +42,13 @@ void  largo_init ( void * generic_workspace,
                    double * grDA,
                    double * grDArms);
 
+void  largo_init_wall_baseflow ( void * generic_workspace,
+                                 double *     wall,
+                                 double * ddy_wall,
+                                 double * ddt_wall,
+                                 double * ddx_wall,
+                                 double * src_wall);
+
 void  largo_prestep_baseflow ( void * generic_workspace,
                                double *     base,
                                double * ddy_base,
