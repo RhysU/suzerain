@@ -31,29 +31,7 @@ perfectgas.dvi perfectgas.pdf: inhomogeneity1.eps inhomogeneity2.eps
 baseflow.dvi   baseflow.pdf:   nozzle_subsonic.eps nozzle_supersonic.eps
 
 # Notebooks, Images, Source Data, References, etc.
-EXTRA_DIST  = notebooks/Acoustics_WallNormal_3D.nb
-EXTRA_DIST += notebooks/Acoustics_WallNormal_3D_reduced.nb
-EXTRA_DIST += notebooks/Acoustics_WallNormal_MassFraction_3D.nb
-EXTRA_DIST += notebooks/Acoustic_WallNormal_EOS_3d.nb
-EXTRA_DIST += notebooks/Bump_Function_Powers.nb
-EXTRA_DIST += notebooks/cev_laminar.in
-EXTRA_DIST += notebooks/cev_laminar.m
-EXTRA_DIST += notebooks/cev_laminar.out
-EXTRA_DIST += notebooks/Euler_Eigensystem_1D_Pressure.nb
-EXTRA_DIST += notebooks/Euler_Eigensystem_3D.nb
-EXTRA_DIST += notebooks/Euler_Eigensystem_3D_PerfectGas.nb
-EXTRA_DIST += notebooks/Euler_Eigensystem_MassFraction_3D.nb
-EXTRA_DIST += notebooks/FPG_BaseFlow_Problem.nb
-EXTRA_DIST += notebooks/Giles_BC_Dimensional.nb
-EXTRA_DIST += notebooks/Giles_BC_Nondimensional.nb
-EXTRA_DIST += notebooks/nozzle1.m
-EXTRA_DIST += notebooks/nozzle_baseflow.m
-EXTRA_DIST += notebooks/nozzle_edge.m
-EXTRA_DIST += notebooks/nozzle.m
-EXTRA_DIST += notebooks/NSNondimensionalizationForced.nb
-EXTRA_DIST += notebooks/NSNondimensionalization.nb
-EXTRA_DIST += notebooks/SMR91_Linearization.nb
-EXTRA_DIST += notebooks/Verification_Giles_Reacting.nb
+EXTRA_DIST  = notebooks # Recursively distributes the entire directory
 EXTRA_DIST += cev_summary1.eps cev_summary2.eps cev_summary_fpg.eps
 EXTRA_DIST += nozzle_schematic.eps nozzle_subsonic.eps nozzle_supersonic.eps
 EXTRA_DIST += inhomogeneity1.gz inhomogeneity1.eps
