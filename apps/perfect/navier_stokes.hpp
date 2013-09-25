@@ -780,12 +780,13 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
     }
 
-    // To track mean slow-growth forcing for Favre-averaged equation residuals,
-    // we need to accumulate pointwise mean computations a la the gathering of
-    // instantaneous moments just above.  This requires gathering, Allreducing,
-    // rescaling, and then accounting for variable substep length.
-    // Unfortunately, it must be spread throughout the remainder of this method
-    // and no clean way to hide the communication costs comes to mind.
+    // To track mean slow-growth forcing for Favre-averaged equation
+    // residuals, we need to accumulate pointwise mean computations a la
+    // the gathering of instantaneous moments just above.  This requires
+    // gathering, Allreducing, rescaling, and then accounting for variable
+    // substep length.  Unfortunately, it must pervade the remainder
+    // of this method.  Attempt has been made to avoid incurring memory
+    // overhead when no slow growth is active.
     typedef ArrayX6r barf_type; // The juvenile spatial average ("bar") of f
     barf_type barf;             // Index ndx::type with [5] being Srhou_dot_u
     if (SlowTreatment != slowgrowth::none) {
@@ -1553,17 +1554,38 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
     }
 
-    if (SlowTreatment != slowgrowth::none) {
+    // Perform any final substep bookkeepping regarding common.Srho{E,u,...}
+    // This includes scaling barf results to account for varying substep length
+    const real_t iota = method.iota(substep_index);
+    if (SlowTreatment == slowgrowth::none) {
 
-        // Allreduce and scale barf to produce the instantaneous mean globally
+        // Update running slow growth forcing means to reflect nothing added
+        common.SrhoE()       += iota*( /*zero*/ - common.SrhoE      ());
+        common.Srhou()       += iota*( /*zero*/ - common.Srhou      ());
+        common.Srhov()       += iota*( /*zero*/ - common.Srhov      ());
+        common.Srhow()       += iota*( /*zero*/ - common.Srhow      ());
+        common.Srho ()       += iota*( /*zero*/ - common.Srho       ());
+        common.Srhou_dot_u() += iota*( /*zero*/ - common.Srhou_dot_u());
+
+    } else {
+
+        // TODO Hide this Allreduce in some other communication process
+        // Allreduce and scale barf to produce the instantaneous global means
         SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, barf.data(), barf.size(),
                     mpi::datatype<barf_type::Scalar>::value,
                     MPI_SUM, MPI_COMM_WORLD));
         barf *= o.dgrid.chi();
 
-        // FIXME #2495 turn instantaneous mean into running RK mean via iota
-    }
+        // Account for varying substep length in finding running forcing means
+        // Dump results into the common block so that others may access them
+        common.SrhoE()      +=iota*(barf.col(ndx::e  ) -common.SrhoE      ());
+        common.Srhou()      +=iota*(barf.col(ndx::mx ) -common.Srhou      ());
+        common.Srhov()      +=iota*(barf.col(ndx::my ) -common.Srhov      ());
+        common.Srhow()      +=iota*(barf.col(ndx::mz ) -common.Srhow      ());
+        common.Srho ()      +=iota*(barf.col(ndx::rho) -common.Srho       ());
+        common.Srhou_dot_u()+=iota*(barf.rightCols<1>()-common.Srhou_dot_u());
 
+    }
 
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce
