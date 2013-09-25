@@ -60,11 +60,6 @@ if test "$ac_test_CFLAGS" != "set"; then
     intel) CFLAGS="-O3"
 
         AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
-        [[#if __INTEL_COMPILER >= 1110
-         ah ha: icc is at least version 11.1
-        #endif
-        ]])], [], [CFLAGS="$CFLAGS -ansi-alias"])
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
         [[#if __INTEL_COMPILER >= 1110 && __INTEL_COMPILER < 1200
          ah ha: icc is exactly version 11.1
          introducing a version 11.1 workaround from Intel support #602718
@@ -72,12 +67,17 @@ if test "$ac_test_CFLAGS" != "set"; then
         ]])], [], [CFLAGS="$CFLAGS -mP2OPT_cndxform_max_new=-1"])
 
         # Intel seems to have changed the spelling of this flag recently
-        icc_ansi_alias="unknown"
-        for flag in -ansi-alias -ansi_alias; do
-          AX_CHECK_COMPILE_FLAG($flag, [icc_ansi_alias=$flag; break])
+        # ANSI aliasing is problematic after Intel 11.1 and enabling it
+        # seems to make trivial performance differences according to Karl's
+        # testing within Redmine #2729.  Explicitly turning on -no-ansi-alias
+        # to document this decision and prevent new Intel -O3 hidden behavior
+        # from turning it on again.
+        icc_no_ansi_alias="unknown"
+        for flag in -no-ansi-alias -no-ansi_alias; do
+          AX_CHECK_COMPILE_FLAG($flag, [icc_no_ansi_alias=$flag; break])
         done
-        if test "x$icc_ansi_alias" != xunknown; then
-            CFLAGS="$CFLAGS $icc_ansi_alias"
+        if test "x$icc_no_ansi_alias" != xunknown; then
+            CFLAGS="$CFLAGS $icc_no_ansi_alias"
         fi
         AX_CHECK_COMPILE_FLAG(-malign-double, CFLAGS="$CFLAGS -malign-double")
 
