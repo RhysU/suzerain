@@ -421,7 +421,7 @@ public:
 
 private:
 
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
     operator_common_block(const operator_common_block&);
     operator_common_block& operator=(const operator_common_block&);
 };

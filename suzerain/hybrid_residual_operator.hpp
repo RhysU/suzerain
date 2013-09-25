@@ -128,7 +128,7 @@ private:
      */
     const real_t chi;
 
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
     hybrid_residual_operator(const hybrid_residual_operator&);
     hybrid_residual_operator& operator=(const hybrid_residual_operator&);
 

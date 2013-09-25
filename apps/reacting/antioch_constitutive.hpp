@@ -389,7 +389,7 @@ public:
 
 private:
 
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
     antioch_constitutive(const antioch_constitutive&);
     antioch_constitutive& operator=(const antioch_constitutive&);
 };

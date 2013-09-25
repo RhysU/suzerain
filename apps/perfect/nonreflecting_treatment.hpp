@@ -227,7 +227,7 @@ private:
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
 
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
     nonreflecting_treatment(const nonreflecting_treatment&);
     nonreflecting_treatment& operator=(const nonreflecting_treatment&);
 

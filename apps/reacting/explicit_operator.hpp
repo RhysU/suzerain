@@ -101,7 +101,7 @@ private:
     /** Helps to identify from whom logging messages are being emitted. */
     std::string who;
 
-    // Using boost::noncopyable trips Intel non-virtual base destructor warnings.
+    // boost::noncopyable trips Intel non-virtual base destructor warnings.
     explicit_nonlinear_operator(const explicit_nonlinear_operator&);
     explicit_nonlinear_operator& operator=(const explicit_nonlinear_operator&);
 
