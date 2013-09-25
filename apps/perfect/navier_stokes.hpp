@@ -786,8 +786,11 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     // rescaling, and then accounting for variable substep length.
     // Unfortunately, it must be spread throughout the remainder of this method
     // and no clean way to hide the communication costs comes to mind.
-    //
-    // FIXME Implement tracking statistics regarding forcing (Redmine #2495)
+    typedef ArrayX6r barf_type; // The juvenile spatial average ("bar") of f
+    barf_type barf;             // Index ndx::type with [5] being Srhou_dot_u
+    if (SlowTreatment != slowgrowth::none) {
+        barf.setZero(Ny, barf_type::ColsAtCompileTime);
+    }
 
     // Traversal:
     // (2) Computing the nonlinear equation right hand sides.
@@ -977,6 +980,10 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         const real_t   ref_e_divm         (common.ref_e_divm    ()[j]);
         const real_t   ref_e_deltarho     (common.ref_e_deltarho()[j]);
 
+        // Prepare accumulators to acquire forcing as a function of y
+        // Construction/destruction automatically resets counts at each y(j)
+        array<summing_accumulator_type, barf_type::ColsAtCompileTime> barf_acc;
+
         // Iterate across the j-th ZX plane
         const int last_zxoffset = offset
                                 + o.dgrid.local_physical_extent.z()
@@ -1115,6 +1122,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
                 break;
             default:
                 SUZERAIN_ERROR_REPORT_UNIMPLEMENTED();
+            }
+            if (SlowTreatment != slowgrowth::none) {
+                barf_acc[ndx::e  ](slowgrowth_f.e  );             // SrhoE
+                barf_acc[ndx::mx ](slowgrowth_f.mx );             // Srhou
+                barf_acc[ndx::my ](slowgrowth_f.my );             // Srhov
+                barf_acc[ndx::mz ](slowgrowth_f.mz );             // Srhow
+                barf_acc[ndx::rho](slowgrowth_f.rho);             // Srho
+                barf_acc.back()   (    slowgrowth_f.mx * u.x()    // Srhou_dot_u
+                                    +  slowgrowth_f.my * u.y()
+                                    +  slowgrowth_f.mz * u.z() );
             }
 
             // FORM ENERGY EQUATION RIGHT HAND SIDE
@@ -1452,6 +1469,16 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
         } // end X // end Z
 
+        // All accumulators should have seen a consistent number of samples
+        assert(consistent_observation_counts(barf_acc));
+
+        // Pack y-specific sums into barf storage for subsequent Allreduce
+        if (SlowTreatment != slowgrowth::none) {
+            for (size_t m = 0; m < barf_acc.static_size; ++m) {
+                barf.col(m)[j] = boost::accumulators::sum(barf_acc[m]);
+            }
+        }
+
     } // end Y
     SUZERAIN_TIMER_END("nonlinear right hand sides");
 
@@ -1525,6 +1552,18 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
         }
 
     }
+
+    if (SlowTreatment != slowgrowth::none) {
+
+        // Allreduce and scale barf to produce the instantaneous mean globally
+        SUZERAIN_MPICHKR(MPI_Allreduce(MPI_IN_PLACE, barf.data(), barf.size(),
+                    mpi::datatype<barf_type::Scalar>::value,
+                    MPI_SUM, MPI_COMM_WORLD));
+        barf *= o.dgrid.chi();
+
+        // FIXME #2495 turn instantaneous mean into running RK mean via iota
+    }
+
 
     // Return the stable time step criteria separately on each rank.  The time
     // stepping logic must perform the Allreduce.  Delegating the Allreduce
