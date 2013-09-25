@@ -99,6 +99,11 @@ AC_CHECK_LIB([fftw3_mpi],[fftw_mpi_init], [
         FFTW3_MPI_THREADS_LIBS="$ax_fftw3_libs_pre -lfftw3_mpi $ax_fftw3_libs_post"
     fi
     AC_SUBST(FFTW3_MPI_THREADS_LIBS)
+
+    # MPI + Threading CFLAGS are taken from FFTW3_THREADS_CFLAGS only
+    FFTW3_MPI_THREADS_CFLAGS="$FFTW3_THREADS_CFLAGS"
+    AC_SUBST(FFTW3_MPI_THREADS_CFLAGS)
+
 ], [
     AC_MSG_ERROR([Could not find FFTW MPI functionality])
 ], [$ax_fftw3_libs_post])
