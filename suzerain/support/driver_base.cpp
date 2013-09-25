@@ -859,7 +859,7 @@ driver_base::log_status_boundary_state(
         // Avoid computational cost when logging is disabled
         bool necessary = false;
         for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
-            necessary |= DEBUG_ENABLED(nick[l][m]);
+            necessary |= INFO_ENABLED(nick[l][m]);
         }
         if (!necessary) continue;
 
@@ -885,7 +885,7 @@ driver_base::log_status_boundary_state(
                            << fields[k].identifier;
             }
             for (size_t m = 0; m < SUZERAIN_COUNTOF(nick[l]); ++m) {
-                DEBUG(nick[l][m], msg.str());
+                INFO(nick[l][m], msg.str());
             }
             log_status_boundary_state_header_shown[l] = true;
         }
@@ -898,7 +898,7 @@ driver_base::log_status_boundary_state(
                 using std::abs;
                 msg << ' ' << fullprec<>(abs(values(m,k)));
             }
-            DEBUG(nick[l][m], msg.str());
+            INFO(nick[l][m], msg.str());
         }
     }
 }
