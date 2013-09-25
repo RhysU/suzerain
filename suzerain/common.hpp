@@ -48,6 +48,7 @@
 #include <memory>
 #include <new>
 #include <numeric>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
