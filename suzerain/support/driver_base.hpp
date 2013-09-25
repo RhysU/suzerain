@@ -140,9 +140,9 @@ public:
 
     /**
      * The log4cxx configuration to use.  Files <tt>bulk.dat</tt>,
-     * <tt>L2.dat</tt>, and <tt>rms.dat</tt> collecting messages with
-     * the names <tt>bulk</tt>, <tt>L2</tt>, and <tt>rms</tt> have
-     * been added.
+     * <tt>L2.dat</tt>, and <tt>rms.dat</tt> collecting messages with the names
+     * <tt>bc</tt>, <tt>bulk</tt>, <tt>L2</tt>, and <tt>rms</tt> have been
+     * added.
      */
     virtual std::string log4cxx_config();
 
