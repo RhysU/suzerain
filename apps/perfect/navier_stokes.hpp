@@ -205,13 +205,14 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     SUZERAIN_ENSURE((unsigned) swave.strides()[3] == swave.shape()[1]*swave.shape()[2]);
     SUZERAIN_ENSURE(equal(swave.shape()   + 1, swave.shape()   + 4, auxw.shape()   + 1));
     SUZERAIN_ENSURE(equal(swave.strides() + 1, swave.strides() + 4, auxw.strides() + 1));
+    const size_t Ny = swave.shape()[1];
 
     // Prepare common-block-like storage used to pass details from N to L.
     // Zeroing is done carefully as accumulated means and reference quantities
     // must survive across nonzero substeps while instant profiles must not.
     // We do not modify common.implicits as other logic populates its content.
     if (ZerothSubstep) {
-        common.set_zero(/* Ny */ swave.shape()[1]);
+        common.set_zero(Ny);
     } else {
         common.means.setZero();
     }
@@ -733,7 +734,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     std::vector<field_L2xz> rms_y(rms.size());
     if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("root-mean-square state derivatives");
-        ArrayX2r tmp(/* Ny */ swave.shape()[1], 2);
+        ArrayX2r tmp(Ny, 2);
         std::vector<field_L2xz>::const_iterator src = rms.begin();
         std::vector<field_L2xz>::const_iterator end = rms.end();
         std::vector<field_L2xz>::      iterator dst = rms_y.begin();
@@ -756,7 +757,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
     assert(rqq_y.cols() == swave_count);
     if (SlowTreatment == slowgrowth::largo) {
         SUZERAIN_TIMER_SCOPED("derivatives of rqq quantities");
-        rqq_y.resize(/* Ny */ swave.shape()[1], NoChange);
+        rqq_y.resize(Ny, NoChange);
 
         rqq_y.col(ndx::e  ) = common.rhoEE();  // TODO Unpleasant access order
         rqq_y.col(ndx::mx ) = common.rhouu();  // stemming from common_block
