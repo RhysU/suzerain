@@ -185,13 +185,13 @@ program bl_spatiotemporal_baseflow_f
 
     real(WP), dimension(neq), parameter :: & 
       srcbase = (/                &
-      &         1.0_WP/ 1000.0_WP,  &
-      &         5.0_WP/   10.0_WP,  &
-      &         1.0_WP/10000.0_WP,  &
-      &         5.0_WP/ 1000.0_WP,  &
-      &      5000.0_WP           ,  &
-      &         2.0_WP/10000.0_WP,  &
-      &         1.0_WP/10000.0_WP   &
+      &         1.0_WP/ 100000.0_WP,  &
+      &         5.0_WP/   1000.0_WP,  &
+      &         1.0_WP/1000000.0_WP,  &
+      &         5.0_WP/ 100000.0_WP,  &
+      &        50.0_WP           ,  &
+      &         2.0_WP/1000000.0_WP,  &
+      &         1.0_WP/1000000.0_WP   &
       /)
 
     real(WP), dimension(neq)            :: srcmean
@@ -200,13 +200,13 @@ program bl_spatiotemporal_baseflow_f
 
     real(WP), dimension(neq), parameter :: &
       srcmean_good = (/              &
-      & -     2.0_WP/    575.0_WP,   &
-      & - 15803.0_WP/   3680.0_WP,   &
-      & -   631.0_WP/1840000.0_WP,   &
-      & -  3227.0_WP/ 184000.0_WP,   &
-      & -414160.0_WP/     23.0_WP,   &
-      & -  7129.0_WP/9200000.0_WP,   &
-      & -  3119.0_WP/9200000.0_WP    &
+      & -  7977.0_WP/ 2300000.0_WP,   &
+      & - 78923.0_WP/   18400.0_WP,   &
+      & - 15729.0_WP/46000000.0_WP,   &
+      & - 16089.0_WP/  920000.0_WP,   &
+      & -413010.0_WP/      23.0_WP,   &
+      & - 35553.0_WP/46000000.0_WP,   &
+      & - 15549.0_WP/46000000.0_WP    &
       /)
 
     real(WP), dimension(neq), parameter :: &

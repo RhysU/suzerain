@@ -579,27 +579,27 @@ contains
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_continuity_sEtaMean)
-    src = A * src + B * auxp%Xs_rhoU
+    src = A * src + B * (auxp%Xs_rhoU + auxp%src_base_rho)
   end subroutine largo_BL_spatiotemporal_continuity_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_xMomentum_sEtaMean)
-    src = A * src + B * (2.0_wp * auxp%fav_u * auxp%Xs_rhoU - auxp%fav_u**2 * auxp%Xs_rho + auxp%Xs_p)
+    src = A * src + B * (2.0_wp * auxp%fav_u * auxp%Xs_rhoU - auxp%fav_u**2 * auxp%Xs_rho + auxp%Xs_p + auxp%src_base_rhoU)
   end subroutine largo_BL_spatiotemporal_xMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_yMomentum_sEtaMean)
-    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoV + auxp%fav_v * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_v * auxp%Xs_rho )
+    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoV + auxp%fav_v * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_v * auxp%Xs_rho + auxp%src_base_rhoV)
   end subroutine largo_BL_spatiotemporal_yMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_zMomentum_sEtaMean)
-    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoW + auxp%fav_w * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_w * auxp%Xs_rho )
+    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoW + auxp%fav_w * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_w * auxp%Xs_rho + auxp%src_base_rhoW)
   end subroutine largo_BL_spatiotemporal_zMomentum_sEtaMean
 
 
   subroutine DECLARE_SUBROUTINE(largo_BL_spatiotemporal_energy_sEtaMean)
-    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoH + auxp%fav_H * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_H*auxp%Xs_rho)
+    src = A * src + B * (auxp%fav_u * auxp%Xs_rhoH + auxp%fav_H * auxp%Xs_rhoU - auxp%fav_u*auxp%fav_H*auxp%Xs_rho + auxp%src_base_rhoE)
   end subroutine largo_BL_spatiotemporal_energy_sEtaMean
 
 
@@ -611,7 +611,7 @@ contains
     integer(c_int), intent(in)              :: is
 
     call c_f_pointer(cp, auxp)
-    src = A * src + B * (auxp%fav_u * auxp%Xs_rhos(is) + auxp%fav_cs(is) * auxp%Xs_rhoU - auxp%fav_u * auxp%fav_cs(is) * auxp%Xs_rho )
+    src = A * src + B * (auxp%fav_u * auxp%Xs_rhos(is) + auxp%fav_cs(is) * auxp%Xs_rhoU - auxp%fav_u * auxp%fav_cs(is) * auxp%Xs_rho + auxp%src_base_rhos(is))
   end subroutine largo_BL_spatiotemporal_ispecies_sEtaMean
 
 
