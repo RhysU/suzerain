@@ -28,9 +28,10 @@
  * Support logic with complex prerequisites spanning multiple applications
  */
 
-#ifdef HAVE_UNDERLING
 #include <fftw3.h>
 #include <fftw3-mpi.h>
+
+#ifdef HAVE_UNDERLING
 #include <underling/error.h>
 #include <underling/underling.hpp>
 #include <underling/underling_fftw.hpp>
