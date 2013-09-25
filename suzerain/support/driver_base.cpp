@@ -781,14 +781,15 @@ driver_base::log_status_L2(
 
 void
 driver_base::log_status_bulk(
-        const std::string& timeprefix)
+        const std::string& timeprefix,
+        const char * const name_bulk)
 {
     // Only continue on the rank housing the zero-zero modes...
     if (!dgrid->has_zero_zero_modes()) return;
 
     // ...and when logging is enabled.  Notice INFO not INFO0 is used.
-    logging::logger_type bulk_state = logging::get_logger("bulk.state");
-    if (!INFO_ENABLED(bulk_state)) return;
+    logging::logger_type log_bulk = logging::get_logger(name_bulk);
+    if (!INFO_ENABLED(log_bulk)) return;
 
     // Show headers only on first invocation
     std::ostringstream msg;
@@ -796,7 +797,7 @@ driver_base::log_status_bulk(
         msg << std::setw(timeprefix.size()) << build_timeprefix_description();
         for (size_t k = 0; k < fields.size(); ++k)
             msg << ' ' << std::setw(fullprec<>::width) << fields[k].identifier;
-        INFO0(bulk_state, msg.str());
+        INFO0(log_bulk, msg.str());
         msg.str("");
         log_status_bulk_header_shown = true;
     }
@@ -813,7 +814,7 @@ driver_base::log_status_bulk(
                 (*state_linear)[k].origin(), state_linear->shape()[1]);
         msg << ' ' << fullprec<>(bulkcoeff.dot(mean.real()));
     }
-    INFO(bulk_state, msg.str());
+    INFO(log_bulk, msg.str());
 }
 
 void

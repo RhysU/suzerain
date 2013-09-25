@@ -296,7 +296,8 @@ public:
 
     /** Log messages containing bulk quantities. */
     virtual void log_status_bulk(
-            const std::string& timeprefix);
+            const std::string& timeprefix,
+            const char * const name_bulk = "bulk.state");
 
     /**
      * Log messages containing state at the upper and lower boundaries.
