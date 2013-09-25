@@ -59,6 +59,23 @@ namespace suzerain {
 
 namespace perfect {
 
+namespace { // anonymous
+
+// Utility to check that collections of accumulators see the same number
+// of samples.  Otherwise, logic errors are certainly present.
+template <typename FPT, typename Stats, std::size_t N>
+bool consistent_observation_counts(
+    const array<boost::accumulators::accumulator_set<FPT, Stats>, N> acc)
+{
+    using boost::accumulators::count;
+    bool retval = true;
+    for (std::size_t i = 1; i < N; ++i)
+        retval |= count(acc.front()) == count(acc[i]);
+    return retval;
+}
+
+}
+
 /**
  * A complete Navier&ndash;Stokes \c apply_operator implementation.  The
  * implementation is provided as a common building block for
@@ -546,14 +563,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             } // end X // end Z
 
-#ifndef NDEBUG
-            // Ensure that all accumulators saw a consistent number of samples
-            const size_t expected = boost::accumulators::count(acc[0]);
-            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
-                const size_t observed = boost::accumulators::count(acc[k]);
-                assert(expected == observed);
-            }
-#endif
+            // All accumulators should have seen a consistent number of samples
+            assert(consistent_observation_counts(acc));
 
             // Store sums into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
@@ -683,14 +694,8 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             } // end X // end Z
 
-#ifndef NDEBUG
-            // Ensure that all accumulators saw a consistent number of samples
-            const size_t expected = boost::accumulators::count(acc[0]);
-            for (size_t k = 1; k < sizeof(acc)/sizeof(acc[0]); ++k) {
-                const size_t observed = boost::accumulators::count(acc[k]);
-                assert(expected == observed);
-            }
-#endif
+            // All accumulators should have seen a consistent number of samples
+            assert(consistent_observation_counts(acc));
 
             // Store sum into common block in preparation for MPI Allreduce
             using boost::accumulators::sum;
