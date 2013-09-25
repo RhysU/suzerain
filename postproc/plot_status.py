@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """Usage: plot_status.py *.dat
-Generate plots from L2.dat, rms.fluct.dat, or bulk.dat files.
+Generate plots from L2.dat, rms.dat, or bulk.dat files.
 Options:
   -f  --file_ext  Output file extension. Default is 'eps'.
   -h  --help      This help message.
@@ -19,7 +19,7 @@ from matplotlib import pyplot
 
 def getfilekind(infile):
 
-    if infile.find('rms.fluct.dat')!=-1:
+    if infile.find('rms.dat')!=-1:
        kind = 'rms_'
     elif infile.find('L2.dat')!=-1:
        kind = 'L2_'

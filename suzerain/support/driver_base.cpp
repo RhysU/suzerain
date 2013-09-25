@@ -184,13 +184,13 @@ driver_base::log4cxx_config()
         "log4j.appender.L2.layout=${log4j.appender.LOG.layout}\n"
         "log4j.appender.L2.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
         "\n"
-        "## Collect \"rms.fluct\" messages into rms.fluct.dat mimicking LOG file behavior\n"
-        "log4j.logger.rms.fluct=INHERITED, RMSFLUCT\n"
-        "log4j.appender.RMSFLUCT=${log4j.appender.LOG}\n"
-        "log4j.appender.RMSFLUCT.filename=rms.fluct.dat\n"
-        "log4j.appender.RMSFLUCT.append=${log4j.appender.LOG.append}\n"
-        "log4j.appender.RMSFLUCT.layout=${log4j.appender.LOG.layout}\n"
-        "log4j.appender.RMSFLUCT.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
+        "## Collect \"rms\" messages into rms.dat mimicking LOG file behavior\n"
+        "log4j.logger.rms=INHERITED, RMS\n"
+        "log4j.appender.RMS=${log4j.appender.LOG}\n"
+        "log4j.appender.RMS.filename=rms.dat\n"
+        "log4j.appender.RMS.append=${log4j.appender.LOG.append}\n"
+        "log4j.appender.RMS.layout=${log4j.appender.LOG.layout}\n"
+        "log4j.appender.RMS.layout.ConversionPattern=${log4j.appender.LOG.layout.ConversionPattern}\n"
     ;
 }
 
