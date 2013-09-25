@@ -87,8 +87,8 @@ case $ax_cv_cxx_compiler_vendor in #(
 dnl      AX_APPEND_COMPILE_FLAGS([-Weffc++])
 dnl      # Enable diagnostics about questionable pointer arithmetic
          AX_APPEND_COMPILE_FLAGS([-Wpointer-arith])
-         # Enable warnings if generated code is not C++ ABI compliant
-         AX_APPEND_COMPILE_FLAGS([-Wabi])
+dnl      # Enable warnings if generated code is not C++ ABI compliant
+dnl      AX_APPEND_COMPILE_FLAGS([-Wabi])
          # Disable warning #279: controlling expression is constant
          AX_APPEND_COMPILE_FLAGS([-wd279])
          # Disable remark #383: value copied to temporary, reference to temporary used
