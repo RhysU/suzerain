@@ -32,7 +32,7 @@ namespace suzerain {
 namespace perfect {
 
 // Empty placeholder for any future content.  In the meantime, compiling this
-// file ensures navier_stokes.hpp has the appropriate #includes
+// file ensures navier_stokes.hpp has the appropriate #includes and syntax.
 
 } // namespace perfect
 
