@@ -109,7 +109,7 @@ bool wisdom_broadcast(const std::string& wisdom_file);
  */
 bool wisdom_gather(const std::string& wisdom_file);
 
-// FIXME Remove and place logic into application_base
+// FIXME Remove and place logic into application_base (post-#2736)
 /**
  * Create a B-spline workspace on [left,right] per ndof, k, and htdelta.
  * @return the absolute error in reproducing prescribed abscissae.
@@ -122,14 +122,14 @@ real_t create(const int ndof,
               shared_ptr<bspline>& b,
               shared_ptr<bsplineop>& cop);
 
-// FIXME Remove and place logic into application_base
+// FIXME Remove and place logic into application_base (post-#2736)
 /** Save a \ref bspline workspace in a file. */
 void save(const esio_handle h,
           const shared_ptr<bspline>& b,
           const shared_ptr<bsplineop>& cop,
           const shared_ptr<bsplineop>& gop);
 
-// FIXME Remove and place logic into application_base
+// FIXME Remove and place logic into application_base (post-#2736)
 /**
  * Load a \ref bspline workspace from a file.
  * @return the absolute error in reproducing prescribed abscissae.
