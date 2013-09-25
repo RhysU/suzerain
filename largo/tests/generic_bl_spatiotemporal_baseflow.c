@@ -72,8 +72,9 @@ FCT_BGN()
 
           void * generic_workspace;
           double y        =   1.0/ 10.0;
-          double grDelta  =   5.0/100.0;
+          double grtDelta =   5.0/100.0;
           double uIw      = 460.0      ;
+          double grxDelta = grtDelta / uIw;
 
           double field  [] = \
           {    11.0/ 1000.0,  \
@@ -137,7 +138,7 @@ FCT_BGN()
           { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
 
-          double grDA   [] = \
+          double grxDA   [] = \
           {   1.0/ 23000.0, \
               1.0/  4600.0, \
               1.0/ 46000.0, \
@@ -148,7 +149,7 @@ FCT_BGN()
               1.0/ 46000.0  \
           };
 
-          double grDArms[] = \
+          double grtDArms[] = \
           {    1.0/  1000.0, \
                5.0/  1000.0, \
                5.0/ 10000.0, \
@@ -158,6 +159,14 @@ FCT_BGN()
                2.0/100000.0, \
                0.0           \
           };
+
+          double grxDArms[] = \
+          { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+          for (unsigned int i=0; i < neq+1; ++i)
+          {
+            grxDArms[i] = grtDArms[i] / uIw;
+          }
 
           double base   [] = \
           {    5.0/  1000.0, \
@@ -275,7 +284,7 @@ FCT_BGN()
 
 
           // Init growth rates
-          largo_init     (generic_workspace, grDelta, grDA, grDArms);
+          largo_init     (generic_workspace, grxDelta, grxDA, grxDArms);
 
           // Init wall baseflow
           largo_init_wall_baseflow(generic_workspace   \ 
@@ -347,14 +356,14 @@ FCT_BGN()
           // Allocate generic workspace;
           largo_allocate (&generic_workspace, neq, ns, model);
 
-          // Init growth rates
-          largo_init     (generic_workspace, grDelta, grDA, grDArms);
-
           // Init wall baseflow
           largo_init_wall_baseflow(generic_workspace   \ 
             ,wall_base ,wall_ddy_base ,wall_ddt_base \
                        ,wall_ddx_base ,wall_src_base \
             );
+
+          // Init growth rates
+          largo_init     (generic_workspace, grxDelta, grxDA, grxDArms);
 
           // Compute prestep values;
           largo_prestep_baseflow  (generic_workspace,   base,  dybase,

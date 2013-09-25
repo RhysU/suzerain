@@ -111,12 +111,20 @@ module largo_BL_spatiotemporal
     real(WP) :: grt_DA_rms_rhoE = 0.0_WP
     real(WP) :: grt_DA_rms_p    = 0.0_WP
 
+    real(WP) :: grx_DA_rms_rho  = 0.0_WP
+    real(WP) :: grx_DA_rms_rhoU = 0.0_WP
+    real(WP) :: grx_DA_rms_rhoV = 0.0_WP
+    real(WP) :: grx_DA_rms_rhoW = 0.0_WP
+    real(WP) :: grx_DA_rms_rhoE = 0.0_WP
+    real(WP) :: grx_DA_rms_p    = 0.0_WP
+
     real(WP), allocatable, dimension(:) :: base_rhos
     real(WP), allocatable, dimension(:) :: ddy_base_rhos
     real(WP), allocatable, dimension(:) :: ddx_base_rhos
     real(WP), allocatable, dimension(:) :: src_base_rhos
     real(WP), allocatable, dimension(:) :: grx_DA_rhos
     real(WP), allocatable, dimension(:) :: grt_DA_rms_rhos
+    real(WP), allocatable, dimension(:) :: grx_DA_rms_rhos
 
     integer(c_int) :: ip
 
@@ -207,13 +215,15 @@ contains
       allocate(auxp%src_base_rhos  (1:ns_))
       allocate(auxp%grx_DA_rhos    (1:ns_))
       allocate(auxp%grt_DA_rms_rhos(1:ns_))
+      allocate(auxp%grx_DA_rms_rhos(1:ns_))
 
-      auxp%base_rhos     = 0.0_WP
-      auxp%ddy_base_rhos = 0.0_WP
-      auxp%ddx_base_rhos = 0.0_WP
-      auxp%src_base_rhos = 0.0_WP
+      auxp%base_rhos      = 0.0_WP
+      auxp%ddy_base_rhos  = 0.0_WP
+      auxp%ddx_base_rhos  = 0.0_WP
+      auxp%src_base_rhos  = 0.0_WP
       auxp%grx_DA_rhos    = 0.0_WP
       auxp%grt_DA_rms_rhos= 0.0_WP
+      auxp%grx_DA_rms_rhos= 0.0_WP
     end if
 
     ! Pressure variable index
@@ -246,6 +256,7 @@ contains
     if (allocated(auxp%src_base_rhos  ))  deallocate(auxp%src_base_rhos  )
     if (allocated(auxp%grx_DA_rhos    ))  deallocate(auxp%grx_DA_rhos    )
     if (allocated(auxp%grt_DA_rms_rhos))  deallocate(auxp%grt_DA_rms_rhos)
+    if (allocated(auxp%grx_DA_rms_rhos))  deallocate(auxp%grx_DA_rms_rhos)
 
     ! Deallocate array of derived types
     deallocate(auxp)
@@ -256,11 +267,11 @@ contains
   end subroutine largo_BL_spatiotemporal_deallocate
 
 
-  subroutine largo_BL_spatiotemporal_init(cp, grt_delta, grx_DA, grt_DA_rms)
+  subroutine largo_BL_spatiotemporal_init(cp, grx_delta, grx_DA, grx_DA_rms)
 
-    real(WP), intent(in)                  :: grt_delta
+    real(WP), intent(in)                  :: grx_delta
     real(WP), dimension(*), intent(in)    :: grx_DA
-    real(WP), dimension(*), intent(in)    :: grt_DA_rms
+    real(WP), dimension(*), intent(in)    :: grx_DA_rms
     integer(c_int) :: is
     type(largo_workspace_ptr), intent(in) :: cp
     type(largo_BL_spatiotemporal_workspace_type), pointer   :: auxp
@@ -269,7 +280,7 @@ contains
     call c_f_pointer(cp, auxp)
 
     ! Set growth rates
-    auxp%grt_delta   = grt_delta
+    auxp%grx_delta   = grx_delta
 
     auxp%grx_DA_rho  = grx_DA(irho )
     auxp%grx_DA_rhoU = grx_DA(irhoU)
@@ -278,16 +289,16 @@ contains
     auxp%grx_DA_rhoE = grx_DA(irhoE)
     auxp%grx_DA_p    = grx_DA(auxp%ip)
 
-    auxp%grt_DA_rms_rho  = grt_DA_rms(irho )
-    auxp%grt_DA_rms_rhoU = grt_DA_rms(irhoU)
-    auxp%grt_DA_rms_rhoV = grt_DA_rms(irhoV)
-    auxp%grt_DA_rms_rhoW = grt_DA_rms(irhoW)
-    auxp%grt_DA_rms_rhoE = grt_DA_rms(irhoE)
-    auxp%grt_DA_rms_p    = grt_DA_rms(auxp%ip)
+    auxp%grx_DA_rms_rho  = grx_DA_rms(irho )
+    auxp%grx_DA_rms_rhoU = grx_DA_rms(irhoU)
+    auxp%grx_DA_rms_rhoV = grx_DA_rms(irhoV)
+    auxp%grx_DA_rms_rhoW = grx_DA_rms(irhoW)
+    auxp%grx_DA_rms_rhoE = grx_DA_rms(irhoE)
+    auxp%grx_DA_rms_p    = grx_DA_rms(auxp%ip)
 
     do is=1, ns_
       auxp%grx_DA_rhos    (is) = grx_DA    (5+is)
-      auxp%grt_DA_rms_rhos(is) = grt_DA_rms(5+is)
+      auxp%grx_DA_rms_rhos(is) = grx_DA_rms(5+is)
     end do
 
     ! Compute grx_delta using as velocity scale the 
@@ -296,7 +307,16 @@ contains
     ! well to avoid having as a requirement to call this method
     ! before the init_wall_baseflow one
     if (auxp%wall_base_u /= 0.0_WP) then
-      auxp%grx_delta    = auxp%grt_delta   / auxp%wall_base_u 
+      auxp%grt_delta       = auxp%grx_delta      * auxp%wall_base_u 
+      auxp%grt_DA_rms_rho  = grx_DA_rms(irho )   * auxp%wall_base_u  
+      auxp%grt_DA_rms_rhoU = grx_DA_rms(irhoU)   * auxp%wall_base_u
+      auxp%grt_DA_rms_rhoV = grx_DA_rms(irhoV)   * auxp%wall_base_u
+      auxp%grt_DA_rms_rhoW = grx_DA_rms(irhoW)   * auxp%wall_base_u
+      auxp%grt_DA_rms_rhoE = grx_DA_rms(irhoE)   * auxp%wall_base_u
+      auxp%grt_DA_rms_p    = grx_DA_rms(auxp%ip) * auxp%wall_base_u
+      do is=1, ns_
+        auxp%grt_DA_rms_rhos(is) = grx_DA_rms(5+is) * auxp%wall_base_u
+      end do
     end if
 
   end subroutine largo_BL_spatiotemporal_init
@@ -321,9 +341,18 @@ contains
     ! Store relevant wall baseflow information
     auxp%wall_base_u  = wall_base(irhoU) / wall_base(irho)
 
-    ! Compute grx_delta using as velocity scale the 
+    ! Compute grx_* using as velocity scale the 
     ! inviscid streamwise velocity at the wall 
-    auxp%grx_delta    = auxp%grt_delta   / auxp%wall_base_u 
+    auxp%grt_delta       = auxp%grx_delta       * auxp%wall_base_u 
+    auxp%grt_DA_rms_rho  = auxp%grx_DA_rms_rho  * auxp%wall_base_u  
+    auxp%grt_DA_rms_rhoU = auxp%grx_DA_rms_rhoU * auxp%wall_base_u
+    auxp%grt_DA_rms_rhoV = auxp%grx_DA_rms_rhoV * auxp%wall_base_u
+    auxp%grt_DA_rms_rhoW = auxp%grx_DA_rms_rhoW * auxp%wall_base_u
+    auxp%grt_DA_rms_rhoE = auxp%grx_DA_rms_rhoE * auxp%wall_base_u
+    auxp%grt_DA_rms_p    = auxp%grx_DA_rms_p    * auxp%wall_base_u
+    do is=1, ns_
+      auxp%grt_DA_rms_rhos(is) = auxp%grx_DA_rms_rhos(is) * auxp%wall_base_u
+    end do
 
   end subroutine largo_BL_spatiotemporal_init_wall_baseflow
 
