@@ -469,7 +469,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // An array of summing_accumulator_type holds all running sums.
             // This gives nicer construction and allows looping over results.
-            summing_accumulator_type acc[ref::count];
+            array<summing_accumulator_type, ref::count> acc;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
@@ -644,7 +644,7 @@ std::vector<real_t> apply_navier_stokes_spatial_operator(
 
             // An array of summing_accumulator_type holds all running sums.
             // This gives nicer construction and allows looping over results.
-            summing_accumulator_type acc[q::count];
+            array<summing_accumulator_type, q::count> acc;
 
             const int last_zxoffset = offset
                                     + o.dgrid.local_physical_extent.z()
