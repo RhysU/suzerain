@@ -160,6 +160,18 @@ def prerequisites(f, df=None, ddf=None):
     set([x, y])
     >>> Cov
     set([(x, x), (x, y), (y, y)])
+
+    >>> E, Cov = prerequisites('x*y')
+    >>> E
+    set([x, y])
+    >>> Cov
+    set([(x, x), (x, y), (y, y)])
+
+    >>> E, Cov = prerequisites('log(x)')
+    >>> E
+    set([x])
+    >>> Cov
+    set([(x, x)])
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
