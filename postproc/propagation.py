@@ -22,6 +22,7 @@ from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
 import collections
 import fileinput
+import itertools
 import sympy
 import sys
 import tempfile
@@ -152,11 +153,47 @@ def prerequisites(f, df=None, ddf=None):
     '''
     if isinstance(f, basestring):
         f = parse_expr(f)
+    f = f.simplify()
     if df is None:
         df = partials(f)
     if ddf is None:
         ddf = mixed_partials(f, df)
+
+    # Implementation heavily relies on set addition semantics combined
+    # with the fact that all derivatives have been precomputed prior
+    # to iteration.  Because the caller might know something we do not
+    # about he or she wants to compute a subexpression (hinted via
+    # df or ddf arguments), we look at all possible terms rather than
+    # removing those which can be eliminated by smoothness or symmetry.
     E, Cov = set(), set()
+
+    # Quantities necessary to compute E[f(x)]
+    ## Term:    f(d)
+    E.add(f.free_symbols)
+    ## Term: +  (1/2) \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+    for i in ddf.keys():
+        for j in ddf[i].keys():
+            f_ij = ddf[i][j]
+            if not f_ij.is_zero:
+                E.add(f_ij.free_symbols)
+                Cov.add(tuple(sorted([i, j])))
+
+    # Quantities additionally necessary to compute Var[f(x)]
+    ## Term:          \sum_{ i } \sigma_{ii} f_{,i}^2(d)
+    for i in df.keys():
+        f_i = df[i]
+        if not f_i.is_zero:
+            E.add(f_i.free_symbols)
+            Cov.add((i, i))
+    ## Term: +    2   \sum_{i<j} \sigma_{ij} f_{,i}(d) f_{,j}(d)
+    for (i, j) in itertools.combinations(df.keys(), 2):
+        fifj = (df[i] * df[j]).simplify()
+        if not fifj.is_zero:
+            E.add(fifj.free_symbols)
+            Cov.add(tuple(sorted([i, j])))
+    ## These terms require no additional data relative to E[f(x)]:
+    ## Term: -  f(d)  \sum_{i,j} \sigma_{ij} f_{,ij}(d)
+    ## Term: - (1/4) (\sum_{i,j} \sigma_{ij} f_{,ij}(d))^2
 
     return E, Cov
 
