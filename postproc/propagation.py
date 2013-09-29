@@ -91,7 +91,7 @@ def partials(f):
         df[x] = f.diff(x).simplify()
     return df
 
-def mixed_partials(f):
+def mixed_partials(f, df=None):
     r'''
     Given a SymPy expression f or any string parsable as such, produce a
     defaultdict of defaultdicts ddf where referencing ddf[x][y] produces
@@ -107,7 +107,9 @@ def mixed_partials(f):
     ddf = collections.defaultdict(
             lambda: collections.defaultdict(lambda: sympy.Integer(0))
         )
-    for (x, dfdx) in partials(f).iteritems():
+    if df is None:
+        df = partials(f)
+    for (x, dfdx) in df.iteritems():
         ddf[x] = partials(dfdx)
 
     return ddf
