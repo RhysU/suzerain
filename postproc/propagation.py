@@ -11,10 +11,21 @@ import collections
 import sys
 
 def parser(filenames):
-    """
+    r'''
     Parse the provided filenames (or stdin if empty) into
     an OrderedDict of symbol -> SymPy expression entries.
-    """
+    See doctests for an example of the accepted syntax.
+
+    >>> import tempfile
+    >>> f = tempfile.NamedTemporaryFile()
+    >>> f.write("a=1       # Comments       \n")
+    >>> f.write(" b =  a+1 # Reuse earlier  \n")
+    >>> f.write("c  = d+e  # Purely symbolic\n")
+    >>> f.write("   f      # Nameless result\n")
+    >>> f.flush()
+    >>> parser(f.name)
+    OrderedDict([('a', 1), ('b', 2), ('c', d + e), ('line4', f)])
+    '''
     # Accumulate symbol definitions maintaining declaration order
     symbol_table = collections.OrderedDict()
 
@@ -55,7 +66,12 @@ def parser(filenames):
     return symbol_table
 
 # def main(args):
+#     symbol_table = parser([])
 #     return 0
 #
 # if __name__=='__main__':
 #     sys.exit(main(*sys.argv[1:]))
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
