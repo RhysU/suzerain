@@ -149,6 +149,9 @@ def prerequisites(f, df=None, ddf=None):
     component x_i and f_{,ij} denotes differentiation with respect to
     both components x_i and x_j.
 
+    >>> prerequisites('1')
+    []
+
     >>> prerequisites('log(x)')
     [(x,), (x, x)]
 
