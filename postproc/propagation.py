@@ -130,13 +130,29 @@ def mixed_partials(f, df=None):
 def prerequisites(f, df=None, ddf=None):
     r'''
     Given a SymPy expression f or any string parsable as such, return
-    a tuple (E, Cov) where E and Cov are is the set of free symbol
-    expectations and covariances, respectively, necessary to compute an
-    estimate of E[f] and Var[f] using Taylor Series Methods (TSM).
+    a tuple (E, Cov) where E and Cov are is the set of expectations and
+    covariances, respectively, necessary to compute an estimate of E[f]
+    and Var[f] using Taylor Series Methods (TSM).
 
     Applying TSM to the underlying model yields
 
-        E[f(x)] = f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{i,j}(d)
+        E[f(x)]   ~= f(d) + (1/2) \sum_{i,j} \sigma_{ij} f_{i,j}(d)
+
+        Var[f(x)] ~=  \sum_{i  } \sigma_{ii} f_{i}^2(d)
+                   + 2\sum_{i<j} \sigma_{ij} f_{i}(d) f_{j}(d)
+
+FIXME STARTHERE
+&\approx
+\\
+ &- f\left(\vec{d}\right)
+    \sum_{i,j} \sigma_{ij}
+    \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+  - \frac{1}{4} \left(
+      \sum_{i,j} \sigma_{ij}
+      \left(\partial_{x_i} \partial_{x_j} f\right)\left(\vec{d}\right)
+    \right)^2
+.
+\end{align*}
 
     '''
     if isinstance(f, basestring):
