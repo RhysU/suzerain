@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 """
-Eventually, this is to be a helper utility for determining
-what information must be gathered to perform uncertainty
-quantification for various derived quantities of interest.
+Eventually, this is to be a helper utility for determining what
+information must be gathered to perform uncertainty quantification for
+various derived quantities of interest.
+
+TODO Still very much a slow work in progress
 """
 from __future__ import division, print_function
 from sympy.parsing.sympy_parser import parse_expr
 import collections
 import fileinput
+import sympy
 import sys
 import tempfile
 
@@ -64,6 +67,28 @@ def parser(filenames):
         fileinput.close()
 
     return symbol_table
+
+
+def partials(e):
+    r'''
+    Given a SymPy expression e or string parsable as such, produce a
+    collections.defaultdict where keys are e.free_symbols and values
+    are the simplified derivative of e with respect to the key.
+    The defaultdict returns sympy.Integer(0) for any key not in
+    e.free_symbols.
+
+    >>> partials("1")
+    defaultdict(<class 'sympy.core.numbers.Integer'>, {})
+
+    >>> partials("b**2 + a + 1")
+    defaultdict(<class 'sympy.core.numbers.Integer'>, {b: 2*b, a: 1})
+    '''
+    if isinstance(e, basestring):
+        e = parse_expr(e)
+    r = collections.defaultdict(sympy.Integer)
+    for s in e.free_symbols:
+        r[s] = e.diff(s).simplify()
+    return r
 
 # def main(args):
 #     symbol_table = parser([])
