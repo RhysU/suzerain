@@ -71,23 +71,45 @@ def parser(filenames):
 
 def partials(e):
     r'''
-    Given a SymPy expression e or string parsable as such, produce a
-    collections.defaultdict where keys are e.free_symbols and values
-    are the simplified derivative of e with respect to the key.
-    The defaultdict returns sympy.Integer(0) for any key not in
-    e.free_symbols.
+    Given a SymPy expression e or any string parsable as such, produce a
+    defaultdict d where referencing d[x] produces the precomputed result
+    e.diff(x).simplify() for any x.
 
-    >>> partials("1")
-    defaultdict(<class 'sympy.core.numbers.Integer'>, {})
+    >>> a, b, c = sympy.symbols('a, b, c')
+    >>> d = partials(b**2 + a + 1)
+    >>> d[a], d[b], d[c]
+    (1, 2*b, 0)
 
-    >>> partials("b**2 + a + 1")
-    defaultdict(<class 'sympy.core.numbers.Integer'>, {b: 2*b, a: 1})
+    >>> d = partials("1 + 2 + 3")
+    >>> d.keys()
+    []
     '''
     if isinstance(e, basestring):
         e = parse_expr(e)
-    r = collections.defaultdict(sympy.Integer)
+    r = collections.defaultdict(lambda: sympy.Integer(0))
     for s in e.free_symbols:
         r[s] = e.diff(s).simplify()
+    return r
+
+def mixed_partials(e):
+    r'''
+    Given a SymPy expression e or any string parsable as such, produce
+    a defaultdict of defaultdicts dd where referencing dd[x][y] produces
+    the precomputed result e.diff(x,y).simplify() for any x and y.
+
+    >>> a, b, c = sympy.symbols('a, b, c')
+    >>> dd = mixed_partials(a**2 + a*b + b**2 + 1)
+    >>> dd[a][a], dd[a][b], dd[b][a], dd[b][b]
+    (2, 1, 1, 2)
+    >>> dd[a][c], dd[c][a], dd[c][c]
+    (0, 0, 0)
+    '''
+    r = collections.defaultdict(
+            lambda: collections.defaultdict(lambda: sympy.Integer(0))
+        )
+    for (x, d) in partials(e).iteritems():
+        r[x] = partials(d)
+
     return r
 
 # def main(args):
